@@ -1,4 +1,4 @@
-package cn.clever.powermaster.module.pdu.controller;
+package cn.clever.powermaster.module.pdu.controller.admin;
 
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import io.swagger.v3.oas.annotations.tags.Tag;
