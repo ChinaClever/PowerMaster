@@ -34,7 +34,7 @@
 
         <dependency>
             <groupId>cn.iocoder.boot</groupId>
-            <artifactId>powermaster-module-pdu-biz</artifactId>
+            <artifactId>yudao-module-pdu-biz</artifactId>
             <version>${revision}</version>
         </dependency>
 
