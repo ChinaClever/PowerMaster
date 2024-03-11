@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>cn.iocoder.boot</groupId>
-        <artifactId>powermaster-module-pdu</artifactId>
+        <artifactId>yudao-module-pdu</artifactId>
         <version>${revision}</version>
     </parent>
 
-    <artifactId>powermaster-module-pdu-api</artifactId>
+    <artifactId>yudao-module-pdu-api</artifactId>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
     <description> <!-- 4. 新增 description 为该模块的描述 -->

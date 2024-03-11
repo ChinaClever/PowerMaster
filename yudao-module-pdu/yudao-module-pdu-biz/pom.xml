@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>cn.iocoder.boot</groupId>
-        <artifactId>powermaster-module-pdu</artifactId>
+        <artifactId>yudao-module-pdu</artifactId>
         <version>${revision}</version>
     </parent>
     <packaging>jar</packaging>
-    <artifactId>powermaster-module-pdu-biz</artifactId>
+    <artifactId>yudao-module-pdu-biz</artifactId>
     <name>${project.artifactId}</name>
 
     <description>
@@ -26,7 +26,7 @@
     <dependencies>  <!-- 5. 新增依赖，这里引入的都是比较常用的业务组件、技术组件 -->
         <dependency>
             <groupId>cn.iocoder.boot</groupId>
-            <artifactId>powermaster-module-pdu-api</artifactId>
+            <artifactId>yudao-module-pdu-api</artifactId>
             <version>${revision}</version>
         </dependency>
 
