@@ -40,14 +40,14 @@ public class HistoryDataController {
 
     @PostMapping("/create")
     @Operation(summary = "创建pdu历史数据")
-    @PreAuthorize("@ss.hasPermission('pdu:history-data:create')")
+//    @PreAuthorize("@ss.hasPermission('pdu:history-data:create')")
     public CommonResult<Long> createHistoryData(@Valid @RequestBody HistoryDataSaveReqVO createReqVO) {
         return success(historyDataService.createHistoryData(createReqVO));
     }
 
     @PutMapping("/update")
     @Operation(summary = "更新pdu历史数据")
-    @PreAuthorize("@ss.hasPermission('pdu:history-data:update')")
+//    @PreAuthorize("@ss.hasPermission('pdu:history-data:update')")
     public CommonResult<Boolean> updateHistoryData(@Valid @RequestBody HistoryDataSaveReqVO updateReqVO) {
         historyDataService.updateHistoryData(updateReqVO);
         return success(true);
@@ -56,7 +56,7 @@ public class HistoryDataController {
     @DeleteMapping("/delete")
     @Operation(summary = "删除pdu历史数据")
     @Parameter(name = "id", description = "编号", required = true)
-    @PreAuthorize("@ss.hasPermission('pdu:history-data:delete')")
+//    @PreAuthorize("@ss.hasPermission('pdu:history-data:delete')")
     public CommonResult<Boolean> deleteHistoryData(@RequestParam("id") Long id) {
         historyDataService.deleteHistoryData(id);
         return success(true);
@@ -65,7 +65,7 @@ public class HistoryDataController {
     @GetMapping("/get")
     @Operation(summary = "获得pdu历史数据")
     @Parameter(name = "id", description = "编号", required = true)
-    @PreAuthorize("@ss.hasPermission('pdu:history-data:query')")
+//    @PreAuthorize("@ss.hasPermission('pdu:history-data:query')")
     public CommonResult<HistoryDataRespVO> getHistoryData(@RequestParam("id") Long id) {
         HistoryDataDO historyData = historyDataService.getHistoryData(id);
         return success(BeanUtils.toBean(historyData, HistoryDataRespVO.class));
@@ -81,7 +81,7 @@ public class HistoryDataController {
 
     @GetMapping("/export-excel")
     @Operation(summary = "导出pdu历史数据 Excel")
-    @PreAuthorize("@ss.hasPermission('pdu:history-data:export')")
+//    @PreAuthorize("@ss.hasPermission('pdu:history-data:export')")
     @OperateLog(type = EXPORT)
     public void exportHistoryDataExcel(@Valid HistoryDataPageReqVO pageReqVO,
               HttpServletResponse response) throws IOException {

@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.pdu.service.historydata;
 import java.util.*;
 import javax.validation.*;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.*;
+import cn.iocoder.yudao.module.pdu.dal.dataobject.historydata.EsHistoryDataDO;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.historydata.HistoryDataDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
@@ -51,5 +52,21 @@ public interface HistoryDataService {
      * @return pdu历史数据分页
      */
     PageResult<HistoryDataDO> getHistoryDataPage(HistoryDataPageReqVO pageReqVO);
+
+
+    Void insertHistoryDataDO(HistoryDataDO historyDataDO);
+
+    //保存和修改
+//    void save(EsHistoryDataDO esHistoryDataDO);
+
+    //查询id
+//    EsHistoryDataDO findById(Long id);
+//
+//    //删除指定ID数据
+//    void deleteById(Long id);
+//
+//    long count();
+//
+//    boolean existsById(Long id);
 
 }

@@ -25,30 +25,40 @@ public class HistoryDataDO{
     /**
      * 编号
      */
-    @TableId
+    @TableId(type = IdType.AUTO)
     private Long id;
     /**
      * pdu编号
      */
-    private Long pduId;
+    private Short pduId;
     /**
      * 数据类型	
      */
-    private String type;
+    private Short type;
     /**
      * topic
      */
-    private String topic;
+    private Short topic;
     /**
      * indexes
      */
-    private Long indexes;
+    private Short indexes;
     /**
      * 值
      */
-    private Double value;
+    private Float value;
     /**
      * 创建时间
      */
     private LocalDateTime createTime;
+    private Short test1;
+    private Short test2;
+    private Short test3;
+    private Short test4;
+    private Short test5;
+    private Short test6;
+    private Short test7;
+    private Short test8;
+    private Short test9;
+    private Short test10;
 }

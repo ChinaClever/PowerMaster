@@ -1,5 +1,8 @@
 package cn.iocoder.yudao.module.pdu.service.historydata;
 
+import cn.iocoder.yudao.module.pdu.dal.dataobject.historydata.EsHistoryDataDO;
+import cn.iocoder.yudao.module.pdu.repository.HistoryDataRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -23,11 +26,17 @@ import static cn.iocoder.yudao.module.pdu.enums.ErrorCodeConstants.*;
  * @author 芋道源码
  */
 @Service
-@Validated
 public class HistoryDataServiceImpl implements HistoryDataService {
 
     @Resource
     private HistoryDataMapper historyDataMapper;
+
+//    private final HistoryDataRepository historyDataRepository;
+//
+//    @Autowired
+//    public HistoryDataServiceImpl(HistoryDataRepository historyDataRepository) {
+//        this.historyDataRepository = historyDataRepository;
+//    }
 
     @Override
     public Long createHistoryData(HistoryDataSaveReqVO createReqVO) {
@@ -70,5 +79,36 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     public PageResult<HistoryDataDO> getHistoryDataPage(HistoryDataPageReqVO pageReqVO) {
         return historyDataMapper.selectPage(pageReqVO);
     }
+
+    @Override
+    public Void insertHistoryDataDO(HistoryDataDO historyDataDO) {
+        historyDataMapper.insert(historyDataDO);
+        return null;
+    }
+
+//    @Override
+//    public void save(EsHistoryDataDO esHistoryDataDO) {
+//        historyDataRepository.save(esHistoryDataDO);
+//    }
+//
+//    @Override
+//    public EsHistoryDataDO findById(Long id) {
+//        return historyDataRepository.findById(id).orElse(new EsHistoryDataDO());
+//    }
+//
+//    @Override
+//    public void deleteById(Long id) {
+//        historyDataRepository.deleteById(id);
+//    }
+//
+//    @Override
+//    public long count() {
+//        return historyDataRepository.count();
+//    }
+//
+//    @Override
+//    public boolean existsById(Long id) {
+//        return historyDataRepository.existsById(id);
+//    }
 
 }
