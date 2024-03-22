@@ -31,6 +31,7 @@
     <el-button>Ia</el-button>
     <el-button>Ib</el-button>
     <el-button>Ic</el-button>
+    <span>单相谐波含量xx</span>
   </ContentWrap> 
 
    <ContentWrap>
@@ -51,12 +52,11 @@
     </el-table>
   </ContentWrap>
 
-  <!-- <ContentWrap>
-    <Echart :options="analysis" :height="200" />
-  </ContentWrap> --> 
+  <ContentWrap>
+    <Echart :options="analysis" :height="400" />
+  </ContentWrap> 
 
   
- 
 </template>
 
 <script setup lang="ts">
@@ -192,7 +192,8 @@ const analysis = ref({
   },
   yAxis: {
     type: 'value', // y轴类型为数值轴
-    max: 15,
+    max: 16,
+    interval: 1, // 刻度的间隔
   },
   series: [{
     data: [4,0,4,0,1,2,3,0,1,0,2,4,1,2,0,2,1,2,3,1,2,1,2,3,1,2,3,1,2,1,2,1,1], // y轴的数据

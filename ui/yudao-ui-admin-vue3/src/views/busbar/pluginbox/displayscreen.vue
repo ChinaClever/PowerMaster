@@ -1,5 +1,5 @@
 <template>
-  <el-collapse >
+  <el-collapse  v-model="activeNames">
     <el-collapse-item title="输入信息" name="1">
       <ContentWrap>
         总有功功率:{{totalActivePower}}kW 总视在功率:{{totalApparentPower}}kW 总无功功率:{{totalReactivePower}}kVar 
@@ -19,17 +19,18 @@
     <el-collapse-item title="插拔位" name="2">
       <ContentWrap>
         <el-table v-loading="loading" :data="insertionList" :stripe="true" :show-overflow-tooltip="true">
+          <el-table-column label="编号" align="center" prop="no" />
           <el-table-column label="总有功功率" align="center" prop="totalActivePower" />
           <el-table-column label="总视在功率" align="center" prop="totalApparentPower" />
           <el-table-column label="总电能" align="center" prop="totalReactivePower" />
-          <el-table-column label="机柜名" align="center" prop="cabinet" />
+          <el-table-column label="对应机柜" align="center" prop="cabinet" />
         </el-table>
       </ContentWrap>
     </el-collapse-item>
     <el-collapse-item title="回路信息" name="3">
       <ContentWrap>
         <el-table v-loading="loading" :data="loopList" :stripe="true" :show-overflow-tooltip="true">
-          <el-table-column label="回路名" align="center" prop="no" /> 
+          <el-table-column label="编号" align="center" prop="no" /> 
           <el-table-column label="名称" align="center" prop="name" /> 
           <el-table-column label="继路器" align="center" prop="relay" /> 
           <el-table-column label="电压" align="center" prop="voltage" /> 
@@ -55,6 +56,7 @@ defineOptions({ name: 'PDUDevice' })
 
 const message = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
+const activeNames = ref(['1']) //默认展开的折叠列
 
 const totalActivePower = ref(220)
 const totalApparentPower = ref(220)
@@ -98,18 +100,21 @@ const inputList = ref([
 
 const insertionList = ref([
   {
+    no:"1",
     totalActivePower: '220kW',
     totalApparentPower: '0kW',
     totalReactivePower: '0kVar',
     cabinet:"机房1-柜列1-机柜2-A",
   },
   {
+    no:"2",
     totalActivePower: '220kW',
     totalApparentPower: '0kW',
     totalReactivePower: '0kVar',
     cabinet:"机房1-柜列1-机柜2-B",
   },
   {
+    no:"3",
     totalActivePower: '220kW',
     totalApparentPower: '0kW',
     totalReactivePower: '0kVar',
@@ -120,7 +125,7 @@ const insertionList = ref([
 const loopList = ref([
   {
     no: '1',
-    name: 'Output1',
+    name: 'loop1',
     relay: '关',
     voltage:"238.0V",
     current:"0.020A",
@@ -130,7 +135,7 @@ const loopList = ref([
   },
   {
     no: '2',
-    name: 'Output2',
+    name: 'loop2',
     relay: '开',
     voltage:"238.0V",
     current:"0.020A",
