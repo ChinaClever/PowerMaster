@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>yudao-module-pdu-api</artifactId>
+
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
     <description> <!-- 4. 新增 description 为该模块的描述 -->
