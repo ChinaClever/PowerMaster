@@ -86,7 +86,7 @@
 
       <!-- 列表 -->
       <ContentWrap>
-        <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+        <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen">
           <el-table-column label="编号" align="center" prop="id" />
           <el-table-column label="运行状态" align="center" prop="status" />
           <el-table-column label="总视在功率" align="center" prop="totalApparentPower" width="130px" />
@@ -138,6 +138,7 @@ import { ElTree } from 'element-plus'
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
+const { push } = useRouter()
 
 const serverRoomArr =  [
   {
@@ -292,6 +293,16 @@ const exportLoading = ref(false) // 导出的加载中
 //     loading.value = false
 //   }
 // }
+
+const toPDUDisplayScreen = (row, column, event) =>{
+  if(column.label == "网络地址"){
+    // push('/pdu/pdu/pdudevice/displayscreen');
+    console.log(row)
+    console.log(column)
+    console.log(event)
+    console.log("去PDU大屏")
+  }
+}
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
