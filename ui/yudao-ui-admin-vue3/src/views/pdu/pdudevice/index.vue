@@ -49,9 +49,9 @@
             </el-checkbox-group>
             
           </el-form-item>
-          <el-form-item label="网络地址" prop="ipAddr">
+          <el-form-item label="网络地址" prop="dev_key">
             <el-input
-              v-model="queryParams.ipAddr"
+              v-model="queryParams.dev_key"
               placeholder="请输入网络地址"
               clearable
               @keyup.enter="handleQuery"
@@ -86,14 +86,23 @@
 
       <!-- 列表 -->
       <ContentWrap>
-        <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen">
+        <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
           <el-table-column label="编号" align="center" prop="id" />
-          <el-table-column label="运行状态" align="center" prop="status" />
-          <el-table-column label="总视在功率" align="center" prop="totalApparentPower" width="130px" />
-          <el-table-column label="总有功功率" align="center" prop="totalActivePower" width="130px"/>
-          <el-table-column label="总电能" align="center" prop="totalElectricalEnergy" />
+          <el-table-column label="运行状态" align="center" prop="status" >
+            <template #default="scope">
+              <el-tag type="primary" v-if="scope.row.status == 0">空闲设备</el-tag>
+              <el-tag type="primary" v-if="scope.row.status == 1">报警设备</el-tag>
+              <el-tag type="primary" v-if="scope.row.status == 2">离线设备</el-tag>
+              <el-tag type="primary" v-if="scope.row.status == 3">未绑定设备</el-tag>
+          </template>
+          </el-table-column>
+          <el-table-column label="总视在功率" align="center" prop="apparent_pow" width="130px" />
+          <el-table-column label="总有功功率" align="center" prop="pow" width="130px"/>
+          <el-table-column label="总电能" align="center" prop="ele" />
+          <!-- 数据库查询 -->
           <el-table-column label="所在位置" align="center" prop="location" />
-          <el-table-column label="网络地址" align="center" prop="ipAddr" />
+          <!-- 数据库查询 -->
+          <el-table-column label="网络地址" align="center" prop="dev_key" :class-name="ip" /> 
           <el-table-column
             label="数据更新时间"
             align="center"
@@ -105,9 +114,16 @@
             <template #default="scope">
               <el-button
                 link
+                type="primary"
+                @click="handleDelete(scope.row.id)"
+              >
+                设备管理
+              </el-button>
+              <el-button
+                link
                 type="danger"
                 @click="handleDelete(scope.row.id)"
-                v-hasPermi="['pdu:PDU-device:delete']"
+                v-if="scope.row.status == 2"
               >
                 删除
               </el-button>
@@ -140,6 +156,8 @@ defineOptions({ name: 'PDUDevice' })
 
 const { push } = useRouter()
 
+
+const ip = ref("ip");
 const serverRoomArr =  [
   {
     value: '1',
@@ -240,30 +258,30 @@ const loading = ref(false) // 列表的加载中
 const list = ref([
   { 
     id:"1",
-    status:"空闲设备",
-    totalApparentPower:"200kW",
-    totalActivePower:"210kVA",
-    totalElectricalEnergy:"10.112kWh",
-    ipAddr:"192.168.1.1-0",
+    status:"0",
+    apparent_pow:"200kW",
+    pow:"210kVA",
+    ele:"10.112kWh",
+    dev_key:"192.168.1.1-0",
     location:"机房2-机柜1-A路",
     updateTime:"15:25:00"
   },
   { 
     id:"2",
-    status:"离线设备",
-    totalApparentPower:"200kW",
-    totalActivePower:"210kVA",
-    totalElectricalEnergy:"10.112kWh",
-    ipAddr:"192.168.1.2-1",
+    status:"2",
+    apparent_pow:"200kW",
+    pow:"210kVA",
+    ele:"10.112kWh",
+    dev_key:"192.168.1.2-1",
     location:"机房2-机柜2-B路",
     updateTime:"15:25:00"
   },{ 
     id:"3",
-    status:"未绑定设备",
-    totalApparentPower:"200kW",
-    totalActivePower:"210kVA",
-    totalElectricalEnergy:"10.112kWh",
-    ipAddr:"192.168.1.3-2",
+    status:"1",
+    apparent_pow:"200kW",
+    pow:"210kVA",
+    ele:"10.112kWh",
+    dev_key:"192.168.1.3-2",
     location:"机房2-机柜3-C路",
     updateTime:"15:25:00"
   },
@@ -273,7 +291,7 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
   devKey: undefined,
-  ipAddr: undefined,
+  dev_key: undefined,
   createTime: [],
   cascadeNum: undefined,
   serverRoomData:undefined,
@@ -296,11 +314,8 @@ const exportLoading = ref(false) // 导出的加载中
 
 const toPDUDisplayScreen = (row, column, event) =>{
   if(column.label == "网络地址"){
-    // push('/pdu/pdu/pdudevice/displayscreen');
-    console.log(row)
-    console.log(column)
-    console.log(event)
-    console.log("去PDU大屏")
+    push('/pdu/pdu/pdudevice/displayscreen?dev_key=' + row.dev_key + '&location=' + row.location);
+
   }
 }
 
@@ -331,7 +346,7 @@ const handleDelete = async (id: number) => {
     await PDUDeviceApi.deletePDUDevice(id)
     message.success(t('common.delSuccess'))
     // 刷新列表
-    await getList()
+    // await getList()
   } catch {}
 }
 
@@ -355,3 +370,10 @@ onMounted(() => {
   // getList()
 })
 </script>
+
+<style scoped>
+/deep/ .ip:hover {
+  color: blue !important;
+  cursor: pointer;
+}
+</style>

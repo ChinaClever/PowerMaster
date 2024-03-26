@@ -11,7 +11,7 @@
             </el-col>   
             <el-col :span="8">
               <el-text line-clamp="2">
-                机房2-机柜1-A路
+                {{ location }}
               </el-text>
             </el-col>
             </el-row>
@@ -46,7 +46,7 @@
               <span>A相</span>
             </div>
           </template>
-          <Echart :options="totalData" :height="200" />
+          <Echart :options="AData" :height="200" />
           <el-row class="text-container">
             <el-col :span="8">
               <el-text line-clamp="2">
@@ -69,14 +69,14 @@
           </el-row>
       </el-card>
     </el-col>
-    <el-col :span="6" class="card-box">
+    <el-col :span="6" class="card-box" >
       <el-card>
         <template #header>
             <div>
               <span>B相</span>
             </div>
           </template>                                                                           
-          <Echart :options="totalData" :height="200" />
+          <Echart :options="BData" :height="200" />
           <el-row class="text-container">
             <el-col :span="8">
               <el-text line-clamp="2">
@@ -99,14 +99,14 @@
           </el-row>
       </el-card>
     </el-col>
-    <el-col :span="6" class="card-box">          
+    <el-col :span="6" class="card-box" >          
       <el-card>
         <template #header>
             <div>
               <span>C相</span>
             </div>
           </template>
-          <Echart :options="totalData" :height="200" />
+          <Echart :options="CData" :height="200" />
           <el-row class="text-container">
             <el-col :span="8">
               <el-text line-clamp="2">
@@ -133,21 +133,24 @@
   <el-collapse >
     <el-collapse-item title="回路" name="1">
       <ContentWrap>
-        <el-table v-loading="loading" :data="circleList" :stripe="true" :show-overflow-tooltip="true">
+        <el-table  :data="circleList" :stripe="true" :show-overflow-tooltip="true">
           <el-table-column label="回路" align="center" prop="circuit" />
-          <el-table-column label="断路器状态" align="center" prop="breakerStatus" />
-          <el-table-column label="输出位" align="center" prop="outputPosition" />
-          <el-table-column label="当前电流" align="center" prop="current" />
-          <el-table-column label="额定电流" align="center" prop="ratedCurrent" />
-          <el-table-column label="当前电压" align="center" prop="currentVoltage" />
-          <el-table-column label="有功功率" align="center" prop="activePower" />
-          <el-table-column label="电能消耗" align="center" prop="energyConsumption" />
+          <el-table-column label="断路器状态" align="center" prop="breaker" > 
+            <template #default="scope">
+              <el-tag type="primary" v-if="scope.row.breaker == 1">开启</el-tag>
+              <el-tag type="danger" v-if="scope.row.breaker == 0">关闭</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="当前电流" align="center" prop="cur_value" />
+          <el-table-column label="当前电压" align="center" prop="vol_value" />
+          <el-table-column label="有功功率" align="center" prop="pow_value" />
+          <el-table-column label="电能消耗" align="center" prop="ele" />
         </el-table>
       </ContentWrap>
     </el-collapse-item>
     <el-collapse-item title="传感器" name="2">
       <ContentWrap>
-        <el-table v-loading="loading" :data="sensorList" :stripe="true" :show-overflow-tooltip="true">
+        <el-table  :data="sensorList" :stripe="true" :show-overflow-tooltip="true">
           <el-table-column label="传感器名称" align="center" prop="sensorName" />
           <el-table-column label="传感器状态" align="center" prop="sensorStatus" />
           <el-table-column label="传感器名称" align="center" prop="sensorName2" />
@@ -157,14 +160,19 @@
     </el-collapse-item>
     <el-collapse-item title="输出位" name="3">
       <ContentWrap>
-        <el-table v-loading="loading" :data="output" :stripe="true" :show-overflow-tooltip="true">
+        <el-table  :data="output" :stripe="true" :show-overflow-tooltip="true">
           <el-table-column label="序号" align="center" prop="no" />
           <el-table-column label="名称" align="center" prop="name" />
-          <el-table-column label="开关状态" align="center" prop="switchState" />
-          <el-table-column label="输出电流(A)" align="center" prop="outputCurrent" />
-          <el-table-column label="有功功率(kW)" align="center" prop="activePower" />
-          <el-table-column label="功率因数" align="center" prop="powerFactor" />
-          <el-table-column label="电能消耗(kWh)" align="center" prop="energyConsumption" />
+          <el-table-column label="开关状态" align="center" prop="relay_state" >
+            <template #default="scope">
+              <el-tag type="primary" v-if="scope.row.relay_state == 1">开启</el-tag>
+              <el-tag type="danger" v-if="scope.row.relay_state == 0">关闭</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="输出电流(A)" align="center" prop="cur_value" />
+          <el-table-column label="有功功率(kW)" align="center" prop="pow_value" />
+          <el-table-column label="功率因数" align="center" prop="pf" />
+          <el-table-column label="电能消耗(kWh)" align="center" prop="ele" />
         </el-table>
       </ContentWrap>
     </el-collapse-item>
@@ -184,46 +192,20 @@
 import download from '@/utils/download'
 import { PDUDeviceApi, PDUDeviceVO } from '@/api/pdu/pdudevice'
 import * as echarts from 'echarts';
+import router from '@/router';
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
+const location = ref();
 const message = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
 
+const testData = ref({
+})
+
 const loading = ref(true) // 列表的加载中
-const circleList = ref([
-  {
-    circuit: 'C1',
-    breakerStatus: '闭合',
-    outputPosition: '1-8',
-    current:"0.00A",
-    ratedCurrent:"16.00A",
-    currentVoltage:"231.0V",
-    activePower:"0.000kW",
-    energyConsumption:"0.0kWh",
-  },
-  {
-    circuit: 'C2',
-    breakerStatus: '闭合',
-    outputPosition: '1-8',
-    current:"0.00A",
-    ratedCurrent:"16.00A",
-    currentVoltage:"231.0V",
-    activePower:"0.000kW",
-    energyConsumption:"0.0kWh",
-  },
-  {
-    circuit: 'C3',
-    breakerStatus: '闭合',
-    outputPosition: '1-8',
-    current:"0.00A",
-    ratedCurrent:"16.00A",
-    currentVoltage:"231.0V",
-    activePower:"0.000kW",
-    energyConsumption:"0.0kWh",
-  },
-]) // 列表的数据
+const circleList = ref([]) // 列表的数据
 
 const sensorList = ref([
   {
@@ -246,59 +228,13 @@ const sensorList = ref([
   },
 ]) // 列表的数据
 
-const output = ref([
-  {
-    no: '1',
-    name: 'Output1',
-    switchState: '关',
-    outputCurrent:"0.00",
-    activePower:"0.000",
-    powerFactor:"0.00",
-    energyConsumption:"0.0",
-  },
-  {
-    no: '2',
-    name: 'Output2',
-    switchState: '关',
-    outputCurrent:"0.00",
-    activePower:"0.000",
-    powerFactor:"0.00",
-    energyConsumption:"0.0",
-  },
-  {
-    no: '3',
-    name: 'Output3',
-    switchState: '关',
-    outputCurrent:"0.00",
-    activePower:"0.000",
-    powerFactor:"0.00",
-    energyConsumption:"0.0",
-  },
-  {
-    no: '4',
-    name: 'Output4',
-    switchState: '关',
-    outputCurrent:"0.00",
-    activePower:"0.000",
-    powerFactor:"0.00",
-    energyConsumption:"0.0",
-  },
-  {
-    no: '5',
-    name: 'Output5',
-    switchState: '关',
-    outputCurrent:"0.00",
-    activePower:"0.000",
-    powerFactor:"0.00",
-    energyConsumption:"0.0",
-  },
-]) // 列表的数据
+const output = ref([]) // 列表的数据
 
 const total = ref(0) // 列表的总页数
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  devKey: undefined,
+  devKey: "",
   ipAddr: undefined,
   createTime: [],
   cascadeNum: undefined,
@@ -307,14 +243,38 @@ const queryParams = reactive({
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
+//数据
+const electricityConsumption = ref(229.6)
+const frequency = ref(50)
+const PF = ref(0.66)
+const U1 = ref(231.0)
+const P1 = ref(0.000)
+const PF1 = ref(0.00)
+const U2 = ref(231.0)
+const P2 = ref(0.000)
+const PF2 = ref(0.00)
+const U3 = ref(231.0)
+const P3 = ref(0.000)
+const PF3 = ref(0.00)
+const totalReActivePower = ref(0);
+const totalActivePower = ref(0);
+const aReActivePower = ref(0);
+const aActivePower = ref(0);
+const bReActivePower = ref(0);
+const bActivePower = ref(0);
+const cReActivePower = ref(0);
+const cActivePower = ref(0);
+
+const haveB = ref(false)
+const haveC = ref(false)
 
 const totalData = reactive({
     series: [{
         type: 'pie',
         radius: ['40%', '70%'],
         data: [
-            {value: 335, name: 'A', unit: 'kw' , itemStyle: {color: 'blue'}},
-            {value: 310, name: 'B', unit: 'kVa' , itemStyle: {color: 'cyan'}},
+            {value: totalReActivePower, name: 'A', unit: 'kw' , itemStyle: {color: 'blue'}},
+            {value: totalActivePower, name: 'B', unit: 'kVa' , itemStyle: {color: 'cyan'}},
         ],
         label: {
             show: true,
@@ -330,32 +290,86 @@ const totalData = reactive({
     }]
 })
 
-//数据
-const electricityConsumption = ref(229.6)
-const frequency = ref(50)
-const PF = ref(0.66)
-const U1 = ref(231.0)
-const P1 = ref(0.000)
-const PF1 = ref(0.00)
-const U2 = ref(231.0)
-const P2 = ref(0.000)
-const PF2 = ref(0.00)
-const U3 = ref(231.0)
-const P3 = ref(0.000)
-const PF3 = ref(0.00)
+const AData = reactive({
+    series: [{
+        type: 'pie',
+        radius: ['40%', '70%'],
+        data: [
+            {value: aReActivePower, name: 'A', unit: 'kw' , itemStyle: {color: 'blue'}},
+            {value: aActivePower, name: 'B', unit: 'kVa' , itemStyle: {color: 'cyan'}},
+        ],
+        label: {
+            show: true,
+            position: 'outside',
+            formatter: (params: any) => {
+                let unit = '';
+                if (params.data.unit) {
+                    unit = params.data.unit;
+                }
+                return params.value + unit;
+            }
+        }
+    }]
+})
+
+const BData = reactive({
+    series: [{
+        type: 'pie',
+        radius: ['40%', '70%'],
+        data: [
+            {value: bReActivePower, name: 'A', unit: 'kw' , itemStyle: {color: 'blue'}},
+            {value: bActivePower, name: 'B', unit: 'kVa' , itemStyle: {color: 'cyan'}},
+        ],
+        label: {
+            show: true,
+            position: 'outside',
+            formatter: (params: any) => {
+                let unit = '';
+                if (params.data.unit) {
+                    unit = params.data.unit;
+                }
+                return params.value + unit;
+            }
+        }
+    }]
+})
+
+const CData = reactive({
+    series: [{
+        type: 'pie',
+        radius: ['40%', '70%'],
+        data: [
+            {value: cReActivePower, name: 'A', unit: 'kw' , itemStyle: {color: 'blue'}},
+            {value: cActivePower, name: 'B', unit: 'kVa' , itemStyle: {color: 'cyan'}},
+        ],
+        label: {
+            show: true,
+            position: 'outside',
+            formatter: (params: any) => {
+                let unit = '';
+                if (params.data.unit) {
+                    unit = params.data.unit;
+                }
+                return params.value + unit;
+            }
+        }
+    }]
+})
+
+
 
 
 /** 查询列表 */
-const getList = async () => {
-  loading.value = true
-  try {
-    const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
-    list.value = data.list
-    total.value = data.total
-  } finally {
-    loading.value = false
-  }
-}
+// const getList = async () => {
+//   loading.value = true
+//   try {
+//     const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
+//     list.value = data.list
+//     total.value = data.total
+//   } finally {
+//     loading.value = false
+//   }
+// }
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
@@ -440,11 +454,72 @@ const handleExport = async () => {
   }
 }
 
+const getTestData = async()=>{
+
+  testData.value = await PDUDeviceApi.PDUDisplay(queryParams)
+
+  for (let i = 0; i < testData.value.pdu_data.loop_item_list["apparent_pow"].length; i++) {
+    let loopItem = {};
+    for (let key in testData.value.pdu_data.loop_item_list) {
+      loopItem[key] = testData.value.pdu_data.loop_item_list[key][i];
+      loopItem["circuit"] = "C" + (i + 1); 
+    }
+    circleList.value.push(loopItem);
+  }
+
+  for (let i = 0; i < testData.value.pdu_data.output_item_list["apparent_pow"].length; i++) {
+    let loopItem = {};
+    for (let key in testData.value.pdu_data.output_item_list) {
+      loopItem[key] = testData.value.pdu_data.output_item_list[key][i];
+      loopItem["no"] = i + 1;
+    }
+    output.value.push(loopItem);
+  }
+
+  totalReActivePower.value = testData.value.pdu_data.pdu_tg_data.apparent_pow;
+  totalActivePower.value = testData.value.pdu_data.pdu_tg_data.pow;
+  electricityConsumption.value = testData.value.pdu_data.pdu_tg_data.ele;
+
+  PF.value = testData.value.pdu_data.pdu_tg_data.pf;
+  aReActivePower.value = testData.value.pdu_data.line_item_list.apparent_pow[0];
+  aActivePower.value = testData.value.pdu_data.line_item_list.pow_value[0];
+  U1.value = testData.value.pdu_data.line_item_list.vol_value[0];
+  P1.value =testData.value.pdu_data.line_item_list.pow_value[0];
+  PF1.value = testData.value.pdu_data.line_item_list.pf[0];
+
+  if(testData.value.pdu_data.line_item_list.ele.length > 1){
+    bReActivePower.value = testData.value.pdu_data.line_item_list.apparent_pow[1];
+    bActivePower.value = testData.value.pdu_data.line_item_list.pow_value[1];
+    U2.value = testData.value.pdu_data.line_item_list.vol_value[1];
+    P2.value =testData.value.pdu_data.line_item_list.pow_value[1];
+    PF2.value = testData.value.pdu_data.line_item_list.pf[1];
+    haveB.value = true;
+  }
+  if(testData.value.pdu_data.line_item_list.ele.length > 2){
+    cReActivePower.value = testData.value.pdu_data.line_item_list.apparent_pow[2];
+    cActivePower.value = testData.value.pdu_data.line_item_list.pow_value[2];
+    U3.value = testData.value.pdu_data.line_item_list.vol_value[2];
+    P3.value =testData.value.pdu_data.line_item_list.pow_value[2];
+    PF3.value = testData.value.pdu_data.line_item_list.pf[2];
+    haveC.value = true;
+  }
+  
+}
+
 /** 初始化 **/
 onMounted(() => {
-  getList()
+  // getList()
   initChart();
   addDataPoint();
+  
 })
+
+onBeforeMount(async () =>{
+  location.value = router.currentRoute.value.query.location as string;
+  queryParams.devKey = router.currentRoute.value.query.dev_key as string;
+  getTestData();
+})
+
+
 </script>
 

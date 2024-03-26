@@ -28,4 +28,8 @@ public class PDUDevicePageReqVO extends PageParam {
     @Schema(description = "级联地址")
     private Integer cascadeNum;
 
+    public String getDevKey(){
+        return devKey;
+    }
+
 }
