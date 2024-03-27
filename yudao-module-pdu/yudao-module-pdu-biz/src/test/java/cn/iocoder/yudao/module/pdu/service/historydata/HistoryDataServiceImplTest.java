@@ -125,34 +125,34 @@ public class HistoryDataServiceImplTest extends BaseDbUnitTest {
         }
     }
 
-    @Test
-    public void testEs() {
-        Random random = new Random();
-        EsHistoryDataDO esHistoryDataDO = new EsHistoryDataDO();
-        esHistoryDataDO.setPduId((short) random.nextInt(10001));
-        esHistoryDataDO.setType((short) random.nextInt(11));
-        esHistoryDataDO.setTopic((short) random.nextInt(11));
-        esHistoryDataDO.setIndexes((short) random.nextInt(1001));
-        esHistoryDataDO.setValue(random.nextFloat() * 100);
-        LocalDateTime currentTime = LocalDateTime.now();
-        esHistoryDataDO.setCreateTime(currentTime);
-        esHistoryDataDO.setTest1((short) random.nextInt(10001));
-        esHistoryDataDO.setTest2((short) random.nextInt(10001));
-        esHistoryDataDO.setTest3((short) random.nextInt(10001));
-        esHistoryDataDO.setTest4((short) random.nextInt(10001));
-        esHistoryDataDO.setTest5((short) random.nextInt(10001));
-        esHistoryDataDO.setTest6((short) random.nextInt(10001));
-        esHistoryDataDO.setTest7((short) random.nextInt(10001));
-        esHistoryDataDO.setTest8((short) random.nextInt(10001));
-        esHistoryDataDO.setTest9((short) random.nextInt(10001));
-        esHistoryDataDO.setTest10((short) random.nextInt(10001));
-        historyDataService.save(esHistoryDataDO);
-    }
+//    @Test
+//    public void testEs() {
+//        Random random = new Random();
+//        EsHistoryDataDO esHistoryDataDO = new EsHistoryDataDO();
+//        esHistoryDataDO.setPduId((short) random.nextInt(10001));
+//        esHistoryDataDO.setType((short) random.nextInt(11));
+//        esHistoryDataDO.setTopic((short) random.nextInt(11));
+//        esHistoryDataDO.setIndexes((short) random.nextInt(1001));
+//        esHistoryDataDO.setValue(random.nextFloat() * 100);
+//        LocalDateTime currentTime = LocalDateTime.now();
+//        esHistoryDataDO.setCreateTime(currentTime);
+//        esHistoryDataDO.setTest1((short) random.nextInt(10001));
+//        esHistoryDataDO.setTest2((short) random.nextInt(10001));
+//        esHistoryDataDO.setTest3((short) random.nextInt(10001));
+//        esHistoryDataDO.setTest4((short) random.nextInt(10001));
+//        esHistoryDataDO.setTest5((short) random.nextInt(10001));
+//        esHistoryDataDO.setTest6((short) random.nextInt(10001));
+//        esHistoryDataDO.setTest7((short) random.nextInt(10001));
+//        esHistoryDataDO.setTest8((short) random.nextInt(10001));
+//        esHistoryDataDO.setTest9((short) random.nextInt(10001));
+//        esHistoryDataDO.setTest10((short) random.nextInt(10001));
+//        historyDataService.save(esHistoryDataDO);
+//    }
 
-    @Test
-    public void findById(){
-        EsHistoryDataDO byId = historyDataService.findById(1L);
-        System.out.println(byId);
-    }
+//    @Test
+//    public void findById(){
+//        EsHistoryDataDO byId = historyDataService.findById(1L);
+//        System.out.println(byId);
+//    }
 
 }

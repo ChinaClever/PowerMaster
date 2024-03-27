@@ -1,12 +1,10 @@
 package cn.iocoder.yudao.module.pdu.service.historydata;
 
-import java.util.*;
+
 import javax.validation.*;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.*;
-import cn.iocoder.yudao.module.pdu.dal.dataobject.historydata.EsHistoryDataDO;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.historydata.HistoryDataDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
 
 /**
  * pdu历史数据 Service 接口

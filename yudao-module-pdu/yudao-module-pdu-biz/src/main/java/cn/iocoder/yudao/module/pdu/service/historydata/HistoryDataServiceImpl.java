@@ -1,8 +1,5 @@
 package cn.iocoder.yudao.module.pdu.service.historydata;
 
-import cn.iocoder.yudao.module.pdu.dal.dataobject.historydata.EsHistoryDataDO;
-import cn.iocoder.yudao.module.pdu.repository.HistoryDataRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
