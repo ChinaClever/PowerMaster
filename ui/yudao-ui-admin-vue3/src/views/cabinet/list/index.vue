@@ -40,25 +40,11 @@
             inactive-value="0" 
             @change="toggleCollapse" />
           </el-form-item>
-          <el-form-item label="状态" prop="status">
-            <el-checkbox-group v-model="deviceStatus">
-              <el-checkbox label="空闲设备" value="Value A" />
-              <el-checkbox label="报警设备" value="2" />
-              <el-checkbox label="离线设备" value="3" />
-              <el-checkbox label="未绑定设备" value="4" />
-            </el-checkbox-group>
-            
-          </el-form-item>
-          <el-form-item label="网络地址" prop="dev_key">
-            <el-input
-              v-model="queryParams.dev_key"
-              placeholder="请输入网络地址"
-              clearable
-              @keyup.enter="handleQuery"
-              class="!w-240px"
-            />
-          </el-form-item>
-          
+         
+          <div class="split-container">
+              <div class="blue-square" :style="{ width: AWidth + '%'}"></div>
+              <div class="orange-square" :style="{ width: BWidth + '%' }"></div>
+            </div>
 
           <el-form-item>
             <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
@@ -67,7 +53,6 @@
               type="primary"
               plain
               @click="openForm('create')"
-              v-hasPermi="['pdu:PDU-device:create']"
             >
               <Icon icon="ep:plus" class="mr-5px" /> 新增
             </el-button>
@@ -86,38 +71,23 @@
 
       <!-- 列表 -->
       <ContentWrap>
-        <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
-          <el-table-column label="编号" align="center" prop="id" />
-          <el-table-column label="运行状态" align="center" prop="status" >
+        <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  >
+          <el-table-column label="名称" align="center" prop="id" />
+          <el-table-column label="总AB视在功率" align="center" prop="apparent_pow" width="130px" />
+          <el-table-column label="总AB有功功率" align="center" prop="pow" width="130px"/>
+          <el-table-column label="总AB电能" align="center" prop="ele" />
+          <el-table-column label="所属公司" align="center" prop="owner" />
+          <el-table-column label="负载比" align="center" prop="load_ratio"/> 
+          <el-table-column label="AB占比" align="center" prop="percent"  >
             <template #default="scope">
-              <el-tag type="primary" v-if="scope.row.status == 0">空闲设备</el-tag>
-              <el-tag type="primary" v-if="scope.row.status == 1">报警设备</el-tag>
-              <el-tag type="primary" v-if="scope.row.status == 2">离线设备</el-tag>
-              <el-tag type="primary" v-if="scope.row.status == 3">未绑定设备</el-tag>
-            </template>
+              <div class="split-container">
+                <div class="blue-square" :style="{ width: scope.row.percent + '%'}"></div>
+                <div class="orange-square" :style="{ width: (100 - scope.row.percent) + '%' }"></div>
+              </div>
+            </template> 
           </el-table-column>
-          <el-table-column label="总视在功率" align="center" prop="apparent_pow" width="130px" />
-          <el-table-column label="总有功功率" align="center" prop="pow" width="130px"/>
-          <el-table-column label="总电能" align="center" prop="ele" />
-          <!-- 数据库查询 -->
-          <el-table-column label="所在位置" align="center" prop="location" />
-          <!-- 数据库查询 -->
-          <el-table-column label="网络地址" align="center" prop="dev_key" :class-name="ip" /> 
-          <el-table-column
-            label="数据更新时间"
-            align="center"
-            prop="updateTime"
-
-            width="180px"
-          />
           <el-table-column label="操作" align="center">
             <template #default="scope">
-              <el-button
-                link
-                type="primary"
-              >
-                设备管理
-              </el-button>
               <el-button
                 link
                 type="danger"
@@ -140,23 +110,19 @@
     </el-col>
   </el-row>
   <!-- 表单弹窗：添加/修改 -->
-  <PDUDeviceForm ref="formRef" @success="getList" />
+  <cabinetForm ref="formRef" @success="getList" />
 </template>
 
 <script setup lang="ts">
 import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
-import { PDUDeviceApi, PDUDeviceVO } from '@/api/pdu/pdudevice'
-import PDUDeviceForm from './PDUDeviceForm.vue'
+import { cabinetApi } from '@/api/cabinet/list'
+import cabinetForm from './cabinetForm.vue'
 import { ElTree } from 'element-plus'
 
 /** PDU设备 列表 */
-defineOptions({ name: 'PDUDevice' })
+defineOptions({ name: 'cabinet' })
 
-const { push } = useRouter()
-
-
-const ip = ref("ip");
 const serverRoomArr =  [
   {
     value: '1',
@@ -165,15 +131,6 @@ const serverRoomArr =  [
       {
         value: '1-1',
         label: '柜列1',
-        children: [
-        {
-          value: '1-1-1',
-          label: '机柜1',
-        },
-        {
-          value: '1-1-2',
-          label: '机柜2',
-        },]
       },
     ],
   },
@@ -184,15 +141,6 @@ const serverRoomArr =  [
       {
         value: '2-1',
         label: '柜列1',
-        children: [
-        {
-          value: '2-1-1',
-          label: '机柜1',
-        },
-        {
-          value: '2-1-2',
-          label: '机柜2',
-        },]
       },
     ],
   },
@@ -203,15 +151,6 @@ const serverRoomArr =  [
       {
         value: '3-1',
         label: '柜列1',
-        children: [
-        {
-          value: '3-1-1',
-          label: '机柜1',
-        },
-        {
-          value: '3-1-2',
-          label: '机柜2',
-        },]
       },
     ],
   },
@@ -220,6 +159,9 @@ const serverRoomArr =  [
 //折叠功能
 let treeWidth = ref(3)
 let isCollapsed = ref(0);
+
+const AWidth = ref(30);
+const BWidth = ref(70);
 
 const toggleCollapse = () => {
   treeWidth.value = isCollapsed.value == 0 ? 3 : 0;
@@ -255,35 +197,23 @@ const { t } = useI18n() // 国际化
 
 const loading = ref(false) // 列表的加载中
 const list = ref([
-  { 
-    id:"1",
-    status:"0",
-    apparent_pow:"200kW",
-    pow:"210kVA",
-    ele:"10.112kWh",
-    dev_key:"192.168.1.1-0",
-    location:"机房2-机柜1-A路",
-    updateTime:"15:25:00"
+// <el-table-column label="名称" align="center" prop="id" />
+//           <el-table-column label="总AB视在功率" align="center" prop="apparent_pow" width="130px" />
+//           <el-table-column label="总AB有功功率" align="center" prop="pow" width="130px"/>
+//           <el-table-column label="总AB电能" align="center" prop="ele" />
+//           <el-table-column label="所属公司" align="center" prop="owner" />
+//           <el-table-column label="负载比" align="center" prop="dev_key"/> 
+//           <el-table-column label="AB占比" align="center" prop="percent"  >
+  {
+    id:"机柜1",
+    apparent_pow:"225kW",
+    pow:"220kW",
+    ele:"200kwh",
+    owner:"克莱沃",
+    load_ratio:"10%",
+    percent:50
   },
-  { 
-    id:"2",
-    status:"2",
-    apparent_pow:"200kW",
-    pow:"210kVA",
-    ele:"10.112kWh",
-    dev_key:"192.168.1.2-1",
-    location:"机房2-机柜2-B路",
-    updateTime:"15:25:00"
-  },{ 
-    id:"3",
-    status:"1",
-    apparent_pow:"200kW",
-    pow:"210kVA",
-    ele:"10.112kWh",
-    dev_key:"192.168.1.3-2",
-    location:"机房2-机柜3-C路",
-    updateTime:"15:25:00"
-  },
+
 ]) // 列表的数据
 const total = ref(0) // 列表的总页数
 const queryParams = reactive({
@@ -303,7 +233,7 @@ const exportLoading = ref(false) // 导出的加载中
 // const getList = async () => {
 //   loading.value = true
 //   try {
-//     const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
+//     const data = await cabinetApi.getcabinetPage(queryParams)
 //     list.value = data.list
 //     total.value = data.total
 //   } finally {
@@ -311,11 +241,6 @@ const exportLoading = ref(false) // 导出的加载中
 //   }
 // }
 
-const toPDUDisplayScreen = (row, column, event) =>{
-  if(column.label == "网络地址"){
-    push('/pdu/pdudevice/displayscreen?dev_key=' + row.dev_key + '&location=' + row.location);
-  }
-}
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
@@ -341,7 +266,7 @@ const handleDelete = async (id: number) => {
     // 删除的二次确认
     await message.delConfirm()
     // 发起删除
-    await PDUDeviceApi.deletePDUDevice(id)
+    await cabinetApi.deletecabinet(id)
     message.success(t('common.delSuccess'))
     // 刷新列表
     // await getList()
@@ -355,7 +280,7 @@ const handleExport = async () => {
     await message.exportConfirm()
     // 发起导出
     exportLoading.value = true
-    const data = await PDUDeviceApi.exportPDUDevice(queryParams)
+    const data = await cabinetApi.exportcabinet(queryParams)
     download.excel(data, 'PDU设备.xls')
   } catch {
   } finally {
@@ -370,8 +295,20 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/deep/ .ip:hover {
-  color: blue !important;
-  cursor: pointer;
+.split-container {
+  display: flex;
+  height: 200px;
+}
+
+.blue-square, .orange-square {
+  height: 100%;
+}
+
+.blue-square {
+  background-color: blue;
+}
+
+.orange-square {
+  background-color: orange;
 }
 </style>

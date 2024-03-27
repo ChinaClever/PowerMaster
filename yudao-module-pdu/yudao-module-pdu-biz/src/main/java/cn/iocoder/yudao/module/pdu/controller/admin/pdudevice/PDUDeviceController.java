@@ -111,8 +111,9 @@ public class PDUDeviceController {
                     "\t\t\"group_item_list\": {},\n" +
                     "\t\t\"line_item_list\": {  \n" +
                     "\t\t\t\"apparent_pow\": [0, 0, 0],\n" +
-                    "\t\t\t\"cur_alarm_status\": [0, 0, 0],\n" +
-                    "\t\t\t\"cur_value\": [0, 0, 0],\n" +
+                    "\t\t\t\"cur_alarm_status\": [1, 0, 0],\n" +
+                    "\t\t\t\"cur_alarm_max\":[6,6,0],\n" +
+                    "\t\t\t\"cur_value\": [6, 2, 0],\n" +
                     "\t\t\t\"ele\": [0, 0, 0],\n" +
                     "\t\t\t\"pf\": [0, 0, 0],\n" +
                     "\t\t\t\"phase_voltage\": [0, 0, 0],\n" +
@@ -125,8 +126,8 @@ public class PDUDeviceController {
                     "\t\t\"loop_item_list\": { \n" +
                     "\t\t\t\"apparent_pow\": [0, 0, 0],\n" +
                     "\t\t\t\"breaker\": [0, 0, 0],\n" +
-                    "\t\t\t\"cur_alarm_status\": [0, 0, 0],\n" +
-                    "\t\t\t\"cur_value\": [0, 0, 0],\n" +
+                    "\t\t\t\"cur_alarm_status\": [1, 0, 0],\n" +
+                    "\t\t\t\"cur_value\": [6, 0, 0],\n" +
                     "\t\t\t\"ele\": [0, 0, 0],\n" +
                     "\t\t\t\"pf\": [0, 0, 0],\n" +
                     "\t\t\t\"pow_alarm_status\": [0, 0, 0],\n" +
@@ -183,7 +184,8 @@ public class PDUDeviceController {
                     "\t\t\"line_item_list\": {  \n" +
                     "\t\t\t\"apparent_pow\": [0],\n" +
                     "\t\t\t\"cur_alarm_status\": [0],\n" +
-                    "\t\t\t\"cur_value\": [0],\n" +
+                    "\t\t\t\"cur_alarm_max\":[16],\n" +
+                    "\t\t\t\"cur_value\": [6],\n" +
                     "\t\t\t\"ele\": [0],\n" +
                     "\t\t\t\"pf\": [0],\n" +
                     "\t\t\t\"phase_voltage\": [0],\n" +

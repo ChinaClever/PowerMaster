@@ -1,5 +1,5 @@
 <template>
-  <el-row :gutter="24">
+  <el-row :gutter="24" >
     <el-col :span="6" class="card-box">
       <el-card>
         <template #header>
@@ -14,26 +14,32 @@
                 {{ location }}
               </el-text>
             </el-col>
-            </el-row>
-        </template> 
-        <Echart :options="totalData" :height="200" />
+          </el-row>
+        </template>
+        <el-row justify="center">
+          <el-progress type="circle" :percentage="totalData.powPercentage" :width="200" >
+            <template #default="{}">
+              <span class="percentage-value">{{ totalData.pow }}kW</span>
+            </template>
+          </el-progress>
+        </el-row>
         <el-row class="text-container"> 
           <el-col :span="8">
-            <el-text line-clamp="2">
+            <el-text line-clamp="2" >
               电能消耗:<br />
-              {{ electricityConsumption }} kWh
+              {{ totalData.ele.toFixed(1) }} kWh
             </el-text>
           </el-col>
           <el-col :span="8">
             <el-text line-clamp="2">
               频率:<br />
-              {{ frequency }} Hz
+              {{ totalData.frequency }} Hz
             </el-text>
           </el-col>
           <el-col :span="8">
             <el-text line-clamp="2">
               PF:<br />
-              {{ PF }}
+              {{ totalData.pf }}
             </el-text>
           </el-col>
         </el-row>
@@ -46,84 +52,102 @@
               <span>A相</span>
             </div>
           </template>
-          <Echart :options="AData" :height="200" />
+          <el-row justify="center">
+            <el-progress type="circle" :percentage="A.curPercemtage" :width="200" :status="A.curColor">
+              <template #default="{}">
+                <span class="percentage-value">{{ A.cur_value }}A</span>
+              </template>
+            </el-progress>
+          </el-row>
           <el-row class="text-container">
             <el-col :span="8">
-              <el-text line-clamp="2">
+              <el-text line-clamp="2" :style="{ backgroundColor: A.volColor }">
                 U1:<br />
-                {{ U1 }} V
+                {{ A.vol_value.toFixed(1) }} V
               </el-text>
             </el-col>
             <el-col :span="8">
-              <el-text line-clamp="2">
+              <el-text line-clamp="2" :style="{ backgroundColor: A.powColor }">
                 P1:<br />
-                {{ P1 }} kW
+                {{ A.pow_value.toFixed(3) }} kW
               </el-text>
             </el-col>
             <el-col :span="8">
-              <el-text line-clamp="2">
+              <el-text line-clamp="2" >
                 PF1:<br />
-                {{ PF1 }}
+                {{ A.pf.toFixed(2) }}
               </el-text>
             </el-col>
           </el-row>
       </el-card>
     </el-col>
-    <el-col :span="6" class="card-box" >
+    <el-col :span="6" class="card-box" v-if="haveB">
       <el-card>
         <template #header>
             <div>
               <span>B相</span>
             </div>
           </template>                                                                           
-          <Echart :options="BData" :height="200" />
+          <el-row justify="center">
+            <el-progress type="circle" :percentage="B.curPercemtage" :width="200" :status="B.curColor">
+              <template #default="{}">
+                <span class="percentage-value">{{ B.cur_value }}A</span>
+              </template>
+            </el-progress>
+          </el-row>
           <el-row class="text-container">
             <el-col :span="8">
-              <el-text line-clamp="2">
+              <el-text line-clamp="2"  :style="{ backgroundColor: B.volColor }">
                 U2:<br />
-                {{ U2 }} V
+                {{ B.vol_value.toFixed(1) }} V
               </el-text>
             </el-col>
             <el-col :span="8">
-              <el-text line-clamp="2">
+              <el-text line-clamp="2" :style="{ backgroundColor: B.powColor }">
                 P2:<br />
-                {{ P2 }} kW
+                {{ B.pow_value.toFixed(3) }} kW
               </el-text>
             </el-col>
             <el-col :span="8">
               <el-text line-clamp="2">
                 PF2:<br />
-                {{ PF2 }}
+                {{ B.pf.toFixed(2) }}
               </el-text>
             </el-col>
           </el-row>
       </el-card>
     </el-col>
-    <el-col :span="6" class="card-box" >          
+    <el-col :span="6" class="card-box" v-if="haveC">          
       <el-card>
         <template #header>
             <div>
               <span>C相</span>
             </div>
           </template>
-          <Echart :options="CData" :height="200" />
+          <el-row justify="center">
+            <el-progress type="circle" :percentage="C.curPercemtage" :width="200" :status="C.curColor">
+              <template #default="{}">
+                <span class="percentage-value">{{ C.cur_value }}A</span>
+              </template>
+            </el-progress>
+          </el-row>
           <el-row class="text-container">
             <el-col :span="8">
-              <el-text line-clamp="2">
+              <el-text line-clamp="2"  :style="{ backgroundColor: C.volColor }">
                 U3:<br />
-                {{ U3 }} V
+                {{ C.vol_value.toFixed(1) }} V
               </el-text>
             </el-col>
             <el-col :span="8">
-              <el-text line-clamp="2">
+              <el-text line-clamp="2" :style="{ backgroundColor: C.powColor }">
                 P3:<br />
-                {{ P3 }} kW
+                {{ C.pow_value.toFixed(3) }} kW
               </el-text>
             </el-col>
             <el-col :span="8">
               <el-text line-clamp="2">
                 PF3:<br />
-                {{ PF3 }}
+                {{ C.pf.toFixed(2) }}
               </el-text>
             </el-col>
           </el-row>
@@ -136,15 +160,31 @@
         <el-table  :data="circleList" :stripe="true" :show-overflow-tooltip="true">
           <el-table-column label="回路" align="center" prop="circuit" />
           <el-table-column label="断路器状态" align="center" prop="breaker" > 
-            <template #default="scope">
+            <template #default="scope" >
               <el-tag type="primary" v-if="scope.row.breaker == 1">开启</el-tag>
               <el-tag type="danger" v-if="scope.row.breaker == 0">关闭</el-tag>
             </template>
+          </el-table-column>                        
+          <el-table-column label="当前电流" align="center" prop="cur_value" >
+            <template #default="scope">
+             {{ scope.row.cur_value.toFixed(2) }}A
+            </template>
           </el-table-column>
-          <el-table-column label="当前电流" align="center" prop="cur_value" />
-          <el-table-column label="当前电压" align="center" prop="vol_value" />
-          <el-table-column label="有功功率" align="center" prop="pow_value" />
-          <el-table-column label="电能消耗" align="center" prop="ele" />
+          <el-table-column label="当前电压" align="center" prop="vol_value" >
+            <template #default="scope">
+             {{ scope.row.vol_value.toFixed(1) }}V
+            </template>
+          </el-table-column>
+          <el-table-column label="有功功率" align="center" prop="pow_value" >
+            <template #default="scope">
+             {{ scope.row.pow_value.toFixed(3) }}kW
+            </template>
+          </el-table-column>
+          <el-table-column label="电能消耗" align="center" prop="ele" >
+            <template #default="scope">
+             {{ scope.row.ele.toFixed(1) }}kWh
+            </template>
+          </el-table-column>
         </el-table>
       </ContentWrap>
     </el-collapse-item>
@@ -166,13 +206,25 @@
           <el-table-column label="开关状态" align="center" prop="relay_state" >
             <template #default="scope">
               <el-tag type="primary" v-if="scope.row.relay_state == 1">开启</el-tag>
-              <el-tag type="danger" v-if="scope.row.relay_state == 0">关闭</el-tag>
+              <el-tag type="danger" v-if="scope.row.relay_state == 0" >关闭</el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="输出电流(A)" align="center" prop="cur_value" />
-          <el-table-column label="有功功率(kW)" align="center" prop="pow_value" />
+          <el-table-column label="输出电流(A)" align="center" prop="cur_value" >
+            <template #default="scope">
+              {{ scope.row.cur_value.toFixed(2) }}A
+            </template>
+          </el-table-column>
+          <el-table-column label="有功功率(kW)" align="center" prop="pow_value" >
+            <template #default="scope">
+             {{ scope.row.pow_value.toFixed(3) }}kW
+            </template>
+          </el-table-column>
           <el-table-column label="功率因数" align="center" prop="pf" />
-          <el-table-column label="电能消耗(kWh)" align="center" prop="ele" />
+          <el-table-column label="电能消耗(kWh)" align="center" prop="ele" >
+            <template #default="scope">
+             {{ scope.row.ele.toFixed(1) }}kWh
+            </template>
+          </el-table-column>
         </el-table>
       </ContentWrap>
     </el-collapse-item>
@@ -244,119 +296,47 @@ const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
 //数据
-const electricityConsumption = ref(229.6)
-const frequency = ref(50)
-const PF = ref(0.66)
-const U1 = ref(231.0)
-const P1 = ref(0.000)
-const PF1 = ref(0.00)
-const U2 = ref(231.0)
-const P2 = ref(0.000)
-const PF2 = ref(0.00)
-const U3 = ref(231.0)
-const P3 = ref(0.000)
-const PF3 = ref(0.00)
-const totalReActivePower = ref(0);
-const totalActivePower = ref(0);
-const aReActivePower = ref(0);
-const aActivePower = ref(0);
-const bReActivePower = ref(0);
-const bActivePower = ref(0);
-const cReActivePower = ref(0);
-const cActivePower = ref(0);
+const totalData = ref({
+  ele : 229.6,
+  frequency : 50,
+  pow : 0,
+  powPercentage : 0,
+  pf : 0.66
+})
+const A = ref({
+  vol_value : 231.0,
+  volColor : "white",
+  pow_value : 0.000,
+  powColor : "white",
+  cur_value : 0,
+  curColor : "success",
+  curPercemtage: 0,
+  pf : 0.00
+})
+const B = ref({
+  vol_value : 231.0,
+  volColor : "white",
+  pow_value : 0.000,
+  powColor : "white",
+  cur_value : 0,
+  curColor : "success",
+  curPercemtage: 0,
+  pf : 0.00
+})
+const C = ref({
+  vol_value : 231.0,
+  volColor : "white",
+  pow_value : 0.000,
+  powColor : "white",
+  cur_value : 0,
+  curColor : "success",
+  curPercemtage: 0,
+  pf : 0.00
+})
 
+const redColor = ref("red")
 const haveB = ref(false)
 const haveC = ref(false)
-
-const totalData = reactive({
-    series: [{
-        type: 'pie',
-        radius: ['40%', '70%'],
-        data: [
-            {value: totalReActivePower, name: 'A', unit: 'kw' , itemStyle: {color: 'blue'}},
-            {value: totalActivePower, name: 'B', unit: 'kVa' , itemStyle: {color: 'cyan'}},
-        ],
-        label: {
-            show: true,
-            position: 'outside',
-            formatter: (params: any) => {
-                let unit = '';
-                if (params.data.unit) {
-                    unit = params.data.unit;
-                }
-                return params.value + unit;
-            }
-        }
-    }]
-})
-
-const AData = reactive({
-    series: [{
-        type: 'pie',
-        radius: ['40%', '70%'],
-        data: [
-            {value: aReActivePower, name: 'A', unit: 'kw' , itemStyle: {color: 'blue'}},
-            {value: aActivePower, name: 'B', unit: 'kVa' , itemStyle: {color: 'cyan'}},
-        ],
-        label: {
-            show: true,
-            position: 'outside',
-            formatter: (params: any) => {
-                let unit = '';
-                if (params.data.unit) {
-                    unit = params.data.unit;
-                }
-                return params.value + unit;
-            }
-        }
-    }]
-})
-
-const BData = reactive({
-    series: [{
-        type: 'pie',
-        radius: ['40%', '70%'],
-        data: [
-            {value: bReActivePower, name: 'A', unit: 'kw' , itemStyle: {color: 'blue'}},
-            {value: bActivePower, name: 'B', unit: 'kVa' , itemStyle: {color: 'cyan'}},
-        ],
-        label: {
-            show: true,
-            position: 'outside',
-            formatter: (params: any) => {
-                let unit = '';
-                if (params.data.unit) {
-                    unit = params.data.unit;
-                }
-                return params.value + unit;
-            }
-        }
-    }]
-})
-
-const CData = reactive({
-    series: [{
-        type: 'pie',
-        radius: ['40%', '70%'],
-        data: [
-            {value: cReActivePower, name: 'A', unit: 'kw' , itemStyle: {color: 'blue'}},
-            {value: cActivePower, name: 'B', unit: 'kVa' , itemStyle: {color: 'cyan'}},
-        ],
-        label: {
-            show: true,
-            position: 'outside',
-            formatter: (params: any) => {
-                let unit = '';
-                if (params.data.unit) {
-                    unit = params.data.unit;
-                }
-                return params.value + unit;
-            }
-        }
-    }]
-})
-
-
 
 
 /** 查询列表 */
@@ -476,31 +456,109 @@ const getTestData = async()=>{
     output.value.push(loopItem);
   }
 
-  totalReActivePower.value = testData.value.pdu_data.pdu_tg_data.apparent_pow;
-  totalActivePower.value = testData.value.pdu_data.pdu_tg_data.pow;
-  electricityConsumption.value = testData.value.pdu_data.pdu_tg_data.ele;
+  totalData.value.pow =  testData.value.pdu_data.pdu_tg_data.pow;
+  if(testData.value.pdu_data.pdu_tg_data.apparent_pow != 0){
+    totalData.value.powPercentage = (testData.value.pdu_data.pdu_tg_data.pow / testData.value.pdu_data.pdu_tg_data.apparent_pow) * 100;
+  } else {
+    totalData.value.powPercentage = 0;
+  }
+  
+  totalData.value.ele = testData.value.pdu_data.pdu_tg_data.ele;
 
-  PF.value = testData.value.pdu_data.pdu_tg_data.pf;
-  aReActivePower.value = testData.value.pdu_data.line_item_list.apparent_pow[0];
-  aActivePower.value = testData.value.pdu_data.line_item_list.pow_value[0];
-  U1.value = testData.value.pdu_data.line_item_list.vol_value[0];
-  P1.value =testData.value.pdu_data.line_item_list.pow_value[0];
-  PF1.value = testData.value.pdu_data.line_item_list.pf[0];
+  totalData.value.pf = testData.value.pdu_data.pdu_tg_data.pf;
+  
+  A.value.cur_value = testData.value.pdu_data.line_item_list.cur_value[0];
+  A.value.curPercemtage = (A.value.cur_value / testData.value.pdu_data.line_item_list.cur_alarm_max[0]) * 100;
+  let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[0];
+  if(curalarm == 1 || curalarm == 8 ){
+    A.value.curColor = "exception";
+  }
+  if(curalarm == 2 || curalarm == 4 ){
+    A.value.curColor = "warning";
+  }
+
+  A.value.vol_value = testData.value.pdu_data.line_item_list.vol_value[0];
+  let u1alarm = testData.value.pdu_data.line_item_list.vol_alarm_status[0];
+  if(u1alarm == 1 || u1alarm == 8 ){
+    A.value.volColor = "red";
+  }
+  if(u1alarm == 2 || u1alarm == 4 ){
+    A.value.volColor = "yellow";
+  }
+  
+  A.value.pow_value =testData.value.pdu_data.line_item_list.pow_value[0];
+  let powalarm = testData.value.pdu_data.line_item_list.pow_alarm_status[0];
+  if(powalarm == 1 || powalarm == 8 ){
+    A.value.powColor = "red";
+  }
+  if(powalarm == 2 || powalarm == 4 ){
+    A.value.powColor = "yellow";
+  }
+
+  A.value.pf = testData.value.pdu_data.line_item_list.pf[0];
 
   if(testData.value.pdu_data.line_item_list.ele.length > 1){
-    bReActivePower.value = testData.value.pdu_data.line_item_list.apparent_pow[1];
-    bActivePower.value = testData.value.pdu_data.line_item_list.pow_value[1];
-    U2.value = testData.value.pdu_data.line_item_list.vol_value[1];
-    P2.value =testData.value.pdu_data.line_item_list.pow_value[1];
-    PF2.value = testData.value.pdu_data.line_item_list.pf[1];
+    B.value.cur_value = testData.value.pdu_data.line_item_list.cur_value[1];
+    B.value.curPercemtage = (B.value.cur_value / testData.value.pdu_data.line_item_list.cur_alarm_max[1]) * 100;
+    let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[1];
+    if(curalarm == 1 || curalarm == 8 ){
+      B.value.curColor = "exception";
+    }
+    if(curalarm == 2 || curalarm == 4 ){
+      B.value.curColor = "warning";
+    }
+
+    B.value.vol_value = testData.value.pdu_data.line_item_list.vol_value[1];
+    let u2alarm = testData.value.pdu_data.line_item_list.vol_alarm_status[1];
+    if(u2alarm == 1 || u2alarm == 8 ){
+      B.value.volColor = "red";
+    }
+    if(u2alarm == 2 || u2alarm == 4 ){
+      B.value.volColor = "yellow";
+    }
+    
+    B.value.pow_value =testData.value.pdu_data.line_item_list.pow_value[1];
+    let powalarm = testData.value.pdu_data.line_item_list.pow_alarm_status[1];
+    if(powalarm == 1 || powalarm == 8 ){
+      B.value.powColor = "red";
+    }
+    if(powalarm == 2 || powalarm == 4 ){
+      B.value.powColor = "yellow";
+    }
+    
+    B.value.pf = testData.value.pdu_data.line_item_list.pf[1];
     haveB.value = true;
   }
   if(testData.value.pdu_data.line_item_list.ele.length > 2){
-    cReActivePower.value = testData.value.pdu_data.line_item_list.apparent_pow[2];
-    cActivePower.value = testData.value.pdu_data.line_item_list.pow_value[2];
-    U3.value = testData.value.pdu_data.line_item_list.vol_value[2];
-    P3.value =testData.value.pdu_data.line_item_list.pow_value[2];
-    PF3.value = testData.value.pdu_data.line_item_list.pf[2];
+    C.value.cur_value = testData.value.pdu_data.line_item_list.cur_value[2];
+    C.value.curPercemtage = (C.value.cur_value / testData.value.pdu_data.line_item_list.cur_alarm_max[2]) * 100;
+    let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[2];
+    if(curalarm == 1 || curalarm == 8 ){
+      C.value.curColor = "exception";
+    }
+    if(curalarm == 2 || curalarm == 4 ){
+      C.value.curColor = "warning";
+    }
+
+    C.value.vol_value = testData.value.pdu_data.line_item_list.vol_value[2];
+    let u2alarm = testData.value.pdu_data.line_item_list.vol_alarm_status[2];
+    if(u2alarm == 1 || u2alarm == 8 ){
+      C.value.volColor = "red";
+    }
+    if(u2alarm == 2 || u2alarm == 4 ){
+      C.value.volColor = "yellow";
+    }
+    
+    C.value.pow_value =testData.value.pdu_data.line_item_list.pow_value[2];
+    let powalarm = testData.value.pdu_data.line_item_list.pow_alarm_status[2];
+    if(powalarm == 1 || powalarm == 8 ){
+      C.value.powColor = "red";
+    }
+    if(powalarm == 2 || powalarm == 4 ){
+      C.value.powColor = "yellow";
+    }
+
+    C.value.pf = testData.value.pdu_data.line_item_list.pf[2];
     haveC.value = true;
   }
   
