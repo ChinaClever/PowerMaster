@@ -39,4 +39,8 @@ export const PDUDeviceApi = {
   exportPDUDevice: async (params) => {
     return await request.download({ url: `/pdu/PDU-device/export-excel`, params })
   },
-}
+
+  PDUDisplay: async (params) => {
+    return await request.download({ url: `/pdu/PDU-device/displayscreen`, params })
+  },
+}
