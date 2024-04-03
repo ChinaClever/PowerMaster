@@ -38,14 +38,18 @@
              inactive-value="0" 
              @change="toggleCollapse" />
          </el-form-item>
-         <el-form-item label="IP地址" prop="ipAddr">
-           <el-input
-             v-model="queryParams.ipAddr"
-             placeholder="请输入IP地址"
-             clearable
-             @keyup.enter="handleQuery"
-             class="!w-160px"
+         <el-form-item label="时间段" prop="createTime">
+           <el-date-picker
+             v-model="queryParams.createTime"
+             value-format="YYYY-MM-DD HH:mm:ss"
+             type="daterange"
+             start-placeholder="开始日期"
+             end-placeholder="结束日期"
+             :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
+             class="!w-210px"
            />
+         </el-form-item>
+         
            <el-form-item label="总/a路/b路" prop="type">
            <el-select
              v-model="queryParams.type"
@@ -56,7 +60,7 @@
              <el-option label="a路" value="a" />
              <el-option label="b路" value="b" />
            </el-select>
-         </el-form-item>
+
          </el-form-item>
          <el-form-item label="颗粒度" prop="type">
            <el-select
@@ -69,17 +73,7 @@
              <el-option label="天" value="day" />
            </el-select>
          </el-form-item>
-         <el-form-item label="时间段" prop="createTime">
-           <el-date-picker
-             v-model="queryParams.createTime"
-             value-format="YYYY-MM-DD HH:mm:ss"
-             type="daterange"
-             start-placeholder="开始日期"
-             end-placeholder="结束日期"
-             :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-             class="!w-210px"
-           />
-         </el-form-item>
+
          <div style="display: flex; justify-content: flex-end;">
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
@@ -581,7 +575,8 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
         myChart.setOption( {
           title: {text: ''},
           tooltip: { trigger: 'axis'},
-          legend: { data: ['总平均有功功率', '总最大有功功率', '总最小有功功率','总平均视在功率', '总最大视在功率', '总最小视在功率']},
+          legend: { data: ['总平均有功功率', '总最大有功功率', '总最小有功功率','总平均视在功率', '总最大视在功率', '总最小视在功率'],
+                selected: { 总平均有功功率: true, 总最大有功功率: false, 总最小有功功率: false, 总平均视在功率: true, 总最大视在功率: false, 总最小视在功率: false}},
           grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
           toolbox: {feature: {saveAsImage: {}}},
           xAxis: [
@@ -634,7 +629,8 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
           myChart.setOption( {
             title: {text: ''},
             tooltip: { trigger: 'axis'},
-            legend: { data: ['a路平均有功功率', 'a路最大有功功率', 'a路最小有功功率','a路平均视在功率', 'a路最大视在功率', 'a路最小视在功率']},
+            legend: { data: ['a路平均有功功率', 'a路最大有功功率', 'a路最小有功功率','a路平均视在功率', 'a路最大视在功率', 'a路最小视在功率'],
+                  selected: { a路平均有功功率: true, a路最大有功功率: false, a路最小有功功率: false, a路平均视在功率: true, a路最大视在功率: false, a路最小视在功率: false}},
             grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
             toolbox: {feature: {saveAsImage: {}}},
             xAxis: [
@@ -687,7 +683,8 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
           myChart.setOption( {
             title: {text: ''},
             tooltip: { trigger: 'axis'},
-            legend: { data: ['b路平均有功功率', 'b路最大有功功率', 'b路最小有功功率','b路平均视在功率', 'b路最大视在功率', 'b路最小视在功率']},
+            legend: { data: ['b路平均有功功率', 'b路最大有功功率', 'b路最小有功功率','b路平均视在功率', 'b路最大视在功率', 'b路最小视在功率'],
+                  selected: { b路平均有功功率: true, b路最大有功功率: false, b路最小有功功率: false, b路平均视在功率: true, b路最大视在功率: false, b路最小视在功率: false}},
             grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
             toolbox: {feature: {saveAsImage: {}}},
             xAxis: [
