@@ -38,13 +38,16 @@
               inactive-value="0" 
               @change="toggleCollapse" />
           </el-form-item>
-          <el-form-item label="IP地址" prop="ipAddr">
-            <el-input
-              v-model="queryParams.ipAddr"
-              placeholder="请输入IP地址"
-              clearable
-              @keyup.enter="handleQuery"
-              class="!w-160px"
+
+          <el-form-item label="时间段" prop="createTime">
+            <el-date-picker
+              v-model="queryParams.createTime"
+              value-format="YYYY-MM-DD HH:mm:ss"
+              type="daterange"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
+              class="!w-210px"
             />
           </el-form-item>
 
@@ -58,18 +61,20 @@
               <el-option label="天" value="day" />
             </el-select>
           </el-form-item>
-          <el-form-item label="时间段" prop="createTime">
-            <el-date-picker
-              v-model="queryParams.createTime"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              type="daterange"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
-              :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-              class="!w-210px"
-            />
+
+          <el-form-item label="筛选列" prop="createTime">
+          <el-cascader
+            v-model="defaultOptionsCol"
+            :options="optionsCol"
+            :props="props"
+            collapse-tags
+            collapse-tags-tooltip
+            :show-all-levels="false"
+            @change="cascaderChange"
+          />
           </el-form-item>
 
+          <div style="display: flex; justify-content: flex-end;">
           <el-form-item >
             <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
             <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
@@ -90,29 +95,9 @@
               <Icon icon="ep:download" class="mr-5px" /> 导出
             </el-button>
           </el-form-item>
-
+          </div>
         </el-form>
 
-        <el-icon style="float: right; font-size: 33px" class="show-col-btn">
-            <el-popover placement="bottom" trigger="click" width="220">
-              <template #reference>
-                <el-button text><Icon icon="ep:operation" :size="30" /></el-button>
-              </template>
-              <div style="overflow: auto; max-height: 650px;">
-                <div v-for="(column, index) in tableColumns" :key="index">
-                  <el-checkbox type="checkbox" v-model="column.istrue"/> {{ column.label }}
-                </div>
-              </div>
-            </el-popover>
-          </el-icon>
-
-          <div style="display: flex; float: right;">
-            <div v-for="(column, index) in checkColumns" :key="index" style="margin-right: 20px;">
-              <div v-if="column.isView">
-                <el-checkbox type="checkbox" v-model="column.istrue"  @click="handleIsView(column.label, column.istrue)"/> {{ column.label }}
-              </div>    
-            </div>
-          </div>
 
       </ContentWrap>
       <!-- 列表 -->
@@ -145,7 +130,7 @@
 import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { HistoryDataApi } from '@/api/pdu/historydata'
-import { ElTree, ElIcon } from 'element-plus'
+import { ElTree } from 'element-plus'
 
 /** pdu历史数据 列表 */
 defineOptions({ name: 'HistoryData' })
@@ -241,12 +226,12 @@ const list = ref<Array<{
       id: number,
       location: string,
       cabinetId: number,
-      totalApparentPow: number,
-      aApparentPow: number,
-      bApparentPow: number,
       totalActivePow: number,
+      totalApparentPow: number,
       aActivePow: number,
+      aApparentPow: number,
       bActivePow: number,
+      bApparentPow: number,
       createTime:  string,
 
       totalApparentPowAvgValue: number,
@@ -297,66 +282,196 @@ const queryParams = reactive({
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
-watch(() => queryParams.granularity, (newValues) => {
-    checkColumns.value.forEach(column => {
+//筛选选项
+const props = { multiple: true}
+const defaultOptionsCol = ref([["total", "totalActivePow"], ["total", "totalApparentPow"], ["a", "aActivePow"], 
+                ["a", "aApparentPow"], ["b", "bActivePow"], ["b", "bApparentPow"]])
+const optionsCol = ref([
+  {
+    value: "total",
+    label: '总',
+    children: [
+      { value: "totalActivePow", label: '总有功功率' },
+      { value: "totalApparentPow", label: '总视在功率' },
+    ],
+  },
+  {
+    value: "a",
+    label: 'a路',
+    children: [
+      { value: "aActivePow", label: 'a路有功功率' },
+      { value: "aApparentPow", label: 'a路视在功率' },
+    ],
+  },
+  {
+    value: "b",
+    label: 'b路',
+    children: [
+      { value: "bActivePow", label: 'b路有功功率' },
+      { value: "bApparentPow", label: 'b路视在功率' },
+    ],
+  },
+])
+const originalArray = ref(["totalActivePow", "totalApparentPow", "aActivePow", "aApparentPow", "bActivePow", "bApparentPow"])
+// 处理选项变化
+const cascaderChange = (selectedCol) => {
+  let selectedCol1 = selectedCol.map((arr) => arr[arr.length - 1]);
+  let notSelectedCol = originalArray.value.filter(item => !selectedCol1.includes(item));
+  tableColumns.value.forEach(column => {
+    if ( selectedCol1?.includes(column.prop)) {
         column.istrue = true;
-      }  
-    );
+      }
+    if ( notSelectedCol?.includes(column.prop as string)) {
+        column.istrue = false;
+      }
+      
+    });
+ 
+}
+
+
+watch(() => queryParams.granularity, (newValues) => {
     const newGranularity = newValues;
     if ( newGranularity == 'realtime'){
+      originalArray.value = ["totalActivePow", "totalApparentPow", "aActivePow", "aApparentPow", "bActivePow", "bApparentPow"]        
+      defaultOptionsCol.value = [
+      ["total", "totalActivePow"], ["total", "totalApparentPow"], ["a", "aActivePow"], 
+      ["a", "aApparentPow"], ["b", "bActivePow"], ["b", "bApparentPow"]
+      ]
+      optionsCol.value = [
+        {
+        value: "total",
+        label: '总',
+        children: [
+          { value: "totalActivePow", label: '总有功功率' },
+          { value: "totalApparentPow", label: '总视在功率' },
+        ],
+        },
+        {
+          value: "a",
+          label: 'a路',
+          children: [
+            { value: "aActivePow", label: 'a路有功功率' },
+            { value: "aApparentPow", label: 'a路视在功率' },
+          ],
+        },
+        {
+          value: "b",
+          label: 'b路',
+          children: [
+            { value: "bActivePow", label: 'b路有功功率' },
+            { value: "bApparentPow", label: 'b路视在功率' },
+          ],
+        },
+      ]
       tableColumns.value = [
         { label: '编号', align: 'center', prop: 'id' , istrue:true},
         { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
-        { label: '总有功功率(kVA)', align: 'center', prop: 'totalActivePow' , istrue:true},
+        { label: '总有功功率(kVA)', align: 'center', prop: 'totalActivePow' , istrue:true, width: '140px'},
+        { label: '总视在功率(kW)', align: 'center', prop: 'totalApparentPow' , istrue:true, width: '140px'},
         { label: 'a路有功功率', align: 'center', prop: 'aActivePow' , istrue:true},
-        { label: 'b路有功功率', align: 'center', prop: 'bActivePow' , istrue:true},
-        { label: '总视在功率(kW)', align: 'center', prop: 'totalApparentPow' , istrue:true},
         { label: 'a路视在功率', align: 'center', prop: 'aApparentPow' , istrue:true},
+        { label: 'b路有功功率', align: 'center', prop: 'bActivePow' , istrue:true},
         { label: 'b路视在功率', align: 'center', prop: 'bApparentPow' , istrue:true},
         { label: '时间', align: 'center', prop: 'createTime', formatter: dateFormatter, width: '200px' , istrue:true},
         { label: '操作', align: 'center', slot: 'actions' , istrue:true},
       ];
     }else{
-      checkColumns.value.forEach(column => {
-        if (column.prop != 'total' && column.prop != 'activePow') {
-            column.istrue = false;
-          }else{
-            column.istrue = true;
-          }
-          
-        }  
-      );
+      originalArray.value = ["totalActivePowAvgValue", "totalActivePowMaxValue", "totalActivePowMinValue", "totalApparentPowAvgValue", "totalApparentPowMaxValue", "totalApparentPowMinValue", 
+                            "aActivePowAvgValue", "aActivePowMaxValue", "aActivePowMinValue", "aApparentPowAvgValue", "aApparentPowMaxValue", "aApparentPowMinValue",
+                            "bActivePowAvgValue", "bActivePowMaxValue", "bActivePowMinValue", "bApparentPowAvgValue", "bApparentPowMaxValue", "bApparentPowMinValue",
+                          ]    
+      defaultOptionsCol.value = [
+        ["total", "activePow", "totalActivePowAvgValue"],["total", "apparentPow", "totalApparentPowAvgValue"],["a", "activePow", "aActivePowAvgValue"],
+        ["a", "apparentPow", "aApparentPowAvgValue"],["b", "activePow", "bActivePowAvgValue"],["b", "apparentPow", "bApparentPowAvgValue"],
+      ]
+      optionsCol.value = [
+        {
+        value: "total",
+        label: '总',
+        children: [
+          { value: "activePow", label: '有功功率', children:[
+              { value: "totalActivePowAvgValue", label: '总平均有功功率' },
+              { value: "totalActivePowMaxValue", label: '总最大有功功率' },
+              { value: "totalActivePowMinValue", label: '总最小有功功率' }
+            ] 
+          },
+          { value: "apparentPow", label: '视在功率', children:[
+              { value: "totalApparentPowAvgValue", label: '总平均视在功率' },
+              { value: "totalApparentPowMaxValue", label: '总最大视在功率' },
+              { value: "totalApparentPowMinValue", label: '总最小视在功率' }
+            ] 
+           },
+          ],
+        },
+        {
+          value: "a",
+          label: 'a路',
+          children: [
+          { value: "activePow", label: '有功功率', children:[
+              { value: "aActivePowAvgValue", label: 'a路平均有功功率' },
+              { value: "aActivePowMaxValue", label: 'a路最大有功功率' },
+              { value: "aActivePowMinValue", label: 'a路最小有功功率' }
+            ] 
+          },
+          { value: "apparentPow", label: '视在功率', children:[
+              { value: "aApparentPowAvgValue", label: 'a路平均视在功率' },
+              { value: "aApparentPowMaxValue", label: 'a路最大视在功率' },
+              { value: "aApparentPowMinValue", label: 'a路最小视在功率' }
+            ] 
+           },
+          ],
+        },
+        {
+          value: "b",
+          label: 'b路',
+          children: [
+          { value: "activePow", label: '有功功率', children:[
+              { value: "bActivePowAvgValue", label: 'b路平均有功功率' },
+              { value: "bActivePowMaxValue", label: 'b路最大有功功率' },
+              { value: "bActivePowMinValue", label: 'b路最小有功功率' }
+            ] 
+          },
+          { value: "apparentPow", label: '视在功率', children:[
+              { value: "bApparentPowAvgValue", label: 'b路平均视在功率' },
+              { value: "bApparentPowMaxValue", label: 'b路最大视在功率' },
+              { value: "bApparentPowMinValue", label: 'b路最小视在功率' }
+            ] 
+           },
+          ],
+        },
+      ]
       tableColumns.value = [
         { label: '编号', align: 'center', prop: 'id', istrue:true},
         { label: '位置', align: 'center', prop: 'location', istrue:true, width: '180px'},
         { label: '总平均有功功率(kVA)', align: 'center', prop: 'totalActivePowAvgValue', istrue:true, width: '180px'},
-        { label: '总最大有功功率(kVA)', align: 'center', prop: 'totalActivePowMaxValue', istrue:true, width: '180px'},
-        { label: '总最大有功功率时间', align: 'center', prop: 'totalActivePowMaxTime', formatter: dateFormatter, width: '200px', istrue:true},
-        { label: '总最小有功功率(kVA)', align: 'center', prop: 'totalActivePowMinValue', istrue:true, width: '180px'},
-        { label: '总最小有功功率时间', align: 'center', prop: 'totalActivePowMinTime', formatter: dateFormatter, width: '200px', istrue:true},
-        { label: '总平均视在功率(kW)', align: 'center', prop: 'totalApparentPowAvgValue', istrue:false, width: '180px'},
+        { label: '总最大有功功率(kVA)', align: 'center', prop: 'totalActivePowMaxValue', istrue:false, width: '180px'},
+        { label: '总最大有功功率时间', align: 'center', prop: 'totalActivePowMaxTime', formatter: dateFormatter, width: '200px', istrue:false},
+        { label: '总最小有功功率(kVA)', align: 'center', prop: 'totalActivePowMinValue', istrue:false, width: '180px'},
+        { label: '总最小有功功率时间', align: 'center', prop: 'totalActivePowMinTime', formatter: dateFormatter, width: '200px', istrue:false},
+        { label: '总平均视在功率(kW)', align: 'center', prop: 'totalApparentPowAvgValue', istrue:true, width: '180px'},
         { label: '总最大视在功率(kW)', align: 'center', prop: 'totalApparentPowMaxValue', istrue:false, width: '180px'},
         { label: '总最大视在功率时间', align: 'center', prop: 'totalApparentPowMaxTime', formatter: dateFormatter, width: '200px', istrue:false},
         { label: '总最小视在功率(kW)', align: 'center', prop: 'totalApparentPowMinValue', istrue:false, width: '180px'},
         { label: '总最小视在功率时间', align: 'center', prop: 'totalApparentPowMinTime', formatter: dateFormatter, width: '200px', istrue:false},
 
-        { label: 'a路平均有功功率(kVA)', align: 'center', prop: 'aActivePowAvgValue', istrue:false, width: '180px'},
+        { label: 'a路平均有功功率(kVA)', align: 'center', prop: 'aActivePowAvgValue', istrue:true, width: '180px'},
         { label: 'a路最大有功功率(kVA)', align: 'center', prop: 'aActivePowMaxValue', istrue:false, width: '180px'},
         { label: 'a路最大有功功率时间', align: 'center', prop: 'aActivePowMaxTime', formatter: dateFormatter, width: '200px', istrue:false},
         { label: 'a路最小有功功率(kVA)', align: 'center', prop: 'aActivePowMinValue', istrue:false, width: '180px'},
         { label: 'a路最小有功功率时间', align: 'center', prop: 'aActivePowMinTime', formatter: dateFormatter, width: '200px', istrue:false},
-        { label: 'a路平均视在功率(kW)', align: 'center', prop: 'aApparentPowAvgValue', istrue:false, width: '180px'},
+        { label: 'a路平均视在功率(kW)', align: 'center', prop: 'aApparentPowAvgValue', istrue:true, width: '180px'},
         { label: 'a路最大视在功率(kW)', align: 'center', prop: 'aApparentPowMaxValue', istrue:false, width: '180px'},
         { label: 'a路最大视在功率时间', align: 'center', prop: 'aApparentPowMaxTime', formatter: dateFormatter, width: '200px', istrue:false},
         { label: 'a路最小视在功率(kW)', align: 'center', prop: 'aApparentPowMinValue', istrue:false, width: '180px'},
         { label: 'a路最小视在功率时间', align: 'center', prop: 'aApparentPowMinTime', formatter: dateFormatter, width: '200px', istrue:false},
 
-        { label: 'b路平均有功功率(kVA)', align: 'center', prop: 'bActivePowAvgValue', istrue:false, width: '180px'},
+        { label: 'b路平均有功功率(kVA)', align: 'center', prop: 'bActivePowAvgValue', istrue:true, width: '180px'},
         { label: 'b路最大有功功率(kVA)', align: 'center', prop: 'bActivePowMaxValue', istrue:false, width: '180px'},
         { label: 'b路最大有功功率时间', align: 'center', prop: 'bActivePowMaxTime', formatter: dateFormatter, width: '200px', istrue:false},
         { label: 'b路最小有功功率(kVA)', align: 'center', prop: 'bActivePowMinValue', istrue:false, width: '180px'},
         { label: 'b路最小有功功率时间', align: 'center', prop: 'bActivePowMinTime', formatter: dateFormatter, width: '200px', istrue:false},
-        { label: 'b路平均视在功率(kW)', align: 'center', prop: 'bApparentPowAvgValue', istrue:false, width: '180px'},
+        { label: 'b路平均视在功率(kW)', align: 'center', prop: 'bApparentPowAvgValue', istrue:true, width: '180px'},
         { label: 'b路最大视在功率(kW)', align: 'center', prop: 'bApparentPowMaxValue', istrue:false, width: '180px'},
         { label: 'b路最大视在功率时间', align: 'center', prop: 'bApparentPowMaxTime', formatter: dateFormatter, width: '200px', istrue:false},
         { label: 'b路最小视在功率(kW)', align: 'center', prop: 'bApparentPowMinValue', istrue:false, width: '180px'},
@@ -371,33 +486,16 @@ watch(() => queryParams.granularity, (newValues) => {
 const tableColumns = ref([
     { label: '编号', align: 'center', prop: 'id' , istrue:true},
     { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
-    { label: '总有功功率(kVA)', align: 'center', prop: 'totalActivePow' , istrue:true},
+    { label: '总有功功率(kVA)', align: 'center', prop: 'totalActivePow' , istrue:true, width: '140px'},
+    { label: '总视在功率(kW)', align: 'center', prop: 'totalApparentPow' , istrue:true, width: '140px'},
     { label: 'a路有功功率', align: 'center', prop: 'aActivePow' , istrue:true},
-    { label: 'b路有功功率', align: 'center', prop: 'bActivePow' , istrue:true},
-    { label: '总视在功率(kW)', align: 'center', prop: 'totalApparentPow' , istrue:true},
     { label: 'a路视在功率', align: 'center', prop: 'aApparentPow' , istrue:true},
+    { label: 'b路有功功率', align: 'center', prop: 'bActivePow' , istrue:true},
     { label: 'b路视在功率', align: 'center', prop: 'bApparentPow' , istrue:true},
     { label: '时间', align: 'center', prop: 'createTime', formatter: dateFormatter, width: '200px' , istrue:true},
     { label: '操作', align: 'center', slot: 'actions' , istrue:true},
 ]);
 
-const checkColumns = ref([
-    { label: '总', align: 'center', prop: 'total' , istrue:true, isView:true},
-    { label: 'a路', align: 'center', prop: 'a' , istrue:true, isView:true},
-    { label: 'b路', align: 'center', prop: 'b' , istrue:true, isView:true},
-    { label: '有功功率', align: 'center', prop: 'activePow' , istrue:true, isView:true},
-    { label: '视在功率', align: 'center', prop: 'apparentPow' , istrue:true, isView:true},
-]);
-
-const handleIsView = (label: string, istrue: boolean) => {
-  tableColumns.value.forEach(column => {
-
-      if (column.label.includes(label)) {
-          column.istrue = !istrue;
-        }  
-      
-  });
-}
 
 /** 查询列表 */
 const getList = async () => {
