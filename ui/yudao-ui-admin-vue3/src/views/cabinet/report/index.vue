@@ -20,149 +20,115 @@
       />
     </el-col>
     <el-col :span="24 - treeWidth" :xs="24">
+      <el-form
+         class="-mb-15px"
+         :model="queryParams"
+         ref="queryFormRef"
+         :inline="true"
+         label-width="120px"
+       >
+       <el-form-item label="" prop="collaspe">
+            <el-switch 
+            v-model="isCollapsed"  
+            active-color="#409EFF" 
+            inactive-color="#909399"
+            active-text="折叠"  
+            active-value="100"
+            inactive-value="0" 
+            @change="toggleCollapse" />
+          </el-form-item>
+         <el-form-item label="时间段" prop="createTime">
+           <el-date-picker
+             v-model="queryParams.createTime"
+             value-format="YYYY-MM-DD HH:mm:ss"
+             type="daterange"
+             start-placeholder="开始日期"
+             end-placeholder="结束日期"
+             :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
+             class="!w-210px"
+           />
+         </el-form-item>
+         <el-text>
+          报警次数：{{ cabinetInfo.alarm }}
+         </el-text>
+         
+       </el-form>
       <el-collapse  v-model="activeNames">
         <el-collapse-item title="机柜信息" name="1">
+          <el-row class="text-container"> 
+            <el-col :span="8" >
+              机柜名称 {{ cabinetInfo.name }}<br/>
+              类型 {{ cabinetInfo.type }}<br/>
+              容量 {{ cabinetInfo.pow_capacity }}kW<br/>
+              所属机房 {{ cabinetInfo.owner }} <br/>
+              平衡度 {{ cabinetInfo.balance }} <br/>
+            </el-col>
+            <el-col :span="6">
+              用电量 {{ cabinetInfo.eq }}kW<br/>
+              总视在功率(最大) {{ cabinetInfo.total_apparent_pow_max_value }}kWh  <br/>
+              最大温度 {{ cabinetInfo.tem_max_value }}°C<br/>
+              最大湿度 {{ cabinetInfo.hum_max_value }}%<br/>
+              负载百分比 {{ cabinetInfo.loadPer }}%<br/>
+            </el-col> 
+            <el-col :span="10">
+              <el-row justify="center">
+                <el-col  :span="6">服务器IT总视在功率</el-col>
+                <el-col  :span="6">&nbsp;</el-col>
+              </el-row>
+              <el-row>
+                <div ref="serChartContainer" id="serChartContainer" style="width: 23vw; height: 30vh"></div>  
+              </el-row>
+            </el-col>
+          </el-row>
+         
+        </el-collapse-item>
+        <el-collapse-item title="耗电排名" name="2">
+          <el-form-item label="颗粒度" prop="type">
+           <el-select
+             v-model="queryParams.eqGranularity"
+             placeholder="请选择天/周/月"
+             class="!w-120px"
+           >
+             <el-option label="天" value="day" />
+             <el-option label="周" value="week" />
+             <el-option label="月" value="month" />
+            </el-select>
+          </el-form-item>
 
-            <el-row class="text-container"> 
-              <el-col :span="10" :ondblclick="handleDoubleClick">
-                机柜名称 {{ cabinetInfo.name }}
-              </el-col>
-              <el-col :span="8">
-                用电量 {{ cabinetInfo.eq }}kW 
-              </el-col>
-            </el-row>
-            <el-row class="text-container"> 
-              <el-col :span="10">
-                类型 {{ cabinetInfo.type }} 
-              </el-col>
-              <el-col :span="8">
-                总最大视在功率 {{ cabinetInfo.total_apparent_pow_max_value }}kWh 
-              </el-col>
-            </el-row>
-            <el-row class="text-container"> 
-              <el-col :span="10">
-                容量 {{ cabinetInfo.pow_capacity }}kW
-              </el-col>
-              <el-col :span="8">
-                最大温度 {{ cabinetInfo.tem_max_value }}°C
-              </el-col>
-            </el-row>
-            <el-row class="text-container"> 
-              <el-col :span="10">
-                所属机房 {{ cabinetInfo.owner }} 
-              </el-col>
-              <el-col :span="8">
-                最大湿度 {{ cabinetInfo.hum_max_value }}%
-              </el-col>
-            </el-row>
-            <el-row class="text-container"> 
-              <el-col :span="10">
-                平衡度 {{ cabinetInfo.balance }} 
-              </el-col>
-              <el-col :span="8">
-                负载百分比 {{ cabinetInfo.loadPer }}%
-              </el-col>
-            </el-row>
+            <div ref="rankChartContainer" id="rankChartContainer" style="width: 75vw; height: 58vh;"></div>
 
         </el-collapse-item>
-        <el-collapse-item title="B相设置" name="2">
-
-            <el-row class="text-container"> 
-              <el-col :span="10">
-                电流当前值 {{ currentB }}A <el-progress :text-inside="true" :stroke-width="20" :percentage="0" style="display: inline-flex;width: 60%;"/>
-              </el-col>
-              <el-col :span="8">
-                电压当前值 {{ voltageB }}V <el-progress :text-inside="true" :stroke-width="20" :percentage="70" style="display: inline-flex;width: 60%;"/>
-              </el-col>
-            </el-row>
-            <el-row class="text-container"> 
-              <el-col :span="10">
-                频率 {{ frequencyB }}Hz <el-progress :text-inside="true" :stroke-width="20" :percentage="0" style="display: inline-flex;width: 60%;"/>
-              </el-col>
-              <el-col :span="8">
-                功率当前值 {{ powerB }}kW 
-              </el-col>
-            </el-row>
-            <el-row class="text-container"> 
-              温度当前值 {{ temperatureB }}°C
-            </el-row>
-
+        <el-collapse-item title="功率曲线" name="3">
+          <el-form-item label="颗粒度" prop="type">
+           <el-select
+             v-model="queryParams.powGranularity"
+             placeholder="请选择分钟/小时/天"
+             class="!w-120px"
+           >
+           <el-option label="分钟" value="realtime" />
+             <el-option label="小时" value="hour" />
+             <el-option label="天" value="day" />
+            </el-select>
+          </el-form-item>
+          <ContentWrap style="overflow: visible;">
+            <div ref="powChartContainer" id="powChartContainer" style="width: 70vw; height: 58vh;"></div>
+          </ContentWrap>
         </el-collapse-item>
-        <el-collapse-item title="C相设置" name="3">
-
-            <el-row class="text-container"> 
-              <el-col :span="10">
-                电流当前值 {{ currentC }}A <el-progress :text-inside="true" :stroke-width="20" :percentage="0" style="display: inline-flex;width: 60%;"/>
-              </el-col>
-              <el-col :span="8">
-                电压当前值 {{ voltageC }}V <el-progress :text-inside="true" :stroke-width="20" :percentage="70" style="display: inline-flex;width: 60%;"/>
-              </el-col>
-            </el-row>
-            <el-row class="text-container"> 
-              <el-col :span="10">
-                频率 {{ frequencyC }}Hz <el-progress :text-inside="true" :stroke-width="20" :percentage="0" style="display: inline-flex;width: 60%;"/>
-              </el-col>
-              <el-col :span="8">
-                功率当前值 {{ powerC }}kW 
-              </el-col>
-            </el-row>
-            <el-row class="text-container"> 
-              温度当前值 {{ temperatureC }}°C
-            </el-row>
-
-        </el-collapse-item>
-
-            零线 
-            <el-row class="text-container"> 
-              <el-col :span="10">
-                电流当前值 {{ neutralCurrent }}A 
-              </el-col>
-              <el-col :span="8">
-                温度当前值 {{ neutralTemperature }}°C
-              </el-col>
-            </el-row>
-
-        <el-collapse-item title="支路设置" name="4">
-          <el-table v-loading="loading" :data="loopList" :stripe="true" :show-overflow-tooltip="true">
-            <el-table-column label="插接箱" align="center" prop="pluginBox" /> 
-            <el-table-column label="A1电流" align="center" prop="A1Current" /> 
-            <el-table-column label="B1电流" align="center" prop="B1Current" /> 
-            <el-table-column label="C1电流" align="center" prop="C1Current" /> 
-            <el-table-column label="A1功率" align="center" prop="A1Power" /> 
-            <el-table-column label="B1功率" align="center" prop="B1Power" /> 
-            <el-table-column label="C1功率" align="center" prop="C1Power" /> 
-          </el-table>
-           
-          <el-table v-loading="loading" :data="loopList" :stripe="true" :show-overflow-tooltip="true">
-            <el-table-column label="插接箱" align="center" prop="pluginBox" /> 
-            <el-table-column label="A2电流" align="center" prop="A2Current" /> 
-            <el-table-column label="B2电流" align="center" prop="B2Current" /> 
-            <el-table-column label="C2电流" align="center" prop="C2Current" /> 
-            <el-table-column label="A2功率" align="center" prop="A2Power" /> 
-            <el-table-column label="B2功率" align="center" prop="B2Power" /> 
-            <el-table-column label="C2功率" align="center" prop="C2Power" /> 
-          </el-table>
-          <el-table v-loading="loading" :data="loopList" :stripe="true" :show-overflow-tooltip="true">
-            <el-table-column label="插接箱" align="center" prop="pluginBox" /> 
-            <el-table-column label="A3电流" align="center" prop="A3Current" /> 
-            <el-table-column label="B3电流" align="center" prop="B3Current" /> 
-            <el-table-column label="C3电流" align="center" prop="C3Current" /> 
-            <el-table-column label="A3功率" align="center" prop="A3Power" /> 
-            <el-table-column label="B3功率" align="center" prop="B3Power" /> 
-            <el-table-column label="C3功率" align="center" prop="C3Power" /> 
-          </el-table>
-
-          <el-table v-loading="loading" :data="loopList" :stripe="true" :show-overflow-tooltip="true">
-            <el-table-column label="插接箱" align="center" prop="pluginBox" /> 
-            <el-table-column label="温度1" align="center" prop="temperature1" /> 
-            <el-table-column label="温度2" align="center" prop="temperature2" /> 
-            <el-table-column label="温度3" align="center" prop="temperature3" /> 
-            <el-table-column label="温度4" align="center" prop="temperature4" /> 
-            <el-table-column label="中性电流" align="center" prop="neutralCurrent" /> 
-            <el-table-column label="零线电流" align="center" prop="neutralCurrent" /> 
-            <el-table-column label="零线温度" align="center" prop="neutralTemperature" /> 
-          </el-table>
-
+        <el-collapse-item title="温度曲线" name="4">
+          <el-form-item label="颗粒度" prop="type">
+           <el-select
+             v-model="queryParams.temGranularity"
+             placeholder="请选择分钟/小时/天"
+             class="!w-120px"
+           >
+           <el-option label="分钟" value="realtime" />
+             <el-option label="小时" value="hour" />
+             <el-option label="天" value="day" />
+            </el-select>
+          </el-form-item>
+          <ContentWrap style="overflow: visible;">
+            <div ref="temChartContainer" id="temChartContainer" style="width: 70vw; height: 58vh;"></div>
+          </ContentWrap>
         </el-collapse-item>
       </el-collapse>
     </el-col>
@@ -174,12 +140,25 @@
 <script setup lang="ts">
 import download from '@/utils/download'
 import { PDUDeviceApi, PDUDeviceVO } from '@/api/pdu/pdudevice'
-
+import * as echarts from 'echarts';
 import { ElTree } from 'element-plus'
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
+const activeNames = ref(["1","2","3","4"])
+
+const queryParams = reactive({
+  pageNo: 1,
+  pageSize: 10,
+  id: undefined,
+  type: 'total',
+  eqGranularity:"day",
+  powGranularity : "hour",
+  temGranularity : "hour",
+  ipAddr: undefined,
+  createTime: undefined,
+})
 
 const serverRoomArr =  [
   {
@@ -258,20 +237,9 @@ const serverRoomArr =  [
 let treeWidth = ref(3)
 let isCollapsed = ref(0);
 
-const currentB = ref(0.14);
-const voltageB = ref(234.5);
-const frequencyB = ref(49.9);
-const powerB = ref(0.567);
-const temperatureB = ref(23);
-const currentC = ref(0.14);
-const voltageC = ref(234.5);
-const frequencyC = ref(49.9);
-const powerC = ref(0.567);
-const temperatureC = ref(23);
-const neutralCurrent = ref(0)
-const neutralTemperature = ref(20)
 
 const cabinetInfo = ref({
+  alarm : 6,
   name : "机柜1",
   type : "xx",
   pow_capacity : "250",
@@ -282,6 +250,54 @@ const cabinetInfo = ref({
   hum_max_value : "75",
   balance : "50",
   loadPer : "80"
+})
+
+//折线图数据
+interface EqData {
+  eq: number[];
+  time: string[];
+}
+const eqData = ref<EqData>({
+  eq : [],
+  time : []
+})
+
+interface PowData {
+  total_apparent_pow_avg_value: number[];
+  total_active_pow_avg_value: number[];
+  time: string[];
+}
+const powData = ref<PowData>({
+  total_apparent_pow_avg_value : [],
+  total_active_pow_avg_value: [],
+  time:[]
+})
+
+interface TemData {
+  tem_avg_value: number[];
+  time: string[];
+}
+const temData = ref<TemData>({
+  tem_avg_value : [],
+  time : []
+})
+
+interface ServerData {
+  nameAndMax: object[];
+  value: number[];
+}
+const serverData = ref<ServerData>({
+  nameAndMax : [
+    { name: '服务器1', max: 250 },
+    { name: '服务器2', max: 250 },
+    { name: '服务器3', max: 250 },
+    { name: '服务器4', max: 250 },
+    { name: '服务器5', max: 250 },
+    { name: '服务器6', max: 250 },
+    { name: '服务器7', max: 250 },
+    { name: '服务器8', max: 250 }
+  ],
+  value: [200, 180, 170, 220, 167, 189,200,150]
 })
 
 
@@ -298,25 +314,298 @@ const filterNode = (value: string, data: Tree) => {
   return data.label.includes(value)
 }
 
-const handleDoubleClick = ()=> {
-  // 在这里编写双击事件的处理逻辑
-  console.log("双击事件触发了");
-}
-
 const defaultProps = {
   children: 'children',
   label: 'label',
 }
 
+const getList = () => {
+  loading.value = true
+  try {
+    // 生成假数据
+    const fakeData = [
+      {
+          id: 1,
+          location: "机房1-机柜1",
+          eq: 501,
+          eqCreateTime: "2024-03-13 08:00:00",
+          total_apparent_pow_avg_value : 200,
+          total_active_pow_avg_value : 180,
+          powCreateTime : "2024-03-13 08:00:00",
+          tem_avg_value : 25,
+          temCrateTime : "2024-03-13 08:00:00",
+      },
+      {
+          id: 2,
+          location: "机房1-机柜1",
+          eq: 435,
+          eqCreateTime: "2024-03-05 08:00:00",
+          total_apparent_pow_avg_value : 190,
+          total_active_pow_avg_value : 170,
+          powCreateTime : "2024-03-13 09:00:00",
+          tem_avg_value : 27,
+          temCrateTime : "2024-03-13 09:00:00",
+      },
+      {
+          id: 3,
+          location: "机房1-机柜1",
+          eq: 360,
+          eqCreateTime: "2024-02-15 08:00:00",
+          total_apparent_pow_avg_value : 220,
+          total_active_pow_avg_value : 200,
+          powCreateTime : "2024-03-13 10:00:00",
+          tem_avg_value : 26.4,
+          temCrateTime : "2024-03-13 10:00:00",
+      },
+      {
+          id: 4,
+          location: "机房1-机柜1",
+          eq: 352,
+          eqCreateTime: "2024-03-20 08:00:00",
+          total_apparent_pow_avg_value : 170,
+          total_active_pow_avg_value : 160,
+          powCreateTime : "2024-03-13 11:00:00",
+          tem_avg_value : 27.8,
+          temCrateTime : "2024-03-13 11:00:00",
+      },
+      {
+          id: 5,
+          location: "机房1-机柜1",
+          eq: 290,
+          eqCreateTime: "2024-02-05 08:00:00",
+          total_apparent_pow_avg_value : 200,
+          total_active_pow_avg_value : 180,
+          powCreateTime : "2024-03-13 12:00:00",
+          tem_avg_value : 24.3,
+          temCrateTime : "2024-03-13 12:00:00",
+      },
+      {
+          id: 6,
+          location: "机房1-机柜1",
+          eq: 275,
+          eqCreateTime: "2024-02-25 08:00:00",
+          total_apparent_pow_avg_value : 200,
+          total_active_pow_avg_value : 180,
+          powCreateTime : "2024-03-13 13:00:00",
+          tem_avg_value : 24.3,
+          temCrateTime : "2024-03-13 13:00:00",
+      },
+      {
+          id: 7,
+          location: "机房1-机柜1",
+          eq: 260,
+          eqCreateTime: "2024-03-25 08:00:00",
+          total_apparent_pow_avg_value : 200,
+          total_active_pow_avg_value : 180,
+          powCreateTime : "2024-03-13 14:00:00",
+          tem_avg_value : 24.3,
+          temCrateTime : "2024-03-13 14:00:00",
+      },
+    ];
+
+    eqData.value.eq = fakeData.map((item) => item.eq);
+    eqData.value.time = fakeData.map((item) => item.eqCreateTime);
+
+    powData.value.total_apparent_pow_avg_value = fakeData.map((item) => item.total_apparent_pow_avg_value);
+    powData.value.total_active_pow_avg_value = fakeData.map((item) => item.total_active_pow_avg_value);
+    powData.value.time = fakeData.map((item) => item.powCreateTime);
+
+    temData.value.tem_avg_value = fakeData.map((item) => item.tem_avg_value);
+    temData.value.time = fakeData.map((item) => item.temCrateTime);
+  }finally{
+    loading.value = false
+  }
+}
+
+const rankChartContainer = ref<HTMLElement | null>(null);
+let rankChart = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
+const powChartContainer = ref<HTMLElement | null>(null);
+let powChart = null as echarts.ECharts | null; // 显式声明 powChart 的类型
+const temChartContainer = ref<HTMLElement | null>(null);
+let temChart = null as echarts.ECharts | null; // 显式声明 temChart 的类型
+const serChartContainer = ref<HTMLElement | null>(null);
+let serChart = null as echarts.ECharts | null; // 显式声明 serChart 的类型
+
+const initChart = () => {
+  const instance = getCurrentInstance();
+  if (rankChartContainer.value && instance) {
+    rankChart = echarts.init(rankChartContainer.value);
+    rankChart.setOption({
+      // 这里设置 Echarts 的配置项和数据
+      title: { text: ''},
+      tooltip: { trigger: 'axis'},
+      legend: { data: ['耗电量']},
+      toolbox: {feature: {saveAsImage: {} }},
+      xAxis: {type: 'category' ,data:eqData.value.time},
+      yAxis: { type: 'value'},
+      series: [
+        {name:"耗电量",  type: 'bar', data: eqData.value.eq, label: { show: true, position: 'top' }},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
+      ],
+    });
+    // 将 rankChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+    instance.appContext.config.globalProperties.rankChart = rankChart;
+  }
+  if (powChartContainer.value && instance) {
+    powChart = echarts.init(powChartContainer.value);
+    powChart.setOption({
+      // 这里设置 Echarts 的配置项和数据
+      title: { text: ''},
+      tooltip: { trigger: 'axis' },
+      legend: { data: ['总平均视在功率','总平均有功功率']},
+      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+      toolbox: {feature: {saveAsImage: {} }},
+      xAxis: {type: 'category', boundaryGap: false, data:powData.value.time},
+      yAxis: { type: 'value'},
+      series: [
+        {name: '总平均视在功率', type: 'line', data: powData.value.total_apparent_pow_avg_value, lineStyle: {type: 'dashed'}},
+        {name: '总平均有功功率', type: 'line', data: powData.value.total_active_pow_avg_value, lineStyle: {type: 'dashed'}},
+      ],
+
+    });
+    // 将 powChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+    instance.appContext.config.globalProperties.powChart = powChart;
+  }
+  if (temChartContainer.value && instance) {
+    temChart = echarts.init(temChartContainer.value);
+    temChart.setOption({
+      // 这里设置 Echarts 的配置项和数据
+      title: { text: ''},
+      tooltip: { trigger: 'axis' },
+      legend: { data: ['温度']},
+      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+      toolbox: {feature: {saveAsImage: {} }},
+      xAxis: {type: 'category', boundaryGap: false, data:temData.value.time},
+      yAxis: { type: 'value'},
+      series: [
+        {name: '温度', type: 'line', data: temData.value.tem_avg_value, lineStyle: {type: 'dashed'}},
+      ],
+    });
+    // 将 temChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+    instance.appContext.config.globalProperties.temChart = temChart;
+  }
+  if (serChartContainer.value && instance) {
+    serChart = echarts.init(serChartContainer.value);
+    serChart.setOption({
+      radar: { indicator: serverData.value.nameAndMax },
+      series: [
+        { name: '服务器IT总视在功率', type: 'radar', label: { show: true, position: 'top' } ,data: [ { value: serverData.value.value, name: '总视在功率' }, ] }
+      ]
+    });
+    // 将 serChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+    instance.appContext.config.globalProperties.serChart = serChart;
+  }
+};
+
+// 在组件销毁时手动销毁图表
+const beforeRankUnmount = () => {
+    rankChart?.dispose(); // 销毁图表实例
+};
+
+const beforePowUnmount = () => {
+    powChart?.dispose();  // 销毁图表实例
+};
+
+const beforeTemUnmount = () => {
+    temChart?.dispose(); // 销毁图表实例
+};
+
+const beforeSerUnmount = () => {
+    serChart?.dispose(); // 销毁图表实例
+};
+
+window.addEventListener('resize', function() {
+    rankChart?.resize(); 
+    powChart?.resize(); 
+    temChart?.resize(); 
+});
+
 watch(filterText, (val) => {
   treeRef.value!.filter(val)
 })
+
+// 监听类型颗粒度
+watch([ () => queryParams.eqGranularity, () => queryParams.powGranularity, () => queryParams.temGranularity], (eqNew,powNew,temNew) => {
+    const [ newEqGranularity] = eqNew;
+    // const [ newPowGranularity] = powNew;
+    // const [ newTemGranularity] = temNew;
+    // 处理参数变化
+
+    if ( newEqGranularity == 'day'){
+      // 销毁原有的图表实例
+      beforeRankUnmount()
+      // 创建新的图表实例
+      rankChart = echarts.init(document.getElementById('rankChartContainer'));
+      getList();
+      // 设置新的配置对象
+      if (rankChart) {
+        rankChart.setOption({
+        // 这里设置 Echarts 的配置项和数据
+        title: { text: ''},
+        tooltip: { trigger: 'axis'},
+        legend: { data: ['耗电量']},
+        toolbox: {feature: {saveAsImage: {} }},
+        xAxis: {type: 'category' ,data:eqData.value.time},
+        yAxis: { type: 'value'},
+        series: [
+          { type: 'bar', data: eqData.value.eq, label: { show: true, position: 'top' }},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
+        ],
+      });
+    }
+    }else if(newEqGranularity == 'week'){
+      // 销毁原有的图表实例
+      beforeRankUnmount()
+      // 创建新的图表实例
+      rankChart = echarts.init(document.getElementById('rankChartContainer'));
+      eqData.value.time = ["2023-04-第一周","2023-03-第二周","2023-02-第三周","2023-01-第一周","2023-03-第一周","2023-02-第一周","2023-04-第一周"]
+      // 设置新的配置对象
+      if (rankChart) {
+        rankChart.setOption({
+          // 这里设置 Echarts 的配置项和数据
+          title: { text: ''},
+          tooltip: { trigger: 'axis'},
+          legend: { data: ['耗电量']},
+          toolbox: {feature: {saveAsImage: {} }},
+          xAxis: {type: 'category' ,data:eqData.value.time},
+          yAxis: { type: 'value'},
+          series: [
+            { type: 'bar', data: eqData.value.eq, label: { show: true, position: 'top' }},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
+          ],
+        });
+      }
+    }else{
+      // 销毁原有的图表实例
+      beforeRankUnmount()
+      // 创建新的图表实例
+      rankChart = echarts.init(document.getElementById('rankChartContainer'));
+      eqData.value.time = ["2023-04","2023-08","2023-07","2023-02","2023-10","2023-06","2023-09"]
+      // 设置新的配置对象
+      if (rankChart) {
+        rankChart.setOption({
+          // 这里设置 Echarts 的配置项和数据
+          title: { text: ''},
+          tooltip: { trigger: 'axis'},
+          legend: { data: ['耗电量']},
+          toolbox: {feature: {saveAsImage: {} }},
+          xAxis: {type: 'category' ,data:eqData.value.time},
+          yAxis: { type: 'value'},
+          series: [
+            { type: 'bar', data: eqData.value.eq, label: { show: true, position: 'top' }},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
+          ],
+        });
+      }
+    }
+    
+});
 
 // 下拉框选项数组
 const deviceStatus = ref([])
 
 const message = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
+
+const toggleCollapse = () => {
+  treeWidth.value = isCollapsed.value == 0 ? 3 : 0;
+};
 
 const loading = ref(false) // 列表的加载中
 const list = ref([
@@ -351,16 +640,6 @@ const list = ref([
   },
 ]) // 列表的数据
 const total = ref(0) // 列表的总页数
-const queryParams = reactive({
-  pageNo: 1,
-  pageSize: 10,
-  devKey: undefined,
-  ipAddr: undefined,
-  createTime: [],
-  cascadeNum: undefined,
-  serverRoomData:undefined,
-  status:undefined,
-})
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
@@ -424,7 +703,8 @@ const handleExport = async () => {
 
 /** 初始化 **/
 onMounted(() => {
-  // getList()
+  getList();
+  initChart();
 })
 </script>
 
