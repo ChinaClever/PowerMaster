@@ -50,6 +50,17 @@
            />
          </el-form-item>
 
+         <el-form-item label="颗粒度" prop="type">
+            <el-select
+              v-model="queryParams.granularity"
+              placeholder="请选择天/周/月"
+              class="!w-120px" >
+              <el-option label="天" value="day" />
+              <el-option label="周" value="week" />
+              <el-option label="月" value="month" />
+            </el-select>
+          </el-form-item>
+
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
            <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
@@ -83,7 +94,7 @@ const queryParams = reactive({
   pageSize: 10,
   id: undefined,
   type: 'total',
-  granularity: 'realtime',
+  granularity: '天',
   ipAddr: undefined,
   createTime: undefined,
 })
@@ -180,7 +191,6 @@ const endTimeData = ref<string[]>([]);
 const eqData = ref<number[]>([]);
 const createTimeData = ref<string[]>([]);
 
-
 /** 查询列表 */
 const getList = () => {
 loading.value = true
@@ -192,60 +202,60 @@ loading.value = true
         location: "机房1-机柜1",
         cabinetId: 123,
         startEle: 2000,
-        startTime: "2024-03-21 00:00:00",
+        startTime: "2024-03-21",
         endEle: 3000,
-        endTime: "2024-03-22 00:00:00",
+        endTime: "2024-03-22",
         eq: 1000,
         bill: 700,
-        createTime: "2024-03-22 00:00:00",
+        createTime: "2024-03-22",
       },
       {
         id: 2,
         location: "机房1-机柜1",
         cabinetId: 123,
         startEle: 3000,
-        startTime: "2024-03-22 00:00:00",
+        startTime: "2024-03-22",
         endEle: 4200,
-        endTime: "2024-03-23 00:00:00",
+        endTime: "2024-03-23",
         eq: 1200,
         bill: 700,
-        createTime: "2024-03-23 00:00:00",
+        createTime: "2024-03-23",
       },
       {
         id: 3,
         location: "机房1-机柜1",
         cabinetId: 123,
         startEle: 4200,
-        startTime: "2024-03-23 00:00:00",
+        startTime: "2024-03-23",
         endEle: 5100,
-        endTime: "2024-03-24 00:00:00",
+        endTime: "2024-03-24",
         eq: 900,
         bill: 700,
-        createTime: "2024-03-24 00:00:00",
+        createTime: "2024-03-24",
       },
       {
         id: 4,
         location: "机房1-机柜1",
         cabinetId: 123,
         startEle: 5100,
-        startTime: "2024-03-24 00:00:00",
+        startTime: "2024-03-24",
         endEle: 6500,
-        endTime: "2024-03-25 00:00:00",
+        endTime: "2024-03-25",
         eq: 1400,
         bill: 1200,
-        createTime: "2024-03-25 00:00:00",
+        createTime: "2024-03-25",
       },
       {
         id: 5,
         location: "机房1-机柜1",
         cabinetId: 123,
         startEle: 6500,
-        startTime: "2024-03-25 00:00:00",
+        startTime: "2024-03-25",
         endEle: 7100,
-        endTime: "2024-03-26 00:00:00",
+        endTime: "2024-03-26",
         eq: 600,
         bill: 500,
-        createTime: "2024-03-26 00:00:00",
+        createTime: "2024-03-26",
       },
     ];
   
@@ -274,14 +284,11 @@ const initChart = () => {
       title: { text: '总耗电量5100kWh', top: -4},
       tooltip: { trigger: 'axis' },
       legend: { data: []},
-      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+      grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true},
       toolbox: {feature: {saveAsImage: {} }},
       xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
       yAxis: { type: 'value', name: "kWh", nameTextStyle: {fontSize:"16px"},},
-      series: [
-        {name: '耗电量', type: 'line', data: eqData.value},
-        
-      ],
+      series: [{name: '耗电量', type: 'line', data: eqData.value}],
 
     });
     // 将 myChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
@@ -292,35 +299,32 @@ const initChart = () => {
     myChart1 = echarts.init(rankContainer.value);
     myChart1.setOption({
       // 这里设置 Echarts 的配置项和数据
-      title: { text: '耗电量排行榜', top: -4},
+      title: { text: '机架耗电量排行', top: -4},
       tooltip: { trigger: 'axis',  axisPointer: { type: "shadow"} },
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {} }},
       xAxis: {
-          type: "value",
-          axisLine: {
-            show: false,
-          },
-          axisTick: {
-            show: false,
-          },
-          //不显示X轴刻度线和数字
-          splitLine: { show: false },
-          axisLabel: { show: false },
+        type: "value",
+        axisLine: {
+          show: false,
         },
+        axisTick: {
+          show: false,
+        },
+        //不显示X轴刻度线和数字
+        splitLine: { show: false },
+        axisLabel: { show: false },
+      },
       yAxis: {
         type: "category",
-        data: [ "0001",
-        "0002",
-        "0003",
-        "0004",
-        "0005",],
+        data: [ "机架1", "机架2", "机架3", "机架4", "机架5",],
         //升序
         inverse: true,
         splitLine: { show: false },
         axisLine: {
           show: false,
         },
+        axisLabel: { fontSize: 16 },
         axisTick: {
           show: false,
         },
@@ -331,54 +335,53 @@ const initChart = () => {
         animationDurationUpdate: 300,
         //key文字大小
         nameTextStyle: {
-          fontSize: 5,
+          fontSize: 15,
         },
       },
       series: [
-          {
-            //柱状图自动排序，排序自动让Y轴名字跟着数据动
-            realtimeSort: true,
-            name: "耗电量",
-            type: "bar",
-            data: eqData.value,
-            barWidth: 20,
-            barGap: 5,
-            smooth: true,
-            valueAnimation: true,
-            //Y轴数字显示部分
-            label: {
-              normal: {
-                show: true,
-                position: "right",
-                valueAnimation: true,
-                offset: [5, -2],
-                textStyle: {
-                  color: "#333",
-                  fontSize: 16,
-                },
+        {
+          //柱状图自动排序，排序自动让Y轴名字跟着数据动
+          realtimeSort: true,
+          name: "耗电量",
+          type: "bar",
+          data: eqData.value,
+          barWidth: 20,
+          barGap: 5,
+          smooth: true,
+          valueAnimation: true,
+          label: {
+            normal: {
+              show: true,
+              position: "right",
+              valueAnimation: true,
+              offset: [5, -2],
+              textStyle: {
+                color: "#333",
+                fontSize: 16,
               },
-            },
-            itemStyle: {
-              emphasis: {
-                barBorderRadius: 7,
-              },
-              //颜色样式部分
-              normal: {
-                barBorderRadius: 7,
-                color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-                  { offset: 0, color: "#3977E6" },
-                  { offset: 1, color: "#37BBF8" },
-                ]),
-              },
+              // formatter: '{value}kWh'
             },
           },
+          itemStyle: {
+            emphasis: {
+              barBorderRadius: 7,
+            },
+            //颜色样式部分
+            normal: {
+              barBorderRadius: 7,
+              color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                { offset: 0, color: "#3977E6" },
+                { offset: 1, color: "#37BBF8" },
+              ]),
+            },
+          },
+        },
       ],
-          //动画部分
-        
-         animationDuration: 0,
-        animationDurationUpdate: 3000,
-        animationEasing: "linear",
-        animationEasingUpdate: "linear",
+      //动画部分
+      animationDuration: 0,
+      animationDurationUpdate: 3000,
+      animationEasing: "linear",
+      animationEasingUpdate: "linear",
     });
     window.addEventListener('resize', function() {
         myChart1?.resize(); 
@@ -389,9 +392,56 @@ const initChart = () => {
   }
 };
 
+watch(() => queryParams.granularity, (newValues) => {
+  const newGranularity = newValues;
+  if ( newGranularity == 'day'){
+    myChart?.setOption({
+      title: { text: '总耗电量5100kWh', top: -4},
+      xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
+      series: [{name: '耗电量', type: 'line', data: eqData.value}],
+    });
+    myChart1?.setOption({
+      series: [{data:['1400', '1200', '1000', '900', '600']}],
+    })
+  }
+  if ( newGranularity == 'week'){
+    myChart?.setOption({
+      title: { text: '总耗电量24210kWh', top: -4},  
+      xAxis: {type: 'category', boundaryGap: false, data:[
+        '2024年3月第一周',
+        '2024年3月第二周',
+        '2024年3月第三周',
+        '2024年3月第四周',]},
+      series: [{name: '耗电量', type: 'line', data:['6000', '6500', '5500', '6210'] }],
+    });
+    myChart1?.setOption({
+      series: [{data: ['6000', '6500', '6210', '5800', '5990']}],
+    })
+  }
+  if ( newGranularity == 'month'){
+    myChart?.setOption({
+      title: { text: '总耗电量150100kWh', top: -4},  
+      xAxis: {type: 'category', boundaryGap: false, data:[
+        '2024年1月',
+        '2024年2月',
+        '2024年3月',
+        '2024年4月',
+        '2024年5月',
+        '2024年6月',]},
+      series: [{name: '耗电量', type: 'line', data:['24000', '25000', '27000', '24500', '25000', '26000'] }],
+    });
+    myChart1?.setOption({
+      series: [{data: ['24000', '25500', '24600', '25100', '26100']}],
+    })
+
+  }
+
+
+});
+
 window.addEventListener('resize', function() {
-    myChart?.resize();
-    myChart1?.resize();  
+  myChart?.resize();
+  myChart1?.resize();  
 });
 
 
