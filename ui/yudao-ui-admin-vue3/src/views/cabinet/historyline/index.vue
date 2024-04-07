@@ -74,13 +74,13 @@
            </el-select>
          </el-form-item>
 
-         <div style="display: flex; justify-content: flex-end;">
+
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
            <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
            <el-button type="primary" plain><Icon icon="ep:download" class="mr-5px" /> 导出</el-button>
          </el-form-item>
-        </div>
+
        </el-form>
 
 
@@ -608,14 +608,14 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
           // 这里设置 Echarts 的配置项和数据
           title: { text: ''},
           tooltip: { trigger: 'axis' },
-          legend: { data: ['a路有功功率', 'a路总视在功率'] },
+          legend: { data: ['a路有功功率', 'a路视在功率'] },
           grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
           toolbox: {feature: {saveAsImage: {} }},
           xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
           yAxis: { type: 'value'},
           series: [
             {name: 'a路有功功率', type: 'line', data: aActivePowData.value},
-            {name: 'a路总视在功率', type: 'line', data: aApparentPowData.value },
+            {name: 'a路视在功率', type: 'line', data: aApparentPowData.value },
           ]
         });
       }
@@ -662,14 +662,14 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
           // 这里设置 Echarts 的配置项和数据
           title: { text: ''},
           tooltip: { trigger: 'axis' },
-          legend: { data: ['b路有功功率', 'b路总视在功率'] },
+          legend: { data: ['b路有功功率', 'b路视在功率'] },
           grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
           toolbox: {feature: {saveAsImage: {} }},
           xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
           yAxis: { type: 'value'},
           series: [
             {name: 'b路有功功率', type: 'line', data: bActivePowData.value},
-            {name: 'b路总视在功率', type: 'line', data: bApparentPowData.value },
+            {name: 'b路视在功率', type: 'line', data: bApparentPowData.value },
           ]
         });
       }
