@@ -47,7 +47,7 @@
               start-placeholder="开始日期"
               end-placeholder="结束日期"
               :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-              class="!w-210px"
+              class="!w-190px"
             />
           </el-form-item>
 
@@ -71,7 +71,7 @@
             collapse-tags-tooltip
             :show-all-levels="false"
             @change="cascaderChange"
-            class="!w-180px"
+            class="!w-220px"
           />
           </el-form-item>
 
@@ -330,7 +330,6 @@ const cascaderChange = (selectedCol) => {
  
 }
 
-
 watch(() => queryParams.granularity, (newValues) => {
     const newGranularity = newValues;
     if ( newGranularity == 'realtime'){
@@ -366,16 +365,16 @@ watch(() => queryParams.granularity, (newValues) => {
         },
       ]
       tableColumns.value = [
-        { label: '编号', align: 'center', prop: 'id' , istrue:true},
-        { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
-        { label: '总有功功率(kVA)', align: 'center', prop: 'totalActivePow' , istrue:true, width: '140px'},
-        { label: '总视在功率(kW)', align: 'center', prop: 'totalApparentPow' , istrue:true, width: '140px'},
-        { label: 'a路有功功率', align: 'center', prop: 'aActivePow' , istrue:true},
-        { label: 'a路视在功率', align: 'center', prop: 'aApparentPow' , istrue:true},
-        { label: 'b路有功功率', align: 'center', prop: 'bActivePow' , istrue:true},
-        { label: 'b路视在功率', align: 'center', prop: 'bApparentPow' , istrue:true},
-        { label: '时间', align: 'center', prop: 'createTime', formatter: dateFormatter, width: '200px' , istrue:true},
-        { label: '操作', align: 'center', slot: 'actions' , istrue:true},
+      { label: '编号', align: 'center', prop: 'id' , istrue:true},
+      { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
+      { label: '总有功功率(kVA)', align: 'center', prop: 'totalActivePow' , istrue:true, width: '140px'},
+      { label: '总视在功率(kW)', align: 'center', prop: 'totalApparentPow' , istrue:true, width: '140px'},
+      { label: 'a路有功功率(kVA)', align: 'center', prop: 'aActivePow' , istrue:true, width: '150px'},
+      { label: 'a路视在功率(kW)', align: 'center', prop: 'aApparentPow' , istrue:true, width: '140px'},
+      { label: 'b路有功功率(kVA)', align: 'center', prop: 'bActivePow' , istrue:true, width: '150px'},
+      { label: 'b路视在功率(kW)', align: 'center', prop: 'bApparentPow' , istrue:true, width: '140px'},
+      { label: '时间', align: 'center', prop: 'createTime', formatter: dateFormatter, width: '200px' , istrue:true},
+      { label: '操作', align: 'center', slot: 'actions' , istrue:true},
       ];
     }else{
       originalArray.value = ["totalActivePowAvgValue", "totalActivePowMaxValue", "totalActivePowMinValue", "totalApparentPowAvgValue", "totalApparentPowMaxValue", "totalApparentPowMinValue", 
@@ -482,19 +481,19 @@ watch(() => queryParams.granularity, (newValues) => {
       ];
     }
     
-  });
+});
 
 const tableColumns = ref([
-    { label: '编号', align: 'center', prop: 'id' , istrue:true},
-    { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
-    { label: '总有功功率(kVA)', align: 'center', prop: 'totalActivePow' , istrue:true, width: '140px'},
-    { label: '总视在功率(kW)', align: 'center', prop: 'totalApparentPow' , istrue:true, width: '140px'},
-    { label: 'a路有功功率', align: 'center', prop: 'aActivePow' , istrue:true},
-    { label: 'a路视在功率', align: 'center', prop: 'aApparentPow' , istrue:true},
-    { label: 'b路有功功率', align: 'center', prop: 'bActivePow' , istrue:true},
-    { label: 'b路视在功率', align: 'center', prop: 'bApparentPow' , istrue:true},
-    { label: '时间', align: 'center', prop: 'createTime', formatter: dateFormatter, width: '200px' , istrue:true},
-    { label: '操作', align: 'center', slot: 'actions' , istrue:true},
+  { label: '编号', align: 'center', prop: 'id' , istrue:true},
+  { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
+  { label: '总有功功率(kVA)', align: 'center', prop: 'totalActivePow' , istrue:true, width: '140px'},
+  { label: '总视在功率(kW)', align: 'center', prop: 'totalApparentPow' , istrue:true, width: '140px'},
+  { label: 'a路有功功率(kVA)', align: 'center', prop: 'aActivePow' , istrue:true, width: '150px'},
+  { label: 'a路视在功率(kW)', align: 'center', prop: 'aApparentPow' , istrue:true, width: '140px'},
+  { label: 'b路有功功率(kVA)', align: 'center', prop: 'bActivePow' , istrue:true, width: '150px'},
+  { label: 'b路视在功率(kW)', align: 'center', prop: 'bApparentPow' , istrue:true, width: '140px'},
+  { label: '时间', align: 'center', prop: 'createTime', formatter: dateFormatter, width: '200px' , istrue:true},
+  { label: '操作', align: 'center', slot: 'actions' , istrue:true},
 ]);
 
 

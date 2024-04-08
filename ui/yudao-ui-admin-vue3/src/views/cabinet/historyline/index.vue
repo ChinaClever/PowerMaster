@@ -511,19 +511,18 @@ const initChart = () => {
   if (chartContainer.value && instance) {
     myChart = echarts.init(chartContainer.value);
     myChart.setOption({
-      // 这里设置 Echarts 的配置项和数据
       title: { text: ''},
       tooltip: { trigger: 'axis' },
       legend: { data: ['总有功功率', '总视在功率']},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-      toolbox: {feature: {saveAsImage: {} }},
+      toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{},saveAsImage: {}}},
       xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
-      yAxis: { type: 'value'},
+      yAxis: { type: 'value', name: "kW"},
       series: [
         {name: '总有功功率', type: 'line', data: totalActivePowData.value},
         {name: '总视在功率', type: 'line', data: totalApparentPowData.value},
-        
       ],
+
 
     });
     // 将 myChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
@@ -543,57 +542,57 @@ window.addEventListener('resize', function() {
 watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
   const [newType, newGranularity] = newValues;
   if (newType == 'total'){
-     if ( newGranularity == 'realtime'){
-    // 销毁原有的图表实例
-    beforeUnmount()
-    // 创建新的图表实例
-    myChart = echarts.init(document.getElementById('chartContainer'));
-    // 设置新的配置对象
-    if (myChart) {
-    myChart.setOption({
-      // 这里设置 Echarts 的配置项和数据
-      title: { text: ''},
-      tooltip: { trigger: 'axis' },
-      legend: { data: ['总有功功率', '总视在功率'] },
-      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-      toolbox: {feature: {saveAsImage: {} }},
-      xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
-      yAxis: { type: 'value'},
-      series: [
-        {name: '总有功功率', type: 'line', data: totalActivePowData.value},
-        {name: '总视在功率', type: 'line', data: totalApparentPowData.value },
-      ]
-    });
-  }
-    }else{
+    if ( newGranularity == 'realtime'){
       // 销毁原有的图表实例
       beforeUnmount()
       // 创建新的图表实例
       myChart = echarts.init(document.getElementById('chartContainer'));
       // 设置新的配置对象
       if (myChart) {
-        myChart.setOption( {
-          title: {text: ''},
-          tooltip: { trigger: 'axis'},
-          legend: { data: ['总平均有功功率', '总最大有功功率', '总最小有功功率','总平均视在功率', '总最大视在功率', '总最小视在功率'],
-                selected: { 总平均有功功率: true, 总最大有功功率: false, 总最小有功功率: false, 总平均视在功率: true, 总最大视在功率: false, 总最小视在功率: false}},
-          grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
-          toolbox: {feature: {saveAsImage: {}}},
-          xAxis: [
-            {type: 'category', boundaryGap: false, data: createTimeData.value}
-          ],
-          yAxis: { type: 'value'},
-          series: [
-            { name: '总平均有功功率', type: 'line',data: totalActivePowAvgValueData.value, lineStyle: {type: 'dashed'}},
-            { name: '总最大有功功率', type: 'line',data: totalActivePowMaxValueData.value, },
-            { name: '总最小有功功率',type: 'line',data: totalActivePowMinValueData.value, },
-            { name: '总平均视在功率',type: 'line',data:  totalApparentPowAvgValueData.value, lineStyle: {type: 'dashed'}},
-            { name: '总最大视在功率', type: 'line', data: totalApparentPowMaxValueData.value, },
-            { name: '总最小视在功率',type: 'line',data:  totalApparentPowMinValueData.value, },
-          ]
-        });
-      }
+      myChart.setOption({
+        // 这里设置 Echarts 的配置项和数据
+        title: { text: ''},
+        tooltip: { trigger: 'axis' },
+        legend: { data: ['总有功功率', '总视在功率'] },
+        grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+        toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{},saveAsImage: {}}},
+        xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
+        yAxis: { type: 'value', name: "kW"},
+        series: [
+          {name: '总有功功率', type: 'line', data: totalActivePowData.value},
+          {name: '总视在功率', type: 'line', data: totalApparentPowData.value },
+        ]
+    });
+  }
+  }else{
+    // 销毁原有的图表实例
+    beforeUnmount()
+    // 创建新的图表实例
+    myChart = echarts.init(document.getElementById('chartContainer'));
+    // 设置新的配置对象
+    if (myChart) {
+      myChart.setOption( {
+        title: {text: ''},
+        tooltip: { trigger: 'axis'},
+        legend: { data: ['总平均有功功率', '总最大有功功率', '总最小有功功率','总平均视在功率', '总最大视在功率', '总最小视在功率'],
+              selected: { 总平均有功功率: true, 总最大有功功率: false, 总最小有功功率: false, 总平均视在功率: true, 总最大视在功率: false, 总最小视在功率: false}},
+        grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
+        toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{},saveAsImage: {}}},
+        xAxis: [
+          {type: 'category', boundaryGap: false, data: createTimeData.value}
+        ],
+        yAxis: { type: 'value', name: "kW"},
+        series: [
+          { name: '总平均有功功率', type: 'line',data: totalActivePowAvgValueData.value, lineStyle: {type: 'dashed'}},
+          { name: '总最大有功功率', type: 'line',data: totalActivePowMaxValueData.value, },
+          { name: '总最小有功功率',type: 'line',data: totalActivePowMinValueData.value, },
+          { name: '总平均视在功率',type: 'line',data:  totalApparentPowAvgValueData.value, lineStyle: {type: 'dashed'}},
+          { name: '总最大视在功率', type: 'line', data: totalApparentPowMaxValueData.value, },
+          { name: '总最小视在功率',type: 'line',data:  totalApparentPowMinValueData.value, },
+        ]
+      });
     }
+  }
   }
 
   if (newType == 'a'){
@@ -610,9 +609,9 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
           tooltip: { trigger: 'axis' },
           legend: { data: ['a路有功功率', 'a路视在功率'] },
           grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-          toolbox: {feature: {saveAsImage: {} }},
+          toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{},saveAsImage: {}}},
           xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
-          yAxis: { type: 'value'},
+          yAxis: { type: 'value', name: "kW"},
           series: [
             {name: 'a路有功功率', type: 'line', data: aActivePowData.value},
             {name: 'a路视在功率', type: 'line', data: aApparentPowData.value },
@@ -632,11 +631,11 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
             legend: { data: ['a路平均有功功率', 'a路最大有功功率', 'a路最小有功功率','a路平均视在功率', 'a路最大视在功率', 'a路最小视在功率'],
                   selected: { a路平均有功功率: true, a路最大有功功率: false, a路最小有功功率: false, a路平均视在功率: true, a路最大视在功率: false, a路最小视在功率: false}},
             grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
-            toolbox: {feature: {saveAsImage: {}}},
+            toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{},saveAsImage: {}}},
             xAxis: [
               {type: 'category', boundaryGap: false, data: createTimeData.value}
             ],
-            yAxis: { type: 'value'},
+            yAxis: { type: 'value', name: "kW"},
             series: [
               { name: 'a路平均有功功率', type: 'line',data: aActivePowAvgValueData.value, lineStyle: {type: 'dashed'}},
               { name: 'a路最大有功功率', type: 'line',data: aActivePowMaxValueData.value, },
@@ -664,9 +663,9 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
           tooltip: { trigger: 'axis' },
           legend: { data: ['b路有功功率', 'b路视在功率'] },
           grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-          toolbox: {feature: {saveAsImage: {} }},
+          toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{},saveAsImage: {}}},
           xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
-          yAxis: { type: 'value'},
+          yAxis: { type: 'value', name: "kW"},
           series: [
             {name: 'b路有功功率', type: 'line', data: bActivePowData.value},
             {name: 'b路视在功率', type: 'line', data: bApparentPowData.value },
@@ -686,11 +685,11 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
             legend: { data: ['b路平均有功功率', 'b路最大有功功率', 'b路最小有功功率','b路平均视在功率', 'b路最大视在功率', 'b路最小视在功率'],
                   selected: { b路平均有功功率: true, b路最大有功功率: false, b路最小有功功率: false, b路平均视在功率: true, b路最大视在功率: false, b路最小视在功率: false}},
             grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
-            toolbox: {feature: {saveAsImage: {}}},
+            toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{},saveAsImage: {}}},
             xAxis: [
               {type: 'category', boundaryGap: false, data: createTimeData.value}
             ],
-            yAxis: { type: 'value'},
+            yAxis: { type: 'value', name: "kW"},
             series: [
               { name: 'b路平均有功功率', type: 'line',data: bActivePowAvgValueData.value, lineStyle: {type: 'dashed'}},
               { name: 'b路最大有功功率', type: 'line',data: bActivePowMaxValueData.value, },

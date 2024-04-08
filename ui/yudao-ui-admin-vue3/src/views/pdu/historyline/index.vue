@@ -450,7 +450,7 @@ const initChart = () => {
       tooltip: { trigger: 'axis' },
       legend: { data: ['总有功功率', '总视在功率']},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-      toolbox: {feature: {saveAsImage: {} }},
+      toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{},saveAsImage: {}}},
       xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
       yAxis: { type: 'value'},
       series: [
@@ -491,7 +491,7 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
           tooltip: { trigger: 'axis' },
           legend: { data: ['总有功功率', '总视在功率'] },
           grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-          toolbox: {feature: {saveAsImage: {} }},
+          toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{},saveAsImage: {}}},
           xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
           yAxis: { type: 'value'},
           series: [
@@ -512,7 +512,7 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
             tooltip: { trigger: 'axis'},
             legend: { data: ['平均有功功率', '最大有功功率', '最小有功功率','平均视在功率', '最大视在功率', '最小视在功率']},
             grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
-            toolbox: {feature: {saveAsImage: {}}},
+            toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{},saveAsImage: {}}},
             xAxis: [
               {type: 'category', boundaryGap: false, data: createTimeData.value}
             ],
@@ -545,7 +545,7 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
               legend: { data: ['电压', '电流', '有功功率', '视在功率'],
                         selected: {  "电压": true, "电流": false, "有功功率": false, "视在功率": false }},
               grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-              toolbox: {feature: {saveAsImage: {} }},
+              toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{},saveAsImage: {}}},
               xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
               yAxis: { type: 'value'},
               series: [
@@ -574,7 +574,7 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
                                     平均视在功率: false, 最大视在功率: false, 最小视在功率: false}
                       },
               grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
-              toolbox: {feature: {saveAsImage: {}}},
+              toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{},saveAsImage: {}}},
               xAxis: [
                 {type: 'category', boundaryGap: false, data: createTimeData.value},
               ],
@@ -617,7 +617,7 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
               legend: { data: ['电压', '电流', '有功功率', '视在功率'],
                         selected: {  "电压": true, "电流": false, "有功功率": false, "视在功率": false }},
               grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-              toolbox: {feature: {saveAsImage: {} }},
+              toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{},saveAsImage: {}}},
               xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
               yAxis: { type: 'value'},
               series: [
@@ -646,7 +646,7 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
                                   平均视在功率: false, 最大视在功率: false, 最小视在功率: false}
                     },
             grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
-            toolbox: {feature: {saveAsImage: {}}},
+            toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{},saveAsImage: {}}},
             xAxis: [
               {type: 'category', boundaryGap: false, data: createTimeData.value},
             ],
@@ -688,7 +688,7 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
           legend: { data: [ '电流', '有功功率', '视在功率'],
                 selected: { "电流": true, "有功功率": false, "视在功率": false }},
           grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-          toolbox: {feature: {saveAsImage: {} }},
+          toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{},saveAsImage: {}}},
           xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
           yAxis: { type: 'value'},
           series: [
@@ -715,7 +715,7 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
                       selected: { 平均电流: false, 最大电流: false, 最小电流: false, 平均视在功率: false, 最大视在功率: false, 最小视在功率: false}
                     },
             grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
-            toolbox: {feature: {saveAsImage: {}}},
+            toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{},saveAsImage: {}}},
             xAxis: [
               {type: 'category', boundaryGap: false, data: createTimeData.value},
             ],

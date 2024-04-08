@@ -285,9 +285,9 @@ const initChart = () => {
       tooltip: { trigger: 'axis' },
       legend: { data: []},
       grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true},
-      toolbox: {feature: {saveAsImage: {} }},
+      toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{},saveAsImage: {}}},
       xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
-      yAxis: { type: 'value', name: "kWh", nameTextStyle: {fontSize:"16px"},},
+      yAxis: { type: 'value', name: "kWh"},
       series: [{name: '耗电量', type: 'line', data: eqData.value}],
 
     });
@@ -302,7 +302,7 @@ const initChart = () => {
       title: { text: '机架耗电量排行', top: -4},
       tooltip: { trigger: 'axis',  axisPointer: { type: "shadow"} },
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-      toolbox: {feature: {saveAsImage: {} }},
+      toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{},saveAsImage: {}}},
       xAxis: {
         type: "value",
         axisLine: {
