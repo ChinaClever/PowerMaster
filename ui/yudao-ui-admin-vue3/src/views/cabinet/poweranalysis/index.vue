@@ -39,9 +39,9 @@
              @change="toggleCollapse" />
          </el-form-item>
 
-         <el-form-item label="时间段" prop="createTime">
+         <el-form-item label="时间段" prop="searchTime">
            <el-date-picker
-             v-model="queryParams.createTime"
+             v-model="queryParams.searchTime"
              value-format="YYYY-MM-DD HH:mm:ss"
              type="daterange"
              start-placeholder="开始日期"
@@ -206,10 +206,8 @@ const total = ref(0) // 列表的总页数
 const queryParams = reactive({
  pageNo: 1,
  pageSize: 10,
- id: undefined,
  granularity: 'day',
- ipAddr: undefined,
- createTime: undefined,
+ searchTime: undefined,
 })
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
