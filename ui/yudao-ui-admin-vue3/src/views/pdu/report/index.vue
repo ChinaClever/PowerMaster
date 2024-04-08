@@ -295,7 +295,7 @@ const pduInfo = ref({
 })
 
 //柱状图宽度
-const barWid = ref(50);
+const barWid = ref(60);
 
 //折线图数据
 interface EqData {

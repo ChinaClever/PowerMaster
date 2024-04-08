@@ -281,7 +281,7 @@ let treeWidth = ref(3)
 let isCollapsed = ref(0);
 
 //柱状图宽度
-const barWid = ref(50);
+const barWid = ref(60);
 
 const cabinetInfo = ref({
   alarm : 6,

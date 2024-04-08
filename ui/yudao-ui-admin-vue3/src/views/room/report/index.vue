@@ -273,7 +273,7 @@ let isCollapsed = ref(0);
 
 
 //柱状图宽度
-const barWid = ref(50);
+const barWid = ref(60);
 
 //产生元素为200-500之间随机整数的数组
 const generateRandomIntegers = (n: number): number[] => {
