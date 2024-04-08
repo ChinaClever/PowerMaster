@@ -48,44 +48,45 @@
              class="!w-210px"
            />
          </el-form-item>
+         <el-text size="large">
+          报警次数：{{ pduInfo.alarm }}
+         </el-text>
          
        </el-form>
       <el-collapse  v-model="activeNames">
-        <el-collapse-item title="机柜信息" name="1">
+        <el-collapse-item title="PDU信息" name="1">
           <el-row class="text-container"> 
             <el-col :span="8" >
               <div style="font-size: 30px;">
-                机房名称 {{ roomInfo.name }}<br/>
-                类型 {{ roomInfo.type }}<br/>
-                IT柜总数 {{ roomInfo.ITTotal }}<br/>
-                IT柜空闲数 {{ roomInfo.ITNotUse }}<br/>
-                IT柜报警数 {{ roomInfo.ITAlarm  }}<br/>
-                容量 {{ roomInfo.pow_capacity }}kW<br/>
+                PDU名称 {{ pduInfo.name }}<br/>
+                运行状态 {{ pduInfo.statuses }}<br/>
+                网络地址 {{ pduInfo.dev_key }}<br/>
+                所属机房 {{ pduInfo.owner }} <br/>
+
               </div>
             </el-col>
             <el-col :span="6">
-              <div style="font-size: 29px;">
-                用电量 {{ roomInfo.eq }}kW<br/>
-                总视在功率(最大) {{ roomInfo.total_apparent_pow_max_value }}kWh  <br/>
-                最大温度 {{ roomInfo.tem_max_value }}°C<br/>
-                最大湿度 {{ roomInfo.hum_max_value }}%<br/>
-                平衡度 {{ roomInfo.balance }} <br/>
-                负载百分比 {{ roomInfo.loadPer }}%<br/>
+              <div style="font-size: 28px;">
+                用电量 {{ pduInfo.eq }}kW<br/>
+                总视在功率(最大) {{ pduInfo.total_apparent_pow_max_value }}kW  <br/>
+                总有功功率(最大) {{ pduInfo.total_pow_max_value }}kVA  <br/>
+                总电能(最大) {{ pduInfo.ele }}kWh  <br/>
+                最大温度 {{ pduInfo.tem_max_value }}°C<br/>
               </div>
             </el-col> 
-            <el-col :span="10">
+            <!-- <el-col :span="10">
               <el-row justify="center">
-                <el-col  :span="6">机房IT总视在功率</el-col>
+                <el-col  :span="6">服务器IT总视在功率</el-col>
                 <el-col  :span="6">&nbsp;</el-col>
-              </el-row>           
+              </el-row>
               <el-row>
                 <div ref="serChartContainer" id="serChartContainer" style="width: 23vw; height: 30vh"></div>  
               </el-row>
-            </el-col>
+            </el-col> -->
           </el-row>
          
         </el-collapse-item>
-        <el-collapse-item title="机房耗电排名" name="2">
+        <el-collapse-item title="耗电排名(日期)" name="2">
           <el-form-item label="颗粒度" prop="type">
            <el-select
              v-model="queryParams.eqGranularity"
@@ -97,40 +98,12 @@
              <el-option label="月" value="month" />
             </el-select>
           </el-form-item>
+
             <div ref="rankChartContainer" id="rankChartContainer" style="width: 75vw; height: 58vh;"></div>
+
         </el-collapse-item>
-        <el-collapse-item title="机柜列耗电排名" name="3">
-          <el-form
-            class="-mb-15px"
-            :model="queryParams"
-            ref="queryFormRef"
-            :inline="true"
-            label-width="120px"
-          >
-            <el-form-item label="颗粒度" prop="type">
-            <el-select
-              v-model="queryParams.cabinetType"
-              placeholder="请选择机柜/机柜列"
-              class="!w-120px"
-            >
-                <el-option label="机柜列" value="cabinetColumn" />
-                <el-option label="机柜" value="cabinet" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="显示数量" prop="type">
-            <el-select
-              v-model="queryParams.cabinetNumber"
-              placeholder="请选择数量"
-              class="!w-120px"
-            >
-                <el-option label="10" value= 10 />
-                <el-option label="7" value= 7 />
-              </el-select>
-            </el-form-item>
-          </el-form>
-          <div ref="cabinetRankChartContainer" id="cabinetRankChartContainer" style="width: 75vw; height: 58vh;"></div>
-        </el-collapse-item>
-        <el-collapse-item title="功率曲线" name="4">
+
+        <el-collapse-item title="功率曲线" name="3">
           <el-form-item label="颗粒度" prop="type">
            <el-select
              v-model="queryParams.powGranularity"
@@ -145,6 +118,19 @@
           <ContentWrap style="overflow: visible;">
             <div ref="powChartContainer" id="powChartContainer" style="width: 70vw; height: 58vh;"></div>
           </ContentWrap>
+        </el-collapse-item>
+        <el-collapse-item title="输出位耗电排名" name="4">
+            <el-form-item label="显示数量" prop="type">
+            <el-select
+              v-model="queryParams.outputNumber"
+              placeholder="请选择数量"
+              class="!w-120px"
+            >
+                <el-option label="10" value= 10 />
+                <el-option label="7" value= 7 />
+              </el-select>
+            </el-form-item>
+          <div ref="outputRankChartContainer" id="outputRankChartContainer" style="width: 75vw; height: 58vh;"></div>
         </el-collapse-item>
         <el-collapse-item title="温度曲线" name="5">
           <el-form-item label="颗粒度" prop="type">
@@ -171,109 +157,12 @@
 
 <script setup lang="ts">
 // import download from '@/utils/download'
-// import { PDUDeviceApi} from '@/api/pdu/pdudevice'
+// import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 import * as echarts from 'echarts';
 import { ElTree } from 'element-plus'
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
-
-const activeNames = ref(["1","2","3","4","5"])          
-
-const queryParams = reactive({
-  pageNo: 1,
-  pageSize: 10,
-  id: undefined,
-  type: 'total',
-  eqGranularity:"day",
-  powGranularity : "hour",
-  temGranularity : "hour",
-  cabinetType : "cabinetColumn",
-  cabinetNumber: 10,
-  ipAddr: undefined, 
-  createTime: undefined,
-})
-
-const serverRoomArr =  [
-  {
-    value: '1',
-    label: '机房1',
-    // children: [ 
-    //   {
-    //     value: '1-1',
-    //     label: '母线1',
-    //     children: [
-    //     {
-    //       value: '1-1-1',
-    //       label: '机柜1',
-    //     },
-    //     {
-    //       value: '1-1-2',
-    //       label: '机柜2',
-    //     },]
-    //   },
-    // ],
-  },
-  {
-    value: '2',
-    label: '机房2',
-    // children: [
-    //   {
-    //     value: '2-1',
-    //     label: '母线1',
-    //     children: [
-    //     {
-    //       value: '2-1-1',
-    //       label: '机柜1',
-    //     },
-    //     {
-    //       value: '2-1-2',
-    //       label: '机柜2',
-    //     },]
-    //   },
-    // ],
-  },
-  {
-    value: '3',
-    label: '机房3',
-    // children: [
-    //   {
-    //     value: '3-1',
-    //     label: '母线1',
-    //     children: [
-    //     {
-    //       value: '3-1-1',
-    //       label: '机柜1',
-    //     },
-    //     {
-    //       value: '3-1-2',
-    //       label: '机柜2',
-    //     },]
-    //   },
-    //   {
-    //     value: '3-2',
-    //     label: '母线2',
-    //     children: [
-    //     {
-    //       value: '3-1-1',
-    //       label: '机柜1',
-    //     },
-    //     {
-    //       value: '3-1-2',
-    //       label: '机柜2',
-    //     },]
-    //   },
-    // ],
-  },
-]
-
-//折叠功能
-let treeWidth = ref(3)
-let isCollapsed = ref(0);
-
-
-//柱状图宽度
-const barWid = ref(50);
 
 //产生元素为200-500之间随机整数的数组
 const generateRandomIntegers = (n: number): number[] => {
@@ -299,21 +188,114 @@ const generateShuffledStrings = (n: number,name : string): string[] => {
   return strings;
 }
 
+const activeNames = ref(["1","2","3","4","5"])
 
-const roomInfo = ref({
-  name : "机房1",
-  type : "xx",
-  ITTotal : 200,
-  ITNotUse : 20,
-  ITAlarm : 10,
-  pow_capacity : "2500",
+const queryParams = reactive({
+  pageNo: 1,
+  pageSize: 10,
+  id: undefined,
+  type: 'total',
+  eqGranularity:"day",
+  powGranularity : "hour",
+  temGranularity : "hour",
+  outputNumber : 10,
+  ipAddr: undefined,
+  createTime: undefined,
+})
+
+const serverRoomArr =  [
+  {
+    value: '1',
+    label: '机房1',
+    children: [
+      {
+        value: '1-1',
+        label: '机柜1',
+        children: [
+        {
+          value: '1-1-1',
+          label: 'PDU1',
+        },
+        {
+          value: '1-1-2',
+          label: 'PDU2',
+        },]
+      },
+    ],
+  },
+  {
+    value: '2',
+    label: '机房2',
+    children: [
+      {
+        value: '2-1',
+        label: '机柜1',
+        children: [
+        {
+          value: '2-1-1',
+          label: 'PDU1',
+        },
+        {
+          value: '2-1-2',
+          label: 'PDU2',
+        },]
+      },
+    ],
+  },
+  {
+    value: '3',
+    label: '机房3',
+    children: [
+      {
+        value: '3-1',
+        label: '机柜1',
+        children: [
+        {
+          value: '3-1-1',
+          label: 'PDU1',
+        },
+        {
+          value: '3-1-2',
+          label: 'PDU2',
+        },]
+      },
+      {
+        value: '3-2',
+        label: '机柜2',
+        children: [
+        {
+          value: '3-1-1',
+          label: 'PDU1',
+        },
+        {
+          value: '3-1-2',
+          label: 'PDU2',
+        },]
+      },
+    ],
+  },
+]
+
+//折叠功能
+let treeWidth = ref(3)
+let isCollapsed = ref(0);
+
+
+const pduInfo = ref({
+  alarm : 6,
+  name : "PDU1",
+  statuses : "空闲设备",
+  dev_key : "192.168.1.1-0",
+  owner :"机房1-机柜1",
   eq : "200",
   total_apparent_pow_max_value : "200",
+  total_pow_max_value : "200",
+  ele:"112",
   tem_max_value : "25",
-  hum_max_value : "75",
-  balance : "50",
-  loadPer : "80"
 })
+
+//柱状图宽度
+const barWid = ref(50);
 
 //折线图数据
 interface EqData {
@@ -351,27 +333,27 @@ interface ServerData {
 }
 const serverData = ref<ServerData>({
   nameAndMax : [
-    { name: '机柜列1', max: 250 },
-    { name: '机柜列2', max: 250 },
-    { name: '机柜列3', max: 250 },
-    { name: '机柜列4', max: 250 },
-    { name: '机柜列5', max: 250 },
-    { name: '机柜列6', max: 250 },
-    { name: '机柜列7', max: 250 },
-    { name: '机柜列8', max: 250 }
+    { name: '服务器1', max: 250 },
+    { name: '服务器2', max: 250 },
+    { name: '服务器3', max: 250 },
+    { name: '服务器4', max: 250 },
+    { name: '服务器5', max: 250 },
+    { name: '服务器6', max: 250 },
+    { name: '服务器7', max: 250 },
+    { name: '服务器8', max: 250 }
   ],
   value: [200, 180, 170, 220, 167, 189,200,150]
 })
 
-interface CabinetEqData {
-  eq: number[];
+interface OutputRankData {
   name: string[];
+  eq: number[];
 }
-const cabinetEqData = ref<CabinetEqData>({
-  eq : [],
-  name : []
-})
 
+const outputRankData = ref<OutputRankData>({
+  name : [],
+  eq : [],
+})
 
 //树型控件
 interface Tree {
@@ -474,9 +456,9 @@ const getList = () => {
           temCrateTime : "2024-03-13 14:00:00",
       },
     ];
-    
+
     eqData.value.eq = fakeData.map((item) => item.eq);
-    eqData.value.time = fakeData.map((item) => item.eqCreateTime); 
+    eqData.value.time = fakeData.map((item) => item.eqCreateTime);
 
     powData.value.total_apparent_pow_avg_value = fakeData.map((item) => item.total_apparent_pow_avg_value);
     powData.value.total_active_pow_avg_value = fakeData.map((item) => item.total_active_pow_avg_value);
@@ -485,9 +467,8 @@ const getList = () => {
     temData.value.tem_avg_value = fakeData.map((item) => item.tem_avg_value);
     temData.value.time = fakeData.map((item) => item.temCrateTime);
 
-    cabinetEqData.value.eq = generateRandomIntegers(queryParams.cabinetNumber);
-    const cabinetName = queryParams.cabinetType == "cabinet" ? "机柜" : "机柜列";
-    cabinetEqData.value.name = generateShuffledStrings(queryParams.cabinetNumber,cabinetName);
+    outputRankData.value.name = generateShuffledStrings(queryParams.outputNumber,"服务器");
+    outputRankData.value.eq = generateRandomIntegers(queryParams.outputNumber);
   }finally{
     loading.value = false
   }
@@ -501,8 +482,8 @@ const temChartContainer = ref<HTMLElement | null>(null);
 let temChart = null as echarts.ECharts | null; // 显式声明 temChart 的类型
 const serChartContainer = ref<HTMLElement | null>(null);
 let serChart = null as echarts.ECharts | null; // 显式声明 serChart 的类型
-const cabinetRankChartContainer = ref<HTMLElement | null>(null);
-let cabinetChart = null as echarts.ECharts | null; // 显式声明 cabinetChart 的类型
+const outputRankChartContainer = ref<HTMLElement | null>(null);
+let outputRankChart = null as echarts.ECharts | null; // 显式声明 serChart 的类型
 
 const initChart = () => {
   const instance = getCurrentInstance();
@@ -523,22 +504,22 @@ const initChart = () => {
     // 将 rankChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }
-  if (cabinetRankChartContainer.value && instance) {
-    cabinetChart = echarts.init(cabinetRankChartContainer.value);
-    cabinetChart.setOption({
+  if (outputRankChartContainer.value && instance) {
+    outputRankChart = echarts.init(outputRankChartContainer.value);
+    outputRankChart.setOption({
       // 这里设置 Echarts 的配置项和数据
       title: { text: ''},
       tooltip: { trigger: 'axis'},
       legend: { data: ['耗电量']},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-      xAxis: {type: 'category' ,data:cabinetEqData.value.name},
+      xAxis: {type: 'category' ,data:outputRankData.value.name},
       yAxis: { type: 'value'},
       series: [
-        {name:"耗电量",  type: 'bar', data: cabinetEqData.value.eq, label: { show: true, position: 'top' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
+        {name:"耗电量",  type: 'bar', data: outputRankData.value.eq, label: { show: true, position: 'top' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
       ],
     });
-    // 将 cabinetChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
-    instance.appContext.config.globalProperties.cabinetChart = cabinetChart;
+    // 将 outputRankChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+    instance.appContext.config.globalProperties.outputRankChart = outputRankChart;
   }
   if (powChartContainer.value && instance) {
     powChart = echarts.init(powChartContainer.value);
@@ -596,8 +577,8 @@ const beforeRankUnmount = () => {
     rankChart?.dispose(); // 销毁图表实例
 };
 
-const beforeCabinetUnmount = () => {
-  cabinetChart?.dispose(); // 销毁图表实例
+const beforeSerRankUnmount = () => {
+    outputRankChart?.dispose(); // 销毁图表实例
 };
 
 // const beforePowUnmount = () => {
@@ -616,93 +597,40 @@ window.addEventListener('resize', function() {
     rankChart?.resize(); 
     powChart?.resize(); 
     temChart?.resize(); 
-    cabinetChart?.resize(); 
 });
 
 watch(filterText, (val) => {
   treeRef.value!.filter(val)
 })
 
-watch([() => queryParams.cabinetNumber], ([newCabinetNumber]) => {
+watch([() => queryParams.outputNumber], ([newOutPutNum]) => {
     // 销毁原有的图表实例
-    beforeCabinetUnmount()
+    beforeSerRankUnmount();
     // 创建新的图表实例
-    cabinetChart = echarts.init(document.getElementById('cabinetRankChartContainer'));
-    cabinetEqData.value.eq = generateRandomIntegers(newCabinetNumber);
-    const cabinetName = queryParams.cabinetType == "cabinet" ? "机柜" : "机柜列";
-    cabinetEqData.value.name = generateShuffledStrings(newCabinetNumber,cabinetName);
+    outputRankChart = echarts.init(document.getElementById('outputRankChartContainer'));
+    outputRankData.value.eq = generateRandomIntegers(newOutPutNum);
+    outputRankData.value.name = generateShuffledStrings(newOutPutNum,"服务器");
     // 设置新的配置对象
-    if (cabinetChart) {
-      cabinetChart.setOption({
-      // 这里设置 Echarts 的配置项和数据
-      title: { text: ''},
-      tooltip: { trigger: 'axis'},
-      legend: { data: ['耗电量']},
-      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-      xAxis: {type: 'category' ,data:cabinetEqData.value.name},
-      yAxis: { type: 'value'},
-      series: [
-        {name:"耗电量",  type: 'bar', data: cabinetEqData.value.eq, label: { show: true, position: 'top' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
-      ],
+    if (outputRankChart) {
+      outputRankChart.setOption({
+        // 这里设置 Echarts 的配置项和数据
+        title: { text: ''},
+        tooltip: { trigger: 'axis'},
+        legend: { data: ['耗电量']},
+        toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+        xAxis: {type: 'category' ,data:outputRankData.value.name},
+        yAxis: { type: 'value'},
+        series: [
+          {name:"耗电量",  type: 'bar', data: outputRankData.value.eq, label: { show: true, position: 'top' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
+        ],
       });
     }
     
 })
 
-watch([() => queryParams.cabinetType], ([newCabinetType]) => {
-    if ( newCabinetType == 'cabinetColumn' ){
-      // 销毁原有的图表实例
-      beforeCabinetUnmount()
-      // 创建新的图表实例
-      cabinetChart = echarts.init(document.getElementById('cabinetRankChartContainer'));
-      getList();
-      // 设置新的配置对象
-      if (cabinetChart) {
-        cabinetChart.setOption({
-        // 这里设置 Echarts 的配置项和数据
-        title: { text: ''},
-        tooltip: { trigger: 'axis'},
-        legend: { data: ['耗电量']},
-        toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-        xAxis: {type: 'category' ,data:cabinetEqData.value.name},
-        yAxis: { type: 'value'},
-        series: [
-          {name:"耗电量",  type: 'bar', data: cabinetEqData.value.eq, label: { show: true, position: 'top' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
-        ],
-        });
-      }
-    }else if( newCabinetType == 'cabinet' ){
-      // 销毁原有的图表实例
-      beforeCabinetUnmount()
-      // 创建新的图表实例
-      cabinetChart = echarts.init(document.getElementById('cabinetRankChartContainer'));
-      cabinetEqData.value.eq = generateRandomIntegers(queryParams.cabinetNumber);
-      cabinetEqData.value.name = generateShuffledStrings(queryParams.cabinetNumber,"机柜");
-      // 设置新的配置对象
-      if (cabinetChart) {
-        cabinetChart.setOption({
-        // 这里设置 Echarts 的配置项和数据
-        title: { text: ''},
-        tooltip: { trigger: 'axis'},
-        legend: { data: ['耗电量']},
-        toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-        xAxis: {type: 'category' ,data:cabinetEqData.value.name},
-        yAxis: { type: 'value'},
-        series: [
-          {name:"耗电量",  type: 'bar', data: cabinetEqData.value.eq, label: { show: true, position: 'top' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
-        ],
-        });
-      }
-    } else {
-      //未变化，什么也不做
-    }
-})
-
 // 监听类型颗粒度
-//newCabinetType, newEqGranularity, powGranularity, temGranularity
-watch([() => queryParams.eqGranularity], ([newEqGranularity]) => {
-    // const [ newPowGranularity] = powNew;
-    // const [ newTemGranularity] = temNew;
+watch([ () => queryParams.eqGranularity], (eqNew) => {
+    const [ newEqGranularity] = eqNew;
     // 处理参数变化
 
     if ( newEqGranularity == 'day'){
@@ -739,7 +667,7 @@ watch([() => queryParams.eqGranularity], ([newEqGranularity]) => {
           title: { text: ''},
           tooltip: { trigger: 'axis'},
           legend: { data: ['耗电量']},
-          toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }, barWidth: barWid.value},
+          toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
           xAxis: {type: 'category' ,data:eqData.value.time},
           yAxis: { type: 'value'},
           series: [
@@ -747,7 +675,7 @@ watch([() => queryParams.eqGranularity], ([newEqGranularity]) => {
           ],
         });
       }
-    }else if (newEqGranularity == 'month'){
+    }else{
       // 销毁原有的图表实例
       beforeRankUnmount()
       // 创建新的图表实例
@@ -768,14 +696,11 @@ watch([() => queryParams.eqGranularity], ([newEqGranularity]) => {
           ],
         });
       }
-    } else {
-      //未变化，什么也不做
-
     }
     
 });
 
-// // 下拉框选项数组
+// 下拉框选项数组
 // const deviceStatus = ref([])
 
 // const message = useMessage() // 消息弹窗
@@ -846,7 +771,7 @@ const queryFormRef = ref() // 搜索的表单
 // }
 
 /** 添加/修改操作 */
-// const formRef = ref()
+const formRef = ref()
 // const openForm = (type: string, id?: number) => {
 //   formRef.value.open(type, id)
 // }

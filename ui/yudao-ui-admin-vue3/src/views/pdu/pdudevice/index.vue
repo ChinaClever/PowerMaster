@@ -90,10 +90,10 @@
           <el-table-column label="编号" align="center" prop="id" />
           <el-table-column label="运行状态" align="center" prop="status" >
             <template #default="scope">
-              <el-tag type="primary" v-if="scope.row.status == 0">空闲设备</el-tag>
-              <el-tag type="primary" v-if="scope.row.status == 1">报警设备</el-tag>
-              <el-tag type="primary" v-if="scope.row.status == 2">离线设备</el-tag>
-              <el-tag type="primary" v-if="scope.row.status == 3">未绑定设备</el-tag>
+              <el-tag  v-if="scope.row.status == 0">空闲设备</el-tag>
+              <el-tag type="danger" v-if="scope.row.status == 1">报警设备</el-tag>
+              <el-tag type="warning" v-if="scope.row.status == 2">离线设备</el-tag>
+              <el-tag type="info" v-if="scope.row.status == 3">未绑定设备</el-tag>
             </template>
           </el-table-column>
           <el-table-column label="总视在功率" align="center" prop="apparent_pow" width="130px" />
@@ -311,7 +311,7 @@ const exportLoading = ref(false) // 导出的加载中
 //   }
 // }
 
-const toPDUDisplayScreen = (row, column, event) =>{
+const toPDUDisplayScreen = (row, column) =>{
   if(column.label == "网络地址"){
     push('/pdu/pdudevice/displayscreen?dev_key=' + row.dev_key + '&location=' + row.location);
   }
