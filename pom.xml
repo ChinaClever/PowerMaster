@@ -26,6 +26,7 @@
 <!--        <module>yudao-module-erp</module>-->
         <!-- 示例项目 -->
 <!--        <module>yudao-example</module>-->
+        <module>yudao-module-statis</module>
     </modules>
 
     <name>${project.artifactId}</name>
@@ -46,6 +47,7 @@
         <spring.boot.version>2.7.18</spring.boot.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <elasticsearch.version>7.6.2</elasticsearch.version>
     </properties>
 
     <dependencyManagement>

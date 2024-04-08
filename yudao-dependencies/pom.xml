@@ -76,6 +76,7 @@
         <xercesImpl.version>2.12.2</xercesImpl.version>
         <weixin-java.version>4.6.0</weixin-java.version>
         <ureport2.version>2.2.9</ureport2.version>
+        <elasticsearch.version>7.6.2</elasticsearch.version>
     </properties>
 
     <dependencyManagement>
