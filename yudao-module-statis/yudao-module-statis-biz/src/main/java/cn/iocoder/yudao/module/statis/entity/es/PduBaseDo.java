@@ -1,0 +1,96 @@
+package cn.iocoder.yudao.module.statis.entity.es;
+
+import cn.hutool.core.date.DateTime;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+
+import java.time.LocalDateTime;
+
+/**
+ * @Author: chenwany
+ * @Date: 2024/4/2 16:59
+ * @Description: 公共属性
+ */
+@Data
+public class PduBaseDo {
+
+
+    private int id;
+
+    /**
+     * 设备标识
+     */
+
+    @JsonProperty("pdu_id")
+    private int pduId;
+
+
+    /**
+     * 平均有功功率
+     */
+    @JsonProperty("active_pow_avg_value")
+    private float activePowAvgValue;
+
+    /**
+     * 最大有功功率时间
+     */
+    @JsonProperty("active_pow_max_time")
+    private DateTime activePowMaxTime;
+
+    /**
+     * 最大有功功率
+     */
+    @JsonProperty("active_pow_max_value")
+    private float activePowMaxValue;
+
+    /**
+     * 最小有功功率时间
+     */
+    @JsonProperty("active_pow_min_time")
+    private DateTime activePowMinTime;
+
+    /**
+     * 最小有功功率
+     */
+    @JsonProperty("active_pow_min_value")
+    private float activePowMinValue;
+
+
+    /**
+     * 平均视在功率
+     */
+    @JsonProperty("apparent_pow_avg_value")
+    private float apparentPowAvgValue;
+
+    /**
+     * 最大视在功率时间
+     */
+    @JsonProperty("apparent_pow_max_time")
+    private DateTime apparentPowMaxTime;
+
+    /**
+     * 最大视在功率
+     */
+    @JsonProperty("apparent_pow_max_value")
+    private float apparentPowMaxValue;
+
+
+    /**
+     * 最小视在功率时间
+     */
+    @JsonProperty("apparent_pow_min_time")
+    private DateTime apparentPowMinTime;
+
+    /**
+     * 最小视在功率
+     */
+    @JsonProperty("apparent_pow_min_value")
+    private float apparentPowMinValue;
+
+    /**
+     * 创建时间
+     */
+    @JsonProperty("create_time")
+    private DateTime createTime;
+
+}
