@@ -39,6 +39,18 @@
              @change="toggleCollapse" />
          </el-form-item>
 
+          <el-form-item label="总/输出位" prop="createTime">
+          <el-cascader
+            v-model="defaultSelected"
+            collapse-tags
+            :options="selection"
+            collapse-tags-tooltip
+            :show-all-levels="false"
+            @change="cascaderChange"
+            class="!w-120px"
+          />
+          </el-form-item>
+
          <el-form-item label="时间段" prop="searchTime">
            <el-date-picker
              v-model="queryParams.searchTime"
@@ -171,33 +183,78 @@ const defaultProps = {
 watch(filterText, (val) => {
  treeRef.value!.filter(val)
 })
+const message = useMessage() 
 
-const message = useMessage() // 消息弹窗
+// 总/输出位筛选
+const defaultSelected = ref(['total'])
+const selection = ref([
+  {
+    value: "total",
+    label: '总'
+  },
+  {
+    value: "outlet",
+    label: '输出位',
+    children: [
+      { value: "输出位1", label: '输出位1' },
+      { value: "输出位2", label: '输出位2' },
+      { value: "输出位3", label: '输出位3' },
+      { value: "输出位4", label: '输出位4' },
+      { value: "输出位5", label: '输出位5' },
+      { value: "输出位6", label: '输出位6' },
+      { value: "输出位7", label: '输出位7' },
+      { value: "输出位8", label: '输出位8' },
+      { value: "输出位9", label: '输出位9' },
+      { value: "输出位10", label: '输出位10' },
+    ],
+  },
 
-const loading = ref(true) // 列表的加载中
+])
+
+// 生成指定范围内的随机整数
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+const cascaderChange = (select) => {
+  if (select[0] === 'outlet'){
+    list.value = [];
+    for (let i = 1; i <= 10; i++) {
+        const ele = getRandomInt(100, 1500); // 生成100到1500之间的随机整数作为总电能数据
+        const location = `机房${Math.ceil(i / 5)}-机柜${i}-PDU${i}-${select[1]}`; 
+        list.value.push({
+            id: i,
+            location: location,
+            ele: ele,
+            createTime: "2024-04-08 09:00:00"
+        });
+    }
+    total.value = 10
+  }else{
+   getList();
+  }
+
+}
+ // 列表
+const loading = ref(true)
 const list = ref<Array<{ 
    id: number; 
    location: string; 
-   totalEle: number;
-   aEle: number;
-   bEle: number;
+   ele: number;
    createTime:string
-}>>([]); // 列表数据
-const total = ref(0) // 列表的总页数
+}>>([]);
+const total = ref(0) 
 const queryParams = reactive({
  pageNo: 1,
  pageSize: 10,
  searchTime: undefined,
 })
-const queryFormRef = ref() // 搜索的表单
-const exportLoading = ref(false) // 导出的加载中
+const queryFormRef = ref()
+const exportLoading = ref(false)
 
 const tableColumns = ref([
    { label: '编号', align: 'center', prop: 'id' , istrue:true},
    { label: '位置', align: 'center', prop: 'location' , istrue:true},
-   { label: '总电能(kWh)', align: 'center', prop: 'totalEle' , istrue:true},
-   { label: 'a路电能(kWh)', align: 'center', prop: 'aEle' , istrue:true},
-   { label: 'b路电能(kWh)', align: 'center', prop: 'bEle' , istrue:true},
+   { label: '电能(kWh)', align: 'center', prop: 'ele' , istrue:true},
    { label: '创建时间', align: 'center', prop: 'createTime', formatter: dateFormatter, istrue:true},
 ]);
 
@@ -209,82 +266,62 @@ const getList = async () => {
     const fakeData = [
     {
       id: 1,
-      location: "机房1-机柜1",
-      totalEle: 500,
-      aEle: 250,
-      bEle: 250,
+      location: "机房1-机柜1-PDU1",
+      ele: 500,
       createTime: "2024-04-08 09:00:00"
     },
     {
     id: 2,
-    location: "机房1-机柜2",
-    totalEle: 800,
-    aEle: 400,
-    bEle: 400,
+    location: "机房1-机柜2-PDU3",
+    ele: 800,
     createTime: "2024-04-08 10:30:00"
     },
     {
     id: 3,
-    location: "机房1-机柜3",
-    totalEle: 1200,
-    aEle: 600,
-    bEle: 600,
+    location: "机房1-机柜3-PDU2",
+    ele: 1200,
     createTime: "2024-04-08 14:00:00"
     },
     {
     id: 4,
-    location: "机房1-机柜4",
-    totalEle: 300,
-    aEle: 150,
-    bEle: 150,
+    location: "机房1-机柜4-PDU1",
+    ele: 300,
     createTime: "2024-04-08 09:30:00"
     },
     {
     id: 5,
-    location: "机房2-机柜1",
-    totalEle: 1000,
-    aEle: 500,
-    bEle: 500,
+    location: "机房2-机柜1-PDU1",
+    ele: 1000,
     createTime: "2024-04-08 13:00:00"
     },
     {
     id: 6,
-    location: "机房2-机柜2",
-    totalEle: 600,
-    aEle: 300,
-    bEle: 300,
+    location: "机房2-机柜2-PDU2",
+    ele: 600,
     createTime: "2024-04-08 16:00:00"
     },
     {
     id: 7,
-    location: "机房2-机柜3",
-    totalEle: 400,
-    aEle: 200,
-    bEle: 200,
+    location: "机房2-机柜3-PDU3",
+    ele: 400,
     createTime: "2024-04-08 11:30:00"
     },
     {
     id: 8,
-    location: "机房2-机柜4",
-    totalEle: 700,
-    aEle: 350,
-    bEle: 350,
+    location: "机房2-机柜4-PDU6",
+    ele: 700,
     createTime: "2024-04-08 15:00:00"
     },
     {
     id: 9,
-    location: "机房2-机柜5",
-    totalEle: 900,
-    aEle: 450,
-    bEle: 450,
+    location: "机房2-机柜5-PDU4",
+    ele: 900,
     createTime: "2024-04-08 12:45:00"
     },
     {
     id: 10,
-    location: "机房2-机柜6",
-    totalEle: 200,
-    aEle: 100,
-    bEle: 100,
+    location: "机房2-机柜6-PDU5",
+    ele: 200,
     createTime: "2024-04-08 14:30:00"
     }
     ];

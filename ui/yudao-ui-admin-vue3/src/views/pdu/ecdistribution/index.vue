@@ -38,6 +38,20 @@
              inactive-value="0" 
              @change="toggleCollapse" />
          </el-form-item>
+
+         
+         <el-form-item label="总/输出位" prop="createTime">
+          <el-cascader
+            v-model="defaultSelected"
+            collapse-tags
+            :options="selection"
+            collapse-tags-tooltip
+            :show-all-levels="false"
+            @change="cascaderChange"
+            class="!w-120px"
+          />
+          </el-form-item>
+
          <el-form-item label="时间段" prop="createTime">
            <el-date-picker
              v-model="queryParams.createTime"
@@ -92,9 +106,8 @@ defineOptions({ name: 'ECDistribution' })
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  id: undefined,
   type: 'total',
-  granularity: '天',
+  granularity: 'day',
   ipAddr: undefined,
   createTime: undefined,
 })
@@ -181,7 +194,57 @@ const defaultProps = {
 watch(filterText, (val) => {
  treeRef.value!.filter(val)
 })
-const loading = ref(true) // 列表的加载中
+const loading = ref(true) 
+
+// 总/输出位筛选
+const defaultSelected = ref(['total'])
+const selection = ref([
+  {
+    value: "total",
+    label: '总'
+  },
+  {
+    value: "outlet",
+    label: '输出位',
+    children: [
+      { value: "输出位1", label: '输出位1' },
+      { value: "输出位2", label: '输出位2' },
+      { value: "输出位3", label: '输出位3' },
+      { value: "输出位4", label: '输出位4' },
+      { value: "输出位5", label: '输出位5' },
+      { value: "输出位6", label: '输出位6' },
+      { value: "输出位7", label: '输出位7' },
+      { value: "输出位8", label: '输出位8' },
+      { value: "输出位9", label: '输出位9' },
+      { value: "输出位10", label: '输出位10' },
+    ],
+  },
+
+])
+
+function getRandomInt(): number {
+    return Math.floor(Math.random() * (250 - 180 + 1)) + 180;
+}
+const cascaderChange = (select) => {
+  if (select[0] === 'outlet'){
+    let data : number[] = [];
+    for (let i = 0; i < 10; i++) {
+      data.push(getRandomInt());
+    }
+    console.log(data)
+    myChart?.setOption({
+      title: { text: select[1]+'总耗电量200kWh', top: -4},
+      series: [{ data: data }]
+    });
+  }else{
+    myChart?.setOption({
+      title: { text: 'PDU1总耗电量2000kWh', top: -4},
+      xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
+      series: [{name: '耗电量', type: 'line', data: eqData.value}],
+    });
+  }
+
+}
 
 // 处理折线图数据
 const startEleData = ref<number[]>([]);
@@ -191,11 +254,10 @@ const endTimeData = ref<string[]>([]);
 const eqData = ref<number[]>([]);
 const createTimeData = ref<string[]>([]);
 
-/** 查询列表 */
+// 生成假数据
 const getList = () => {
 loading.value = true
  try {
-    // 生成假数据
     const fakeData = [
       {
         id: 1,
@@ -272,16 +334,15 @@ loading.value = true
 }
 
 const chartContainer = ref<HTMLElement | null>(null);
-let myChart = null as echarts.ECharts | null; // 显式声明 myChart 的类型
+let myChart = null as echarts.ECharts | null; 
 const rankContainer = ref<HTMLElement | null>(null);
-let myChart1 = null as echarts.ECharts | null; // 显式声明 myChart 的类型
+let rankChart = null as echarts.ECharts | null; 
 const initChart = () => {
   const instance = getCurrentInstance();
   if (chartContainer.value && instance) {
     myChart = echarts.init(chartContainer.value);
     myChart.setOption({
-      // 这里设置 Echarts 的配置项和数据
-      title: { text: '机柜1总耗电量5100kWh', top: -4},
+      title: { text: 'PDU1总耗电量2000kWh', top: -4},
       tooltip: { trigger: 'axis' },
       legend: { data: []},
       grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true},
@@ -291,15 +352,14 @@ const initChart = () => {
       series: [{name: '耗电量', type: 'line', data: eqData.value}],
 
     });
-    // 将 myChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
     instance.appContext.config.globalProperties.myChart = myChart;
   }
 
   if (rankContainer.value && instance) {
-    myChart1 = echarts.init(rankContainer.value);
-    myChart1.setOption({
+    rankChart = echarts.init(rankContainer.value);
+    rankChart.setOption({
       // 这里设置 Echarts 的配置项和数据
-      title: { text: '机架耗电量排行', top: -4},
+      title: { text: '输出位耗电量排行', top: -4},
       tooltip: { trigger: 'axis',  axisPointer: { type: "shadow"} },
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{},saveAsImage: {}}},
@@ -317,7 +377,7 @@ const initChart = () => {
       },
       yAxis: {
         type: "category",
-        data: [ "机架1", "机架2", "机架3", "机架4", "机架5",],
+        data: [ "输出位1", "输出位2", "输出位3", "输出位4", "输出位5", "输出位6", "输出位7", "输出位8", "输出位9", "输出位10"],
         //升序
         inverse: true,
         splitLine: { show: false },
@@ -344,7 +404,7 @@ const initChart = () => {
           realtimeSort: true,
           name: "耗电量",
           type: "bar",
-          data: eqData.value,
+          data:  [ "200", "100", "135", "154", "120", "245", "200", "212", "191", "200"],
           barWidth: 20,
           barGap: 5,
           smooth: true,
@@ -383,12 +443,7 @@ const initChart = () => {
       animationEasing: "linear",
       animationEasingUpdate: "linear",
     });
-    window.addEventListener('resize', function() {
-        myChart1?.resize(); 
-    });
-
-    // 将 myChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
-    instance.appContext.config.globalProperties.myChart1 = myChart1;
+    instance.appContext.config.globalProperties.rankChart = rankChart;
   }
 };
 
@@ -396,31 +451,25 @@ watch(() => queryParams.granularity, (newValues) => {
   const newGranularity = newValues;
   if ( newGranularity == 'day'){
     myChart?.setOption({
-      title: { text: '机柜1总耗电量5100kWh', top: -4},
-      xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
-      series: [{name: '耗电量', type: 'line', data: eqData.value}],
+      xAxis: {data:createTimeData.value},
+      series: [{data: eqData.value}],
     });
-    myChart1?.setOption({
-      series: [{data:['1400', '1200', '1000', '900', '600']}],
+    rankChart?.setOption({
+      series: [{data: [ "200", "100", "135", "154", "120", "245", "200", "212", "191", "200"]}],
     })
+
   }
   if ( newGranularity == 'week'){
     myChart?.setOption({
-      title: { text: '机柜1总耗电量24210kWh', top: -4},  
-      xAxis: {type: 'category', boundaryGap: false, data:[
-        '2024年3月第一周',
-        '2024年3月第二周',
-        '2024年3月第三周',
-        '2024年3月第四周',]},
-      series: [{name: '耗电量', type: 'line', data:['6000', '6500', '5500', '6210'] }],
+      xAxis: {data:['2024年3月第一周', '2024年3月第二周', '2024年3月第三周', '2024年3月第四周',]},
+      series: [{data:['6000', '6500', '5500', '6210'] }],
     });
-    myChart1?.setOption({
-      series: [{data: ['6000', '6500', '6210', '5800', '5990']}],
+    rankChart?.setOption({
+      series: [{data: [ "2000", "1000", "1305", "1540", "1200", "1245", "1200", "1212", "1191", "1200"]}],
     })
   }
   if ( newGranularity == 'month'){
     myChart?.setOption({
-      title: { text: '机柜1总耗电量150100kWh', top: -4},  
       xAxis: {type: 'category', boundaryGap: false, data:[
         '2024年1月',
         '2024年2月',
@@ -428,10 +477,10 @@ watch(() => queryParams.granularity, (newValues) => {
         '2024年4月',
         '2024年5月',
         '2024年6月',]},
-      series: [{name: '耗电量', type: 'line', data:['24000', '25000', '27000', '24500', '25000', '26000'] }],
+      series: [{data:['24000', '25000', '27000', '24500', '25000', '26000'] }],
     });
-    myChart1?.setOption({
-      series: [{data: ['24000', '25500', '24600', '25100', '26100']}],
+    rankChart?.setOption({
+      series: [{data: [ "6000", "4500", "5305", "5540", "5200", "5245", "5200", "5212", "5191", "5200"]}],
     })
 
   }
@@ -441,9 +490,8 @@ watch(() => queryParams.granularity, (newValues) => {
 
 window.addEventListener('resize', function() {
   myChart?.resize();
-  myChart1?.resize();  
+  rankChart?.resize();  
 });
-
 
 /** 搜索按钮操作 */
 const handleQuery = () => {

@@ -39,6 +39,18 @@
              @change="toggleCollapse" />
          </el-form-item>
 
+         <el-form-item label="总/输出位" prop="createTime">
+          <el-cascader
+            v-model="defaultSelected"
+            collapse-tags
+            :options="selection"
+            collapse-tags-tooltip
+            :show-all-levels="false"
+            @change="cascaderChange"
+            class="!w-120px"
+          />
+          </el-form-item>
+
          <el-form-item label="时间段" prop="searchTime">
            <el-date-picker
              v-model="queryParams.searchTime"
@@ -112,15 +124,6 @@ const serverRoomArr =  [
      {
        value: '1-1',
        label: '柜列1',
-       children: [
-       {
-         value: '1-1-1',
-         label: '机柜1',
-       },
-       {
-         value: '1-1-2',
-         label: '机柜2',
-       },]
      },
    ],
  },
@@ -187,9 +190,9 @@ watch(filterText, (val) => {
  treeRef.value!.filter(val)
 })
 
-const message = useMessage() // 消息弹窗
-
-const loading = ref(true) // 列表的加载中
+const message = useMessage() 
+// 列表
+const loading = ref(true)
 const list = ref<Array<{ 
    id: number; 
    location: string; 
@@ -201,17 +204,77 @@ const list = ref<Array<{
    eq: number;
    bill: number;
    createTime:string
-}>>([]); // 列表数据
-const total = ref(0) // 列表的总页数
+}>>([]); 
+const total = ref(0)
 const queryParams = reactive({
  pageNo: 1,
  pageSize: 10,
+ type: 'total',
  granularity: 'day',
  searchTime: undefined,
 })
-const queryFormRef = ref() // 搜索的表单
-const exportLoading = ref(false) // 导出的加载中
+const queryFormRef = ref()
+const exportLoading = ref(false)
 
+// 总/输出位筛选
+const defaultSelected = ref(['total'])
+const selection = ref([
+  {
+    value: "total",
+    label: '总'
+  },
+  {
+    value: "outlet",
+    label: '输出位',
+    children: [
+      { value: "输出位1", label: '输出位1' },
+      { value: "输出位2", label: '输出位2' },
+      { value: "输出位3", label: '输出位3' },
+      { value: "输出位4", label: '输出位4' },
+      { value: "输出位5", label: '输出位5' },
+      { value: "输出位6", label: '输出位6' },
+      { value: "输出位7", label: '输出位7' },
+      { value: "输出位8", label: '输出位8' },
+      { value: "输出位9", label: '输出位9' },
+      { value: "输出位10", label: '输出位10' },
+    ],
+  },
+
+])
+
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+const cascaderChange = (select) => {
+  if (select[0] === 'outlet'){
+    list.value = [];
+    for (let i = 1; i <= 10; i++) {
+      const startEle = getRandomInt(100, 500);
+      const endEle = getRandomInt(500, 1000); 
+      const eq = endEle - startEle; 
+      const location = `机房${Math.ceil(i / 5)}-机柜${i}-PDU${i}-${select[1]}`; 
+      const bill = getRandomInt(100, 300); 
+      list.value.push({
+          id: i,
+          cabinetId: 101,
+          location: location,
+          startEle: startEle,
+          startTime: "2024-04-08 08:00:00",
+          endEle: endEle,
+          endTime: "2024-04-08 09:00:00",
+          eq: eq,
+          bill: bill,
+          createTime: "2024-04-08 09:00:00",
+      });
+    }
+    total.value = 10
+  }else{
+    getList();
+  }
+
+}
+
+// 柱状图
 const rankChartContainer = ref<HTMLElement | null>(null);
 let rankChart = null as echarts.ECharts | null;
 const eqData = ref<number[]>([]);
@@ -220,11 +283,11 @@ const initChart = () => {
   if (rankChartContainer.value && instance) {
     rankChart = echarts.init(rankChartContainer.value);
     rankChart.setOption({
-      title: { text: '各机柜耗电量'},
+      title: { text: '各PDU耗电量'},
       tooltip: { trigger: 'axis'},
       legend: { data: []},
       toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{}, saveAsImage:{}}},
-      xAxis: {type: 'category', data: ['机柜1', '机柜2', '机柜3', '机柜4', '机柜5']},
+      xAxis: {type: 'category', data: ['PDU1', 'PDU2', 'PDU3', 'PDU4', 'PDU5']},
       yAxis: { type: 'value', name: "kWh"},
       series: [
         {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
@@ -253,7 +316,7 @@ watch(() => queryParams.granularity, (newValues) => {
     const fakeData = [
       {
         id: 1,
-        location: "机房1-机柜1",
+        location: "机房1-机柜1-PDU1",
         cabinetId: 101,
         startEle: 150,
         startTime: "2024-03-01 00:00:00",
@@ -265,7 +328,7 @@ watch(() => queryParams.granularity, (newValues) => {
       },
       {
         id: 2,
-        location: "机房1-机柜2",
+        location: "机房1-机柜2-PDU1",
         cabinetId: 102,
         startEle: 500,
         startTime: "2024-03-07 00:00:00",
@@ -277,7 +340,7 @@ watch(() => queryParams.granularity, (newValues) => {
       },
       {
         id: 3,
-        location: "机房1-机柜2",
+        location: "机房1-机柜2-PDU1",
         cabinetId: 103,
         startEle: 1000,
         startTime: "2024-03-14 00:00:00",
@@ -289,7 +352,7 @@ watch(() => queryParams.granularity, (newValues) => {
       },
       {
         id: 4,
-        location: "机房1-机柜2",
+        location: "机房1-机柜2-PDU1",
         cabinetId: 103,
         startEle: 1000,
         startTime: "2024-03-14 00:00:00",
@@ -301,7 +364,7 @@ watch(() => queryParams.granularity, (newValues) => {
       },
       {
         id: 5,
-        location: "机房1-机柜2",
+        location: "机房1-机柜2-PDU1",
         cabinetId: 102,
         startEle: 500,
         startTime: "2024-03-14 00:00:00",
@@ -325,7 +388,7 @@ watch(() => queryParams.granularity, (newValues) => {
     const fakeData = [
       {
         id: 1,
-        location: "机房1-机柜1",
+        location: "机房1-机柜1-PDU1",
         cabinetId: 101,
         startEle: 140,
         startTime: "2024-03-01 00:00:00",
@@ -337,7 +400,7 @@ watch(() => queryParams.granularity, (newValues) => {
       },
       {
         id: 2,
-        location: "机房1-机柜2",
+        location: "机房1-机柜2-PDU1",
         cabinetId: 102,
         startEle: 500,
         startTime: "2024-03-07 00:00:00",
@@ -349,7 +412,7 @@ watch(() => queryParams.granularity, (newValues) => {
       },
       {
         id: 3,
-        location: "机房1-机柜2",
+        location: "机房1-机柜2-PDU1",
         cabinetId: 103,
         startEle: 1000,
         startTime: "2024-03-14 00:00:00",
@@ -361,7 +424,7 @@ watch(() => queryParams.granularity, (newValues) => {
       },
       {
         id: 4,
-        location: "机房1-机柜5",
+        location: "机房1-机柜5-PDU1",
         cabinetId: 103,
         startEle: 1000,
         startTime: "2024-03-14 00:00:00",
@@ -373,7 +436,7 @@ watch(() => queryParams.granularity, (newValues) => {
       },
       {
         id: 5,
-        location: "机房1-机柜6",
+        location: "机房1-机柜6-PDU1",
         cabinetId: 102,
         startEle: 500,
         startTime: "2024-03-14 00:00:00",
@@ -397,7 +460,7 @@ watch(() => queryParams.granularity, (newValues) => {
 
 const tableColumns = ref([
    { label: '编号', align: 'center', prop: 'id' , istrue:true},
-   { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
+   { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '230px'},
    { label: '开始电能(kWh)', align: 'center', prop: 'startEle' , istrue:true, width: '140px'},
    { label: '开始时间', align: 'center', prop: 'startTime' , formatter: dateFormatter, width: '200px' , istrue:true},
    { label: '结束电能(kWh)', align: 'center', prop: 'endEle' , istrue:true, width: '140px'},
@@ -415,7 +478,7 @@ const getList = async () => {
     const fakeData = [
       {
         id: 1,
-        location: "机房1-机柜1",
+        location: "机房1-机柜1-PDU1",
         cabinetId: 101,
         startEle: 150,
         startTime: "2024-04-08 08:00:00",
@@ -427,7 +490,7 @@ const getList = async () => {
       },
       {
         id: 2,
-        location: "机房1-机柜2",
+        location: "机房1-机柜2-PDU1",
         cabinetId: 102,
         startEle: 120,
         startTime: "2024-04-08 10:30:00",
@@ -439,7 +502,7 @@ const getList = async () => {
       },
       {
         id: 3,
-        location: "机房1-机柜2",
+        location: "机房1-机柜2-PDU2",
         cabinetId: 103,
         startEle: 300,
         startTime: "2024-04-08 14:00:00",
@@ -451,7 +514,7 @@ const getList = async () => {
       },
       {
         id: 4,
-        location: "机房1-机柜3",
+        location: "机房1-机柜3-PDU3",
         cabinetId: 104,
         startEle: 80,
         startTime: "2024-04-08 09:30:00",
@@ -463,7 +526,7 @@ const getList = async () => {
       },
       {
         id: 5,
-        location: "机房1-机柜5",
+        location: "机房1-机柜5-PDU1",
         cabinetId: 105,
         startEle: 200,
         startTime: "2024-04-08 13:00:00",
@@ -515,4 +578,5 @@ onMounted(() => {
  getList();
  initChart();
 })
+
 </script>
