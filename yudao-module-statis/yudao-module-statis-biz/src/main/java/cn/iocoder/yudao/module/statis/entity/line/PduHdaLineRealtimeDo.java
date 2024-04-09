@@ -1,22 +1,23 @@
-package cn.iocoder.yudao.module.statis.entity.es;
+package cn.iocoder.yudao.module.statis.entity.line;
 
+import cn.iocoder.yudao.module.statis.entity.BaseDo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 /**
  * @Auther: chenwany
  * @Date: 2024/3/28 14:47
- * @Description: pdu回路历史数据表（实时)
+ * @Description: pdu相历史数据表（实时）
  */
 @Data
-public class PduHdaLoopRealtimeDo extends BaseDo {
+public class PduHdaLineRealtimeDo extends BaseDo {
 
 
     /**
-     * 回路
+     * 相
      */
-    @JsonProperty("loop_id")
-    private int loopId;
+    @JsonProperty("line_id")
+    private int lineId;
 
     /**
      * 电压

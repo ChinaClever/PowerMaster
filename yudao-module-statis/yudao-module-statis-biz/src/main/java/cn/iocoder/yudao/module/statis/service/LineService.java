@@ -7,9 +7,15 @@ package cn.iocoder.yudao.module.statis.service;
  */
 public interface LineService {
 
+    /**
+     * 按小时统计
+     */
     void hourDeal();
 
 
+    /**
+     * 按天统计
+     */
     void dayDeal();
 
 }

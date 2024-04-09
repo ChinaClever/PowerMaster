@@ -83,7 +83,7 @@ public class EsHandleServiceImpl implements EsHandleService {
                 // 检查批量响应的结果
                 if (bulkResponse.hasFailures()) {
                     // 处理失败的请求
-                    log.error("Batch insert failed...");
+                    log.error("Batch insert failed..." + bulkResponse.buildFailureMessage());
                 } else {
                     log.info("Batch insert success...");
                 }

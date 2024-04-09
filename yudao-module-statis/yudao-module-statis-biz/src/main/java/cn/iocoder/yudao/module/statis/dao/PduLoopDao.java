@@ -1,11 +1,15 @@
 package cn.iocoder.yudao.module.statis.dao;
 
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.iocoder.yudao.framework.common.enums.EsIndexEnum;
 import cn.iocoder.yudao.framework.common.enums.EsStatisFieldEnum;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
-import cn.iocoder.yudao.module.statis.entity.es.PduHdaLoopBaseDo;
-import cn.iocoder.yudao.module.statis.entity.es.PduHdaLoopRealtimeDo;
+import cn.iocoder.yudao.module.statis.entity.line.PduHdaLineHourDo;
+import cn.iocoder.yudao.module.statis.entity.line.PduHdaLineRealtimeDo;
+import cn.iocoder.yudao.module.statis.entity.loop.PduHdaLoopBaseDo;
+import cn.iocoder.yudao.module.statis.entity.loop.PduHdaLoopHourDo;
+import cn.iocoder.yudao.module.statis.entity.loop.PduHdaLoopRealtimeDo;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -45,13 +49,13 @@ public class PduLoopDao {
 
 
     /**
-     * 回路历史数据统计
+     * 回路历史数据统计(按小时)
      *
      * @param startTime 统计开始时间
      * @param endTime   统计结束时间
      * @return
      */
-    public Map<Object, Map<Object, PduHdaLoopBaseDo>> statisLoop(String startTime, String endTime) {
+    public Map<Object, Map<Object, PduHdaLoopBaseDo>> statisLoopHour(String startTime, String endTime) {
         Map<Object, Map<Object, PduHdaLoopBaseDo>> result = new HashMap<>();
         try {
             // 创建SearchRequest对象, 设置查询索引名
@@ -184,8 +188,8 @@ public class PduLoopDao {
                             Min min = loopBucket.getAggregations().get(field);
                             loopBaseDo.setApparentPowMinValue(((Double) min.getValue()).floatValue());
                         }
-
                     });
+                    loopBaseDo.setCreateTime(DateTime.now());
                     dataMap.put(loopBucket.getKey(), loopBaseDo);
                 }
                 result.put(bucket.getKey(), dataMap);
@@ -198,89 +202,49 @@ public class PduLoopDao {
                 Map<Integer, List<PduHdaLoopRealtimeDo>> loopMap = loopRealtimeDos.stream().collect(Collectors.groupingBy(PduHdaLoopRealtimeDo::getLoopId));
                 loopMap.keySet().forEach(loopId -> {
                     List<PduHdaLoopRealtimeDo> list = loopMap.get(loopId);
-                    list.forEach(loop -> {
-                        PduHdaLoopBaseDo fieldMap = result.get(Long.parseLong(String.valueOf(pduId))).get(Long.parseLong(String.valueOf(loopId)));
-                        if (equalsValue(fieldMap.getVolMaxValue(), loop.getVol())) {
-                            if (Objects.nonNull(fieldMap.getVolMaxTime())) {
-                                if (DateUtil.compare(loop.getCreateTime(), fieldMap.getVolMaxTime()) < 0) {
-                                    fieldMap.setVolMaxTime(loop.getCreateTime());
-                                }
-                            } else {
-                                fieldMap.setVolMaxTime(loop.getCreateTime());
-                            }
-                        }
-                        if (equalsValue(fieldMap.getVolMinValue(), loop.getVol())) {
-                            if (Objects.nonNull(fieldMap.getVolMinTime())) {
-                                if (DateUtil.compare(loop.getCreateTime(), fieldMap.getVolMinTime()) < 0) {
-                                    fieldMap.setVolMinTime(loop.getCreateTime());
-                                }
-                            } else {
-                                fieldMap.setVolMinTime(loop.getCreateTime());
-                            }
-                        }
 
-                        if (equalsValue(fieldMap.getCurMaxValue(), loop.getCur())) {
-                            if (Objects.nonNull(fieldMap.getCurMaxTime())) {
-                                if (DateUtil.compare(loop.getCreateTime(), fieldMap.getCurMaxTime()) < 0) {
-                                    fieldMap.setCurMaxTime(loop.getCreateTime());
-                                }
-                            } else {
-                                fieldMap.setCurMaxTime(loop.getCreateTime());
-                            }
-                        }
+                    PduHdaLoopBaseDo fieldMap = result.get(Long.parseLong(String.valueOf(pduId))).get(Long.parseLong(String.valueOf(loopId)));
 
-                        if (equalsValue(fieldMap.getCurMinValue(), loop.getCur())) {
-
-                            if (Objects.nonNull(fieldMap.getCurMinTime())) {
-                                if (DateUtil.compare(loop.getCreateTime(), fieldMap.getCurMinTime()) < 0) {
-                                    fieldMap.setCurMinTime(loop.getCreateTime());
+                    Map<Float, DateTime> volMap = list.stream().collect(Collectors
+                            .toMap(PduHdaLoopRealtimeDo::getVol,PduHdaLoopRealtimeDo::getCreateTime,(v1, v2) -> {
+                                if (DateUtil.compare(v1 ,v2) < 0) {
+                                    return v1;
                                 }
-                            } else {
-                                fieldMap.setCurMinTime(loop.getCreateTime());
-                            }
-                        }
-
-                        if (equalsValue(fieldMap.getActivePowMaxValue(), loop.getActivePow())) {
-
-                            if (Objects.nonNull(fieldMap.getActivePowMaxTime())) {
-                                if (DateUtil.compare(loop.getCreateTime(), fieldMap.getActivePowMaxTime()) < 0) {
-                                    fieldMap.setActivePowMaxTime(loop.getCreateTime());
+                                return v2;
+                            }));
+                    Map<Float, DateTime> curMap = list.stream().collect(Collectors
+                            .toMap(PduHdaLoopRealtimeDo::getCur,PduHdaLoopRealtimeDo::getCreateTime,(v1,v2) -> {
+                                if (DateUtil.compare(v1 ,v2) < 0) {
+                                    return v1;
                                 }
-                            } else {
-                                fieldMap.setActivePowMaxTime(loop.getCreateTime());
-                            }
-                        }
-                        if (equalsValue(fieldMap.getActivePowMinValue(), loop.getActivePow())) {
+                                return v2;
+                            }));
 
-                            if (Objects.nonNull(fieldMap.getActivePowMinTime())) {
-                                if (DateUtil.compare(loop.getCreateTime(), fieldMap.getActivePowMinTime()) < 0) {
-                                    fieldMap.setActivePowMinTime(loop.getCreateTime());
+                    Map<Float, DateTime> activePowMap = list.stream().collect(Collectors
+                            .toMap(PduHdaLoopRealtimeDo::getActivePow,PduHdaLoopRealtimeDo::getCreateTime,(v1,v2) -> {
+                                if (DateUtil.compare(v1 ,v2) < 0) {
+                                    return v1;
                                 }
-                            } else {
-                                fieldMap.setActivePowMinTime(loop.getCreateTime());
-                            }
-                        }
-                        if (equalsValue(fieldMap.getApparentPowMaxValue(), loop.getApparentPow())) {
-                            if (Objects.nonNull(fieldMap.getApparentPowMaxTime())) {
-                                if (DateUtil.compare(loop.getCreateTime(), fieldMap.getApparentPowMaxTime()) < 0) {
-                                    fieldMap.setApparentPowMaxTime(loop.getCreateTime());
-                                }
-                            } else {
-                                fieldMap.setApparentPowMaxTime(loop.getCreateTime());
-                            }
-                        }
-                        if (equalsValue(fieldMap.getApparentPowMinValue(), loop.getApparentPow())) {
+                                return v2;
+                            }));
 
-                            if (Objects.nonNull(fieldMap.getApparentPowMinTime())) {
-                                if (DateUtil.compare(loop.getCreateTime(), fieldMap.getApparentPowMinTime()) < 0) {
-                                    fieldMap.setApparentPowMinTime(loop.getCreateTime());
+                    Map<Float, DateTime> apparentPowMap = list.stream().collect(Collectors
+                            .toMap(PduHdaLoopRealtimeDo::getApparentPow,PduHdaLoopRealtimeDo::getCreateTime,(v1,v2) -> {
+                                if (DateUtil.compare(v1 ,v2) < 0) {
+                                    return v1;
                                 }
-                            } else {
-                                fieldMap.setApparentPowMinTime(loop.getCreateTime());
-                            }
-                        }
-                        result.get(Long.parseLong(String.valueOf(pduId))).put(loopId, fieldMap);
-                    });
+                                return v2;
+                            }));
+                    fieldMap.setCurMinTime(curMap.get(fieldMap.getCurMinValue()));
+                    fieldMap.setCurMaxTime(curMap.get(fieldMap.getCurMaxValue()));
+                    fieldMap.setVolMaxTime(volMap.get(fieldMap.getVolMaxValue()));
+                    fieldMap.setVolMinTime(volMap.get(fieldMap.getVolMinValue()));
+                    fieldMap.setActivePowMaxTime(activePowMap.get(fieldMap.getActivePowMaxValue()));
+                    fieldMap.setActivePowMinTime(activePowMap.get(fieldMap.getActivePowMinValue()));
+                    fieldMap.setApparentPowMaxTime(apparentPowMap.get(fieldMap.getApparentPowMaxValue()));
+                    fieldMap.setApparentPowMinTime(apparentPowMap.get(fieldMap.getActivePowMinValue()));
+
+                    result.get(Long.parseLong(String.valueOf(pduId))).put(loopId, fieldMap);
                 });
             });
             log.info("--------------------" + result);
@@ -293,7 +257,243 @@ public class PduLoopDao {
         return result;
     }
 
+    /**
+     * 回路历史数据统计(按天)
+     *
+     * @param startTime 统计开始时间
+     * @param endTime   统计结束时间
+     * @return
+     */
+    public Map<Object, Map<Object, PduHdaLoopBaseDo>> statisLoopDay(String startTime, String endTime) {
+        Map<Object, Map<Object, PduHdaLoopBaseDo>> result = new HashMap<>();
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(EsIndexEnum.PDU_HDA_LOOP_HOUR.getIndex());
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
 
+            //获取需要处理的数据
+            builder.query(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime));
+
+//            builder.query(QueryBuilders.matchAllQuery());
+            // 创建terms桶聚合，聚合名字=by_pdu, 字段=pdu_id，根据pdu_id分组
+            TermsAggregationBuilder pduAggregationBuilder = AggregationBuilders.terms("by_pdu")
+                    .field("pdu_id");
+
+            // 设置Avg指标聚合，按loop_id分组
+            TermsAggregationBuilder loopAggregationBuilder = AggregationBuilders.terms("by_loop").field(LOOP_ID);
+            // 嵌套聚合
+            // 设置聚合查询
+            builder.aggregation(pduAggregationBuilder.subAggregation(loopAggregationBuilder
+                    //统计平均电压
+                    .subAggregation(AggregationBuilders.avg(VOL_AVG_VALUE).field(VOL_AVG_VALUE))
+                    //最大电压
+                    .subAggregation(AggregationBuilders.max(VOL_MAX_VALUE).field(VOL_MAX_VALUE))
+                    //最小电压
+                    .subAggregation(AggregationBuilders.min(VOL_MIN_VALUE).field(VOL_MIN_VALUE))
+                    //统计平均电流
+                    .subAggregation(AggregationBuilders.avg(CUR_AVG_VALUE).field(CUR_AVG_VALUE))
+                    //最大电流
+                    .subAggregation(AggregationBuilders.max(CUR_MAX_VALUE).field(CUR_MAX_VALUE))
+                    //最小电流
+                    .subAggregation(AggregationBuilders.min(CUR_MIN_VALUE).field(CUR_MIN_VALUE))
+                    //平均有功功率
+                    .subAggregation(AggregationBuilders.avg(ACTIVE_POW_AVG_VALUE).field(ACTIVE_POW_AVG_VALUE))
+                    //最大有功功率
+                    .subAggregation(AggregationBuilders.max(ACTIVE_POW_MAX_VALUE).field(ACTIVE_POW_MAX_VALUE))
+                    // 最小有功功率
+                    .subAggregation(AggregationBuilders.min(ACTIVE_POW_MIN_VALUE).field(ACTIVE_POW_MIN_VALUE))
+                    //平均视在功率
+                    .subAggregation(AggregationBuilders.avg(APPARENT_POW_AVG_VALUE).field(APPARENT_POW_AVG_VALUE))
+                    //最大视在功率
+                    .subAggregation(AggregationBuilders.max(APPARENT_POW_MAX_VALUE).field(APPARENT_POW_MAX_VALUE))
+                    //最小视在功率
+                    .subAggregation(AggregationBuilders.min(APPARENT_POW_MIN_VALUE).field(APPARENT_POW_MIN_VALUE))));
+
+            // 设置搜索条件
+            searchRequest.source(builder);
+            // 如果只想返回聚合统计结果，不想返回查询结果可以将分页大小设置为0
+//            builder.size(0);
+
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            //查询结果
+            SearchHits hits = searchResponse.getHits();
+            LinkedList<PduHdaLoopHourDo> resList = new LinkedList<>();
+
+            for (SearchHit hit : hits.getHits()) {
+                String str = hit.getSourceAsString();
+                PduHdaLoopHourDo loopRealtimeDo = JsonUtils.parseObject(str, PduHdaLoopHourDo.class);
+                resList.add(loopRealtimeDo);
+            }
+
+
+            // 处理聚合查询结果
+            Aggregations aggregations = searchResponse.getAggregations();
+            // 根据by_pdu名字查询terms聚合结果
+            Terms byPduAggregation = aggregations.get("by_pdu");
+
+
+            // 遍历terms聚合结果
+            for (Terms.Bucket bucket : byPduAggregation.getBuckets()) {
+                // 获取按pduId分组
+                Map<Object, PduHdaLoopBaseDo> dataMap = new HashMap<>();
+                Terms byLoopAggregation = bucket.getAggregations().get("by_loop");
+                //获取按loopId分组
+                for (Terms.Bucket loopBucket : byLoopAggregation.getBuckets()) {
+                    PduHdaLoopBaseDo loopBaseDo = new PduHdaLoopBaseDo();
+                    loopBaseDo.setLoopId(Integer.parseInt(String.valueOf(loopBucket.getKey())));
+                    loopBaseDo.setPduId(Integer.parseInt(String.valueOf(bucket.getKey())));
+                    EsStatisFieldEnum.fields().forEach(field -> {
+                        if (field.equals(VOL_AVG_VALUE)) {
+                            Avg avg = loopBucket.getAggregations().get(field);
+                            loopBaseDo.setVolAvgValue(((Double) avg.getValue()).floatValue());
+                        }
+                        if (field.equals(VOL_MAX_VALUE)) {
+                            Max max = loopBucket.getAggregations().get(field);
+                            loopBaseDo.setVolMaxValue(((Double) max.getValue()).floatValue());
+                        }
+
+                        if (field.equals(VOL_MIN_VALUE)) {
+                            Min min = loopBucket.getAggregations().get(field);
+                            loopBaseDo.setVolMinValue(((Double) min.getValue()).floatValue());
+                        }
+                        if (field.equals(CUR_AVG_VALUE)) {
+                            Avg avg = loopBucket.getAggregations().get(field);
+                            loopBaseDo.setCurAvgValue(((Double) avg.getValue()).floatValue());
+                        }
+                        if (field.equals(CUR_MAX_VALUE)) {
+                            Max max = loopBucket.getAggregations().get(field);
+                            loopBaseDo.setCurMaxValue(((Double) max.getValue()).floatValue());
+                        }
+
+                        if (field.equals(CUR_MIN_VALUE)) {
+                            Min min = loopBucket.getAggregations().get(field);
+                            loopBaseDo.setCurMinValue(((Double) min.getValue()).floatValue());
+                        }
+                        if (field.equals(ACTIVE_POW_AVG_VALUE)) {
+                            Avg avg = loopBucket.getAggregations().get(field);
+                            loopBaseDo.setActivePowAvgValue(((Double) avg.getValue()).floatValue());
+                        }
+                        if (field.equals(ACTIVE_POW_MAX_VALUE)) {
+                            Max max = loopBucket.getAggregations().get(field);
+                            loopBaseDo.setActivePowMaxValue(((Double) max.getValue()).floatValue());
+                        }
+
+                        if (field.equals(ACTIVE_POW_MIN_VALUE)) {
+                            Min min = loopBucket.getAggregations().get(field);
+                            loopBaseDo.setActivePowMinValue(((Double) min.getValue()).floatValue());
+                        }
+                        if (field.equals(APPARENT_POW_AVG_VALUE)) {
+                            Avg avg = loopBucket.getAggregations().get(field);
+                            loopBaseDo.setApparentPowAvgValue(((Double) avg.getValue()).floatValue());
+                        }
+                        if (field.equals(APPARENT_POW_MAX_VALUE)) {
+                            Max max = loopBucket.getAggregations().get(field);
+                            loopBaseDo.setApparentPowMaxValue(((Double) max.getValue()).floatValue());
+                        }
+
+                        if (field.equals(APPARENT_POW_MIN_VALUE)) {
+                            Min min = loopBucket.getAggregations().get(field);
+                            loopBaseDo.setApparentPowMinValue(((Double) min.getValue()).floatValue());
+                        }
+                    });
+                    loopBaseDo.setCreateTime(DateTime.now());
+                    dataMap.put(loopBucket.getKey(), loopBaseDo);
+                }
+                result.put(bucket.getKey(), dataMap);
+            }
+
+            //获取时间
+            Map<Integer, List<PduHdaLoopHourDo>> loopRealtimeDoMap = resList.stream().collect(Collectors.groupingBy(PduHdaLoopHourDo::getPduId));
+            loopRealtimeDoMap.keySet().forEach(pduId -> {
+                List<PduHdaLoopHourDo> loopRealtimeDos = loopRealtimeDoMap.get(pduId);
+                Map<Integer, List<PduHdaLoopHourDo>> loopMap = loopRealtimeDos.stream().collect(Collectors.groupingBy(PduHdaLoopHourDo::getLoopId));
+                loopMap.keySet().forEach(loopId -> {
+                    List<PduHdaLoopHourDo> list = loopMap.get(loopId);
+
+                    PduHdaLoopBaseDo fieldMap = result.get(Long.parseLong(String.valueOf(pduId))).get(Long.parseLong(String.valueOf(loopId)));
+
+                    Map<Float, DateTime> volMaxMap = list.stream().collect(Collectors
+                            .toMap(PduHdaLoopHourDo::getVolMaxValue,PduHdaLoopHourDo::getVolMaxTime,(v1, v2) -> {
+                                if (DateUtil.compare(v1 ,v2) < 0) {
+                                    return v1;
+                                }
+                                return v2;
+                            }));
+                    Map<Float, DateTime> volMinMap = list.stream().collect(Collectors
+                            .toMap(PduHdaLoopHourDo::getVolMinValue,PduHdaLoopHourDo::getVolMinTime,(v1, v2) -> {
+                                if (DateUtil.compare(v1 ,v2) < 0) {
+                                    return v1;
+                                }
+                                return v2;
+                            }));
+
+                    Map<Float, DateTime> curMaxMap = list.stream().collect(Collectors
+                            .toMap(PduHdaLoopHourDo::getCurMaxValue,PduHdaLoopHourDo::getCurMaxTime,(v1,v2) -> {
+                                if (DateUtil.compare(v1 ,v2) < 0) {
+                                    return v1;
+                                }
+                                return v2;
+                            }));
+                    Map<Float, DateTime> curMinMap = list.stream().collect(Collectors
+                            .toMap(PduHdaLoopHourDo::getCurMinValue,PduHdaLoopHourDo::getCurMinTime,(v1,v2) -> {
+                                if (DateUtil.compare(v1 ,v2) < 0) {
+                                    return v1;
+                                }
+                                return v2;
+                            }));
+
+                    Map<Float, DateTime> activePowMaxMap = list.stream().collect(Collectors
+                            .toMap(PduHdaLoopHourDo::getActivePowMaxValue,PduHdaLoopHourDo::getActivePowMaxTime,(v1,v2) -> {
+                                if (DateUtil.compare(v1 ,v2) < 0) {
+                                    return v1;
+                                }
+                                return v2;
+                            }));
+                    Map<Float, DateTime> activePowMinMap = list.stream().collect(Collectors
+                            .toMap(PduHdaLoopHourDo::getActivePowMinValue,PduHdaLoopHourDo::getActivePowMinTime,(v1,v2) -> {
+                                if (DateUtil.compare(v1 ,v2) < 0) {
+                                    return v1;
+                                }
+                                return v2;
+                            }));
+
+                    Map<Float, DateTime> apparentPowMaxMap = list.stream().collect(Collectors
+                            .toMap(PduHdaLoopHourDo::getApparentPowMaxValue,PduHdaLoopHourDo::getApparentPowMaxTime,(v1,v2) -> {
+                                if (DateUtil.compare(v1 ,v2) < 0) {
+                                    return v1;
+                                }
+                                return v2;
+                            }));
+                    Map<Float, DateTime> apparentPowMinMap = list.stream().collect(Collectors
+                            .toMap(PduHdaLoopHourDo::getApparentPowMinValue,PduHdaLoopHourDo::getApparentPowMinTime,(v1,v2) -> {
+                                if (DateUtil.compare(v1 ,v2) < 0) {
+                                    return v1;
+                                }
+                                return v2;
+                            }));
+                    fieldMap.setCurMinTime(curMinMap.get(fieldMap.getCurMinValue()));
+                    fieldMap.setCurMaxTime(curMaxMap.get(fieldMap.getCurMaxValue()));
+                    fieldMap.setVolMaxTime(volMaxMap.get(fieldMap.getVolMaxValue()));
+                    fieldMap.setVolMinTime(volMinMap.get(fieldMap.getVolMinValue()));
+                    fieldMap.setActivePowMaxTime(activePowMaxMap.get(fieldMap.getActivePowMaxValue()));
+                    fieldMap.setActivePowMinTime(activePowMinMap.get(fieldMap.getActivePowMinValue()));
+                    fieldMap.setApparentPowMaxTime(apparentPowMaxMap.get(fieldMap.getApparentPowMaxValue()));
+                    fieldMap.setApparentPowMinTime(apparentPowMinMap.get(fieldMap.getActivePowMinValue()));
+
+                    result.get(Long.parseLong(String.valueOf(pduId))).put(loopId, fieldMap);
+                });
+            });
+            log.info("--------------------" + result);
+
+            return result;
+
+        } catch (Exception e) {
+            log.error("获取数据失败：", e);
+        }
+        return result;
+    }
     /**
      * 判断两个值是否相等
      *

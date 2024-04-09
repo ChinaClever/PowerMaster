@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.statis.entity.es;
+package cn.iocoder.yudao.module.statis.entity.total;
 
 import cn.hutool.core.date.DateTime;
 import com.fasterxml.jackson.annotation.JsonProperty;

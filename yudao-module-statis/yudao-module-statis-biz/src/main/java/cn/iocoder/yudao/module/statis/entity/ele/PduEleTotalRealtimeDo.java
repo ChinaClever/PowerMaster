@@ -1,5 +1,6 @@
-package cn.iocoder.yudao.module.statis.entity.es;
+package cn.iocoder.yudao.module.statis.entity.ele;
 
+import cn.iocoder.yudao.module.statis.entity.BaseDo;
 import lombok.Data;
 
 /**

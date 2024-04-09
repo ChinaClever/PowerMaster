@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.statis.entity.es;
+package cn.iocoder.yudao.module.statis.entity.env;
 
 import cn.hutool.core.date.DateTime;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -71,13 +71,13 @@ public class PduEnvBaseDo {
      *  平均湿度
      */
     @JsonProperty("hum_avg_value")
-    private float humAvgValue;
+    private int humAvgValue;
 
     /**
      * 最高湿度
      */
     @JsonProperty("hum_max_value")
-    private float humMaxValue;
+    private int humMaxValue;
 
 
 
@@ -92,7 +92,7 @@ public class PduEnvBaseDo {
      * 最低湿度
      */
     @JsonProperty("hum_min_value")
-    private float humMinValue;
+    private int humMinValue;
 
 
     /**
