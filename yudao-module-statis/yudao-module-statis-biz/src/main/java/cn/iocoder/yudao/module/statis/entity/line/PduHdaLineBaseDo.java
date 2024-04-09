@@ -1,22 +1,23 @@
-package cn.iocoder.yudao.module.statis.entity.es;
+package cn.iocoder.yudao.module.statis.entity.line;
 
 import cn.hutool.core.date.DateTime;
+import cn.iocoder.yudao.module.statis.entity.total.PduBaseDo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 /**
  * @Author: chenwany
- * @Date: 2024/4/3 08:59
- * @Description: 回路历史基础数据
+ * @Date: 2024/4/2 17:23
+ * @Description: 相历史基础数据
  */
 @Data
-public class PduHdaLoopBaseDo extends PduBaseDo {
+public class PduHdaLineBaseDo extends PduBaseDo {
 
     /**
-     * 回路
+     * 相
      */
-    @JsonProperty("loop_id")
-    private int loopId;
+    @JsonProperty("line_id")
+    private int lineId;
 
     /**
      * 平均电压
@@ -30,7 +31,6 @@ public class PduHdaLoopBaseDo extends PduBaseDo {
     @JsonProperty("vol_max_time")
     private DateTime volMaxTime;
 
-
     /**
      * 最大电压
      */
@@ -43,13 +43,11 @@ public class PduHdaLoopBaseDo extends PduBaseDo {
     @JsonProperty("vol_min_time")
     private DateTime volMinTime;
 
-
     /**
      * 最小电压
      */
     @JsonProperty("vol_min_value")
     private float volMinValue;
-
 
     /**
      * 平均电流
@@ -69,18 +67,17 @@ public class PduHdaLoopBaseDo extends PduBaseDo {
     @JsonProperty("cur_max_value")
     private float curMaxValue;
 
+
     /**
      * 最小电流时间
      */
     @JsonProperty("cur_min_time")
     private DateTime curMinTime;
 
-
     /**
      * 最小电流
      */
     @JsonProperty("cur_min_value")
     private float curMinValue;
-
 
 }

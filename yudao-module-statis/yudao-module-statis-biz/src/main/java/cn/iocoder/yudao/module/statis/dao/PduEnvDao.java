@@ -1,10 +1,13 @@
 package cn.iocoder.yudao.module.statis.dao;
 
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.iocoder.yudao.framework.common.enums.EsIndexEnum;
 import cn.iocoder.yudao.framework.common.enums.EsStatisFieldEnum;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
-import cn.iocoder.yudao.module.statis.entity.es.*;
+import cn.iocoder.yudao.module.statis.entity.env.PduEnvBaseDo;
+import cn.iocoder.yudao.module.statis.entity.env.PduEnvHourDo;
+import cn.iocoder.yudao.module.statis.entity.env.PduEnvRealtimeDo;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -44,12 +47,12 @@ public class PduEnvDao {
 
 
     /**
-     * 环境数据统计
+     * 环境数据统计(按小时)
      *
      * @param startTime 统计开始时间
      * @param endTime   统计结束时间
      */
-    public Map<Integer, Map<Integer, PduEnvBaseDo>> statis(String startTime, String endTime) {
+    public Map<Integer, Map<Integer, PduEnvBaseDo>> statisHour(String startTime, String endTime) {
         Map<Integer, Map<Integer, PduEnvBaseDo>> result = new HashMap<>();
         try {
             // 创建SearchRequest对象, 设置查询索引名
@@ -134,19 +137,20 @@ public class PduEnvDao {
                         }
                         if (field.equals(HUM_AVG_VALUE)) {
                             Avg avg = baseBucket.getAggregations().get(field);
-                            baseDo.setHumAvgValue(((Double) avg.getValue()).floatValue());
+                            baseDo.setHumAvgValue(Integer.parseInt(String.valueOf(avg.getValue()) ));
                         }
                         if (field.equals(HUM_MAX_VALUE)) {
                             Max max = baseBucket.getAggregations().get(field);
-                            baseDo.setHumMaxValue(((Double) max.getValue()).floatValue());
+                            baseDo.setHumMaxValue(Integer.parseInt(String.valueOf(max.getValue())));
                         }
 
                         if (field.equals(HUM_MIN_VALUE)) {
                             Min min = baseBucket.getAggregations().get(field);
-                            baseDo.setHumMinValue(((Double) min.getValue()).floatValue());
+                            baseDo.setHumMinValue(Integer.parseInt(String.valueOf(min.getValue())));
                         }
 
                     });
+                    baseDo.setCreateTime(DateTime.now());
                     dataMap.put(Integer.parseInt(String.valueOf(baseBucket.getKey())), baseDo);
                 }
                 result.put(Integer.parseInt(String.valueOf(bucket.getKey())), dataMap);
@@ -159,50 +163,29 @@ public class PduEnvDao {
                 Map<Integer, List<PduEnvRealtimeDo>> map = realtimeDos.stream().collect(Collectors.groupingBy(PduEnvRealtimeDo::getSensorId));
                 map.keySet().forEach(id -> {
                     List<PduEnvRealtimeDo> list = map.get(id);
-                    list.forEach(env -> {
-                        PduEnvBaseDo fieldMap = result.get(pduId).get(id);
-                        if (equalsValue(fieldMap.getTemMaxValue(), env.getTem())) {
-                            if (Objects.nonNull(fieldMap.getTemMaxTime())) {
-                                if (DateUtil.compare(env.getCreateTime(), fieldMap.getTemMaxTime()) < 0) {
-                                    fieldMap.setTemMaxTime(env.getCreateTime());
+                    Map<Integer, DateTime> humValueMap = list.stream().collect(Collectors
+                            .toMap(PduEnvRealtimeDo::getHum,PduEnvRealtimeDo::getCreateTime,(v1,v2) -> {
+                                if (DateUtil.compare(v1 ,v2) < 0) {
+                                    return v1;
                                 }
-                            } else {
-                                fieldMap.setTemMaxTime(env.getCreateTime());
-                            }
-                        }
-                        if (equalsValue(fieldMap.getTemMinValue(), env.getTem())) {
-                            if (Objects.nonNull(fieldMap.getTemMinTime())) {
-                                if (DateUtil.compare(env.getCreateTime(), fieldMap.getTemMinTime()) < 0) {
-                                    fieldMap.setTemMinTime(env.getCreateTime());
+                                return v2;
+                            }));
+
+                    Map<Float, DateTime> temValueMap = list.stream().collect(Collectors
+                            .toMap(PduEnvRealtimeDo::getTem,PduEnvRealtimeDo::getCreateTime,(v1,v2) -> {
+                                if (DateUtil.compare(v1 ,v2) < 0) {
+                                    return v1;
                                 }
-                            } else {
-                                fieldMap.setTemMinTime(env.getCreateTime());
-                            }
-                        }
+                                return v2;
+                            }));
 
-                        if (equalsValue(fieldMap.getHumMaxValue(), env.getHum())) {
-                            if (Objects.nonNull(fieldMap.getHumMaxTime())) {
-                                if (DateUtil.compare(env.getCreateTime(), fieldMap.getHumMaxTime()) < 0) {
-                                    fieldMap.setHumMaxTime(env.getCreateTime());
-                                }
-                            } else {
-                                fieldMap.setHumMaxTime(env.getCreateTime());
-                            }
-                        }
+                    PduEnvBaseDo fieldMap = result.get(pduId).get(id);
+                    fieldMap.setHumMaxTime(humValueMap.get(fieldMap.getHumMaxValue()));
+                    fieldMap.setHumMinTime(humValueMap.get(fieldMap.getHumMinValue()));
+                    fieldMap.setTemMaxTime(temValueMap.get(fieldMap.getTemMaxValue()));
+                    fieldMap.setTemMinTime(temValueMap.get(fieldMap.getTemMinValue()));
 
-                        if (equalsValue(fieldMap.getHumMinValue(), env.getHum())) {
-
-                            if (Objects.nonNull(fieldMap.getHumMinTime())) {
-                                if (DateUtil.compare(env.getCreateTime(), fieldMap.getHumMinTime()) < 0) {
-                                    fieldMap.setHumMinTime(env.getCreateTime());
-                                }
-                            } else {
-                                fieldMap.setHumMinTime(env.getCreateTime());
-                            }
-                        }
-
-                        result.get(pduId).put(id, fieldMap);
-                    });
+                    result.get(pduId).put(id, fieldMap);
                 });
             });
             log.info("--------------------" + result);
@@ -215,7 +198,172 @@ public class PduEnvDao {
         return result;
     }
 
+    /**
+     * 环境数据统计(按天)
+     *
+     * @param startTime 统计开始时间
+     * @param endTime   统计结束时间
+     */
+    public Map<Integer, Map<Integer, PduEnvBaseDo>> statisDay(String startTime, String endTime) {
+        Map<Integer, Map<Integer, PduEnvBaseDo>> result = new HashMap<>();
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(EsIndexEnum.PDU_ENV_HOUR.getIndex());
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
 
+            //获取需要处理的数据
+            builder.query(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime));
+
+//            builder.query(QueryBuilders.matchAllQuery());
+
+            //创建terms桶聚合，聚合名字=by_pdu, 字段=pdu_id，根据pdu_id分组
+            TermsAggregationBuilder pduAggregationBuilder = AggregationBuilders.terms("by_pdu")
+                    .field("pdu_id");
+
+            // 设置Avg指标聚合，按sensor_id分组
+            TermsAggregationBuilder envAggregationBuilder = AggregationBuilders.terms("by_sensor").field(SENSOR_ID);
+            // 嵌套聚合
+            // 设置聚合查询
+            builder.aggregation(pduAggregationBuilder.subAggregation(envAggregationBuilder
+                    //统计平均温度
+                    .subAggregation(AggregationBuilders.avg(TEM_AVG_VALUE).field(TEM_AVG_VALUE))
+                    //最大温度
+                    .subAggregation(AggregationBuilders.max(TEM_MAX_VALUE).field(TEM_MAX_VALUE))
+                    //最小温度
+                    .subAggregation(AggregationBuilders.min(TEM_MIN_VALUE).field(TEM_MIN_VALUE))
+                    //统计平均湿度
+                    .subAggregation(AggregationBuilders.avg(HUM_AVG_VALUE).field(HUM_AVG_VALUE))
+                    //最大湿度
+                    .subAggregation(AggregationBuilders.max(HUM_MAX_VALUE).field(HUM_MAX_VALUE))
+                    //最小湿度
+                    .subAggregation(AggregationBuilders.min(HUM_MIN_VALUE).field(HUM_MIN_VALUE))));
+
+            // 设置搜索条件
+            searchRequest.source(builder);
+            // 如果只想返回聚合统计结果，不想返回查询结果可以将分页大小设置为0
+//            builder.size(0);
+
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            //查询结果
+            SearchHits hits = searchResponse.getHits();
+            LinkedList<PduEnvHourDo> resList = new LinkedList<>();
+
+            for (SearchHit hit : hits.getHits()) {
+                String str = hit.getSourceAsString();
+                PduEnvHourDo realtimeDo = JsonUtils.parseObject(str, PduEnvHourDo.class);
+                resList.add(realtimeDo);
+            }
+
+
+            // 处理聚合查询结果
+            Aggregations aggregations = searchResponse.getAggregations();
+            // 根据by_pdu名字查询terms聚合结果
+            Terms byPduAggregation = aggregations.get("by_pdu");
+
+
+            // 遍历terms聚合结果
+            for (Terms.Bucket bucket : byPduAggregation.getBuckets()) {
+                // 获取按pduId分组
+                Map<Integer, PduEnvBaseDo> dataMap = new HashMap<>();
+                Terms byEnvAggregation = bucket.getAggregations().get("by_sensor");
+                //获取按sensor_id分组
+                for (Terms.Bucket baseBucket : byEnvAggregation.getBuckets()) {
+                    PduEnvBaseDo baseDo = new PduEnvBaseDo();
+                    baseDo.setSensorId(Integer.parseInt(String.valueOf(baseBucket.getKey())));
+                    baseDo.setPduId(Integer.parseInt(String.valueOf(bucket.getKey())));
+                    EsStatisFieldEnum.fields().forEach(field -> {
+                        if (field.equals(TEM_AVG_VALUE)) {
+                            Avg avg = baseBucket.getAggregations().get(field);
+                            baseDo.setTemAvgValue(((Double) avg.getValue()).floatValue());
+                        }
+                        if (field.equals(TEM_MAX_VALUE)) {
+                            Max max = baseBucket.getAggregations().get(field);
+                            baseDo.setTemMaxValue(((Double) max.getValue()).floatValue());
+                        }
+
+                        if (field.equals(TEM_MIN_VALUE)) {
+                            Min min = baseBucket.getAggregations().get(field);
+                            baseDo.setTemMinValue(((Double) min.getValue()).floatValue());
+                        }
+                        if (field.equals(HUM_AVG_VALUE)) {
+                            Avg avg = baseBucket.getAggregations().get(field);
+                            baseDo.setHumAvgValue(Integer.parseInt(String.valueOf(avg.getValue()) ));
+                        }
+                        if (field.equals(HUM_MAX_VALUE)) {
+                            Max max = baseBucket.getAggregations().get(field);
+                            baseDo.setHumMaxValue(Integer.parseInt(String.valueOf(max.getValue())));
+                        }
+
+                        if (field.equals(HUM_MIN_VALUE)) {
+                            Min min = baseBucket.getAggregations().get(field);
+                            baseDo.setHumMinValue(Integer.parseInt(String.valueOf(min.getValue())));
+                        }
+
+                    });
+                    baseDo.setCreateTime(DateTime.now());
+                    dataMap.put(Integer.parseInt(String.valueOf(baseBucket.getKey())), baseDo);
+                }
+                result.put(Integer.parseInt(String.valueOf(bucket.getKey())), dataMap);
+            }
+
+            //获取时间
+            Map<Integer, List<PduEnvHourDo>> realtimeDoMap = resList.stream().collect(Collectors.groupingBy(PduEnvHourDo::getPduId));
+            realtimeDoMap.keySet().forEach(pduId -> {
+                List<PduEnvHourDo> realtimeDos = realtimeDoMap.get(pduId);
+                Map<Integer, List<PduEnvHourDo>> map = realtimeDos.stream().collect(Collectors.groupingBy(PduEnvHourDo::getSensorId));
+                map.keySet().forEach(id -> {
+                    List<PduEnvHourDo> list = map.get(id);
+                    Map<Integer, DateTime> humMaxValueMap = list.stream().collect(Collectors
+                            .toMap(PduEnvHourDo::getHumMaxValue,PduEnvHourDo::getHumMaxTime,(v1,v2) -> {
+                                if (DateUtil.compare(v1 ,v2) < 0) {
+                                    return v1;
+                                }
+                                return v2;
+                            }));
+                    Map<Integer, DateTime> humMinValueMap = list.stream().collect(Collectors
+                            .toMap(PduEnvHourDo::getHumMinValue,PduEnvHourDo::getHumMinTime,(v1,v2) -> {
+                                if (DateUtil.compare(v1 ,v2) < 0) {
+                                    return v1;
+                                }
+                                return v2;
+                            }));
+
+                    Map<Float, DateTime> temMaxValueMap = list.stream().collect(Collectors
+                            .toMap(PduEnvHourDo::getTemMaxValue,PduEnvHourDo::getTemMaxTime,(v1,v2) -> {
+                                if (DateUtil.compare(v1 ,v2) < 0) {
+                                    return v1;
+                                }
+                                return v2;
+                            }));
+
+                    Map<Float, DateTime> temMinValueMap = list.stream().collect(Collectors
+                            .toMap(PduEnvHourDo::getTemMinValue,PduEnvHourDo::getTemMinTime,(v1,v2) -> {
+                                if (DateUtil.compare(v1 ,v2) < 0) {
+                                    return v1;
+                                }
+                                return v2;
+                            }));
+                    PduEnvBaseDo fieldMap = result.get(pduId).get(id);
+                    fieldMap.setHumMaxTime(humMaxValueMap.get(fieldMap.getHumMaxValue()));
+                    fieldMap.setHumMinTime(humMinValueMap.get(fieldMap.getHumMinValue()));
+                    fieldMap.setTemMaxTime(temMaxValueMap.get(fieldMap.getTemMaxValue()));
+                    fieldMap.setTemMinTime(temMinValueMap.get(fieldMap.getTemMinValue()));
+
+                    result.get(pduId).put(id, fieldMap);
+
+                });
+            });
+            log.info("--------------------" + result);
+
+            return result;
+
+        } catch (Exception e) {
+            log.error("获取数据失败：", e);
+        }
+        return result;
+    }
     /**
      * 判断两个值是否相等
      *

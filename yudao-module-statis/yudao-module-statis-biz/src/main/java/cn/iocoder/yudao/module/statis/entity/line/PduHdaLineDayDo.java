@@ -1,5 +1,6 @@
-package cn.iocoder.yudao.module.statis.entity.es;
+package cn.iocoder.yudao.module.statis.entity.line;
 
+import cn.iocoder.yudao.module.statis.entity.line.PduHdaLineBaseDo;
 import lombok.Data;
 
 /**

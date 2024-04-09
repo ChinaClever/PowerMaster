@@ -78,6 +78,19 @@ public enum EsIndexEnum {
      * pdu环境数据表（按天算）
      */
     PDU_ENV_DAY("pdu_env_day","pdu环境数据表（按天算）"),
+    /**
+     * pdu总电量表（按天算）
+     */
+    PDU_EQ_TOTAL_DAY("pdu_eq_total_day","pdu总电量表（按天算）"),
+    /**
+     * pdu总电量表（按周算）
+     */
+    PDU_EQ_TOTAL_WEEK("pdu_eq_total_week","pdu总电量表（按周算）"),
+
+    /**
+     * pdu总电量表（按月算）
+     */
+    PDU_EQ_TOTAL_MONTH("pdu_eq_total_month","pdu总电量表（按月算）"),
 
     ;
     /**

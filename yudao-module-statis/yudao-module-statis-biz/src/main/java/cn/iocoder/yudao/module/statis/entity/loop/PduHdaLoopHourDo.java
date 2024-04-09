@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.statis.entity.es;
+package cn.iocoder.yudao.module.statis.entity.loop;
 
 import lombok.Data;
 

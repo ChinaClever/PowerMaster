@@ -3,7 +3,7 @@ package cn.iocoder.yudao.module.statis.service.impl;
 import cn.hutool.core.date.DateUtil;
 import cn.iocoder.yudao.framework.common.enums.EsIndexEnum;
 import cn.iocoder.yudao.module.statis.dao.PduLoopDao;
-import cn.iocoder.yudao.module.statis.entity.es.PduHdaLoopBaseDo;
+import cn.iocoder.yudao.module.statis.entity.loop.PduHdaLoopBaseDo;
 import cn.iocoder.yudao.module.statis.service.EsHandleService;
 import cn.iocoder.yudao.module.statis.service.LoopService;
 import lombok.extern.slf4j.Slf4j;
@@ -30,29 +30,39 @@ public class LoopServiceImpl implements LoopService {
     @Override
     public void hourDeal() {
         log.info("回路历史按小时数据统计");
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.HOUR_OF_DAY, -1);
-        String startTime = DateUtil.formatDateTime(calendar.getTime());
-        String endTime = DateUtil.formatDateTime(new Date());
+        try{
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR_OF_DAY, -1);
+            String startTime = DateUtil.formatDateTime(calendar.getTime());
+            String endTime = DateUtil.formatDateTime(new Date());
 
-        Map<Object, Map<Object, PduHdaLoopBaseDo>> map = loopDao.statisLoop(startTime, endTime);
-        List<PduHdaLoopBaseDo> list = new ArrayList<>();
-        map.keySet().forEach(pduId -> list.addAll(map.get(pduId).values()));
-        list.forEach(t-> log.info("回路历史数据：" + t));
-        esHandleService.batchInsert(list, EsIndexEnum.PDU_HDA_LOOP_HOUR.getIndex());
+            Map<Object, Map<Object, PduHdaLoopBaseDo>> map = loopDao.statisLoopHour(startTime, endTime);
+            List<PduHdaLoopBaseDo> list = new ArrayList<>();
+            map.keySet().forEach(pduId -> list.addAll(map.get(pduId).values()));
+            list.forEach(t-> log.info("回路历史数据：" + t));
+            esHandleService.batchInsert(list, EsIndexEnum.PDU_HDA_LOOP_HOUR.getIndex());
+        }catch (Exception e){
+            log.error("回路历史数据统计异常：" ,e);
+        }
+
     }
 
     @Override
     public void dayDeal() {
         log.info("回路历史数据按天统计");
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.HOUR_OF_DAY, -24);
-        String startTime = DateUtil.formatDateTime(calendar.getTime());
-        String endTime = DateUtil.formatDateTime(new Date());
+        try{
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR_OF_DAY, -24);
+            String startTime = DateUtil.formatDateTime(calendar.getTime());
+            String endTime = DateUtil.formatDateTime(new Date());
 
-        Map<Object, Map<Object, PduHdaLoopBaseDo>> map = loopDao.statisLoop(startTime, endTime);
-        List<PduHdaLoopBaseDo> list = new ArrayList<>();
-        map.keySet().forEach(pduId -> list.addAll(map.get(pduId).values()));
-        esHandleService.batchInsert(list, EsIndexEnum.PDU_HDA_LOOP_DAY.getIndex());
+            Map<Object, Map<Object, PduHdaLoopBaseDo>> map = loopDao.statisLoopDay(startTime, endTime);
+            List<PduHdaLoopBaseDo> list = new ArrayList<>();
+            map.keySet().forEach(pduId -> list.addAll(map.get(pduId).values()));
+            esHandleService.batchInsert(list, EsIndexEnum.PDU_HDA_LOOP_DAY.getIndex());
+        }catch (Exception e){
+            log.error("回路历史数据统计异常：" ,e);
+        }
+
     }
 }
