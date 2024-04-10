@@ -1,5 +1,6 @@
-package cn.iocoder.yudao.module.statis.entity.ele;
+package cn.iocoder.yudao.module.statis.entity.ele.outlet;
 
+import cn.iocoder.yudao.module.statis.entity.ele.PduEqBaseDo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -9,7 +10,7 @@ import lombok.Data;
  * @Description: 输出位电量
  */
 @Data
-public class PduEqOutletBaseDo extends PduEqBaseDo{
+public class PduEqOutletBaseDo extends PduEqBaseDo {
 
     /**
      * 输出位
