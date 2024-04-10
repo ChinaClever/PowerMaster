@@ -36,7 +36,7 @@ public class TotalServiceImpl implements TotalService {
             String startTime = DateUtil.formatDateTime(calendar.getTime());
             String endTime = DateUtil.formatDateTime(new Date());
 
-            Map<Object, PduBaseDo> map = totalDao.statisTotalHour(startTime, endTime);
+            Map<Integer, PduBaseDo> map = totalDao.statisTotalHour(startTime, endTime);
             List<PduBaseDo> list = new ArrayList<>();
             map.keySet().forEach(pduId -> {
                 PduBaseDo pduBaseDo = map.get(pduId);
@@ -61,7 +61,7 @@ public class TotalServiceImpl implements TotalService {
             String startTime = DateUtil.formatDateTime(calendar.getTime());
             String endTime = DateUtil.formatDateTime(new Date());
 
-            Map<Object, PduBaseDo> map = totalDao.statisTotalDay(startTime, endTime);
+            Map<Integer, PduBaseDo> map = totalDao.statisTotalDay(startTime, endTime);
             List<PduBaseDo> list = new ArrayList<>();
             map.keySet().forEach(pduId -> {
                 PduBaseDo pduBaseDo = map.get(pduId);
