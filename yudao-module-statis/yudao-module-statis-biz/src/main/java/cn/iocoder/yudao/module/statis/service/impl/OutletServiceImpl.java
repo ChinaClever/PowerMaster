@@ -1,9 +1,9 @@
 package cn.iocoder.yudao.module.statis.service.impl;
 
 import cn.hutool.core.date.DateUtil;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.outlet.PduHdaOutletBaseDo;
 import cn.iocoder.yudao.framework.common.enums.EsIndexEnum;
 import cn.iocoder.yudao.module.statis.dao.PduOutletDao;
-import cn.iocoder.yudao.module.statis.entity.outlet.PduHdaOutletBaseDo;
 import cn.iocoder.yudao.module.statis.service.EsHandleService;
 import cn.iocoder.yudao.module.statis.service.OutletService;
 import lombok.extern.slf4j.Slf4j;

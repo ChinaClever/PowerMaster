@@ -2,14 +2,11 @@ package cn.iocoder.yudao.module.statis.dao;
 
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.outlet.PduEleOutletDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.outlet.PduEqOutletBaseDo;
 import cn.iocoder.yudao.framework.common.enums.EsIndexEnum;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
-import cn.iocoder.yudao.module.statis.entity.ele.PduEqBaseDo;
-import cn.iocoder.yudao.module.statis.entity.ele.outlet.PduEleOutletDo;
-import cn.iocoder.yudao.module.statis.entity.ele.outlet.PduEqOutletBaseDo;
-import cn.iocoder.yudao.module.statis.entity.ele.total.PduEleTotalRealtimeDo;
 import cn.iocoder.yudao.module.statis.vo.EqBillConfigVo;
-import io.swagger.v3.oas.models.security.SecurityScheme;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -60,7 +57,7 @@ public class PduEleOutletDao {
         try {
             billConfigVoList.forEach(billConfigVo -> {
                 //获取时间段内第一条和最后一条数据
-                Map<Integer, Map<Integer,PduEleOutletDo>> endMap = getEleData(billConfigVo,
+                Map<Integer, Map<Integer, PduEleOutletDo>> endMap = getEleData(billConfigVo,
                         SortOrder.DESC,
                         EsIndexEnum.PDU_ELE_OUTLET.getIndex());
                 Map<Integer, Map<Integer,PduEleOutletDo>> startMap = getEleData(billConfigVo,

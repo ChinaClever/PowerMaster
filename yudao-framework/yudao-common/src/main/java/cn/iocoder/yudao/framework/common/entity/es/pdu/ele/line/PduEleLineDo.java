@@ -1,6 +1,6 @@
 package cn.iocoder.yudao.framework.common.entity.es.pdu.ele.line;
 
-import cn.iocoder.yudao.module.statis.entity.ele.total.PduEleTotalRealtimeDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEleTotalRealtimeDo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 

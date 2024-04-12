@@ -1,6 +1,6 @@
 package cn.iocoder.yudao.framework.common.entity.es.pdu.env;
 
-import cn.iocoder.yudao.module.statis.entity.BaseDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.BaseDo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 

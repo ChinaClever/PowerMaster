@@ -2,10 +2,10 @@ package cn.iocoder.yudao.module.statis.dao;
 
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.PduEqBaseDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.enums.EsIndexEnum;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
-import cn.iocoder.yudao.module.statis.entity.ele.total.PduEleTotalRealtimeDo;
-import cn.iocoder.yudao.module.statis.entity.ele.PduEqBaseDo;
 import cn.iocoder.yudao.module.statis.vo.EqBillConfigVo;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchRequest;
