@@ -2,12 +2,12 @@ import request from '@/config/axios'
 
 // pdu历史数据 VO
 export interface HistoryDataVO {
-  id: number // 编号
-  pduId: number // pdu编号
-  type: string // 数据类型	
-  topic: string // topic
-  indexes: number // indexes
-  value: number // 值
+  id: number 
+  pduId: number 
+  activePow: number 
+  apparentPow: number
+  powerFactor: number 
+  createTime: string 
 }
 
 // pdu历史数据 API

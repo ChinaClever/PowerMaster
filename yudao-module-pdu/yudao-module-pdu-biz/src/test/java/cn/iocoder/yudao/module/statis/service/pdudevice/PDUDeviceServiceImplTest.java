@@ -1,5 +1,8 @@
 package cn.iocoder.yudao.module.statis.service.pdudevice;
 
+import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDevicePageReqVO;
+import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDeviceSaveReqVO;
+import cn.iocoder.yudao.module.pdu.service.pdudevice.PDUDeviceServiceImpl;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -7,9 +10,8 @@ import javax.annotation.Resource;
 
 import cn.iocoder.yudao.framework.test.core.ut.BaseDbUnitTest;
 
-import cn.iocoder.yudao.module.statis.controller.admin.pdudevice.vo.*;
-import cn.iocoder.yudao.module.statis.dal.dataobject.pdudevice.PDUDeviceDO;
-import cn.iocoder.yudao.module.statis.dal.mysql.pdudevice.PDUDeviceMapper;
+import cn.iocoder.yudao.module.pdu.dal.dataobject.pdudevice.PDUDeviceDO;
+import cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PDUDeviceMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 
 import org.springframework.context.annotation.Import;

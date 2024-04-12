@@ -70,9 +70,9 @@
               <el-option label="天" value="day" />
             </el-select>
           </el-form-item>
-          <el-form-item label="时间段" prop="createTime">
+          <el-form-item label="时间段" prop="timeRange">
             <el-date-picker
-              v-model="queryParams.createTime"
+              v-model="queryParams.searchTime"
               value-format="YYYY-MM-DD HH:mm:ss"
               type="daterange"
               start-placeholder="开始日期"
@@ -258,8 +258,8 @@ const list = ref<Array<{
 
     vol:number
     cur:number
-    activePow: number; 
-    apparentPow: number; 
+    active_pow: number; 
+    apparent_pow: number; 
 
     volAvgValue: number; 
     volMaxValue: number; 
@@ -286,17 +286,16 @@ const list = ref<Array<{
     apparentPowMinTime: string; 
 
     powerFactor:number
-    createTime:string
+    create_time:string
 }>>([]); // 列表数据
 const total = ref(0) // 列表的总页数
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  id: undefined,
   type: 'total',
   granularity: 'realtime',
   ipAddr: undefined,
-  createTime: undefined,
+  timeRange: undefined,
 })
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
@@ -517,10 +516,10 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
 const tableColumns = ref([
     { label: '编号', align: 'center', prop: 'id' , istrue:true},
     { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
-    { label: '总有功功率(kVA)', align: 'center', prop: 'activePow' , istrue:true},
-    { label: '总视在功率(kW)', align: 'center', prop: 'apparentPow' , istrue:true},
-    { label: '功率因素', align: 'center', prop: 'powerFactor' , istrue:true},
-    { label: '时间', align: 'center', prop: 'createTime', formatter: dateFormatter, width: '200px' , istrue:true},
+    { label: '总有功功率(kVA)', align: 'center', prop: 'active_pow' , istrue:true},
+    { label: '总视在功率(kW)', align: 'center', prop: 'apparent_pow' , istrue:true},
+    { label: '功率因素', align: 'center', prop: 'power_factor' , istrue:true},
+    { label: '时间', align: 'center', prop: 'create_time', formatter: dateFormatter, width: '200px' , istrue:true},
     { label: '操作', align: 'center', slot: 'actions' , istrue:true},
 ]);
 
@@ -546,175 +545,176 @@ const getList = async () => {
   loading.value = true
   try {
  // 生成假数据
-const fakeData = [
-    {
-        id: 1,
-        location: "机房1-机柜1",
-        lineId: 123,
-        loopId: 456,
-        outletId: 789,
-        vol: 220,
-        cur: 10,
-        activePow: 2200,
-        apparentPow: 2300,
-        volAvgValue: 210,
-        volMaxValue: 230,
-        volMaxTime: "2024-03-27 12:00:00",
-        volMinValue: 200,
-        volMinTime: "2024-03-27 06:00:00",
-        curAvgValue: 12,
-        curMaxValue: 14,
-        curMaxTime: "2024-03-27 11:00:00",
-        curMinValue: 10,
-        curMinTime: "2024-03-27 05:00:00",
-        activePowAvgValue: 2000,
-        activePowMaxValue: 2500,
-        activePowMaxTime: "2024-03-27 14:00:00",
-        activePowMinValue: 1800,
-        activePowMinTime: "2024-03-27 04:00:00",
-        apparentPowAvgValue: 2200,
-        apparentPowMaxValue: 2400,
-        apparentPowMaxTime: "2024-03-27 15:00:00",
-        apparentPowMinValue: 2100,
-        apparentPowMinTime: "2024-03-27 03:00:00",
-        powerFactor: 0.95,
-        createTime: "2024-03-27 18:00:00"
-    },
-    {
-        id: 2,
-        location: "机房1-机柜1",
-        lineId: 124,
-        loopId: 457,
-        outletId: 790,
-        vol: 210,
-        cur: 12,
-        activePow: 2500,
-        apparentPow: 2600,
-        volAvgValue: 200,
-        volMaxValue: 220,
-        volMaxTime: "2024-03-27 11:00:00",
-        volMinValue: 190,
-        volMinTime: "2024-03-27 05:00:00",
-        curAvgValue: 12,
-        curMaxValue: 14,
-        curMaxTime: "2024-03-27 11:00:00",
-        curMinValue: 10,
-        curMinTime: "2024-03-27 05:00:00",
-        activePowAvgValue: 2300,
-        activePowMaxValue: 2700,
-        activePowMaxTime: "2024-03-27 13:00:00",
-        activePowMinValue: 2100,
-        activePowMinTime: "2024-03-27 02:00:00",
-        apparentPowAvgValue: 2400,
-        apparentPowMaxValue: 2600,
-        apparentPowMaxTime: "2024-03-27 16:00:00",
-        apparentPowMinValue: 2200,
-        apparentPowMinTime: "2024-03-27 01:00:00",
-        powerFactor: 0.96,
-        createTime: "2024-03-27 17:00:00"
-    },
-    {
-        id: 3,
-        location: "机房1-机柜1",
-        lineId: 124,
-        loopId: 457,
-        outletId: 790,
-        vol: 210,
-        cur: 12,
-        activePow: 2500,
-        apparentPow: 2600,
-        volAvgValue: 200,
-        volMaxValue: 220,
-        volMaxTime: "2024-03-27 11:00:00",
-        volMinValue: 190,
-        volMinTime: "2024-03-27 05:00:00",
-        curAvgValue: 12,
-        curMaxValue: 14,
-        curMaxTime: "2024-03-27 11:00:00",
-        curMinValue: 10,
-        curMinTime: "2024-03-27 05:00:00",
-        activePowAvgValue: 2300,
-        activePowMaxValue: 2700,
-        activePowMaxTime: "2024-03-27 13:00:00",
-        activePowMinValue: 2100,
-        activePowMinTime: "2024-03-27 02:00:00",
-        apparentPowAvgValue: 2400,
-        apparentPowMaxValue: 2600,
-        apparentPowMaxTime: "2024-03-27 16:00:00",
-        apparentPowMinValue: 2200,
-        apparentPowMinTime: "2024-03-27 01:00:00",
-        powerFactor: 0.96,
-        createTime: "2024-03-27 17:00:00"
-    },{
-        id: 4,
-        location: "机房1-机柜1",
-        lineId: 124,
-        loopId: 457,
-        outletId: 790,
-        vol: 210,
-        cur: 12,
-        activePow: 2500,
-        apparentPow: 2600,
-        volAvgValue: 200,
-        volMaxValue: 220,
-        volMaxTime: "2024-03-27 11:00:00",
-        volMinValue: 190,
-        volMinTime: "2024-03-27 05:00:00",
-        curAvgValue: 12,
-        curMaxValue: 14,
-        curMaxTime: "2024-03-27 11:00:00",
-        curMinValue: 10,
-        curMinTime: "2024-03-27 05:00:00",
-        activePowAvgValue: 2300,
-        activePowMaxValue: 2700,
-        activePowMaxTime: "2024-03-27 13:00:00",
-        activePowMinValue: 2100,
-        activePowMinTime: "2024-03-27 02:00:00",
-        apparentPowAvgValue: 2400,
-        apparentPowMaxValue: 2600,
-        apparentPowMaxTime: "2024-03-27 16:00:00",
-        apparentPowMinValue: 2200,
-        apparentPowMinTime: "2024-03-27 01:00:00",
-        powerFactor: 0.96,
-        createTime: "2024-03-27 17:00:00"
-    },{
-        id: 5,
-        location: "机房1-机柜1",
-        lineId: 124,
-        loopId: 457,
-        outletId: 790,
-        vol: 210,
-        cur: 12,
-        activePow: 2500,
-        apparentPow: 2600,
-        volAvgValue: 200,
-        volMaxValue: 220,
-        volMaxTime: "2024-03-27 11:00:00",
-        volMinValue: 190,
-        volMinTime: "2024-03-27 05:00:00",
-        curAvgValue: 12,
-        curMaxValue: 14,
-        curMaxTime: "2024-03-27 11:00:00",
-        curMinValue: 10,
-        curMinTime: "2024-03-27 05:00:00",
-        activePowAvgValue: 2300,
-        activePowMaxValue: 2700,
-        activePowMaxTime: "2024-03-27 13:00:00",
-        activePowMinValue: 2100,
-        activePowMinTime: "2024-03-27 02:00:00",
-        apparentPowAvgValue: 2400,
-        apparentPowMaxValue: 2600,
-        apparentPowMaxTime: "2024-03-27 16:00:00",
-        apparentPowMinValue: 2200,
-        apparentPowMinTime: "2024-03-27 01:00:00",
-        powerFactor: 0.96,
-        createTime: "2024-03-27 17:00:00"
-    }
-];
+// const fakeData = [
+//     {
+//         id: 1,
+//         location: "机房1-机柜1",
+//         lineId: 123,
+//         loopId: 456,
+//         outletId: 789,
+//         vol: 220,
+//         cur: 10,
+//         activePow: 2200,
+//         apparentPow: 2300,
+//         volAvgValue: 210,
+//         volMaxValue: 230,
+//         volMaxTime: "2024-03-27 12:00:00",
+//         volMinValue: 200,
+//         volMinTime: "2024-03-27 06:00:00",
+//         curAvgValue: 12,
+//         curMaxValue: 14,
+//         curMaxTime: "2024-03-27 11:00:00",
+//         curMinValue: 10,
+//         curMinTime: "2024-03-27 05:00:00",
+//         activePowAvgValue: 2000,
+//         activePowMaxValue: 2500,
+//         activePowMaxTime: "2024-03-27 14:00:00",
+//         activePowMinValue: 1800,
+//         activePowMinTime: "2024-03-27 04:00:00",
+//         apparentPowAvgValue: 2200,
+//         apparentPowMaxValue: 2400,
+//         apparentPowMaxTime: "2024-03-27 15:00:00",
+//         apparentPowMinValue: 2100,
+//         apparentPowMinTime: "2024-03-27 03:00:00",
+//         powerFactor: 0.95,
+//         createTime: "2024-03-27 18:00:00"
+//     },
+//     {
+//         id: 2,
+//         location: "机房1-机柜1",
+//         lineId: 124,
+//         loopId: 457,
+//         outletId: 790,
+//         vol: 210,
+//         cur: 12,
+//         activePow: 2500,
+//         apparentPow: 2600,
+//         volAvgValue: 200,
+//         volMaxValue: 220,
+//         volMaxTime: "2024-03-27 11:00:00",
+//         volMinValue: 190,
+//         volMinTime: "2024-03-27 05:00:00",
+//         curAvgValue: 12,
+//         curMaxValue: 14,
+//         curMaxTime: "2024-03-27 11:00:00",
+//         curMinValue: 10,
+//         curMinTime: "2024-03-27 05:00:00",
+//         activePowAvgValue: 2300,
+//         activePowMaxValue: 2700,
+//         activePowMaxTime: "2024-03-27 13:00:00",
+//         activePowMinValue: 2100,
+//         activePowMinTime: "2024-03-27 02:00:00",
+//         apparentPowAvgValue: 2400,
+//         apparentPowMaxValue: 2600,
+//         apparentPowMaxTime: "2024-03-27 16:00:00",
+//         apparentPowMinValue: 2200,
+//         apparentPowMinTime: "2024-03-27 01:00:00",
+//         powerFactor: 0.96,
+//         createTime: "2024-03-27 17:00:00"
+//     },
+//     {
+//         id: 3,
+//         location: "机房1-机柜1",
+//         lineId: 124,
+//         loopId: 457,
+//         outletId: 790,
+//         vol: 210,
+//         cur: 12,
+//         activePow: 2500,
+//         apparentPow: 2600,
+//         volAvgValue: 200,
+//         volMaxValue: 220,
+//         volMaxTime: "2024-03-27 11:00:00",
+//         volMinValue: 190,
+//         volMinTime: "2024-03-27 05:00:00",
+//         curAvgValue: 12,
+//         curMaxValue: 14,
+//         curMaxTime: "2024-03-27 11:00:00",
+//         curMinValue: 10,
+//         curMinTime: "2024-03-27 05:00:00",
+//         activePowAvgValue: 2300,
+//         activePowMaxValue: 2700,
+//         activePowMaxTime: "2024-03-27 13:00:00",
+//         activePowMinValue: 2100,
+//         activePowMinTime: "2024-03-27 02:00:00",
+//         apparentPowAvgValue: 2400,
+//         apparentPowMaxValue: 2600,
+//         apparentPowMaxTime: "2024-03-27 16:00:00",
+//         apparentPowMinValue: 2200,
+//         apparentPowMinTime: "2024-03-27 01:00:00",
+//         powerFactor: 0.96,
+//         createTime: "2024-03-27 17:00:00"
+//     },{
+//         id: 4,
+//         location: "机房1-机柜1",
+//         lineId: 124,
+//         loopId: 457,
+//         outletId: 790,
+//         vol: 210,
+//         cur: 12,
+//         activePow: 2500,
+//         apparentPow: 2600,
+//         volAvgValue: 200,
+//         volMaxValue: 220,
+//         volMaxTime: "2024-03-27 11:00:00",
+//         volMinValue: 190,
+//         volMinTime: "2024-03-27 05:00:00",
+//         curAvgValue: 12,
+//         curMaxValue: 14,
+//         curMaxTime: "2024-03-27 11:00:00",
+//         curMinValue: 10,
+//         curMinTime: "2024-03-27 05:00:00",
+//         activePowAvgValue: 2300,
+//         activePowMaxValue: 2700,
+//         activePowMaxTime: "2024-03-27 13:00:00",
+//         activePowMinValue: 2100,
+//         activePowMinTime: "2024-03-27 02:00:00",
+//         apparentPowAvgValue: 2400,
+//         apparentPowMaxValue: 2600,
+//         apparentPowMaxTime: "2024-03-27 16:00:00",
+//         apparentPowMinValue: 2200,
+//         apparentPowMinTime: "2024-03-27 01:00:00",
+//         powerFactor: 0.96,
+//         createTime: "2024-03-27 17:00:00"
+//     },{
+//         id: 5,
+//         location: "机房1-机柜1",
+//         lineId: 124,
+//         loopId: 457,
+//         outletId: 790,
+//         vol: 210,
+//         cur: 12,
+//         activePow: 2500,
+//         apparentPow: 2600,
+//         volAvgValue: 200,
+//         volMaxValue: 220,
+//         volMaxTime: "2024-03-27 11:00:00",
+//         volMinValue: 190,
+//         volMinTime: "2024-03-27 05:00:00",
+//         curAvgValue: 12,
+//         curMaxValue: 14,
+//         curMaxTime: "2024-03-27 11:00:00",
+//         curMinValue: 10,
+//         curMinTime: "2024-03-27 05:00:00",
+//         activePowAvgValue: 2300,
+//         activePowMaxValue: 2700,
+//         activePowMaxTime: "2024-03-27 13:00:00",
+//         activePowMinValue: 2100,
+//         activePowMinTime: "2024-03-27 02:00:00",
+//         apparentPowAvgValue: 2400,
+//         apparentPowMaxValue: 2600,
+//         apparentPowMaxTime: "2024-03-27 16:00:00",
+//         apparentPowMinValue: 2200,
+//         apparentPowMinTime: "2024-03-27 01:00:00",
+//         powerFactor: 0.96,
+//         createTime: "2024-03-27 17:00:00"
+//     }
+// ];
 
-    // const data = await HistoryDataApi.getHistoryDataPage(queryParams)
-    list.value = fakeData
-    total.value = 5
+    const data = await HistoryDataApi.getHistoryDataPage(queryParams)
+    list.value = data.list
+    total.value = data.total
+
   } finally {
     loading.value = false
   }
