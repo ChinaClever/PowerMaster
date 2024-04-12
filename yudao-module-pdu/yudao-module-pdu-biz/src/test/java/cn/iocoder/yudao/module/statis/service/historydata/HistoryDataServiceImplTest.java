@@ -2,11 +2,12 @@ package cn.iocoder.yudao.module.statis.service.historydata;
 
 import cn.iocoder.yudao.framework.mybatis.core.query.QueryWrapperX;
 import cn.iocoder.yudao.framework.test.core.ut.BaseDbUnitTest;
-import cn.iocoder.yudao.module.statis.dal.dataobject.historydata.EsHistoryDataDO;
+import cn.iocoder.yudao.module.pdu.service.historydata.HistoryDataService;
+import cn.iocoder.yudao.module.pdu.service.historydata.HistoryDataServiceImpl;
 import org.junit.jupiter.api.Test;
 import javax.annotation.Resource;
-import cn.iocoder.yudao.module.statis.dal.dataobject.historydata.HistoryDataDO;
-import cn.iocoder.yudao.module.statis.dal.mysql.historydata.HistoryDataMapper;
+import cn.iocoder.yudao.module.pdu.dal.dataobject.historydata.HistoryDataDO;
+import cn.iocoder.yudao.module.pdu.dal.mysql.historydata.HistoryDataMapper;
 import org.springframework.context.annotation.Import;
 
 import java.time.Duration;
@@ -38,23 +39,23 @@ public class HistoryDataServiceImplTest extends BaseDbUnitTest {
             int totalInserted = 54192643;
             for (int i = 0; i < 1000000000; i++) {
                 HistoryDataDO historyDataDO = new HistoryDataDO();
-                historyDataDO.setPduId((short) random.nextInt(10001));
-                historyDataDO.setType((short) random.nextInt(11));
-                historyDataDO.setTopic((short) random.nextInt(11));
-                historyDataDO.setIndexes((short) random.nextInt(1001));
-                historyDataDO.setValue(random.nextFloat() * 100);
-                LocalDateTime currentTime = LocalDateTime.now();
-                historyDataDO.setCreateTime(currentTime);
-                historyDataDO.setTest1((short) random.nextInt(10001));
-                historyDataDO.setTest2((short) random.nextInt(10001));
-                historyDataDO.setTest3((short) random.nextInt(10001));
-                historyDataDO.setTest4((short) random.nextInt(10001));
-                historyDataDO.setTest5((short) random.nextInt(10001));
-                historyDataDO.setTest6((short) random.nextInt(10001));
-                historyDataDO.setTest7((short) random.nextInt(10001));
-                historyDataDO.setTest8((short) random.nextInt(10001));
-                historyDataDO.setTest9((short) random.nextInt(10001));
-                historyDataDO.setTest10((short) random.nextInt(10001));
+//                historyDataDO.setPduId((short) random.nextInt(10001));
+//                historyDataDO.setType((short) random.nextInt(11));
+//                historyDataDO.setTopic((short) random.nextInt(11));
+//                historyDataDO.setIndexes((short) random.nextInt(1001));
+//                historyDataDO.setValue(random.nextFloat() * 100);
+//                LocalDateTime currentTime = LocalDateTime.now();
+//                historyDataDO.setCreateTime(currentTime);
+//                historyDataDO.setTest1((short) random.nextInt(10001));
+//                historyDataDO.setTest2((short) random.nextInt(10001));
+//                historyDataDO.setTest3((short) random.nextInt(10001));
+//                historyDataDO.setTest4((short) random.nextInt(10001));
+//                historyDataDO.setTest5((short) random.nextInt(10001));
+//                historyDataDO.setTest6((short) random.nextInt(10001));
+//                historyDataDO.setTest7((short) random.nextInt(10001));
+//                historyDataDO.setTest8((short) random.nextInt(10001));
+//                historyDataDO.setTest9((short) random.nextInt(10001));
+//                historyDataDO.setTest10((short) random.nextInt(10001));
                 historyDataMapper.insert(historyDataDO);
                 totalInserted++;
 

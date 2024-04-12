@@ -202,7 +202,7 @@ const selection = ref([
       { value: "输出位4", label: '输出位4' },
       { value: "输出位5", label: '输出位5' },
       { value: "输出位6", label: '输出位6' },
-      { value: "输出位7", label: '输出位7' },
+      { value: "输出位7", label: '输出位7' },  
       { value: "输出位8", label: '输出位8' },
       { value: "输出位9", label: '输出位9' },
       { value: "输出位10", label: '输出位10' },
@@ -219,7 +219,7 @@ const cascaderChange = (select) => {
   if (select[0] === 'outlet'){
     list.value = [];
     for (let i = 1; i <= 10; i++) {
-        const ele = getRandomInt(100, 1500); // 生成100到1500之间的随机整数作为总电能数据
+        const ele = getRandomInt(100, 1500);
         const location = `机房${Math.ceil(i / 5)}-机柜${i}-PDU${i}-${select[1]}`; 
         list.value.push({
             id: i,
@@ -258,7 +258,7 @@ const tableColumns = ref([
    { label: '创建时间', align: 'center', prop: 'createTime', formatter: dateFormatter, istrue:true},
 ]);
 
-/** 查询列表 */
+/** 初始化数据 */
 const getList = async () => {
   loading.value = true
   try {
