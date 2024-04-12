@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.statis.entity.total;
+package cn.iocoder.yudao.framework.common.entity.es.pdu.line;
 
 import cn.iocoder.yudao.module.statis.entity.BaseDo;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -7,11 +7,29 @@ import lombok.Data;
 /**
  * @Auther: chenwany
  * @Date: 2024/3/28 14:47
- * @Description: pdu总历史数据表（实时）
+ * @Description: pdu相历史数据表（实时）
  */
 @Data
-public class PduHdaTotalRealtimeDo extends BaseDo {
+public class PduHdaLineRealtimeDo extends BaseDo {
 
+
+    /**
+     * 相
+     */
+    @JsonProperty("line_id")
+    private int lineId;
+
+    /**
+     * 电压
+     */
+    @JsonProperty("vol_value")
+    private float vol;
+
+    /**
+     * 电流
+     */
+    @JsonProperty("cur_value")
+    private float cur;
 
     /**
      * 有功功率
@@ -30,4 +48,5 @@ public class PduHdaTotalRealtimeDo extends BaseDo {
      */
     @JsonProperty("power_factor")
     private int powerFactor;
+
 }

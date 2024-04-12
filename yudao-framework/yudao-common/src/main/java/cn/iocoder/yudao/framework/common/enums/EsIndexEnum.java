@@ -92,6 +92,24 @@ public enum EsIndexEnum {
      */
     PDU_EQ_TOTAL_MONTH("pdu_eq_total_month","pdu总电量表（按月算）"),
 
+    /**
+     * pdu输出位电量表（按天算）
+     */
+    PDU_EQ_OUTLET_DAY("pdu_eq_outlet_day","pdu输出位电量表（按天算）"),
+    /**
+     * pdu输出位电量表（按周算）
+     */
+    PDU_EQ_OUTLET_WEEK("pdu_eq_outlet_week","pdu输出位电量表（按周算）"),
+
+    /**
+     * pdu输出位电量表（按月算）
+     */
+    PDU_EQ_OUTLET_MONTH("pdu_eq_outlet_month","pdu输出位电量表（按月算）"),
+    /**
+     * pdu输出位电能表
+     */
+    PDU_ELE_OUTLET("pdu_ele_outlet","pdu输出位电能表"),
+
     ;
     /**
      * es索引

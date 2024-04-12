@@ -22,23 +22,25 @@ public class PduHdaLineRealtimeDo extends BaseDo {
     /**
      * 电压
      */
+    @JsonProperty("vol_value")
     private float vol;
 
     /**
      * 电流
      */
+    @JsonProperty("cur_value")
     private float cur;
 
     /**
      * 有功功率
      */
-    @JsonProperty("active_pow")
+    @JsonProperty("pow_active")
     private float activePow;
 
     /**
      * 视在功率
      */
-    @JsonProperty("apparent_pow")
+    @JsonProperty("pow_apparent")
     private float apparentPow;
 
     /**

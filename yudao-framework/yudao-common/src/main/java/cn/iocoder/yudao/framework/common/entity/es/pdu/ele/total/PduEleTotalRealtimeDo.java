@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.statis.entity.ele;
+package cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total;
 
 import cn.iocoder.yudao.module.statis.entity.BaseDo;
 import com.fasterxml.jackson.annotation.JsonProperty;
