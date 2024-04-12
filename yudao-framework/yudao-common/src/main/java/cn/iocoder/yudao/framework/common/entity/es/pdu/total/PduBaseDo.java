@@ -1,10 +1,8 @@
-package cn.iocoder.yudao.module.statis.entity.total;
+package cn.iocoder.yudao.framework.common.entity.es.pdu.total;
 
 import cn.hutool.core.date.DateTime;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-
-import java.time.LocalDateTime;
 
 /**
  * @Author: chenwany

@@ -1,8 +1,10 @@
 package cn.iocoder.yudao.module.statis.service.impl;
 
 import cn.iocoder.yudao.framework.common.enums.EsIndexEnum;
+import cn.iocoder.yudao.module.statis.dao.PduEleOutletDao;
 import cn.iocoder.yudao.module.statis.dao.PduEleTotalDao;
 import cn.iocoder.yudao.module.statis.entity.ele.PduEqBaseDo;
+import cn.iocoder.yudao.module.statis.entity.ele.outlet.PduEqOutletBaseDo;
 import cn.iocoder.yudao.module.statis.service.EleService;
 import cn.iocoder.yudao.module.statis.service.EsHandleService;
 import cn.iocoder.yudao.module.statis.vo.EqBillConfigVo;
@@ -24,6 +26,8 @@ public class EleServiceImpl implements EleService {
 
     @Autowired
     PduEleTotalDao pduEleTotalDao;
+    @Autowired
+    PduEleOutletDao pduEleOutletDao;
     @Autowired
     EsHandleService  esHandleService;
 
@@ -49,6 +53,13 @@ public class EleServiceImpl implements EleService {
 
     @Override
     public void eleOutletDayDeal() {
+
+        //获取配置时间段
+        List<EqBillConfigVo> configVos = new ArrayList<>();
+        //电量统计
+        List<PduEqOutletBaseDo> eqBaseDos = pduEleOutletDao.statisEleDay(configVos);
+        //数据入库
+        esHandleService.batchInsert(eqBaseDos, EsIndexEnum.PDU_EQ_OUTLET_DAY.getIndex());
 
     }
 

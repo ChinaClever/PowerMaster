@@ -97,7 +97,17 @@ public class PduEleTotalDao {
         }
         return list;
     }
+    
 
+    /**
+     * @description:  获取ES中数据
+      * @param configVo 时间段配置
+     * @param sortOrder 排序
+     * @param index  索引名称
+     * @return Map<Integer,PduEleTotalRealtimeDo>
+     * @author luowei
+     * @date: 2024/4/10 10:46
+     */
     private Map<Integer, PduEleTotalRealtimeDo> getEleData(EqBillConfigVo configVo,SortOrder sortOrder,String index){
         Map<Integer, PduEleTotalRealtimeDo> dataMap = new HashMap<>();
         try {
