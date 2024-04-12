@@ -1,7 +1,7 @@
 package cn.iocoder.yudao.framework.common.entity.es.pdu.loop;
 
 import cn.hutool.core.date.DateTime;
-import cn.iocoder.yudao.module.statis.entity.total.PduBaseDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduBaseDo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 

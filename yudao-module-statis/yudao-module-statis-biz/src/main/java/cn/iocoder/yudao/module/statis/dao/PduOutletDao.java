@@ -2,14 +2,12 @@ package cn.iocoder.yudao.module.statis.dao;
 
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.outlet.PduHdaOutletBaseDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.outlet.PduHdaOutletHourDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.outlet.PduHdaOutletRealtimeDo;
 import cn.iocoder.yudao.framework.common.enums.EsIndexEnum;
 import cn.iocoder.yudao.framework.common.enums.EsStatisFieldEnum;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
-import cn.iocoder.yudao.module.statis.entity.loop.PduHdaLoopHourDo;
-import cn.iocoder.yudao.module.statis.entity.loop.PduHdaLoopRealtimeDo;
-import cn.iocoder.yudao.module.statis.entity.outlet.PduHdaOutletBaseDo;
-import cn.iocoder.yudao.module.statis.entity.outlet.PduHdaOutletHourDo;
-import cn.iocoder.yudao.module.statis.entity.outlet.PduHdaOutletRealtimeDo;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;

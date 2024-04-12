@@ -1,10 +1,10 @@
 package cn.iocoder.yudao.module.statis.service.impl;
 
+import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.PduEqBaseDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.outlet.PduEqOutletBaseDo;
 import cn.iocoder.yudao.framework.common.enums.EsIndexEnum;
 import cn.iocoder.yudao.module.statis.dao.PduEleOutletDao;
 import cn.iocoder.yudao.module.statis.dao.PduEleTotalDao;
-import cn.iocoder.yudao.module.statis.entity.ele.PduEqBaseDo;
-import cn.iocoder.yudao.module.statis.entity.ele.outlet.PduEqOutletBaseDo;
 import cn.iocoder.yudao.module.statis.service.EleService;
 import cn.iocoder.yudao.module.statis.service.EsHandleService;
 import cn.iocoder.yudao.module.statis.vo.EqBillConfigVo;
