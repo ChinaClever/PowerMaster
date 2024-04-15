@@ -315,12 +315,15 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
         tableColumns.value = [
           { label: '编号', align: 'center', prop: 'id', istrue:true},
           { label: '位置', align: 'center', prop: 'location', istrue:true, width: '180px'},
-          { label: '总有功功率(kVA)', align: 'center', prop: 'activePow', istrue:true, width: '140px'},
-          { label: '总视在功率(kW)', align: 'center', prop: 'apparentPow', istrue:true, width: '140px'},
-          { label: '功率因素', align: 'center', prop: 'powerFactor', istrue:true},
-          { label: '时间', align: 'center', prop: 'createTime', formatter: dateFormatter, width: '200px', istrue:true},
+          { label: '总有功功率(kVA)', align: 'center', prop: 'pow_active', istrue:true, width: '140px'},
+          { label: '总视在功率(kW)', align: 'center', prop: 'pow_apparent', istrue:true, width: '140px'},
+          { label: '功率因素', align: 'center', prop: 'power_factor', istrue:true},
+          { label: '时间', align: 'center', prop: 'create_time', formatter: dateFormatter, width: '200px', istrue:true},
           { label: '操作', align: 'center', slot: 'actions', istrue:true},
         ];
+        queryParams.pageNo = 1;
+        queryParams.pageSize = 10;
+        getList();
       }else{
         checkColumns.value.forEach(column => {
             column.istrue = true;
@@ -341,6 +344,9 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
           { label: '最小视在功率时间', align: 'center', prop: 'apparentPowMinTime', formatter: dateFormatter, width: '200px', istrue:true},
           { label: '操作', align: 'center', slot: 'actions', istrue:true},
         ];
+        queryParams.pageNo = 1;
+        queryParams.pageSize = 10;
+        getList();
       }
     }
     
@@ -353,15 +359,17 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
         tableColumns.value = [
           { label: '编号', align: 'center', prop: 'id', istrue:true},
           { label: '位置', align: 'center', prop: 'location', istrue:true, width: '180px'},
-          { label: '相', align: 'center', prop: 'lineId', istrue:true},
-          { label: '电压(V)', align: 'center', prop: 'vol', istrue:true},
-          { label: '电流(A)', align: 'center', prop: 'cur', istrue:true},
-          { label: '有功功率(kVA)', align: 'center', prop: 'activePow', istrue:true, width: '140px'},
-          { label: '视在功率(kW)', align: 'center', prop: 'apparentPow', istrue:true, width: '140px'},
-          { label: '功率因素', align: 'center', prop: 'powerFactor', istrue:true},
-          { label: '时间', align: 'center', prop: 'createTime', formatter: dateFormatter, width: '200px', istrue:true},
+          { label: '电压(V)', align: 'center', prop: 'vol_value', istrue:true},
+          { label: '电流(A)', align: 'center', prop: 'cur_value', istrue:true},
+          { label: '有功功率(kVA)', align: 'center', prop: 'pow_active', istrue:true, width: '140px'},
+          { label: '视在功率(kW)', align: 'center', prop: 'pow_apparent', istrue:true, width: '140px'},
+          { label: '功率因素', align: 'center', prop: 'power_factor', istrue:true},
+          { label: '时间', align: 'center', prop: 'create_time', formatter: dateFormatter, width: '200px', istrue:true},
           { label: '操作', align: 'center', slot: 'actions', istrue:true},
         ];
+        queryParams.pageNo = 1;
+        queryParams.pageSize = 10;
+        getList();
       }else{
         checkColumns.value.forEach(column => {
           column.isView = true;
@@ -374,7 +382,6 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
         tableColumns.value = [
           { label: '编号', align: 'center', prop: 'id', istrue:true},
           { label: '位置', align: 'center', prop: 'location', istrue:true, width: '180px'},
-          { label: '相', align: 'center', prop: 'lineId', istrue:true},
           { label: '平均电压(V)', align: 'center', prop: 'volAvgValue', istrue:false, width: '140px'},
           { label: '最大电压(V)', align: 'center', prop: 'volMaxValue', istrue:false, width: '140px'},
           { label: '最大电压时间', align: 'center', prop: 'volMaxTime', formatter: dateFormatter, width: '200px', istrue:false},
@@ -397,6 +404,9 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
           { label: '最小视在功率时间', align: 'center', prop: 'apparentPowMinTime', formatter: dateFormatter, width: '200px', istrue:false},
           { label: '操作', align: 'center', slot: 'actions', istrue:true},
         ];
+        queryParams.pageNo = 1;
+        queryParams.pageSize = 10;
+        getList();
       }
     }
 
@@ -409,15 +419,17 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
         tableColumns.value = [
           { label: '编号', align: 'center', prop: 'id', istrue:true},
           { label: '位置', align: 'center', prop: 'location', istrue:true, width: '180px'},
-          { label: '回路', align: 'center', prop: 'loopId', istrue:true},
-          { label: '电压(V)', align: 'center', prop: 'vol', istrue:true},
-          { label: '电流(A)', align: 'center', prop: 'cur', istrue:true},
-          { label: '有功功率(kVA)', align: 'center', prop: 'activePow', istrue:true, width: '140px'},
-          { label: '视在功率(kW)', align: 'center', prop: 'apparentPow', istrue:true, width: '140px'},
-          { label: '功率因素', align: 'center', prop: 'powerFactor', istrue:true},
-          { label: '时间', align: 'center', prop: 'createTime', formatter: dateFormatter, width: '200px', istrue:true},
+          { label: '电压(V)', align: 'center', prop: 'vol_value', istrue:true},
+          { label: '电流(A)', align: 'center', prop: 'cur_value', istrue:true},
+          { label: '有功功率(kVA)', align: 'center', prop: 'pow_active', istrue:true, width: '140px'},
+          { label: '视在功率(kW)', align: 'center', prop: 'pow_apparent', istrue:true, width: '140px'},
+          { label: '功率因素', align: 'center', prop: 'power_factor', istrue:true},
+          { label: '时间', align: 'center', prop: 'create_time', formatter: dateFormatter, width: '200px', istrue:true},
           { label: '操作', align: 'center', slot: 'actions', istrue:true},
         ];
+        queryParams.pageNo = 1;
+        queryParams.pageSize = 10;
+        getList();
       }else{
         checkColumns.value.forEach(column => {
           column.isView = true;
@@ -430,7 +442,6 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
         tableColumns.value = [
           { label: '编号', align: 'center', prop: 'id', istrue:true},
           { label: '位置', align: 'center', prop: 'location', istrue:true, width: '180px'},
-          { label: '回路', align: 'center', prop: 'loopId', istrue:true},
           { label: '平均电压(V)', align: 'center', prop: 'volAvgValue', istrue:false, width: '140px'},
           { label: '最大电压(V)', align: 'center', prop: 'volMaxValue', istrue:false, width: '140px'},
           { label: '最大电压时间', align: 'center', prop: 'volMaxTime', formatter: dateFormatter, width: '200px', istrue:false},
@@ -453,6 +464,9 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
           { label: '最小视在功率时间', align: 'center', prop: 'apparentPowMinTime', formatter: dateFormatter, width: '200px', istrue:false},
           { label: '操作', align: 'center', slot: 'actions', istrue:true},
         ];
+        queryParams.pageNo = 1;
+        queryParams.pageSize = 10;
+        getList();
       }
     }
 
@@ -469,14 +483,16 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
         tableColumns.value = [
           { label: '编号', align: 'center', prop: 'id', istrue:true},
           { label: '位置', align: 'center', prop: 'location', istrue:true, width: '180px'},
-          { label: '输出位', align: 'center', prop: 'outletId', istrue:true},
-          { label: '电流(A)', align: 'center', prop: 'cur', istrue:true},
-          { label: '有功功率(kVA)', align: 'center', prop: 'activePow', istrue:true, width: '140px'},
-          { label: '视在功率(kW)', align: 'center', prop: 'apparentPow', istrue:true, width: '140px'},
-          { label: '功率因素', align: 'center', prop: 'powerFactor', istrue:true},
-          { label: '时间', align: 'center', prop: 'createTime', formatter: dateFormatter, width: '200px', istrue:true},
+          { label: '电流(A)', align: 'center', prop: 'cur_value', istrue:true},
+          { label: '有功功率(kVA)', align: 'center', prop: 'pow_active', istrue:true, width: '140px'},
+          { label: '视在功率(kW)', align: 'center', prop: 'pow_apparent', istrue:true, width: '140px'},
+          { label: '功率因素', align: 'center', prop: 'power_factor', istrue:true},
+          { label: '时间', align: 'center', prop: 'create_time', formatter: dateFormatter, width: '200px', istrue:true},
           { label: '操作', align: 'center', slot: 'actions', istrue:true},
         ];
+        queryParams.pageNo = 1;
+        queryParams.pageSize = 10;
+        getList();
       }else{
         checkColumns.value.forEach(column => {
           if (column.prop === 'vol') {
@@ -491,7 +507,6 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
         tableColumns.value = [
           { label: '编号', align: 'center', prop: 'id', istrue:true},
           { label: '位置', align: 'center', prop: 'location', istrue:true, width: '180px'},
-          { label: '输出位', align: 'center', prop: 'outletId', istrue:true},
           { label: '平均电流(A)', align: 'center', prop: 'curAvgValue', istrue:false, width: '140px'},
           { label: '最大电流(A)', align: 'center', prop: 'curMaxValue', istrue:false, width: '140px'},
           { label: '最大电流时间', align: 'center', prop: 'curMaxTime', formatter: dateFormatter, width: '200px', istrue:false},
@@ -509,6 +524,9 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
           { label: '最小视在功率时间', align: 'center', prop: 'apparentPowMinTime', formatter: dateFormatter, width: '200px', istrue:false},
           { label: '操作', align: 'center', slot: 'actions', istrue:true},
         ];
+        queryParams.pageNo = 1;
+        queryParams.pageSize = 10;
+        getList();
       }
     }
   });
@@ -516,8 +534,8 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
 const tableColumns = ref([
     { label: '编号', align: 'center', prop: 'id' , istrue:true},
     { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
-    { label: '总有功功率(kVA)', align: 'center', prop: 'active_pow' , istrue:true},
-    { label: '总视在功率(kW)', align: 'center', prop: 'apparent_pow' , istrue:true},
+    { label: '总有功功率(kVA)', align: 'center', prop: 'pow_active', istrue:true, width: '140px'},
+    { label: '总视在功率(kW)', align: 'center', prop: 'pow_apparent', istrue:true, width: '140px'},
     { label: '功率因素', align: 'center', prop: 'power_factor' , istrue:true},
     { label: '时间', align: 'center', prop: 'create_time', formatter: dateFormatter, width: '200px' , istrue:true},
     { label: '操作', align: 'center', slot: 'actions' , istrue:true},
@@ -544,173 +562,6 @@ const handleIsView = (label: string, istrue: boolean) => {
 const getList = async () => {
   loading.value = true
   try {
- // 生成假数据
-// const fakeData = [
-//     {
-//         id: 1,
-//         location: "机房1-机柜1",
-//         lineId: 123,
-//         loopId: 456,
-//         outletId: 789,
-//         vol: 220,
-//         cur: 10,
-//         activePow: 2200,
-//         apparentPow: 2300,
-//         volAvgValue: 210,
-//         volMaxValue: 230,
-//         volMaxTime: "2024-03-27 12:00:00",
-//         volMinValue: 200,
-//         volMinTime: "2024-03-27 06:00:00",
-//         curAvgValue: 12,
-//         curMaxValue: 14,
-//         curMaxTime: "2024-03-27 11:00:00",
-//         curMinValue: 10,
-//         curMinTime: "2024-03-27 05:00:00",
-//         activePowAvgValue: 2000,
-//         activePowMaxValue: 2500,
-//         activePowMaxTime: "2024-03-27 14:00:00",
-//         activePowMinValue: 1800,
-//         activePowMinTime: "2024-03-27 04:00:00",
-//         apparentPowAvgValue: 2200,
-//         apparentPowMaxValue: 2400,
-//         apparentPowMaxTime: "2024-03-27 15:00:00",
-//         apparentPowMinValue: 2100,
-//         apparentPowMinTime: "2024-03-27 03:00:00",
-//         powerFactor: 0.95,
-//         createTime: "2024-03-27 18:00:00"
-//     },
-//     {
-//         id: 2,
-//         location: "机房1-机柜1",
-//         lineId: 124,
-//         loopId: 457,
-//         outletId: 790,
-//         vol: 210,
-//         cur: 12,
-//         activePow: 2500,
-//         apparentPow: 2600,
-//         volAvgValue: 200,
-//         volMaxValue: 220,
-//         volMaxTime: "2024-03-27 11:00:00",
-//         volMinValue: 190,
-//         volMinTime: "2024-03-27 05:00:00",
-//         curAvgValue: 12,
-//         curMaxValue: 14,
-//         curMaxTime: "2024-03-27 11:00:00",
-//         curMinValue: 10,
-//         curMinTime: "2024-03-27 05:00:00",
-//         activePowAvgValue: 2300,
-//         activePowMaxValue: 2700,
-//         activePowMaxTime: "2024-03-27 13:00:00",
-//         activePowMinValue: 2100,
-//         activePowMinTime: "2024-03-27 02:00:00",
-//         apparentPowAvgValue: 2400,
-//         apparentPowMaxValue: 2600,
-//         apparentPowMaxTime: "2024-03-27 16:00:00",
-//         apparentPowMinValue: 2200,
-//         apparentPowMinTime: "2024-03-27 01:00:00",
-//         powerFactor: 0.96,
-//         createTime: "2024-03-27 17:00:00"
-//     },
-//     {
-//         id: 3,
-//         location: "机房1-机柜1",
-//         lineId: 124,
-//         loopId: 457,
-//         outletId: 790,
-//         vol: 210,
-//         cur: 12,
-//         activePow: 2500,
-//         apparentPow: 2600,
-//         volAvgValue: 200,
-//         volMaxValue: 220,
-//         volMaxTime: "2024-03-27 11:00:00",
-//         volMinValue: 190,
-//         volMinTime: "2024-03-27 05:00:00",
-//         curAvgValue: 12,
-//         curMaxValue: 14,
-//         curMaxTime: "2024-03-27 11:00:00",
-//         curMinValue: 10,
-//         curMinTime: "2024-03-27 05:00:00",
-//         activePowAvgValue: 2300,
-//         activePowMaxValue: 2700,
-//         activePowMaxTime: "2024-03-27 13:00:00",
-//         activePowMinValue: 2100,
-//         activePowMinTime: "2024-03-27 02:00:00",
-//         apparentPowAvgValue: 2400,
-//         apparentPowMaxValue: 2600,
-//         apparentPowMaxTime: "2024-03-27 16:00:00",
-//         apparentPowMinValue: 2200,
-//         apparentPowMinTime: "2024-03-27 01:00:00",
-//         powerFactor: 0.96,
-//         createTime: "2024-03-27 17:00:00"
-//     },{
-//         id: 4,
-//         location: "机房1-机柜1",
-//         lineId: 124,
-//         loopId: 457,
-//         outletId: 790,
-//         vol: 210,
-//         cur: 12,
-//         activePow: 2500,
-//         apparentPow: 2600,
-//         volAvgValue: 200,
-//         volMaxValue: 220,
-//         volMaxTime: "2024-03-27 11:00:00",
-//         volMinValue: 190,
-//         volMinTime: "2024-03-27 05:00:00",
-//         curAvgValue: 12,
-//         curMaxValue: 14,
-//         curMaxTime: "2024-03-27 11:00:00",
-//         curMinValue: 10,
-//         curMinTime: "2024-03-27 05:00:00",
-//         activePowAvgValue: 2300,
-//         activePowMaxValue: 2700,
-//         activePowMaxTime: "2024-03-27 13:00:00",
-//         activePowMinValue: 2100,
-//         activePowMinTime: "2024-03-27 02:00:00",
-//         apparentPowAvgValue: 2400,
-//         apparentPowMaxValue: 2600,
-//         apparentPowMaxTime: "2024-03-27 16:00:00",
-//         apparentPowMinValue: 2200,
-//         apparentPowMinTime: "2024-03-27 01:00:00",
-//         powerFactor: 0.96,
-//         createTime: "2024-03-27 17:00:00"
-//     },{
-//         id: 5,
-//         location: "机房1-机柜1",
-//         lineId: 124,
-//         loopId: 457,
-//         outletId: 790,
-//         vol: 210,
-//         cur: 12,
-//         activePow: 2500,
-//         apparentPow: 2600,
-//         volAvgValue: 200,
-//         volMaxValue: 220,
-//         volMaxTime: "2024-03-27 11:00:00",
-//         volMinValue: 190,
-//         volMinTime: "2024-03-27 05:00:00",
-//         curAvgValue: 12,
-//         curMaxValue: 14,
-//         curMaxTime: "2024-03-27 11:00:00",
-//         curMinValue: 10,
-//         curMinTime: "2024-03-27 05:00:00",
-//         activePowAvgValue: 2300,
-//         activePowMaxValue: 2700,
-//         activePowMaxTime: "2024-03-27 13:00:00",
-//         activePowMinValue: 2100,
-//         activePowMinTime: "2024-03-27 02:00:00",
-//         apparentPowAvgValue: 2400,
-//         apparentPowMaxValue: 2600,
-//         apparentPowMaxTime: "2024-03-27 16:00:00",
-//         apparentPowMinValue: 2200,
-//         apparentPowMinTime: "2024-03-27 01:00:00",
-//         powerFactor: 0.96,
-//         createTime: "2024-03-27 17:00:00"
-//     }
-// ];
-
     const data = await HistoryDataApi.getHistoryDataPage(queryParams)
     list.value = data.list
     total.value = data.total

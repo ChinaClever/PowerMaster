@@ -3,8 +3,6 @@ package cn.iocoder.yudao.module.pdu.dal.dataobject.historydata;
 import cn.hutool.core.date.DateTime;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.Document;
 
 /**
  * pdu历史数据 DO
@@ -12,7 +10,7 @@ import org.springframework.data.elasticsearch.annotations.Document;
  * @author 芋道源码
  */
 @Data
-public class HistoryDataDO{
+public class PduHdaTotalRealtimeDO {
 
     private Long id;
 

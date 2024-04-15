@@ -6,7 +6,7 @@ import cn.iocoder.yudao.module.pdu.service.historydata.HistoryDataService;
 import cn.iocoder.yudao.module.pdu.service.historydata.HistoryDataServiceImpl;
 import org.junit.jupiter.api.Test;
 import javax.annotation.Resource;
-import cn.iocoder.yudao.module.pdu.dal.dataobject.historydata.HistoryDataDO;
+import cn.iocoder.yudao.module.pdu.dal.dataobject.historydata.PduHdaTotalRealtimeDO;
 import cn.iocoder.yudao.module.pdu.dal.mysql.historydata.HistoryDataMapper;
 import org.springframework.context.annotation.Import;
 
@@ -38,7 +38,7 @@ public class HistoryDataServiceImplTest extends BaseDbUnitTest {
             Random random = new Random();
             int totalInserted = 54192643;
             for (int i = 0; i < 1000000000; i++) {
-                HistoryDataDO historyDataDO = new HistoryDataDO();
+                PduHdaTotalRealtimeDO pduHdaTotalRealtimeDO = new PduHdaTotalRealtimeDO();
 //                historyDataDO.setPduId((short) random.nextInt(10001));
 //                historyDataDO.setType((short) random.nextInt(11));
 //                historyDataDO.setTopic((short) random.nextInt(11));
@@ -56,7 +56,7 @@ public class HistoryDataServiceImplTest extends BaseDbUnitTest {
 //                historyDataDO.setTest8((short) random.nextInt(10001));
 //                historyDataDO.setTest9((short) random.nextInt(10001));
 //                historyDataDO.setTest10((short) random.nextInt(10001));
-                historyDataMapper.insert(historyDataDO);
+                historyDataMapper.insert(pduHdaTotalRealtimeDO);
                 totalInserted++;
 
                 if (totalInserted % 50000 == 0) {
@@ -89,20 +89,20 @@ public class HistoryDataServiceImplTest extends BaseDbUnitTest {
 //            logger.info("["+ currentTimeFormatted + "] --- " + " 开始查询数据 条件：pdu_id、type、topic和indexes" );
 //            logger.info("["+ currentTimeFormatted + "] --- " + " 开始查询数据 条件：五分钟时间段" );
 
-            QueryWrapperX<HistoryDataDO> queryWrapperX = new QueryWrapperX<>();
+            QueryWrapperX<PduHdaTotalRealtimeDO> queryWrapperX = new QueryWrapperX<>();
             queryWrapperX.eq("pdu_id", 150);
 //            queryWrapperX.eq("type", 6);
 //            queryWrapperX.eq("topic", 2);
 //            queryWrapperX.eq("indexes", 202);
 //            queryWrapperX.between("create_time", "2024-03-14 13:20:00", "2024-03-14 13:21:00");
-            List<HistoryDataDO> historyDataDOList = historyDataMapper.selectList(queryWrapperX);
+            List<PduHdaTotalRealtimeDO> pduHdaTotalRealtimeDOList = historyDataMapper.selectList(queryWrapperX);
 
-            if (!historyDataDOList.isEmpty()) {
+            if (!pduHdaTotalRealtimeDOList.isEmpty()) {
                 LocalDateTime endTime = LocalDateTime.now();
                 String endTimeFormatted = endTime.format(formatter);
                 Duration duration = Duration.between(startTime, endTime);
                 long milliseconds = duration.toMillis();
-                logger.info("["+ endTimeFormatted + "] --- " + " 查询结束--查询到的数据总条数：" + historyDataDOList.size() + "  总耗时："+ milliseconds + " 毫秒" );
+                logger.info("["+ endTimeFormatted + "] --- " + " 查询结束--查询到的数据总条数：" + pduHdaTotalRealtimeDOList.size() + "  总耗时："+ milliseconds + " 毫秒" );
 
             } else {
                 LocalDateTime endTime = LocalDateTime.now();
