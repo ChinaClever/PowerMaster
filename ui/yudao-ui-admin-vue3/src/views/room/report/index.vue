@@ -20,14 +20,15 @@
       />
     </el-col>
     <el-col :span="24 - treeWidth" :xs="24">
-      <el-form
-         class="-mb-15px"
-         :model="queryParams"
-         ref="queryFormRef"
-         :inline="true"
-         label-width="120px"
-       >
-       <el-form-item label="" prop="collaspe">
+      <ContentWrap>
+        <el-form
+          class="-mb-15px"
+          :model="queryParams"
+          ref="queryFormRef"
+          :inline="true"
+          label-width="120px"
+        >
+          <el-form-item label="" prop="collaspe">
             <el-switch 
             v-model="isCollapsed"  
             active-color="#409EFF" 
@@ -37,19 +38,19 @@
             inactive-value="0" 
             @change="toggleCollapse" />
           </el-form-item>
-         <el-form-item label="时间段" prop="createTime">
-           <el-date-picker
-             v-model="queryParams.createTime"
-             value-format="YYYY-MM-DD HH:mm:ss"
-             type="daterange"
-             start-placeholder="开始日期"
-             end-placeholder="结束日期"
-             :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-             class="!w-210px"
-           />
-         </el-form-item>
-         
-       </el-form>
+          <el-form-item label="时间段" prop="createTime">
+            <el-date-picker
+              v-model="queryParams.createTime"
+              value-format="YYYY-MM-DD HH:mm:ss"
+              type="daterange"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
+              class="!w-210px"
+            />
+          </el-form-item>
+        </el-form>
+      </ContentWrap>
       <el-collapse  v-model="activeNames">
         <el-collapse-item title="机柜信息" name="1">
           <el-row class="text-container"> 
@@ -85,6 +86,7 @@
           </el-row>
          
         </el-collapse-item>
+
         <el-collapse-item title="机房耗电排名" name="2">
           <el-form-item label="颗粒度" prop="type">
            <el-select
@@ -99,6 +101,7 @@
           </el-form-item>
             <div ref="rankChartContainer" id="rankChartContainer" style="width: 75vw; height: 58vh;"></div>
         </el-collapse-item>
+
         <el-collapse-item title="机柜列耗电排名" name="3">
           <el-form
             class="-mb-15px"
@@ -130,6 +133,7 @@
           </el-form>
           <div ref="cabinetRankChartContainer" id="cabinetRankChartContainer" style="width: 75vw; height: 58vh;"></div>
         </el-collapse-item>
+
         <el-collapse-item title="功率曲线" name="4">
           <el-form-item label="颗粒度" prop="type">
            <el-select
@@ -146,6 +150,7 @@
             <div ref="powChartContainer" id="powChartContainer" style="width: 70vw; height: 58vh;"></div>
           </ContentWrap>
         </el-collapse-item>
+
         <el-collapse-item title="温度曲线" name="5">
           <el-form-item label="颗粒度" prop="type">
            <el-select
@@ -312,7 +317,7 @@ const roomInfo = ref({
   tem_max_value : "25",
   hum_max_value : "75",
   balance : "50",
-  loadPer : "80"
+  loadPer : "80",
 })
 
 //折线图数据

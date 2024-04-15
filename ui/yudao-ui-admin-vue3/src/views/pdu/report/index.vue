@@ -20,14 +20,15 @@
       />
     </el-col>
     <el-col :span="24 - treeWidth" :xs="24">
-      <el-form
-         class="-mb-15px"
-         :model="queryParams"
-         ref="queryFormRef"
-         :inline="true"
-         label-width="120px"
-       >
-       <el-form-item label="" prop="collaspe">
+      <ContentWrap>
+        <el-form
+          class="-mb-15px"
+          :model="queryParams"
+          ref="queryFormRef"
+          :inline="true"
+          label-width="120px"
+        >
+          <el-form-item label="" prop="collaspe">
             <el-switch 
             v-model="isCollapsed"  
             active-color="#409EFF" 
@@ -37,22 +38,22 @@
             inactive-value="0" 
             @change="toggleCollapse" />
           </el-form-item>
-         <el-form-item label="时间段" prop="createTime">
-           <el-date-picker
-             v-model="queryParams.createTime"
-             value-format="YYYY-MM-DD HH:mm:ss"
-             type="daterange"
-             start-placeholder="开始日期"
-             end-placeholder="结束日期"
-             :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-             class="!w-210px"
-           />
-         </el-form-item>
-         <el-text size="large">
-          报警次数：{{ pduInfo.alarm }}
-         </el-text>
-         
-       </el-form>
+          <el-form-item label="时间段" prop="createTime">
+            <el-date-picker
+              v-model="queryParams.createTime"
+              value-format="YYYY-MM-DD HH:mm:ss"
+              type="daterange"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
+              class="!w-210px"
+            />
+          </el-form-item>
+          <el-text size="large">
+            报警次数：{{ pduInfo.alarm }}
+          </el-text>
+        </el-form>
+      </ContentWrap>
       <el-collapse  v-model="activeNames">
         <el-collapse-item title="PDU信息" name="1">
           <el-row class="text-container"> 
@@ -84,7 +85,6 @@
               </el-row>
             </el-col> -->
           </el-row>
-         
         </el-collapse-item>
         <el-collapse-item title="耗电排名(日期)" name="2">
           <el-form-item label="颗粒度" prop="type">
@@ -93,16 +93,13 @@
              placeholder="请选择天/周/月"
              class="!w-120px"
            >
-             <el-option label="天" value="day" />
-             <el-option label="周" value="week" />
-             <el-option label="月" value="month" />
+              <el-option label="天" value="day" />
+              <el-option label="周" value="week" />
+              <el-option label="月" value="month" />
             </el-select>
           </el-form-item>
-
             <div ref="rankChartContainer" id="rankChartContainer" style="width: 75vw; height: 58vh;"></div>
-
         </el-collapse-item>
-
         <el-collapse-item title="功率曲线" name="3">
           <el-form-item label="颗粒度" prop="type">
            <el-select
@@ -111,8 +108,8 @@
              class="!w-120px"
            >
            <el-option label="分钟" value="realtime" />
-             <el-option label="小时" value="hour" />
-             <el-option label="天" value="day" />
+              <el-option label="小时" value="hour" />
+              <el-option label="天" value="day" />
             </el-select>
           </el-form-item>
           <ContentWrap style="overflow: visible;">
@@ -121,27 +118,27 @@
         </el-collapse-item>
         <el-collapse-item title="输出位耗电排名" name="4">
             <el-form-item label="显示数量" prop="type">
-            <el-select
-              v-model="queryParams.outputNumber"
-              placeholder="请选择数量"
-              class="!w-120px"
-            >
-                <el-option label="10" value= 10 />
-                <el-option label="7" value= 7 />
+              <el-select
+                v-model="queryParams.outputNumber"
+                placeholder="请选择数量"
+                class="!w-120px"
+              >
+                  <el-option label="10" value= 10 />
+                  <el-option label="7" value= 7 />
               </el-select>
             </el-form-item>
           <div ref="outputRankChartContainer" id="outputRankChartContainer" style="width: 75vw; height: 58vh;"></div>
         </el-collapse-item>
         <el-collapse-item title="温度曲线" name="5">
           <el-form-item label="颗粒度" prop="type">
-           <el-select
-             v-model="queryParams.temGranularity"
-             placeholder="请选择分钟/小时/天"
-             class="!w-120px"
-           >
-           <el-option label="分钟" value="realtime" />
-             <el-option label="小时" value="hour" />
-             <el-option label="天" value="day" />
+            <el-select
+            v-model="queryParams.temGranularity"
+            placeholder="请选择分钟/小时/天"
+            class="!w-120px"
+            >
+              <el-option label="分钟" value="realtime" />
+              <el-option label="小时" value="hour" />
+              <el-option label="天" value="day" />
             </el-select>
           </el-form-item>
           <ContentWrap style="overflow: visible;">
