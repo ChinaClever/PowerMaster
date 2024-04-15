@@ -19,6 +19,11 @@ public class FieldConstant {
     public static final String SYS_TIME = "sys_time";
 
     /**
+     * pdu
+     */
+    public static final String PDU_ID = "pdu_id";
+
+    /**
      * 回路
      */
     public static final String LOOP_ID = "loop_id";
@@ -208,5 +213,26 @@ public class FieldConstant {
      *   最低湿度
      */
     public static final String HUM_MIN_VALUE = "hum_min_value";
+
+
+    /**
+     *   电量
+     */
+    public static final String EQ_VALUE = "eq_value";
+
+    /**
+     * 电费
+     */
+    public static final String BILL_VALUE = "bill_value";
+
+    /**
+     * 计费方式
+     */
+    public static final String BILL_MODE = "bill_mode";
+
+    /**
+     * 计费时间段
+     */
+    public static final String BILL_PERIOD = "bill_period";
 
 }
