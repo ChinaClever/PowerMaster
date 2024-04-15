@@ -13,7 +13,6 @@ interface ImportMetaEnv {
   readonly VITE_OPEN: string
   readonly VITE_DEV: string
   readonly VITE_APP_CAPTCHA_ENABLE: string
-  readonly VITE_APP_TENANT_ENABLE: string
   readonly VITE_APP_DOCALERT_ENABLE: string
   readonly VITE_BASE_URL: string
   readonly VITE_UPLOAD_URL: string

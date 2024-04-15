@@ -355,11 +355,7 @@
           "isAttr": true,
           "type": "String"
         },
-        {
-          "name": "calledElementTenantId",
-          "isAttr": true,
-          "type": "String"
-        },
+
         {
           "name": "caseRef",
           "isAttr": true,
@@ -373,11 +369,6 @@
         },
         {
           "name": "caseVersion",
-          "isAttr": true,
-          "type": "String"
-        },
-        {
-          "name": "caseTenantId",
           "isAttr": true,
           "type": "String"
         },
@@ -449,12 +440,8 @@
           "isAttr": true,
           "type": "String",
           "default": "resultList"
-        },
-        {
-          "name": "decisionRefTenantId",
-          "isAttr": true,
-          "type": "String"
         }
+
       ]
     },
     {

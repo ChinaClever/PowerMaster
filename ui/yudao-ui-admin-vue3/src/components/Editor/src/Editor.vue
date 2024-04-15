@@ -1,12 +1,11 @@
 <script lang="ts" setup>
 import { PropType } from 'vue'
-import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
 import { i18nChangeLanguage, IDomEditor, IEditorConfig } from '@wangeditor/editor'
 import { propTypes } from '@/utils/propTypes'
 import { isNumber } from '@/utils/is'
 import { ElMessage } from 'element-plus'
 import { useLocaleStore } from '@/store/modules/locale'
-import { getAccessToken, getTenantId } from '@/utils/auth'
+import { getAccessToken } from '@/utils/auth'
 
 defineOptions({ name: 'Editor' })
 
@@ -104,8 +103,7 @@ const editorConfig = computed((): IEditorConfig => {
           // 自定义增加 http  header
           headers: {
             Accept: '*',
-            Authorization: 'Bearer ' + getAccessToken(),
-            'tenant-id': getTenantId()
+            Authorization: 'Bearer ' + getAccessToken()
           },
 
           // 跨域是否传递 cookie ，默认为 false

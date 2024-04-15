@@ -115,7 +115,6 @@ export default {
   login: {
     welcome: '欢迎使用本系统',
     message: '开箱即用的中后台管理系统',
-    tenantname: '租户名称',
     username: '用户名',
     password: '密码',
     code: '验证码',
@@ -127,7 +126,6 @@ export default {
     remember: '记住我',
     hasUser: '已有账号？去登录',
     forgetPassword: '忘记密码?',
-    tenantNamePlaceholder: '请输入租户名称',
     usernamePlaceholder: '请输入用户名',
     passwordPlaceholder: '请输入密码',
     codePlaceholder: '请输入验证码',
