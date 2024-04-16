@@ -47,10 +47,9 @@
              class="!w-160px"
            />
          </el-form-item>
-         <el-form-item label="相/回路/输出位" prop="type">
+         <el-form-item label="参数类型" prop="type">
            <el-select
              v-model="queryParams.type"
-             placeholder="请选择总/相/回路/输出位"
              class="!w-120px"
            >
              <el-option label="总" value="total" />
@@ -70,18 +69,19 @@
              <el-option label="天" value="day" />
            </el-select>
          </el-form-item>
-         <el-form-item label="时间段" prop="createTime">
-           <el-date-picker
-             v-model="queryParams.createTime"
-             value-format="YYYY-MM-DD HH:mm:ss"
-             type="daterange"
-             start-placeholder="开始日期"
-             end-placeholder="结束日期"
-             :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-             class="!w-210px"
-           />
-         </el-form-item>
-         <div style="display: flex; justify-content: flex-end;">
+          <el-form-item label="时间段" prop="timeRange">
+            <el-date-picker
+            value-format="YYYY-MM-DD HH:mm:ss"
+            v-model="queryParams.timeRange"
+            type="datetimerange"
+            :shortcuts="shortcuts"
+            range-separator="-"
+            start-placeholder="开始时间"
+            end-placeholder="结束时间"
+          />
+          </el-form-item>
+
+        <div style="float:right">
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
            <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
@@ -89,12 +89,15 @@
          </el-form-item>
          </div>
        </el-form>
-
-
      </ContentWrap>
-     <!-- 列表 -->
      <ContentWrap style="overflow: visible;">
-      <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
+      <el-tabs v-model="activeName">
+        <el-tab-pane label="日原始数据" name="first">
+          <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
+        </el-tab-pane>
+        <el-tab-pane label="逐日极值数据" name="second">Config</el-tab-pane>
+      </el-tabs>
+
     </ContentWrap>
    </el-col>
   </el-row>
@@ -107,7 +110,7 @@ import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 /** pdu历史曲线 */
 defineOptions({ name: 'HistoryLine' })
-
+const activeName = ref('first') // tabs显示第一个
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
@@ -183,7 +186,6 @@ let isCollapsed = ref(0);
 const toggleCollapse = () => {
  treeWidth.value = isCollapsed.value == 0 ? 3 : 0;
 };
-//树型控件
 interface Tree {
  [key: string]: any
 }

@@ -24,7 +24,6 @@ public class HistoryDataPageReqVO extends PageParam {
 
     private String ipAddr;
 
-    @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
-    private DateTime timeRange;
+    private String[] timeRange;
 
 }

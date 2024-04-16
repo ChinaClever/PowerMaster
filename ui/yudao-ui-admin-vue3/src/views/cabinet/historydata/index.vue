@@ -333,8 +333,8 @@ watch(() => queryParams.granularity, (newValues) => {
     if ( newGranularity == 'realtime'){
       originalArray.value = ["totalActivePow", "totalApparentPow", "aActivePow", "aApparentPow", "bActivePow", "bApparentPow"]        
       defaultOptionsCol.value = [
-      ["total", "totalActivePow"], ["total", "totalApparentPow"], ["a", "aActivePow"], 
-      ["a", "aApparentPow"], ["b", "bActivePow"], ["b", "bApparentPow"]
+        ["total", "totalActivePow"], ["total", "totalApparentPow"], ["a", "aActivePow"], 
+        ["a", "aApparentPow"], ["b", "bActivePow"], ["b", "bApparentPow"]
       ]
       optionsCol.value = [
         {
@@ -438,7 +438,7 @@ watch(() => queryParams.granularity, (newValues) => {
            },
           ],
         },
-      ]
+      ] as any;
       tableColumns.value = [
         { label: '编号', align: 'center', prop: 'id', istrue:true},
         { label: '位置', align: 'center', prop: 'location', istrue:true, width: '180px'},
