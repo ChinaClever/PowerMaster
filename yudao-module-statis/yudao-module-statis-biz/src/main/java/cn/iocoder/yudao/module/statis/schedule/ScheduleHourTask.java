@@ -33,9 +33,10 @@ public class ScheduleHourTask {
     /**
      * 每小时执行一次
      */
-   // @Scheduled(cron = "${cron.day}")
+//    @Scheduled(cron = "${cron.day}")
     //测试。每五分钟执行一次
-    @Scheduled(cron = "0 0/2 * * * ?")
+//    @Scheduled(cron = "0 0/2 * * * ?")
+    @Scheduled(cron = "${cron.hour}")
     @Async()
     public void scheduledLoopTask() {
         log.info("定时任务1开始：" + System.currentTimeMillis());
@@ -44,9 +45,10 @@ public class ScheduleHourTask {
     }
 
 
-    // @Scheduled(cron = "${cron.day}")
+
     //测试。每五分钟执行一次
-    @Scheduled(cron = "0 0/5 * * * ?")
+//    @Scheduled(cron = "0 0/5 * * * ?")
+    @Scheduled(cron = "${cron.hour}")
     @Async()
     public void scheduledLineTask() {
         log.info("定时任务2开始：" + System.currentTimeMillis());
@@ -56,7 +58,8 @@ public class ScheduleHourTask {
 
     // @Scheduled(cron = "${cron.day}")
     //测试。每五分钟执行一次
-    @Scheduled(cron = "0 0/5 * * * ?")
+//    @Scheduled(cron = "0 0/5 * * * ?")
+    @Scheduled(cron = "${cron.hour}")
     @Async()
     public void scheduledOutletTask() {
         log.info("定时任务3开始：" + System.currentTimeMillis());
@@ -66,7 +69,8 @@ public class ScheduleHourTask {
 
     // @Scheduled(cron = "${cron.day}")
     //测试。每五分钟执行一次
-    @Scheduled(cron = "0 0/5 * * * ?")
+//    @Scheduled(cron = "0 0/5 * * * ?")
+    @Scheduled(cron = "${cron.hour}")
     @Async()
     public void scheduledTotalTask() {
         log.info("定时任务4开始：" + System.currentTimeMillis());

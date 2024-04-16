@@ -24,7 +24,7 @@ public class ScheduleDayTask {
     /**
      * 每天凌晨六点执行
      */
-    @Scheduled(cron = "${cron.hour}")
+    @Scheduled(cron = "${cron.day}")
     @Async()
     public void scheduledLoopTask() {
         log.info("定时任务1开始：" + System.currentTimeMillis());
