@@ -43,4 +43,8 @@ export const PDUDeviceApi = {
   PDUDisplay: async (params) => {
     return await request.download({ url: `/pdu/PDU-device/displayscreen`, params })
   },
+
+  PDUHis: async (params) => {
+    return await request.get({ url: `/pdu/PDU-device/hisdata/`+ params})
+  },
 }

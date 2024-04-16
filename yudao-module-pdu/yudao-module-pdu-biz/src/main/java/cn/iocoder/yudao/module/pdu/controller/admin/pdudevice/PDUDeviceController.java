@@ -50,9 +50,15 @@ public class PDUDeviceController {
     }
 
     @GetMapping("/displayscreen")
-    @Operation(summary = "获得PDU设备分页")
+    @Operation(summary = "获得PDU设备详细信息")
     public String getDisplay(@Valid PDUDevicePageReqVO pageReqVO) {
         return pDUDeviceService.getDisplayDataByDevKey(pageReqVO.getDevKey());
+    }
+
+    @GetMapping("/hisdata/{id}")
+    @Operation(summary = "获得PDU历史数据")
+    public CommonResult<Map> getHistoryDataByPduId(@PathVariable("id") Long id) {
+        return success(pDUDeviceService.getHistoryDataByPduId(id));
     }
 
 }

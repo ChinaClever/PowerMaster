@@ -530,8 +530,8 @@ const initChart = () => {
       xAxis: {type: 'category', boundaryGap: false, data:powData.value.time},
       yAxis: { type: 'value'},
       series: [
-        {name: '总平均视在功率', type: 'line', data: powData.value.total_apparent_pow_avg_value, lineStyle: {type: 'dashed'}},
-        {name: '总平均有功功率', type: 'line', data: powData.value.total_active_pow_avg_value, lineStyle: {type: 'dashed'}},
+        {name: '总平均视在功率', type: 'line', data: powData.value.total_apparent_pow_avg_value},
+        {name: '总平均有功功率', type: 'line', data: powData.value.total_active_pow_avg_value},
       ],
 
     });
@@ -550,7 +550,7 @@ const initChart = () => {
       xAxis: {type: 'category', boundaryGap: false, data:temData.value.time},
       yAxis: { type: 'value'},
       series: [
-        {name: '温度', type: 'line', data: temData.value.tem_avg_value, lineStyle: {type: 'dashed'}},
+        {name: '温度', type: 'line', data: temData.value.tem_avg_value},
       ],
     });
     // 将 temChart 绑定到组件实例，以便在销毁组件时能够正确释放资源

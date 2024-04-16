@@ -7,6 +7,9 @@ import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDeviceSaveRe
 import cn.iocoder.yudao.module.pdu.dal.dataobject.pdudevice.PDUDeviceDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * PDU设备 Service 接口
  *
@@ -24,4 +27,6 @@ public interface PDUDeviceService {
     PageResult<PDUDeviceDO> getPDUDevicePage(PDUDevicePageReqVO pageReqVO);
 
     String getDisplayDataByDevKey(String devKey);
+
+    Map<String, List<Double>> getHistoryDataByPduId(Long id);
 }

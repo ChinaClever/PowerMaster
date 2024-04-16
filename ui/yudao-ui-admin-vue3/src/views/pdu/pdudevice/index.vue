@@ -96,9 +96,27 @@
               <el-tag type="info" v-if="scope.row.status == 3">未绑定设备</el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="总视在功率" align="center" prop="apparentPow" width="130px" />
-          <el-table-column label="总有功功率" align="center" prop="pow" width="130px"/>
-          <el-table-column label="总电能" align="center" prop="ele" />
+          <el-table-column label="总视在功率" align="center" prop="apparentPow" width="130px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.apparentPow }} kW
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="总有功功率" align="center" prop="pow" width="130px">
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.pow }} kW
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="总电能" align="center" prop="ele" >
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.ele }} kWh
+              </el-text>
+            </template>
+          </el-table-column>
           <!-- 数据库查询 -->
           <el-table-column label="所在位置" align="center" prop="location" />
           <!-- 数据库查询 -->
@@ -115,8 +133,9 @@
               <el-button
                 link
                 type="primary"
+                @click="openNewPage(scope)"
               >
-                设备管理
+              设备管理
               </el-button>
               <el-button
                 link
@@ -155,6 +174,8 @@ defineOptions({ name: 'PDUDevice' })
 
 const { push } = useRouter()
 
+const flashListTimer = ref();
+const firstTimerCreate = ref(true);
 
 const ip = ref("ip");
 const serverRoomArr =  [
@@ -296,16 +317,34 @@ const getList = async () => {
   }
 }
 
-const toPDUDisplayScreen = (row, column) =>{
-  if(column.label == "网络地址"){
-    push('/pdu/pdudisplayscreen?dev_key=' + row.devKey + '&location=' + row.location);
+const getListNoLoading = async () => {
+  console.log(1)
+  try {
+    const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
+    list.value = data.list
+    list.value.forEach((obj) => {
+      const splitArray = obj.dataUpdateTime.split(' ');
+      obj.dataUpdateTime = splitArray[1];
+    });
+    total.value = data.total
+  } catch (error) {
+    
   }
+}
+
+const toPDUDisplayScreen = (row) =>{
+  push('/pdu/pdudisplayscreen?dev_key=' + row.devKey + '&location=' + row.location + '&id=' + row.id);
+}
+
+const openNewPage = (scope) => {
+  const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
+  window.open(url, '_blank');
 }
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
-  // getList()
+  getList()
 }
 
 /** 重置按钮操作 */
@@ -351,8 +390,30 @@ const handleExport = async () => {
 /** 初始化 **/
 onMounted(() => {
   getList()
+  flashListTimer.value = setInterval((getListNoLoading), 5000);
+})
 
-  })
+onBeforeUnmount(()=>{
+  if(flashListTimer.value){
+    clearInterval(flashListTimer.value)
+    flashListTimer.value = null;
+  }
+})
+
+onBeforeRouteLeave(()=>{
+  if(flashListTimer.value){
+    clearInterval(flashListTimer.value)
+    flashListTimer.value = null;
+    firstTimerCreate.value = false;
+  }
+})
+
+onActivated(() => {
+  getList()
+  if(!firstTimerCreate.value){
+    flashListTimer.value = setInterval((getListNoLoading), 5000);
+  }
+})
 </script>
 
 <style scoped>
