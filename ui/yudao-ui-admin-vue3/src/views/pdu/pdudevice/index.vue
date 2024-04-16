@@ -96,18 +96,18 @@
               <el-tag type="info" v-if="scope.row.status == 3">未绑定设备</el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="总视在功率" align="center" prop="apparent_pow" width="130px" />
+          <el-table-column label="总视在功率" align="center" prop="apparentPow" width="130px" />
           <el-table-column label="总有功功率" align="center" prop="pow" width="130px"/>
           <el-table-column label="总电能" align="center" prop="ele" />
           <!-- 数据库查询 -->
           <el-table-column label="所在位置" align="center" prop="location" />
           <!-- 数据库查询 -->
-          <el-table-column label="网络地址" align="center" prop="dev_key" :class-name="ip" /> 
+          <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" /> 
           <el-table-column
             label="数据更新时间"
             align="center"
-            prop="updateTime"
-
+            prop="dataUpdateTime"
+            dateFormatter="hh:MM:ss"
             width="180px"
           />
           <el-table-column label="操作" align="center">
@@ -256,34 +256,15 @@ const { t } = useI18n() // 国际化
 const loading = ref(false) // 列表的加载中
 const list = ref([
   { 
-    id:"1",
-    status:"0",
-    apparent_pow:"200kW",
-    pow:"210kVA",
-    ele:"10.112kWh",
-    dev_key:"192.168.1.1-0",
-    location:"机房2-机柜1-A路",
-    updateTime:"15:25:00"
-  },
-  { 
-    id:"2",
-    status:"2",
-    apparent_pow:"200kW",
-    pow:"210kVA",
-    ele:"10.112kWh",
-    dev_key:"192.168.1.2-1",
-    location:"机房2-机柜2-B路",
-    updateTime:"15:25:00"
-  },{ 
-    id:"3",
-    status:"1",
-    apparent_pow:"200kW",
-    pow:"210kVA",
-    ele:"10.112kWh",
-    dev_key:"192.168.1.3-2",
-    location:"机房2-机柜3-C路",
-    updateTime:"15:25:00"
-  },
+    id:null,
+    status:null,
+    apparentPow:null,
+    pow:null,
+    ele:null,
+    devKey:null,
+    location:null,
+    dataUpdateTime : ""
+  }
 ]) // 列表的数据
 const total = ref(0) // 列表的总页数
 const queryParams = reactive({
@@ -300,20 +281,24 @@ const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
 /** 查询列表 */
-// const getList = async () => {
-//   loading.value = true
-//   try {
-//     const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
-//     list.value = data.list
-//     total.value = data.total
-//   } finally {
-//     loading.value = false
-//   }
-// }
+const getList = async () => {
+  loading.value = true
+  try {
+    const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
+    list.value = data.list
+    list.value.forEach((obj) => {
+      const splitArray = obj.dataUpdateTime.split(' ');
+      obj.dataUpdateTime = splitArray[1];
+    });
+    total.value = data.total
+  } finally {
+    loading.value = false
+  }
+}
 
 const toPDUDisplayScreen = (row, column) =>{
   if(column.label == "网络地址"){
-    push('/pdu/pdudevice/displayscreen?dev_key=' + row.dev_key + '&location=' + row.location);
+    push('/pdu/pdudisplayscreen?dev_key=' + row.devKey + '&location=' + row.location);
   }
 }
 
@@ -365,8 +350,9 @@ const handleExport = async () => {
 
 /** 初始化 **/
 onMounted(() => {
-  // getList()
-})
+  getList()
+
+  })
 </script>
 
 <style scoped>

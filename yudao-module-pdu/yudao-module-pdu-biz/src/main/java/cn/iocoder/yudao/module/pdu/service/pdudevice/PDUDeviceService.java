@@ -14,35 +14,6 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
  */
 public interface PDUDeviceService {
 
-    /**
-     * 创建PDU设备
-     *
-     * @param createReqVO 创建信息
-     * @return 编号
-     */
-    Long createPDUDevice(@Valid PDUDeviceSaveReqVO createReqVO);
-
-    /**
-     * 更新PDU设备
-     *
-     * @param updateReqVO 更新信息
-     */
-    void updatePDUDevice(@Valid PDUDeviceSaveReqVO updateReqVO);
-
-    /**
-     * 删除PDU设备
-     *
-     * @param id 编号
-     */
-    void deletePDUDevice(Long id);
-
-    /**
-     * 获得PDU设备
-     *
-     * @param id 编号
-     * @return PDU设备
-     */
-    PDUDeviceDO getPDUDevice(Long id);
 
     /**
      * 获得PDU设备分页
@@ -52,4 +23,5 @@ public interface PDUDeviceService {
      */
     PageResult<PDUDeviceDO> getPDUDevicePage(PDUDevicePageReqVO pageReqVO);
 
+    String getDisplayDataByDevKey(String devKey);
 }

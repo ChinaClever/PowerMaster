@@ -1,6 +1,5 @@
 package cn.iocoder.yudao.module.statis.service.pdudevice;
 
-import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDevicePageReqVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDeviceSaveReqVO;
 import cn.iocoder.yudao.module.pdu.service.pdudevice.PDUDeviceServiceImpl;
 import org.junit.jupiter.api.Disabled;
@@ -11,16 +10,13 @@ import javax.annotation.Resource;
 import cn.iocoder.yudao.framework.test.core.ut.BaseDbUnitTest;
 
 import cn.iocoder.yudao.module.pdu.dal.dataobject.pdudevice.PDUDeviceDO;
-import cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PDUDeviceMapper;
-import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PduIndexMapper;
 
 import org.springframework.context.annotation.Import;
 
 import static cn.iocoder.yudao.module.statis.enums.ErrorCodeConstants.*;
 import static cn.iocoder.yudao.framework.test.core.util.AssertUtils.*;
 import static cn.iocoder.yudao.framework.test.core.util.RandomUtils.*;
-import static cn.iocoder.yudao.framework.common.util.date.LocalDateTimeUtils.*;
-import static cn.iocoder.yudao.framework.common.util.object.ObjectUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -35,7 +31,7 @@ public class PDUDeviceServiceImplTest extends BaseDbUnitTest {
     private PDUDeviceServiceImpl pDUDeviceService;
 
     @Resource
-    private PDUDeviceMapper pDUDeviceMapper;
+    private PduIndexMapper pDUDeviceMapper;
 
     @Test
     public void testCreatePDUDevice_success() {
@@ -103,35 +99,7 @@ public class PDUDeviceServiceImplTest extends BaseDbUnitTest {
     @Test
     @Disabled  // TODO 请修改 null 为需要的值，然后删除 @Disabled 注解
     public void testGetPDUDevicePage() {
-       // mock 数据
-       PDUDeviceDO dbPDUDevice = randomPojo(PDUDeviceDO.class, o -> { // 等会查询到
-           o.setDevKey(null);
-           o.setIpAddr(null);
-           o.setCreateTime(null);
-           o.setCascadeNum(null);
-       });
-       pDUDeviceMapper.insert(dbPDUDevice);
-       // 测试 devKey 不匹配
-       pDUDeviceMapper.insert(cloneIgnoreId(dbPDUDevice, o -> o.setDevKey(null)));
-       // 测试 ipAddr 不匹配
-       pDUDeviceMapper.insert(cloneIgnoreId(dbPDUDevice, o -> o.setIpAddr(null)));
-       // 测试 createTime 不匹配
-       pDUDeviceMapper.insert(cloneIgnoreId(dbPDUDevice, o -> o.setCreateTime(null)));
-       // 测试 cascadeNum 不匹配
-       pDUDeviceMapper.insert(cloneIgnoreId(dbPDUDevice, o -> o.setCascadeNum(null)));
-       // 准备参数
-       PDUDevicePageReqVO reqVO = new PDUDevicePageReqVO();
-       reqVO.setDevKey(null);
-       reqVO.setIpAddr(null);
-       reqVO.setCreateTime(buildBetweenTime(2023, 2, 1, 2023, 2, 28));
-       reqVO.setCascadeNum(null);
 
-       // 调用
-       PageResult<PDUDeviceDO> pageResult = pDUDeviceService.getPDUDevicePage(reqVO);
-       // 断言
-       assertEquals(1, pageResult.getTotal());
-       assertEquals(1, pageResult.getList().size());
-       assertPojoEquals(dbPDUDevice, pageResult.getList().get(0));
     }
 
 }

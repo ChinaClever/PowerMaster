@@ -27,7 +27,7 @@
           <el-col :span="8">
             <el-text line-clamp="2" >
               电能消耗:<br />
-              {{ totalData.ele.toFixed(1) }} kWh
+              {{ totalData.ele }} kWh
             </el-text>
           </el-col>
           <el-col :span="8">
@@ -63,25 +63,25 @@
             <el-col :span="8">
               <el-text line-clamp="2" :style="{ backgroundColor: A.volColor }">
                 U1:<br />
-                {{ A.vol_value.toFixed(1) }} V
+                {{ A.vol_value }} V
               </el-text>
             </el-col>
             <el-col :span="8">
               <el-text line-clamp="2" :style="{ backgroundColor: A.powColor }">
                 P1:<br />
-                {{ A.pow_value.toFixed(3) }} kW
+                {{ A.pow_value }} kW
               </el-text>
             </el-col>
             <el-col :span="8">
               <el-text line-clamp="2" >
                 PF1:<br />
-                {{ A.pf.toFixed(2) }}
+                {{ A.pf }}
               </el-text>
             </el-col>
           </el-row>
       </el-card>
     </el-col>
-    <el-col :span="6" class="card-box" v-if="haveB">
+    <el-col :span="6" class="card-box" v-if="controlVis.haveB">
       <el-card>
         <template #header>
             <div>
@@ -99,25 +99,25 @@
             <el-col :span="8">
               <el-text line-clamp="2"  :style="{ backgroundColor: B.volColor }">
                 U2:<br />
-                {{ B.vol_value.toFixed(1) }} V
+                {{ B.vol_value }} V
               </el-text>
             </el-col>
             <el-col :span="8">
               <el-text line-clamp="2" :style="{ backgroundColor: B.powColor }">
                 P2:<br />
-                {{ B.pow_value.toFixed(3) }} kW
+                {{ B.pow_value }} kW
               </el-text>
             </el-col>
             <el-col :span="8">
               <el-text line-clamp="2">
                 PF2:<br />
-                {{ B.pf.toFixed(2) }}
+                {{ B.pf }}
               </el-text>
             </el-col>
           </el-row>
       </el-card>
     </el-col>
-    <el-col :span="6" class="card-box" v-if="haveC">          
+    <el-col :span="6" class="card-box" v-if="controlVis.haveC">          
       <el-card>
         <template #header>
             <div>
@@ -135,19 +135,19 @@
             <el-col :span="8">
               <el-text line-clamp="2"  :style="{ backgroundColor: C.volColor }">
                 U3:<br />
-                {{ C.vol_value.toFixed(1) }} V
+                {{ C.vol_value }} V
               </el-text>
             </el-col>
             <el-col :span="8">
               <el-text line-clamp="2" :style="{ backgroundColor: C.powColor }">
                 P3:<br />
-                {{ C.pow_value.toFixed(3) }} kW
+                {{ C.pow_value }} kW
               </el-text>
             </el-col>
             <el-col :span="8">
               <el-text line-clamp="2">
                 PF3:<br />
-                {{ C.pf.toFixed(2) }}
+                {{ C.pf }}
               </el-text>
             </el-col>
           </el-row>
@@ -155,34 +155,34 @@
     </el-col>
   </el-row>
   <el-collapse >
-    <el-collapse-item title="回路" name="1">
+    <el-collapse-item title="回路" name="1" v-if="controlVis.haveCircle">
       <ContentWrap>
         <el-table  :data="circleList" :stripe="true" :show-overflow-tooltip="true">
           <el-table-column label="回路" align="center" prop="circuit" />
-          <el-table-column label="断路器状态" align="center" prop="breaker" > 
+          <el-table-column label="断路器状态" align="center" prop="breaker" v-if="controlVis.circleTableCol.breaker"> 
             <template #default="scope" >
               <el-tag type="primary" v-if="scope.row.breaker == 1">开启</el-tag>
               <el-tag type="danger" v-if="scope.row.breaker == 0">关闭</el-tag>
             </template>
           </el-table-column>                        
-          <el-table-column label="当前电流" align="center" prop="cur_value" >
+          <el-table-column label="当前电流" align="center" prop="cur_value" v-if="controlVis.circleTableCol.cur_value" >
             <template #default="scope">
-             {{ scope.row.cur_value.toFixed(2) }}A
+             {{ scope.row.cur_value }}A
             </template>
           </el-table-column>
-          <el-table-column label="当前电压" align="center" prop="vol_value" >
+          <el-table-column label="当前电压" align="center" prop="vol_value" v-if="controlVis.circleTableCol.vol_value" >
             <template #default="scope">
-             {{ scope.row.vol_value.toFixed(1) }}V
+             {{ scope.row.vol_value }}V
             </template>
           </el-table-column>
-          <el-table-column label="有功功率" align="center" prop="pow_value" >
+          <el-table-column label="有功功率" align="center" prop="pow_value" v-if="controlVis.circleTableCol.pow_value" >
             <template #default="scope">
-             {{ scope.row.pow_value.toFixed(3) }}kW
+             {{ scope.row.pow_value }}kW
             </template>
           </el-table-column>
-          <el-table-column label="电能消耗" align="center" prop="ele" >
+          <el-table-column label="电能消耗" align="center" prop="ele" v-if="controlVis.circleTableCol.ele">
             <template #default="scope">
-             {{ scope.row.ele.toFixed(1) }}kWh
+             {{ scope.row.ele }}kWh
             </template>
           </el-table-column>
         </el-table>
@@ -198,31 +198,31 @@
         </el-table>
       </ContentWrap>
     </el-collapse-item>
-    <el-collapse-item title="输出位" name="3">
+    <el-collapse-item title="输出位" name="3" v-if="controlVis.haveOutPut">
       <ContentWrap>
         <el-table  :data="output" :stripe="true" :show-overflow-tooltip="true">
           <el-table-column label="序号" align="center" prop="no" />
           <el-table-column label="名称" align="center" prop="name" />
-          <el-table-column label="开关状态" align="center" prop="relay_state" >
+          <el-table-column label="开关状态" align="center" prop="relay_state" v-if="controlVis.outPutTableCol.relay_state">
             <template #default="scope">
               <el-tag type="primary" v-if="scope.row.relay_state == 1">开启</el-tag>
               <el-tag type="danger" v-if="scope.row.relay_state == 0" >关闭</el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="输出电流(A)" align="center" prop="cur_value" >
+          <el-table-column label="输出电流(A)" align="center" prop="cur_value"  v-if="controlVis.outPutTableCol.cur_value">
             <template #default="scope">
-              {{ scope.row.cur_value.toFixed(2) }}A
+              {{ scope.row.cur_value }}A
             </template>
           </el-table-column>
-          <el-table-column label="有功功率(kW)" align="center" prop="pow_value" >
+          <el-table-column label="有功功率(kW)" align="center" prop="pow_value"  v-if="controlVis.outPutTableCol.pow_value">
             <template #default="scope">
-             {{ scope.row.pow_value.toFixed(3) }}kW
+             {{ scope.row.pow_value }}kW
             </template>
           </el-table-column>
-          <el-table-column label="功率因数" align="center" prop="pf" />
-          <el-table-column label="电能消耗(kWh)" align="center" prop="ele" >
+          <el-table-column label="功率因数" align="center" prop="pf"  v-if="controlVis.outPutTableCol.pf"/>
+          <el-table-column label="电能消耗(kWh)" align="center" prop="ele"  v-if="controlVis.outPutTableCol.ele">
             <template #default="scope">
-             {{ scope.row.ele.toFixed(1) }}kWh
+             {{ scope.row.ele }}kWh
             </template>
           </el-table-column>
         </el-table>
@@ -248,6 +248,27 @@ import router from '@/router';
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
+
+const controlVis = ref({
+  haveCircle : false,
+  haveOutPut : false,
+  haveC : false,
+  haveB : false,
+  circleTableCol : {
+    breaker : false,
+    cur_value : false,
+    vol_value : false,
+    pow_value : false,
+    ele : false
+  },
+  outPutTableCol : {
+    relay_state : false,
+    cur_value : false, 
+    pow_value : false,
+    pf : false,
+    ele : false
+  },
+})
 
 const location = ref();
 const message = useMessage() // 消息弹窗
@@ -297,46 +318,44 @@ const exportLoading = ref(false) // 导出的加载中
 
 //数据
 const totalData = ref({
-  ele : 229.6,
-  frequency : 50,
+  ele : 0,
+  frequency : 0,
   pow : 0,
   powPercentage : 0,
-  pf : 0.66
+  pf : 0
 })
 const A = ref({
-  vol_value : 231.0,
-  volColor : "white",
-  pow_value : 0.000,
-  powColor : "white",
-  cur_value : 0,
-  curColor : "success",
-  curPercemtage: 0,
-  pf : 0.00
+  vol_value : null,
+  volColor : null,
+  pow_value : null,
+  powColor : null,
+  cur_value : null,
+  curColor : null,
+  curPercemtage: null,
+  pf : null
 })
 const B = ref({
-  vol_value : 231.0,
-  volColor : "white",
-  pow_value : 0.000,
-  powColor : "white",
-  cur_value : 0,
-  curColor : "success",
-  curPercemtage: 0,
-  pf : 0.00
+  vol_value : null,
+  volColor : null,
+  pow_value : null,
+  powColor : null,
+  cur_value : null,
+  curColor : null,
+  curPercemtage: null,
+  pf : null
 })
 const C = ref({
-  vol_value : 231.0,
-  volColor : "white",
-  pow_value : 0.000,
-  powColor : "white",
-  cur_value : 0,
-  curColor : "success",
-  curPercemtage: 0,
-  pf : 0.00
+  vol_value : null,
+  volColor : null,
+  pow_value : null,
+  powColor : null,
+  cur_value : null,
+  curColor : null,
+  curPercemtage: null,
+  pf : null
 })
 
 const redColor = ref("red")
-const haveB = ref(false)
-const haveC = ref(false)
 
 
 /** 查询列表 */
@@ -437,25 +456,31 @@ const handleExport = async () => {
 const getTestData = async()=>{
 
   testData.value = await PDUDeviceApi.PDUDisplay(queryParams)
-
-  for (let i = 0; i < testData.value.pdu_data.loop_item_list["apparent_pow"].length; i++) {
-    let loopItem = {};
-    for (let key in testData.value.pdu_data.loop_item_list) {
-      loopItem[key] = testData.value.pdu_data.loop_item_list[key][i];
-      loopItem["circuit"] = "C" + (i + 1); 
+  console.log(testData);
+  if(testData.value.pdu_data?.loop_item_list){
+    for (let i = 0; i < testData.value.pdu_data?.loop_item_list["pow_apparent"].length; i++) {
+      let loopItem = {};
+      for (let key in testData.value.pdu_data.loop_item_list) {
+        loopItem[key] = testData.value.pdu_data.loop_item_list[key][i];
+        loopItem["circuit"] = "C" + (i + 1); 
+        controlVis.value.circleTableCol[key] = true;
+      }
+      circleList.value.push(loopItem);
     }
-    circleList.value.push(loopItem);
+    controlVis.value.haveCircle = true;
   }
-
-  for (let i = 0; i < testData.value.pdu_data.output_item_list["apparent_pow"].length; i++) {
-    let loopItem = {};
-    for (let key in testData.value.pdu_data.output_item_list) {
-      loopItem[key] = testData.value.pdu_data.output_item_list[key][i];
-      loopItem["no"] = i + 1;
+  if(testData.value.pdu_data.output_item_list){
+    for (let i = 0; i < testData.value.pdu_data.output_item_list["name"].length; i++) {
+      let loopItem = {};
+      for (let key in testData.value.pdu_data.output_item_list) {
+        loopItem[key] = testData.value.pdu_data.output_item_list[key][i];
+        loopItem["no"] = i + 1;
+        controlVis.value.outPutTableCol[key] = true;
+      }
+      output.value.push(loopItem);
     }
-    output.value.push(loopItem);
+    controlVis.value.haveOutPut = true;
   }
-
   totalData.value.pow =  testData.value.pdu_data.pdu_tg_data.pow;
   if(testData.value.pdu_data.pdu_tg_data.apparent_pow != 0){
     totalData.value.powPercentage = (testData.value.pdu_data.pdu_tg_data.pow / testData.value.pdu_data.pdu_tg_data.apparent_pow) * 100;
@@ -527,7 +552,7 @@ const getTestData = async()=>{
     }
     
     B.value.pf = testData.value.pdu_data.line_item_list.pf[1];
-    haveB.value = true;
+    controlVis.value.haveB = true;
   }
   if(testData.value.pdu_data.line_item_list.ele.length > 2){
     C.value.cur_value = testData.value.pdu_data.line_item_list.cur_value[2];
@@ -559,7 +584,7 @@ const getTestData = async()=>{
     }
 
     C.value.pf = testData.value.pdu_data.line_item_list.pf[2];
-    haveC.value = true;
+    controlVis.value.haveC = true;
   }
   
 }
