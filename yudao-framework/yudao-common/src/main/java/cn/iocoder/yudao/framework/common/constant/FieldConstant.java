@@ -53,33 +53,33 @@ public class FieldConstant {
     /**
      * 电压
      */
-    public static final String VOL = "vol";
+    public static final String VOL = "vol_value";
 
     /**
      * 电流
      */
-    public static final String CUR = "cur";
+    public static final String CUR = "cur_value";
 
     /**
      * 温度
      */
-    public static final String TEM = "tem";
+    public static final String TEM = "tem_value";
 
     /**
      * 湿度
      */
-    public static final String HUM = "hum";
+    public static final String HUM = "hum_value";
 
 
     /**
      *  有功功率
      */
-    public static final String ACTIVE_POW = "active_pow";
+    public static final String ACTIVE_POW = "pow_active";
 
     /**
      * 视在功率
      */
-    public static final String APPARENT_POW = "apparent_pow";
+    public static final String APPARENT_POW = "pow_apparent";
 
 
 
@@ -137,52 +137,52 @@ public class FieldConstant {
     /**
      * 平均有功功率
      */
-    public static final String ACTIVE_POW_AVG_VALUE = "active_pow_avg_value";
+    public static final String ACTIVE_POW_AVG_VALUE = "pow_active_avg_value";
 
     /**
      *  最大有功功率
      */
-    public static final String ACTIVE_POW_MAX_VALUE = "active_pow_max_value";
+    public static final String ACTIVE_POW_MAX_VALUE = "pow_active_max_value";
 
     /**
      *  最小有功功率
      */
-    public static final String ACTIVE_POW_MIN_VALUE = "active_pow_min_value";
+    public static final String ACTIVE_POW_MIN_VALUE = "pow_active_min_time";
 
     /**
      *  最大有功功率时间
      */
-    public static final String ACTIVE_POW_MAX_TIME = "active_pow_max_time";
+    public static final String ACTIVE_POW_MAX_TIME = "pow_active_max_time";
 
     /**
      *  最小有功功率时间
      */
-    public static final String ACTIVE_POW_MIN_TIME = "active_pow_min_time";
+    public static final String ACTIVE_POW_MIN_TIME = "pow_active_min_time";
 
     /**
      *  平均视在功率
      */
-    public static final String APPARENT_POW_AVG_VALUE = "apparent_pow_avg_value";
+    public static final String APPARENT_POW_AVG_VALUE = "pow_apparent_avg_value";
 
     /**
      *  最大视在功率
      */
-    public static final String APPARENT_POW_MAX_VALUE = "apparent_pow_max_value";
+    public static final String APPARENT_POW_MAX_VALUE = "pow_apparent_max_value";
 
     /**
      *  最小视在功率
      */
-    public static final String APPARENT_POW_MIN_VALUE = "apparent_pow_min_value";
+    public static final String APPARENT_POW_MIN_VALUE = "pow_apparent_min_value";
 
     /**
      *  最大视在功率时间
      */
-    public static final String APPARENT_POW_MAX_TIME = "apparent_pow_max_time";
+    public static final String APPARENT_POW_MAX_TIME = "pow_apparent_max_time";
 
     /**
      *  最小视在功率时间
      */
-    public static final String APPARENT_POW_MIN_TIME = "apparent_pow_min_time";
+    public static final String APPARENT_POW_MIN_TIME = "pow_apparent_min_time";
 
     /**
      *   平均温度
