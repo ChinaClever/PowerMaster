@@ -44,11 +44,23 @@ public class EleServiceImpl implements EleService {
     @Override
     public void eleTotalWeekDeal() {
 
+        //获取配置时间段
+        List<EqBillConfigVo> configVos = new ArrayList<>();
+        //电量统计
+        List<PduEqBaseDo> eqBaseDos = pduEleTotalDao.statisEleWeek(configVos);
+        //数据入库
+        esHandleService.batchInsert(eqBaseDos, EsIndexEnum.PDU_EQ_TOTAL_WEEK.getIndex());
+
     }
 
     @Override
     public void eleTotalMonthDeal() {
-
+        //获取配置时间段
+        List<EqBillConfigVo> configVos = new ArrayList<>();
+        //电量统计
+        List<PduEqBaseDo> eqBaseDos = pduEleTotalDao.statisEleMonth(configVos);
+        //数据入库
+        esHandleService.batchInsert(eqBaseDos, EsIndexEnum.PDU_EQ_TOTAL_MONTH.getIndex());
     }
 
     @Override
@@ -65,11 +77,21 @@ public class EleServiceImpl implements EleService {
 
     @Override
     public void eleOutletWeekDeal() {
-
+        //获取配置时间段
+        List<EqBillConfigVo> configVos = new ArrayList<>();
+        //电量统计
+        List<PduEqOutletBaseDo> eqBaseDos = pduEleOutletDao.statisEleWeek(configVos);
+        //数据入库
+        esHandleService.batchInsert(eqBaseDos, EsIndexEnum.PDU_EQ_OUTLET_WEEK.getIndex());
     }
 
     @Override
     public void eleOutletMonthDeal() {
-
+        //获取配置时间段
+        List<EqBillConfigVo> configVos = new ArrayList<>();
+        //电量统计
+        List<PduEqOutletBaseDo> eqBaseDos = pduEleOutletDao.statisEleMonth(configVos);
+        //数据入库
+        esHandleService.batchInsert(eqBaseDos, EsIndexEnum.PDU_EQ_OUTLET_MONTH.getIndex());
     }
 }

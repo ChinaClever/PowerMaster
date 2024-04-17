@@ -32,6 +32,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.*;
+import static cn.iocoder.yudao.module.statis.constant.Constants.*;
 
 /**
  * @Author: chenwany
@@ -61,16 +62,15 @@ public class PduLineDao {
             SearchSourceBuilder builder = new SearchSourceBuilder();
 
             //获取需要处理的数据
-            builder.query(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime));
+            builder.query(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime));
 
-//            builder.query(QueryBuilders.matchAllQuery());
 
             //创建terms桶聚合，聚合名字=by_pdu, 字段=pdu_id，根据pdu_id分组
-            TermsAggregationBuilder pduAggregationBuilder = AggregationBuilders.terms("by_pdu")
-                    .field("pdu_id");
+            TermsAggregationBuilder pduAggregationBuilder = AggregationBuilders.terms(BY_PDU)
+                    .field(PDU_ID);
 
             // 设置Avg指标聚合，按line_id分组
-            TermsAggregationBuilder lineAggregationBuilder = AggregationBuilders.terms("by_line").field(LINE_ID);
+            TermsAggregationBuilder lineAggregationBuilder = AggregationBuilders.terms(BY_LINE).field(LINE_ID);
             // 嵌套聚合
             // 设置聚合查询
             builder.aggregation(pduAggregationBuilder.subAggregation(lineAggregationBuilder
@@ -120,14 +120,14 @@ public class PduLineDao {
             // 处理聚合查询结果
             Aggregations aggregations = searchResponse.getAggregations();
             // 根据by_pdu名字查询terms聚合结果
-            Terms byPduAggregation = aggregations.get("by_pdu");
+            Terms byPduAggregation = aggregations.get(BY_PDU);
 
 
             // 遍历terms聚合结果
             for (Terms.Bucket bucket : byPduAggregation.getBuckets()) {
                 // 获取按pduId分组
                 Map<Object, PduHdaLineBaseDo> dataMap = new HashMap<>();
-                Terms byLineAggregation = bucket.getAggregations().get("by_line");
+                Terms byLineAggregation = bucket.getAggregations().get(BY_LINE);
                 //获取按line_id分组
                 for (Terms.Bucket baseBucket : byLineAggregation.getBuckets()) {
                     PduHdaLineBaseDo lineBaseDo = new PduHdaLineBaseDo();
@@ -273,16 +273,16 @@ public class PduLineDao {
             SearchSourceBuilder builder = new SearchSourceBuilder();
 
             //获取需要处理的数据
-            builder.query(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime));
+            builder.query(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime));
 
 //            builder.query(QueryBuilders.matchAllQuery());
 
             //创建terms桶聚合，聚合名字=by_pdu, 字段=pdu_id，根据pdu_id分组
-            TermsAggregationBuilder pduAggregationBuilder = AggregationBuilders.terms("by_pdu")
-                    .field("pdu_id");
+            TermsAggregationBuilder pduAggregationBuilder = AggregationBuilders.terms(BY_PDU)
+                    .field(PDU_ID);
 
             // 设置Avg指标聚合，按line_id分组
-            TermsAggregationBuilder lineAggregationBuilder = AggregationBuilders.terms("by_line").field(LINE_ID);
+            TermsAggregationBuilder lineAggregationBuilder = AggregationBuilders.terms(BY_LINE).field(LINE_ID);
             // 嵌套聚合
             // 设置聚合查询
             builder.aggregation(pduAggregationBuilder.subAggregation(lineAggregationBuilder
@@ -332,14 +332,14 @@ public class PduLineDao {
             // 处理聚合查询结果
             Aggregations aggregations = searchResponse.getAggregations();
             // 根据by_pdu名字查询terms聚合结果
-            Terms byPduAggregation = aggregations.get("by_pdu");
+            Terms byPduAggregation = aggregations.get(BY_PDU);
 
 
             // 遍历terms聚合结果
             for (Terms.Bucket bucket : byPduAggregation.getBuckets()) {
                 // 获取按pduId分组
                 Map<Object, PduHdaLineBaseDo> dataMap = new HashMap<>();
-                Terms byLineAggregation = bucket.getAggregations().get("by_line");
+                Terms byLineAggregation = bucket.getAggregations().get(BY_LINE);
                 //获取按line_id分组
                 for (Terms.Bucket baseBucket : byLineAggregation.getBuckets()) {
                     PduHdaLineBaseDo lineBaseDo = new PduHdaLineBaseDo();

@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.statis.service.impl;
 
 import cn.iocoder.yudao.module.statis.service.EsHandleService;
+import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -63,7 +64,7 @@ public class EsHandleServiceImpl implements EsHandleService {
                     pageDealDataList.forEach(t -> {
                         IndexRequest indexRequest = new IndexRequest(indexName);
 
-                        indexRequest.source(t, XContentType.JSON);
+                        indexRequest.source(JSON.toJSONString(t), XContentType.JSON);
                         request.add(indexRequest);
                     });
                 } else {
@@ -71,7 +72,7 @@ public class EsHandleServiceImpl implements EsHandleService {
                     log.info("general: " + pageDealDataList.size());
                     pageDealDataList.forEach(t -> {
                         IndexRequest indexRequest = new IndexRequest(indexName);
-                        indexRequest.source(t,XContentType.JSON);
+                        indexRequest.source(JSON.toJSONString(t),XContentType.JSON);
                         request.add(indexRequest);
                     });
                 }

@@ -39,9 +39,10 @@ public class ScheduleHourTask {
     @Scheduled(cron = "${cron.hour}")
     @Async()
     public void scheduledLoopTask() {
-        log.info("定时任务1开始：" + System.currentTimeMillis());
+        long start = System.currentTimeMillis();
         loopService.hourDeal();
-        log.info("定时任务1结束：" + System.currentTimeMillis());
+        long end = System.currentTimeMillis();
+        log.info("回路按小时统计结束：" + (end-start));
     }
 
 
@@ -51,9 +52,10 @@ public class ScheduleHourTask {
     @Scheduled(cron = "${cron.hour}")
     @Async()
     public void scheduledLineTask() {
-        log.info("定时任务2开始：" + System.currentTimeMillis());
+        long start = System.currentTimeMillis();
         lineService.hourDeal();
-        log.info("定时任务2结束：" + System.currentTimeMillis());
+        long end = System.currentTimeMillis();
+        log.info("相按小时统计结束：" + (end-start));
     }
 
     // @Scheduled(cron = "${cron.day}")
@@ -62,9 +64,10 @@ public class ScheduleHourTask {
     @Scheduled(cron = "${cron.hour}")
     @Async()
     public void scheduledOutletTask() {
-        log.info("定时任务3开始：" + System.currentTimeMillis());
+        long start = System.currentTimeMillis();
         outletService.hourDeal();
-        log.info("定时任务3结束：" + System.currentTimeMillis());
+        long end = System.currentTimeMillis();
+        log.info("输出位按小时统计结束：" + (end-start));
     }
 
     // @Scheduled(cron = "${cron.day}")
@@ -73,9 +76,10 @@ public class ScheduleHourTask {
     @Scheduled(cron = "${cron.hour}")
     @Async()
     public void scheduledTotalTask() {
-        log.info("定时任务4开始：" + System.currentTimeMillis());
+        long start = System.currentTimeMillis();
         totalService.hourDeal();
-        log.info("定时任务4结束：" + System.currentTimeMillis());
+        long end = System.currentTimeMillis();
+        log.info("总历史数据按小时统计结束：" + (end-start));
     }
 
 }

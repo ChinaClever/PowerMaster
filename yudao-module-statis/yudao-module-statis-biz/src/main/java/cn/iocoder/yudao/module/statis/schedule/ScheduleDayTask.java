@@ -1,6 +1,9 @@
 package cn.iocoder.yudao.module.statis.schedule;
 
+import cn.iocoder.yudao.module.statis.service.LineService;
 import cn.iocoder.yudao.module.statis.service.LoopService;
+import cn.iocoder.yudao.module.statis.service.OutletService;
+import cn.iocoder.yudao.module.statis.service.TotalService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -20,15 +23,60 @@ public class ScheduleDayTask {
 
     @Autowired
     LoopService loopService;
-
+    @Autowired
+    LineService lineService;
+    @Autowired
+    TotalService totalService;
+    @Autowired
+    OutletService outletService;
     /**
      * 每天凌晨六点执行
      */
     @Scheduled(cron = "${cron.day}")
     @Async()
     public void scheduledLoopTask() {
-        log.info("定时任务1开始：" + System.currentTimeMillis());
+        long start = System.currentTimeMillis();
         loopService.dayDeal();
-        log.info("定时任务1结束：" + System.currentTimeMillis());
+        long end = System.currentTimeMillis();
+        log.info("回路按天统计结束：" + (end-start));
     }
+
+    /**
+     * 每天凌晨六点执行
+     */
+    @Scheduled(cron = "${cron.day}")
+    @Async()
+    public void scheduledLineTask() {
+        long start = System.currentTimeMillis();
+        lineService.dayDeal();
+        long end = System.currentTimeMillis();
+        log.info("相按天统计结束：" + (end-start));
+    }
+
+
+    /**
+     * 每天凌晨六点执行
+     */
+    @Scheduled(cron = "${cron.day}")
+    @Async()
+    public void scheduledOutletTask() {
+        long start = System.currentTimeMillis();
+        outletService.dayDeal();
+        long end = System.currentTimeMillis();
+        log.info("输出位按天统计结束：" + (end-start));
+    }
+
+
+    /**
+     * 每天凌晨六点执行
+     */
+    @Scheduled(cron = "${cron.day}")
+    @Async()
+    public void scheduledTotalTask() {
+        long start = System.currentTimeMillis();
+        totalService.dayDeal();
+        long end = System.currentTimeMillis();
+        log.info("总历史数据按天统计结束：" + (end-start));
+    }
+
 }
