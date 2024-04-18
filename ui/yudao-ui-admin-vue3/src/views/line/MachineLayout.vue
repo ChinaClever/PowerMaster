@@ -4,7 +4,7 @@
       <el-table class="dragTable" :data="tableData" border style="width: 100%;" :row-style="{background: 'revert'}" >
         <el-table-column fixed type="index" width="80" align="center" :resizable="false" />
         <template v-for="(formItem, index) in formParam" :key="index">
-          <el-table-column :label="formItem" width="50" align="center" :resizable="false">
+          <el-table-column :label="formItem" width="100" align="center" :resizable="false">
             <template #default="scope">
               <draggable
                 :id="`${scope.$index}-${index}`"
