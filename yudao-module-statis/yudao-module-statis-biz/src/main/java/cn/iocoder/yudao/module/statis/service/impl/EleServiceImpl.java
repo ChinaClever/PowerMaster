@@ -5,10 +5,12 @@ import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.outlet.PduEqOutletBas
 import cn.iocoder.yudao.framework.common.enums.EsIndexEnum;
 import cn.iocoder.yudao.module.statis.dao.PduEleOutletDao;
 import cn.iocoder.yudao.module.statis.dao.PduEleTotalDao;
+import cn.iocoder.yudao.module.statis.init.DataInit;
 import cn.iocoder.yudao.module.statis.service.EleService;
 import cn.iocoder.yudao.module.statis.service.EsHandleService;
 import cn.iocoder.yudao.module.statis.vo.EqBillConfigVo;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +36,7 @@ public class EleServiceImpl implements EleService {
     @Override
     public void eleTotalDayDeal() {
         //获取配置时间段
-        List<EqBillConfigVo> configVos = new ArrayList<>();
+        List<EqBillConfigVo> configVos = getConfigList();
         //电量统计
         List<PduEqBaseDo> eqBaseDos = pduEleTotalDao.statisEleDay(configVos);
         //数据入库
@@ -45,7 +47,7 @@ public class EleServiceImpl implements EleService {
     public void eleTotalWeekDeal() {
 
         //获取配置时间段
-        List<EqBillConfigVo> configVos = new ArrayList<>();
+        List<EqBillConfigVo> configVos = getConfigList();
         //电量统计
         List<PduEqBaseDo> eqBaseDos = pduEleTotalDao.statisEleWeek(configVos);
         //数据入库
@@ -56,7 +58,7 @@ public class EleServiceImpl implements EleService {
     @Override
     public void eleTotalMonthDeal() {
         //获取配置时间段
-        List<EqBillConfigVo> configVos = new ArrayList<>();
+        List<EqBillConfigVo> configVos = getConfigList();
         //电量统计
         List<PduEqBaseDo> eqBaseDos = pduEleTotalDao.statisEleMonth(configVos);
         //数据入库
@@ -67,7 +69,7 @@ public class EleServiceImpl implements EleService {
     public void eleOutletDayDeal() {
 
         //获取配置时间段
-        List<EqBillConfigVo> configVos = new ArrayList<>();
+        List<EqBillConfigVo> configVos = getConfigList();
         //电量统计
         List<PduEqOutletBaseDo> eqBaseDos = pduEleOutletDao.statisEleDay(configVos);
         //数据入库
@@ -78,7 +80,7 @@ public class EleServiceImpl implements EleService {
     @Override
     public void eleOutletWeekDeal() {
         //获取配置时间段
-        List<EqBillConfigVo> configVos = new ArrayList<>();
+        List<EqBillConfigVo> configVos = getConfigList();
         //电量统计
         List<PduEqOutletBaseDo> eqBaseDos = pduEleOutletDao.statisEleWeek(configVos);
         //数据入库
@@ -88,10 +90,23 @@ public class EleServiceImpl implements EleService {
     @Override
     public void eleOutletMonthDeal() {
         //获取配置时间段
-        List<EqBillConfigVo> configVos = new ArrayList<>();
+        List<EqBillConfigVo> configVos = getConfigList();
         //电量统计
         List<PduEqOutletBaseDo> eqBaseDos = pduEleOutletDao.statisEleMonth(configVos);
         //数据入库
         esHandleService.batchInsert(eqBaseDos, EsIndexEnum.PDU_EQ_OUTLET_MONTH.getIndex());
+    }
+
+    /**
+     * 获取配置
+     */
+    private List<EqBillConfigVo> getConfigList(){
+        List<EqBillConfigVo> configVos = new ArrayList<>();
+        DataInit.BILL_CONFIG_MAP.keySet().forEach(key ->{
+            EqBillConfigVo configVo = new EqBillConfigVo();
+            BeanUtils.copyProperties(DataInit.BILL_CONFIG_MAP.get(key),configVo);
+            configVos.add(configVo);
+        });
+        return configVos;
     }
 }

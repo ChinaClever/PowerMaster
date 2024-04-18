@@ -4,8 +4,11 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.outlet.PduEleOutletDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.outlet.PduEqOutletBaseDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.outlet.PduEqOutletDayDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.enums.EsIndexEnum;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
+import cn.iocoder.yudao.module.statis.util.TimeUtil;
 import cn.iocoder.yudao.module.statis.vo.EqBillConfigVo;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchRequest;
@@ -27,10 +30,8 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.*;
 import static cn.iocoder.yudao.module.statis.constant.Constants.*;
@@ -59,6 +60,20 @@ public class PduEleOutletDao {
 
         try {
             billConfigVoList.forEach(billConfigVo -> {
+                if (billConfigVo.getBillMode() == 1){
+                    //固定计费
+                    DateTime end = DateTime.now();
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.add(Calendar.HOUR_OF_DAY, -24);
+                    DateTime start = DateTime.of(calendar.getTime());
+
+                    String startTime = DateUtil.formatDateTime(start) ;
+                    String endTime = DateUtil.formatDateTime(end) ;
+
+                    billConfigVo.setStartTime(startTime);
+                    billConfigVo.setEndTime(endTime);
+                }
+
                 //获取时间段内第一条和最后一条数据
                 Map<Integer, Map<Integer, PduEleOutletDo>> endMap = getEleData(billConfigVo,
                         SortOrder.DESC,
@@ -189,31 +204,25 @@ public class PduEleOutletDao {
 
         try {
             billConfigVoList.forEach(billConfigVo -> {
-                String[] times = billConfigVo.getBillPeriod().split(SPLIT);
-                String startTime = DateUtil.formatDate(DateUtil.beginOfWeek(DateTime.now())) +" " + times[0];
-                String endTime = DateUtil.formatDate(DateTime.now()) +" " + times[1];
+                if (billConfigVo.getBillMode() == 1){
+                    //固定计费
+                    DateTime end = DateTime.now();
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.add(Calendar.DAY_OF_MONTH, -7);
+                    DateTime start = DateTime.of(calendar.getTime());
 
-                billConfigVo.setStartTime(startTime);
-                billConfigVo.setEndTime(endTime);
+                    String startTime = DateUtil.formatDateTime(start) ;
+                    String endTime = DateUtil.formatDateTime(end) ;
 
-                //获取时间段内第一条和最后一条数据
-                Map<Integer,  Map<Integer,PduEleOutletDo>> endMap = getEleData(billConfigVo,
-                        SortOrder.DESC,
-                        EsIndexEnum.PDU_ELE_OUTLET.getIndex());
-                Map<Integer,  Map<Integer,PduEleOutletDo>> startMap = getEleData(billConfigVo,
-                        SortOrder.ASC,
-                        EsIndexEnum.PDU_ELE_OUTLET.getIndex());
+                    billConfigVo.setStartTime(startTime);
+                    billConfigVo.setEndTime(endTime);
+                }
 
-                startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
-                endTime = DateUtil.formatDateTime(DateTime.now());
-
-                billConfigVo.setStartTime(startTime);
-                billConfigVo.setEndTime(endTime);
                 //计算总量
                 Map<Integer,Map<Integer,Map<String,Double>>> dataMap = getEleDataByDay(billConfigVo,
                         EsIndexEnum.PDU_EQ_OUTLET_DAY.getIndex());
 
-                endMap.keySet().forEach(pduId -> endMap.get(pduId).keySet().forEach(outletId -> {
+                dataMap.keySet().forEach(pduId -> dataMap.get(pduId).keySet().forEach(outletId -> {
                     PduEqOutletBaseDo baseDo = new PduEqOutletBaseDo();
                     //统计时间段
                     baseDo.setStartTime(DateUtil.parseDateTime(billConfigVo.getStartTime()));
@@ -221,13 +230,11 @@ public class PduEleOutletDao {
                     baseDo.setPduId(pduId);
                     baseDo.setOutletId(outletId);
 
-                    PduEleOutletDo endRealtimeDo = endMap.get(pduId).get(outletId);
-                    PduEleOutletDo startRealtimeDo = startMap.get(pduId).get(outletId);
                     //结束时间电量
-                    double endEle = endRealtimeDo.getEle();
+                    double endEle = dataMap.get(pduId).get(outletId).get(END_ELE);
                     baseDo.setEndEle(endEle);
                     //开始时间电量
-                    double startEle = startRealtimeDo.getEle();
+                    double startEle = dataMap.get(pduId).get(outletId).get(START_ELE);
                     baseDo.setStartEle(startEle);
                     //电量集合
                     baseDo.setEq(dataMap.get(pduId).get(outletId).get(EQ_VALUE));
@@ -284,11 +291,35 @@ public class PduEleOutletDao {
 
             // 设置搜索条件
             searchRequest.source(builder);
-            // 如果只想返回聚合统计结果，不想返回查询结果可以将分页大小设置为0
-            builder.size(0);
+
 
             // 执行ES请求
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+
+            SearchHits hits = searchResponse.getHits();
+            LinkedList<PduEqOutletDayDo> resList = new LinkedList<>();
+
+            for (SearchHit hit : hits.getHits()) {
+                String str = hit.getSourceAsString();
+                PduEqOutletDayDo dayDo = JsonUtils.parseObject(str, PduEqOutletDayDo.class);
+                resList.add(dayDo);
+            }
+
+            Map<Integer,List<PduEqOutletDayDo>>  dayMap = resList.stream().collect(Collectors.groupingBy(PduEqOutletDayDo::getPduId));
+
+            dayMap.keySet().forEach(pduId -> {
+                Map<Integer,List<PduEqOutletDayDo>> outletMap = dayMap.get(pduId).stream().collect(Collectors.groupingBy(PduEqOutletDayDo::getOutletId));
+                Map<Integer,Map<String,Double>> outMap = new HashMap<>();
+                outletMap.keySet().forEach(outletId -> {
+                    List<PduEqOutletDayDo> outletDayDos = outletMap.get(outletId).stream().sorted(Comparator.comparing(PduEqOutletDayDo::getCreateTime)).collect(Collectors.toList());
+                    Map<String,Double> map = new HashMap<>();
+                    map.put(START_ELE,outletDayDos.get(0).getStartEle());
+                    map.put(END_ELE,outletDayDos.get(outletDayDos.size()-1).getEndEle());
+                   outMap.put(outletId,map);
+                });
+               dataMap.put(pduId,outMap);
+            });
 
             // 处理聚合查询结果
             Aggregations aggregations = searchResponse.getAggregations();
@@ -297,13 +328,13 @@ public class PduEleOutletDao {
 
             for (Terms.Bucket bucket : byPduAggregation.getBuckets()){
                 Integer pudId = Integer.parseInt(String.valueOf(bucket.getKey()));
-                Map<Integer,Map<String,Double>>  pduMap = new HashMap<>();
+                Map<Integer,Map<String,Double>>  pduMap =dataMap.get(pudId);
                 Terms byOutletAggregation = bucket.getAggregations().get(BY_OUTLET);
                 for (Terms.Bucket outBucket : byOutletAggregation.getBuckets()){
                     Integer outletId = Integer.parseInt(String.valueOf(outBucket.getKey()));
                     Sum bills  = outBucket.getAggregations().get(BILL_VALUE);
                     Sum  eqs = outBucket.getAggregations().get(EQ_VALUE);
-                    Map<String,Double> map = new HashMap<>();
+                    Map<String,Double> map = pduMap.get(outletId);
                     map.put(BILL_VALUE,bills.getValue());
                     map.put(EQ_VALUE,eqs.getValue());
                     pduMap.put(outletId,map);
@@ -328,31 +359,24 @@ public class PduEleOutletDao {
 
         try {
             billConfigVoList.forEach(billConfigVo -> {
-                String[] times = billConfigVo.getBillPeriod().split(SPLIT);
-                String startTime = DateUtil.formatDate(DateUtil.beginOfMonth(DateTime.now())) +" " + times[0];
-                String endTime = DateUtil.formatDate(DateTime.now()) +" " + times[1];
+                if (billConfigVo.getBillMode() == 1){
+                    //固定计费
+                    DateTime end = DateTime.now();
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.add(Calendar.MONTH, -1);
+                    DateTime start = DateTime.of(calendar.getTime());
 
-                billConfigVo.setStartTime(startTime);
-                billConfigVo.setEndTime(endTime);
+                    String startTime = DateUtil.formatDateTime(start) ;
+                    String endTime = DateUtil.formatDateTime(end) ;
 
-                //获取时间段内第一条和最后一条数据
-                Map<Integer,  Map<Integer,PduEleOutletDo>> endMap = getEleData(billConfigVo,
-                        SortOrder.DESC,
-                        EsIndexEnum.PDU_ELE_OUTLET.getIndex());
-                Map<Integer,  Map<Integer,PduEleOutletDo>> startMap = getEleData(billConfigVo,
-                        SortOrder.ASC,
-                        EsIndexEnum.PDU_ELE_OUTLET.getIndex());
-
-                startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
-                endTime = DateUtil.formatDateTime(DateTime.now());
-
-                billConfigVo.setStartTime(startTime);
-                billConfigVo.setEndTime(endTime);
+                    billConfigVo.setStartTime(startTime);
+                    billConfigVo.setEndTime(endTime);
+                }
                 //计算总量
                 Map<Integer,Map<Integer,Map<String,Double>>> dataMap = getEleDataByDay(billConfigVo,
                         EsIndexEnum.PDU_EQ_OUTLET_DAY.getIndex());
 
-                endMap.keySet().forEach(pduId -> endMap.get(pduId).keySet().forEach(outletId -> {
+                dataMap.keySet().forEach(pduId -> dataMap.get(pduId).keySet().forEach(outletId -> {
                     PduEqOutletBaseDo baseDo = new PduEqOutletBaseDo();
                     //统计时间段
                     baseDo.setStartTime(DateUtil.parseDateTime(billConfigVo.getStartTime()));
@@ -360,13 +384,11 @@ public class PduEleOutletDao {
                     baseDo.setPduId(pduId);
                     baseDo.setOutletId(outletId);
 
-                    PduEleOutletDo endRealtimeDo = endMap.get(pduId).get(outletId);
-                    PduEleOutletDo startRealtimeDo = startMap.get(pduId).get(outletId);
                     //结束时间电量
-                    double endEle = endRealtimeDo.getEle();
+                    double endEle = dataMap.get(pduId).get(outletId).get(END_ELE);
                     baseDo.setEndEle(endEle);
                     //开始时间电量
-                    double startEle = startRealtimeDo.getEle();
+                    double startEle = dataMap.get(pduId).get(outletId).get(START_ELE);
                     baseDo.setStartEle(startEle);
                     //电量集合
                     baseDo.setEq(dataMap.get(pduId).get(outletId).get(EQ_VALUE));

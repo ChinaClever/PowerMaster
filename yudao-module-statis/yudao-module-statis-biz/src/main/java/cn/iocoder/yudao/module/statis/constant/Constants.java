@@ -43,4 +43,6 @@ public class Constants {
      * 传感器
      */
     public static final String  BY_SENSOR = "by_sensor";
+
+    public static final String STATIS_CONFIG = "statisConfig";
 }
