@@ -41,27 +41,27 @@ public enum EsStatisFieldEnum {
     /**
      * 平均有功功率
      */
-    ACTIVE_POW_AVG_VALUE("active_pow_avg_value","平均有功功率"),
+    ACTIVE_POW_AVG_VALUE("pow_active_avg_value","平均有功功率"),
     /**
      * 最大有功功率
      */
-    ACTIVE_POW_MAX_VALUE("active_pow_max_value","最大有功功率"),
+    ACTIVE_POW_MAX_VALUE("pow_active_max_value","最大有功功率"),
     /**
      * 最小有功功率
      */
-    ACTIVE_POW_MIN_VALUE("active_pow_min_value","最小有功功率"),
+    ACTIVE_POW_MIN_VALUE("pow_active_min_value","最小有功功率"),
     /**
      * 平均视在功率
      */
-    APPARENT_POW_AVG_VALUE("apparent_pow_avg_value","平均视在功率"),
+    APPARENT_POW_AVG_VALUE("pow_apparent_avg_value","平均视在功率"),
     /**
      * 最大视在功率
      */
-    APPARENT_POW_MAX_VALUE("apparent_pow_max_value","最大视在功率"),
+    APPARENT_POW_MAX_VALUE("pow_apparent_max_value","最大视在功率"),
     /**
      * 最小视在功率
      */
-    APPARENT_POW_MIN_VALUE("apparent_pow_min_value","最小视在功率"),
+    APPARENT_POW_MIN_VALUE("pow_apparent_min_value","最小视在功率"),
 
     ;
     /**

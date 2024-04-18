@@ -7,37 +7,39 @@
       <el-col :span="20" :xs="24">
         <ContentWrap>
           <el-form
-          class="-mb-15px"
-          :model="queryParams"
-          ref="queryFormRef"
-          :inline="true"
-          label-width="68px"
-        >
-          <el-form-item label="公司名称" prop="username">
-            <el-input
-              v-model="queryParams.username"
-              placeholder="请输入公司名称"
-              clearable
-              class="!w-240px"
-            />
-          </el-form-item>
-          <el-form-item label="展示列" prop="showCol">
-            <el-cascader
-              ref="colNode"
-              class="!w-240px"
-              v-model="defaultOptionsCol"
-              @change="cascaderChange"
-              :options="optionsCol"
-              :props="props"
-              collapse-tags />
-          </el-form-item>
-          <el-form-item>
-            <el-button @click="handleQuery"><Icon icon="ep:search" />搜索</el-button>
-            <el-button @click="openForm('add')" type="primary" plain><Icon icon="ep:plus" />添加</el-button>
-          </el-form-item>
-        </el-form>
+            class="-mb-15px"
+            :model="queryParams"
+            ref="queryFormRef"
+            :inline="true"
+            label-width="68px"
+          >
+            <el-form-item label="公司名称" prop="username">
+              <el-input
+                v-model="queryParams.username"
+                placeholder="请输入公司名称"
+                clearable
+                class="!w-240px"
+              />
+            </el-form-item>
+            <el-form-item label="展示列" prop="showCol">
+              <el-cascader
+                ref="colNode"
+                class="!w-240px"
+                v-model="defaultOptionsCol"
+                @change="cascaderChange"
+                :options="optionsCol"
+                :props="props"
+                collapse-tags />
+            </el-form-item>
+            <el-form-item>
+              <el-button @click="handleQuery"><Icon icon="ep:search" />搜索</el-button>
+              <el-button @click="openForm('add')" type="primary" plain><Icon icon="ep:plus" />添加</el-button>
+              <el-button @click="switchValue = 0" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
+              <el-button @click="switchValue = 1" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
+            </el-form-item>
+          </el-form>
         </ContentWrap>
-        <ContentWrap>
+        <ContentWrap v-show="switchValue">
           <el-table style="width: 100%" v-loading="loading" :data="list">
             <el-table-column v-if="queryParams.showCol.includes(1)" label="总AB视在功率" min-width="120" align="center" prop="abszgl" />
             <el-table-column v-if="queryParams.showCol.includes(2)" label="总AB有功功率" min-width="120" align="center" prop="abyggl" />
@@ -79,6 +81,23 @@
             v-model:limit="queryParams.pageSize"
           />
         </ContentWrap>
+        <ContentWrap v-show="!switchValue">
+          <div class="arrayContainer">
+            <div class="arrayItem" v-for="item in list" :key="item.id">
+              <div class="content">
+                <div><img class="icon" alt="" src="@/assets/imgs/jigui.jpg" /></div>
+                <div class="info">
+                  <div>总视在功率：{{item.abszgl}}</div>
+                  <div>总有功功率：{{item.abyggl}}</div>
+                  <div>AB路占比：{{item.fzb}}</div>
+                </div>
+              </div>
+              <div class="room">{{item.jf}}-{{item.mc}}</div>
+              <div class="status">报警</div>
+              <button class="detail">详情</button>
+            </div>
+          </div>
+        </ContentWrap>
       </el-col>
     </el-row>
   </div>
@@ -97,6 +116,7 @@ const machineForm = ref()
 const colNode = ref()
 const testData = ref(null)
 const loading = ref(false)
+const switchValue = ref(1)
 const queryParams = reactive({
   username: undefined,
   showCol: [1, 2, 3, 5, 6, 7, 9, 10, 11, 16] as number[],
@@ -285,6 +305,91 @@ let list = reactive([
     fzb: '50%',
     abzb: 30,
   },
+  {
+    id: 1414,
+    abszgl: '25',
+    abyggl: '52',
+    abdn: '45',
+    aszgl: '22',
+    ayggl: '5',
+    adn: '52',
+    bszgl: '25',
+    byggl: '52',
+    bdn: '40',
+    mc: '服务器1',
+    gs: '亚马逊',
+    jf: '机房202',
+    fzb: '50%',
+    abzb: 30,
+  },
+  {
+    id: 6232,
+    abszgl: '25',
+    abyggl: '52',
+    abdn: '45',
+    aszgl: '22',
+    ayggl: '5',
+    adn: '52',
+    bszgl: '25',
+    byggl: '52',
+    bdn: '40',
+    mc: '服务器1',
+    gs: '亚马逊',
+    jf: '机房202',
+    fzb: '50%',
+    abzb: 30,
+  },
+  {
+    id: 241,
+    abszgl: '25',
+    abyggl: '52',
+    abdn: '45',
+    aszgl: '22',
+    ayggl: '5',
+    adn: '52',
+    bszgl: '25',
+    byggl: '52',
+    bdn: '40',
+    mc: '服务器1',
+    gs: '亚马逊',
+    jf: '机房202',
+    fzb: '50%',
+    abzb: 30,
+  },
+  {
+    id: 21233,
+    abszgl: '25',
+    abyggl: '52',
+    abdn: '45',
+    aszgl: '22',
+    ayggl: '5',
+    adn: '52',
+    bszgl: '25',
+    byggl: '52',
+    bdn: '40',
+    mc: '服务器1',
+    gs: '亚马逊',
+    jf: '机房202',
+    fzb: '50%',
+    abzb: 30,
+  },
+  {
+    id: 7676,
+    abszgl: '25',
+    abyggl: '52',
+    abdn: '45',
+    aszgl: '22',
+    ayggl: '5',
+    adn: '52',
+    bszgl: '25',
+    byggl: '52',
+    bdn: '40',
+    mc: '服务器1',
+    gs: '亚马逊',
+    jf: '机房202',
+    fzb: '50%',
+    abzb: 30,
+  },
 ])
 const data = reactive([{
   label: '机房 1',
@@ -341,5 +446,58 @@ const data = reactive([{
     }
   }
 }
-
+.arrayContainer {
+  display: flex;
+  flex-wrap: wrap;
+  .arrayItem {
+    width: 25%;
+    height: 120px;
+    font-size: 13px;
+    box-sizing: border-box;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 40px;
+    position: relative;
+    .content {
+      display: flex;
+      align-items: center;
+      .icon {
+        width: 30px;
+        height: 30px;
+        margin: 0 28px;
+      }
+    }
+    .room {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .status {
+      width: 40px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fa3333;
+      color: #fff;
+      position: absolute;
+      right: 8px;
+      top: 8px;
+    }
+    .detail {
+      width: 40px;
+      height: 25px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+    }
+  }
+}
 </style>

@@ -65,3 +65,4 @@ auto-*.d.ts
 .idea
 .history
 
+*.local

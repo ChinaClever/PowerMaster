@@ -65,7 +65,7 @@ const echartsOption = reactive<EChartsOption>({
   xAxis: [
     {
       type: 'category',
-      data: ['Mon', 'Tue'],
+      data: ['A路', 'B路'],
       axisTick: {
         alignWithLabel: true
       }
@@ -81,7 +81,7 @@ const echartsOption = reactive<EChartsOption>({
       name: 'Direct',
       type: 'bar',
       barWidth: '100%',
-      data: [10, 52]
+      data: [45, 52]
     }
   ]
 }) as EChartsOption

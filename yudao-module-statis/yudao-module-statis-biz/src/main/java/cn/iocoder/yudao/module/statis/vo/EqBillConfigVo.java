@@ -24,4 +24,15 @@ public class EqBillConfigVo {
      * 计费结束时间 23:59:59
      */
     private String endTime;
+
+
+    /**
+     * 计费方式
+     */
+    private int billMode;
+
+    /**
+     * 计费时间段
+     */
+    private String billPeriod;
 }

@@ -1,32 +1,28 @@
 package cn.iocoder.yudao.module.pdu.controller.admin.pdudevice;
 
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDevicePageReqVO;
-import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDeviceRespVO;
-import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDeviceSaveReqVO;
+
 import cn.iocoder.yudao.module.pdu.dal.dataobject.pdudevice.PDUDeviceDO;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.security.access.prepost.PreAuthorize;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.Parameter;
+
 import io.swagger.v3.oas.annotations.Operation;
 
 import javax.validation.*;
-import javax.servlet.http.*;
-import java.util.*;
-import java.io.IOException;
 
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
+import java.time.LocalDateTime;
+import java.util.*;
+
+
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
-import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
-import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
-
-import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
-import static cn.iocoder.yudao.framework.operatelog.core.enums.OperateTypeEnum.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import cn.iocoder.yudao.module.pdu.service.pdudevice.PDUDeviceService;
 
@@ -55,10 +51,16 @@ public class PDUDeviceController {
         return pDUDeviceService.getDisplayDataByDevKey(pageReqVO.getDevKey());
     }
 
-    @GetMapping("/hisdata/{id}")
+    @GetMapping("/hisdata")
     @Operation(summary = "获得PDU历史数据")
-    public CommonResult<Map> getHistoryDataByPduId(@PathVariable("id") Long id) {
-        return success(pDUDeviceService.getHistoryDataByPduId(id));
+    public CommonResult<Map> getHistoryDataByPduId(Long id,String type) {
+        return success(pDUDeviceService.getHistoryDataByPduId(id,type));
+    }
+
+    @GetMapping("/chartNewData")
+    @Operation(summary = "获得PDU历史数据")
+    public CommonResult<Map> getChartNewDataByPduId(Long id,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,String type) {
+        return success(pDUDeviceService.getChartNewDataByPduId(id,oldTime,type));
     }
 
 }

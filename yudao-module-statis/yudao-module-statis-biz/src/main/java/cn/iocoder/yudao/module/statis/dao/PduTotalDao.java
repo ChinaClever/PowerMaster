@@ -32,6 +32,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.*;
+import static cn.iocoder.yudao.module.statis.constant.Constants.BY_PDU;
+import static cn.iocoder.yudao.module.statis.constant.Constants.KEYWORD;
 
 /**
  * @Author: chenwany
@@ -61,12 +63,12 @@ public class PduTotalDao {
             SearchSourceBuilder builder = new SearchSourceBuilder();
 
             //获取需要处理的数据
-            builder.query(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime));
+            builder.query(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime));
 
 //            builder.query(QueryBuilders.matchAllQuery());
             // 创建terms桶聚合，聚合名字=by_pdu, 字段=pdu_id，根据pdu_id分组
-            TermsAggregationBuilder pduAggregationBuilder = AggregationBuilders.terms("by_pdu")
-                    .field("pdu_id");
+            TermsAggregationBuilder pduAggregationBuilder = AggregationBuilders.terms(BY_PDU)
+                    .field(PDU_ID);
             // 嵌套聚合
             // 设置聚合查询
             builder.aggregation(pduAggregationBuilder
@@ -104,7 +106,7 @@ public class PduTotalDao {
             // 处理聚合查询结果
             Aggregations aggregations = searchResponse.getAggregations();
             // 根据by_pdu名字查询terms聚合结果
-            Terms byPduAggregation = aggregations.get("by_pdu");
+            Terms byPduAggregation = aggregations.get(BY_PDU);
 
 
             // 遍历terms聚合结果
@@ -200,12 +202,12 @@ public class PduTotalDao {
             SearchSourceBuilder builder = new SearchSourceBuilder();
 
             //获取需要处理的数据
-            builder.query(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime));
+            builder.query(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime));
 
 //            builder.query(QueryBuilders.matchAllQuery());
             // 创建terms桶聚合，聚合名字=by_pdu, 字段=pdu_id，根据pdu_id分组
-            TermsAggregationBuilder pduAggregationBuilder = AggregationBuilders.terms("by_pdu")
-                    .field("pdu_id");
+            TermsAggregationBuilder pduAggregationBuilder = AggregationBuilders.terms(BY_PDU)
+                    .field(PDU_ID);
             // 嵌套聚合
             // 设置聚合查询
             builder.aggregation(pduAggregationBuilder
@@ -243,7 +245,7 @@ public class PduTotalDao {
             // 处理聚合查询结果
             Aggregations aggregations = searchResponse.getAggregations();
             // 根据by_pdu名字查询terms聚合结果
-            Terms byPduAggregation = aggregations.get("by_pdu");
+            Terms byPduAggregation = aggregations.get(BY_PDU);
 
 
             // 遍历terms聚合结果

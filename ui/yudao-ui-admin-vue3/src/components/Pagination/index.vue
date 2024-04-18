@@ -5,7 +5,7 @@
     v-model:current-page="currentPage"
     v-model:page-size="pageSize"
     :background="true"
-    :page-sizes="[10, 20, 30, 50, 100]"
+    :page-sizes="pageSizeArr"
     :pager-count="pagerCount"
     :total="total"
     :small="isSmall"
@@ -34,6 +34,10 @@ const props = defineProps({
   total: {
     required: true,
     type: Number
+  },
+  pageSizeArr:{
+    type: Array<number>,
+    default : [10, 20, 30, 50, 100]
   },
   // 当前页数：pageNo
   page: {

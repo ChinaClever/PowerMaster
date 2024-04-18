@@ -7,6 +7,7 @@ import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDeviceSaveRe
 import cn.iocoder.yudao.module.pdu.dal.dataobject.pdudevice.PDUDeviceDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -28,5 +29,7 @@ public interface PDUDeviceService {
 
     String getDisplayDataByDevKey(String devKey);
 
-    Map<String, List<Double>> getHistoryDataByPduId(Long id);
+    Map getHistoryDataByPduId(Long id,String type);
+
+    Map getChartNewDataByPduId(Long id, LocalDateTime oldTime,String type);
 }

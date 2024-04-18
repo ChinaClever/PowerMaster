@@ -1,10 +1,10 @@
 <template>
-  <el-card class="card" shadow="never">
-    <template #header>
-      <CardTitle title="机柜总览" />
-    </template>
-    <div class="descriptionContainer">
-      <el-descriptions class="ABRord" title="A路" direction="vertical" :column="2" size="medium" >
+  <div class="descriptionContainer">
+    <el-card class="card" shadow="never">
+      <template #header>
+        <CardTitle title="A路" />
+      </template>
+      <el-descriptions class="ABRord" direction="vertical" :column="2" >
         <el-descriptions-item label="输入电压">381.1V</el-descriptions-item>
         <el-descriptions-item label="A视在功率">200KW</el-descriptions-item>
         <el-descriptions-item label="A有功功率">201KVA</el-descriptions-item>
@@ -12,13 +12,23 @@
         <el-descriptions-item label="A平衡度">20%</el-descriptions-item>
         <el-descriptions-item label="A负载百分比">65.5%</el-descriptions-item>
       </el-descriptions>
-      <el-descriptions class="ABRord" title="总参数" direction="vertical" :column="2" >
+    </el-card>
+    <el-card class="card" shadow="never">
+      <template #header>
+        <CardTitle title="总参数" />
+      </template>
+      <el-descriptions class="ABRord" direction="vertical" :column="2" >
         <el-descriptions-item label="输入电压">378.8V</el-descriptions-item>
         <el-descriptions-item label="视在功率">190KW</el-descriptions-item>
         <el-descriptions-item label="有功功率">192KVA</el-descriptions-item>
         <el-descriptions-item label="电能">8.996kWh</el-descriptions-item>
       </el-descriptions>
-      <el-descriptions class="ABRord" title="B路" direction="vertical" :column="2" >
+    </el-card>
+    <el-card class="card" shadow="never">
+      <template #header>
+        <CardTitle title="B路" />
+      </template>
+      <el-descriptions class="ABRord" direction="vertical" :column="2" >
         <el-descriptions-item label="输入电压">381.1V</el-descriptions-item>
         <el-descriptions-item label="B视在功率">200KW</el-descriptions-item>
         <el-descriptions-item label="B有功功率">201KVA</el-descriptions-item>
@@ -26,8 +36,8 @@
         <el-descriptions-item label="B平衡度">80%</el-descriptions-item>
         <el-descriptions-item label="B负载百分比">34.5%</el-descriptions-item>
       </el-descriptions>
-    </div>
-  </el-card>
+    </el-card>
+  </div>
   <el-card class="card" shadow="never">
     <template #header>
       <CardTitle title="拓扑展示" />
@@ -121,15 +131,22 @@ const echartsOption = reactive<EChartsOption>({
 </script>
 
 <style lang="scss" scoped>
-.card {
-  margin-bottom: 16px
-}
+
 .descriptionContainer {
   display: flex;
-  justify-content: space-around;
-  .ABRord {
+  justify-content: space-between;
+  .card {
     flex: 1;
-    padding-left: 50px;
+    // margin-right: 15px;
+    .ABRord {
+      padding-left: 50px;
+    }
   }
+  .card:nth-child(2) {
+    margin: 0 16px 16px;
+  }
+}
+.card {
+  margin-bottom: 16px
 }
 </style>
