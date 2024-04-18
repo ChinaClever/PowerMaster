@@ -45,6 +45,10 @@ export const PDUDeviceApi = {
   },
 
   PDUHis: async (params) => {
-    return await request.get({ url: `/pdu/PDU-device/hisdata/`+ params})
+    return await request.get({ url: `/pdu/PDU-device/hisdata/`, params})
+  },
+
+  ChartNewData: async (params) => {
+    return await request.get({ url: `/pdu/PDU-device/chartNewData`,params})
   },
 }

@@ -1,4 +1,25 @@
 <template>
+  <el-row :gutter="18" >
+    <el-col>
+      <el-card>
+        <el-row :gutter="18" >
+          <el-col :span="8">
+            <el-text line-clamp="2">
+              所在位置：{{ location }}
+            </el-text>
+          </el-col>
+          <el-col :span="8">
+            <el-text line-clamp="2">
+              网络地址：{{ queryParams.devKey }}
+            </el-text>
+          </el-col>
+          <el-col :span="6">
+            <el-button type="primary" @click="openNewPage(queryParams.devKey)" >进入管理界面</el-button>
+          </el-col>
+        </el-row>
+      </el-card>
+    </el-col>
+  </el-row>
   <el-row :gutter="24" >
     <el-col :span="6" class="card-box">
       <el-card>
@@ -9,11 +30,6 @@
                 总数据
               </el-text>
             </el-col>   
-            <el-col :span="8">
-              <el-text line-clamp="2">
-                {{ location }}
-              </el-text>
-            </el-col>
           </el-row>
         </template>
         <el-row justify="center">
@@ -156,10 +172,25 @@
   </el-row>
   <el-collapse v-model="activeNames" >
     <el-card>
-    <span style="width: 100%">趋势图</span>
-    <el-button type="primary" @click="openNewPage(queryParams.devKey)" >进入管理界面</el-button>
-    <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
-  </el-card>
+      <el-row>
+        <el-col :span="2">
+          <span style="width: 100%">趋势图</span>
+        </el-col>
+        <el-col :span="8">
+          <el-form-item label="颗粒度" prop="type">
+            <el-select
+              v-model="queryParams.powGranularity"
+              placeholder="请选择"
+              class="!w-120px"
+            >
+              <el-option label="最近一小时" value="oneHour" />
+              <el-option label="过去24小时" value="twentyfourHour" />
+            </el-select>
+          </el-form-item>
+        </el-col> 
+      </el-row>
+      <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
+    </el-card>
     <el-collapse-item title="回路" name="1" v-if="controlVis.haveCircle">
       <ContentWrap>
         <el-table  :data="circleList" :stripe="true" :show-overflow-tooltip="true">
@@ -199,16 +230,6 @@
         </el-table>
       </ContentWrap>
     </el-collapse-item>
-    <el-collapse-item title="传感器" name="2">
-      <ContentWrap>
-        <el-table  :data="sensorList" :stripe="true" :show-overflow-tooltip="true">
-          <el-table-column label="传感器名称" align="center" prop="sensorName" />
-          <el-table-column label="传感器状态" align="center" prop="sensorStatus" />
-          <el-table-column label="传感器名称" align="center" prop="sensorName2" />
-          <el-table-column label="传感器状态" align="center" prop="sensorStatus2" />
-        </el-table>
-      </ContentWrap>
-    </el-collapse-item>
     <el-collapse-item title="输出位" name="3" v-if="controlVis.haveOutPut">
       <ContentWrap>
         <el-table  :data="output" :stripe="true" :show-overflow-tooltip="true">
@@ -243,11 +264,34 @@
         </el-table>
       </ContentWrap>
     </el-collapse-item>
+    <el-collapse-item title="传感器" name="2" v-if="controlVis.haveSensor">
+      <ContentWrap>
+        <el-table  :data="sensorList" :stripe="true" :show-overflow-tooltip="true">
+          <el-table-column label="传感器名称" align="center" prop="temName" />
+          <el-table-column label="传感器状态" align="center" prop="tem_alarm_status" >
+            <template #default="scope" >
+              <el-tag type="" v-if="scope.row.tem_alarm_status == 0">正常</el-tag>
+              <el-tag type="danger" v-if="scope.row.tem_alarm_status == 1">最小值告警</el-tag>
+              <el-tag type="warning" v-if="scope.row.tem_alarm_status == 2">下限预警</el-tag>
+              <el-tag type="warning" v-if="scope.row.tem_alarm_status == 4">上限预警</el-tag>
+              <el-tag type="danger" v-if="scope.row.tem_alarm_status == 8">最大值告警</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="传感器名称" align="center" prop="humName" />
+          <el-table-column label="传感器状态" align="center" prop="hum_alarm_status" >
+            <template #default="scope" >
+              <el-tag type="" v-if="scope.row.hum_alarm_status == 0">正常</el-tag>
+              <el-tag type="danger" v-if="scope.row.hum_alarm_status == 1">最小值告警</el-tag>
+              <el-tag type="warning" v-if="scope.row.hum_alarm_status == 2">下限预警</el-tag>
+              <el-tag type="warning" v-if="scope.row.hum_alarm_status == 4">上限预警</el-tag>
+              <el-tag type="danger" v-if="scope.row.hum_alarm_status == 8">最大值告警</el-tag>
+            </template>
+          </el-table-column>
+        </el-table>
+      </ContentWrap>
+    </el-collapse-item>
   </el-collapse>
 
-
-  
- 
 </template>
 
 <script setup lang="ts">
@@ -256,17 +300,27 @@
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 import * as echarts from 'echarts';
 import router from '@/router';
+// import { object } from 'vue-types';
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
 const instance = getCurrentInstance();
 
+//折叠列表显示的项
 const activeNames = ref(["1","2","3","4","5"])
+
+//计时器
+const flashListTimer = ref({
+  tableDataTimer : null as any,
+  chartTimer : null as any,
+});
+const firstTimerCreate = ref(true);
 
 const controlVis = ref({
   haveCircle : false,
   haveOutPut : false,
+  haveSensor : false,
   haveC : false,
   haveB : false,
   circleTableCol : {
@@ -294,35 +348,17 @@ const testData = ref({
 
 // const loading = ref(true) // 列表的加载中
 
-const circleList = ref([]) // 列表的数据
+const circleList = ref([]) as any // 列表的数据
 
-const output = ref([]) // 列表的数据
+const output = ref([]) as any// 列表的数据
 
 const sensorList = ref([
-  {
-    sensorName: '温度1',
-    sensorStatus: 'NA',
-    sensorName2: '湿度1',
-    sensorStatus2:"NA",
-  },
-  {
-    sensorName: '温度2',
-    sensorStatus: 'NA',
-    sensorName2: '湿度2',
-    sensorStatus2:"NA",
-  },
-  {
-    sensorName: '门禁1',
-    sensorStatus: 'NA',
-    sensorName2: '门禁2',
-    sensorStatus2:"NA",
-  },
-]) // 列表的数据
+]) as any// 列表的数据
 
 const chartData = ref({
-  apparentList : [],
-  activeList : [],
-  dateTimes : []
+  apparentList : [] as number[],
+  activeList : [] as number[],
+  dateTimes : [] as string[]
 })
 
 // const total = ref(0) // 列表的总页数
@@ -334,6 +370,7 @@ const queryParams = reactive({
   createTime: [],
   cascadeNum: undefined,
   id : '',
+  powGranularity: "oneHour",
 })
 
 // const queryFormRef = ref() // 搜索的表单
@@ -432,10 +469,11 @@ const openNewPage = (devKey) => {
 let chart = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
 const chartContainer = ref<HTMLElement | null>(null);
 
-const initChart =  () => {
+const initChart = async () => {
+  var tempParams = { id : queryParams.id, type : queryParams.powGranularity}
+  chartData.value = await PDUDeviceApi.PDUHis(tempParams); 
   if (chartContainer.value && instance) {
     chart = echarts.init(chartContainer.value);
-    console.log(chartData)
     chart.setOption({
       // 这里设置 Echarts 的配置项和数据
       title: { text: ''},
@@ -443,7 +481,17 @@ const initChart =  () => {
       legend: { data: ['视在功率','有功功率']},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-      xAxis: {type: 'category', boundaryGap: false, data:chartData.value.dateTimes},
+      xAxis: {type: 'category', axisLabel: { formatter: 
+            function (value) {
+              if(queryParams.powGranularity == "oneHour"){
+                // 截取字符串的前n位，即yyyy-MM-dd HH:mm:ss
+                return value.substring(11, 19);
+              } else if(queryParams.powGranularity == "twentyfourHour"){
+                // 截取字符串的n位，即yyyy-MM-dd HH:mm:ss
+                return value.substring(5, 19);
+              }
+            }
+          },boundaryGap: false, data:chartData.value.dateTimes},
       yAxis: { type: 'value'},
       series: [
         {name: '视在功率', type: 'line', data: chartData.value.apparentList , symbol: 'circle', symbolSize: 4},
@@ -456,9 +504,50 @@ const initChart =  () => {
   }
 };
 
-window.addEventListener('resize', function() {
-  chart?.resize(); 
-});
+// 在组件销毁时手动销毁图表
+const beforeChartUnmount = () => {
+  chart?.dispose(); // 销毁图表实例
+};
+
+// window.addEventListener('resize', function() {
+//   chart?.resize(); 
+// });
+
+const setNewChartData = async () => {
+  var params = { id : queryParams.id , oldTime : chartData.value.dateTimes[chartData.value.dateTimes.length - 1], type : queryParams.powGranularity}
+  var temp =  {dateTime : '' , apparent : 0, active: 0 };
+  temp =  await PDUDeviceApi.ChartNewData(params);
+  console.log(temp);
+  chartData.value.apparentList.shift()
+  chartData.value.activeList.shift()
+  chartData.value.dateTimes.shift()
+
+  chartData.value.dateTimes.push(temp.dateTime);
+  chartData.value.apparentList.push(temp.apparent);
+  chartData.value.activeList.push(temp.active);
+  console.log(chartData.value.dateTimes);
+
+  chart?.setOption({
+    xAxis: { data: chartData.value.dateTimes },
+    series: [
+      { data: chartData.value.apparentList },
+      { data: chartData.value.activeList},
+    ],
+  });
+}
+
+const flashChartData = async () =>{
+  var tempParams = { id : queryParams.id, type : queryParams.powGranularity}
+  chartData.value = await PDUDeviceApi.PDUHis(tempParams); 
+
+  chart?.setOption({
+    xAxis: { data: chartData.value.dateTimes },
+    series: [
+      { data: chartData.value.apparentList },
+      { data: chartData.value.activeList},
+    ],
+  });
+}
 
 // const addDataPoint = () => {
 //   setInterval(() => {
@@ -495,9 +584,8 @@ window.addEventListener('resize', function() {
 const getTestData = async()=>{
 
   testData.value = await PDUDeviceApi.PDUDisplay(queryParams);
-  chartData.value = await PDUDeviceApi.PDUHis(queryParams.id);  
-  
-  initChart();
+  circleList.value = [];
+  output.value = [];
 
   if(testData.value.pdu_data?.loop_item_list){
     for (let i = 0; i < testData.value.pdu_data?.loop_item_list["pow_apparent"].length; i++) {
@@ -517,6 +605,7 @@ const getTestData = async()=>{
     }
     controlVis.value.haveCircle = true;
   }
+
   if(testData.value.pdu_data?.output_item_list){
     for (let i = 0; i < testData.value.pdu_data.output_item_list["name"].length; i++) {
       let loopItem = {} as any;
@@ -535,9 +624,25 @@ const getTestData = async()=>{
     }
     controlVis.value.haveOutPut = true;
   }
+
+  if(testData.value.pdu_data?.env_item_list?.tem_value){
+    for(let i = 0; i < testData.value.pdu_data.env_item_list["tem_value"].length; i++){
+      let loopItem = {} as any;
+      for (let key in testData.value.pdu_data.env_item_list) {
+        loopItem[key] = testData.value.pdu_data.env_item_list[key][i];
+      }
+      loopItem["temName"] = "温度" + i;
+      loopItem["hummName"] = "湿度" + i;
+      if(loopItem["insert"][i] == 1){
+        controlVis.value.haveSensor = true;
+      }
+      sensorList.value.push(loopItem)
+    }
+  }
+
   totalData.value.pow =  testData.value.pdu_data.pdu_tg_data.pow;
-  if(testData.value.pdu_data.pdu_tg_data.apparent_pow != 0){
-    totalData.value.powPercentage = (testData.value.pdu_data.pdu_tg_data.pow / testData.value.pdu_data.pdu_tg_data.apparent_pow) * 100;
+  if(testData.value.pdu_data.pdu_tg_data.pow_apparent != 0){
+    totalData.value.powPercentage = (testData.value.pdu_data.pdu_tg_data.pow / testData.value.pdu_data.pdu_tg_data.pow_apparent) * 100;
   } else {
     totalData.value.powPercentage = 0;
   }
@@ -643,6 +748,57 @@ const getTestData = async()=>{
   
 }
 
+watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
+    // 销毁原有的图表实例
+    beforeChartUnmount();
+    //获取数据
+    var tempParams = { id : queryParams.id, type : newPowGranularity}
+    chartData.value = await PDUDeviceApi.PDUHis(tempParams); 
+
+    // 创建新的图表实例
+    chart = echarts.init(document.getElementById('chartContainer'));
+    // 设置新的配置对象
+    if (chart) {
+      chart.setOption({
+        // 这里设置 Echarts 的配置项和数据
+        title: { text: ''},
+        tooltip: { trigger: 'axis' },
+        legend: { data: ['视在功率','有功功率']},
+        grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+        toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+        xAxis: {type: 'category', axisLabel: { formatter: 
+            function (value) {
+              if(queryParams.powGranularity == "oneHour"){
+                // 截取字符串的前n位，即yyyy-MM-dd HH:mm:ss
+                return value.substring(11, 19);
+              } else if(queryParams.powGranularity == "twentyfourHour"){
+                // 截取字符串的n位，即yyyy-MM-dd HH:mm:ss
+                return value.substring(5, 19);
+              }
+            }
+          }, boundaryGap: false, data:chartData.value.dateTimes},
+        yAxis: { type: 'value'},
+        series: [
+          {name: '视在功率', type: 'line', data: chartData.value.apparentList , symbol: 'circle', symbolSize: 4},
+          {name: '有功功率', type: 'line', data: chartData.value.activeList , symbol: 'circle', symbolSize: 4},
+        ],
+
+      });
+    }
+    if(flashListTimer.value.chartTimer){
+      var time = 0;
+      if(queryParams.powGranularity == "oneHour"){
+        time = 60000;
+        // time = 3000;
+      } else if(queryParams.powGranularity == "twentyfourHour"){
+        time = 3600000;
+        // time = 3000;
+      }
+      clearInterval(flashListTimer.value.chartTimer)
+      flashListTimer.value.chartTimer = null;
+      flashListTimer.value.chartTimer = setInterval((setNewChartData), time);
+    }
+})
 
 
 /** 初始化 **/
@@ -655,11 +811,54 @@ onMounted(() => {
 
 onBeforeMount(async () =>{
   location.value = router.currentRoute.value.query.location as string;
-  queryParams.devKey = router.currentRoute.value.query.dev_key as string;
+  queryParams.devKey = router.currentRoute.value.query.devKey as string;
   queryParams.id = router.currentRoute.value.query.id as string;
   
   getTestData();
+  initChart();
+  flashListTimer.value.tableDataTimer = setInterval((getTestData), 5000);
+  flashListTimer.value.chartTimer = setInterval((setNewChartData), 60000);
 })
+
+onBeforeUnmount(()=>{
+  if(flashListTimer.value.tableDataTimer && flashListTimer.value.chartTimer){
+    clearInterval(flashListTimer.value.tableDataTimer)
+    clearInterval(flashListTimer.value.chartTimer)
+    flashListTimer.value.tableDataTimer = null;
+    flashListTimer.value.chartTimer = null;
+  }
+})
+
+onActivated(() => {
+  getTestData();
+  flashChartData();
+  if(!firstTimerCreate.value){
+    flashListTimer.value.tableDataTimer = setInterval((getTestData), 5000);
+    var time = 0;
+    if(queryParams.powGranularity == "oneHour"){
+      time = 60000;
+      // time = 3000;
+    } else if(queryParams.powGranularity == "twentyfourHour"){
+      time = 3600000;
+      // time = 3000;
+    }
+    flashListTimer.value.chartTimer = setInterval((setNewChartData), time);
+  }
+})
+
+onBeforeRouteLeave(()=>{
+  if(flashListTimer.value.tableDataTimer && flashListTimer.value.chartTimer){
+    clearInterval(flashListTimer.value.tableDataTimer)
+    clearInterval(flashListTimer.value.chartTimer)
+    flashListTimer.value.tableDataTimer = null;
+    flashListTimer.value.chartTimer = null;
+    firstTimerCreate.value = false;
+  }
+  
+})
+
+
+
 
 
 </script>
