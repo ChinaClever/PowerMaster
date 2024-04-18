@@ -235,4 +235,14 @@ public class FieldConstant {
      */
     public static final String BILL_PERIOD = "bill_period";
 
+    /**
+     *  开始电能
+     */
+    public static final String START_ELE = "start_ele";
+
+    /**
+     * 结束电能
+     */
+    public static final String END_ELE = "end_ele";
+
 }
