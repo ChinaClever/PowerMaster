@@ -108,17 +108,17 @@
 import { ElTree } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
+import { HistoryDataApi } from '@/api/pdu/historydata'
+import { formatDate } from '@/utils/formatTime'
 /** pdu历史曲线 */
 defineOptions({ name: 'HistoryLine' })
 const activeName = ref('first') // tabs显示第一个
 const queryParams = reactive({
-  pageNo: 1,
-  pageSize: 10,
-  id: undefined,
+  id: 12, // 测试默认查pduid10的详情，后面要改回undefined
   type: 'total',
   granularity: 'realtime',
   ipAddr: undefined,
-  createTime: undefined,
+  timeRange: undefined,
 })
 
 const serverRoomArr =  [
@@ -203,7 +203,36 @@ watch(filterText, (val) => {
  treeRef.value!.filter(val)
 })
 const loading = ref(true) // 列表的加载中
-
+// 时间段快捷选项
+const shortcuts = [
+  {
+    text: '最近一周',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setDate(start.getDate() - 7)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近一个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setMonth(start.getMonth() - 1)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近半年',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setMonth(start.getMonth() - 6)
+      return [start, end]
+    },
+  },
+]
 // 处理折线图数据
 const volData = ref<number[]>([]);
 const curData = ref<number[]>([]);
@@ -235,213 +264,46 @@ const apparentPowMaxTimeData = ref<string[]>([]);
 const apparentPowMinValueData = ref<number[]>([]);
 const apparentPowMinTimeData = ref<string[]>([]);
 /** 查询列表 */
-const getList = () => {
+const getList = async () => {
 loading.value = true
  try {
-    // 生成假数据
-    const fakeData = [
-      {
-          id: 1,
-          location: "机房1-机柜1",
-          lineId: 123,
-          loopId: 456,
-          outletId: 789,
-          vol: 220,
-          cur: 10,
-          activePow: 2200,
-          apparentPow: 2300,
-          volAvgValue: 210,
-          volMaxValue: 230,
-          volMaxTime: "2024-03-27 12:00:00",
-          volMinValue: 200,
-          volMinTime: "2024-03-27 06:00:00",
-          curAvgValue: 12,
-          curMaxValue: 14,
-          curMaxTime: "2024-03-27 11:00:00",
-          curMinValue: 10,
-          curMinTime: "2024-03-27 05:00:00",
-          activePowAvgValue: 2000,
-          activePowMaxValue: 2500,
-          activePowMaxTime: "2024-03-27 14:00:00",
-          activePowMinValue: 1800,
-          activePowMinTime: "2024-03-27 04:00:00",
-          apparentPowAvgValue: 2200,
-          apparentPowMaxValue: 2400,
-          apparentPowMaxTime: "2024-03-27 15:00:00",
-          apparentPowMinValue: 2100,
-          apparentPowMinTime: "2024-03-27 03:00:00",
-          powerFactor: 0.95,
-          createTime: "2024-03-27 14:00:00"
-      },
-      {
-          id: 2,
-          location: "机房1-机柜1",
-          lineId: 124,
-          loopId: 457,
-          outletId: 790,
-          vol: 210,
-          cur: 12,
-          activePow: 2300,
-          apparentPow: 2600,
-          volAvgValue: 200,
-          volMaxValue: 220,
-          volMaxTime: "2024-03-27 11:00:00",
-          volMinValue: 190,
-          volMinTime: "2024-03-27 05:00:00",
-          curAvgValue: 12,
-          curMaxValue: 14,
-          curMaxTime: "2024-03-27 11:00:00",
-          curMinValue: 10,
-          curMinTime: "2024-03-27 05:00:00",
-          activePowAvgValue: 2300,
-          activePowMaxValue: 2700,
-          activePowMaxTime: "2024-03-27 13:00:00",
-          activePowMinValue: 2100,
-          activePowMinTime: "2024-03-27 02:00:00",
-          apparentPowAvgValue: 2400,
-          apparentPowMaxValue: 2600,
-          apparentPowMaxTime: "2024-03-27 16:00:00",
-          apparentPowMinValue: 2200,
-          apparentPowMinTime: "2024-03-27 01:00:00",
-          powerFactor: 0.96,
-          createTime: "2024-03-27 15:00:00"
-      },
-      {
-          id: 3,
-          location: "机房1-机柜1",
-          lineId: 124,
-          loopId: 457,
-          outletId: 790,
-          vol: 210,
-          cur: 12,
-          activePow: 2500,
-          apparentPow: 2800,
-          volAvgValue: 200,
-          volMaxValue: 220,
-          volMaxTime: "2024-03-27 11:00:00",
-          volMinValue: 190,
-          volMinTime: "2024-03-27 05:00:00",
-          curAvgValue: 12,
-          curMaxValue: 14,
-          curMaxTime: "2024-03-27 11:00:00",
-          curMinValue: 10,
-          curMinTime: "2024-03-27 05:00:00",
-          activePowAvgValue: 2300,
-          activePowMaxValue: 2700,
-          activePowMaxTime: "2024-03-27 13:00:00",
-          activePowMinValue: 2100,
-          activePowMinTime: "2024-03-27 02:00:00",
-          apparentPowAvgValue: 2400,
-          apparentPowMaxValue: 2600,
-          apparentPowMaxTime: "2024-03-27 16:00:00",
-          apparentPowMinValue: 2200,
-          apparentPowMinTime: "2024-03-27 01:00:00",
-          powerFactor: 0.96,
-          createTime: "2024-03-27 16:00:00"
-      },
-      {
-          id: 4,
-          location: "机房1-机柜1",
-          lineId: 124,
-          loopId: 457,
-          outletId: 790,
-          vol: 210,
-          cur: 12,
-          activePow: 2900,
-          apparentPow: 3000,
-          volAvgValue: 200,
-          volMaxValue: 220,
-          volMaxTime: "2024-03-27 11:00:00",
-          volMinValue: 190,
-          volMinTime: "2024-03-27 05:00:00",
-          curAvgValue: 12,
-          curMaxValue: 14,
-          curMaxTime: "2024-03-27 11:00:00",
-          curMinValue: 10,
-          curMinTime: "2024-03-27 05:00:00",
-          activePowAvgValue: 2300,
-          activePowMaxValue: 2700,
-          activePowMaxTime: "2024-03-27 13:00:00",
-          activePowMinValue: 2100,
-          activePowMinTime: "2024-03-27 02:00:00",
-          apparentPowAvgValue: 2400,
-          apparentPowMaxValue: 2600,
-          apparentPowMaxTime: "2024-03-27 16:00:00",
-          apparentPowMinValue: 2200,
-          apparentPowMinTime: "2024-03-27 01:00:00",
-          powerFactor: 0.96,
-          createTime: "2024-03-27 17:00:00"
-      },
-      {
-          id: 5,
-          location: "机房1-机柜1",
-          lineId: 124,
-          loopId: 457,
-          outletId: 790,
-          vol: 210,
-          cur: 12,
-          activePow: 3100,
-          apparentPow: 3200,
-          volAvgValue: 200,
-          volMaxValue: 220,
-          volMaxTime: "2024-03-27 11:00:00",
-          volMinValue: 190,
-          volMinTime: "2024-03-27 05:00:00",
-          curAvgValue: 12,
-          curMaxValue: 14,
-          curMaxTime: "2024-03-27 11:00:00",
-          curMinValue: 10,
-          curMinTime: "2024-03-27 05:00:00",
-          activePowAvgValue: 2300,
-          activePowMaxValue: 2700,
-          activePowMaxTime: "2024-03-27 13:00:00",
-          activePowMinValue: 2100,
-          activePowMinTime: "2024-03-27 02:00:00",
-          apparentPowAvgValue: 2400,
-          apparentPowMaxValue: 2600,
-          apparentPowMaxTime: "2024-03-27 16:00:00",
-          apparentPowMinValue: 2200,
-          apparentPowMinTime: "2024-03-27 01:00:00",
-          powerFactor: 0.96,
-          createTime: "2024-03-27 18:00:00"
-      }
-    ];
-      volData.value = fakeData.map((item) => item.vol);
-      curData.value = fakeData.map((item) => item.cur);
-      createTimeData.value = fakeData.map((item) => item.createTime);
-      activePowData.value = fakeData.map((item) => item.activePow);
-      apparentPowData.value = fakeData.map((item) => item.apparentPow);
+      const data = await HistoryDataApi.getHistoryDataDetails(queryParams)
+      volData.value = data.list.map((item) => item.vol_value);
+      curData.value = data.list.map((item) => item.cur_value);
+      createTimeData.value = data.list.map((item) => formatDate(item.create_time));
+      activePowData.value = data.list.map((item) => item.pow_active);
+      apparentPowData.value = data.list.map((item) => item.pow_apparent);
 
-      curAvgValueData.value = fakeData.map((item) => item.curAvgValue);
-      curMaxValueData.value = fakeData.map((item) => item.curMaxValue);
-      curMaxTimeData.value = fakeData.map((item) => item.curMaxTime);
-      curMinValueData.value = fakeData.map((item) => item.curMinValue);
-      curMinTimeData.value = fakeData.map((item) => item.curMinTime);
+      curAvgValueData.value = data.list.map((item) => item.cur_avg_value);
+      curMaxValueData.value = data.list.map((item) => item.cur_max_value);
+      curMaxTimeData.value = data.list.map((item) => formatDate(item.cur_max_time));
+      curMinValueData.value = data.list.map((item) => item.cur_min_value);
+      curMinTimeData.value = data.list.map((item) => formatDate(item.cur_min_time));
       
-      volAvgValueData.value = fakeData.map((item) => item.volAvgValue);
-      volMaxValueData.value = fakeData.map((item) => item.volMaxValue);
-      volMaxTimeData.value = fakeData.map((item) => item.volMaxTime);
-      volMinValueData.value = fakeData.map((item) => item.volMinValue);
-      volMinTimeData.value = fakeData.map((item) => item.volMinTime);
+      volAvgValueData.value = data.list.map((item) => item.vol_avg_value);
+      volMaxValueData.value = data.list.map((item) => item.vol_max_value);
+      volMaxTimeData.value = data.list.map((item) => formatDate(item.vol_max_time));
+      volMinValueData.value = data.list.map((item) => item.vol_min_value);
+      volMinTimeData.value = data.list.map((item) => formatDate(item.vol_min_time));
 
-      activePowAvgValueData.value = fakeData.map((item) => item.activePowAvgValue);
-      activePowMaxValueData.value = fakeData.map((item) => item.activePowMaxValue);
-      activePowMaxTimeData.value = fakeData.map((item) => item.activePowMaxTime);
-      activePowMinValueData.value = fakeData.map((item) => item.activePowMinValue);
-      activePowMinTimeData.value = fakeData.map((item) => item.activePowMinTime);
+      activePowAvgValueData.value = data.list.map((item) => item.pow_active_avg_value);
+      activePowMaxValueData.value = data.list.map((item) => item.pow_active_max_value);
+      activePowMaxTimeData.value = data.list.map((item) => formatDate(item.pow_active_max_time));
+      activePowMinValueData.value = data.list.map((item) => item.pow_active_min_value);
+      activePowMinTimeData.value = data.list.map((item) => formatDate(item.pow_active_min_time));
 
-      apparentPowAvgValueData.value = fakeData.map((item) => item.apparentPowAvgValue);
-      apparentPowMaxValueData.value = fakeData.map((item) => item.apparentPowMaxValue);
-      apparentPowMaxTimeData.value = fakeData.map((item) => item.apparentPowMaxTime);
-      apparentPowMinValueData.value = fakeData.map((item) => item.apparentPowMinValue);
-      apparentPowMinTimeData.value = fakeData.map((item) => item.apparentPowMinTime);
+      apparentPowAvgValueData.value = data.list.map((item) => item.pow_apparent_avg_value);
+      apparentPowMaxValueData.value = data.list.map((item) => item.pow_apparent_max_value);
+      apparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.pow_apparent_max_time));
+      apparentPowMinValueData.value = data.list.map((item) => item.pow_apparent_min_value);
+      apparentPowMinTimeData.value = data.list.map((item) => formatDate(item.pow_apparent_min_time));
  } finally {
    loading.value = false
  }
 }
 
 const chartContainer = ref<HTMLElement | null>(null);
-  let myChart = null as echarts.ECharts | null; // 显式声明 myChart 的类型
+let myChart = null as echarts.ECharts | null; // 显式声明 myChart 的类型
 const initChart = () => {
   const instance = getCurrentInstance();
   if (chartContainer.value && instance) {
@@ -453,12 +315,12 @@ const initChart = () => {
       legend: { data: ['总有功功率', '总视在功率']},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{},saveAsImage: {}}},
-      xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
+      xAxis: {type: 'category', boundaryGap: false, data: createTimeData.value},
       yAxis: { type: 'value'},
       series: [
         {name: '总有功功率', type: 'line', data: activePowData.value},
         {name: '总视在功率', type: 'line', data: apparentPowData.value},
-        
+    
       ],
 
     });
@@ -497,8 +359,8 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
           xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
           yAxis: { type: 'value'},
           series: [
-            {name: '总有功功率', type: 'line', data: activePowData.value, lineStyle: {type: 'dashed'} },
-            {name: '总视在功率', type: 'line', data: apparentPowData.value, lineStyle: {type: 'dashed'} },
+            {name: '总有功功率', type: 'line', data: activePowData.value},
+            {name: '总视在功率', type: 'line', data: apparentPowData.value},
           ]
         });
       }
@@ -822,7 +684,7 @@ function setupLegendListener(myChart) {
   });
 }
 
-// 实时图例切换函数
+// 小时、天图例切换函数
 function setupLegendListener1(myChart) {
   myChart?.on('legendselectchanged', function (params) {
     var legendName = params.name;
@@ -940,8 +802,9 @@ const resetQuery = () => {
 
 /** 初始化 **/
 onMounted(() => {
- getList();
+  getList();
   initChart();
+
 
 })
 

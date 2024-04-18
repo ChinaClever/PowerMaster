@@ -295,8 +295,7 @@ const queryParams = reactive({
 })
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
-
-// 时间段设置
+// 时间段快捷选项
 const shortcuts = [
   {
     text: '最近一周',
@@ -326,8 +325,6 @@ const shortcuts = [
     },
   },
 ]
-
-
 //筛选选项
 const props = { multiple: true}
 const defaultOptionsCol = ref([["pow_active"], ["pow_apparent"], ["power_factor"]])

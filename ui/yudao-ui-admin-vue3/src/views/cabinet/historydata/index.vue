@@ -772,18 +772,6 @@ const openForm = (type: string, id?: number) => {
 const toDetails = (id?: number) => {
   console.log(id)
 }
-/** 删除按钮操作 */
-const handleDelete = async (id: number) => {
-  try {
-    // 删除的二次确认
-    await message.delConfirm()
-    // 发起删除
-    await HistoryDataApi.deleteHistoryData(id)
-    message.success(t('common.delSuccess'))
-    // 刷新列表
-    await getList()
-  } catch {}
-}
 
 /** 导出按钮操作 */
 const handleExport = async () => {
