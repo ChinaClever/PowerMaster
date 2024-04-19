@@ -1,24 +1,22 @@
 <template>
-  <ContentWrap style="height: calc(100% - 15px)">
-    <div v-if="showSearch" class="head-container">
-      <el-input v-model="deptName" class="mb-20px" clearable placeholder="请输入部门名称">
-        <template #prefix>
-          <Icon icon="ep:search" />
-        </template>
-      </el-input>
-    </div>
-    <div class="head-container">
-      <el-tree
-        ref="treeRef"
-        :data="dataList"
-        :props="defaultProps"
-        :accordion="isAccordion"
-        :filter-node-method="filterNode"
-        :show-checkbox="showCheckbox"
-        @node-click="handleNodeClick"
-        @check="handleCheckedNodes" />
-    </div>
-  </ContentWrap>
+  <div v-if="showSearch" class="head-container">
+    <el-input v-model="deptName" class="mb-20px" clearable placeholder="请输入部门名称">
+      <template #prefix>
+        <Icon icon="ep:search" />
+      </template>
+    </el-input>
+  </div>
+  <div class="head-container">
+    <el-tree
+      ref="treeRef"
+      :data="dataList"
+      :props="defaultProps"
+      :accordion="isAccordion"
+      :filter-node-method="filterNode"
+      :show-checkbox="showCheckbox"
+      @node-click="handleNodeClick"
+      @check="handleCheckedNodes" />
+  </div>
 </template>
 
 <script lang="ts" setup>
