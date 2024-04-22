@@ -1,13 +1,13 @@
 package cn.iocoder.yudao.module.statis.dao;
 
 import cn.hutool.core.date.DateTime;
-import cn.hutool.core.date.DateUtil;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduBaseDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.enums.EsIndexEnum;
 import cn.iocoder.yudao.framework.common.enums.EsStatisFieldEnum;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
+import com.alibaba.fastjson2.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -16,6 +16,7 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
@@ -23,13 +24,15 @@ import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilde
 import org.elasticsearch.search.aggregations.metrics.Avg;
 import org.elasticsearch.search.aggregations.metrics.Max;
 import org.elasticsearch.search.aggregations.metrics.Min;
+import org.elasticsearch.search.aggregations.metrics.TopHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.*;
 import static cn.iocoder.yudao.module.statis.constant.Constants.BY_PDU;
@@ -57,15 +60,15 @@ public class PduTotalDao {
     public Map<Integer, PduBaseDo> statisTotalHour(String startTime, String endTime) {
         Map<Integer, PduBaseDo> result = new HashMap<>();
         try {
+            String index = EsIndexEnum.PDU_HDA_TOTAL_REALTIME.getIndex();
             // 创建SearchRequest对象, 设置查询索引名
-            SearchRequest searchRequest = new SearchRequest(EsIndexEnum.PDU_HDA_TOTAL_REALTIME.getIndex());
+            SearchRequest searchRequest = new SearchRequest(index);
             // 通过QueryBuilders构建ES查询条件，
             SearchSourceBuilder builder = new SearchSourceBuilder();
 
             //获取需要处理的数据
             builder.query(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime));
 
-//            builder.query(QueryBuilders.matchAllQuery());
             // 创建terms桶聚合，聚合名字=by_pdu, 字段=pdu_id，根据pdu_id分组
             TermsAggregationBuilder pduAggregationBuilder = AggregationBuilders.terms(BY_PDU)
                     .field(PDU_ID);
@@ -88,20 +91,10 @@ public class PduTotalDao {
             // 设置搜索条件
             searchRequest.source(builder);
             // 如果只想返回聚合统计结果，不想返回查询结果可以将分页大小设置为0
-//            builder.size(0);
+            builder.size(0);
 
             // 执行ES请求
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-            //查询结果
-            SearchHits hits = searchResponse.getHits();
-            LinkedList<PduHdaTotalRealtimeDo> resList = new LinkedList<>();
-
-            for (SearchHit hit : hits.getHits()) {
-                String str = hit.getSourceAsString();
-                PduHdaTotalRealtimeDo realtimeDo = JsonUtils.parseObject(str, PduHdaTotalRealtimeDo.class);
-                resList.add(realtimeDo);
-            }
-
 
             // 处理聚合查询结果
             Aggregations aggregations = searchResponse.getAggregations();
@@ -148,33 +141,38 @@ public class PduTotalDao {
                 result.put(Integer.parseInt(String.valueOf(bucket.getKey())), baseDo);
             }
 
+
             //获取时间
-            Map<Integer, List<PduHdaTotalRealtimeDo>> realtimeDoMap = resList.stream().collect(Collectors.groupingBy(PduHdaTotalRealtimeDo::getPduId));
-            realtimeDoMap.keySet().forEach(pduId -> {
-                List<PduHdaTotalRealtimeDo> realtimeDos = realtimeDoMap.get(pduId);
+            Map<Integer,String> activePowMaxValueMap = getData(startTime,endTime,SortOrder.DESC,ACTIVE_POW,index,CREATE_TIME);
+
+            Map<Integer,String> activePowMinValueMap = getData(startTime,endTime,SortOrder.ASC,ACTIVE_POW,index,CREATE_TIME);
+
+            Map<Integer,String> apparentPowMaxValueMap = getData(startTime,endTime,SortOrder.DESC,APPARENT_POW,index,CREATE_TIME);
+
+            Map<Integer,String> apparentPowMinValueMap = getData(startTime,endTime,SortOrder.ASC,APPARENT_POW,index,CREATE_TIME);
+
+            result.keySet().forEach(pduId -> {
                 PduBaseDo fieldMap = result.get(pduId);
 
-                Map<Float, DateTime> activePowMap = realtimeDos.stream().collect(Collectors
-                        .toMap(PduHdaTotalRealtimeDo::getActivePow,PduHdaTotalRealtimeDo::getCreateTime,(v1,v2) -> {
-                            if (DateUtil.compare(v1 ,v2) < 0) {
-                                return v1;
-                            }
-                            return v2;
-                        }));
+                PduHdaTotalRealtimeDo activePowMaxMap = JsonUtils.parseObject(activePowMaxValueMap.get(pduId),PduHdaTotalRealtimeDo.class) ;
+                fieldMap.setActivePowMaxTime(activePowMaxMap.getCreateTime());
+                fieldMap.setActivePowMaxValue(activePowMaxMap.getActivePow());
 
-                Map<Float, DateTime> apparentPowMap = realtimeDos.stream().collect(Collectors
-                        .toMap(PduHdaTotalRealtimeDo::getApparentPow,PduHdaTotalRealtimeDo::getCreateTime,(v1,v2) -> {
-                            if (DateUtil.compare(v1 ,v2) < 0) {
-                                return v1;
-                            }
-                            return v2;
-                        }));
-                fieldMap.setActivePowMaxTime(activePowMap.get(fieldMap.getActivePowMaxValue()));
-                fieldMap.setActivePowMinTime(activePowMap.get(fieldMap.getActivePowMinValue()));
-                fieldMap.setApparentPowMaxTime(apparentPowMap.get(fieldMap.getApparentPowMaxValue()));
-                fieldMap.setApparentPowMinTime(apparentPowMap.get(fieldMap.getActivePowMinValue()));
+                PduHdaTotalRealtimeDo activePowMinMap = JsonUtils.parseObject(activePowMinValueMap.get(pduId),PduHdaTotalRealtimeDo.class) ;
+                fieldMap.setActivePowMinTime(activePowMinMap.getCreateTime());
+                fieldMap.setActivePowMinValue(activePowMinMap.getActivePow());
+
+                PduHdaTotalRealtimeDo apparentPowMaxMap = JsonUtils.parseObject(apparentPowMaxValueMap.get(pduId),PduHdaTotalRealtimeDo.class) ;
+                fieldMap.setApparentPowMaxValue(apparentPowMaxMap.getApparentPow());
+                fieldMap.setApparentPowMaxTime(apparentPowMaxMap.getCreateTime());
+
+                PduHdaTotalRealtimeDo apparentPowMinMap = JsonUtils.parseObject(apparentPowMinValueMap.get(pduId),PduHdaTotalRealtimeDo.class) ;
+                fieldMap.setApparentPowMinTime(apparentPowMinMap.getCreateTime());
+                fieldMap.setApparentPowMinValue(apparentPowMinMap.getApparentPow());
+
                 result.put(pduId, fieldMap);
             });
+
             log.info("--------------------" + result);
 
             return result;
@@ -184,7 +182,6 @@ public class PduTotalDao {
         }
         return result;
     }
-
 
 
     /**
@@ -196,15 +193,15 @@ public class PduTotalDao {
     public Map<Integer, PduBaseDo> statisTotalDay(String startTime, String endTime) {
         Map<Integer, PduBaseDo> result = new HashMap<>();
         try {
+            String index = EsIndexEnum.PDU_HDA_TOTAL_HOUR.getIndex();
             // 创建SearchRequest对象, 设置查询索引名
-            SearchRequest searchRequest = new SearchRequest(EsIndexEnum.PDU_HDA_TOTAL_HOUR.getIndex());
+            SearchRequest searchRequest = new SearchRequest(index);
             // 通过QueryBuilders构建ES查询条件，
             SearchSourceBuilder builder = new SearchSourceBuilder();
 
             //获取需要处理的数据
             builder.query(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime));
 
-//            builder.query(QueryBuilders.matchAllQuery());
             // 创建terms桶聚合，聚合名字=by_pdu, 字段=pdu_id，根据pdu_id分组
             TermsAggregationBuilder pduAggregationBuilder = AggregationBuilders.terms(BY_PDU)
                     .field(PDU_ID);
@@ -213,34 +210,16 @@ public class PduTotalDao {
             builder.aggregation(pduAggregationBuilder
                     //平均有功功率
                     .subAggregation(AggregationBuilders.avg(ACTIVE_POW_AVG_VALUE).field(ACTIVE_POW_AVG_VALUE))
-                    //最大有功功率
-                    .subAggregation(AggregationBuilders.max(ACTIVE_POW_MAX_VALUE).field(ACTIVE_POW_MAX_VALUE))
-                    // 最小有功功率
-                    .subAggregation(AggregationBuilders.min(ACTIVE_POW_MIN_VALUE).field(ACTIVE_POW_MIN_VALUE))
                     //平均视在功率
-                    .subAggregation(AggregationBuilders.avg(APPARENT_POW_AVG_VALUE).field(APPARENT_POW_AVG_VALUE))
-                    //最大视在功率
-                    .subAggregation(AggregationBuilders.max(APPARENT_POW_MAX_VALUE).field(APPARENT_POW_MAX_VALUE))
-                    //最小视在功率
-                    .subAggregation(AggregationBuilders.min(APPARENT_POW_MIN_VALUE).field(APPARENT_POW_MIN_VALUE)));
+                    .subAggregation(AggregationBuilders.avg(APPARENT_POW_AVG_VALUE).field(APPARENT_POW_AVG_VALUE)));
 
             // 设置搜索条件
             searchRequest.source(builder);
             // 如果只想返回聚合统计结果，不想返回查询结果可以将分页大小设置为0
-//            builder.size(0);
+            builder.size(0);
 
             // 执行ES请求
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-            //查询结果
-            SearchHits hits = searchResponse.getHits();
-            LinkedList<PduHdaTotalHourDo> resList = new LinkedList<>();
-
-            for (SearchHit hit : hits.getHits()) {
-                String str = hit.getSourceAsString();
-                PduHdaTotalHourDo realtimeDo = JsonUtils.parseObject(str, PduHdaTotalHourDo.class);
-                resList.add(realtimeDo);
-            }
-
 
             // 处理聚合查询结果
             Aggregations aggregations = searchResponse.getAggregations();
@@ -259,27 +238,9 @@ public class PduTotalDao {
                         Avg avg = bucket.getAggregations().get(field);
                         baseDo.setActivePowAvgValue(((Double) avg.getValue()).floatValue());
                     }
-                    if (field.equals(ACTIVE_POW_MAX_VALUE)) {
-                        Max max = bucket.getAggregations().get(field);
-                        baseDo.setActivePowMaxValue(((Double) max.getValue()).floatValue());
-                    }
-
-                    if (field.equals(ACTIVE_POW_MIN_VALUE)) {
-                        Min min = bucket.getAggregations().get(field);
-                        baseDo.setActivePowMinValue(((Double) min.getValue()).floatValue());
-                    }
                     if (field.equals(APPARENT_POW_AVG_VALUE)) {
                         Avg avg = bucket.getAggregations().get(field);
                         baseDo.setApparentPowAvgValue(((Double) avg.getValue()).floatValue());
-                    }
-                    if (field.equals(APPARENT_POW_MAX_VALUE)) {
-                        Max max = bucket.getAggregations().get(field);
-                        baseDo.setApparentPowMaxValue(((Double) max.getValue()).floatValue());
-                    }
-
-                    if (field.equals(APPARENT_POW_MIN_VALUE)) {
-                        Min min = bucket.getAggregations().get(field);
-                        baseDo.setApparentPowMinValue(((Double) min.getValue()).floatValue());
                     }
 
                 });
@@ -288,48 +249,36 @@ public class PduTotalDao {
             }
 
             //获取时间
-            Map<Integer, List<PduHdaTotalHourDo>> realtimeDoMap = resList.stream().collect(Collectors.groupingBy(PduHdaTotalHourDo::getPduId));
-            realtimeDoMap.keySet().forEach(pduId -> {
-                List<PduHdaTotalHourDo> realtimeDos = realtimeDoMap.get(pduId);
+            Map<Integer,String> activePowMaxValueMap = getData(startTime,endTime,SortOrder.DESC,ACTIVE_POW_MAX_VALUE,index,ACTIVE_POW_MAX_TIME);
 
+            Map<Integer,String> activePowMinValueMap = getData(startTime,endTime,SortOrder.ASC,ACTIVE_POW_MIN_VALUE,index,ACTIVE_POW_MIN_TIME);
+
+            Map<Integer,String> apparentPowMaxValueMap = getData(startTime,endTime,SortOrder.DESC,APPARENT_POW_MAX_VALUE,index,APPARENT_POW_MAX_TIME);
+
+            Map<Integer,String> apparentPowMinValueMap = getData(startTime,endTime,SortOrder.ASC,APPARENT_POW_MIN_VALUE,index,APPARENT_POW_MIN_TIME);
+
+            result.keySet().forEach(pduId -> {
                 PduBaseDo fieldMap = result.get(pduId);
 
-                Map<Float, DateTime> activePowMaxMap = realtimeDos.stream().collect(Collectors
-                        .toMap(PduHdaTotalHourDo::getActivePowMaxValue,PduHdaTotalHourDo::getActivePowMaxTime,(v1,v2) -> {
-                            if (DateUtil.compare(v1 ,v2) < 0) {
-                                return v1;
-                            }
-                            return v2;
-                        }));
-                Map<Float, DateTime> activePowMinMap = realtimeDos.stream().collect(Collectors
-                        .toMap(PduHdaTotalHourDo::getActivePowMinValue,PduHdaTotalHourDo::getActivePowMinTime,(v1,v2) -> {
-                            if (DateUtil.compare(v1 ,v2) < 0) {
-                                return v1;
-                            }
-                            return v2;
-                        }));
+                PduHdaTotalHourDo activePowMaxMap = JsonUtils.parseObject(activePowMaxValueMap.get(pduId),PduHdaTotalHourDo.class) ;
+                fieldMap.setActivePowMaxTime(activePowMaxMap.getActivePowMaxTime());
+                fieldMap.setActivePowMaxValue(activePowMaxMap.getActivePowMaxValue());
 
-                Map<Float, DateTime> apparentPowMaxMap = realtimeDos.stream().collect(Collectors
-                        .toMap(PduHdaTotalHourDo::getApparentPowMaxValue,PduHdaTotalHourDo::getApparentPowMaxTime,(v1,v2) -> {
-                            if (DateUtil.compare(v1 ,v2) < 0) {
-                                return v1;
-                            }
-                            return v2;
-                        }));
-                Map<Float, DateTime> apparentPowMinMap = realtimeDos.stream().collect(Collectors
-                        .toMap(PduHdaTotalHourDo::getApparentPowMinValue,PduHdaTotalHourDo::getApparentPowMinTime,(v1,v2) -> {
-                            if (DateUtil.compare(v1 ,v2) < 0) {
-                                return v1;
-                            }
-                            return v2;
-                        }));
-                fieldMap.setActivePowMaxTime(activePowMaxMap.get(fieldMap.getActivePowMaxValue()));
-                fieldMap.setActivePowMinTime(activePowMinMap.get(fieldMap.getActivePowMinValue()));
-                fieldMap.setApparentPowMaxTime(apparentPowMaxMap.get(fieldMap.getApparentPowMaxValue()));
-                fieldMap.setApparentPowMinTime(apparentPowMinMap.get(fieldMap.getActivePowMinValue()));
+                PduHdaTotalHourDo activePowMinMap = JsonUtils.parseObject(activePowMinValueMap.get(pduId),PduHdaTotalHourDo.class) ;
+                fieldMap.setActivePowMinTime(activePowMinMap.getActivePowMinTime());
+                fieldMap.setActivePowMinValue(activePowMinMap.getActivePowMinValue());
+
+                PduHdaTotalHourDo apparentPowMaxMap = JsonUtils.parseObject(apparentPowMaxValueMap.get(pduId),PduHdaTotalHourDo.class) ;
+                fieldMap.setApparentPowMaxValue(apparentPowMaxMap.getApparentPowMaxValue());
+                fieldMap.setApparentPowMaxTime(apparentPowMaxMap.getApparentPowMaxTime());
+
+                PduHdaTotalHourDo apparentPowMinMap = JsonUtils.parseObject(apparentPowMinValueMap.get(pduId),PduHdaTotalHourDo.class) ;
+                fieldMap.setApparentPowMinTime(apparentPowMinMap.getApparentPowMinTime());
+                fieldMap.setApparentPowMinValue(apparentPowMinMap.getApparentPowMinValue());
 
                 result.put(pduId, fieldMap);
             });
+
             log.info("--------------------" + result);
 
             return result;
@@ -342,20 +291,52 @@ public class PduTotalDao {
 
 
     /**
-     * 判断两个值是否相等
-     *
-     * @param value
-     * @param esValue
+     * 获取最大/最小数据
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param sortOrder 升序或降序
+     * @param field 统计字段
      */
-    private boolean equalsValue(float value, float esValue) {
-        BigDecimal doubleValue = BigDecimal.valueOf(value);
-        BigDecimal floatValue = BigDecimal.valueOf(esValue);
+    private Map<Integer,String> getData(String startTime, String endTime, SortOrder sortOrder,String field,String index,String sortTime) throws IOException {
+        Map<Integer,String>  dataMap = new HashMap<>();
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件，
+        SearchSourceBuilder builder = new SearchSourceBuilder();
 
-        if (doubleValue.equals(floatValue)) {
-            return true;
+        //获取需要处理的数据
+        builder.query(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime));
+
+        // 创建terms桶聚合，聚合名字=by_pdu, 字段=pdu_id，根据pdu_id分组
+        TermsAggregationBuilder pduAggregationBuilder = AggregationBuilders.terms(BY_PDU)
+                .field(PDU_ID);
+
+        // 设置聚合查询
+        String top = "top";
+        AggregationBuilder topAgg = AggregationBuilders.topHits(top)
+                .size(1).sort(field, sortOrder).sort(sortTime + KEYWORD,SortOrder.ASC);
+
+        builder.aggregation(pduAggregationBuilder.subAggregation(topAgg));
+
+        // 设置搜索条件
+        searchRequest.source(builder);
+
+        // 执行ES请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        // 处理聚合查询结果
+        Aggregations aggregations = searchResponse.getAggregations();
+        // 根据by_pdu名字查询terms聚合结果
+        Terms byPduAggregation = aggregations.get(BY_PDU);
+
+        for (Terms.Bucket bucket : byPduAggregation.getBuckets()){
+            TopHits tophits = bucket.getAggregations().get(top);
+            SearchHits sophistsHits = tophits.getHits();
+            SearchHit hit = sophistsHits.getHits()[0];
+//            log.info("hit.getSourceAsString(): " + hit.getSourceAsString());
+            dataMap.put(Integer.parseInt(String.valueOf(bucket.getKey())),hit.getSourceAsString());
         }
-
-        return false;
+        return dataMap;
 
     }
 }
