@@ -36,7 +36,7 @@ public class LoopServiceImpl implements LoopService {
             String startTime = DateUtil.formatDateTime(calendar.getTime());
             String endTime = DateUtil.formatDateTime(new Date());
 
-            Map<Object, Map<Object, PduHdaLoopBaseDo>> map = loopDao.statisLoopHour(startTime, endTime);
+            Map<Integer, Map<Integer, PduHdaLoopBaseDo>> map = loopDao.statisLoopHour(startTime, endTime);
             List<PduHdaLoopBaseDo> list = new ArrayList<>();
             map.keySet().forEach(pduId -> list.addAll(map.get(pduId).values()));
             list.forEach(t-> log.info("回路历史数据：" + t));
@@ -56,7 +56,7 @@ public class LoopServiceImpl implements LoopService {
             String startTime = DateUtil.formatDateTime(calendar.getTime());
             String endTime = DateUtil.formatDateTime(new Date());
 
-            Map<Object, Map<Object, PduHdaLoopBaseDo>> map = loopDao.statisLoopDay(startTime, endTime);
+            Map<Integer, Map<Integer, PduHdaLoopBaseDo>> map = loopDao.statisLoopDay(startTime, endTime);
             List<PduHdaLoopBaseDo> list = new ArrayList<>();
             map.keySet().forEach(pduId -> list.addAll(map.get(pduId).values()));
             esHandleService.batchInsert(list, EsIndexEnum.PDU_HDA_LOOP_DAY.getIndex());
