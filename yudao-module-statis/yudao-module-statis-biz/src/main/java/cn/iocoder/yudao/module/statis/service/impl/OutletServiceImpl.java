@@ -36,7 +36,7 @@ public class OutletServiceImpl implements OutletService {
             String startTime = DateUtil.formatDateTime(calendar.getTime());
             String endTime = DateUtil.formatDateTime(new Date());
 
-            Map<Integer, Map<Integer, PduHdaOutletBaseDo>> map = outletDao.statisOutletHour(startTime, endTime);
+            Map<Object, Map<Object, PduHdaOutletBaseDo>> map = outletDao.statisOutletHour(startTime, endTime);
             List<PduHdaOutletBaseDo> list = new ArrayList<>();
             map.keySet().forEach(pduId -> list.addAll(map.get(pduId).values()));
             list.forEach(t->{
@@ -58,7 +58,7 @@ public class OutletServiceImpl implements OutletService {
             String startTime = DateUtil.formatDateTime(calendar.getTime());
             String endTime = DateUtil.formatDateTime(new Date());
 
-            Map<Integer, Map<Integer, PduHdaOutletBaseDo>> map = outletDao.statisOutletDay(startTime, endTime);
+            Map<Object, Map<Object, PduHdaOutletBaseDo>> map = outletDao.statisOutletDay(startTime, endTime);
             List<PduHdaOutletBaseDo> list = new ArrayList<>();
             map.keySet().forEach(pduId -> list.addAll(map.get(pduId).values()));
             esHandleService.batchInsert(list, EsIndexEnum.PDU_HDA_OUTLET_DAY.getIndex());

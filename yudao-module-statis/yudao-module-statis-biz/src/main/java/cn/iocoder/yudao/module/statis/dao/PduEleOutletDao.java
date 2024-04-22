@@ -30,7 +30,6 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -257,6 +256,99 @@ public class PduEleOutletDao {
     }
 
 
+    /**
+     * @description:  获取ES中数据
+     * @param configVo 时间段配置
+     * @param index  索引名称
+     * @return Map<Integer,PduEleTotalRealtimeDo>
+     * @author luowei
+     * @date: 2024/4/10 10:46
+     */
+    private Map<Integer,Map<Integer,Map<String,Double>>>  getEleDataByDay(EqBillConfigVo configVo, String index){
+        Map<Integer,Map<Integer,Map<String,Double>>> dataMap = new HashMap<>();
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+            //获取需要处理的数据
+            builder.query(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD)
+                            .gte(configVo.getStartTime())
+                            .lt(configVo.getEndTime()))
+                    .must(QueryBuilders.termQuery(BILL_MODE ,configVo.getBillMode()))
+                    .must(QueryBuilders.termQuery(BILL_PERIOD + KEYWORD,configVo.getBillPeriod())));
+
+            // 创建terms桶聚合，聚合名字=by_pdu, 字段=pdu_id，根据pdu_id分组
+            TermsAggregationBuilder pduAggregationBuilder = AggregationBuilders.terms(BY_PDU)
+                    .field(PDU_ID);
+            // 嵌套聚合
+            TermsAggregationBuilder outletAggregationBuilder = AggregationBuilders.terms(BY_OUTLET).field(OUTLET_ID);
+            // 设置聚合查询
+            builder.aggregation(pduAggregationBuilder.subAggregation(outletAggregationBuilder
+                            .subAggregation(AggregationBuilders.sum(BILL_VALUE).field(BILL_VALUE))
+                            .subAggregation(AggregationBuilders.sum(EQ_VALUE).field(EQ_VALUE)))
+                    );
+
+            // 设置搜索条件
+            searchRequest.source(builder);
+
+
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+
+            SearchHits hits = searchResponse.getHits();
+            LinkedList<PduEqOutletDayDo> resList = new LinkedList<>();
+
+            for (SearchHit hit : hits.getHits()) {
+                String str = hit.getSourceAsString();
+                PduEqOutletDayDo dayDo = JsonUtils.parseObject(str, PduEqOutletDayDo.class);
+                resList.add(dayDo);
+            }
+
+            Map<Integer,List<PduEqOutletDayDo>>  dayMap = resList.stream().collect(Collectors.groupingBy(PduEqOutletDayDo::getPduId));
+
+            dayMap.keySet().forEach(pduId -> {
+                Map<Integer,List<PduEqOutletDayDo>> outletMap = dayMap.get(pduId).stream().collect(Collectors.groupingBy(PduEqOutletDayDo::getOutletId));
+                Map<Integer,Map<String,Double>> outMap = new HashMap<>();
+                outletMap.keySet().forEach(outletId -> {
+                    List<PduEqOutletDayDo> outletDayDos = outletMap.get(outletId).stream().sorted(Comparator.comparing(PduEqOutletDayDo::getCreateTime)).collect(Collectors.toList());
+                    Map<String,Double> map = new HashMap<>();
+                    map.put(START_ELE,outletDayDos.get(0).getStartEle());
+                    map.put(END_ELE,outletDayDos.get(outletDayDos.size()-1).getEndEle());
+                   outMap.put(outletId,map);
+                });
+               dataMap.put(pduId,outMap);
+            });
+
+            // 处理聚合查询结果
+            Aggregations aggregations = searchResponse.getAggregations();
+            // 根据by_pdu名字查询terms聚合结果
+            Terms byPduAggregation = aggregations.get(BY_PDU);
+
+            for (Terms.Bucket bucket : byPduAggregation.getBuckets()){
+                Integer pudId = Integer.parseInt(String.valueOf(bucket.getKey()));
+                Map<Integer,Map<String,Double>>  pduMap =dataMap.get(pudId);
+                Terms byOutletAggregation = bucket.getAggregations().get(BY_OUTLET);
+                for (Terms.Bucket outBucket : byOutletAggregation.getBuckets()){
+                    Integer outletId = Integer.parseInt(String.valueOf(outBucket.getKey()));
+                    Sum bills  = outBucket.getAggregations().get(BILL_VALUE);
+                    Sum  eqs = outBucket.getAggregations().get(EQ_VALUE);
+                    Map<String,Double> map = pduMap.get(outletId);
+                    map.put(BILL_VALUE,bills.getValue());
+                    map.put(EQ_VALUE,eqs.getValue());
+                    pduMap.put(outletId,map);
+                }
+                dataMap.put(pudId,pduMap);
+
+            }
+            return dataMap;
+        }catch (Exception e){
+            log.error("获取数据异常：",e);
+        }
+        return dataMap;
+    }
+
 
     /**
      *  电费计算 (按月统计)
@@ -315,172 +407,6 @@ public class PduEleOutletDao {
             log.error("计算异常：",e);
         }
         return list;
-    }
-
-
-    /**
-     * @description:  获取ES中数据
-     * @param configVo 时间段配置
-     * @param index  索引名称
-     * @return Map<Integer,PduEleTotalRealtimeDo>
-     * @author luowei
-     * @date: 2024/4/10 10:46
-     */
-    private Map<Integer,Map<Integer,Map<String,Double>>>  getEleDataByDay(EqBillConfigVo configVo, String index){
-        Map<Integer,Map<Integer,Map<String,Double>>> dataMap = new HashMap<>();
-        try {
-            // 创建SearchRequest对象, 设置查询索引名
-            SearchRequest searchRequest = new SearchRequest(index);
-            // 通过QueryBuilders构建ES查询条件，
-            SearchSourceBuilder builder = new SearchSourceBuilder();
-            //获取需要处理的数据
-            builder.query(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD)
-                            .gte(configVo.getStartTime())
-                            .lt(configVo.getEndTime()))
-                    .must(QueryBuilders.termQuery(BILL_MODE ,configVo.getBillMode()))
-                    .must(QueryBuilders.termQuery(BILL_PERIOD + KEYWORD,configVo.getBillPeriod())));
-
-            // 创建terms桶聚合，聚合名字=by_pdu, 字段=pdu_id，根据pdu_id分组
-            TermsAggregationBuilder pduAggregationBuilder = AggregationBuilders.terms(BY_PDU)
-                    .field(PDU_ID);
-            // 嵌套聚合
-            TermsAggregationBuilder outletAggregationBuilder = AggregationBuilders.terms(BY_OUTLET).field(OUTLET_ID);
-            // 设置聚合查询
-            builder.aggregation(pduAggregationBuilder.subAggregation(outletAggregationBuilder
-                    .subAggregation(AggregationBuilders.sum(BILL_VALUE).field(BILL_VALUE))
-                    .subAggregation(AggregationBuilders.sum(EQ_VALUE).field(EQ_VALUE)))
-            );
-
-            // 设置搜索条件
-            searchRequest.source(builder);
-
-
-            // 执行ES请求
-            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-
-
-            SearchHits hits = searchResponse.getHits();
-            LinkedList<PduEqOutletDayDo> resList = new LinkedList<>();
-
-            for (SearchHit hit : hits.getHits()) {
-                String str = hit.getSourceAsString();
-                PduEqOutletDayDo dayDo = JsonUtils.parseObject(str, PduEqOutletDayDo.class);
-                resList.add(dayDo);
-            }
-
-            Map<Integer,List<PduEqOutletDayDo>>  dayMap = resList.stream().collect(Collectors.groupingBy(PduEqOutletDayDo::getPduId));
-
-            dayMap.keySet().forEach(pduId -> {
-                Map<Integer,List<PduEqOutletDayDo>> outletMap = dayMap.get(pduId).stream().collect(Collectors.groupingBy(PduEqOutletDayDo::getOutletId));
-                Map<Integer,Map<String,Double>> outMap = new HashMap<>();
-                outletMap.keySet().forEach(outletId -> {
-                    List<PduEqOutletDayDo> outletDayDos = outletMap.get(outletId).stream().sorted(Comparator.comparing(PduEqOutletDayDo::getCreateTime)).collect(Collectors.toList());
-                    Map<String,Double> map = new HashMap<>();
-                    map.put(START_ELE,outletDayDos.get(0).getStartEle());
-                    map.put(END_ELE,outletDayDos.get(outletDayDos.size()-1).getEndEle());
-                    outMap.put(outletId,map);
-                });
-                dataMap.put(pduId,outMap);
-            });
-
-            Map<Integer,Map<Integer,String>> startEleMap = getData(configVo,SortOrder.ASC,index);
-
-            Map<Integer,Map<Integer,String>> endEleMap = getData(configVo,SortOrder.DESC,index);
-
-            // 处理聚合查询结果
-            Aggregations aggregations = searchResponse.getAggregations();
-            // 根据by_pdu名字查询terms聚合结果
-            Terms byPduAggregation = aggregations.get(BY_PDU);
-
-            for (Terms.Bucket bucket : byPduAggregation.getBuckets()){
-                Integer pudId = Integer.parseInt(String.valueOf(bucket.getKey()));
-                Map<Integer,Map<String,Double>>  pduMap = new HashMap<>();
-                Terms byOutletAggregation = bucket.getAggregations().get(BY_OUTLET);
-                for (Terms.Bucket outBucket : byOutletAggregation.getBuckets()){
-                    Integer outletId = Integer.parseInt(String.valueOf(outBucket.getKey()));
-                    Sum bills  = outBucket.getAggregations().get(BILL_VALUE);
-                    Sum  eqs = outBucket.getAggregations().get(EQ_VALUE);
-
-                    PduEqOutletDayDo startDo = JsonUtils.parseObject(startEleMap.get(pudId).get(outletId),PduEqOutletDayDo.class);
-
-                    PduEqOutletDayDo endDo = JsonUtils.parseObject(startEleMap.get(pudId).get(outletId),PduEqOutletDayDo.class);
-
-                    Map<String,Double> map = new HashMap<>();
-                    map.put(BILL_VALUE,bills.getValue());
-                    map.put(EQ_VALUE,eqs.getValue());
-                    map.put(START_ELE,startDo.getStartEle());
-                    map.put(END_ELE,endDo.getEndEle());
-                    pduMap.put(outletId,map);
-                }
-                dataMap.put(pudId,pduMap);
-
-            }
-            return dataMap;
-        }catch (Exception e){
-            log.error("获取数据异常：",e);
-        }
-        return dataMap;
-    }
-
-
-    /**
-     * 获取最大/最小数据
-     * @param sortOrder 升序或降序
-     */
-    private  Map<Integer,Map<Integer,String>>  getData(EqBillConfigVo configVo, SortOrder sortOrder, String index) throws IOException {
-        Map<Integer,Map<Integer,String>>  dataMap = new HashMap<>();
-        // 创建SearchRequest对象, 设置查询索引名
-        SearchRequest searchRequest = new SearchRequest(index);
-        // 通过QueryBuilders构建ES查询条件，
-        SearchSourceBuilder builder = new SearchSourceBuilder();
-
-        //获取需要处理的数据
-        builder.query(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD)
-                        .gte(configVo.getStartTime())
-                        .lt(configVo.getEndTime()))
-                .must(QueryBuilders.termQuery(BILL_MODE ,configVo.getBillMode()))
-                .must(QueryBuilders.termQuery(BILL_PERIOD + KEYWORD,configVo.getBillPeriod())));
-
-        // 创建terms桶聚合，聚合名字=by_pdu, 字段=pdu_id，根据pdu_id分组
-        TermsAggregationBuilder pduAggregationBuilder = AggregationBuilders.terms(BY_PDU)
-                .field(PDU_ID);
-        // 嵌套聚合
-        TermsAggregationBuilder outletAggregationBuilder = AggregationBuilders.terms(BY_OUTLET).field(OUTLET_ID);
-        // 设置聚合查询
-        String top = "top";
-        AggregationBuilder topAgg = AggregationBuilders.topHits(top)
-                .size(1).sort(CREATE_TIME + KEYWORD, sortOrder);
-
-        builder.aggregation(pduAggregationBuilder.subAggregation(outletAggregationBuilder.subAggregation(topAgg)));
-
-        // 设置搜索条件
-        searchRequest.source(builder);
-
-        // 执行ES请求
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-
-        // 处理聚合查询结果
-        Aggregations aggregations = searchResponse.getAggregations();
-        // 根据by_pdu名字查询terms聚合结果
-        Terms byPduAggregation = aggregations.get(BY_PDU);
-
-        for (Terms.Bucket bucket : byPduAggregation.getBuckets()){
-            Integer pduId = Integer.parseInt(String.valueOf(bucket.getKey()));
-
-            Terms byOutletAggregation = bucket.getAggregations().get(BY_OUTLET);
-            Map<Integer,String> outletDoMap = new HashMap<>();
-            //获取按outlet_Id分组
-            for (Terms.Bucket baseBucket : byOutletAggregation.getBuckets()) {
-                TopHits tophits = bucket.getAggregations().get(top);
-                SearchHits sophistsHits = tophits.getHits();
-                SearchHit hit = sophistsHits.getHits()[0];
-
-                outletDoMap.put(Integer.parseInt(String.valueOf(baseBucket.getKey())),hit.getSourceAsString());
-            }
-            dataMap.put(pduId,outletDoMap);
-        }
-        return dataMap;
-
     }
 
 }
