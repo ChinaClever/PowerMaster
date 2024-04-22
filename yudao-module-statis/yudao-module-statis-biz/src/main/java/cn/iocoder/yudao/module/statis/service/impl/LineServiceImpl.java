@@ -36,7 +36,7 @@ public class LineServiceImpl implements LineService {
             String startTime = DateUtil.formatDateTime(calendar.getTime());
             String endTime = DateUtil.formatDateTime(new Date());
 
-            Map<Object, Map<Object, PduHdaLineBaseDo>> map = lineDao.statisLineHour(startTime, endTime);
+            Map<Integer, Map<Integer, PduHdaLineBaseDo>> map = lineDao.statisLineHour(startTime, endTime);
             List<PduHdaLineBaseDo> list = new ArrayList<>();
             map.keySet().forEach(pduId -> list.addAll(map.get(pduId).values()));
             list.forEach(t-> log.info("相历史数据：" + t));
@@ -56,7 +56,7 @@ public class LineServiceImpl implements LineService {
             String startTime = DateUtil.formatDateTime(calendar.getTime());
             String endTime = DateUtil.formatDateTime(new Date());
 
-            Map<Object, Map<Object, PduHdaLineBaseDo>> map = lineDao.statisLineDay(startTime, endTime);
+            Map<Integer, Map<Integer, PduHdaLineBaseDo>> map = lineDao.statisLineDay(startTime, endTime);
             List<PduHdaLineBaseDo> list = new ArrayList<>();
             map.keySet().forEach(pduId -> list.addAll(map.get(pduId).values()));
             esHandleService.batchInsert(list, EsIndexEnum.PDU_HDA_LINE_DAY.getIndex());
