@@ -24,6 +24,8 @@ public class HistoryDataPageReqVO extends PageParam {
 
     private String ipAddr;
 
+    private String cascadeAddr;
+
     private String[] timeRange;
 
 }

@@ -7,6 +7,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * pdu历史数据 Service 接口
@@ -16,6 +17,10 @@ import java.util.List;
 public interface HistoryDataService {
 
 //    public PageResult<Object> scrollQuery(Integer pageSize, String index, String key, Object value) throws IOException;
+
+    List<Object> getLocationsByPduIds(List<Map<String, Object>> mapList);
+
+    Integer getPduIdByAddr(String ipAddr, String cascadeAddr);
 
     /**
      * 获得pdu历史数据分页

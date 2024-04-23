@@ -1,41 +1,24 @@
 package cn.iocoder.yudao.module.pdu.service.historydata;
 
-import cn.iocoder.yudao.framework.common.entity.es.pdu.line.PduHdaLineDayDo;
-import cn.iocoder.yudao.framework.common.entity.es.pdu.line.PduHdaLineHourDo;
-import cn.iocoder.yudao.framework.common.entity.es.pdu.line.PduHdaLineRealtimeDo;
-import cn.iocoder.yudao.framework.common.entity.es.pdu.loop.PduHdaLoopDayDo;
-import cn.iocoder.yudao.framework.common.entity.es.pdu.loop.PduHdaLoopHourDo;
-import cn.iocoder.yudao.framework.common.entity.es.pdu.loop.PduHdaLoopRealtimeDo;
-import cn.iocoder.yudao.framework.common.entity.es.pdu.outlet.PduHdaOutletDayDo;
-import cn.iocoder.yudao.framework.common.entity.es.pdu.outlet.PduHdaOutletHourDo;
-import cn.iocoder.yudao.framework.common.entity.es.pdu.outlet.PduHdaOutletRealtimeDo;
-import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalDayDo;
-import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalHourDo;
-import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalRealtimeDo;
-import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataDetailsReqVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataPageReqVO;
-import com.alibaba.excel.util.StringUtils;
-import org.apache.catalina.connector.ClientAbortException;
+import cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PduIndex;
+import cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PduIndexMapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.elasticsearch.action.search.*;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.core.CountRequest;
-import org.elasticsearch.client.core.CountResponse;
-import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.SimpleQueryStringBuilder;
-import org.elasticsearch.search.Scroll;
-import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -45,20 +28,75 @@ import java.util.List;
 public class HistoryDataServiceImpl implements HistoryDataService {
 
     @Autowired
+    private PduIndexMapper pDUDeviceMapper;
+    @Autowired
     private RestHighLevelClient client;
 
     @Override
+    public List<Object> getLocationsByPduIds(List<Map<String, Object>> mapList) {
+        List<Object> resultList = new ArrayList<>();
+        for (Map<String, Object> map : mapList){
+            Object pduId = map.get("pdu_id");
+            if (pduId != null){
+                // 查询位置
+                PduIndex pduIndex = pDUDeviceMapper.selectById( (int)pduId );
+                map.put("location", pduIndex.getDevKey());
+                resultList.add(map);
+            }else{
+                map.put("location", null);
+                resultList.add(map);
+            }
+
+        }
+        return resultList;
+    }
+
+    @Override
+    public Integer getPduIdByAddr(String ipAddr, String cascadeAddr) {
+        String devKey = ipAddr+"-"+cascadeAddr;
+        QueryWrapper<PduIndex> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("dev_key", devKey); // 指定查询条件：name 字段等于给定的 name 值
+        PduIndex pduIndex = pDUDeviceMapper.selectOne(queryWrapper); // 执行查询，返回匹配的实体对象
+        if (pduIndex != null){
+            return Math.toIntExact(pduIndex.getId());
+        }
+        return null;
+    }
+
+    @Override
     public PageResult<Object> getHistoryDataPage(HistoryDataPageReqVO pageReqVO) throws IOException {
+        PageResult<Object> pageResult = null;
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         int pageNo = pageReqVO.getPageNo();
         int pageSize = pageReqVO.getPageSize();
         int index = (pageNo - 1) * pageSize;
         searchSourceBuilder.from(index);
-        searchSourceBuilder.size(pageSize);
-        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        // 最后一页请求超过一万，pageSize设置成请求刚好一万条
+        if (index + pageSize > 10000){
+            searchSourceBuilder.size(10000 - index);
+        }else{
+            searchSourceBuilder.size(pageSize);
+        }
         searchSourceBuilder.trackTotalHits(true);
-        PageResult<Object> pageResult = null;
+        searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
+        if (!Objects.equals(pageReqVO.getIpAddr(), "") && !Objects.equals(pageReqVO.getIpAddr(), null)){
+            Integer pduId = getPduIdByAddr(pageReqVO.getIpAddr(), pageReqVO.getCascadeAddr());
+            if(pduId != null){
+                // 这样构造的查询条件，将不进行score计算，从而提高查询效率
+                searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.rangeQuery("pdu_id").gte(pduId).lte(pduId)));
+            }else{
+                // 查不到pdu 直接返回空数据
+                pageResult = new PageResult<>();
+                pageResult.setList(null)
+                        .setTotal(0L);
+                return pageResult;
+            }
+
+        }else{
+            searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        }
+
         switch (pageReqVO.getType()) {
             case "total":
                 // 搜索请求对象
@@ -79,26 +117,14 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 // 执行搜索,向ES发起http请求
                 SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
                 // 搜索结果
-                List<Object> resultList = new ArrayList<>();
+                List<Map<String, Object>> mapList = new ArrayList<>();
                 SearchHits hits = searchResponse.getHits();
-                for (SearchHit hit : hits.getHits()) {
-                    String str = hit.getSourceAsString();
-                    if ("realtime".equals(pageReqVO.getGranularity())) {
-                        PduHdaTotalRealtimeDo pduHdaTotalRealtimeDo = JsonUtils.parseObject(str, PduHdaTotalRealtimeDo.class);
-                        resultList.add(pduHdaTotalRealtimeDo);
-                    } else if ("hour".equals(pageReqVO.getGranularity())) {
-                        PduHdaTotalHourDo pduHdaTotalHourDo = JsonUtils.parseObject(str, PduHdaTotalHourDo.class);
-                        resultList.add(pduHdaTotalHourDo);
-                    } else {
-                        PduHdaTotalDayDo pduHdaTotalDayDo = JsonUtils.parseObject(str, PduHdaTotalDayDo.class);
-                        resultList.add(pduHdaTotalDayDo);
-                    }
-                }
+                hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
                 // 匹配到的总记录数
                 Long totalHits = hits.getTotalHits().value;
                 // 返回的结果
                 pageResult = new PageResult<>();
-                pageResult.setList(resultList)
+                pageResult.setList(getLocationsByPduIds(mapList))
                         .setTotal(totalHits);
                 break;
 
@@ -121,26 +147,14 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 // 执行搜索,向ES发起http请求
                 SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
                 // 搜索结果
-                List<Object> resultList1 = new ArrayList<>();
+                List<Map<String, Object>> mapList1 = new ArrayList<>();
                 SearchHits hits1 = searchResponse1.getHits();
-                for (SearchHit hit : hits1.getHits()) {
-                    String str = hit.getSourceAsString();
-                    if ("realtime".equals(pageReqVO.getGranularity())) {
-                        PduHdaLineRealtimeDo pduHdaTotalRealtimeDo = JsonUtils.parseObject(str, PduHdaLineRealtimeDo.class);
-                        resultList1.add(pduHdaTotalRealtimeDo);
-                    } else if ("hour".equals(pageReqVO.getGranularity())) {
-                        PduHdaLineHourDo pduHdaTotalHourDo = JsonUtils.parseObject(str, PduHdaLineHourDo.class);
-                        resultList1.add(pduHdaTotalHourDo);
-                    } else {
-                        PduHdaLineDayDo pduHdaTotalDayDo = JsonUtils.parseObject(str, PduHdaLineDayDo.class);
-                        resultList1.add(pduHdaTotalDayDo);
-                    }
-                }
+                hits1.forEach(searchHit -> mapList1.add(searchHit.getSourceAsMap()));
                 // 匹配到的总记录数
                 Long totalHits1 = hits1.getTotalHits().value;
                 // 返回的结果
                 pageResult = new PageResult<>();
-                pageResult.setList(resultList1)
+                pageResult.setList(getLocationsByPduIds(mapList1))
                         .setTotal(totalHits1);
                 break;
 
@@ -163,26 +177,14 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 // 执行搜索,向ES发起http请求
                 SearchResponse searchResponse2 = client.search(searchRequest2, RequestOptions.DEFAULT);
                 // 搜索结果
-                List<Object> resultList2 = new ArrayList<>();
+                List<Map<String, Object>> mapList2 = new ArrayList<>();
                 SearchHits hits2 = searchResponse2.getHits();
-                for (SearchHit hit : hits2.getHits()) {
-                    String str = hit.getSourceAsString();
-                    if ("realtime".equals(pageReqVO.getGranularity())) {
-                        PduHdaLoopRealtimeDo pduHdaTotalRealtimeDo = JsonUtils.parseObject(str, PduHdaLoopRealtimeDo.class);
-                        resultList2.add(pduHdaTotalRealtimeDo);
-                    } else if ("hour".equals(pageReqVO.getGranularity())) {
-                        PduHdaLoopHourDo pduHdaTotalHourDo = JsonUtils.parseObject(str, PduHdaLoopHourDo.class);
-                        resultList2.add(pduHdaTotalHourDo);
-                    } else {
-                        PduHdaLoopDayDo pduHdaTotalDayDo = JsonUtils.parseObject(str, PduHdaLoopDayDo.class);
-                        resultList2.add(pduHdaTotalDayDo);
-                    }
-                }
+                hits2.forEach(searchHit -> mapList2.add(searchHit.getSourceAsMap()));
                 // 匹配到的总记录数
                 Long totalHits2 = hits2.getTotalHits().value;
                 // 返回的结果
                 pageResult = new PageResult<>();
-                pageResult.setList(resultList2)
+                pageResult.setList(getLocationsByPduIds(mapList2))
                         .setTotal(totalHits2);
                 break;
 
@@ -205,26 +207,14 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 // 执行搜索,向ES发起http请求
                 SearchResponse searchResponse3 = client.search(searchRequest3, RequestOptions.DEFAULT);
                 // 搜索结果
-                List<Object> resultList3 = new ArrayList<>();
+                List<Map<String, Object>> mapList3 = new ArrayList<>();
                 SearchHits hits3 = searchResponse3.getHits();
-                for (SearchHit hit : hits3.getHits()) {
-                    String str = hit.getSourceAsString();
-                    if ("realtime".equals(pageReqVO.getGranularity())) {
-                        PduHdaOutletRealtimeDo pduHdaTotalRealtimeDo = JsonUtils.parseObject(str, PduHdaOutletRealtimeDo.class);
-                        resultList3.add(pduHdaTotalRealtimeDo);
-                    } else if ("hour".equals(pageReqVO.getGranularity())) {
-                        PduHdaOutletHourDo pduHdaTotalHourDo = JsonUtils.parseObject(str, PduHdaOutletHourDo.class);
-                        resultList3.add(pduHdaTotalHourDo);
-                    } else {
-                        PduHdaOutletDayDo pduHdaTotalDayDo = JsonUtils.parseObject(str, PduHdaOutletDayDo.class);
-                        resultList3.add(pduHdaTotalDayDo);
-                    }
-                }
+                hits3.forEach(searchHit -> mapList3.add(searchHit.getSourceAsMap()));
                 // 匹配到的总记录数
                 Long totalHits3 = hits3.getTotalHits().value;
                 // 返回的结果
                 pageResult = new PageResult<>();
-                pageResult.setList(resultList3)
+                pageResult.setList(getLocationsByPduIds(mapList3))
                         .setTotal(totalHits3);
                 break;
 
@@ -239,6 +229,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     public PageResult<Object> getHistoryDataDetails(HistoryDataDetailsReqVO reqVO) throws IOException{
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
         String id = String.valueOf(reqVO.getId());
         SimpleQueryStringBuilder simpleQueryStringBuilder = QueryBuilders.simpleQueryStringQuery(id);
         simpleQueryStringBuilder.field("pdu_id");
@@ -268,23 +259,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 // 搜索结果
                 List<Object> resultList = new ArrayList<>();
                 SearchHits hits = searchResponse.getHits();
-                System.out.println(hits.getTotalHits());
-                for (SearchHit hit : hits.getHits()) {
-                    String str = hit.getSourceAsString();
-                    if ("realtime".equals(reqVO.getGranularity()) ){
-                        PduHdaTotalRealtimeDo pduHdaTotalRealtimeDo = JsonUtils.parseObject(str, PduHdaTotalRealtimeDo.class);
-                        resultList.add(pduHdaTotalRealtimeDo);
-                        System.out.println(pduHdaTotalRealtimeDo);
-                    }else if ("hour".equals(reqVO.getGranularity()) ){
-                        PduHdaTotalHourDo pduHdaTotalHourDo = JsonUtils.parseObject(str, PduHdaTotalHourDo.class);
-                        resultList.add(pduHdaTotalHourDo);
-                        resultList.add(pduHdaTotalHourDo);
-                    }else {
-                        PduHdaTotalDayDo pduHdaTotalDayDo = JsonUtils.parseObject(str, PduHdaTotalDayDo.class);
-                        resultList.add(pduHdaTotalDayDo);
-                        resultList.add(pduHdaTotalDayDo);
-                    }
-                }
+                hits.forEach(searchHit -> resultList.add(searchHit.getSourceAsMap()));
                 // 匹配到的总记录数
                 Long totalHits = hits.getTotalHits().value;
                 // 返回的结果
@@ -314,19 +289,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 // 搜索结果
                 List<Object> resultList1 = new ArrayList<>();
                 SearchHits hits1 = searchResponse1.getHits();
-                for (SearchHit hit : hits1.getHits()) {
-                    String str = hit.getSourceAsString();
-                    if ("realtime".equals(reqVO.getGranularity()) ){
-                        PduHdaLineRealtimeDo pduHdaTotalRealtimeDo = JsonUtils.parseObject(str, PduHdaLineRealtimeDo.class);
-                        resultList1.add(pduHdaTotalRealtimeDo);
-                    }else if ("hour".equals(reqVO.getGranularity()) ){
-                        PduHdaLineHourDo pduHdaTotalHourDo = JsonUtils.parseObject(str, PduHdaLineHourDo.class);
-                        resultList1.add(pduHdaTotalHourDo);
-                    }else {
-                        PduHdaLineDayDo pduHdaTotalDayDo = JsonUtils.parseObject(str, PduHdaLineDayDo.class);
-                        resultList1.add(pduHdaTotalDayDo);
-                    }
-                }
+                hits1.forEach(searchHit -> resultList1.add(searchHit.getSourceAsMap()));
                 // 匹配到的总记录数
                 Long totalHits1 = hits1.getTotalHits().value;
                 // 返回的结果
@@ -356,19 +319,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 // 搜索结果
                 List<Object> resultList2 = new ArrayList<>();
                 SearchHits hits2 = searchResponse2.getHits();
-                for (SearchHit hit : hits2.getHits()) {
-                    String str = hit.getSourceAsString();
-                    if ("realtime".equals(reqVO.getGranularity()) ){
-                        PduHdaLoopRealtimeDo pduHdaTotalRealtimeDo = JsonUtils.parseObject(str, PduHdaLoopRealtimeDo.class);
-                        resultList2.add(pduHdaTotalRealtimeDo);
-                    }else if ("hour".equals(reqVO.getGranularity()) ){
-                        PduHdaLoopHourDo pduHdaTotalHourDo = JsonUtils.parseObject(str, PduHdaLoopHourDo.class);
-                        resultList2.add(pduHdaTotalHourDo);
-                    }else {
-                        PduHdaLoopDayDo pduHdaTotalDayDo = JsonUtils.parseObject(str, PduHdaLoopDayDo.class);
-                        resultList2.add(pduHdaTotalDayDo);
-                    }
-                }
+                hits2.forEach(searchHit -> resultList2.add(searchHit.getSourceAsMap()));
                 // 匹配到的总记录数
                 Long totalHits2 = hits2.getTotalHits().value;
                 // 返回的结果
@@ -398,19 +349,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 // 搜索结果
                 List<Object> resultList3 = new ArrayList<>();
                 SearchHits hits3 = searchResponse3.getHits();
-                for (SearchHit hit : hits3.getHits()) {
-                    String str = hit.getSourceAsString();
-                    if ("realtime".equals(reqVO.getGranularity()) ){
-                        PduHdaOutletRealtimeDo pduHdaTotalRealtimeDo = JsonUtils.parseObject(str, PduHdaOutletRealtimeDo.class);
-                        resultList3.add(pduHdaTotalRealtimeDo);
-                    }else if ("hour".equals(reqVO.getGranularity()) ){
-                        PduHdaOutletHourDo pduHdaTotalHourDo = JsonUtils.parseObject(str, PduHdaOutletHourDo.class);
-                        resultList3.add(pduHdaTotalHourDo);
-                    }else {
-                        PduHdaOutletDayDo pduHdaTotalDayDo = JsonUtils.parseObject(str, PduHdaOutletDayDo.class);
-                        resultList3.add(pduHdaTotalDayDo);
-                    }
-                }
+                hits3.forEach(searchHit -> resultList3.add(searchHit.getSourceAsMap()));
                 // 匹配到的总记录数
                 Long totalHits3 = hits3.getTotalHits().value;
                 // 返回的结果
