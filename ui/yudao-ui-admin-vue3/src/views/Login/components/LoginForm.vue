@@ -220,7 +220,9 @@ const handleLogin = async (params) => {
       return
     }
     loginData.loginForm.captchaVerification = params.captchaVerification
+    console.log('wwww')
     const res = await LoginApi.login(loginData.loginForm)
+    console.log('res', res)
     if (!res) {
       return
     }

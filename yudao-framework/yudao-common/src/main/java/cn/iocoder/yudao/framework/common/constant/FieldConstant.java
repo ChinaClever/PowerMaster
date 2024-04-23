@@ -147,7 +147,7 @@ public class FieldConstant {
     /**
      *  最小有功功率
      */
-    public static final String ACTIVE_POW_MIN_VALUE = "pow_active_min_time";
+    public static final String ACTIVE_POW_MIN_VALUE = "pow_active_min_value";
 
     /**
      *  最大有功功率时间
@@ -193,12 +193,20 @@ public class FieldConstant {
      *  最大温度
      */
     public static final String TEM_MAX_VALUE = "tem_max_value";
+    /**
+     *  最大温度时间
+     */
+    public static final String TEM_MAX_TIME = "tem_max_time";
 
     /**
      *  最低温度
      */
     public static final String TEM_MIN_VALUE = "tem_min_value";
 
+    /**
+     *  最低温度时间
+     */
+    public static final String TEM_MIN_TIME = "tem_min_time";
     /**
      *   平均湿度
      */
@@ -210,10 +218,19 @@ public class FieldConstant {
     public static final String HUM_MAX_VALUE = "hum_max_value";
 
     /**
+     *   最高湿度时间
+     */
+    public static final String HUM_MAX_TIME = "hum_max_time";
+
+    /**
      *   最低湿度
      */
     public static final String HUM_MIN_VALUE = "hum_min_value";
 
+    /**
+     *   最低湿度时间
+     */
+    public static final String HUM_MIN_TIME = "hum_min_time";
 
     /**
      *   电量
@@ -234,5 +251,15 @@ public class FieldConstant {
      * 计费时间段
      */
     public static final String BILL_PERIOD = "bill_period";
+
+    /**
+     *  开始电能
+     */
+    public static final String START_ELE = "start_ele";
+
+    /**
+     * 结束电能
+     */
+    public static final String END_ELE = "end_ele";
 
 }
