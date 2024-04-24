@@ -38,6 +38,7 @@
             inactive-value="0" 
             @change="toggleCollapse" />
           </el-form-item>
+          
           <!-- <el-form-item label="网络地址" prop="devKey">
             <el-input
               v-model="queryParams.devKey"
@@ -47,23 +48,141 @@
               class="!w-240px"
             />
           </el-form-item> -->
-          <el-form-item label="时间段" prop="createTime">
+
+          <el-form-item label="IP地址" prop="ipAddr" >
+            <el-input
+              v-model="queryParams.ipAddr"
+              placeholder="请输入IP地址"
+              clearable
+              class="!w-140px"
+            />
+          </el-form-item>
+
+          <el-form-item label="级联地址" prop="cascadeAddr" label-width="70px">
+            <el-input-number
+              v-model="queryParams.cascadeAddr"
+              :min="0"
+              controls-position="right"
+              :value-on-clear="0"
+                class="!w-100px"
+            />
+          </el-form-item>
+          <el-form-item label="时间段" prop="createTime" label-width="100px">
+            <el-button 
+              @click="queryParams.timeType = 0;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 0;" 
+              :type="switchValue == 0 ? 'primary' : ''"
+            >
+              日报
+            </el-button>
+            <el-button 
+              @click="queryParams.timeType = 1;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 1;" 
+              :type="switchValue == 1 ? 'primary' : ''"
+            >
+              月报
+            </el-button>
+            <el-button 
+              @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 2;" 
+              :type="switchValue == 2 ? 'primary' : ''"
+            >
+              自定义
+            </el-button>
+            
+            
+          </el-form-item>
+          <el-form-item>
             <el-date-picker
-              v-model="queryParams.createTime"
+              v-if="switchValue == 0"
+              v-model="queryParams.oldTime"
+              value-format="YYYY-MM-DD HH:mm:ss"
+              type="date"
+              :disabled-date="disabledDate"
+              @change="handleDayPick"
+              class="!w-160px"
+            />
+            <el-date-picker
+              v-if="switchValue == 1"
+              v-model="queryParams.oldTime"
+              value-format="YYYY-MM-DD HH:mm:ss"
+              type="month"
+              :disabled-date="disabledDate"
+              @change="handleMonthPick"
+              class="!w-160px"
+            />
+            <el-date-picker
+              v-if="switchValue == 2"
+              v-model="queryParams.timeArr"
               value-format="YYYY-MM-DD HH:mm:ss"
               type="daterange"
               start-placeholder="开始日期"
               end-placeholder="结束日期"
-              :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-              class="!w-210px"
+              :disabled-date="disabledDate"
+              @change="handleDayPick"
+              class="!w-200px"
             />
           </el-form-item>
-          <el-text size="large">
+          <el-form-item>
+            <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          </el-form-item>
+          <!-- <el-text size="large">
             报警次数：{{ pduInfo.alarm }}
-          </el-text>
+          </el-text> -->
         </el-form>
       </ContentWrap>
-      <el-collapse  v-model="activeNames">
+      <ContentWrap v-show="visControll.visAllReport" >
+        <div class="page" >
+          <div class="pageBox" >
+            <div class="page-conTitle">
+              PDU基本信息
+            </div>
+              <el-table 
+                :data="PDUTableData" 
+                :header-cell-style="arraySpanMethod"
+                >
+                <el-table-column  align="center" label="基本信息"  prop="baseInfoName" />
+                <el-table-column  prop="baseInfoValue" />
+                <el-table-column label="能耗" :rowspan="2" prop="consumeName"  />
+                <el-table-column  prop="consumeValue"  />
+              </el-table>
+            </div>
+          <div class="pageBox" v-if="visControll.eqVis" >
+            <div class="page-conTitle" v-if="!visControll.isSameDay">
+              电量分布
+            </div>
+            <div class="page-conTitle" v-if="visControll.isSameDay">
+              电能分布
+            </div>
+            <p v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大用电量{{eqData.maxEle}}kWh， 最大负荷发生时间{{eqData.maxEleTime}}</p>
+            <p v-if="visControll.isSameDay && eqData.eq">本周期内，开始时电能为{{eqData.eq[0]}}kWh，结束时电能为{{eqData.eq[eqData.eq.length - 1]}}kWh， 电能增长{{(eqData.eq[eqData.eq.length - 1] - eqData.eq[0]).toFixed(1)}}kWh</p>
+            <div ref="rankChartContainer" id="rankChartContainer" style="width: 75vw; height: 58vh;"></div>
+          </div>
+          <div class="pageBox"  v-if="visControll.powVis">
+            <div class="page-conTitle">
+              平均功率曲线
+            </div>
+            <p>本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 最大负荷发生时间{{powData.apparentPowMaxTime}}</p>
+            <div ref="powChartContainer" id="powChartContainer" style="width: 70vw; height: 58vh;"></div>
+          </div>
+          <div class="pageBox" v-if="visControll.outletVis">
+            <div class="page-conTitle" v-if="!visControll.isSameDay">
+              输出位电量排名
+            </div>
+            <div class="page-conTitle" v-if="visControll.isSameDay">
+              输出位电能排名
+            </div>
+            <div ref="outputRankChartContainer" id="outputRankChartContainer" style="width: 75vw; height: 58vh;"></div>
+
+          </div>
+          <div class="pageBox" v-if="visControll.temVis">
+            <div class="page-conTitle">
+              温度曲线
+            </div>
+            <p>本周期内，最大温度{{temData.temMaxValue}}°C， 最大温度发生时间{{temData.temMaxTime}}</p>
+            <div ref="temChartContainer" id="temChartContainer" style="width: 70vw; height: 58vh;"></div>
+          </div>
+        </div>
+      </ContentWrap>
+      
+      <!-- <el-collapse  v-model="activeNames">
         <el-collapse-item title="PDU信息" name="1">
           <el-row class="text-container"> 
             <el-col :span="8" >
@@ -78,21 +197,12 @@
             <el-col :span="6">
               <div style="font-size: 28px;">
                 用电量 {{ pduInfo.eq }}kW<br/>
-                总视在功率(最大) {{ pduInfo.total_apparent_pow_max_value }}kW  <br/>
-                总有功功率(最大) {{ pduInfo.total_pow_max_value }}kVA  <br/>
+                总视在功率(最大) {{ pduInfo.total_apparent_pow_max_value }}kVA   <br/>
+                总有功功率(最大) {{ pduInfo.total_pow_max_value }}kW <br/>
                 总电能(最大) {{ pduInfo.ele }}kWh  <br/>
                 最大温度 {{ pduInfo.tem_max_value }}°C<br/>
               </div>
             </el-col> 
-            <!-- <el-col :span="10">
-              <el-row justify="center">
-                <el-col  :span="6">服务器IT总视在功率</el-col>
-                <el-col  :span="6">&nbsp;</el-col>
-              </el-row>
-              <el-row>
-                <div ref="serChartContainer" id="serChartContainer" style="width: 23vw; height: 30vh"></div>  
-              </el-row>
-            </el-col> -->
           </el-row>
         </el-collapse-item>
         <el-collapse-item title="耗电排名(日期)" name="2">
@@ -154,7 +264,7 @@
             <div ref="temChartContainer" id="temChartContainer" style="width: 70vw; height: 58vh;"></div>
           </ContentWrap>
         </el-collapse-item>
-      </el-collapse>
+      </el-collapse> -->
     </el-col>
   </el-row>
   <!-- 表单弹窗：添加/修改 -->
@@ -163,38 +273,123 @@
 
 <script setup lang="ts">
 // import download from '@/utils/download'
-// import { PDUDeviceApi } from '@/api/pdu/pdudevice'
+import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 import * as echarts from 'echarts';
 import { ElTree } from 'element-plus'
+
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
-//产生元素为200-500之间随机整数的数组
-const generateRandomIntegers = (n: number): number[] => {
-  const randomIntegers: number[] = [];
-  for (let i = 0; i < n; i++) {
-    const randomInteger = Math.floor(Math.random() * (500 - 200 + 1)) + 200;
-    randomIntegers.push(randomInteger);
+const switchValue = ref(0);
+const instance = getCurrentInstance();
+const visControll = reactive({
+  visAllReport : false,
+  isSameDay : false,
+  eqVis : false,
+  powVis : false,
+  outletVis : false,
+  temVis : false,
+})
+
+const disabledDate = (date) => {
+  // 获取今天的日期
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // 设置date的时间为0时0分0秒，以便与today进行比较
+  date.setHours(0, 0, 0, 0);
+
+  // 如果date在今天之后，则禁用
+  if(switchValue.value == 0){
+    return date > today;
+  }else {
+    return date >= today;
   }
-  return randomIntegers.sort((a, b) => b - a);
+  
 }
 
-//产生随机字符串数组，元素值为机柜+n
-const generateShuffledStrings = (n: number,name : string): string[] => {
-  const strings: string[] = [];
-  for (let i = 1; i <= n; i++) {
-    const string = name + i;
-    strings.push(string);
+const handleDayPick = () => {
+  if(queryParams?.oldTime && switchValue.value == 2){
+
+    queryParams.oldTime = null;
+    queryParams.newTime = null;
   }
-  for (let i = strings.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [strings[i], strings[j]] = [strings[j], strings[i]];
+  if(queryParams?.oldTime && switchValue.value == 0){
+    queryParams.newTime = queryParams.oldTime.split(" ")[0] + " " + "23:59:59";
+    visControll.isSameDay = true;
+
+  } else if (queryParams.timeArr && switchValue.value == 2) {
+
+    // 获取选择的开始日期和结束日期
+    const startDate = new Date(queryParams.timeArr[0]);
+    const endDate = new Date(queryParams.timeArr[1]);
+
+    // 计算两个日期之间的天数差
+    const diffTime = Math.abs(endDate - startDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    // 如果天数差超过32天，则重置选择的日期
+    if (diffDays > 32) {
+      queryParams.timeArr = null;
+      ElMessage({
+        message: '日期选择不超过31天',
+        type: 'warning',
+      })
+    }else {
+      if(areDatesEqual(new Date(queryParams.timeArr[0]),new Date(queryParams.timeArr[1]))){
+        visControll.isSameDay = true;
+      }else{
+        visControll.isSameDay = false;
+      }
+      queryParams.oldTime = queryParams.timeArr[0];
+      queryParams.newTime = queryParams.timeArr[1];
+
+
+    }
   }
-  return strings;
+  
 }
 
-const activeNames = ref(["1","2","3","4","5"])
+const handleMonthPick = () => {
+
+  if(queryParams.oldTime){
+    var newTime = new Date(queryParams.oldTime);
+    newTime.setMonth(newTime.getMonth() + 1);
+    newTime.setHours(23,59,59)
+    queryParams.newTime = getFullTimeByDate(newTime);
+    visControll.isSameDay = false;
+  }
+  
+} 
+
+const getFullTimeByDate = (date) => {
+  var year = date.getFullYear();//年
+  var month = date.getMonth();//月
+  var day = date.getDate();//日
+  var hours = date.getHours();//时
+  var min = date.getMinutes();//分
+  var second = date.getSeconds();//秒
+  return year + "-" +
+      ((month + 1) > 9 ? (month + 1) : "0" + (month + 1)) + "-" +
+      (day > 9 ? day : ("0" + day)) + " " +
+      (hours > 9 ? hours : ("0" + hours)) + ":" +
+      (min > 9 ? min : ("0" + min)) + ":" +
+      (second > 9 ? second : ("0" + second));
+}
+
+const areDatesEqual = (date1, date2) => {
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  );
+}
+
+
+// const activeNames = ref(["1","2","3","4","5"])
+
+const PDUTableData = ref([]) as any
 
 const queryParams = reactive({
   pageNo: 1,
@@ -208,7 +403,12 @@ const queryParams = reactive({
   outputNumber : 10,
   ipAddr: undefined,
   createTime: undefined,
-})
+  timeArr:[],
+  oldTime : null,
+  newTime : null,
+  timeType: 0,
+  cascadeAddr : null
+}) as any
 
 const serverRoomArr =  [
   {
@@ -302,36 +502,52 @@ const pduInfo = ref({
 })
 
 //柱状图宽度
-const barWid = ref(60);
+const barWid = ref(20);
 
 //折线图数据
 interface EqData {
   eq: number[];
   time: string[];
+  totalEle : number;
+  maxEle : number;
+  maxEleTime : string;
 }
 const eqData = ref<EqData>({
   eq : [],
-  time : []
+  time : [],
+  totalEle : 0,
+  maxEle : 0,
+  maxEleTime : ""
 })
 
 interface PowData {
-  total_apparent_pow_avg_value: number[];
-  total_active_pow_avg_value: number[];
+  apparentPowAvgValue: number[];
+  activePowAvgValue: number[];
   time: string[];
+  total_pow_apparent : number;
+  apparentPowMaxValue : number;
+  apparentPowMaxTime : string;
 }
 const powData = ref<PowData>({
-  total_apparent_pow_avg_value : [],
-  total_active_pow_avg_value: [],
-  time:[]
+  apparentPowAvgValue : [],
+  activePowAvgValue: [],
+  time:[],
+  total_pow_apparent : 0,
+  apparentPowMaxValue : 0,
+  apparentPowMaxTime : ""
 })
 
 interface TemData {
-  tem_avg_value: number[];
+  temAvgValue: number[];
   time: string[];
+  temMaxValue : number;
+  temMaxTime : string;
 }
 const temData = ref<TemData>({
-  tem_avg_value : [],
-  time : []
+  temAvgValue : [],
+  time : [],
+  temMaxValue : 0,
+  temMaxTime : ""
 })
 
 interface ServerData {
@@ -352,14 +568,14 @@ const serverData = ref<ServerData>({
   value: [200, 180, 170, 220, 167, 189,200,150]
 })
 
-interface OutputRankData {
-  name: string[];
-  eq: number[];
+interface OutLetRankData {
+  outLetId: string[];
+  eleValue: number[];
 }
 
-const outputRankData = ref<OutputRankData>({
-  name : [],
-  eq : [],
+const outletRankData = ref<OutLetRankData>({
+  outLetId : [],
+  eleValue : [],
 })
 
 //树型控件
@@ -380,105 +596,74 @@ const defaultProps = {
   label: 'label',
 }
 
-const getList = () => {
+const getList = async () => {
   loading.value = true
-  try {
-    // 生成假数据
-    const fakeData = [
-      {
-          id: 1,
-          location: "机房1-机柜1",
-          eq: 501,
-          eqCreateTime: "2024-03-13 08:00:00",
-          total_apparent_pow_avg_value : 200,
-          total_active_pow_avg_value : 180,
-          powCreateTime : "2024-03-13 08:00:00",
-          tem_avg_value : 25,
-          temCrateTime : "2024-03-13 08:00:00",
-      },
-      {
-          id: 2,
-          location: "机房1-机柜1",
-          eq: 435,
-          eqCreateTime: "2024-03-05 08:00:00",
-          total_apparent_pow_avg_value : 190,
-          total_active_pow_avg_value : 170,
-          powCreateTime : "2024-03-13 09:00:00",
-          tem_avg_value : 27,
-          temCrateTime : "2024-03-13 09:00:00",
-      },
-      {
-          id: 3,
-          location: "机房1-机柜1",
-          eq: 360,
-          eqCreateTime: "2024-02-15 08:00:00",
-          total_apparent_pow_avg_value : 220,
-          total_active_pow_avg_value : 200,
-          powCreateTime : "2024-03-13 10:00:00",
-          tem_avg_value : 26.4,
-          temCrateTime : "2024-03-13 10:00:00",
-      },
-      {
-          id: 4,
-          location: "机房1-机柜1",
-          eq: 352,
-          eqCreateTime: "2024-03-20 08:00:00",
-          total_apparent_pow_avg_value : 170,
-          total_active_pow_avg_value : 160,
-          powCreateTime : "2024-03-13 11:00:00",
-          tem_avg_value : 27.8,
-          temCrateTime : "2024-03-13 11:00:00",
-      },
-      {
-          id: 5,
-          location: "机房1-机柜1",
-          eq: 290,
-          eqCreateTime: "2024-02-05 08:00:00",
-          total_apparent_pow_avg_value : 200,
-          total_active_pow_avg_value : 180,
-          powCreateTime : "2024-03-13 12:00:00",
-          tem_avg_value : 24.3,
-          temCrateTime : "2024-03-13 12:00:00",
-      },
-      {
-          id: 6,
-          location: "机房1-机柜1",
-          eq: 275,
-          eqCreateTime: "2024-02-25 08:00:00",
-          total_apparent_pow_avg_value : 200,
-          total_active_pow_avg_value : 180,
-          powCreateTime : "2024-03-13 13:00:00",
-          tem_avg_value : 24.3,
-          temCrateTime : "2024-03-13 13:00:00",
-      },
-      {
-          id: 7,
-          location: "机房1-机柜1",
-          eq: 260,
-          eqCreateTime: "2024-03-25 08:00:00",
-          total_apparent_pow_avg_value : 200,
-          total_active_pow_avg_value : 180,
-          powCreateTime : "2024-03-13 14:00:00",
-          tem_avg_value : 24.3,
-          temCrateTime : "2024-03-13 14:00:00",
-      },
-    ];
-
-    eqData.value.eq = fakeData.map((item) => item.eq);
-    eqData.value.time = fakeData.map((item) => item.eqCreateTime);
-
-    powData.value.total_apparent_pow_avg_value = fakeData.map((item) => item.total_apparent_pow_avg_value);
-    powData.value.total_active_pow_avg_value = fakeData.map((item) => item.total_active_pow_avg_value);
-    powData.value.time = fakeData.map((item) => item.powCreateTime);
-
-    temData.value.tem_avg_value = fakeData.map((item) => item.tem_avg_value);
-    temData.value.time = fakeData.map((item) => item.temCrateTime);
-
-    outputRankData.value.name = generateShuffledStrings(queryParams.outputNumber,"服务器");
-    outputRankData.value.eq = generateRandomIntegers(queryParams.outputNumber);
-  }finally{
-    loading.value = false
+  eqData.value = await PDUDeviceApi.getConsumeData(queryParams);
+  if( eqData.value.eq && eqData.value.eq.length > 0){
+    visControll.eqVis = true;
+    eqData.value.eq.forEach((obj,index)=>{
+      eqData.value.eq[index] = obj.toFixed(1);
+    })
+    eqData.value.maxEle = eqData.value.maxEle.toFixed(1);
+    eqData.value.totalEle = eqData.value.totalEle.toFixed(1);
   }
+  
+
+  powData.value = await PDUDeviceApi.getPowData(queryParams);
+  if(powData.value.activePowAvgValue && powData.value.activePowAvgValue.length > 0){
+    visControll.powVis = true;
+    powData.value.activePowAvgValue.forEach((obj,index)=>{
+      powData.value.activePowAvgValue[index] = obj.toFixed(3);
+    })
+
+    powData.value.apparentPowAvgValue.forEach((obj,index)=>{
+      powData.value.apparentPowAvgValue[index] = obj.toFixed(3);
+    })
+
+    powData.value.apparentPowMaxValue = powData.value.apparentPowMaxValue.toFixed(3);
+  }
+  
+  outletRankData.value = await PDUDeviceApi.getOutLetData(queryParams);
+  if(outletRankData.value.eleValue && outletRankData.value.eleValue.length > 0){
+    visControll.outletVis = true;
+    outletRankData.value.eleValue.forEach((obj,index)=>{
+      outletRankData.value.eleValue[index] = obj.toFixed(1);
+    })
+
+    outletRankData.value.outLetId.forEach((obj,index)=>{
+      outletRankData.value.outLetId[index] = "输出位" + obj;
+    })
+
+    
+  }
+  
+  temData.value = await PDUDeviceApi.getTemData(queryParams);
+  if(temData.value.temAvgValue && temData.value.temAvgValue.length > 0){
+    visControll.temVis = true;
+  }
+  var temp = [] as any;
+  temp.push({
+    baseInfoName : "PDU名称",
+    baseInfoValue : "xx",
+    consumeName : "用电量",
+    consumeValue : visControll.isSameDay ? (eqData.value.eq[eqData.value.eq.length - 1] - eqData.value.eq[0]).toFixed(1) : eqData.value.totalEle,
+  })
+  temp.push({
+    baseInfoName : "所属机房",
+    baseInfoValue : "xx",
+    consumeName : "最大视在功率",
+    consumeValue : powData.value.apparentPowMaxValue
+  })
+  temp.push({
+    baseInfoName : "网络地址",
+    baseInfoValue : queryParams.ipAddr + "-" + queryParams.cascadeAddr,
+    consumeName : "最大温度",
+    consumeValue : temData.value.temMaxValue 
+  })
+  PDUTableData.value = temp;
+  // initChart();
+  loading.value = false
+
 }
 
 const rankChartContainer = ref<HTMLElement | null>(null);
@@ -492,20 +677,20 @@ let serChart = null as echarts.ECharts | null; // 显式声明 serChart 的类�
 const outputRankChartContainer = ref<HTMLElement | null>(null);
 let outputRankChart = null as echarts.ECharts | null; // 显式声明 serChart 的类型
 
-const initChart = () => {
-  const instance = getCurrentInstance();
+const initChart =  () => {
   if (rankChartContainer.value && instance) {
     rankChart = echarts.init(rankChartContainer.value);
+
     rankChart.setOption({
       // 这里设置 Echarts 的配置项和数据
+      dataZoom:[{ type:"inside"}],
       title: { text: ''},
       tooltip: { trigger: 'axis'},
-      legend: { data: ['耗电量']},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
       xAxis: {type: 'category' ,data:eqData.value.time},
-      yAxis: { type: 'value'},
+      yAxis: { type: 'value', axisLabel: { formatter: '{value} kWh' }},
       series: [
-        {name:"耗电量",  type: 'bar', data: eqData.value.eq, label: { show: true, position: 'top' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
+        { type: 'bar', data: eqData.value.eq, label: { show: true, position: 'top' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
       ],
     });
     // 将 rankChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
@@ -515,14 +700,14 @@ const initChart = () => {
     outputRankChart = echarts.init(outputRankChartContainer.value);
     outputRankChart.setOption({
       // 这里设置 Echarts 的配置项和数据
+      dataZoom:[{ type:"inside"}],
       title: { text: ''},
       tooltip: { trigger: 'axis'},
-      legend: { data: ['耗电量']},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-      xAxis: {type: 'category' ,data:outputRankData.value.name},
-      yAxis: { type: 'value'},
+      xAxis: {type: 'category' ,data:outletRankData.value.outLetId},
+      yAxis: { type: 'value',axisLabel: { formatter: '{value} kWh' }},
       series: [
-        {name:"耗电量",  type: 'bar', data: outputRankData.value.eq, label: { show: true, position: 'top' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
+        {  type: 'bar', data: outletRankData.value.eleValue, label: { show: true, position: 'top' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
       ],
     });
     // 将 outputRankChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
@@ -532,6 +717,7 @@ const initChart = () => {
     powChart = echarts.init(powChartContainer.value);
     powChart.setOption({
       // 这里设置 Echarts 的配置项和数据
+      dataZoom:[{ type:"inside"}],
       title: { text: ''},
       tooltip: { trigger: 'axis' },
       legend: { data: ['总平均视在功率','总平均有功功率']},
@@ -540,8 +726,8 @@ const initChart = () => {
       xAxis: {type: 'category', boundaryGap: false, data:powData.value.time},
       yAxis: { type: 'value'},
       series: [
-        {name: '总平均视在功率', type: 'line', data: powData.value.total_apparent_pow_avg_value},
-        {name: '总平均有功功率', type: 'line', data: powData.value.total_active_pow_avg_value},
+        {name: '总平均视在功率', type: 'line', data: powData.value.apparentPowAvgValue},
+        {name: '总平均有功功率', type: 'line', data: powData.value.activePowAvgValue},
       ],
 
     });
@@ -552,6 +738,7 @@ const initChart = () => {
     temChart = echarts.init(temChartContainer.value);
     temChart.setOption({
       // 这里设置 Echarts 的配置项和数据
+      dataZoom:[{ type:"inside"}],
       title: { text: ''},
       tooltip: { trigger: 'axis' },
       legend: { data: ['温度']},
@@ -560,7 +747,7 @@ const initChart = () => {
       xAxis: {type: 'category', boundaryGap: false, data:temData.value.time},
       yAxis: { type: 'value'},
       series: [
-        {name: '温度', type: 'line', data: temData.value.tem_avg_value},
+        {name: '温度', type: 'line', data: temData.value.temAvgValue},
       ],
     });
     // 将 temChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
@@ -577,16 +764,17 @@ const initChart = () => {
     // 将 serChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
     instance.appContext.config.globalProperties.serChart = serChart;
   }
+  visControll.visAllReport = true;
 };
 
 // 在组件销毁时手动销毁图表
-const beforeRankUnmount = () => {
-    rankChart?.dispose(); // 销毁图表实例
-};
+// const beforeRankUnmount = () => {
+//     rankChart?.dispose(); // 销毁图表实例
+// };
 
-const beforeSerRankUnmount = () => {
-    outputRankChart?.dispose(); // 销毁图表实例
-};
+// const beforeSerRankUnmount = () => {
+//     outputRankChart?.dispose(); // 销毁图表实例
+// };
 
 // const beforePowUnmount = () => {
 //     powChart?.dispose();  // 销毁图表实例
@@ -600,112 +788,112 @@ const beforeSerRankUnmount = () => {
 //     serChart?.dispose(); // 销毁图表实例
 // };
 
-window.addEventListener('resize', function() {
-    rankChart?.resize(); 
-    powChart?.resize(); 
-    temChart?.resize(); 
-});
+// window.addEventListener('resize', function() {
+//     rankChart?.resize(); 
+//     powChart?.resize(); 
+//     temChart?.resize(); 
+// });
 
 watch(filterText, (val) => {
   treeRef.value!.filter(val)
 })
 
-watch([() => queryParams.outputNumber], ([newOutPutNum]) => {
-    // 销毁原有的图表实例
-    beforeSerRankUnmount();
-    // 创建新的图表实例
-    outputRankChart = echarts.init(document.getElementById('outputRankChartContainer'));
-    outputRankData.value.eq = generateRandomIntegers(newOutPutNum);
-    outputRankData.value.name = generateShuffledStrings(newOutPutNum,"服务器");
-    // 设置新的配置对象
-    if (outputRankChart) {
-      outputRankChart.setOption({
-        // 这里设置 Echarts 的配置项和数据
-        title: { text: ''},
-        tooltip: { trigger: 'axis'},
-        legend: { data: ['耗电量']},
-        toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-        xAxis: {type: 'category' ,data:outputRankData.value.name},
-        yAxis: { type: 'value'},
-        series: [
-          {name:"耗电量",  type: 'bar', data: outputRankData.value.eq, label: { show: true, position: 'top' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
-        ],
-      });
-    }
+// watch([() => queryParams.outputNumber], ([newOutPutNum]) => {
+//     // 销毁原有的图表实例
+//     beforeSerRankUnmount();
+//     // 创建新的图表实例
+//     outputRankChart = echarts.init(document.getElementById('outputRankChartContainer'));
+//     outletRankData.value.eleValue = generateRandomIntegers(newOutPutNum);
+//     outletRankData.value.outLetId = generateShuffledStrings(newOutPutNum,"服务器");
+//     // 设置新的配置对象
+//     if (outputRankChart) {
+//       outputRankChart.setOption({
+//         // 这里设置 Echarts 的配置项和数据
+//         title: { text: ''},
+//         tooltip: { trigger: 'axis'},
+//         legend: { data: ['耗电量']},
+//         toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+//         xAxis: {type: 'category' ,data:outletRankData.value.outLetId},
+//         yAxis: { type: 'value'},
+//         series: [
+//           {name:"耗电量",  type: 'bar', data: outletRankData.value.eleValue, label: { show: true, position: 'top' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
+//         ],
+//       });
+//     }
     
-})
+// })
 
 // 监听类型颗粒度
-watch([ () => queryParams.eqGranularity], (eqNew) => {
-    const [ newEqGranularity] = eqNew;
-    // 处理参数变化
+// watch([ () => queryParams.eqGranularity], (eqNew) => {
+//     const [ newEqGranularity] = eqNew;
+//     // 处理参数变化
 
-    if ( newEqGranularity == 'day'){
-      // 销毁原有的图表实例
-      beforeRankUnmount()
-      // 创建新的图表实例
-      rankChart = echarts.init(document.getElementById('rankChartContainer'));
-      getList();
-      // 设置新的配置对象
-      if (rankChart) {
-        rankChart.setOption({
-        // 这里设置 Echarts 的配置项和数据
-        title: { text: ''},
-        tooltip: { trigger: 'axis'},
-        legend: { data: ['耗电量']},
-        toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-        xAxis: {type: 'category' ,data:eqData.value.time},
-        yAxis: { type: 'value'},
-        series: [
-          { type: 'bar', data: eqData.value.eq, label: { show: true, position: 'top' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
-        ],
-      });
-    }
-    }else if(newEqGranularity == 'week'){
-      // 销毁原有的图表实例
-      beforeRankUnmount()
-      // 创建新的图表实例
-      rankChart = echarts.init(document.getElementById('rankChartContainer'));
-      eqData.value.time = ["2023-04-第一周","2023-03-第二周","2023-02-第三周","2023-01-第一周","2023-03-第一周","2023-02-第一周","2023-04-第一周"]
-      // 设置新的配置对象
-      if (rankChart) {
-        rankChart.setOption({
-          // 这里设置 Echarts 的配置项和数据
-          title: { text: ''},
-          tooltip: { trigger: 'axis'},
-          legend: { data: ['耗电量']},
-          toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-          xAxis: {type: 'category' ,data:eqData.value.time},
-          yAxis: { type: 'value'},
-          series: [
-            { type: 'bar', data: eqData.value.eq, label: { show: true, position: 'top' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
-          ],
-        });
-      }
-    }else{
-      // 销毁原有的图表实例
-      beforeRankUnmount()
-      // 创建新的图表实例
-      rankChart = echarts.init(document.getElementById('rankChartContainer'));
-      eqData.value.time = ["2023-04","2023-08","2023-07","2023-02","2023-10","2023-06","2023-09"]
-      // 设置新的配置对象
-      if (rankChart) {
-        rankChart.setOption({
-          // 这里设置 Echarts 的配置项和数据
-          title: { text: ''},
-          tooltip: { trigger: 'axis'},
-          legend: { data: ['耗电量']},
-          toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-          xAxis: {type: 'category' ,data:eqData.value.time},
-          yAxis: { type: 'value'},
-          series: [
-            { type: 'bar', data: eqData.value.eq, label: { show: true, position: 'top' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
-          ],
-        });
-      }
-    }
+//     if ( newEqGranularity == 'day'){
+//       // 销毁原有的图表实例
+//       beforeRankUnmount()
+//       // 创建新的图表实例
+//       rankChart = echarts.init(document.getElementById('rankChartContainer'));
+//       getList();
+//       // 设置新的配置对象
+//       if (rankChart) {
+//         rankChart.setOption({
+//         // 这里设置 Echarts 的配置项和数据
+//         title: { text: ''},
+//         tooltip: { trigger: 'axis'},
+//         legend: { data: ['耗电量']},
+//         toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+//         xAxis: {type: 'category' ,data:eqData.value.time},
+//         yAxis: { type: 'value'},
+//         series: [
+//           { type: 'bar', data: eqData.value.eq, label: { show: true, position: 'top' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
+//         ],
+//       });
+//     }
+//     }else if(newEqGranularity == 'week'){
+//       // 销毁原有的图表实例
+//       beforeRankUnmount()
+//       // 创建新的图表实例
+//       rankChart = echarts.init(document.getElementById('rankChartContainer'));
+//       eqData.value.time = ["2023-04-第一周","2023-03-第二周","2023-02-第三周","2023-01-第一周","2023-03-第一周","2023-02-第一周","2023-04-第一周"]
+//       // 设置新的配置对象
+//       if (rankChart) {
+//         rankChart.setOption({
+//           // 这里设置 Echarts 的配置项和数据
+//           title: { text: ''},
+//           tooltip: { trigger: 'axis'},
+//           legend: { data: ['耗电量']},
+//           toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+//           xAxis: {type: 'category' ,data:eqData.value.time},
+//           yAxis: { type: 'value'},
+//           series: [
+//             { type: 'bar', data: eqData.value.eq, label: { show: true, position: 'top' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
+//           ],
+//         });
+//       }
+//     }else{
+//       // 销毁原有的图表实例
+//       beforeRankUnmount()
+//       // 创建新的图表实例
+//       rankChart = echarts.init(document.getElementById('rankChartContainer'));
+//       eqData.value.time = ["2023-04","2023-08","2023-07","2023-02","2023-10","2023-06","2023-09"]
+//       // 设置新的配置对象
+//       if (rankChart) {
+//         rankChart.setOption({
+//           // 这里设置 Echarts 的配置项和数据
+//           title: { text: ''},
+//           tooltip: { trigger: 'axis'},
+//           legend: { data: ['耗电量']},
+//           toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+//           xAxis: {type: 'category' ,data:eqData.value.time},
+//           yAxis: { type: 'value'},
+//           series: [
+//             { type: 'bar', data: eqData.value.eq, label: { show: true, position: 'top' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
+//           ],
+//         });
+//       }
+//     }
     
-});
+// });
 
 // 下拉框选项数组
 // const deviceStatus = ref([])
@@ -718,57 +906,34 @@ const toggleCollapse = () => {
 };
 
 const loading = ref(false) // 列表的加载中
-// const list = ref([
-//   { 
-//     id:"1",
-//     status:"空闲设备",
-//     totalApparentPower:"200kW",
-//     totalActivePower:"210kVA",
-//     totalElectricalEnergy:"10.112kWh",
-//     ipAddr:"192.168.1.1-0",
-//     location:"机房2-机柜1-A路",
-//     updateTime:"15:25:00"
-//   },
-//   { 
-//     id:"2",
-//     status:"离线设备",
-//     totalApparentPower:"200kW",
-//     totalActivePower:"210kVA",
-//     totalElectricalEnergy:"10.112kWh",
-//     ipAddr:"192.168.1.2-1",
-//     location:"机房2-机柜2-B路",
-//     updateTime:"15:25:00"
-//   },{ 
-//     id:"3",
-//     status:"未绑定设备",
-//     totalApparentPower:"200kW",
-//     totalActivePower:"210kVA",
-//     totalElectricalEnergy:"10.112kWh",
-//     ipAddr:"192.168.1.3-2",
-//     location:"机房2-机柜3-C路",
-//     updateTime:"15:25:00"
-//   },
-// ]) // 列表的数据
+
 // const total = ref(0) // 列表的总页数
 const queryFormRef = ref() // 搜索的表单
 // const exportLoading = ref(false) // 导出的加载中
 
-/** 查询列表 */
-// const getList = async () => {
-//   loading.value = true
-//   try {
-//     const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
-//     list.value = data.list
-//     total.value = data.total
-//   } finally {
-//     loading.value = false
-//   }
-// }
+
+const arraySpanMethod = ({
+  row,
+}) => {
+  row[0].colSpan = 2
+  row[1].colSpan = 0
+  row[2].colSpan = 2
+  row[3].colSpan = 0
+}
 
 /** 搜索按钮操作 */
-const handleQuery = () => {
-  queryParams.pageNo = 1
-  getList()
+const handleQuery = async () => {
+
+  if(queryParams.ipAddr){
+    if(queryParams.oldTime && queryParams.newTime){
+      queryParams.devKey = queryParams.ipAddr +'-' +  queryParams.cascadeAddr;
+      await getList();
+      
+      initChart();
+      queryParams.devKey = null;
+    }
+  }
+  
 }
 
 /** 重置按钮操作 */
@@ -812,9 +977,9 @@ const formRef = ref()
 // }
 
 /** 初始化 **/
-onMounted(() => {
-  getList();
-  initChart();
+onMounted( async () =>  {
+  // getList();
+  // initChart();
 })
 </script>
 
