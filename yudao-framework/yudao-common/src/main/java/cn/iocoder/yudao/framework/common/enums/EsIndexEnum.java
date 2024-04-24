@@ -53,7 +53,7 @@ public enum EsIndexEnum {
     /**
      * pdu相历史数据表（按天算）
      */
-    PDU_HDA_LINE_DAY("pdu_hda_total_day","pdu相历史数据表（按天算）"),
+    PDU_HDA_LINE_DAY("pdu_hda_line_day","pdu相历史数据表（按天算）"),
     /**
      * pdu回路历史数据表（按小时算）
      */
@@ -61,7 +61,7 @@ public enum EsIndexEnum {
     /**
      * pdu回路历史数据表（按天算）
      */
-    PDU_HDA_LOOP_DAY("pdu_hda_total_day","pdu回路历史数据表（按天算）"),
+    PDU_HDA_LOOP_DAY("pdu_hda_loop_day","pdu回路历史数据表（按天算）"),
     /**
      * pdu输出位历史数据表（按小时算）
      */
