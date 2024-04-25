@@ -3,17 +3,17 @@
     <el-col>
       <el-card>
         <el-row :gutter="18" >
-          <el-col :span="8">
+          <el-col :span="2">
             <el-text line-clamp="2">
-              所在位置：{{ location }}
+              <el-text class="mx-1" size="large">所在位置：{{ location }}</el-text>
             </el-text>
           </el-col>
-          <el-col :span="8">
+          <el-col :span="20">
             <el-text line-clamp="2">
-              网络地址：{{ queryParams.devKey }}
+              <el-text class="mx-1" size="large">网络地址：{{ queryParams.devKey }}</el-text>
             </el-text>
           </el-col>
-          <el-col :span="6">
+          <el-col :span="2">
             <el-button type="primary" @click="openNewPage(queryParams.devKey)" >进入管理界面</el-button>
           </el-col>
         </el-row>
@@ -173,23 +173,22 @@
   <el-collapse v-model="activeNames" >
     <el-card>
       <el-row>
-        <el-col :span="2">
+        <el-col >
           <span style="width: 100%">趋势图</span>
         </el-col>
-        <el-col :span="8">
-          <el-form-item label="颗粒度" prop="type">
-            <el-select
-              v-model="queryParams.powGranularity"
-              placeholder="请选择"
-              class="!w-120px"
-            >
-              <el-option label="最近一小时" value="oneHour" />
-              <el-option label="过去24小时" value="twentyfourHour" />
-            </el-select>
-          </el-form-item>
+        <el-col >
+          <div style="float:right;margin-top: 0;">
+            <el-form-item label="颗粒度" prop="type">
+              <el-button @click="queryParams.powGranularity = `oneHour`;switchValue = 0;" :type="!switchValue ? 'primary' : ''">最近一小时</el-button>
+              <el-button @click="queryParams.powGranularity = `twentyfourHour`;switchValue = 1;" :type="switchValue ? 'primary' : ''">过去24小时</el-button>
+            </el-form-item>
+          </div>
         </el-col> 
       </el-row>
-      <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
+      <div style="display: flex; justify-content: center; align-items: center;">
+        <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
+      </div>
+      
     </el-card>
     <el-collapse-item title="回路" name="1" v-if="controlVis.haveCircle">
       <ContentWrap>
@@ -306,6 +305,7 @@ import router from '@/router';
 defineOptions({ name: 'PDUDevice' })
 
 const instance = getCurrentInstance();
+const switchValue = ref(0);
 
 //折叠列表显示的项
 const activeNames = ref(["1","2","3","4","5"])
@@ -803,6 +803,7 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
 
 /** 初始化 **/
 onMounted(() => {
+
   // getList()
   
   // addDataPoint();

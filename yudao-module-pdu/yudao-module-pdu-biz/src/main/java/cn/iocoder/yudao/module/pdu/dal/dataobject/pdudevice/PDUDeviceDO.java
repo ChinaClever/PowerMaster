@@ -42,6 +42,8 @@ public class PDUDeviceDO extends BaseDO {
 
     private String location;
 
+    private String pduAlarm;
+
     private String dataUpdateTime;
 
 }

@@ -78,9 +78,8 @@
             <el-col :span="6">
               <div style="font-size: 28px;">
                 用电量 {{ pduInfo.eq }}kW<br/>
-                总视在功率(最大) {{ pduInfo.total_apparent_pow_max_value }}kW  <br/>
-                总有功功率(最大) {{ pduInfo.total_pow_max_value }}kVA  <br/>
-                总电能(最大) {{ pduInfo.ele }}kWh  <br/>
+                总视在功率(最大) {{ pduInfo.total_apparent_pow_max_value }}kVA   <br/>
+                总有功功率(最大) {{ pduInfo.total_pow_max_value }}kW <br/>
                 最大温度 {{ pduInfo.tem_max_value }}°C<br/>
               </div>
             </el-col> 

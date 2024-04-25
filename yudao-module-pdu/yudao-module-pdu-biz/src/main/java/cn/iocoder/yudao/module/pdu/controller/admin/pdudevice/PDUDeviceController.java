@@ -58,9 +58,33 @@ public class PDUDeviceController {
     }
 
     @GetMapping("/chartNewData")
-    @Operation(summary = "获得PDU历史数据")
+    @Operation(summary = "获得PDU历史最新数据")
     public CommonResult<Map> getChartNewDataByPduId(Long id,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,String type) {
         return success(pDUDeviceService.getChartNewDataByPduId(id,oldTime,type));
+    }
+
+    @GetMapping("/report/ele")
+    @Operation(summary = "获得PDU报表数据")
+    public CommonResult<Map> getReportConsumeDataByDevKey(String devKey,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
+        return success(pDUDeviceService.getReportConsumeDataByDevKey(devKey,timeType,oldTime,newTime));
+    }
+
+    @GetMapping("/report/pow")
+    @Operation(summary = "获得PDU报表数据")
+    public CommonResult<Map> getReportPowDataByDevKey(String devKey,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
+        return success(pDUDeviceService.getReportPowDataByDevKey(devKey,timeType,oldTime,newTime));
+    }
+
+    @GetMapping("/report/outlet")
+    @Operation(summary = "获得PDU报表数据")
+    public CommonResult<Map> getReportOutLetDataByDevKey(String devKey,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
+        return success(pDUDeviceService.getReportOutLetDataByDevKey(devKey,timeType,oldTime,newTime));
+    }
+
+    @GetMapping("/report/tem")
+    @Operation(summary = "获得PDU报表数据")
+    public CommonResult<Map> getReportTemDataByDevKey(String devKey,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
+        return success(pDUDeviceService.getReportTemDataByDevKey(devKey,timeType,oldTime,newTime));
     }
 
 }

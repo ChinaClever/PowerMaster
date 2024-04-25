@@ -32,4 +32,12 @@ public interface PDUDeviceService {
     Map getHistoryDataByPduId(Long id,String type);
 
     Map getChartNewDataByPduId(Long id, LocalDateTime oldTime,String type);
+
+    Map getReportConsumeDataByDevKey(String devKey, Integer timeType,LocalDateTime oldTime, LocalDateTime newTime);
+
+    Map getReportPowDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    Map getReportOutLetDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 }

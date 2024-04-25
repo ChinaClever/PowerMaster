@@ -51,4 +51,20 @@ export const PDUDeviceApi = {
   ChartNewData: async (params) => {
     return await request.get({ url: `/pdu/PDU-device/chartNewData`,params})
   },
+
+  getConsumeData: async (params) => {
+    return await request.get({ url: `/pdu/PDU-device/report/ele`,params})
+  },
+
+  getPowData: async (params) => {
+    return await request.get({ url: `/pdu/PDU-device/report/pow`,params})
+  },
+
+  getOutLetData: async (params) => {
+    return await request.get({ url: `/pdu/PDU-device/report/outlet`,params})
+  },
+
+  getTemData: async (params) => {
+    return await request.get({ url: `/pdu/PDU-device/report/tem`,params})
+  },
 }
