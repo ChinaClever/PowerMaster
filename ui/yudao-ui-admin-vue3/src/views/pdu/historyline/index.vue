@@ -20,13 +20,17 @@
    </el-col>
    <el-col :span="24 - treeWidth" :xs="24">
      <ContentWrap>
+       <el-tabs v-model="activeName">
+        <el-tab-pane label="原始数据" name="realtimeTabPane"/>
+        <el-tab-pane label="极值数据" name="extremumTabPane"/>
+      </el-tabs>
        <!-- 搜索工作栏 -->
        <el-form
          class="-mb-15px"
          :model="queryParams"
          ref="queryFormRef"
          :inline="true"
-         label-width="120px"
+         label-width="70px"
        >
          <el-form-item label="" prop="collaspe">
            <el-switch 
@@ -47,6 +51,16 @@
              class="!w-160px"
            />
          </el-form-item>
+
+        <el-form-item label="级联地址" prop="cascadeAddr">
+          <el-input-number
+            v-model="cascadeAddr"
+            :min="0"
+            controls-position="right"
+            :value-on-clear="0"
+            class="!w-100px"
+          />
+        </el-form-item>
          <el-form-item label="参数类型" prop="type">
            <el-select
              v-model="queryParams.type"
@@ -58,27 +72,17 @@
              <el-option label="输出位" value="outlet" />
            </el-select>
          </el-form-item>
-         <el-form-item label="颗粒度" prop="type">
-           <el-select
-             v-model="queryParams.granularity"
-             placeholder="请选择分钟/小时/天"
-             class="!w-120px"
-           >
-             <el-option label="分钟" value="realtime" />
-             <el-option label="小时" value="hour" />
-             <el-option label="天" value="day" />
-           </el-select>
-         </el-form-item>
-          <el-form-item label="时间段" prop="timeRange">
+
+          <el-form-item label="时间段" prop="timeRange" >
             <el-date-picker
-            value-format="YYYY-MM-DD HH:mm:ss"
-            v-model="queryParams.timeRange"
-            type="datetimerange"
-            :shortcuts="shortcuts"
-            range-separator="-"
-            start-placeholder="开始时间"
-            end-placeholder="结束时间"
-          />
+              value-format="YYYY-MM-DD HH:mm:ss"
+              v-model="queryParams.timeRange"
+              type="datetimerange"
+              :shortcuts="shortcuts"
+              range-separator="-"
+              start-placeholder="开始时间"
+              end-placeholder="结束时间"
+            />
           </el-form-item>
 
         <div style="float:right">
@@ -91,13 +95,11 @@
        </el-form>
      </ContentWrap>
      <ContentWrap style="overflow: visible;">
-      <el-tabs v-model="activeName">
-        <el-tab-pane label="日原始数据" name="first">
-          <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
-        </el-tab-pane>
-        <el-tab-pane label="逐日极值数据" name="second">Config</el-tab-pane>
+      <el-tabs v-model="activeName1">
+        <el-tab-pane label="图表" name="myChart"/>
+        <el-tab-pane label="数据" name="myData"/>
       </el-tabs>
-
+      <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
     </ContentWrap>
    </el-col>
   </el-row>
@@ -105,22 +107,31 @@
 </template>
 
 <script setup lang="ts">
-import { ElTree } from 'element-plus'
+import { ElTree, ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { HistoryDataApi } from '@/api/pdu/historydata'
 import { formatDate } from '@/utils/formatTime'
+import { get } from 'http';
 /** pdu历史曲线 */
 defineOptions({ name: 'HistoryLine' })
-const activeName = ref('first') // tabs显示第一个
+ // tab默认显示
+const activeName = ref('realtimeTabPane')
+const activeName1 = ref('mychart')
+const instance = getCurrentInstance();
+const cascadeAddr = ref(0) // 数字类型的级联地址
+
 const queryParams = reactive({
   id: 12, // 测试默认查pduid10的详情，后面要改回undefined
   type: 'total',
   granularity: 'realtime',
   ipAddr: undefined,
-  timeRange: undefined,
+  cascadeAddr: '0',
+  // 默认显示最近一小时
+  timeRange: defaultTimeRange()
 })
 
+//折叠功能
 const serverRoomArr =  [
  {
    value: '1',
@@ -180,7 +191,6 @@ const serverRoomArr =  [
    ],
  },
 ]
-//折叠功能
 let treeWidth = ref(3)
 let isCollapsed = ref(0);
 const toggleCollapse = () => {
@@ -202,37 +212,52 @@ const defaultProps = {
 watch(filterText, (val) => {
  treeRef.value!.filter(val)
 })
-const loading = ref(true) // 列表的加载中
+
+// watch(activeName, (val) => {
+//  console.log(val)
+// })
+
+const loading = ref(true) // 加载中
 // 时间段快捷选项
 const shortcuts = [
   {
-    text: '最近一周',
+    text: '最近1小时',
     value: () => {
       const end = new Date()
       const start = new Date()
-      start.setDate(start.getDate() - 7)
+      start.setHours(start.getHours() - 1)
       return [start, end]
     },
   },
   {
-    text: '最近一个月',
+    text: '最近12小时',
     value: () => {
       const end = new Date()
       const start = new Date()
-      start.setMonth(start.getMonth() - 1)
+      start.setHours(start.getHours() - 12)
       return [start, end]
     },
   },
   {
-    text: '最近半年',
+    text: '最近24小时',
     value: () => {
       const end = new Date()
       const start = new Date()
-      start.setMonth(start.getMonth() - 6)
+      start.setHours(start.getHours() - 24)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近48小时',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setHours(start.getHours() - 48)
       return [start, end]
     },
   },
 ]
+
 // 处理折线图数据
 const volData = ref<number[]>([]);
 const curData = ref<number[]>([]);
@@ -263,93 +288,97 @@ const apparentPowMaxValueData = ref<number[]>([]);
 const apparentPowMaxTimeData = ref<string[]>([]);
 const apparentPowMinValueData = ref<number[]>([]);
 const apparentPowMinTimeData = ref<string[]>([]);
+
 /** 查询列表 */
 const getList = async () => {
-loading.value = true
- try {
-      const data = await HistoryDataApi.getHistoryDataDetails(queryParams)
-      volData.value = data.list.map((item) => item.vol_value);
-      curData.value = data.list.map((item) => item.cur_value);
-      createTimeData.value = data.list.map((item) => formatDate(item.create_time));
-      activePowData.value = data.list.map((item) => item.pow_active);
-      apparentPowData.value = data.list.map((item) => item.pow_apparent);
+  loading.value = true
+  try {
+        const data = await HistoryDataApi.getHistoryDataDetails(queryParams)
+        volData.value = data.list.map((item) => formatNumber(item.vol_value, 1));
+        curData.value = data.list.map((item) => formatNumber(item.cur_value, 2));
+        createTimeData.value = data.list.map((item) => formatDate(item.create_time));
+        activePowData.value = data.list.map((item) => formatNumber(item.pow_active, 3));
+        apparentPowData.value = data.list.map((item) => formatNumber(item.pow_apparent, 3));
 
-      curAvgValueData.value = data.list.map((item) => item.cur_avg_value);
-      curMaxValueData.value = data.list.map((item) => item.cur_max_value);
-      curMaxTimeData.value = data.list.map((item) => formatDate(item.cur_max_time));
-      curMinValueData.value = data.list.map((item) => item.cur_min_value);
-      curMinTimeData.value = data.list.map((item) => formatDate(item.cur_min_time));
-      
-      volAvgValueData.value = data.list.map((item) => item.vol_avg_value);
-      volMaxValueData.value = data.list.map((item) => item.vol_max_value);
-      volMaxTimeData.value = data.list.map((item) => formatDate(item.vol_max_time));
-      volMinValueData.value = data.list.map((item) => item.vol_min_value);
-      volMinTimeData.value = data.list.map((item) => formatDate(item.vol_min_time));
+        curAvgValueData.value = data.list.map((item) => formatNumber(item.cur_avg_value, 2));
+        curMaxValueData.value = data.list.map((item) => formatNumber(item.cur_max_value, 2));
+        curMaxTimeData.value = data.list.map((item) => formatDate(item.cur_max_time));
+        curMinValueData.value = data.list.map((item) => formatNumber(item.cur_min_value, 2));
+        curMinTimeData.value = data.list.map((item) => formatDate(item.cur_min_time));
+        
+        volAvgValueData.value = data.list.map((item) => formatNumber(item.vol_avg_value, 1));
+        volMaxValueData.value = data.list.map((item) => formatNumber(item.vol_max_value, 1));
+        volMaxTimeData.value = data.list.map((item) => formatDate(item.vol_max_time));
+        volMinValueData.value = data.list.map((item) => formatNumber(item.vol_min_value, 1));
+        volMinTimeData.value = data.list.map((item) => formatDate(item.vol_min_time));
 
-      activePowAvgValueData.value = data.list.map((item) => item.pow_active_avg_value);
-      activePowMaxValueData.value = data.list.map((item) => item.pow_active_max_value);
-      activePowMaxTimeData.value = data.list.map((item) => formatDate(item.pow_active_max_time));
-      activePowMinValueData.value = data.list.map((item) => item.pow_active_min_value);
-      activePowMinTimeData.value = data.list.map((item) => formatDate(item.pow_active_min_time));
+        activePowAvgValueData.value = data.list.map((item) => formatNumber(item.pow_active_avg_value, 3));
+        activePowMaxValueData.value = data.list.map((item) => formatNumber(item.pow_active_max_value, 3));
+        activePowMaxTimeData.value = data.list.map((item) => formatDate(item.pow_active_max_time));
+        activePowMinValueData.value = data.list.map((item) => formatNumber(item.pow_active_min_value, 3));
+        activePowMinTimeData.value = data.list.map((item) => formatDate(item.pow_active_min_time));
 
-      apparentPowAvgValueData.value = data.list.map((item) => item.pow_apparent_avg_value);
-      apparentPowMaxValueData.value = data.list.map((item) => item.pow_apparent_max_value);
-      apparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.pow_apparent_max_time));
-      apparentPowMinValueData.value = data.list.map((item) => item.pow_apparent_min_value);
-      apparentPowMinTimeData.value = data.list.map((item) => formatDate(item.pow_apparent_min_time));
- } finally {
-   loading.value = false
- }
+        apparentPowAvgValueData.value = data.list.map((item) => formatNumber(item.pow_apparent_avg_value, 3));
+        apparentPowMaxValueData.value = data.list.map((item) => formatNumber(item.pow_apparent_max_value, 3));
+        apparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.pow_apparent_max_time));
+        apparentPowMinValueData.value = data.list.map((item) => formatNumber(item.pow_apparent_min_value, 3));
+        apparentPowMinTimeData.value = data.list.map((item) => formatDate(item.pow_apparent_min_time));
+  } finally {
+    loading.value = false
+  }
 }
 
 const chartContainer = ref<HTMLElement | null>(null);
-let myChart = null as echarts.ECharts | null; // 显式声明 myChart 的类型
+let realtimeChart = null as echarts.ECharts | null; 
 const initChart = () => {
-  const instance = getCurrentInstance();
   if (chartContainer.value && instance) {
-    myChart = echarts.init(chartContainer.value);
-    myChart.setOption({
-      // 这里设置 Echarts 的配置项和数据
-      title: { text: ''},
-      tooltip: { trigger: 'axis' },
-      legend: { data: ['总有功功率', '总视在功率']},
-      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-      toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{},saveAsImage: {}}},
-      xAxis: {type: 'category', boundaryGap: false, data: createTimeData.value},
-      yAxis: { type: 'value'},
-      series: [
-        {name: '总有功功率', type: 'line', data: activePowData.value},
-        {name: '总视在功率', type: 'line', data: apparentPowData.value},
-    
-      ],
-
-    });
-    // 将 myChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
-    instance.appContext.config.globalProperties.myChart = myChart;
+    realtimeChart = echarts.init(chartContainer.value);
+      if (realtimeChart) {
+        realtimeChart.setOption({
+          dataZoom:[{type: "inside"}],
+          title: { text: ''},
+          tooltip: { trigger: 'axis' },
+          legend: { data: ['总有功功率', '总视在功率'] },
+          grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+          toolbox: {feature: { dataView:{}, restore:{},saveAsImage: {}}},
+          xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
+          yAxis: { type: 'value'},
+          series: [
+            {name: '总有功功率', type: 'line', symbol: 'pin', data: activePowData.value},
+            {name: '总视在功率', type: 'line', symbol: 'pin', data: apparentPowData.value},
+          ]
+        });
+      }
+    // 将 realtimeChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+    instance.appContext.config.globalProperties.realtimeChart = realtimeChart;
   }
 };
 // 在组件销毁时手动销毁图表
 const beforeUnmount = () => {
-    myChart?.dispose(); // 销毁图表实例
+    realtimeChart?.dispose();
 };
 window.addEventListener('resize', function() {
-    myChart?.resize(); 
+    realtimeChart?.resize(); 
 });
 
 
 // 监听类型颗粒度
-watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
-    const [newType, newGranularity] = newValues;
+watch([() => activeName.value, () => queryParams.type], async (newValues) => {
+    const [newActiveName, newType] = newValues;
     // 处理参数变化
     if (newType == 'total'){
-      if ( newGranularity == 'realtime'){
+      if ( newActiveName == 'realtimeTabPane'){
+        // 颗粒度变回实时 查询数据
+        queryParams.granularity = 'realtime'
+        await getList();
         // 销毁原有的图表实例
         beforeUnmount()
         // 创建新的图表实例
-        myChart = echarts.init(document.getElementById('chartContainer'));
+        realtimeChart = echarts.init(document.getElementById('chartContainer'));
         // 设置新的配置对象
-        if (myChart) {
-        myChart.setOption({
+        if (realtimeChart) {
+        realtimeChart.setOption({
+          dataZoom:[{type: "inside"}],
           // 这里设置 Echarts 的配置项和数据
           title: { text: ''},
           tooltip: { trigger: 'axis' },
@@ -359,19 +388,24 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
           xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
           yAxis: { type: 'value'},
           series: [
-            {name: '总有功功率', type: 'line', data: activePowData.value},
-            {name: '总视在功率', type: 'line', data: apparentPowData.value},
-          ]
+            {name: '总有功功率', type: 'line', symbol: 'pin', data: activePowData.value},
+            {name: '总视在功率', type: 'line', symbol: 'pin', data: apparentPowData.value},
+          ],
+  
         });
       }
-      }else{
+      }else{    
+        // 颗粒度默认变回小时 查询数据
+        queryParams.granularity = 'hour'
+        await getList();
         // 销毁原有的图表实例
         beforeUnmount()
         // 创建新的图表实例
-        myChart = echarts.init(document.getElementById('chartContainer'));
+        realtimeChart = echarts.init(document.getElementById('chartContainer'));
         // 设置新的配置对象
-        if (myChart) {
-          myChart.setOption( {
+        if (realtimeChart) {
+          realtimeChart.setOption({
+            dataZoom:[{type: "inside"}],
             title: {text: ''},
             tooltip: { trigger: 'axis'},
             legend: { data: ['平均有功功率', '最大有功功率', '最小有功功率','平均视在功率', '最大视在功率', '最小视在功率']},
@@ -382,12 +416,12 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
             ],
             yAxis: { type: 'value'},
             series: [
-              { name: '平均有功功率', type: 'line',data: activePowAvgValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最大有功功率', type: 'line',data: activePowMaxValueData.value, },
-              { name: '最小有功功率',type: 'line',data: activePowMinValueData.value, },
-              { name: '平均视在功率',type: 'line',data:  apparentPowAvgValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最大视在功率', type: 'line', data: apparentPowMaxValueData.value, },
-              { name: '最小视在功率',type: 'line',data:  apparentPowMinValueData.value, },
+              { name: '平均有功功率', type: 'line', symbol: 'pin', data: activePowAvgValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '最大有功功率', type: 'line', symbol: 'pin', data: activePowMaxValueData.value, },
+              { name: '最小有功功率', type: 'line', symbol: 'pin', data: activePowMinValueData.value, },
+              { name: '平均视在功率', type: 'line', symbol: 'pin', data: apparentPowAvgValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '最大视在功率', type: 'line', symbol: 'pin', data: apparentPowMaxValueData.value, },
+              { name: '最小视在功率', type: 'line', symbol: 'pin', data: apparentPowMinValueData.value, },
             ]
           });
         }
@@ -395,14 +429,14 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
     }
     
     if (newType == 'line'){
-      if ( newGranularity == 'realtime'){
+      if ( newActiveName == 'realtimeTabPane'){
           // 销毁原有的图表实例
           beforeUnmount()
           // 创建新的图表实例
-          myChart = echarts.init(document.getElementById('chartContainer'));
+          realtimeChart = echarts.init(document.getElementById('chartContainer'));
           // 设置新的配置对象
-          if (myChart) {
-            myChart.setOption({
+          if (realtimeChart) {
+            realtimeChart.setOption({
               // 这里设置 Echarts 的配置项和数据
               title: { text: ''},
               tooltip: { trigger: 'axis' },
@@ -421,15 +455,15 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
             });
           }
           // 图例切换监听
-          setupLegendListener(myChart);
+          setupLegendListener(realtimeChart);
       }else{
         // 销毁原有的图表实例
         beforeUnmount()
         // 创建新的图表实例
-        myChart = echarts.init(document.getElementById('chartContainer'));
+        realtimeChart = echarts.init(document.getElementById('chartContainer'));
         // 设置新的配置对象
-        if (myChart) {
-          myChart.setOption( {
+        if (realtimeChart) {
+          realtimeChart.setOption( {
               title: {text: ''},
               tooltip: { trigger: 'axis'},
               legend: { data: ['平均电流', '最大电流', '最小电流','平均电压', '最大电压', '最小电压',
@@ -461,20 +495,20 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
           });
         }
         // 图例切换监听
-        setupLegendListener1(myChart);
+        setupLegendListener1(realtimeChart);
 
       }
     }
 
     if (newType == 'loop'){
-      if ( newGranularity == 'realtime'){
+      if ( newActiveName == 'realtimeTabPane'){
           // 销毁原有的图表实例
           beforeUnmount()
             // 创建新的图表实例
-            myChart = echarts.init(document.getElementById('chartContainer'));
+            realtimeChart = echarts.init(document.getElementById('chartContainer'));
             // 设置新的配置对象
-            if (myChart) {
-            myChart.setOption({
+            if (realtimeChart) {
+            realtimeChart.setOption({
               // 这里设置 Echarts 的配置项和数据
               title: { text: ''},
               tooltip: { trigger: 'axis' },
@@ -493,15 +527,15 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
           });
         }
         // 图例切换监听
-        setupLegendListener(myChart);
+        setupLegendListener(realtimeChart);
       }else{
         // 销毁原有的图表实例
         beforeUnmount()
         // 创建新的图表实例
-        myChart = echarts.init(document.getElementById('chartContainer'));
+        realtimeChart = echarts.init(document.getElementById('chartContainer'));
         // 设置新的配置对象
-        if (myChart) {
-          myChart.setOption( {
+        if (realtimeChart) {
+          realtimeChart.setOption( {
             title: {text: ''},
             tooltip: { trigger: 'axis'},
             legend: { data: ['平均电流', '最大电流', '最小电流','平均电压', '最大电压', '最小电压',
@@ -533,19 +567,19 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
           });
         }
         // 图例切换监听
-        setupLegendListener1(myChart);
+        setupLegendListener1(realtimeChart);
       }
     }
 
     if (newType == 'outlet'){
-      if ( newGranularity == 'realtime'){
+      if ( newActiveName == 'realtimeTabPane'){
         // 销毁原有的图表实例
         beforeUnmount()
         // 创建新的图表实例
-        myChart = echarts.init(document.getElementById('chartContainer'));
+        realtimeChart = echarts.init(document.getElementById('chartContainer'));
         // 设置新的配置对象
-        if (myChart) {
-        myChart.setOption({
+        if (realtimeChart) {
+        realtimeChart.setOption({
           // 这里设置 Echarts 的配置项和数据
           title: { text: ''},
           tooltip: { trigger: 'axis' },
@@ -564,15 +598,15 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
         });
         }
         // 图例切换监听
-        setupLegendListener(myChart);
+        setupLegendListener(realtimeChart);
       }else{
         // 销毁原有的图表实例
         beforeUnmount()
         // 创建新的图表实例
-        myChart = echarts.init(document.getElementById('chartContainer'));
+        realtimeChart = echarts.init(document.getElementById('chartContainer'));
         // 设置新的配置对象
-        if (myChart) {
-          myChart.setOption( {
+        if (realtimeChart) {
+          realtimeChart.setOption( {
             title: {text: ''},
             tooltip: { trigger: 'axis'},
             legend: { data: ['平均电流', '最大电流', '最小电流', '平均有功功率', '最大有功功率', '最小有功功率','平均视在功率', '最大视在功率', '最小视在功率'],
@@ -599,16 +633,16 @@ watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
           });
         }
         // 图例切换监听
-        setupLegendListener1(myChart);
+        setupLegendListener1(realtimeChart);
       }
     }
 });
 
 // 实时图例切换函数
-function setupLegendListener(myChart) {
-  myChart?.on('legendselectchanged', function (params) {
+function setupLegendListener(realtimeChart) {
+  realtimeChart?.on('legendselectchanged', function (params) {
     var legendName = params.name;
-    var legendData = myChart?.getOption().legend[0]?.data;
+    var legendData = realtimeChart?.getOption().legend[0]?.data;
 
     // 检查图例是否有电压，没有就是输出位
     if (!legendData.includes('电压')) {
@@ -631,7 +665,7 @@ function setupLegendListener(myChart) {
           break;
       }
 
-      myChart?.setOption({
+      realtimeChart?.setOption({
         legend: {
           data: ['电流', '有功功率', '视在功率'],
           selected: optionsToUpdate
@@ -675,7 +709,7 @@ function setupLegendListener(myChart) {
         break;
     }
 
-    myChart?.setOption({
+    realtimeChart?.setOption({
       legend: {
         data: ['电压', '电流', '有功功率', '视在功率'],
         selected: optionsToUpdate
@@ -685,11 +719,11 @@ function setupLegendListener(myChart) {
 }
 
 // 小时、天图例切换函数
-function setupLegendListener1(myChart) {
-  myChart?.on('legendselectchanged', function (params) {
+function setupLegendListener1(realtimeChart) {
+  realtimeChart?.on('legendselectchanged', function (params) {
     var legendName = params.name;
-    var legendData = myChart?.getOption().legend[0]?.data;
-    var legendSelected = myChart?.getOption().legend[0]?.selected;
+    var legendData = realtimeChart?.getOption().legend[0]?.data;
+    var legendSelected = realtimeChart?.getOption().legend[0]?.selected;
     // 检查图例是否有电压，没有就是输出位
     if (!legendData.includes('平均电压')) {
       var optionsToUpdate = {};
@@ -725,7 +759,7 @@ function setupLegendListener1(myChart) {
         break;
     }
 
-    myChart?.setOption({
+    realtimeChart?.setOption({
       legend: {
         data: ['平均电流', '最大电流', '最小电流','平均有功功率', '最大有功功率', '最小有功功率','平均视在功率', '最大视在功率', '最小视在功率'],
         selected: optionsToUpdate
@@ -779,7 +813,7 @@ function setupLegendListener1(myChart) {
         break;
     }
 
-    myChart?.setOption({
+    realtimeChart?.setOption({
       legend: {
         data: ['平均电流', '最大电流', '最小电流','平均电压', '最大电压', '最小电压',
                '平均有功功率', '最大有功功率', '最小有功功率','平均视在功率', '最大视在功率', '最小视在功率'],
@@ -789,9 +823,36 @@ function setupLegendListener1(myChart) {
   });
 }
 
+// 处理数据后有几位小数点
+function formatNumber(value, decimalPlaces) {
+    if (!isNaN(value)) {
+        return value.toFixed(decimalPlaces);
+    } else {
+        return null; // 或者其他默认值
+    }
+}
+
+function defaultTimeRange(){
+  // 默认查询最近一小时，先获取本地时区偏移量（以分钟为单位，需要转换为毫秒）
+  var timezoneOffset = new Date().getTimezoneOffset() * 60 * 1000
+  // 计算当前时间和一小时前的时间，并考虑时区偏移量
+  var end = new Date(new Date().getTime() - timezoneOffset);
+  var start = new Date(end.getTime() - 60 * 60 * 1000);
+  // 格式化时间并返回
+  return [start.toISOString().slice(0, 19).replace('T', ' '), end.toISOString().slice(0, 19).replace('T', ' ')]
+}
+
 /** 搜索按钮操作 */
 const handleQuery = () => {
- getList()
+  console.log(queryParams.timeRange)
+  // IP地址的正则表达式
+  const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+  if (queryParams.ipAddr == null || queryParams.ipAddr == '' || ipRegex.test(queryParams.ipAddr)){
+    queryParams.cascadeAddr = cascadeAddr.value.toString();
+    getList()
+  }else{
+    ElMessage.error('IP地址格式有误,请重新输入！')
+  }
 }
 
 /** 重置按钮操作 */
@@ -799,13 +860,11 @@ const resetQuery = () => {
  handleQuery()
 }
 
-
 /** 初始化 **/
-onMounted(() => {
-  getList();
+onMounted( async () => {
+  await getList();
   initChart();
-
-
+  console.log(queryParams.timeRange)
 })
 
 </script>

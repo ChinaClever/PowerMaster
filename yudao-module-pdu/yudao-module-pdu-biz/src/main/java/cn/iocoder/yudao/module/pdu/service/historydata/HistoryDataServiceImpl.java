@@ -229,7 +229,8 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     public PageResult<Object> getHistoryDataDetails(HistoryDataDetailsReqVO reqVO) throws IOException{
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
+        searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
+        searchSourceBuilder.size(2880);
         String id = String.valueOf(reqVO.getId());
         SimpleQueryStringBuilder simpleQueryStringBuilder = QueryBuilders.simpleQueryStringQuery(id);
         simpleQueryStringBuilder.field("pdu_id");
@@ -361,6 +362,71 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             default:
 
         }
+
+        return pageResult;
+    }
+
+    @Override
+    public PageResult<Object> getEnvDataPage(HistoryDataPageReqVO pageReqVO) throws IOException {
+        PageResult<Object> pageResult = null;
+        // 搜索源构建对象
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        int pageNo = pageReqVO.getPageNo();
+        int pageSize = pageReqVO.getPageSize();
+        int index = (pageNo - 1) * pageSize;
+        searchSourceBuilder.from(index);
+        // 最后一页请求超过一万，pageSize设置成请求刚好一万条
+        if (index + pageSize > 10000){
+            searchSourceBuilder.size(10000 - index);
+        }else{
+            searchSourceBuilder.size(pageSize);
+        }
+        searchSourceBuilder.trackTotalHits(true);
+        searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
+        if (!Objects.equals(pageReqVO.getIpAddr(), "") && !Objects.equals(pageReqVO.getIpAddr(), null)){
+            Integer pduId = getPduIdByAddr(pageReqVO.getIpAddr(), pageReqVO.getCascadeAddr());
+            if(pduId != null){
+                // 这样构造的查询条件，将不进行score计算，从而提高查询效率
+                searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.rangeQuery("pdu_id").gte(pduId).lte(pduId)));
+            }else{
+                // 查不到pdu 直接返回空数据
+                pageResult = new PageResult<>();
+                pageResult.setList(null)
+                        .setTotal(0L);
+                return pageResult;
+            }
+
+        }else{
+            searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        }
+
+        // 搜索请求对象
+        SearchRequest searchRequest = new SearchRequest();
+        if ("realtime".equals(pageReqVO.getGranularity())) {
+            searchRequest.indices("pdu_env_realtime");
+        } else if ("hour".equals(pageReqVO.getGranularity())) {
+            searchRequest.indices("pdu_env_hour");
+        } else {
+            searchRequest.indices("pdu_env_day");
+        }
+        if (pageReqVO.getTimeRange() != null && pageReqVO.getTimeRange().length != 0) {
+            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                    .from(pageReqVO.getTimeRange()[0])
+                    .to(pageReqVO.getTimeRange()[1]));
+        }
+        searchRequest.source(searchSourceBuilder);
+        // 执行搜索,向ES发起http请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        // 搜索结果
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        SearchHits hits = searchResponse.getHits();
+        hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
+        // 匹配到的总记录数
+        Long totalHits = hits.getTotalHits().value;
+        // 返回的结果
+        pageResult = new PageResult<>();
+        pageResult.setList(getLocationsByPduIds(mapList))
+                .setTotal(totalHits);
 
         return pageResult;
     }

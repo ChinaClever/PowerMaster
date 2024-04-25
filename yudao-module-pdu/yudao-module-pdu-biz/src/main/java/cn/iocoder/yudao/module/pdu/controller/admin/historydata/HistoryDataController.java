@@ -42,6 +42,12 @@ public class HistoryDataController {
     }
 
 
+    @GetMapping("/env-page")
+    @Operation(summary = "获得pdu环境数据分页")
+    public CommonResult<PageResult<Object>> getEnvDataPage(HistoryDataPageReqVO pageReqVO) throws IOException {
+        PageResult<Object> pageResult = historyDataService.getEnvDataPage(pageReqVO);
+        return success(pageResult);
+    }
 
 
 

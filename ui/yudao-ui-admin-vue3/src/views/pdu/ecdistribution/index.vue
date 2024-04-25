@@ -327,7 +327,6 @@ loading.value = true
     endTimeData.value = fakeData.map((item) => item.endTime);
     eqData.value = fakeData.map((item) => item.eq);
     createTimeData.value = fakeData.map((item) => item.createTime);
-
  } finally {
    loading.value = false
  }
