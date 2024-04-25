@@ -1,9 +1,6 @@
 package cn.iocoder.yudao.module.statis.schedule;
 
-import cn.iocoder.yudao.module.statis.service.LineService;
-import cn.iocoder.yudao.module.statis.service.LoopService;
-import cn.iocoder.yudao.module.statis.service.OutletService;
-import cn.iocoder.yudao.module.statis.service.TotalService;
+import cn.iocoder.yudao.module.statis.service.*;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -38,6 +35,8 @@ public class ScheduleHourTask implements SchedulingConfigurer {
     TotalService totalService;
     @Autowired
     OutletService outletService;
+    @Autowired
+    EnvService envService;
 
     //按小时执行
     private static final String HOUR_CRON = "0 0 * * * ?";
@@ -81,6 +80,14 @@ public class ScheduleHourTask implements SchedulingConfigurer {
         log.info("总历史数据按小时统计结束：" + (end-start));
     }
 
+    @Async()
+    public void scheduledEnvTask() {
+        long start = System.currentTimeMillis();
+        envService.hourDeal();
+        long end = System.currentTimeMillis();
+        log.info("总历史数据按小时统计结束：" + (end-start));
+    }
+
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
         log.info("cron: " + hourCron);
@@ -96,6 +103,8 @@ public class ScheduleHourTask implements SchedulingConfigurer {
             scheduledOutletTask();
             //总历史数据按小时统计
             scheduledTotalTask();
+            //环境数据统计
+            scheduledEnvTask();
 
         }, triggerContext -> {
             CronTrigger trigger = new CronTrigger(hourCron);

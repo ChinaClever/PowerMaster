@@ -1,9 +1,6 @@
 package cn.iocoder.yudao.module.statis.schedule;
 
-import cn.iocoder.yudao.module.statis.service.LineService;
-import cn.iocoder.yudao.module.statis.service.LoopService;
-import cn.iocoder.yudao.module.statis.service.OutletService;
-import cn.iocoder.yudao.module.statis.service.TotalService;
+import cn.iocoder.yudao.module.statis.service.*;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -37,6 +34,8 @@ public class ScheduleDayTask implements SchedulingConfigurer {
     TotalService totalService;
     @Autowired
     OutletService outletService;
+    @Autowired
+    EnvService envService;
 
     //按天执行 凌晨六点
     private static final String DAY_CRON = "0 0 6 * * ?";
@@ -90,6 +89,14 @@ public class ScheduleDayTask implements SchedulingConfigurer {
         log.info("总历史数据按天统计结束：" + (end-start));
     }
 
+    @Async()
+    public void scheduledEnvTask() {
+        long start = System.currentTimeMillis();
+        envService.dayDeal();
+        long end = System.currentTimeMillis();
+        log.info("总历史数据按天统计结束：" + (end-start));
+    }
+
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
@@ -106,6 +113,8 @@ public class ScheduleDayTask implements SchedulingConfigurer {
             scheduledOutletTask();
             //总历史数据按小时统计
             scheduledTotalTask();
+            //环境
+            scheduledEnvTask();
 
         }, triggerContext -> {
             CronTrigger trigger = new CronTrigger(dayCron);
