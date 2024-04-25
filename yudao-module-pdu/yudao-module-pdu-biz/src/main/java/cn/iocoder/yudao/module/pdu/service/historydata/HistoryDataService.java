@@ -38,4 +38,12 @@ public interface HistoryDataService {
      */
     PageResult<Object> getHistoryDataDetails(HistoryDataDetailsReqVO reqVO) throws IOException;
 
+    /**
+     * 获得pdu环境数据分页
+     *
+     * @param pageReqVO 分页查询
+     * @return pdu环境数据分页
+     */
+    PageResult<Object> getEnvDataPage(HistoryDataPageReqVO pageReqVO) throws IOException;
+
 }
