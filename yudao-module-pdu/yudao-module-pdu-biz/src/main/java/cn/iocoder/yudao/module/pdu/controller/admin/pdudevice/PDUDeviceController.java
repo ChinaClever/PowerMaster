@@ -53,8 +53,8 @@ public class PDUDeviceController {
 
     @GetMapping("/hisdata")
     @Operation(summary = "获得PDU历史数据")
-    public CommonResult<Map> getHistoryDataByPduId(Long id,String type) {
-        return success(pDUDeviceService.getHistoryDataByPduId(id,type));
+    public CommonResult<Map> getHistoryDataByDevKey(String devKey,String type) {
+        return success(pDUDeviceService.getHistoryDataByDevKey(devKey,type));
     }
 
     @GetMapping("/chartNewData")

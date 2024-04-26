@@ -138,9 +138,11 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     }
 
     @Override
-    public Map getHistoryDataByPduId(Long id,String type) {
+    public Map getHistoryDataByDevKey(String devKey,String type) {
         HashMap result = new HashMap<>();
 
+        PduIndex pduIndex = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getDevKey, devKey));
+        Long id = pduIndex.getId();
         // 构建查询请求
         SearchRequest searchRequest = null;
         LocalDateTime now = LocalDateTime.now();

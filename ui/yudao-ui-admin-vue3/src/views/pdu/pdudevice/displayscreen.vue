@@ -282,23 +282,19 @@
       <ContentWrap>
         <el-table  :data="sensorList" :stripe="true" :show-overflow-tooltip="true">
           <el-table-column label="传感器名称" align="center" prop="temName" />
-          <el-table-column label="传感器状态" align="center" prop="tem_alarm_status" >
-            <template #default="scope" >
-              <el-tag type="" v-if="scope.row.tem_alarm_status == 0">正常</el-tag>
-              <el-tag type="danger" v-if="scope.row.tem_alarm_status == 1">最小值告警</el-tag>
-              <el-tag type="warning" v-if="scope.row.tem_alarm_status == 2">下限预警</el-tag>
-              <el-tag type="warning" v-if="scope.row.tem_alarm_status == 4">上限预警</el-tag>
-              <el-tag type="danger" v-if="scope.row.tem_alarm_status == 8">最大值告警</el-tag>
+          <el-table-column label="传感器状态" align="center" prop="tem_value" v-if="controlVis.envTableCol.tem_value">
+            <template #default="scope">
+              <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.temColor }">
+                {{ scope.row.tem_value }}°C
+              </el-text>
             </template>
           </el-table-column>
           <el-table-column label="传感器名称" align="center" prop="humName" />
-          <el-table-column label="传感器状态" align="center" prop="hum_alarm_status" >
-            <template #default="scope" >
-              <el-tag type="" v-if="scope.row.hum_alarm_status == 0">正常</el-tag>
-              <el-tag type="danger" v-if="scope.row.hum_alarm_status == 1">最小值告警</el-tag>
-              <el-tag type="warning" v-if="scope.row.hum_alarm_status == 2">下限预警</el-tag>
-              <el-tag type="warning" v-if="scope.row.hum_alarm_status == 4">上限预警</el-tag>
-              <el-tag type="danger" v-if="scope.row.hum_alarm_status == 8">最大值告警</el-tag>
+          <el-table-column label="传感器状态" align="center" prop="hum_value" v-if="controlVis.envTableCol.hum_value">
+            <template #default="scope">
+              <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.humColor }">
+                {{ scope.row.hum_value }}%
+              </el-text>
             </template>
           </el-table-column>
         </el-table>
@@ -352,6 +348,10 @@ const controlVis = ref({
     pf : false,
     ele : false
   },
+  envTableCol : {
+    hum_value : false,
+    tem_value : false
+  }
 })
 
 const location = ref("");
@@ -495,13 +495,34 @@ let CChart = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
 const CChartContainer = ref<HTMLElement | null>(null);
 
 const initChart = async () => {
-  
+
+  var tempParams = { devKey : queryParams.devKey, type : queryParams.powGranularity}
+  chartData.value = await PDUDeviceApi.PDUHis(tempParams); 
+  chartData.value.apparentList.forEach((obj,index) => {
+    chartData.value.apparentList[index] = obj?.toFixed(3);
+  });
+  chartData.value.activeList.forEach((obj,index) => {
+    chartData.value.activeList[index] = obj?.toFixed(3);
+  });
+
   if (chartContainer.value && instance) {
     chart = echarts.init(chartContainer.value);
     chart.setOption({
       // 这里设置 Echarts 的配置项和数据
       title: { text: ''},
-      tooltip: { trigger: 'axis' },
+      tooltip: { trigger: 'axis' ,formatter: function(params) {
+                                    var result = params[0].name + '<br>';
+                                    for (var i = 0; i < params.length; i++) {
+                                      result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
+                                      if (params[i].seriesName === '视在功率') {
+                                        result += ' kVA'; 
+                                      } else if (params[i].seriesName === '有功功率') {
+                                        result += ' kW';
+                                      }
+                                      result += '<br>';
+                                    }
+                                    return result;
+                                  }},
       legend: { data: ['视在功率','有功功率']},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
@@ -521,7 +542,6 @@ const initChart = async () => {
         {name: '视在功率', type: 'line', data: chartData.value.apparentList , symbol: 'circle', symbolSize: 4},
         {name: '有功功率', type: 'line', data: chartData.value.activeList , symbol: 'circle', symbolSize: 4},
       ],
-
     });
     // 将 chart 绑定到组件实例，以便在销毁组件时能够正确释放资源
     instance.appContext.config.globalProperties.chart = chart;
@@ -618,9 +638,10 @@ const setNewChartData = async () => {
   chartData.value.dateTimes.shift()
 
   chartData.value.dateTimes.push(temp.dateTime);
-  chartData.value.apparentList.push(temp.apparent.toFixed(3));
-  chartData.value.activeList.push(temp.active.toFixed(3));
+  chartData.value.apparentList.push(temp.apparent?.toFixed(3));
+  chartData.value.activeList.push(temp.active?.toFixed(3));
 
+  console.log(chartData.value)
 
   chart?.setOption({
     xAxis: { data: chartData.value.dateTimes },
@@ -632,8 +653,15 @@ const setNewChartData = async () => {
 }
 
 const flashChartData = async () =>{
-  var tempParams = { id : queryParams.id, type : queryParams.powGranularity}
+
+  var tempParams = { devKey : queryParams.devKey, type : queryParams.powGranularity}
   chartData.value = await PDUDeviceApi.PDUHis(tempParams); 
+  chartData.value.apparentList.forEach((obj,index) => {
+    chartData.value.apparentList[index] = obj?.toFixed(3);
+  });
+  chartData.value.activeList.forEach((obj,index) => {
+    chartData.value.activeList[index] = obj?.toFixed(3);
+  });
 
   chart?.setOption({
     xAxis: { data: chartData.value.dateTimes },
@@ -726,7 +754,7 @@ const getTestData = async()=>{
   } else {
     controlVis.value.haveOutPut = false;
   }
-
+   
 
   output.value.forEach(element => {
     element.cur_value = element.cur_value?.toFixed(2);
@@ -741,6 +769,17 @@ const getTestData = async()=>{
       let loopItem = {} as any;
       for (let key in testData.value.pdu_data.env_item_list) {
         loopItem[key] = testData.value.pdu_data.env_item_list[key][i];
+        controlVis.value.envTableCol[key] = true;
+        if (key.includes("alarm_status")) {
+          var alarmStatus = testData.value.pdu_data.env_item_list[key][i];
+          if(alarmStatus == 1 ||alarmStatus == 8){
+            var alarmColor = key.split("_")[0] + "Color";
+            loopItem[alarmColor] = "red";
+          } else {
+            var alarmColor = key.split("_")[0] + "Color";
+            loopItem[alarmColor] = "";
+          }
+        }
       }
       loopItem["temName"] = "温度" + (i + 1);
       loopItem["humName"] = "湿度" + (i + 1);
@@ -751,14 +790,14 @@ const getTestData = async()=>{
   } else {
     controlVis.value.haveSensor = false;
   }
-
+  console.log(sensorList.value)
   totalData.value.pow =  testData.value.pdu_data.pdu_tg_data.pow?.toFixed(3);
   if(testData.value.pdu_data.pdu_tg_data.pow_apparent != 0){
     totalData.value.powPercentage = (testData.value.pdu_data.pdu_tg_data.pow / testData.value.pdu_data.pdu_tg_data.pow_apparent) * 100;
   } else {
     totalData.value.powPercentage = 0;
   }
-  
+
   totalData.value.ele = testData.value.pdu_data.pdu_tg_data.ele?.toFixed(1);
 
   totalData.value.pf = testData.value.pdu_data.pdu_tg_data.pf?.toFixed(2);
@@ -769,9 +808,9 @@ const getTestData = async()=>{
   A.value.curPercemtage = (testData.value.pdu_data.line_item_list.cur_value[0] / testData.value.pdu_data.line_item_list.cur_alarm_max[0]) * 100;
   let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[0];
   if(curalarm == 1 || curalarm == 8 ){
-    A.value.curColor = "exception";
+    A.value.curColor = "red";
   } else if(curalarm == 2 || curalarm == 4 ){
-    A.value.curColor = "warning";
+    A.value.curColor = "yellow";
   } else{
     A.value.curColor = "";
   }
@@ -803,9 +842,9 @@ const getTestData = async()=>{
     B.value.curPercemtage = (testData.value.pdu_data.line_item_list.cur_value[1] / testData.value.pdu_data.line_item_list.cur_alarm_max[1]) * 100;
     let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[1];
     if(curalarm == 1 || curalarm == 8 ){
-      B.value.curColor = "exception";
+      B.value.curColor = "red";
     } else if(curalarm == 2 || curalarm == 4 ){
-      B.value.curColor = "warning";
+      B.value.curColor = "yellow";
     } else{
       B.value.curColor = "";
     }
@@ -838,9 +877,9 @@ const getTestData = async()=>{
     C.value.curPercemtage = (testData.value.pdu_data.line_item_list.cur_value[2] / testData.value.pdu_data.line_item_list.cur_alarm_max[2]) * 100;
     let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[2];
     if(curalarm == 1 || curalarm == 8 ){
-      C.value.curColor = "exception";
+      C.value.curColor = "red";
     } else if(curalarm == 2 || curalarm == 4 ){
-      C.value.curColor = "warning";
+      C.value.curColor = "yellow";
     } else{
       C.value.curColor = "";
     }
@@ -868,22 +907,14 @@ const getTestData = async()=>{
     C.value.pf = testData.value.pdu_data.line_item_list.pf[2]?.toFixed(2);
     controlVis.value.haveC = true;
   }
-  
-  var tempParams = { id : queryParams.id, type : queryParams.powGranularity}
-  chartData.value = await PDUDeviceApi.PDUHis(tempParams); 
-  chartData.value.apparentList.forEach((obj,index) => {
-    chartData.value.apparentList[index] = obj?.toFixed(3);
-  });
-  chartData.value.activeList.forEach((obj,index) => {
-    chartData.value.activeList[index] = obj?.toFixed(3);
-  });
+
 }
 
 watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
     // 销毁原有的图表实例
     beforeChartUnmount();
     //获取数据
-    var tempParams = { id : queryParams.id, type : newPowGranularity}
+    var tempParams = { devKey : queryParams.devKey, type : newPowGranularity}
     chartData.value = await PDUDeviceApi.PDUHis(tempParams); 
     chartData.value.apparentList.forEach((obj,index) => {
       chartData.value.apparentList[index] = obj?.toFixed(3);
@@ -896,13 +927,25 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
     // 设置新的配置对象
     if (chart) {
       chart.setOption({
-        // 这里设置 Echarts 的配置项和数据
-        title: { text: ''},
-        tooltip: { trigger: 'axis' },
-        legend: { data: ['视在功率','有功功率']},
-        grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-        toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-        xAxis: {type: 'category', axisLabel: { formatter: 
+      // 这里设置 Echarts 的配置项和数据
+      title: { text: ''},
+      tooltip: { trigger: 'axis' ,formatter: function(params) {
+                                    var result = params[0].name + '<br>';
+                                    for (var i = 0; i < params.length; i++) {
+                                      result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
+                                      if (params[i].seriesName === '视在功率') {
+                                        result += ' kVA'; 
+                                      } else if (params[i].seriesName === '有功功率') {
+                                        result += ' kW';
+                                      }
+                                      result += '<br>';
+                                    }
+                                    return result;
+                                  }},
+      legend: { data: ['视在功率','有功功率']},
+      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+      xAxis: {type: 'category', axisLabel: { formatter: 
             function (value) {
               if(queryParams.powGranularity == "oneHour"){
                 // 截取字符串的前n位，即yyyy-MM-dd HH:mm:ss
@@ -912,14 +955,13 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
                 return value.substring(5, 19);
               }
             }
-          }, boundaryGap: false, data:chartData.value.dateTimes},
-        yAxis: { type: 'value'},
-        series: [
-          {name: '视在功率', type: 'line', data: chartData.value.apparentList , symbol: 'circle', symbolSize: 4},
-          {name: '有功功率', type: 'line', data: chartData.value.activeList , symbol: 'circle', symbolSize: 4},
-        ],
-
-      });
+          },boundaryGap: false, data:chartData.value.dateTimes},
+      yAxis: { type: 'value'},
+      series: [
+        {name: '视在功率', type: 'line', data: chartData.value.apparentList , symbol: 'circle', symbolSize: 4},
+        {name: '有功功率', type: 'line', data: chartData.value.activeList , symbol: 'circle', symbolSize: 4},
+      ],
+    });
     }
     if(flashListTimer.value.chartTimer){
       var time = 0;
@@ -940,10 +982,9 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
 const handleQuery = async () => {
 
   if(queryParams.ipAddr){
-    console.log(1)
     queryParams.devKey = queryParams.ipAddr +'-' +  queryParams.cascadeAddr;
     await getTestData();
-    initChart();
+    flashChartData();
   }
 }
 

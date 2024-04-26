@@ -139,9 +139,32 @@
                 :header-cell-style="arraySpanMethod"
                 >
                 <el-table-column  align="center" label="基本信息"  prop="baseInfoName" />
-                <el-table-column  prop="baseInfoValue" />
+                <el-table-column  prop="baseInfoValue" >
+                  <template #default="scope">
+                    <span v-if="scope.$index === 2">
+                      <el-tag  v-if="scope.row.baseInfoValue == 0">正常</el-tag>
+                      <el-tag type="warning" v-if="scope.row.baseInfoValue == 1">预警</el-tag>
+                      <el-popover
+                          placement="top-start"
+                          title="告警内容"
+                          :width="500"
+                          trigger="hover"
+                          :content="scope.row.pduAlarm"
+                          v-if="scope.row.baseInfoValue == 2"
+                        >
+                          <template #reference>
+                            <el-tag type="danger">告警</el-tag>
+                          </template>
+                        </el-popover>
+                      <el-tag type="info" v-if="scope.row.baseInfoValue == 4">故障</el-tag>
+                      <el-tag type="info" v-if="scope.row.baseInfoValue == 5">离线</el-tag>
+                    </span>
+                    <span v-else>{{ scope.row.baseInfoValue }}</span>
+                  </template>
+                </el-table-column>
                 <el-table-column label="能耗" :rowspan="2" prop="consumeName"  />
-                <el-table-column  prop="consumeValue"  />
+                <el-table-column  prop="consumeValue" />
+    
               </el-table>
             </div>
           <div class="pageBox" v-if="visControll.eqVis" >
@@ -268,7 +291,7 @@ const handleDayPick = () => {
   
 }
 
-const handleMonthPick = (newV) => {
+const handleMonthPick = () => {
 
   if(queryParams.oldTime){
     var newTime = new Date(queryParams.oldTime);
@@ -564,32 +587,36 @@ const getList = async () => {
   temData.value = await PDUDeviceApi.getTemData(queryParams);
   if(temData.value.temAvgValue && temData.value.temAvgValue.length > 0){
     visControll.temVis = true;
+    temData.value.temAvgValue?.forEach((obj,index) => {
+      temData.value.temAvgValue[index] = obj?.toFixed(2);
+    });
+
+    temData.value.temMaxValue = temData.value.temMaxValue?.toFixed(2);
   }else{
     visControll.temVis = false;
   }
 
-  temData.value.temAvgValue?.forEach(element => {
-    element = element?.toFixed(2);
-  });
-  temData.value.temMaxValue = temData.value.temMaxValue?.toFixed(2);
+  var PDU = await PDUDeviceApi.getPDUDevicePage(queryParams);
   var temp = [] as any;
+
   temp.push({
-    baseInfoName : "PDU名称",
-    baseInfoValue : "xx",
-    consumeName : "用电量",
-    consumeValue : visControll.isSameDay ? (eqData.value.eq[eqData.value.eq.length - 1] - eqData.value.eq[0]).toFixed(1) : eqData.value.totalEle,
-  })
-  temp.push({
-    baseInfoName : "所属机房",
-    baseInfoValue : "xx",
-    consumeName : "最大视在功率",
-    consumeValue : powData.value.apparentPowMaxValue
+    baseInfoName : "所属位置",
+    baseInfoValue : "",
+    consumeName : "消耗电量",
+    consumeValue : visControll.isSameDay ? (eqData.value.eq[eqData.value.eq.length - 1] - eqData.value.eq[0]).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh",
   })
   temp.push({
     baseInfoName : "网络地址",
     baseInfoValue : queryParams.ipAddr + "-" + queryParams.cascadeAddr,
+    consumeName : "功率因素",
+    consumeValue : PDU.list[0].pf?.toFixed(2)
+  })
+  temp.push({
+    baseInfoName : "设备状态",
+    baseInfoValue : PDU.list[0].status,
+    pduAlarm : PDU.list[0].pduAlarm,
     consumeName : "最大温度",
-    consumeValue : temData.value.temMaxValue 
+    consumeValue : temData.value.temMaxValue + "°C"
   })
   PDUTableData.value = temp;
   // initChart();
@@ -619,11 +646,11 @@ const initChart =  () => {
       tooltip: { trigger: 'axis',formatter: function (params) {
                                               var dataIndex = params[0].dataIndex;
                                               var eleValue = eqData.value.eq[dataIndex];
-                                              return  eqData.value.time[dataIndex] + "<br/>" + eleValue + " kWh"; // 自定义浮窗显示的内容
+                                              return  eqData.value.time[dataIndex] + "<br/>" + params[0].marker +  eleValue + " kWh"; // 自定义浮窗显示的内容
                                             },},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
       xAxis: {type: 'category' ,data:eqData.value.time},
-      yAxis: { type: 'value'},
+      yAxis: { type: 'value' , name : "kWh"},
       series: [
         { type: 'bar', data: eqData.value.eq, label: { show: true, position: 'top' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
       ],
@@ -640,7 +667,7 @@ const initChart =  () => {
       tooltip: { trigger: 'axis',formatter: function (params) {
                                               var dataIndex = params[0].dataIndex;
                                               var eleValue = outletRankData.value.eleValue[dataIndex];
-                                              return  outletRankData.value.outLetId[dataIndex] + "<br/>"  + eleValue + " kWh"; // 自定义浮窗显示的内容
+                                              return  outletRankData.value.outLetId[dataIndex] + "<br/>"  + params[0].marker + eleValue + " kWh"; // 自定义浮窗显示的内容
                                             },},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
       xAxis: { type: 'value' },
@@ -658,7 +685,19 @@ const initChart =  () => {
       // 这里设置 Echarts 的配置项和数据
       dataZoom:[{ type:"inside"}],
       title: { text: ''},
-      tooltip: { trigger: 'axis' },
+      tooltip: { trigger: 'axis', formatter: function(params) {
+                                    var result = params[0].name + '<br>';
+                                    for (var i = 0; i < params.length; i++) {
+                                      result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
+                                      if (params[i].seriesName === '总平均视在功率') {
+                                        result += ' kVA'; 
+                                      } else if (params[i].seriesName === '总平均有功功率') {
+                                        result += ' kW';
+                                      }
+                                      result += '<br>';
+                                    }
+                                    return result;
+                                  } },
       legend: { data: ['总平均视在功率','总平均有功功率']},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
@@ -679,7 +718,17 @@ const initChart =  () => {
       // 这里设置 Echarts 的配置项和数据
       dataZoom:[{ type:"inside"}],
       title: { text: ''},
-      tooltip: { trigger: 'axis' },
+      tooltip: { trigger: 'axis',formatter: function(params) {
+                                    var result = params[0].name + '<br>';
+                                    for (var i = 0; i < params.length; i++) {
+                                      result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
+                                      if (params[i].seriesName === '平均温度') {
+                                        result += '°C'; 
+                                      } 
+                                      result += '<br>';
+                                    }
+                                    return result;
+                                  } },
       legend: { data: ['平均温度']},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
@@ -849,7 +898,6 @@ const loading = ref(false) // 列表的加载中
 // const total = ref(0) // 列表的总页数
 const queryFormRef = ref() // 搜索的表单
 // const exportLoading = ref(false) // 导出的加载中
-
 
 const arraySpanMethod = ({
   row,
