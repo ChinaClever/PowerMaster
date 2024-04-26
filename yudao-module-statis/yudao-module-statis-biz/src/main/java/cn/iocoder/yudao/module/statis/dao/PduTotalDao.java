@@ -1,13 +1,12 @@
 package cn.iocoder.yudao.module.statis.dao;
 
 import cn.hutool.core.date.DateTime;
-import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduBaseDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduTotalBaseDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.enums.EsIndexEnum;
 import cn.iocoder.yudao.framework.common.enums.EsStatisFieldEnum;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
-import com.alibaba.fastjson2.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -57,8 +56,8 @@ public class PduTotalDao {
      * @param startTime 统计开始时间
      * @param endTime   统计结束时间
      */
-    public Map<Integer, PduBaseDo> statisTotalHour(String startTime, String endTime) {
-        Map<Integer, PduBaseDo> result = new HashMap<>();
+    public Map<Integer, PduTotalBaseDo> statisTotalHour(String startTime, String endTime) {
+        Map<Integer, PduTotalBaseDo> result = new HashMap<>();
         try {
             String index = EsIndexEnum.PDU_HDA_TOTAL_REALTIME.getIndex();
             // 创建SearchRequest对象, 设置查询索引名
@@ -105,7 +104,7 @@ public class PduTotalDao {
             // 遍历terms聚合结果
             for (Terms.Bucket bucket : byPduAggregation.getBuckets()) {
                 // 获取按pduId分组
-                PduBaseDo baseDo = new PduBaseDo();
+                PduTotalBaseDo baseDo = new PduTotalBaseDo();
                 baseDo.setPduId(Integer.parseInt(String.valueOf(bucket.getKey())));
                 EsStatisFieldEnum.fields().forEach(field -> {
 
@@ -152,7 +151,7 @@ public class PduTotalDao {
             Map<Integer,String> apparentPowMinValueMap = getData(startTime,endTime,SortOrder.ASC,APPARENT_POW,index,CREATE_TIME);
 
             result.keySet().forEach(pduId -> {
-                PduBaseDo fieldMap = result.get(pduId);
+                PduTotalBaseDo fieldMap = result.get(pduId);
 
                 PduHdaTotalRealtimeDo activePowMaxMap = JsonUtils.parseObject(activePowMaxValueMap.get(pduId),PduHdaTotalRealtimeDo.class) ;
                 fieldMap.setActivePowMaxTime(activePowMaxMap.getCreateTime());
@@ -190,8 +189,8 @@ public class PduTotalDao {
      * @param startTime 统计开始时间
      * @param endTime   统计结束时间
      */
-    public Map<Integer, PduBaseDo> statisTotalDay(String startTime, String endTime) {
-        Map<Integer, PduBaseDo> result = new HashMap<>();
+    public Map<Integer, PduTotalBaseDo> statisTotalDay(String startTime, String endTime) {
+        Map<Integer, PduTotalBaseDo> result = new HashMap<>();
         try {
             String index = EsIndexEnum.PDU_HDA_TOTAL_HOUR.getIndex();
             // 创建SearchRequest对象, 设置查询索引名
@@ -230,7 +229,7 @@ public class PduTotalDao {
             // 遍历terms聚合结果
             for (Terms.Bucket bucket : byPduAggregation.getBuckets()) {
                 // 获取按pduId分组
-                PduBaseDo baseDo = new PduBaseDo();
+                PduTotalBaseDo baseDo = new PduTotalBaseDo();
                 baseDo.setPduId(Integer.parseInt(String.valueOf(bucket.getKey())));
                 EsStatisFieldEnum.fields().forEach(field -> {
 
@@ -258,7 +257,7 @@ public class PduTotalDao {
             Map<Integer,String> apparentPowMinValueMap = getData(startTime,endTime,SortOrder.ASC,APPARENT_POW_MIN_VALUE,index,APPARENT_POW_MIN_TIME);
 
             result.keySet().forEach(pduId -> {
-                PduBaseDo fieldMap = result.get(pduId);
+                PduTotalBaseDo fieldMap = result.get(pduId);
 
                 PduHdaTotalHourDo activePowMaxMap = JsonUtils.parseObject(activePowMaxValueMap.get(pduId),PduHdaTotalHourDo.class) ;
                 fieldMap.setActivePowMaxTime(activePowMaxMap.getActivePowMaxTime());
