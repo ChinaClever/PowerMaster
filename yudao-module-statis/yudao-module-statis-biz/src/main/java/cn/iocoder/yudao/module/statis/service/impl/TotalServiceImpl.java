@@ -1,7 +1,7 @@
 package cn.iocoder.yudao.module.statis.service.impl;
 
 import cn.hutool.core.date.DateUtil;
-import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduBaseDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduTotalBaseDo;
 import cn.iocoder.yudao.framework.common.enums.EsIndexEnum;
 import cn.iocoder.yudao.module.statis.dao.PduTotalDao;
 import cn.iocoder.yudao.module.statis.service.EsHandleService;
@@ -36,10 +36,10 @@ public class TotalServiceImpl implements TotalService {
             String startTime = DateUtil.formatDateTime(calendar.getTime());
             String endTime = DateUtil.formatDateTime(new Date());
 
-            Map<Integer, PduBaseDo> map = totalDao.statisTotalHour(startTime, endTime);
-            List<PduBaseDo> list = new ArrayList<>();
+            Map<Integer, PduTotalBaseDo> map = totalDao.statisTotalHour(startTime, endTime);
+            List<PduTotalBaseDo> list = new ArrayList<>();
             map.keySet().forEach(pduId -> {
-                PduBaseDo pduBaseDo = map.get(pduId);
+                PduTotalBaseDo pduBaseDo = map.get(pduId);
                 list.add(pduBaseDo);
             });
             list.forEach(t->{
@@ -61,10 +61,10 @@ public class TotalServiceImpl implements TotalService {
             String startTime = DateUtil.formatDateTime(calendar.getTime());
             String endTime = DateUtil.formatDateTime(new Date());
 
-            Map<Integer, PduBaseDo> map = totalDao.statisTotalDay(startTime, endTime);
-            List<PduBaseDo> list = new ArrayList<>();
+            Map<Integer, PduTotalBaseDo> map = totalDao.statisTotalDay(startTime, endTime);
+            List<PduTotalBaseDo> list = new ArrayList<>();
             map.keySet().forEach(pduId -> {
-                PduBaseDo pduBaseDo = map.get(pduId);
+                PduTotalBaseDo pduBaseDo = map.get(pduId);
                 list.add(pduBaseDo);
             });
             esHandleService.batchInsert(list, EsIndexEnum.PDU_HDA_TOTAL_DAY.getIndex());

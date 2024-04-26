@@ -1,6 +1,6 @@
 package cn.iocoder.yudao.framework.common.entity.es.pdu.env;
 
-import cn.iocoder.yudao.framework.common.entity.es.pdu.BaseDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.PduBaseDo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -10,7 +10,7 @@ import lombok.Data;
  * @Description: pdu环境表（实时）
  */
 @Data
-public class PduEnvRealtimeDo extends BaseDo {
+public class PduEnvRealtimeDo extends PduBaseDo {
 
 
     /**

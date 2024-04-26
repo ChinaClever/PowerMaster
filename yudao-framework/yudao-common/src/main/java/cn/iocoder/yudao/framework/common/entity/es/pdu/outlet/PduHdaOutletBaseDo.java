@@ -1,7 +1,7 @@
 package cn.iocoder.yudao.framework.common.entity.es.pdu.outlet;
 
 import cn.hutool.core.date.DateTime;
-import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduBaseDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduTotalBaseDo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -11,7 +11,7 @@ import lombok.Data;
  * @Description: 输出位历史基础数据
  */
 @Data
-public class PduHdaOutletBaseDo extends PduBaseDo {
+public class PduHdaOutletBaseDo extends PduTotalBaseDo {
 
     /**
      * 输出位

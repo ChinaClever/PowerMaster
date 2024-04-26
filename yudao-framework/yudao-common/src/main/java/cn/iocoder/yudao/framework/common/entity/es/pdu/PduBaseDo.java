@@ -11,7 +11,7 @@ import lombok.Data;
  * @Description: 基础实体类
  */
 @Data
-public class BaseDo {
+public class PduBaseDo {
 
     private int id;
 
