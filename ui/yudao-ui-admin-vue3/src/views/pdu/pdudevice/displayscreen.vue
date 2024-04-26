@@ -64,7 +64,7 @@
           </el-row>
         </template>
         <el-row justify="center">
-          <div ref="totalChartContainer" id="totalChartContainer" style="width: 350px; height: 200px;"></div>
+          <div ref="totalChartContainer" id="totalChartContainer" style="width: 400px; height: 200px;"></div>
         </el-row>
         <el-row class="text-container"> 
           <el-col :span="8">
@@ -96,11 +96,7 @@
             </div>
           </template>
           <el-row justify="center">
-            <el-progress type="circle" :percentage="A.curPercemtage" :width="200" :status="A.curColor">
-              <template #default="{}">
-                <span class="percentage-value">{{ A.cur_value }}A</span>
-              </template>
-            </el-progress>
+            <div ref="AChartContainer" id="AChartContainer" style="width: 400px; height: 200px;"></div>
           </el-row>
           <el-row class="text-container">
             <el-col :span="8">
@@ -132,11 +128,7 @@
             </div>
           </template>                                                                           
           <el-row justify="center">
-            <el-progress type="circle" :percentage="B.curPercemtage" :width="200" :status="B.curColor">
-              <template #default="{}">
-                <span class="percentage-value">{{ B.cur_value }}A</span>
-              </template>
-            </el-progress>
+            <div ref="BChartContainer" id="BChartContainer" style="width: 400px; height: 200px;"></div>
           </el-row>
           <el-row class="text-container">
             <el-col :span="8">
@@ -168,11 +160,7 @@
             </div>
           </template>
           <el-row justify="center">
-            <el-progress type="circle" :percentage="C.curPercemtage" :width="200" :status="C.curColor">
-              <template #default="{}">
-                <span class="percentage-value">{{ C.cur_value }}A</span>
-              </template>
-            </el-progress>
+            <div ref="CChartContainer" id="CChartContainer" style="width: 400px; height: 200px;"></div>
           </el-row>
           <el-row class="text-container">
             <el-col :span="8">
@@ -499,10 +487,15 @@ let chart = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
 const chartContainer = ref<HTMLElement | null>(null);
 let totalChart = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
 const totalChartContainer = ref<HTMLElement | null>(null);
+let AChart = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
+const AChartContainer = ref<HTMLElement | null>(null);
+let BChart = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
+const BChartContainer = ref<HTMLElement | null>(null);
+let CChart = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
+const CChartContainer = ref<HTMLElement | null>(null);
 
 const initChart = async () => {
-  var tempParams = { id : queryParams.id, type : queryParams.powGranularity}
-  chartData.value = await PDUDeviceApi.PDUHis(tempParams); 
+  
   if (chartContainer.value && instance) {
     chart = echarts.init(chartContainer.value);
     chart.setOption({
@@ -531,24 +524,78 @@ const initChart = async () => {
 
     });
     // 将 chart 绑定到组件实例，以便在销毁组件时能够正确释放资源
-    instance.appContext.config.globalProperties.powChart = chart;
+    instance.appContext.config.globalProperties.chart = chart;
   }
   if (totalChartContainer.value && instance) {
     totalChart = echarts.init(totalChartContainer.value);
     totalChart.setOption({
       // 这里设置 Echarts 的配置项和数据
       title: { text: ''},
-      tooltip: { trigger: 'item', formatter: '{b}: {c}' },
+      tooltip: { trigger: 'item', formatter: function(params) {
+                                      if (params.name === '视在功率') {
+                                          return params.name + ': ' + params.value + 'kVA';
+                                      } else if (params.name === '有功功率') {
+                                          return params.name + ': ' + params.value + 'kW';
+                                      }
+                                  } },
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       series: [
-        { type: 'pie', radius: ['70%', '85%'], avoidLabelOverlap: false,  labelLine: { show: false },
-          data: [{value : totalData.value.pow, name: '有功功率', label: { show: true, position: 'outside', formatter: '{c}kW',fontSize: 16 },itemStyle: { color: '#0A69EE' }  },
-                 {value : totalData.value.powApparent , name : '视在功率' , label: { show: true, position: 'outside', formatter: '{c}kVA',fontSize: 16 }, itemStyle: { color: '#0AD0EE' } }],
+        { type: 'pie', radius: ['50%', '65%'], avoidLabelOverlap: false,  labelLine: { show: false },
+          data: [{value : totalData.value.pow, name: '有功功率', label: { show: true, position: 'outside', formatter: '{c}kW',fontSize: 13 },itemStyle: { color: '#0A69EE' }  },
+                 {value : totalData.value.powApparent , name : '视在功率' , label: { show: true, position: 'outside', formatter: '{c}kVA',fontSize: 13  }, itemStyle: { color: '#0AD0EE' } }],
         },
       ],
     });
     // 将 totalChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
-    instance.appContext.config.globalProperties.powChart = totalChart;
+    instance.appContext.config.globalProperties.totalChart = totalChart;
+  }
+  if (AChartContainer.value && instance) {
+    AChart = echarts.init(AChartContainer.value);
+    AChart.setOption({
+      // 这里设置 Echarts 的配置项和数据
+      title: { text: ''},
+      // tooltip: { trigger: 'item', formatter: '{b}: {c}A' },
+      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+      series: [
+        { type: 'pie', radius: ['50%', '65%'], avoidLabelOverlap: false,  labelLine: { show: false },
+          data: [{value : A.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13 ,backgroundColor : A.value.curColor },itemStyle: { color: '#0AD0EE' }  },],
+        },
+      ],
+    });
+    // 将 AChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+    instance.appContext.config.globalProperties.AChart = AChart;
+  }
+  if (BChartContainer.value && instance) {
+    BChart = echarts.init(BChartContainer.value);
+    BChart.setOption({
+      // 这里设置 Echarts 的配置项和数据
+      title: { text: ''},
+      // tooltip: { trigger: 'item', formatter: '{b}: {c}A' },
+      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+      series: [
+        { type: 'pie', radius: ['50%', '65%'], avoidLabelOverlap: false,  labelLine: { show: false },
+          data: [{value : B.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13, backgroundColor : B.value.curColor },itemStyle: { color: '#0AD0EE' }  },],
+        },
+      ],
+    });
+    // 将 BChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+    instance.appContext.config.globalProperties.BChart = BChart;
+  }
+  if (CChartContainer.value && instance) {
+    CChart = echarts.init(CChartContainer.value);
+    CChart.setOption({
+      // 这里设置 Echarts 的配置项和数据
+      title: { text: ''},
+      // tooltip: { trigger: 'item', formatter: '{b}: {c}A' },
+      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+      series: [
+        { type: 'pie', radius: ['50%', '65%'], avoidLabelOverlap: false,  labelLine: { show: false },
+          data: [{value : A.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13, backgroundColor : C.value.curColor },itemStyle: { color: '#0AD0EE' }  },],
+        },
+      ],
+    });
+    // 将 CChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+    instance.appContext.config.globalProperties.CChart = CChart;
   }
 };
 
@@ -571,8 +618,8 @@ const setNewChartData = async () => {
   chartData.value.dateTimes.shift()
 
   chartData.value.dateTimes.push(temp.dateTime);
-  chartData.value.apparentList.push(temp.apparent);
-  chartData.value.activeList.push(temp.active);
+  chartData.value.apparentList.push(temp.apparent.toFixed(3));
+  chartData.value.activeList.push(temp.active.toFixed(3));
 
 
   chart?.setOption({
@@ -822,6 +869,14 @@ const getTestData = async()=>{
     controlVis.value.haveC = true;
   }
   
+  var tempParams = { id : queryParams.id, type : queryParams.powGranularity}
+  chartData.value = await PDUDeviceApi.PDUHis(tempParams); 
+  chartData.value.apparentList.forEach((obj,index) => {
+    chartData.value.apparentList[index] = obj?.toFixed(3);
+  });
+  chartData.value.activeList.forEach((obj,index) => {
+    chartData.value.activeList[index] = obj?.toFixed(3);
+  });
 }
 
 watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
@@ -830,7 +885,12 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
     //获取数据
     var tempParams = { id : queryParams.id, type : newPowGranularity}
     chartData.value = await PDUDeviceApi.PDUHis(tempParams); 
-
+    chartData.value.apparentList.forEach((obj,index) => {
+      chartData.value.apparentList[index] = obj?.toFixed(3);
+    });
+    chartData.value.activeList.forEach((obj,index) => {
+      chartData.value.activeList[index] = obj?.toFixed(3);
+    });
     // 创建新的图表实例
     chart = echarts.init(document.getElementById('chartContainer'));
     // 设置新的配置对象
