@@ -31,7 +31,7 @@ public interface PDUDeviceService {
 
     Map getHistoryDataByPduId(Long id,String type);
 
-    Map getChartNewDataByPduId(Long id, LocalDateTime oldTime,String type);
+    Map getChartNewDataByPduDevKey(String devKey, LocalDateTime oldTime,String type);
 
     Map getReportConsumeDataByDevKey(String devKey, Integer timeType,LocalDateTime oldTime, LocalDateTime newTime);
 

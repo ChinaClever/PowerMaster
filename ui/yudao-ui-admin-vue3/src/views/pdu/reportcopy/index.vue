@@ -153,7 +153,7 @@
             </div>
             <p v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大用电量{{eqData.maxEle}}kWh， 最大负荷发生时间{{eqData.maxEleTime}}</p>
             <p v-if="visControll.isSameDay && eqData.eq">本周期内，开始时电能为{{eqData.eq[0]}}kWh，结束时电能为{{eqData.eq[eqData.eq.length - 1]}}kWh， 电能增长{{(eqData.eq[eqData.eq.length - 1] - eqData.eq[0]).toFixed(1)}}kWh</p>
-            <div ref="rankChartContainer" id="rankChartContainer" style="width: 75vw; height: 58vh;"></div>
+            <div ref="rankChartContainer" id="rankChartContainer" style="width: 70vw; height: 58vh;"></div>
           </div>
           <div class="pageBox"  v-if="visControll.powVis">
             <div class="page-conTitle">
@@ -169,7 +169,7 @@
             <div class="page-conTitle" v-if="visControll.isSameDay">
               输出位电能排名
             </div>
-            <div ref="outputRankChartContainer" id="outputRankChartContainer" style="width: 75vw; height: 58vh;"></div>
+            <div ref="outputRankChartContainer" id="outputRankChartContainer" style="width: 70vw; height: 58vh;"></div>
 
           </div>
           <div class="pageBox" v-if="visControll.temVis">
@@ -182,89 +182,6 @@
         </div>
       </ContentWrap>
       
-      <!-- <el-collapse  v-model="activeNames">
-        <el-collapse-item title="PDU信息" name="1">
-          <el-row class="text-container"> 
-            <el-col :span="8" >
-              <div style="font-size: 30px;">
-                PDU名称 {{ pduInfo.name }}<br/>
-                运行状态 {{ pduInfo.statuses }}<br/>
-                网络地址 {{ pduInfo.dev_key }}<br/>
-                所属机房 {{ pduInfo.owner }} <br/>
-
-              </div>
-            </el-col>
-            <el-col :span="6">
-              <div style="font-size: 28px;">
-                用电量 {{ pduInfo.eq }}kW<br/>
-                总视在功率(最大) {{ pduInfo.total_apparent_pow_max_value }}kVA   <br/>
-                总有功功率(最大) {{ pduInfo.total_pow_max_value }}kW <br/>
-                总电能(最大) {{ pduInfo.ele }}kWh  <br/>
-                最大温度 {{ pduInfo.tem_max_value }}°C<br/>
-              </div>
-            </el-col> 
-          </el-row>
-        </el-collapse-item>
-        <el-collapse-item title="耗电排名(日期)" name="2">
-          <el-form-item label="颗粒度" prop="type">
-           <el-select
-             v-model="queryParams.eqGranularity"
-             placeholder="请选择天/周/月"
-             class="!w-120px"
-           >
-              <el-option label="天" value="day" />
-              <el-option label="周" value="week" />
-              <el-option label="月" value="month" />
-            </el-select>
-          </el-form-item>
-            <div ref="rankChartContainer" id="rankChartContainer" style="width: 75vw; height: 58vh;"></div>
-        </el-collapse-item>
-        <el-collapse-item title="功率曲线" name="3">
-          <el-form-item label="颗粒度" prop="type">
-           <el-select
-             v-model="queryParams.powGranularity"
-             placeholder="请选择分钟/小时/天"
-             class="!w-120px"
-           >
-           <el-option label="分钟" value="realtime" />
-              <el-option label="小时" value="hour" />
-              <el-option label="天" value="day" />
-            </el-select>
-          </el-form-item>
-          <ContentWrap style="overflow: visible;">
-            <div ref="powChartContainer" id="powChartContainer" style="width: 70vw; height: 58vh;"></div>
-          </ContentWrap>
-        </el-collapse-item>
-        <el-collapse-item title="输出位耗电排名" name="4">
-            <el-form-item label="显示数量" prop="type">
-              <el-select
-                v-model="queryParams.outputNumber"
-                placeholder="请选择数量"
-                class="!w-120px"
-              >
-                  <el-option label="10" value= 10 />
-                  <el-option label="7" value= 7 />
-              </el-select>
-            </el-form-item>
-          <div ref="outputRankChartContainer" id="outputRankChartContainer" style="width: 75vw; height: 58vh;"></div>
-        </el-collapse-item>
-        <el-collapse-item title="温度曲线" name="5">
-          <el-form-item label="颗粒度" prop="type">
-            <el-select
-            v-model="queryParams.temGranularity"
-            placeholder="请选择分钟/小时/天"
-            class="!w-120px"
-            >
-              <el-option label="分钟" value="realtime" />
-              <el-option label="小时" value="hour" />
-              <el-option label="天" value="day" />
-            </el-select>
-          </el-form-item>
-          <ContentWrap style="overflow: visible;">
-            <div ref="temChartContainer" id="temChartContainer" style="width: 70vw; height: 58vh;"></div>
-          </ContentWrap>
-        </el-collapse-item>
-      </el-collapse> -->
     </el-col>
   </el-row>
   <!-- 表单弹窗：添加/修改 -->
@@ -281,7 +198,7 @@ import { ElTree } from 'element-plus'
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
-const switchValue = ref(0);
+const switchValue = ref(1);
 const instance = getCurrentInstance();
 const visControll = reactive({
   visAllReport : false,
@@ -351,7 +268,7 @@ const handleDayPick = () => {
   
 }
 
-const handleMonthPick = () => {
+const handleMonthPick = (newV) => {
 
   if(queryParams.oldTime){
     var newTime = new Date(queryParams.oldTime);
@@ -359,6 +276,8 @@ const handleMonthPick = () => {
     newTime.setHours(23,59,59)
     queryParams.newTime = getFullTimeByDate(newTime);
     visControll.isSameDay = false;
+  }else {
+    queryParams.newTime = null;
   }
   
 } 
@@ -404,10 +323,10 @@ const queryParams = reactive({
   ipAddr: undefined,
   createTime: undefined,
   timeArr:[],
-  oldTime : null,
-  newTime : null,
-  timeType: 0,
-  cascadeAddr : null
+  oldTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),1,0,0,0)),
+  newTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth() + 1,1,23,59,59)),
+  timeType: 1,
+  cascadeAddr : 0
 }) as any
 
 const serverRoomArr =  [
@@ -486,6 +405,7 @@ const serverRoomArr =  [
 //折叠功能
 let treeWidth = ref(3)
 let isCollapsed = ref(0);
+
 
 
 const pduInfo = ref({
@@ -606,6 +526,8 @@ const getList = async () => {
     })
     eqData.value.maxEle = eqData.value.maxEle.toFixed(1);
     eqData.value.totalEle = eqData.value.totalEle.toFixed(1);
+  } else{
+    visControll.eqVis = false;
   }
   
 
@@ -621,6 +543,8 @@ const getList = async () => {
     })
 
     powData.value.apparentPowMaxValue = powData.value.apparentPowMaxValue.toFixed(3);
+  }else{
+    visControll.powVis = false;
   }
   
   outletRankData.value = await PDUDeviceApi.getOutLetData(queryParams);
@@ -633,14 +557,21 @@ const getList = async () => {
     outletRankData.value.outLetId.forEach((obj,index)=>{
       outletRankData.value.outLetId[index] = "输出位" + obj;
     })
-
-    
+  }else{
+    visControll.outletVis = false;
   }
   
   temData.value = await PDUDeviceApi.getTemData(queryParams);
   if(temData.value.temAvgValue && temData.value.temAvgValue.length > 0){
     visControll.temVis = true;
+  }else{
+    visControll.temVis = false;
   }
+
+  temData.value.temAvgValue?.forEach(element => {
+    element = element?.toFixed(2);
+  });
+  temData.value.temMaxValue = temData.value.temMaxValue?.toFixed(2);
   var temp = [] as any;
   temp.push({
     baseInfoName : "PDU名称",
@@ -685,10 +616,14 @@ const initChart =  () => {
       // 这里设置 Echarts 的配置项和数据
       dataZoom:[{ type:"inside"}],
       title: { text: ''},
-      tooltip: { trigger: 'axis'},
+      tooltip: { trigger: 'axis',formatter: function (params) {
+                                              var dataIndex = params[0].dataIndex;
+                                              var eleValue = eqData.value.eq[dataIndex];
+                                              return  eqData.value.time[dataIndex] + "<br/>" + eleValue + " kWh"; // 自定义浮窗显示的内容
+                                            },},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
       xAxis: {type: 'category' ,data:eqData.value.time},
-      yAxis: { type: 'value', axisLabel: { formatter: '{value} kWh' }},
+      yAxis: { type: 'value'},
       series: [
         { type: 'bar', data: eqData.value.eq, label: { show: true, position: 'top' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
       ],
@@ -702,12 +637,16 @@ const initChart =  () => {
       // 这里设置 Echarts 的配置项和数据
       dataZoom:[{ type:"inside"}],
       title: { text: ''},
-      tooltip: { trigger: 'axis'},
+      tooltip: { trigger: 'axis',formatter: function (params) {
+                                              var dataIndex = params[0].dataIndex;
+                                              var eleValue = outletRankData.value.eleValue[dataIndex];
+                                              return  outletRankData.value.outLetId[dataIndex] + "<br/>"  + eleValue + " kWh"; // 自定义浮窗显示的内容
+                                            },},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-      xAxis: {type: 'category' ,data:outletRankData.value.outLetId},
-      yAxis: { type: 'value',axisLabel: { formatter: '{value} kWh' }},
+      xAxis: { type: 'value' },
+      yAxis: {type: 'category' ,data:outletRankData.value.outLetId},
       series: [
-        {  type: 'bar', data: outletRankData.value.eleValue, label: { show: true, position: 'top' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
+        {  type: 'bar', data: outletRankData.value.eleValue, label: { show: true, position: 'right' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
       ],
     });
     // 将 outputRankChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
@@ -741,13 +680,13 @@ const initChart =  () => {
       dataZoom:[{ type:"inside"}],
       title: { text: ''},
       tooltip: { trigger: 'axis' },
-      legend: { data: ['温度']},
+      legend: { data: ['平均温度']},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
       xAxis: {type: 'category', boundaryGap: false, data:temData.value.time},
       yAxis: { type: 'value'},
       series: [
-        {name: '温度', type: 'line', data: temData.value.temAvgValue},
+        {name: '平均温度', type: 'line', data: temData.value.temAvgValue},
       ],
     });
     // 将 temChart 绑定到组件实例，以便在销毁组件时能够正确释放资源

@@ -117,8 +117,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             pduDeviceDO.setDevKey(pduIndex.getDevKey());
             pduDeviceDO.setEle(pduTgData.getDoubleValue("ele"));
             pduDeviceDO.setPow(pduTgData.getDoubleValue("pow"));
-            pduDeviceDO.setApparentPow(pduTgData.getDoubleValue("apparent_pow"));
-            pduDeviceDO.setReactivePow(pduTgData.getDoubleValue("reactive_pow"));
+            pduDeviceDO.setApparentPow(pduTgData.getDoubleValue("pow_apparent"));
+            pduDeviceDO.setReactivePow(pduTgData.getDoubleValue("pow_reactive"));
             pduDeviceDO.setDataUpdateTime(jsonObject.getString("sys_time"));
             pduDeviceDO.setPduAlarm(jsonObject.getString("pdu_alarm"));
             result.add(pduDeviceDO);
@@ -200,16 +200,17 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     }
 
     @Override
-    public Map getChartNewDataByPduId(Long id,LocalDateTime oldTime,String type) {
+    public Map getChartNewDataByPduDevKey(String devKey,LocalDateTime oldTime,String type) {
         HashMap result = new HashMap<>();
 
+        PduIndex pduIndex = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getDevKey, devKey));
+        Long id = pduIndex.getId();
         // 构建查询请求
         SearchRequest searchRequest = null;
         LocalDateTime newTime = null;
         if("oneHour".equals(type)){
             newTime = oldTime.plusMinutes(1);
             newTime = newTime.plusSeconds(20);
-            System.out.println(newTime);
             // 构建查询请求
             searchRequest = new SearchRequest("pdu_hda_total_realtime");
         } else if("twentyfourHour".equals(type)){
@@ -299,7 +300,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 // 执行多索引搜索请求
                 MultiSearchResponse multiSearchResponse = client.msearch(multiSearchRequest, RequestOptions.DEFAULT);
 
-                // 解析第二个搜索请求
+                // 解析搜索请求
                 SearchResponse pduEleTotalRealDisResponse = multiSearchResponse.getResponses()[0].getResponse();
                 if(pduEleTotalRealDisResponse != null){
                     for (SearchHit hit : pduEleTotalRealDisResponse.getHits()) {
@@ -318,7 +319,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 result.put("time",time);
                 result.put("totalEle",todayEle);
                 result.put("maxEle",maxEle != -1 ? maxEle : null);
-                result.put("maxEleTime",maxEle != -1 ? maxEleTime.toString("yyyy-MM-dd HH:mm") : null);
+                result.put("maxEleTime",maxEle != -1 ? maxEleTime.toString("yyyy-MM-dd HH:mm:ss") : null);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -389,7 +390,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 result.put("time",time);
                 result.put("totalEle",totalEq);
                 result.put("maxEle",maxEq != -1 ? maxEq : null);
-                result.put("maxEleTime",maxEq != -1 ? maxEleTime.toString("yyyy-MM-dd HH:mm") : null);
+                result.put("maxEleTime",maxEq != -1 ? maxEleTime.toString("yyyy-MM-dd HH:mm:ss") : null);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -455,7 +456,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 result.put("apparentPowAvgValue",apparentPowAvgValue);
                 result.put("time",time);
                 result.put("apparentPowMaxValue",apparentPowMaxValue != -1 ? apparentPowMaxValue : null);
-                result.put("apparentPowMaxTime",apparentPowMaxValue != -1 ? apparentPowMaxTime.toString("yyyy-MM-dd HH:mm") : null);
+                result.put("apparentPowMaxTime",apparentPowMaxValue != -1 ? apparentPowMaxTime.toString("yyyy-MM-dd HH:mm:ss") : null);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -507,7 +508,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 result.put("apparentPowAvgValue",apparentPowAvgValue);
                 result.put("time",time);
                 result.put("apparentPowMaxValue",apparentPowMaxValue != -1 ? apparentPowMaxValue : null);
-                result.put("apparentPowMaxTime",apparentPowMaxValue != -1 ? apparentPowMaxTime.toString("yyyy-MM-dd HH:mm") : null);
+                result.put("apparentPowMaxTime",apparentPowMaxValue != -1 ? apparentPowMaxTime.toString("yyyy-MM-dd HH:mm:ss") : null);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -539,7 +540,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             Map<String, String> map = new HashMap<>();
             map.put("sumEle", "sum_ele_active");
             pduOutLetTotalRealSourceBuilder.aggregation(AggregationBuilders
-                    .terms("by_outlet_id").field("outlet_id").order(BucketOrder.aggregation("sum_ele_active",false)).size(24)
+                    .terms("by_outlet_id").field("outlet_id").order(BucketOrder.aggregation("sum_ele_active",true)).size(24)
                     .subAggregation(AggregationBuilders.sum("sum_ele_active").field("ele_active"))
                     //筛选sumEle > 0的
                     .subAggregation(PipelineAggregatorBuilders.bucketSelector("positive_sum_ele",map, new Script("params.sumEle > 0"))));
@@ -589,7 +590,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             Map<String, String> map = new HashMap<>();
             map.put("sumEq", "sum_eq");
             pduOutLetTotalDaySourceBuilder.aggregation(AggregationBuilders
-                    .terms("by_outlet_id").field("outlet_id").order(BucketOrder.aggregation("sum_eq",false)).size(24)
+                    .terms("by_outlet_id").field("outlet_id").order(BucketOrder.aggregation("sum_eq",true)).size(24)
                     .subAggregation(AggregationBuilders.sum("sum_eq").field("eq_value"))
                     //筛选sumEle > 0的
                     .subAggregation(PipelineAggregatorBuilders.bucketSelector("positive_sum_eq",map, new Script("params.sumEq > 0"))));
@@ -682,7 +683,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 result.put("temAvgValue",temAvgValue);
                 result.put("time",time);
                 result.put("temMaxValue",temMaxValue != -255 ? temMaxValue : null);
-                result.put("temMaxTime",temMaxValue != -255 ? temMaxTime.toString("yyyy-MM-dd HH:mm") : null);
+                result.put("temMaxTime",temMaxValue != -255 ? temMaxTime.toString("yyyy-MM-dd HH:mm:ss") : null);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -732,7 +733,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 result.put("temAvgValue",temAvgValue);
                 result.put("time",time);
                 result.put("temMaxValue",temMaxValue != -255 ? temMaxValue : null);
-                result.put("temMaxTime",temMaxValue != -255 ? temMaxTime.toString("yyyy-MM-dd HH:mm") : null);
+                result.put("temMaxTime",temMaxValue != -255 ? temMaxTime.toString("yyyy-MM-dd HH:mm:ss") : null);
 
             } catch (IOException e) {
                 e.printStackTrace();

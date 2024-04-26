@@ -59,8 +59,8 @@ public class PDUDeviceController {
 
     @GetMapping("/chartNewData")
     @Operation(summary = "获得PDU历史最新数据")
-    public CommonResult<Map> getChartNewDataByPduId(Long id,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,String type) {
-        return success(pDUDeviceService.getChartNewDataByPduId(id,oldTime,type));
+    public CommonResult<Map> getChartNewDataByPduDevKey(String devKey,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,String type) {
+        return success(pDUDeviceService.getChartNewDataByPduDevKey(devKey,oldTime,type));
     }
 
     @GetMapping("/report/ele")
