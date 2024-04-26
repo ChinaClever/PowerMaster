@@ -18,6 +18,8 @@ public class HistoryDataPageReqVO extends PageParam {
 
     private Integer pageSize;
 
+    private Integer sensorId;
+
     private String type;
 
     private String granularity;

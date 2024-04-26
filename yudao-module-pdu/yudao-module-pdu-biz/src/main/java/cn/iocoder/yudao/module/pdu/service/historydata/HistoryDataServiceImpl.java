@@ -8,9 +8,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.elasticsearch.action.search.*;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.index.query.Operator;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.SimpleQueryStringBuilder;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -37,16 +35,18 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         List<Object> resultList = new ArrayList<>();
         for (Map<String, Object> map : mapList){
             Object pduId = map.get("pdu_id");
-            if (pduId != null){
+            if (pduId instanceof Integer) {
                 // 查询位置
                 PduIndex pduIndex = pDUDeviceMapper.selectById( (int)pduId );
-                map.put("location", pduIndex.getDevKey());
-                resultList.add(map);
+                if (pduIndex != null){
+                    map.put("location", pduIndex.getDevKey());
+                }else{
+                    map.put("location", null);
+                }
             }else{
                 map.put("location", null);
-                resultList.add(map);
             }
-
+            resultList.add(map);
         }
         return resultList;
     }
@@ -227,15 +227,13 @@ public class HistoryDataServiceImpl implements HistoryDataService {
 
     @Override
     public PageResult<Object> getHistoryDataDetails(HistoryDataDetailsReqVO reqVO) throws IOException{
+        String pduId = String.valueOf(reqVO.getPduId());
+        // 创建BoolQueryBuilder对象
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
         searchSourceBuilder.size(2880);
-        String id = String.valueOf(reqVO.getId());
-        SimpleQueryStringBuilder simpleQueryStringBuilder = QueryBuilders.simpleQueryStringQuery(id);
-        simpleQueryStringBuilder.field("pdu_id");
-        simpleQueryStringBuilder.defaultOperator(Operator.OR);
-        searchSourceBuilder.query(simpleQueryStringBuilder);
         searchSourceBuilder.trackTotalHits(true);
         PageResult<Object> pageResult = null;
         switch (reqVO.getType()) {
@@ -254,6 +252,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                             .from(reqVO.getTimeRange()[0])
                             .to(reqVO.getTimeRange()[1]));
                 }
+                searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.rangeQuery("pdu_id").gte(pduId).lte(pduId)));
                 searchRequest.source(searchSourceBuilder);
                 // 执行搜索,向ES发起http请求
                 SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -284,6 +283,16 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                             .from(reqVO.getTimeRange()[0])
                             .to(reqVO.getTimeRange()[1]));
                 }
+                String lineId = String.valueOf(reqVO.getLineId());
+                // 创建范围查询
+                QueryBuilder rangeQuery = QueryBuilders.rangeQuery("pdu_id").gte(pduId).lte(pduId);
+                // 创建匹配查询
+                QueryBuilder matchQuery = QueryBuilders.matchQuery("line_id", lineId);
+                // 将范围查询和匹配查询添加到布尔查询中
+                boolQuery.must(rangeQuery);
+                boolQuery.must(matchQuery);
+                // 将布尔查询设置到SearchSourceBuilder中
+                searchSourceBuilder.query(boolQuery);
                 searchRequest1.source(searchSourceBuilder);
                 // 执行搜索,向ES发起http请求
                 SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
@@ -314,6 +323,16 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                             .from(reqVO.getTimeRange()[0])
                             .to(reqVO.getTimeRange()[1]));
                 }
+                String loopId = String.valueOf(reqVO.getLoopId());
+                // 创建范围查询
+                rangeQuery = QueryBuilders.rangeQuery("pdu_id").gte(pduId).lte(pduId);
+                // 创建匹配查询
+                matchQuery = QueryBuilders.matchQuery("loop_id", loopId);
+                // 将范围查询和匹配查询添加到布尔查询中
+                boolQuery.must(rangeQuery);
+                boolQuery.must(matchQuery);
+                // 将布尔查询设置到SearchSourceBuilder中
+                searchSourceBuilder.query(boolQuery);
                 searchRequest2.source(searchSourceBuilder);
                 // 执行搜索,向ES发起http请求
                 SearchResponse searchResponse2 = client.search(searchRequest2, RequestOptions.DEFAULT);
@@ -344,6 +363,16 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                             .from(reqVO.getTimeRange()[0])
                             .to(reqVO.getTimeRange()[1]));
                 }
+                String outletId = String.valueOf(reqVO.getOutletId());
+                // 创建范围查询
+                rangeQuery = QueryBuilders.rangeQuery("pdu_id").gte(pduId).lte(pduId);
+                // 创建匹配查询
+                matchQuery = QueryBuilders.matchQuery("outlet_id", outletId);
+                // 将范围查询和匹配查询添加到布尔查询中
+                boolQuery.must(rangeQuery);
+                boolQuery.must(matchQuery);
+                // 将布尔查询设置到SearchSourceBuilder中
+                searchSourceBuilder.query(boolQuery);
                 searchRequest3.source(searchSourceBuilder);
                 // 执行搜索,向ES发起http请求
                 SearchResponse searchResponse3 = client.search(searchRequest3, RequestOptions.DEFAULT);
@@ -369,6 +398,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     @Override
     public PageResult<Object> getEnvDataPage(HistoryDataPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = null;
+        Integer sensorId = pageReqVO.getSensorId();
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         int pageNo = pageReqVO.getPageNo();
@@ -386,8 +416,22 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         if (!Objects.equals(pageReqVO.getIpAddr(), "") && !Objects.equals(pageReqVO.getIpAddr(), null)){
             Integer pduId = getPduIdByAddr(pageReqVO.getIpAddr(), pageReqVO.getCascadeAddr());
             if(pduId != null){
-                // 这样构造的查询条件，将不进行score计算，从而提高查询效率
-                searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.rangeQuery("pdu_id").gte(pduId).lte(pduId)));
+                if (!Objects.equals(sensorId, 0)){
+                    // 创建范围查询
+                    QueryBuilder rangeQuery = QueryBuilders.rangeQuery("pdu_id").gte(pduId).lte(pduId);
+                    // 创建匹配查询
+                    QueryBuilder matchQuery = QueryBuilders.matchQuery("sensor_id", sensorId);
+                    // 创建BoolQueryBuilder对象
+                    BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+                    // 将范围查询和匹配查询添加到布尔查询中
+                    boolQuery.must(rangeQuery);
+                    boolQuery.must(matchQuery);
+                    // 将布尔查询设置到SearchSourceBuilder中
+                    searchSourceBuilder.query(boolQuery);
+                }else{
+                    // 这样构造的查询条件，将不进行score计算，从而提高查询效率
+                    searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.rangeQuery("pdu_id").gte(pduId).lte(pduId)));
+                }
             }else{
                 // 查不到pdu 直接返回空数据
                 pageResult = new PageResult<>();
@@ -395,9 +439,15 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                         .setTotal(0L);
                 return pageResult;
             }
-
         }else{
-            searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+            if (!Objects.equals(sensorId, 0)){
+                QueryBuilder matchQuery = QueryBuilders.matchQuery("sensor_id", sensorId);
+                BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+                boolQuery.must(matchQuery);
+                searchSourceBuilder.query(boolQuery);
+            }else{
+                searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+            }
         }
 
         // 搜索请求对象

@@ -9,7 +9,13 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class HistoryDataDetailsReqVO extends PageParam {
-    private Integer id;
+    private Integer pduId;
+
+    private Integer lineId;
+
+    private Integer loopId;
+
+    private Integer outletId;
 
     private String type;
 

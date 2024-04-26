@@ -59,6 +59,17 @@
               />
           </el-form-item>
 
+          <el-form-item label="传感器" prop="sensorId">
+            <el-select
+              v-model="queryParams.sensorId"
+              class="!w-120px"
+              @change="handleQuery">
+              <el-option label="全部" :value=0 />
+              <el-option label="1" :value=1 />
+              <el-option label="2" :value=2 />
+            </el-select>
+          </el-form-item>
+
           <el-form-item label="颗粒度" prop="type">
             <el-select
               v-model="queryParams.granularity"
@@ -255,6 +266,7 @@ const queryParams = reactive({
   granularity: 'realtime',
   ipAddr: undefined,
   cascadeAddr: '0',
+  sensorId: 0,
   timeRange: undefined,
 })
 const pageSizeArr = ref([15,30,50,100])
@@ -373,6 +385,7 @@ watch(() => queryParams.granularity, (newValues) => {
       // 配置表格列
       tableColumns.value = [
         { label: '位置', align: 'center', prop: 'location', istrue:true, width: '180px'}, 
+        { label: '传感器', align: 'center', prop: 'sensor_id', istrue:true},
         { label: '平均温度(℃)', align: 'center', prop: 'tem_avg_value', istrue:true, width: '180px' },
         { label: '最大温度(℃)', align: 'center', prop: 'tem_max_value', istrue:true, width: '180px' },
         { label: '最大温度时间', align: 'center', prop: 'tem_max_time' , width: '230px', istrue:true},
