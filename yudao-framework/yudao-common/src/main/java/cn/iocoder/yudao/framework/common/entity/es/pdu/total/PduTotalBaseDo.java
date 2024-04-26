@@ -10,7 +10,7 @@ import lombok.Data;
  * @Description: 公共属性
  */
 @Data
-public class PduBaseDo {
+public class PduTotalBaseDo {
 
 
     private int id;

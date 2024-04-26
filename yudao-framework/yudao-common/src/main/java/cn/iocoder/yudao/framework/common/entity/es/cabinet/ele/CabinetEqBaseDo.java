@@ -1,29 +1,24 @@
-package cn.iocoder.yudao.framework.common.entity.es.pdu.ele;
+package cn.iocoder.yudao.framework.common.entity.es.cabinet.ele;
 
 import cn.hutool.core.date.DateTime;
-import cn.iocoder.yudao.framework.common.entity.es.pdu.PduBaseDo;
+import cn.iocoder.entity.es.cabinet.CabinetBaseDo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 /**
- * @Author: chenwany
- * @Date: 2024/4/9 09:39
- * @Description: 电量计算基础数据
+ * @author luowei
+ * @version 1.0
+ * @description: 机柜电量基础表
+ * @date 2024/4/23 10:24
  */
 @Data
-public class PduEqBaseDo extends PduBaseDo {
+public class CabinetEqBaseDo extends CabinetBaseDo {
 
     /**
      * 开始时间
      */
     @JsonProperty("start_time")
     private DateTime startTime;
-
-    /**
-     * 结束时间
-     */
-    @JsonProperty("end_time")
-    private DateTime endTime;
 
     /**
      * 开始电能
@@ -38,17 +33,22 @@ public class PduEqBaseDo extends PduBaseDo {
     private double endEle;
 
     /**
+     * 结束时间
+     */
+    @JsonProperty("end_time")
+    private DateTime endTime;
+
+    /**
      * 电量
      */
     @JsonProperty("eq_value")
-    private double eq;
+    private double eqValue;
 
     /**
      * 电费
      */
     @JsonProperty("bill_value")
-    private double bill;
-
+    private double billValue;
 
     /**
      * 计费方式

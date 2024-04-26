@@ -8,5 +8,5 @@ import lombok.Data;
  * @Description: pdu总历史数据表（按天算）
  */
 @Data
-public class PduHdaTotalDayDo extends PduBaseDo {
+public class PduHdaTotalDayDo extends PduTotalBaseDo {
 }
