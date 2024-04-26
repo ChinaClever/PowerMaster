@@ -1,21 +1,23 @@
 <template>
-  <div v-if="showSearch" class="head-container">
-    <el-input v-model="deptName" class="mb-20px" clearable placeholder="请输入部门名称">
-      <template #prefix>
-        <Icon icon="ep:search" />
-      </template>
-    </el-input>
-  </div>
-  <div class="head-container">
-    <el-tree
-      ref="treeRef"
-      :data="dataList"
-      :props="defaultProps"
-      :accordion="isAccordion"
-      :filter-node-method="filterNode"
-      :show-checkbox="showCheckbox"
-      @node-click="handleNodeClick"
-      @check="handleCheckedNodes" />
+  <div class="container">
+    <div v-if="showSearch" class="head-container">
+      <el-input v-model="deptName" class="mb-20px" clearable placeholder="请输入部门名称">
+        <template #prefix>
+          <Icon icon="ep:search" />
+        </template>
+      </el-input>
+    </div>
+    <div class="head-container">
+      <el-tree
+        ref="treeRef"
+        :data="dataList"
+        :props="defaultProps"
+        :accordion="isAccordion"
+        :filter-node-method="filterNode"
+        :show-checkbox="showCheckbox"
+        @node-click="handleNodeClick"
+        @check="handleCheckedNodes" />
+    </div>
   </div>
 </template>
 
@@ -71,4 +73,8 @@ watch(deptName, (val) => {
 
 <style scoped>
 /* 自定义按钮组件的样式 */
+.container {
+  padding: 20px;
+  box-sizing: border-box;
+}
 </style>
