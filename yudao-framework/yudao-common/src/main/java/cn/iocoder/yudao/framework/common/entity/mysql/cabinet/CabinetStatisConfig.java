@@ -96,6 +96,11 @@ public class CabinetStatisConfig implements Serializable {
      */
     private String timingPushCron;
 
+    /**
+     * redis推送任务
+     */
+    private String redisCron;
+
 
     /**
      * 电能存储任务
