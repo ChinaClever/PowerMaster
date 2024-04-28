@@ -3,7 +3,7 @@
     <!-- 左大侧 -->
     <div class="master-left" :style="`flex: ${leftFlex}`">
       <ContentWrap style="height: calc(100% - 15px)">
-        <div v-if="!isCloseNav" class="nav-left">
+        <div v-if="!isCloseNav && switchNav" class="nav-left">
           <div class="navBar">微模块机房</div>
           <div class="header">
             <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
@@ -63,10 +63,12 @@
             </div>
           </div>
         </div>
-        <div v-if="!isCloseNav" class="openNavtree">
-          <button class="btn" @click.prevent="openNavtree">{{isOpenNavtree ? '关闭' : '打开'}}</button>
+        <div v-if="!isCloseNav" class="openNavtree" @click.prevent="handleSwitchNav">
+          <Icon icon="ep:switch" />切换
+          <!-- <button class="btn">{{switchNav ? '关闭' : '打开'}}</button> -->
         </div>
-        <NavTree v-if="!isCloseNav && isOpenNavtree" @node-click="handleClick" @check="handleCheck" :showSearch="true" :dataList="data" />
+        <div v-if="!isCloseNav && !switchNav" class="navBar">微模块机房</div>
+        <NavTree v-if="!isCloseNav && !switchNav" @node-click="handleClick" @check="handleCheck" :showSearch="true" :dataList="data" />
         <div v-if="isCloseNav" class="expand" @click.prevent="expandNav"><Icon icon="ep:arrow-right" /><span>展</span><span>开</span></div>
       </ContentWrap>
     </div>
@@ -168,14 +170,15 @@
         <div class="arrayContainer">
           <div class="arrayItem" v-for="item in listPage" :key="item.id">
             <div class="content">
-              <div><img class="icon" alt="" src="@/assets/imgs/jigui.jpg" /></div>
+              <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div>
               <div class="info">
-                <div>总视在功率：{{item.abszgl}}</div>
-                <div>总有功功率：{{item.abyggl}}</div>
-                <div>AB路占比：{{item.fzb}}</div>
+                <div>视在功率：{{item.abszgl}}KVA</div>
+                <div>有功功率：{{item.abyggl}}KW</div>
+                <div>负载率：{{item.fzb}}</div>
+                <!-- <div>电能：50kWh</div> -->
               </div>
             </div>
-            <div class="room">{{item.jf}}-{{item.mc}}</div>
+            <div class="room">{{item.jf}}-{{item.jg}}</div>
             <div v-if="item.status == 0" class="status-empty">空载</div>
             <div v-if="item.status == 1" class="status-normal">正常</div>
             <div v-if="item.status == 2" class="status-warn">预警</div>
@@ -199,7 +202,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 import { object } from 'vue-types';
-import MachineForm from './MachineForm.vue'
+import MachineForm from './component/MachineForm.vue'
 // import MyButton from '@/components/MyButton/MyButton.vue';
 
 const { push } = useRouter() // 路由跳转
@@ -208,13 +211,13 @@ const machineForm = ref()
 const colNode = ref()
 const testData = ref(null)
 const loading = ref(false)
-const isCloseNav = ref(false)
-const isOpenNavtree = ref(false)
+const isCloseNav = ref(false) // 左侧导航是否收起
+const switchNav = ref(false) //false: 导航树 true：微模块展示
 const switchValue = ref(0)
 const leftFlex = ref(8)
 const queryParams = reactive({
   username: undefined,
-  showCol: [1, 2, 3, 14] as number[],
+  showCol: [1, 2, 3, 14, 15, 16] as number[],
   pageNo: 1,
   pageSize: 10,
 })
@@ -253,14 +256,16 @@ const statusList = reactive([
   },
 ])
 const props = { multiple: true }
-const openNavtree = () => {
-  isOpenNavtree.value = !isOpenNavtree.value
+const handleSwitchNav = () => {
+  switchNav.value = !switchNav.value
 }
+// 收起左侧导航
 const closeNav = () => {
   console.log('closeNav')
   leftFlex.value = 1
   isCloseNav.value = true
 }
+// 展开左侧导航
 const expandNav = () => {
   console.log('expandNav')
   leftFlex.value = 8
@@ -275,7 +280,7 @@ const handleSelectStatus = (index) => {
 }
 const toMachineDetail = () => {
   console.log('toMachineDetail!')
-  push('/line/Managment')
+  push('/cabinet/detail')
 }
 const handleClick = (row) => {
   console.log('Button clicked!', row);
@@ -319,7 +324,7 @@ onBeforeMount(() => {
   listPage.value = list
 })
 const listPage = ref<any>([])
-const defaultOptionsCol = reactive([[0,1], [0,2], [0,3], [14]])
+const defaultOptionsCol = reactive([[0,1], [0,2], [0,3], [14], [15], [16]])
 const optionsCol = reactive([{
   value: 0,
   label: '总',
@@ -393,7 +398,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜1',
     status: 1,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -412,7 +417,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜2',
     status: 1,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -431,7 +436,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜3',
     status: 1,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -450,7 +455,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜4',
     status: 0,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -469,7 +474,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜1',
     status: 1,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -488,7 +493,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜6',
     status: 1,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -507,7 +512,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜7',
     status: 1,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -526,7 +531,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜8',
     status: 1,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -545,7 +550,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜9',
     status: 1,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -564,7 +569,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜10',
     status: 1,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -583,7 +588,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜11',
     status: 1,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -602,7 +607,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜12',
     status: 1,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -621,7 +626,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜13',
     status: 1,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -640,7 +645,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜14',
     status: 2,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -659,7 +664,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜15',
     status: 1,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -678,7 +683,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜16',
     status: 1,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -697,7 +702,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜17',
     status: 1,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -716,7 +721,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜18',
     status: 1,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -735,7 +740,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜19',
     status: 1,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -754,7 +759,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜20',
     status: 1,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -773,7 +778,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜21',
     status: 1,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -792,7 +797,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜22',
     status: 1,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -811,7 +816,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜23',
     status: 1,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -830,7 +835,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜24',
     status: 1,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
   {
@@ -849,7 +854,7 @@ let list = reactive([
     jf: '机房202',
     jg: '机柜25',
     status: 1,
-    fzb: '50%',
+    fzb: '35%',
     abzb: 30,
   },
 ])
@@ -884,20 +889,22 @@ const data = reactive([{
 .master {
   display: flex;
   .master-left {
+    position: relative;
     overflow: hidden;
     box-sizing: border-box;
     padding-right: 20px;
     transition: all 0.2s linear;
     .openNavtree {
-      width: 100%;
-      padding: 0 20px;
+      // width: 100%;
       box-sizing: border-box;
       text-align: right;
-      .btn {
-        border: 1px solid #ccc;
-        background-color: #fff;
-        cursor: pointer;
-      }
+      cursor: pointer;
+      position: absolute;
+      right: 28px;
+      top: 12px;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
     }
     .expand {
       display: flex;
@@ -978,6 +985,14 @@ const data = reactive([{
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
+.navBar {
+  width: 100%;
+  height: 46px;
+  line-height: 46px;
+  padding-left: 10px;
+  background-color: #d5ffc1;
+  font-size: 14px;
+}
 .nav-left {
   width: 100%;
   height: 100%;
@@ -1051,14 +1066,6 @@ const data = reactive([{
         }
       }
     }
-  }
-  .navBar {
-    width: 100%;
-    height: 46px;
-    line-height: 46px;
-    padding-left: 10px;
-    background-color: #d5ffc1;
-    font-size: 14px;
   }
   .header {
     display: flex;
