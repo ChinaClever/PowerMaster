@@ -11,13 +11,12 @@ import java.time.LocalDateTime;
 /**
  * @author luowei
  * @version 1.0
- * @description: 机柜索引表
- * @date 2024/4/23 10:40
+ * @description: 机柜配置表
+ * @date 2024/4/28 13:53
  */
 @Data
-@TableName(value = "cabinet_index")
-public class CabinetIndex implements Serializable {
-
+@TableName(value = "cabinet_cfg")
+public class CabinetCfg implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
@@ -25,43 +24,35 @@ public class CabinetIndex implements Serializable {
 
 
     /**
-     * 机房编号
+     * 机柜id
      */
-    private int roomId;
+    private int cabinetId;
 
     /**
      * 机柜名称
      */
-    private String name;
-    /**
-     * 通道编号
-     */
-    private int aisleId;
+    private String cabinetName;
 
     /**
-     * 电力容量
+     * 机柜高度
      */
-    private float powCapacity;
+    private int cabinetHeight;
+
 
     /**
-     * 运行状态
+     * 注释
      */
-    private int runStatus;
+    private int xCoordinate;
 
     /**
-     * 数据来源
+     * 类名
      */
-    private int pduBox;
+    private int yCoordinate;
 
     /**
-     * 是否禁用
+     * 所属于公司
      */
-    private int isDisabled;
-
-    /**
-     * 是否删除
-     */
-    private int isDeleted;
+    private String company;
 
     /**
      * 更新时间
@@ -71,4 +62,5 @@ public class CabinetIndex implements Serializable {
      * 创建时间
      */
     private LocalDateTime createTime;
+
 }
