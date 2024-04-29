@@ -3,6 +3,8 @@ package cn.iocoder.yudao.module.cabinet.vo;
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author luowei
  * @version 1.0
@@ -27,7 +29,7 @@ public class CabinetIndexVo extends PageParam {
     /**
      * 运行状态
      */
-    private Integer runStatus;
+    private List<Integer> runStatus;
 
     /**
      * 数据来源
