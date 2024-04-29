@@ -32,8 +32,11 @@
         <if test = " indexVo.pduBox != null ">
             and ci.pdu_box = #{indexVo.pduBox}
         </if>
-        <if test = " indexVo.runStatus != null ">
-            and ci.run_status = #{indexVo.runStatus}
+        <if test = " indexVo.runStatus != null and indexVo.runStatus.size > 0">
+            and ci.run_status in
+            <foreach collection="indexVo.runStatus" item="item" index="index" open="(" close=")" separator=",">
+                         #{item}
+            </foreach>
         </if>
         <if test = " indexVo.cabinetId != null ">
             and ci.cabinet_id = #{indexVo.cabinet_id}
