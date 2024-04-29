@@ -297,3 +297,7 @@ cron:
   day: 0 0 6 * * ?
 #ES一次性最大写入数据量
 max-deal-count: 2000
+
+mybatis-plus:
+  configuration:
+    shrink-whitespaces-in-sql: true #从SQL中删除多余的空格字符

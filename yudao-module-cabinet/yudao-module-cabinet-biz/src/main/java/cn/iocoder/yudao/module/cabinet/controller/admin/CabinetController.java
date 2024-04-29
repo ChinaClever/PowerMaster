@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.cabinet.controller;
+package cn.iocoder.yudao.module.cabinet.controller.admin;
 
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
