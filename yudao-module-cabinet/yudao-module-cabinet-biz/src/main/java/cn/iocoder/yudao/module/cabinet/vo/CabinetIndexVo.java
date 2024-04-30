@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * @author luowei
  * @version 1.0
- * @description: TODO
+ * @description: 机柜搜索实体
  * @date 2024/4/28 13:32
  */
 @Data

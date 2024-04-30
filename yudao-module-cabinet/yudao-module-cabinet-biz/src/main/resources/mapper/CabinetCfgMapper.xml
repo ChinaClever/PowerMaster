@@ -9,7 +9,7 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
-    <select id="selectList" parameterType="cn.iocoder.yudao.module.cabinet.vo.CabinetIndexVo"
+    <select id="selectCabList" parameterType="cn.iocoder.yudao.module.cabinet.vo.CabinetIndexVo"
             resultType="cn.iocoder.yudao.module.cabinet.dto.CabinetIndexDTO">
 
         select
