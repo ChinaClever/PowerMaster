@@ -102,4 +102,56 @@ public class CabConstants {
      * 公司
      */
     public static final String COMPANY = "company";
+
+
+    /**
+     * 小时
+     */
+    public static final String HOUR = "HOUR";
+
+    /**
+     * 天
+     */
+    public static final String DAY = "DAY";
+
+    /**
+     * 机柜id
+     */
+    public static final String CABINET_ID = "cabinet_id";
+
+    /**
+     * 机柜功率历史数据表（实时）
+     */
+    public static final String CABINET_HDA_POW_REALTIME = "cabinet_hda_pow_realtime";
+
+    /**
+     * 机柜功率历史数据表（按小时算）
+     */
+    public static final String CABINET_HDA_POW_HOUR = "cabinet_hda_pow_hour";
+
+    /**
+     * 机柜功率历史数据表（按天算）
+     */
+    public static final String CABINET_HDA_POW_DAY = "cabinet_hda_pow_day";
+
+    /**
+     * 机柜总电能表(实时)
+     */
+    public static final String CABINET_ELE_TOTAL_REALTIME = "cabinet_ele_total_realtime";
+
+    /**
+     * 机柜电量表（按天算）
+     */
+    public static final String CABINET_EQ_TOTAL_DAY = "cabinet_eq_total_day";
+
+    /**
+     * 机柜电量表（按周算）
+     */
+    public static final String CABINET_EQ_TOTAL_WEEK = "cabinet_eq_total_week";
+
+    /**
+     * 机柜电量表（按月算）
+     */
+    public static final String CABINET_EQ_TOTAL_MONTH = "cabinet_eq_total_month";
+
 }

@@ -25,6 +25,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -36,6 +37,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.module.cabinet.constant.CabConstants.*;
 
@@ -168,21 +170,24 @@ public class CabinetServiceImpl implements CabinetService {
             CabinetPdu pdu = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>()
                     .eq(CabinetPdu::getCabinetId,index.getId()));
             //判断pdu是否已经关联其他机柜
-            CabinetPdu pduFlag = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>()
-                    .and(wq -> wq.and(qr -> qr.eq(CabinetPdu::getPduIpA,vo.getPduIpA())
-                                    .eq(CabinetPdu::getCasIdA,vo.getCasIdA()))
-                            .or()
-                            .and(qr -> qr.eq(CabinetPdu::getPduIpB,vo.getPduIpA())
-                                    .eq(CabinetPdu::getCasIdB,vo.getCasIdA())))
-                    .or()
-                    .and(wq -> wq.and(qr -> qr.eq(CabinetPdu::getPduIpA,vo.getPduIpB())
-                                    .eq(CabinetPdu::getCasIdA,vo.getCasIdB()))
-                            .or()
-                            .and(qr -> qr.eq(CabinetPdu::getPduIpB,vo.getPduIpB())
-                                    .eq(CabinetPdu::getCasIdB,vo.getCasIdB()))));
-            if (Objects.nonNull(pduFlag)){
-                return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(),"pdu已关联其他机柜");
+            List<CabinetIndex> indexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
+                    .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
+                    .eq(CabinetIndex::getIsDisabled,DisableEnums.ENABLE.getStatus()));
+            if (!CollectionUtils.isEmpty(indexList)){
+                List<Integer> ids = indexList.stream().map(CabinetIndex::getId).collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(ids)){
+                    if (isExist(vo.getPduIpA(), vo.getCasIdA(), ids)){
+                        log.info("---- " + vo.getPduIpA() + vo.getCasIdA());
+                        return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(),"pdu已关联其他机柜");
+                    }
+
+                    if (isExist(vo.getPduIpB(), vo.getCasIdB(), ids)){
+                        log.info("---- " + vo.getPduIpB() + vo.getCasIdB());
+                        return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(),"pdu已关联其他机柜");
+                    }
+                }
             }
+
 
             //判断AB路pdu是否一样
             if(vo.getPduIpA().equals(vo.getPduIpB()) && vo.getCasIdA() == vo.getCasIdB()){
@@ -292,5 +297,28 @@ public class CabinetServiceImpl implements CabinetService {
        cfg.setXCoordinate(vo.getXCoordinate());
        cfg.setYCoordinate(vo.getYCoordinate());
         return cfg;
+    }
+
+    /**
+     * 判断pdu是否已经绑定
+     * @param ip
+     * @param cas
+     * @param ids
+     * @return
+     */
+    private boolean isExist(String ip ,Integer cas,List<Integer> ids){
+        List<CabinetPdu> pduFlag = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>()
+                        .in(CabinetPdu::getCabinetId,ids)
+                        .and((wq -> wq.and(qr -> qr.eq(StringUtils.isNotEmpty(ip),CabinetPdu::getPduIpA,ip)
+                                        .eq(Objects.nonNull(cas),CabinetPdu::getCasIdA,cas))
+                                .or(qr -> qr.eq(StringUtils.isNotEmpty(ip),CabinetPdu::getPduIpB,ip)
+                                        .eq(Objects.nonNull(cas),CabinetPdu::getCasIdB,cas)))
+                        )
+                );
+        if (!CollectionUtils.isEmpty(pduFlag)){
+            return true;
+        }else {
+            return false;
+        }
     }
 }
