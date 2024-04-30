@@ -96,4 +96,10 @@ public class CabConstants {
      * 视在功率
      */
     public static final String POW_APPARENT = "pow_apparent";
+
+
+    /**
+     * 公司
+     */
+    public static final String COMPANY = "company";
 }
