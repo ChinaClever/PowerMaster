@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.cabinet.controller.admin;
 import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.cabinet.dto.CabinetDTO;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetIndexDTO;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexVo;
@@ -48,6 +49,16 @@ public class CabinetController {
     @GetMapping("/cabinet/detail")
     public CommonResult<JSONObject> getCabinetDetail(@Param("id") int id)  {
         JSONObject dto = cabinetService.getCabinetDetail(id);
+        return success(dto);
+    }
+
+    /**
+     * 机柜详情
+     * @param id 机柜id
+     */
+    @GetMapping("/cabinet/detailV2")
+    public CommonResult<CabinetDTO> getCabinetDetailV2(@Param("id") int id)  {
+        CabinetDTO dto = cabinetService.getCabinetDetailV2(id);
         return success(dto);
     }
 
