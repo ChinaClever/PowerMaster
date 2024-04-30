@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.cabinet.service;
 
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.cabinet.dto.CabinetDTO;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetIndexDTO;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexVo;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetVo;
@@ -28,6 +29,13 @@ public interface CabinetService {
      * @return
      */
     JSONObject getCabinetDetail(int id);
+
+    /**
+     * 获取机柜信息
+     * @param id
+     * @return
+     */
+    CabinetDTO getCabinetDetailV2(int id);
 
     /**
      * 机柜新增/编辑页面
