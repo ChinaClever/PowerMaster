@@ -161,7 +161,8 @@ public class CabinetServiceImpl implements CabinetService {
             //判断pdu是否已经关联其他机柜
             List<CabinetIndex> indexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
                     .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
-                    .eq(CabinetIndex::getIsDisabled,DisableEnums.ENABLE.getStatus()));
+                    .eq(CabinetIndex::getIsDisabled,DisableEnums.ENABLE.getStatus())
+                    .ne(Objects.nonNull(vo.getId()),CabinetIndex::getId,vo.getId()));
             if (!CollectionUtils.isEmpty(indexList)){
                 List<Integer> ids = indexList.stream().map(CabinetIndex::getId).collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(ids)){
@@ -270,6 +271,9 @@ public class CabinetServiceImpl implements CabinetService {
     public int delCabinet(int id) {
         try {
             CabinetIndex index = cabinetIndexMapper.selectById(id);
+            if (Objects.isNull(index)){
+                return -1;
+            }
             if (index.getIsDeleted() == DelEnums.DELETE.getStatus()){
                 //已经删除则物理删除
                 cabinetIndexMapper.deleteById(id);
@@ -283,6 +287,13 @@ public class CabinetServiceImpl implements CabinetService {
                         .eq(CabinetIndex::getId,id)
                         .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
             }
+
+            //删除key
+            String key = REDIS_KEY_CABINET + index.getRoomId()+SPLIT_KEY + index.getId();
+
+            boolean flag = redisTemplate.delete(key);
+            log.info("key: " + key + " flag : " + flag);
+
             return id;
         }catch (Exception e){
             log.error("删除失败：",e);
