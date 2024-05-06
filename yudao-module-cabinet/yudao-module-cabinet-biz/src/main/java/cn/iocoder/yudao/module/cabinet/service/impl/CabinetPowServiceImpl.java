@@ -46,6 +46,7 @@ public class CabinetPowServiceImpl implements CabinetPowService {
     public List<CabinetPowDTO> getPowList(CabinetPowVo vo) {
         List<CabinetPowDTO> list = new ArrayList<>();
         try {
+            //近一个小时
             if (vo.getType().equals(HOUR)){
                 DateTime end = DateTime.now();
                 Calendar calendar = Calendar.getInstance();
@@ -64,7 +65,7 @@ public class CabinetPowServiceImpl implements CabinetPowService {
                     dto.setDateTime(cabinetPowRealtimeDo.getCreateTime());
                     list.add(dto);
                 });
-
+            //近24小时
             }else if(vo.getType().equals(DAY)){
                 DateTime end = DateTime.now();
                 Calendar calendar = Calendar.getInstance();
@@ -96,6 +97,15 @@ public class CabinetPowServiceImpl implements CabinetPowService {
     }
 
 
+    /**
+     * 获取es数据
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param powVo  请求参数
+     * @param index  索引表
+     * @return
+     * @throws IOException
+     */
     private List<String> getData(String startTime, String endTime,CabinetPowVo powVo, String index) throws IOException {
         // 创建SearchRequest对象, 设置查询索引名
         SearchRequest searchRequest = new SearchRequest(index);

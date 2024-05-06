@@ -4,7 +4,6 @@ import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetPowDTO;
 import cn.iocoder.yudao.module.cabinet.service.CabinetPowService;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetPowVo;
-import com.alibaba.fastjson2.JSONObject;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
