@@ -2,8 +2,6 @@ package cn.iocoder.yudao.module.cabinet.dto;
 
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
 /**
  * @author luowei
  * @version 1.0

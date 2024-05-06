@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.framework.common.enums;
+package cn.iocoder.yudao.module.cabinet.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -6,19 +6,20 @@ import lombok.Getter;
 /**
  * @author luowei
  * @version 1.0
- * @description: 删除枚举
+ * @description: 菜单类型枚举
  * @date 2024/4/23 11:10
  */
 @Getter
 @AllArgsConstructor
-public enum DelEnums {
-    DELETE(1, "删除"),
-    NO_DEL(0, "未删除");
+public enum MenuTypeEnums {
+    ROOM(1, "机房"),
+    AISLE(2, "通道"),
+    CABINET(3, "机柜"),;
 
     /**
-     * 状态值
+     * 类型
      */
-    private final Integer status;
+    private final Integer type;
     /**
      * 状态名
      */

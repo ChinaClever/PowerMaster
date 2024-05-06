@@ -88,11 +88,11 @@ public class CabinetServiceImpl implements CabinetService {
 
             }
 
-            return new PageResult<JSONObject>(result, indexDTOPage.getTotal());
+            return new PageResult<>(result, indexDTOPage.getTotal());
         }catch (Exception e){
             log.error("获取数据失败：",e);
         }
-        return new PageResult<JSONObject>(new ArrayList<>(), 0L);
+        return new PageResult<>(new ArrayList<>(), 0L);
 
     }
 
@@ -102,7 +102,7 @@ public class CabinetServiceImpl implements CabinetService {
         try{
 
             CabinetIndex index = cabinetIndexMapper.selectById(id);
-
+            //获取redis数据
             String key = REDIS_KEY_CABINET + index.getRoomId()+SPLIT_KEY + id;
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(redisTemplate.opsForValue().get(key)));
             return jsonObject;
@@ -117,6 +117,7 @@ public class CabinetServiceImpl implements CabinetService {
         CabinetDTO dto = new CabinetDTO();
 
         try {
+            //获取数据库保存数据
             CabinetIndex index = cabinetIndexMapper.selectById(id);
             if (Objects.nonNull(index)){
 

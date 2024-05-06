@@ -6,7 +6,7 @@ import lombok.Getter;
 /**
  * @author luowei
  * @version 1.0
- * @description: TODO
+ * @description: 可用枚举
  * @date 2024/4/23 11:10
  */
 @Getter
