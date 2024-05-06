@@ -19,7 +19,7 @@ public class CabinetIndexVo extends PageParam {
     /**
      * 机柜id
      */
-    private Integer cabinetId;
+    private List<Integer> cabinetIds;
 
     /**
      * 机房编号

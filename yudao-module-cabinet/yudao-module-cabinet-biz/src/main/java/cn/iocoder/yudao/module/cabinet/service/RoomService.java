@@ -32,4 +32,10 @@ public interface RoomService {
      * @param roomId
      */
     List<AisleIndex>  aisleList(Integer roomId);
+
+
+    /**
+     * 获取机房菜单(全部)
+     */
+    List<RoomMenuDTO> roomMenuListAll();
 }
