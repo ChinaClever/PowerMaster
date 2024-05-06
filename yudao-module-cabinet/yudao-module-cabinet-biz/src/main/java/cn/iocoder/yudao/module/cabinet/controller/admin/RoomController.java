@@ -46,6 +46,14 @@ public class RoomController {
         return success(dto);
     }
 
+    /**
+     * 机房菜单全部
+     */
+    @GetMapping("/room/menuAll")
+    public CommonResult<List<RoomMenuDTO>> getRoomMenuAll()  {
+        List<RoomMenuDTO> dto = roomService.roomMenuListAll();
+        return success(dto);
+    }
 
     /**
      * 机房下柜列列表

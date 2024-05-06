@@ -38,8 +38,11 @@
                          #{item}
             </foreach>
         </if>
-        <if test = " indexVo.cabinetId != null ">
-            and ci.cabinet_id = #{indexVo.cabinet_id}
+        <if test = " indexVo.cabinetIds != null and indexVo.cabinetIds.size > 0">
+            and ci.id in
+            <foreach collection="indexVo.cabinetIds" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
         </if>
         <if test = " indexVo.roomId != null ">
             and ci.roomId = #{indexVo.roomId}
