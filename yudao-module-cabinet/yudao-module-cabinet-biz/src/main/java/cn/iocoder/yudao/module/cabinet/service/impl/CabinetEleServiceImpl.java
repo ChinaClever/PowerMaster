@@ -78,30 +78,14 @@ public class CabinetEleServiceImpl implements CabinetEleService {
         CabinetEleChainDTO chainDTO = new CabinetEleChainDTO();
         try {
 
-            ThreadUtil.execute(() -> {
-                try {
-                    getDayChain(id, chainDTO);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
 
-            ThreadUtil.execute(() -> {
-                try {
-                    getWeekChain(id, chainDTO);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            getDayChain(id, chainDTO);
 
 
-            ThreadUtil.execute(() -> {
-                try {
-                    getMonthChain(id, chainDTO);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            getWeekChain(id, chainDTO);
+
+
+            getMonthChain(id, chainDTO);
 
 
         } catch (Exception e) {
