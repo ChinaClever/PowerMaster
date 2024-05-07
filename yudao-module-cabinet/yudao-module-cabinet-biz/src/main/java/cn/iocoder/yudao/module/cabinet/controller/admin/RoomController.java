@@ -28,20 +28,22 @@ public class RoomController {
 
     /**
      * 机房列表
+     *
      * @param name 机房名称
      */
     @GetMapping("/room/list")
-    public CommonResult<List<RoomIndex>> getRoomList(@RequestParam(value = "name",required = false) String name)  {
+    public CommonResult<List<RoomIndex>> getRoomList(@RequestParam(value = "name", required = false) String name) {
         List<RoomIndex> dto = roomService.roomList(name);
         return success(dto);
     }
 
     /**
      * 机房菜单
+     *
      * @param id 机房id
      */
     @GetMapping("/room/menu")
-    public CommonResult<List<RoomMenuDTO>> getRoomMenu(@RequestParam(value = "id") Integer id)  {
+    public CommonResult<List<RoomMenuDTO>> getRoomMenu(@RequestParam(value = "id") Integer id) {
         List<RoomMenuDTO> dto = roomService.roomMenuList(id);
         return success(dto);
     }
@@ -50,17 +52,18 @@ public class RoomController {
      * 机房菜单全部
      */
     @GetMapping("/room/menuAll")
-    public CommonResult<List<RoomMenuDTO>> getRoomMenuAll()  {
+    public CommonResult<List<RoomMenuDTO>> getRoomMenuAll() {
         List<RoomMenuDTO> dto = roomService.roomMenuListAll();
         return success(dto);
     }
 
     /**
      * 机房下柜列列表
+     *
      * @param roomId 机房id
      */
     @GetMapping("/room/aisleList")
-    public CommonResult<List<AisleIndex>> aisleList(@RequestParam(value = "roomId") Integer roomId)  {
+    public CommonResult<List<AisleIndex>> aisleList(@RequestParam(value = "roomId") Integer roomId) {
         List<AisleIndex> dto = roomService.aisleList(roomId);
         return success(dto);
     }

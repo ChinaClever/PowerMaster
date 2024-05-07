@@ -57,7 +57,7 @@ public class CabConstants {
     /**
      * 传感器
      */
-    public static final String  BY_SENSOR = "by_sensor";
+    public static final String BY_SENSOR = "by_sensor";
 
     public static final String STATIS_CONFIG = "statisConfig";
 
@@ -99,6 +99,10 @@ public class CabConstants {
 
 
     /**
+     * 聚合名称
+     */
+    public static final String BY_CABINET = "by_cabinet";
+    /**
      * 公司
      */
     public static final String COMPANY = "company";
@@ -114,6 +118,16 @@ public class CabConstants {
      */
     public static final String DAY = "DAY";
 
+
+    /**
+     * 周
+     */
+    public static final String WEEK = "WEEK";
+
+    /**
+     * 月
+     */
+    public static final String MONTH = "MONTH";
     /**
      * 机柜id
      */

@@ -28,9 +28,10 @@ public class HttpUtil {
 
     /**
      * get请求
+     *
      * @param addr
      */
-    public void get(String addr){
+    public void get(String addr) {
         BufferedReader in = null;
         try {
             //创建信任管理器，忽略证书认证
@@ -84,8 +85,8 @@ public class HttpUtil {
             conn.connect();
             log.info("code : " + conn.getResponseCode());
 
-        }catch (Exception e){
-            log.error("异常：",e);
+        } catch (Exception e) {
+            log.error("异常：", e);
         }
 
     }

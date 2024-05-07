@@ -21,33 +21,33 @@
         ci.pdu_box as pduBox,
         ci.run_status as runStatus,
         ci.update_time as updateTime,
-        ci.create_time  as createTime,
+        ci.create_time as createTime,
         cf.cabinet_height as cabinetHeight,
         cf.x_coordinate as xCoordinate,
         cf.y_coordinate as yCoordinate,
         cf.company
         from cabinet_index ci
-        left join cabinet_cfg cf on ci.id  = cf.cabinet_id
-        where CI.is_disabled  = 0 and  CI.is_deleted  = 0
-        <if test = " indexVo.pduBox != null ">
+        left join cabinet_cfg cf on ci.id = cf.cabinet_id
+        where CI.is_disabled = 0 and CI.is_deleted = 0
+        <if test=" indexVo.pduBox != null ">
             and ci.pdu_box = #{indexVo.pduBox}
         </if>
-        <if test = " indexVo.runStatus != null and indexVo.runStatus.size > 0">
+        <if test=" indexVo.runStatus != null and indexVo.runStatus.size > 0">
             and ci.run_status in
             <foreach collection="indexVo.runStatus" item="item" index="index" open="(" close=")" separator=",">
-                         #{item}
+                #{item}
             </foreach>
         </if>
-        <if test = " indexVo.cabinetIds != null and indexVo.cabinetIds.size > 0">
+        <if test=" indexVo.cabinetIds != null and indexVo.cabinetIds.size > 0">
             and ci.id in
             <foreach collection="indexVo.cabinetIds" item="item" index="index" open="(" close=")" separator=",">
                 #{item}
             </foreach>
         </if>
-        <if test = " indexVo.roomId != null ">
+        <if test=" indexVo.roomId != null ">
             and ci.roomId = #{indexVo.roomId}
         </if>
-        <if test = " indexVo.company != null and indexVo.company != ''">
+        <if test=" indexVo.company != null and indexVo.company != ''">
             and CF.company like "%"#{indexVo.company}"%"
         </if>
 

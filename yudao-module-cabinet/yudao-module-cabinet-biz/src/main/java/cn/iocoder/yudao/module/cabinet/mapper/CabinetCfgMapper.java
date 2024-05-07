@@ -19,5 +19,5 @@ import org.apache.ibatis.annotations.Param;
 public interface CabinetCfgMapper extends BaseMapper<CabinetCfg> {
 
     @InterceptorIgnore(tenantLine = "true")
-    Page<CabinetIndexDTO> selectCabList(@Param("page") Page<CabinetIndexDTO> page, @Param("indexVo")CabinetIndexVo indexVo);
+    Page<CabinetIndexDTO> selectCabList(@Param("page") Page<CabinetIndexDTO> page, @Param("indexVo") CabinetIndexVo indexVo);
 }

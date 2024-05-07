@@ -31,4 +31,9 @@ public class RoomMenuDTO {
      */
     private int parentType;
 
+    /**
+     * 唯一标识
+     */
+    private String unique;
+
 }

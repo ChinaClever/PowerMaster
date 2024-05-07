@@ -18,13 +18,15 @@ public interface CabinetService {
 
     /**
      * 机柜列表页面
+     *
      * @param vo
      * @return
      */
-    PageResult<JSONObject>  getPageCabinet(CabinetIndexVo vo);
+    PageResult<JSONObject> getPageCabinet(CabinetIndexVo vo);
 
     /**
      * 机柜详情页面
+     *
      * @param id
      * @return
      */
@@ -32,6 +34,7 @@ public interface CabinetService {
 
     /**
      * 获取机柜信息
+     *
      * @param id
      * @return
      */
@@ -39,15 +42,16 @@ public interface CabinetService {
 
     /**
      * 机柜新增/编辑页面
+     *
      * @param vo
      * @return
      */
     CommonResult saveCabinet(CabinetVo vo);
 
 
-
     /**
      * 机柜删除
+     *
      * @param id
      * @return
      */

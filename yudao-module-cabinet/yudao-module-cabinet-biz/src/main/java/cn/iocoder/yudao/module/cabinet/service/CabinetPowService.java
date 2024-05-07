@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.cabinet.service;
 
+import cn.iocoder.yudao.module.cabinet.dto.CabinetActivePowDTO;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetPowDTO;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetPowVo;
 
@@ -15,8 +16,16 @@ public interface CabinetPowService {
 
     /**
      * 实时曲线功率数据
+     *
      * @param vo
      * @return
      */
     List<CabinetPowDTO> getPowList(CabinetPowVo vo);
+
+    /**
+     * 总有功功率数据
+     *
+     * @return
+     */
+    CabinetActivePowDTO getActivePow(CabinetPowVo vo);
 }

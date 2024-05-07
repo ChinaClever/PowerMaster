@@ -16,6 +16,7 @@ public interface RoomService {
 
     /**
      * 获取机房列表
+     *
      * @param name 机房名称
      */
     List<RoomIndex> roomList(String name);
@@ -23,15 +24,17 @@ public interface RoomService {
 
     /**
      * 获取机房菜单
+     *
      * @param id 机房id
      */
     List<RoomMenuDTO> roomMenuList(Integer id);
 
     /**
      * 柜列列表
+     *
      * @param roomId
      */
-    List<AisleIndex>  aisleList(Integer roomId);
+    List<AisleIndex> aisleList(Integer roomId);
 
 
     /**

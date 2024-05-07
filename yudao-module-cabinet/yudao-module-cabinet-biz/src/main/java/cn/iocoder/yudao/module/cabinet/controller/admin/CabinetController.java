@@ -33,30 +33,33 @@ public class CabinetController {
 
     /**
      * 机柜主页面
+     *
      * @param pageReqVO
      */
     @PostMapping("/cabinet/page")
-    public CommonResult<PageResult<JSONObject>> getCabinetPage(@RequestBody CabinetIndexVo pageReqVO)  {
+    public CommonResult<PageResult<JSONObject>> getCabinetPage(@RequestBody CabinetIndexVo pageReqVO) {
         PageResult<JSONObject> pageResult = cabinetService.getPageCabinet(pageReqVO);
         return success(pageResult);
     }
 
     /**
      * 机柜详情
+     *
      * @param id 机柜id
      */
     @GetMapping("/cabinet/detail")
-    public CommonResult<JSONObject> getCabinetDetail(@Param("id") int id)  {
+    public CommonResult<JSONObject> getCabinetDetail(@Param("id") int id) {
         JSONObject dto = cabinetService.getCabinetDetail(id);
         return success(dto);
     }
 
     /**
      * 机柜详情
+     *
      * @param id 机柜id
      */
     @GetMapping("/cabinet/detailV2")
-    public CommonResult<CabinetDTO> getCabinetDetailV2(@Param("id") int id)  {
+    public CommonResult<CabinetDTO> getCabinetDetailV2(@Param("id") int id) {
         CabinetDTO dto = cabinetService.getCabinetDetailV2(id);
         return success(dto);
     }
@@ -64,10 +67,11 @@ public class CabinetController {
 
     /**
      * 机柜新增/编辑页面
+     *
      * @param vo
      */
     @PostMapping("/cabinet/save")
-    public CommonResult saveCabinet(@RequestBody CabinetVo vo)  {
+    public CommonResult saveCabinet(@RequestBody CabinetVo vo) {
         CommonResult message = cabinetService.saveCabinet(vo);
         return message;
     }
@@ -75,13 +79,14 @@ public class CabinetController {
 
     /**
      * 机柜删除
+     *
      * @param id 机柜id
      */
     @GetMapping("/cabinet/delete")
-    public CommonResult<Integer> deleteCabinet(@Param("id") int id)  {
+    public CommonResult<Integer> deleteCabinet(@Param("id") int id) {
         int cabinetId = cabinetService.delCabinet(id);
         if (cabinetId == -1) {
-            return error(GlobalErrorCodeConstants.UNKNOWN.getCode(),"删除失败");
+            return error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "删除失败");
         }
         return success(cabinetId);
     }
