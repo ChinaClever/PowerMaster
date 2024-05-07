@@ -51,256 +51,259 @@
       </el-card>
     </el-col>
   </el-row>
-  <el-row :gutter="24" >
-    <el-col :span="6" class="card-box">
-      <el-card>
-        <template #header>
-          <el-row class="text-container"> 
-            <el-col :span="12">
-              <el-text line-clamp="2">
-                总数据
-              </el-text>
-            </el-col>   
-          </el-row>
-        </template>
-        <el-row justify="center">
-          <div ref="totalChartContainer" id="totalChartContainer" style="width: 400px; height: 200px;"></div>
-        </el-row>
-        <el-row class="text-container"> 
-          <el-col :span="8">
-            <el-text line-clamp="2" >
-              电能消耗:<br />
-              {{ totalData.ele }} kWh
-            </el-text>
-          </el-col>
-          <el-col :span="8">
-            <el-text line-clamp="2">
-              频率:<br />
-              {{ totalData.frequency }} Hz
-            </el-text>
-          </el-col>
-          <el-col :span="8">
-            <el-text line-clamp="2">
-              PF:<br />
-              {{ totalData.pf }}
-            </el-text>
-          </el-col>
-        </el-row>
-      </el-card>       
-    </el-col>
-    <el-col :span="6" class="card-box">
-      <el-card>
-        <template #header>
-            <div>
-              <span>A相</span>
-            </div>
+  <div v-show="controlVis.display">
+    <el-row :gutter="24" >
+      <el-col :span="6" class="card-box">
+        <el-card>
+          <template #header>
+            <el-row class="text-container"> 
+              <el-col :span="12">
+                <el-text line-clamp="2">
+                  总数据
+                </el-text>
+              </el-col>   
+            </el-row>
           </template>
           <el-row justify="center">
-            <div ref="AChartContainer" id="AChartContainer" style="width: 400px; height: 200px;"></div>
+            <div ref="totalChartContainer" id="totalChartContainer" style="width: 400px; height: 200px;"></div>
           </el-row>
-          <el-row class="text-container">
-            <el-col :span="8">
-              <el-text line-clamp="2" :style="{ backgroundColor: A.volColor }">
-                U1:<br />
-                {{ A.vol_value }} V
-              </el-text>
-            </el-col>
-            <el-col :span="8">
-              <el-text line-clamp="2" :style="{ backgroundColor: A.powColor }">
-                P1:<br />
-                {{ A.pow_value }} kW
-              </el-text>
-            </el-col>
+          <el-row class="text-container"> 
             <el-col :span="8">
               <el-text line-clamp="2" >
-                PF1:<br />
-                {{ A.pf }}
-              </el-text>
-            </el-col>
-          </el-row>
-      </el-card>
-    </el-col>
-    <el-col :span="6" class="card-box" v-if="controlVis.haveB">
-      <el-card>
-        <template #header>
-            <div>
-              <span>B相</span>
-            </div>
-          </template>                                                                           
-          <el-row justify="center">
-            <div ref="BChartContainer" id="BChartContainer" style="width: 400px; height: 200px;"></div>
-          </el-row>
-          <el-row class="text-container">
-            <el-col :span="8">
-              <el-text line-clamp="2"  :style="{ backgroundColor: B.volColor }">
-                U2:<br />
-                {{ B.vol_value }} V
-              </el-text>
-            </el-col>
-            <el-col :span="8">
-              <el-text line-clamp="2" :style="{ backgroundColor: B.powColor }">
-                P2:<br />
-                {{ B.pow_value }} kW
+                电能消耗:<br />
+                {{ totalData.ele }} kWh
               </el-text>
             </el-col>
             <el-col :span="8">
               <el-text line-clamp="2">
-                PF2:<br />
-                {{ B.pf }}
-              </el-text>
-            </el-col>
-          </el-row>
-      </el-card>
-    </el-col>
-    <el-col :span="6" class="card-box" v-if="controlVis.haveC">          
-      <el-card>
-        <template #header>
-            <div>
-              <span>C相</span>
-            </div>
-          </template>
-          <el-row justify="center">
-            <div ref="CChartContainer" id="CChartContainer" style="width: 400px; height: 200px;"></div>
-          </el-row>
-          <el-row class="text-container">
-            <el-col :span="8">
-              <el-text line-clamp="2"  :style="{ backgroundColor: C.volColor }">
-                U3:<br />
-                {{ C.vol_value }} V
-              </el-text>
-            </el-col>
-            <el-col :span="8">
-              <el-text line-clamp="2" :style="{ backgroundColor: C.powColor }">
-                P3:<br />
-                {{ C.pow_value }} kW
+                频率:<br />
+                {{ totalData.frequency }} Hz
               </el-text>
             </el-col>
             <el-col :span="8">
               <el-text line-clamp="2">
-                PF3:<br />
-                {{ C.pf }}
+                PF:<br />
+                {{ totalData.pf }}
               </el-text>
             </el-col>
           </el-row>
+        </el-card>       
+      </el-col>
+      <el-col :span="6" class="card-box">
+        <el-card>
+          <template #header>
+              <div>
+                <span>A相</span>
+              </div>
+            </template>
+            <el-row justify="center">
+              <div ref="AChartContainer" id="AChartContainer" style="width: 400px; height: 200px;"></div>
+            </el-row>
+            <el-row class="text-container">
+              <el-col :span="8">
+                <el-text line-clamp="2" :style="{ backgroundColor: A.volColor }">
+                  U1:<br />
+                  {{ A.vol_value }} V
+                </el-text>
+              </el-col>
+              <el-col :span="8">
+                <el-text line-clamp="2" :style="{ backgroundColor: A.powColor }">
+                  P1:<br />
+                  {{ A.pow_value }} kW
+                </el-text>
+              </el-col>
+              <el-col :span="8">
+                <el-text line-clamp="2" >
+                  PF1:<br />
+                  {{ A.pf }}
+                </el-text>
+              </el-col>
+            </el-row>
+        </el-card>
+      </el-col>
+      <el-col :span="6" class="card-box" v-if="controlVis.haveB">
+        <el-card>
+          <template #header>
+              <div>
+                <span>B相</span>
+              </div>
+            </template>                                                                           
+            <el-row justify="center">
+              <div ref="BChartContainer" id="BChartContainer" style="width: 400px; height: 200px;"></div>
+            </el-row>
+            <el-row class="text-container">
+              <el-col :span="8">
+                <el-text line-clamp="2"  :style="{ backgroundColor: B.volColor }">
+                  U2:<br />
+                  {{ B.vol_value }} V
+                </el-text>
+              </el-col>
+              <el-col :span="8">
+                <el-text line-clamp="2" :style="{ backgroundColor: B.powColor }">
+                  P2:<br />
+                  {{ B.pow_value }} kW
+                </el-text>
+              </el-col>
+              <el-col :span="8">
+                <el-text line-clamp="2">
+                  PF2:<br />
+                  {{ B.pf }}
+                </el-text>
+              </el-col>
+            </el-row>
+        </el-card>
+      </el-col>
+      <el-col :span="6" class="card-box" v-if="controlVis.haveC">          
+        <el-card>
+          <template #header>
+              <div>
+                <span>C相</span>
+              </div>
+            </template>
+            <el-row justify="center">
+              <div ref="CChartContainer" id="CChartContainer" style="width: 400px; height: 200px;"></div>
+            </el-row>
+            <el-row class="text-container">
+              <el-col :span="8">
+                <el-text line-clamp="2"  :style="{ backgroundColor: C.volColor }">
+                  U3:<br />
+                  {{ C.vol_value }} V
+                </el-text>
+              </el-col>
+              <el-col :span="8">
+                <el-text line-clamp="2" :style="{ backgroundColor: C.powColor }">
+                  P3:<br />
+                  {{ C.pow_value }} kW
+                </el-text>
+              </el-col>
+              <el-col :span="8">
+                <el-text line-clamp="2">
+                  PF3:<br />
+                  {{ C.pf }}
+                </el-text>
+              </el-col>
+            </el-row>
+        </el-card>
+      </el-col>
+    </el-row>
+    <el-collapse v-model="activeNames" >
+      <el-card>
+        <el-row>
+          <el-col >
+            <span style="width: 100%">趋势图</span>
+          </el-col>
+          <el-col >
+            <div style="float:right;margin-top: 0;">
+              <el-form-item  prop="type">
+                <el-button @click="queryParams.powGranularity = `oneHour`;switchValue = 0;" :type="!switchValue ? 'primary' : ''">最近一小时</el-button>
+                <el-button @click="queryParams.powGranularity = `twentyfourHour`;switchValue = 1;" :type="switchValue ? 'primary' : ''">过去24小时</el-button>
+              </el-form-item>
+            </div>
+          </el-col> 
+        </el-row>
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
+        </div>
+        
       </el-card>
-    </el-col>
-  </el-row>
-  <el-collapse v-model="activeNames" >
-    <el-card>
-      <el-row>
-        <el-col >
-          <span style="width: 100%">趋势图</span>
-        </el-col>
-        <el-col >
-          <div style="float:right;margin-top: 0;">
-            <el-form-item  prop="type">
-              <el-button @click="queryParams.powGranularity = `oneHour`;switchValue = 0;" :type="!switchValue ? 'primary' : ''">最近一小时</el-button>
-              <el-button @click="queryParams.powGranularity = `twentyfourHour`;switchValue = 1;" :type="switchValue ? 'primary' : ''">过去24小时</el-button>
-            </el-form-item>
-          </div>
-        </el-col> 
-      </el-row>
-      <div style="display: flex; justify-content: center; align-items: center;">
-        <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
-      </div>
-      
-    </el-card>
-    <el-collapse-item title="回路" name="1" v-if="controlVis.haveCircle">
-      <ContentWrap>
-        <el-table  :data="circleList" :stripe="true" :show-overflow-tooltip="true">
-          <el-table-column label="回路" align="center" prop="circuit" />
-          <el-table-column label="断路器状态" align="center" prop="breaker" v-if="controlVis.circleTableCol.breaker"> 
-            <template #default="scope" >
-              <el-tag type="" v-if="scope.row.breaker == 1">开启</el-tag>
-              <el-tag type="danger" v-if="scope.row.breaker == 0">关闭</el-tag>
-            </template>
-          </el-table-column>                        
-          <el-table-column label="当前电流" align="center" prop="cur_value" v-if="controlVis.circleTableCol.cur_value" >
-            <template #default="scope" >
-              <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.curColor }">
-                {{ scope.row.cur_value }}A
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="当前电压" align="center" prop="vol_value" v-if="controlVis.circleTableCol.vol_value" >
-            <template #default="scope">
-              <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.volColor }">
-                {{ scope.row.vol_value }}V
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="有功功率" align="center" prop="pow_value" v-if="controlVis.circleTableCol.pow_value" >
-            <template #default="scope">
-              <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.powColor }">
-                {{ scope.row.pow_value }}kW
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="电能消耗" align="center" prop="ele" v-if="controlVis.circleTableCol.ele">
-            <template #default="scope">
-             {{ scope.row.ele }}kWh
-            </template>
-          </el-table-column>
-        </el-table>
-      </ContentWrap>
-    </el-collapse-item>
-    <el-collapse-item title="输出位" name="3" v-if="controlVis.haveOutPut">
-      <ContentWrap>
-        <el-table  :data="output" :stripe="true" :show-overflow-tooltip="true">
-          <el-table-column label="序号" align="center" prop="no" />
-          <el-table-column label="名称" align="center" prop="name" />
-          <el-table-column label="开关状态" align="center" prop="relay_state" v-if="controlVis.outPutTableCol.relay_state">
-            <template #default="scope">
-              <el-tag type="" v-if="scope.row.relay_state == 1">开启</el-tag>
-              <el-tag type="danger" v-if="scope.row.relay_state == 0" >关闭</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="输出电流(A)" align="center" prop="cur_value"  v-if="controlVis.outPutTableCol.cur_value">
-            <template #default="scope">
-              <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.curColor }">
-                {{ scope.row.cur_value }}A
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="有功功率(kW)" align="center" prop="pow_value"  v-if="controlVis.outPutTableCol.pow_value">
-            <template #default="scope">
-              <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.powColor }">
-                {{ scope.row.pow_value }}kW
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="功率因数" align="center" prop="pf"  v-if="controlVis.outPutTableCol.pf"/>
-          <el-table-column label="电能消耗(kWh)" align="center" prop="ele"  v-if="controlVis.outPutTableCol.ele">
-            <template #default="scope">
-             {{ scope.row.ele }}kWh
-            </template>
-          </el-table-column>
-        </el-table>
-      </ContentWrap>
-    </el-collapse-item>
-    <el-collapse-item title="传感器" name="2" v-if="controlVis.haveSensor">
-      <ContentWrap>
-        <el-table  :data="sensorList" :stripe="true" :show-overflow-tooltip="true">
-          <el-table-column label="传感器名称" align="center" prop="temName" />
-          <el-table-column label="传感器状态" align="center" prop="tem_value" v-if="controlVis.envTableCol.tem_value">
-            <template #default="scope">
-              <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.temColor }">
-                {{ scope.row.tem_value }}°C
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="传感器名称" align="center" prop="humName" />
-          <el-table-column label="传感器状态" align="center" prop="hum_value" v-if="controlVis.envTableCol.hum_value">
-            <template #default="scope">
-              <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.humColor }">
-                {{ scope.row.hum_value }}%
-              </el-text>
-            </template>
-          </el-table-column>
-        </el-table>
-      </ContentWrap>
-    </el-collapse-item>
-  </el-collapse>
+      <el-collapse-item title="回路" name="1" v-if="controlVis.haveCircle">
+        <ContentWrap>
+          <el-table  :data="circleList" :stripe="true" :show-overflow-tooltip="true">
+            <el-table-column label="回路" align="center" prop="circuit" />
+            <el-table-column label="断路器状态" align="center" prop="breaker" v-if="controlVis.circleTableCol.breaker"> 
+              <template #default="scope" >
+                <el-tag type="" v-if="scope.row.breaker == 1">开启</el-tag>
+                <el-tag type="danger" v-if="scope.row.breaker == 0">关闭</el-tag>
+              </template>
+            </el-table-column>                        
+            <el-table-column label="当前电流" align="center" prop="cur_value" v-if="controlVis.circleTableCol.cur_value" >
+              <template #default="scope" >
+                <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.curColor }">
+                  {{ scope.row.cur_value }}A
+                </el-text>
+              </template>
+            </el-table-column>
+            <el-table-column label="当前电压" align="center" prop="vol_value" v-if="controlVis.circleTableCol.vol_value" >
+              <template #default="scope">
+                <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.volColor }">
+                  {{ scope.row.vol_value }}V
+                </el-text>
+              </template>
+            </el-table-column>
+            <el-table-column label="有功功率" align="center" prop="pow_value" v-if="controlVis.circleTableCol.pow_value" >
+              <template #default="scope">
+                <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.powColor }">
+                  {{ scope.row.pow_value }}kW
+                </el-text>
+              </template>
+            </el-table-column>
+            <el-table-column label="电能消耗" align="center" prop="ele_active" v-if="controlVis.circleTableCol.ele_active">
+              <template #default="scope">
+              {{ scope.row.ele_active }}kWh
+              </template>
+            </el-table-column>
+          </el-table>
+        </ContentWrap>
+      </el-collapse-item>
+      <el-collapse-item title="输出位" name="3" v-if="controlVis.haveOutPut">
+        <ContentWrap>
+          <el-table  :data="output" :stripe="true" :show-overflow-tooltip="true">
+            <el-table-column label="序号" align="center" prop="no" />
+            <el-table-column label="名称" align="center" prop="name" />
+            <el-table-column label="开关状态" align="center" prop="relay_state" v-if="controlVis.outPutTableCol.relay_state">
+              <template #default="scope">
+                <el-tag type="" v-if="scope.row.relay_state == 1">开启</el-tag>
+                <el-tag type="danger" v-if="scope.row.relay_state == 0" >关闭</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="输出电流(A)" align="center" prop="cur_value"  v-if="controlVis.outPutTableCol.cur_value">
+              <template #default="scope">
+                <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.curColor }">
+                  {{ scope.row.cur_value }}A
+                </el-text>
+              </template>
+            </el-table-column>
+            <el-table-column label="有功功率(kW)" align="center" prop="pow_value"  v-if="controlVis.outPutTableCol.pow_value">
+              <template #default="scope">
+                <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.powColor }">
+                  {{ scope.row.pow_value }}kW
+                </el-text>
+              </template>
+            </el-table-column>
+            <el-table-column label="功率因数" align="center" prop="pf"  v-if="controlVis.outPutTableCol.pf"/>
+            <el-table-column label="电能消耗(kWh)" align="center" prop="ele_active"  v-if="controlVis.outPutTableCol.ele_active">
+              <template #default="scope">
+              {{ scope.row.ele_active }}kWh
+              </template>
+            </el-table-column>
+          </el-table>
+        </ContentWrap>
+      </el-collapse-item>
+      <el-collapse-item title="传感器" name="2" v-if="controlVis.haveSensor">
+        <ContentWrap>
+          <el-table  :data="sensorList" :stripe="true" :show-overflow-tooltip="true">
+            <el-table-column label="传感器名称" align="center" prop="temName" />
+            <el-table-column label="传感器状态" align="center" prop="tem_value" v-if="controlVis.envTableCol.tem_value">
+              <template #default="scope">
+                <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.temColor }">
+                  {{ scope.row.tem_value }}°C
+                </el-text>
+              </template>
+            </el-table-column>
+            <el-table-column label="传感器名称" align="center" prop="humName" />
+            <el-table-column label="传感器状态" align="center" prop="hum_value" v-if="controlVis.envTableCol.hum_value">
+              <template #default="scope">
+                <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.humColor }">
+                  {{ scope.row.hum_value }}%
+                </el-text>
+              </template>
+            </el-table-column>
+          </el-table>
+        </ContentWrap>
+      </el-collapse-item>
+    </el-collapse>
+  </div>
+  
 
 </template>
 
@@ -310,6 +313,7 @@
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 import * as echarts from 'echarts';
 import router from '@/router';
+
 // import { object } from 'vue-types';
 
 /** PDU设备 列表 */
@@ -317,6 +321,7 @@ defineOptions({ name: 'PDUDevice' })
 
 const instance = getCurrentInstance();
 const switchValue = ref(0);
+const message = useMessage() // 消息弹窗
 
 //折叠列表显示的项
 const activeNames = ref(["1","2","3","4","5"])
@@ -339,19 +344,20 @@ const controlVis = ref({
     cur_value : false,
     vol_value : false,
     pow_value : false,
-    ele : false
+    ele_active : false
   },
   outPutTableCol : {
     relay_state : false,
     cur_value : false, 
     pow_value : false,
     pf : false,
-    ele : false
+    ele_active : false
   },
   envTableCol : {
     hum_value : false,
     tem_value : false
-  }
+  },
+  display: false,
 })
 
 const location = ref("");
@@ -610,7 +616,7 @@ const initChart = async () => {
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       series: [
         { type: 'pie', radius: ['50%', '65%'], avoidLabelOverlap: false,  labelLine: { show: false },
-          data: [{value : A.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13, backgroundColor : C.value.curColor },itemStyle: { color: '#0AD0EE' }  },],
+          data: [{value : C.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13, backgroundColor : C.value.curColor },itemStyle: { color: '#0AD0EE' }  },],
         },
       ],
     });
@@ -623,6 +629,8 @@ const initChart = async () => {
 const beforeChartUnmount = () => {
   chart?.dispose(); // 销毁图表实例
 };
+
+
 
 // window.addEventListener('resize', function() {
 //   chart?.resize(); 
@@ -641,8 +649,6 @@ const setNewChartData = async () => {
   chartData.value.apparentList.push(temp.apparent?.toFixed(3));
   chartData.value.activeList.push(temp.active?.toFixed(3));
 
-  console.log(chartData.value)
-
   chart?.setOption({
     xAxis: { data: chartData.value.dateTimes },
     series: [
@@ -654,6 +660,8 @@ const setNewChartData = async () => {
 
 const flashChartData = async () =>{
 
+  beforeChartUnmount();
+
   var tempParams = { devKey : queryParams.devKey, type : queryParams.powGranularity}
   chartData.value = await PDUDeviceApi.PDUHis(tempParams); 
   chartData.value.apparentList.forEach((obj,index) => {
@@ -663,270 +671,11 @@ const flashChartData = async () =>{
     chartData.value.activeList[index] = obj?.toFixed(3);
   });
 
-  chart?.setOption({
-    xAxis: { data: chartData.value.dateTimes },
-    series: [
-      { data: chartData.value.apparentList },
-      { data: chartData.value.activeList},
-    ],
-  });
-}
-
-
-/** 导出按钮操作 */
-// const handleExport = async () => {
-//   try {
-//     // 导出的二次确认
-//     await message.exportConfirm()
-//     // 发起导出
-//     exportLoading.value = true
-//     const data = await PDUDeviceApi.exportPDUDevice(queryParams)
-//     download.excel(data, 'PDU设备.xls')
-//   } catch {
-//   } finally {
-//     exportLoading.value = false
-//   }
-// }
-
-const getTestData = async()=>{
-
-  testData.value = await PDUDeviceApi.PDUDisplay(queryParams);
-  circleList.value = [];
-  output.value = [];
-
-  if(testData.value.pdu_data?.loop_item_list?.ele){
-    var temp = [] as any;
-    for (let i = 0; i < testData.value.pdu_data?.loop_item_list["pow_apparent"].length; i++) {
-      let loopItem = {} as any;
-      for (let key in testData.value.pdu_data.loop_item_list) {
-        loopItem[key] = testData.value.pdu_data.loop_item_list[key][i];
-        loopItem["circuit"] = "C" + (i + 1); 
-        controlVis.value.circleTableCol[key] = true;
-        if (key.includes("alarm_status")) {
-          var alarmStatus = testData.value.pdu_data.loop_item_list[key][i];
-          if(alarmStatus == 1 ||alarmStatus == 8){
-            var alarmColor = key.split("_")[0] + "Color";
-            loopItem[alarmColor] = "red";
-          } else {
-            var alarmColor = key.split("_")[0] + "Color";
-            loopItem[alarmColor] = "";
-          }
-        }
-      }
-      temp.push(loopItem);
-    }
-    circleList.value = temp;
-    controlVis.value.haveCircle = true;
-  }else{
-    controlVis.value.haveCircle = false;
-  }
-
-  circleList.value.forEach(element => {
-    element.cur_value = element.cur_value?.toFixed(2);
-    element.vol_value = element.vol_value?.toFixed(1);
-    element.pow_value = element.pow_value?.toFixed(3);
-    element.ele = element.ele?.toFixed(1);
-  });
-
-  if(testData.value.pdu_data?.output_item_list?.name){
-    var temp = [] as any;
-    for (let i = 0; i < testData.value.pdu_data.output_item_list["name"].length; i++) {
-      let loopItem = {} as any;
-      for (let key in testData.value.pdu_data.output_item_list) {
-        loopItem[key] = testData.value.pdu_data.output_item_list[key][i];
-        loopItem["no"] = i + 1;
-        controlVis.value.outPutTableCol[key] = true;
-        if (key.includes("alarm_status")) {
-          var alarmStatus = testData.value.pdu_data.output_item_list[key][i];
-          if(alarmStatus == 1 ||alarmStatus == 8){
-            var alarmColor = key.split("_")[0] + "Color";
-            loopItem[alarmColor] = "red";
-          } else {
-            var alarmColor = key.split("_")[0] + "Color";
-            loopItem[alarmColor] = "";
-          }
-        }
-      }
-      temp.push(loopItem);
-    }
-    output.value = temp;
-    controlVis.value.haveOutPut = true;
-  } else {
-    controlVis.value.haveOutPut = false;
-  }
-   
-
-  output.value.forEach(element => {
-    element.cur_value = element.cur_value?.toFixed(2);
-    element.pow_value = element.pow_value?.toFixed(3);
-    element.pf = element.pf?.toFixed(2);
-    element.ele = element.ele?.toFixed(1);
-  });
-
-  if(testData.value.pdu_data?.env_item_list?.tem_value){
-    var temp = [] as any;
-    for(let i = 0; i < testData.value.pdu_data.env_item_list["tem_value"].length; i++){
-      let loopItem = {} as any;
-      for (let key in testData.value.pdu_data.env_item_list) {
-        loopItem[key] = testData.value.pdu_data.env_item_list[key][i];
-        controlVis.value.envTableCol[key] = true;
-        if (key.includes("alarm_status")) {
-          var alarmStatus = testData.value.pdu_data.env_item_list[key][i];
-          if(alarmStatus == 1 ||alarmStatus == 8){
-            var alarmColor = key.split("_")[0] + "Color";
-            loopItem[alarmColor] = "red";
-          } else {
-            var alarmColor = key.split("_")[0] + "Color";
-            loopItem[alarmColor] = "";
-          }
-        }
-      }
-      loopItem["temName"] = "温度" + (i + 1);
-      loopItem["humName"] = "湿度" + (i + 1);
-      temp.push(loopItem);
-    }
-    sensorList.value = temp;
-    controlVis.value.haveSensor = true;
-  } else {
-    controlVis.value.haveSensor = false;
-  }
-  console.log(sensorList.value)
-  totalData.value.pow =  testData.value.pdu_data.pdu_tg_data.pow?.toFixed(3);
-  if(testData.value.pdu_data.pdu_tg_data.pow_apparent != 0){
-    totalData.value.powPercentage = (testData.value.pdu_data.pdu_tg_data.pow / testData.value.pdu_data.pdu_tg_data.pow_apparent) * 100;
-  } else {
-    totalData.value.powPercentage = 0;
-  }
-
-  totalData.value.ele = testData.value.pdu_data.pdu_tg_data.ele?.toFixed(1);
-
-  totalData.value.pf = testData.value.pdu_data.pdu_tg_data.pf?.toFixed(2);
-  totalData.value.frequency = testData.value.dev_hz;
-  totalData.value.powApparent = testData.value.pdu_data.pdu_tg_data.pow_apparent?.toFixed(3);
-  
-  A.value.cur_value = testData.value.pdu_data.line_item_list.cur_value[0]?.toFixed(2);
-  A.value.curPercemtage = (testData.value.pdu_data.line_item_list.cur_value[0] / testData.value.pdu_data.line_item_list.cur_alarm_max[0]) * 100;
-  let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[0];
-  if(curalarm == 1 || curalarm == 8 ){
-    A.value.curColor = "red";
-  } else if(curalarm == 2 || curalarm == 4 ){
-    A.value.curColor = "yellow";
-  } else{
-    A.value.curColor = "";
-  }
-
-  A.value.vol_value = testData.value.pdu_data.line_item_list.vol_value[0]?.toFixed(1);
-  let u1alarm = testData.value.pdu_data.line_item_list.vol_alarm_status[0];
-  if(u1alarm == 1 || u1alarm == 8 ){
-    A.value.volColor = "red";
-  } else if(u1alarm == 2 || u1alarm == 4 ){
-    A.value.volColor = "yellow";
-  } else{
-    A.value.volColor = "";
-  }
-  
-  A.value.pow_value =testData.value.pdu_data.line_item_list.pow_value[0]?.toFixed(3);
-  let powalarm = testData.value.pdu_data.line_item_list.pow_alarm_status[0];
-  if(powalarm == 1 || powalarm == 8 ){
-    A.value.powColor = "red";
-  } else if(powalarm == 2 || powalarm == 4 ){
-    A.value.powColor = "yellow";
-  } else {
-    A.value.powColor = "";
-  }
-
-  A.value.pf = testData.value.pdu_data.line_item_list.pf[0]?.toFixed(2);
-
-  if(testData.value.pdu_data.line_item_list.ele.length > 1){
-    B.value.cur_value = testData.value.pdu_data.line_item_list.cur_value[1]?.toFixed(2);
-    B.value.curPercemtage = (testData.value.pdu_data.line_item_list.cur_value[1] / testData.value.pdu_data.line_item_list.cur_alarm_max[1]) * 100;
-    let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[1];
-    if(curalarm == 1 || curalarm == 8 ){
-      B.value.curColor = "red";
-    } else if(curalarm == 2 || curalarm == 4 ){
-      B.value.curColor = "yellow";
-    } else{
-      B.value.curColor = "";
-    }
-
-    B.value.vol_value = testData.value.pdu_data.line_item_list.vol_value[1]?.toFixed(1);
-    let u2alarm = testData.value.pdu_data.line_item_list.vol_alarm_status[1];
-    if(u2alarm == 1 || u2alarm == 8 ){
-      B.value.volColor = "red";
-    } else if(u2alarm == 2 || u2alarm == 4 ){
-      B.value.volColor = "yellow";
-    } else {
-      B.value.volColor = "";
-    }
-    
-    B.value.pow_value =testData.value.pdu_data.line_item_list.pow_value[1]?.toFixed(3);
-    let powalarm = testData.value.pdu_data.line_item_list.pow_alarm_status[1];
-    if(powalarm == 1 || powalarm == 8 ){
-      B.value.powColor = "red";
-    } else if(powalarm == 2 || powalarm == 4 ){
-      B.value.powColor = "yellow";
-    } else {
-      B.value.powColor = "";
-    }
-    
-    B.value.pf = testData.value.pdu_data.line_item_list.pf[1]?.toFixed(2);
-    controlVis.value.haveB = true;
-  }
-  if(testData.value.pdu_data.line_item_list.ele.length > 2){
-    C.value.cur_value = testData.value.pdu_data.line_item_list.cur_value[2]?.toFixed(2);
-    C.value.curPercemtage = (testData.value.pdu_data.line_item_list.cur_value[2] / testData.value.pdu_data.line_item_list.cur_alarm_max[2]) * 100;
-    let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[2];
-    if(curalarm == 1 || curalarm == 8 ){
-      C.value.curColor = "red";
-    } else if(curalarm == 2 || curalarm == 4 ){
-      C.value.curColor = "yellow";
-    } else{
-      C.value.curColor = "";
-    }
-
-    C.value.vol_value = testData.value.pdu_data.line_item_list.vol_value[2]?.toFixed(1);
-    let u2alarm = testData.value.pdu_data.line_item_list.vol_alarm_status[2];
-    if(u2alarm == 1 || u2alarm == 8 ){
-      C.value.volColor = "red";
-    } else if(u2alarm == 2 || u2alarm == 4 ){
-      C.value.volColor = "yellow";
-    } else{
-      C.value.volColor = "";
-    }
-    
-    C.value.pow_value =testData.value.pdu_data.line_item_list.pow_value[2]?.toFixed(3);
-    let powalarm = testData.value.pdu_data.line_item_list.pow_alarm_status[2];
-    if(powalarm == 1 || powalarm == 8 ){
-      C.value.powColor = "red";
-    } else if(powalarm == 2 || powalarm == 4 ){
-      C.value.powColor = "yellow";
-    } else {
-      C.value.powColor = "";
-    }
-
-    C.value.pf = testData.value.pdu_data.line_item_list.pf[2]?.toFixed(2);
-    controlVis.value.haveC = true;
-  }
-
-}
-
-watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
-    // 销毁原有的图表实例
-    beforeChartUnmount();
-    //获取数据
-    var tempParams = { devKey : queryParams.devKey, type : newPowGranularity}
-    chartData.value = await PDUDeviceApi.PDUHis(tempParams); 
-    chartData.value.apparentList.forEach((obj,index) => {
-      chartData.value.apparentList[index] = obj?.toFixed(3);
-    });
-    chartData.value.activeList.forEach((obj,index) => {
-      chartData.value.activeList[index] = obj?.toFixed(3);
-    });
-    // 创建新的图表实例
-    chart = echarts.init(document.getElementById('chartContainer'));
-    // 设置新的配置对象
-    if (chart) {
-      chart.setOption({
+  // 创建新的图表实例
+  chart = echarts.init(document.getElementById('chartContainer'));
+  // 设置新的配置对象
+  if (chart) {
+    chart.setOption({
       // 这里设置 Echarts 的配置项和数据
       title: { text: ''},
       tooltip: { trigger: 'axis' ,formatter: function(params) {
@@ -962,6 +711,333 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
         {name: '有功功率', type: 'line', data: chartData.value.activeList , symbol: 'circle', symbolSize: 4},
       ],
     });
+  }
+
+  totalChart?.setOption({
+    series: [
+        { 
+          data: [{value : totalData.value.pow, name: '有功功率', label: { show: true, position: 'outside', formatter: '{c}kW',fontSize: 13 },itemStyle: { color: '#0A69EE' }  },
+                 {value : totalData.value.powApparent , name : '视在功率' , label: { show: true, position: 'outside', formatter: '{c}kVA',fontSize: 13  }, itemStyle: { color: '#0AD0EE' } }],
+        },
+    ],
+  });
+
+  AChart?.setOption({
+    series: [
+        { 
+          data: [{value : A.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13 ,backgroundColor : A.value.curColor },itemStyle: { color: '#0AD0EE' }  },],
+        },
+      ],
+  });
+
+  BChart?.setOption({
+    series: [
+        { 
+          data: [{value : B.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13 ,backgroundColor : A.value.curColor },itemStyle: { color: '#0AD0EE' }  },],
+        },
+      ],
+  });
+
+  CChart?.setOption({
+    series: [
+        { 
+          data: [{value : C.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13 ,backgroundColor : A.value.curColor },itemStyle: { color: '#0AD0EE' }  },],
+        },
+      ],
+  });
+}
+
+
+/** 导出按钮操作 */
+// const handleExport = async () => {
+//   try {
+//     // 导出的二次确认
+//     await message.exportConfirm()
+//     // 发起导出
+//     exportLoading.value = true
+//     const data = await PDUDeviceApi.exportPDUDevice(queryParams)
+//     download.excel(data, 'PDU设备.xls')
+//   } catch {
+//   } finally {
+//     exportLoading.value = false
+//   }
+// }
+
+const getTestData = async()=>{
+
+  testData.value = await PDUDeviceApi.PDUDisplay(queryParams);
+  circleList.value = [];
+  output.value = [];
+
+  if(testData.value.pdu_data?.loop_item_list?.pow_apparent != null && testData.value.pdu_data?.loop_item_list?.pow_apparent.length > 0){
+    var temp = [] as any;
+    for (let i = 0; i < testData.value.pdu_data?.loop_item_list["pow_apparent"].length; i++) {
+      let loopItem = {} as any;
+      for (let key in testData.value.pdu_data.loop_item_list) {
+        loopItem[key] = testData.value.pdu_data.loop_item_list[key][i];
+        loopItem["circuit"] = "C" + (i + 1); 
+        controlVis.value.circleTableCol[key] = true;
+        if (key.includes("alarm_status")) {
+          var alarmStatus = testData.value.pdu_data.loop_item_list[key][i];
+          if(alarmStatus == 1 ||alarmStatus == 8){
+            var alarmColor = key.split("_")[0] + "Color";
+            loopItem[alarmColor] = "red";
+          } else {
+            var alarmColor = key.split("_")[0] + "Color";
+            loopItem[alarmColor] = "";
+          }
+        }
+      }
+      temp.push(loopItem);
+    }
+    circleList.value = temp;
+    controlVis.value.haveCircle = true;
+  }else{
+    controlVis.value.haveCircle = false;
+  }
+
+  circleList.value.forEach(element => {
+    element.cur_value = element.cur_value?.toFixed(2);
+    element.vol_value = element.vol_value?.toFixed(1);
+    element.pow_value = element.pow_value?.toFixed(3);
+    element.ele_active = element.ele_active?.toFixed(1);
+  });
+
+  
+  if(testData.value.pdu_data?.output_item_list?.name != null && testData.value.pdu_data?.output_item_list?.name.length > 0){
+    var temp = [] as any;
+    for (let i = 0; i < testData.value.pdu_data.output_item_list["name"].length; i++) {
+      let loopItem = {} as any;
+      for (let key in testData.value.pdu_data.output_item_list) {
+        loopItem[key] = testData.value.pdu_data.output_item_list[key][i];
+        loopItem["no"] = i + 1;
+        controlVis.value.outPutTableCol[key] = true;
+        if (key.includes("alarm_status")) {
+          var alarmStatus = testData.value.pdu_data.output_item_list[key][i];
+          if(alarmStatus == 1 ||alarmStatus == 8){
+            var alarmColor = key.split("_")[0] + "Color";
+            loopItem[alarmColor] = "red";
+          } else {
+            var alarmColor = key.split("_")[0] + "Color";
+            loopItem[alarmColor] = "";
+          }
+        }
+      }
+      temp.push(loopItem);
+    }
+    output.value = temp;
+    controlVis.value.haveOutPut = true;
+  } else {
+    controlVis.value.haveOutPut = false;
+  }
+
+  output.value.forEach(element => {
+    element.cur_value = element.cur_value?.toFixed(2);
+    element.pow_value = element.pow_value?.toFixed(3);
+    element.pf = element.pf?.toFixed(2);
+    element.ele_active = element.ele_active?.toFixed(1);
+  });
+
+  if(testData.value.pdu_data?.env_item_list?.tem_value){
+    var temp = [] as any;
+    for(let i = 0; i < testData.value.pdu_data.env_item_list["tem_value"].length; i++){
+      let loopItem = {} as any;
+      for (let key in testData.value.pdu_data.env_item_list) {
+        loopItem[key] = testData.value.pdu_data.env_item_list[key][i];
+        controlVis.value.envTableCol[key] = true;
+        if (key.includes("alarm_status")) {
+          var alarmStatus = testData.value.pdu_data.env_item_list[key][i];
+          if(alarmStatus == 1 ||alarmStatus == 8){
+            var alarmColor = key.split("_")[0] + "Color";
+            loopItem[alarmColor] = "red";
+          } else {
+            var alarmColor = key.split("_")[0] + "Color";
+            loopItem[alarmColor] = "";
+          }
+        }
+      }
+      loopItem["temName"] = "温度" + (i + 1);
+      loopItem["humName"] = "湿度" + (i + 1);
+      temp.push(loopItem);
+    }
+    sensorList.value = temp;
+    controlVis.value.haveSensor = true;
+  } else {
+    controlVis.value.haveSensor = false;
+  }
+
+
+  if(testData.value?.pdu_data?.pdu_total_data?.pow_active == null){
+    message.error("请输入正确的地址");
+    return;
+  }
+  
+  totalData.value.pow =  testData.value.pdu_data.pdu_total_data.pow_active?.toFixed(3);
+
+  totalData.value.ele = testData.value.pdu_data.pdu_total_data.ele_active?.toFixed(1);
+
+  totalData.value.pf = testData.value.pdu_data.pdu_total_data.power_factor?.toFixed(2);
+  totalData.value.frequency = testData.value.dev_hz;
+  totalData.value.powApparent = testData.value.pdu_data.pdu_total_data.pow_apparent?.toFixed(3);
+  
+  A.value.cur_value = testData.value.pdu_data.line_item_list.cur_value[0]?.toFixed(2);
+  A.value.curPercemtage = (testData.value.pdu_data.line_item_list.cur_value[0] / testData.value.pdu_data.line_item_list.cur_alarm_max[0]) * 100;
+  let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[0];
+  if(curalarm == 1 || curalarm == 8 ){
+    A.value.curColor = "red";
+  } else if(curalarm == 2 || curalarm == 4 ){
+    A.value.curColor = "yellow";
+  } else{
+    A.value.curColor = "";
+  }
+
+  A.value.vol_value = testData.value.pdu_data.line_item_list.vol_value[0]?.toFixed(1);
+  let u1alarm = testData.value.pdu_data.line_item_list.vol_alarm_status[0];
+  if(u1alarm == 1 || u1alarm == 8 ){
+    A.value.volColor = "red";
+  } else if(u1alarm == 2 || u1alarm == 4 ){
+    A.value.volColor = "yellow";
+  } else{
+    A.value.volColor = "";
+  }
+  
+  A.value.pow_value =testData.value.pdu_data.line_item_list.pow_value[0]?.toFixed(3);
+  let powalarm = testData.value.pdu_data.line_item_list.pow_alarm_status[0];
+  if(powalarm == 1 || powalarm == 8 ){
+    A.value.powColor = "red";
+  } else if(powalarm == 2 || powalarm == 4 ){
+    A.value.powColor = "yellow";
+  } else {
+    A.value.powColor = "";
+  }
+
+  A.value.pf = testData.value.pdu_data.line_item_list.power_factor[0]?.toFixed(2);
+
+  if(testData.value.pdu_data.line_item_list.ele_active.length > 1){
+    B.value.cur_value = testData.value.pdu_data.line_item_list.cur_value[1]?.toFixed(2);
+    B.value.curPercemtage = (testData.value.pdu_data.line_item_list.cur_value[1] / testData.value.pdu_data.line_item_list.cur_alarm_max[1]) * 100;
+    let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[1];
+    if(curalarm == 1 || curalarm == 8 ){
+      B.value.curColor = "red";
+    } else if(curalarm == 2 || curalarm == 4 ){
+      B.value.curColor = "yellow";
+    } else{
+      B.value.curColor = "";
+    }
+
+    B.value.vol_value = testData.value.pdu_data.line_item_list.vol_value[1]?.toFixed(1);
+    let u2alarm = testData.value.pdu_data.line_item_list.vol_alarm_status[1];
+    if(u2alarm == 1 || u2alarm == 8 ){
+      B.value.volColor = "red";
+    } else if(u2alarm == 2 || u2alarm == 4 ){
+      B.value.volColor = "yellow";
+    } else {
+      B.value.volColor = "";
+    }
+    
+    B.value.pow_value =testData.value.pdu_data.line_item_list.pow_value[1]?.toFixed(3);
+    let powalarm = testData.value.pdu_data.line_item_list.pow_alarm_status[1];
+    if(powalarm == 1 || powalarm == 8 ){
+      B.value.powColor = "red";
+    } else if(powalarm == 2 || powalarm == 4 ){
+      B.value.powColor = "yellow";
+    } else {
+      B.value.powColor = "";
+    }
+    
+    B.value.pf = testData.value.pdu_data.line_item_list.power_factor[1]?.toFixed(2);
+    controlVis.value.haveB = true;
+  }
+  if(testData.value.pdu_data.line_item_list.ele_active.length > 2){
+    C.value.cur_value = testData.value.pdu_data.line_item_list.cur_value[2]?.toFixed(2);
+    C.value.curPercemtage = (testData.value.pdu_data.line_item_list.cur_value[2] / testData.value.pdu_data.line_item_list.cur_alarm_max[2]) * 100;
+    let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[2];
+    if(curalarm == 1 || curalarm == 8 ){
+      C.value.curColor = "red";
+    } else if(curalarm == 2 || curalarm == 4 ){
+      C.value.curColor = "yellow";
+    } else{
+      C.value.curColor = "";
+    }
+
+    C.value.vol_value = testData.value.pdu_data.line_item_list.vol_value[2]?.toFixed(1);
+    let u2alarm = testData.value.pdu_data.line_item_list.vol_alarm_status[2];
+    if(u2alarm == 1 || u2alarm == 8 ){
+      C.value.volColor = "red";
+    } else if(u2alarm == 2 || u2alarm == 4 ){
+      C.value.volColor = "yellow";
+    } else{
+      C.value.volColor = "";
+    }
+    
+    C.value.pow_value =testData.value.pdu_data.line_item_list.pow_value[2]?.toFixed(3);
+    let powalarm = testData.value.pdu_data.line_item_list.pow_alarm_status[2];
+    if(powalarm == 1 || powalarm == 8 ){
+      C.value.powColor = "red";
+    } else if(powalarm == 2 || powalarm == 4 ){
+      C.value.powColor = "yellow";
+    } else {
+      C.value.powColor = "";
+    }
+
+    C.value.pf = testData.value.pdu_data.line_item_list.power_factor[2]?.toFixed(2);
+    controlVis.value.haveC = true;
+  }
+  controlVis.value.display = true;
+}
+
+watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
+    // 销毁原有的图表实例
+    beforeChartUnmount();
+    //获取数据
+    var tempParams = { devKey : queryParams.devKey, type : newPowGranularity}
+    chartData.value = await PDUDeviceApi.PDUHis(tempParams); 
+    chartData.value.apparentList.forEach((obj,index) => {
+      chartData.value.apparentList[index] = obj?.toFixed(3);
+    });
+    chartData.value.activeList.forEach((obj,index) => {
+      chartData.value.activeList[index] = obj?.toFixed(3);
+    });
+    // 创建新的图表实例
+    chart = echarts.init(document.getElementById('chartContainer'));
+    // 设置新的配置对象
+    if (chart) {
+      chart.setOption({
+        // 这里设置 Echarts 的配置项和数据
+        title: { text: ''},
+        tooltip: { trigger: 'axis' ,formatter: function(params) {
+                                      var result = params[0].name + '<br>';
+                                      for (var i = 0; i < params.length; i++) {
+                                        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
+                                        if (params[i].seriesName === '视在功率') {
+                                          result += ' kVA'; 
+                                        } else if (params[i].seriesName === '有功功率') {
+                                          result += ' kW';
+                                        }
+                                        result += '<br>';
+                                      }
+                                      return result;
+                                    }},
+        legend: { data: ['视在功率','有功功率']},
+        grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+        toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+        xAxis: {type: 'category', axisLabel: { formatter: 
+              function (value) {
+                if(queryParams.powGranularity == "oneHour"){
+                  // 截取字符串的前n位，即yyyy-MM-dd HH:mm:ss
+                  return value.substring(11, 19);
+                } else if(queryParams.powGranularity == "twentyfourHour"){
+                  // 截取字符串的n位，即yyyy-MM-dd HH:mm:ss
+                  return value.substring(5, 19);
+                }
+              }
+            },boundaryGap: false, data:chartData.value.dateTimes},
+        yAxis: { type: 'value'},
+        series: [
+          {name: '视在功率', type: 'line', data: chartData.value.apparentList , symbol: 'circle', symbolSize: 4},
+          {name: '有功功率', type: 'line', data: chartData.value.activeList , symbol: 'circle', symbolSize: 4},
+        ],
+      });
     }
     if(flashListTimer.value.chartTimer){
       var time = 0;
@@ -980,7 +1056,7 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
 
 /** 搜索按钮操作 */
 const handleQuery = async () => {
-
+  controlVis.value.display = false;
   if(queryParams.ipAddr){
     queryParams.devKey = queryParams.ipAddr +'-' +  queryParams.cascadeAddr;
     await getTestData();

@@ -20,6 +20,7 @@
         <!-- 示例项目 -->
 <!--        <module>yudao-example</module>-->
         <module>yudao-module-statis</module>
+        <module>yudao-module-cabinet</module>
     </modules>
 
     <name>${project.artifactId}</name>

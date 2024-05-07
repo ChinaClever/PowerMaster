@@ -5,6 +5,7 @@ import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import cn.iocoder.yudao.module.pdu.controller.admin.mqconfig.vo.*;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.mqconfig.MqConfigDO;
@@ -33,6 +34,7 @@ public class MqConfigServiceImpl implements MqConfigService {
     public Integer createMqConfig(MqConfigSaveReqVO createReqVO) {
         // 插入
         MqConfigDO mqConfig = BeanUtils.toBean(createReqVO, MqConfigDO.class);
+        mqConfig.setCreateTime(LocalDateTime.now());
         mqConfigMapper.insert(mqConfig);
         // 返回
         return mqConfig.getId();

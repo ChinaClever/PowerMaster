@@ -134,63 +134,66 @@
             <div class="page-conTitle">
               PDU基本信息
             </div>
-              <el-table 
-                :data="PDUTableData" 
-                :header-cell-style="arraySpanMethod"
-                >
-                <el-table-column  align="center" label="基本信息"  prop="baseInfoName" />
-                <el-table-column  prop="baseInfoValue" >
-                  <template #default="scope">
-                    <span v-if="scope.$index === 2">
-                      <el-tag  v-if="scope.row.baseInfoValue == 0">正常</el-tag>
-                      <el-tag type="warning" v-if="scope.row.baseInfoValue == 1">预警</el-tag>
-                      <el-popover
-                          placement="top-start"
-                          title="告警内容"
-                          :width="500"
-                          trigger="hover"
-                          :content="scope.row.pduAlarm"
-                          v-if="scope.row.baseInfoValue == 2"
-                        >
-                          <template #reference>
-                            <el-tag type="danger">告警</el-tag>
-                          </template>
-                        </el-popover>
-                      <el-tag type="info" v-if="scope.row.baseInfoValue == 4">故障</el-tag>
-                      <el-tag type="info" v-if="scope.row.baseInfoValue == 5">离线</el-tag>
-                    </span>
-                    <span v-else>{{ scope.row.baseInfoValue }}</span>
-                  </template>
-                </el-table-column>
-                <el-table-column label="能耗" :rowspan="2" prop="consumeName"  />
-                <el-table-column  prop="consumeValue" />
-    
-              </el-table>
-            </div>
+            <el-row :gutter="24" >
+              <el-col :span="24 - serChartContainerWidth">
+                <div class="centered-div">
+                  <el-table 
+                    :data="PDUTableData" 
+                    :header-cell-style="arraySpanMethod"
+                    >
+                    <el-table-column  align="center" label="基本信息"  prop="baseInfoName" />
+                    <el-table-column  prop="baseInfoValue" >
+                      <template #default="scope">
+                        <span v-if="scope.$index === 2">
+                          <el-tag  v-if="scope.row.baseInfoValue == 0">正常</el-tag>
+                          <el-tag type="warning" v-if="scope.row.baseInfoValue == 1">预警</el-tag>
+                          <el-popover
+                              placement="top-start"
+                              title="告警内容"
+                              :width="500"
+                              trigger="hover"
+                              :content="scope.row.pduAlarm"
+                              v-if="scope.row.baseInfoValue == 2"
+                            >
+                              <template #reference>
+                                <el-tag type="danger">告警</el-tag>
+                              </template>
+                            </el-popover>
+                          <el-tag type="info" v-if="scope.row.baseInfoValue == 4">故障</el-tag>
+                          <el-tag type="info" v-if="scope.row.baseInfoValue == 5">离线</el-tag>
+                        </span>
+                        <span v-else>{{ scope.row.baseInfoValue }}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="能耗" :rowspan="2" prop="consumeName"  />
+                    <el-table-column  prop="consumeValue" />
+                  </el-table>
+                </div>
+              </el-col>
+              <el-col :span="serChartContainerWidth">
+                <div class="right-div" ref="serChartContainer" id="serChartContainer" style="width: 29vw; height: 25vh;"></div>
+              </el-col>
+            </el-row>
+          </div>
           <div class="pageBox" v-if="visControll.eqVis" >
-            <div class="page-conTitle" v-if="!visControll.isSameDay">
+            <div class="page-conTitle" >
               电量分布
             </div>
-            <div class="page-conTitle" v-if="visControll.isSameDay">
-              电能分布
-            </div>
             <p v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大用电量{{eqData.maxEle}}kWh， 最大负荷发生时间{{eqData.maxEleTime}}</p>
-            <p v-if="visControll.isSameDay && eqData.eq">本周期内，开始时电能为{{eqData.eq[0]}}kWh，结束时电能为{{eqData.eq[eqData.eq.length - 1]}}kWh， 电能增长{{(eqData.eq[eqData.eq.length - 1] - eqData.eq[0]).toFixed(1)}}kWh</p>
+            <p v-if="visControll.isSameDay && eqData.eq">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
             <div ref="rankChartContainer" id="rankChartContainer" style="width: 70vw; height: 58vh;"></div>
           </div>
           <div class="pageBox"  v-if="visControll.powVis">
             <div class="page-conTitle">
               平均功率曲线
             </div>
-            <p>本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 最大负荷发生时间{{powData.apparentPowMaxTime}}</p>
+            <p>本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kVA， 发生时间{{powData.activePowMaxTime}}。最小视在功率{{powData.activePowMinValue}}kVA， 发生时间{{powData.activePowMinTime}}</p>
             <div ref="powChartContainer" id="powChartContainer" style="width: 70vw; height: 58vh;"></div>
           </div>
           <div class="pageBox" v-if="visControll.outletVis">
-            <div class="page-conTitle" v-if="!visControll.isSameDay">
+            <div class="page-conTitle" >
               输出位电量排名
-            </div>
-            <div class="page-conTitle" v-if="visControll.isSameDay">
-              输出位电能排名
             </div>
             <div ref="outputRankChartContainer" id="outputRankChartContainer" style="width: 70vw; height: 58vh;"></div>
 
@@ -199,7 +202,8 @@
             <div class="page-conTitle">
               温度曲线
             </div>
-            <p>本周期内，最大温度{{temData.temMaxValue}}°C， 最大温度发生时间{{temData.temMaxTime}}</p>
+            <p v-show="temData.temMaxValue">本周期内，最高温度{{temData.temMaxValue}}°C， 最高温度发生时间{{temData.temMaxTime}}，由温度传感器{{temData.temMaxSensorId}}采集得到</p>
+            <p v-show="temData.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{temData.temMinValue}}°C， 最高温度发生时间{{temData.temMinTime}}，由温度传感器{{temData.temMinSensorId}}采集得到</p>
             <div ref="temChartContainer" id="temChartContainer" style="width: 70vw; height: 58vh;"></div>
           </div>
         </div>
@@ -218,6 +222,7 @@ import * as echarts from 'echarts';
 import { ElTree } from 'element-plus'
 
 
+
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
@@ -231,6 +236,7 @@ const visControll = reactive({
   outletVis : false,
   temVis : false,
 })
+const serChartContainerWidth = ref(10)
 
 const disabledDate = (date) => {
   // 获取今天的日期
@@ -296,6 +302,7 @@ const handleMonthPick = () => {
   if(queryParams.oldTime){
     var newTime = new Date(queryParams.oldTime);
     newTime.setMonth(newTime.getMonth() + 1);
+    newTime.setDate(newTime.getDate() - 1);
     newTime.setHours(23,59,59)
     queryParams.newTime = getFullTimeByDate(newTime);
     visControll.isSameDay = false;
@@ -454,13 +461,17 @@ interface EqData {
   totalEle : number;
   maxEle : number;
   maxEleTime : string;
+  firstEq : number;
+  lastEq : number;
 }
 const eqData = ref<EqData>({
   eq : [],
   time : [],
   totalEle : 0,
   maxEle : 0,
-  maxEleTime : ""
+  maxEleTime : "",
+  firstEq : 0,
+  lastEq : 0,
 })
 
 interface PowData {
@@ -470,6 +481,12 @@ interface PowData {
   total_pow_apparent : number;
   apparentPowMaxValue : number;
   apparentPowMaxTime : string;
+  apparentPowMinValue : number;
+  apparentPowMinTime : string;
+  activePowMaxValue : number;
+  activePowMaxTime : string;
+  activePowMinValue : number;
+  activePowMinTime : string;
 }
 const powData = ref<PowData>({
   apparentPowAvgValue : [],
@@ -477,20 +494,34 @@ const powData = ref<PowData>({
   time:[],
   total_pow_apparent : 0,
   apparentPowMaxValue : 0,
-  apparentPowMaxTime : ""
+  apparentPowMaxTime : "",
+  apparentPowMinValue : 0,
+  apparentPowMinTime : "",
+  activePowMaxValue : 0,
+  activePowMaxTime : "",
+  activePowMinValue : 0,
+  activePowMinTime : ""
 })
 
 interface TemData {
-  temAvgValue: number[];
+  temAvgValue: any;
   time: string[];
   temMaxValue : number;
   temMaxTime : string;
+  temMaxSensorId : number;
+  temMinValue : number;
+  temMinTime : string;
+  temMinSensorId : number;
 }
 const temData = ref<TemData>({
   temAvgValue : [],
   time : [],
   temMaxValue : 0,
-  temMaxTime : ""
+  temMaxTime : "",
+  temMaxSensorId : 0,
+  temMinValue : 0,
+  temMinTime : "",
+  temMinSensorId : 0,
 })
 
 interface ServerData {
@@ -499,16 +530,8 @@ interface ServerData {
 }
 const serverData = ref<ServerData>({
   nameAndMax : [
-    { name: '服务器1', max: 250 },
-    { name: '服务器2', max: 250 },
-    { name: '服务器3', max: 250 },
-    { name: '服务器4', max: 250 },
-    { name: '服务器5', max: 250 },
-    { name: '服务器6', max: 250 },
-    { name: '服务器7', max: 250 },
-    { name: '服务器8', max: 250 }
   ],
-  value: [200, 180, 170, 220, 167, 189,200,150]
+  value: []
 })
 
 interface OutLetRankData {
@@ -547,8 +570,15 @@ const getList = async () => {
     eqData.value.eq.forEach((obj,index)=>{
       eqData.value.eq[index] = obj.toFixed(1);
     })
-    eqData.value.maxEle = eqData.value.maxEle.toFixed(1);
-    eqData.value.totalEle = eqData.value.totalEle.toFixed(1);
+    eqData.value.maxEle = eqData.value.maxEle?.toFixed(1);
+    eqData.value.totalEle = eqData.value.totalEle?.toFixed(1);
+    if(eqData.value.firstEq){
+      eqData.value.firstEq = eqData.value.firstEq?.toFixed(1);
+    }
+    if(eqData.value.lastEq){
+      eqData.value.lastEq = eqData.value.lastEq?.toFixed(1);
+    }
+    
   } else{
     visControll.eqVis = false;
   }
@@ -565,7 +595,10 @@ const getList = async () => {
       powData.value.apparentPowAvgValue[index] = obj.toFixed(3);
     })
 
-    powData.value.apparentPowMaxValue = powData.value.apparentPowMaxValue.toFixed(3);
+    powData.value.apparentPowMaxValue = powData.value.apparentPowMaxValue?.toFixed(3);
+    powData.value.apparentPowMinValue =  powData.value.apparentPowMinValue?.toFixed(3);
+    powData.value.activePowMaxValue = powData.value.activePowMaxValue?.toFixed(3);
+    powData.value.activePowMinValue = powData.value.activePowMinValue?.toFixed(3);
   }else{
     visControll.powVis = false;
   }
@@ -574,7 +607,7 @@ const getList = async () => {
   if(outletRankData.value.eleValue && outletRankData.value.eleValue.length > 0){
     visControll.outletVis = true;
     outletRankData.value.eleValue.forEach((obj,index)=>{
-      outletRankData.value.eleValue[index] = obj.toFixed(1);
+      outletRankData.value.eleValue[index] = obj?.toFixed(1);
     })
 
     outletRankData.value.outLetId.forEach((obj,index)=>{
@@ -585,40 +618,86 @@ const getList = async () => {
   }
   
   temData.value = await PDUDeviceApi.getTemData(queryParams);
-  if(temData.value.temAvgValue && temData.value.temAvgValue.length > 0){
+  if(temData.value.temAvgValue && temData.value.temAvgValue[1] && temData.value.temAvgValue[1]?.length > 0){
     visControll.temVis = true;
     temData.value.temAvgValue?.forEach((obj,index) => {
-      temData.value.temAvgValue[index] = obj?.toFixed(2);
+      obj?.forEach((element,innerIndex) => {
+        temData.value.temAvgValue[index][innerIndex] = element?.toFixed(2);
+      });
     });
-
+    
+    temData.value.temMinValue = temData.value.temMinValue?.toFixed(2);
     temData.value.temMaxValue = temData.value.temMaxValue?.toFixed(2);
   }else{
     visControll.temVis = false;
   }
 
-  var PDU = await PDUDeviceApi.getPDUDevicePage(queryParams);
+  var PDU = await PDUDeviceApi.PDUDisplay(queryParams);
   var temp = [] as any;
+  
+  // 假设 PDU.pdu_data.output_item_list.pow_value 是一个 double 数组
+  var powValueArray = PDU.pdu_data?.output_item_list?.pow_value;
+  // 过滤出大于 0 的元素，并将值与下标保存到对象数组中
+  if(powValueArray && powValueArray.length > 0){
+    var resultArray = [];
+    for (var i = 0; i < powValueArray.length; i++) {
+      if (powValueArray[i] > 0) {
+        resultArray.push({
+          value: powValueArray[i],
+          index: i + 1
+        });
+      }
+    }
 
-  temp.push({
-    baseInfoName : "所属位置",
-    baseInfoValue : "",
-    consumeName : "消耗电量",
-    consumeValue : visControll.isSameDay ? (eqData.value.eq[eqData.value.eq.length - 1] - eqData.value.eq[0]).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh",
-  })
-  temp.push({
-    baseInfoName : "网络地址",
-    baseInfoValue : queryParams.ipAddr + "-" + queryParams.cascadeAddr,
-    consumeName : "功率因素",
-    consumeValue : PDU.list[0].pf?.toFixed(2)
-  })
-  temp.push({
-    baseInfoName : "设备状态",
-    baseInfoValue : PDU.list[0].status,
-    pduAlarm : PDU.list[0].pduAlarm,
-    consumeName : "最大温度",
-    consumeValue : temData.value.temMaxValue + "°C"
-  })
-  PDUTableData.value = temp;
+    // 按值进行排序
+    resultArray.sort(function(a, b) {
+      return a.value - b.value;
+    });
+
+    // 只保留前十个元素
+    resultArray = resultArray.slice(0, 10);
+
+    // 根据 resultArray 中的元素生成 nameAndMax 数组和 value 数组
+    var element = [];
+    var valueArr = [];
+    for (var j = 0; j < resultArray.length; j++) {
+      var name = "输出位" + resultArray[j].index;
+      element.push({
+        name: name,
+        max: resultArray[j].value + 0.001
+      });
+      valueArr.push(resultArray[j].value?.toFixed(3))
+    }
+    serverData.value.nameAndMax = element;
+    serverData.value.value = valueArr;
+    serChartContainerWidth.value = 10;
+  }else{
+    serChartContainerWidth.value = 0;
+  }
+  
+
+    temp.push({
+      baseInfoName : "所属位置",
+      baseInfoValue : "",
+      consumeName : "消耗电量",
+      consumeValue : eqData.value.eq && eqData.value.eq.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '/',
+    })
+    temp.push({
+      baseInfoName : "网络地址",
+      baseInfoValue : queryParams.ipAddr + "-" + queryParams.cascadeAddr,
+      consumeName : "当前视在功率",
+      consumeValue : PDU?.pdu_data?.pdu_total_data ? PDU.pdu_data.pdu_total_data.pow_apparent.toFixed(3) + "kVA" : '/'
+    })
+    temp.push({
+      baseInfoName : "设备状态",
+      baseInfoValue : PDU.status != null ? PDU.status : '/',
+      pduAlarm : PDU.pdu_alarm,
+      consumeName : "当前功率因素",
+      consumeValue : PDU?.pdu_data?.pdu_total_data ? PDU.pdu_data.pdu_total_data.power_factor?.toFixed(2) : '/'
+    })
+    PDUTableData.value = temp;
+  
+  
   // initChart();
   loading.value = false
 
@@ -636,7 +715,7 @@ const outputRankChartContainer = ref<HTMLElement | null>(null);
 let outputRankChart = null as echarts.ECharts | null; // 显式声明 serChart 的类型
 
 const initChart =  () => {
-  if (rankChartContainer.value && instance) {
+  if (rankChartContainer.value && instance && eqData.value.time && eqData.value.time.length > 0) {
     rankChart = echarts.init(rankChartContainer.value);
 
     rankChart.setOption({
@@ -652,13 +731,27 @@ const initChart =  () => {
       xAxis: {type: 'category' ,data:eqData.value.time},
       yAxis: { type: 'value' , name : "kWh"},
       series: [
-        { type: 'bar', data: eqData.value.eq, label: { show: true, position: 'top' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
+        { type: 'bar', data: eqData.value.eq, label: { show: true, position: 'top' }, barWidth: barWid.value,
+          itemStyle: {
+            emphasis: {
+              barBorderRadius: 3,
+            },
+            //颜色样式部分
+            normal: {
+              barBorderRadius: 3,
+              color: new echarts.graphic.LinearGradient(0, 1, 0, 0, [
+                { offset: 0, color: "#3977E6" },
+                { offset: 1, color: "#37BBF8" },
+              ]),
+            },
+          },
+        },
       ],
     });
     // 将 rankChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }
-  if (outputRankChartContainer.value && instance) {
+  if (outputRankChartContainer.value && instance && outletRankData.value.outLetId  && outletRankData.value.outLetId.length > 0 ) {
     outputRankChart = echarts.init(outputRankChartContainer.value);
     outputRankChart.setOption({
       // 这里设置 Echarts 的配置项和数据
@@ -673,13 +766,27 @@ const initChart =  () => {
       xAxis: { type: 'value' },
       yAxis: {type: 'category' ,data:outletRankData.value.outLetId},
       series: [
-        {  type: 'bar', data: outletRankData.value.eleValue, label: { show: true, position: 'right' }, barWidth: barWid.value},// 你可以根据需要选择标签的位置，比如 'top', 'insideTop', 'inside', 等等
+        { type: 'bar', data: outletRankData.value.eleValue, label: { show: true, position: 'right' }, barWidth: barWid.value, 
+          itemStyle: {
+            emphasis: {
+              barBorderRadius: 7,
+            },
+            //颜色样式部分
+            normal: {
+              barBorderRadius: 7,
+              color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                { offset: 0, color: "#3977E6" },
+                { offset: 1, color: "#37BBF8" },
+              ]),
+            },
+          },
+        },
       ],
     });
     // 将 outputRankChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
     instance.appContext.config.globalProperties.outputRankChart = outputRankChart;
   }
-  if (powChartContainer.value && instance) {
+  if (powChartContainer.value && instance && powData.value.time && powData.value.time.length > 0) {
     powChart = echarts.init(powChartContainer.value);
     powChart.setOption({
       // 这里设置 Echarts 的配置项和数据
@@ -704,16 +811,31 @@ const initChart =  () => {
       xAxis: {type: 'category', boundaryGap: false, data:powData.value.time},
       yAxis: { type: 'value'},
       series: [
-        {name: '总平均视在功率', type: 'line', data: powData.value.apparentPowAvgValue},
-        {name: '总平均有功功率', type: 'line', data: powData.value.activePowAvgValue},
+        {name: '总平均视在功率', type: 'line', symbol: 'circle', symbolSize: 4, data: powData.value.apparentPowAvgValue},
+        {name: '总平均有功功率', type: 'line', symbol: 'circle', symbolSize: 4, data: powData.value.activePowAvgValue},
       ],
 
     });
     // 将 powChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
     instance.appContext.config.globalProperties.powChart = powChart;
+   
   }
-  if (temChartContainer.value && instance) {
+  if (temChartContainer.value && instance && temData.value.temAvgValue && temData.value.temAvgValue.length > 0) {
     temChart = echarts.init(temChartContainer.value);
+    var seriesArr = [] as any;
+    var legendData = [] as any;
+    temData.value.temAvgValue?.forEach((obj,index) => {
+      if(index != 0 && temData.value.temAvgValue[index].length > 0){
+        seriesArr.push({
+          name: '温度传感器' + index,
+          type: 'line',
+          data: obj,
+          symbol: 'circle', 
+          symbolSize: 4,
+        });
+        legendData.push('温度传感器' + index)
+      }
+    });
     temChart.setOption({
       // 这里设置 Echarts 的配置项和数据
       dataZoom:[{ type:"inside"}],
@@ -722,26 +844,30 @@ const initChart =  () => {
                                     var result = params[0].name + '<br>';
                                     for (var i = 0; i < params.length; i++) {
                                       result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
-                                      if (params[i].seriesName === '平均温度') {
+                                      if (params[i].seriesName.includes('平均温度')) {
                                         result += '°C'; 
                                       } 
                                       result += '<br>';
                                     }
                                     return result;
                                   } },
-      legend: { data: ['平均温度']},
+      legend: { data: legendData},
+      
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-      xAxis: {type: 'category', boundaryGap: false, data:temData.value.time},
+      xAxis: {
+          type: 'category', 
+          boundaryGap: false, 
+          data: temData.value.time[1]
+        },
       yAxis: { type: 'value'},
-      series: [
-        {name: '平均温度', type: 'line', data: temData.value.temAvgValue},
-      ],
+      series: seriesArr ,
     });
     // 将 temChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
     instance.appContext.config.globalProperties.temChart = temChart;
   }
-  if (serChartContainer.value && instance) {
+  console.log(serverData.value.nameAndMax);
+  if (serChartContainer.value && instance && serverData.value.nameAndMax && serverData.value.nameAndMax.length > 0) {
     serChart = echarts.init(serChartContainer.value);
     serChart.setOption({
       radar: { indicator: serverData.value.nameAndMax },
@@ -756,21 +882,21 @@ const initChart =  () => {
 };
 
 // 在组件销毁时手动销毁图表
-// const beforeRankUnmount = () => {
-//     rankChart?.dispose(); // 销毁图表实例
-// };
+const beforeRankUnmount = () => {
+    rankChart?.dispose(); // 销毁图表实例
+};
 
-// const beforeSerRankUnmount = () => {
-//     outputRankChart?.dispose(); // 销毁图表实例
-// };
+const beforeOutPutRankUnmount = () => {
+    outputRankChart?.dispose(); // 销毁图表实例
+};
 
-// const beforePowUnmount = () => {
-//     powChart?.dispose();  // 销毁图表实例
-// };
+const beforePowUnmount = () => {
+    powChart?.dispose();  // 销毁图表实例
+};
 
-// const beforeTemUnmount = () => {
-//     temChart?.dispose(); // 销毁图表实例
-// };
+const beforeTemUnmount = () => {
+    temChart?.dispose(); // 销毁图表实例
+};
 
 // const beforeSerUnmount = () => {
 //     serChart?.dispose(); // 销毁图表实例
@@ -915,7 +1041,10 @@ const handleQuery = async () => {
     if(queryParams.oldTime && queryParams.newTime){
       queryParams.devKey = queryParams.ipAddr +'-' +  queryParams.cascadeAddr;
       await getList();
-      
+      beforeRankUnmount();
+      beforeOutPutRankUnmount();
+      beforePowUnmount();
+      beforeTemUnmount();
       initChart();
       queryParams.devKey = null;
     }
@@ -969,4 +1098,17 @@ onMounted( async () =>  {
   // initChart();
 })
 </script>
-
+<style>
+.centered-div {
+  display: flex;
+  justify-content: center; /* 水平居中 */
+  align-items: center; /* 垂直居中 */
+  height: 100%; /* 使用父容器的高度 */
+}
+.right-div{
+  display: flex;
+  justify-content: right; /* 水平居右 */
+  align-items: center; /* 垂直居中 */
+  height: 100%; /* 使用父容器的高度 */
+}
+</style>

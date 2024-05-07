@@ -78,7 +78,7 @@
             </el-button>
           </el-form-item>
           <div style="float:right">
-            <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 25;getList();switchValue = 0;" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
+            <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
             <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
           </div>
         </el-form>
@@ -114,14 +114,14 @@
           <el-table-column label="总视在功率" align="center" prop="apparentPow" width="130px" >
             <template #default="scope" >
               <el-text line-clamp="2" >
-                {{ scope.row.apparentPow }} kVA
+                {{ scope.row.apparentPow }}kVA
               </el-text>
             </template>
           </el-table-column>
           <el-table-column label="总有功功率" align="center" prop="pow" width="130px">
             <template #default="scope" >
               <el-text line-clamp="2" >
-                {{ scope.row.pow }} kW
+                {{ scope.row.pow }}kW
               </el-text>
             </template>
           </el-table-column>
@@ -131,7 +131,7 @@
           <el-table-column label="总电能" align="center" prop="ele" >
             <template #default="scope" >
               <el-text line-clamp="2" >
-                {{ scope.row.ele }} kWh
+                {{ scope.row.ele }}kWh
               </el-text>
             </template>
           </el-table-column>
@@ -374,7 +374,7 @@ const list = ref([
     pduAlarm:"",
     pf:null
   }
-]) // 列表的数据
+]) as any// 列表的数据
 const total = ref(0) // 列表的总页数
 const queryParams = reactive({
   pageNo: 1,
@@ -614,6 +614,7 @@ onActivated(() => {
         width: 30px;
         height: 30px;
         margin: 0 28px;
+        text-align: center;
       }
     }
     .devKey{
