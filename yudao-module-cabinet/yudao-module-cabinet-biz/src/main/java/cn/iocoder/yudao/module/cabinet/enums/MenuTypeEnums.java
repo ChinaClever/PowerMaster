@@ -14,7 +14,8 @@ import lombok.Getter;
 public enum MenuTypeEnums {
     ROOM(1, "机房"),
     AISLE(2, "通道"),
-    CABINET(3, "机柜"),;
+    CABINET(3, "机柜"),
+    ;
 
     /**
      * 类型
