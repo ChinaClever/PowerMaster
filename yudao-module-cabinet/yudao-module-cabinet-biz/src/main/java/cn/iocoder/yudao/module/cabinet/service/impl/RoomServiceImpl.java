@@ -21,7 +21,6 @@ import org.springframework.util.CollectionUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * @author luowei
@@ -48,11 +47,11 @@ public class RoomServiceImpl implements RoomService {
         try {
 
             roomIndexList = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>()
-                            .eq(RoomIndex::getIsDelete, DelEnums.NO_DEL.getStatus())
-                    .like(StringUtils.isNotEmpty(name),RoomIndex::getName,name));
+                    .eq(RoomIndex::getIsDelete, DelEnums.NO_DEL.getStatus())
+                    .like(StringUtils.isNotEmpty(name), RoomIndex::getName, name));
 
-        }catch (Exception e){
-            log.error("获取机房列表异常：",e);
+        } catch (Exception e) {
+            log.error("获取机房列表异常：", e);
         }
         return roomIndexList;
     }
@@ -63,28 +62,29 @@ public class RoomServiceImpl implements RoomService {
         try {
 
             //获取机柜列表
-            List<CabinetIndex>  cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
+            List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
                     .eq(CabinetIndex::getIsDisabled, DisableEnums.ENABLE.getStatus())
-                    .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus()));
+                    .eq(CabinetIndex::getIsDeleted, DelEnums.NO_DEL.getStatus()));
 
             //获取柜列
             List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>()
-                    .eq(AisleIndex::getIsDelete,DelEnums.NO_DEL.getStatus()));
+                    .eq(AisleIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
 
             //获取机房
-            List<RoomIndex> roomIndexList =  roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>()
-                    .eq(Objects.nonNull(id),RoomIndex::getId,id));
+            List<RoomIndex> roomIndexList = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>()
+                    .eq(Objects.nonNull(id), RoomIndex::getId, id));
 
 
             List<RoomMenuDTO> menuDTOS = new ArrayList<>();
 
-            if (!CollectionUtils.isEmpty(roomIndexList)){
+            if (!CollectionUtils.isEmpty(roomIndexList)) {
                 roomIndexList.forEach(roomIndex -> {
                     RoomMenuDTO roomMenuDTO = new RoomMenuDTO();
                     roomMenuDTO.setChildren(new ArrayList<>());
                     roomMenuDTO.setId(roomIndex.getId());
                     roomMenuDTO.setType(MenuTypeEnums.ROOM.getType());
                     roomMenuDTO.setName(roomIndex.getName());
+                    roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.ROOM.getType()) + roomIndex.getId());
                     //父id设置0
                     roomMenuDTO.setParentId(0);
                     roomMenuDTO.setParentType(0);
@@ -93,13 +93,14 @@ public class RoomServiceImpl implements RoomService {
 
             }
 
-            if (!CollectionUtils.isEmpty(aisleIndexList)){
+            if (!CollectionUtils.isEmpty(aisleIndexList)) {
                 aisleIndexList.forEach(aisleIndex -> {
                     RoomMenuDTO roomMenuDTO = new RoomMenuDTO();
                     roomMenuDTO.setChildren(new ArrayList<>());
                     roomMenuDTO.setId(aisleIndex.getId());
                     roomMenuDTO.setType(MenuTypeEnums.AISLE.getType());
                     roomMenuDTO.setName(aisleIndex.getName());
+                    roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.AISLE.getType()) + aisleIndex.getId());
                     //父id设置机房
                     roomMenuDTO.setParentId(aisleIndex.getRoomId());
                     roomMenuDTO.setParentType(MenuTypeEnums.ROOM.getType());
@@ -108,24 +109,25 @@ public class RoomServiceImpl implements RoomService {
 
             }
 
-            if (!CollectionUtils.isEmpty(cabinetIndexList)){
+            if (!CollectionUtils.isEmpty(cabinetIndexList)) {
                 cabinetIndexList.forEach(cabinetIndex -> {
                     RoomMenuDTO roomMenuDTO = new RoomMenuDTO();
                     roomMenuDTO.setChildren(new ArrayList<>());
                     roomMenuDTO.setId(cabinetIndex.getId());
                     roomMenuDTO.setType(MenuTypeEnums.CABINET.getType());
                     roomMenuDTO.setName(cabinetIndex.getName());
+                    roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.CABINET.getType()) + cabinetIndex.getId());
                     //父id设置通道/机房
-                    roomMenuDTO.setParentId(cabinetIndex.getAisleId() == 0 ? cabinetIndex.getRoomId():cabinetIndex.getAisleId());
-                    roomMenuDTO.setParentType(cabinetIndex.getAisleId() == 0 ? MenuTypeEnums.ROOM.getType():MenuTypeEnums.AISLE.getType());
+                    roomMenuDTO.setParentId(cabinetIndex.getAisleId() == 0 ? cabinetIndex.getRoomId() : cabinetIndex.getAisleId());
+                    roomMenuDTO.setParentType(cabinetIndex.getAisleId() == 0 ? MenuTypeEnums.ROOM.getType() : MenuTypeEnums.AISLE.getType());
                     menuDTOS.add(roomMenuDTO);
                 });
 
             }
 
             return buildTree(menuDTOS);
-        }catch (Exception e){
-            log.error("获取菜单失败：",e);
+        } catch (Exception e) {
+            log.error("获取菜单失败：", e);
         }
 
         return new ArrayList<>();
@@ -133,15 +135,15 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public List<AisleIndex> aisleList(Integer roomId) {
-        List<AisleIndex>  aisleIndexList = new ArrayList<>();
+        List<AisleIndex> aisleIndexList = new ArrayList<>();
         try {
 
             aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>()
-                    .eq(AisleIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
-                    .eq(AisleIndex::getRoomId,roomId));
+                    .eq(AisleIndex::getIsDelete, DelEnums.NO_DEL.getStatus())
+                    .eq(AisleIndex::getRoomId, roomId));
 
-        }catch (Exception e){
-            log.error("获取柜列列表失败：",e);
+        } catch (Exception e) {
+            log.error("获取柜列列表失败：", e);
         }
         return aisleIndexList;
     }
@@ -151,28 +153,29 @@ public class RoomServiceImpl implements RoomService {
         try {
 
             //获取机柜列表
-            List<CabinetIndex>  cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
+            List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
                     .eq(CabinetIndex::getIsDisabled, DisableEnums.ENABLE.getStatus())
-                    .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus()));
+                    .eq(CabinetIndex::getIsDeleted, DelEnums.NO_DEL.getStatus()));
 
             //获取柜列
             List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>()
-                    .eq(AisleIndex::getIsDelete,DelEnums.NO_DEL.getStatus()));
+                    .eq(AisleIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
 
             //获取机房
-            List<RoomIndex> roomIndexList =  roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>()
-                    .eq(RoomIndex::getIsDelete,DelEnums.NO_DEL.getStatus()));
+            List<RoomIndex> roomIndexList = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>()
+                    .eq(RoomIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
 
 
             List<RoomMenuDTO> menuDTOS = new ArrayList<>();
 
-            if (!CollectionUtils.isEmpty(roomIndexList)){
+            if (!CollectionUtils.isEmpty(roomIndexList)) {
                 roomIndexList.forEach(roomIndex -> {
                     RoomMenuDTO roomMenuDTO = new RoomMenuDTO();
                     roomMenuDTO.setChildren(new ArrayList<>());
                     roomMenuDTO.setId(roomIndex.getId());
                     roomMenuDTO.setType(MenuTypeEnums.ROOM.getType());
                     roomMenuDTO.setName(roomIndex.getName());
+                    roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.ROOM.getType()) + roomIndex.getId());
                     //父id设置0
                     roomMenuDTO.setParentId(0);
                     roomMenuDTO.setParentType(0);
@@ -181,13 +184,14 @@ public class RoomServiceImpl implements RoomService {
 
             }
 
-            if (!CollectionUtils.isEmpty(aisleIndexList)){
+            if (!CollectionUtils.isEmpty(aisleIndexList)) {
                 aisleIndexList.forEach(aisleIndex -> {
                     RoomMenuDTO roomMenuDTO = new RoomMenuDTO();
                     roomMenuDTO.setChildren(new ArrayList<>());
                     roomMenuDTO.setId(aisleIndex.getId());
                     roomMenuDTO.setType(MenuTypeEnums.AISLE.getType());
                     roomMenuDTO.setName(aisleIndex.getName());
+                    roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.AISLE.getType()) + aisleIndex.getId());
                     //父id设置机房
                     roomMenuDTO.setParentId(aisleIndex.getRoomId());
                     roomMenuDTO.setParentType(MenuTypeEnums.ROOM.getType());
@@ -196,24 +200,25 @@ public class RoomServiceImpl implements RoomService {
 
             }
 
-            if (!CollectionUtils.isEmpty(cabinetIndexList)){
+            if (!CollectionUtils.isEmpty(cabinetIndexList)) {
                 cabinetIndexList.forEach(cabinetIndex -> {
                     RoomMenuDTO roomMenuDTO = new RoomMenuDTO();
                     roomMenuDTO.setChildren(new ArrayList<>());
                     roomMenuDTO.setId(cabinetIndex.getId());
                     roomMenuDTO.setType(MenuTypeEnums.CABINET.getType());
                     roomMenuDTO.setName(cabinetIndex.getName());
+                    roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.CABINET.getType()) + cabinetIndex.getId());
                     //父id设置通道/机房
-                    roomMenuDTO.setParentId(cabinetIndex.getAisleId() == 0 ? cabinetIndex.getRoomId():cabinetIndex.getAisleId());
-                    roomMenuDTO.setParentType(cabinetIndex.getAisleId() == 0 ? MenuTypeEnums.ROOM.getType():MenuTypeEnums.AISLE.getType());
+                    roomMenuDTO.setParentId(cabinetIndex.getAisleId() == 0 ? cabinetIndex.getRoomId() : cabinetIndex.getAisleId());
+                    roomMenuDTO.setParentType(cabinetIndex.getAisleId() == 0 ? MenuTypeEnums.ROOM.getType() : MenuTypeEnums.AISLE.getType());
                     menuDTOS.add(roomMenuDTO);
                 });
 
             }
 
             return buildTree(menuDTOS);
-        }catch (Exception e){
-            log.error("获取菜单失败：",e);
+        } catch (Exception e) {
+            log.error("获取菜单失败：", e);
         }
 
         return new ArrayList<>();
@@ -240,7 +245,7 @@ public class RoomServiceImpl implements RoomService {
     /**
      * 构建子节点
      *
-     * @param menuDTO     当前
+     * @param menuDTO      当前
      * @param roomMenuDTOS 初始解雇
      * @return 构建的子节点
      */

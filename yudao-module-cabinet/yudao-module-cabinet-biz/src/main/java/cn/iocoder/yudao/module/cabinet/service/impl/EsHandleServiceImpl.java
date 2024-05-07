@@ -23,7 +23,7 @@ import java.util.List;
  */
 @Slf4j
 //@Service
-public class  EsHandleServiceImpl implements EsHandleService {
+public class EsHandleServiceImpl implements EsHandleService {
 
 
     @Value("${max-deal-count}")
@@ -72,7 +72,7 @@ public class  EsHandleServiceImpl implements EsHandleService {
                     log.info("general: " + pageDealDataList.size());
                     pageDealDataList.forEach(t -> {
                         IndexRequest indexRequest = new IndexRequest(indexName);
-                        indexRequest.source(JSON.toJSONString(t),XContentType.JSON);
+                        indexRequest.source(JSON.toJSONString(t), XContentType.JSON);
                         request.add(indexRequest);
                     });
                 }

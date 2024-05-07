@@ -4,6 +4,10 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.iocoder.yudao.module.cabinet.vo.EqBillConfigVo;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -17,7 +21,7 @@ import static cn.iocoder.yudao.module.cabinet.constant.CabConstants.SPLIT;
  */
 public class TimeUtil {
 
-    public static EqBillConfigVo getTimeByDay(EqBillConfigVo configVo){
+    public static EqBillConfigVo getTimeByDay(EqBillConfigVo configVo) {
 
         //获取当前时间
         DateTime end = DateTime.now();
@@ -38,12 +42,12 @@ public class TimeUtil {
         String eTime2 = endDate + " " + times[1];
 
 
-        if (belongCalendar(DateUtil.parseDateTime(sTime1).toJdkDate(),start.toJdkDate(),end.toJdkDate())
-        && belongCalendar(DateUtil.parseDateTime(eTime1).toJdkDate(),start.toJdkDate(),end.toJdkDate())){
+        if (belongCalendar(DateUtil.parseDateTime(sTime1).toJdkDate(), start.toJdkDate(), end.toJdkDate())
+                && belongCalendar(DateUtil.parseDateTime(eTime1).toJdkDate(), start.toJdkDate(), end.toJdkDate())) {
             configVo.setStartTime(sTime1);
             configVo.setEndTime(eTime1);
-        }else if (belongCalendar(DateUtil.parseDateTime(sTime2).toJdkDate(),start.toJdkDate(),end.toJdkDate())
-         && belongCalendar(DateUtil.parseDateTime(eTime2).toJdkDate(),start.toJdkDate(),end.toJdkDate())){
+        } else if (belongCalendar(DateUtil.parseDateTime(sTime2).toJdkDate(), start.toJdkDate(), end.toJdkDate())
+                && belongCalendar(DateUtil.parseDateTime(eTime2).toJdkDate(), start.toJdkDate(), end.toJdkDate())) {
             configVo.setStartTime(sTime2);
             configVo.setEndTime(eTime2);
         }
@@ -53,6 +57,7 @@ public class TimeUtil {
 
     /**
      * 判断时间是否在时间段内
+     *
      * @param nowTime
      * @param beginTime
      * @param endTime
@@ -71,4 +76,21 @@ public class TimeUtil {
             return false;
         }
     }
+
+
+    // 获得某天最大时间 2020-02-19 23:59:59
+    public static Date getEndOfDay(Date date) {
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(date.getTime()), ZoneId.systemDefault());
+        ;
+        LocalDateTime endOfDay = localDateTime.with(LocalTime.MAX);
+        return Date.from(endOfDay.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    // 获得某天最小时间 2020-02-17 00:00:00
+    public static Date getStartOfDay(Date date) {
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(date.getTime()), ZoneId.systemDefault());
+        LocalDateTime startOfDay = localDateTime.with(LocalTime.MIN);
+        return Date.from(startOfDay.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
 }

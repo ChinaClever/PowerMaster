@@ -15,7 +15,6 @@ import java.util.List;
 public class CabinetIndexVo extends PageParam {
 
 
-
     /**
      * 机柜id
      */
