@@ -121,7 +121,7 @@ const dialogStyle = computed(() => {
       height: 54px;
       padding: 0;
       margin-right: 0 !important;
-      border-bottom: 1px solid var(--el-border-color);
+      // border-bottom: 1px solid var(--el-border-color);
     }
 
     &__body {
@@ -129,7 +129,7 @@ const dialogStyle = computed(() => {
     }
 
     &__footer {
-      border-top: 1px solid var(--el-border-color);
+      // border-top: 1px solid var(--el-border-color);
     }
 
     &__headerbtn {
