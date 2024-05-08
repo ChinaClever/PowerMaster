@@ -1,23 +1,20 @@
 package cn.iocoder.yudao.module.cabinet.service.impl;
 
-import cn.hutool.core.date.DateTime;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.enums.DisableEnums;
-import cn.iocoder.yudao.framework.common.exception.ErrorCode;
 import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetDTO;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetIndexDTO;
 import cn.iocoder.yudao.module.cabinet.mapper.CabinetCfgMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.CabinetPduMapper;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
-import cn.iocoder.yudao.module.cabinet.util.HttpUtil;
+import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexVo;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetVo;
 import com.alibaba.fastjson2.JSON;
@@ -30,10 +27,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,8 +55,8 @@ public class CabinetServiceImpl implements CabinetService {
     CabinetPduMapper cabinetPduMapper;
     @Autowired
     RedisTemplate redisTemplate;
-    @Autowired
-    HttpUtil httpUtil;
+//    @Autowired
+//    HttpUtil httpUtil;
 
     @Value("${cabinet-refresh-url}")
     public String addr;
@@ -162,7 +157,7 @@ public class CabinetServiceImpl implements CabinetService {
             List<CabinetIndex> indexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
                     .eq(CabinetIndex::getIsDeleted, DelEnums.NO_DEL.getStatus())
                     .eq(CabinetIndex::getIsDisabled, DisableEnums.ENABLE.getStatus())
-                    .ne(Objects.nonNull(vo.getId()), CabinetIndex::getId, vo.getId()));
+                    .ne(CabinetIndex::getId, vo.getId()));
             if (!CollectionUtils.isEmpty(indexList)) {
                 List<Integer> ids = indexList.stream().map(CabinetIndex::getId).collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(ids)) {
@@ -261,7 +256,7 @@ public class CabinetServiceImpl implements CabinetService {
         } finally {
             //刷新机柜计算服务缓存
             log.info("刷新计算服务缓存 --- " + addr);
-            httpUtil.get(addr);
+            HttpUtil.get(addr);
         }
         return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "保存失败");
     }
@@ -300,7 +295,7 @@ public class CabinetServiceImpl implements CabinetService {
         } finally {
             log.info("刷新计算服务缓存 --- " + addr);
             //刷新机柜计算服务缓存
-            httpUtil.get(addr);
+            HttpUtil.get(addr);
         }
         return -1;
     }
