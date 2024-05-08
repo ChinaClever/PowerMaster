@@ -53,14 +53,14 @@ public class PDUDeviceController {
 
     @GetMapping("/hisdata")
     @Operation(summary = "获得PDU历史数据")
-    public CommonResult<Map> getHistoryDataByPduId(Long id,String type) {
-        return success(pDUDeviceService.getHistoryDataByPduId(id,type));
+    public CommonResult<Map> getHistoryDataByDevKey(String devKey,String type) {
+        return success(pDUDeviceService.getHistoryDataByDevKey(devKey,type));
     }
 
     @GetMapping("/chartNewData")
     @Operation(summary = "获得PDU历史最新数据")
-    public CommonResult<Map> getChartNewDataByPduId(Long id,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,String type) {
-        return success(pDUDeviceService.getChartNewDataByPduId(id,oldTime,type));
+    public CommonResult<Map> getChartNewDataByPduDevKey(String devKey,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,String type) {
+        return success(pDUDeviceService.getChartNewDataByPduDevKey(devKey,oldTime,type));
     }
 
     @GetMapping("/report/ele")

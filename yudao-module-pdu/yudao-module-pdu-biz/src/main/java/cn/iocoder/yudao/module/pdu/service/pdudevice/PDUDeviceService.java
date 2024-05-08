@@ -1,14 +1,10 @@
 package cn.iocoder.yudao.module.pdu.service.pdudevice;
 
-import javax.validation.*;
-
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDevicePageReqVO;
-import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDeviceSaveReqVO;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.pdudevice.PDUDeviceDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -29,9 +25,9 @@ public interface PDUDeviceService {
 
     String getDisplayDataByDevKey(String devKey);
 
-    Map getHistoryDataByPduId(Long id,String type);
+    Map getHistoryDataByDevKey(String devKey, String type);
 
-    Map getChartNewDataByPduId(Long id, LocalDateTime oldTime,String type);
+    Map getChartNewDataByPduDevKey(String devKey, LocalDateTime oldTime,String type);
 
     Map getReportConsumeDataByDevKey(String devKey, Integer timeType,LocalDateTime oldTime, LocalDateTime newTime);
 

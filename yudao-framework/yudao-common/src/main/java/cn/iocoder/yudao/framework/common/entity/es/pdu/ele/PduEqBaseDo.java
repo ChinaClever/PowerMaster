@@ -1,7 +1,7 @@
 package cn.iocoder.yudao.framework.common.entity.es.pdu.ele;
 
 import cn.hutool.core.date.DateTime;
-import cn.iocoder.yudao.framework.common.entity.es.pdu.BaseDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.PduBaseDo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -11,7 +11,7 @@ import lombok.Data;
  * @Description: 电量计算基础数据
  */
 @Data
-public class PduEqBaseDo extends BaseDo {
+public class PduEqBaseDo extends PduBaseDo {
 
     /**
      * 开始时间

@@ -25,6 +25,7 @@ public class PDUDeviceDO extends BaseDO {
      * 设备唯一识别码
      */
     private int status;
+    private int color;
 
     private Double apparentPow;
 
@@ -45,5 +46,21 @@ public class PDUDeviceDO extends BaseDO {
     private String pduAlarm;
 
     private String dataUpdateTime;
+
+    private Double Acur ;
+
+    private Double Bcur ;
+
+    private Double Ccur ;
+
+    private double curUnbalance;
+
+    private Double Avol ;
+
+    private Double Bvol ;
+
+    private Double Cvol ;
+
+    private double volUnbalance;
 
 }

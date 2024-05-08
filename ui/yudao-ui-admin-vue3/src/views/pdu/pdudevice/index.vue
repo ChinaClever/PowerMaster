@@ -78,7 +78,7 @@
             </el-button>
           </el-form-item>
           <div style="float:right">
-            <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 25;getList();switchValue = 0;" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
+            <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
             <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
           </div>
         </el-form>
@@ -114,34 +114,27 @@
           <el-table-column label="总视在功率" align="center" prop="apparentPow" width="130px" >
             <template #default="scope" >
               <el-text line-clamp="2" >
-                {{ scope.row.apparentPow }} kVA
+                {{ scope.row.apparentPow }}kVA
               </el-text>
             </template>
           </el-table-column>
           <el-table-column label="总有功功率" align="center" prop="pow" width="130px">
             <template #default="scope" >
               <el-text line-clamp="2" >
-                {{ scope.row.pow }} kW
+                {{ scope.row.pow }}kW
               </el-text>
             </template>
           </el-table-column>
+          <el-table-column label="功率因素" align="center" prop="pf" width="180px" />
+          <!-- 数据库查询 -->
+          <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" /> 
           <el-table-column label="总电能" align="center" prop="ele" >
             <template #default="scope" >
               <el-text line-clamp="2" >
-                {{ scope.row.ele }} kWh
+                {{ scope.row.ele }}kWh
               </el-text>
             </template>
           </el-table-column>
-          
-          <!-- 数据库查询 -->
-          <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" /> 
-          <el-table-column
-            label="数据更新时间"
-            align="center"
-            prop="dataUpdateTime"
-            dateFormatter="hh:MM:ss"
-            width="180px"
-          />
           <el-table-column label="操作" align="center">
             <template #default="scope">
               <el-button
@@ -167,15 +160,14 @@
 
       <ContentWrap v-show="!switchValue">
           <div class="arrayContainer">
-            <div class="arrayItem" v-for="item in list" :key="item.id">
+            <div class="arrayItem" v-for="item in list" :key="item.devKey">
               <div class="devKey">{{ item.devKey }}</div>
               <div class="content">
                 <div class="icon">{{item.pow}}<br/>kW</div>
                 <div class="info">
                   <div >所在位置：</div>
                   <div >视在功率：{{item.apparentPow}}kVA</div>
-                  <div >有功电能：{{item.ele}}kWh</div>
-                  <div >更新时间：{{item.dataUpdateTime}}</div>
+                  <div >功率因素：{{item.pf}}</div>
                   <!-- <div>AB路占比：{{item.fzb}}</div> -->
                 </div>
               </div>
@@ -379,9 +371,10 @@ const list = ref([
     devKey:null,
     location:null,
     dataUpdateTime : "",
-    pduAlarm:""
+    pduAlarm:"",
+    pf:null
   }
-]) // 列表的数据
+]) as any// 列表的数据
 const total = ref(0) // 列表的总页数
 const queryParams = reactive({
   pageNo: 1,
@@ -409,6 +402,7 @@ const getList = async () => {
       obj.apparentPow = obj.apparentPow.toFixed(3);
       obj.pow = obj.pow.toFixed(3);
       obj.ele = obj.ele.toFixed(1);
+      obj.pf = obj.pf.toFixed(2);
     });
     total.value = data.total
   } finally {
@@ -429,6 +423,7 @@ const getListNoLoading = async () => {
       obj.apparentPow = obj.apparentPow.toFixed(3);
       obj.pow = obj.pow.toFixed(3);
       obj.ele = obj.ele.toFixed(1);
+      obj.pf = obj.pf.toFixed(2);
     });
     total.value = data.total
   } catch (error) {
@@ -619,6 +614,7 @@ onActivated(() => {
         width: 30px;
         height: 30px;
         margin: 0 28px;
+        text-align: center;
       }
     }
     .devKey{

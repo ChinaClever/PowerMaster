@@ -75,7 +75,7 @@ spring:
 
   # Redis 配置。Redisson 默认的配置足够使用，一般不需要进行调优
   redis:
-    host: 192.168.1.44 # 地址
+    host: 127.0.0.1 # 地址
     port: 6379 # 端口
     database: 0 # 数据库索引
 #    password: dev # 密码，建议生产环境开启
@@ -285,7 +285,7 @@ justauth:
 spring:
   elasticsearch:
     rest:
-      uris: 192.168.1.44:9200
+      uris: 127.0.0.1:9200
       connection-timeout: 1s
       read-timeout: 30s
 
@@ -297,3 +297,9 @@ cron:
   day: 0 0 6 * * ?
 #ES一次性最大写入数据量
 max-deal-count: 2000
+#机柜刷新地址
+cabinet-refresh-url: 127.0.0.1:48082/cabinet/refresh
+
+mybatis-plus:
+  configuration:
+    shrink-whitespaces-in-sql: true #从SQL中删除多余的空格字符

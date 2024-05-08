@@ -1,7 +1,7 @@
 package cn.iocoder.yudao.framework.common.entity.es.pdu.loop;
 
 import cn.hutool.core.date.DateTime;
-import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduBaseDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduTotalBaseDo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -11,7 +11,7 @@ import lombok.Data;
  * @Description: 回路历史基础数据
  */
 @Data
-public class PduHdaLoopBaseDo extends PduBaseDo {
+public class PduHdaLoopBaseDo extends PduTotalBaseDo {
 
     /**
      * 回路

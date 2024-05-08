@@ -32,6 +32,9 @@ public class PDUDevicePageReqVO extends PageParam {
     @Schema(description = "级联地址")
     private Integer cascadeNum;
 
+    @Schema(description = "颜色")
+    private List<Integer> color;
+
     public String getDevKey(){
         return devKey;
     }
