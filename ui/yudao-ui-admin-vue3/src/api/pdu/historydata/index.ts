@@ -12,6 +12,11 @@ export interface HistoryDataVO {
 
 // pdu历史数据 API
 export const HistoryDataApi = {
+  // 查询pdu数据参数类型各id最大值
+  getTypeMaxValue: async () => {
+    return await request.get({ url: `/pdu/history-data/type-max-value`})
+  },
+
   // 查询pdu历史数据分页
   getHistoryDataPage: async (params: any) => {
     return await request.get({ url: `/pdu/history-data/page`, params })

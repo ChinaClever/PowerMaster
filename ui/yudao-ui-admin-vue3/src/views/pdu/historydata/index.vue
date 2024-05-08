@@ -28,17 +28,6 @@
           :inline="true"
           label-width="80px"
         >
-          <el-form-item label="" prop="collaspe">
-            <el-switch 
-              v-model="isCollapsed"  
-              active-color="#409EFF" 
-              inactive-color="#909399"
-              active-text="折叠"  
-              active-value="100"
-              inactive-value="0" 
-              @change="toggleCollapse" />
-          </el-form-item>
-
           <el-form-item label="IP地址" prop="ipAddr">
             <el-input
               v-model="queryParams.ipAddr"
@@ -55,22 +44,21 @@
                 :min="0"
                 controls-position="right"
                 :value-on-clear="0"
-                 class="!w-100px"
+                 class="!w-148px"
               />
           </el-form-item>
 
           <el-form-item label="参数类型" prop="type">
-            <el-select
-              v-model="queryParams.type"
-              placeholder="请选择参数类型"
-              class="!w-120px"
-            >
-              <el-option label="总" value="total" />
-              <el-option label="相" value="line" />
-              <el-option label="回路" value="loop" />
-              <el-option label="输出位" value="outlet" />
-            </el-select>
-          </el-form-item>
+          <el-cascader
+            v-model="defaultSelected"
+            collapse-tags
+            :options="typeSelection"
+            collapse-tags-tooltip
+            :show-all-levels="true"
+            @change="typeCascaderChange"
+            class="!w-140px"
+          />
+        </el-form-item>
 
           <el-form-item label="颗粒度" prop="type">
             <el-select
@@ -92,7 +80,7 @@
               collapse-tags-tooltip
               :show-all-levels="false"
               @change="cascaderChange"
-              class="!w-220px"
+              class="!w-210px"
             />
           </el-form-item>
 
@@ -108,7 +96,7 @@
           />
           </el-form-item>
 
-          <div style="float:right">
+          <div style="float:right; padding-right:78px">
           <el-form-item >
             <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
             <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
@@ -133,7 +121,7 @@
           <template v-for="column in tableColumns">
             <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
               <template #default="{ row }" v-if="column.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.id)">详情</el-button>
+                <el-button link type="primary" @click="toDetails(row.pdu_id)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -167,7 +155,7 @@ import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { HistoryDataApi } from '@/api/pdu/historydata'
 import { ElTree, ElIcon, ElMessage } from 'element-plus'
-
+const { push } = useRouter()
 /** pdu历史数据 列表 */
 defineOptions({ name: 'HistoryData' })
 
@@ -265,6 +253,9 @@ const cascadeAddr = ref(0) // 数字类型的级联地址
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
+  lineId: undefined,
+  loopId: undefined,
+  outletId: undefined,
   type: 'total',
   granularity: 'realtime',
   ipAddr: undefined,
@@ -305,6 +296,39 @@ const shortcuts = [
   },
 ]
 
+// 参数类型选项
+const defaultSelected = ref(['total'])
+const typeSelection = ref([]) as any;
+
+// 参数类型改变触发
+const typeCascaderChange = (selected) => {
+  queryParams.type = selected[0];
+  switch(selected[0]){
+    case 'line':
+      queryParams.lineId = selected[1];
+      queryParams.loopId = undefined;
+      queryParams.outletId = undefined;
+      break;
+    case 'loop':
+      queryParams.loopId = selected[1];
+      queryParams.lineId = undefined;
+      queryParams.outletId = undefined;
+      break;
+    case 'outlet':
+      queryParams.outletId = selected[1];
+      queryParams.loopId = undefined;
+      queryParams.lineId = undefined;
+      break;
+    case 'total':
+      queryParams.lineId = undefined;
+      queryParams.loopId = undefined;
+      queryParams.outletId = undefined;
+      break;
+  }
+  // 自动搜索
+  handleQuery()
+}
+
 //筛选选项
 const props = { multiple: true}
 const defaultOptionsCol = ref([["pow_active"], ["pow_apparent"], ["power_factor"]])
@@ -341,7 +365,7 @@ const shouldShowDataExceedMessage = computed(() => {
   return queryParams.pageNo === lastPageNo && total.value >= 10000;
 });
 
-watch([() => queryParams.type, () => queryParams.granularity], (newValues) => {
+watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
     const [newType, newGranularity] = newValues;
     // 处理参数变化
     if (newType == 'total'){
@@ -759,6 +783,56 @@ function formatTime(row: any, column: any, cellValue: number): string {
   return dayjs(cellValue).format('YYYY-MM-DD HH:mm:ss.SSS')
 }
 
+// 获取参数类型最大值 例如lineId=6 表示下拉框为L1~L6
+const getTypeMaxValue = async () => {
+    const data = await HistoryDataApi.getTypeMaxValue()
+    const lineIdMaxValue = data.line_id_max_value;
+    const loopIdMaxValue = data.loop_id_max_value;
+    const outletIdMaxValue = data.outlet_id_max_value;
+    const typeSelectionValue  = [
+    {
+      value: "total",
+      label: '总'
+    },
+    {
+      value: "line",
+      label: '相',
+      children: (() => {
+        const lines: { value: any; label: string; }[] = [];
+        lines.push({ value: undefined, label: '全部' },)
+        for (let i = 1; i <= lineIdMaxValue; i++) {
+          lines.push({ value: `${i}`, label: `L${i}` });
+        }
+        return lines;
+      })(),
+    },
+    {
+      value: "loop",
+      label: '回路',
+      children: (() => {
+        const loops: { value: any; label: string; }[] = [];
+        loops.push({ value: undefined, label: '全部' },)
+        for (let i = 1; i <= loopIdMaxValue; i++) {
+          loops.push({ value: `${i}`, label: `C${i}` });
+        }
+        return loops;
+      })(),
+    },
+    {
+      value: "outlet",
+      label: '输出位',
+      children: (() => {
+        const outlets: { value: any; label: string; }[] = [];
+        outlets.push({ value: undefined, label: '全部' },)
+        for (let i = 1; i <= outletIdMaxValue; i++) {
+          outlets.push({ value: `${i}`, label: `${i}` });
+        }
+        return outlets;
+      })(),
+    },
+  ]
+  typeSelection.value = typeSelectionValue;
+}
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
@@ -769,7 +843,7 @@ const handleQuery = () => {
     queryParams.cascadeAddr = cascadeAddr.value.toString();
     getList()
   }else{
-    ElMessage.error('IP地址格式有误,请重新输入！')
+    ElMessage.error('IP地址有误,请重新输入！')
   }
 
 }
@@ -782,9 +856,9 @@ const resetQuery = () => {
 }
 
 
-/** 详情操作*/
-const toDetails = (id?: number) => {
-  console.log(id)
+//详情操作 跳转电力分析
+const toDetails = (pdu_id?: number) => {
+  push('/pdu/power/analysis?pduId='+pdu_id);
 }
 
 /** 导出按钮操作 */
@@ -804,8 +878,13 @@ const handleExport = async () => {
 
 /** 初始化 **/
 onMounted(() => {
-  getList()
+  getList();
 })
+// 在组件挂载后获取数据
+onMounted(async () => {
+  await getTypeMaxValue();
+});
+
 </script>
 
 <style scoped>
