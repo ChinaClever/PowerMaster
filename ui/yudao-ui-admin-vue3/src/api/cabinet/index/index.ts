@@ -44,4 +44,20 @@ export const IndexApi = {
   exportIndex: async (params) => {
     return await request.download({ url: `/cabinet/index/export-excel`, params })
   },
-}
+
+  getConsumeData: async (params) => {
+    return await request.get({ url: `/cabinet/index/report/ele`,params})
+  },
+
+  getPowData: async (params) => {
+    return await request.get({ url: `/cabinet/index/report/pow`,params})
+  },
+
+  // getOutLetData: async (params) => {
+  //   return await request.get({ url: `/cabinet/index/report/outlet`,params})
+  // },
+
+  getTemData: async (params) => {
+    return await request.get({ url: `/cabinet/index/report/tem`,params})
+  },
+}
