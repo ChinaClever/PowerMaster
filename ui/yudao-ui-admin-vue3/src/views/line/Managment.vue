@@ -103,6 +103,26 @@ const echartsOption1 = reactive<EChartsOption>({
   ]
 }) as EChartsOption
 
+// series: [
+//     {
+//       type: 'liquidFill',
+//       data: [0.38], // 设置水球图的填充比例
+//       label: {
+//         fontSize: 12, // 设置字体大小
+//         fontWeight: 'bold' // 设置字体粗细
+//       },
+//       radius: '100%',
+//       amplitude: 3, // 调整波浪的振幅
+//       outline: {
+//               show: false // 不显示外圈轮廓线
+//             },
+//       color: ['#3b8bf5'],
+//       backgroundStyle: {
+//         // color: '#eee'
+//       }
+//     }
+//   ]
+
 const echartsOption2 = reactive<EChartsOption>({
   title: {
     text: '实时功率走势'

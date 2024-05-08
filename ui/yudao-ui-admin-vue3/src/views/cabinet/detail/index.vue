@@ -70,9 +70,9 @@
                   <div>{{scope.row.pow_value.toFixed(3)}}kW</div>
                 </template>
               </el-table-column>
-              <el-table-column v-if="APDUParam.includes('pf')" prop="pf" label="功率因素" width="100" align="center">
+              <el-table-column v-if="APDUParam.includes('power_factor')" prop="power_factor" label="功率因素" width="100" align="center">
                 <template #default="scope">
-                  <div>{{scope.row.pf.toFixed(2)}}</div>
+                  <div>{{scope.row.power_factor.toFixed(2)}}</div>
                 </template>
               </el-table-column>
             </el-table>
@@ -97,9 +97,9 @@
                   <div>{{scope.row.pow_value.toFixed(3)}}kW</div>
                 </template>
               </el-table-column>
-              <el-table-column v-if="CPDUParam.includes('pf')" prop="pf" label="功率因素" width="100" align="center">
+              <el-table-column v-if="CPDUParam.includes('power_factor')" prop="power_factor" label="功率因素" width="100" align="center">
                 <template #default="scope">
-                  <div>{{scope.row.pf.toFixed(2)}}</div>
+                  <div>{{scope.row.power_factor.toFixed(2)}}</div>
                 </template>
               </el-table-column>
             </el-table>
@@ -124,9 +124,9 @@
                   <div>{{scope.row.pow_value.toFixed(3)}}kW</div>
                 </template>
               </el-table-column>
-              <el-table-column v-if="SPDUParam.includes('pf')" prop="pf" label="功率因素" width="100" align="center">
+              <el-table-column v-if="SPDUParam.includes('power_factor')" prop="power_factor" label="功率因素" width="100" align="center">
                 <template #default="scope">
-                  <div>{{scope.row.pf.toFixed(2)}}</div>
+                  <div>{{scope.row.power_factor.toFixed(2)}}</div>
                 </template>
               </el-table-column>
             </el-table>
@@ -157,9 +157,9 @@
                   <div>{{scope.row.pow_value.toFixed(3)}}kW</div>
                 </template>
               </el-table-column>
-              <el-table-column v-if="APDUParam.includes('pf')" prop="pf" label="功率因素" width="100" align="center">
+              <el-table-column v-if="APDUParam.includes('power_factor')" prop="power_factor" label="功率因素" width="100" align="center">
                 <template #default="scope">
-                  <div>{{scope.row.pf.toFixed(2)}}</div>
+                  <div>{{scope.row.power_factor.toFixed(2)}}</div>
                 </template>
               </el-table-column>
             </el-table>
@@ -184,9 +184,9 @@
                   <div>{{scope.row.pow_value.toFixed(3)}}kW</div>
                 </template>
               </el-table-column>
-              <el-table-column v-if="CPDUParam.includes('pf')" prop="pf" label="功率因素" width="100" align="center">
+              <el-table-column v-if="CPDUParam.includes('power_factor')" prop="power_factor" label="功率因素" width="100" align="center">
                 <template #default="scope">
-                  <div>{{scope.row.pf.toFixed(2)}}</div>
+                  <div>{{scope.row.power_factor.toFixed(2)}}</div>
                 </template>
               </el-table-column>
             </el-table>
@@ -211,9 +211,9 @@
                   <div>{{scope.row.pow_value.toFixed(3)}}kW</div>
                 </template>
               </el-table-column>
-              <el-table-column v-if="SPDUParam.includes('pf')" prop="pf" label="功率因素" width="100" align="center">
+              <el-table-column v-if="SPDUParam.includes('power_factor')" prop="power_factor" label="功率因素" width="100" align="center">
                 <template #default="scope">
-                  <div>{{scope.row.pf.toFixed(2)}}</div>
+                  <div>{{scope.row.power_factor.toFixed(2)}}</div>
                 </template>
               </el-table-column>
             </el-table>

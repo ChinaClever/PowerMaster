@@ -10,14 +10,17 @@
     </parent>
 
     <artifactId>yudao-module-cabinet-api</artifactId>
+
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
+
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
     <dependencies>  <!-- 5. 新增 yudao-common 依赖 -->
         <dependency>
             <groupId>cn.iocoder.boot</groupId>

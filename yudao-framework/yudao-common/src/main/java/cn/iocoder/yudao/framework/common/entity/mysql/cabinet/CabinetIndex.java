@@ -1,8 +1,6 @@
 package cn.iocoder.yudao.framework.common.entity.mysql.cabinet;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -44,6 +42,11 @@ public class CabinetIndex implements Serializable {
     private float powCapacity;
 
     /**
+     * 运行状态
+     */
+    private int runStatus;
+
+    /**
      * 数据来源
      */
     private int pduBox;
@@ -61,9 +64,11 @@ public class CabinetIndex implements Serializable {
     /**
      * 更新时间
      */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
     /**
      * 创建时间
      */
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 }

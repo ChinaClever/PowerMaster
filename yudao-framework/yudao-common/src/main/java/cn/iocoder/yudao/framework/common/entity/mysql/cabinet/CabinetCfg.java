@@ -9,38 +9,53 @@ import java.time.LocalDateTime;
 /**
  * @author luowei
  * @version 1.0
- * @description: 机柜与PDU关联表
- * @date 2024/4/23 10:30
+ * @description: 机柜配置表
+ * @date 2024/4/28 13:53
  */
 @Data
-@TableName(value = "cabinet_pdu")
-public class CabinetPdu implements Serializable {
-
+@TableName(value = "cabinet_cfg")
+public class CabinetCfg implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
     private int id;
 
+
     /**
      * 机柜id
      */
     private int cabinetId;
+
     /**
-     * A路IP地址
+     * 机柜名称
      */
-    private String pduIpA;
+    private String cabinetName;
+
     /**
-     * A路级联编号
+     * 机柜高度
      */
-    private int casIdA;
+    private int cabinetHeight;
+
     /**
-     * B路IP地址
+     * 机柜类型
      */
-    private String pduIpB;
+    private String type;
+
     /**
-     * B路级联编号
+     * 注释
      */
-    private int casIdB;
+    private int xCoordinate;
+
+    /**
+     * 类名
+     */
+    private int yCoordinate;
+
+    /**
+     * 所属于公司
+     */
+    private String company;
+
     /**
      * 更新时间
      */
@@ -51,4 +66,5 @@ public class CabinetPdu implements Serializable {
      */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
+
 }

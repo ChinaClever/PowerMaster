@@ -21,6 +21,7 @@
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <elasticsearch.version>7.6.2</elasticsearch.version>
     </properties>
     <dependencies>
         <dependency>
@@ -91,5 +92,10 @@
             <version>2.0.43</version>
         </dependency>
     </dependencies>
+
+    <description>
+        计算服务模块
+    </description>
+
 
 </project>
