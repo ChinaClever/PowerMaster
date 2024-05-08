@@ -1,16 +1,17 @@
 package cn.iocoder.yudao.module.pdu.service.eqbillconfig;
 
+import cn.iocoder.yudao.framework.common.util.HttpUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.*;
+
 import cn.iocoder.yudao.module.pdu.controller.admin.eqbillconfig.vo.*;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.eqbillconfig.EqBillConfigDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 
 import cn.iocoder.yudao.module.pdu.dal.mysql.eqbillconfig.EqBillConfigMapper;
@@ -27,34 +28,54 @@ import static cn.iocoder.yudao.module.pdu.enums.ErrorCodeConstants.*;
 @Validated
 public class EqBillConfigServiceImpl implements EqBillConfigService {
 
+  
+
+    @Value("${pdu-cal-refresh-url}")
+    public String adder;
+
     @Resource
     private EqBillConfigMapper eqBillConfigMapper;
 
     @Override
     public Integer createEqBillConfig(EqBillConfigSaveReqVO createReqVO) {
-        // 插入
-        EqBillConfigDO eqBillConfig = BeanUtils.toBean(createReqVO, EqBillConfigDO.class);
-        eqBillConfig.setCreateTime(LocalDateTime.now());
-        eqBillConfigMapper.insert(eqBillConfig);
-        // 返回
-        return eqBillConfig.getId();
+        try {
+            // 插入
+            EqBillConfigDO eqBillConfig = BeanUtils.toBean(createReqVO, EqBillConfigDO.class);
+            eqBillConfig.setCreateTime(LocalDateTime.now());
+            eqBillConfigMapper.insert(eqBillConfig);
+            // 返回
+            return eqBillConfig.getId();
+        }finally {
+            HttpUtil.get(adder);
+        }
+
     }
 
     @Override
     public void updateEqBillConfig(EqBillConfigSaveReqVO updateReqVO) {
-        // 校验存在
-        validateEqBillConfigExists(updateReqVO.getId());
-        // 更新
-        EqBillConfigDO updateObj = BeanUtils.toBean(updateReqVO, EqBillConfigDO.class);
-        eqBillConfigMapper.updateById(updateObj);
+        try {
+            // 校验存在
+            validateEqBillConfigExists(updateReqVO.getId());
+            // 更新
+            EqBillConfigDO updateObj = BeanUtils.toBean(updateReqVO, EqBillConfigDO.class);
+            eqBillConfigMapper.updateById(updateObj);
+        }finally {
+            HttpUtil.get(adder);
+        }
+
     }
 
     @Override
     public void deleteEqBillConfig(Integer id) {
-        // 校验存在
-        validateEqBillConfigExists(id);
-        // 删除
-        eqBillConfigMapper.deleteById(id);
+        try {
+            // 校验存在
+            validateEqBillConfigExists(id);
+            // 删除
+            eqBillConfigMapper.deleteById(id);
+        }finally {
+            HttpUtil.get(adder);
+        }
+
     }
 
     private void validateEqBillConfigExists(Integer id) {

@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.framework.common.entity.mysql.cabinet;
+package cn.iocoder.yudao.framework.common.entity.mysql;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -11,12 +11,12 @@ import java.time.LocalDateTime;
 /**
  * @author luowei
  * @version 1.0
- * @description: 机柜电量计费配置
+ * @description: 电量计费配置
  * @date 2024/4/17 13:59
  */
 @Data
-@TableName(value = "cabinet_eq_bill_config")
-public class CabinetEqBillConfig implements Serializable {
+@TableName(value = "sys_eq_bill_config")
+public class SysEqBillConfig implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)

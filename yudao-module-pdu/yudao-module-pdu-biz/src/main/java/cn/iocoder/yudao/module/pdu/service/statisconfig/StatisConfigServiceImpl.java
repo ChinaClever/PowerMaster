@@ -1,5 +1,8 @@
 package cn.iocoder.yudao.module.pdu.service.statisconfig;
 
+import cn.iocoder.yudao.framework.common.util.HttpUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -26,33 +29,50 @@ import static cn.iocoder.yudao.module.pdu.enums.ErrorCodeConstants.*;
 @Validated
 public class StatisConfigServiceImpl implements StatisConfigService {
 
+    @Value("${pdu-cal-refresh-url}")
+    public String adder;
     @Resource
     private StatisConfigMapper statisConfigMapper;
 
     @Override
     public Integer createStatisConfig(StatisConfigSaveReqVO createReqVO) {
-        // 插入
-        StatisConfigDO statisConfig = BeanUtils.toBean(createReqVO, StatisConfigDO.class);
-        statisConfigMapper.insert(statisConfig);
-        // 返回
-        return statisConfig.getId();
+        try {
+            // 插入
+            StatisConfigDO statisConfig = BeanUtils.toBean(createReqVO, StatisConfigDO.class);
+            statisConfigMapper.insert(statisConfig);
+            // 返回
+            return statisConfig.getId();
+        }finally {
+            HttpUtil.get(adder);
+        }
+
     }
 
     @Override
     public void updateStatisConfig(StatisConfigSaveReqVO updateReqVO) {
-        // 校验存在
-        validateStatisConfigExists(updateReqVO.getId());
-        // 更新
-        StatisConfigDO updateObj = BeanUtils.toBean(updateReqVO, StatisConfigDO.class);
-        statisConfigMapper.updateById(updateObj);
+        try {
+            // 校验存在
+            validateStatisConfigExists(updateReqVO.getId());
+            // 更新
+            StatisConfigDO updateObj = BeanUtils.toBean(updateReqVO, StatisConfigDO.class);
+            statisConfigMapper.updateById(updateObj);
+        }finally {
+            HttpUtil.get(adder);
+        }
+
     }
 
     @Override
     public void deleteStatisConfig(Integer id) {
-        // 校验存在
-        validateStatisConfigExists(id);
-        // 删除
-        statisConfigMapper.deleteById(id);
+        try {
+            // 校验存在
+            validateStatisConfigExists(id);
+            // 删除
+            statisConfigMapper.deleteById(id);
+        }finally {
+            HttpUtil.get(adder);
+        }
+
     }
 
     private void validateStatisConfigExists(Integer id) {
