@@ -28,17 +28,6 @@
           :inline="true"
           label-width="80px"
         >
-          <el-form-item label="" prop="collaspe">
-            <el-switch 
-              v-model="isCollapsed"  
-              active-color="#409EFF" 
-              inactive-color="#909399"
-              active-text="折叠"  
-              active-value="100"
-              inactive-value="0" 
-              @change="toggleCollapse" />
-          </el-form-item>
-
           <el-form-item label="IP地址" prop="ipAddr">
             <el-input
               v-model="queryParams.ipAddr"
@@ -55,18 +44,22 @@
                 :min="0"
                 controls-position="right"
                 :value-on-clear="0"
-                 class="!w-100px"
+                 class="!w-148px"
               />
           </el-form-item>
 
           <el-form-item label="传感器" prop="sensorId">
             <el-select
               v-model="queryParams.sensorId"
-              class="!w-120px"
-              @change="handleQuery">
-              <el-option label="全部" :value=0 />
-              <el-option label="1" :value=1 />
-              <el-option label="2" :value=2 />
+              class="!w-140px"
+              @change="handleQuery"
+              >
+              <el-option
+                v-for="item in sensorOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
             </el-select>
           </el-form-item>
 
@@ -90,7 +83,7 @@
               collapse-tags-tooltip
               :show-all-levels="false"
               @change="cascaderChange"
-              class="!w-220px"
+              class="!w-210px"
             />
           </el-form-item>
 
@@ -106,7 +99,7 @@
           />
           </el-form-item>
 
-          <div style="float:right">
+          <div style="float:right; padding-right:78px">
           <el-form-item >
             <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
             <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
@@ -131,7 +124,7 @@
           <template v-for="column in tableColumns">
             <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
               <template #default="{ row }" v-if="column.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.id)">详情</el-button>
+                <el-button link type="primary" @click="toDetails(row.pdu_id)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -165,7 +158,7 @@ import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnvDataApi } from '@/api/pdu/envData'
 import { ElTree, ElIcon, ElMessage } from 'element-plus'
-
+const { push } = useRouter()
 /** pdu历史数据 列表 */
 defineOptions({ name: 'HistoryData' })
 
@@ -303,6 +296,9 @@ const shortcuts = [
   },
 ]
 
+// 传感器选项
+const sensorOptions = ref([]) as any;
+
 //筛选选项
 const props = { multiple: true}
 const defaultOptionsCol = ref([["tem"], ["hum"]])
@@ -352,8 +348,8 @@ watch(() => queryParams.granularity, (newValues) => {
       tableColumns.value =([
         { label: '位置', align: 'center', prop: 'location' , istrue:true},
         { label: '传感器', align: 'center', prop: 'sensor_id', istrue:true},
-        { label: '温度(℃)', align: 'center', prop: 'tem_value', istrue:true},
-        { label: '湿度(%RH)', align: 'center', prop: 'hum_value' , istrue:true},
+        { label: '温度(℃)', align: 'center', prop: 'tem_value', istrue:true, formatter: formatData},
+        { label: '湿度(%RH)', align: 'center', prop: 'hum_value' , istrue:true, formatter: formatData},
         { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
         { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '230px'},
       ]);
@@ -369,8 +365,8 @@ watch(() => queryParams.granularity, (newValues) => {
       optionsCol.value = [
         { value: "tem_value", label: '温度', children: [
             { value: "tem_avg_value", label: '平均温度'},
-            { value: "tem_max", label: '最大温度' },
-            { value: "tem_min", label: '最小温度' },
+            { value: "tem_max", label: '最高温度' },
+            { value: "tem_min", label: '最低温度' },
           ]
         },
         { value: "hum_value", label: '湿度', children: [
@@ -386,15 +382,15 @@ watch(() => queryParams.granularity, (newValues) => {
       tableColumns.value = [
         { label: '位置', align: 'center', prop: 'location', istrue:true, width: '180px'}, 
         { label: '传感器', align: 'center', prop: 'sensor_id', istrue:true},
-        { label: '平均温度(℃)', align: 'center', prop: 'tem_avg_value', istrue:true, width: '180px' },
-        { label: '最大温度(℃)', align: 'center', prop: 'tem_max_value', istrue:true, width: '180px' },
-        { label: '最大温度时间', align: 'center', prop: 'tem_max_time' , width: '230px', istrue:true},
-        { label: '最小温度(℃)', align: 'center', prop: 'tem_min_value', istrue:true, width: '180px' },
-        { label: '最小温度时间', align: 'center', prop: 'tem_min_time' , width: '230px', istrue:true},
-        { label: '平均湿度(%RH)', align: 'center', prop: 'hum_avg_value', istrue:false, width: '180px '},
-        { label: '最大湿度(%RH)', align: 'center', prop: 'hum_max_value', istrue:false, width: '180px' },
+        { label: '平均温度(℃)', align: 'center', prop: 'tem_avg_value', istrue:true, width: '180px', formatter: formatData },
+        { label: '最高温度(℃)', align: 'center', prop: 'tem_max_value', istrue:true, width: '180px', formatter: formatData },
+        { label: '最高温度时间', align: 'center', prop: 'tem_max_time' , width: '230px', istrue:true},
+        { label: '最低温度(℃)', align: 'center', prop: 'tem_min_value', istrue:true, width: '180px', formatter: formatData },
+        { label: '最低温度时间', align: 'center', prop: 'tem_min_time' , width: '230px', istrue:true},
+        { label: '平均湿度(%RH)', align: 'center', prop: 'hum_avg_value', istrue:false, width: '180px', formatter: formatData},
+        { label: '最大湿度(%RH)', align: 'center', prop: 'hum_max_value', istrue:false, width: '180px', formatter: formatData },
         { label: '最大湿度时间', align: 'center', prop: 'hum_max_time' , width: '230px', istrue:false},
-        { label: '最小湿度(%RH)', align: 'center', prop: 'hum_min_value', istrue:false, width: '180px' },
+        { label: '最小湿度(%RH)', align: 'center', prop: 'hum_min_value', istrue:false, width: '180px', formatter: formatData },
         { label: '最小湿度时间', align: 'center', prop: 'hum_min_time' , width: '230px', istrue:false},
         { label: '创建时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true},
         { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '230px'},
@@ -441,6 +437,22 @@ function formatTime(row: any, column: any, cellValue: number): string {
   return dayjs(cellValue).format('YYYY-MM-DD HH:mm:ss.SSS')
 }
 
+// 格式化温湿度列数据，保留一位小数
+function formatData(row: any, column: any, cellValue: number): string {
+  return cellValue.toFixed(1);
+}
+
+// 获取参数类型最大值 例如lineId=6 表示下拉框为L1~L6
+const getSensorIdMaxValue = async () => {
+  const data = await EnvDataApi.getSensorIdMaxValue()
+  const sensorIdMaxValue = data.sensor_id_max_value;
+  const sensorSelectionValue: { value: number; label: string; }[] = [];
+  sensorSelectionValue.push({ value: 0, label: '全部' },)
+  for (let i = 1; i <= sensorIdMaxValue; i++) {
+    sensorSelectionValue.push({ value: i, label: `${i}`});
+  }
+  sensorOptions.value = sensorSelectionValue;
+}
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
@@ -465,8 +477,8 @@ const resetQuery = () => {
 
 
 /** 详情操作*/
-const toDetails = (id?: number) => {
-  console.log(id)
+const toDetails = (pdu_id?: number) => {
+  push('/pdu/env/analysis?pduId='+pdu_id);
 }
 
 /** 导出按钮操作 */
@@ -488,6 +500,11 @@ const handleExport = async () => {
 onMounted(() => {
   getList()
 })
+// 在组件挂载后获取数据
+onMounted(async () => {
+  await getSensorIdMaxValue();
+});
+
 </script>
 
 <style scoped>

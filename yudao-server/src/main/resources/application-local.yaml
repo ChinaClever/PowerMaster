@@ -286,7 +286,8 @@ spring:
   elasticsearch:
     rest:
       uris: 127.0.0.1:9200
-      connection-timeout: 1s
+#      uris: 192.168.1.44:9200
+      connection-timeout: 5s
       read-timeout: 30s
 
 #定时任务配置
@@ -299,7 +300,13 @@ cron:
 max-deal-count: 2000
 #机柜刷新地址
 cabinet-refresh-url: 127.0.0.1:48082/cabinet/refresh
+#pdu采集配置刷新地址
+pdu-dc-refresh-url: 127.0.0.1:48082/pdu-dc/refresh
+#pdu计算配置刷新地址
+pdu-cal-refresh-url: 127.0.0.1:48082/pdu-cal/refresh
 
 mybatis-plus:
   configuration:
     shrink-whitespaces-in-sql: true #从SQL中删除多余的空格字符
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+

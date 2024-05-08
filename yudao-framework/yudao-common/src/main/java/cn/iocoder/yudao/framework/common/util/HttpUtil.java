@@ -1,14 +1,10 @@
-package cn.iocoder.yudao.module.cabinet.util;
+package cn.iocoder.yudao.framework.common.util;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import javax.net.ssl.*;
 import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.SecureRandom;
@@ -31,7 +27,7 @@ public class HttpUtil {
      *
      * @param addr
      */
-    public void get(String addr) {
+    public static void get(String addr) {
         BufferedReader in = null;
         try {
             //创建信任管理器，忽略证书认证

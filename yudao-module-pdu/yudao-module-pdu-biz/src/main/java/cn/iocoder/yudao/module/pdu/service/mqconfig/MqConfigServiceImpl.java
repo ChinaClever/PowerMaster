@@ -1,5 +1,8 @@
 package cn.iocoder.yudao.module.pdu.service.mqconfig;
 
+import cn.iocoder.yudao.framework.common.util.HttpUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -27,34 +30,54 @@ import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionU
 @Validated
 public class MqConfigServiceImpl implements MqConfigService {
 
+
+    @Value("${pdu-dc-refresh-url}")
+    public String adder;
+
+
     @Resource
     private MqConfigMapper mqConfigMapper;
 
     @Override
     public Integer createMqConfig(MqConfigSaveReqVO createReqVO) {
-        // 插入
-        MqConfigDO mqConfig = BeanUtils.toBean(createReqVO, MqConfigDO.class);
-        mqConfig.setCreateTime(LocalDateTime.now());
-        mqConfigMapper.insert(mqConfig);
-        // 返回
-        return mqConfig.getId();
+        try {
+            // 插入
+            MqConfigDO mqConfig = BeanUtils.toBean(createReqVO, MqConfigDO.class);
+            mqConfig.setCreateTime(LocalDateTime.now());
+            mqConfigMapper.insert(mqConfig);
+            // 返回
+            return mqConfig.getId();
+        }finally {
+            HttpUtil.get(adder);
+        }
+
     }
 
     @Override
     public void updateMqConfig(MqConfigSaveReqVO updateReqVO) {
-        // 校验存在
-        validateMqConfigExists(updateReqVO.getId());
-        // 更新
-        MqConfigDO updateObj = BeanUtils.toBean(updateReqVO, MqConfigDO.class);
-        mqConfigMapper.updateById(updateObj);
+        try {
+            // 校验存在
+            validateMqConfigExists(updateReqVO.getId());
+            // 更新
+            MqConfigDO updateObj = BeanUtils.toBean(updateReqVO, MqConfigDO.class);
+            mqConfigMapper.updateById(updateObj);
+        }finally {
+            HttpUtil.get(adder);
+        }
+
     }
 
     @Override
     public void deleteMqConfig(Integer id) {
-        // 校验存在
-        validateMqConfigExists(id);
-        // 删除
-        mqConfigMapper.deleteById(id);
+        try {
+            // 校验存在
+            validateMqConfigExists(id);
+            // 删除
+            mqConfigMapper.deleteById(id);
+        }finally {
+            HttpUtil.get(adder);
+        }
+
     }
 
     private void validateMqConfigExists(Integer id) {

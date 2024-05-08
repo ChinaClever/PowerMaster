@@ -10,6 +10,8 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.metrics.Max;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,8 +66,53 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     }
 
     @Override
+    public Map getHistoryDataTypeMaxValue() throws IOException {
+        HashMap resultMap = new HashMap<>();
+        String[] indexArr = new String[]{"pdu_hda_line_realtime", "pdu_hda_loop_realtime", "pdu_hda_outlet_realtime"};
+        String[] fieldNameArr = new String[]{"line_id", "loop_id", "outlet_id"};
+        for (int i = 0; i < indexArr.length; i++) {
+            SearchRequest searchRequest = new SearchRequest(indexArr[i]);
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            // 添加最大值聚合
+            searchSourceBuilder.aggregation(
+                    AggregationBuilders.max("max_value").field(fieldNameArr[i])
+            );
+            searchRequest.source(searchSourceBuilder);
+            // 执行搜索请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            // 从聚合结果中获取最大值
+            Max maxAggregation = searchResponse.getAggregations().get("max_value");
+            Integer maxValue = (int) maxAggregation.getValue();
+            resultMap.put(fieldNameArr[i]+"_max_value", maxValue);
+        }
+
+        return resultMap;
+    }
+
+    @Override
+    public Map getSensorIdMaxValue() throws IOException {
+        HashMap resultMap = new HashMap<>();
+        SearchRequest searchRequest = new SearchRequest("pdu_env_realtime");
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        // 添加最大值聚合
+        searchSourceBuilder.aggregation(
+                AggregationBuilders.max("max_value").field("sensor_id")
+        );
+        searchRequest.source(searchSourceBuilder);
+        // 执行搜索请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        // 从聚合结果中获取最大值
+        Max maxAggregation = searchResponse.getAggregations().get("max_value");
+        Integer maxValue = (int) maxAggregation.getValue();
+        resultMap.put("sensor_id_max_value", maxValue);
+        return resultMap;
+    }
+
+    @Override
     public PageResult<Object> getHistoryDataPage(HistoryDataPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = null;
+        // 创建BoolQueryBuilder对象
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         int pageNo = pageReqVO.getPageNo();
@@ -143,6 +190,14 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                             .from(pageReqVO.getTimeRange()[0])
                             .to(pageReqVO.getTimeRange()[1]));
                 }
+                if( pageReqVO.getLineId() != null){
+                    String lineId = String.valueOf(pageReqVO.getLineId());
+                    // 创建匹配查询
+                    QueryBuilder matchQuery = QueryBuilders.matchQuery("line_id", lineId);
+                    boolQuery.must(matchQuery);
+                    // 将布尔查询设置到SearchSourceBuilder中
+                    searchSourceBuilder.query(boolQuery);
+                }
                 searchRequest1.source(searchSourceBuilder);
                 // 执行搜索,向ES发起http请求
                 SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
@@ -172,6 +227,14 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                     searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                             .from(pageReqVO.getTimeRange()[0])
                             .to(pageReqVO.getTimeRange()[1]));
+                }
+                if( pageReqVO.getLoopId() != null){
+                    String loopId = String.valueOf(pageReqVO.getLoopId());
+                    // 创建匹配查询
+                    QueryBuilder matchQuery1 = QueryBuilders.matchQuery("loop_id", loopId);
+                    boolQuery.must(matchQuery1);
+                    // 将布尔查询设置到SearchSourceBuilder中
+                    searchSourceBuilder.query(boolQuery);
                 }
                 searchRequest2.source(searchSourceBuilder);
                 // 执行搜索,向ES发起http请求
@@ -203,6 +266,14 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                             .from(pageReqVO.getTimeRange()[0])
                             .to(pageReqVO.getTimeRange()[1]));
                 }
+                if( pageReqVO.getOutletId() != null){
+                    String outletId = String.valueOf(pageReqVO.getOutletId());
+                    // 创建匹配查询
+                    QueryBuilder matchQuery2 = QueryBuilders.matchQuery("outlet_id", outletId);
+                    boolQuery.must(matchQuery2);
+                    // 将布尔查询设置到SearchSourceBuilder中
+                    searchSourceBuilder.query(boolQuery);
+                }
                 searchRequest3.source(searchSourceBuilder);
                 // 执行搜索,向ES发起http请求
                 SearchResponse searchResponse3 = client.search(searchRequest3, RequestOptions.DEFAULT);
@@ -227,7 +298,13 @@ public class HistoryDataServiceImpl implements HistoryDataService {
 
     @Override
     public PageResult<Object> getHistoryDataDetails(HistoryDataDetailsReqVO reqVO) throws IOException{
-        String pduId = String.valueOf(reqVO.getPduId());
+        Integer pduId = reqVO.getPduId();
+        if (Objects.equals(pduId, null)){
+            pduId = getPduIdByAddr(reqVO.getIpAddr(), reqVO.getCascadeAddr());
+            if (Objects.equals(pduId, null)){
+                return null;
+            }
+        }
         // 创建BoolQueryBuilder对象
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         // 搜索源构建对象

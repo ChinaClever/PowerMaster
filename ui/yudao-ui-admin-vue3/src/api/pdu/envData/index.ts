@@ -10,12 +10,17 @@ export interface EnvDataVO {
 }
 
 export const EnvDataApi = {
-  // 查询pdu历史数据分页
+  // 查询pdu环境数据传感器id最大值
+  getSensorIdMaxValue: async () => {
+    return await request.get({ url: `/pdu/history-data/sensorId-max-value`})
+  },
+  
+  // 查询pdu环境数据分页
   getEnvDataPage: async (params: any) => {
     return await request.get({ url: `/pdu/history-data/env-page`, params })
   },
 
-  // 查询pdu历史数据详情
+  // 查询pdu环境数据详情
   getEnvDataDetails: async (params: any) => {
     return await request.get({ url: `/pdu/history-data/env-details`, params })
   },

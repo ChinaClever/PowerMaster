@@ -18,6 +18,12 @@ public class HistoryDataPageReqVO extends PageParam {
 
     private Integer pageSize;
 
+    private Integer lineId;
+
+    private Integer loopId;
+
+    private Integer outletId;
+
     private Integer sensorId;
 
     private String type;
