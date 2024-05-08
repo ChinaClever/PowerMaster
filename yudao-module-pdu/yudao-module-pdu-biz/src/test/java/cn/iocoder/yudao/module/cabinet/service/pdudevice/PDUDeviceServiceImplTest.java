@@ -14,7 +14,7 @@ import cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PduIndexMapper;
 
 import org.springframework.context.annotation.Import;
 
-import static cn.iocoder.yudao.module.cabinet.enums.ErrorCodeConstants.*;
+import static cn.iocoder.yudao.module.pdu.enums.ErrorCodeConstants.*;
 import static cn.iocoder.yudao.framework.test.core.util.AssertUtils.*;
 import static cn.iocoder.yudao.framework.test.core.util.RandomUtils.*;
 import static org.junit.jupiter.api.Assertions.*;

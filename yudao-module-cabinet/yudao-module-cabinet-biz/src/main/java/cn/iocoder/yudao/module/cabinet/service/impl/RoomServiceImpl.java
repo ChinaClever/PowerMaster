@@ -6,7 +6,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.enums.DisableEnums;
 import cn.iocoder.yudao.module.cabinet.dto.RoomMenuDTO;
-import cn.iocoder.yudao.module.cabinet.enums.MenuTypeEnums;
+import cn.iocoder.yudao.module.pdu.enums.MenuTypeEnums;
 import cn.iocoder.yudao.module.cabinet.mapper.AisleIndexMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.RoomIndexMapper;

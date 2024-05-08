@@ -11,7 +11,6 @@ import cn.iocoder.yudao.framework.common.entity.es.cabinet.pow.CabinetPowDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.pow.CabinetPowHourDo;
 
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
-import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -19,13 +18,8 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.script.Script;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.BucketOrder;
-import org.elasticsearch.search.aggregations.PipelineAggregatorBuilders;
-import org.elasticsearch.search.aggregations.bucket.terms.ParsedLongTerms;
-import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.Sum;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -34,7 +28,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -43,7 +36,6 @@ import java.util.*;
 import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.*;
 import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.IndexDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 
 import cn.iocoder.yudao.module.cabinet.dal.mysql.index.IndexMapper;

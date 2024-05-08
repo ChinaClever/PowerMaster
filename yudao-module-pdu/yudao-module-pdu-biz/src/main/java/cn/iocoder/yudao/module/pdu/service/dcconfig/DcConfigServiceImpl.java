@@ -15,7 +15,7 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.pdu.dal.mysql.dcconfig.DcConfigMapper;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static cn.iocoder.yudao.module.statis.enums.ErrorCodeConstants.*;
+import static cn.iocoder.yudao.module.pdu.enums.ErrorCodeConstants.*;
 
 /**
  * pdu数据采集配置 Service 实现类
