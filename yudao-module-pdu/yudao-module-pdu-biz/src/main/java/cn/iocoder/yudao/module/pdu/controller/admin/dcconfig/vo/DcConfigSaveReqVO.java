@@ -9,7 +9,7 @@ import javax.validation.constraints.*;
 @Data
 public class DcConfigSaveReqVO {
 
-    @Schema(description = "主键ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "32383")
+    @Schema(description = "主键ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "24868")
     private Short id;
 
     @Schema(description = "数据接收端口", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -67,5 +67,21 @@ public class DcConfigSaveReqVO {
 
     @Schema(description = "配置推送的mq")
     private String pushMqs;
+
+    @Schema(description = "定时任务开关 默认开 1   关0", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotNull(message = "定时任务开关 默认开 1   关0不能为空")
+    private Integer fixStore;
+
+    @Schema(description = "变化存储开关 默认开1 关0", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotNull(message = "变化存储开关 默认开1 关0不能为空")
+    private Integer changeStore;
+
+    @Schema(description = "电能存储开关 默认开1  关0", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotNull(message = "电能存储开关 默认开1  关0不能为空")
+    private Integer eleStore;
+
+    @Schema(description = "redis保存开关  开1 关0", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotNull(message = "redis保存开关  开1 关0不能为空")
+    private Integer redisSwitch;
 
 }

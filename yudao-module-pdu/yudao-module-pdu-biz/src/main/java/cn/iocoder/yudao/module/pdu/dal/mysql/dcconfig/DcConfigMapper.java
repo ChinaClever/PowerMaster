@@ -19,7 +19,6 @@ public interface DcConfigMapper extends BaseMapperX<DcConfigDO> {
 
     default PageResult<DcConfigDO> selectPage(DcConfigPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<DcConfigDO>()
-                .eqIfPresent(DcConfigDO::getId, reqVO.getId())
                 .eqIfPresent(DcConfigDO::getReceivePort, reqVO.getReceivePort())
                 .eqIfPresent(DcConfigDO::getFixStoreCron, reqVO.getFixStoreCron())
                 .eqIfPresent(DcConfigDO::getChangeStoreCron, reqVO.getChangeStoreCron())
@@ -35,7 +34,12 @@ public interface DcConfigMapper extends BaseMapperX<DcConfigDO> {
                 .eqIfPresent(DcConfigDO::getTimingPush, reqVO.getTimingPush())
                 .eqIfPresent(DcConfigDO::getChangePush, reqVO.getChangePush())
                 .eqIfPresent(DcConfigDO::getAlarmPush, reqVO.getAlarmPush())
+                .betweenIfPresent(DcConfigDO::getCreateTime, reqVO.getCreateTime())
                 .eqIfPresent(DcConfigDO::getPushMqs, reqVO.getPushMqs())
+                .eqIfPresent(DcConfigDO::getFixStore, reqVO.getFixStore())
+                .eqIfPresent(DcConfigDO::getChangeStore, reqVO.getChangeStore())
+                .eqIfPresent(DcConfigDO::getEleStore, reqVO.getEleStore())
+                .eqIfPresent(DcConfigDO::getRedisSwitch, reqVO.getRedisSwitch())
                 .orderByDesc(DcConfigDO::getId));
     }
 

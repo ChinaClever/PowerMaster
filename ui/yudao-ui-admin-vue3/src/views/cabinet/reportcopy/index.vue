@@ -1,25 +1,11 @@
 <template>
   <el-row :gutter="20">
-    <el-col :span="treeWidth" :xs="24">
-      
-      <el-input
-        v-model="filterText"
-        style="width: 190px"
-        placeholder="Filter keyword"
-      />
-
-      <el-tree
-        ref="treeRef"
-        style="max-width: 600px"
-        class="filter-tree"
-        :data="serverRoomArr"
-        :props="defaultProps"
-        default-expand-all
-
-        :filter-node-method="filterNode"
-      />
+    <el-col :span="4" >
+      <ContentWrap>
+        <NavTree :showCheckbox="false" ref="navTree" @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" />
+      </ContentWrap>
     </el-col>
-    <el-col :span="24 - treeWidth" :xs="24">
+    <el-col :span="24 - 4" >
       <ContentWrap>
         <el-form
           class="-mb-15px"
@@ -218,13 +204,14 @@
     </el-col>
   </el-row>
   <!-- 表单弹窗：添加/修改 -->
-  <PDUDeviceForm ref="formRef" @success="getList" />
+  <!-- <PDUDeviceForm ref="formRef" @success="getList" /> -->
 </template>
 
 <script setup lang="ts">
 // import download from '@/utils/download'
 import { IndexApi } from '@/api/cabinet/index'
 import * as echarts from 'echarts';
+import { CabinetApi } from '@/api/cabinet/info'
 import { ElTree } from 'element-plus'
 
 
@@ -367,7 +354,7 @@ const queryParams = reactive({
   cascadeAddr : 0
 }) as any
 
-const serverRoomArr =  [
+const serverRoomArr =  ref([
   {
     value: '1',
     label: '机房1',
@@ -438,13 +425,35 @@ const serverRoomArr =  [
       },
     ],
   },
-]
+])
 
 //折叠功能
-let treeWidth = ref(3)
+let treeWidth = ref(8)
 let isCollapsed = ref(0);
 
+const getNavList = async() => {
+  const res = await CabinetApi.getRoomMenuAll({})
+  serverRoomArr.value = res
+  if (res && res.length > 0) {
+    const room = res[0]
+    const keys = [] as string[]
+    room.children.forEach(child => {
+      if(child.children.length > 0) {
+        child.children.forEach(son => {
+          keys.push(son.id + '-' + son.type)
+        })
+      }
+    })
+  }
+}
 
+const handleClick = (row) => {
+  console.log('Button clicked!', row);
+  if(row.type != null  && row.type == 3){
+    queryParams.Id = row.id
+    handleQuery();
+  }
+}
 
 const pduInfo = ref({
   alarm : 6,
@@ -1203,7 +1212,6 @@ const arraySpanMethod = ({
 const handleQuery = async () => {
 
   if(queryParams.Id){
-    console.log(1)
     if(queryParams.oldTime && queryParams.newTime){
       await getList();
       beforeRankUnmount();
@@ -1263,6 +1271,7 @@ const formRef = ref()
 onMounted( async () =>  {
   // getList();
   // initChart();
+  getNavList();
 })
 </script>
 <style>
