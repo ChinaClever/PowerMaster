@@ -15,6 +15,8 @@
         :accordion="isAccordion"
         :filter-node-method="filterNode"
         :show-checkbox="showCheckbox"
+        :lazy="lazy"
+        :load="load"
         node-key="unique"
         :default-checked-keys="checkKeys"
         @node-click="handleNodeClick"
@@ -41,6 +43,14 @@ const props = defineProps({
     type: Boolean,
     default: true
   },
+  lazy: {
+    type: Boolean,
+    default: false
+  },
+  load: {
+    type: Function,
+    required: false
+  }
 })
 
 const defaultProps = {
