@@ -7,12 +7,18 @@
       v-loading="formLoading"
     >
       <el-row :gutter="24">
-        <el-col :span="12" >
+        <el-col :span="8" >
           <el-form-item label="数据接收端口" prop="receivePort">
             <el-input type="number" v-model="formData.receivePort" placeholder="请输入数据接收端口" />
           </el-form-item>
           <el-form-item label="总视在功率变化比（%）" prop="powLimitRate">
             <el-input type="number" v-model="formData.powLimitRate" placeholder="请输入总视在功率变化比" />
+          </el-form-item>
+          <el-form-item label="redis保存开关" prop="redisSwitch">
+            <el-radio-group v-model="formData.redisSwitch">
+              <el-radio :label="1">开启</el-radio>
+              <el-radio :label="0">关闭</el-radio>
+            </el-radio-group>
           </el-form-item>
           <el-form-item label="rediskey过期时间（秒）" prop="redisExpire">
             <el-input type="number" v-model="formData.redisExpire" placeholder="请输入rediskey过期时间（分钟）" />
@@ -33,10 +39,18 @@
               <el-radio :label="0">关闭</el-radio>
             </el-radio-group>
           </el-form-item>
+        </el-col>
+        <el-col :span="8" >
+          <el-form-item label="定时任务开关" prop="fixStore">
+            <el-radio-group v-model="formData.fixStore">
+              <el-radio :label="1">开启</el-radio>
+              <el-radio :label="0">关闭</el-radio>
+            </el-radio-group>
+          </el-form-item>
           <el-form-item label="定时存储定时任务配置" prop="fixStoreCronValue">
             每
-            <el-input size="small" style="width: 70px" type="number" :min="1" :max="formData.fixStoreCronType == 3 ? 24 : 60" v-model="formData.fixStoreCronValue" />
-            <el-select size="small" v-model="formData.fixStoreCronType" placeholder="时间" clearable style="width: 80px">
+            <el-input :disabled="formData.fixStore == 0"  size="small" style="width: 70px" type="number" :min="1" :max="formData.fixStoreCronType == 3 ? 24 : 60" v-model="formData.fixStoreCronValue" />
+            <el-select :disabled="formData.fixStore == 0" size="small" v-model="formData.fixStoreCronType" placeholder="时间" clearable style="width: 80px">
               <el-option
                 label="秒钟"
                 :value="1"
@@ -52,10 +66,17 @@
             </el-select>
             执行一次
           </el-form-item>
+          <el-form-item label="变化存储开关" prop="changeStore">
+            <el-radio-group v-model="formData.changeStore">
+              <el-radio :label="1">开启</el-radio>
+              <el-radio :label="0">关闭</el-radio>
+            </el-radio-group>
+          </el-form-item>
+
           <el-form-item label="变化存储定时任务配置" prop="changeStoreCronValue">
             每
-            <el-input prop="changeStoreCronValue" size="small" style="width: 70px" type="number" :min="1" :max="formData.changeStoreCronType == 3 ? 24 : 60" v-model="formData.changeStoreCronValue" />
-            <el-select size="small" v-model="formData.changeStoreCronType" placeholder="时间" clearable style="width: 80px">
+            <el-input prop="changeStoreCronValue" :disabled="formData.changeStore == 0"  size="small" style="width: 70px" type="number" :min="1" :max="formData.changeStoreCronType == 3 ? 24 : 60" v-model="formData.changeStoreCronValue" />
+            <el-select :disabled="formData.changeStore == 0" size="small" v-model="formData.changeStoreCronType" placeholder="时间" clearable style="width: 80px">
             
               <el-option
                 label="秒钟"
@@ -72,10 +93,16 @@
             </el-select>
             执行一次
           </el-form-item>
+          <el-form-item label="电能存储开关" prop="eleStore">
+            <el-radio-group v-model="formData.eleStore">
+              <el-radio :label="1">开启</el-radio>
+              <el-radio :label="0">关闭</el-radio>
+            </el-radio-group>
+          </el-form-item>
           <el-form-item label="电能存储定时任务配置" prop="eleStoreCronValue">
             每
-            <el-input prop="eleStoreCronValue" size="small" style="width: 70px" type="number" :min="1" :max="formData.eleStoreCronType == 3 ? 24 : 60" v-model="formData.eleStoreCronValue" />
-            <el-select size="small" v-model="formData.eleStoreCronType" placeholder="时间" clearable style="width: 80px">
+            <el-input prop="eleStoreCronValue" :disabled="formData.eleStore == 0" size="small" style="width: 70px" type="number" :min="1" :max="formData.eleStoreCronType == 3 ? 24 : 60" v-model="formData.eleStoreCronValue" />
+            <el-select :disabled="formData.eleStore == 0" size="small" v-model="formData.eleStoreCronType" placeholder="时间" clearable style="width: 80px">
               <el-option
                   label="秒钟"
                   :value="1"
@@ -92,7 +119,7 @@
             执行一次
           </el-form-item>
         </el-col>
-        <el-col :span="12">
+        <el-col :span="8">
           <el-form-item label="配置推送的mq" prop="pushMqs">
             <el-checkbox-group :disabled="formData.timingPush === 0 && formData.alarmPush === 0 && formData.changePush === 0" v-model="formData.pushMqs">
               <el-checkbox label="1" value="1">kafka</el-checkbox>
@@ -229,6 +256,10 @@ const formData = ref({
   changePush: undefined,
   alarmPush: undefined,
   pushMqs: [] as any,
+  fixStore: undefined,
+  changeStore: undefined,
+  eleStore: undefined,
+  redisSwitch: undefined,
   fixStoreCronType : undefined,
   fixStoreCronValue : undefined,
   changeStoreCronType : undefined,
@@ -273,6 +304,10 @@ const formRules = reactive({
   timingPush: [{ required: true, message: '定时推送开关不能为空', trigger: 'blur' }],
   changePush: [{ required: true, message: '变化推送开关不能为空', trigger: 'blur' }],
   alarmPush: [{ required: true, message: '告警推送开关不能为空', trigger: 'blur' }],
+  fixStore: [{ required: true, message: '定时任务开关 默认开 1   关0不能为空', trigger: 'blur' }],
+  changeStore: [{ required: true, message: '变化存储开关 默认开1 关0不能为空', trigger: 'blur' }],
+  eleStore: [{ required: true, message: '电能存储开关 默认开1  关0不能为空', trigger: 'blur' }],
+  redisSwitch: [{ required: true, message: 'redis保存开关  开1 关0不能为空', trigger: 'blur' }],
   fixStoreCronValue:[{validator: checkCronValue, trigger: 'blur'}],
   changeStoreCronValue:[{validator: checkCronValue, trigger: 'blur'}],
   eleStoreCronValue:[{validator: checkCronValue, trigger: 'blur'}],
@@ -420,6 +455,10 @@ const resetForm = () => {
     timingPush: undefined,
     changePush: undefined,
     alarmPush: undefined,
+    fixStore: undefined,
+    changeStore: undefined,
+    eleStore: undefined,
+    redisSwitch: undefined,
     pushMqs: []
   }
   formRef.value?.resetFields()
