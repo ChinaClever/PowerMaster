@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.cabinet.service;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.module.cabinet.dto.RoomMenuDTO;
+import cn.iocoder.yudao.module.cabinet.dto.RoomPduMenuDTO;
 
 import java.util.List;
 
@@ -41,4 +42,11 @@ public interface RoomService {
      * 获取机房菜单(全部)
      */
     List<RoomMenuDTO> roomMenuListAll();
+
+    /**
+     * 获取机房菜单
+     *
+     * @param id 机房id
+     */
+    List<RoomPduMenuDTO> roomPduMenuList(Integer id);
 }

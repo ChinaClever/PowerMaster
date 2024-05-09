@@ -4,6 +4,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.module.cabinet.dto.RoomMenuDTO;
+import cn.iocoder.yudao.module.cabinet.dto.RoomPduMenuDTO;
 import cn.iocoder.yudao.module.cabinet.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -65,6 +66,17 @@ public class RoomController {
     @GetMapping("/room/aisleList")
     public CommonResult<List<AisleIndex>> aisleList(@RequestParam(value = "roomId") Integer roomId) {
         List<AisleIndex> dto = roomService.aisleList(roomId);
+        return success(dto);
+    }
+
+    /**
+     * 机房菜单
+     *
+     * @param id 机房id
+     */
+    @GetMapping("/room/pdu/menu")
+    public CommonResult<List<RoomPduMenuDTO>> getRoomPduMenu(@RequestParam(value = "id") Integer id) {
+        List<RoomPduMenuDTO> dto = roomService.roomPduMenuList(id);
         return success(dto);
     }
 }
