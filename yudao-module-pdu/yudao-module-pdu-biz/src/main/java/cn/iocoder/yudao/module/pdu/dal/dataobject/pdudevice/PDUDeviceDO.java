@@ -24,8 +24,8 @@ public class PDUDeviceDO extends BaseDO {
     /**
      * 设备唯一识别码
      */
-    private int status;
-    private int color;
+    private Integer status;
+    private Integer color;
 
     private Double apparentPow;
 
@@ -53,7 +53,7 @@ public class PDUDeviceDO extends BaseDO {
 
     private Double Ccur ;
 
-    private double curUnbalance;
+    private Double curUnbalance;
 
     private Double Avol ;
 
@@ -61,6 +61,6 @@ public class PDUDeviceDO extends BaseDO {
 
     private Double Cvol ;
 
-    private double volUnbalance;
+    private Double volUnbalance;
 
 }

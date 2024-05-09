@@ -411,7 +411,7 @@ const getList = async () => {
 }
 
 const getListNoLoading = async () => {
-
+  console.log("定时任务")
   try {
     const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
     list.value = data.list
