@@ -1,18 +1,16 @@
 package cn.iocoder.yudao.module.cabinet.service.statisconfig;
 
-import java.util.*;
 import javax.validation.*;
 import cn.iocoder.yudao.module.cabinet.controller.admin.statisconfig.vo.*;
-import cn.iocoder.yudao.module.cabinet.dal.dataobject.statisconfig.StatisConfigDO;
+import cn.iocoder.yudao.module.cabinet.dal.dataobject.statisconfig.CabinetStatisConfigDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
 
 /**
  * 机柜计算服务配置 Service 接口
  *
  * @author clever
  */
-public interface StatisConfigService {
+public interface CabinetStatisConfigService {
 
     /**
      * 创建机柜计算服务配置
@@ -20,14 +18,14 @@ public interface StatisConfigService {
      * @param createReqVO 创建信息
      * @return 编号
      */
-    Integer createStatisConfig(@Valid StatisConfigSaveReqVO createReqVO);
+    Integer createStatisConfig(@Valid CabinetStatisConfigSaveReqVO createReqVO);
 
     /**
      * 更新机柜计算服务配置
      *
      * @param updateReqVO 更新信息
      */
-    void updateStatisConfig(@Valid StatisConfigSaveReqVO updateReqVO);
+    void updateStatisConfig(@Valid CabinetStatisConfigSaveReqVO updateReqVO);
 
     /**
      * 删除机柜计算服务配置
@@ -42,7 +40,7 @@ public interface StatisConfigService {
      * @param id 编号
      * @return 机柜计算服务配置
      */
-    StatisConfigDO getStatisConfig(Integer id);
+    CabinetStatisConfigDO getStatisConfig(Integer id);
 
     /**
      * 获得机柜计算服务配置分页
@@ -50,6 +48,6 @@ public interface StatisConfigService {
      * @param pageReqVO 分页查询
      * @return 机柜计算服务配置分页
      */
-    PageResult<StatisConfigDO> getStatisConfigPage(StatisConfigPageReqVO pageReqVO);
+    PageResult<CabinetStatisConfigDO> getStatisConfigPage(CabinetStatisConfigPageReqVO pageReqVO);
 
 }

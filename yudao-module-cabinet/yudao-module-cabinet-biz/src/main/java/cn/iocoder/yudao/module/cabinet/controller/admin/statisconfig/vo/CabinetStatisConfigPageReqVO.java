@@ -1,7 +1,6 @@
 package cn.iocoder.yudao.module.cabinet.controller.admin.statisconfig.vo;
 
 import lombok.*;
-import java.util.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -13,7 +12,7 @@ import static cn.iocoder.yudao.framework.common.util.date.DateUtils.FORMAT_YEAR_
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class StatisConfigPageReqVO extends PageParam {
+public class CabinetStatisConfigPageReqVO extends PageParam {
 
     @Schema(description = "计费方式 1固定计费 2分段计费")
     private Integer billMode;
