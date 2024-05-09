@@ -71,9 +71,10 @@
             start-placeholder="开始时间"
             end-placeholder="结束时间"
             :disabled-date="disabledDate"
-            @change="handleDayPick"
+
             class="!w-350px"
           />
+                      <!-- @change="handleDayPick" -->
         </el-form-item>
 
          <el-form-item >
@@ -1097,57 +1098,57 @@ const disabledDate = (date) => {
 }
 
 // 处理实时数据的时间选择不超过xxx范围
-const handleDayPick = () => {
-  if (activeName.value=='realtimeTabPane'){
-    // 获取选择的开始日期和结束日期
-    const startDate = new Date(queryParams.timeRange[0]);
-    const endDate = new Date(queryParams.timeRange[1]);
-    // 计算两个日期之间的天数差
-    const diffTime = Math.abs(endDate.getTime() - startDate.getTime()); 
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    // 如果天数差超过2天，则重置选择的日期
-    if (diffDays > 2) {
-      queryParams.timeRange = [];
-      ElMessage({
-        message: '时间选择不超过48小时',
-        type: 'warning',
-      })
-    }
-  }
-  if (activeName.value=='hourExtremumTabPane'){
-    // 获取选择的开始日期和结束日期
-    const startDate = new Date(queryParams.timeRange[0]);
-    const endDate = new Date(queryParams.timeRange[1]);
-    // 计算两个日期之间的天数差
-    const diffTime = Math.abs(endDate.getTime() - startDate.getTime()); 
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    // 如果天数差超过7天，则重置选择的日期
-    if (diffDays > 7) {
-      queryParams.timeRange = [];
-      ElMessage({
-        message: '时间选择不超过7天',
-        type: 'warning',
-      })
-    }
-  }
-    if (activeName.value=='dayExtremumTabPane'){
-    // 获取选择的开始日期和结束日期
-    const startDate = new Date(queryParams.timeRange[0]);
-    const endDate = new Date(queryParams.timeRange[1]);
-    // 计算两个日期之间的天数差
-    const diffTime = Math.abs(endDate.getTime() - startDate.getTime()); 
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    // 如果天数差超过7天，则重置选择的日期
-    if (diffDays > 180) {
-      queryParams.timeRange = [];
-      ElMessage({
-        message: '时间选择不超过6个月',
-        type: 'warning',
-      })
-    }
-  }
+// const handleDayPick = () => {
+//   if (activeName.value=='realtimeTabPane'){
+//     // 获取选择的开始日期和结束日期
+//     const startDate = new Date(queryParams.timeRange[0]);
+//     const endDate = new Date(queryParams.timeRange[1]);
+//     // 计算两个日期之间的天数差
+//     const diffTime = Math.abs(endDate.getTime() - startDate.getTime()); 
+//     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+//     // 如果天数差超过2天，则重置选择的日期
+//     if (diffDays > 2) {
+//       queryParams.timeRange = [];
+//       ElMessage({
+//         message: '时间选择不超过48小时',
+//         type: 'warning',
+//       })
+//     }
+//   }
+//   if (activeName.value=='hourExtremumTabPane'){
+//     // 获取选择的开始日期和结束日期
+//     const startDate = new Date(queryParams.timeRange[0]);
+//     const endDate = new Date(queryParams.timeRange[1]);
+//     // 计算两个日期之间的天数差
+//     const diffTime = Math.abs(endDate.getTime() - startDate.getTime()); 
+//     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+//     // 如果天数差超过7天，则重置选择的日期
+//     if (diffDays > 7) {
+//       queryParams.timeRange = [];
+//       ElMessage({
+//         message: '时间选择不超过7天',
+//         type: 'warning',
+//       })
+//     }
+//   }
+//     if (activeName.value=='dayExtremumTabPane'){
+//     // 获取选择的开始日期和结束日期
+//     const startDate = new Date(queryParams.timeRange[0]);
+//     const endDate = new Date(queryParams.timeRange[1]);
+//     // 计算两个日期之间的天数差
+//     const diffTime = Math.abs(endDate.getTime() - startDate.getTime()); 
+//     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+//     // 如果天数差超过7天，则重置选择的日期
+//     if (diffDays > 180) {
+//       queryParams.timeRange = [];
+//       ElMessage({
+//         message: '时间选择不超过6个月',
+//         type: 'warning',
+//       })
+//     }
+//   }
   
-}
+// }
 
 // 获取参数类型最大值 例如lineId=6 表示下拉框为L1~L6
 const getTypeMaxValue = async () => {
@@ -1204,13 +1205,9 @@ const handleQuery = () => {
   if (queryParams.ipAddr == null || queryParams.ipAddr == '' || ipRegex.test(queryParams.ipAddr)){
     queryParams.cascadeAddr = cascadeAddr.value.toString();
     if (queryParams.ipAddr != undefined && ipRegex.test(queryParams.ipAddr)){
-      console.log(10086)
       queryParams.pduId = undefined;
-                 console.log(queryParams.pduId)
     }
     needFlush.value++;
-  }else if (queryParams.pduId == undefined && queryParams.ipAddr == null){
-    ElMessage.error('请输入IP地址进行搜索！')
   }else{
     ElMessage.error('IP地址格式有误,请重新输入！')
   }
@@ -1226,7 +1223,6 @@ onMounted( async () => {
   // 获取路由参数中的 pdu_id
   const pduId = useRoute().query.pduId as string  | undefined;
   queryParams.pduId = pduId ? parseInt(pduId, 10) : undefined;
-  console.log(pduId)
   if (queryParams.pduId != undefined){
     await getTypeMaxValue();
     await getList();
