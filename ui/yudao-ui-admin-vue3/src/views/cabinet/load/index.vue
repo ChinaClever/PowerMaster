@@ -1,5 +1,5 @@
 <template>
-  <div class="master">
+<div class="master">
     <!-- 左大侧 -->
     <div class="master-left">
       <ContentWrap style="height: calc(100% - 15px)">
@@ -89,33 +89,22 @@
         >
           <el-form-item>
             <template v-for="(status, index) in statusList" :key="index">
-              <button type="button" :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index, $event)">{{status.name}}</button>
+              <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
             </template>
           </el-form-item>
           <div>
-            <el-form-item v-show="switchValue"  label="公司名称" prop="company">
+            <el-form-item v-show="switchValue"  label="公司名称" prop="username">
               <el-input
-                v-model="queryParams.company"
+                v-model="queryParams.username"
                 placeholder="请输入公司名称"
                 clearable
                 class="!w-160px"
                 height="35"
               />
-            </el-form-item >
-            <el-form-item v-show="switchValue" label="展示列" prop="showCol">
-              <el-cascader
-                ref="colNode"
-                class="!w-230px"
-                v-model="defaultOptionsCol"
-                @change="cascaderChange"
-                :options="optionsCol"
-                :props="props"
-                :clearable="false"
-                collapse-tags />
             </el-form-item>
             <el-form-item>
-              <el-button style="margin-left: 12px" v-show="switchValue" @click="getTableData(true)"><Icon icon="ep:search" />搜索</el-button>
-              <el-button @click="openForm('add')" type="primary" plain><Icon icon="ep:plus" />添加</el-button>
+              <el-button style="margin-left: 12px" v-show="switchValue" ><Icon icon="ep:search" />搜索</el-button>
+              <!-- <el-button @click="openForm('add')" type="primary" plain><Icon icon="ep:plus" />添加</el-button> -->
             </el-form-item>
           </div>
           <el-form-item style="margin-left: auto">
@@ -125,7 +114,7 @@
         </el-form>
       </ContentWrap>
       <ContentWrap v-show="switchValue" style="min-height: 680px">
-        <el-table style="width: 100%;" v-loading="loading" :data="listPage" @cell-dblclick="handleDbclick">
+        <!-- <el-table style="width: 100%;" v-loading="loading" :data="listPage" @cell-dblclick="handleDbclick">
           <el-table-column label="位置" min-width="110" align="center">
             <template #default="scope">
               <div>{{scope.row.roomName}}-{{scope.row.cabinetName}}</div>
@@ -136,7 +125,7 @@
               <div :style="{color: statusList[scope.row.status].color}">{{statusList[scope.row.status] && statusList[scope.row.status].name}}</div>
             </template>
           </el-table-column>
-          <!-- <el-table-column v-if="queryParams.showCol.includes(12)" label="名称" min-width="110" align="center" prop="cabinetName" /> -->
+          <el-table-column v-if="queryParams.showCol.includes(12)" label="名称" min-width="110" align="center" prop="cabinetName" />
           <el-table-column v-if="queryParams.showCol.includes(1)" label="总视在功率(kVA)" min-width="140" align="center" prop="apparentTotal" />
           <el-table-column v-if="queryParams.showCol.includes(2)" label="总有功功率(kW)" min-width="130" align="center" prop="activeTotal" />
           <el-table-column v-if="queryParams.showCol.includes(3)" label="总电能(kWh)" min-width="110" align="center" prop="eleTotal" />
@@ -177,10 +166,101 @@
           v-model:page="queryParams.pageNo"
           v-model:limit="queryParams.pageSize"
           @pagination="getTableData(false)"
-        />
+        /> -->
+        <el-table style="width: 100%;" v-loading="loading" :data="listPage" >
+          <el-table-column label="位置" min-width="110" align="center" prop="local" />
+          <el-table-column label="负载率" min-width="110" align="center" prop="loadPrecent" />
+          <el-table-column label="总视在功率" min-width="110" align="center" prop="zszgl" />
+          <el-table-column label="A路视在功率" min-width="110" align="center" prop="aszgl" />
+          <el-table-column label="B路视在功率" min-width="110" align="center" prop="bszgl" />
+          <el-table-column label="电力容量" min-width="110" align="center" prop="dlrl" />
+          <el-table-column label="更新时间" min-width="110" align="center" prop="gxsj" />
+        </el-table>
       </ContentWrap>
-      <ContentWrap v-show="!switchValue">
-        <div class="arrayContainer">
+      <ContentWrap v-show="!switchValue" style="min-height: 680px">
+        <div class="loadContainer">
+          <div class="loadItem">
+            <div class="content">
+              <div class="info">
+                <div>总视在功率：0.153KVA</div>
+                <div>A路视在功率：0.063KVA</div>
+                <div>B路视在功率：0.112KVA</div>
+                <div>电力容量：50p</div>
+              </div>
+              <div class="waterPoloBox">
+                <LiquidBall />
+              </div>
+              <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
+            </div>
+            <div class="room">机房1-机柜1</div>
+            <button class="detail" @click.prevent="toMachineDetail">详情</button>
+          </div>
+          <div class="loadItem">
+            <div class="content">
+              <div class="info">
+                <div>总视在功率：0.153KVA</div>
+                <div>A路视在功率：0.063KVA</div>
+                <div>B路视在功率：0.112KVA</div>
+                <div>电力容量：50p</div>
+              </div>
+              <div class="waterPoloBox">
+                <Echart :height="60" :width="60" :options="echartsOption" />
+              </div>
+              <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
+            </div>
+            <div class="room">机房1-机柜1</div>
+            <button class="detail" @click.prevent="toMachineDetail">详情</button>
+          </div>
+          <div class="loadItem">
+            <div class="content">
+              <div class="info">
+                <div>总视在功率：0.153KVA</div>
+                <div>A路视在功率：0.063KVA</div>
+                <div>B路视在功率：0.112KVA</div>
+                <div>电力容量：50p</div>
+              </div>
+              <div class="waterPoloBox">
+                <Echart :height="60" :width="60" :options="echartsOption" />
+              </div>
+              <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
+            </div>
+            <div class="room">机房1-机柜1</div>
+            <button class="detail" @click.prevent="toMachineDetail">详情</button>
+          </div>
+          <div class="loadItem">
+            <div class="content">
+              <div class="info">
+                <div>总视在功率：0.153KVA</div>
+                <div>A路视在功率：0.063KVA</div>
+                <div>B路视在功率：0.112KVA</div>
+                <div>电力容量：50p</div>
+              </div>
+              <div class="waterPoloBox">
+                <Echart :height="60" :width="60" :options="echartsOption" />
+              </div>
+              <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
+            </div>
+            <div class="room">机房1-机柜1</div>
+            <button class="detail" @click.prevent="toMachineDetail">详情</button>
+          </div>
+          <div class="loadItem">
+            <div class="content">
+              <div class="info">
+                <div>总视在功率：0.153KVA</div>
+                <div>A路视在功率：0.063KVA</div>
+                <div>B路视在功率：0.112KVA</div>
+                <div>电力容量：50p</div>
+              </div>
+              <div class="waterPoloBox">
+                <Echart :height="60" :width="60" :options="echartsOption" />
+              </div>
+              <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
+            </div>
+            <div class="room">机房1-机柜1</div>
+            <button class="detail" @click.prevent="toMachineDetail">详情</button>
+          </div>
+        </div>
+        <!-- <div class="arrayContainer">
           <div class="arrayItem" v-for="item in listPage" :key="item.id" @dblclick="handleArrayDbclick(item)">
             <div class="content">
               <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div>
@@ -188,7 +268,7 @@
                 <div>视在功率：{{item.apparentTotal}}KVA</div>
                 <div>有功功率：{{item.activeTotal}}KW</div>
                 <div>负载率：{{item.loadFactor}}</div>
-                <!-- <div>电能：50kWh</div> -->
+                <div>电能：50kWh</div>
               </div>
             </div>
             <div class="room">{{item.roomName}}-{{item.cabinetName}}</div>
@@ -206,96 +286,94 @@
           v-model:page="queryParams.pageNo"
           v-model:limit="queryParams.pageSize"
           @pagination="getTableData"
-        />
+        /> -->
       </ContentWrap>
     </div>
   </div>
-
-  <!-- 添加或修改用户对话框 -->
-  <MachineForm ref="machineForm" @success="saveMachine" />
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
-import { object } from 'vue-types';
-import MachineForm from './component/MachineForm.vue'
+import { EChartsOption } from 'echarts'
+import 'echarts-liquidfill'
 import { CabinetApi } from '@/api/cabinet/info'
-import { fa } from 'node_modules/element-plus/es/locale';
-// import MyButton from '@/components/MyButton/MyButton.vue';
+import LiquidBall from './compoent/LiquidBall.vue'
 
-const { push } = useRouter() // 路由跳转
-const message = useMessage() // 消息弹窗
-const machineForm = ref() // 机柜表单组件
-const navTree = ref() // 导航树组件
-const colNode = ref() // 展示列组件
 const loading = ref(false)
-const isCloseNav = ref(false) // 左侧导航是否收起
-const switchNav = ref(false) //false: 导航树 true：微模块展示
-const switchValue = ref(0) // 0:阵列 1：表格
-const listPage = ref<any>([]) // 表格数据
-const navList = ref([]) // 左侧导航列表数据
-const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
-const defaultOptionsCol = reactive([1, 2, 3, 12, 13, 14])
-const optionsCol = reactive([{
-  value: 0,
-  label: '总',
-  children: [{
-    value: 1,
-    label: '总AB视在功率'
-  }, {
-    value: 2,
-    label: '总AB有功功率'
-  }, {
-    value: 3,
-    label: '总AB电能'
-  }],
-},{
-  value: 4,
-  label: 'A组',
-  children: [{
-    value: 5,
-    label: 'A视在功率'
-  }, {
-    value: 6,
-    label: 'A有功功率'
-  }, {
-    value: 7,
-    label: 'A电能'
-  }],
-},{
-  value: 8,
-  label: 'B组',
-  children: [{
-    value: 9,
-    label: 'B视在功率'
-  }, {
-    value: 10,
-    label: 'B有功功率'
-  }, {
-    value: 11,
-    label: 'B电能'
-  }],
-},{
-  value: 12,
-  label: '所属公司'
-},{
-  value: 13,
-  label: '负载比'
-},{
-  value: 14,
-  label: 'AB占比'
-}
+
+const listPage = reactive([
+  {
+    local: '机房1-机柜1',
+    loadPrecent: '38%',
+    zszgl: '0.153KVA',
+    aszgl: '0.063KVA',
+    bszgl: '0.112KVA',
+    dlrl: '50p',
+    gxsj: '2024-5-7 11:00'
+  },
+  {
+    local: '机房1-机柜1',
+    loadPrecent: '38%',
+    zszgl: '0.153KVA',
+    aszgl: '0.063KVA',
+    bszgl: '0.112KVA',
+    dlrl: '50p',
+    gxsj: '2024-5-7 11:00'
+  },
+  {
+    local: '机房1-机柜1',
+    loadPrecent: '38%',
+    zszgl: '0.153KVA',
+    aszgl: '0.063KVA',
+    bszgl: '0.112KVA',
+    dlrl: '50p',
+    gxsj: '2024-5-7 11:00'
+  },
+  {
+    local: '机房1-机柜1',
+    loadPrecent: '38%',
+    zszgl: '0.153KVA',
+    aszgl: '0.063KVA',
+    bszgl: '0.112KVA',
+    dlrl: '50p',
+    gxsj: '2024-5-7 11:00'
+  },
+  {
+    local: '机房1-机柜1',
+    loadPrecent: '38%',
+    zszgl: '0.153KVA',
+    aszgl: '0.063KVA',
+    bszgl: '0.112KVA',
+    dlrl: '50p',
+    gxsj: '2024-5-7 11:00'
+  },
 ])
-const queryParams = reactive({
-  company: undefined,
-  showCol: [1, 2, 3, 12, 13, 14] as number[],
-  pageNo: 1,
-  pageSize: 24,
-  pageTotal: 0,
+
+const echartsOption = reactive({
+  series: [
+    {
+      type: 'liquidFill',
+      data: [0.38], // 设置水球图的填充比例
+      label: {
+        fontSize: 12, // 设置字体大小
+        fontWeight: 'bold' // 设置字体粗细
+      },
+      radius: '100%',
+      amplitude: 2, // 调整波浪的振幅
+      outline: {
+        show: false // 不显示外圈轮廓线
+      },
+
+      color: ['#3b8bf5'],
+      backgroundStyle: {
+        color: '#fff'
+      }
+    }
+  ]
 })
+
 const statusList = reactive([
   {
-    name: '空载',
+    name: '未开通',
     selected: true,
     value: 0,
     cssClass: 'btn_empty',
@@ -303,7 +381,7 @@ const statusList = reactive([
     color: '#aaa'
   },
   {
-    name: '正常',
+    name: '负载量<30%',
     selected: true,
     value: 1,
     cssClass: 'btn_normal',
@@ -311,7 +389,7 @@ const statusList = reactive([
     color: '#3bbb00'
   },
   {
-    name: '预警',
+    name: '30%≤负载量<60%',
     selected: true,
     value: 2,
     cssClass: 'btn_warn',
@@ -319,7 +397,7 @@ const statusList = reactive([
     color: '#ffc402'
   },
   {
-    name: '故障',
+    name: '60%≤负载量<90%',
     selected: true,
     value: 3,
     cssClass: 'btn_error',
@@ -327,144 +405,56 @@ const statusList = reactive([
     color: '#fa3333'
   },
   {
-    name: '未绑定',
+    name: '负载量>90%',
     selected: true,
     value: 4,
     cssClass: 'btn_unbound',
     activeClass: 'btn_unbound unbound',
     color: '#05ebfc'
   },
-  {
-    name: '离线',
-    selected: true,
-    value: 5,
-    cssClass: 'btn_offline',
-    activeClass: 'btn_offline offline',
-    color: '#7700ff'
-  },
 ])
-const props = { multiple: true }
 
-// 接口获取机柜列表
-const getTableData = async(reset = false) => {
-  loading.value = true
-  if (reset) queryParams.pageNo = 1
-  const status =  statusList.filter(item => item.selected)
-  try {
-    const res = await CabinetApi.getCabinetInfo({
-      pageNo: queryParams.pageNo,
-      pageSize: queryParams.pageSize,
-      cabinetIds: cabinetIds.value,
-      // roomId: null,
-      runStatus: status.map(item => item.value),
-      pduBox: 0,
-      company: queryParams.company
-    })
-    console.log('res', res)
-    if (res.list) {
-      const list = res.list.map(item => {
-        const tableItem = {
-          company: item.company,
-          cabinet_key: item.cabinet_key,
-          cabinetName: item.cabinet_name,
-          roomName: item.room_name,
-          status: item.status,
-          apparentTotal: item.cabinet_power.total_data.pow_apparent.toFixed(3),
-          apparentA: item.cabinet_power.path_a ? item.cabinet_power.path_a.pow_apparent.toFixed(3) : '-',
-          apparentB: item.cabinet_power.path_b ? item.cabinet_power.path_b.pow_apparent.toFixed(3) : '-',
-          activeTotal: item.cabinet_power.total_data.pow_active.toFixed(3),
-          activeA: item.cabinet_power.path_a ? item.cabinet_power.path_a.pow_active.toFixed(3) : '-',
-          activeB: item.cabinet_power.path_b ? item.cabinet_power.path_b.pow_active.toFixed(3) : '-',
-          eleTotal: item.cabinet_power.total_data.ele_active.toFixed(1),
-          eleA: item.cabinet_power.path_a ? item.cabinet_power.path_a.ele_active.toFixed(1) : '-',
-          eleB: item.cabinet_power.path_b ? item.cabinet_power.path_b.ele_active.toFixed(1) : '-',
-          loadFactor: Math.ceil(item.load_factor),
-          abzb: '-' as number | string
-        }
-        if (item.cabinet_power.path_a && item.cabinet_power.path_b) {
-          if (item.cabinet_power.path_a.pow_apparent == 0) tableItem.abzb = 0
-          else tableItem.abzb = Math.ceil(Number((item.cabinet_power.path_a.pow_apparent / item.cabinet_power.total_data.pow_apparent).toFixed(0)))
-        }
-        return tableItem
-      })
-      listPage.value = list
-      queryParams.pageTotal = res.total
-      console.log('listPage', listPage.value)
-    }
-  } finally {
-    loading.value = false
-  }
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const navList = ref([])
+const switchNav = ref(false) //false: 导航树 true：微模块展示
+const isCloseNav = ref(false) // 左侧导航是否收起
+const switchValue = ref(0)
+const queryParams = reactive({
+  company: undefined,
+  showCol: [1, 2, 3, 12, 13, 14] as number[],
+  pageNo: 1,
+  pageSize: 24,
+  pageTotal: 0,
+})
 
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await CabinetApi.getRoomMenuAll({})
   console.log('接口获取机房导航列表', res)
-  const ids = [] as number[]
   navList.value = res
-  if (res && res.length > 0) {
-    const room = res[0]
-    room.children.forEach(child => {
-      if (child.type == 3) {
-        ids.push(child.id)
-      }
-      if(child.children.length > 0) {
-        child.children.forEach(son => {
-          ids.push(son.id)
-        })
-      }
-    })
-    navTree.value.initCheck([room.unique])
-  }
-  cabinetIds.value = ids
-  getTableData(false)
-}
-
-// 保存机柜修改/删除
-const saveMachine = async() => {
-  getNavList()
-}
-
-// 处理切换 表格/阵列 模式
-const handleSwitchModal = (value) => {
-  if (switchValue.value == value) return
-  switchValue.value = value
-  if (value == 0) { // 阵列
-    queryParams.pageSize = 24
-  } else {
-    queryParams.pageSize = 10
-  }
-  getTableData(true)
-}
-
-// 处理切换按钮点击事件
-const handleSwitchNav = () => {
-  switchNav.value = !switchNav.value
-}
-
-//处理表格双击事件
-const handleDbclick = (e) => {
-  console.log('处理表格双击事件', e, e.id)
-  push('/cabinet/cab/detail')
-}
-
-// 处理阵列双击事件
-const handleArrayDbclick = (data) => {
-  console.log('处理阵列双击事件', data)
-  openForm('add')
-}
-
-// 处理状态选择事件
-const handleSelectStatus = (index, event) => {
-  console.log('处理状态选择事件', index, event)
-  statusList[index].selected = !statusList[index].selected
-  getTableData()
-}
-
-// 跳转详情页
-const toMachineDetail = () => {
-  console.log('toMachineDetail!')
-  push('/cabinet/cab/detail')
 }
 
 const handleClick = (row) => {
@@ -473,63 +463,109 @@ const handleClick = (row) => {
 
 const handleCheck = (row) => {
   console.log('handleCheck!', row);
-  const ids = [] as any
-  row.forEach(item => {
-    if (item.type == 3) {
-      ids.push(item.id)
-    }
-  })
-  cabinetIds.value = ids
-  getTableData(true)
+  // const ids = [] as any
+  // row.forEach(item => {
+  //   if (item.type == 3) {
+  //     ids.push(item.id)
+  //   }
+  // })
+  // getTableData(true, ids)
 }
-
-// 打开 编辑/添加 表单弹窗
-const openForm = async(type: string, key?: string) => {
-  if (type == 'add') {
-    machineForm.value.open(type)
-  } else if (type == 'edit' && key) {
-    const id = key.split('-')[1]
-    try {
-      loading.value = true
-      const res = await CabinetApi.getCabinetInfoItem({id})
-      console.log('res', res)
-      machineForm.value.open(type, res)
-    } finally {
-      loading.value =false
-    }
-  }
+// 处理切换按钮点击事件
+const handleSwitchNav = () => {
+  switchNav.value = !switchNav.value
 }
-
-// 处理删除事件
-const handleDelete = async (key: string) => {
-  try {
-    // 删除的二次确认
-    await message.delConfirm()
-    // 发起删除
-    await CabinetApi.deleteCabinetInfo({
-      id: key.split('-')[1]
-    })
-    message.success('删除成功')
-    // 刷新列表
-    await getNavList()
-  } catch (error) {
-    console.log(error)
-  }
+// 处理状态选择事件
+const handleSelectStatus = (index, event) => {
+  console.log('处理状态选择事件', index, event)
+  statusList[index].selected = !statusList[index].selected
 }
-
-// 展示列选择处理事件
-const cascaderChange = (row) => {
-  const checkedNodes = colNode.value.getCheckedNodes(true)
-  queryParams.showCol = checkedNodes.map(item => item.value)
+// 处理切换 表格/阵列 模式
+const handleSwitchModal = (value) => {
+  if (switchValue.value == value) return
+  switchValue.value = value
+  // if (value == 0) { // 阵列
+  //   queryParams.pageSize = 24
+  // } else {
+  //   queryParams.pageSize = 10
+  // }
+  // getTableData(true)
 }
 
 onBeforeMount(() => {
   getNavList()
 })
-
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
+
+.loadContainer {
+  height: 600px;
+  overflow: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  .loadItem {
+    width: 25%;
+    min-width: 275px;
+    height: 145px;
+    font-size: 12px;
+    box-sizing: border-box;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 36px;
+    position: relative;
+    .content {
+      padding-left: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      line-height: 1.6;
+      .waterPoloBox {
+        flex: 1;
+        margin-left: 15px;
+        display: flex;
+        justify-content: center;
+      }
+    }
+    .room {
+      position: absolute;
+      left: 10px;
+      top: 8px;
+      font-size: 13px;
+    }
+    .detail {
+      width: 35px;
+      height: 20px;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 10px;
+      top: 8px;
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .master {
   width: 100%;
   box-sizing: border-box;
@@ -578,91 +614,6 @@ onBeforeMount(() => {
     overflow: hidden;
   }
 }
-.btn_normal,
-.btn_empty,
-.btn_warn,
-.btn_error,
-.btn_unbound,
-.btn_offline {
-  width: 55px;
-  height: 32px;
-  cursor: pointer;
-  border-radius: 3px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 8px;
-  &:hover {
-    color: #7bc25a;
-  }
-}
-.btn_normal {
-  border: 1px solid #3bbb00;
-  background-color: #fff;
-}
-.normal {
-  background-color: #3bbb00;
-  color: #fff;
-  &:hover {
-    color: #fff;
-  }
-}
-.btn_empty {
-  border: 1px solid #aaa;
-  background-color: #fff;
-}
-.empty {
-  background-color: #aaa;
-  color: #fff;
-  &:hover {
-    color: #fff;
-  }
-}
-.btn_warn {
-  border: 1px solid #ffc402;
-  background-color: #fff;
-}
-.warn {
-  background-color: #ffc402;
-  color: #fff;
-  &:hover {
-    color: #fff;
-  }
-}
-.btn_error {
-  border: 1px solid #fa3333;
-  background-color: #fff;
-}
-.error {
-  background-color: #fa3333;
-  color: #fff;
-  &:hover {
-    color: #fff;
-  }
-}
-.btn_unbound {
-  border: 1px solid #05ebfc;
-  background-color: #fff;
-}
-.unbound {
-  background-color: #05ebfc;
-  color: #fff;
-  &:hover {
-    color: #fff;
-  }
-}
-.btn_offline {
-  border: 1px solid #7700ff;
-  background-color: #fff;
-}
-.offline {
-  background-color: #7700ff;
-  color: #fff;
-  &:hover {
-    color: #fff;
-  }
-}
-
 .navBar {
   box-sizing: border-box;
   width: 100%;
@@ -777,159 +728,6 @@ onBeforeMount(() => {
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
 }
-.progressContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  .progress {
-    width: 100px;
-    height: 18px;
-    line-height: 18px;
-    font-size: 12px;
-    box-sizing: border-box;
-    border-radius: 150px;
-    overflow: hidden;
-    position: relative;
-    vertical-align: middle;
-    background-color: #bfa;
-    display: flex;
-    justify-content: center;
-    .left {
-      overflow: hidden;
-      box-sizing: border-box;
-      background-color: var(--el-color-primary);
-      // border-right: 1px solid #000;
-    }
-    .right {
-      overflow: hidden;
-      background-color:  #f56c6c;
-    }
-  }
-}
-.arrayContainer {
-  height: 600px;
-  overflow: auto;
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  .arrayItem {
-    width: 25%;
-    height: 120px;
-    font-size: 13px;
-    box-sizing: border-box;
-    background-color: #eef4fc;
-    border: 5px solid #fff;
-    padding-top: 36px;
-    position: relative;
-    .content {
-      display: flex;
-      align-items: center;
-      line-height: 1.7;
-      .icon {
-        width: 30px;
-        height: 30px;
-        margin: 0 28px;
-      }
-    }
-    .room {
-      position: absolute;
-      left: 8px;
-      top: 8px;
-    }
-    .status-empty {
-      width: 40px;
-      height: 20px;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #ccc;
-      color: #fff;
-      position: absolute;
-      right: 8px;
-      top: 8px;
-    }
-    .status-normal {
-      width: 40px;
-      height: 20px;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #3bbb00;
-      color: #fff;
-      position: absolute;
-      right: 8px;
-      top: 8px;
-    }
-    .status-warn {
-      width: 40px;
-      height: 20px;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #ffc402;
-      color: #fff;
-      position: absolute;
-      right: 8px;
-      top: 8px;
-    }
-    .status-error {
-      width: 40px;
-      height: 20px;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #fa3333;
-      color: #fff;
-      position: absolute;
-      right: 8px;
-      top: 8px;
-    }
-    .status-unbound {
-      width: 40px;
-      height: 20px;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #05ebfc;
-      color: #fff;
-      position: absolute;
-      right: 8px;
-      top: 8px;
-    }
-    .status-offline {
-      width: 40px;
-      height: 20px;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #7700ff;
-      color: #fff;
-      position: absolute;
-      right: 8px;
-      top: 8px;
-    }
-    .detail {
-      width: 40px;
-      height: 25px;
-      cursor: pointer;
-      padding: 0;
-      border: 1px solid #ccc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #fff;
-      position: absolute;
-      right: 8px;
-      bottom: 8px;
-    }
-  }
-}
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
@@ -940,5 +738,79 @@ onBeforeMount(() => {
 }
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+.btn_normal,
+.btn_empty,
+.btn_warn,
+.btn_error,
+.btn_unbound,
+.btn_offline {
+  // width: 55px;
+  // height: 32px;
+  padding: 3px 8px;
+  cursor: pointer;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  &:hover {
+    color: #7bc25a;
+  }
+}
+.btn_normal {
+  border: 1px solid #3bbb00;
+  background-color: #fff;
+}
+.normal {
+  background-color: #3bbb00;
+  color: #fff;
+  &:hover {
+    color: #fff;
+  }
+}
+.btn_empty {
+  border: 1px solid #aaa;
+  background-color: #fff;
+}
+.empty {
+  background-color: #aaa;
+  color: #fff;
+  &:hover {
+    color: #fff;
+  }
+}
+.btn_warn {
+  border: 1px solid #3b8bf5;
+  background-color: #fff;
+}
+.warn {
+  background-color: #3b8bf5;
+  color: #fff;
+  &:hover {
+    color: #fff;
+  }
+}
+.btn_error {
+  border: 1px solid #ffc402;
+  background-color: #fff;
+}
+.error {
+  background-color: #ffc402;
+  color: #fff;
+  &:hover {
+    color: #fff;
+  }
+}
+.btn_unbound {
+  border: 1px solid #fa3333;
+  background-color: #fff;
+}
+.unbound {
+  background-color: #fa3333;
+  color: #fff;
+  &:hover {
+    color: #fff;
+  }
 }
 </style>
