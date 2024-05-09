@@ -100,7 +100,7 @@
               :cell-style="{ color: '#000000', fontSize: '16px', textAlign: 'center', borderBottom: '0.5px #143275 solid', borderLeft: '0.5px #143275 solid' }"
               :row-style="{ color: '#fff', fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
-              <el-table-column prop="create_time" label="采集时间" />
+              <el-table-column prop="create_time" label="记录时间" />
               <!-- <el-table-column label="功率">
                 <el-table-column prop="pow_active" label="有功功率" />
                 <el-table-column prop="pow_apparent" label="视在功率" />
@@ -414,7 +414,11 @@ const getList = async () => {
       isHaveData.value = true
       volData.value = data.list.map((item) => formatNumber(item.vol_value, 1));
       curData.value = data.list.map((item) => formatNumber(item.cur_value, 2));
-      createTimeData.value = data.list.map((item) => formatDate(item.create_time));
+      if (activeName.value === 'dayExtremumTabPane'){
+        createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
+      }else{
+        createTimeData.value = data.list.map((item) => formatDate(item.create_time));
+      }
       activePowData.value = data.list.map((item) => formatNumber(item.pow_active, 3));
       apparentPowData.value = data.list.map((item) => formatNumber(item.pow_apparent, 3));
 
@@ -423,7 +427,7 @@ const getList = async () => {
       curMaxTimeData.value = data.list.map((item) => formatDate(item.cur_max_time));
       curMinValueData.value = data.list.map((item) => formatNumber(item.cur_min_value, 2));
       curMinTimeData.value = data.list.map((item) => formatDate(item.cur_min_time));
-      
+
       volAvgValueData.value = data.list.map((item) => formatNumber(item.vol_avg_value, 1));
       volMaxValueData.value = data.list.map((item) => formatNumber(item.vol_max_value, 1));
       volMaxTimeData.value = data.list.map((item) => formatDate(item.vol_max_time));
@@ -492,6 +496,14 @@ const updateTableData = () => {
   for (let i = 0; i < length; i++) {
     const rowData: { [key: string]: any } = {};
     rowData['create_time'] = createTimeData.value[i];
+    rowData['curMaxTimeData'] = curMaxTimeData.value[i];
+    rowData['curMinTimeData'] = curMinTimeData.value[i];
+    rowData['volMaxTimeData'] = volMaxTimeData.value[i];
+    rowData['volMinTimeData'] = volMinTimeData.value[i];
+    rowData['activePowMaxTimeData'] = activePowMaxTimeData.value[i];
+    rowData['activePowMinTimeData'] = activePowMinTimeData.value[i];
+    rowData['apparentPowMaxTimeData'] = apparentPowMaxTimeData.value[i];
+    rowData['apparentPowMinTimeData'] = apparentPowMinTimeData.value[i];
     for (const item of headerData.value) {
       rowData[item.name] = item.data[i];
     }
@@ -927,34 +939,50 @@ function setupLegendListener(realtimeChart) {
 
 // 给折线图提示框的数据加单位
 function customTooltipFormatter(params: any[]) {
-  var tooltipContent = params[0].name + '<br/>'; // X 轴数值
+  var tooltipContent = ''; // X 轴数值
   params.forEach(function(item) {
     switch( item.seriesName ){
       case '总有功功率':
       case '有功功率':
       case '平均有功功率':
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  记录时间: ' +params[0].name + '<br/>';
+        break;
       case '最大有功功率':
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +activePowMaxTimeData.value[item.dataIndex] + '<br/>';
+        break;
       case '最小有功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW <br/>';
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +activePowMinTimeData.value[item.dataIndex] + '<br/>';
         break;
       case '总视在功率':
       case '视在功率':
       case '平均视在功率':
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  记录时间: ' +params[0].name + '<br/>';
+        break;
       case '最大视在功率':
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +apparentPowMaxTimeData.value[item.dataIndex] + '<br/>';
+        break;
       case '最小视在功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA <br/>';
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +apparentPowMinTimeData.value[item.dataIndex] + '<br/>';
         break;
       case '电流':
       case '平均电流':
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  记录时间: ' +params[0].name + '<br/>';
+        break;
       case '最大电流':
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +curMaxTimeData.value[item.dataIndex] + '<br/>';
+        break;
       case '最小电流':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' A <br/>'; 
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +curMinTimeData.value[item.dataIndex] + '<br/>';
         break;
       case '电压':
       case '平均电压':
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  记录时间: ' +params[0].name + '<br/>';
+        break;
       case '最大电压':
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +volMaxTimeData.value[item.dataIndex] + '<br/>';
+        break;
       case '最小电压':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' V <br/>'; 
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +volMinTimeData.value[item.dataIndex] + '<br/>';
       break;
     }
     
@@ -1147,7 +1175,6 @@ const disabledDate = (date) => {
 //       })
 //     }
 //   }
-  
 // }
 
 // 获取参数类型最大值 例如lineId=6 表示下拉框为L1~L6

@@ -478,7 +478,7 @@ const resetQuery = () => {
 
 /** 详情操作*/
 const toDetails = (pdu_id: number) => {
-  push({ name:"PDUEnvAnalysis", params:{pduId:pdu_id} });
+  push('/pdu/record/envAnalysis?pduId='+pdu_id);
 }
 
 /** 导出按钮操作 */

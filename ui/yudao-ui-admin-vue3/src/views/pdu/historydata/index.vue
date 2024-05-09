@@ -858,7 +858,7 @@ const resetQuery = () => {
 
 //详情操作 跳转电力分析
 const toDetails = (pdu_id?: number) => {
-  push('/pdu/power/analysis?pduId='+pdu_id);
+  push('/pdu/record/historyLine?pduId='+pdu_id);
 }
 
 /** 导出按钮操作 */

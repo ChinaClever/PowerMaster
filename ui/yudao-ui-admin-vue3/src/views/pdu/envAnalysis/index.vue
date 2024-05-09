@@ -103,7 +103,7 @@
               :cell-style="{ color: '#000000', fontSize: '16px', textAlign: 'center', borderBottom: '0.5px #143275 solid', borderLeft: '0.5px #143275 solid' }"
               :row-style="{ color: '#fff', fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
-              <el-table-column prop="create_time" label="采集时间" />
+              <el-table-column prop="create_time" label="记录时间" />
               <!-- <el-table-column label="功率">
                 <el-table-column prop="pow_active" label="有功功率" />
                 <el-table-column prop="pow_apparent" label="视在功率" />
@@ -371,8 +371,11 @@ const getList = async () => {
       isHaveData.value = true
       HumValueData.value = data.list.map((item) => formatNumber(item.hum_value, 1));
       TemValueData.value = data.list.map((item) => formatNumber(item.tem_value, 1));
-      createTimeData.value = data.list.map((item) => formatDate(item.create_time));
-
+      if (activeName.value === 'dayExtremumTabPane'){
+        createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
+      }else{
+        createTimeData.value = data.list.map((item) => formatDate(item.create_time));
+      }
       HumAvgValueData.value = data.list.map((item) => formatNumber(item.hum_avg_value, 1));
       HumMaxValueData.value = data.list.map((item) => formatNumber(item.hum_max_value, 1));
       HumMaxTimeData.value = data.list.map((item) => formatDate(item.hum_max_time));
@@ -579,20 +582,28 @@ function setupLegendListener(realtimeChart) {
 
 // 给折线图提示框的数据加单位
 function customTooltipFormatter(params: any[]) {
-  var tooltipContent = params[0].name + '<br/>'; // X 轴数值
+  var tooltipContent = ''; // X 轴数值
   params.forEach(function(item) {
     switch( item.seriesName ){
       case '温度':
       case '平均温度':
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' ℃  记录时间: ' +params[0].name + '<br/>';
+        break;
       case '最高温度':
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' ℃  发生时间: ' +TemMaxTimeData.value[item.dataIndex] + '<br/>';
+        break;
       case '最低温度':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' ℃ <br/>';
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' ℃  发生时间: ' +TemMinTimeData.value[item.dataIndex] + '<br/>';
         break;
       case '湿度':
       case '平均湿度':
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' %RH  记录时间: ' +params[0].name + '<br/>';
+        break;
       case '最大湿度':
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' %RH  发生时间: ' +HumMaxTimeData.value[item.dataIndex] + '<br/>';
+        break;
       case '最小湿度':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' %RH <br/>';
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' %RH  发生时间: ' +HumMinTimeData.value[item.dataIndex] + '<br/>';
         break;
     }
     
@@ -752,7 +763,7 @@ const resetQuery = () => {
 /** 初始化 **/
 onMounted( async () => {
   // 获取路由参数中的 pdu_id
-  const pduId = useRoute().params.pduId as string  | undefined;
+  const pduId = useRoute().query.pduId as string  | undefined;
     console.log(pduId)
   queryParams.pduId = pduId ? parseInt(pduId, 10) : undefined;
 
