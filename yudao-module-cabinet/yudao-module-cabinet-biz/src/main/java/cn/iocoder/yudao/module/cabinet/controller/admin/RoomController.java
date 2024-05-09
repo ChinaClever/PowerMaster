@@ -4,7 +4,10 @@ import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.module.cabinet.dto.RoomMenuDTO;
+import cn.iocoder.yudao.module.cabinet.dto.RoomPduMenuDTO;
 import cn.iocoder.yudao.module.cabinet.service.RoomService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,6 +23,7 @@ import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
  * @description: 机房操作
  * @date 2024/5/6 9:09
  */
+@Tag(name = "管理后台 - 机房数据")
 @RestController
 public class RoomController {
 
@@ -31,6 +35,7 @@ public class RoomController {
      *
      * @param name 机房名称
      */
+    @Operation(summary = "机房列表")
     @GetMapping("/room/list")
     public CommonResult<List<RoomIndex>> getRoomList(@RequestParam(value = "name", required = false) String name) {
         List<RoomIndex> dto = roomService.roomList(name);
@@ -42,6 +47,7 @@ public class RoomController {
      *
      * @param id 机房id
      */
+    @Operation(summary = "机房菜单（不包含机房）")
     @GetMapping("/room/menu")
     public CommonResult<List<RoomMenuDTO>> getRoomMenu(@RequestParam(value = "id") Integer id) {
         List<RoomMenuDTO> dto = roomService.roomMenuList(id);
@@ -51,6 +57,7 @@ public class RoomController {
     /**
      * 机房菜单全部
      */
+    @Operation(summary = "机房菜单")
     @GetMapping("/room/menuAll")
     public CommonResult<List<RoomMenuDTO>> getRoomMenuAll() {
         List<RoomMenuDTO> dto = roomService.roomMenuListAll();
@@ -62,9 +69,22 @@ public class RoomController {
      *
      * @param roomId 机房id
      */
+    @Operation(summary = "机房下柜列列表")
     @GetMapping("/room/aisleList")
     public CommonResult<List<AisleIndex>> aisleList(@RequestParam(value = "roomId") Integer roomId) {
         List<AisleIndex> dto = roomService.aisleList(roomId);
+        return success(dto);
+    }
+
+    /**
+     * 机房菜单
+     *
+     * @param id 机房id
+     */
+    @Operation(summary = "机房-pdu菜单")
+    @GetMapping("/room/pdu/menu")
+    public CommonResult<List<RoomPduMenuDTO>> getRoomPduMenu(@RequestParam(value = "id") Integer id) {
+        List<RoomPduMenuDTO> dto = roomService.roomPduMenuList(id);
         return success(dto);
     }
 }

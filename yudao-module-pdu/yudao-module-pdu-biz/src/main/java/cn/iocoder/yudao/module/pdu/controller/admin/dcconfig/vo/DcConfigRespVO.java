@@ -11,7 +11,7 @@ import com.alibaba.excel.annotation.*;
 @ExcelIgnoreUnannotated
 public class DcConfigRespVO {
 
-    @Schema(description = "主键ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "32383")
+    @Schema(description = "主键ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "24868")
     @ExcelProperty("主键ID")
     private Short id;
 
@@ -75,8 +75,28 @@ public class DcConfigRespVO {
     @ExcelProperty("告警推送开关 1开启 0关闭")
     private Integer alarmPush;
 
+    @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
+    @ExcelProperty("创建时间")
+    private String createTime;
+
     @Schema(description = "配置推送的mq")
     @ExcelProperty("配置推送的mq")
     private String pushMqs;
+
+    @Schema(description = "定时任务开关 默认开 1   关0", requiredMode = Schema.RequiredMode.REQUIRED)
+    @ExcelProperty("定时任务开关 默认开 1   关0")
+    private Integer fixStore;
+
+    @Schema(description = "变化存储开关 默认开1 关0", requiredMode = Schema.RequiredMode.REQUIRED)
+    @ExcelProperty("变化存储开关 默认开1 关0")
+    private Integer changeStore;
+
+    @Schema(description = "电能存储开关 默认开1  关0", requiredMode = Schema.RequiredMode.REQUIRED)
+    @ExcelProperty("电能存储开关 默认开1  关0")
+    private Integer eleStore;
+
+    @Schema(description = "redis保存开关  开1 关0", requiredMode = Schema.RequiredMode.REQUIRED)
+    @ExcelProperty("redis保存开关  开1 关0")
+    private Integer redisSwitch;
 
 }

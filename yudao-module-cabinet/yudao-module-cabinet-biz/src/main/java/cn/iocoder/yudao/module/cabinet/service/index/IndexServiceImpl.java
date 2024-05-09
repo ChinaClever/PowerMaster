@@ -396,6 +396,12 @@ public class IndexServiceImpl implements IndexService {
                     }
                     result.put("activePowAvgValue",activePowAvgValue);
                     result.put("apparentPowAvgValue",apparentPowAvgValue);
+
+                    result.put("AactivePowAvgValue",AactivePowAvgValue);
+                    result.put("AapparentPowAvgValue",AapparentPowAvgValue);
+
+                    result.put("BactivePowAvgValue",BactivePowAvgValue);
+                    result.put("BapparentPowAvgValue",BapparentPowAvgValue);
                     result.put("time",time);
 
                     result.put("apparentPowMaxValue",apparentPowMaxValue != -1 ? apparentPowMaxValue : null);
@@ -431,7 +437,7 @@ public class IndexServiceImpl implements IndexService {
                 MultiSearchRequest multiSearchRequest = new MultiSearchRequest();
 
                 // 创建时间分布搜索请求
-                SearchRequest cabinetPowTotalRealRequest = new SearchRequest("cabinet_hda_total_day");
+                SearchRequest cabinetPowTotalRealRequest = new SearchRequest("cabinet_hda_pow_day");
                 SearchSourceBuilder cabinetPowTotalRealSourceBuilder = new SearchSourceBuilder();
 
                 cabinetPowTotalRealSourceBuilder.query(QueryBuilders.boolQuery()
@@ -563,6 +569,12 @@ public class IndexServiceImpl implements IndexService {
                     }
                     result.put("activePowAvgValue",activePowAvgValue);
                     result.put("apparentPowAvgValue",apparentPowAvgValue);
+
+                    result.put("AactivePowAvgValue",AactivePowAvgValue);
+                    result.put("AapparentPowAvgValue",AapparentPowAvgValue);
+
+                    result.put("BactivePowAvgValue",BactivePowAvgValue);
+                    result.put("BapparentPowAvgValue",BapparentPowAvgValue);
                     result.put("time",time);
 
                     result.put("apparentPowMaxValue",apparentPowMaxValue != -1 ? apparentPowMaxValue : null);

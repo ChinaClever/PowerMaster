@@ -91,6 +91,23 @@ public class DcConfigDO {
      */
     private String pushMqs;
     /**
+     * 定时任务开关 默认开 1   关0
+     */
+    private Integer fixStore;
+    /**
+     * 变化存储开关 默认开1 关0
+     */
+    private Integer changeStore;
+    /**
+     * 电能存储开关 默认开1  关0
+     */
+    private Integer eleStore;
+    /**
+     * redis保存开关  开1 关0
+     */
+    private Integer redisSwitch;
+
+    /**
      * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)
@@ -100,4 +117,5 @@ public class DcConfigDO {
      */
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+
 }

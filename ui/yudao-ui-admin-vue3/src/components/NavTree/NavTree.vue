@@ -15,7 +15,9 @@
         :accordion="isAccordion"
         :filter-node-method="filterNode"
         :show-checkbox="showCheckbox"
-        node-key="id"
+        :lazy="lazy"
+        :load="load"
+        node-key="unique"
         :default-checked-keys="checkKeys"
         @node-click="handleNodeClick"
         @check="handleCheckedNodes" />
@@ -29,12 +31,6 @@ import * as DeptApi from '@/api/system/dept'
 import { defineProps } from 'vue'
 import type Node from 'element-plus/es/components/tree/src/model/node'
 
-const defaultProps = {
-  children: 'children',
-  label: 'name'
-}
-const checkKeys = ref<number[]>([])
-const deptName = ref('')
 const emits = defineEmits(['node-click', 'check'])
 const props = defineProps({
   dataList: Array,
@@ -47,13 +43,29 @@ const props = defineProps({
     type: Boolean,
     default: true
   },
+  lazy: {
+    type: Boolean,
+    default: false
+  },
+  load: {
+    type: Function,
+    required: false
+  }
 })
+
+const defaultProps = {
+  children: 'children',
+  label: 'name'
+}
+
+const checkKeys = ref<number[]>([])
+const deptName = ref('')
 const treeRef = ref<InstanceType<typeof ElTree>>()
 
 /** 复选初始化 */
 const initCheck = (keys) => {
   treeRef.value!.setCheckedKeys(keys)
-  console.log('initCheck')
+  console.log('initCheck', props.dataList)
 }
 
 /** 基于名字过滤 */

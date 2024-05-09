@@ -1,13 +1,11 @@
 package cn.iocoder.yudao.module.cabinet.controller.admin;
 
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
-import cn.iocoder.yudao.module.cabinet.dto.CabinetActivePowDTO;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetEleChainDTO;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetEqTrendDTO;
-import cn.iocoder.yudao.module.cabinet.dto.CabinetPowDTO;
 import cn.iocoder.yudao.module.cabinet.service.CabinetEleService;
-import cn.iocoder.yudao.module.cabinet.service.CabinetPowService;
-import cn.iocoder.yudao.module.cabinet.vo.CabinetPowVo;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +21,7 @@ import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
  * @description: 电能数据
  * @date 2024/4/30 11:11
  */
+@Tag(name = "管理后台 - 机柜用能")
 @RestController
 public class CabinetEleController {
 
@@ -35,6 +34,7 @@ public class CabinetEleController {
      *
      * @param id 机柜id
      */
+    @Operation(summary = "机柜用能趋势")
     @GetMapping("/cabinet/eleTrend")
     public CommonResult<List<CabinetEqTrendDTO>> eleTrend(@Param("id") int id, @Param("type") String type) {
         List<CabinetEqTrendDTO> dto = eleService.eqTrend(id, type);
@@ -46,6 +46,7 @@ public class CabinetEleController {
      *
      * @param id 机柜id
      */
+    @Operation(summary = "机柜用能环比")
     @GetMapping("/cabinet/eleChain")
     public CommonResult<CabinetEleChainDTO> eleChain(@Param("id") int id) {
         CabinetEleChainDTO dto = eleService.getEleChain(id);

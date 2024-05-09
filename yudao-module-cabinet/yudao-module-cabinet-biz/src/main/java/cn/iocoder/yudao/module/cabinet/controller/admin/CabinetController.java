@@ -8,6 +8,8 @@ import cn.iocoder.yudao.module.cabinet.service.CabinetService;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexVo;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetVo;
 import com.alibaba.fastjson2.JSONObject;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +26,7 @@ import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
  * @description: 机柜主页面
  * @date 2024/4/28 11:12
  */
+@Tag(name = "管理后台 - 机柜页面")
 @RestController
 public class CabinetController {
 
@@ -36,6 +39,7 @@ public class CabinetController {
      *
      * @param pageReqVO
      */
+    @Operation(summary = "机柜列表分页")
     @PostMapping("/cabinet/page")
     public CommonResult<PageResult<JSONObject>> getCabinetPage(@RequestBody CabinetIndexVo pageReqVO) {
         PageResult<JSONObject> pageResult = cabinetService.getPageCabinet(pageReqVO);
@@ -47,6 +51,7 @@ public class CabinetController {
      *
      * @param id 机柜id
      */
+    @Operation(summary = "机柜功率详情")
     @GetMapping("/cabinet/detail")
     public CommonResult<JSONObject> getCabinetDetail(@Param("id") int id) {
         JSONObject dto = cabinetService.getCabinetDetail(id);
@@ -58,6 +63,7 @@ public class CabinetController {
      *
      * @param id 机柜id
      */
+    @Operation(summary = "单个机柜数据详情")
     @GetMapping("/cabinet/detailV2")
     public CommonResult<CabinetDTO> getCabinetDetailV2(@Param("id") int id) {
         CabinetDTO dto = cabinetService.getCabinetDetailV2(id);
@@ -70,6 +76,7 @@ public class CabinetController {
      *
      * @param vo
      */
+    @Operation(summary = "机柜新增/编辑")
     @PostMapping("/cabinet/save")
     public CommonResult saveCabinet(@RequestBody CabinetVo vo) {
         CommonResult message = cabinetService.saveCabinet(vo);
@@ -82,6 +89,7 @@ public class CabinetController {
      *
      * @param id 机柜id
      */
+    @Operation(summary = "机柜删除")
     @GetMapping("/cabinet/delete")
     public CommonResult<Integer> deleteCabinet(@Param("id") int id) {
         int cabinetId = cabinetService.delCabinet(id);

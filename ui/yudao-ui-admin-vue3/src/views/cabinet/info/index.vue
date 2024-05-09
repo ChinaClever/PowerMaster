@@ -73,8 +73,8 @@
         <div v-if="!isCloseNav" class="openNavtree" @click.prevent="handleSwitchNav">
           <Icon icon="ep:switch" />切换
         </div>
-        <div v-if="!isCloseNav" class="reduce" @click.prevent="isCloseNav.value = true"><Icon icon="ep:arrow-left" />收起</div>
-        <div v-if="isCloseNav" class="expand" @click.prevent="isCloseNav.value = false"><Icon icon="ep:arrow-right" /><span>展</span><span>开</span></div>
+        <div v-if="!isCloseNav" class="reduce" @click.prevent="isCloseNav = true"><Icon icon="ep:arrow-left" />收起</div>
+        <div v-if="isCloseNav" class="expand" @click.prevent="isCloseNav = false"><Icon icon="ep:arrow-right" /><span>展</span><span>开</span></div>
       </ContentWrap>
     </div>
     <!-- 右大侧 -->
@@ -89,13 +89,13 @@
         >
           <el-form-item>
             <template v-for="(status, index) in statusList" :key="index">
-              <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
+              <button type="button" :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index, $event)">{{status.name}}</button>
             </template>
           </el-form-item>
           <div>
-            <el-form-item v-show="switchValue"  label="公司名称" prop="username">
+            <el-form-item v-show="switchValue"  label="公司名称" prop="company">
               <el-input
-                v-model="queryParams.username"
+                v-model="queryParams.company"
                 placeholder="请输入公司名称"
                 clearable
                 class="!w-160px"
@@ -110,6 +110,7 @@
                 @change="cascaderChange"
                 :options="optionsCol"
                 :props="props"
+                :clearable="false"
                 collapse-tags />
             </el-form-item>
             <el-form-item>
@@ -224,16 +225,69 @@ import { fa } from 'node_modules/element-plus/es/locale';
 
 const { push } = useRouter() // 路由跳转
 const message = useMessage() // 消息弹窗
-const machineForm = ref()
-const navTree = ref()
-const colNode = ref()
-const testData = ref(null)
+const machineForm = ref() // 机柜表单组件
+const navTree = ref() // 导航树组件
+const colNode = ref() // 展示列组件
 const loading = ref(false)
 const isCloseNav = ref(false) // 左侧导航是否收起
 const switchNav = ref(false) //false: 导航树 true：微模块展示
-const switchValue = ref(0)
+const switchValue = ref(0) // 0:阵列 1：表格
+const listPage = ref<any>([]) // 表格数据
+const navList = ref([]) // 左侧导航列表数据
+const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
+const defaultOptionsCol = reactive([1, 2, 3, 12, 13, 14])
+const optionsCol = reactive([{
+  value: 0,
+  label: '总',
+  children: [{
+    value: 1,
+    label: '总AB视在功率'
+  }, {
+    value: 2,
+    label: '总AB有功功率'
+  }, {
+    value: 3,
+    label: '总AB电能'
+  }],
+},{
+  value: 4,
+  label: 'A组',
+  children: [{
+    value: 5,
+    label: 'A视在功率'
+  }, {
+    value: 6,
+    label: 'A有功功率'
+  }, {
+    value: 7,
+    label: 'A电能'
+  }],
+},{
+  value: 8,
+  label: 'B组',
+  children: [{
+    value: 9,
+    label: 'B视在功率'
+  }, {
+    value: 10,
+    label: 'B有功功率'
+  }, {
+    value: 11,
+    label: 'B电能'
+  }],
+},{
+  value: 12,
+  label: '所属公司'
+},{
+  value: 13,
+  label: '负载比'
+},{
+  value: 14,
+  label: 'AB占比'
+}
+])
 const queryParams = reactive({
-  username: undefined,
+  company: undefined,
   showCol: [1, 2, 3, 12, 13, 14] as number[],
   pageNo: 1,
   pageSize: 24,
@@ -292,7 +346,7 @@ const statusList = reactive([
 const props = { multiple: true }
 
 // 接口获取机柜列表
-const getTableData = async(reset = false, cabinetIds:number[]|null = null) => {
+const getTableData = async(reset = false) => {
   loading.value = true
   if (reset) queryParams.pageNo = 1
   const status =  statusList.filter(item => item.selected)
@@ -300,11 +354,11 @@ const getTableData = async(reset = false, cabinetIds:number[]|null = null) => {
     const res = await CabinetApi.getCabinetInfo({
       pageNo: queryParams.pageNo,
       pageSize: queryParams.pageSize,
-      cabinetIds: cabinetIds || [],
+      cabinetIds: cabinetIds.value,
       // roomId: null,
       runStatus: status.map(item => item.value),
       pduBox: 0,
-      // company: '华'
+      company: queryParams.company
     })
     console.log('res', res)
     if (res.list) {
@@ -341,29 +395,36 @@ const getTableData = async(reset = false, cabinetIds:number[]|null = null) => {
     loading.value = false
   }
 }
+
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await CabinetApi.getRoomMenuAll({})
   console.log('接口获取机房导航列表', res)
+  const ids = [] as number[]
   navList.value = res
   if (res && res.length > 0) {
     const room = res[0]
-    const keys = [] as string[]
     room.children.forEach(child => {
+      if (child.type == 3) {
+        ids.push(child.id)
+      }
       if(child.children.length > 0) {
         child.children.forEach(son => {
-          keys.push(son.id + '-' + son.type)
+          ids.push(son.id)
         })
       }
     })
+    navTree.value.initCheck([room.unique])
   }
-  navTree.value.initCheck([23, 24])
-  getTableData(false, [23, 24])
+  cabinetIds.value = ids
+  getTableData(false)
 }
+
 // 保存机柜修改/删除
 const saveMachine = async() => {
-  getTableData()
+  getNavList()
 }
+
 // 处理切换 表格/阵列 模式
 const handleSwitchModal = (value) => {
   if (switchValue.value == value) return
@@ -375,25 +436,31 @@ const handleSwitchModal = (value) => {
   }
   getTableData(true)
 }
+
 // 处理切换按钮点击事件
 const handleSwitchNav = () => {
   switchNav.value = !switchNav.value
 }
+
 //处理表格双击事件
 const handleDbclick = (e) => {
   console.log('处理表格双击事件', e, e.id)
   push('/cabinet/cab/detail')
 }
+
 // 处理阵列双击事件
 const handleArrayDbclick = (data) => {
   console.log('处理阵列双击事件', data)
   openForm('add')
 }
+
 // 处理状态选择事件
-const handleSelectStatus = (index) => {
+const handleSelectStatus = (index, event) => {
+  console.log('处理状态选择事件', index, event)
   statusList[index].selected = !statusList[index].selected
   getTableData()
 }
+
 // 跳转详情页
 const toMachineDetail = () => {
   console.log('toMachineDetail!')
@@ -403,6 +470,7 @@ const toMachineDetail = () => {
 const handleClick = (row) => {
   console.log('Button clicked!', row);
 }
+
 const handleCheck = (row) => {
   console.log('handleCheck!', row);
   const ids = [] as any
@@ -411,12 +479,10 @@ const handleCheck = (row) => {
       ids.push(item.id)
     }
   })
-  getTableData(true, ids)
+  cabinetIds.value = ids
+  getTableData(true)
 }
-const handleQuery = () => {
-  const arr = JSON.parse(JSON.stringify(list))
-  console.log('handleQuery clicked!', arr);
-}
+
 // 打开 编辑/添加 表单弹窗
 const openForm = async(type: string, key?: string) => {
   if (type == 'add') {
@@ -433,6 +499,7 @@ const openForm = async(type: string, key?: string) => {
     }
   }
 }
+
 // 处理删除事件
 const handleDelete = async (key: string) => {
   try {
@@ -444,573 +511,21 @@ const handleDelete = async (key: string) => {
     })
     message.success('删除成功')
     // 刷新列表
-    await getTableData()
+    await getNavList()
   } catch (error) {
     console.log(error)
   }
 }
+
 // 展示列选择处理事件
 const cascaderChange = (row) => {
   const checkedNodes = colNode.value.getCheckedNodes(true)
   queryParams.showCol = checkedNodes.map(item => item.value)
 }
+
 onBeforeMount(() => {
   getNavList()
 })
-const listPage = ref<any>([])
-const defaultOptionsCol = reactive([1, 2, 3, 12, 13, 14])
-const optionsCol = reactive([{
-  value: 0,
-  label: '总',
-  children: [{
-    value: 1,
-    label: '总AB视在功率'
-  }, {
-    value: 2,
-    label: '总AB有功功率'
-  }, {
-    value: 3,
-    label: '总AB电能'
-  }],
-},{
-  value: 4,
-  label: 'A组',
-  children: [{
-    value: 5,
-    label: 'A视在功率'
-  }, {
-    value: 6,
-    label: 'A有功功率'
-  }, {
-    value: 7,
-    label: 'A电能'
-  }],
-},{
-  value: 8,
-  label: 'B组',
-  children: [{
-    value: 9,
-    label: 'B视在功率'
-  }, {
-    value: 10,
-    label: 'B有功功率'
-  }, {
-    value: 11,
-    label: 'B电能'
-  }],
-},{
-  value: 12,
-  label: '所属公司'
-},{
-  value: 13,
-  label: '负载比'
-},{
-  value: 14,
-  label: 'AB占比'
-}
-])
-let list = reactive([
-  {
-    id: 1,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜1',
-    status: 1,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 2,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜2',
-    status: 1,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 3,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜3',
-    status: 1,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 4,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜4',
-    status: 0,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 5,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜1',
-    status: 1,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 6,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜6',
-    status: 1,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 7,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜7',
-    status: 1,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 8,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜8',
-    status: 1,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 9,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜9',
-    status: 1,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 10,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜10',
-    status: 1,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 11,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜11',
-    status: 1,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 12,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜12',
-    status: 1,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 13,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜13',
-    status: 1,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 14,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜14',
-    status: 2,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 15,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜15',
-    status: 1,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 16,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜16',
-    status: 1,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 17,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜17',
-    status: 1,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 18,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜18',
-    status: 1,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 19,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜19',
-    status: 1,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 20,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜20',
-    status: 1,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 21,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜21',
-    status: 1,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 22,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜22',
-    status: 1,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 23,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜23',
-    status: 1,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 24,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜24',
-    status: 1,
-    fzb: '35%',
-    abzb: 30,
-  },
-  {
-    id: 25,
-    abszgl: '25',
-    abyggl: '52',
-    abdn: '45',
-    aszgl: '22',
-    ayggl: '5',
-    adn: '52',
-    bszgl: '25',
-    byggl: '52',
-    bdn: '40',
-    mc: '服务器1',
-    gs: '亚马逊',
-    jf: '机房202',
-    jg: '机柜25',
-    status: 1,
-    fzb: '35%',
-    abzb: 30,
-  },
-])
-const navList = ref([{
-  label: '机房 1',
-  children: [{
-    label: '柜列1',
-    children: [{
-      label: '机柜1',
-    }]
-  }],
-}, {
-  label: '机房 2',
-  children: [{
-    label: '柜列1',
-    children: [{
-      label: '机柜1',
-    }]
-  }],
-}, {
-  label: '机房 3',
-  children: [{
-    label: '柜列1',
-    children: [{
-      label: '机柜1',
-    }]
-  }],
-}],)
 
 </script>
 
