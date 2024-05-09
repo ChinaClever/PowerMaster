@@ -3,16 +3,13 @@ package cn.iocoder.yudao.module.cabinet.service.statisconfig;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
 import cn.iocoder.yudao.module.cabinet.controller.admin.statisconfig.vo.*;
-import cn.iocoder.yudao.module.cabinet.dal.dataobject.statisconfig.StatisConfigDO;
+import cn.iocoder.yudao.module.cabinet.dal.dataobject.statisconfig.CabinetStatisConfigDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 
-import cn.iocoder.yudao.module.cabinet.dal.mysql.statisconfig.StatisConfigMapper;
+import cn.iocoder.yudao.module.cabinet.dal.mysql.statisconfig.CabinetStatisConfigMapper;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.cabinet.enums.ErrorCodeConstants.*;
@@ -24,27 +21,27 @@ import static cn.iocoder.yudao.module.cabinet.enums.ErrorCodeConstants.*;
  */
 @Service
 @Validated
-public class StatisConfigServiceImpl implements StatisConfigService {
+public class CabinetStatisConfigServiceImpl implements CabinetStatisConfigService {
 
     @Resource
-    private StatisConfigMapper statisConfigMapper;
+    private CabinetStatisConfigMapper cabinetStatisConfigMapper;
 
     @Override
-    public Integer createStatisConfig(StatisConfigSaveReqVO createReqVO) {
+    public Integer createStatisConfig(CabinetStatisConfigSaveReqVO createReqVO) {
         // 插入
-        StatisConfigDO statisConfig = BeanUtils.toBean(createReqVO, StatisConfigDO.class);
-        statisConfigMapper.insert(statisConfig);
+        CabinetStatisConfigDO statisConfig = BeanUtils.toBean(createReqVO, CabinetStatisConfigDO.class);
+        cabinetStatisConfigMapper.insert(statisConfig);
         // 返回
         return statisConfig.getId();
     }
 
     @Override
-    public void updateStatisConfig(StatisConfigSaveReqVO updateReqVO) {
+    public void updateStatisConfig(CabinetStatisConfigSaveReqVO updateReqVO) {
         // 校验存在
         validateStatisConfigExists(updateReqVO.getId());
         // 更新
-        StatisConfigDO updateObj = BeanUtils.toBean(updateReqVO, StatisConfigDO.class);
-        statisConfigMapper.updateById(updateObj);
+        CabinetStatisConfigDO updateObj = BeanUtils.toBean(updateReqVO, CabinetStatisConfigDO.class);
+        cabinetStatisConfigMapper.updateById(updateObj);
     }
 
     @Override
@@ -52,23 +49,23 @@ public class StatisConfigServiceImpl implements StatisConfigService {
         // 校验存在
         validateStatisConfigExists(id);
         // 删除
-        statisConfigMapper.deleteById(id);
+        cabinetStatisConfigMapper.deleteById(id);
     }
 
     private void validateStatisConfigExists(Integer id) {
-        if (statisConfigMapper.selectById(id) == null) {
+        if (cabinetStatisConfigMapper.selectById(id) == null) {
             throw exception(STATIS_CONFIG_NOT_EXISTS);
         }
     }
 
     @Override
-    public StatisConfigDO getStatisConfig(Integer id) {
-        return statisConfigMapper.selectById(id);
+    public CabinetStatisConfigDO getStatisConfig(Integer id) {
+        return cabinetStatisConfigMapper.selectById(id);
     }
 
     @Override
-    public PageResult<StatisConfigDO> getStatisConfigPage(StatisConfigPageReqVO pageReqVO) {
-        return statisConfigMapper.selectPage(pageReqVO);
+    public PageResult<CabinetStatisConfigDO> getStatisConfigPage(CabinetStatisConfigPageReqVO pageReqVO) {
+        return cabinetStatisConfigMapper.selectPage(pageReqVO);
     }
 
 }

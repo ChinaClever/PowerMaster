@@ -1,11 +1,10 @@
 package cn.iocoder.yudao.module.cabinet.dal.dataobject.statisconfig;
 
 import lombok.*;
-import java.util.*;
+
 import java.time.LocalDateTime;
-import java.time.LocalDateTime;
+
 import com.baomidou.mybatisplus.annotation.*;
-import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 
 /**
  * 机柜计算服务配置 DO
@@ -19,7 +18,7 @@ import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StatisConfigDO {
+public class CabinetStatisConfigDO {
 
     /**
      * 主键id
