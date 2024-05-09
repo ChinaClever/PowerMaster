@@ -15,6 +15,7 @@ public enum MenuTypeEnums {
     ROOM(1, "机房"),
     AISLE(2, "通道"),
     CABINET(3, "机柜"),
+    PDU(4, "pdu"),
     ;
 
     /**
