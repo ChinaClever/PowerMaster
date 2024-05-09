@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.pdu.service.historydata;
 
 
+import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.EnvDataDetailsReqVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataDetailsReqVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataPageReqVO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
@@ -49,5 +50,13 @@ public interface HistoryDataService {
      * @return pdu环境数据分页
      */
     PageResult<Object> getEnvDataPage(HistoryDataPageReqVO pageReqVO) throws IOException;
+
+    /**
+     * 获得pdu环境数据详情（曲线）
+     *
+     * @param reqVO 分页查询
+     * @return pdu历史数据详情
+     */
+    PageResult<Object> getEnvDataDetails(EnvDataDetailsReqVO reqVO) throws IOException;
 
 }

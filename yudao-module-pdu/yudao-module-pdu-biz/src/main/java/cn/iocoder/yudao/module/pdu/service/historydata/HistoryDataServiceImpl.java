@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.pdu.service.historydata;
 
+import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.EnvDataDetailsReqVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataDetailsReqVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataPageReqVO;
 import cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PduIndex;
@@ -310,7 +311,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
-        searchSourceBuilder.size(2880);
+        searchSourceBuilder.size(10000);
         searchSourceBuilder.trackTotalHits(true);
         PageResult<Object> pageResult = null;
         switch (reqVO.getType()) {
@@ -554,6 +555,63 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         pageResult = new PageResult<>();
         pageResult.setList(getLocationsByPduIds(mapList))
                 .setTotal(totalHits);
+
+        return pageResult;
+    }
+
+    @Override
+    public PageResult<Object> getEnvDataDetails(EnvDataDetailsReqVO reqVO) throws IOException {
+        Integer sensorId = reqVO.getSensorId();
+        Integer pduId = reqVO.getPduId();
+        if (Objects.equals(pduId, null)){
+            pduId = getPduIdByAddr(reqVO.getIpAddr(), reqVO.getCascadeAddr());
+            if (Objects.equals(pduId, null)){
+                return null;
+            }
+        }
+        // 创建BoolQueryBuilder对象
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        // 搜索源构建对象
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
+        searchSourceBuilder.size(10000);
+        searchSourceBuilder.trackTotalHits(true);
+        PageResult<Object> pageResult = null;
+        // 搜索请求对象
+        SearchRequest searchRequest3 = new SearchRequest();
+        if ("realtime".equals(reqVO.getGranularity()) ){
+            searchRequest3.indices("pdu_env_realtime");
+        }else if ("hour".equals(reqVO.getGranularity()) ){
+            searchRequest3.indices("pdu_env_hour");
+        }else {
+            searchRequest3.indices("pdu_env_day");
+        }
+        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0){
+            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                    .from(reqVO.getTimeRange()[0])
+                    .to(reqVO.getTimeRange()[1]));
+        }
+        // 创建匹配查询
+        QueryBuilder matchQuery = QueryBuilders.matchQuery("pdu_id", pduId);
+        QueryBuilder matchQuery1 = QueryBuilders.matchQuery("sensor_id", sensorId);
+        // 将匹配查询添加到布尔查询中
+        boolQuery.must(matchQuery);
+        boolQuery.must(matchQuery1);
+        // 将布尔查询设置到SearchSourceBuilder中
+        searchSourceBuilder.query(boolQuery);
+        searchRequest3.source(searchSourceBuilder);
+        // 执行搜索,向ES发起http请求
+        SearchResponse searchResponse3 = client.search(searchRequest3, RequestOptions.DEFAULT);
+        // 搜索结果
+        List<Object> resultList3 = new ArrayList<>();
+        SearchHits hits3 = searchResponse3.getHits();
+        hits3.forEach(searchHit -> resultList3.add(searchHit.getSourceAsMap()));
+        // 匹配到的总记录数
+        Long totalHits3 = hits3.getTotalHits().value;
+        // 返回的结果
+        pageResult = new PageResult<>();
+        pageResult.setList(resultList3)
+                .setTotal(totalHits3);
 
         return pageResult;
     }

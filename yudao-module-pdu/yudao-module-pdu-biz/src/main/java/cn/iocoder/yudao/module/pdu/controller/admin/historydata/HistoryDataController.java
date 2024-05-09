@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.pdu.controller.admin.historydata;
 
+import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.EnvDataDetailsReqVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataPageReqVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataDetailsReqVO;
 import org.springframework.web.bind.annotation.*;
@@ -64,7 +65,12 @@ public class HistoryDataController {
         return success(pageResult);
     }
 
-
+    @GetMapping("/env-details")
+    @Operation(summary = "获得pdu历史数据详情")
+    public CommonResult<PageResult<Object>> getEnvDataDetails(EnvDataDetailsReqVO reqVO) throws IOException {
+        PageResult<Object> pageResult = historyDataService.getEnvDataDetails(reqVO);
+        return success(pageResult);
+    }
 
 
 //    @GetMapping("/export-excel")
