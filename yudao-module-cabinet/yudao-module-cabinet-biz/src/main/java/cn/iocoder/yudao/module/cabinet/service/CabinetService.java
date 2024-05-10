@@ -46,7 +46,7 @@ public interface CabinetService {
      * @param vo
      * @return
      */
-    CommonResult saveCabinet(CabinetVo vo);
+    CommonResult saveCabinet(CabinetVo vo) throws Exception;
 
 
     /**
@@ -55,7 +55,7 @@ public interface CabinetService {
      * @param id
      * @return
      */
-    int delCabinet(int id);
+    int delCabinet(int id) throws Exception;
 
 
 }
