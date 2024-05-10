@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.cabinet.service.statisconfig;
 
+import cn.iocoder.yudao.framework.common.util.HttpUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -9,7 +11,7 @@ import cn.iocoder.yudao.module.cabinet.dal.dataobject.statisconfig.CabinetStatis
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 
-import cn.iocoder.yudao.module.cabinet.dal.mysql.statisconfig.CabinetStatisConfigMapper;
+import cn.iocoder.yudao.module.cabinet.dal.mysql.cabinetstatisconfig.CabinetStatisConfigMapper;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.cabinet.enums.ErrorCodeConstants.*;
@@ -26,11 +28,15 @@ public class CabinetStatisConfigServiceImpl implements CabinetStatisConfigServic
     @Resource
     private CabinetStatisConfigMapper cabinetStatisConfigMapper;
 
+    @Value("${cabinet-refresh-url}")
+    public String addr;
+
     @Override
     public Integer createStatisConfig(CabinetStatisConfigSaveReqVO createReqVO) {
         // 插入
         CabinetStatisConfigDO statisConfig = BeanUtils.toBean(createReqVO, CabinetStatisConfigDO.class);
         cabinetStatisConfigMapper.insert(statisConfig);
+        HttpUtil.get(addr);
         // 返回
         return statisConfig.getId();
     }
@@ -41,6 +47,7 @@ public class CabinetStatisConfigServiceImpl implements CabinetStatisConfigServic
         validateStatisConfigExists(updateReqVO.getId());
         // 更新
         CabinetStatisConfigDO updateObj = BeanUtils.toBean(updateReqVO, CabinetStatisConfigDO.class);
+        HttpUtil.get(addr);
         cabinetStatisConfigMapper.updateById(updateObj);
     }
 

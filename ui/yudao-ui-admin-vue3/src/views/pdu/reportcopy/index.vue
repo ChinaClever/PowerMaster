@@ -262,14 +262,15 @@ const handleDayPick = () => {
     queryParams.newTime = null;
   }
   if(queryParams?.oldTime && switchValue.value == 0){
+    
     queryParams.newTime = queryParams.oldTime.split(" ")[0] + " " + "23:59:59";
     visControll.isSameDay = true;
 
   } else if (queryParams.timeArr && switchValue.value == 2) {
 
     // 获取选择的开始日期和结束日期
-    const startDate = new Date(queryParams.timeArr[0]);
-    const endDate = new Date(queryParams.timeArr[1]);
+    const startDate = new Date(queryParams.timeArr[0]) as any;
+    const endDate = new Date(queryParams.timeArr[1]) as any;
 
     // 计算两个日期之间的天数差
     const diffTime = Math.abs(endDate - startDate);
@@ -437,20 +438,6 @@ let treeWidth = ref(3)
 let isCollapsed = ref(0);
 
 
-
-const pduInfo = ref({
-  alarm : 6,
-  name : "PDU1",
-  statuses : "空闲设备",
-  dev_key : "192.168.1.1-0",
-  owner :"机房1-机柜1",
-  eq : "200",
-  total_apparent_pow_max_value : "200",
-  total_pow_max_value : "200",
-  ele:"112",
-  tem_max_value : "25",
-})
-
 //柱状图宽度
 const barWid = ref(20);
 
@@ -472,7 +459,7 @@ const eqData = ref<EqData>({
   maxEleTime : "",
   firstEq : 0,
   lastEq : 0,
-})
+}) as any
 
 interface PowData {
   apparentPowAvgValue: number[];
@@ -501,7 +488,7 @@ const powData = ref<PowData>({
   activePowMaxTime : "",
   activePowMinValue : 0,
   activePowMinTime : ""
-})
+}) as any
 
 interface TemData {
   temAvgValue: any;
@@ -522,7 +509,7 @@ const temData = ref<TemData>({
   temMinValue : 0,
   temMinTime : "",
   temMinSensorId : 0,
-})
+}) as any
 
 interface ServerData {
   nameAndMax: object[];
@@ -532,7 +519,7 @@ const serverData = ref<ServerData>({
   nameAndMax : [
   ],
   value: []
-})
+}) as any
 
 interface OutLetRankData {
   outLetId: string[];
@@ -542,7 +529,7 @@ interface OutLetRankData {
 const outletRankData = ref<OutLetRankData>({
   outLetId : [],
   eleValue : [],
-})
+}) as any
 
 //树型控件
 interface Tree {
@@ -639,7 +626,7 @@ const getList = async () => {
   var powValueArray = PDU.pdu_data?.output_item_list?.pow_value;
   // 过滤出大于 0 的元素，并将值与下标保存到对象数组中
   if(powValueArray && powValueArray.length > 0){
-    var resultArray = [];
+    var resultArray = [] as any;
     for (var i = 0; i < powValueArray.length; i++) {
       if (powValueArray[i] > 0) {
         resultArray.push({
@@ -658,8 +645,8 @@ const getList = async () => {
     resultArray = resultArray.slice(0, 10);
 
     // 根据 resultArray 中的元素生成 nameAndMax 数组和 value 数组
-    var element = [];
-    var valueArr = [];
+    var element = [] as any;
+    var valueArr = [] as any;
     for (var j = 0; j < resultArray.length; j++) {
       var name = "输出位" + resultArray[j].index;
       element.push({
@@ -1032,7 +1019,7 @@ const arraySpanMethod = ({
   row[1].colSpan = 0
   row[2].colSpan = 2
   row[3].colSpan = 0
-}
+} 
 
 /** 搜索按钮操作 */
 const handleQuery = async () => {

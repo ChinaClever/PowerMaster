@@ -9,7 +9,7 @@ import cn.iocoder.yudao.framework.test.core.ut.BaseDbUnitTest;
 
 import cn.iocoder.yudao.module.cabinet.controller.admin.statisconfig.vo.*;
 import cn.iocoder.yudao.module.cabinet.dal.dataobject.statisconfig.CabinetStatisConfigDO;
-import cn.iocoder.yudao.module.cabinet.dal.mysql.statisconfig.CabinetStatisConfigMapper;
+import cn.iocoder.yudao.module.cabinet.dal.mysql.cabinetstatisconfig.CabinetStatisConfigMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 
 import org.springframework.context.annotation.Import;
