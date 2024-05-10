@@ -101,12 +101,42 @@
               :row-style="{ color: '#fff', fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
               <el-table-column prop="create_time" label="记录时间" />
-              <!-- <el-table-column label="功率">
-                <el-table-column prop="pow_active" label="有功功率" />
-                <el-table-column prop="pow_apparent" label="视在功率" />
-              </el-table-column> -->
               <!-- 动态生成表头 -->
-              <el-table-column v-for="item in headerData" :key="item.name" :prop="item.name" :label="item.name"/>
+              <template v-for="item in headerData" :key="item.name">
+                <el-table-column v-if="item.name === '最大有功功率'" label="有功功率最大值">
+                  <el-table-column :prop="item.name" label="数值"/>  
+                  <el-table-column prop="activePowMaxTimeData" label="发生时间"/>
+                </el-table-column>
+                <el-table-column v-else-if="item.name === '最小有功功率'" label="有功功率最小值">
+                  <el-table-column :prop="item.name" label="数值"/>  
+                  <el-table-column prop="activePowMinTimeData" label="发生时间"/>
+                </el-table-column>
+                <el-table-column v-else-if="item.name === '最大视在功率'" label="视在功率最大值">
+                  <el-table-column :prop="item.name" label="数值"/>  
+                  <el-table-column prop="apparentPowMaxTimeData" label="发生时间"/>
+                </el-table-column>
+                 <el-table-column v-else-if="item.name === '最小视在功率'" label="视在功率最小值">
+                  <el-table-column :prop="item.name" label="数值"/>  
+                  <el-table-column prop="apparentPowMinTimeData" label="发生时间"/>
+                </el-table-column>
+                <el-table-column v-else-if="item.name === '最大电压'" label="电压最大值">
+                  <el-table-column :prop="item.name" label="数值"/>  
+                  <el-table-column prop="volMaxTimeData" label="发生时间"/>
+                </el-table-column>
+                 <el-table-column v-else-if="item.name === '最小电压'" label="电压最小值">
+                  <el-table-column :prop="item.name" label="数值"/>  
+                  <el-table-column prop="volMinTimeData" label="发生时间"/>
+                </el-table-column>
+                <el-table-column v-else-if="item.name === '最大电流'" label="电流最大值">
+                  <el-table-column :prop="item.name" label="数值"/>  
+                  <el-table-column prop="curMaxTimeData" label="发生时间"/>
+                </el-table-column>
+                 <el-table-column v-else-if="item.name === '最小电流'" label="电流最小值">
+                  <el-table-column :prop="item.name" label="数值"/>  
+                  <el-table-column prop="curMinTimeData" label="发生时间"/>
+                </el-table-column>
+                <el-table-column v-else :prop="item.name" :label="item.name"/>   
+              </template>
             </el-table>
             </div>
           </el-tab-pane>
@@ -145,8 +175,8 @@ const queryParams = reactive({
   outletId: undefined,
   type: 'total',
   granularity: 'realtime',
-  ipAddr: undefined,
-  cascadeAddr: '0',
+  ipAddr: undefined as string | undefined,
+  cascadeAddr: '0' as string | undefined,
   // 进入页面原始数据默认显示最近一小时
   timeRange: defaultHourTimeRange(1)
 })
@@ -1248,8 +1278,15 @@ const resetQuery = () => {
 /** 初始化 **/
 onMounted( async () => {
   // 获取路由参数中的 pdu_id
-  const pduId = useRoute().query.pduId as string  | undefined;
-  queryParams.pduId = pduId ? parseInt(pduId, 10) : undefined;
+  const queryPduId = useRoute().query.pduId as string  | undefined;
+  const queryLocation = useRoute().query.location as string  | undefined;
+  const queryIpAddr = queryLocation?.split("-")[0];
+  const queryCascadeAddr = queryLocation?.split("-")[1];
+  queryParams.pduId = queryPduId ? parseInt(queryPduId, 10) : undefined;
+  queryParams.ipAddr = queryIpAddr ? queryIpAddr : undefined;
+  queryParams.cascadeAddr = queryCascadeAddr ? queryCascadeAddr : undefined;
+  cascadeAddr.value = queryCascadeAddr ? parseInt(queryCascadeAddr, 10) : 0;
+
   if (queryParams.pduId != undefined){
     await getTypeMaxValue();
     await getList();
