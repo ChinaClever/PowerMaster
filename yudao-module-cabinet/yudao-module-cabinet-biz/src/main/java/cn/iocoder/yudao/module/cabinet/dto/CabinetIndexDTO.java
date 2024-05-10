@@ -41,6 +41,12 @@ public class CabinetIndexDTO {
     private Integer runStatus;
 
     /**
+     * 负载状态
+     */
+    private Integer loadStatus;
+
+
+    /**
      * 数据来源
      */
     private Integer pduBox;
