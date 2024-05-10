@@ -104,12 +104,26 @@
               :row-style="{ color: '#fff', fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
               <el-table-column prop="create_time" label="记录时间" />
-              <!-- <el-table-column label="功率">
-                <el-table-column prop="pow_active" label="有功功率" />
-                <el-table-column prop="pow_apparent" label="视在功率" />
-              </el-table-column> -->
               <!-- 动态生成表头 -->
-              <el-table-column v-for="item in headerData" :key="item.name" :prop="item.name" :label="item.name"/>
+              <template v-for="item in headerData" :key="item.name">
+                <el-table-column v-if="item.name === '最高温度'" label="温度最高值">
+                  <el-table-column :prop="item.name" label="数值"/>   
+                  <el-table-column prop="temMaxTimeData" label="发生时间"/>
+                </el-table-column>
+                <el-table-column v-else-if="item.name === '最低温度'" label="温度最低值">
+                  <el-table-column :prop="item.name" label="数值"/>   
+                  <el-table-column prop="temMinTimeData" label="发生时间"/>
+                </el-table-column>
+                <el-table-column v-else-if="item.name === '最大湿度'" label="湿度最大值">
+                  <el-table-column :prop="item.name" label="数值"/>   
+                  <el-table-column prop="humMaxTimeData" label="发生时间"/>
+                </el-table-column>
+                 <el-table-column v-else-if="item.name === '最小湿度'" label="湿度最小值">
+                  <el-table-column :prop="item.name" label="数值"/>   
+                  <el-table-column prop="humMinTimeData" label="发生时间"/>
+                </el-table-column>
+                <el-table-column v-else :prop="item.name" :label="item.name"/>   
+              </template>
             </el-table>
             </div>
           </el-tab-pane>
@@ -148,7 +162,7 @@ const queryParams = reactive({
   sensorId: 1,
   type: 'total',
   granularity: 'realtime',
-  ipAddr: undefined,
+  ipAddr: undefined as string | undefined,
   cascadeAddr: '0',
   // 进入页面原始数据默认显示最近一小时
   timeRange: defaultHourTimeRange(1)
@@ -345,21 +359,21 @@ const shortcuts2 = [
 
 
 // 处理折线图数据
-const HumValueData = ref<number[]>([]);
-const TemValueData = ref<number[]>([]);
+const humValueData = ref<number[]>([]);
+const temValueData = ref<number[]>([]);
 const createTimeData = ref<string[]>([]);
 
-const HumAvgValueData = ref<number[]>([]);
-const HumMaxValueData = ref<number[]>([]);
-const HumMaxTimeData = ref<string[]>([]);
+const humAvgValueData = ref<number[]>([]);
+const humMaxValueData = ref<number[]>([]);
+const humMaxTimeData = ref<string[]>([]);
 const HumMinValueData = ref<number[]>([]);
-const HumMinTimeData = ref<string[]>([]);
+const humMinTimeData = ref<string[]>([]);
 
-const TemAvgValueData = ref<number[]>([]);
-const TemMaxValueData = ref<number[]>([]);
-const TemMaxTimeData = ref<string[]>([]);
-const TemMinValueData = ref<number[]>([]);
-const TemMinTimeData = ref<string[]>([]);
+const temAvgValueData = ref<number[]>([]);
+const temMaxValueData = ref<number[]>([]);
+const temMaxTimeData = ref<string[]>([]);
+const temMinValueData = ref<number[]>([]);
+const temMinTimeData = ref<string[]>([]);
 
 /** 查询列表 */
 const isHaveData = ref(false);
@@ -369,24 +383,24 @@ const getList = async () => {
     const data = await EnvDataApi.getEnvDataDetails(queryParams);
     if (data != null && data.total != 0){
       isHaveData.value = true
-      HumValueData.value = data.list.map((item) => formatNumber(item.hum_value, 1));
-      TemValueData.value = data.list.map((item) => formatNumber(item.tem_value, 1));
+      humValueData.value = data.list.map((item) => formatNumber(item.hum_value, 1));
+      temValueData.value = data.list.map((item) => formatNumber(item.tem_value, 1));
       if (activeName.value === 'dayExtremumTabPane'){
         createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
       }else{
         createTimeData.value = data.list.map((item) => formatDate(item.create_time));
       }
-      HumAvgValueData.value = data.list.map((item) => formatNumber(item.hum_avg_value, 1));
-      HumMaxValueData.value = data.list.map((item) => formatNumber(item.hum_max_value, 1));
-      HumMaxTimeData.value = data.list.map((item) => formatDate(item.hum_max_time));
+      humAvgValueData.value = data.list.map((item) => formatNumber(item.hum_avg_value, 1));
+      humMaxValueData.value = data.list.map((item) => formatNumber(item.hum_max_value, 1));
+      humMaxTimeData.value = data.list.map((item) => formatDate(item.hum_max_time));
       HumMinValueData.value = data.list.map((item) => formatNumber(item.hum_min_value, 1));
-      HumMinTimeData.value = data.list.map((item) => formatDate(item.hum_min_time));
+      humMinTimeData.value = data.list.map((item) => formatDate(item.hum_min_time));
 
-      TemAvgValueData.value = data.list.map((item) => formatNumber(item.tem_avg_value, 1));
-      TemMaxValueData.value = data.list.map((item) => formatNumber(item.tem_max_value, 1));
-      TemMaxTimeData.value = data.list.map((item) => formatDate(item.tem_max_time));
-      TemMinValueData.value = data.list.map((item) => formatNumber(item.tem_min_value, 1));
-      TemMinTimeData.value = data.list.map((item) => formatDate(item.tem_min_time));
+      temAvgValueData.value = data.list.map((item) => formatNumber(item.tem_avg_value, 1));
+      temMaxValueData.value = data.list.map((item) => formatNumber(item.tem_max_value, 1));
+      temMaxTimeData.value = data.list.map((item) => formatDate(item.tem_max_time));
+      temMinValueData.value = data.list.map((item) => formatNumber(item.tem_min_value, 1));
+      temMinTimeData.value = data.list.map((item) => formatDate(item.tem_min_time));
       
     }else{
       isHaveData.value = false;
@@ -417,8 +431,8 @@ const initChart = () => {
           xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
           yAxis: { type: 'value'},
           series: [
-            {name: '温度', type: 'line', symbol: 'none', data: TemValueData.value},
-            {name: '湿度', type: 'line', symbol: 'none', data: HumValueData.value},
+            {name: '温度', type: 'line', symbol: 'none', data: temValueData.value},
+            {name: '湿度', type: 'line', symbol: 'none', data: humValueData.value},
           ],
           dataZoom:[{type: "inside"}],
         });
@@ -441,6 +455,10 @@ const updateTableData = () => {
   for (let i = 0; i < length; i++) {
     const rowData: { [key: string]: any } = {};
     rowData['create_time'] = createTimeData.value[i];
+    rowData['humMaxTimeData'] = humMaxTimeData.value[i];
+    rowData['humMinTimeData'] = humMinTimeData.value[i];
+    rowData['temMaxTimeData'] = temMaxTimeData.value[i];
+    rowData['temMinTimeData'] = temMinTimeData.value[i];
     for (const item of headerData.value) {
       rowData[item.name] = item.data[i];
     }
@@ -495,8 +513,8 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
               xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
               yAxis: { type: 'value'},
               series: [
-                {name: '温度', type: 'line', symbol: 'none', data: TemValueData.value},
-                {name: '湿度', type: 'line', symbol: 'none', data: HumValueData.value},
+                {name: '温度', type: 'line', symbol: 'none', data: temValueData.value},
+                {name: '湿度', type: 'line', symbol: 'none', data: humValueData.value},
               ],
               dataZoom:[{type: "inside"}],
             });
@@ -530,11 +548,11 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
             ],
             yAxis: { type: 'value'},
             series: [
-              { name: '平均温度', type: 'line', symbol: 'none', data: TemAvgValueData.value, },
-              { name: '最高温度', type: 'line', symbol: 'none', data: TemMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最低温度', type: 'line', symbol: 'none', data: TemMinValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '平均湿度', type: 'line', symbol: 'none', data: HumAvgValueData.value, },
-              { name: '最大湿度', type: 'line', symbol: 'none', data: HumMaxValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '平均温度', type: 'line', symbol: 'none', data: temAvgValueData.value, },
+              { name: '最高温度', type: 'line', symbol: 'none', data: temMaxValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '最低温度', type: 'line', symbol: 'none', data: temMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '平均湿度', type: 'line', symbol: 'none', data: humAvgValueData.value, },
+              { name: '最大湿度', type: 'line', symbol: 'none', data: humMaxValueData.value, lineStyle: {type: 'dashed'}},
               { name: '最小湿度', type: 'line', symbol: 'none', data: HumMinValueData.value, lineStyle: {type: 'dashed'}},
             ],
             dataZoom:[{type: "inside"}],
@@ -590,20 +608,20 @@ function customTooltipFormatter(params: any[]) {
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' ℃  记录时间: ' +params[0].name + '<br/>';
         break;
       case '最高温度':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' ℃  发生时间: ' +TemMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' ℃  发生时间: ' +temMaxTimeData.value[item.dataIndex] + '<br/>';
         break;
       case '最低温度':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' ℃  发生时间: ' +TemMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' ℃  发生时间: ' +temMinTimeData.value[item.dataIndex] + '<br/>';
         break;
       case '湿度':
       case '平均湿度':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' %RH  记录时间: ' +params[0].name + '<br/>';
         break;
       case '最大湿度':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' %RH  发生时间: ' +HumMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' %RH  发生时间: ' +humMaxTimeData.value[item.dataIndex] + '<br/>';
         break;
       case '最小湿度':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' %RH  发生时间: ' +HumMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' %RH  发生时间: ' +humMinTimeData.value[item.dataIndex] + '<br/>';
         break;
     }
     
@@ -763,10 +781,16 @@ const resetQuery = () => {
 /** 初始化 **/
 onMounted( async () => {
   // 获取路由参数中的 pdu_id
-  const pduId = useRoute().query.pduId as string  | undefined;
-    console.log(pduId)
-  queryParams.pduId = pduId ? parseInt(pduId, 10) : undefined;
-
+  const queryPduId = useRoute().query.pduId as string  | undefined;
+  const querySensorId = useRoute().query.sensorId as string  | undefined;
+  const queryLocation = useRoute().query.location as string  | undefined;
+  const queryIpAddr = queryLocation?.split("-")[0];
+  const queryCascadeAddr = queryLocation?.split("-")[1];
+  queryParams.pduId = queryPduId ? parseInt(queryPduId, 10) : undefined;
+  queryParams.sensorId = querySensorId ? parseInt(querySensorId, 10) : 1;
+  queryParams.ipAddr = queryIpAddr ? queryIpAddr : undefined;
+  queryParams.cascadeAddr = queryCascadeAddr ? queryCascadeAddr : '0';
+  cascadeAddr.value = queryCascadeAddr ? parseInt(queryCascadeAddr, 10) : 0;
   if (queryParams.pduId != undefined){
     await getSensorIdMaxValue();
     await getList();

@@ -124,7 +124,7 @@
           <template v-for="column in tableColumns">
             <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
               <template #default="{ row }" v-if="column.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.pdu_id)">详情</el-button>
+                <el-button link type="primary" @click="toDetails(row.pdu_id, row.location, row.sensor_id)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -477,8 +477,8 @@ const resetQuery = () => {
 
 
 /** 详情操作*/
-const toDetails = (pdu_id: number) => {
-  push('/pdu/record/envAnalysis?pduId='+pdu_id);
+const toDetails = (pduId: number, location: string, sensorId: number) => {
+  push('/pdu/record/envAnalysis?pduId='+pduId+'&location='+location+'&sensorId='+sensorId);
 }
 
 /** 导出按钮操作 */
