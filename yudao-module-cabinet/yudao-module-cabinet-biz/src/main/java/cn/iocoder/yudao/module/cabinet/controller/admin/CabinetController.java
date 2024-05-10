@@ -78,7 +78,7 @@ public class CabinetController {
      */
     @Operation(summary = "机柜新增/编辑")
     @PostMapping("/cabinet/save")
-    public CommonResult saveCabinet(@RequestBody CabinetVo vo) {
+    public CommonResult saveCabinet(@RequestBody CabinetVo vo) throws Exception {
         CommonResult message = cabinetService.saveCabinet(vo);
         return message;
     }
@@ -91,7 +91,7 @@ public class CabinetController {
      */
     @Operation(summary = "机柜删除")
     @GetMapping("/cabinet/delete")
-    public CommonResult<Integer> deleteCabinet(@Param("id") int id) {
+    public CommonResult<Integer> deleteCabinet(@Param("id") int id) throws Exception {
         int cabinetId = cabinetService.delCabinet(id);
         if (cabinetId == -1) {
             return error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "删除失败");
