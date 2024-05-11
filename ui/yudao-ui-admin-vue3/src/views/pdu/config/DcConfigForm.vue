@@ -333,15 +333,18 @@ defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 
 function getTypeAndValue(cronExpression, obj, typeKey, valueKey) {
   if (cronExpression) {
-    const lastZeroIndex = cronExpression.lastIndexOf("0");
-    if (lastZeroIndex === 0) {
+    const lastZeroIndex = cronExpression.lastIndexOf("/");
+    if (lastZeroIndex === 1) {
       obj[typeKey] = 1;
-    } else if (lastZeroIndex === 2) {
+    } else if (lastZeroIndex === 3) {
       obj[typeKey] = 2;
-    } else if (lastZeroIndex === 4) {
+    } else if (lastZeroIndex === 5) {
       obj[typeKey] = 3;
     }
-    obj[valueKey] = cronExpression[lastZeroIndex + 2];
+    obj[valueKey] = cronExpression[lastZeroIndex + 1];
+    if(cronExpression[lastZeroIndex + 2] != ' '){
+      obj[valueKey] += cronExpression[lastZeroIndex + 2];
+    }
   }
 }
 

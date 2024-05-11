@@ -8,4 +8,6 @@ public class PduIndex {
     private Long id;
 
     private String devKey;
+
+    private String ipAddr;
 }

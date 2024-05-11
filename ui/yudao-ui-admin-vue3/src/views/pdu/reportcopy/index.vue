@@ -1,25 +1,84 @@
 <template>
-  <el-row :gutter="20">
-    <el-col :span="treeWidth" :xs="24">
-      
-      <el-input
-        v-model="filterText"
-        style="width: 190px"
-        placeholder="Filter keyword"
-      />
-
-      <el-tree
-        ref="treeRef"
-        style="max-width: 600px"
-        class="filter-tree"
-        :data="serverRoomArr"
-        :props="defaultProps"
-        default-expand-all
-
-        :filter-node-method="filterNode"
-      />
-    </el-col>
-    <el-col :span="24 - treeWidth" :xs="24">
+  <div class="master">
+    <!-- 左大侧 -->
+    <div class="master-left">
+      <ContentWrap style="height: calc(100% - 15px)">
+        <div v-if="!isCloseNav" class="nav-left">
+          <!-- 左侧标题栏 -->
+          <div class="navBar">微模块机房</div>
+          <!-- 信息展示模式 -->
+          <div v-if="switchNav">
+            <div class="header">
+              <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
+              <div class="name">微模块机房</div>
+              <div>机房202</div>
+            </div>
+            <div class="line"></div>
+            <!-- <div class="status">
+              <div class="box">
+                <div class="top">
+                  <div class="tag"></div>&lt;15%
+                </div>
+                <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
+              </div>
+              <div class="box">
+                <div class="top">
+                  <div class="tag empty"></div>小电流
+                </div>
+                <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
+              </div>
+              <div class="box">
+                <div class="top">
+                  <div class="tag warn"></div>15%-30%
+                </div>
+                <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
+              </div>
+              <div class="box">
+                <div class="top">
+                  <div class="tag error"></div>&gt;30
+                </div>
+                <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
+              </div>
+            </div> -->
+            <div class="line"></div>
+            <div class="overview">
+              <div class="count">
+                <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+                <div class="info">
+                  <div>总电能</div>
+                  <div class="value">295.87 kW·h</div>
+                </div>
+              </div>
+              <div class="count">
+                <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
+                <div class="info">
+                  <div>今日用电</div>
+                  <div class="value">295.87 kW·h</div>
+                </div>
+              </div>
+              <div class="count">
+                <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+                <div class="info">
+                  <div>今日用电</div>
+                  <div class="value">295.87 kW·h</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 筛选模式 -->
+          <div v-else style="margin-top: 10px">
+            <NavTree :showCheckbox="false" ref="navTree"   @node-click="handleClick" :showSearch="false"  :lazy="true" :load="loadNode" />
+          </div>
+        </div>
+        <div v-if="!isCloseNav" class="openNavtree" @click.prevent="handleSwitchNav">
+          <Icon icon="ep:switch" />切换
+        </div>
+        <div v-if="!isCloseNav" class="reduce" @click.prevent="isCloseNav = true"><Icon icon="ep:arrow-left" />收起</div>
+        <div v-if="isCloseNav" class="expand" @click.prevent="isCloseNav = false"><Icon icon="ep:arrow-right" /><span>展</span><span>开</span></div>
+      </ContentWrap>
+    </div>
+    <!-- 右大侧 -->
+    <div class="master-right">
       <ContentWrap>
         <el-form
           class="-mb-15px"
@@ -27,18 +86,7 @@
           ref="queryFormRef"
           :inline="true"
           label-width="120px"
-        >
-          <el-form-item label="" prop="collaspe">
-            <el-switch 
-            v-model="isCollapsed"  
-            active-color="#409EFF" 
-            inactive-color="#909399"
-            active-text="折叠"  
-            active-value="100"
-            inactive-value="0" 
-            @change="toggleCollapse" />
-          </el-form-item>
-          
+        >      
           <!-- <el-form-item label="网络地址" prop="devKey">
             <el-input
               v-model="queryParams.devKey"
@@ -141,32 +189,37 @@
                     :data="PDUTableData" 
                     :header-cell-style="arraySpanMethod"
                     >
-                    <el-table-column  align="center" label="基本信息"  prop="baseInfoName" />
-                    <el-table-column  prop="baseInfoValue" >
-                      <template #default="scope">
-                        <span v-if="scope.$index === 2">
-                          <el-tag  v-if="scope.row.baseInfoValue == 0">正常</el-tag>
-                          <el-tag type="warning" v-if="scope.row.baseInfoValue == 1">预警</el-tag>
-                          <el-popover
-                              placement="top-start"
-                              title="告警内容"
-                              :width="500"
-                              trigger="hover"
-                              :content="scope.row.pduAlarm"
-                              v-if="scope.row.baseInfoValue == 2"
-                            >
-                              <template #reference>
-                                <el-tag type="danger">告警</el-tag>
-                              </template>
-                            </el-popover>
-                          <el-tag type="info" v-if="scope.row.baseInfoValue == 4">故障</el-tag>
-                          <el-tag type="info" v-if="scope.row.baseInfoValue == 5">离线</el-tag>
-                        </span>
-                        <span v-else>{{ scope.row.baseInfoValue }}</span>
-                      </template>
+                    <el-table-column  align="center" label="基本信息" >
+                      <el-table-column  align="center" label="基本信息"  prop="baseInfoName" />
+                      <el-table-column  prop="baseInfoValue" >
+                        <template #default="scope">
+                          <span v-if="scope.$index === 2">
+                            <el-tag  v-if="scope.row.baseInfoValue == 0">正常</el-tag>
+                            <el-tag type="warning" v-if="scope.row.baseInfoValue == 1">预警</el-tag>
+                            <el-popover
+                                placement="top-start"
+                                title="告警内容"
+                                :width="500"
+                                trigger="hover"
+                                :content="scope.row.pduAlarm"
+                                v-if="scope.row.baseInfoValue == 2"
+                              >
+                                <template #reference>
+                                  <el-tag type="danger">告警</el-tag>
+                                </template>
+                              </el-popover>
+                            <el-tag type="info" v-if="scope.row.baseInfoValue == 4">故障</el-tag>
+                            <el-tag type="info" v-if="scope.row.baseInfoValue == 5">离线</el-tag>
+                          </span>
+                          <span v-else>{{ scope.row.baseInfoValue }}</span>
+                        </template>
+                      </el-table-column>
                     </el-table-column>
-                    <el-table-column label="能耗" :rowspan="2" prop="consumeName"  />
-                    <el-table-column  prop="consumeValue" />
+                    <el-table-column  align="center" label="能耗">
+                      <el-table-column  prop="consumeName"  />
+                      <el-table-column  prop="consumeValue" />
+                    </el-table-column>
+                    
                   </el-table>
                 </div>
               </el-col>
@@ -208,9 +261,9 @@
           </div>
         </div>
       </ContentWrap>
-      
-    </el-col>
-  </el-row>
+    </div>
+  </div>
+
   <!-- 表单弹窗：添加/修改 -->
   <PDUDeviceForm ref="formRef" @success="getList" />
 </template>
@@ -220,12 +273,15 @@
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 import * as echarts from 'echarts';
 import { ElTree } from 'element-plus'
-
+import { CabinetApi } from '@/api/cabinet/info'
+import type Node from 'element-plus/es/components/tree/src/model/node'
 
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
+const isCloseNav = ref(false) // 左侧导航是否收起
+const switchNav = ref(false) //false: 导航树 true：微模块展示
 const switchValue = ref(1);
 const instance = getCurrentInstance();
 const visControll = reactive({
@@ -360,83 +416,34 @@ const queryParams = reactive({
   cascadeAddr : 0
 }) as any
 
-const serverRoomArr =  [
-  {
-    value: '1',
-    label: '机房1',
-    children: [
-      {
-        value: '1-1',
-        label: '机柜1',
-        children: [
-        {
-          value: '1-1-1',
-          label: 'PDU1',
-        },
-        {
-          value: '1-1-2',
-          label: 'PDU2',
-        },]
-      },
-    ],
-  },
-  {
-    value: '2',
-    label: '机房2',
-    children: [
-      {
-        value: '2-1',
-        label: '机柜1',
-        children: [
-        {
-          value: '2-1-1',
-          label: 'PDU1',
-        },
-        {
-          value: '2-1-2',
-          label: 'PDU2',
-        },]
-      },
-    ],
-  },
-  {
-    value: '3',
-    label: '机房3',
-    children: [
-      {
-        value: '3-1',
-        label: '机柜1',
-        children: [
-        {
-          value: '3-1-1',
-          label: 'PDU1',
-        },
-        {
-          value: '3-1-2',
-          label: 'PDU2',
-        },]
-      },
-      {
-        value: '3-2',
-        label: '机柜2',
-        children: [
-        {
-          value: '3-1-1',
-          label: 'PDU1',
-        },
-        {
-          value: '3-1-2',
-          label: 'PDU2',
-        },]
-      },
-    ],
-  },
-]
+const loadNode = async (node: Node, resolve: (data: Tree[]) => void) => {
+  if (node.level === 0) {
+    var temp = await CabinetApi.getRoomList({});
+    return resolve(temp)
+  }
+  if (node.level === 1){
+    var temp = await CabinetApi.getRoomPDUList({id : node.data.id});
+    console.log(temp)
+    return resolve(temp[0].children);
+  } 
+  if (node.level >= 2){
+    return resolve(node?.data?.children);
+  } 
+}
 
-//折叠功能
-let treeWidth = ref(3)
-let isCollapsed = ref(0);
+const handleClick = (row) => {
+  console.log('Button clicked!', row);
+  if(row.type != null  && row.type == 4){
+    queryParams.ipAddr = row.ip
+    queryParams.cascadeAddr = row?.unique?.split("-")[1];
+    handleQuery();
+  }
+}
 
+// 处理切换按钮点击事件
+const handleSwitchNav = () => {
+  switchNav.value = !switchNav.value
+}
 
 //柱状图宽度
 const barWid = ref(20);
@@ -539,16 +546,6 @@ interface Tree {
 const filterText = ref('')
 const treeRef = ref<InstanceType<typeof ElTree>>()
 
-const filterNode = (value: string, data: Tree) => {
-  if (!value) return true
-  return data.label.includes(value)
-}
-
-const defaultProps = {
-  children: 'children',
-  label: 'label',
-}
-
 const getList = async () => {
   loading.value = true
   eqData.value = await PDUDeviceApi.getConsumeData(queryParams);
@@ -621,7 +618,8 @@ const getList = async () => {
 
   var PDU = await PDUDeviceApi.PDUDisplay(queryParams);
   var temp = [] as any;
-  
+  var baseInfo = await PDUDeviceApi.getPDUDevicePage(queryParams);
+  console.log(baseInfo);
   // 假设 PDU.pdu_data.output_item_list.pow_value 是一个 double 数组
   var powValueArray = PDU.pdu_data?.output_item_list?.pow_value;
   // 过滤出大于 0 的元素，并将值与下标保存到对象数组中
@@ -665,7 +663,7 @@ const getList = async () => {
 
     temp.push({
       baseInfoName : "所属位置",
-      baseInfoValue : "",
+      baseInfoValue : baseInfo?.list && baseInfo?.list.length > 0 ? baseInfo?.list[0].location : "/",
       consumeName : "消耗电量",
       consumeValue : eqData.value.eq && eqData.value.eq.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '/',
     })
@@ -1002,9 +1000,6 @@ watch(filterText, (val) => {
 // const message = useMessage() // 消息弹窗
 // const { t } = useI18n() // 国际化
 
-const toggleCollapse = () => {
-  treeWidth.value = isCollapsed.value == 0 ? 3 : 0;
-};
 
 const loading = ref(false) // 列表的加载中
 
@@ -1013,13 +1008,13 @@ const queryFormRef = ref() // 搜索的表单
 // const exportLoading = ref(false) // 导出的加载中
 
 const arraySpanMethod = ({
-  row,
+  rowIndex,
 }) => {
-  row[0].colSpan = 2
-  row[1].colSpan = 0
-  row[2].colSpan = 2
-  row[3].colSpan = 0
-} 
+  if (rowIndex === 1) {
+  //这里为了是将第二列的表头隐藏，就形成了合并表头的效果
+      return {display: 'none'}
+  }
+}
 
 /** 搜索按钮操作 */
 const handleQuery = async () => {
@@ -1085,7 +1080,56 @@ onMounted( async () =>  {
   // initChart();
 })
 </script>
-<style>
+<style scoped lang="scss">
+
+.master {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  .master-left {
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    margin-right: 20px;
+    transition: all 0.2s linear;
+    .openNavtree {
+      box-sizing: border-box;
+      text-align: right;
+      cursor: pointer;
+      position: absolute;
+      right: 10px;
+      top: 12px;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+    }
+    .reduce {
+      display: flex;
+      align-items: center;
+      position: absolute;
+      right: 10px;
+      top: 52px;
+      color: #777777;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .expand {
+      width: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #777;
+      cursor: pointer;
+      background-color: #eef4fc;
+      padding: 10px 0;
+    }
+  }
+  .master-right {
+    flex: 1;
+    overflow: hidden;
+  }
+}
+
 .centered-div {
   display: flex;
   justify-content: center; /* 水平居中 */
@@ -1097,5 +1141,161 @@ onMounted( async () =>  {
   justify-content: right; /* 水平居右 */
   align-items: center; /* 垂直居中 */
   height: 100%; /* 使用父容器的高度 */
+}
+
+.navBar {
+  box-sizing: border-box;
+  width: 100%;
+  height: 46px;
+  line-height: 46px;
+  padding-left: 10px;
+  background-color: #d5ffc1;
+  font-size: 14px;
+}
+.nav-left {
+  width: 215px;
+  height: 100%;
+  .overview {
+    padding: 0 20px;
+    .count {
+      height: 70px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-left: 15px;
+      padding-right: 10px;
+      box-shadow: 0 3px 4px 1px rgba(0,0,0,.12);
+      border-radius: 3px;
+      border: 1px solid #eee;
+      .info {
+        height: 46px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: space-between;
+        font-size: 13px;
+        .value {
+          font-size: 15px;
+          font-weight: bold;
+        }
+      }
+    }
+  }
+  .status {
+    display: flex;
+    flex-wrap: wrap;
+    .box {
+      height: 70px;
+      width: 50%;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      .top {
+        display: flex;
+        align-items: center;
+        .tag {
+          width: 8px;
+          height: 8px;
+          background-color: #3bbb00;
+          margin-right: 3px;
+          margin-top: 2px;
+        }
+        .empty {
+          background-color: #ccc;
+        }
+        .warn {
+          background-color: #ffc402;
+        }
+        .error {
+          background-color: #fa3333;
+        }
+      }
+      .value {
+        font-size: 14px;
+        margin-top: 5px;
+        color: #aaa;
+        .number {
+          font-size: 14px;
+          font-weight: bold;
+          margin-right: 5px;
+          color: #000;
+        }
+      }
+    }
+  }
+  .header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 13px;
+    padding-top: 28px;
+    .header_img {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid #555;
+      img {
+        width: 75px;
+        height: 75px;
+      }
+    }
+    .name {
+      font-size: 15px;
+      margin: 15px 0;
+    }
+  }
+  .line {
+    height: 1px;
+    margin-top: 28px;
+    margin-bottom: 20px;
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
+}
+.progressContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .progress {
+    width: 100px;
+    height: 18px;
+    line-height: 18px;
+    font-size: 12px;
+    box-sizing: border-box;
+    border-radius: 150px;
+    overflow: hidden;
+    position: relative;
+    vertical-align: middle;
+    background-color: #bfa;
+    display: flex;
+    justify-content: center;
+    .left {
+      overflow: hidden;
+      box-sizing: border-box;
+      background-color: var(--el-color-primary);
+
+    }
+    .right {
+      overflow: hidden;
+      background-color:  #f56c6c;
+    }
+  }
+}
+
+:deep(.master-left .el-card__body) {
+  padding: 0;
+}
+:deep(.el-form) {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+:deep(.el-form .el-form-item) {
+  margin-right: 0;
 }
 </style>

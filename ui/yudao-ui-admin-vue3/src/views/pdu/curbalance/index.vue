@@ -1,25 +1,84 @@
 <template>
-  <el-row :gutter="20">
-    <el-col :span="treeWidth" :xs="24">
-      
-      <el-input
-        v-model="filterText"
-        style="width: 190px"
-        placeholder="Filter keyword"
-      />
-
-      <el-tree
-        ref="treeRef"
-        style="max-width: 600px"
-        class="filter-tree"
-        :data="serverRoomArr"
-        :props="defaultProps"
-        default-expand-all
-        show-checkbox
-        :filter-node-method="filterNode"
-      />
-    </el-col>
-    <el-col :span="24 - treeWidth" :xs="24">
+  <div class="master">
+    <!-- 左大侧 -->
+    <div class="master-left">
+      <ContentWrap style="height: calc(100% - 15px)">
+        <div v-if="!isCloseNav" class="nav-left">
+          <!-- 左侧标题栏 -->
+          <div class="navBar">微模块机房</div>
+          <!-- 信息展示模式 -->
+          <div v-if="switchNav">
+            <div class="header">
+              <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
+              <div class="name">微模块机房</div>
+              <div>机房202</div>
+            </div>
+            <div class="line"></div>
+            <div class="status">
+              <div class="box">
+                <div class="top">
+                  <div class="tag"></div>&lt;15%
+                </div>
+                <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
+              </div>
+              <div class="box">
+                <div class="top">
+                  <div class="tag empty"></div>小电流
+                </div>
+                <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
+              </div>
+              <div class="box">
+                <div class="top">
+                  <div class="tag warn"></div>15%-30%
+                </div>
+                <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
+              </div>
+              <div class="box">
+                <div class="top">
+                  <div class="tag error"></div>&gt;30
+                </div>
+                <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
+              </div>
+            </div>
+            <div class="line"></div>
+            <div class="overview">
+              <div class="count">
+                <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+                <div class="info">
+                  <div>总电能</div>
+                  <div class="value">295.87 kW·h</div>
+                </div>
+              </div>
+              <div class="count">
+                <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
+                <div class="info">
+                  <div>今日用电</div>
+                  <div class="value">295.87 kW·h</div>
+                </div>
+              </div>
+              <div class="count">
+                <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+                <div class="info">
+                  <div>今日用电</div>
+                  <div class="value">295.87 kW·h</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 筛选模式 -->
+          <div v-else style="margin-top: 10px">
+            <NavTree :showCheckbox="true" ref="navTree"  @check="handleCheck" @node-click="handleClick" :showSearch="true"  :dataList="serverRoomArr" />
+          </div>
+        </div>
+        <div v-if="!isCloseNav" class="openNavtree" @click.prevent="handleSwitchNav">
+          <Icon icon="ep:switch" />切换
+        </div>
+        <div v-if="!isCloseNav" class="reduce" @click.prevent="isCloseNav = true"><Icon icon="ep:arrow-left" />收起</div>
+        <div v-if="isCloseNav" class="expand" @click.prevent="isCloseNav = false"><Icon icon="ep:arrow-right" /><span>展</span><span>开</span></div>
+      </ContentWrap>
+    </div>
+    <!-- 右大侧 -->
+    <div class="master-right">
       <ContentWrap>
         
         <!-- 搜索工作栏 -->
@@ -30,16 +89,6 @@
           :inline="true"
           label-width="68px"                          
         >
-          <el-form-item label="" prop="collaspe">
-            <el-switch 
-            v-model="isCollapsed"  
-            active-color="#409EFF" 
-            inactive-color="#909399"
-            active-text="折叠"  
-            active-value="100"
-            inactive-value="0" 
-            @change="toggleCollapse" />
-          </el-form-item>
           <el-form-item v-if="switchValue == 2 || switchValue == 3">
             <template v-for="(status, index) in statusList" :key="index">
               <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
@@ -153,14 +202,14 @@
       <ContentWrap v-show="switchValue == 2">
           <div class="arrayContainer">
             <div class="arrayItem" v-for="item in list" :key="item.devKey">
-              <div class="devKey">{{ item.devKey }}</div>
+              <div class="devKey">{{ item.location }}</div>
               <div class="content">
                 <div class="icon" v-if="item.curUnbalance != null">不平衡度<br/>{{ item.curUnbalance }}%</div>
-                <div class="info">
-                  <div >所在位置：</div>
+                <div class="info">                  
                   <div v-if="item.acur != null">A相电流：{{item.acur}}A</div>
                   <div v-if="item.bcur != null" >B相电流：{{item.bcur}}A</div>
                   <div v-if="item.ccur != null" >C相电流：{{item.ccur}}A</div>
+                  <div >网络地址：{{ item.devKey }}</div>
                   <!-- <div>AB路占比：{{item.fzb}}</div> -->
                 </div>
               </div>
@@ -174,9 +223,9 @@
               <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
             </div>
           </div>
-        </ContentWrap>
+      </ContentWrap>
 
-        <ContentWrap  v-show="switchValue == 1">
+      <ContentWrap  v-show="switchValue == 1">
         <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
           <el-table-column label="编号" align="center" prop="tableId" />
           <!-- 数据库查询 -->
@@ -236,14 +285,14 @@
       <ContentWrap v-show="switchValue == 0">
           <div class="arrayContainer">
             <div class="arrayItem" v-for="item in list" :key="item.devKey">
-              <div class="devKey">{{ item.devKey }}</div>
+              <div class="devKey">{{ item.location }}</div>
               <div class="content">
                 <div class="icon"  v-if="item.volUnbalance != null" >不平衡度<br/>{{ item.volUnbalance }}%</div>
-                <div class="info">
-                  <div >所在位置：</div>
+                <div class="info">                  
                   <div v-if="item.avol != null">A相电压：{{item.avol}}V</div>
                   <div v-if="item.bvol != null" >B相电压：{{item.bvol}}V</div>
                   <div v-if="item.cvol != null" >C相电压：{{item.cvol}}V</div>
+                  <div >网络地址：{{ item.devKey }}</div>
                   <!-- <div>AB路占比：{{item.fzb}}</div> -->
                 </div>
               </div>
@@ -266,8 +315,9 @@
         @pagination="getList"
       />
       </ContentWrap>
-    </el-col>
-  </el-row>
+    </div>
+  </div>
+
   <!-- 表单弹窗：添加/修改 -->
   <!-- <PDUDeviceForm ref="formRef" @success="getList" /> -->
 </template>
@@ -278,19 +328,25 @@ import download from '@/utils/download'
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 // import PDUDeviceForm from './PDUDeviceForm.vue'
 import { ElTree } from 'element-plus'
+import { CabinetApi } from '@/api/cabinet/info'
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
 const { push } = useRouter()
 
+const isCloseNav = ref(false) // 左侧导航是否收起
+const switchNav = ref(false) //false: 导航树 true：微模块展示
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48])
-
 const switchValue = ref(2)
-
-const ip = ref("ip");
+const statusNumber = reactive({
+  lessFifteen : 0,
+  greaterFifteen : 0,
+  greaterThirty : 0,
+  smallCurrent : 0
+})
 
 const statusList = reactive([
   {
@@ -323,98 +379,37 @@ const statusList = reactive([
   },
 ])
 
-const serverRoomArr =  [
-  {
-    value: '1',
-    label: '机房1',
-    children: [
-      {
-        value: '1-1',
-        label: '柜列1',
-        children: [
-        {
-          value: '1-1-1',
-          label: '机柜1',
-        },
-        {
-          value: '1-1-2',
-          label: '机柜2',
-        },]
-      },
-    ],
-  },
-  {
-    value: '2',
-    label: '机房2',
-    children: [
-      {
-        value: '2-1',
-        label: '柜列1',
-        children: [
-        {
-          value: '2-1-1',
-          label: '机柜1',
-        },
-        {
-          value: '2-1-2',
-          label: '机柜2',
-        },]
-      },
-    ],
-  },
-  {
-    value: '3',
-    label: '机房3',
-    children: [
-      {
-        value: '3-1',
-        label: '柜列1',
-        children: [
-        {
-          value: '3-1-1',
-          label: '机柜1',
-        },
-        {
-          value: '3-1-2',
-          label: '机柜2',
-        },]
-      },
-    ],
-  },
-]
-
-//折叠功能
-let treeWidth = ref(3)
-let isCollapsed = ref(0);
-
-const toggleCollapse = () => {
-  treeWidth.value = isCollapsed.value == 0 ? 3 : 0;
-};
-
-//树型控件
-interface Tree {
-  [key: string]: any
+const handleClick = (row) => {
+  console.log("click",row)
 }
+
+const handleCheck = async (row) => {
+  console.log('handleCheck!', row);
+  const ids = [] as any
+  row.forEach(item => {
+    if (item.type == 3) {
+      ids.push(item.id)
+    }
+  })
+  queryParams.cabinetIds = ids
+  getList();
+}
+
+// 处理切换按钮点击事件
+const handleSwitchNav = () => {
+  switchNav.value = !switchNav.value
+}
+
+const serverRoomArr =  ref([])
 
 const filterText = ref('')
 const treeRef = ref<InstanceType<typeof ElTree>>()
 
-const filterNode = (value: string, data: Tree) => {
-  if (!value) return true
-  return data.label.includes(value)
-}
-
-const defaultProps = {
-  children: 'children',
-  label: 'label',
-}
 
 watch(filterText, (val) => {
   treeRef.value!.filter(val)
 })
 
-// 下拉框选项数组
-const deviceStatus = ref([])
 
 const message = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
@@ -447,7 +442,8 @@ const queryParams = reactive({
   cascadeNum: undefined,
   serverRoomData:undefined,
   status:[],
-})
+  cabinetIds : [],
+})as any
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
@@ -459,6 +455,10 @@ const getList = async () => {
 
     list.value = data.list
     var tableIndex = 0;
+    var lessFifteen = 0;
+    var greaterFifteen = 0;
+    var greaterThirty = 0;
+    var smallCurrent = 0;
     list.value.forEach((obj) => {
       const splitArray = obj.dataUpdateTime.split(' ');
       obj.dataUpdateTime = splitArray[1];
@@ -475,7 +475,20 @@ const getList = async () => {
       obj.bvol = obj.bvol?.toFixed(1);
       obj.cvol = obj.cvol?.toFixed(1);
       obj.volUnbalance = obj.volUnbalance?.toFixed(0);
+      if(obj.color == 1){
+        smallCurrent++;
+      } else if (obj.color == 2) {
+        lessFifteen++;
+      } else if (obj.color == 3) {
+        greaterFifteen++;
+      } else if (obj.color == 4) {
+        greaterThirty++;
+      }
     });
+    statusNumber.smallCurrent = smallCurrent;
+    statusNumber.lessFifteen = lessFifteen;
+    statusNumber.greaterFifteen = greaterFifteen;
+    statusNumber.greaterThirty = greaterThirty;
     total.value = data.total
   } finally {
     loading.value = false
@@ -483,7 +496,6 @@ const getList = async () => {
 }
 
 const getListNoLoading = async () => {
-  console.log("定时任务")
   try {
     const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
     list.value = data.list
@@ -509,6 +521,23 @@ const getListNoLoading = async () => {
   } catch (error) {
     
   }
+}
+
+const getNavList = async() => {
+  const res = await CabinetApi.getRoomMenuAll({})
+  serverRoomArr.value = res
+  if (res && res.length > 0) {
+    const room = res[0]
+    const keys = [] as string[]
+    room.children.forEach(child => {
+      if(child.children.length > 0) {
+        child.children.forEach(son => {
+          keys.push(son.id + '-' + son.type)
+        })
+      }
+    })
+  }
+  console.log(serverRoomArr.value)
 }
 
 const toPDUDisplayScreen = (row) =>{
@@ -578,6 +607,7 @@ const handleExport = async () => {
 /** 初始化 **/
 onMounted(() => {
   getList()
+  getNavList();
   flashListTimer.value = setInterval((getListNoLoading), 5000);
 })
 
@@ -598,16 +628,65 @@ onBeforeRouteLeave(()=>{
 
 onActivated(() => {
   getList()
+  getNavList();
   if(!firstTimerCreate.value){
     flashListTimer.value = setInterval((getListNoLoading), 5000);
   }
 })
 </script>
 
-<style scoped >
-/deep/ .ip:hover {
+<style scoped lang="scss">
+:deep(.ip:hover) {
   color: blue !important;
   cursor: pointer;
+}
+
+.master {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  .master-left {
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    margin-right: 20px;
+    transition: all 0.2s linear;
+    .openNavtree {
+      box-sizing: border-box;
+      text-align: right;
+      cursor: pointer;
+      position: absolute;
+      right: 10px;
+      top: 12px;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+    }
+    .reduce {
+      display: flex;
+      align-items: center;
+      position: absolute;
+      right: 10px;
+      top: 52px;
+      color: #777777;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .expand {
+      width: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #777;
+      cursor: pointer;
+      background-color: #eef4fc;
+      padding: 10px 0;
+    }
+  }
+  .master-right {
+    flex: 1;
+    overflow: hidden;
+  }
 }
 
 .btn_offline,
@@ -674,6 +753,150 @@ onActivated(() => {
   }
 }
 
+.navBar {
+  box-sizing: border-box;
+  width: 100%;
+  height: 46px;
+  line-height: 46px;
+  padding-left: 10px;
+  background-color: #d5ffc1;
+  font-size: 14px;
+}
+.nav-left {
+  width: 215px;
+  height: 100%;
+  .overview {
+    padding: 0 20px;
+    .count {
+      height: 70px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-left: 15px;
+      padding-right: 10px;
+      box-shadow: 0 3px 4px 1px rgba(0,0,0,.12);
+      border-radius: 3px;
+      border: 1px solid #eee;
+      .info {
+        height: 46px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: space-between;
+        font-size: 13px;
+        .value {
+          font-size: 15px;
+          font-weight: bold;
+        }
+      }
+    }
+  }
+  .status {
+    display: flex;
+    flex-wrap: wrap;
+    .box {
+      height: 70px;
+      width: 50%;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      .top {
+        display: flex;
+        align-items: center;
+        .tag {
+          width: 8px;
+          height: 8px;
+          background-color: #3bbb00;
+          margin-right: 3px;
+          margin-top: 2px;
+        }
+        .empty {
+          background-color: #ccc;
+        }
+        .warn {
+          background-color: #ffc402;
+        }
+        .error {
+          background-color: #fa3333;
+        }
+      }
+      .value {
+        font-size: 14px;
+        margin-top: 5px;
+        color: #aaa;
+        .number {
+          font-size: 14px;
+          font-weight: bold;
+          margin-right: 5px;
+          color: #000;
+        }
+      }
+    }
+  }
+  .header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 13px;
+    padding-top: 28px;
+    .header_img {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid #555;
+      img {
+        width: 75px;
+        height: 75px;
+      }
+    }
+    .name {
+      font-size: 15px;
+      margin: 15px 0;
+    }
+  }
+  .line {
+    height: 1px;
+    margin-top: 28px;
+    margin-bottom: 20px;
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
+}
+.progressContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .progress {
+    width: 100px;
+    height: 18px;
+    line-height: 18px;
+    font-size: 12px;
+    box-sizing: border-box;
+    border-radius: 150px;
+    overflow: hidden;
+    position: relative;
+    vertical-align: middle;
+    background-color: #bfa;
+    display: flex;
+    justify-content: center;
+    .left {
+      overflow: hidden;
+      box-sizing: border-box;
+      background-color: var(--el-color-primary);
+
+    }
+    .right {
+      overflow: hidden;
+      background-color:  #f56c6c;
+    }
+  }
+}
+
 .arrayContainer {
   display: flex;
   flex-wrap: wrap;
@@ -734,5 +957,17 @@ onActivated(() => {
       cursor: pointer;
     }
   }
+}
+
+:deep(.master-left .el-card__body) {
+  padding: 0;
+}
+:deep(.el-form) {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+:deep(.el-form .el-form-item) {
+  margin-right: 0;
 }
 </style>

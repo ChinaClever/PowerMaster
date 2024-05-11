@@ -9,6 +9,12 @@ import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalRealtimeDo;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
+import cn.iocoder.yudao.module.cabinet.mapper.AisleIndexMapper;
+import cn.iocoder.yudao.module.cabinet.mapper.CabinetIndexMapper;
+import cn.iocoder.yudao.module.cabinet.mapper.CabinetPduMapper;
+import cn.iocoder.yudao.module.cabinet.mapper.RoomIndexMapper;
 import org.elasticsearch.search.aggregations.metrics.Max;
 import org.elasticsearch.search.aggregations.metrics.Min;
 
@@ -84,12 +90,43 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     @Autowired
     private RestHighLevelClient client;
 
+    @Autowired
+    private CabinetPduMapper cabinetPduMapper;
+
+    @Autowired
+    private CabinetIndexMapper cabinetIndexMapper;
+
+    @Autowired
+    private AisleIndexMapper aisleIndexMapper;
+
+    @Autowired
+    private RoomIndexMapper roomIndexMapper;
 
     @Override
     public PageResult<PDUDeviceDO> getPDUDevicePage(PDUDevicePageReqVO pageReqVO) {
 
-        PageResult<PduIndex> pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
-                .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()));
+        PageResult<PduIndex> pduIndexPageResult = null;
+
+        if(pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
+            List<String> ipAddrList = new ArrayList<>();
+            List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().inIfPresent(CabinetPdu::getCabinetId, pageReqVO.getCabinetIds()));
+            if(cabinetPduList != null){
+                for (CabinetPdu cabinetPdu : cabinetPduList) {
+                    if (!StringUtils.isEmpty(cabinetPdu.getPduIpA())){
+                        ipAddrList.add(cabinetPdu.getPduIpA());
+                    }
+                    if (!StringUtils.isEmpty(cabinetPdu.getPduIpB())){
+                        ipAddrList.add(cabinetPdu.getPduIpB());
+                    }
+                }
+            }
+            pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
+                    .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()).inIfPresent(PduIndex::getIpAddr,ipAddrList));
+        }else{
+            pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
+                    .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()));
+        }
+
 
         List<PduIndex> pduIndices = pduIndexPageResult.getList();
         ValueOperations ops = redisTemplate.opsForValue();
@@ -146,7 +183,26 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             if(status1 != null){
                 pduDeviceDO.setStatus(status1);
             }
+
+            String localtion = null;
+            String ipAddr = pduIndex.getIpAddr();
+            CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().like(CabinetPdu::getPduIpA, ipAddr).or().like(CabinetPdu::getPduIpB, ipAddr));
+            if(cabinetPdu != null){
+                int cabinetId = cabinetPdu.getCabinetId();
+                CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
+                String cabinetName = cabinet.getName();
+                String roomName = roomIndexMapper.selectById(cabinet.getRoomId()).getName();
+                if(cabinet.getAisleId() != 0){
+                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+
+                    localtion = roomName + "-" + aisleName + "-" + cabinetName;
+                }else {
+                    localtion = roomName + "-"  + cabinetName;
+                }
+            }
+
             pduDeviceDO.setId(pduIndex.getId());
+            pduDeviceDO.setLocation(localtion);
             pduDeviceDO.setPf(pduTgData.getDoubleValue("power_factor"));
             pduDeviceDO.setDevKey(pduIndex.getDevKey());
             pduDeviceDO.setEle(pduTgData.getDoubleValue("ele_active"));

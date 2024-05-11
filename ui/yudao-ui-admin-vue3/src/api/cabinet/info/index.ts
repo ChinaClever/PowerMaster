@@ -21,4 +21,16 @@ export const CabinetApi = {
   deleteCabinetInfo: async (params: any) => {
     return await request.get({ url: `/cabinet/delete`, params })
   },
+  // 获取机房菜单
+  getRoomList: async (params: any) => {
+    return await request.get({ url: `/room/list`, params })
+  },
+  // 获取机房菜单
+  getRoomPDUList: async (params: any) => {
+    return await request.get({ url: `/room/pdu/menu`, params })
+  },
+  // 获取机柜详情
+  getCabinetDetail: async (params: any) => {
+    return await request.get({ url: `/cabinet/detail`, params })
+  },
 }

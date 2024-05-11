@@ -63,4 +63,5 @@ public class PDUDeviceDO extends BaseDO {
 
     private Double volUnbalance;
 
+
 }

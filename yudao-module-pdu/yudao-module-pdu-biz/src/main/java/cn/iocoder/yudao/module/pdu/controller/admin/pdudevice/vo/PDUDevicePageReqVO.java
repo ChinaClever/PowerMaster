@@ -35,6 +35,9 @@ public class PDUDevicePageReqVO extends PageParam {
     @Schema(description = "颜色")
     private List<Integer> color;
 
+    @Schema(description = "机柜ID列表")
+    private List<Integer> cabinetIds;
+
     public String getDevKey(){
         return devKey;
     }

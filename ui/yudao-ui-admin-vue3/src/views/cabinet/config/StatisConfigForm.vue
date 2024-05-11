@@ -17,7 +17,7 @@
               </el-radio-group>
             </el-form-item>
             <el-form-item label="按天统计历史数据任务" prop="dayCron">
-              
+
               每天的
               <el-form-item prop="dayHour">
                 <el-input size="small" style="width: 70px" type="number" :min="1" :max="24" v-model="formData.dayHour" />
@@ -33,7 +33,7 @@
               秒执行一次
             </el-form-item>
             <el-form-item label="按小时统计历史数据任务" prop="hourCron">
-              
+
               每时的
               <el-form-item prop="hourMin">
                 <el-input size="small" style="width: 70px" type="number" :min="1" :max="60" v-model="formData.hourMin" /> 
@@ -45,7 +45,7 @@
               秒执行一次
             </el-form-item>
             <el-form-item label="电量按天统计任务" prop="eqDayCron">
-              
+
               每天的
               <el-form-item prop="eqDayHour">
                 <el-input size="small" style="width: 70px" type="number" :min="1" :max="24" v-model="formData.eqDayHour" />
@@ -61,7 +61,7 @@
               秒执行一次
             </el-form-item>
             <el-form-item label="电量按周执行任务" prop="eqWeekCron">
-              
+
               每周星期
               <el-form-item prop="eqWeekDay">
                 <el-input size="small" style="width: 70px" type="number" :min="1" :max="7" v-model="formData.eqWeekDay" />
@@ -81,7 +81,7 @@
               秒执行一次
             </el-form-item>
             <el-form-item label="按月统计电量任务" prop="eqMonthCron">
-              
+
               每月的
               <el-form-item prop="eqMonthDay">
                 <el-input size="small" style="width: 70px" type="number" :min="1" :max="31" v-model="formData.eqMonthDay" />
@@ -103,8 +103,8 @@
             <el-form-item label="redis key过期时间（秒）" prop="redisExpire">
               <el-input v-model="formData.redisExpire" placeholder="请输入redis key过期时间" />
             </el-form-item>
-            <el-form-item label="负载限制" prop="loadLimit">
-              <el-input v-model="formData.loadLimit" placeholder="请输入负载限制" />
+            <el-form-item label="负载限制（%）" prop="loadLimit">
+              <el-input v-model="formData.loadLimit" type="number" placeholder="请输入负载限制" />
             </el-form-item>  
             <el-form-item label="状态告警开关" prop="statusAlarm">            
               <el-radio-group v-model="formData.statusAlarm">
@@ -115,7 +115,8 @@
           </el-col>
           <el-col :span="12">
                       
-            <el-form-item label="存储任务" prop="storeCronValue">              
+            <el-form-item label="存储任务" prop="storeCronValue">
+            
               每
               <el-input prop="storeCronValue"  size="small" style="width: 70px" type="number" :min="1" :max="formData.storeCronType == 3 ? 24 : 60" v-model="formData.storeCronValue" />
               <el-select  size="small" v-model="formData.storeCronType" placeholder="时间" clearable style="width: 80px">
@@ -135,7 +136,7 @@
               执行一次
             </el-form-item>
             <el-form-item label="告警任务" prop="alarmCronValue">
-              
+     
               每
               <el-input prop="alarmCronValue"  size="small" style="width: 70px" type="number" :min="1" :max="formData.alarmCronType == 3 ? 24 : 60" v-model="formData.alarmCronValue" />
               <el-select  size="small" v-model="formData.alarmCronType" placeholder="时间" clearable style="width: 80px">
@@ -154,7 +155,8 @@
               </el-select>
               执行一次
             </el-form-item>          
-            <el-form-item label="电能存储任务" prop="eleStoreCronValue">              
+            <el-form-item label="电能存储任务" prop="eleStoreCronValue">    
+   
               每
               <el-input prop="eleStoreCronValue"  size="small" style="width: 70px" type="number" :min="1" :max="formData.eleStoreCronType == 3 ? 24 : 60" v-model="formData.eleStoreCronValue" />
               <el-select  size="small" v-model="formData.eleStoreCronType" placeholder="时间" clearable style="width: 80px">
@@ -174,7 +176,7 @@
               执行一次
             </el-form-item>
             <el-form-item label="redis缓存任务" prop="redisCronValue">
-              
+
               每
               <el-input prop="redisCronValue"  size="small" style="width: 70px" type="number" :min="1" :max="formData.redisCronType == 3 ? 24 : 60" v-model="formData.redisCronValue" />
               <el-select  size="small" v-model="formData.redisCronType" placeholder="时间" clearable style="width: 80px">
@@ -206,7 +208,8 @@
                 <el-radio :label="0">关闭</el-radio>
               </el-radio-group>
             </el-form-item>
-            <el-form-item label="定时推送任务" prop="timingPushCronValue">              
+            <el-form-item label="定时推送任务" prop="timingPushCronValue">     
+      
               每
               <el-input prop="timingPushCronValue" :disabled="formData.timingPush == null || formData.timingPush == 0" size="small" style="width: 70px" type="number" :min="1" :max="formData.timingPushCronType == 3 ? 24 : 60" v-model="formData.timingPushCronValue" />
               <el-select :disabled="formData.timingPush == null ||  formData.timingPush == 0" size="small" v-model="formData.timingPushCronType" placeholder="时间" clearable style="width: 80px">
@@ -231,7 +234,8 @@
                 <el-radio :label="0">关闭</el-radio>
               </el-radio-group>
             </el-form-item>
-            <el-form-item label="告警推送任务" prop="alarmPushCronValue">            
+            <el-form-item label="告警推送任务" prop="alarmPushCronValue">   
+                 
               每
                 <el-input prop="alarmPushCronValue" :disabled="formData.alarmPush == null || formData.alarmPush == 0" size="small" style="width: 70px" type="number" :min="1" :max="formData.alarmPushCronType == 3 ? 24 : 60" v-model="formData.alarmPushCronValue" />
                 <el-select :disabled=" formData.alarmPush == null || formData.alarmPush == 0" size="small" v-model="formData.alarmPushCronType" placeholder="时间" clearable style="width: 80px">
@@ -399,7 +403,20 @@ const checkWeek = (rule: any, value: any, callback: any) => {
 
 const formRules = reactive({
   billMode: [{ required: true, message: '计费方式不能为空', trigger: 'blur' }],
-  loadLimit: [{ required: true, message: '负载限制不能为空', trigger: 'blur' }],
+  loadLimit: [{ required: true, message: '负载限制不能为空', trigger: 'blur' },
+  {validator: (rule: any, value: any, callback: any) => {
+                if(value){
+                  if(value > 100){
+                    return callback(new Error('不超过100'));
+                  } else if (value < 0){
+                    return callback(new Error('应大于0'));
+                  } else {
+                    return callback();
+                  }
+                }else{
+                  return callback();
+                }
+              }, trigger: 'blur'}],
   statusAlarm: [{ required: true, message: '状态告警开关不能为空', trigger: 'blur' }],
   alarmPush: [{ required: true, message: '告警推送开关不能为空', trigger: 'blur' }],
   timingPush: [{ required: true, message: '定时推送开关不能为空', trigger: 'blur' }],
@@ -496,7 +513,6 @@ const open = async (type: string, id?: number) => {
         formData.value.eqWeekMin = temp[1];
         formData.value.eqWeekSec = temp[0];
       }
-
     } finally {
       formLoading.value = false
     }
@@ -506,15 +522,18 @@ defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 
 function getTypeAndValue(cronExpression, obj, typeKey, valueKey) {
   if (cronExpression) {
-    const lastZeroIndex = cronExpression.lastIndexOf("0");
-    if (lastZeroIndex === 0) {
+    const lastZeroIndex = cronExpression.lastIndexOf("/");
+    if (lastZeroIndex === 1) {
       obj[typeKey] = 1;
-    } else if (lastZeroIndex === 2) {
+    } else if (lastZeroIndex === 3) {
       obj[typeKey] = 2;
-    } else if (lastZeroIndex === 4) {
+    } else if (lastZeroIndex === 5) {
       obj[typeKey] = 3;
     }
-    obj[valueKey] = cronExpression[lastZeroIndex + 2];
+    obj[valueKey] = cronExpression[lastZeroIndex + 1];
+    if(cronExpression[lastZeroIndex + 2] != ' '){
+      obj[valueKey] += cronExpression[lastZeroIndex + 2];
+    }
   }
 }
 
