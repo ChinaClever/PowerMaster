@@ -35,7 +35,6 @@
         <el-form-item label="IP地址" prop="ipAddr">
           <el-input
             v-model="queryParams.ipAddr"
-            placeholder="请输入IP地址"
             clearable
             @keyup.enter="handleQuery"
             class="!w-130px"
@@ -74,7 +73,6 @@
             start-placeholder="开始时间"
             end-placeholder="结束时间"
             :disabled-date="disabledDate"
-     
             class="!w-350px"
           />
                  <!-- @change="handleDayPick" -->
@@ -82,12 +80,11 @@
 
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
            <el-button type="primary" plain><Icon icon="ep:download" class="mr-5px" /> 导出</el-button>
          </el-form-item>
-
        </el-form>
-      <div style="">
+
+      <div v-loading="loading">
         <el-tabs v-model="activeName1">
           <el-tab-pane label="图表" name="myChart">
             <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 65vh;"></div>
@@ -143,7 +140,6 @@ import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { EnvDataApi } from '@/api/pdu/envData'
 import { formatDate } from '@/utils/formatTime'
-import { get } from 'http';
 
 
 /** pdu曲线 */
@@ -257,7 +253,7 @@ watch(filterText, (val) => {
  treeRef.value!.filter(val)
 })
 
-const loading = ref(true) // 加载中
+const loading = ref(true) //  列表的加载中
 
 // 时间段快捷选项
 const shortcuts = [
@@ -638,17 +634,17 @@ function setupLegendListener1(realtimeChart) {
       case '平均温度':
       case '最高温度':
       case '最低温度':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "平均温度": true, "最高温度": true, "最低温度": true, "平均湿度": false, "最大湿度": false, "最小湿度": false};
-      }
+        if (params.selected[legendName]){
+          optionsToUpdate = { "平均温度": true, "最高温度": true, "最低温度": true, "平均湿度": false, "最大湿度": false, "最小湿度": false};
+        }
         break;
 
       case '平均湿度':
       case '最大湿度':
       case '最小湿度':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "平均湿度": true, "最大湿度": true, "最小湿度": true, "平均温度": false, "最高温度": false, "最低温度": false};
-      }
+        if (params.selected[legendName]){
+          optionsToUpdate = { "平均湿度": true, "最大湿度": true, "最小湿度": true, "平均温度": false, "最高温度": false, "最低温度": false};
+        }
         break;
 
       default:
@@ -773,17 +769,12 @@ const handleQuery = () => {
   }
 }
 
-/** 重置按钮操作 */
-const resetQuery = () => {
- handleQuery()
-}
-
 /** 初始化 **/
 onMounted( async () => {
   // 获取路由参数中的 pdu_id
-  const queryPduId = useRoute().query.pduId as string  | undefined;
-  const querySensorId = useRoute().query.sensorId as string  | undefined;
-  const queryLocation = useRoute().query.location as string  | undefined;
+  const queryPduId = useRoute().query.pduId as string | undefined;
+  const querySensorId = useRoute().query.sensorId as string | undefined;
+  const queryLocation = useRoute().query.location as string | undefined;
   const queryIpAddr = queryLocation?.split("-")[0];
   const queryCascadeAddr = queryLocation?.split("-")[1];
   queryParams.pduId = queryPduId ? parseInt(queryPduId, 10) : undefined;

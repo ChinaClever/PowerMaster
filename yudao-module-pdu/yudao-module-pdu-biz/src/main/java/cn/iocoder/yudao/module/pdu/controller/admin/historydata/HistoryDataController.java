@@ -37,7 +37,7 @@ public class HistoryDataController {
     }
 
     @GetMapping("/sensorId-max-value")
-    @Operation(summary = "获得pdu数据参数类型的最大值")
+    @Operation(summary = "获得pdu环境数据传感器数量的最大值")
     public CommonResult<Map> getSensorIdMaxValue() throws IOException {
         Map resultList = historyDataService.getSensorIdMaxValue();
         return success(resultList);

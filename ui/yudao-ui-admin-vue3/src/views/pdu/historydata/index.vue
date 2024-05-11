@@ -96,15 +96,15 @@
           />
           </el-form-item>
 
-          <div style="float:right; padding-right:78px">
+          <!-- <div style="float:right; padding-right:78px"> -->
           <el-form-item >
             <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-            <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+            <!-- <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button> -->
             <el-button type="success" plain @click="handleExport" :loading="exportLoading">
               <Icon icon="ep:download" class="mr-5px" /> 导出
             </el-button>
           </el-form-item>
-          </div>
+          <!-- </div> -->
         </el-form>
 
       </ContentWrap>
@@ -425,7 +425,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '最大视在功率时间', align: 'center', prop: 'pow_apparent_max_time', formatter: formatTime, width: '230px', istrue:false},
           { label: '最小视在功率(kVA)', align: 'center', prop: 'pow_apparent_min_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最小视在功率时间', align: 'center', prop: 'pow_apparent_min_time', formatter: formatTime, width: '230px', istrue:false},
-          { label: '创建时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
+          { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '230px'},
         ] as any;
         queryParams.pageNo = 1;
@@ -522,7 +522,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '最大视在功率时间', align: 'center', prop: 'pow_apparent_max_time', formatter: formatTime, width: '230px', istrue:false},
           { label: '最小视在功率(kVA)', align: 'center', prop: 'pow_apparent_min_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最小视在功率时间', align: 'center', prop: 'pow_apparent_min_time', formatter: formatTime, width: '230px', istrue:false},
-          { label: '创建时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
+          { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '230px'},
         ] as any;
         queryParams.pageNo = 1;
@@ -619,7 +619,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '最大视在功率时间', align: 'center', prop: 'pow_apparent_max_time', formatter: formatTime, width: '230px', istrue:false},
           { label: '最小视在功率(kVA)', align: 'center', prop: 'pow_apparent_min_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最小视在功率时间', align: 'center', prop: 'pow_apparent_min_time', formatter: formatTime, width: '230px', istrue:false},
-          { label: '创建时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
+          { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '230px'},
         ] as any;
         queryParams.pageNo = 1;
@@ -702,7 +702,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '最大视在功率时间', align: 'center', prop: 'pow_apparent_max_time', formatter: formatTime, width: '230px', istrue:false},
           { label: '最小视在功率(kVA)', align: 'center', prop: 'pow_apparent_min_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最小视在功率时间', align: 'center', prop: 'pow_apparent_min_time', formatter: formatTime, width: '230px', istrue:false},
-          { label: '创建时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
+          { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '230px'},
         ] as any;
         queryParams.pageNo = 1;
@@ -717,7 +717,7 @@ const tableColumns = ref([
     { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower },
     { label: '总视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, formatter: formatPower },
     { label: '功率因素', align: 'center', prop: 'power_factor' , istrue:true, formatter: formatPowerFactor },
-    { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+    { label: '时间', align: 'center', prop: 'create_time', width: '230px',formatter: formatTime, istrue:true},
     { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '230px'},
 ]);
 
@@ -849,11 +849,11 @@ const handleQuery = () => {
 }
 
 /** 重置按钮操作 */
-const resetQuery = () => {
-  cascadeAddr.value = 0
-  queryFormRef.value.resetFields()
-  handleQuery()
-}
+// const resetQuery = () => {
+//   cascadeAddr.value = 0
+//   queryFormRef.value.resetFields()
+//   handleQuery()
+// }
 
 
 //详情操作 跳转电力分析

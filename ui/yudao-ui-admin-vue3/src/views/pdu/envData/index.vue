@@ -74,7 +74,7 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item label="筛选列" prop="createTime">
+          <el-form-item label="筛选列">
             <el-cascader
               v-model="defaultOptionsCol"
               :options="optionsCol"
@@ -99,15 +99,14 @@
           />
           </el-form-item>
 
-          <div style="float:right; padding-right:78px">
+          <!-- <div style="float:right; padding-right:78px"> -->
           <el-form-item >
             <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-            <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
             <el-button type="success" plain @click="handleExport" :loading="exportLoading">
               <Icon icon="ep:download" class="mr-5px" /> 导出
             </el-button>
-          </el-form-item>
-          </div>
+          </el-form-item> 
+          <!-- </div> -->
         </el-form>
 
       </ContentWrap>
@@ -160,7 +159,7 @@ import { EnvDataApi } from '@/api/pdu/envData'
 import { ElTree, ElIcon, ElMessage } from 'element-plus'
 const { push } = useRouter()
 /** pdu历史数据 列表 */
-defineOptions({ name: 'HistoryData' })
+defineOptions({ name: 'PDUEnvHistoryData' })
 
 //折叠功能
 const serverRoomArr =  [
@@ -350,7 +349,7 @@ watch(() => queryParams.granularity, (newValues) => {
         { label: '传感器', align: 'center', prop: 'sensor_id', istrue:true},
         { label: '温度(℃)', align: 'center', prop: 'tem_value', istrue:true, formatter: formatData},
         { label: '湿度(%RH)', align: 'center', prop: 'hum_value' , istrue:true, formatter: formatData},
-        { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '时间', align: 'center', prop: 'create_time', width: '230px', formatter: formatTime, istrue:true},
         { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '230px'},
       ]);
       queryParams.pageNo = 1;
@@ -392,7 +391,7 @@ watch(() => queryParams.granularity, (newValues) => {
         { label: '最大湿度时间', align: 'center', prop: 'hum_max_time' , width: '230px', istrue:false},
         { label: '最小湿度(%RH)', align: 'center', prop: 'hum_min_value', istrue:false, width: '180px', formatter: formatData },
         { label: '最小湿度时间', align: 'center', prop: 'hum_min_time' , width: '230px', istrue:false},
-        { label: '创建时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true},
+        { label: '记录时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true},
         { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '230px'},
       ] as any;
       queryParams.pageNo = 1;
@@ -406,9 +405,9 @@ const tableColumns = ref([
     { label: '传感器', align: 'center', prop: 'sensor_id', istrue:true},
     { label: '温度(℃)', align: 'center', prop: 'tem_value', istrue:true},
     { label: '湿度(%RH)', align: 'center', prop: 'hum_value' , istrue:true},
-    { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+    { label: '时间', align: 'center', prop: 'create_time', width: '230px', formatter: formatTime, istrue:true},
     { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '230px'},
-]);
+]) as any;
 
 /** 查询列表 */
 const getList = async () => {
@@ -468,13 +467,6 @@ const handleQuery = () => {
 
 }
 
-/** 重置按钮操作 */
-const resetQuery = () => {
-  cascadeAddr.value = 0
-  queryFormRef.value.resetFields()
-  handleQuery()
-}
-
 
 /** 详情操作*/
 const toDetails = (pduId: number, location: string, sensorId: number) => {
@@ -497,12 +489,9 @@ const handleExport = async () => {
 }
 
 /** 初始化 **/
-onMounted(() => {
-  getList()
-})
-// 在组件挂载后获取数据
 onMounted(async () => {
   await getSensorIdMaxValue();
+  getList()
 });
 
 </script>
