@@ -37,6 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.text.NumberFormat;
@@ -590,9 +591,10 @@ public class CabinetEleServiceImpl implements CabinetEleService {
 
             TopHits tophits = aggregations.get(top);
             SearchHits sophistsHits = tophits.getHits();
-            SearchHit hit = sophistsHits.getHits()[0];
-            realtimeDo = JsonUtils.parseObject(hit.getSourceAsString(), CabinetEleTotalRealtimeDo.class);
-
+            if (null != sophistsHits.getHits() && sophistsHits.getHits().length>0){
+                SearchHit hit = sophistsHits.getHits()[0];
+                realtimeDo = JsonUtils.parseObject(hit.getSourceAsString(), CabinetEleTotalRealtimeDo.class);
+            }
             return realtimeDo;
         } catch (Exception e) {
             log.error("获取数据异常：", e);
