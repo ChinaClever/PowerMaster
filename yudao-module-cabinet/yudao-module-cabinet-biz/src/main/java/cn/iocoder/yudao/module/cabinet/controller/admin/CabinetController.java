@@ -4,6 +4,7 @@ import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstant
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetDTO;
+import cn.iocoder.yudao.module.cabinet.dto.CabinetIndexDTO;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexVo;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetVo;
@@ -97,5 +98,30 @@ public class CabinetController {
             return error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "删除失败");
         }
         return success(cabinetId);
+    }
+
+
+    /**
+     * 机柜环境新增/编辑页面
+     *
+     * @param vo
+     */
+    @Operation(summary = "机柜环境新增/编辑")
+    @PostMapping("/cabinet/env/save")
+    public CommonResult saveEnvCabinet(@RequestBody CabinetVo vo) throws Exception {
+        CommonResult message = cabinetService.saveEnvCabinet(vo);
+        return message;
+    }
+
+    /**
+     * 机柜用能页面
+     *
+     * @param pageReqVO
+     */
+    @Operation(summary = "机柜用能列表分页")
+    @PostMapping("/cabinet/eq/page")
+    public CommonResult<PageResult<CabinetIndexDTO>> getEqPage(@RequestBody CabinetIndexVo pageReqVO) {
+        PageResult<CabinetIndexDTO> pageResult = cabinetService.getEqPage(pageReqVO);
+        return success(pageResult);
     }
 }
