@@ -36,6 +36,12 @@ public class CabinetIndexVo extends PageParam {
     private List<Integer> runStatus;
 
     /**
+     * 负载状态
+     */
+    @Schema(description = "负载状态 0：0 1：0-30 2：30-60 3：60-90 4:90以上 ", example = "[1,2,3]")
+    private List<Integer> loadStatus;
+
+    /**
      * 数据来源
      */
     @Schema(description = "数据来源 0：PDU 1：母线", example = "1")

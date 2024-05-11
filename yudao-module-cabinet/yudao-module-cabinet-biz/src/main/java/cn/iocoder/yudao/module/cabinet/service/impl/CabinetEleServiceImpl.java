@@ -37,6 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.text.NumberFormat;
@@ -566,10 +567,10 @@ public class CabinetEleServiceImpl implements CabinetEleService {
             // 通过QueryBuilders构建ES查询条件，
             SearchSourceBuilder builder = new SearchSourceBuilder();
             //获取需要处理的数据
-            builder.query(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + CabConstants.KEYWORD)
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + CabConstants.KEYWORD)
                             .gte(startTime)
                             .lt(endTime))
-                    .must(QueryBuilders.termQuery(CABINET_ID, id)));
+                    .must(QueryBuilders.termQuery(CABINET_ID, id))));
 
             // 嵌套聚合
             // 设置聚合查询
@@ -590,9 +591,10 @@ public class CabinetEleServiceImpl implements CabinetEleService {
 
             TopHits tophits = aggregations.get(top);
             SearchHits sophistsHits = tophits.getHits();
-            SearchHit hit = sophistsHits.getHits()[0];
-            realtimeDo = JsonUtils.parseObject(hit.getSourceAsString(), CabinetEleTotalRealtimeDo.class);
-
+            if (null != sophistsHits.getHits() && sophistsHits.getHits().length>0){
+                SearchHit hit = sophistsHits.getHits()[0];
+                realtimeDo = JsonUtils.parseObject(hit.getSourceAsString(), CabinetEleTotalRealtimeDo.class);
+            }
             return realtimeDo;
         } catch (Exception e) {
             log.error("获取数据异常：", e);
@@ -663,8 +665,8 @@ public class CabinetEleServiceImpl implements CabinetEleService {
         SearchSourceBuilder builder = new SearchSourceBuilder();
 
         //获取需要处理的数据
-        builder.query(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
-                .must(QueryBuilders.termQuery(CABINET_ID, id)));
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
+                .must(QueryBuilders.termQuery(CABINET_ID, id))));
         builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
         // 设置搜索条件
         searchRequest.source(builder);

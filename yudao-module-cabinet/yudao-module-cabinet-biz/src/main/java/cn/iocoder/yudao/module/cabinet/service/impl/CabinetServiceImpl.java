@@ -1,20 +1,31 @@
 package cn.iocoder.yudao.module.cabinet.service.impl;
 
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
+import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalDayDo;
+import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalMonthDo;
+import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCfg;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetEnvSensor;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
+import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.enums.DisableEnums;
 import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetDTO;
+import cn.iocoder.yudao.module.cabinet.dto.CabinetEnvSensorDTO;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetIndexDTO;
-import cn.iocoder.yudao.module.cabinet.mapper.CabinetCfgMapper;
-import cn.iocoder.yudao.module.cabinet.mapper.CabinetIndexMapper;
-import cn.iocoder.yudao.module.cabinet.mapper.CabinetPduMapper;
+import cn.iocoder.yudao.module.cabinet.enums.CabinetChannelEnum;
+import cn.iocoder.yudao.module.cabinet.enums.CabinetPduEnum;
+import cn.iocoder.yudao.module.cabinet.enums.CabinetPositionEnum;
+import cn.iocoder.yudao.module.cabinet.mapper.*;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
+import cn.iocoder.yudao.module.cabinet.util.TimeUtil;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexVo;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetVo;
 import com.alibaba.fastjson2.JSON;
@@ -24,17 +35,27 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.io.IOException;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
 import static cn.iocoder.yudao.module.cabinet.constant.CabConstants.*;
 
 /**
@@ -53,14 +74,22 @@ public class CabinetServiceImpl implements CabinetService {
     CabinetIndexMapper cabinetIndexMapper;
     @Autowired
     CabinetPduMapper cabinetPduMapper;
+
+    @Autowired
+    CabinetEnvSensorMapper envSensorMapper;
+    @Autowired
+    RoomIndexMapper roomIndexMapper;
+
     @Autowired
     RedisTemplate redisTemplate;
 //    @Autowired
 //    HttpUtil httpUtil;
 
     @Value("${cabinet-refresh-url}")
-    public String addr;
+    public String adder;
 
+    @Autowired
+    private RestHighLevelClient client;
 
     @Override
     public PageResult<JSONObject> getPageCabinet(CabinetIndexVo vo) {
@@ -123,6 +152,9 @@ public class CabinetServiceImpl implements CabinetService {
                 dto.setRunStatus(index.getRunStatus());
                 dto.setPduBox(index.getPduBox());
 
+                RoomIndex roomIndex = roomIndexMapper.selectById(index.getRoomId());
+                dto.setRoomName(roomIndex.getName());
+
                 CabinetCfg cfg = cabinetCfgMapper.selectOne(new LambdaQueryWrapper<CabinetCfg>()
                         .eq(CabinetCfg::getCabinetId, index.getId()));
                 if (Objects.nonNull(cfg)) {
@@ -141,6 +173,25 @@ public class CabinetServiceImpl implements CabinetService {
                     dto.setCasIdA(pdu.getCasIdA());
                     dto.setCasIdB(pdu.getCasIdB());
                 }
+
+                List<CabinetEnvSensor> envSensorList = envSensorMapper.selectList(new LambdaQueryWrapper<CabinetEnvSensor>()
+                        .eq(CabinetEnvSensor::getCabinetId,index.getId()));
+                if (!CollectionUtils.isEmpty(envSensorList)){
+
+                    List<CabinetEnvSensorDTO> sensorDtos = new ArrayList<>();
+                    envSensorList.forEach(env -> {
+                        CabinetEnvSensorDTO sensorDTO = new CabinetEnvSensorDTO();
+                        sensorDTO.setId(env.getId());
+                        sensorDTO.setCabinetId(env.getCabinetId());
+                        sensorDTO.setChannel(CabinetChannelEnum.getEnumByValue(env.getChannel()));
+                        sensorDTO.setPosition(CabinetPositionEnum.getEnumByValue(env.getPosition()));
+                        sensorDTO.setPathPdu(CabinetPduEnum.getEnumByValue(String.valueOf(env.getPathPdu())));
+                        sensorDTO.setSensorId(env.getSensorId());
+                        sensorDtos.add(sensorDTO);
+                    });
+                   dto.setSensorList(sensorDtos);
+
+                }
             }
             return dto;
         } catch (Exception e) {
@@ -149,8 +200,12 @@ public class CabinetServiceImpl implements CabinetService {
         return null;
     }
 
+
+
+    //保存数据失败全部回滚
     @Override
-    public CommonResult saveCabinet(CabinetVo vo) {
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult saveCabinet(CabinetVo vo) throws Exception{
         try {
 
             //判断pdu是否已经关联其他机柜
@@ -186,9 +241,8 @@ public class CabinetServiceImpl implements CabinetService {
                 //index 索引表
                 index = cabinetIndexMapper.selectById(vo.getId());
 
-                index = convertIndex(vo, index);
                 //修改
-                cabinetIndexMapper.updateById(index);
+                cabinetIndexMapper.updateById( convertIndex(vo, index));
             } else {
                 //新增
                 //判断机柜名称是否重复（已删除的或者已禁用的恢复）
@@ -198,9 +252,8 @@ public class CabinetServiceImpl implements CabinetService {
                 if (Objects.nonNull(index)) {
                     if (index.getIsDeleted() == DelEnums.DELETE.getStatus() || index.getIsDisabled() == DisableEnums.DISABLE.getStatus()) {
                         //index 索引表
-                        index = convertIndex(vo, index);
                         //修改
-                        cabinetIndexMapper.updateById(index);
+                        cabinetIndexMapper.updateById(convertIndex(vo, index));
                     } else {
                         return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "机柜名称重复");
                     }
@@ -208,62 +261,59 @@ public class CabinetServiceImpl implements CabinetService {
                 } else {
                     index = new CabinetIndex();
                     //index 索引表
-                    index = convertIndex(vo, index);
                     //新增
-                    cabinetIndexMapper.insert(index);
-
+                    CabinetIndex cabinetIndex = convertIndex(vo, index);
+//                    cabinetIndexMapper.addIndex(cabinetIndex);
+                    cabinetIndexMapper.insert(cabinetIndex);
+                    vo.setId(cabinetIndex.getId());
                 }
             }
-            vo.setId(index.getId());
-            log.info("index : " + index);
+
+            log.info("vo : " + vo);
 
             //配置表
             CabinetCfg cfg = cabinetCfgMapper.selectOne(new LambdaQueryWrapper<CabinetCfg>()
-                    .eq(CabinetCfg::getCabinetId, index.getId()));
+                    .eq(CabinetCfg::getCabinetId, vo.getId()));
             if (Objects.nonNull(cfg)) {
-                cfg = convertCfg(vo, cfg);
                 //修改
-                cabinetCfgMapper.updateById(cfg);
+                cabinetCfgMapper.updateById(convertCfg(vo, cfg));
             } else {
                 cfg = new CabinetCfg();
 
-                cfg = convertCfg(vo, cfg);
                 //新增
-                cabinetCfgMapper.insert(cfg);
+                cabinetCfgMapper.insert(convertCfg(vo, cfg));
             }
 
             //pdu关联表
             CabinetPdu pdu = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>()
-                    .eq(CabinetPdu::getCabinetId, index.getId()));
+                    .eq(CabinetPdu::getCabinetId, vo.getId()));
 
             if (Objects.nonNull(pdu)) {
-                pdu = convertPdu(vo, pdu);
                 //修改
-                cabinetPduMapper.updateById(pdu);
+                cabinetPduMapper.updateById(convertPdu(vo, pdu));
             } else {
                 pdu = new CabinetPdu();
+                if (StringUtils.isNotEmpty(vo.getPduIpA()) || StringUtils.isNotEmpty(vo.getPduIpB())){
 
-                pdu = convertPdu(vo, pdu);
-                //新增
-                cabinetPduMapper.insert(pdu);
+                    //新增
+                    cabinetPduMapper.insert(convertPdu(vo, pdu));
+                }
             }
+            //保存环境数据
+            saveEnvSensor(vo.getId(),vo);
 
-
-            return CommonResult.success(index.getId());
-        } catch (Exception e) {
-            log.error("保存失败：", e);
-
+            return CommonResult.success(vo.getId());
         } finally {
             //刷新机柜计算服务缓存
-            log.info("刷新计算服务缓存 --- " + addr);
-            HttpUtil.get(addr);
+            log.info("刷新计算服务缓存 --- " + adder);
+            HttpUtil.get(adder);
         }
-        return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "保存失败");
     }
 
 
     @Override
-    public int delCabinet(int id) {
+    @Transactional(rollbackFor = Exception.class)
+    public int delCabinet(int id) throws Exception{
         try {
             CabinetIndex index = cabinetIndexMapper.selectById(id);
             if (Objects.isNull(index)) {
@@ -272,10 +322,15 @@ public class CabinetServiceImpl implements CabinetService {
             if (index.getIsDeleted() == DelEnums.DELETE.getStatus()) {
                 //已经删除则物理删除
                 cabinetIndexMapper.deleteById(id);
+                //删除pdu关联关系
                 cabinetPduMapper.delete(new LambdaQueryWrapper<CabinetPdu>()
                         .eq(CabinetPdu::getCabinetId, id));
+                //删除配置信息
                 cabinetCfgMapper.delete(new LambdaQueryWrapper<CabinetCfg>()
                         .eq(CabinetCfg::getCabinetId, id));
+                //删除环境信息
+                envSensorMapper.delete(new LambdaQueryWrapper<CabinetEnvSensor>()
+                        .eq(CabinetEnvSensor::getCabinetId,id));
             } else {
                 //逻辑删除
                 cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
@@ -290,14 +345,97 @@ public class CabinetServiceImpl implements CabinetService {
             log.info("key: " + key + " flag : " + flag);
 
             return id;
-        } catch (Exception e) {
-            log.error("删除失败：", e);
         } finally {
-            log.info("刷新计算服务缓存 --- " + addr);
+            log.info("刷新计算服务缓存 --- " + adder);
             //刷新机柜计算服务缓存
-            HttpUtil.get(addr);
+            HttpUtil.get(adder);
         }
-        return -1;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public CommonResult saveEnvCabinet(CabinetVo vo) throws Exception {
+        saveEnvSensor(vo.getId(),vo);
+        return CommonResult.success(vo.getId());
+    }
+
+    @Override
+    public PageResult<CabinetIndexDTO> getEqPage(CabinetIndexVo vo) {
+        try {
+            Page<CabinetIndexDTO> page = new Page<>(vo.getPageNo(), vo.getPageSize());
+            //获取机柜列表
+            Page<CabinetIndexDTO> indexDTOPage = cabinetCfgMapper.selectCabList(page, vo);
+            List<CabinetIndexDTO> result = new ArrayList<>();
+            //获取机房数据
+            if (!CollectionUtils.isEmpty(indexDTOPage.getRecords())){
+                List<Integer> roomIds = indexDTOPage.getRecords().stream().map(CabinetIndexDTO::getRoomId).distinct().collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(roomIds)){
+                    List<RoomIndex> roomIndexList = roomIndexMapper.selectBatchIds(roomIds);
+                    if (!CollectionUtils.isEmpty(roomIndexList)){
+                        Map<Integer,String>  map = roomIndexList.stream().collect(Collectors.toMap(RoomIndex::getId,RoomIndex::getName));
+
+                        if (Objects.nonNull(map)){
+                            indexDTOPage.getRecords().forEach(dto -> {
+                               dto.setRoomName(map.get(dto.getRoomId()));
+                               result.add(dto);
+                            });
+                        }
+                    }
+                }
+            }
+
+            List<Integer> ids = result.stream().map(CabinetIndexDTO::getId).distinct().collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(ids)){
+                return new PageResult<>(result, indexDTOPage.getTotal());
+            }
+            //昨日
+            String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+            String endTime =DateUtil.formatDateTime(DateTime.now());
+            List<String>  yesterdayList = getData(startTime,endTime, ids,CABINET_EQ_TOTAL_DAY);
+            Map<Integer,Double> yesterdayMap = new HashMap<>();
+            if (!CollectionUtils.isEmpty(yesterdayList)){
+                yesterdayList.forEach(str -> {
+                    CabinetEqTotalDayDo dayDo = JsonUtils.parseObject(str, CabinetEqTotalDayDo.class);
+                    yesterdayMap.put(dayDo.getCabinetId(),dayDo.getEqValue());
+                });
+            }
+
+            //上周
+            startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
+            endTime =DateUtil.formatDateTime(DateTime.now());
+            List<String>  weekList = getData(startTime,endTime, ids,CABINET_EQ_TOTAL_WEEK);
+            Map<Integer,Double> weekMap = new HashMap<>();
+            if (!CollectionUtils.isEmpty(weekList)){
+                weekList.forEach(str -> {
+                    CabinetEqTotalWeekDo weekDo = JsonUtils.parseObject(str, CabinetEqTotalWeekDo.class);
+                    weekMap.put(weekDo.getCabinetId(),weekDo.getEqValue());
+                });
+            }
+
+            //上月
+            startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
+            endTime =DateUtil.formatDateTime(DateTime.now());
+            List<String>  monthList = getData(startTime,endTime, ids,CABINET_EQ_TOTAL_MONTH);
+            Map<Integer,Double> monthMap = new HashMap<>();
+            if (!CollectionUtils.isEmpty(monthList)){
+                monthList.forEach(str -> {
+                    CabinetEqTotalMonthDo monthDo = JsonUtils.parseObject(str, CabinetEqTotalMonthDo.class);
+                    monthMap.put(monthDo.getCabinetId(),monthDo.getEqValue());
+                });
+            }
+
+            result.forEach(dto -> {
+                dto.setYesterdayEq(yesterdayMap.get(dto.getId()));
+                dto.setLastWeekEq(weekMap.get(dto.getId()));
+                dto.setLastMonthEq(monthMap.get(dto.getId()));
+            });
+
+            return new PageResult<>(result, indexDTOPage.getTotal());
+        } catch (Exception e) {
+            log.error("获取数据失败：", e);
+        }
+        return new PageResult<>(new ArrayList<>(), 0L);
+
     }
 
     /**
@@ -308,16 +446,18 @@ public class CabinetServiceImpl implements CabinetService {
      * @return
      */
     private CabinetIndex convertIndex(CabinetVo vo, CabinetIndex index) {
-        index.setAisleId(vo.getAisleId());
-        index.setName(vo.getCabinetName());
-        index.setPduBox(vo.getPduBox());
+        CabinetIndex cabinetIndex = new CabinetIndex();
+        cabinetIndex.setAisleId(vo.getAisleId());
+        cabinetIndex.setName(vo.getCabinetName());
+        cabinetIndex.setPduBox(vo.getPduBox());
         //未删除
-        index.setIsDeleted(DelEnums.NO_DEL.getStatus());
+        cabinetIndex.setIsDeleted(DelEnums.NO_DEL.getStatus());
         //未禁用
-        index.setIsDisabled(DisableEnums.ENABLE.getStatus());
-        index.setPowCapacity(vo.getPowCapacity());
-        index.setRoomId(vo.getRoomId());
-        return index;
+        cabinetIndex.setIsDisabled(DisableEnums.ENABLE.getStatus());
+        cabinetIndex.setPowCapacity(vo.getPowCapacity());
+        cabinetIndex.setRoomId(vo.getRoomId());
+        cabinetIndex.setId(index.getId());
+        return cabinetIndex;
     }
 
     /**
@@ -328,12 +468,14 @@ public class CabinetServiceImpl implements CabinetService {
      * @return
      */
     private CabinetPdu convertPdu(CabinetVo vo, CabinetPdu pdu) {
-        pdu.setCabinetId(vo.getId());
-        pdu.setPduIpA(vo.getPduIpA());
-        pdu.setPduIpB(vo.getPduIpB());
-        pdu.setCasIdB(vo.getCasIdB());
-        pdu.setCasIdA(vo.getCasIdA());
-        return pdu;
+        CabinetPdu cabinetPdu = new CabinetPdu();
+        cabinetPdu.setCabinetId(vo.getId());
+        cabinetPdu.setPduIpA(vo.getPduIpA());
+        cabinetPdu.setPduIpB(vo.getPduIpB());
+        cabinetPdu.setCasIdB(vo.getCasIdB());
+        cabinetPdu.setCasIdA(vo.getCasIdA());
+        cabinetPdu.setId(pdu.getId());
+        return cabinetPdu;
     }
 
 
@@ -345,14 +487,16 @@ public class CabinetServiceImpl implements CabinetService {
      * @return
      */
     private CabinetCfg convertCfg(CabinetVo vo, CabinetCfg cfg) {
-        cfg.setCabinetId(vo.getId());
-        cfg.setCabinetHeight(vo.getCabinetHeight());
-        cfg.setCabinetName(vo.getCabinetName());
-        cfg.setCompany(vo.getCompany());
-        cfg.setType(vo.getType());
-        cfg.setXCoordinate(vo.getXCoordinate());
-        cfg.setYCoordinate(vo.getYCoordinate());
-        return cfg;
+        CabinetCfg cabinetCfg = new CabinetCfg();
+        cabinetCfg.setCabinetId(vo.getId());
+        cabinetCfg.setCabinetHeight(vo.getCabinetHeight());
+        cabinetCfg.setCabinetName(vo.getCabinetName());
+        cabinetCfg.setCompany(vo.getCompany());
+        cabinetCfg.setType(vo.getType());
+        cabinetCfg.setXCoordinate(vo.getXCoordinate());
+        cabinetCfg.setYCoordinate(vo.getYCoordinate());
+        cabinetCfg.setId(cfg.getId());
+        return cabinetCfg;
     }
 
     /**
@@ -381,4 +525,71 @@ public class CabinetServiceImpl implements CabinetService {
             return false;
         }
     }
+
+    /**
+     * 保存机柜环境数据
+     */
+    private void saveEnvSensor(int cabinetId,CabinetVo vo) throws Exception{
+        //环境数据为空，清空数据
+        if (CollectionUtils.isEmpty(vo.getSensorList())){
+            envSensorMapper.delete(new LambdaQueryWrapper<CabinetEnvSensor>()
+                    .eq(CabinetEnvSensor::getCabinetId,cabinetId));
+        }
+        List<CabinetEnvSensor> envSensors = envSensorMapper.selectList(new LambdaQueryWrapper<CabinetEnvSensor>()
+                .eq(CabinetEnvSensor::getCabinetId,cabinetId));
+        if (!CollectionUtils.isEmpty(envSensors)){
+            //先删除再新增
+            List<Integer> ids = envSensors.stream().map(CabinetEnvSensor::getId).collect(Collectors.toList());
+            envSensorMapper.deleteBatchIds(ids);
+            //新增
+            vo.getSensorList().forEach(cabinetEnvSensor -> {
+                cabinetEnvSensor.setCabinetId(cabinetId);
+                envSensorMapper.insert(cabinetEnvSensor);
+            });
+
+        }else {
+            //新增
+            vo.getSensorList().forEach(cabinetEnvSensor -> {
+                cabinetEnvSensor.setCabinetId(cabinetId);
+                envSensorMapper.insert(cabinetEnvSensor);
+            });
+        }
+    }
+
+
+    /**
+     * 获取数据
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param ids 机柜id列表
+     * @param index 索引表
+     */
+    private List<String> getData(String startTime, String endTime, List<Integer> ids, String index) throws IOException {
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件，
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+
+        //获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
+                .must(QueryBuilders.termsQuery(CABINET_ID, ids))));
+        builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
+        // 设置搜索条件
+        searchRequest.source(builder);
+        builder.size(1000);
+
+        List<String> list = new ArrayList<>();
+        // 执行ES请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                String str = hit.getSourceAsString();
+                list.add(str);
+            }
+        }
+        return list;
+
+    }
+
 }

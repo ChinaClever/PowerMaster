@@ -11,7 +11,7 @@ import com.alibaba.fastjson2.JSONObject;
 /**
  * @author luowei
  * @version 1.0
- * @description: TODO
+ * @description: 机柜页面
  * @date 2024/4/28 14:24
  */
 public interface CabinetService {
@@ -19,43 +19,52 @@ public interface CabinetService {
     /**
      * 机柜列表页面
      *
-     * @param vo
-     * @return
+     * @param vo 搜索参数
      */
     PageResult<JSONObject> getPageCabinet(CabinetIndexVo vo);
 
     /**
      * 机柜详情页面
      *
-     * @param id
-     * @return
+     * @param id 机柜id
      */
     JSONObject getCabinetDetail(int id);
 
     /**
      * 获取机柜信息
      *
-     * @param id
-     * @return
+     * @param id 机柜id
      */
     CabinetDTO getCabinetDetailV2(int id);
 
     /**
      * 机柜新增/编辑页面
      *
-     * @param vo
-     * @return
+     * @param vo 新增/编辑参数
      */
-    CommonResult saveCabinet(CabinetVo vo);
+    CommonResult saveCabinet(CabinetVo vo) throws Exception;
 
 
     /**
      * 机柜删除
      *
-     * @param id
-     * @return
+     * @param id 机柜id
      */
-    int delCabinet(int id);
+    int delCabinet(int id) throws Exception;
+
+    /**
+     * 机柜环境新增/编辑页面
+     *
+     * @param vo 环境新增/编辑参数
+     */
+    CommonResult saveEnvCabinet(CabinetVo vo) throws Exception;
 
 
+
+    /**
+     * 机柜用电列表页面
+     *
+     * @param vo 搜索参数
+     */
+    PageResult<CabinetIndexDTO> getEqPage(CabinetIndexVo vo);
 }

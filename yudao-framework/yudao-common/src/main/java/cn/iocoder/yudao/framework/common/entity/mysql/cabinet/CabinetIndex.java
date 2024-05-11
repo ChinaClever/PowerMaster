@@ -45,6 +45,10 @@ public class CabinetIndex implements Serializable {
      * 运行状态
      */
     private int runStatus;
+    /**
+     * 负载状态
+     */
+    private int loadStatus;
 
     /**
      * 数据来源

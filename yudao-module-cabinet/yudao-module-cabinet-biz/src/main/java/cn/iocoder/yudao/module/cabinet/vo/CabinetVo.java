@@ -1,7 +1,10 @@
 package cn.iocoder.yudao.module.cabinet.vo;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetEnvSensor;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * @author luowei
@@ -114,5 +117,8 @@ public class CabinetVo {
     @Schema(description = "B路级联编号", example = "0")
     private int casIdB;
 
+
+    @Schema(description = "温度传感器绑定", example = "[]")
+    private List<CabinetEnvSensor>  sensorList;
 
 }
