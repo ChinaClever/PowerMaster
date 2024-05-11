@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.cabinet.dal.mysql.statisconfig;
+package cn.iocoder.yudao.module.cabinet.dal.mysql.cabinetstatisconfig;
 
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;

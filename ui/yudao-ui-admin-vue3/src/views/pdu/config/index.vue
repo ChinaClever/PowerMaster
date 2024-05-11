@@ -364,7 +364,7 @@ const submitRocketMqForm = async () => {
   }
 }
 
-const dcList = ref<DcConfigVO[]>([]) // 列表的数据
+const dcList = ref<DcConfigVO[]>([]) as any // 列表的数据
 const dcListTotal = ref(0) // 列表的总页数
 const dcQueryParams = reactive({
   pageNo: 1,
@@ -388,7 +388,7 @@ const billQueryFormRef = ref() // 搜索的表单
 const billExportLoading = ref(false) // 导出的加载中
 
 
-const staticList = ref<StatisConfigVO[]>([]) // 列表的数据
+const staticList = ref<StatisConfigVO[]>([]) as any// 列表的数据
 const staticTotal = ref(0) // 列表的总页数
 const staticQueryParams = reactive({
   pageNo: 1,
@@ -535,7 +535,7 @@ const activeName = ref('first')
 
 const handleClick = (tab: TabsPaneContext, event: Event) => {
   if(tab.props.label === "数据采集"){
-    if(dcList.value[0].id){
+    if(dcList.value && dcList.value.length > 0 && dcList.value[0].id){
       openDCForm('update', dcList.value[0].id);
     }else{
       openDCForm('create');
@@ -549,14 +549,14 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
     getBillList();
   }
   if(tab.props.label === "计算服务"){
-    if(staticList.value[0].id){
+    if(staticList.value && staticList.value?.length > 0 && staticList.value[0].id){
       openStaticForm('update', staticList.value[0].id);
     } else {'create'
       openStaticForm('create');
     }
     
   }
-  console.log(tab, event)
+
 }
 </script>
 

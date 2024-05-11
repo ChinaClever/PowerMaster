@@ -170,8 +170,8 @@ public class CabinetPowServiceImpl implements CabinetPowService {
             powDTO.setYesterdayList(yesterdayList);
             powDTO.setTodayList(todayList);
             //获取峰值
-            CabinetActivePowTrendDTO yesterdayMax = yesterdayList.stream().max(Comparator.comparing(CabinetActivePowTrendDTO::getActivePow)).get();
-            CabinetActivePowTrendDTO todayMax = todayList.stream().max(Comparator.comparing(CabinetActivePowTrendDTO::getActivePow)).get();
+            CabinetActivePowTrendDTO yesterdayMax = yesterdayList.stream().max(Comparator.comparing(CabinetActivePowTrendDTO::getActivePow)).orElse(new CabinetActivePowTrendDTO());
+            CabinetActivePowTrendDTO todayMax = todayList.stream().max(Comparator.comparing(CabinetActivePowTrendDTO::getActivePow)).orElse(new CabinetActivePowTrendDTO());
             powDTO.setTodayMax(todayMax.getActivePow());
             powDTO.setTodayMaxTime(todayMax.getDateTime());
             powDTO.setYesterdayMaxTime(yesterdayMax.getDateTime());

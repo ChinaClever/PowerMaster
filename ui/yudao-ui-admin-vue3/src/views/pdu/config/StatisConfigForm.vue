@@ -9,8 +9,11 @@
     >
       <el-row :gutter="24">
         <el-col :span="12" >
-          <el-form-item label="计费方式" prop="billMode">
-            <el-input v-model="formData.billMode" placeholder="请输入计费方式 1固定计费 2分段计费" />
+          <el-form-item label="计费方式" prop="billMode">      
+            <el-radio-group v-model="formData.billMode">
+              <el-radio :label="1">固定计费</el-radio>
+              <el-radio :label="2">分段计费</el-radio>
+            </el-radio-group>
           </el-form-item>
           <el-form-item label="按天统计历史数据任务" prop="dayCron">
 
@@ -106,8 +109,6 @@
         <el-button @click="submitForm" type="primary" :disabled="formLoading">保 存</el-button>
       </el-row>
     </el-form>
-    
-
 </template>
 <script setup lang="ts">
 import { StatisConfigApi, StatisConfigVO } from '@/api/pdu/statisconfig'
@@ -205,11 +206,11 @@ const formData = ref({
   eqMonthHour : null,
   eqMonthMin : null,
   eqMonthSec : null,
-  eqWeekDay : null,
+  eqWeekDay : null as any,
   eqWeekHour : null,
   eqWeekMin : null,
   eqWeekSec : null,
-})
+}) as any
 const formRules = reactive({
   billMode: [{ required: true, message: '计费方式 1固定计费 2分段计费不能为空', trigger: 'blur' }],
   dayHour:[{validator: checkHour, trigger: 'blur'}],
@@ -319,7 +320,7 @@ const submitForm = async () => {
       formData.value.eqMonthCron = `${formData.value.eqMonthSec} ${formData.value.eqMonthMin} ${formData.value.eqMonthHour} ${formData.value.eqMonthDay} * ?`;
     }
     if(formData.value.eqWeekDay != null && formData.value.eqWeekHour != null && formData.value.eqWeekMin != null && formData.value.eqWeekSec != null){
-      var temp = null;
+      var temp = null as any;
       if(formData.value.eqWeekDay == 1){ temp = 'MON' } 
       else if (formData.value.eqWeekDay == 2){temp = 'TUE'}
       else if (formData.value.eqWeekDay == 3){temp = 'WED'}

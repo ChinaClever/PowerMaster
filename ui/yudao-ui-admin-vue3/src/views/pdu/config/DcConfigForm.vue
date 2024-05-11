@@ -22,8 +22,7 @@
           </el-form-item>
           <el-form-item label="rediskey过期时间（秒）" prop="redisExpire">
             <el-input type="number" v-model="formData.redisExpire" placeholder="请输入rediskey过期时间（分钟）" />
-          </el-form-item>
-          
+          </el-form-item>          
           <el-form-item label="离线告警开关" prop="offLineAlarm">
             <el-radio-group v-model="formData.offLineAlarm">
               <el-radio :label="1">开启</el-radio>
@@ -121,27 +120,22 @@
         </el-col>
         <el-col :span="8">
           <el-form-item label="配置推送的mq" prop="pushMqs">
-            <el-checkbox-group :disabled="formData.timingPush === 0 && formData.alarmPush === 0 && formData.changePush === 0" v-model="formData.pushMqs">
+            <el-checkbox-group :disabled="formData.timingPush == null || formData.alarmPush == null ||formData.changePush == null ||(formData.timingPush === 0 && formData.alarmPush === 0 && formData.changePush === 0)" v-model="formData.pushMqs">
               <el-checkbox label="1" value="1">kafka</el-checkbox>
               <el-checkbox label="2" value="2">RocketMQ</el-checkbox>
               <el-checkbox label="3" value="3">RabbitMQ</el-checkbox>
             </el-checkbox-group>
           </el-form-item>
           <el-form-item label="定时推送开关" prop="timingPush">
-            <el-radio-group v-model="formData.timingPush" @change="{
-                if(formData.timingPush == 0){
-                  formData.timingPushCronType = null;
-                  formData.timingPushCronValue = null;
-                }}
-              ">
+            <el-radio-group v-model="formData.timingPush" >
               <el-radio :label="1">开启</el-radio>
               <el-radio :label="0">关闭</el-radio>
             </el-radio-group>
           </el-form-item>
           <el-form-item label="定时推送任务配置" prop="timingPushCronValue">
               每
-              <el-input prop="timingPushCronValue" :disabled="formData.timingPush == 0" size="small" style="width: 70px" type="number" :min="1" :max="formData.timingPushCronType == 3 ? 24 : 60" v-model="formData.timingPushCronValue" />
-              <el-select :disabled="formData.timingPush == 0" size="small" v-model="formData.timingPushCronType" placeholder="时间" clearable style="width: 80px">
+              <el-input prop="timingPushCronValue" :disabled="formData.timingPush == null ||formData.timingPush == 0" size="small" style="width: 70px" type="number" :min="1" :max="formData.timingPushCronType == 3 ? 24 : 60" v-model="formData.timingPushCronValue" />
+              <el-select :disabled="formData.timingPush == null ||formData.timingPush == 0" size="small" v-model="formData.timingPushCronType" placeholder="时间" clearable style="width: 80px">
                 <el-option
                     label="秒钟"
                     :value="1"
@@ -158,20 +152,15 @@
               执行一次
           </el-form-item>
           <el-form-item label="告警推送开关" prop="alarmPush">
-            <el-radio-group v-model="formData.alarmPush" @change="{
-                if(formData.timingPush == 0){
-                  formData.alarmPushCronType = null;
-                  formData.alarmPushCronValue = null;
-                }}
-              ">
+            <el-radio-group v-model="formData.alarmPush" >
               <el-radio :label="1">开启</el-radio>
               <el-radio :label="0">关闭</el-radio>
             </el-radio-group>
           </el-form-item>
           <el-form-item label="告警推送任务配置" prop="alarmPushCronValue">
               每
-              <el-input prop="alarmPushCronValue" :disabled="formData.alarmPush == 0" size="small" style="width: 70px" type="number" :min="1" :max="formData.alarmPushCronType == 3 ? 24 : 60" v-model="formData.alarmPushCronValue" />
-              <el-select :disabled="formData.alarmPush == 0" size="small" v-model="formData.alarmPushCronType" placeholder="时间" clearable style="width: 80px">
+              <el-input prop="alarmPushCronValue" :disabled="formData.alarmPush == null ||formData.alarmPush == 0" size="small" style="width: 70px" type="number" :min="1" :max="formData.alarmPushCronType == 3 ? 24 : 60" v-model="formData.alarmPushCronValue" />
+              <el-select :disabled="formData.alarmPush == null ||formData.alarmPush == 0" size="small" v-model="formData.alarmPushCronType" placeholder="时间" clearable style="width: 80px">
                 <el-option
                     label="秒钟"
                     :value="1"
@@ -188,20 +177,15 @@
               执行一次
           </el-form-item>
           <el-form-item label="变化推送开关" prop="changePush">
-            <el-radio-group v-model="formData.changePush" @change="{
-                if(formData.timingPush == 0){
-                  formData.changePushCronType = null;
-                  formData.changePushCronValue = null;
-                }}
-              ">
+            <el-radio-group v-model="formData.changePush" >
               <el-radio :label="1">开启</el-radio>
               <el-radio :label="0">关闭</el-radio>
             </el-radio-group>
           </el-form-item>
           <el-form-item label="变化推送任务配置" prop="changePushCronValue">
             每
-              <el-input prop="changePushCronValue" :disabled="formData.changePush == 0" size="small" style="width: 70px" type="number" :min="1" :max="formData.changePushCronType == 3 ? 24 : 60" v-model="formData.changePushCronValue" />
-              <el-select :disabled="formData.changePush == 0" size="small" v-model="formData.changePushCronType" placeholder="时间" clearable style="width: 80px">
+              <el-input prop="changePushCronValue" :disabled="formData.changePush == null || formData.changePush == 0" size="small" style="width: 70px" type="number" :min="1" :max="formData.changePushCronType == 3 ? 24 : 60" v-model="formData.changePushCronValue" />
+              <el-select :disabled="formData.changePush == null || formData.changePush == 0" size="small" v-model="formData.changePushCronType" placeholder="时间" clearable style="width: 80px">
                 <el-option
                     label="秒钟"
                     :value="1"
@@ -294,7 +278,6 @@ const checkCronValue = (rule: any, value: any, callback: any) => {
   }
 
 }
-
 const formRules = reactive({
   receivePort: [{ required: true, message: '数据接收端口不能为空', trigger: 'blur' }],
   powLimitRate: [{ required: true, message: '总视在功率变化比不能为空', trigger: 'blur' }],

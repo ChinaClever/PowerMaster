@@ -20,6 +20,7 @@
         ci.pow_capacity as powCapacity,
         ci.pdu_box as pduBox,
         ci.run_status as runStatus,
+        ci.load_status as loadStatus,
         ci.update_time as updateTime,
         ci.create_time as createTime,
         cf.cabinet_height as cabinetHeight,
@@ -35,6 +36,12 @@
         <if test=" indexVo.runStatus != null and indexVo.runStatus.size > 0">
             and ci.run_status in
             <foreach collection="indexVo.runStatus" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test=" indexVo.loadStatus != null and indexVo.loadStatus.size > 0">
+            and ci.load_status in
+            <foreach collection="indexVo.loadStatus" item="item" index="index" open="(" close=")" separator=",">
                 #{item}
             </foreach>
         </if>
