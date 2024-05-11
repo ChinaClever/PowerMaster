@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.cabinet.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -10,50 +11,66 @@ import java.time.LocalDateTime;
  * @description: 机柜索引表扩展字段
  * @date 2024/4/28 15:27
  */
+@Schema(description = "管理后台 - 机柜用能 Response VO")
 @Data
 public class CabinetIndexDTO {
 
+    @Schema(description = "机柜id", example = "1")
     private int id;
 
 
     /**
      * 机房编号
      */
+    @Schema(description = "机房编号", example = "1")
     private Integer roomId;
 
     /**
      * 机柜名称
      */
+    @Schema(description = "机柜名称", example = "xxx")
     private String name;
+
+    /**
+     * 机房名称
+     */
+    @Schema(description = "机房名称", example = "xxx")
+    private String roomName;
     /**
      * 通道编号
      */
+    @Schema(description = "通道编号", example = "1")
     private Integer aisleId;
 
     /**
      * 电力容量
      */
+    @Schema(description = "电力容量", example = "1")
     private float powCapacity;
 
     /**
      * 运行状态
      */
+    @Schema(description = "运行状态", example = "1")
     private Integer runStatus;
 
     /**
      * 负载状态
      */
+    @Schema(description = "负载状态", example = "1")
     private Integer loadStatus;
 
 
     /**
      * 数据来源
      */
+    @Schema(description = "数据来源", example = "1")
     private Integer pduBox;
 
     /**
      * 机柜高度
      */
+    @Schema(description = "机柜高度", example = "1")
     private int cabinetHeight;
 
 
@@ -70,57 +87,36 @@ public class CabinetIndexDTO {
     /**
      * 所属于公司
      */
+    @Schema(description = "所属于公司", example = "xx")
     private String company;
-    /**
-     * 总视在功率
-     */
-    private float apparentTotal;
 
     /**
-     * 总有功功率
+     * 昨日电量
      */
-    private float activeTotal;
-    /**
-     * a路视在功率
-     */
-    private float apparentA;
-    /**
-     * b路视在功率
-     */
-    private float apparentB;
+    @Schema(description = "昨日电量", example = "1")
+    private Double yesterdayEq;
 
     /**
-     * a路有功功率
+     * 上周电量
      */
-    private float activeA;
+    @Schema(description = "上周电量", example = "1")
+    private Double lastWeekEq;
 
     /**
-     * b路有功功率
+     * 上月电量
      */
-    private float activeB;
-
-    /**
-     * 总电能
-     */
-    private double eleTotal;
-
-    /**
-     * a路电能
-     */
-    private double eleA;
-
-    /**
-     * b路电能
-     */
-    private double eleB;
+    @Schema(description = "上月电量", example = "1")
+    private Double lastMonthEq;
 
 
     /**
      * 更新时间
      */
+    @Schema(description = "更新时间")
     private LocalDateTime updateTime;
     /**
      * 创建时间
      */
+    @Schema(description = "创建时间")
     private LocalDateTime createTime;
 }
