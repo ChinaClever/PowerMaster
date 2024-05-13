@@ -7,18 +7,18 @@ import lombok.Getter;
 /**
  * @author luowei
  * @version 1.0
- * @description: 机柜位置枚举
- * @date 2024/5/10 13:56
+ * @description: 传感器类型
+ * @date 2024/5/13 13:01
  */
 @Getter
 @AllArgsConstructor
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-public enum CabinetPositionEnum {
+public enum SensorTypeEnum {
 
-    EMPTY(0, "无"),
-    TOP(1, "上"),
-    MIDDLE(2, "中"),
-    BOTTOM(3, "下");
+    HUM(1, "温湿度传感器"),
+    ACCESS(2, "门禁传感器"),
+    WATER(3, "水浸传感器"),
+    SMOKE(4, "烟雾传感器");
 
     /**
      * 值
@@ -32,14 +32,13 @@ public enum CabinetPositionEnum {
     /**
      * 根据值获取枚举类
      */
-    public static CabinetPositionEnum getEnumByValue(int value) {
-        CabinetPositionEnum[] enums = CabinetPositionEnum.values();
-        for (CabinetPositionEnum indexEnum : enums) {
+    public static SensorTypeEnum getEnumByValue(int value) {
+        SensorTypeEnum[] enums = SensorTypeEnum.values();
+        for (SensorTypeEnum indexEnum : enums) {
             if (indexEnum.value.equals(value)) {
                 return indexEnum;
             }
         }
         return null;
     }
-
 }

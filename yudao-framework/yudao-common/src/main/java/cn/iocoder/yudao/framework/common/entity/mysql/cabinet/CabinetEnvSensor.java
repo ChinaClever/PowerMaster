@@ -48,6 +48,11 @@ public class CabinetEnvSensor implements Serializable {
     private int sensorId;
 
     /**
+     * 传感器类型
+     */
+    private int type;
+
+    /**
      * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)
