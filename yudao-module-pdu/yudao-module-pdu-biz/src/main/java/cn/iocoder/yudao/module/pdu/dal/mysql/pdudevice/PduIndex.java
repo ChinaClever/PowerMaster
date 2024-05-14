@@ -10,4 +10,6 @@ public class PduIndex {
     private String devKey;
 
     private String ipAddr;
+
+    private String cascadeAddr;
 }

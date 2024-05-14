@@ -15,6 +15,7 @@ import cn.iocoder.yudao.module.cabinet.mapper.AisleIndexMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.CabinetPduMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.RoomIndexMapper;
+import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDULineRes;
 import org.elasticsearch.search.aggregations.metrics.Max;
 import org.elasticsearch.search.aggregations.metrics.Min;
 
@@ -108,20 +109,21 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         PageResult<PduIndex> pduIndexPageResult = null;
 
         if(pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
-            List<String> ipAddrList = new ArrayList<>();
+            List<String> devKeyList = new ArrayList<>();
+
             List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().inIfPresent(CabinetPdu::getCabinetId, pageReqVO.getCabinetIds()));
             if(cabinetPduList != null){
                 for (CabinetPdu cabinetPdu : cabinetPduList) {
-                    if (!StringUtils.isEmpty(cabinetPdu.getPduIpA())){
-                        ipAddrList.add(cabinetPdu.getPduIpA());
+                    if (!StringUtils.isEmpty(cabinetPdu.getPduIpA()) && cabinetPdu.getCasIdA() >= 0){
+                        devKeyList.add(cabinetPdu.getPduIpA() + '-' +cabinetPdu.getCasIdA());
                     }
-                    if (!StringUtils.isEmpty(cabinetPdu.getPduIpB())){
-                        ipAddrList.add(cabinetPdu.getPduIpB());
+                    if (!StringUtils.isEmpty(cabinetPdu.getPduIpB()) && cabinetPdu.getCasIdB() >= 0){
+                        devKeyList.add(cabinetPdu.getPduIpB() + '-' +cabinetPdu.getCasIdB());
                     }
                 }
             }
             pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
-                    .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()).inIfPresent(PduIndex::getIpAddr,ipAddrList));
+                    .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()).inIfPresent(PduIndex::getDevKey,devKeyList));
         }else{
             pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
                     .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()));
@@ -134,6 +136,44 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         long i = 0;
         for (PduIndex pduIndex : pduIndices) {
             i++;
+            String localtion = null;
+            String ipAddr = pduIndex.getIpAddr();
+            String cascadeAddr = pduIndex.getCascadeAddr();
+            PDUDeviceDO pduDeviceDO = new PDUDeviceDO();
+            result.add(pduDeviceDO);
+            CabinetPdu cabinetPduA = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
+                            .eq(CabinetPdu::getPduIpA, ipAddr)
+                            .eq(CabinetPdu::getCasIdA,cascadeAddr));
+            CabinetPdu cabinetPduB = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
+                    .eq(CabinetPdu::getPduIpB, ipAddr)
+                    .eq(CabinetPdu::getCasIdB, cascadeAddr));
+            if(cabinetPduA != null){
+                int cabinetId = cabinetPduA.getCabinetId();
+                CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
+                String cabinetName = cabinet.getName();
+                String roomName = roomIndexMapper.selectById(cabinet.getRoomId()).getName();
+                if(cabinet.getAisleId() != 0){
+                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+                    localtion = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
+                }else {
+                    localtion = roomName + "-"  + cabinetName +  "-" + "A路";
+                }
+            }
+            if(cabinetPduB != null){
+                int cabinetId = cabinetPduB.getCabinetId();
+                CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
+                String cabinetName = cabinet.getName();
+                String roomName = roomIndexMapper.selectById(cabinet.getRoomId()).getName();
+                if(cabinet.getAisleId() != 0){
+                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+                    localtion = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";
+                }else {
+                    localtion = roomName + "-"  + cabinetName +  "-" + "B路";
+                }
+            }
+            pduDeviceDO.setLocation(localtion);
+            pduDeviceDO.setDevKey(pduIndex.getDevKey());
+
             JSONObject jsonObject = (JSONObject) ops.get("packet:pdu:" + pduIndex.getDevKey());
             if (jsonObject == null){
                 continue;
@@ -179,32 +219,14 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     continue;
                 }
             }
-            PDUDeviceDO pduDeviceDO = new PDUDeviceDO();
+
             if(status1 != null){
                 pduDeviceDO.setStatus(status1);
             }
-
-            String localtion = null;
-            String ipAddr = pduIndex.getIpAddr();
-            CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().like(CabinetPdu::getPduIpA, ipAddr).or().like(CabinetPdu::getPduIpB, ipAddr));
-            if(cabinetPdu != null){
-                int cabinetId = cabinetPdu.getCabinetId();
-                CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
-                String cabinetName = cabinet.getName();
-                String roomName = roomIndexMapper.selectById(cabinet.getRoomId()).getName();
-                if(cabinet.getAisleId() != 0){
-                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
-
-                    localtion = roomName + "-" + aisleName + "-" + cabinetName;
-                }else {
-                    localtion = roomName + "-"  + cabinetName;
-                }
-            }
-
             pduDeviceDO.setId(pduIndex.getId());
-            pduDeviceDO.setLocation(localtion);
+
             pduDeviceDO.setPf(pduTgData.getDoubleValue("power_factor"));
-            pduDeviceDO.setDevKey(pduIndex.getDevKey());
+
             pduDeviceDO.setEle(pduTgData.getDoubleValue("ele_active"));
             pduDeviceDO.setPow(pduTgData.getDoubleValue("pow_active"));
             pduDeviceDO.setApparentPow(pduTgData.getDoubleValue("pow_apparent"));
@@ -220,9 +242,139 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             pduDeviceDO.setCvol(volArr.size() > 2 ? volArr.getDoubleValue(2) : null);
             pduDeviceDO.setVolUnbalance(pduTgData.getDouble("vol_unbalance") != null ? pduTgData.getDouble("vol_unbalance") : null);
             pduDeviceDO.setColor(color);
-            result.add(pduDeviceDO);
+
         }
-        return new PageResult<PDUDeviceDO>(result,pduIndexPageResult.getTotal());
+
+        return new PageResult<PDUDeviceDO>(result,new Long(result.size()));
+    }
+
+    @Override
+    public PageResult<PDULineRes> getPDULineDevicePage(PDUDevicePageReqVO pageReqVO) {
+
+        PageResult<PduIndex> pduIndexPageResult = null;
+
+        if(pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
+            List<String> ipAddrList = new ArrayList<>();
+            List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().inIfPresent(CabinetPdu::getCabinetId, pageReqVO.getCabinetIds()));
+            if(cabinetPduList != null){
+                for (CabinetPdu cabinetPdu : cabinetPduList) {
+                    if (!StringUtils.isEmpty(cabinetPdu.getPduIpA())){
+                        ipAddrList.add(cabinetPdu.getPduIpA());
+                    }
+                    if (!StringUtils.isEmpty(cabinetPdu.getPduIpB())){
+                        ipAddrList.add(cabinetPdu.getPduIpB());
+                    }
+                }
+            }
+            pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
+                    .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()).inIfPresent(PduIndex::getIpAddr,ipAddrList));
+        }else{
+            pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
+                    .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()));
+        }
+        List<PduIndex> pduIndices = pduIndexPageResult.getList();
+        List<PDULineRes> result = new ArrayList<>();
+        for (PduIndex pduIndex : pduIndices) {
+            PDULineRes pduLineRes = new PDULineRes();
+            String ipAddr = pduIndex.getIpAddr();
+            String cascadeAddr = pduIndex.getCascadeAddr();
+            String localtion = null;
+            CabinetPdu cabinetPduA = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
+                    .eq(CabinetPdu::getPduIpA, ipAddr)
+                    .eq(CabinetPdu::getCasIdA,cascadeAddr));
+            CabinetPdu cabinetPduB = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
+                    .eq(CabinetPdu::getPduIpB, ipAddr)
+                    .eq(CabinetPdu::getCasIdB, cascadeAddr));
+            if(cabinetPduA != null){
+                int cabinetId = cabinetPduA.getCabinetId();
+                CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
+                String cabinetName = cabinet.getName();
+                String roomName = roomIndexMapper.selectById(cabinet.getRoomId()).getName();
+                if(cabinet.getAisleId() != 0){
+                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+                    localtion = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
+                }else {
+                    localtion = roomName + "-"  + cabinetName +  "-" + "A路";
+                }
+            }
+            if(cabinetPduB != null){
+                int cabinetId = cabinetPduB.getCabinetId();
+                CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
+                String cabinetName = cabinet.getName();
+                String roomName = roomIndexMapper.selectById(cabinet.getRoomId()).getName();
+                if(cabinet.getAisleId() != 0){
+                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+                    localtion = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";
+                }else {
+                    localtion = roomName + "-"  + cabinetName +  "-" + "B路";
+                }
+            }
+            pduLineRes.setLocation(localtion);
+            pduLineRes.setPduId(pduIndex.getId());
+            if(pageReqVO.getTimeType() == 0) {
+                pageReqVO.setNewTime(LocalDateTime.now());
+                pageReqVO.setOldTime(LocalDateTime.now().minusHours(24));
+            } else {
+                pageReqVO.setNewTime(pageReqVO.getNewTime().plusDays(1));
+                pageReqVO.setOldTime(pageReqVO.getOldTime().plusDays(1));
+            }
+
+            MultiSearchRequest request = new MultiSearchRequest();
+
+            for (int lineId = 1; lineId <= 3; lineId++) {
+                SearchRequest searchRequest = null;
+
+                if(pageReqVO.getTimeType() == 0) {
+                    searchRequest = new SearchRequest("pdu_hda_line_hour");
+                } else {
+                    searchRequest = new SearchRequest("pdu_hda_line_day");
+                }
+
+                SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+                sourceBuilder.size(0);
+
+                sourceBuilder.query(QueryBuilders.boolQuery()
+                        .filter(QueryBuilders.termQuery("pdu_id", pduIndex.getId()))
+                        .filter(QueryBuilders.termQuery("line_id", lineId))
+                        .filter(QueryBuilders.rangeQuery("create_time.keyword").gte(pageReqVO.getOldTime()).lte(pageReqVO.getNewTime())));
+
+                sourceBuilder.aggregation(AggregationBuilders.max("vol_max").field("vol_max_value"));
+                sourceBuilder.aggregation(AggregationBuilders.max("cur_max").field("cur_max_value"));
+                sourceBuilder.aggregation(AggregationBuilders.max("pow_max").field("pow_active_max_value"));
+
+                searchRequest.source(sourceBuilder);
+                request.add(searchRequest);
+            }
+            try {
+                MultiSearchResponse response = client.msearch(request, RequestOptions.DEFAULT);
+
+                if(response.getResponses().length > 2){
+                    pduLineRes.setL1MaxCur(((Max)(response.getResponses()[0].getResponse().getAggregations().get("cur_max"))).getValue());
+                    if(((Max)(response.getResponses()[0].getResponse().getAggregations().get("cur_max"))).getValue() < 0){
+                        continue;
+                    }
+                    pduLineRes.setL1MaxVol(((Max)(response.getResponses()[0].getResponse().getAggregations().get("vol_max"))).getValue());
+                    pduLineRes.setL1MaxPow(((Max)(response.getResponses()[0].getResponse().getAggregations().get("pow_max"))).getValue());
+                    pduLineRes.setL2MaxCur(((Max)(response.getResponses()[1].getResponse().getAggregations().get("cur_max"))).getValue());
+                    pduLineRes.setL2MaxVol(((Max)(response.getResponses()[1].getResponse().getAggregations().get("vol_max"))).getValue());
+                    pduLineRes.setL2MaxPow(((Max)(response.getResponses()[1].getResponse().getAggregations().get("pow_max"))).getValue());
+                    pduLineRes.setL3MaxCur(((Max)(response.getResponses()[2].getResponse().getAggregations().get("cur_max"))).getValue());
+                    pduLineRes.setL3MaxVol(((Max)(response.getResponses()[2].getResponse().getAggregations().get("vol_max"))).getValue());
+                    pduLineRes.setL3MaxPow(((Max)(response.getResponses()[2].getResponse().getAggregations().get("pow_max"))).getValue());
+                }else {
+                    pduLineRes.setL1MaxCur(((Max)(response.getResponses()[0].getResponse().getAggregations().get("cur_max"))).getValue());
+                    pduLineRes.setL1MaxVol(((Max)(response.getResponses()[0].getResponse().getAggregations().get("vol_max"))).getValue());
+                    pduLineRes.setL1MaxPow(((Max)(response.getResponses()[0].getResponse().getAggregations().get("pow_max"))).getValue());
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            result.add(pduLineRes);
+        }
+
+        return new PageResult<PDULineRes>(result,new Long(result.size()));
     }
 
     @Override
@@ -456,7 +608,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
                 pduEqTotalDaySourceBuilder.query(QueryBuilders.boolQuery()
                         //今天的数据 pdu_ele_total_realtime的时间范围查询必须使用字符串
-                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime.plusDays(1))).lte(formatter.format(newTime.plusDays(1).withHour(7))))
+                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime.plusDays(1))).lte(formatter.format(newTime.plusDays(1))))
                         .must(QueryBuilders.termQuery("pdu_id", pduId))); // 添加pdu_id条件
                 // 设置聚合条件
                 pduEqTotalDaySourceBuilder.aggregation(AggregationBuilders.sum("total_eq")
@@ -471,7 +623,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 SearchSourceBuilder pduRealTimeDisSourceBuilder = new SearchSourceBuilder();
 
                 pduRealTimeDisSourceBuilder.query(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime.plusDays(1))).lte(formatter.format(newTime.plusDays(1).withHour(7))))
+                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime.plusDays(1))).lte(formatter.format(newTime.plusDays(1))))
                         .must(QueryBuilders.termQuery("pdu_id", pduId)));
 
                 pduRealTimeDisSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
@@ -619,7 +771,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 SearchSourceBuilder pduPowTotalRealSourceBuilder = new SearchSourceBuilder();
 
                 pduPowTotalRealSourceBuilder.query(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime.plusDays(1))).lte(formatter.format(newTime.plusDays(1).withHour(7))))
+                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime.plusDays(1))).lte(formatter.format(newTime.plusDays(1))))
                         .must(QueryBuilders.termQuery("pdu_id", pduId)));
 
                 pduPowTotalRealSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
@@ -651,7 +803,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                             PduHdaTotalDayDo pduHdaTotalHourDo = JsonUtils.parseObject(hit.getSourceAsString(), PduHdaTotalDayDo.class);
                             double activePowAvg  = pduHdaTotalHourDo.getActivePowAvgValue();
                             double apparentPowAvg = pduHdaTotalHourDo.getApparentPowAvgValue();
-                            DateTime createTime = pduHdaTotalHourDo.getCreateTime();
+                            DateTime createTime = new DateTime(pduHdaTotalHourDo.getCreateTime().toLocalDateTime().minusDays(1));
                             if(pduHdaTotalHourDo.getApparentPowMaxValue() > apparentPowMaxValue){
                                 apparentPowMaxValue = pduHdaTotalHourDo.getApparentPowMaxValue();
                                 apparentPowMaxTime = pduHdaTotalHourDo.getApparentPowMaxTime();
@@ -670,7 +822,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                             }
                             activePowAvgValue.add(activePowAvg);
                             apparentPowAvgValue.add(apparentPowAvg);
-                            time.add(createTime.toString("yyyy-MM-dd HH:mm"));
+                            time.add(createTime.toString("yyyy-MM-dd"));
                         }
                     }
                     result.put("activePowAvgValue",activePowAvgValue);
@@ -794,7 +946,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 SearchSourceBuilder pduOutLetTotalDaySourceBuilder = new SearchSourceBuilder();
 
                 pduOutLetTotalDaySourceBuilder.query(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime.plusDays(1))).lte(formatter.format(newTime.plusDays(1).withHour(7))))
+                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime.plusDays(1))).lte(formatter.format(newTime.plusDays(1))))
                         .must(QueryBuilders.termQuery("pdu_id", pduId)));
 
                 //映射sum的sum_ele_active为sumEle
@@ -935,7 +1087,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 SearchSourceBuilder pduTemDaySourceBuilder = new SearchSourceBuilder();
 
                 pduTemDaySourceBuilder.query(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime)).lte(formatter.format(newTime)))
+                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime)).lte(formatter.format(newTime.plusDays(1))))
                         .must(QueryBuilders.termQuery("pdu_id", pduId)));
 
 
@@ -974,7 +1126,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         for (SearchHit hit : pduTemRealDisResponse.getHits()) {
                             PduEnvDayDo pduEnvHourDo = JsonUtils.parseObject(hit.getSourceAsString(), PduEnvDayDo.class);
                             double temAvg = pduEnvHourDo.getTemAvgValue();
-                            DateTime createTime = pduEnvHourDo.getCreateTime();
+                            DateTime createTime = new DateTime(pduEnvHourDo.getCreateTime().toLocalDateTime().minusDays(1));
                             if (pduEnvHourDo.getTemMaxValue() > temMaxValue) {
                                 temMaxValue = pduEnvHourDo.getTemMaxValue();
                                 temMaxTime = pduEnvHourDo.getTemMaxTime();
@@ -986,7 +1138,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                                 temMinSensorId = pduEnvHourDo.getSensorId();
                             }
                             temAvgValue.get(pduEnvHourDo.getSensorId()).add(temAvg);
-                            time.get(pduEnvHourDo.getSensorId()).add(createTime.toString("yyyy-MM-dd HH:mm"));
+                            time.get(pduEnvHourDo.getSensorId()).add(createTime.toString("yyyy-MM-dd"));
                         }
                     }
                     result.put("temAvgValue",temAvgValue);
@@ -1007,5 +1159,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             return result;
         }
     }
+
+
 
 }

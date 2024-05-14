@@ -1,10 +1,12 @@
 package cn.iocoder.yudao.module.pdu.service.pdudevice;
 
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDevicePageReqVO;
+import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDULineRes;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.pdudevice.PDUDeviceDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -36,4 +38,6 @@ public interface PDUDeviceService {
     Map getReportOutLetDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
     Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    PageResult<PDULineRes> getPDULineDevicePage(PDUDevicePageReqVO pageReqVO);
 }

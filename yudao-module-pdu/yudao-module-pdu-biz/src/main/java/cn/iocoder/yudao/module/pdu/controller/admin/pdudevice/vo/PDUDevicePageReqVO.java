@@ -38,6 +38,17 @@ public class PDUDevicePageReqVO extends PageParam {
     @Schema(description = "机柜ID列表")
     private List<Integer> cabinetIds;
 
+    @Schema(description = "时间类型")
+    private Integer timeType;
+
+    @Schema(description = "开始时间")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime oldTime;
+
+    @Schema(description = "结束时间")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime newTime;
+
     public String getDevKey(){
         return devKey;
     }

@@ -204,7 +204,11 @@
             <div class="arrayItem" v-for="item in list" :key="item.devKey">
               <div class="devKey">{{ item.location }}</div>
               <div class="content">
-                <div class="icon" v-if="item.curUnbalance != null">不平衡度<br/>{{ item.curUnbalance }}%</div>
+                <div class="icon" >
+                  <div v-if="item.curUnbalance != null" >
+                    不平衡度<br/>{{ item.curUnbalance }}%
+                  </div>              
+                </div>
                 <div class="info">                  
                   <div v-if="item.acur != null">A相电流：{{item.acur}}A</div>
                   <div v-if="item.bcur != null" >B相电流：{{item.bcur}}A</div>
@@ -253,7 +257,7 @@
           </el-table-column>
           <el-table-column label="不平衡度" align="center" prop="volUnbalance" width="130px">
             <template #default="scope" >
-              <el-text line-clamp="2" >
+              <el-text line-clamp="2" v-if="scope.row.volUnbalance != null">
                 {{ scope.row.volUnbalance }}%
               </el-text>
             </template>
@@ -287,7 +291,11 @@
             <div class="arrayItem" v-for="item in list" :key="item.devKey">
               <div class="devKey">{{ item.location }}</div>
               <div class="content">
-                <div class="icon"  v-if="item.volUnbalance != null" >不平衡度<br/>{{ item.volUnbalance }}%</div>
+                <div class="icon" >
+                  <div v-if="item.volUnbalance != null" >
+                    不平衡度<br/>{{ item.volUnbalance }}%
+                  </div>              
+                </div>
                 <div class="info">                  
                   <div v-if="item.avol != null">A相电压：{{item.avol}}V</div>
                   <div v-if="item.bvol != null" >B相电压：{{item.bvol}}V</div>
@@ -460,9 +468,13 @@ const getList = async () => {
     var greaterThirty = 0;
     var smallCurrent = 0;
     list.value.forEach((obj) => {
+      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+      if(obj?.dataUpdateTime == null && obj?.pow == null){
+        return;
+      }
       const splitArray = obj.dataUpdateTime.split(' ');
       obj.dataUpdateTime = splitArray[1];
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+      
       obj.apparentPow = obj.apparentPow.toFixed(3);
       obj.pow = obj.pow.toFixed(3);
       obj.ele = obj.ele.toFixed(1);
@@ -501,9 +513,12 @@ const getListNoLoading = async () => {
     list.value = data.list
     var tableIndex = 0;
     list.value.forEach((obj) => {
-      const splitArray = obj.dataUpdateTime.split(' ');
-      obj.dataUpdateTime = splitArray[1];
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+      if(obj?.dataUpdateTime == null && obj?.pow == null){
+        return;
+      }
+      const splitArray = obj.dataUpdateTime.split(' ');
+      obj.dataUpdateTime = splitArray[1];      
       obj.apparentPow = obj.apparentPow.toFixed(3);
       obj.pow = obj.pow.toFixed(3);
       obj.ele = obj.ele.toFixed(1);

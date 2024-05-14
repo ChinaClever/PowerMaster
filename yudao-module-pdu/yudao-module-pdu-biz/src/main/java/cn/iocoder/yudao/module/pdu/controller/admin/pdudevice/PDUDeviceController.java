@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.pdu.controller.admin.pdudevice;
 
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDevicePageReqVO;
 
+import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDULineRes;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.pdudevice.PDUDeviceDO;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
@@ -39,10 +40,15 @@ public class PDUDeviceController {
 
     @GetMapping("/page")
     @Operation(summary = "获得PDU设备分页")
-    @PreAuthorize("@ss.hasPermission('pdu:PDU-device:query')")
     public CommonResult<PageResult<PDUDeviceDO>> getPDUDevicePage(@Valid PDUDevicePageReqVO pageReqVO) {
         PageResult<PDUDeviceDO> pageResult = pDUDeviceService.getPDUDevicePage(pageReqVO);
         return success(pageResult);
+    }
+
+    @GetMapping("/line/page")
+    @Operation(summary = "获得PDU设备分页")
+    public CommonResult<PageResult<PDULineRes>> getPDULineDevicePage(@Valid PDUDevicePageReqVO pageReqVO) {
+        return success(pDUDeviceService.getPDULineDevicePage(pageReqVO));
     }
 
     @GetMapping("/displayscreen")
