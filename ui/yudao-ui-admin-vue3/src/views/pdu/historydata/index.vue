@@ -60,7 +60,7 @@
           />
         </el-form-item>
 
-          <el-form-item label="颗粒度" prop="type">
+          <el-form-item label="颗粒度" prop="granularity">
             <el-select
               v-model="queryParams.granularity"
               placeholder="请选择分钟/小时/天"
@@ -71,7 +71,7 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item label="筛选列" prop="createTime">
+          <el-form-item label="筛选列" prop="optionsCol">
             <el-cascader
               v-model="defaultOptionsCol"
               :options="optionsCol"
@@ -93,6 +93,7 @@
             range-separator="-"
             start-placeholder="开始时间"
             end-placeholder="结束时间"
+            :disabled-date="disabledDate"
           />
           </el-form-item>
 
@@ -388,7 +389,6 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
             { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '230px'},
         ]);
         queryParams.pageNo = 1;
-        queryParams.pageSize = 15;
         getList();
       }else{
         // 配置筛选列
@@ -429,7 +429,6 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '230px'},
         ] as any;
         queryParams.pageNo = 1;
-        queryParams.pageSize = 15;
         getList();
       }
     }
@@ -459,7 +458,6 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '230px'},
         ] as any;
         queryParams.pageNo = 1;
-        queryParams.pageSize = 15;
         getList();
       }else{
         // 配置筛选列
@@ -526,7 +524,6 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '230px'},
         ] as any;
         queryParams.pageNo = 1;
-        queryParams.pageSize = 15;
         getList();
       }
     }
@@ -556,7 +553,6 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '230px'},
         ] as any ;
         queryParams.pageNo = 1;
-        queryParams.pageSize = 15;
         getList();
       }else{
         // 配置筛选列
@@ -623,7 +619,6 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '230px'},
         ] as any;
         queryParams.pageNo = 1;
-        queryParams.pageSize = 15;
         getList();
       }
     }
@@ -651,7 +646,6 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '230px'},
         ] as any;
         queryParams.pageNo = 1;
-        queryParams.pageSize = 15;
         getList();
       }else{
          // 配置筛选列
@@ -706,7 +700,6 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '230px'},
         ] as any;
         queryParams.pageNo = 1;
-        queryParams.pageSize = 15;
         getList();
       }
     }
@@ -779,9 +772,19 @@ function formatTime(row: any, column: any, cellValue: number): string {
   if (!cellValue) {
     return ''
   }
-
   return dayjs(cellValue).format('YYYY-MM-DD HH:mm:ss.SSS')
 }
+
+// 禁选未来的日期
+const disabledDate = (date) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  // 设置date的时间为0时0分0秒，以便与today进行比较
+  date.setHours(0, 0, 0, 0);
+  // 如果date在今天之后，则禁用
+  return date > today;
+}
+
 
 // 获取参数类型最大值 例如lineId=6 表示下拉框为L1~L6
 const getTypeMaxValue = async () => {
@@ -876,13 +879,11 @@ const handleExport = async () => {
   }
 }
 
+
 /** 初始化 **/
-onMounted(() => {
-  getList();
-})
-// 在组件挂载后获取数据
 onMounted(async () => {
   await getTypeMaxValue();
+  getList();
 });
 
 </script>

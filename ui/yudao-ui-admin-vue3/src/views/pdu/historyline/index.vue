@@ -30,7 +30,7 @@
          :model="queryParams"
          ref="queryFormRef"
          :inline="true"
-         label-width="70px"
+         label-width="auto"
        >
         <el-form-item label="IP地址" prop="ipAddr">
           <el-input
@@ -968,7 +968,7 @@ function setupLegendListener(realtimeChart) {
 
 // 给折线图提示框的数据加单位
 function customTooltipFormatter(params: any[]) {
-  var tooltipContent = ''; // X 轴数值
+  var tooltipContent = ''; 
   params.forEach(function(item) {
     switch( item.seriesName ){
       case '总有功功率':
