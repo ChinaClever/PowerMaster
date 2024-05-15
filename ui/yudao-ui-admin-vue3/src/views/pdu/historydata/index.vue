@@ -287,7 +287,7 @@ const shortcuts = [
     },
   },
   {
-    text: '最近半年',
+    text: '最近六个月',
     value: () => {
       const end = new Date()
       const start = new Date()

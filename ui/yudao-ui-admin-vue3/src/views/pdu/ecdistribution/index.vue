@@ -47,17 +47,17 @@
 
         <el-form-item label="时间段" prop="timeRange" >
           <el-date-picker
-            value-format="YYYY-MM-DD HH:mm:ss"
-            v-model="queryParams.timeRange"
-            type="datetimerange"
+            value-format="YYYY-MM-DD"
+            v-model="selectTimeRange"
+            type="daterange"
             :shortcuts="shortcuts"
             range-separator="-"
             start-placeholder="开始时间"
             end-placeholder="结束时间"
             :disabled-date="disabledDate"
             class="!w-350px"
+            @change="handleDayPick"
           />
-                 <!-- @change="handleDayPick" -->
         </el-form-item>
 
          <el-form-item >
@@ -65,10 +65,41 @@
            <el-button type="primary" plain><Icon icon="ep:download" class="mr-5px" /> 导出</el-button>
          </el-form-item>
        </el-form>
-     </ContentWrap>
      <!-- 列表 -->
-     <ContentWrap style="overflow: visible;">
-      <div v-loading="loading" ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
+      <el-tabs v-model="activeName1">
+        <el-tab-pane label="图表" name="lineChart">
+          <div v-loading="loading" ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
+        </el-tab-pane>
+        <el-tab-pane label="数据" name="lineChartData">
+          <div style="height: 58vh;">
+            <el-table  
+              border
+              :data="tableData"
+              style="height: 58vh; width: 99.97%;--el-table-border-color: none;border-right: 1px #143275 solid;border-left: 1px #143275 solid;border-bottom: 1px #143275 solid;"
+              :highlight-current-row="false"
+              :header-cell-style="{ backgroundColor: '#143275', color: '#ffffff', fontSize: '18px', textAlign: 'center', borderLeft: '0.5px #ffffff solid', borderBottom: '1px #ffffff solid' }"
+              :cell-style="{ color: '#000000', fontSize: '16px', textAlign: 'center', borderBottom: '0.5px #143275 solid', borderLeft: '0.5px #143275 solid' }"
+              :row-style="{ color: '#fff', fontSize: '14px', textAlign: 'center', }"
+              empty-text="暂无数据" max-height="818">
+              <!-- 动态生成表头 -->
+              <template v-for="item in headerData" :key="item.name">
+                <el-table-column  label="开始电能">
+                  <el-table-column prop="startEleData" label="数值"/>   
+                  <el-table-column prop="startTimeData" label="发生时间"/>
+                </el-table-column>
+                <el-table-column  label="结束电能">
+                  <el-table-column prop="endEleData" label="数值"/>   
+                  <el-table-column prop="endTimeData" label="发生时间"/>
+                </el-table-column>
+                <el-table-column v-if="item.name === '耗电量'" label="耗电量">
+                  <el-table-column :prop="item.name" label="数值"/>   
+                  <el-table-column prop="create_time" label="记录时间"/>
+                </el-table-column>
+              </template>
+            </el-table>
+          </div>
+        </el-tab-pane>
+      </el-tabs>
     </ContentWrap>
     <ContentWrap style="overflow: visible;">
       <div v-loading="loading1" ref="rankContainer" id="rankContainer" style="width: 70vw; height: 58vh;"></div>
@@ -82,38 +113,60 @@
 import { ElTree, ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
-import { formatDate } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
 import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption'
 import { HistoryDataApi } from '@/api/pdu/historydata'
-import { da } from 'element-plus/es/locale';
 
 defineOptions({ name: 'ECDistribution' })
 const activeName = ref('dayTabPane')
+const activeName1 = ref('lineChart')
+const tableData = ref<Array<{ }>>([]); // 折线图表格数据
+const headerData = ref<any[]>([]);
 const instance = getCurrentInstance();
+const selectTimeRange = ref(defaultDayTimeRange(14))
 const queryParams = reactive({
-  pduId: 22,
+  pduId: undefined as number | undefined,
   outletId: undefined as number | undefined,
   type: 'total',
   granularity: 'day',
   ipAddr: undefined,
   // 进入页面原始数据默认显示最近2周
-  timeRange: defaultHourTimeRange(24 * 14)
+  timeRange: ['', '']
 })
 
-// 原始数据默认查询的时间范围
-function defaultHourTimeRange(hour: number){
-  // 先获取本地时区偏移量（以分钟为单位，需要转换为毫秒）
-  var timezoneOffset = new Date().getTimezoneOffset() * 60 * 1000
-  // 计算当前时间和1小时前的时间，并考虑时区偏移量
-  var end = new Date(new Date().getTime() - timezoneOffset);
-  var start = new Date(end.getTime() - 60 * 60 * 1000 * hour);
-  // 格式化时间并返回
-  return [start.toISOString().slice(0, 19).replace('T', ' '), end.toISOString().slice(0, 19).replace('T', ' ')]
+// 默认查询的时间范围，单位：天
+function defaultDayTimeRange(day: number){
+  // 获取当前日期
+  var endDate = new Date();
+  // 计算半个月前的日期
+  var startDate = new Date();
+  startDate.setDate(startDate.getDate() - day); // 15天为半个月
+  // 格式化日期并返回
+  return [
+    startDate.toISOString().slice(0, 10),
+    endDate.toISOString().slice(0, 10)
+  ];
+}
+
+// 默认查询的时间范围，单位：月
+function defaultMonthTimeRange(month) {
+  // 获取当前日期
+  var endDate = new Date();
+
+  // 计算指定月数前的日期
+  var startDate = new Date();
+  startDate.setMonth(startDate.getMonth() - month);
+
+  // 格式化日期并返回
+  return [
+    startDate.toISOString().slice(0, 10), 
+    endDate.toISOString().slice(0, 10) 
+  ];
 }
 
 const shortcuts = [
   {
-    text: '最近2周',
+    text: '最近两周',
     value: () => {
       const end = new Date()
       const start = new Date()
@@ -122,38 +175,38 @@ const shortcuts = [
     },
   },
   {
-    text: '最近1个月',
+    text: '最近一个月',
     value: () => {
       const end = new Date()
       const start = new Date()
-      start.setHours(start.getHours() - 24 * 7 * 4)
+      start.setUTCMonth(start.getUTCMonth() - 1)
       return [start, end]
     },
   },
   {
-    text: '最近3个月',
+    text: '最近三个月',
     value: () => {
       const end = new Date()
       const start = new Date()
-      start.setHours(start.getHours() - 24 * 7 * 4 * 3)
+      start.setUTCMonth(start.getUTCMonth() - 3)
       return [start, end]
     },
   },
   {
-    text: '最近半年',
+    text: '最近六个月',
     value: () => {
       const end = new Date()
       const start = new Date()
-      start.setHours(start.getHours() - 24 * 7 * 4 * 6)
+      start.setUTCMonth(start.getUTCMonth() - 6)
       return [start, end]
     },
   },
   {
-    text: '最近1年',
+    text: '最近一年',
     value: () => {
       const end = new Date()
       const start = new Date()
-      start.setHours(start.getHours() - 24 * 7 * 4 * 12)
+      start.setFullYear(start.getFullYear() - 1)
       return [start, end]
     },
   },
@@ -258,16 +311,35 @@ const typeCascaderChange = async (selected) => {
 watch( ()=>activeName.value, async(newActiveName)=>{
   if ( newActiveName == 'dayTabPane'){
     queryParams.granularity = 'day'
-    queryParams.timeRange = defaultHourTimeRange(24 * 14)
+    selectTimeRange.value = defaultDayTimeRange(14)
   }else if (newActiveName == 'weekTabPane'){
     queryParams.granularity = 'week'
-    queryParams.timeRange = defaultHourTimeRange(24 * 7 * 4 * 3)//三个月
+    selectTimeRange.value = defaultMonthTimeRange(3)
   }else{
     queryParams.granularity = 'month'
-    queryParams.timeRange = defaultHourTimeRange(24 * 7 * 4 * 12)//一年
+    selectTimeRange.value = defaultMonthTimeRange(12)
   }
   handleQuery();
 });
+
+// 表格映射图数据
+const updateTableData = () => {
+  const data: any[] = [];
+  const length = headerData.value[0]?.data?.length || 0;
+  for (let i = 0; i < length; i++) {
+    const rowData: { [key: string]: any } = {};
+    rowData['create_time'] = createTimeData.value[i];
+    rowData['startEleData'] = startEleData.value[i];
+    rowData['startTimeData'] = startTimeData.value[i];
+    rowData['endEleData'] = endEleData.value[i];
+    rowData['endTimeData'] = endTimeData.value[i];
+    for (const item of headerData.value) {
+      rowData[item.name] = item.data[i];
+    }
+    data.push(rowData);
+  }
+  tableData.value = data;
+};
 
 // 折线图数据
 const startEleData = ref<number[]>([]);
@@ -277,10 +349,16 @@ const endTimeData = ref<string[]>([]);
 const eqData = ref<number[]>([]);
 const createTimeData = ref<string[]>([]);
 const totalEqData = ref(0);
-// 获取数据
+// 获取折线图数据
 const getLineChartData =async () => {
 loading.value = true
  try {
+    // 格式化时间范围 加上23:59:59的时分秒 
+    queryParams.timeRange[0] = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+    // 结束时间的天数多加一天 ，  一天的毫秒数
+    const oneDay = 24 * 60 * 60 * 1000;
+    queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+
     const data = await EnergyConsumptionApi.getEQDataDetails(queryParams);
     if (data != null && data.total != 0){
       totalEqData.value = 0;
@@ -310,6 +388,12 @@ const sumEqData = ref<number[]>([]);
 const getRankChartData =async () => {
 loading1.value = true
  try {
+    // 格式化时间范围 加上23:59:59的时分秒 
+    queryParams.timeRange[0] = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+    // 结束时间的天数多加一天 ，  一天的毫秒数
+    const oneDay = 24 * 60 * 60 * 1000;
+    queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+
     const data = await EnergyConsumptionApi.getOutletsEQData(queryParams);
     if (data != null && data.total != 0){
       outletIdData.value = data.map((item) => '输出位 '+item.outlet_id);
@@ -332,17 +416,20 @@ const initLineChart = () => {
   if (chartContainer.value && instance) {
     lineChart = echarts.init(chartContainer.value);
     lineChart.setOption({
-      title: { text: '[位置]总耗电量'+totalEqData.value+'kWh', top: -4},
+      title: { text: '[位置]总耗电量'+formatNumber(totalEqData.value, 1)+'kWh', top: -4},
       tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
       legend: { data: []},
       grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true},
       toolbox: {feature: {  restore:{}, saveAsImage: {}}},
-      xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
+      xAxis: {type: 'category', boundaryGap: false, data:startTimeData.value},
       yAxis: { type: 'value', name: "kWh"},
       series: [{name: '耗电量', type: 'line', data: eqData.value}],
       dataZoom:[{type: "inside"}],
     });
     instance.appContext.config.globalProperties.lineChart = lineChart;
+    // 每次切换图就要动态生成数据表头
+    headerData.value = lineChart?.getOption().series as any[];
+    updateTableData();
   }
 };
 
@@ -353,7 +440,7 @@ const initRankChart = () => {
   if (rankContainer.value && instance) {
     rankChart = echarts.init(rankContainer.value);
     rankChart.setOption({
-      title: { text: '输出位耗电量排行', top: -4},
+      title: { text: selectTimeRange.value[0]+' 至 '+selectTimeRange.value[1]+' 输出位耗电量排行', top: -4},
       tooltip: { show: false, trigger: 'axis',  axisPointer: { type: "shadow"} },
       grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true},
       toolbox: {feature: {saveAsImage: {}}},
@@ -436,7 +523,6 @@ const initRankChart = () => {
 
 };
 
-
 // 处理数据后有几位小数点
 function formatNumber(value, decimalPlaces) {
     if (!isNaN(value)) {
@@ -457,6 +543,34 @@ function customTooltipFormatter(params: any[]) {
     }
   });
   return tooltipContent;
+}
+
+// 处理时间选择不超过xxx范围
+const handleDayPick = () => {
+  if (activeName.value=='weekTabPane'){
+    // 计算两个日期之间的天数差
+    const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
+    // 如果天数差不超过7天，则重置选择的日期
+    if (diffDays < 7) {
+      selectTimeRange.value = defaultDayTimeRange(7)
+      ElMessage({
+        message: '时间选择不少于7天,已默认选择最近一周',
+        type: 'warning',
+      })
+    }
+  }
+  if (activeName.value=='monthTabPane'){
+    // 计算两个日期之间的天数差
+    const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
+    // 如果天数差超过30天，则重置选择的日期
+    if (diffDays < 30) {
+      selectTimeRange.value = defaultMonthTimeRange(1)
+      ElMessage({
+        message: '时间选择不少于1个月,已默认选择最近一个月',
+        type: 'warning',
+      })
+    }
+  }
 }
 
 // 获取参数类型最大值 例如lineId=6 表示下拉框为L1~L6
@@ -508,11 +622,16 @@ const handleQuery = async() => {
 
 /** 初始化 **/
 onMounted(async () => {
-  getTypeMaxValue();
-  await getLineChartData();
-  await getRankChartData();
-  initLineChart();
-  initRankChart();
+   // 获取路由参数中的 pdu_id
+  const queryPduId = useRoute().query.pduId as string | undefined;
+  queryParams.pduId = queryPduId ? parseInt(queryPduId, 10) : 22;
+  // if (queryParams.pduId != undefined){
+    getTypeMaxValue();
+    await getLineChartData();
+    await getRankChartData();
+    initLineChart();
+    initRankChart();
+  // }
 })
 
 </script>
