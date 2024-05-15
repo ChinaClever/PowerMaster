@@ -346,7 +346,7 @@ const handleDayPick = () => {
         visControll.isSameDay = false;
       }
       queryParams.oldTime = queryParams.timeArr[0];
-      queryParams.newTime = queryParams.timeArr[1];
+      queryParams.newTime = queryParams.timeArr[1].split(" ")[0]+ " " + "23:59:59";
 
 
     }
@@ -619,7 +619,6 @@ const getList = async () => {
   var PDU = await PDUDeviceApi.PDUDisplay(queryParams);
   var temp = [] as any;
   var baseInfo = await PDUDeviceApi.getPDUDevicePage(queryParams);
-  console.log(baseInfo);
   // 假设 PDU.pdu_data.output_item_list.pow_value 是一个 double 数组
   var powValueArray = PDU.pdu_data?.output_item_list?.pow_value;
   // 过滤出大于 0 的元素，并将值与下标保存到对象数组中

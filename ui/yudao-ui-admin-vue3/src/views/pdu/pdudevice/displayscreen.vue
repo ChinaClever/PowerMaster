@@ -3,12 +3,12 @@
     <el-col>
       <el-card>
         <el-row :gutter="18" >
-          <el-col :span="2">
+          <el-col :span="5">
             <el-text line-clamp="2">
               <el-text class="mx-1" size="large">所在位置：{{ location }}</el-text>
             </el-text>
           </el-col>
-          <el-col :span="10">
+          <el-col :span="5">
             <el-text line-clamp="2">
               <el-text class="mx-1" size="large">网络地址：{{ queryParams.devKey }}</el-text>
             </el-text>
