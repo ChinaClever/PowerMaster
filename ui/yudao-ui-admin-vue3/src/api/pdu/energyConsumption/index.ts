@@ -22,9 +22,14 @@ export const EnergyConsumptionApi = {
     return await request.get({ url: `/pdu/eq-data/page`, params })
   },
 
-  // 查询pdu历史数据详情
+  // 查询pdu电量数据详情
   getEQDataDetails: async (params: any) => {
     return await request.get({ url: `/pdu/eq-data/details`, params })
+  },
+
+  // 查询pdu各输出位电量数据详情
+  getOutletsEQData: async (params: any) => {
+    return await request.get({ url: `/pdu/eq-data/outlets-details`, params })
   },
 
 }
