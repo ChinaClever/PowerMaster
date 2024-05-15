@@ -89,22 +89,48 @@
             :inline="true"
             label-width="68px"                          
           >
-            <el-form-item>
-              <template v-for="(status, index) in statusList" :key="index">
-                <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
-              </template>
+            <el-form-item label="时间段" prop="createTime" label-width="100px">
+              <el-button 
+                @click="queryParams.timeType = 0;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;" 
+                :type="queryParams.timeType == 0 ? 'primary' : ''"
+              >
+                最近24小时
+              </el-button>
+              <el-button 
+                @click="queryParams.timeType = 1;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;" 
+                :type="queryParams.timeType == 1 ? 'primary' : ''"
+              >
+                月份
+              </el-button>
+              <el-button 
+                @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;" 
+                :type="queryParams.timeType == 2 ? 'primary' : ''"
+              >
+                自定义
+              </el-button>                            
             </el-form-item>
-            <el-form-item label="网络地址" prop="devKey">
-              <el-input
-                v-model="queryParams.devKey"
-                placeholder="请输入网络地址"
-                clearable
-                @keyup.enter="handleQuery"
+            <el-form-item>
+              <el-date-picker
+                v-if="queryParams.timeType == 1"
+                v-model="queryParams.oldTime"
+                value-format="YYYY-MM-DD HH:mm:ss"
+                type="month"
+                :disabled-date="disabledDate"
+                @change="handleMonthPick"
+                class="!w-160px"
+              />
+              <el-date-picker
+                v-if="queryParams.timeType == 2"
+                v-model="queryParams.timeArr"
+                value-format="YYYY-MM-DD HH:mm:ss"
+                type="daterange"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+                :disabled-date="disabledDate"
+                @change="handleDayPick"
                 class="!w-200px"
               />
             </el-form-item>
-          
-
             <el-form-item>
               <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
               <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
@@ -127,63 +153,62 @@
               </el-button>
             </el-form-item>
             <div style="float:right">
-              <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
-              <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
+              <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />电流矩阵</el-button>
+              <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />功率阵列</el-button>
+              <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
             </div>
           </el-form>
         </ContentWrap>
 
         <!-- 列表 -->
-        <ContentWrap  v-show="switchValue">
+        <ContentWrap  v-show="switchValue == 2">
           <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
             <el-table-column label="编号" align="center" prop="tableId" />
             <!-- 数据库查询 -->
             <el-table-column label="所在位置" align="center" prop="location" />
-            <el-table-column label="运行状态" align="center" prop="status" >
-              <template #default="scope">
-                <el-tag  v-if="scope.row.status == 0 && scope.row.apparentPow == 0">空载</el-tag>
-                <el-tag  v-if="scope.row.status == 0 && scope.row.apparentPow != 0">正常</el-tag>
-                <el-tag type="warning" v-if="scope.row.status == 1">预警</el-tag>
-                <el-popover
-                    placement="top-start"
-                    title="告警内容"
-                    :width="500"
-                    trigger="hover"
-                    :content="scope.row.pduAlarm"
-                    v-if="scope.row.status == 2"
-                  >
-                    <template #reference>
-                      <el-tag type="danger">告警</el-tag>
-                    </template>
-                  </el-popover>
-                <el-tag type="info" v-if="scope.row.status == 4">故障</el-tag>
-                <el-tag type="info" v-if="scope.row.status == 5">离线</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column label="总视在功率" align="center" prop="apparentPow" width="130px" >
+            <el-table-column label="L1最大电流" align="center" prop="l1MaxCur" >
               <template #default="scope" >
-                <el-text line-clamp="2" v-if=" scope.row.apparentPow != null" >
-                  {{ scope.row.apparentPow }}kVA
+                <el-text line-clamp="2" >
+                  {{ scope.row.l1MaxCur }}kA
                 </el-text>
               </template>
             </el-table-column>
-            <el-table-column label="总有功功率" align="center" prop="pow" width="130px">
+            <el-table-column label="L2最大电流" align="center" prop="l2MaxCur" width="130px" >
               <template #default="scope" >
-                <el-text line-clamp="2" v-if=" scope.row.pow != null" >
-                  {{ scope.row.pow }}kW
+                <el-text line-clamp="2" >
+                  {{ scope.row.l2MaxCur }}A
                 </el-text>
               </template>
             </el-table-column>
-            <el-table-column label="功率因素" align="center" prop="pf" width="180px" />
-            <!-- 数据库查询 -->
-            <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" /> 
-            <el-table-column label="总电能" align="center" prop="ele" >
+            <el-table-column label="L3最大电流" align="center" prop="l3MaxCur" width="130px" >
               <template #default="scope" >
-                <el-text line-clamp="2" v-if=" scope.row.ele != null" >
-                  {{ scope.row.ele }}kWh
+                <el-text line-clamp="2" >
+                  {{ scope.row.l3MaxCur }}A
                 </el-text>
               </template>
             </el-table-column>
+            <el-table-column label="L1最大功率" align="center" prop="l1MaxPow" width="130px" >
+              <template #default="scope" >
+                <el-text line-clamp="2" >
+                  {{ scope.row.l1MaxPow }}kW
+                </el-text>
+              </template>
+            </el-table-column>
+            <el-table-column label="L2最大功率" align="center" prop="l2MaxPow" width="130px" >
+              <template #default="scope" >
+                <el-text line-clamp="2" >
+                  {{ scope.row.l2MaxPow }}kW
+                </el-text>
+              </template>
+            </el-table-column>
+            <el-table-column label="L3最大功率" align="center" prop="l3MaxPow" width="130px" >
+              <template #default="scope" >
+                <el-text line-clamp="2" >
+                  {{ scope.row.l3MaxPow }}kW
+                </el-text>
+              </template>
+            </el-table-column>
+            
             <el-table-column label="操作" align="center">
               <template #default="scope">
                 <el-button
@@ -207,57 +232,53 @@
           <!-- 分页 -->
         </ContentWrap>
 
-        <ContentWrap v-show="!switchValue">
+        <ContentWrap v-show="switchValue == 1">
             <div class="arrayContainer">
               <div class="arrayItem" v-for="item in list" :key="item.devKey">
                 <div class="devKey">{{ item.location }}</div>
                 <div class="content">
-                  <div class="icon">
-                    <div v-if=" item.pow != null ">
-                      {{item.pow}}<br/>kW
-                    </div>                    
-                  </div>
+                  <div class="icon"></div>
                   <div class="info">
                     
-                    <div v-if="item.pf != null">功率因素：{{item.pf}}</div>
-                    <div v-if="item.apparentPow != null">视在功率：{{item.apparentPow}}kVA</div>
-                    <div >网络地址：{{ item.devKey }}</div>
+                    <div >L1最大功率：{{item.l1MaxPow}}kW</div>
+                    <div >L2最大功率：{{item.l2MaxPow}}kW</div>
+                    <div >L3最大功率：{{ item.l3MaxPow }}kW</div>
                     <!-- <div>AB路占比：{{item.fzb}}</div> -->
                   </div>
                 </div>
-                <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
-                <div class="status">
-                  <el-tag  v-if="item.status == 0 && item.apparentPow == 0">空载</el-tag>
-                  <el-tag  v-if="item.status == 0 && item.apparentPow != 0">正常</el-tag>
-                  <el-tag type="warning" v-if="item.status == 1">预警</el-tag>
+                <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->              
+                <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+              </div>
+            </div>
+        </ContentWrap>
 
-                  <el-popover
-                    placement="top-start"
-                    title="告警内容"
-                    :width="1000"
-                    trigger="hover"
-                    :content="item.pduAlarm"
-                    v-if="item.status == 2"
-                  >
-                    <template #reference>
-                      <el-tag type="danger">告警</el-tag>
-                    </template>
-                  </el-popover>
-                  <el-tag type="info" v-if="item.status == 4">故障</el-tag>
-                  <el-tag type="info" v-if="item.status == 5">离线</el-tag>
+        <ContentWrap v-show="switchValue == 0">
+            <div class="arrayContainer">
+              <div class="arrayItem" v-for="item in list" :key="item.devKey">
+                <div class="devKey">{{ item.location }}</div>
+                <div class="content">
+                  <div class="icon"></div>
+                  <div class="info">
+                    
+                    <div >L1最大电流：{{item.l1MaxCur}}A</div>
+                    <div >L2最大电流：{{item.l2MaxCur}}A</div>
+                    <div >L3最大电流：{{ item.l3MaxCur }}A</div>
+                    <!-- <div>AB路占比：{{item.fzb}}</div> -->
+                  </div>
                 </div>
+                <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->                
                 <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
               </div>
             </div>
         </ContentWrap>
         <ContentWrap>
           <Pagination
-          :total="total"
-          :page-size-arr="pageSizeArr"
-          v-model:page="queryParams.pageNo"
-          v-model:limit="queryParams.pageSize"
-          @pagination="getList"
-        />
+            :total="total"
+            :page-size-arr="pageSizeArr"
+            v-model:page="queryParams.pageNo"
+            v-model:limit="queryParams.pageSize"
+            @pagination="getList"
+          />
         </ContentWrap>   
     </div>
   </div>
@@ -282,8 +303,6 @@ const { push } = useRouter()
 
 const isCloseNav = ref(false) // 左侧导航是否收起
 const switchNav = ref(false) //false: 导航树 true：微模块展示
-const flashListTimer = ref();
-const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48])
 const switchValue = ref(0)
 const statusNumber = reactive({
@@ -364,6 +383,68 @@ watch(filterText, (val) => {
 const message = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
 
+const getFullTimeByDate = (date) => {
+  var year = date.getFullYear();//年
+  var month = date.getMonth();//月
+  var day = date.getDate();//日
+  var hours = date.getHours();//时
+  var min = date.getMinutes();//分
+  var second = date.getSeconds();//秒
+  return year + "-" +
+      ((month + 1) > 9 ? (month + 1) : "0" + (month + 1)) + "-" +
+      (day > 9 ? day : ("0" + day)) + " " +
+      (hours > 9 ? hours : ("0" + hours)) + ":" +
+      (min > 9 ? min : ("0" + min)) + ":" +
+      (second > 9 ? second : ("0" + second));
+}
+
+const disabledDate = (date) => {
+  // 获取今天的日期
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // 设置date的时间为0时0分0秒，以便与today进行比较
+  date.setHours(0, 0, 0, 0);
+
+  // 如果date在今天之后，则禁用
+  if(queryParams.timeType == 0){
+    return date > today;
+  }else {
+    return date >= today;
+  }
+  
+}
+
+const handleDayPick = () => {
+  if(queryParams?.oldTime && queryParams.timeType == 2){
+
+    queryParams.oldTime = null;
+    queryParams.newTime = null;
+  }
+
+ if (queryParams.timeArr && queryParams.timeType == 2) {
+
+    queryParams.oldTime = queryParams.timeArr[0];
+    queryParams.newTime = queryParams.timeArr[1];
+  }
+  
+}
+
+const handleMonthPick = () => {
+
+  if(queryParams.oldTime){
+    var newTime = new Date(queryParams.oldTime);
+    newTime.setMonth(newTime.getMonth() + 1);
+    newTime.setDate(newTime.getDate() - 1);
+    newTime.setHours(23,59,59)
+    queryParams.newTime = getFullTimeByDate(newTime);
+
+  }else {
+    queryParams.newTime = null;
+  }
+
+} 
+
 const loading = ref(false) // 列表的加载中
 const list = ref([
   { 
@@ -389,96 +470,40 @@ const queryParams = reactive({
   serverRoomData:undefined,
   status:[],
   cabinetIds:[],
+  timeType : 0,
+  timeArr:[],
+  oldTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),1,0,0,0)),
+  newTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth() + 1,1,23,59,59)),
 }) as any
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
+
+
 
 /** 查询列表 */
 const getList = async () => {
   loading.value = true
   try {
-    const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
+    const data = await PDUDeviceApi.getPDULinePage(queryParams)
     list.value = data.list
     var tableIndex = 0;
-    var normal = 0;
-    var offline = 0;
-    var alarm = 0;
-    var warn = 0;
     list.value.forEach((obj) => {
+
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.dataUpdateTime == null && obj?.pow == null){
-        obj.status = 5;
-        return;
-      }
-      const splitArray = obj.dataUpdateTime.split(' ');
-      obj.dataUpdateTime = splitArray[1];
-      
-      obj.apparentPow = obj.apparentPow.toFixed(3);
-      obj.pow = obj.pow.toFixed(3);
-      obj.ele = obj.ele.toFixed(1);
-      obj.pf = obj.pf.toFixed(2);
-      
-      if(obj.status == 0){
-        normal++;
-      } else if (obj.status == 1){
-        warn++;
-      } else if (obj.status == 2){
-        alarm++;
-      } else if (obj.status == 5){
-        offline++;
-      } 
+      obj.l1MaxCur = obj.l1MaxCur?.toFixed(1);
+      obj.l1MaxVol = obj.l1MaxVol?.toFixed(1);
+      obj.l1MaxPow = obj.l1MaxPow?.toFixed(3);
+      obj.l2MaxCur = obj.l2MaxCur?.toFixed(1);
+      obj.l2MaxVol = obj.l2MaxVol?.toFixed(1);
+      obj.l2MaxPow = obj.l2MaxPow?.toFixed(3);
+      obj.l3MaxCur = obj.l3MaxCur?.toFixed(1);
+      obj.l3MaxVol = obj.l3MaxVol?.toFixed(1);
+      obj.l3MaxPow = obj.l3MaxPow?.toFixed(3);
     });
-    statusNumber.normal = normal;
-    statusNumber.offline = offline;
-    statusNumber.alarm = alarm;
-    statusNumber.warn = warn;
+
     total.value = data.total
   } finally {
     loading.value = false
-  }
-}
-
-const getListNoLoading = async () => {
-  try {
-    const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
-    list.value = data.list
-    var tableIndex = 0;
-    var normal = 0;
-    var offline = 0;
-    var alarm = 0;
-    var warn = 0;
-    list.value.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.dataUpdateTime == null && obj?.pow == null){
-        obj.status = 5;
-        return;
-      }
-      const splitArray = obj?.dataUpdateTime?.split(' ');
-      obj.dataUpdateTime = splitArray[1];
-      
-      obj.apparentPow = obj?.apparentPow?.toFixed(3);
-      obj.pow = obj?.pow?.toFixed(3);
-      obj.ele = obj?.ele?.toFixed(1);
-      obj.pf = obj?.pf?.toFixed(2);
-
-      if(obj?.status == 0){
-        normal++;
-      } else if (obj?.status == 1){
-        warn++;
-      } else if (obj?.status == 2){
-        alarm++;
-      } else if (obj?.status == 5){
-        offline++;
-      } 
-    });
-    statusNumber.normal = normal;
-    statusNumber.offline = offline;
-    statusNumber.alarm = alarm;
-    statusNumber.warn = warn;
-
-    total.value = data.total
-  } catch (error) {
-    
   }
 }
 
@@ -502,22 +527,13 @@ const toPDUDisplayScreen = (row) =>{
   push('/pdu/pdudisplayscreen?devKey=' + row.devKey + '&location=' + row.location + '&id=' + row.id);
 }
 
-// const openNewPage = (scope) => {
-//   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
-//   window.open(url, '_blank');
-// }
-
-const handleSelectStatus = (index) => {
-  statusList[index].selected = !statusList[index].selected
-  const status =  statusList.filter(item => item.selected)
-  const statusArr = status.map(item => item.value)
-  queryParams.status = statusArr;
-  handleQuery();
-}
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
+  if(queryParams.timeType != 1 && queryParams.oldTime == null ){
+    return;
+  }
   getList()
 }
 
@@ -567,31 +583,10 @@ const handleExport = async () => {
 onMounted(() => {
   getList()
   getNavList();
-  flashListTimer.value = setInterval((getListNoLoading), 5000);
+
 })
 
-onBeforeUnmount(()=>{
-  if(flashListTimer.value){
-    clearInterval(flashListTimer.value)
-    flashListTimer.value = null;
-  }
-})
 
-onBeforeRouteLeave(()=>{
-  if(flashListTimer.value){
-    clearInterval(flashListTimer.value)
-    flashListTimer.value = null;
-    firstTimerCreate.value = false;
-  }
-})
-
-onActivated(() => {
-  getList();
-  getNavList();
-  if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getListNoLoading), 5000);
-  }
-})
 </script>
 
 <style scoped lang="scss">

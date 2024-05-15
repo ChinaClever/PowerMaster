@@ -118,4 +118,10 @@ public class IndexController {
     public CommonResult<Map> getReportTemDataById(String Id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
         return success(indexService.getReportTemDataById(Id,timeType,oldTime,newTime));
     }
+
+    @GetMapping("/env/page")
+    @Operation(summary = "获得机柜索引分页")
+    public CommonResult<PageResult<CabinetEnvAndHumRes>> getCabinetEnvPage(@Valid IndexPageReqVO pageReqVO) {
+        return success(indexService.getCabinetEnvPage(pageReqVO));
+    }
 }

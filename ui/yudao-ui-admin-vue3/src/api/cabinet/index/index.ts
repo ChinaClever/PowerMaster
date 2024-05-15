@@ -60,4 +60,7 @@ export const IndexApi = {
   getTemData: async (params) => {
     return await request.get({ url: `/cabinet/index/report/tem`,params})
   },
+  getCabinetEnvPage: async (params) => {
+    return await request.get({ url: `/cabinet/index/env/page`,params})
+  },
 }

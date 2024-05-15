@@ -17,27 +17,27 @@
             <div class="status">
               <div class="box">
                 <div class="top">
-                  <div class="tag"></div>正常
+                  <div class="tag"></div>&lt;15%
                 </div>
-                <div class="value"><span class="number">{{ statusNumber.normal }}</span>个</div>
+                <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
               </div>
               <div class="box">
                 <div class="top">
-                  <div class="tag empty"></div>离线
+                  <div class="tag empty"></div>小电流
                 </div>
-                <div class="value"><span class="number">{{ statusNumber.offline }}</span>个</div>
+                <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
               </div>
               <div class="box">
                 <div class="top">
-                  <div class="tag warn"></div>预警
+                  <div class="tag warn"></div>15%-30%
                 </div>
-                <div class="value"><span class="number">{{ statusNumber.warn }}</span>个</div>
+                <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
               </div>
               <div class="box">
                 <div class="top">
-                  <div class="tag error"></div>告警
+                  <div class="tag error"></div>&gt;30
                 </div>
-                <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
+                <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
               </div>
             </div>
             <div class="line"></div>
@@ -80,188 +80,207 @@
     <!-- 右大侧 -->
     <div class="master-right">
       <ContentWrap>
-          
-          <!-- 搜索工作栏 -->
-          <el-form
-            class="-mb-15px"
-            :model="queryParams"
-            ref="queryFormRef"
-            :inline="true"
-            label-width="68px"                          
-          >
-            <el-form-item>
-              <template v-for="(status, index) in statusList" :key="index">
-                <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
-              </template>
-            </el-form-item>
-            <el-form-item label="网络地址" prop="devKey">
-              <el-input
-                v-model="queryParams.devKey"
-                placeholder="请输入网络地址"
-                clearable
-                @keyup.enter="handleQuery"
-                class="!w-200px"
-              />
-            </el-form-item>
-          
+        
+        <!-- 搜索工作栏 -->
+        <el-form
+          class="-mb-15px"
+          :model="queryParams"
+          ref="queryFormRef"
+          :inline="true"
+          label-width="68px"                          
+        >
+          <!-- <el-form-item>
+            <template v-for="(status, index) in statusList" :key="index">
+              <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
+            </template>
+          </el-form-item> -->
+          <el-form-item>
+            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+            <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+            <el-button
+              type="primary"
+              plain
+              @click="openForm('create')"
+              v-hasPermi="['pdu:PDU-device:create']"
+            >
+              <Icon icon="ep:plus" class="mr-5px" /> 新增
+            </el-button>
+            <el-button
+              type="success"
+              plain
+              @click="handleExport"
+              :loading="exportLoading"
+              v-hasPermi="['pdu:PDU-device:export']"
+            >
+              <Icon icon="ep:download" class="mr-5px" /> 导出
+            </el-button>
+          </el-form-item>
+          <div style="float:right">
+            <el-button v-if="switchValue == 2" @click="switchTemAndHum = 0;" :type="switchTemAndHum == 0 ? 'primary' : ''"><Icon icon="mdi:temperature-celsius" style="margin-right: 4px" />温度</el-button>
+            <el-button v-if="switchValue == 2" @click="switchTemAndHum = 1;" :type="switchTemAndHum == 1 ? 'primary' : ''"><Icon icon="carbon:humidity" style="margin-right: 4px" />温度</el-button>
+            <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />冷通道阵列</el-button>
+            <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />热通道阵列</el-button>
+            <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />电压表格</el-button>
+          </div>
+        </el-form>
+      </ContentWrap>
 
-            <el-form-item>
-              <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-              <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+      <!-- 列表 -->
+      <ContentWrap  v-show="switchValue == 2">
+        <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+          <el-table-column label="编号" align="center" prop="tableId" />
+          <!-- 数据库查询 -->
+          <el-table-column label="所在位置" align="center" prop="location" />
+          <el-table-column label="前门" align="center" >
+            <el-table-column label="上" align="center" >
+              <template #default="scope" >
+                <el-text v-if="scope.row.iceTopTem != null && switchTemAndHum == 0">
+                  {{ scope.row.iceTopTem }}°C
+                </el-text>
+                <el-text v-if="scope.row.iceTopHum != null && switchTemAndHum == 1">
+                  {{ scope.row.iceTopHum }}%
+                </el-text>
+              </template>
+            </el-table-column>        
+            <el-table-column label="中" align="center" >
+              <template #default="scope" >
+                <el-text v-if="scope.row.iceMidTem != null && switchTemAndHum == 0">
+                  {{ scope.row.iceMidTem }}°C
+                </el-text>
+                <el-text v-if="scope.row.iceMidHum != null && switchTemAndHum == 1">
+                  {{ scope.row.iceMidHum }}%
+                </el-text>                
+              </template>
+            </el-table-column>     
+            <el-table-column label="下" align="center" >
+              <template #default="scope" >
+                <el-text v-if="scope.row.iceBomTem != null && switchTemAndHum == 0">
+                  {{ scope.row.iceBomTem }}°C
+                </el-text>          
+                <el-text v-if="scope.row.iceBomHum != null && switchTemAndHum == 1">
+                  {{ scope.row.iceBomHum }}%
+                </el-text>   
+              </template>
+            </el-table-column>     
+          </el-table-column>
+          <el-table-column label="后门" align="center" >
+            <el-table-column label="上" align="center" >
+              <template #default="scope" >
+                <el-text v-if="scope.row.hotTopTem != null && switchTemAndHum == 0">
+                  {{ scope.row.hotTopTem }}°C
+                </el-text>       
+                <el-text v-if="scope.row.hotTopHum != null && switchTemAndHum == 1">
+                  {{ scope.row.hotTopHum }}%
+                </el-text>            
+              </template>
+            </el-table-column>        
+            <el-table-column label="中" align="center" >
+              <template #default="scope" >
+                <el-text v-if="scope.row.hotMidTem != null && switchTemAndHum == 0">
+                  {{ scope.row.hotMidTem }}°C
+                </el-text>               
+                <el-text v-if="scope.row.hotMidHum != null && switchTemAndHum == 1">
+                  {{ scope.row.hotMidHum }}%
+                </el-text>    
+              </template>
+            </el-table-column>     
+            <el-table-column label="下" align="center" >
+              <template #default="scope" >
+                <el-text v-if="scope.row.hotBomTem != null && switchTemAndHum == 0">
+                  {{ scope.row.hotBomTem }}°C
+                </el-text>             
+                <el-text v-if="scope.row.hotBomHum != null && switchTemAndHum == 1">
+                  {{ scope.row.hotBomHum }}%
+                </el-text>   
+              </template>
+            </el-table-column> 
+          </el-table-column>
+          <!-- 数据库查询 -->
+          <el-table-column label="操作" align="center">
+            <template #default="scope">
               <el-button
+                link  
                 type="primary"
-                plain
-                @click="openForm('create')"
-                v-hasPermi="['pdu:PDU-device:create']"
+                @click="toPDUDisplayScreen(scope.row)"
               >
-                <Icon icon="ep:plus" class="mr-5px" /> 新增
+              设备详情
               </el-button>
               <el-button
-                type="success"
-                plain
-                @click="handleExport"
-                :loading="exportLoading"
-                v-hasPermi="['pdu:PDU-device:export']"
+                link
+                type="danger"
+                @click="handleDelete(scope.row.id)"
+                v-if="scope.row.status == 5"
               >
-                <Icon icon="ep:download" class="mr-5px" /> 导出
+                删除
               </el-button>
-            </el-form-item>
-            <div style="float:right">
-              <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
-              <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
-            </div>
-          </el-form>
-        </ContentWrap>
+            </template>
+          </el-table-column>
+        </el-table>
+        <!-- 分页 -->
+      </ContentWrap>
 
-        <!-- 列表 -->
-        <ContentWrap  v-show="switchValue">
-          <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
-            <el-table-column label="编号" align="center" prop="tableId" />
-            <!-- 数据库查询 -->
-            <el-table-column label="所在位置" align="center" prop="location" />
-            <el-table-column label="运行状态" align="center" prop="status" >
-              <template #default="scope">
-                <el-tag  v-if="scope.row.status == 0 && scope.row.apparentPow == 0">空载</el-tag>
-                <el-tag  v-if="scope.row.status == 0 && scope.row.apparentPow != 0">正常</el-tag>
-                <el-tag type="warning" v-if="scope.row.status == 1">预警</el-tag>
-                <el-popover
-                    placement="top-start"
-                    title="告警内容"
-                    :width="500"
-                    trigger="hover"
-                    :content="scope.row.pduAlarm"
-                    v-if="scope.row.status == 2"
-                  >
-                    <template #reference>
-                      <el-tag type="danger">告警</el-tag>
-                    </template>
-                  </el-popover>
-                <el-tag type="info" v-if="scope.row.status == 4">故障</el-tag>
-                <el-tag type="info" v-if="scope.row.status == 5">离线</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column label="总视在功率" align="center" prop="apparentPow" width="130px" >
-              <template #default="scope" >
-                <el-text line-clamp="2" v-if=" scope.row.apparentPow != null" >
-                  {{ scope.row.apparentPow }}kVA
-                </el-text>
-              </template>
-            </el-table-column>
-            <el-table-column label="总有功功率" align="center" prop="pow" width="130px">
-              <template #default="scope" >
-                <el-text line-clamp="2" v-if=" scope.row.pow != null" >
-                  {{ scope.row.pow }}kW
-                </el-text>
-              </template>
-            </el-table-column>
-            <el-table-column label="功率因素" align="center" prop="pf" width="180px" />
-            <!-- 数据库查询 -->
-            <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" /> 
-            <el-table-column label="总电能" align="center" prop="ele" >
-              <template #default="scope" >
-                <el-text line-clamp="2" v-if=" scope.row.ele != null" >
-                  {{ scope.row.ele }}kWh
-                </el-text>
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" align="center">
-              <template #default="scope">
-                <el-button
-                  link
-                  type="primary"
-                  @click="toPDUDisplayScreen(scope.row)"
-                >
-                设备详情
-                </el-button>
-                <el-button
-                  link
-                  type="danger"
-                  @click="handleDelete(scope.row.id)"
-                  v-if="scope.row.status == 5"
-                >
-                  删除
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-          <!-- 分页 -->
-        </ContentWrap>
-
-        <ContentWrap v-show="!switchValue">
-            <div class="arrayContainer">
-              <div class="arrayItem" v-for="item in list" :key="item.devKey">
-                <div class="devKey">{{ item.location }}</div>
-                <div class="content">
-                  <div class="icon">
-                    <div v-if=" item.pow != null ">
-                      {{item.pow}}<br/>kW
-                    </div>                    
-                  </div>
-                  <div class="info">
-                    
-                    <div v-if="item.pf != null">功率因素：{{item.pf}}</div>
-                    <div v-if="item.apparentPow != null">视在功率：{{item.apparentPow}}kVA</div>
-                    <div >网络地址：{{ item.devKey }}</div>
-                    <!-- <div>AB路占比：{{item.fzb}}</div> -->
-                  </div>
+      <ContentWrap v-show="switchValue == 1">
+          <div class="arrayContainer">
+            <div class="arrayItem" v-for="item in list" :key="item.devKey">
+              <div class="devKey">{{ item.location }}</div>
+              <div class="content">
+                <div class="icon" >
+                  <div v-if="false" >
+                    1                                    
+                  </div>              
                 </div>
-                <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
-                <div class="status">
-                  <el-tag  v-if="item.status == 0 && item.apparentPow == 0">空载</el-tag>
-                  <el-tag  v-if="item.status == 0 && item.apparentPow != 0">正常</el-tag>
-                  <el-tag type="warning" v-if="item.status == 1">预警</el-tag>
-
-                  <el-popover
-                    placement="top-start"
-                    title="告警内容"
-                    :width="1000"
-                    trigger="hover"
-                    :content="item.pduAlarm"
-                    v-if="item.status == 2"
-                  >
-                    <template #reference>
-                      <el-tag type="danger">告警</el-tag>
-                    </template>
-                  </el-popover>
-                  <el-tag type="info" v-if="item.status == 4">故障</el-tag>
-                  <el-tag type="info" v-if="item.status == 5">离线</el-tag>
+                <div class="info">                  
+                  <div v-if="item.hotTopTem != null">上层温度：{{item.hotTopTem}}°C</div>
+                  <div v-if="item.hotMidTem != null" >中层温度：{{item.hotMidTem}}°C</div>
+                  <div v-if="item.hotBomTem != null" >下层温度：{{item.hotBomTem}}°C</div>
+                  <!-- <div>AB路占比：{{item.fzb}}</div> -->
                 </div>
-                <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
               </div>
+              <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
+              <div class="status" >
+              </div>
+              <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
             </div>
-        </ContentWrap>
-        <ContentWrap>
-          <Pagination
-          :total="total"
-          :page-size-arr="pageSizeArr"
-          v-model:page="queryParams.pageNo"
-          v-model:limit="queryParams.pageSize"
-          @pagination="getList"
-        />
-        </ContentWrap>   
+          </div>
+      </ContentWrap>
+
+      <ContentWrap v-show="switchValue == 0">
+          <div class="arrayContainer">
+            <div class="arrayItem" v-for="item in list" :key="item.devKey">
+              <div class="devKey">{{ item.location }}</div>
+              <div class="content">
+                <div class="icon" >
+                  <div v-if="false" >
+                    1
+                  </div>              
+                </div>
+                <div class="info">                  
+                  <div v-if="item.iceTopTem != null">上层温度：{{item.iceTopTem}}°C</div>
+                  <div v-if="item.iceMidTem != null" >中层温度：{{item.iceMidTem}}°C</div>
+                  <div v-if="item.iceBomTem != null" >下层温度：{{item.iceBomTem}}°C</div>
+                  <!-- <div>AB路占比：{{item.fzb}}</div> -->
+                </div>
+              </div>
+              <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
+              <div class="status" >
+              </div>
+              <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+            </div>
+          </div>
+      </ContentWrap>
+
+      <ContentWrap>
+        <Pagination
+        :total="total"
+        :page-size-arr="pageSizeArr"
+        v-model:page="queryParams.pageNo"
+        v-model:limit="queryParams.pageSize"
+        @pagination="getList"
+      />
+      </ContentWrap>
     </div>
   </div>
-  
+
   <!-- 表单弹窗：添加/修改 -->
   <!-- <PDUDeviceForm ref="formRef" @success="getList" /> -->
 </template>
@@ -273,7 +292,7 @@ import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 // import PDUDeviceForm from './PDUDeviceForm.vue'
 import { ElTree } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
-const navTree = ref() // 导航树组件
+import { IndexApi } from '@/api/cabinet/index'
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -282,57 +301,51 @@ const { push } = useRouter()
 
 const isCloseNav = ref(false) // 左侧导航是否收起
 const switchNav = ref(false) //false: 导航树 true：微模块展示
+const switchTemAndHum = ref(0);
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48])
 const switchValue = ref(0)
 const statusNumber = reactive({
-  normal : 0,
-  warn : 0,
-  alarm : 0,
-  offline : 0
+  lessFifteen : 0,
+  greaterFifteen : 0,
+  greaterThirty : 0,
+  smallCurrent : 0
 })
-
-const ip = ref("ip");
 
 const statusList = reactive([
   {
-    name: '正常',
+    name: '<15%',
     selected: true,
-    value: 0,
+    value: 2,
     cssClass: 'btn_normal',
     activeClass: 'btn_normal normal'
   },
   {
-    name: '预警',
+    name: '15%-30%',
     selected: true,
-    value: 1,
+    value: 3,
     cssClass: 'btn_warn',
     activeClass: 'btn_warn warn'
   },
   {
-    name: '告警',
+    name: '>30%',
     selected: true,
-    value: 2,
+    value: 4,
     cssClass: 'btn_error',
     activeClass: 'btn_error error'
   },
   {
-    name: '离线',
+    name: '小电流',
     selected: true,
-    value: 5,
+    value: 1,
     cssClass: 'btn_offline',
     activeClass: 'btn_offline offline'
-
   },
 ])
 
 const handleClick = (row) => {
-  console.log('Button clicked!', row);
-  if(row.type != null  && row.type == 3){
-    queryParams.devKey = row.devKey
-    handleQuery();
-  }
+  console.log("click",row)
 }
 
 const handleCheck = async (row) => {
@@ -357,9 +370,11 @@ const serverRoomArr =  ref([])
 const filterText = ref('')
 const treeRef = ref<InstanceType<typeof ElTree>>()
 
+
 watch(filterText, (val) => {
   treeRef.value!.filter(val)
 })
+
 
 const message = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
@@ -376,7 +391,11 @@ const list = ref([
     location:null,
     dataUpdateTime : "",
     pduAlarm:"",
-    pf:null
+    pf:null,
+    acur : null,
+    bcur : null,
+    ccur : null,
+    curUnbalance : null,
   }
 ]) as any// 列表的数据
 const total = ref(0) // 列表的总页数
@@ -388,8 +407,8 @@ const queryParams = reactive({
   cascadeNum: undefined,
   serverRoomData:undefined,
   status:[],
-  cabinetIds:[],
-}) as any
+  cabinetIds : [],
+})as any
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
@@ -397,41 +416,27 @@ const exportLoading = ref(false) // 导出的加载中
 const getList = async () => {
   loading.value = true
   try {
-    const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
+    const data = await IndexApi.getCabinetEnvPage(queryParams);
+
     list.value = data.list
     var tableIndex = 0;
-    var normal = 0;
-    var offline = 0;
-    var alarm = 0;
-    var warn = 0;
+
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.dataUpdateTime == null && obj?.pow == null){
-        obj.status = 5;
-        return;
-      }
-      const splitArray = obj.dataUpdateTime.split(' ');
-      obj.dataUpdateTime = splitArray[1];
-      
-      obj.apparentPow = obj.apparentPow.toFixed(3);
-      obj.pow = obj.pow.toFixed(3);
-      obj.ele = obj.ele.toFixed(1);
-      obj.pf = obj.pf.toFixed(2);
-      
-      if(obj.status == 0){
-        normal++;
-      } else if (obj.status == 1){
-        warn++;
-      } else if (obj.status == 2){
-        alarm++;
-      } else if (obj.status == 5){
-        offline++;
-      } 
+      obj.iceTopTem = obj.iceTopTem?.toFixed(1);
+      obj.iceTopHum = obj.iceTopHum?.toFixed(1);
+      obj.iceMidTem = obj.iceMidTem?.toFixed(1);
+      obj.iceMidHum = obj.iceMidHum?.toFixed(1);
+      obj.iceBomTem = obj.iceBomTem?.toFixed(1);
+      obj.iceBomHum = obj.iceBomHum?.toFixed(1);
+      obj.hotTopTem = obj.hotTopTem?.toFixed(1);
+      obj.hotTopHum = obj.hotTopHum?.toFixed(1);
+      obj.hotMidTem = obj.hotMidTem?.toFixed(1);
+      obj.hotMidHum = obj.hotMidHum?.toFixed(1);
+      obj.hotBomTem = obj.hotBomTem?.toFixed(1);
+      obj.hotBomHum = obj.hotBomHum?.toFixed(1);
     });
-    statusNumber.normal = normal;
-    statusNumber.offline = offline;
-    statusNumber.alarm = alarm;
-    statusNumber.warn = warn;
+
     total.value = data.total
   } finally {
     loading.value = false
@@ -440,42 +445,24 @@ const getList = async () => {
 
 const getListNoLoading = async () => {
   try {
-    const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
+    const data = await IndexApi.getCabinetEnvPage(queryParams);
     list.value = data.list
     var tableIndex = 0;
-    var normal = 0;
-    var offline = 0;
-    var alarm = 0;
-    var warn = 0;
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.dataUpdateTime == null && obj?.pow == null){
-        obj.status = 5;
-        return;
-      }
-      const splitArray = obj?.dataUpdateTime?.split(' ');
-      obj.dataUpdateTime = splitArray[1];
-      
-      obj.apparentPow = obj?.apparentPow?.toFixed(3);
-      obj.pow = obj?.pow?.toFixed(3);
-      obj.ele = obj?.ele?.toFixed(1);
-      obj.pf = obj?.pf?.toFixed(2);
-
-      if(obj?.status == 0){
-        normal++;
-      } else if (obj?.status == 1){
-        warn++;
-      } else if (obj?.status == 2){
-        alarm++;
-      } else if (obj?.status == 5){
-        offline++;
-      } 
+      obj.iceTopTem = obj.iceTopTem?.toFixed(1);
+      obj.iceTopHum = obj.iceTopHum?.toFixed(1);
+      obj.iceMidTem = obj.iceMidTem?.toFixed(1);
+      obj.iceMidHum = obj.iceMidHum?.toFixed(1);
+      obj.iceBomTem = obj.iceBomTem?.toFixed(1);
+      obj.iceBomHum = obj.iceBomHum?.toFixed(1);
+      obj.hotTopTem = obj.hotTopTem?.toFixed(1);
+      obj.hotTopHum = obj.hotTopHum?.toFixed(1);
+      obj.hotMidTem = obj.hotMidTem?.toFixed(1);
+      obj.hotMidHum = obj.hotMidHum?.toFixed(1);
+      obj.hotBomTem = obj.hotBomTem?.toFixed(1);
+      obj.hotBomHum = obj.hotBomHum?.toFixed(1);
     });
-    statusNumber.normal = normal;
-    statusNumber.offline = offline;
-    statusNumber.alarm = alarm;
-    statusNumber.warn = warn;
-
     total.value = data.total
   } catch (error) {
     
@@ -496,6 +483,7 @@ const getNavList = async() => {
       }
     })
   }
+  console.log(serverRoomArr.value)
 }
 
 const toPDUDisplayScreen = (row) =>{
@@ -507,13 +495,13 @@ const toPDUDisplayScreen = (row) =>{
 //   window.open(url, '_blank');
 // }
 
-const handleSelectStatus = (index) => {
-  statusList[index].selected = !statusList[index].selected
-  const status =  statusList.filter(item => item.selected)
-  const statusArr = status.map(item => item.value)
-  queryParams.status = statusArr;
-  handleQuery();
-}
+// const handleSelectStatus = (index) => {
+//   statusList[index].selected = !statusList[index].selected
+//   const status =  statusList.filter(item => item.selected)
+//   const statusArr = status.map(item => item.value)
+//   queryParams.color = statusArr;
+//   handleQuery();
+// }
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
@@ -525,7 +513,6 @@ const handleQuery = () => {
 const resetQuery = () => {
   queryFormRef.value.resetFields()
   statusList.forEach((item) => item.selected = true)
-  queryParams.status = [];
   handleQuery()
 }
 
@@ -567,7 +554,7 @@ const handleExport = async () => {
 onMounted(() => {
   getList()
   getNavList();
-  flashListTimer.value = setInterval((getListNoLoading), 5000);
+  flashListTimer.value = setInterval((getListNoLoading), 60000);
 })
 
 onBeforeUnmount(()=>{
@@ -586,10 +573,10 @@ onBeforeRouteLeave(()=>{
 })
 
 onActivated(() => {
-  getList();
+  getList()
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getListNoLoading), 5000);
+    flashListTimer.value = setInterval((getListNoLoading), 60000);
   }
 })
 </script>

@@ -67,4 +67,8 @@ export const PDUDeviceApi = {
   getTemData: async (params) => {
     return await request.get({ url: `/pdu/PDU-device/report/tem`,params})
   },
+
+  getPDULinePage: async (params) => {
+    return await request.get({ url: `/pdu/PDU-device/line/page`,params})
+  },
 }

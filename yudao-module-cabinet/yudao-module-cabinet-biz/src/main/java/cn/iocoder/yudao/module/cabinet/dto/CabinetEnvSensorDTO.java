@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.cabinet.dto;
 import cn.iocoder.yudao.module.cabinet.enums.CabinetChannelEnum;
 import cn.iocoder.yudao.module.cabinet.enums.CabinetPduEnum;
 import cn.iocoder.yudao.module.cabinet.enums.CabinetPositionEnum;
+import cn.iocoder.yudao.module.cabinet.enums.SensorTypeEnum;
 import com.baomidou.mybatisplus.annotation.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -34,19 +35,25 @@ public class CabinetEnvSensorDTO {
      * 机柜前后通道 1前2后
      */
     @Schema(description = "机柜前后通道 1前2后", example = "1")
-    private CabinetChannelEnum channel;
+    private int channel;
 
     /**
      * 位置 1 上 2 中 3下
      */
     @Schema(description = "位置", example = "1")
-    private CabinetPositionEnum position;
+    private int position;
 
     /**
      * pdu
      */
     @Schema(description = "pdu", example = "A")
-    private CabinetPduEnum pathPdu;
+    private String pathPdu;
+
+    /**
+     * 传感器类型
+     */
+    @Schema(description = "传感器类型", example = "{}")
+    private int sensorType;
 
     /**
      * 传感器id

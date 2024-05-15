@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice;
+package cn.iocoder.yudao.module.cabinet.dal.dataobject.index;
 
 import lombok.Data;
 
