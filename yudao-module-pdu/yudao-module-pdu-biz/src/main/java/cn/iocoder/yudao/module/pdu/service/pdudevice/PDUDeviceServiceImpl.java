@@ -245,7 +245,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
         }
 
-        return new PageResult<PDUDeviceDO>(result,new Long(result.size()));
+        return new PageResult<PDUDeviceDO>(result,pduIndexPageResult.getTotal());
     }
 
     @Override
@@ -374,7 +374,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             result.add(pduLineRes);
         }
 
-        return new PageResult<PDULineRes>(result,new Long(result.size()));
+        return new PageResult<PDULineRes>(result,pduIndexPageResult.getTotal());
     }
 
     @Override

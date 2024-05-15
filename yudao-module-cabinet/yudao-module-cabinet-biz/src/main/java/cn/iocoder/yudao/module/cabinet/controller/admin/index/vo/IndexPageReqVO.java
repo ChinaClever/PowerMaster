@@ -27,6 +27,9 @@ public class IndexPageReqVO extends PageParam {
     @Schema(description = "电力容量")
     private Double powCapacity;
 
+    @Schema(description = "机柜ID列表")
+    private List<Integer> cabinetIds;
+
     @Schema(description = "数据来源 0：PDU 1：母线")
     private Integer pduBox;
 

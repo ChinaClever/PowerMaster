@@ -10,7 +10,13 @@ import cn.iocoder.yudao.framework.common.entity.es.cabinet.env.CabinetEnvHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.pow.CabinetPowDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.pow.CabinetPowHourDo;
 
+import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvRealtimeDo;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetEnvSensor;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
+import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.PduIndex;
+import cn.iocoder.yudao.module.cabinet.mapper.*;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -19,6 +25,7 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.metrics.Sum;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -56,7 +63,22 @@ public class IndexServiceImpl implements IndexService {
     private IndexMapper indexMapper;
 
     @Autowired
+    private RoomIndexMapper roomIndexMapper;
+
+    @Autowired
+    private AisleIndexMapper aisleIndexMapper;
+
+    @Autowired
+    private CabinetPduMapper cabinetPduMapper;
+
+    @Autowired
+    private NewPDUIndexMapper pduIndexMapper;
+
+    @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    private CabinetEnvSensorMapper cabinetEnvSensorMapper;
 
     @Autowired
     private RestHighLevelClient client;
@@ -182,7 +204,7 @@ public class IndexServiceImpl implements IndexService {
 
                 cabinetEqTotalDaySourceBuilder.query(QueryBuilders.boolQuery()
                         //今天的数据 cabinet_ele_total_realtime的时间范围查询必须使用字符串
-                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime.plusDays(1))).lte(formatter.format(newTime.plusDays(1).withHour(7))))
+                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime.plusDays(1))).lte(formatter.format(newTime.plusDays(1))))
                         .must(QueryBuilders.termQuery("cabinet_id", Id))); // 添加cabinet_id条件
                 // 设置聚合条件
                 cabinetEqTotalDaySourceBuilder.aggregation(AggregationBuilders.sum("total_eq")
@@ -197,7 +219,7 @@ public class IndexServiceImpl implements IndexService {
                 SearchSourceBuilder cabinetRealTimeDisSourceBuilder = new SearchSourceBuilder();
 
                 cabinetRealTimeDisSourceBuilder.query(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime.plusDays(1))).lte(formatter.format(newTime.plusDays(1).withHour(7))))
+                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime.plusDays(1))).lte(formatter.format(newTime.plusDays(1))))
                         .must(QueryBuilders.termQuery("cabinet_id", Id)));
 
                 cabinetRealTimeDisSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
@@ -441,7 +463,7 @@ public class IndexServiceImpl implements IndexService {
                 SearchSourceBuilder cabinetPowTotalRealSourceBuilder = new SearchSourceBuilder();
 
                 cabinetPowTotalRealSourceBuilder.query(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime.plusDays(1))).lte(formatter.format(newTime.plusDays(1).withHour(7))))
+                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime.plusDays(1))).lte(formatter.format(newTime.plusDays(1))))
                         .must(QueryBuilders.termQuery("cabinet_id", Id)));
 
                 cabinetPowTotalRealSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
@@ -898,6 +920,109 @@ public class IndexServiceImpl implements IndexService {
         }else{
             return result;
         }
+    }
+
+    @Override
+    public PageResult<CabinetEnvAndHumRes> getCabinetEnvPage(IndexPageReqVO pageReqVO) {
+
+        PageResult<IndexDO> indexDOPageResult = indexMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<IndexDO>()
+                .inIfPresent(IndexDO::getId, pageReqVO.getCabinetIds()));
+
+        List<CabinetEnvAndHumRes> result = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+
+        for (IndexDO indexDO : indexDOPageResult.getList()) {
+            CabinetEnvAndHumRes res = new CabinetEnvAndHumRes();
+            result.add(res);
+            String localtion = null;
+            String roomName = roomIndexMapper.selectById(indexDO.getRoomId()).getName();
+            if(indexDO.getAisleId() != 0){
+                String aisleName = aisleIndexMapper.selectById(indexDO.getAisleId()).getName();
+                localtion = roomName + "-" + aisleName + "-" + indexDO.getName();
+            }else {
+                localtion = roomName + "-"  + indexDO.getName() ;
+            }
+            res.setLocation(localtion);
+            CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, indexDO.getId()));
+            List<CabinetEnvSensor> envList = cabinetEnvSensorMapper.selectList(new LambdaQueryWrapperX<CabinetEnvSensor>().eq(CabinetEnvSensor::getCabinetId, indexDO.getId()));
+            if(envList == null || envList.size() == 0){
+                continue;
+            }
+            for (CabinetEnvSensor cabinetEnvSensor : envList) {
+                String devKey = null;
+                if(cabinetEnvSensor.getPathPdu() == 'A'){
+                    devKey = cabinetPdu.getPduIpA() + '-' + cabinetPdu.getCasIdA();
+                }else{
+                    devKey = cabinetPdu.getPduIpB() + '-' + cabinetPdu.getCasIdB();
+                }
+                List<PduIndex> pduList = pduIndexMapper.selectList(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getDevKey, devKey));
+                if (pduList == null || pduList.size() == 0){
+                    continue;
+                }
+                PduIndex pdu = pduList.get(0);
+                MultiSearchRequest multiSearchRequest = new MultiSearchRequest();
+                SearchRequest pduEnvRealtimeRequest = new SearchRequest("pdu_env_realtime");
+                SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+
+                searchSourceBuilder.query(QueryBuilders.boolQuery()
+                        .must(QueryBuilders.termQuery("pdu_id", pdu.getId()))
+                        .must(QueryBuilders.termQuery("sensor_id", cabinetEnvSensor.getSensorId())));
+                searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
+                searchSourceBuilder.size(1); // 设置返回的最大结果数
+                pduEnvRealtimeRequest.source(searchSourceBuilder);
+                multiSearchRequest.add(pduEnvRealtimeRequest);
+
+                try {
+                    // 执行多索引搜索请求
+                    MultiSearchResponse multiSearchResponse = client.msearch(multiSearchRequest, RequestOptions.DEFAULT);
+
+                    SearchResponse response = multiSearchResponse.getResponses()[0].getResponse();
+                    if (response != null) {
+                        SearchHits hits = response.getHits();
+                        if (hits.getTotalHits().value > 0) {
+                            SearchHit hit = hits.getAt(0);
+                            PduEnvRealtimeDo pduEnvRealtimeDo = JsonUtils.parseObject(hit.getSourceAsString(), PduEnvRealtimeDo.class);
+                            if (cabinetEnvSensor.getChannel() == 1 && cabinetEnvSensor.getPosition() == 1) {
+                                Double tem = new Double(pduEnvRealtimeDo.getTem());
+                                Double hum = new Double(pduEnvRealtimeDo.getHum());
+                                res.setIceTopTem(tem);
+                                res.setIceTopHum(hum);
+                            } else if (cabinetEnvSensor.getChannel() == 1 && cabinetEnvSensor.getPosition() == 2) {
+                                Double tem = new Double(pduEnvRealtimeDo.getTem());
+                                Double hum = new Double(pduEnvRealtimeDo.getHum());
+                                res.setIceMidTem(tem);
+                                res.setIceMidHum(hum);
+                            } else if (cabinetEnvSensor.getChannel() == 1 && cabinetEnvSensor.getPosition() == 3) {
+                                Double tem = new Double(pduEnvRealtimeDo.getTem());
+                                Double hum = new Double(pduEnvRealtimeDo.getHum());
+                                res.setIceBomTem(tem);
+                                res.setIceBomHum(hum);
+                            } else if (cabinetEnvSensor.getChannel() == 2 && cabinetEnvSensor.getPosition() == 1) {
+                                Double tem = new Double(pduEnvRealtimeDo.getTem());
+                                Double hum = new Double(pduEnvRealtimeDo.getHum());
+                                res.setHotTopTem(tem);
+                                res.setHotTopHum(hum);
+                            } else if (cabinetEnvSensor.getChannel() == 2 && cabinetEnvSensor.getPosition() == 2) {
+                                Double tem = new Double(pduEnvRealtimeDo.getTem());
+                                Double hum = new Double(pduEnvRealtimeDo.getHum());
+                                res.setHotMidTem(tem);
+                                res.setHotMidHum(hum);
+                            } else if (cabinetEnvSensor.getChannel() == 2 && cabinetEnvSensor.getPosition() == 3) {
+                                Double tem = new Double(pduEnvRealtimeDo.getTem());
+                                Double hum = new Double(pduEnvRealtimeDo.getHum());
+                                res.setHotBomTem(tem);
+                                res.setHotBomHum(hum);
+                            }
+                        }
+                    }
+                }catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+
+        return new PageResult<CabinetEnvAndHumRes>(result,indexDOPageResult.getTotal());
     }
 
 }

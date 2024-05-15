@@ -306,7 +306,6 @@ defineOptions({ name: 'PDUDevice' })
 
 const isCloseNav = ref(false) // 左侧导航是否收起
 const switchNav = ref(false) //false: 导航树 true：微模块展示
-const leftTreeColWidth = ref(6);
 const switchValue = ref(1);
 const instance = getCurrentInstance();
 const visControll = reactive({
@@ -351,8 +350,8 @@ const handleDayPick = () => {
   } else if (queryParams.timeArr && switchValue.value == 2) {
 
     // 获取选择的开始日期和结束日期
-    const startDate = new Date(queryParams.timeArr[0]);
-    const endDate = new Date(queryParams.timeArr[1]);
+    const startDate = new Date(queryParams.timeArr[0]) as any;
+    const endDate = new Date(queryParams.timeArr[1])as any;
 
     // 计算两个日期之间的天数差
     const diffTime = Math.abs(endDate - startDate);
@@ -446,7 +445,6 @@ const serverRoomArr =  ref([]) as any
 
 //折叠功能
 
-let isCollapsed = ref(0);
 
 const getNavList = async() => {
   const res = await CabinetApi.getRoomMenuAll({})
@@ -507,7 +505,7 @@ const eqData = ref<EqData>({
   maxEleTime : "",
   firstEq : 0,
   lastEq : 0,
-})
+})as any
 
 interface PowData {
   apparentPowAvgValue: number[];
@@ -576,7 +574,7 @@ const powData = ref<PowData>({
   BactivePowMaxTime : "",
   BactivePowMinValue : 0,
   BactivePowMinTime : "",
-})
+})as any
 
 interface TemData {
   temAvgValue: any;
@@ -597,7 +595,7 @@ const temData = ref<TemData>({
   temMinValue : 0,
   temMinTime : "",
   temMinSensorId : 0,
-})
+})as any
 
 interface ServerData {
   nameAndMax: object[];
@@ -607,7 +605,7 @@ const serverData = ref<ServerData>({
   nameAndMax : [
   ],
   value: []
-})
+})as any
 
 interface OutLetRankData {
   outLetId: string[];
@@ -617,7 +615,7 @@ interface OutLetRankData {
 const outletRankData = ref<OutLetRankData>({
   outLetId : [],
   eleValue : [],
-})
+})as any
 
 const filterText = ref('')
 const treeRef = ref<InstanceType<typeof ElTree>>()
@@ -781,7 +779,7 @@ const getList = async () => {
     var apow = CabinetInfo?.cabinet_power?.path_a?.pow_active;
     var bpow = CabinetInfo?.cabinet_power?.path_b?.pow_active;
     console.log("apow",apow,"bpow",bpow)
-    var percentageValue = 50;
+    var percentageValue = 50 as any;
     if(apow == null && bpow == null){
       percentageValue = null;
     } else if (apow != null && bpow == null){
