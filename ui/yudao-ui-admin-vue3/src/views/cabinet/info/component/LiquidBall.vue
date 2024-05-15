@@ -1,5 +1,5 @@
 <template>
-  <Echart :height="60" :width="60" :options="echartsOption" />
+  <Echart :height="height" :width="width" :options="echartsOption" />
 </template>
 
 <script lang="ts" setup>
@@ -10,6 +10,14 @@ const {precent} = defineProps({
     type: Number,
     required: true
   },
+  height: {
+    type: Number,
+    default: 60
+  },
+  width: {
+    type: Number,
+    default: 60
+  }
 })
 const color = ref('')
 console.log('precent', precent)
