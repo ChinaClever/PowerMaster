@@ -32,7 +32,6 @@
         <div v-if="switchValue == 0" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
             <div class="content">
-              <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
               <div class="info">
                 <div>昨日用能：{{item.yesterdayEq}}kW·h</div>
                 <div>上周用能：{{item.lastWeekEq}}kW·h</div>
@@ -40,16 +39,15 @@
               </div>
             </div>
             <div class="room">{{item.local}}</div>
-            <button class="detail" @click.prevent="toDetail(item.id)">详情</button>
           </div>
         </div>
-        <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" >
+        <!-- <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" >
           <el-table-column type="index" width="100" label="序号" align="center" />
           <el-table-column label="位置" min-width="110" align="center" prop="local" />
           <el-table-column label="昨日用能" min-width="110" align="center" prop="yesterdayEq" />
           <el-table-column label="上周用能" min-width="110" align="center" prop="lastWeekEq" />
           <el-table-column label="上月用能" min-width="110" align="center" prop="lastMonthEq" />
-        </el-table>
+        </el-table> -->
         <Pagination
           :total="queryParams.pageTotal"
           v-model:page="queryParams.pageNo"
@@ -63,9 +61,6 @@
 
 <script lang="ts" setup>
 import { CabinetApi } from '@/api/cabinet/info'
-import { CabinetEnergyApi } from '@/api/cabinet/energy'
-
-const { push } = useRouter() // 路由跳转
 
 const tableLoading = ref(false) // 
 const navList = ref([]) // 左侧导航栏树结构列表
@@ -85,13 +80,12 @@ const getNavList = async() => {
   navList.value = res
 }
 
-// 获取表格数据
+// 接口获取机柜列表
 const getTableData = async(reset = false) => {
-  console.log('getTableData', queryParams)
   tableLoading.value = true
   if (reset) queryParams.pageNo = 1
   try {
-    const res = await CabinetEnergyApi.getEqPage({
+    const res = await CabinetApi.getCabinetInfo({
       pageNo: queryParams.pageNo,
       pageSize: queryParams.pageSize,
       cabinetIds: cabinetIds.value,
@@ -100,17 +94,31 @@ const getTableData = async(reset = false) => {
       pduBox: 0,
       company: queryParams.company
     })
+    console.log('res', res)
     if (res.list) {
-      tableData.value = res.list.map(item => {
-        return {
-          id: item.id,
-          local: item.roomName + '-' + item.name,
-          yesterdayEq: item.yesterdayEq ? item.yesterdayEq.toFixed(1) : 0,
-          lastWeekEq: item.lastWeekEq ? item.lastWeekEq.toFixed(1) : 0,
-          lastMonthEq: item.lastMonthEq ? item.lastMonthEq.toFixed(1) : 0,
+      const list = res.list.map(item => {
+        const tableItem = {
+          company: item.company,
+          cabinet_key: item.cabinet_key,
+          cabinetName: item.cabinet_name,
+          roomName: item.room_name,
+          status: item.status,
+          apparentTotal: item.cabinet_power.total_data.pow_apparent.toFixed(3),
+          apparentA: item.cabinet_power.path_a ? item.cabinet_power.path_a.pow_apparent.toFixed(3) : '-',
+          apparentB: item.cabinet_power.path_b ? item.cabinet_power.path_b.pow_apparent.toFixed(3) : '-',
+          activeTotal: item.cabinet_power.total_data.pow_active.toFixed(3),
+          activeA: item.cabinet_power.path_a ? item.cabinet_power.path_a.pow_active.toFixed(3) : '-',
+          activeB: item.cabinet_power.path_b ? item.cabinet_power.path_b.pow_active.toFixed(3) : '-',
+          eleTotal: item.cabinet_power.total_data.ele_active.toFixed(1),
+          eleA: item.cabinet_power.path_a ? item.cabinet_power.path_a.ele_active.toFixed(1) : '-',
+          eleB: item.cabinet_power.path_b ? item.cabinet_power.path_b.ele_active.toFixed(1) : '-',
+          powerFactorTotal: item.cabinet_power.total_data.power_factor,
+          powerReactiveTotal: item.cabinet_power.total_data.pow_reactive.toFixed(3),
+          loadFactor: Math.ceil(item.load_factor),
+          abzb: '-' as number | string
         }
+        return tableItem
       })
-      queryParams.pageTotal = res.total
     }
   } finally {
     tableLoading.value = false
@@ -139,12 +147,6 @@ const handleCheck = (row) => {
   })
   cabinetIds.value = ids
   getTableData(true)
-}
-
-// 跳转详情
-const toDetail = (id) => {
-  console.log('跳转详情', id)
-  push({path: '/cabinet/cab/energyDetail', state: { id }})
 }
 
 onBeforeMount(() => {
@@ -182,34 +184,12 @@ onBeforeMount(() => {
       padding-left: 20px;
       display: flex;
       align-items: center;
-      .count_img {
-        margin: 0 35px 0 13px;
-      }
-      .info {
-        line-height: 1.7;
-        font-size: 13px;
-      }
     }
     .room {
       position: absolute;
       left: 10px;
       top: 8px;
       font-size: 13px;
-    }
-    .detail {
-      width: 35px;
-      height: 20px;
-      cursor: pointer;
-      font-size: 12px;
-      padding: 0;
-      border: 1px solid #ccc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #fff;
-      position: absolute;
-      right: 5px;
-      top: 4px;
     }
   }
 }

@@ -84,30 +84,34 @@
         <el-collapse-item title="机柜与传感器" name="4">
           <div class="sensorContainer">
             <div class="list">
-              <div class="box">温湿度传感器上</div>
-              <div class="box">水浸</div>
-              <div class="box">烟雾传感器</div>
-              <div class="minInterval"></div>
-              <div class="box">温湿度传感器中</div>
-              <div class="defaultInterval"></div>
-              <div class="box">门禁</div>
-              <div class="defaultInterval"></div>
-              <div class="box">温湿度传感器下</div>
+              <template v-for="(item, index) in sensorListLeft" :key="index">
+                <div class="minInterval" v-if="index > 0"></div>
+                <!-- <div v-if="!item.sensorId" :class="item.sensorId ? 'boxActive' : 'box'" @click.prevent="handleSensorEdit(item, 0, index)">{{sensorType[item.type]}}{{item.position ? sensorPositon[item.position] : ''}}</div> -->
+                <el-tooltip placement="right"  effect="light">
+                  <template #content>PDU: {{item.pathPdu}}<br />传感器id: {{item.sensorId}}</template>
+                  <div :class="item.pathPdu ? 'boxActive' : 'box'" @click.prevent="handleSensorEdit(item, 0, index)">
+                    {{sensorType[item.type]}}{{item.position ? sensorPositon[item.position] : ''}}
+                    <div v-if="item.pathPdu" @click.stop="handleSensorDelete(0, index)" class="delete"><Icon icon="ep:close" />
+                    </div>
+                  </div>
+                </el-tooltip>
+              </template>
               <div class="tip">
                 <div>机柜前端</div>
                 <div>(冷通道)</div>
               </div>
             </div>
             <div class="list">
-              <div class="box">温湿度传感器上</div>
-              <div class="box">水浸</div>
-              <div class="box">烟雾传感器</div>
-              <div class="minInterval"></div>
-              <div class="box">温湿度传感器中</div>
-              <div class="defaultInterval"></div>
-              <div class="box">门禁</div>
-              <div class="defaultInterval"></div>
-              <div class="box">温湿度传感器下</div>
+              <template v-for="(item, index) in sensorListRight" :key="index">
+                <div class="minInterval" v-if="index > 0"></div>
+                <el-tooltip placement="right"  effect="light">
+                  <template #content>PDU: {{item.pathPdu}}<br />传感器id: {{item.sensorId}}</template>
+                  <div :class="item.sensorId ? 'boxActive' : 'box'" @click.prevent="handleSensorEdit(item, 1, index)">
+                    {{sensorType[item.type]}}{{item.position ? sensorPositon[item.position] : ''}}
+                    <div v-if="item.pathPdu" @click.stop="handleSensorDelete(1, index)" class="delete"><Icon icon="ep:close" /></div>
+                  </div>
+                </el-tooltip>
+              </template>
               <div class="tip">
                 <div>机柜后端</div>
                 <div>(热通道)</div>
@@ -122,12 +126,50 @@
       <el-button @click="dialogVisible = false">取 消</el-button>
       <el-button :disabled="formLoading" type="primary" @click="submitForm">确 定</el-button>
     </template>
+    <Dialog id="sensorDialog" v-model="sensorVisible" width="500px" title="传感器">
+      <div class="sensorDialog" style="padding-left: 20px">
+        <el-form
+          ref="sensorForm"
+          v-loading="sensorLoading"
+          :model="sensorFormData"
+          :rules="sensorFormRules"
+          label-width="80px"
+          center
+        >
+          <el-form-item label="类型">
+            <el-input disabled :value="sensorType[sensorFormData.type]" />
+          </el-form-item>
+          <el-form-item label="PDU" prop="pathPdu">
+            <el-select v-model="sensorFormData.pathPdu" placeholder="请选择">
+              <el-option label="A路" value="A" />
+              <el-option label="B路" value="B" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="传感器id" prop="sensorId">
+            <el-select v-model="sensorFormData.sensorId " placeholder="请选择">
+              <template v-if="sensorFormData.type == 1 && leftRight[0] == 0">
+                <el-option v-for="id in sensorLeftIds" :key="id" :label="id" :value="id" />
+              </template>
+              <template v-else-if="sensorFormData.type == 1 && leftRight[0] == 1">
+                <el-option v-for="id in sensorRightIds" :key="id" :label="id" :value="id" />
+              </template>
+              <el-option v-else v-for="id in 2" :key="id" :label="id" :value="id" />
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </div>
+      <template #footer>
+      <el-button @click="sensorVisible = false">取 消</el-button>
+      <el-button :disabled="sensorLoading" type="primary" @click="submitSensorForm">确 定</el-button>
+    </template>
+    </Dialog>
   </Dialog>
 </template>
 <script lang="ts" setup>
 import { FormRules } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
 import TopologyEdit from './TopologyEdit.vue'
+import { fa } from 'element-plus/es/locale'
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
@@ -136,7 +178,106 @@ const dialogVisible = ref(false) // 弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
 const isFullscreen = ref(false)
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
+const sensorVisible = ref(false) // 传感器弹窗的是否展示
+const sensorLoading = ref(false) // 传感器表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
+const sensorFormData = reactive({
+  type: null,
+  sensorId: null,
+  pathPdu: '',
+  channel: null
+},)
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
+const sensorType = ['', '温湿度传感器', '门禁传感器', '水浸传感器', '烟雾传感器',]
+const sensorPositon = {
+  1: '(上)', 
+  2: '(中)', 
+  3: '(下)', 
+}
+const sensorLeftIds = ref([1, 2, 3, 4])
+const sensorRightIds = ref([1, 2, 3, 4])
+const leftRight = ref([0, 0])
+const sensorListLeft = reactive([
+  {
+    type: 1,
+    sensorId: null,
+    position: 1,
+    pathPdu: '',
+    channel: 1
+  },
+  {
+    type: 3,
+    sensorId: null,
+    pathPdu: '',
+    channel: 1
+  },
+  {
+    type: 4,
+    sensorId: null,
+    pathPdu: '',
+    channel: 1
+  },
+  {
+    type: 1,
+    sensorId: null,
+    position: 2,
+    pathPdu: '',
+    channel: 1
+  },
+  {
+    type: 2,
+    sensorId: null,
+    pathPdu: '',
+    channel: 1
+  },
+  {
+    type: 1,
+    sensorId: null,
+    position: 3,
+    pathPdu: '',
+    channel: 1
+  }
+])
+const sensorListRight = reactive([
+  {
+    type: 1,
+    sensorId: null,
+    position: 1,
+    pathPdu: '',
+    channel: 2
+  },
+  {
+    type: 3,
+    sensorId: null,
+    pathPdu: '',
+    channel: 2
+  },
+  {
+    type: 4,
+    sensorId: null,
+    pathPdu: '',
+    channel: 2
+  },
+  {
+    type: 1,
+    sensorId: null,
+    position: 1,
+    pathPdu: '',
+    channel: 2
+  },
+  {
+    type: 2,
+    sensorId: null,
+    pathPdu: '',
+    channel: 2
+  },
+  {
+    type: 1,
+    sensorId: null,
+    position: 3,
+    pathPdu: '',
+    channel: 2
+  },
+])
 const machineFormData = ref({
   roomName: '',
   cabinetName: '',
@@ -148,6 +289,7 @@ const machineFormData = ref({
   casIdA: '',
   pduIpB: '',
   casIdB: '',
+  sensorList: [] as any
 })
 const PDUFormData = ref({
   ipdzA: '',
@@ -155,7 +297,7 @@ const PDUFormData = ref({
   ipdzB: '',
   jldzB: '',
 })
-const sensorFormData = ref()
+
 const machineFormRules = reactive<FormRules>({
   roomName: [{ required: true, message: '所属机房不能为空', trigger: 'blur' }],
   cabinetName: [{ required: true, message: '机柜名称不能为空', trigger: 'blur' }],
@@ -167,7 +309,63 @@ const PDUFormRules = reactive<FormRules>({
   ipdzA: [{ required: true, message: 'A路PDU不能为空', trigger: 'blur' }],
   jldzA: [{ required: true, message: 'B路PDU不能为空', trigger: 'blur' }],
 })
+const sensorFormRules = reactive<FormRules>({
+  pathPdu: [{ required: true, message: 'PDU不能为空', trigger: 'blur' }],
+  sensorId: [{ required: true, message: '传感器id不能为空', trigger: 'blur' }],
+})
 const activeNames = ref(['1'])
+
+watch(sensorListLeft, (val) => {
+  const usedFilter = val.filter(item => item.type == 1 && item.sensorId)
+  const list = usedFilter.map(item => item.sensorId)
+  if (list.length == 0) return
+  sensorLeftIds.value = sensorLeftIds.value.filter(item => !list.includes(item))
+})
+
+watch(sensorListRight, (val) => {
+  const usedFilter = val.filter(item => item.type == 1 && item.sensorId)
+  const list = usedFilter.map(item => item.sensorId)
+  if (list.length == 0) return
+  sensorRightIds.value = sensorRightIds.value.filter(item => !list.includes(item))
+})
+
+const handleSensorEdit = (data, i, index) => {
+  console.log('handleSensorEdit', data)
+  leftRight.value = [i, index]
+  Object.assign(sensorFormData, data)
+  sensorVisible.value = true
+}
+const handleSensorDelete = (i, index) => {
+  console.log('handleSensorDelete',i, index)
+  if (i == 0) {
+    Object.assign(sensorListLeft[index], {
+      ...sensorListLeft[index],
+      sensorId: null,
+      pathPdu: null,
+    })
+  } else {
+    Object.assign(sensorListRight[index], {
+      ...sensorListLeft[index],
+      sensorId: null,
+      pathPdu: null,
+    })
+  }
+}
+const submitSensorForm = async(data) => {
+  // 校验表单
+  if (!sensorForm) return
+  const valid = await sensorForm.value.validate()
+  if (!valid) return
+  const index = leftRight.value[1]
+  console.log('submitSensorForm', sensorFormData, leftRight.value[0], index)
+  if (leftRight.value[0] == 0) {
+    Object.assign(sensorListLeft[index], sensorFormData)
+  } else {
+    Object.assign(sensorListRight[index], sensorFormData)
+  }
+  sensorVisible.value = false
+  console.log('sensorListLeft', sensorListLeft, sensorListRight)
+}
 const handleChange = (val: string[]) => {
   console.log(val)
 }
@@ -175,6 +373,7 @@ const toggleFull = () => {
   isFullscreen.value = !isFullscreen.value
 }
 const machineForm = ref() // 机柜表单 Ref
+const sensorForm = ref() // 传感器表单 Ref
 // const deptList = ref<Tree[]>([]) // 树形结构
 // const postList = ref([] as PostApi.PostVO[]) // 岗位列表
 
@@ -184,7 +383,30 @@ const open = async (type: string, data) => {
   dialogTitle.value = type == 'edit' ? '编辑': '添加'
   formType.value = type
   resetForm()
+  sensorListLeft.forEach(item => {
+    item.sensorId = null
+    item.pathPdu = ''
+  })
   console.log('data', data)
+  if (data && data.sensorList.length > 0) {
+    data.sensorList.forEach(item => {
+      if (item.channel == 1) {
+        const index = sensorListLeft.findIndex(sensor => item.position ? (item.position == sensor.position) : (sensor.type == item.sensorType))
+        sensorListLeft[index] = {
+          ...sensorListLeft[index],
+          sensorId: item.sensorId,
+          pathPdu: item.pathPdu,
+        }
+      } else if (item.channel == 2) {
+        const index = sensorListRight.findIndex(sensor => item.position ? (item.position == sensor.position) : (sensor.type == item.sensorType))
+        sensorListRight[index] = {
+          ...sensorListRight[index],
+          sensorId: item.sensorId,
+          pathPdu: item.pathPdu,
+        }
+      }
+    })
+  }
   machineFormData.value = data || {
     cabinetName: '',
     roomName: '',
@@ -196,6 +418,7 @@ const open = async (type: string, data) => {
     casIdA: '',
     pduIpB: '',
     casIdB: '',
+    sensorList: []
   }
   // 修改时，设置数据
   // if (id) {
@@ -219,6 +442,10 @@ const submitForm = async () => {
   // 提交请求
   formLoading.value = true
   try {
+    const sensorList = [...sensorListLeft, ...sensorListRight]
+    const sensorListFilter = sensorList.filter(item => item.sensorId)
+    console.log('sensorListFilter', sensorListFilter)
+    machineFormData.value.sensorList = sensorListFilter
     console.log('roomName', machineFormData.value)
     const res = await CabinetApi.saveCabinetInfo({
       ...machineFormData.value,
@@ -234,6 +461,7 @@ const submitForm = async () => {
     //   message.success(t('common.updateSuccess'))
     // }
     dialogVisible.value = false
+    resetForm()
     // 发送操作成功的事件
     emit('success')
   } finally {
@@ -254,12 +482,15 @@ const resetForm = () => {
     casIdA: '',
     pduIpB: '',
     casIdB: '',
+    sensorList: []
   }
   machineForm.value?.resetFields()
 }
 </script>
 <style lang="scss" scoped>
 .sensorContainer {
+  border: 1px solid #efefef;
+  padding: 30px 50px 20px 0;
   display: flex;
   align-items: center;
   justify-content: space-around;
@@ -275,6 +506,31 @@ const resetForm = () => {
     }
     .box {
       height: 45px;
+      background-color: #f5f7fa;
+      color: #a8abb2;
+      cursor: pointer;
+    }
+    .boxActive {
+      height: 45px;
+      background-color: #78d560;
+      color: #fff;
+      cursor: pointer;
+      position: relative;
+      .delete {
+        display: none;
+        position: absolute;
+        top: 0px;
+        right: 0px;
+      }
+      &:hover {
+        .delete {
+          display: block;
+          position: absolute;
+          top: 0px;
+          right: 0px;
+        }
+      }
+      
     }
     .minInterval {
       height: 8px;

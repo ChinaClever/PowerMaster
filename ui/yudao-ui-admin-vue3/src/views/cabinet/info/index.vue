@@ -146,9 +146,11 @@
           <el-table-column v-if="queryParams.showCol.includes(9)" label="B视在功率(kVA)" min-width="140" align="center" prop="apparentB" />
           <el-table-column v-if="queryParams.showCol.includes(10)" label="B有功功率(kW)" min-width="130" align="center" prop="activeB" />
           <el-table-column v-if="queryParams.showCol.includes(11)" label="B电能(kWh)" min-width="110" align="center" prop="eleB" />
-          <el-table-column v-if="queryParams.showCol.includes(13)" label="负载比(%)" min-width="110" align="center" prop="loadFactor" />
-          <el-table-column v-if="queryParams.showCol.includes(12)" label="所属公司" min-width="110" align="center" prop="company" />
-          <el-table-column v-if="queryParams.showCol.includes(14)" label="A,B占比" align="center" prop="abzb">
+          <el-table-column v-if="queryParams.showCol.includes(12)" label="无功功率(kVar)" min-width="120" align="center" prop="powerReactiveTotal"/>
+          <el-table-column v-if="queryParams.showCol.includes(13)" label="功率因素" align="center" prop="powerFactorTotal" />
+          <el-table-column v-if="queryParams.showCol.includes(15)" label="负载比(%)" min-width="110" align="center" prop="loadFactor" />
+          <el-table-column v-if="queryParams.showCol.includes(14)" label="所属公司" min-width="110" align="center" prop="company" />
+          <el-table-column v-if="queryParams.showCol.includes(16)" label="A,B占比" align="center" prop="abzb">
             <template #default="scope">
               <div v-if="scope.row.abzb == '-'">-</div>
               <div v-else class="progressContainer">
@@ -181,14 +183,15 @@
       </ContentWrap>
       <ContentWrap v-show="!switchValue">
         <div class="arrayContainer">
-          <div class="arrayItem" v-for="item in listPage" :key="item.id" @dblclick="handleArrayDbclick(item)">
+          <div class="arrayItem" v-for="item in listPage" :key="item.id" @dblclick="handleArrayDbclick(item.cabinet_key)">
             <div class="content">
-              <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div>
+              <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
+              <div style="padding: 0 28px"><LiquidBall :width="50" :height="50" :precent="item.loadFactor" /></div>
               <div class="info">
                 <div>视在功率：{{item.apparentTotal}}KVA</div>
                 <div>有功功率：{{item.activeTotal}}KW</div>
-                <div>负载率：{{item.loadFactor}}</div>
-                <!-- <div>电能：50kWh</div> -->
+                <div>功率因素：{{item.powerFactorTotal}}</div>
+                <!-- 负载率： -->
               </div>
             </div>
             <div class="room">{{item.roomName}}-{{item.cabinetName}}</div>
@@ -198,7 +201,7 @@
             <div v-if="item.status == 3" class="status-error">故障</div>
             <div v-if="item.status == 4" class="status-unbound">未绑定</div>
             <div v-if="item.status == 6" class="status-offline">离线</div>
-            <button class="detail" @click.prevent="toMachineDetail">详情</button>
+            <button class="detail" @click.prevent="toMachineDetail(item.cabinet_key)">详情</button>
           </div>
         </div>
         <Pagination
@@ -219,6 +222,7 @@
 import { ref } from 'vue';
 import { object } from 'vue-types';
 import MachineForm from './component/MachineForm.vue'
+import LiquidBall from './component/LiquidBall.vue'
 import { CabinetApi } from '@/api/cabinet/info'
 import { fa } from 'node_modules/element-plus/es/locale';
 // import MyButton from '@/components/MyButton/MyButton.vue';
@@ -235,7 +239,7 @@ const switchValue = ref(0) // 0:阵列 1：表格
 const listPage = ref<any>([]) // 表格数据
 const navList = ref([]) // 左侧导航列表数据
 const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
-const defaultOptionsCol = reactive([1, 2, 3, 12, 13, 14])
+const defaultOptionsCol = reactive([1, 2, 12, 13, 15, 16])
 const optionsCol = reactive([{
   value: 0,
   label: '总',
@@ -277,18 +281,24 @@ const optionsCol = reactive([{
   }],
 },{
   value: 12,
-  label: '所属公司'
+  label: '无功功率'
 },{
   value: 13,
-  label: '负载比'
+  label: '功率因素'
 },{
   value: 14,
+  label: '所属公司'
+},{
+  value: 15,
+  label: '负载比'
+},{
+  value: 16,
   label: 'AB占比'
 }
 ])
 const queryParams = reactive({
   company: undefined,
-  showCol: [1, 2, 3, 12, 13, 14] as number[],
+  showCol: [1, 2, 12, 13, 15, 16] as number[],
   pageNo: 1,
   pageSize: 24,
   pageTotal: 0,
@@ -378,6 +388,8 @@ const getTableData = async(reset = false) => {
           eleTotal: item.cabinet_power.total_data.ele_active.toFixed(1),
           eleA: item.cabinet_power.path_a ? item.cabinet_power.path_a.ele_active.toFixed(1) : '-',
           eleB: item.cabinet_power.path_b ? item.cabinet_power.path_b.ele_active.toFixed(1) : '-',
+          powerFactorTotal: item.cabinet_power.total_data.power_factor,
+          powerReactiveTotal: item.cabinet_power.total_data.pow_reactive.toFixed(3),
           loadFactor: Math.ceil(item.load_factor),
           abzb: '-' as number | string
         }
@@ -400,23 +412,23 @@ const getTableData = async(reset = false) => {
 const getNavList = async() => {
   const res = await CabinetApi.getRoomMenuAll({})
   console.log('接口获取机房导航列表', res)
-  const ids = [] as number[]
+  // const ids = [] as number[]
   navList.value = res
-  if (res && res.length > 0) {
-    const room = res[0]
-    room.children.forEach(child => {
-      if (child.type == 3) {
-        ids.push(child.id)
-      }
-      if(child.children.length > 0) {
-        child.children.forEach(son => {
-          ids.push(son.id)
-        })
-      }
-    })
-    navTree.value.initCheck([room.unique])
-  }
-  cabinetIds.value = ids
+  // if (res && res.length > 0) {
+  //   const room = res[0]
+  //   room.children.forEach(child => {
+  //     if (child.type == 3) {
+  //       ids.push(child.id)
+  //     }
+  //     if(child.children.length > 0) {
+  //       child.children.forEach(son => {
+  //         ids.push(son.id)
+  //       })
+  //     }
+  //   })
+  //   navTree.value.initCheck([room.unique])
+  // }
+  // cabinetIds.value = ids
   getTableData(false)
 }
 
@@ -449,9 +461,9 @@ const handleDbclick = (e) => {
 }
 
 // 处理阵列双击事件
-const handleArrayDbclick = (data) => {
-  console.log('处理阵列双击事件', data)
-  openForm('add')
+const handleArrayDbclick = (key) => {
+  console.log('处理阵列双击事件', key)
+  openForm('edit', key)
 }
 
 // 处理状态选择事件
@@ -462,9 +474,9 @@ const handleSelectStatus = (index, event) => {
 }
 
 // 跳转详情页
-const toMachineDetail = () => {
-  console.log('toMachineDetail!')
-  push('/cabinet/cab/detail')
+const toMachineDetail = (key) => {
+  console.log('toMachineDetail!', key.split('-')[1])
+  push({path: '/cabinet/cab/detail', state: { id: key.split('-')[1] }})
 }
 
 const handleClick = (row) => {

@@ -311,6 +311,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             }
             pduLineRes.setLocation(localtion);
             pduLineRes.setPduId(pduIndex.getId());
+            pduLineRes.setDevKey(pduIndex.getDevKey());
             if(pageReqVO.getTimeType() == 0) {
                 pageReqVO.setNewTime(LocalDateTime.now());
                 pageReqVO.setOldTime(LocalDateTime.now().minusHours(24));
@@ -1087,7 +1088,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 SearchSourceBuilder pduTemDaySourceBuilder = new SearchSourceBuilder();
 
                 pduTemDaySourceBuilder.query(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime)).lte(formatter.format(newTime.plusDays(1))))
+                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime.plusDays(1))).lte(formatter.format(newTime.plusDays(1))))
                         .must(QueryBuilders.termQuery("pdu_id", pduId)));
 
 

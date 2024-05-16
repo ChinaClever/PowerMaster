@@ -7,6 +7,8 @@ public class PDULineRes {
 
     private Long pduId;
 
+    private String devKey;
+
     private Double L1MaxCur;
 
     private Double L1MaxVol;

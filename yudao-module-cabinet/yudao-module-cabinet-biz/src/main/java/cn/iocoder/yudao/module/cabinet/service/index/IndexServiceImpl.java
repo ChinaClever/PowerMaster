@@ -525,7 +525,7 @@ public class IndexServiceImpl implements IndexService {
                             double activeBAvgValue = cabinetHdaTotalHourDo.getActiveBAvgValue();
                             double apparentBAvgValue = cabinetHdaTotalHourDo.getApparentBAvgValue();
                             DateTime createTime = new DateTime(cabinetHdaTotalHourDo.getCreateTime());
-
+                            createTime = new DateTime(createTime.toLocalDateTime().minusDays(1));
                             if(cabinetHdaTotalHourDo.getApparentTotalMaxValue() > apparentPowMaxValue){
                                 apparentPowMaxValue = cabinetHdaTotalHourDo.getApparentTotalMaxValue();
                                 apparentPowMaxTime = new DateTime(cabinetHdaTotalHourDo.getApparentTotalMaxTime());
@@ -586,7 +586,7 @@ public class IndexServiceImpl implements IndexService {
                             BactivePowAvgValue.add(activeBAvgValue);
                             BapparentPowAvgValue.add(apparentBAvgValue);
 
-                            time.add(createTime.toString("yyyy-MM-dd HH:mm"));
+                            time.add(createTime.toString("yyyy-MM-dd"));
                         }
                     }
                     result.put("activePowAvgValue",activePowAvgValue);
@@ -889,6 +889,7 @@ public class IndexServiceImpl implements IndexService {
                             CabinetEnvDayDo cabinetEnvHourDo = JsonUtils.parseObject(hit.getSourceAsString(), CabinetEnvDayDo.class);
                             double temAvg = cabinetEnvHourDo.getTemAvgValue();
                             DateTime createTime = new DateTime(cabinetEnvHourDo.getCreateTime());
+                            createTime = new DateTime(createTime.toLocalDateTime().minusDays(1));
                             if (cabinetEnvHourDo.getTemMaxValue() > temMaxValue) {
                                 temMaxValue = cabinetEnvHourDo.getTemMaxValue();
                                 temMaxTime = new DateTime(cabinetEnvHourDo.getTemMaxTime());
@@ -900,7 +901,7 @@ public class IndexServiceImpl implements IndexService {
                                 temMinSensorId = cabinetEnvHourDo.getSensorId();
                             }
                             temAvgValue.get(cabinetEnvHourDo.getSensorId()).add(temAvg);
-                            time.get(cabinetEnvHourDo.getSensorId()).add(createTime.toString("yyyy-MM-dd HH:mm"));
+                            time.get(cabinetEnvHourDo.getSensorId()).add(createTime.toString("yyyy-MM-dd"));
                         }
                     }
                     result.put("temAvgValue",temAvgValue);
@@ -929,7 +930,6 @@ public class IndexServiceImpl implements IndexService {
                 .inIfPresent(IndexDO::getId, pageReqVO.getCabinetIds()));
 
         List<CabinetEnvAndHumRes> result = new ArrayList<>();
-        LocalDateTime now = LocalDateTime.now();
 
         for (IndexDO indexDO : indexDOPageResult.getList()) {
             CabinetEnvAndHumRes res = new CabinetEnvAndHumRes();
@@ -944,7 +944,9 @@ public class IndexServiceImpl implements IndexService {
             }
             res.setLocation(localtion);
             CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, indexDO.getId()));
-            List<CabinetEnvSensor> envList = cabinetEnvSensorMapper.selectList(new LambdaQueryWrapperX<CabinetEnvSensor>().eq(CabinetEnvSensor::getCabinetId, indexDO.getId()));
+            List<CabinetEnvSensor> envList = cabinetEnvSensorMapper.selectList(new LambdaQueryWrapperX<CabinetEnvSensor>()
+                    .eq(CabinetEnvSensor::getCabinetId, indexDO.getId())
+                    .eq(CabinetEnvSensor::getType,1));
             if(envList == null || envList.size() == 0){
                 continue;
             }

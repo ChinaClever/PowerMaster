@@ -392,7 +392,6 @@ const handleClick = (row) => {
 }
 
 const handleCheck = async (row) => {
-  console.log('handleCheck!', row);
   const ids = [] as any
   row.forEach(item => {
     if (item.type == 3) {
@@ -552,7 +551,7 @@ const getNavList = async() => {
       }
     })
   }
-  console.log(serverRoomArr.value)
+
 }
 
 const toPDUDisplayScreen = (row) =>{

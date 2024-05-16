@@ -169,90 +169,32 @@
         /> -->
         <el-table style="width: 100%;" v-loading="loading" :data="listPage" >
           <el-table-column label="位置" min-width="110" align="center" prop="local" />
-          <el-table-column label="负载率" min-width="110" align="center" prop="loadPrecent" />
-          <el-table-column label="总视在功率" min-width="110" align="center" prop="zszgl" />
-          <el-table-column label="A路视在功率" min-width="110" align="center" prop="aszgl" />
-          <el-table-column label="B路视在功率" min-width="110" align="center" prop="bszgl" />
-          <el-table-column label="电力容量" min-width="110" align="center" prop="dlrl" />
-          <el-table-column label="更新时间" min-width="110" align="center" prop="gxsj" />
+          <el-table-column label="负载率" min-width="110" align="center" prop="load_factor" />
+          <el-table-column label="总视在功率" min-width="110" align="center" prop="apparentTotal" />
+          <el-table-column label="A路视在功率" min-width="110" align="center" prop="apparentA" />
+          <el-table-column label="B路视在功率" min-width="110" align="center" prop="apparentB" />
+          <el-table-column label="电力容量" min-width="110" align="center" prop="pow_capacity" />
+          <el-table-column label="更新时间" min-width="110" align="center" prop="date_time" />
         </el-table>
+        <Pagination
+          :total="queryParams.pageTotal"
+          v-model:page="queryParams.pageNo"
+          v-model:limit="queryParams.pageSize"
+          @pagination="getTableData(false)"
+        />
       </ContentWrap>
       <ContentWrap v-show="!switchValue" style="min-height: 680px">
         <div class="loadContainer">
-          <div class="loadItem">
+          <div class="loadItem" v-for="load in listPage" :key="load.key">
             <div class="content">
               <div class="info">
-                <div>总视在功率：0.153KVA</div>
-                <div>A路视在功率：0.063KVA</div>
-                <div>B路视在功率：0.112KVA</div>
-                <div>电力容量：50p</div>
+                <div>总视在功率：{{load.apparentTotal}}KVA</div>
+                <div>A路视在功率：{{load.apparentA}}KVA</div>
+                <div>B路视在功率：{{load.apparentB}}KVA</div>
+                <div>电力容量：{{load.pow_capacity}}</div>
               </div>
               <div class="waterPoloBox">
-                <LiquidBall />
-              </div>
-              <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
-            </div>
-            <div class="room">机房1-机柜1</div>
-            <button class="detail" @click.prevent="toMachineDetail">详情</button>
-          </div>
-          <div class="loadItem">
-            <div class="content">
-              <div class="info">
-                <div>总视在功率：0.153KVA</div>
-                <div>A路视在功率：0.063KVA</div>
-                <div>B路视在功率：0.112KVA</div>
-                <div>电力容量：50p</div>
-              </div>
-              <div class="waterPoloBox">
-                <Echart :height="60" :width="60" :options="echartsOption" />
-              </div>
-              <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
-            </div>
-            <div class="room">机房1-机柜1</div>
-            <button class="detail" @click.prevent="toMachineDetail">详情</button>
-          </div>
-          <div class="loadItem">
-            <div class="content">
-              <div class="info">
-                <div>总视在功率：0.153KVA</div>
-                <div>A路视在功率：0.063KVA</div>
-                <div>B路视在功率：0.112KVA</div>
-                <div>电力容量：50p</div>
-              </div>
-              <div class="waterPoloBox">
-                <Echart :height="60" :width="60" :options="echartsOption" />
-              </div>
-              <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
-            </div>
-            <div class="room">机房1-机柜1</div>
-            <button class="detail" @click.prevent="toMachineDetail">详情</button>
-          </div>
-          <div class="loadItem">
-            <div class="content">
-              <div class="info">
-                <div>总视在功率：0.153KVA</div>
-                <div>A路视在功率：0.063KVA</div>
-                <div>B路视在功率：0.112KVA</div>
-                <div>电力容量：50p</div>
-              </div>
-              <div class="waterPoloBox">
-                <Echart :height="60" :width="60" :options="echartsOption" />
-              </div>
-              <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
-            </div>
-            <div class="room">机房1-机柜1</div>
-            <button class="detail" @click.prevent="toMachineDetail">详情</button>
-          </div>
-          <div class="loadItem">
-            <div class="content">
-              <div class="info">
-                <div>总视在功率：0.153KVA</div>
-                <div>A路视在功率：0.063KVA</div>
-                <div>B路视在功率：0.112KVA</div>
-                <div>电力容量：50p</div>
-              </div>
-              <div class="waterPoloBox">
-                <Echart :height="60" :width="60" :options="echartsOption" />
+                <LiquidBall  :precent="load.load_factor"/>
               </div>
               <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
             </div>
@@ -260,6 +202,12 @@
             <button class="detail" @click.prevent="toMachineDetail">详情</button>
           </div>
         </div>
+        <Pagination
+          :total="queryParams.pageTotal"
+          v-model:page="queryParams.pageNo"
+          v-model:limit="queryParams.pageSize"
+          @pagination="getTableData"
+        />
         <!-- <div class="arrayContainer">
           <div class="arrayItem" v-for="item in listPage" :key="item.id" @dblclick="handleArrayDbclick(item)">
             <div class="content">
@@ -300,53 +248,6 @@ import LiquidBall from './compoent/LiquidBall.vue'
 
 const loading = ref(false)
 
-const listPage = reactive([
-  {
-    local: '机房1-机柜1',
-    loadPrecent: '38%',
-    zszgl: '0.153KVA',
-    aszgl: '0.063KVA',
-    bszgl: '0.112KVA',
-    dlrl: '50p',
-    gxsj: '2024-5-7 11:00'
-  },
-  {
-    local: '机房1-机柜1',
-    loadPrecent: '38%',
-    zszgl: '0.153KVA',
-    aszgl: '0.063KVA',
-    bszgl: '0.112KVA',
-    dlrl: '50p',
-    gxsj: '2024-5-7 11:00'
-  },
-  {
-    local: '机房1-机柜1',
-    loadPrecent: '38%',
-    zszgl: '0.153KVA',
-    aszgl: '0.063KVA',
-    bszgl: '0.112KVA',
-    dlrl: '50p',
-    gxsj: '2024-5-7 11:00'
-  },
-  {
-    local: '机房1-机柜1',
-    loadPrecent: '38%',
-    zszgl: '0.153KVA',
-    aszgl: '0.063KVA',
-    bszgl: '0.112KVA',
-    dlrl: '50p',
-    gxsj: '2024-5-7 11:00'
-  },
-  {
-    local: '机房1-机柜1',
-    loadPrecent: '38%',
-    zszgl: '0.153KVA',
-    aszgl: '0.063KVA',
-    bszgl: '0.112KVA',
-    dlrl: '50p',
-    gxsj: '2024-5-7 11:00'
-  },
-])
 
 const echartsOption = reactive({
   series: [
@@ -434,14 +335,12 @@ const statusList = reactive([
 
 
 
-
-
-
-
 const navList = ref([])
 const switchNav = ref(false) //false: 导航树 true：微模块展示
 const isCloseNav = ref(false) // 左侧导航是否收起
 const switchValue = ref(0)
+const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
+const listPage = ref<any>([]) // 表格数据
 const queryParams = reactive({
   company: undefined,
   showCol: [1, 2, 3, 12, 13, 14] as number[],
@@ -449,6 +348,46 @@ const queryParams = reactive({
   pageSize: 24,
   pageTotal: 0,
 })
+
+// 接口获取机柜列表
+const getTableData = async(reset = false) => {
+  loading.value = true
+  if (reset) queryParams.pageNo = 1
+  const status =  statusList.filter(item => item.selected)
+  try {
+    const res = await CabinetApi.getCabinetInfo({
+      pageNo: queryParams.pageNo,
+      pageSize: queryParams.pageSize,
+      cabinetIds: cabinetIds.value,
+      // roomId: null,
+      loadStatus: status.map(item => item.value),
+      pduBox: 0,
+      company: queryParams.company
+    })
+    console.log('res', res)
+    if (res.list) {
+      const list = res.list.map(item => {
+        const tableItem = {
+          key: item.cabinet_key,
+          local: item.room_name + '-' + item.cabinet_name,
+          load_factor: +(item.load_factor.toFixed(0)),
+          pow_capacity: item.pow_capacity,
+          date_time: item.date_time,
+          status: item.status,
+          apparentTotal: item.cabinet_power.total_data.pow_apparent.toFixed(3),
+          apparentA: item.cabinet_power.path_a ? item.cabinet_power.path_a.pow_apparent.toFixed(3) : '-',
+          apparentB: item.cabinet_power.path_b ? item.cabinet_power.path_b.pow_apparent.toFixed(3) : '-',
+        }
+        return tableItem
+      })
+      listPage.value = list
+      queryParams.pageTotal = res.total
+      console.log('listPage', listPage.value)
+    }
+  } finally {
+    loading.value = false
+  }
+}
 
 // 接口获取机房导航列表
 const getNavList = async() => {
@@ -463,13 +402,14 @@ const handleClick = (row) => {
 
 const handleCheck = (row) => {
   console.log('handleCheck!', row);
-  // const ids = [] as any
-  // row.forEach(item => {
-  //   if (item.type == 3) {
-  //     ids.push(item.id)
-  //   }
-  // })
-  // getTableData(true, ids)
+  const ids = [] as any
+  row.forEach(item => {
+    if (item.type == 3) {
+      ids.push(item.id)
+    }
+  })
+  cabinetIds.value = ids
+  getTableData(true)
 }
 // 处理切换按钮点击事件
 const handleSwitchNav = () => {
@@ -479,21 +419,23 @@ const handleSwitchNav = () => {
 const handleSelectStatus = (index, event) => {
   console.log('处理状态选择事件', index, event)
   statusList[index].selected = !statusList[index].selected
+  getTableData()
 }
 // 处理切换 表格/阵列 模式
 const handleSwitchModal = (value) => {
   if (switchValue.value == value) return
   switchValue.value = value
-  // if (value == 0) { // 阵列
-  //   queryParams.pageSize = 24
-  // } else {
-  //   queryParams.pageSize = 10
-  // }
-  // getTableData(true)
+  if (value == 0) { // 阵列
+    queryParams.pageSize = 24
+  } else {
+    queryParams.pageSize = 10
+  }
+  getTableData(true)
 }
 
 onBeforeMount(() => {
   getNavList()
+  getTableData()
 })
 </script>
 

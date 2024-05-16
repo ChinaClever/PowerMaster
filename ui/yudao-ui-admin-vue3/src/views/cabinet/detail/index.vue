@@ -7,33 +7,33 @@
         </template>
         <el-descriptions title="总参数" class="ABRord" direction="horizontal" :column="2" >
           <el-descriptions-item label="总负载率：">35%</el-descriptions-item>
-          <el-descriptions-item label="视在功率：">190.000kVA</el-descriptions-item>
-          <el-descriptions-item label="有功功率：">192.100kW</el-descriptions-item>
-          <el-descriptions-item label="无功功率：">8.996kVar</el-descriptions-item>
-          <el-descriptions-item label="功率因素：">无</el-descriptions-item>
-          <el-descriptions-item label="电力容量：">52kVA</el-descriptions-item>
+          <el-descriptions-item label="视在功率：">{{allDetail.pow_apparent || ''}}kVA</el-descriptions-item>
+          <el-descriptions-item label="有功功率：">{{allDetail.ele_active || ''}}kW</el-descriptions-item>
+          <el-descriptions-item label="无功功率：">{{allDetail.pow_reactive || ''}}kVar</el-descriptions-item>
+          <el-descriptions-item label="功率因素：">{{allDetail.power_factor || ''}}</el-descriptions-item>
+          <el-descriptions-item label="电力容量：">{{allDetail.pow_capacity}}</el-descriptions-item>
         </el-descriptions>
       </el-card>
       <el-card class="card" shadow="never">
         <template #header>
           <CardTitle title="A路" />
         </template>
-        <el-descriptions class="ABRord" direction="vertical" :column="2" >
-          <el-descriptions-item label="视在功率">200.000kVA</el-descriptions-item>
-          <el-descriptions-item label="有功功率">201.000kW</el-descriptions-item>
-          <el-descriptions-item label="无功功率">10.112kVar</el-descriptions-item>
-          <el-descriptions-item label="A路占比">45%</el-descriptions-item>
+        <el-descriptions class="ABRord" direction="horizontal" :column="2" >
+          <el-descriptions-item label="视在功率">{{ADetail.pow_apparent || ''}}kVA</el-descriptions-item>
+          <el-descriptions-item label="有功功率">{{ADetail.ele_active || ''}}kW</el-descriptions-item>
+          <el-descriptions-item label="无功功率">{{ADetail.pow_reactive || ''}}kVar</el-descriptions-item>
+          <el-descriptions-item label="A路占比">{{ADetail.zb}}%</el-descriptions-item>
         </el-descriptions>
       </el-card>
       <el-card class="card" shadow="never">
         <template #header>
           <CardTitle title="B路" />
         </template>
-        <el-descriptions class="ABRord" direction="vertical" :column="2" >
-          <el-descriptions-item label="视在功率">200.000kVA</el-descriptions-item>
-          <el-descriptions-item label="有功功率">201.000kW</el-descriptions-item>
-          <el-descriptions-item label="无功功率">10.112kVar</el-descriptions-item>
-          <el-descriptions-item label="B路占比：">55%</el-descriptions-item>
+        <el-descriptions class="ABRord" direction="horizontal" :column="2" >
+          <el-descriptions-item label="视在功率">{{BDetail.pow_apparent || ''}}kVA</el-descriptions-item>
+          <el-descriptions-item label="有功功率">{{BDetail.ele_active || ''}}kW</el-descriptions-item>
+          <el-descriptions-item label="无功功率">{{BDetail.pow_reactive || ''}}kVar</el-descriptions-item>
+          <el-descriptions-item label="B路占比：">{{BDetail.zb}}%</el-descriptions-item>
         </el-descriptions>
       </el-card>
     </div>
@@ -67,7 +67,7 @@
               </el-table-column>
               <el-table-column v-if="APDUParam.includes('pow_value')" prop="pow_value" label="有功功率" width="100" align="center">
                 <template #default="scope">
-                  <div>{{scope.row.pow_value.toFixed(3)}}kW</div>
+                  <div>{{scope.row.pow_value || ''}}kW</div>
                 </template>
               </el-table-column>
               <el-table-column v-if="APDUParam.includes('power_factor')" prop="power_factor" label="功率因素" width="100" align="center">
@@ -94,7 +94,7 @@
               </el-table-column>
               <el-table-column v-if="CPDUParam.includes('pow_value')" prop="pow_value" label="有功功率" width="100" align="center">
                 <template #default="scope">
-                  <div>{{scope.row.pow_value.toFixed(3)}}kW</div>
+                  <div>{{scope.row.pow_value || ''}}kW</div>
                 </template>
               </el-table-column>
               <el-table-column v-if="CPDUParam.includes('power_factor')" prop="power_factor" label="功率因素" width="100" align="center">
@@ -121,7 +121,7 @@
               </el-table-column>
               <el-table-column v-if="SPDUParam.includes('pow_value')" prop="pow_value" label="有功功率" width="100" align="center">
                 <template #default="scope">
-                  <div>{{scope.row.pow_value.toFixed(3)}}kW</div>
+                  <div>{{scope.row.pow_value || ''}}kW</div>
                 </template>
               </el-table-column>
               <el-table-column v-if="SPDUParam.includes('power_factor')" prop="power_factor" label="功率因素" width="100" align="center">
@@ -154,7 +154,7 @@
               </el-table-column>
               <el-table-column v-if="APDUParam.includes('pow_value')" prop="pow_value" label="有功功率" width="100" align="center">
                 <template #default="scope">
-                  <div>{{scope.row.pow_value.toFixed(3)}}kW</div>
+                  <div>{{scope.row.pow_value || ''}}kW</div>
                 </template>
               </el-table-column>
               <el-table-column v-if="APDUParam.includes('power_factor')" prop="power_factor" label="功率因素" width="100" align="center">
@@ -181,7 +181,7 @@
               </el-table-column>
               <el-table-column v-if="CPDUParam.includes('pow_value')" prop="pow_value" label="有功功率" width="100" align="center">
                 <template #default="scope">
-                  <div>{{scope.row.pow_value.toFixed(3)}}kW</div>
+                  <div>{{scope.row.pow_value || ''}}kW</div>
                 </template>
               </el-table-column>
               <el-table-column v-if="CPDUParam.includes('power_factor')" prop="power_factor" label="功率因素" width="100" align="center">
@@ -208,7 +208,7 @@
               </el-table-column>
               <el-table-column v-if="SPDUParam.includes('pow_value')" prop="pow_value" label="有功功率" width="100" align="center">
                 <template #default="scope">
-                  <div>{{scope.row.pow_value.toFixed(3)}}kW</div>
+                  <div>{{scope.row.pow_value || ''}}kW</div>
                 </template>
               </el-table-column>
               <el-table-column v-if="SPDUParam.includes('power_factor')" prop="power_factor" label="功率因素" width="100" align="center">
@@ -231,7 +231,13 @@
     <template #header>
       <CardTitle title="实时曲线" />
     </template>
-    <Echart :height="500" :options="echartsOption" />
+    <div class="echart">
+      <div class="btns">
+        <el-button class="btn" size="small" :plain="!(radioBtn == 'HOUR')" type="primary" @click="getPowTrend('HOUR')">最近1小时</el-button>
+        <el-button class="btn" size="small" :plain="!(radioBtn == 'DAY')" type="primary" @click="getPowTrend('DAY')">最近24小时</el-button>
+      </div>
+      <Echart :height="500" :options="echartsOption" />
+    </div>
     <!-- <div id="cabinetDetail" ></div> -->
   </el-card>
   <el-card class="card" shadow="never">
@@ -288,9 +294,14 @@
 <script lang="ts" setup>
 import TopologyShow from "./component/TopologyShow.vue"
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
+import { CabinetApi } from '@/api/cabinet/detail'
 import { EChartsOption } from 'echarts'
 
 
+const radioBtn = ref('')
+const allDetail = reactive({})
+const ADetail = reactive({})
+const BDetail = reactive({})
 const APDUData = ref<any>([])
 const APDUTriphase = ref([])
 const APDUTriphaseMax = ref(0)
@@ -299,7 +310,7 @@ const CPDUData = ref([])
 const CPDUParam = ref<string[]>([])
 const SPDUData = ref([])
 const SPDUParam = ref<string[]>([])
-const { push } = useRouter() // 路由跳转
+const {push} = useRouter() // 路由跳转
 const activeName = ref('first')
 const alarmClass = {
   0: 'normal',
@@ -308,55 +319,13 @@ const alarmClass = {
   4: 'warn',
   8: 'error',
 }
+const cabinetId = history?.state?.id || 1
+console.log('router', history?.state?.id)
 const toPDU = () => {
   push('/pdu/pdudisplayscreen')
 }
 
-const echartsOption = reactive<EChartsOption>({
-  title: {
-    text: '机柜列实时功率走势'
-  },
-  tooltip: {
-    trigger: 'axis'
-  },
-  legend: {},
-  xAxis: {
-    type: 'category',
-    boundaryGap: false,
-    data: ['13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00']
-  },
-  yAxis: {
-    type: 'value',
-    axisLabel: {
-      formatter: '{value} W'
-    }
-  },
-  series: [
-    {
-      name: 'sourceA',
-      type: 'line',
-      data: [200, 110, 330, 410, 420, 320, 390],
-      markPoint: {
-        data: [
-          { type: 'max', name: 'Max' },
-          { type: 'min', name: 'Min' }
-        ]
-      },
-    },
-    {
-      name: 'sourceB',
-      type: 'line',
-      data: [300, 360, 230, 300, 320, 280, 290],
-      markPoint: {
-        // data: [{ name: '周最低', value: -2, xAxis: 1, yAxis: -1.5 }]
-        data: [
-          { type: 'max', name: 'Max' },
-          { type: 'min', name: 'Min' }
-        ]
-      },
-    }
-  ]
-}) as EChartsOption
+const echartsOption = ref<EChartsOption>({})
 
 const loadOption = reactive<EChartsOption>({
   legend: {
@@ -417,6 +386,90 @@ const regulateData = (data) => {
     data: result,
     keys: lineKeys
   }
+}
+
+const getMachineDetail = async() => {
+  const res = await CabinetApi.getDetail({id:cabinetId})
+  console.log('---------------', res)
+  if (res.cabinet_power && res.cabinet_power.path_a) {
+    Object.assign(ADetail, {
+      pow_apparent: res.cabinet_power.path_a.pow_apparent.toFixed(3),
+      ele_active: res.cabinet_power.path_a.ele_active.toFixed(3),
+      pow_reactive: res.cabinet_power.path_a.pow_reactive.toFixed(3),
+      zb: Number((res.cabinet_power.path_a.pow_apparent/res.cabinet_power.total_data.pow_apparent).toFixed(2)) * 100
+    })
+  }
+  if (res.cabinet_power && res.cabinet_power.path_b) {
+    Object.assign(BDetail, {
+      pow_apparent: res.cabinet_power.path_b.pow_apparent.toFixed(3),
+      ele_active: res.cabinet_power.path_b.ele_active.toFixed(3),
+      pow_reactive: res.cabinet_power.path_b.pow_reactive.toFixed(3),
+      zb: Number((res.cabinet_power.path_b.pow_apparent/res.cabinet_power.total_data.pow_apparent).toFixed(2)) * 100
+    })
+  }
+  if (res.cabinet_power && res.cabinet_power.total_data) {
+    Object.assign(allDetail, {
+      pow_apparent: res.cabinet_power.total_data.pow_apparent.toFixed(3),
+      ele_active: res.cabinet_power.total_data.ele_active.toFixed(3),
+      pow_reactive: res.cabinet_power.total_data.pow_reactive.toFixed(3),
+      power_factor: res.cabinet_power.total_data.power_factor.toFixed(3),
+      pow_capacity: res.pow_capacity
+    })
+  }
+}
+
+const getPowTrend = async(type) => {
+  if (type == radioBtn.value) return
+  radioBtn.value = type
+  const res = await CabinetApi.getPowTrend({id:1, type})
+  echartsOption.value = {
+    title: {
+      text: '机柜列实时功率走势'
+    },
+    tooltip: {
+      trigger: 'axis'
+    },
+    legend: {},
+    xAxis: {
+      type: 'category',
+      boundaryGap: false,
+      data: res.map(item => item.dateTime)
+    },
+    yAxis: {
+      type: 'value',
+      axisLabel: {
+        formatter: '{value} W'
+      }
+    },
+    series: [
+      {
+        name: '有功功率',
+        type: 'line',
+        symbol: 'none',
+        data: res.map(item => item.activePow),
+        markPoint: {
+          data: [
+            { type: 'max', name: 'Max' },
+            { type: 'min', name: 'Min' }
+          ]
+        },
+      },
+      {
+        name: '视在功率',
+        type: 'line',
+        symbol: 'none',
+        data: res.map(item => item.apparentPow),
+        markPoint: {
+          // data: [{ name: '周最低', value: -2, xAxis: 1, yAxis: -1.5 }]
+          data: [
+            { type: 'max', name: 'Max' },
+            { type: 'min', name: 'Min' }
+          ]
+        },
+      }
+    ]
+  }
+  console.log('getPowTrend res', res)
 }
 
 const getData =  async() => {
@@ -510,7 +563,11 @@ const getData =  async() => {
 }
 
 getData()
-
+getMachineDetail()
+getPowTrend('DAY')
+onMounted(()=> {
+  
+})
 </script>
 
 <style lang="scss" scoped>
@@ -694,6 +751,15 @@ getData()
       height: 6px;
       background-color: #fd0808;
     }
+  }
+}
+.echart {
+  position: relative;
+  .btns {
+    position: absolute;
+    z-index: 9;
+    right: 200px;
+    top: 0px;
   }
 }
 :deep(.el-table__row .el-table__cell) {
