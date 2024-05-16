@@ -423,7 +423,6 @@ const loadNode = async (node: Node, resolve: (data: Tree[]) => void) => {
   }
   if (node.level === 1){
     var temp = await CabinetApi.getRoomPDUList({id : node.data.id});
-    console.log(temp)
     return resolve(temp[0].children);
   } 
   if (node.level >= 2){
@@ -432,7 +431,6 @@ const loadNode = async (node: Node, resolve: (data: Tree[]) => void) => {
 }
 
 const handleClick = (row) => {
-  console.log('Button clicked!', row);
   if(row.type != null  && row.type == 4){
     queryParams.ipAddr = row.ip
     queryParams.cascadeAddr = row?.unique?.split("-")[1];
@@ -850,7 +848,6 @@ const initChart =  () => {
     // 将 temChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
     instance.appContext.config.globalProperties.temChart = temChart;
   }
-  console.log(serverData.value.nameAndMax);
   if (serChartContainer.value && instance && serverData.value.nameAndMax && serverData.value.nameAndMax.length > 0) {
     serChart = echarts.init(serChartContainer.value);
     serChart.setOption({

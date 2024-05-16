@@ -380,7 +380,7 @@ const chartData = ref({
   apparentList : [] as number[],
   activeList : [] as number[],
   dateTimes : [] as string[]
-})
+}) as any
 
 // const total = ref(0) // 列表的总页数
 const queryParams = reactive({
