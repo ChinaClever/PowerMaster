@@ -271,7 +271,7 @@ const typeCascaderChange = (selected) => {
     // 选择总，移除索引为 1 的位置上的行数据
     tableColumns.value.splice(1, 1);
   }
-  getList();
+  handleQuery();
 }
 
 // 返回当前页的序号数组
@@ -311,31 +311,8 @@ window.addEventListener('resize', function() {
   rankChart?.resize(); 
 });
 
-watch(() => queryParams.granularity, (newValues) => {
-  const newGranularity = newValues;
-  queryParams.pageNo = 1;
-  getList();
-  if ( newGranularity == 'day'){
-  // rankChart?.setOption({
-  //   series: [
-  //     {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
-  //   ],
-  // })
-  }
-  if ( newGranularity == 'week'){
-  // rankChart?.setOption({
-  //   series: [
-  //     {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
-  //   ],
-  // })
-  }
-  if ( newGranularity == 'month'){
-  // rankChart?.setOption({
-  //   series: [
-  //     {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
-  //   ],
-  // })
-  }
+watch(() => queryParams.granularity, () => {
+  handleQuery();
 });
 
 const tableColumns = ref([
@@ -347,7 +324,6 @@ const tableColumns = ref([
   { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
   { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px' , istrue:true},
   { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '130px'},
-
 ]);
 
 /** 查询列表 */
@@ -416,7 +392,7 @@ function formatEle(row: any, column: any, cellValue: number): string {
   return cellValue.toFixed(1);
 }
 
-// 格式化电量列数据，保留1位小数
+// 格式化耗电量列数据，保留1位小数
 function formatEQ(value, decimalPlaces){
   if (!isNaN(value)) {
     return value.toFixed(decimalPlaces);

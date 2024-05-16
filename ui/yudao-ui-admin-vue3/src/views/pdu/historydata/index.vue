@@ -842,9 +842,9 @@ const handleQuery = () => {
    // IP地址的正则表达式
   const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
   if (queryParams.ipAddr == null || queryParams.ipAddr == '' || ipRegex.test(queryParams.ipAddr)){
-    queryParams.pageNo = 1
+    queryParams.pageNo = 1;
     queryParams.cascadeAddr = cascadeAddr.value.toString();
-    getList()
+    getList();
   }else{
     ElMessage.error('IP地址有误,请重新输入！')
   }
@@ -881,8 +881,8 @@ const handleExport = async () => {
 
 
 /** 初始化 **/
-onMounted(async () => {
-  await getTypeMaxValue();
+onMounted( () => {
+  getTypeMaxValue();
   getList();
 });
 
