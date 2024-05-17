@@ -5,6 +5,8 @@ import lombok.Data;
 @Data
 public class CabinetEnvAndHumRes {
 
+    private Integer id;
+
     private String  location;
 
     private Double iceTopTem;

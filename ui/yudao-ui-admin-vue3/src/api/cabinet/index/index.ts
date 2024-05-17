@@ -63,4 +63,10 @@ export const IndexApi = {
   getCabinetEnvPage: async (params) => {
     return await request.get({ url: `/cabinet/index/env/page`,params})
   },
+  getCabinetIceTemAndHumById: async (params) => {
+    return await request.get({ url: `/cabinet/index/env/ice`,params})
+  },
+  getCabinetHotTemAndHumById: async (params) => {
+    return await request.get({ url: `/cabinet/index/env/hot`,params})
+  },
 }

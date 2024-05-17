@@ -127,7 +127,7 @@
 
       <!-- 列表 -->
       <ContentWrap  v-show="switchValue == 2">
-        <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+        <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toCabinetEnvDetail" >
           <el-table-column label="编号" align="center" prop="tableId" />
           <!-- 数据库查询 -->
           <el-table-column label="所在位置" align="center" prop="location" />
@@ -201,7 +201,7 @@
               <el-button
                 link  
                 type="primary"
-                @click="toPDUDisplayScreen(scope.row)"
+                @click="toCabinetEnvDetail(scope.row)"
               >
               设备详情
               </el-button>
@@ -239,7 +239,7 @@
               <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
               <div class="status" >
               </div>
-              <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+              <button class="detail" @click="toCabinetEnvDetail(item)">详情</button>
             </div>
           </div>
       </ContentWrap>
@@ -264,7 +264,7 @@
               <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
               <div class="status" >
               </div>
-              <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+              <button class="detail" @click="toCabinetEnvDetail(item)">详情</button>
             </div>
           </div>
       </ContentWrap>
@@ -312,6 +312,10 @@ const statusNumber = reactive({
   greaterThirty : 0,
   smallCurrent : 0
 })
+
+const toCabinetEnvDetail = (row) =>{
+  push('/cabinet/cab/cabinetenvdetail?id=' + row.id);
+}
 
 const statusList = reactive([
   {
@@ -484,10 +488,6 @@ const getNavList = async() => {
     })
   }
 
-}
-
-const toPDUDisplayScreen = (row) =>{
-  push('/pdu/pdudisplayscreen?devKey=' + row.devKey + '&location=' + row.location + '&id=' + row.id);
 }
 
 // const openNewPage = (scope) => {

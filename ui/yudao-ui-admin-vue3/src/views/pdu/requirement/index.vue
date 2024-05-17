@@ -425,9 +425,8 @@ const handleDayPick = () => {
  if (queryParams.timeArr && queryParams.timeType == 2) {
 
     queryParams.oldTime = queryParams.timeArr[0];
-    queryParams.newTime = queryParams.timeArr[1];
+    queryParams.newTime = queryParams.timeArr[1].split(" ")[0]+ " " + "23:59:59";
   }
-  
 }
 
 const handleMonthPick = () => {

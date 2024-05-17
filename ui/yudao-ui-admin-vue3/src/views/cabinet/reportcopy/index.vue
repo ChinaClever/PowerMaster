@@ -371,7 +371,7 @@ const handleDayPick = () => {
         visControll.isSameDay = false;
       }
       queryParams.oldTime = queryParams.timeArr[0];
-      queryParams.newTime = queryParams.timeArr[1];
+      queryParams.newTime = queryParams.timeArr[1].split(" ")[0]+ " " + "23:59:59";
 
 
     }

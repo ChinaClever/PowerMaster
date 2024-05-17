@@ -10,6 +10,7 @@ import cn.iocoder.yudao.framework.common.entity.es.cabinet.env.CabinetEnvHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.pow.CabinetPowDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.pow.CabinetPowHourDo;
 
+import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetEnvSensor;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
@@ -845,7 +846,7 @@ public class IndexServiceImpl implements IndexService {
                 SearchSourceBuilder cabinetTemDaySourceBuilder = new SearchSourceBuilder();
 
                 cabinetTemDaySourceBuilder.query(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime)).lte(formatter.format(newTime)))
+                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime.plusDays(1))).lte(formatter.format(newTime.plusDays(1))))
                         .must(QueryBuilders.termQuery("cabinet_id", Id)));
 
 
@@ -943,6 +944,7 @@ public class IndexServiceImpl implements IndexService {
                 localtion = roomName + "-"  + indexDO.getName() ;
             }
             res.setLocation(localtion);
+            res.setId(indexDO.getId());
             CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, indexDO.getId()));
             List<CabinetEnvSensor> envList = cabinetEnvSensorMapper.selectList(new LambdaQueryWrapperX<CabinetEnvSensor>()
                     .eq(CabinetEnvSensor::getCabinetId, indexDO.getId())
@@ -963,6 +965,7 @@ public class IndexServiceImpl implements IndexService {
                 }
                 PduIndex pdu = pduList.get(0);
                 MultiSearchRequest multiSearchRequest = new MultiSearchRequest();
+
                 SearchRequest pduEnvRealtimeRequest = new SearchRequest("pdu_env_realtime");
                 SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
@@ -1025,6 +1028,194 @@ public class IndexServiceImpl implements IndexService {
         }
 
         return new PageResult<CabinetEnvAndHumRes>(result,indexDOPageResult.getTotal());
+    }
+
+    @Override
+    public Map getCabinetEnvIceTemAndHumData(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+        Map result = new HashMap<>();
+        CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, id),false);
+        if (cabinetPdu == null){
+            return null;
+        }
+        List<List> tem = new ArrayList<>();
+        tem.add(new ArrayList());
+        tem.add(new ArrayList());
+        tem.add(new ArrayList());
+        tem.add(new ArrayList());
+        List<List> hum = new ArrayList<>();
+        hum.add(new ArrayList());
+        hum.add(new ArrayList());
+        hum.add(new ArrayList());
+        hum.add(new ArrayList());
+        List<String> time = null;
+        boolean firstTime = false;
+        for (int position = 1; position <= 3; position++) {
+            List<String> createTimeList = new ArrayList<>();
+            CabinetEnvSensor cabinetEnvSensor = cabinetEnvSensorMapper.selectOne(new LambdaQueryWrapperX<CabinetEnvSensor>()
+                    .eq(CabinetEnvSensor::getCabinetId, id)
+                    .eq(CabinetEnvSensor::getChannel, 1)
+                    .eq(CabinetEnvSensor::getPosition, position)
+                    .eq(CabinetEnvSensor::getSensorId, 1), false);
+            if (cabinetEnvSensor == null){
+                continue;
+            }
+            String devKey = null;
+            if(cabinetEnvSensor.getPathPdu() == 'A'){
+                devKey = cabinetPdu.getPduIpA() + '-' + cabinetPdu.getCasIdA();
+            }else{
+                devKey = cabinetPdu.getPduIpB() + '-' + cabinetPdu.getCasIdB();
+            }
+            PduIndex pduIndex = pduIndexMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getDevKey, devKey), false);
+            if (pduIndex == null){
+                continue;
+            }
+            MultiSearchRequest multiSearchRequest = new MultiSearchRequest();
+            String whichIndex = "pdu_env_hour";
+            if (timeType == 2){
+                whichIndex = "pdu_env_day";
+            }
+
+            SearchRequest pduEnvRealtimeRequest = new SearchRequest(whichIndex);
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+
+            if(timeType == 1){
+                LocalDateTime now = LocalDateTime.now();
+                oldTime = now.minusHours(25);
+                newTime = now;
+            } else if (timeType == 2) {
+                oldTime = oldTime.plusDays(1);
+                newTime = newTime.plusDays(1);
+            }
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            searchSourceBuilder.query(QueryBuilders.boolQuery()
+                    .must(QueryBuilders.termQuery("pdu_id", pduIndex.getId()))
+                    .must(QueryBuilders.termQuery("sensor_id", cabinetEnvSensor.getSensorId()))
+                    .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime)).lte(formatter.format(newTime))));
+
+            searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
+            pduEnvRealtimeRequest.source(searchSourceBuilder);
+            multiSearchRequest.add(pduEnvRealtimeRequest);
+
+            try {
+                // 执行多索引搜索请求
+                MultiSearchResponse multiSearchResponse = client.msearch(multiSearchRequest, RequestOptions.DEFAULT);
+
+                SearchResponse response = multiSearchResponse.getResponses()[0].getResponse();
+                if (response != null) {
+                    for (SearchHit hit : response.getHits()) {
+                        PduEnvHourDo pduEnvHourDo = JsonUtils.parseObject(hit.getSourceAsString(), PduEnvHourDo.class);
+                        tem.get(position).add(pduEnvHourDo.getTemAvgValue());
+                        hum.get(position).add(pduEnvHourDo.getHumAvgValue());
+                        createTimeList.add(pduEnvHourDo.getCreateTime().toString("yyyy-MM-dd HH:mm"));
+                    }
+                }
+                if (!firstTime){
+                    time = createTimeList;
+                    firstTime = true;
+                }
+            }catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        result.put("temAvgValue",tem);
+        result.put("humAvgValue",hum);
+        result.put("time",time);
+        return result;
+    }
+
+    @Override
+    public Map getCabinetEnvHotTemAndHumData(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+        Map result = new HashMap<>();
+        CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, id),false);
+        if (cabinetPdu == null){
+            return null;
+        }
+        List<List> tem = new ArrayList<>();
+        tem.add(new ArrayList());
+        tem.add(new ArrayList());
+        tem.add(new ArrayList());
+        tem.add(new ArrayList());
+        List<List> hum = new ArrayList<>();
+        hum.add(new ArrayList());
+        hum.add(new ArrayList());
+        hum.add(new ArrayList());
+        hum.add(new ArrayList());
+        List<String> time = null;
+        boolean firstTime = false;
+        for (int position = 1; position <= 3; position++) {
+            List<String> createTimeList = new ArrayList<>();
+            CabinetEnvSensor cabinetEnvSensor = cabinetEnvSensorMapper.selectOne(new LambdaQueryWrapperX<CabinetEnvSensor>()
+                    .eq(CabinetEnvSensor::getCabinetId, id)
+                    .eq(CabinetEnvSensor::getChannel, 2)
+                    .eq(CabinetEnvSensor::getPosition, position)
+                    .eq(CabinetEnvSensor::getSensorId, 1), false);
+            if (cabinetEnvSensor == null){
+                continue;
+            }
+            String devKey = null;
+            if(cabinetEnvSensor.getPathPdu() == 'A'){
+                devKey = cabinetPdu.getPduIpA() + '-' + cabinetPdu.getCasIdA();
+            }else{
+                devKey = cabinetPdu.getPduIpB() + '-' + cabinetPdu.getCasIdB();
+            }
+            PduIndex pduIndex = pduIndexMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getDevKey, devKey), false);
+            if (pduIndex == null){
+                continue;
+            }
+            MultiSearchRequest multiSearchRequest = new MultiSearchRequest();
+            String whichIndex = "pdu_env_hour";
+            if (timeType == 2){
+                whichIndex = "pdu_env_day";
+            }
+
+            SearchRequest pduEnvRealtimeRequest = new SearchRequest(whichIndex);
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+
+            if(timeType == 1){
+                LocalDateTime now = LocalDateTime.now();
+                oldTime = now.minusHours(25);
+                newTime = now;
+            } else if (timeType == 2) {
+                oldTime = oldTime.plusDays(1);
+                newTime = newTime.plusDays(1);
+            }
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            searchSourceBuilder.query(QueryBuilders.boolQuery()
+                    .must(QueryBuilders.termQuery("pdu_id", pduIndex.getId()))
+                    .must(QueryBuilders.termQuery("sensor_id", cabinetEnvSensor.getSensorId()))
+                    .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime)).lte(formatter.format(newTime))));
+
+
+            searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
+
+            pduEnvRealtimeRequest.source(searchSourceBuilder);
+            multiSearchRequest.add(pduEnvRealtimeRequest);
+
+            try {
+                // 执行多索引搜索请求
+                MultiSearchResponse multiSearchResponse = client.msearch(multiSearchRequest, RequestOptions.DEFAULT);
+
+                SearchResponse response = multiSearchResponse.getResponses()[0].getResponse();
+                if (response != null) {
+                    for (SearchHit hit : response.getHits()) {
+                        PduEnvHourDo pduEnvHourDo = JsonUtils.parseObject(hit.getSourceAsString(), PduEnvHourDo.class);
+                        tem.get(position).add(pduEnvHourDo.getTemAvgValue());
+                        hum.get(position).add(pduEnvHourDo.getHumAvgValue());
+                        createTimeList.add(pduEnvHourDo.getCreateTime().toString("yyyy-MM-dd HH:mm"));
+                    }
+                }
+                if (!firstTime){
+                    time = createTimeList;
+                    firstTime = true;
+                }
+            }catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        result.put("temAvgValue",tem);
+        result.put("humAvgValue",hum);
+        result.put("time",time);
+        return result;
     }
 
 }

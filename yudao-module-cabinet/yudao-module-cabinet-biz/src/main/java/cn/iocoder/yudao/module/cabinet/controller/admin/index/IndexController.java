@@ -124,4 +124,16 @@ public class IndexController {
     public CommonResult<PageResult<CabinetEnvAndHumRes>> getCabinetEnvPage(@Valid IndexPageReqVO pageReqVO) {
         return success(indexService.getCabinetEnvPage(pageReqVO));
     }
+
+    @GetMapping("/env/ice")
+    @Operation(summary = "获得机柜冷通道温度和湿度")
+    public CommonResult<Map> getCabinetEnvIceTemAndHumData(String id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
+        return success(indexService.getCabinetEnvIceTemAndHumData(id,timeType,oldTime,newTime));
+    }
+
+    @GetMapping("/env/hot")
+    @Operation(summary = "获得机柜热通道温度和湿度")
+    public CommonResult<Map> getCabinetEnvHotTemAndHumData(String id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
+        return success(indexService.getCabinetEnvHotTemAndHumData(id,timeType,oldTime,newTime));
+    }
 }
