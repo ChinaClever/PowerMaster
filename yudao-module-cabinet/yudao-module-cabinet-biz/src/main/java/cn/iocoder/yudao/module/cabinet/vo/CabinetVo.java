@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.cabinet.vo;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetEnvSensor;
+import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -120,5 +121,8 @@ public class CabinetVo {
 
     @Schema(description = "温度传感器绑定", example = "[]")
     private List<CabinetEnvSensor>  sensorList;
+
+    @Schema(description = "u位绑定", example = "[]")
+    private List<RackIndex>  rackList;
 
 }
