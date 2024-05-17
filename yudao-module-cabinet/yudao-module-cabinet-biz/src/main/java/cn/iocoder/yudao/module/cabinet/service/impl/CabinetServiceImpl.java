@@ -378,6 +378,12 @@ public class CabinetServiceImpl implements CabinetService {
         try {
             Page<CabinetIndexDTO> page = new Page<>(vo.getPageNo(), vo.getPageSize());
             //获取机柜列表
+            if (Objects.nonNull(vo.getCabinetIds()) && CollectionUtils.isEmpty(vo.getCabinetIds())){
+                List<Integer> list = new ArrayList<>();
+                list.add(-1);
+                vo.setCabinetIds(list);
+            }
+            //获取机柜列表
             Page<CabinetIndexDTO> indexDTOPage = cabinetCfgMapper.selectCabList(page, vo);
             List<CabinetIndexDTO> result = new ArrayList<>();
             //获取机房数据
