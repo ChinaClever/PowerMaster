@@ -1,293 +1,265 @@
 <template>
-  <div class="master">
-    <!-- 左大侧 -->
-    <div class="master-left">
-      <ContentWrap style="height: calc(100% - 15px)">
-        <div v-if="!isCloseNav" class="nav-left">
-          <!-- 左侧标题栏 -->
-          <div class="navBar">微模块机房</div>
-          <!-- 信息展示模式 -->
-          <div v-if="switchNav">
-            <div class="header">
-              <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
-              <div class="name">微模块机房</div>
-              <div>机房202</div>
+  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="均衡配电">
+    <template #NavInfo>
+      <div>
+        <div class="header">
+          <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
+          <div class="name">微模块机房</div>
+          <div>机房202</div>
+        </div>
+        <div class="line"></div>
+        <div class="status">
+          <div class="box">
+            <div class="top">
+              <div class="tag"></div>&lt;15%
             </div>
-            <div class="line"></div>
-            <div class="status">
-              <div class="box">
-                <div class="top">
-                  <div class="tag"></div>&lt;15%
-                </div>
-                <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
-              </div>
-              <div class="box">
-                <div class="top">
-                  <div class="tag empty"></div>小电流
-                </div>
-                <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
-              </div>
-              <div class="box">
-                <div class="top">
-                  <div class="tag warn"></div>15%-30%
-                </div>
-                <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
-              </div>
-              <div class="box">
-                <div class="top">
-                  <div class="tag error"></div>&gt;30
-                </div>
-                <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
-              </div>
-            </div>
-            <div class="line"></div>
-            <div class="overview">
-              <div class="count">
-                <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-                <div class="info">
-                  <div>总电能</div>
-                  <div class="value">295.87 kW·h</div>
-                </div>
-              </div>
-              <div class="count">
-                <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
-                <div class="info">
-                  <div>今日用电</div>
-                  <div class="value">295.87 kW·h</div>
-                </div>
-              </div>
-              <div class="count">
-                <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-                <div class="info">
-                  <div>今日用电</div>
-                  <div class="value">295.87 kW·h</div>
-                </div>
-              </div>
-            </div>
+            <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
           </div>
-          <!-- 筛选模式 -->
-          <div v-else style="margin-top: 10px">
-            <NavTree :showCheckbox="true" ref="navTree"  @check="handleCheck" @node-click="handleClick" :showSearch="true"  :dataList="serverRoomArr" />
+          <div class="box">
+            <div class="top">
+              <div class="tag empty"></div>小电流
+            </div>
+            <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag warn"></div>15%-30%
+            </div>
+            <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag error"></div>&gt;30
+            </div>
+            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
           </div>
         </div>
-        <div v-if="!isCloseNav" class="openNavtree" @click.prevent="handleSwitchNav">
-          <Icon icon="ep:switch" />切换
+        <div class="line"></div>
+        <div class="overview">
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+            <div class="info">
+              <div>总电能</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
+          </div>
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
+            <div class="info">
+              <div>今日用电</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
+          </div>
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+            <div class="info">
+              <div>今日用电</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
+          </div>
         </div>
-        <div v-if="!isCloseNav" class="reduce" @click.prevent="isCloseNav = true"><Icon icon="ep:arrow-left" />收起</div>
-        <div v-if="isCloseNav" class="expand" @click.prevent="isCloseNav = false"><Icon icon="ep:arrow-right" /><span>展</span><span>开</span></div>
-      </ContentWrap>
-    </div>
-    <!-- 右大侧 -->
-    <div class="master-right">
-      <ContentWrap>
-        
-        <!-- 搜索工作栏 -->
-        <el-form
-          class="-mb-15px"
-          :model="queryParams"
-          ref="queryFormRef"
-          :inline="true"
-          label-width="68px"                          
-        >
-          <el-form-item v-if="switchValue == 2 || switchValue == 3">
-            <template v-for="(status, index) in statusList" :key="index">
-              <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
-            </template>
-          </el-form-item>
-          <el-form-item label="网络地址" prop="devKey">
-            <el-input
-              v-model="queryParams.devKey"
-              placeholder="请输入网络地址"
-              clearable
-              @keyup.enter="handleQuery"
-              class="!w-200px"
-            />
-          </el-form-item>
-          <el-form-item>
-            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-            <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+      </div>
+    </template>
+    <template #ActionBar>
+      <el-form
+        class="-mb-15px"
+        :model="queryParams"
+        ref="queryFormRef"
+        :inline="true"
+        label-width="68px"                          
+      >
+        <el-form-item v-if="switchValue == 2 || switchValue == 3">
+          <template v-for="(status, index) in statusList" :key="index">
+            <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
+          </template>
+        </el-form-item>
+        <el-form-item label="网络地址" prop="devKey">
+          <el-input
+            v-model="queryParams.devKey"
+            placeholder="请输入网络地址"
+            clearable
+            @keyup.enter="handleQuery"
+            class="!w-200px"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+          <el-button
+            type="primary"
+            plain
+            @click="openForm('create')"
+            v-hasPermi="['pdu:PDU-device:create']"
+          >
+            <Icon icon="ep:plus" class="mr-5px" /> 新增
+          </el-button>
+          <el-button
+            type="success"
+            plain
+            @click="handleExport"
+            :loading="exportLoading"
+            v-hasPermi="['pdu:PDU-device:export']"
+          >
+            <Icon icon="ep:download" class="mr-5px" /> 导出
+          </el-button>
+        </el-form-item>
+        <div style="float:right">
+          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流阵列</el-button>            
+          <el-button @click="statusList.forEach((item) => item.selected = true);pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压阵列</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
+        </div>
+      </el-form>
+    </template>
+    <template #Content>
+      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+        <el-table-column label="编号" align="center" prop="tableId" />
+        <!-- 数据库查询 -->
+        <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="运行状态" align="center" prop="status" >
+          <template #default="scope" >
+              <el-tag type="info"  v-if="scope.row.color == 1">小电流不平衡</el-tag>
+              <el-tag type="success"  v-if="scope.row.color == 2">大电流不平衡</el-tag>
+              <el-tag type="warning" v-if="scope.row.color == 3">大电流不平衡</el-tag>
+              <el-tag type="danger" v-if="scope.row.color == 4">大电流不平衡</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="A相电流" align="center" prop="acur" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.acur != null">
+              {{ scope.row.acur }}A
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="B相电流" align="center" prop="bcur" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.bcur != null">
+              {{ scope.row.bcur }}A
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="C相电流" align="center" prop="ccur" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.ccur != null">
+              {{ scope.row.ccur }}A
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="A相电压" align="center" prop="avol" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.avol">
+              {{ scope.row.avol }}V
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="B相电压" align="center" prop="bvol" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.bvol">
+              {{ scope.row.bvol }}V
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="C相电压" align="center" prop="cvol" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.cvol">
+              {{ scope.row.cvol }}V
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="不平衡度" align="center" prop="curUnbalance" width="130px">
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.curUnbalance != null" >
+              {{ scope.row.curUnbalance }}%
+            </el-text>
+          </template>
+        </el-table-column>
+        <!-- 数据库查询 -->
+        <el-table-column label="操作" align="center">
+          <template #default="scope">
             <el-button
+              link
               type="primary"
-              plain
-              @click="openForm('create')"
-              v-hasPermi="['pdu:PDU-device:create']"
+              @click="toPDUDisplayScreen(scope.row)"
             >
-              <Icon icon="ep:plus" class="mr-5px" /> 新增
+            设备详情
             </el-button>
             <el-button
-              type="success"
-              plain
-              @click="handleExport"
-              :loading="exportLoading"
-              v-hasPermi="['pdu:PDU-device:export']"
+              link
+              type="danger"
+              @click="handleDelete(scope.row.id)"
+              v-if="scope.row.status == 5"
             >
-              <Icon icon="ep:download" class="mr-5px" /> 导出
+              删除
             </el-button>
-          </el-form-item>
-          <div style="float:right">
-            <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流阵列</el-button>            
-            <el-button @click="statusList.forEach((item) => item.selected = true);pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压阵列</el-button>
-            <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格</el-button>
-          </div>
-        </el-form>
-      </ContentWrap>
+          </template>
+        </el-table-column>
+      </el-table>
 
-      <!-- 列表 -->
-      <ContentWrap  v-show="switchValue == 3">
-        <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
-          <el-table-column label="编号" align="center" prop="tableId" />
-          <!-- 数据库查询 -->
-          <el-table-column label="所在位置" align="center" prop="location" />
-          <el-table-column label="运行状态" align="center" prop="status" >
-            <template #default="scope" >
-                <el-tag type="info"  v-if="scope.row.color == 1">小电流不平衡</el-tag>
-                <el-tag type="success"  v-if="scope.row.color == 2">大电流不平衡</el-tag>
-                <el-tag type="warning" v-if="scope.row.color == 3">大电流不平衡</el-tag>
-                <el-tag type="danger" v-if="scope.row.color == 4">大电流不平衡</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="A相电流" align="center" prop="acur" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.acur != null">
-                {{ scope.row.acur }}A
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="B相电流" align="center" prop="bcur" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.bcur != null">
-                {{ scope.row.bcur }}A
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="C相电流" align="center" prop="ccur" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.ccur != null">
-                {{ scope.row.ccur }}A
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="A相电压" align="center" prop="avol" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.avol">
-                {{ scope.row.avol }}V
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="B相电压" align="center" prop="bvol" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.bvol">
-                {{ scope.row.bvol }}V
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="C相电压" align="center" prop="cvol" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.cvol">
-                {{ scope.row.cvol }}V
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="不平衡度" align="center" prop="curUnbalance" width="130px">
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.curUnbalance != null" >
-                {{ scope.row.curUnbalance }}%
-              </el-text>
-            </template>
-          </el-table-column>
-          <!-- 数据库查询 -->
-          <el-table-column label="操作" align="center">
-            <template #default="scope">
-              <el-button
-                link
-                type="primary"
-                @click="toPDUDisplayScreen(scope.row)"
-              >
-              设备详情
-              </el-button>
-              <el-button
-                link
-                type="danger"
-                @click="handleDelete(scope.row.id)"
-                v-if="scope.row.status == 5"
-              >
-                删除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <!-- 分页 -->
-      </ContentWrap>
-
-      <ContentWrap v-show="switchValue == 2">
-          <div class="arrayContainer">
-            <div class="arrayItem" v-for="item in list" :key="item.devKey">
-              <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
-              <div class="content">
-                <div class="icon" >
-                  <div v-if="item.curUnbalance != null" >
-                    不平衡度<br/>{{ item.curUnbalance }}%
-                  </div>              
-                </div>
-                <div class="info">                  
-                  <div v-if="item.acur != null">A相电流：{{item.acur}}A</div>
-                  <div v-if="item.bcur != null" >B相电流：{{item.bcur}}A</div>
-                  <div v-if="item.ccur != null" >C相电流：{{item.ccur}}A</div>
-                  <div >网络地址：{{ item.devKey }}</div>
-                  <!-- <div>AB路占比：{{item.fzb}}</div> -->
-                </div>
-              </div>
-              <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
-              <div class="status" v-if="item.color != 0">
-                <el-tag type="info"  v-if="item.color == 1">小电流不平衡</el-tag>
-                <el-tag type="success"  v-if="item.color == 2">大电流不平衡</el-tag>
-                <el-tag type="warning" v-if="item.color == 3">大电流不平衡</el-tag>
-                <el-tag type="danger" v-if="item.color == 4">大电流不平衡</el-tag>
-              </div>
-              <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+      <div v-show="switchValue == 2  && list.length > 0" class="arrayContainer">
+        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
+          <div class="content">
+            <div class="icon" >
+              <div v-if="item.curUnbalance != null" >
+                不平衡度<br/>{{ item.curUnbalance }}%
+              </div>              
+            </div>
+            <div class="info">                  
+              <div v-if="item.acur != null">A相电流：{{item.acur}}A</div>
+              <div v-if="item.bcur != null" >B相电流：{{item.bcur}}A</div>
+              <div v-if="item.ccur != null" >C相电流：{{item.ccur}}A</div>
+              <div >网络地址：{{ item.devKey }}</div>
+              <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
-      </ContentWrap>
+          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
+          <div class="status" v-if="item.color != 0">
+            <el-tag type="info"  v-if="item.color == 1">小电流不平衡</el-tag>
+            <el-tag type="success"  v-if="item.color == 2">大电流不平衡</el-tag>
+            <el-tag type="warning" v-if="item.color == 3">大电流不平衡</el-tag>
+            <el-tag type="danger" v-if="item.color == 4">大电流不平衡</el-tag>
+          </div>
+          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+        </div>
+      </div>
 
-      <ContentWrap v-show="switchValue == 0">
-          <div class="arrayContainer">
-            <div class="arrayItem" v-for="item in list" :key="item.devKey">
-              <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
-              <div class="content">
-                <div class="icon" >
-                  <div v-if="item.volUnbalance != null" >
-                    不平衡度<br/>{{ item.volUnbalance }}%
-                  </div>              
-                </div>
-                <div class="info">                  
-                  <div v-if="item.avol != null">A相电压：{{item.avol}}V</div>
-                  <div v-if="item.bvol != null" >B相电压：{{item.bvol}}V</div>
-                  <div v-if="item.cvol != null" >C相电压：{{item.cvol}}V</div>
-                  <div >网络地址：{{ item.devKey }}</div>
-                  <!-- <div>AB路占比：{{item.fzb}}</div> -->
-                </div>
-              </div>
-              <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
-              <div class="status" >
-                <el-tag type="info" >电压不平衡</el-tag>
-
-              </div>
-              <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+      <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
+        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
+          <div class="content">
+            <div class="icon" >
+              <div v-if="item.volUnbalance != null" >
+                不平衡度<br/>{{ item.volUnbalance }}%
+              </div>              
+            </div>
+            <div class="info">                  
+              <div v-if="item.avol != null">A相电压：{{item.avol}}V</div>
+              <div v-if="item.bvol != null" >B相电压：{{item.bvol}}V</div>
+              <div v-if="item.cvol != null" >C相电压：{{item.cvol}}V</div>
+              <div >网络地址：{{ item.devKey }}</div>
+              <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
-      </ContentWrap>
+          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
+          <div class="status" >
+            <el-tag type="info" >电压不平衡</el-tag>
 
-      <ContentWrap>
-        <Pagination
+          </div>
+          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+        </div>
+      </div>
+      <Pagination
         :total="total"
         :page-size-arr="pageSizeArr"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
-      </ContentWrap>
-    </div>
-  </div>
+      <template v-if="list.length == 0 && switchValue != 3">
+        <el-empty description="暂无数据" :image-size="300" />
+      </template>
+    </template>
+  </CommonMenu>
+
 
   <!-- 表单弹窗：添加/修改 -->
   <!-- <PDUDeviceForm ref="formRef" @success="getList" /> -->
@@ -306,8 +278,6 @@ defineOptions({ name: 'PDUDevice' })
 
 const { push } = useRouter()
 
-const isCloseNav = ref(false) // 左侧导航是否收起
-const switchNav = ref(false) //false: 导航树 true：微模块展示
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48])
@@ -377,10 +347,6 @@ const handleCheck = async (row) => {
   getList();
 }
 
-// 处理切换按钮点击事件
-const handleSwitchNav = () => {
-  switchNav.value = !switchNav.value
-}
 
 const serverRoomArr =  ref([])
 

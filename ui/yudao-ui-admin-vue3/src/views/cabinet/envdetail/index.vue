@@ -1,383 +1,364 @@
 <template>
-  <div class="master">
-    <!-- 左大侧 -->
-    <div class="master-left">
-      <ContentWrap style="height: calc(100% - 15px)">
-        <div v-if="!isCloseNav" class="nav-left">
-          <!-- 左侧标题栏 -->
-          <div class="navBar">微模块机房</div>
-          <!-- 信息展示模式 -->
-          <div v-if="switchNav">
-            <div class="header">
-              <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
-              <div class="name">微模块机房</div>
-              <div>机房202</div>
+  <CommonMenu :showCheckbox="false"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="机柜环境详情">
+    <template #NavInfo>
+      <div >
+        <div class="header">
+          <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
+          <div class="name">微模块机房</div>
+          <div>机房202</div>
+        </div>
+        <div class="line"></div>
+        <!-- <div class="status">
+          <div class="box">
+            <div class="top">
+              <div class="tag"></div>&lt;15%
             </div>
-            <div class="line"></div>
-            <!-- <div class="status">
-              <div class="box">
-                <div class="top">
-                  <div class="tag"></div>&lt;15%
-                </div>
-                <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
-              </div>
-              <div class="box">
-                <div class="top">
-                  <div class="tag empty"></div>小电流
-                </div>
-                <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
-              </div>
-              <div class="box">
-                <div class="top">
-                  <div class="tag warn"></div>15%-30%
-                </div>
-                <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
-              </div>
-              <div class="box">
-                <div class="top">
-                  <div class="tag error"></div>&gt;30
-                </div>
-                <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
-              </div>
-            </div> -->
-            <div class="line"></div>
-            <div class="overview">
-              <div class="count">
-                <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-                <div class="info">
-                  <div>总电能</div>
-                  <div class="value">295.87 kW·h</div>
-                </div>
-              </div>
-              <div class="count">
-                <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
-                <div class="info">
-                  <div>今日用电</div>
-                  <div class="value">295.87 kW·h</div>
-                </div>
-              </div>
-              <div class="count">
-                <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-                <div class="info">
-                  <div>今日用电</div>
-                  <div class="value">295.87 kW·h</div>
-                </div>
-              </div>
+            <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag empty"></div>小电流
+            </div>
+            <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag warn"></div>15%-30%
+            </div>
+            <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag error"></div>&gt;30
+            </div>
+            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
+          </div>
+        </div> -->
+        <div class="line"></div>
+        <div class="overview">
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+            <div class="info">
+              <div>总电能</div>
+              <div class="value">295.87 kW·h</div>
             </div>
           </div>
-          <!-- 筛选模式 -->
-          <div v-else style="margin-top: 10px">
-            <NavTree :showCheckbox="false" ref="navTree" @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" />
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
+            <div class="info">
+              <div>今日用电</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
+          </div>
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+            <div class="info">
+              <div>今日用电</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
           </div>
         </div>
-        <div v-if="!isCloseNav" class="openNavtree" @click.prevent="handleSwitchNav">
-          <Icon icon="ep:switch" />切换
-        </div>
-        <div v-if="!isCloseNav" class="reduce" @click.prevent="isCloseNav = true"><Icon icon="ep:arrow-left" />收起</div>
-        <div v-if="isCloseNav" class="expand" @click.prevent="isCloseNav = false"><Icon icon="ep:arrow-right" /><span>展</span><span>开</span></div>
-      </ContentWrap>
-    </div>
-    <!-- 右大侧 -->
-    <div class="master-right">
-      <ContentWrap>
-        <el-form
-          class="-mb-15px"
-          :model="queryParams"
-          ref="queryFormRef"
-          :inline="true"
-          label-width="120px"
-        >
-          
-          <!-- <el-form-item label="网络地址" prop="devKey">
-            <el-input
-              v-model="queryParams.devKey"
-              placeholder="请输入网络地址"
-              clearable
-              @keyup.enter="handleQuery"
-              class="!w-240px"
-            />
-          </el-form-item> -->
+      </div>
+    </template>
+    <template #ActionBar>
+      <el-form
+        class="-mb-15px"
+        :model="queryParams"
+        ref="queryFormRef"
+        :inline="true"
+        label-width="120px"
+      >
+        
+        <!-- <el-form-item label="网络地址" prop="devKey">
+          <el-input
+            v-model="queryParams.devKey"
+            placeholder="请输入网络地址"
+            clearable
+            @keyup.enter="handleQuery"
+            class="!w-240px"
+          />
+        </el-form-item> -->
 
-          <el-form-item label="机房Id" prop="ipAddr" >
-            <el-input
-              v-model="queryParams.id"
-              placeholder="请输入IP"
-              clearable
-              class="!w-140px"
-            />
-          </el-form-item>
-          <el-form-item>
-            <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          </el-form-item>
-          <!-- <el-text size="large">
-            报警次数：{{ pduInfo.alarm }}
-          </el-text> -->
-        </el-form>
-      </ContentWrap>
-      <ContentWrap v-show="visControll.visAllReport" >
-        <el-row :gutter="24" >
-          <el-col :span="6">
-            <el-card >
-              <template #header>
-                <div class="card-header">
-                  <el-row :gutter="24">
-                    <el-col :span="12">
-                      <div style="float:left">
-                        <h2>冷通道</h2>
-                      </div>
-                    </el-col>
-                    <el-col :span="12">
-                      <div style="float:right">
-                        <h2>热通道</h2>
-                      </div>
-                    </el-col>
-                  </el-row>
-                </div>
-              </template>
-              <el-row justify="center">
-                <h1>上层</h1>
-              </el-row>
-              <el-row :gutter="24">
-                <el-col :span="12">
-                  <div style="float:left">
-                    {{  cabinetEnvData?.iceTopTem != null ? "温度:" + cabinetEnvData?.iceTopTem : ''}}
-                    <br/>
-                    {{  cabinetEnvData?.iceTopHum != null ? "湿度:" + cabinetEnvData?.iceTopHum : ''}}
-                  </div>
-                </el-col>
-                <el-col :span="12">
-                  <div style="float:right">
-                    {{  cabinetEnvData?.hotTopTem != null ? "温度:" + cabinetEnvData?.hotTopTem : ''}}
-                    <br/>
-                    {{  cabinetEnvData?.hotTopHum != null ? "湿度:" + cabinetEnvData?.hotTopHum : ''}}
-                  </div>
-                </el-col>
-              </el-row>
-              <el-row justify="center">
-                <h1>中层</h1>
-              </el-row>
-              <el-row :gutter="24">
-                <el-col :span="12">
-                  <div style="float:left">
-                    {{  cabinetEnvData?.iceMidTem != null ? "温度:" + cabinetEnvData?.iceMidTem : ''}}
-                    <br/>
-                    {{  cabinetEnvData?.iceMidHum != null ? "湿度:" + cabinetEnvData?.iceMidHum : ''}}
-                  </div>
-                </el-col>
-                <el-col :span="12">
-                  <div style="float:right">
-                    {{  cabinetEnvData?.hotMidTem != null ? "温度:" + cabinetEnvData?.hotMidTem : ''}}
-                    <br/>
-                    {{  cabinetEnvData?.hotMidHum != null ? "湿度:" + cabinetEnvData?.hotMidHum : ''}}
-                  </div>
-                </el-col>
-              </el-row>
-              <el-row justify="center">
-                <h1 >下层</h1>
-              </el-row>
-              <el-row :gutter="24">
-                <el-col :span="12">
-                  <div style="float:left">
-                    {{  cabinetEnvData?.iceBomTem != null ? "温度:" + cabinetEnvData?.iceBomTem : ''}}
-                    <br/>
-                    {{  cabinetEnvData?.iceBomHum != null ? "湿度:" + cabinetEnvData?.iceBomHum : ''}}
-                  </div>
-                </el-col>
-                <el-col :span="12">
-                  <div style="float:right">
-                    {{  cabinetEnvData?.hotBomTem != null ? "温度:" + cabinetEnvData?.hotBomTem : ''}}
-                    <br/>
-                    {{  cabinetEnvData?.hotBomHum != null ? "湿度:" + cabinetEnvData?.hotBomHum : ''}}
-                  </div>
-                </el-col>
-              </el-row>
-            </el-card>
-          </el-col>
-          <el-col :span="18">
+        <el-form-item label="机房Id" prop="ipAddr" >
+          <el-input
+            v-model="queryParams.id"
+            placeholder="请输入IP"
+            clearable
+            class="!w-140px"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+        </el-form-item>
+        <!-- <el-text size="large">
+          报警次数：{{ pduInfo.alarm }}
+        </el-text> -->
+      </el-form>
+    </template>
+    <template #Content>
+      <el-row v-show="visControll.visAllReport" :gutter="24" >
+        <el-col :span="6">
+          <el-card >
+            <template #header>
+              <div class="card-header">
+                <el-row :gutter="24">
+                  <el-col :span="12">
+                    <div style="float:left">
+                      <h2>冷通道</h2>
+                    </div>
+                  </el-col>
+                  <el-col :span="12">
+                    <div style="float:right">
+                      <h2>热通道</h2>
+                    </div>
+                  </el-col>
+                </el-row>
+              </div>
+            </template>
+            <el-row justify="center">
+              <h1>上层</h1>
+            </el-row>
             <el-row :gutter="24">
-              <el-col :span="8">
-                <el-card >
-                  <template #header>
-                    <div class="card-header">
-                      <el-row :gutter="24">
-                        <el-col :span="12">
-                          <div style="float:left">
-                            <h1>前门</h1>
-                          </div>
-                        </el-col>
-                        <el-col :span="12">
-                          <div style="float:right">
-                            <h1>后门</h1>
-                            
-                          </div>
-                        </el-col>
-                      </el-row>
-                    </div>
-                  </template>
-                  <el-row :gutter="24">
-                    <el-col :span="12">
-                      <div style="float:left">
-                        门禁状态：
-                      </div>
-                      
-                    </el-col>
-                    <el-col :span="12">
-                      <div style="float:right">
-                        门禁状态：
-                      </div>
-                      
-                    </el-col>
-                  </el-row>
-                </el-card>
+              <el-col :span="12">
+                <div style="float:left">
+                  {{  cabinetEnvData?.iceTopTem != null ? "温度:" + cabinetEnvData?.iceTopTem : ''}}
+                  <br/>
+                  {{  cabinetEnvData?.iceTopHum != null ? "湿度:" + cabinetEnvData?.iceTopHum : ''}}
+                </div>
               </el-col>
-              <el-col :span="8">
-                <el-card >
-                  <template #header>
-                    <div class="card-header">
-                      <el-row :gutter="24">
-                        <el-col :span="12">
-                          <div style="float:left">
-                            <h1>前门</h1>
-                          </div>
-                        </el-col>
-                        <el-col :span="12">
-                          <div style="float:right">
-                            <h1>后门</h1>
-                            
-                          </div>
-                        </el-col>
-                      </el-row>
-                    </div>
-                  </template>
-                  <el-row :gutter="24">
-                    <el-col :span="12">
-                      <div style="float:left">
-                        水浸状态：
-                      </div>
-                      
-                    </el-col>
-                    <el-col :span="12">
-                      <div style="float:right">
-                        水浸状态：
-                      </div>
-                      
-                    </el-col>
-                  </el-row>
-                </el-card>
-              </el-col>
-              <el-col :span="8">
-                <el-card >
-                  <template #header>
-                    <div class="card-header">
-                      <el-row :gutter="24">
-                        <el-col :span="12">
-                          <div style="float:left">
-                            <h1>前门</h1>
-                          </div>
-                        </el-col>
-                        <el-col :span="12">
-                          <div style="float:right">
-                            <h1>后门</h1>
-                            
-                          </div>
-                        </el-col>
-                      </el-row>
-                    </div>
-                  </template>
-                  <el-row :gutter="24">
-                    <el-col :span="12">
-                      <div style="float:left">
-                        烟雾状态：
-                      </div>
-                      
-                    </el-col>
-                    <el-col :span="12">
-                      <div style="float:right">
-                        烟雾状态：
-                      </div>
-                      
-                    </el-col>
-                  </el-row>
-                </el-card>
+              <el-col :span="12">
+                <div style="float:right">
+                  {{  cabinetEnvData?.hotTopTem != null ? "温度:" + cabinetEnvData?.hotTopTem : ''}}
+                  <br/>
+                  {{  cabinetEnvData?.hotTopHum != null ? "湿度:" + cabinetEnvData?.hotTopHum : ''}}
+                </div>
               </el-col>
             </el-row>
-            <el-row>
-              <el-card>
-                <el-row>
-                  <el-col >
-                    <h1 style="width: 100%">冷通道</h1>
+            <el-row justify="center">
+              <h1>中层</h1>
+            </el-row>
+            <el-row :gutter="24">
+              <el-col :span="12">
+                <div style="float:left">
+                  {{  cabinetEnvData?.iceMidTem != null ? "温度:" + cabinetEnvData?.iceMidTem : ''}}
+                  <br/>
+                  {{  cabinetEnvData?.iceMidHum != null ? "湿度:" + cabinetEnvData?.iceMidHum : ''}}
+                </div>
+              </el-col>
+              <el-col :span="12">
+                <div style="float:right">
+                  {{  cabinetEnvData?.hotMidTem != null ? "温度:" + cabinetEnvData?.hotMidTem : ''}}
+                  <br/>
+                  {{  cabinetEnvData?.hotMidHum != null ? "湿度:" + cabinetEnvData?.hotMidHum : ''}}
+                </div>
+              </el-col>
+            </el-row>
+            <el-row justify="center">
+              <h1 >下层</h1>
+            </el-row>
+            <el-row :gutter="24">
+              <el-col :span="12">
+                <div style="float:left">
+                  {{  cabinetEnvData?.iceBomTem != null ? "温度:" + cabinetEnvData?.iceBomTem : ''}}
+                  <br/>
+                  {{  cabinetEnvData?.iceBomHum != null ? "湿度:" + cabinetEnvData?.iceBomHum : ''}}
+                </div>
+              </el-col>
+              <el-col :span="12">
+                <div style="float:right">
+                  {{  cabinetEnvData?.hotBomTem != null ? "温度:" + cabinetEnvData?.hotBomTem : ''}}
+                  <br/>
+                  {{  cabinetEnvData?.hotBomHum != null ? "湿度:" + cabinetEnvData?.hotBomHum : ''}}
+                </div>
+              </el-col>
+            </el-row>
+          </el-card>
+        </el-col>
+        <el-col :span="18">
+          <el-row :gutter="24">
+            <el-col :span="8">
+              <el-card >
+                <template #header>
+                  <div class="card-header">
+                    <el-row :gutter="24">
+                      <el-col :span="12">
+                        <div style="float:left">
+                          <h1>前门</h1>
+                        </div>
+                      </el-col>
+                      <el-col :span="12">
+                        <div style="float:right">
+                          <h1>后门</h1>
+                          
+                        </div>
+                      </el-col>
+                    </el-row>
+                  </div>
+                </template>
+                <el-row :gutter="24">
+                  <el-col :span="12">
+                    <div style="float:left">
+                      门禁状态：
+                    </div>
+                    
                   </el-col>
-                  <el-col>                    
-                    <el-form>
-                      <el-form-item >
-                        <el-button @click="iceTemAndHumSwitchValue = 1;" :type="iceTemAndHumSwitchValue == 1 ? 'primary' : ''">温度</el-button>
-                        <el-button @click="iceTemAndHumSwitchValue = 2;" :type="iceTemAndHumSwitchValue == 2 ? 'primary' : ''">湿度</el-button>                      
-                      </el-form-item>
-                      <el-form-item style="margin-bottom: 10px;">
-                        <el-button @click="queryParams.iceTimeType = 1;queryParams.timeArr = null;queryParams.id ? handleIceQuery() : ''" :type="queryParams.iceTimeType == 1 ? 'primary' : ''">过去24小时</el-button>
-                        <el-button @click="queryParams.iceTimeType = 2;" :type="queryParams.iceTimeType == 2 ? 'primary' : ''">自定义</el-button>                      
+                  <el-col :span="12">
+                    <div style="float:right">
+                      门禁状态：
+                    </div>
+                    
+                  </el-col>
+                </el-row>
+              </el-card>
+            </el-col>
+            <el-col :span="8">
+              <el-card >
+                <template #header>
+                  <div class="card-header">
+                    <el-row :gutter="24">
+                      <el-col :span="12">
+                        <div style="float:left">
+                          <h1>前门</h1>
+                        </div>
+                      </el-col>
+                      <el-col :span="12">
+                        <div style="float:right">
+                          <h1>后门</h1>
+                          
+                        </div>
+                      </el-col>
+                    </el-row>
+                  </div>
+                </template>
+                <el-row :gutter="24">
+                  <el-col :span="12">
+                    <div style="float:left">
+                      水浸状态：
+                    </div>
+                    
+                  </el-col>
+                  <el-col :span="12">
+                    <div style="float:right">
+                      水浸状态：
+                    </div>
+                    
+                  </el-col>
+                </el-row>
+              </el-card>
+            </el-col>
+            <el-col :span="8">
+              <el-card >
+                <template #header>
+                  <div class="card-header">
+                    <el-row :gutter="24">
+                      <el-col :span="12">
+                        <div style="float:left">
+                          <h1>前门</h1>
+                        </div>
+                      </el-col>
+                      <el-col :span="12">
+                        <div style="float:right">
+                          <h1>后门</h1>
+                          
+                        </div>
+                      </el-col>
+                    </el-row>
+                  </div>
+                </template>
+                <el-row :gutter="24">
+                  <el-col :span="12">
+                    <div style="float:left">
+                      烟雾状态：
+                    </div>
+                    
+                  </el-col>
+                  <el-col :span="12">
+                    <div style="float:right">
+                      烟雾状态：
+                    </div>
+                    
+                  </el-col>
+                </el-row>
+              </el-card>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-card>
+              <el-row>
+                <el-col >
+                  <h1 style="width: 100%">冷通道</h1>
+                </el-col>
+                <el-col>                    
+                  <el-form>
+                    <el-form-item >
+                      <el-button @click="iceTemAndHumSwitchValue = 1;" :type="iceTemAndHumSwitchValue == 1 ? 'primary' : ''">温度</el-button>
+                      <el-button @click="iceTemAndHumSwitchValue = 2;" :type="iceTemAndHumSwitchValue == 2 ? 'primary' : ''">湿度</el-button>                      
+                    </el-form-item>
+                    <el-form-item style="margin-bottom: 10px;">
+                      <el-button @click="queryParams.iceTimeType = 1;queryParams.timeArr = null;queryParams.id ? handleIceQuery() : ''" :type="queryParams.iceTimeType == 1 ? 'primary' : ''">过去24小时</el-button>
+                      <el-button @click="queryParams.iceTimeType = 2;" :type="queryParams.iceTimeType == 2 ? 'primary' : ''">自定义</el-button>                      
+                      <el-date-picker
+                        v-if="queryParams.iceTimeType == 2"
+                        v-model="queryParams.timeArr"
+                        value-format="YYYY-MM-DD HH:mm:ss"
+                        type="daterange"
+                        start-placeholder="开始日期"
+                        end-placeholder="结束日期"
+                        :disabled-date="disabledDate"
+                        @change="handleIceDayPick"
+                        class="!w-200px"
+                      />
+                    </el-form-item>
+                  </el-form>                                                  
+                </el-col> 
+              </el-row>
+              <div style="display: flex; justify-content: center; align-items: center;">
+                <div ref="iceTemOrHumChartContainer" id="iceTemOrHumChartContainer" style="width: 52vw; height: 38vh;"></div>
+              </div>                
+            </el-card>
+          </el-row>
+          <el-row>
+            <el-card>
+              <el-row>
+                <el-col >
+                  <h1 style="width: 100%">热通道</h1>
+                </el-col>
+                <el-col >
+                  <el-form>          
+                    <el-form-item>
+                      <el-button @click="hotTemAndHumSwitchValue = 1;" :type="hotTemAndHumSwitchValue == 1 ? 'primary' : ''">温度</el-button>
+                      <el-button @click="hotTemAndHumSwitchValue = 2;" :type="hotTemAndHumSwitchValue == 2 ? 'primary' : ''">湿度</el-button>                      
+                    </el-form-item>
+                    <div style="float:right;margin-top: 0;">
+                      <el-form-item>
+                        <el-button @click="queryParams.hotTimeType = 1;queryParams.timeArr = null;queryParams.id ? handleHotQuery() : ''" :type="queryParams.hotTimeType == 1 ? 'primary' : ''">过去24小时</el-button>
+                        <el-button @click="queryParams.hotTimeType = 2;" :type="queryParams.hotTimeType == 2 ? 'primary' : ''">自定义</el-button>                      
                         <el-date-picker
-                          v-if="queryParams.iceTimeType == 2"
+                          v-if="queryParams.hotTimeType == 2"
                           v-model="queryParams.timeArr"
                           value-format="YYYY-MM-DD HH:mm:ss"
                           type="daterange"
                           start-placeholder="开始日期"
                           end-placeholder="结束日期"
                           :disabled-date="disabledDate"
-                          @change="handleIceDayPick"
+                          @change="handleHotDayPick"
                           class="!w-200px"
                         />
                       </el-form-item>
-                    </el-form>                                                  
-                  </el-col> 
-                </el-row>
-                <div style="display: flex; justify-content: center; align-items: center;">
-                  <div ref="iceTemOrHumChartContainer" id="iceTemOrHumChartContainer" style="width: 52vw; height: 38vh;"></div>
-                </div>                
-              </el-card>
-            </el-row>
-            <el-row>
-              <el-card>
-                <el-row>
-                  <el-col >
-                    <h1 style="width: 100%">热通道</h1>
-                  </el-col>
-                  <el-col >
-                    <el-form>          
-                      <el-form-item>
-                        <el-button @click="hotTemAndHumSwitchValue = 1;" :type="hotTemAndHumSwitchValue == 1 ? 'primary' : ''">温度</el-button>
-                        <el-button @click="hotTemAndHumSwitchValue = 2;" :type="hotTemAndHumSwitchValue == 2 ? 'primary' : ''">湿度</el-button>                      
-                      </el-form-item>
-                      <div style="float:right;margin-top: 0;">
-                        <el-form-item>
-                          <el-button @click="queryParams.hotTimeType = 1;queryParams.timeArr = null;queryParams.id ? handleHotQuery() : ''" :type="queryParams.hotTimeType == 1 ? 'primary' : ''">过去24小时</el-button>
-                          <el-button @click="queryParams.hotTimeType = 2;" :type="queryParams.hotTimeType == 2 ? 'primary' : ''">自定义</el-button>                      
-                          <el-date-picker
-                            v-if="queryParams.hotTimeType == 2"
-                            v-model="queryParams.timeArr"
-                            value-format="YYYY-MM-DD HH:mm:ss"
-                            type="daterange"
-                            start-placeholder="开始日期"
-                            end-placeholder="结束日期"
-                            :disabled-date="disabledDate"
-                            @change="handleHotDayPick"
-                            class="!w-200px"
-                          />
-                        </el-form-item>
-                      </div>
-                    </el-form>                        
-                  </el-col> 
-                </el-row>
-                <div style="display: flex; justify-content: center; align-items: center;">
-                  <div ref="hotTemOrHumChartContainer" id="hotTemOrHumChartContainer" style="width: 52vw; height: 38vh;"></div>
-                </div>                
-              </el-card>
-            </el-row>
-          </el-col>
-        </el-row>
-      </ContentWrap>
-    </div>
-  </div>
+                    </div>
+                  </el-form>                        
+                </el-col> 
+              </el-row>
+              <div style="display: flex; justify-content: center; align-items: center;">
+                <div ref="hotTemOrHumChartContainer" id="hotTemOrHumChartContainer" style="width: 52vw; height: 38vh;"></div>
+              </div>                
+            </el-card>
+          </el-row>
+        </el-col>
+      </el-row>
+    </template>
+  </CommonMenu>
+
   <!-- 表单弹窗：添加/修改 -->
   <!-- <PDUDeviceForm ref="formRef" @success="getList" /> -->
 </template>
@@ -392,9 +373,6 @@ import router from '@/router';
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
-
-const isCloseNav = ref(false) // 左侧导航是否收起
-const switchNav = ref(false) //false: 导航树 true：微模块展示
 const switchValue = ref(1);
 const iceTemAndHumSwitchValue = ref(1)
 const hotTemAndHumSwitchValue = ref(1)
@@ -465,48 +443,48 @@ const handleHotDayPick = () => {
   }
 }
 
-const handleMonthPick = () => {
+// const handleMonthPick = () => {
 
-  if(queryParams.oldTime){
-    var newTime = new Date(queryParams.oldTime);
-    newTime.setMonth(newTime.getMonth() + 1);
-    newTime.setDate(newTime.getDate() - 1);
-    newTime.setHours(23,59,59)
-    queryParams.newTime = getFullTimeByDate(newTime);
-    visControll.isSameDay = false;
-  }else {
-    queryParams.newTime = null;
-  }
+//   if(queryParams.oldTime){
+//     var newTime = new Date(queryParams.oldTime);
+//     newTime.setMonth(newTime.getMonth() + 1);
+//     newTime.setDate(newTime.getDate() - 1);
+//     newTime.setHours(23,59,59)
+//     queryParams.newTime = getFullTimeByDate(newTime);
+//     visControll.isSameDay = false;
+//   }else {
+//     queryParams.newTime = null;
+//   }
   
-} 
+// } 
 
-const getFullTimeByDate = (date) => {
-  var year = date.getFullYear();//年
-  var month = date.getMonth();//月
-  var day = date.getDate();//日
-  var hours = date.getHours();//时
-  var min = date.getMinutes();//分
-  var second = date.getSeconds();//秒
-  return year + "-" +
-      ((month + 1) > 9 ? (month + 1) : "0" + (month + 1)) + "-" +
-      (day > 9 ? day : ("0" + day)) + " " +
-      (hours > 9 ? hours : ("0" + hours)) + ":" +
-      (min > 9 ? min : ("0" + min)) + ":" +
-      (second > 9 ? second : ("0" + second));
-}
+// const getFullTimeByDate = (date) => {
+//   var year = date.getFullYear();//年
+//   var month = date.getMonth();//月
+//   var day = date.getDate();//日
+//   var hours = date.getHours();//时
+//   var min = date.getMinutes();//分
+//   var second = date.getSeconds();//秒
+//   return year + "-" +
+//       ((month + 1) > 9 ? (month + 1) : "0" + (month + 1)) + "-" +
+//       (day > 9 ? day : ("0" + day)) + " " +
+//       (hours > 9 ? hours : ("0" + hours)) + ":" +
+//       (min > 9 ? min : ("0" + min)) + ":" +
+//       (second > 9 ? second : ("0" + second));
+// }
 
-const areDatesEqual = (date1, date2) => {
-  return (
-    date1.getFullYear() === date2.getFullYear() &&
-    date1.getMonth() === date2.getMonth() &&
-    date1.getDate() === date2.getDate()
-  );
-}
+// const areDatesEqual = (date1, date2) => {
+//   return (
+//     date1.getFullYear() === date2.getFullYear() &&
+//     date1.getMonth() === date2.getMonth() &&
+//     date1.getDate() === date2.getDate()
+//   );
+// }
 
 
 // const activeNames = ref(["1","2","3","4","5"])
 
-const CabinetTableData = ref([]) as any
+// const CabinetTableData = ref([]) as any
 
 const queryParams = reactive({
   pageNo: 1,
@@ -556,14 +534,8 @@ const handleClick = (row) => {
   }
 }
 
-// 处理切换按钮点击事件
-const handleSwitchNav = () => {
-  switchNav.value = !switchNav.value
-}
-
 
 //柱状图宽度
-const barWid = ref(20);
 const list = ref([
   { 
     id:null,
@@ -586,93 +558,93 @@ const list = ref([
 const cabinetEnvData = ref({}) as any
 
 //折线图数据
-interface EqData {
-  eq: number[];
-  time: string[];
-  totalEle : number;
-  maxEle : number;
-  maxEleTime : string;
-  firstEq : number;
-  lastEq : number;
-}
-const eqData = ref<EqData>({
-  eq : [],
-  time : [],
-  totalEle : 0,
-  maxEle : 0,
-  maxEleTime : "",
-  firstEq : 0,
-  lastEq : 0,
-})as any
+// interface EqData {
+//   eq: number[];
+//   time: string[];
+//   totalEle : number;
+//   maxEle : number;
+//   maxEleTime : string;
+//   firstEq : number;
+//   lastEq : number;
+// }
+// const eqData = ref<EqData>({
+//   eq : [],
+//   time : [],
+//   totalEle : 0,
+//   maxEle : 0,
+//   maxEleTime : "",
+//   firstEq : 0,
+//   lastEq : 0,
+// })as any
 
-interface PowData {
-  apparentPowAvgValue: number[];
-  activePowAvgValue: number[];
-  AapparentPowAvgValue: number[];
-  AactivePowAvgValue: number[];
-  BapparentPowAvgValue: number[];
-  BactivePowAvgValue: number[];
-  time: string[];
-  total_pow_apparent : number;
-  apparentPowMaxValue : number;
-  apparentPowMaxTime : string;
-  apparentPowMinValue : number;
-  apparentPowMinTime : string;
-  activePowMaxValue : number;
-  activePowMaxTime : string;
-  activePowMinValue : number;
-  activePowMinTime : string;
-  AapparentPowMaxValue : number;
-  AapparentPowMaxTime : string;
-  AapparentPowMinValue : number;
-  AapparentPowMinTime : string;
-  AactivePowMaxValue : number;
-  AactivePowMaxTime : string;
-  AactivePowMinValue : number;
-  AactivePowMinTime : string;
-  BapparentPowMaxValue : number;
-  BapparentPowMaxTime : string;
-  BapparentPowMinValue : number;
-  BapparentPowMinTime : string;
-  BactivePowMaxValue : number;
-  BactivePowMaxTime : string;
-  BactivePowMinValue : number;
-  BactivePowMinTime : string;
-}
-const powData = ref<PowData>({
-  apparentPowAvgValue : [],
-  activePowAvgValue: [],
-  AapparentPowAvgValue : [],
-  AactivePowAvgValue: [],
-  BapparentPowAvgValue : [],
-  BactivePowAvgValue: [],
-  time:[],
-  total_pow_apparent : 0,
-  apparentPowMaxValue : 0,
-  apparentPowMaxTime : "",
-  apparentPowMinValue : 0,
-  apparentPowMinTime : "",
-  activePowMaxValue : 0,
-  activePowMaxTime : "",
-  activePowMinValue : 0,
-  activePowMinTime : "",
-  AapparentPowMaxValue : 0,
-  AapparentPowMaxTime : "",
-  AapparentPowMinValue : 0,
-  AapparentPowMinTime : "",
-  AactivePowMaxValue : 0,
-  AactivePowMaxTime : "",
-  AactivePowMinValue : 0,
-  AactivePowMinTime : "",
-  BapparentPowMaxValue : 0,
-  BapparentPowMaxTime : "",
-  BapparentPowMinValue : 0,
-  BapparentPowMinTime : "",
-  BactivePowMaxValue : 0,
-  BactivePowMaxTime : "",
-  BactivePowMinValue : 0,
-  BactivePowMinTime : "",
-})as any
+// interface PowData {
+//   apparentPowAvgValue: number[];
+//   activePowAvgValue: number[];
+//   AapparentPowAvgValue: number[];
+//   AactivePowAvgValue: number[];
+//   BapparentPowAvgValue: number[];
+//   BactivePowAvgValue: number[];
+//   time: string[];
+//   total_pow_apparent : number;
+//   apparentPowMaxValue : number;
+//   apparentPowMaxTime : string;
+//   apparentPowMinValue : number;
+//   apparentPowMinTime : string;
+//   activePowMaxValue : number;
+//   activePowMaxTime : string;
+//   activePowMinValue : number;
+//   activePowMinTime : string;
+//   AapparentPowMaxValue : number;
+//   AapparentPowMaxTime : string;
+//   AapparentPowMinValue : number;
+//   AapparentPowMinTime : string;
+//   AactivePowMaxValue : number;
+//   AactivePowMaxTime : string;
+//   AactivePowMinValue : number;
+//   AactivePowMinTime : string;
+//   BapparentPowMaxValue : number;
+//   BapparentPowMaxTime : string;
+//   BapparentPowMinValue : number;
+//   BapparentPowMinTime : string;
+//   BactivePowMaxValue : number;
+//   BactivePowMaxTime : string;
+//   BactivePowMinValue : number;
+//   BactivePowMinTime : string;
+// }
+// const powData = ref<PowData>({
+//   apparentPowAvgValue : [],
+//   activePowAvgValue: [],
+//   AapparentPowAvgValue : [],
+//   AactivePowAvgValue: [],
+//   BapparentPowAvgValue : [],
+//   BactivePowAvgValue: [],
+//   time:[],
+//   total_pow_apparent : 0,
+//   apparentPowMaxValue : 0,
+//   apparentPowMaxTime : "",
+//   apparentPowMinValue : 0,
+//   apparentPowMinTime : "",
+//   activePowMaxValue : 0,
+//   activePowMaxTime : "",
+//   activePowMinValue : 0,
+//   activePowMinTime : "",
+//   AapparentPowMaxValue : 0,
+//   AapparentPowMaxTime : "",
+//   AapparentPowMinValue : 0,
+//   AapparentPowMinTime : "",
+//   AactivePowMaxValue : 0,
+//   AactivePowMaxTime : "",
+//   AactivePowMinValue : 0,
+//   AactivePowMinTime : "",
+//   BapparentPowMaxValue : 0,
+//   BapparentPowMaxTime : "",
+//   BapparentPowMinValue : 0,
+//   BapparentPowMinTime : "",
+//   BactivePowMaxValue : 0,
+//   BactivePowMaxTime : "",
+//   BactivePowMinValue : 0,
+//   BactivePowMinTime : "",
+// })as any
 
 const iceTemAndHumData = ({
   temAvgValue : [],
@@ -687,25 +659,25 @@ const hotTemAndHumData = ({
 })as any
 
 
-interface ServerData {
-  nameAndMax: object[];
-  value: number[];
-}
-const serverData = ref<ServerData>({
-  nameAndMax : [
-  ],
-  value: []
-})as any
+// interface ServerData {
+//   nameAndMax: object[];
+//   value: number[];
+// }
+// const serverData = ref<ServerData>({
+//   nameAndMax : [
+//   ],
+//   value: []
+// })as any
 
-interface OutLetRankData {
-  outLetId: string[];
-  eleValue: number[];
-}
+// interface OutLetRankData {
+//   outLetId: string[];
+//   eleValue: number[];
+// }
 
-const outletRankData = ref<OutLetRankData>({
-  outLetId : [],
-  eleValue : [],
-})as any
+// const outletRankData = ref<OutLetRankData>({
+//   outLetId : [],
+//   eleValue : [],
+// })as any
 
 const filterText = ref('')
 const treeRef = ref<InstanceType<typeof ElTree>>()

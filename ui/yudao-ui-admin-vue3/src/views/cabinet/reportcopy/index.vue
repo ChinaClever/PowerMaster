@@ -1,292 +1,273 @@
 <template>
-  <div class="master">
-    <!-- 左大侧 -->
-    <div class="master-left">
-      <ContentWrap style="height: calc(100% - 15px)">
-        <div v-if="!isCloseNav" class="nav-left">
-          <!-- 左侧标题栏 -->
-          <div class="navBar">微模块机房</div>
-          <!-- 信息展示模式 -->
-          <div v-if="switchNav">
-            <div class="header">
-              <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
-              <div class="name">微模块机房</div>
-              <div>机房202</div>
+  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="机柜报表">
+    <template #NavInfo>
+      <div >
+        <div class="header">
+          <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
+          <div class="name">微模块机房</div>
+          <div>机房202</div>
+        </div>
+        <div class="line"></div>
+        <!-- <div class="status">
+          <div class="box">
+            <div class="top">
+              <div class="tag"></div>&lt;15%
             </div>
-            <div class="line"></div>
-            <!-- <div class="status">
-              <div class="box">
-                <div class="top">
-                  <div class="tag"></div>&lt;15%
-                </div>
-                <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
-              </div>
-              <div class="box">
-                <div class="top">
-                  <div class="tag empty"></div>小电流
-                </div>
-                <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
-              </div>
-              <div class="box">
-                <div class="top">
-                  <div class="tag warn"></div>15%-30%
-                </div>
-                <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
-              </div>
-              <div class="box">
-                <div class="top">
-                  <div class="tag error"></div>&gt;30
-                </div>
-                <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
-              </div>
-            </div> -->
-            <div class="line"></div>
-            <div class="overview">
-              <div class="count">
-                <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-                <div class="info">
-                  <div>总电能</div>
-                  <div class="value">295.87 kW·h</div>
-                </div>
-              </div>
-              <div class="count">
-                <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
-                <div class="info">
-                  <div>今日用电</div>
-                  <div class="value">295.87 kW·h</div>
-                </div>
-              </div>
-              <div class="count">
-                <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-                <div class="info">
-                  <div>今日用电</div>
-                  <div class="value">295.87 kW·h</div>
-                </div>
-              </div>
+            <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag empty"></div>小电流
+            </div>
+            <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag warn"></div>15%-30%
+            </div>
+            <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag error"></div>&gt;30
+            </div>
+            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
+          </div>
+        </div> -->
+        <div class="line"></div>
+        <div class="overview">
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+            <div class="info">
+              <div>总电能</div>
+              <div class="value">295.87 kW·h</div>
             </div>
           </div>
-          <!-- 筛选模式 -->
-          <div v-else style="margin-top: 10px">
-            <NavTree :showCheckbox="false" ref="navTree" @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" />
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
+            <div class="info">
+              <div>今日用电</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
+          </div>
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+            <div class="info">
+              <div>今日用电</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
           </div>
         </div>
-        <div v-if="!isCloseNav" class="openNavtree" @click.prevent="handleSwitchNav">
-          <Icon icon="ep:switch" />切换
-        </div>
-        <div v-if="!isCloseNav" class="reduce" @click.prevent="isCloseNav = true"><Icon icon="ep:arrow-left" />收起</div>
-        <div v-if="isCloseNav" class="expand" @click.prevent="isCloseNav = false"><Icon icon="ep:arrow-right" /><span>展</span><span>开</span></div>
-      </ContentWrap>
-    </div>
-    <!-- 右大侧 -->
-    <div class="master-right">
-      <ContentWrap>
-        <el-form
-          class="-mb-15px"
-          :model="queryParams"
-          ref="queryFormRef"
-          :inline="true"
-          label-width="120px"
-        >
+      </div>
+    </template>
+    <template #ActionBar>
+      <el-form
+        class="-mb-15px"
+        :model="queryParams"
+        ref="queryFormRef"
+        :inline="true"
+        label-width="120px"
+      >
+        
+        <!-- <el-form-item label="网络地址" prop="devKey">
+          <el-input
+            v-model="queryParams.devKey"
+            placeholder="请输入网络地址"
+            clearable
+            @keyup.enter="handleQuery"
+            class="!w-240px"
+          />
+        </el-form-item> -->
+
+        <el-form-item label="机房Id" prop="ipAddr" >
+          <el-input
+            v-model="queryParams.Id"
+            placeholder="请输入IP"
+            clearable
+            class="!w-140px"
+          />
+        </el-form-item>
+
+        <el-form-item label="时间段" prop="createTime" label-width="100px">
+          <el-button 
+            @click="queryParams.timeType = 0;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 0;" 
+            :type="switchValue == 0 ? 'primary' : ''"
+          >
+            日报
+          </el-button>
+          <el-button 
+            @click="queryParams.timeType = 1;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 1;" 
+            :type="switchValue == 1 ? 'primary' : ''"
+          >
+            月报
+          </el-button>
+          <el-button 
+            @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 2;" 
+            :type="switchValue == 2 ? 'primary' : ''"
+          >
+            自定义
+          </el-button>
           
-          <!-- <el-form-item label="网络地址" prop="devKey">
-            <el-input
-              v-model="queryParams.devKey"
-              placeholder="请输入网络地址"
-              clearable
-              @keyup.enter="handleQuery"
-              class="!w-240px"
-            />
-          </el-form-item> -->
-
-          <el-form-item label="机房Id" prop="ipAddr" >
-            <el-input
-              v-model="queryParams.Id"
-              placeholder="请输入IP"
-              clearable
-              class="!w-140px"
-            />
-          </el-form-item>
-
-          <el-form-item label="时间段" prop="createTime" label-width="100px">
-            <el-button 
-              @click="queryParams.timeType = 0;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 0;" 
-              :type="switchValue == 0 ? 'primary' : ''"
-            >
-              日报
-            </el-button>
-            <el-button 
-              @click="queryParams.timeType = 1;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 1;" 
-              :type="switchValue == 1 ? 'primary' : ''"
-            >
-              月报
-            </el-button>
-            <el-button 
-              @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 2;" 
-              :type="switchValue == 2 ? 'primary' : ''"
-            >
-              自定义
-            </el-button>
-            
-            
-          </el-form-item>
-          <el-form-item>
-            <el-date-picker
-              v-if="switchValue == 0"
-              v-model="queryParams.oldTime"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              type="date"
-              :disabled-date="disabledDate"
-              @change="handleDayPick"
-              class="!w-160px"
-            />
-            <el-date-picker
-              v-if="switchValue == 1"
-              v-model="queryParams.oldTime"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              type="month"
-              :disabled-date="disabledDate"
-              @change="handleMonthPick"
-              class="!w-160px"
-            />
-            <el-date-picker
-              v-if="switchValue == 2"
-              v-model="queryParams.timeArr"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              type="daterange"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
-              :disabled-date="disabledDate"
-              @change="handleDayPick"
-              class="!w-200px"
-            />
-          </el-form-item>
-          <el-form-item>
-            <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          </el-form-item>
-          <!-- <el-text size="large">
-            报警次数：{{ pduInfo.alarm }}
-          </el-text> -->
-        </el-form>
-      </ContentWrap>
-      <ContentWrap v-show="visControll.visAllReport" >
-        <div class="page" >
-          <div class="pageBox" >
-            <div class="page-conTitle">
-              机柜基本信息
-            </div>
-            <el-row :gutter="24" >
-              <el-col :span="24 - serChartContainerWidth">
-                <div class="centered-div">
-                  <el-table 
-                    :data="CabinetTableData" 
-                    :header-cell-style="arraySpanMethod"
-                    >
-                    <el-table-column  align="center" label="基本信息" >
-                      <el-table-column :show-header="false" prop="baseInfoName" />
-                      <el-table-column :show-header="false" prop="baseInfoValue" />
-                    </el-table-column>
-                    
-                      <!-- <template #default="scope">
-                        <span v-if="scope.$index === 2">
-                          <el-tag  v-if="scope.row.baseInfoValue == 0">正常</el-tag>
-                          <el-tag type="warning" v-if="scope.row.baseInfoValue == 1">预警</el-tag>
-                          <el-popover
-                              placement="top-start"
-                              title="告警内容"
-                              :width="500"
-                              trigger="hover"
-                              :content="scope.row.pduAlarm"
-                              v-if="scope.row.baseInfoValue == 2"
-                            >
-                              <template #reference>
-                                <el-tag type="danger">告警</el-tag>
-                              </template>
-                            </el-popover>
-                          <el-tag type="info" v-if="scope.row.baseInfoValue == 4">故障</el-tag>
-                          <el-tag type="info" v-if="scope.row.baseInfoValue == 5">离线</el-tag>
+          
+        </el-form-item>
+        <el-form-item>
+          <el-date-picker
+            v-if="switchValue == 0"
+            v-model="queryParams.oldTime"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            type="date"
+            :disabled-date="disabledDate"
+            @change="handleDayPick"
+            class="!w-160px"
+          />
+          <el-date-picker
+            v-if="switchValue == 1"
+            v-model="queryParams.oldTime"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            type="month"
+            :disabled-date="disabledDate"
+            @change="handleMonthPick"
+            class="!w-160px"
+          />
+          <el-date-picker
+            v-if="switchValue == 2"
+            v-model="queryParams.timeArr"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            type="daterange"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            :disabled-date="disabledDate"
+            @change="handleDayPick"
+            class="!w-200px"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+        </el-form-item>
+        <!-- <el-text size="large">
+          报警次数：{{ pduInfo.alarm }}
+        </el-text> -->
+      </el-form>
+    </template>
+    <template #Content>
+      <div v-show="visControll.visAllReport" class="page" >
+        <div class="pageBox" >
+          <div class="page-conTitle">
+            机柜基本信息
+          </div>
+          <el-row :gutter="24" >
+            <el-col :span="24 - serChartContainerWidth">
+              <div class="centered-div">
+                <el-table 
+                  :data="CabinetTableData" 
+                  :header-cell-style="arraySpanMethod"
+                  >
+                  <el-table-column  align="center" label="基本信息" >
+                    <el-table-column :show-header="false" prop="baseInfoName" />
+                    <el-table-column :show-header="false" prop="baseInfoValue" />
+                  </el-table-column>
+                  
+                    <!-- <template #default="scope">
+                      <span v-if="scope.$index === 2">
+                        <el-tag  v-if="scope.row.baseInfoValue == 0">正常</el-tag>
+                        <el-tag type="warning" v-if="scope.row.baseInfoValue == 1">预警</el-tag>
+                        <el-popover
+                            placement="top-start"
+                            title="告警内容"
+                            :width="500"
+                            trigger="hover"
+                            :content="scope.row.pduAlarm"
+                            v-if="scope.row.baseInfoValue == 2"
+                          >
+                            <template #reference>
+                              <el-tag type="danger">告警</el-tag>
+                            </template>
+                          </el-popover>
+                        <el-tag type="info" v-if="scope.row.baseInfoValue == 4">故障</el-tag>
+                        <el-tag type="info" v-if="scope.row.baseInfoValue == 5">离线</el-tag>
+                      </span>
+                      <span v-else>{{ scope.row.baseInfoValue }}</span>
+                    </template>
+                  </el-table-column> -->
+                  <el-table-column  align="center" label="能耗" >
+                    <el-table-column :show-header="false" prop="consumeName"  />
+                    <el-table-column :show-header="false" prop="consumeValue" />
+                  </el-table-column>
+                  <el-table-column  align="center" label="占比" >
+                    <el-table-column :show-header="false" prop="percentageName"  />
+                    <el-table-column :show-header="false" prop="percentageValue" >
+                      <template #default="scope">
+                        <span v-if="scope.$index === 0 && scope.row.percentageValue != null">
+                          <div class="progressContainer">
+                            <div class="progress">
+                              <div class="left" :style="`flex: ${scope.row.percentageValue}`">{{scope.row.percentageValue}}%</div>
+                              <div class="line"></div>
+                              <div class="right" :style="`flex: ${100 - scope.row.percentageValue}`">{{100 - scope.row.percentageValue}}%</div>
+                            </div>
+                          </div>                            
                         </span>
-                        <span v-else>{{ scope.row.baseInfoValue }}</span>
                       </template>
-                    </el-table-column> -->
-                    <el-table-column  align="center" label="能耗" >
-                      <el-table-column :show-header="false" prop="consumeName"  />
-                      <el-table-column :show-header="false" prop="consumeValue" />
                     </el-table-column>
-                    <el-table-column  align="center" label="占比" >
-                      <el-table-column :show-header="false" prop="percentageName"  />
-                      <el-table-column :show-header="false" prop="percentageValue" >
-                        <template #default="scope">
-                          <span v-if="scope.$index === 0 && scope.row.percentageValue != null">
-                            <div class="progressContainer">
-                              <div class="progress">
-                                <div class="left" :style="`flex: ${scope.row.percentageValue}`">{{scope.row.percentageValue}}%</div>
-                                <div class="line"></div>
-                                <div class="right" :style="`flex: ${100 - scope.row.percentageValue}`">{{100 - scope.row.percentageValue}}%</div>
-                              </div>
-                            </div>                            
-                          </span>
-                        </template>
-                      </el-table-column>
-                    </el-table-column>
-                    
-                  </el-table>
-                </div>
-              </el-col>
-              <!-- <el-col :span="serChartContainerWidth">
-                <div class="right-div" ref="serChartContainer" id="serChartContainer" style="width: 29vw; height: 25vh;"></div>
-              </el-col> -->
-            </el-row>
-          </div>
-          <div class="pageBox" v-if="visControll.eqVis" >
-            <div class="page-conTitle" >
-              电量分布
-            </div>
-            <p v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大用电量{{eqData.maxEle}}kWh， 最大负荷发生时间{{eqData.maxEleTime}}</p>
-            <p v-if="visControll.isSameDay && eqData.eq">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
-            <div ref="rankChartContainer" id="rankChartContainer" style="width: 70vw; height: 58vh;"></div>
-          </div>
-          <div class="pageBox"  v-if="visControll.powVis">
-            <div class="page-conTitle">
-              总平均功率曲线
-            </div>
-            <p>本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
-            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kVA， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kVA， 发生时间{{powData.activePowMinTime}}</p>
-            <div ref="powChartContainer" id="powChartContainer" style="width: 70vw; height: 58vh;"></div>
-          </div>
-          <div class="pageBox"  v-if="visControll.ApowVis">
-            <div class="page-conTitle">
-              A路平均功率曲线
-            </div>
-            <p>本周期内，最大视在功率{{powData.AapparentPowMaxValue}}kVA， 发生时间{{powData.AapparentPowMaxTime}}。最小视在功率{{powData.AapparentPowMinValue}}kVA， 发生时间{{powData.AapparentPowMinTime}}</p>
-            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.AactivePowMaxValue}}kVA， 发生时间{{powData.AactivePowMaxTime}}。最小有功功率{{powData.AactivePowMinValue}}kVA， 发生时间{{powData.AactivePowMinTime}}</p>
-            <div ref="ApowChartContainer" id="ApowChartContainer" style="width: 70vw; height: 58vh;"></div>
-          </div>
-          <div class="pageBox"  v-if="visControll.BpowVis">
-            <div class="page-conTitle">
-              B路平均功率曲线
-            </div>
-            <p>本周期内，最大视在功率{{powData.BapparentPowMaxValue}}kVA， 发生时间{{powData.BapparentPowMaxTime}}。最小视在功率{{powData.BapparentPowMinValue}}kVA， 发生时间{{powData.BapparentPowMinTime}}</p>
-            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.BactivePowMaxValue}}kVA， 发生时间{{powData.BactivePowMaxTime}}。最小有功功率{{powData.BactivePowMinValue}}kVA， 发生时间{{powData.BactivePowMinTime}}</p>
-            <div ref="BpowChartContainer" id="BpowChartContainer" style="width: 70vw; height: 58vh;"></div>
-          </div>
-          <!-- <div class="pageBox" v-if="visControll.outletVis">
-            <div class="page-conTitle" >
-              输出位电量排名
-            </div>
-            <div ref="outputRankChartContainer" id="outputRankChartContainer" style="width: 70vw; height: 58vh;"></div>
-          </div> -->
-          <div class="pageBox" v-if="visControll.temVis">
-            <div class="page-conTitle">
-              温度曲线
-            </div>
-            <p v-show="temData.temMaxValue">本周期内，最高温度{{temData.temMaxValue}}°C， 最高温度发生时间{{temData.temMaxTime}}，由温度传感器{{temData.temMaxSensorId}}采集得到</p>
-            <p v-show="temData.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{temData.temMinValue}}°C， 最高温度发生时间{{temData.temMinTime}}，由温度传感器{{temData.temMinSensorId}}采集得到</p>
-            <div ref="temChartContainer" id="temChartContainer" style="width: 70vw; height: 58vh;"></div>
-          </div>
+                  </el-table-column>
+                  
+                </el-table>
+              </div>
+            </el-col>
+            <!-- <el-col :span="serChartContainerWidth">
+              <div class="right-div" ref="serChartContainer" id="serChartContainer" style="width: 29vw; height: 25vh;"></div>
+            </el-col> -->
+          </el-row>
         </div>
-      </ContentWrap>
-    </div>
-  </div>
+        <div class="pageBox" v-if="visControll.eqVis" >
+          <div class="page-conTitle" >
+            电量分布
+          </div>
+          <p v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大用电量{{eqData.maxEle}}kWh， 最大负荷发生时间{{eqData.maxEleTime}}</p>
+          <p v-if="visControll.isSameDay && eqData.eq">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
+          <div ref="rankChartContainer" id="rankChartContainer" style="width: 70vw; height: 58vh;"></div>
+        </div>
+        <div class="pageBox"  v-if="visControll.powVis">
+          <div class="page-conTitle">
+            总平均功率曲线
+          </div>
+          <p>本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
+          <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kVA， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kVA， 发生时间{{powData.activePowMinTime}}</p>
+          <div ref="powChartContainer" id="powChartContainer" style="width: 70vw; height: 58vh;"></div>
+        </div>
+        <div class="pageBox"  v-if="visControll.ApowVis">
+          <div class="page-conTitle">
+            A路平均功率曲线
+          </div>
+          <p>本周期内，最大视在功率{{powData.AapparentPowMaxValue}}kVA， 发生时间{{powData.AapparentPowMaxTime}}。最小视在功率{{powData.AapparentPowMinValue}}kVA， 发生时间{{powData.AapparentPowMinTime}}</p>
+          <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.AactivePowMaxValue}}kVA， 发生时间{{powData.AactivePowMaxTime}}。最小有功功率{{powData.AactivePowMinValue}}kVA， 发生时间{{powData.AactivePowMinTime}}</p>
+          <div ref="ApowChartContainer" id="ApowChartContainer" style="width: 70vw; height: 58vh;"></div>
+        </div>
+        <div class="pageBox"  v-if="visControll.BpowVis">
+          <div class="page-conTitle">
+            B路平均功率曲线
+          </div>
+          <p>本周期内，最大视在功率{{powData.BapparentPowMaxValue}}kVA， 发生时间{{powData.BapparentPowMaxTime}}。最小视在功率{{powData.BapparentPowMinValue}}kVA， 发生时间{{powData.BapparentPowMinTime}}</p>
+          <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.BactivePowMaxValue}}kVA， 发生时间{{powData.BactivePowMaxTime}}。最小有功功率{{powData.BactivePowMinValue}}kVA， 发生时间{{powData.BactivePowMinTime}}</p>
+          <div ref="BpowChartContainer" id="BpowChartContainer" style="width: 70vw; height: 58vh;"></div>
+        </div>
+        <!-- <div class="pageBox" v-if="visControll.outletVis">
+          <div class="page-conTitle" >
+            输出位电量排名
+          </div>
+          <div ref="outputRankChartContainer" id="outputRankChartContainer" style="width: 70vw; height: 58vh;"></div>
+        </div> -->
+        <div class="pageBox" v-if="visControll.temVis">
+          <div class="page-conTitle">
+            温度曲线
+          </div>
+          <p v-show="temData.temMaxValue">本周期内，最高温度{{temData.temMaxValue}}°C， 最高温度发生时间{{temData.temMaxTime}}，由温度传感器{{temData.temMaxSensorId}}采集得到</p>
+          <p v-show="temData.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{temData.temMinValue}}°C， 最高温度发生时间{{temData.temMinTime}}，由温度传感器{{temData.temMinSensorId}}采集得到</p>
+          <div ref="temChartContainer" id="temChartContainer" style="width: 70vw; height: 58vh;"></div>
+        </div>
+      </div>
+    </template>
+  </CommonMenu>
+
   <!-- 表单弹窗：添加/修改 -->
   <!-- <PDUDeviceForm ref="formRef" @success="getList" /> -->
 </template>
@@ -303,9 +284,6 @@ import { ElTree } from 'element-plus'
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
-
-const isCloseNav = ref(false) // 左侧导航是否收起
-const switchNav = ref(false) //false: 导航树 true：微模块展示
 const switchValue = ref(1);
 const instance = getCurrentInstance();
 const visControll = reactive({
@@ -470,11 +448,6 @@ const handleClick = (row) => {
   }
 }
 
-// 处理切换按钮点击事件
-const handleSwitchNav = () => {
-  switchNav.value = !switchNav.value
-}
-
 const arraySpanMethod = ({
   rowIndex,
 }) => {
@@ -597,25 +570,25 @@ const temData = ref<TemData>({
   temMinSensorId : 0,
 })as any
 
-interface ServerData {
-  nameAndMax: object[];
-  value: number[];
-}
-const serverData = ref<ServerData>({
-  nameAndMax : [
-  ],
-  value: []
-})as any
+// interface ServerData {
+//   nameAndMax: object[];
+//   value: number[];
+// }
+// const serverData = ref<ServerData>({
+//   nameAndMax : [
+//   ],
+//   value: []
+// })as any
 
-interface OutLetRankData {
-  outLetId: string[];
-  eleValue: number[];
-}
+// interface OutLetRankData {
+//   outLetId: string[];
+//   eleValue: number[];
+// }
 
-const outletRankData = ref<OutLetRankData>({
-  outLetId : [],
-  eleValue : [],
-})as any
+// const outletRankData = ref<OutLetRankData>({
+//   outLetId : [],
+//   eleValue : [],
+// })as any
 
 const filterText = ref('')
 const treeRef = ref<InstanceType<typeof ElTree>>()
@@ -774,7 +747,6 @@ const getList = async () => {
   //   serChartContainerWidth.value = 0;
   // }
     var CabinetInfo = await CabinetApi.getCabinetDetail({id : queryParams.Id});
-  
 
     var apow = CabinetInfo?.cabinet_power?.path_a?.pow_active;
     var bpow = CabinetInfo?.cabinet_power?.path_b?.pow_active;

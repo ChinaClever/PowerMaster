@@ -1,285 +1,259 @@
 <template>
-  <div class="master">
-    <!-- 左大侧 -->
-    <div class="master-left">
-      <ContentWrap style="height: calc(100% - 15px)">
-        <div v-if="!isCloseNav" class="nav-left">
-          <!-- 左侧标题栏 -->
-          <div class="navBar">微模块机房</div>
-          <!-- 信息展示模式 -->
-          <div v-if="switchNav">
-            <div class="header">
-              <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
-              <div class="name">微模块机房</div>
-              <div>机房202</div>
+  <CommonMenu :showCheckbox="true" @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="机柜环境">
+    <template #NavInfo>
+      <div >
+        <div class="header">
+          <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
+          <div class="name">微模块机房</div>
+          <div>机房202</div>
+        </div>
+        <div class="line"></div>
+        <div class="status">
+          <div class="box">
+            <div class="top">
+              <div class="tag"></div>&lt;15%
             </div>
-            <div class="line"></div>
-            <div class="status">
-              <div class="box">
-                <div class="top">
-                  <div class="tag"></div>&lt;15%
-                </div>
-                <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
-              </div>
-              <div class="box">
-                <div class="top">
-                  <div class="tag empty"></div>小电流
-                </div>
-                <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
-              </div>
-              <div class="box">
-                <div class="top">
-                  <div class="tag warn"></div>15%-30%
-                </div>
-                <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
-              </div>
-              <div class="box">
-                <div class="top">
-                  <div class="tag error"></div>&gt;30
-                </div>
-                <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
-              </div>
-            </div>
-            <div class="line"></div>
-            <div class="overview">
-              <div class="count">
-                <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-                <div class="info">
-                  <div>总电能</div>
-                  <div class="value">295.87 kW·h</div>
-                </div>
-              </div>
-              <div class="count">
-                <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
-                <div class="info">
-                  <div>今日用电</div>
-                  <div class="value">295.87 kW·h</div>
-                </div>
-              </div>
-              <div class="count">
-                <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-                <div class="info">
-                  <div>今日用电</div>
-                  <div class="value">295.87 kW·h</div>
-                </div>
-              </div>
-            </div>
+            <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
           </div>
-          <!-- 筛选模式 -->
-          <div v-else style="margin-top: 10px">
-            <NavTree :showCheckbox="true" ref="navTree"  @check="handleCheck" @node-click="handleClick" :showSearch="true"  :dataList="serverRoomArr" />
+          <div class="box">
+            <div class="top">
+              <div class="tag empty"></div>小电流
+            </div>
+            <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag warn"></div>15%-30%
+            </div>
+            <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag error"></div>&gt;30
+            </div>
+            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
           </div>
         </div>
-        <div v-if="!isCloseNav" class="openNavtree" @click.prevent="handleSwitchNav">
-          <Icon icon="ep:switch" />切换
+        <div class="line"></div>
+        <div class="overview">
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+            <div class="info">
+              <div>总电能</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
+          </div>
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
+            <div class="info">
+              <div>今日用电</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
+          </div>
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+            <div class="info">
+              <div>今日用电</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
+          </div>
         </div>
-        <div v-if="!isCloseNav" class="reduce" @click.prevent="isCloseNav = true"><Icon icon="ep:arrow-left" />收起</div>
-        <div v-if="isCloseNav" class="expand" @click.prevent="isCloseNav = false"><Icon icon="ep:arrow-right" /><span>展</span><span>开</span></div>
-      </ContentWrap>
-    </div>
-    <!-- 右大侧 -->
-    <div class="master-right">
-      <ContentWrap>
-        
-        <!-- 搜索工作栏 -->
-        <el-form
-          class="-mb-15px"
-          :model="queryParams"
-          ref="queryFormRef"
-          :inline="true"
-          label-width="68px"                          
-        >
-          <!-- <el-form-item>
-            <template v-for="(status, index) in statusList" :key="index">
-              <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
+      </div>
+    </template>
+    <template #ActionBar>
+      <el-form
+        class="-mb-15px"
+        :model="queryParams"
+        ref="queryFormRef"
+        :inline="true"
+        label-width="68px"                          
+      >
+        <!-- <el-form-item>
+          <template v-for="(status, index) in statusList" :key="index">
+            <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
+          </template>
+        </el-form-item> -->
+        <el-form-item>
+          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+          <el-button
+            type="primary"
+            plain
+            @click="openForm('create')"
+            v-hasPermi="['pdu:PDU-device:create']"
+          >
+            <Icon icon="ep:plus" class="mr-5px" /> 新增
+          </el-button>
+          <el-button
+            type="success"
+            plain
+            @click="handleExport"
+            :loading="exportLoading"
+            v-hasPermi="['pdu:PDU-device:export']"
+          >
+            <Icon icon="ep:download" class="mr-5px" /> 导出
+          </el-button>
+        </el-form-item>
+        <div style="float:right">
+          <el-button v-if="switchValue == 2" @click="switchTemAndHum = 0;" :type="switchTemAndHum == 0 ? 'primary' : ''"><Icon icon="mdi:temperature-celsius" style="margin-right: 4px" />温度</el-button>
+          <el-button v-if="switchValue == 2" @click="switchTemAndHum = 1;" :type="switchTemAndHum == 1 ? 'primary' : ''"><Icon icon="carbon:humidity" style="margin-right: 4px" />温度</el-button>
+          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />冷通道阵列</el-button>
+          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />热通道阵列</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />电压表格</el-button>
+        </div>
+      </el-form>
+    </template>
+    <template #Content>
+      <el-table v-show="switchValue == 2" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toCabinetEnvDetail" >
+        <el-table-column label="编号" align="center" prop="tableId" />
+        <!-- 数据库查询 -->
+        <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="前门" align="center" >
+          <el-table-column label="上" align="center" >
+            <template #default="scope" >
+              <el-text v-if="scope.row.iceTopTem != null && switchTemAndHum == 0">
+                {{ scope.row.iceTopTem }}°C
+              </el-text>
+              <el-text v-if="scope.row.iceTopHum != null && switchTemAndHum == 1">
+                {{ scope.row.iceTopHum }}%
+              </el-text>
             </template>
-          </el-form-item> -->
-          <el-form-item>
-            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-            <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+          </el-table-column>        
+          <el-table-column label="中" align="center" >
+            <template #default="scope" >
+              <el-text v-if="scope.row.iceMidTem != null && switchTemAndHum == 0">
+                {{ scope.row.iceMidTem }}°C
+              </el-text>
+              <el-text v-if="scope.row.iceMidHum != null && switchTemAndHum == 1">
+                {{ scope.row.iceMidHum }}%
+              </el-text>                
+            </template>
+          </el-table-column>     
+          <el-table-column label="下" align="center" >
+            <template #default="scope" >
+              <el-text v-if="scope.row.iceBomTem != null && switchTemAndHum == 0">
+                {{ scope.row.iceBomTem }}°C
+              </el-text>          
+              <el-text v-if="scope.row.iceBomHum != null && switchTemAndHum == 1">
+                {{ scope.row.iceBomHum }}%
+              </el-text>   
+            </template>
+          </el-table-column>     
+        </el-table-column>
+        <el-table-column label="后门" align="center" >
+          <el-table-column label="上" align="center" >
+            <template #default="scope" >
+              <el-text v-if="scope.row.hotTopTem != null && switchTemAndHum == 0">
+                {{ scope.row.hotTopTem }}°C
+              </el-text>       
+              <el-text v-if="scope.row.hotTopHum != null && switchTemAndHum == 1">
+                {{ scope.row.hotTopHum }}%
+              </el-text>            
+            </template>
+          </el-table-column>        
+          <el-table-column label="中" align="center" >
+            <template #default="scope" >
+              <el-text v-if="scope.row.hotMidTem != null && switchTemAndHum == 0">
+                {{ scope.row.hotMidTem }}°C
+              </el-text>               
+              <el-text v-if="scope.row.hotMidHum != null && switchTemAndHum == 1">
+                {{ scope.row.hotMidHum }}%
+              </el-text>    
+            </template>
+          </el-table-column>     
+          <el-table-column label="下" align="center" >
+            <template #default="scope" >
+              <el-text v-if="scope.row.hotBomTem != null && switchTemAndHum == 0">
+                {{ scope.row.hotBomTem }}°C
+              </el-text>             
+              <el-text v-if="scope.row.hotBomHum != null && switchTemAndHum == 1">
+                {{ scope.row.hotBomHum }}%
+              </el-text>   
+            </template>
+          </el-table-column> 
+        </el-table-column>
+        <!-- 数据库查询 -->
+        <el-table-column label="操作" align="center">
+          <template #default="scope">
             <el-button
+              link  
               type="primary"
-              plain
-              @click="openForm('create')"
-              v-hasPermi="['pdu:PDU-device:create']"
+              @click="toCabinetEnvDetail(scope.row)"
             >
-              <Icon icon="ep:plus" class="mr-5px" /> 新增
+            设备详情
             </el-button>
             <el-button
-              type="success"
-              plain
-              @click="handleExport"
-              :loading="exportLoading"
-              v-hasPermi="['pdu:PDU-device:export']"
+              link
+              type="danger"
+              @click="handleDelete(scope.row.id)"
+              v-if="scope.row.status == 5"
             >
-              <Icon icon="ep:download" class="mr-5px" /> 导出
+              删除
             </el-button>
-          </el-form-item>
-          <div style="float:right">
-            <el-button v-if="switchValue == 2" @click="switchTemAndHum = 0;" :type="switchTemAndHum == 0 ? 'primary' : ''"><Icon icon="mdi:temperature-celsius" style="margin-right: 4px" />温度</el-button>
-            <el-button v-if="switchValue == 2" @click="switchTemAndHum = 1;" :type="switchTemAndHum == 1 ? 'primary' : ''"><Icon icon="carbon:humidity" style="margin-right: 4px" />温度</el-button>
-            <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />冷通道阵列</el-button>
-            <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />热通道阵列</el-button>
-            <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />电压表格</el-button>
-          </div>
-        </el-form>
-      </ContentWrap>
+          </template>
+        </el-table-column>
+      </el-table>
 
-      <!-- 列表 -->
-      <ContentWrap  v-show="switchValue == 2">
-        <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toCabinetEnvDetail" >
-          <el-table-column label="编号" align="center" prop="tableId" />
-          <!-- 数据库查询 -->
-          <el-table-column label="所在位置" align="center" prop="location" />
-          <el-table-column label="前门" align="center" >
-            <el-table-column label="上" align="center" >
-              <template #default="scope" >
-                <el-text v-if="scope.row.iceTopTem != null && switchTemAndHum == 0">
-                  {{ scope.row.iceTopTem }}°C
-                </el-text>
-                <el-text v-if="scope.row.iceTopHum != null && switchTemAndHum == 1">
-                  {{ scope.row.iceTopHum }}%
-                </el-text>
-              </template>
-            </el-table-column>        
-            <el-table-column label="中" align="center" >
-              <template #default="scope" >
-                <el-text v-if="scope.row.iceMidTem != null && switchTemAndHum == 0">
-                  {{ scope.row.iceMidTem }}°C
-                </el-text>
-                <el-text v-if="scope.row.iceMidHum != null && switchTemAndHum == 1">
-                  {{ scope.row.iceMidHum }}%
-                </el-text>                
-              </template>
-            </el-table-column>     
-            <el-table-column label="下" align="center" >
-              <template #default="scope" >
-                <el-text v-if="scope.row.iceBomTem != null && switchTemAndHum == 0">
-                  {{ scope.row.iceBomTem }}°C
-                </el-text>          
-                <el-text v-if="scope.row.iceBomHum != null && switchTemAndHum == 1">
-                  {{ scope.row.iceBomHum }}%
-                </el-text>   
-              </template>
-            </el-table-column>     
-          </el-table-column>
-          <el-table-column label="后门" align="center" >
-            <el-table-column label="上" align="center" >
-              <template #default="scope" >
-                <el-text v-if="scope.row.hotTopTem != null && switchTemAndHum == 0">
-                  {{ scope.row.hotTopTem }}°C
-                </el-text>       
-                <el-text v-if="scope.row.hotTopHum != null && switchTemAndHum == 1">
-                  {{ scope.row.hotTopHum }}%
-                </el-text>            
-              </template>
-            </el-table-column>        
-            <el-table-column label="中" align="center" >
-              <template #default="scope" >
-                <el-text v-if="scope.row.hotMidTem != null && switchTemAndHum == 0">
-                  {{ scope.row.hotMidTem }}°C
-                </el-text>               
-                <el-text v-if="scope.row.hotMidHum != null && switchTemAndHum == 1">
-                  {{ scope.row.hotMidHum }}%
-                </el-text>    
-              </template>
-            </el-table-column>     
-            <el-table-column label="下" align="center" >
-              <template #default="scope" >
-                <el-text v-if="scope.row.hotBomTem != null && switchTemAndHum == 0">
-                  {{ scope.row.hotBomTem }}°C
-                </el-text>             
-                <el-text v-if="scope.row.hotBomHum != null && switchTemAndHum == 1">
-                  {{ scope.row.hotBomHum }}%
-                </el-text>   
-              </template>
-            </el-table-column> 
-          </el-table-column>
-          <!-- 数据库查询 -->
-          <el-table-column label="操作" align="center">
-            <template #default="scope">
-              <el-button
-                link  
-                type="primary"
-                @click="toCabinetEnvDetail(scope.row)"
-              >
-              设备详情
-              </el-button>
-              <el-button
-                link
-                type="danger"
-                @click="handleDelete(scope.row.id)"
-                v-if="scope.row.status == 5"
-              >
-                删除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <!-- 分页 -->
-      </ContentWrap>
-
-      <ContentWrap v-show="switchValue == 1">
-          <div class="arrayContainer">
-            <div class="arrayItem" v-for="item in list" :key="item.devKey">
-              <div class="devKey">{{ item.location }}</div>
-              <div class="content">
-                <div class="icon" >
-                  <div v-if="false" >
-                    1                                    
-                  </div>              
-                </div>
-                <div class="info">                  
-                  <div v-if="item.hotTopTem != null">上层温度：{{item.hotTopTem}}°C</div>
-                  <div v-if="item.hotMidTem != null" >中层温度：{{item.hotMidTem}}°C</div>
-                  <div v-if="item.hotBomTem != null" >下层温度：{{item.hotBomTem}}°C</div>
-                  <!-- <div>AB路占比：{{item.fzb}}</div> -->
-                </div>
-              </div>
-              <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
-              <div class="status" >
-              </div>
-              <button class="detail" @click="toCabinetEnvDetail(item)">详情</button>
+      <div v-show="switchValue == 1 && list.length > 0" class="arrayContainer">
+        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+          <div class="devKey">{{ item.location }}</div>
+          <div class="content">
+            <div class="icon" >
+              <div v-if="false" >
+                1                                    
+              </div>              
+            </div>
+            <div class="info">                  
+              <div v-if="item.hotTopTem != null">上层温度：{{item.hotTopTem}}°C</div>
+              <div v-if="item.hotMidTem != null" >中层温度：{{item.hotMidTem}}°C</div>
+              <div v-if="item.hotBomTem != null" >下层温度：{{item.hotBomTem}}°C</div>
+              <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
-      </ContentWrap>
+          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
+          <div class="status" >
+          </div>
+          <button class="detail" @click="toCabinetEnvDetail(item)">详情</button>
+        </div>
+      </div>
 
-      <ContentWrap v-show="switchValue == 0">
-          <div class="arrayContainer">
-            <div class="arrayItem" v-for="item in list" :key="item.devKey">
-              <div class="devKey">{{ item.location }}</div>
-              <div class="content">
-                <div class="icon" >
-                  <div v-if="false" >
-                    1
-                  </div>              
-                </div>
-                <div class="info">                  
-                  <div v-if="item.iceTopTem != null">上层温度：{{item.iceTopTem}}°C</div>
-                  <div v-if="item.iceMidTem != null" >中层温度：{{item.iceMidTem}}°C</div>
-                  <div v-if="item.iceBomTem != null" >下层温度：{{item.iceBomTem}}°C</div>
-                  <!-- <div>AB路占比：{{item.fzb}}</div> -->
-                </div>
-              </div>
-              <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
-              <div class="status" >
-              </div>
-              <button class="detail" @click="toCabinetEnvDetail(item)">详情</button>
+      <div v-show="switchValue == 0 && list.length > 0" class="arrayContainer">
+        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+          <div class="devKey">{{ item.location }}</div>
+          <div class="content">
+            <div class="icon" >
+              <div v-if="false" >
+                1
+              </div>              
+            </div>
+            <div class="info">                  
+              <div v-if="item.iceTopTem != null">上层温度：{{item.iceTopTem}}°C</div>
+              <div v-if="item.iceMidTem != null" >中层温度：{{item.iceMidTem}}°C</div>
+              <div v-if="item.iceBomTem != null" >下层温度：{{item.iceBomTem}}°C</div>
+              <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
-      </ContentWrap>
+          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
+          <div class="status" >
+          </div>
+          <button class="detail" @click="toCabinetEnvDetail(item)">详情</button>
+        </div>
+      </div>
 
-      <ContentWrap>
-        <Pagination
+      <Pagination
         :total="total"
         :page-size-arr="pageSizeArr"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
-      </ContentWrap>
-    </div>
-  </div>
+
+      <template v-if="list.length == 0 && switchValue != 2">
+        <el-empty description="暂无数据" :image-size="300" />
+      </template>
+    </template>
+  </CommonMenu>
+
 
   <!-- 表单弹窗：添加/修改 -->
   <!-- <PDUDeviceForm ref="formRef" @success="getList" /> -->
@@ -299,8 +273,6 @@ defineOptions({ name: 'PDUDevice' })
 
 const { push } = useRouter()
 
-const isCloseNav = ref(false) // 左侧导航是否收起
-const switchNav = ref(false) //false: 导航树 true：微模块展示
 const switchTemAndHum = ref(0);
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
@@ -353,20 +325,26 @@ const handleClick = (row) => {
 }
 
 const handleCheck = async (row) => {
-
+  if(row.length == 0){
+    queryParams.cabinetIds = null;
+    getList();
+    return;
+  }
   const ids = [] as any
+  var haveCabinet = false;
   row.forEach(item => {
     if (item.type == 3) {
       ids.push(item.id)
+      haveCabinet = true;
     }
   })
-  queryParams.cabinetIds = ids
-  getList();
-}
+  if(!haveCabinet ){
+    queryParams.cabinetIds = [-1]
+  }else{
+    queryParams.cabinetIds = ids
+  }
 
-// 处理切换按钮点击事件
-const handleSwitchNav = () => {
-  switchNav.value = !switchNav.value
+  getList();
 }
 
 const serverRoomArr =  ref([])
