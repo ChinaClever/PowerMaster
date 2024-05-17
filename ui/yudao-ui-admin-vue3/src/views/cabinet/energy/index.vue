@@ -1,5 +1,65 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" >
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="模块化机房">
+    <template #NavInfo>
+      <div class="navInfo">
+        <div class="header">
+          <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
+          <div class="name">微模块机房</div>
+          <div>机房202</div>
+        </div>
+        <div class="line"></div>
+        <div class="status">
+          <div class="box">
+            <div class="top">
+              <div class="tag"></div>正常
+            </div>
+            <div class="value"><span class="number">24</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag empty"></div>空载
+            </div>
+            <div class="value"><span class="number">1</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag warn"></div>预警
+            </div>
+            <div class="value"><span class="number">1</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag error"></div>故障
+            </div>
+            <div class="value"><span class="number">0</span>个</div>
+          </div>
+        </div>
+        <div class="line"></div>
+        <div class="overview">
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+            <div class="info">
+              <div>总电能</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
+          </div>
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
+            <div class="info">
+              <div>今日用电</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
+          </div>
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+            <div class="info">
+              <div>今日用电</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
     <template #ActionBar>
       <el-form
         class="-mb-15px"
@@ -105,9 +165,9 @@ const getTableData = async(reset = false) => {
         return {
           id: item.id,
           local: item.roomName + '-' + item.name,
-          yesterdayEq: item.yesterdayEq ? item.yesterdayEq.toFixed(1) : 0,
-          lastWeekEq: item.lastWeekEq ? item.lastWeekEq.toFixed(1) : 0,
-          lastMonthEq: item.lastMonthEq ? item.lastMonthEq.toFixed(1) : 0,
+          yesterdayEq: item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0',
+          lastWeekEq: item.lastWeekEq ? item.lastWeekEq.toFixed(1) : '0.0',
+          lastMonthEq: item.lastMonthEq ? item.lastMonthEq.toFixed(1) : '0.0',
         }
       })
       queryParams.pageTotal = res.total
@@ -161,6 +221,109 @@ onBeforeMount(() => {
 }
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+.navInfo {
+  .overview {
+    padding: 0 20px;
+    .count {
+      height: 70px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-left: 15px;
+      padding-right: 10px;
+      box-shadow: 0 3px 4px 1px rgba(0,0,0,.12);
+      border-radius: 3px;
+      border: 1px solid #eee;
+      .info {
+        height: 46px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: space-between;
+        font-size: 13px;
+        .value {
+          font-size: 15px;
+          font-weight: bold;
+        }
+      }
+    }
+  }
+  .status {
+    display: flex;
+    flex-wrap: wrap;
+    .box {
+      height: 70px;
+      width: 50%;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      .top {
+        display: flex;
+        align-items: center;
+        .tag {
+          width: 8px;
+          height: 8px;
+          background-color: #3bbb00;
+          margin-right: 3px;
+          margin-top: 2px;
+        }
+        .empty {
+          background-color: #ccc;
+        }
+        .warn {
+          background-color: #ffc402;
+        }
+        .error {
+          background-color: #fa3333;
+        }
+      }
+      .value {
+        font-size: 14px;
+        margin-top: 5px;
+        color: #aaa;
+        .number {
+          font-size: 14px;
+          font-weight: bold;
+          margin-right: 5px;
+          color: #000;
+        }
+      }
+    }
+  }
+  .header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 13px;
+    padding-top: 28px;
+    .header_img {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid #555;
+      img {
+        width: 75px;
+        height: 75px;
+      }
+    }
+    .name {
+      font-size: 15px;
+      margin: 15px 0;
+    }
+  }
+  .line {
+    height: 1px;
+    margin-top: 28px;
+    margin-bottom: 20px;
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
 }
 .matrixContainer {
   height: calc(100vh - 320px);
