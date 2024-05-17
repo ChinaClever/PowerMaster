@@ -1,219 +1,196 @@
 <template>
-  <div class="master">
-    <!-- 左大侧 -->
-    <div class="master-left">
-      <ContentWrap style="height: calc(100% - 15px)">
-        <div v-if="!isCloseNav" class="nav-left">
-          <!-- 左侧标题栏 -->
-          <div class="navBar">微模块机房</div>
-          <!-- 信息展示模式 -->
-          <div v-if="switchNav">
-            <div class="header">
-              <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
-              <div class="name">微模块机房</div>
-              <div>机房202</div>
+  <CommonMenu @check="handleCheck" :showSearch="true" :dataList="navList" navTitle="模块化机房">
+    <template #NavInfo>
+      <div>
+        <div class="header">
+          <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
+          <div class="name">微模块机房</div>
+          <div>机房202</div>
+        </div>
+        <div class="line"></div>
+        <div class="status">
+          <div class="box">
+            <div class="top">
+              <div class="tag"></div>正常
             </div>
-            <div class="line"></div>
-            <div class="status">
-              <div class="box">
-                <div class="top">
-                  <div class="tag"></div>正常
-                </div>
-                <div class="value"><span class="number">24</span>个</div>
-              </div>
-              <div class="box">
-                <div class="top">
-                  <div class="tag empty"></div>空载
-                </div>
-                <div class="value"><span class="number">1</span>个</div>
-              </div>
-              <div class="box">
-                <div class="top">
-                  <div class="tag warn"></div>预警
-                </div>
-                <div class="value"><span class="number">1</span>个</div>
-              </div>
-              <div class="box">
-                <div class="top">
-                  <div class="tag error"></div>故障
-                </div>
-                <div class="value"><span class="number">0</span>个</div>
-              </div>
-            </div>
-            <div class="line"></div>
-            <div class="overview">
-              <div class="count">
-                <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-                <div class="info">
-                  <div>总电能</div>
-                  <div class="value">295.87 kW·h</div>
-                </div>
-              </div>
-              <div class="count">
-                <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
-                <div class="info">
-                  <div>今日用电</div>
-                  <div class="value">295.87 kW·h</div>
-                </div>
-              </div>
-              <div class="count">
-                <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-                <div class="info">
-                  <div>今日用电</div>
-                  <div class="value">295.87 kW·h</div>
-                </div>
-              </div>
-            </div>
+            <div class="value"><span class="number">24</span>个</div>
           </div>
-          <!-- 筛选模式 -->
-          <div v-else style="margin-top: 10px">
-            <NavTree ref="navTree" @node-click="handleClick" @check="handleCheck" :showSearch="true" :dataList="navList" />
+          <div class="box">
+            <div class="top">
+              <div class="tag empty"></div>空载
+            </div>
+            <div class="value"><span class="number">1</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag warn"></div>预警
+            </div>
+            <div class="value"><span class="number">1</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag error"></div>故障
+            </div>
+            <div class="value"><span class="number">0</span>个</div>
           </div>
         </div>
-        <div v-if="!isCloseNav" class="openNavtree" @click.prevent="handleSwitchNav">
-          <Icon icon="ep:switch" />切换
+        <div class="line"></div>
+        <div class="overview">
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+            <div class="info">
+              <div>总电能</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
+          </div>
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
+            <div class="info">
+              <div>今日用电</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
+          </div>
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+            <div class="info">
+              <div>今日用电</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
+          </div>
         </div>
-        <div v-if="!isCloseNav" class="reduce" @click.prevent="isCloseNav = true"><Icon icon="ep:arrow-left" />收起</div>
-        <div v-if="isCloseNav" class="expand" @click.prevent="isCloseNav = false"><Icon icon="ep:arrow-right" /><span>展</span><span>开</span></div>
-      </ContentWrap>
-    </div>
-    <!-- 右大侧 -->
-    <div class="master-right">
-      <ContentWrap>
-        <el-form
-          class="-mb-15px"
-          :model="queryParams"
-          ref="queryFormRef"
-          :inline="true"
-          label-width="68px"
-        >
+      </div>
+    </template>
+    <template #ActionBar>
+      <el-form
+        class="-mb-15px"
+        :model="queryParams"
+        ref="queryFormRef"
+        :inline="true"
+        label-width="68px"
+      >
+        <el-form-item>
+          <template v-for="(status, index) in statusList" :key="index">
+            <button type="button" :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index, $event)">{{status.name}}</button>
+          </template>
+        </el-form-item>
+        <div>
+          <el-form-item v-show="switchValue"  label="公司名称" prop="company">
+            <el-input
+              v-model="queryParams.company"
+              placeholder="请输入公司名称"
+              clearable
+              class="!w-160px"
+              height="35"
+            />
+          </el-form-item >
+          <el-form-item v-show="switchValue" label="展示列" prop="showCol">
+            <el-cascader
+              ref="colNode"
+              class="!w-230px"
+              v-model="defaultOptionsCol"
+              @change="cascaderChange"
+              :options="optionsCol"
+              :props="props"
+              :clearable="false"
+              collapse-tags />
+          </el-form-item>
           <el-form-item>
-            <template v-for="(status, index) in statusList" :key="index">
-              <button type="button" :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index, $event)">{{status.name}}</button>
-            </template>
+            <el-button style="margin-left: 12px" v-show="switchValue" @click="getTableData(true)"><Icon icon="ep:search" />搜索</el-button>
+            <el-button @click="openForm('add')" type="primary" plain><Icon icon="ep:plus" />添加</el-button>
           </el-form-item>
-          <div>
-            <el-form-item v-show="switchValue"  label="公司名称" prop="company">
-              <el-input
-                v-model="queryParams.company"
-                placeholder="请输入公司名称"
-                clearable
-                class="!w-160px"
-                height="35"
-              />
-            </el-form-item >
-            <el-form-item v-show="switchValue" label="展示列" prop="showCol">
-              <el-cascader
-                ref="colNode"
-                class="!w-230px"
-                v-model="defaultOptionsCol"
-                @change="cascaderChange"
-                :options="optionsCol"
-                :props="props"
-                :clearable="false"
-                collapse-tags />
-            </el-form-item>
-            <el-form-item>
-              <el-button style="margin-left: 12px" v-show="switchValue" @click="getTableData(true)"><Icon icon="ep:search" />搜索</el-button>
-              <el-button @click="openForm('add')" type="primary" plain><Icon icon="ep:plus" />添加</el-button>
-            </el-form-item>
-          </div>
-          <el-form-item style="margin-left: auto">
-            <el-button @click="handleSwitchModal(0)" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />阵列模式</el-button>
-            <el-button @click="handleSwitchModal(1)" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
-          </el-form-item>
-        </el-form>
-      </ContentWrap>
-      <ContentWrap v-show="switchValue" style="min-height: 680px">
-        <el-table style="width: 100%;" v-loading="loading" :data="listPage" @cell-dblclick="handleDbclick">
-          <el-table-column label="位置" min-width="110" align="center">
-            <template #default="scope">
-              <div>{{scope.row.roomName}}-{{scope.row.cabinetName}}</div>
-            </template>
-          </el-table-column>
-          <el-table-column label="状态" min-width="110" align="center">
-            <template #default="scope">
-              <div :style="{color: statusList[scope.row.status].color}">{{statusList[scope.row.status] && statusList[scope.row.status].name}}</div>
-            </template>
-          </el-table-column>
-          <!-- <el-table-column v-if="queryParams.showCol.includes(12)" label="名称" min-width="110" align="center" prop="cabinetName" /> -->
-          <el-table-column v-if="queryParams.showCol.includes(1)" label="总视在功率(kVA)" min-width="140" align="center" prop="apparentTotal" />
-          <el-table-column v-if="queryParams.showCol.includes(2)" label="总有功功率(kW)" min-width="130" align="center" prop="activeTotal" />
-          <el-table-column v-if="queryParams.showCol.includes(3)" label="总电能(kWh)" min-width="110" align="center" prop="eleTotal" />
-          <el-table-column v-if="queryParams.showCol.includes(5)" label="A视在功率(kVA)" min-width="140" align="center" prop="apparentA" />
-          <el-table-column v-if="queryParams.showCol.includes(6)" label="A有功功率(kW)" min-width="130" align="center" prop="activeA" />
-          <el-table-column v-if="queryParams.showCol.includes(7)" label="A电能(kWh)" min-width="110" align="center" prop="eleA" />
-          <el-table-column v-if="queryParams.showCol.includes(9)" label="B视在功率(kVA)" min-width="140" align="center" prop="apparentB" />
-          <el-table-column v-if="queryParams.showCol.includes(10)" label="B有功功率(kW)" min-width="130" align="center" prop="activeB" />
-          <el-table-column v-if="queryParams.showCol.includes(11)" label="B电能(kWh)" min-width="110" align="center" prop="eleB" />
-          <el-table-column v-if="queryParams.showCol.includes(12)" label="无功功率(kVar)" min-width="120" align="center" prop="powerReactiveTotal"/>
-          <el-table-column v-if="queryParams.showCol.includes(13)" label="功率因素" align="center" prop="powerFactorTotal" />
-          <el-table-column v-if="queryParams.showCol.includes(15)" label="负载比(%)" min-width="110" align="center" prop="loadFactor" />
-          <el-table-column v-if="queryParams.showCol.includes(14)" label="所属公司" min-width="110" align="center" prop="company" />
-          <el-table-column v-if="queryParams.showCol.includes(16)" label="A,B占比" align="center" prop="abzb">
-            <template #default="scope">
-              <div v-if="scope.row.abzb == '-'">-</div>
-              <div v-else class="progressContainer">
-                <div class="progress">
-                  <div class="left" :style="`flex: ${scope.row.abzb}`">A:{{scope.row.abzb}}</div>
-                  <div class="right" :style="`flex: ${100 - scope.row.abzb}`">B:{{100 - scope.row.abzb}}</div>
-                </div>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column fixed="right" label="操作" align="center" width="180px">
-            <template #default="scope">
-              <el-button
-                type="primary"
-                @click="openForm('edit', scope.row.cabinet_key)">编辑
-              </el-button>
-              <el-button
-                type="danger"
-                @click="handleDelete(scope.row.cabinet_key)">删除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <Pagination
-          :total="queryParams.pageTotal"
-          v-model:page="queryParams.pageNo"
-          v-model:limit="queryParams.pageSize"
-          @pagination="getTableData(false)"
-        />
-      </ContentWrap>
-      <ContentWrap v-show="!switchValue">
-        <div class="arrayContainer">
-          <div class="arrayItem" v-for="item in listPage" :key="item.id" @dblclick="handleArrayDbclick(item.cabinet_key)">
-            <div class="content">
-              <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
-              <div style="padding: 0 28px"><LiquidBall :width="50" :height="50" :precent="item.loadFactor" /></div>
-              <div class="info">
-                <div>视在功率：{{item.apparentTotal}}KVA</div>
-                <div>有功功率：{{item.activeTotal}}KW</div>
-                <div>功率因素：{{item.powerFactorTotal}}</div>
-                <!-- 负载率： -->
+        </div>
+        <el-form-item style="margin-left: auto">
+          <el-button @click="handleSwitchModal(0)" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />阵列模式</el-button>
+          <el-button @click="handleSwitchModal(1)" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
+        </el-form-item>
+      </el-form>
+    </template>
+    <template #Content>
+      <el-table v-show="switchValue" style="width: 100%;" v-loading="loading" :data="listPage" @cell-dblclick="handleDbclick">
+        <el-table-column label="位置" min-width="110" align="center">
+          <template #default="scope">
+            <div>{{scope.row.roomName}}-{{scope.row.cabinetName}}</div>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" min-width="110" align="center">
+          <template #default="scope">
+            <div :style="{color: statusList[scope.row.status].color}">{{statusList[scope.row.status] && statusList[scope.row.status].name}}</div>
+          </template>
+        </el-table-column>
+        <!-- <el-table-column v-if="queryParams.showCol.includes(12)" label="名称" min-width="110" align="center" prop="cabinetName" /> -->
+        <el-table-column v-if="queryParams.showCol.includes(1)" label="总视在功率(kVA)" min-width="140" align="center" prop="apparentTotal" />
+        <el-table-column v-if="queryParams.showCol.includes(2)" label="总有功功率(kW)" min-width="130" align="center" prop="activeTotal" />
+        <el-table-column v-if="queryParams.showCol.includes(3)" label="总电能(kWh)" min-width="110" align="center" prop="eleTotal" />
+        <el-table-column v-if="queryParams.showCol.includes(5)" label="A视在功率(kVA)" min-width="140" align="center" prop="apparentA" />
+        <el-table-column v-if="queryParams.showCol.includes(6)" label="A有功功率(kW)" min-width="130" align="center" prop="activeA" />
+        <el-table-column v-if="queryParams.showCol.includes(7)" label="A电能(kWh)" min-width="110" align="center" prop="eleA" />
+        <el-table-column v-if="queryParams.showCol.includes(9)" label="B视在功率(kVA)" min-width="140" align="center" prop="apparentB" />
+        <el-table-column v-if="queryParams.showCol.includes(10)" label="B有功功率(kW)" min-width="130" align="center" prop="activeB" />
+        <el-table-column v-if="queryParams.showCol.includes(11)" label="B电能(kWh)" min-width="110" align="center" prop="eleB" />
+        <el-table-column v-if="queryParams.showCol.includes(12)" label="无功功率(kVar)" min-width="120" align="center" prop="powerReactiveTotal"/>
+        <el-table-column v-if="queryParams.showCol.includes(13)" label="功率因素" align="center" prop="powerFactorTotal" />
+        <el-table-column v-if="queryParams.showCol.includes(15)" label="负载比(%)" min-width="110" align="center" prop="loadFactor" />
+        <el-table-column v-if="queryParams.showCol.includes(14)" label="所属公司" min-width="110" align="center" prop="company" />
+        <el-table-column v-if="queryParams.showCol.includes(16)" label="A,B占比" align="center" prop="abzb">
+          <template #default="scope">
+            <div v-if="scope.row.abzb == '-'">-</div>
+            <div v-else class="progressContainer">
+              <div class="progress">
+                <div class="left" :style="`flex: ${scope.row.abzb}`">A:{{scope.row.abzb}}</div>
+                <div class="right" :style="`flex: ${100 - scope.row.abzb}`">B:{{100 - scope.row.abzb}}</div>
               </div>
             </div>
-            <div class="room">{{item.roomName}}-{{item.cabinetName}}</div>
-            <div v-if="item.status == 0" class="status-empty">空载</div>
-            <div v-if="item.status == 1" class="status-normal">正常</div>
-            <div v-if="item.status == 2" class="status-warn">预警</div>
-            <div v-if="item.status == 3" class="status-error">故障</div>
-            <div v-if="item.status == 4" class="status-unbound">未绑定</div>
-            <div v-if="item.status == 6" class="status-offline">离线</div>
-            <button class="detail" @click.prevent="toMachineDetail(item.cabinet_key)">详情</button>
+          </template>
+        </el-table-column>
+        <el-table-column fixed="right" label="操作" align="center" width="180px">
+          <template #default="scope">
+            <el-button
+              type="primary"
+              @click="openForm('edit', scope.row.cabinet_key)">编辑
+            </el-button>
+            <el-button
+              type="danger"
+              @click="handleDelete(scope.row.cabinet_key)">删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div v-show="!switchValue && listPage.length > 0" class="arrayContainer">
+        <div class="arrayItem" v-for="item in listPage" :key="item.id" @dblclick="handleArrayDbclick(item.cabinet_key)">
+          <div class="content">
+            <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
+            <div style="padding: 0 28px"><LiquidBall :width="50" :height="50" :precent="item.loadFactor" /></div>
+            <div class="info">
+              <div>视在功率：{{item.apparentTotal}}KVA</div>
+              <div>有功功率：{{item.activeTotal}}KW</div>
+              <div>功率因素：{{item.powerFactorTotal}}</div>
+              <!-- 负载率： -->
+            </div>
           </div>
+          <div class="room">{{item.roomName}}-{{item.cabinetName}}</div>
+          <div v-if="item.status == 0" class="status-empty">空载</div>
+          <div v-if="item.status == 1" class="status-normal">正常</div>
+          <div v-if="item.status == 2" class="status-warn">预警</div>
+          <div v-if="item.status == 3" class="status-error">故障</div>
+          <div v-if="item.status == 4" class="status-unbound">未绑定</div>
+          <div v-if="item.status == 6" class="status-offline">离线</div>
+          <button class="detail" @click.prevent="toMachineDetail(item.cabinet_key)">详情</button>
         </div>
-        <Pagination
-          :total="queryParams.pageTotal"
-          v-model:page="queryParams.pageNo"
-          v-model:limit="queryParams.pageSize"
-          @pagination="getTableData"
-        />
-      </ContentWrap>
-    </div>
-  </div>
-
+      </div>
+      <Pagination
+        :total="queryParams.pageTotal"
+        v-model:page="queryParams.pageNo"
+        v-model:limit="queryParams.pageSize"
+        @pagination="getTableData(false)"
+      />
+      <template v-if="listPage.length == 0 && !switchValue">
+        <el-empty description="暂无数据" :image-size="300" />
+      </template>
+      <!-- <div v-if="listPage.length == 0 && !switchValue" style="display:flex;"> -->
+        
+      <!-- </div> -->
+    </template>
+  </CommonMenu>
   <!-- 添加或修改用户对话框 -->
   <MachineForm ref="machineForm" @success="saveMachine" />
 </template>
@@ -230,11 +207,10 @@ import { fa } from 'node_modules/element-plus/es/locale';
 const { push } = useRouter() // 路由跳转
 const message = useMessage() // 消息弹窗
 const machineForm = ref() // 机柜表单组件
-const navTree = ref() // 导航树组件
 const colNode = ref() // 展示列组件
 const loading = ref(false)
 const isCloseNav = ref(false) // 左侧导航是否收起
-const switchNav = ref(false) //false: 导航树 true：微模块展示
+const isFirst = ref(true) // 是否第一次调用getTableData函数
 const switchValue = ref(0) // 0:阵列 1：表格
 const listPage = ref<any>([]) // 表格数据
 const navList = ref([]) // 左侧导航列表数据
@@ -364,7 +340,7 @@ const getTableData = async(reset = false) => {
     const res = await CabinetApi.getCabinetInfo({
       pageNo: queryParams.pageNo,
       pageSize: queryParams.pageSize,
-      cabinetIds: cabinetIds.value,
+      cabinetIds: [],
       // roomId: null,
       runStatus: status.map(item => item.value),
       pduBox: 0,
@@ -426,10 +402,8 @@ const getNavList = async() => {
   //       })
   //     }
   //   })
-  //   navTree.value.initCheck([room.unique])
   // }
   // cabinetIds.value = ids
-  getTableData(false)
 }
 
 // 保存机柜修改/删除
@@ -449,10 +423,6 @@ const handleSwitchModal = (value) => {
   getTableData(true)
 }
 
-// 处理切换按钮点击事件
-const handleSwitchNav = () => {
-  switchNav.value = !switchNav.value
-}
 
 //处理表格双击事件
 const handleDbclick = (e) => {
@@ -477,10 +447,6 @@ const handleSelectStatus = (index, event) => {
 const toMachineDetail = (key) => {
   console.log('toMachineDetail!', key.split('-')[1])
   push({path: '/cabinet/cab/detail', state: { id: key.split('-')[1] }})
-}
-
-const handleClick = (row) => {
-  console.log('Button clicked!', row);
 }
 
 const handleCheck = (row) => {
@@ -537,59 +503,12 @@ const cascaderChange = (row) => {
 
 onBeforeMount(() => {
   getNavList()
+  getTableData(false)
 })
 
 </script>
 
 <style scoped lang="scss">
-.master {
-  width: 100%;
-  box-sizing: border-box;
-  display: flex;
-  .master-left {
-    position: relative;
-    overflow: hidden;
-    box-sizing: border-box;
-    margin-right: 20px;
-    transition: all 0.2s linear;
-    .openNavtree {
-      // width: 100%;
-      box-sizing: border-box;
-      text-align: right;
-      cursor: pointer;
-      position: absolute;
-      right: 10px;
-      top: 12px;
-      font-size: 15px;
-      display: flex;
-      align-items: center;
-    }
-    .reduce {
-      display: flex;
-      align-items: center;
-      position: absolute;
-      right: 10px;
-      top: 52px;
-      color: #777777;
-      cursor: pointer;
-      font-size: 13px;
-    }
-    .expand {
-      width: 30px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      color: #777;
-      cursor: pointer;
-      background-color: #eef4fc;
-      padding: 10px 0;
-    }
-  }
-  .master-right {
-    flex: 1;
-    overflow: hidden;
-  }
-}
 .btn_normal,
 .btn_empty,
 .btn_warn,

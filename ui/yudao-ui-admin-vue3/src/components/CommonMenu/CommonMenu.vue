@@ -5,67 +5,10 @@
       <ContentWrap style="height: calc(100% - 15px)">
         <div v-if="!isCloseNav" class="nav-left">
           <!-- 左侧标题栏 -->
-          <div class="navBar">微模块机房</div>
+          <div class="navBar">{{navTitle}}</div>
           <!-- 信息展示模式 -->
-          <div v-if="switchNav">
-            <div class="header">
-              <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
-              <div class="name">微模块机房</div>
-              <div>机房202</div>
-            </div>
-            <div class="line"></div>
-            <div class="status">
-              <div class="box">
-                <div class="top">
-                  <div class="tag"></div>正常
-                </div>
-                <div class="value"><span class="number">24</span>个</div>
-              </div>
-              <div class="box">
-                <div class="top">
-                  <div class="tag empty"></div>空载
-                </div>
-                <div class="value"><span class="number">1</span>个</div>
-              </div>
-              <div class="box">
-                <div class="top">
-                  <div class="tag warn"></div>预警
-                </div>
-                <div class="value"><span class="number">1</span>个</div>
-              </div>
-              <div class="box">
-                <div class="top">
-                  <div class="tag error"></div>故障
-                </div>
-                <div class="value"><span class="number">0</span>个</div>
-              </div>
-            </div>
-            <div class="line"></div>
-            <div class="overview">
-              <div class="count">
-                <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-                <div class="info">
-                  <div>总电能</div>
-                  <div class="value">295.87 kW·h</div>
-                </div>
-              </div>
-              <div class="count">
-                <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
-                <div class="info">
-                  <div>今日用电</div>
-                  <div class="value">295.87 kW·h</div>
-                </div>
-              </div>
-              <div class="count">
-                <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-                <div class="info">
-                  <div>今日用电</div>
-                  <div class="value">295.87 kW·h</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- 筛选模式 -->
+          <slot v-if="switchNav" name="NavInfo"></slot>
+            <!-- 筛选模式 -->
           <div v-else style="margin-top: 10px">
             <NavTree ref="navTree" @node-click="handleClick" @check="handleCheck" :showCheckbox="showCheckbox" :showSearch="true" :dataList="dataList" :load="load" />
           </div>
@@ -93,6 +36,7 @@
 const emits = defineEmits(['node-click', 'check'])
 const props = defineProps({
   dataList: Array,
+  navTitle: String,
   showSearch: Boolean,
   isAccordion: {
     type: Boolean,
@@ -117,6 +61,7 @@ const isCloseNav = ref(false) // 左侧导航是否收起
 
 // 处理切换按钮点击事件
 const handleSwitchNav = () => {
+  console.log('处理切换按钮点击事件', switchNav.value)
   switchNav.value = !switchNav.value
 }
 

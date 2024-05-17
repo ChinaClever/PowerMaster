@@ -255,6 +255,10 @@ const getMachineEleTrend = async(type) => {
           return `${params[0].seriesName}：${params[0].value}kW·h` + '<br>' + `${params[1].seriesName}：${params[1].value}kW·h`; // 使用 <b> 标签使数值加粗显示
         }
       },
+      legend: {
+        data: EleTrendOption[type],
+        right: '4%'
+      },
       grid: {
         left: '3%',
         right: '4%',
@@ -301,7 +305,10 @@ const getMachineEleTrend = async(type) => {
           name: EleTrendOption[type][1],
           type: 'bar',
           barWidth: '20%',
-          data: res.map(item => item.lastEq.toFixed(1))
+          data: res.map(item => item.lastEq.toFixed(1)),
+          itemStyle: {
+            color: '#bd0000' // 设置柱形图的颜色
+          }
         }
       ]
     }
