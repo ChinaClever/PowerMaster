@@ -1,7 +1,7 @@
 <template>
   <CommonMenu @check="handleCheck" :showSearch="true" :dataList="navList" navTitle="模块化机房">
     <template #NavInfo>
-      <div>
+      <div class="navInfo">
         <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
           <div class="name">微模块机房</div>
@@ -340,13 +340,12 @@ const getTableData = async(reset = false) => {
     const res = await CabinetApi.getCabinetInfo({
       pageNo: queryParams.pageNo,
       pageSize: queryParams.pageSize,
-      cabinetIds: [],
+      cabinetIds: isFirst.value ? null : cabinetIds.value,
       // roomId: null,
       runStatus: status.map(item => item.value),
       pduBox: 0,
       company: queryParams.company
     })
-    console.log('res', res)
     if (res.list) {
       const list = res.list.map(item => {
         const tableItem = {
@@ -451,6 +450,7 @@ const toMachineDetail = (key) => {
 
 const handleCheck = (row) => {
   console.log('handleCheck!', row);
+  isFirst.value = false
   const ids = [] as any
   row.forEach(item => {
     if (item.type == 3) {
@@ -593,17 +593,7 @@ onBeforeMount(() => {
     color: #fff;
   }
 }
-
-.navBar {
-  box-sizing: border-box;
-  width: 100%;
-  height: 46px;
-  line-height: 46px;
-  padding-left: 10px;
-  background-color: #d5ffc1;
-  font-size: 14px;
-}
-.nav-left {
+.navInfo {
   width: 215px;
   height: 100%;
   .overview {
