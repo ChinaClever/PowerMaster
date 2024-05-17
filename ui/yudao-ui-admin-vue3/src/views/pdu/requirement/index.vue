@@ -255,7 +255,7 @@
         <ContentWrap v-show="switchValue == 0">
             <div class="arrayContainer">
               <div class="arrayItem" v-for="item in list" :key="item.devKey">
-                <div class="devKey">{{ item.location }}</div>
+                <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
                 <div class="content">
                   <div class="icon"></div>
                   <div class="info">
@@ -355,14 +355,25 @@ const handleClick = (row) => {
 }
 
 const handleCheck = async (row) => {
-  console.log('handleCheck!', row);
+  if(row.length == 0){
+    queryParams.cabinetIds = null;
+    getList();
+    return;
+  }
   const ids = [] as any
+  var haveCabinet = false;
   row.forEach(item => {
     if (item.type == 3) {
       ids.push(item.id)
+      haveCabinet = true;
     }
   })
-  queryParams.cabinetIds = ids
+  if(!haveCabinet ){
+    queryParams.cabinetIds = [-1]
+  }else{
+    queryParams.cabinetIds = ids
+  }
+
   getList();
 }
 

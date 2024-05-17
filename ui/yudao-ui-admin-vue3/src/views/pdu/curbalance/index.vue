@@ -125,10 +125,9 @@
             </el-button>
           </el-form-item>
           <div style="float:right">
-            <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流阵列</el-button>
-            <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />电流表格</el-button>
+            <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流阵列</el-button>            
             <el-button @click="statusList.forEach((item) => item.selected = true);pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压阵列</el-button>
-            <el-button @click="statusList.forEach((item) => item.selected = true);pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />电压表格</el-button>
+            <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格</el-button>
           </div>
         </el-form>
       </ContentWrap>
@@ -168,6 +167,27 @@
               </el-text>
             </template>
           </el-table-column>
+          <el-table-column label="A相电压" align="center" prop="avol" width="130px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" v-if="scope.row.avol">
+                {{ scope.row.avol }}V
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="B相电压" align="center" prop="bvol" width="130px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" v-if="scope.row.bvol">
+                {{ scope.row.bvol }}V
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="C相电压" align="center" prop="cvol" width="130px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" v-if="scope.row.cvol">
+                {{ scope.row.cvol }}V
+              </el-text>
+            </template>
+          </el-table-column>
           <el-table-column label="不平衡度" align="center" prop="curUnbalance" width="130px">
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.curUnbalance != null" >
@@ -202,7 +222,7 @@
       <ContentWrap v-show="switchValue == 2">
           <div class="arrayContainer">
             <div class="arrayItem" v-for="item in list" :key="item.devKey">
-              <div class="devKey">{{ item.location }}</div>
+              <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
               <div class="content">
                 <div class="icon" >
                   <div v-if="item.curUnbalance != null" >
@@ -229,67 +249,10 @@
           </div>
       </ContentWrap>
 
-      <ContentWrap  v-show="switchValue == 1">
-        <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
-          <el-table-column label="编号" align="center" prop="tableId" />
-          <!-- 数据库查询 -->
-          <el-table-column label="所在位置" align="center" prop="location" />
-          <el-table-column label="A相电压" align="center" prop="avol" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.avol">
-                {{ scope.row.avol }}V
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="B相电压" align="center" prop="bvol" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.bvol">
-                {{ scope.row.bvol }}V
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="C相电压" align="center" prop="cvol" width="130px" >
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.cvol">
-                {{ scope.row.cvol }}V
-              </el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="不平衡度" align="center" prop="volUnbalance" width="130px">
-            <template #default="scope" >
-              <el-text line-clamp="2" v-if="scope.row.volUnbalance != null">
-                {{ scope.row.volUnbalance }}%
-              </el-text>
-            </template>
-          </el-table-column>
-          <!-- 数据库查询 -->
-          <el-table-column label="操作" align="center">
-            <template #default="scope">
-              <el-button
-                link
-                type="primary"
-                @click="toPDUDisplayScreen(scope.row)"
-              >
-              设备详情
-              </el-button>
-              <el-button
-                link
-                type="danger"
-                @click="handleDelete(scope.row.id)"
-                v-if="scope.row.status == 5"
-              >
-                删除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <!-- 分页 -->
-      </ContentWrap>
-
       <ContentWrap v-show="switchValue == 0">
           <div class="arrayContainer">
             <div class="arrayItem" v-for="item in list" :key="item.devKey">
-              <div class="devKey">{{ item.location }}</div>
+              <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
               <div class="content">
                 <div class="icon" >
                   <div v-if="item.volUnbalance != null" >
@@ -392,13 +355,25 @@ const handleClick = (row) => {
 }
 
 const handleCheck = async (row) => {
+  if(row.length == 0){
+    queryParams.cabinetIds = null;
+    getList();
+    return;
+  }
   const ids = [] as any
+  var haveCabinet = false;
   row.forEach(item => {
     if (item.type == 3) {
       ids.push(item.id)
+      haveCabinet = true;
     }
   })
-  queryParams.cabinetIds = ids
+  if(!haveCabinet ){
+    queryParams.cabinetIds = [-1]
+  }else{
+    queryParams.cabinetIds = ids
+  }
+
   getList();
 }
 

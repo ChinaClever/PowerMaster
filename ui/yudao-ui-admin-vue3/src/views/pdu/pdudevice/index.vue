@@ -210,7 +210,7 @@
         <ContentWrap v-show="!switchValue">
             <div class="arrayContainer">
               <div class="arrayItem" v-for="item in list" :key="item.devKey">
-                <div class="devKey">{{ item.location }}</div>
+                <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
                 <div class="content">
                   <div class="icon">
                     <div v-if=" item.pow != null ">
@@ -221,7 +221,7 @@
                     
                     <div v-if="item.pf != null">功率因素：{{item.pf}}</div>
                     <div v-if="item.apparentPow != null">视在功率：{{item.apparentPow}}kVA</div>
-                    <div >网络地址：{{ item.devKey }}</div>
+                    <!-- <div >网络地址：{{ item.devKey }}</div> -->
                     <!-- <div>AB路占比：{{item.fzb}}</div> -->
                   </div>
                 </div>
@@ -335,13 +335,25 @@ const handleClick = (row) => {
 }
 
 const handleCheck = async (row) => {
+  if(row.length == 0){
+    queryParams.cabinetIds = null;
+    getList();
+    return;
+  }
   const ids = [] as any
+  var haveCabinet = false;
   row.forEach(item => {
     if (item.type == 3) {
       ids.push(item.id)
+      haveCabinet = true;
     }
   })
-  queryParams.cabinetIds = ids
+  if(!haveCabinet ){
+    queryParams.cabinetIds = [-1]
+  }else{
+    queryParams.cabinetIds = ids
+  }
+
   getList();
 }
 
