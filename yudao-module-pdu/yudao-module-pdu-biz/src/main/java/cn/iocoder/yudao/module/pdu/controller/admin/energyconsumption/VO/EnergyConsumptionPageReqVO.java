@@ -11,6 +11,10 @@ import lombok.ToString;
 public class EnergyConsumptionPageReqVO extends PageParam {
     private Integer pduId;
 
+    private Integer lineId;
+
+    private Integer loopId;
+
     private Integer outletId;
 
     private String type;

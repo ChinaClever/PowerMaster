@@ -53,9 +53,9 @@
 
          <el-form-item label="时间段" prop="timeRange">
             <el-date-picker
-            value-format="YYYY-MM-DD HH:mm:ss"
-            v-model="queryParams.timeRange"
-            type="datetimerange"
+            value-format="YYYY-MM-DD"
+            v-model="selectTimeRange"
+            type="daterange"
             :shortcuts="shortcuts"
             range-separator="-"
             start-placeholder="开始时间"
@@ -84,7 +84,11 @@
         </el-table-column>
         <!-- 遍历其他列 -->  
         <template v-for="column in tableColumns">
-          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" />
+          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue">
+            <template #default="{ row }" v-if="column.slot === 'actions'">
+              <el-button link type="primary" @click="toDetails(row.pdu_id)">详情</el-button>
+            </template>
+          </el-table-column>
         </template>
         <!-- 超过一万条数据提示信息 -->
           <template v-if="shouldShowDataExceedMessage" #append>
@@ -119,6 +123,7 @@ import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption'
 import { HistoryDataApi } from '@/api/pdu/historydata'
 import { ElTree, ElIcon, ElMessage } from 'element-plus'
+import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
 import * as echarts from 'echarts';
 const { push } = useRouter()
 defineOptions({ name: 'PowerAnalysis' })
@@ -204,13 +209,14 @@ const loading = ref(true)
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
+const selectTimeRange = ref(undefined)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
   outletId: undefined,
   type: 'total',
   granularity: 'day',
-  timeRange: undefined,
+  timeRange: undefined as string[] | undefined,
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
@@ -237,7 +243,7 @@ const shortcuts = [
     },
   },
   {
-    text: '最近半年',
+    text: '最近六个月',
     value: () => {
       const end = new Date()
       const start = new Date()
@@ -265,7 +271,7 @@ const typeCascaderChange = (selected) => {
     // 选择总，移除索引为 1 的位置上的行数据
     tableColumns.value.splice(1, 1);
   }
-  getList();
+  handleQuery();
 }
 
 // 返回当前页的序号数组
@@ -305,31 +311,8 @@ window.addEventListener('resize', function() {
   rankChart?.resize(); 
 });
 
-watch(() => queryParams.granularity, (newValues) => {
-  const newGranularity = newValues;
-  queryParams.pageNo = 1;
-  getList();
-  if ( newGranularity == 'day'){
-  // rankChart?.setOption({
-  //   series: [
-  //     {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
-  //   ],
-  // })
-  }
-  if ( newGranularity == 'week'){
-  // rankChart?.setOption({
-  //   series: [
-  //     {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
-  //   ],
-  // })
-  }
-  if ( newGranularity == 'month'){
-  // rankChart?.setOption({
-  //   series: [
-  //     {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
-  //   ],
-  // })
-  }
+watch(() => queryParams.granularity, () => {
+  handleQuery();
 });
 
 const tableColumns = ref([
@@ -338,14 +321,24 @@ const tableColumns = ref([
   { label: '开始电能(kWh)', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
   { label: '结束时间', align: 'center', prop: 'end_time' , formatter: formatTime, width: '200px' , istrue:true},
   { label: '结束电能(kWh)', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle},
-  { label: '电量', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
+  { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
   { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px' , istrue:true},
+  { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '130px'},
 ]);
 
 /** 查询列表 */
 const getList = async () => {
   loading.value = true
   try {
+    if ( selectTimeRange.value != undefined){
+      // 格式化时间范围 加上23:59:59的时分秒 
+      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+      // 结束时间的天数多加一天 ，  一天的毫秒数
+      const oneDay = 24 * 60 * 60 * 1000;
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+      queryParams.timeRange = [selectedStartTime, selectedEndTime];
+    }
+  
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
     eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
     list.value = data.list
@@ -399,7 +392,7 @@ function formatEle(row: any, column: any, cellValue: number): string {
   return cellValue.toFixed(1);
 }
 
-// 格式化电量列数据，保留1位小数
+// 格式化耗电量列数据，保留1位小数
 function formatEQ(value, decimalPlaces){
   if (!isNaN(value)) {
     return value.toFixed(decimalPlaces);
@@ -447,6 +440,11 @@ const getTypeMaxValue = async () => {
     },
   ]
   typeSelection.value = typeSelectionValue;
+}
+
+/** 详情操作*/
+const toDetails = (pduId: number) => {
+  push('/pdu/nenghao/ecdistribution?pduId='+pduId);
 }
 
 // /** 重置按钮操作 */

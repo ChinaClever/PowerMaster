@@ -18,6 +18,8 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+
+import javax.persistence.criteria.CriteriaBuilder;
 import java.io.IOException;
 import java.util.*;
 
@@ -128,11 +130,11 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         }
         searchSourceBuilder.trackTotalHits(true);
         searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
+        Integer pduId = null;
         if (!Objects.equals(pageReqVO.getIpAddr(), "") && !Objects.equals(pageReqVO.getIpAddr(), null)){
-            Integer pduId = getPduIdByAddr(pageReqVO.getIpAddr(), pageReqVO.getCascadeAddr());
+            pduId = getPduIdByAddr(pageReqVO.getIpAddr(), pageReqVO.getCascadeAddr());
             if(pduId != null){
-                // 这样构造的查询条件，将不进行score计算，从而提高查询效率
-                searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.rangeQuery("pdu_id").gte(pduId).lte(pduId)));
+                searchSourceBuilder.query(QueryBuilders.termQuery("pdu_id", pduId));
             }else{
                 // 查不到pdu 直接返回空数据
                 pageResult = new PageResult<>();
@@ -140,15 +142,18 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                         .setTotal(0L);
                 return pageResult;
             }
-
         }else{
             searchSourceBuilder.query(QueryBuilders.matchAllQuery());
         }
-
+        // 搜索请求对象
+        SearchRequest searchRequest = new SearchRequest();
+        if (pageReqVO.getTimeRange() != null && pageReqVO.getTimeRange().length != 0) {
+            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                    .from(pageReqVO.getTimeRange()[0])
+                    .to(pageReqVO.getTimeRange()[1]));
+        }
         switch (pageReqVO.getType()) {
             case "total":
-                // 搜索请求对象
-                SearchRequest searchRequest = new SearchRequest();
                 if ("realtime".equals(pageReqVO.getGranularity())) {
                     searchRequest.indices("pdu_hda_total_realtime");
                 } else if ("hour".equals(pageReqVO.getGranularity())) {
@@ -156,73 +161,36 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 } else {
                     searchRequest.indices("pdu_hda_total_day");
                 }
-                if (pageReqVO.getTimeRange() != null && pageReqVO.getTimeRange().length != 0) {
-                    searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                            .from(pageReqVO.getTimeRange()[0])
-                            .to(pageReqVO.getTimeRange()[1]));
-                }
-                searchRequest.source(searchSourceBuilder);
-                // 执行搜索,向ES发起http请求
-                SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-                // 搜索结果
-                List<Map<String, Object>> mapList = new ArrayList<>();
-                SearchHits hits = searchResponse.getHits();
-                hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
-                // 匹配到的总记录数
-                Long totalHits = hits.getTotalHits().value;
-                // 返回的结果
-                pageResult = new PageResult<>();
-                pageResult.setList(getLocationsByPduIds(mapList))
-                        .setTotal(totalHits);
                 break;
-
             case "line":
-                // 搜索请求对象
-                SearchRequest searchRequest1 = new SearchRequest();
                 if ("realtime".equals(pageReqVO.getGranularity())) {
-                    searchRequest1.indices("pdu_hda_line_realtime");
+                    searchRequest.indices("pdu_hda_line_realtime");
                 } else if ("hour".equals(pageReqVO.getGranularity())) {
-                    searchRequest1.indices("pdu_hda_line_hour");
+                    searchRequest.indices("pdu_hda_line_hour");
                 } else {
-                    searchRequest1.indices("pdu_hda_line_day");
-                }
-                if (pageReqVO.getTimeRange() != null && pageReqVO.getTimeRange().length != 0) {
-                    searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                            .from(pageReqVO.getTimeRange()[0])
-                            .to(pageReqVO.getTimeRange()[1]));
+                    searchRequest.indices("pdu_hda_line_day");
                 }
                 if( pageReqVO.getLineId() != null){
-                    String lineId = String.valueOf(pageReqVO.getLineId());
+                    Integer lineId = pageReqVO.getLineId();
                     // 创建匹配查询
-                    QueryBuilder matchQuery = QueryBuilders.matchQuery("line_id", lineId);
-                    boolQuery.must(matchQuery);
+                    QueryBuilder termQuery = QueryBuilders.termQuery ("line_id", lineId);
+                    if (pduId != null) {
+                        QueryBuilder termQuery1 = QueryBuilders.termQuery("pdu_id", pduId);
+                        boolQuery.must(termQuery1);
+                    }
+                    boolQuery.must(termQuery);
                     // 将布尔查询设置到SearchSourceBuilder中
                     searchSourceBuilder.query(boolQuery);
                 }
-                searchRequest1.source(searchSourceBuilder);
-                // 执行搜索,向ES发起http请求
-                SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
-                // 搜索结果
-                List<Map<String, Object>> mapList1 = new ArrayList<>();
-                SearchHits hits1 = searchResponse1.getHits();
-                hits1.forEach(searchHit -> mapList1.add(searchHit.getSourceAsMap()));
-                // 匹配到的总记录数
-                Long totalHits1 = hits1.getTotalHits().value;
-                // 返回的结果
-                pageResult = new PageResult<>();
-                pageResult.setList(getLocationsByPduIds(mapList1))
-                        .setTotal(totalHits1);
                 break;
 
             case "loop":
-                // 搜索请求对象
-                SearchRequest searchRequest2 = new SearchRequest();
                 if ("realtime".equals(pageReqVO.getGranularity())) {
-                    searchRequest2.indices("pdu_hda_loop_realtime");
+                    searchRequest.indices("pdu_hda_loop_realtime");
                 } else if ("hour".equals(pageReqVO.getGranularity())) {
-                    searchRequest2.indices("pdu_hda_loop_hour");
+                    searchRequest.indices("pdu_hda_loop_hour");
                 } else {
-                    searchRequest2.indices("pdu_hda_loop_day");
+                    searchRequest.indices("pdu_hda_loop_day");
                 }
                 if (pageReqVO.getTimeRange() != null && pageReqVO.getTimeRange().length != 0) {
                     searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
@@ -230,69 +198,55 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                             .to(pageReqVO.getTimeRange()[1]));
                 }
                 if( pageReqVO.getLoopId() != null){
-                    String loopId = String.valueOf(pageReqVO.getLoopId());
+                    Integer loopId = pageReqVO.getLoopId();
                     // 创建匹配查询
-                    QueryBuilder matchQuery1 = QueryBuilders.matchQuery("loop_id", loopId);
-                    boolQuery.must(matchQuery1);
+                    QueryBuilder termQuery = QueryBuilders.termQuery("loop_id", loopId);
+                    boolQuery.must(termQuery);
+                    if (pduId != null) {
+                        QueryBuilder termQuery1 = QueryBuilders.termQuery("pdu_id", pduId);
+                        boolQuery.must(termQuery1);
+                    }
                     // 将布尔查询设置到SearchSourceBuilder中
                     searchSourceBuilder.query(boolQuery);
                 }
-                searchRequest2.source(searchSourceBuilder);
-                // 执行搜索,向ES发起http请求
-                SearchResponse searchResponse2 = client.search(searchRequest2, RequestOptions.DEFAULT);
-                // 搜索结果
-                List<Map<String, Object>> mapList2 = new ArrayList<>();
-                SearchHits hits2 = searchResponse2.getHits();
-                hits2.forEach(searchHit -> mapList2.add(searchHit.getSourceAsMap()));
-                // 匹配到的总记录数
-                Long totalHits2 = hits2.getTotalHits().value;
-                // 返回的结果
-                pageResult = new PageResult<>();
-                pageResult.setList(getLocationsByPduIds(mapList2))
-                        .setTotal(totalHits2);
                 break;
 
             case "outlet":
-                // 搜索请求对象
-                SearchRequest searchRequest3 = new SearchRequest();
                 if ("realtime".equals(pageReqVO.getGranularity())) {
-                    searchRequest3.indices("pdu_hda_outlet_realtime");
+                    searchRequest.indices("pdu_hda_outlet_realtime");
                 } else if ("hour".equals(pageReqVO.getGranularity())) {
-                    searchRequest3.indices("pdu_hda_outlet_hour");
+                    searchRequest.indices("pdu_hda_outlet_hour");
                 } else {
-                    searchRequest3.indices("pdu_hda_outlet_day");
-                }
-                if (pageReqVO.getTimeRange() != null && pageReqVO.getTimeRange().length != 0) {
-                    searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                            .from(pageReqVO.getTimeRange()[0])
-                            .to(pageReqVO.getTimeRange()[1]));
+                    searchRequest.indices("pdu_hda_outlet_day");
                 }
                 if( pageReqVO.getOutletId() != null){
-                    String outletId = String.valueOf(pageReqVO.getOutletId());
+                    Integer outletId = pageReqVO.getOutletId();
                     // 创建匹配查询
-                    QueryBuilder matchQuery2 = QueryBuilders.matchQuery("outlet_id", outletId);
-                    boolQuery.must(matchQuery2);
+                    QueryBuilder termQuery = QueryBuilders.termQuery("outlet_id", outletId);
+                    boolQuery.must(termQuery);
+                    if (pduId != null) {
+                        QueryBuilder termQuery1 = QueryBuilders.termQuery("pdu_id", pduId);
+                        boolQuery.must(termQuery1);
+                    }
                     // 将布尔查询设置到SearchSourceBuilder中
                     searchSourceBuilder.query(boolQuery);
                 }
-                searchRequest3.source(searchSourceBuilder);
-                // 执行搜索,向ES发起http请求
-                SearchResponse searchResponse3 = client.search(searchRequest3, RequestOptions.DEFAULT);
-                // 搜索结果
-                List<Map<String, Object>> mapList3 = new ArrayList<>();
-                SearchHits hits3 = searchResponse3.getHits();
-                hits3.forEach(searchHit -> mapList3.add(searchHit.getSourceAsMap()));
-                // 匹配到的总记录数
-                Long totalHits3 = hits3.getTotalHits().value;
-                // 返回的结果
-                pageResult = new PageResult<>();
-                pageResult.setList(getLocationsByPduIds(mapList3))
-                        .setTotal(totalHits3);
                 break;
-
             default:
-
         }
+        searchRequest.source(searchSourceBuilder);
+        // 执行搜索,向ES发起http请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        // 搜索结果
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        SearchHits hits = searchResponse.getHits();
+        hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
+        // 匹配到的总记录数
+        Long totalHits = hits.getTotalHits().value;
+        // 返回的结果
+        pageResult = new PageResult<>();
+        pageResult.setList(getLocationsByPduIds(mapList))
+                .setTotal(totalHits);
 
         return pageResult;
     }
@@ -313,11 +267,16 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
         searchSourceBuilder.size(10000);
         searchSourceBuilder.trackTotalHits(true);
+        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0){
+            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                    .from(reqVO.getTimeRange()[0])
+                    .to(reqVO.getTimeRange()[1]));
+        }
+        // 搜索请求对象
+        SearchRequest searchRequest = new SearchRequest();
         PageResult<Object> pageResult = null;
         switch (reqVO.getType()) {
             case "total":
-                // 搜索请求对象
-                SearchRequest searchRequest = new SearchRequest();
                 if ("realtime".equals(reqVO.getGranularity()) ){
                     searchRequest.indices("pdu_hda_total_realtime");
                 }else if ("hour".equals(reqVO.getGranularity()) ){
@@ -325,150 +284,83 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 }else {
                     searchRequest.indices("pdu_hda_total_day");
                 }
-                if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0){
-                    searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                            .from(reqVO.getTimeRange()[0])
-                            .to(reqVO.getTimeRange()[1]));
-                }
-                searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.rangeQuery("pdu_id").gte(pduId).lte(pduId)));
-                searchRequest.source(searchSourceBuilder);
-                // 执行搜索,向ES发起http请求
-                SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-                // 搜索结果
-                List<Object> resultList = new ArrayList<>();
-                SearchHits hits = searchResponse.getHits();
-                hits.forEach(searchHit -> resultList.add(searchHit.getSourceAsMap()));
-                // 匹配到的总记录数
-                Long totalHits = hits.getTotalHits().value;
-                // 返回的结果
-                pageResult = new PageResult<>();
-                pageResult.setList(resultList)
-                        .setTotal(totalHits);
+                searchSourceBuilder.query(QueryBuilders.termQuery("pdu_id", pduId));
                 break;
 
             case "line":
-                // 搜索请求对象
-                SearchRequest searchRequest1 = new SearchRequest();
                 if ("realtime".equals(reqVO.getGranularity()) ){
-                    searchRequest1.indices("pdu_hda_line_realtime");
+                    searchRequest.indices("pdu_hda_line_realtime");
                 }else if ("hour".equals(reqVO.getGranularity()) ){
-                    searchRequest1.indices("pdu_hda_line_hour");
+                    searchRequest.indices("pdu_hda_line_hour");
                 }else {
-                    searchRequest1.indices("pdu_hda_line_day");
+                    searchRequest.indices("pdu_hda_line_day");
                 }
-                if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0){
-                    searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                            .from(reqVO.getTimeRange()[0])
-                            .to(reqVO.getTimeRange()[1]));
-                }
-                String lineId = String.valueOf(reqVO.getLineId());
+                Integer lineId = reqVO.getLineId();
                 // 创建范围查询
-                QueryBuilder rangeQuery = QueryBuilders.rangeQuery("pdu_id").gte(pduId).lte(pduId);
+                QueryBuilder termQuery = QueryBuilders.termQuery("pdu_id", pduId);
                 // 创建匹配查询
-                QueryBuilder matchQuery = QueryBuilders.matchQuery("line_id", lineId);
+                QueryBuilder termQuery1 = QueryBuilders.termQuery("line_id", lineId);
                 // 将范围查询和匹配查询添加到布尔查询中
-                boolQuery.must(rangeQuery);
-                boolQuery.must(matchQuery);
+                boolQuery.must(termQuery);
+                boolQuery.must(termQuery1);
                 // 将布尔查询设置到SearchSourceBuilder中
                 searchSourceBuilder.query(boolQuery);
-                searchRequest1.source(searchSourceBuilder);
-                // 执行搜索,向ES发起http请求
-                SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
-                // 搜索结果
-                List<Object> resultList1 = new ArrayList<>();
-                SearchHits hits1 = searchResponse1.getHits();
-                hits1.forEach(searchHit -> resultList1.add(searchHit.getSourceAsMap()));
-                // 匹配到的总记录数
-                Long totalHits1 = hits1.getTotalHits().value;
-                // 返回的结果
-                pageResult = new PageResult<>();
-                pageResult.setList(resultList1)
-                        .setTotal(totalHits1);
                 break;
 
             case "loop":
-                // 搜索请求对象
-                SearchRequest searchRequest2 = new SearchRequest();
                 if ("realtime".equals(reqVO.getGranularity()) ){
-                    searchRequest2.indices("pdu_hda_loop_realtime");
+                    searchRequest.indices("pdu_hda_loop_realtime");
                 }else if ("hour".equals(reqVO.getGranularity()) ){
-                    searchRequest2.indices("pdu_hda_loop_hour");
+                    searchRequest.indices("pdu_hda_loop_hour");
                 }else {
-                    searchRequest2.indices("pdu_hda_loop_day");
+                    searchRequest.indices("pdu_hda_loop_day");
                 }
-                if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0){
-                    searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                            .from(reqVO.getTimeRange()[0])
-                            .to(reqVO.getTimeRange()[1]));
-                }
-                String loopId = String.valueOf(reqVO.getLoopId());
+                Integer loopId = reqVO.getLoopId();
                 // 创建范围查询
-                rangeQuery = QueryBuilders.rangeQuery("pdu_id").gte(pduId).lte(pduId);
+                termQuery = QueryBuilders.termQuery("pdu_id", pduId);
                 // 创建匹配查询
-                matchQuery = QueryBuilders.matchQuery("loop_id", loopId);
+                termQuery1 = QueryBuilders.termQuery("loop_id", loopId);
                 // 将范围查询和匹配查询添加到布尔查询中
-                boolQuery.must(rangeQuery);
-                boolQuery.must(matchQuery);
+                boolQuery.must(termQuery);
+                boolQuery.must(termQuery1);
                 // 将布尔查询设置到SearchSourceBuilder中
                 searchSourceBuilder.query(boolQuery);
-                searchRequest2.source(searchSourceBuilder);
-                // 执行搜索,向ES发起http请求
-                SearchResponse searchResponse2 = client.search(searchRequest2, RequestOptions.DEFAULT);
-                // 搜索结果
-                List<Object> resultList2 = new ArrayList<>();
-                SearchHits hits2 = searchResponse2.getHits();
-                hits2.forEach(searchHit -> resultList2.add(searchHit.getSourceAsMap()));
-                // 匹配到的总记录数
-                Long totalHits2 = hits2.getTotalHits().value;
-                // 返回的结果
-                pageResult = new PageResult<>();
-                pageResult.setList(resultList2)
-                        .setTotal(totalHits2);
                 break;
 
             case "outlet":
-                // 搜索请求对象
-                SearchRequest searchRequest3 = new SearchRequest();
                 if ("realtime".equals(reqVO.getGranularity()) ){
-                    searchRequest3.indices("pdu_hda_outlet_realtime");
+                    searchRequest.indices("pdu_hda_outlet_realtime");
                 }else if ("hour".equals(reqVO.getGranularity()) ){
-                    searchRequest3.indices("pdu_hda_outlet_hour");
+                    searchRequest.indices("pdu_hda_outlet_hour");
                 }else {
-                    searchRequest3.indices("pdu_hda_outlet_day");
+                    searchRequest.indices("pdu_hda_outlet_day");
                 }
-                if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0){
-                    searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                            .from(reqVO.getTimeRange()[0])
-                            .to(reqVO.getTimeRange()[1]));
-                }
-                String outletId = String.valueOf(reqVO.getOutletId());
+                Integer outletId = reqVO.getOutletId();
                 // 创建范围查询
-                rangeQuery = QueryBuilders.rangeQuery("pdu_id").gte(pduId).lte(pduId);
+                termQuery = QueryBuilders.termQuery("pdu_id", pduId);
                 // 创建匹配查询
-                matchQuery = QueryBuilders.matchQuery("outlet_id", outletId);
+                termQuery1 = QueryBuilders.termQuery("outlet_id", outletId);
                 // 将范围查询和匹配查询添加到布尔查询中
-                boolQuery.must(rangeQuery);
-                boolQuery.must(matchQuery);
+                boolQuery.must(termQuery);
+                boolQuery.must(termQuery1);
                 // 将布尔查询设置到SearchSourceBuilder中
                 searchSourceBuilder.query(boolQuery);
-                searchRequest3.source(searchSourceBuilder);
-                // 执行搜索,向ES发起http请求
-                SearchResponse searchResponse3 = client.search(searchRequest3, RequestOptions.DEFAULT);
-                // 搜索结果
-                List<Object> resultList3 = new ArrayList<>();
-                SearchHits hits3 = searchResponse3.getHits();
-                hits3.forEach(searchHit -> resultList3.add(searchHit.getSourceAsMap()));
-                // 匹配到的总记录数
-                Long totalHits3 = hits3.getTotalHits().value;
-                // 返回的结果
-                pageResult = new PageResult<>();
-                pageResult.setList(resultList3)
-                        .setTotal(totalHits3);
                 break;
-
             default:
-
         }
+        searchRequest.source(searchSourceBuilder);
+        // 执行搜索,向ES发起http请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        // 搜索结果
+        List<Object> resultList = new ArrayList<>();
+        SearchHits hits = searchResponse.getHits();
+        hits.forEach(searchHit -> resultList.add(searchHit.getSourceAsMap()));
+        // 匹配到的总记录数
+        Long totalHits = hits.getTotalHits().value;
+        // 返回的结果
+        pageResult = new PageResult<>();
+        pageResult.setList(resultList)
+                .setTotal(totalHits);
 
         return pageResult;
     }
@@ -496,19 +388,18 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             if(pduId != null){
                 if (!Objects.equals(sensorId, 0)){
                     // 创建范围查询
-                    QueryBuilder rangeQuery = QueryBuilders.rangeQuery("pdu_id").gte(pduId).lte(pduId);
+                    QueryBuilder termQuery = QueryBuilders.termQuery("pdu_id", pduId);
                     // 创建匹配查询
-                    QueryBuilder matchQuery = QueryBuilders.matchQuery("sensor_id", sensorId);
+                    QueryBuilder termQuery1 = QueryBuilders.termQuery("sensor_id", sensorId);
                     // 创建BoolQueryBuilder对象
                     BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
                     // 将范围查询和匹配查询添加到布尔查询中
-                    boolQuery.must(rangeQuery);
-                    boolQuery.must(matchQuery);
+                    boolQuery.must(termQuery);
+                    boolQuery.must(termQuery1);
                     // 将布尔查询设置到SearchSourceBuilder中
                     searchSourceBuilder.query(boolQuery);
                 }else{
-                    // 这样构造的查询条件，将不进行score计算，从而提高查询效率
-                    searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.rangeQuery("pdu_id").gte(pduId).lte(pduId)));
+                    searchSourceBuilder.query(QueryBuilders.termQuery("pdu_id", pduId));
                 }
             }else{
                 // 查不到pdu 直接返回空数据
@@ -519,9 +410,9 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             }
         }else{
             if (!Objects.equals(sensorId, 0)){
-                QueryBuilder matchQuery = QueryBuilders.matchQuery("sensor_id", sensorId);
+                QueryBuilder termQuery = QueryBuilders.termQuery("sensor_id", sensorId);
                 BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-                boolQuery.must(matchQuery);
+                boolQuery.must(termQuery);
                 searchSourceBuilder.query(boolQuery);
             }else{
                 searchSourceBuilder.query(QueryBuilders.matchAllQuery());
@@ -592,11 +483,11 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                     .to(reqVO.getTimeRange()[1]));
         }
         // 创建匹配查询
-        QueryBuilder matchQuery = QueryBuilders.matchQuery("pdu_id", pduId);
-        QueryBuilder matchQuery1 = QueryBuilders.matchQuery("sensor_id", sensorId);
+        QueryBuilder termQuery = QueryBuilders.termQuery("pdu_id", pduId);
+        QueryBuilder termQuery1 = QueryBuilders.termQuery("sensor_id", sensorId);
         // 将匹配查询添加到布尔查询中
-        boolQuery.must(matchQuery);
-        boolQuery.must(matchQuery1);
+        boolQuery.must(termQuery);
+        boolQuery.must(termQuery1);
         // 将布尔查询设置到SearchSourceBuilder中
         searchSourceBuilder.query(boolQuery);
         searchRequest3.source(searchSourceBuilder);

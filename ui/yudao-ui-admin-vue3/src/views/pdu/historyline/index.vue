@@ -155,7 +155,7 @@ import { ElTree, ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { HistoryDataApi } from '@/api/pdu/historydata'
-import { formatDate } from '@/utils/formatTime'
+import { formatDate, convertDate, betweenDay } from '@/utils/formatTime'
 import { get } from 'http';
 /** pdu历史曲线 */
 defineOptions({ name: 'PDUHistoryLine' })
@@ -274,7 +274,7 @@ const loading = ref(true) // 加载中
 // 时间段快捷选项
 const shortcuts = [
   {
-    text: '最近1小时',
+    text: '最近一小时',
     value: () => {
       const end = new Date()
       const start = new Date()
@@ -283,7 +283,7 @@ const shortcuts = [
     },
   },
   {
-    text: '最近12小时',
+    text: '最近十二小时',
     value: () => {
       const end = new Date()
       const start = new Date()
@@ -292,7 +292,7 @@ const shortcuts = [
     },
   },
   {
-    text: '最近24小时',
+    text: '最近一天',
     value: () => {
       const end = new Date()
       const start = new Date()
@@ -301,7 +301,7 @@ const shortcuts = [
     },
   },
   {
-    text: '最近48小时',
+    text: '最近两天',
     value: () => {
       const end = new Date()
       const start = new Date()
@@ -312,7 +312,7 @@ const shortcuts = [
 ]
 const shortcuts1 = [
   {
-    text: '最近1天',
+    text: '最近一天',
     value: () => {
       const end = new Date()
       const start = new Date()
@@ -321,7 +321,7 @@ const shortcuts1 = [
     },
   },
   {
-    text: '最近3天',
+    text: '最近三天',
     value: () => {
       const end = new Date()
       const start = new Date()
@@ -330,7 +330,7 @@ const shortcuts1 = [
     },
   },
   {
-    text: '最近7天',
+    text: '最近一周',
     value: () => {
       const end = new Date()
       const start = new Date()
@@ -341,7 +341,7 @@ const shortcuts1 = [
 ]
 const shortcuts2 = [
   {
-    text: '最近1个月',
+    text: '最近一个月',
     value: () => {
       const end = new Date()
       const start = new Date()
@@ -350,7 +350,7 @@ const shortcuts2 = [
     },
   },
   {
-    text: '最近3个月',
+    text: '最近三个月',
     value: () => {
       const end = new Date()
       const start = new Date()
@@ -359,7 +359,7 @@ const shortcuts2 = [
     },
   },
   {
-    text: '最近6个月',
+    text: '最近六个月',
     value: () => {
       const end = new Date()
       const start = new Date()
@@ -1157,12 +1157,8 @@ const disabledDate = (date) => {
 // 处理实时数据的时间选择不超过xxx范围
 // const handleDayPick = () => {
 //   if (activeName.value=='realtimeTabPane'){
-//     // 获取选择的开始日期和结束日期
-//     const startDate = new Date(queryParams.timeRange[0]);
-//     const endDate = new Date(queryParams.timeRange[1]);
 //     // 计算两个日期之间的天数差
-//     const diffTime = Math.abs(endDate.getTime() - startDate.getTime()); 
-//     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+//    const diffDays = betweenDay(convertDate(queryParams.timeRange[0]), convertDate(queryParams.timeRange[1]))
 //     // 如果天数差超过2天，则重置选择的日期
 //     if (diffDays > 2) {
 //       queryParams.timeRange = [];
@@ -1173,12 +1169,8 @@ const disabledDate = (date) => {
 //     }
 //   }
 //   if (activeName.value=='hourExtremumTabPane'){
-//     // 获取选择的开始日期和结束日期
-//     const startDate = new Date(queryParams.timeRange[0]);
-//     const endDate = new Date(queryParams.timeRange[1]);
 //     // 计算两个日期之间的天数差
-//     const diffTime = Math.abs(endDate.getTime() - startDate.getTime()); 
-//     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+//    const diffDays = betweenDay(convertDate(queryParams.timeRange[0]), convertDate(queryParams.timeRange[1]))
 //     // 如果天数差超过7天，则重置选择的日期
 //     if (diffDays > 7) {
 //       queryParams.timeRange = [];
@@ -1189,12 +1181,8 @@ const disabledDate = (date) => {
 //     }
 //   }
 //     if (activeName.value=='dayExtremumTabPane'){
-//     // 获取选择的开始日期和结束日期
-//     const startDate = new Date(queryParams.timeRange[0]);
-//     const endDate = new Date(queryParams.timeRange[1]);
 //     // 计算两个日期之间的天数差
-//     const diffTime = Math.abs(endDate.getTime() - startDate.getTime()); 
-//     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+//    const diffDays = betweenDay(convertDate(queryParams.timeRange[0]), convertDate(queryParams.timeRange[1]))
 //     // 如果天数差超过7天，则重置选择的日期
 //     if (diffDays > 180) {
 //       queryParams.timeRange = [];

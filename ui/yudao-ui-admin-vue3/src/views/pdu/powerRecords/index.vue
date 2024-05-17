@@ -26,80 +26,92 @@
          :model="queryParams"
          ref="queryFormRef"
          :inline="true"
-         label-width="120px"
+         label-width="auto"
        >
-         <el-form-item label="" prop="collaspe">
-           <el-switch 
-             v-model="isCollapsed"  
-             active-color="#409EFF" 
-             inactive-color="#909399"
-             active-text="折叠"  
-             active-value="100"
-             inactive-value="0" 
-             @change="toggleCollapse" />
-         </el-form-item>
-
-          <el-form-item label="总/输出位" prop="createTime">
+          <el-form-item label="参数类型" prop="type">
           <el-cascader
-            v-model="defaultSelected"
+            v-model="typeDefaultSelected"
             collapse-tags
-            :options="selection"
+            :options="typeSelection"
             collapse-tags-tooltip
-            :show-all-levels="false"
-            @change="cascaderChange"
-            class="!w-120px"
+            :show-all-levels="true"
+            @change="typeCascaderChange"
+            class="!w-140px"
           />
-          </el-form-item>
+        </el-form-item>
 
-         <el-form-item label="时间段" prop="searchTime">
-           <el-date-picker
-             v-model="queryParams.searchTime"
-             value-format="YYYY-MM-DD HH:mm:ss"
-             type="daterange"
-             start-placeholder="开始日期"
-             end-placeholder="结束日期"
-             :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-             class="!w-210px"
-           />
-         </el-form-item>
+        <el-form-item label="时间段" prop="timeRange">
+          <el-date-picker
+          value-format="YYYY-MM-DD HH:mm:ss"
+          v-model="queryParams.timeRange"
+          type="datetimerange"
+          :shortcuts="shortcuts"
+          range-separator="-"
+          start-placeholder="开始时间"
+          end-placeholder="结束时间"
+          :disabled-date="disabledDate"
+        />
+        </el-form-item>
 
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
-           <el-button type="success" plain @click="handleExport" :loading="exportLoading">
+           <!-- <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button> -->
+           <el-button type="success" plain :loading="exportLoading">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
          </el-form-item>
        </el-form>
      </ContentWrap>
-     <!-- 列表 -->
-     <ContentWrap>
-       <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
-         <template v-for="column in tableColumns">
-           <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" v-if="column.istrue" />
-         </template>
-       </el-table>
-       <!-- 分页 -->
-       <Pagination
-         :total="total"
-         v-model:page="queryParams.pageNo"
-         v-model:limit="queryParams.pageSize"
-         @pagination="getList"
-       />
-     </ContentWrap>
-
+      <ContentWrap>
+   <!-- 列表 -->
+      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+        <!-- 添加行号列 -->
+        <el-table-column label="序号" align="center" width="80px">
+          <template #default="{ $index }">
+            {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
+          </template>
+        </el-table-column>
+        <!-- 遍历其他列 -->  
+        <template v-for="column in tableColumns">
+          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue">
+            <template #default="{ row }" v-if="column.slot === 'actions'">
+              <el-button link type="primary" @click="toDetails(row.pdu_id)">详情</el-button>
+            </template>
+          </el-table-column>
+        </template>
+        <!-- 超过一万条数据提示信息 -->
+          <template v-if="shouldShowDataExceedMessage" #append>
+            <tr>
+              <td colspan="列数" style="text-align: center; padding: 12px 0;">
+                <span style="margin:0 12px; color: red;">数据量过大，请筛选后查看更多数据。</span>
+              </td>
+            </tr>
+          </template>
+      </el-table>
+      <!-- 分页 -->
+      <Pagination
+        :total="total"
+        :page-size-arr="pageSizeArr"
+        layout = "sizes, prev, pager, next, jumper"
+        v-model:page="queryParams.pageNo"
+        v-model:limit="queryParams.pageSize"
+        @pagination="getList"/>
+      <div class="realTotal">共 {{ realTotel }} 条</div>
+      </ContentWrap>
    </el-col>
   </el-row>
-
+ 
 </template>
 
 <script setup lang="ts">
-import { dateFormatter } from '@/utils/formatTime'
+import dayjs from 'dayjs'
 import download from '@/utils/download'
+import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption'
 import { HistoryDataApi } from '@/api/pdu/historydata'
-import { ElTree } from 'element-plus'
+import { ElTree, ElIcon, ElMessage } from 'element-plus'
+import * as echarts from 'echarts';
 
-defineOptions({ name: 'PowerAnalysis' })
+defineOptions({ name: 'PowerRecords' })
 
 const serverRoomArr =  [
  {
@@ -183,185 +195,270 @@ const defaultProps = {
 watch(filterText, (val) => {
  treeRef.value!.filter(val)
 })
-const message = useMessage() 
 
-// 总/输出位筛选
-const defaultSelected = ref(['total'])
-const selection = ref([
-  {
-    value: "total",
-    label: '总'
-  },
-  {
-    value: "outlet",
-    label: '输出位',
-    children: [
-      { value: "输出位1", label: '输出位1' },
-      { value: "输出位2", label: '输出位2' },
-      { value: "输出位3", label: '输出位3' },
-      { value: "输出位4", label: '输出位4' },
-      { value: "输出位5", label: '输出位5' },
-      { value: "输出位6", label: '输出位6' },
-      { value: "输出位7", label: '输出位7' },  
-      { value: "输出位8", label: '输出位8' },
-      { value: "输出位9", label: '输出位9' },
-      { value: "输出位10", label: '输出位10' },
-    ],
-  },
-
-])
-
-// 生成指定范围内的随机整数
-function getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-const cascaderChange = (select) => {
-  if (select[0] === 'outlet'){
-    list.value = [];
-    for (let i = 1; i <= 10; i++) {
-        const ele = getRandomInt(100, 1500);
-        const location = `机房${Math.ceil(i / 5)}-机柜${i}-PDU${i}-${select[1]}`; 
-        list.value.push({
-            id: i,
-            location: location,
-            ele: ele,
-            createTime: "2024-04-08 09:00:00"
-        });
-    }
-    total.value = 10
-  }else{
-   getList();
-  }
-
-}
- // 列表
+const instance = getCurrentInstance();
+const message = useMessage()
+const activeName = ref('myData') 
 const loading = ref(true)
-const list = ref<Array<{ 
-   id: number; 
-   location: string; 
-   ele: number;
-   createTime:string
-}>>([]);
-const total = ref(0) 
+const list = ref<Array<{ }>>([]) as any; 
+const total = ref(0)
+const realTotel = ref(0) // 数据的真实总条数
 const queryParams = reactive({
- pageNo: 1,
- pageSize: 10,
- searchTime: undefined,
+  pageNo: 1,
+  pageSize: 15,
+  lineId: undefined,
+  loopId: undefined,
+  outletId: undefined,
+  type: 'total',
+  timeRange: undefined as string[] | undefined,
 })
+const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
 const exportLoading = ref(false)
 
+// 时间段快捷选项
+const shortcuts = [
+  {
+    text: '最近一周',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setDate(start.getDate() - 7)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近一个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setMonth(start.getMonth() - 1)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近六个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setMonth(start.getMonth() - 6)
+      return [start, end]
+    },
+  },
+]
+
+// 总/输出位筛选
+const typeDefaultSelected = ref(['total'])
+const typeSelection = ref([]) as any;
+const typeCascaderChange = (selected) => {
+  queryParams.type = selected[0];
+  switch(selected[0]){
+    case 'line':
+      tableColumns.value = [
+        { label: '位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '相', align: 'center', prop: 'line_id' , istrue:true, formatter: formatLineId}, 
+        { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
+        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '130px'},
+      ]
+      queryParams.lineId = selected[1];
+      queryParams.loopId = undefined;
+      queryParams.outletId = undefined;
+      break;
+    case 'loop':
+      tableColumns.value = [
+        { label: '位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '回路', align: 'center', prop: 'loop_id' , istrue:true, formatter: formatLoopId},
+        { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
+        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime,   istrue:true},
+        { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '130px'},
+      ]
+      queryParams.loopId = selected[1];
+      queryParams.lineId = undefined;
+      queryParams.outletId = undefined;
+      break;
+    case 'outlet':
+      tableColumns.value = [
+        { label: '位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '输出位', align: 'center', prop: 'outlet_id' , istrue:true},
+        { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
+        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime,   istrue:true},
+        { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '130px'},
+      ]
+      queryParams.outletId = selected[1];
+      queryParams.loopId = undefined;
+      queryParams.lineId = undefined;
+      break;
+    case 'total':
+      tableColumns.value = [
+        { label: '位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
+        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime,   istrue:true},
+        { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '130px'},
+      ]
+      queryParams.lineId = undefined;
+      queryParams.loopId = undefined;
+      queryParams.outletId = undefined;
+      break;
+  }
+  // 自动搜索
+  handleQuery();
+}
+
 const tableColumns = ref([
-   { label: '编号', align: 'center', prop: 'id' , istrue:true},
-   { label: '位置', align: 'center', prop: 'location' , istrue:true},
-   { label: '电能(kWh)', align: 'center', prop: 'ele' , istrue:true},
-   { label: '创建时间', align: 'center', prop: 'createTime', formatter: dateFormatter, istrue:true},
+  { label: '位置', align: 'center', prop: 'location' , istrue:true},
+  { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
+  { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime,   istrue:true},
+  { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '130px'},
 ]);
 
 /** 初始化数据 */
 const getList = async () => {
   loading.value = true
   try {
-    // 生成假数据
-    const fakeData = [
-    {
-      id: 1,
-      location: "机房1-机柜1-PDU1",
-      ele: 500,
-      createTime: "2024-04-08 09:00:00"
-    },
-    {
-    id: 2,
-    location: "机房1-机柜2-PDU3",
-    ele: 800,
-    createTime: "2024-04-08 10:30:00"
-    },
-    {
-    id: 3,
-    location: "机房1-机柜3-PDU2",
-    ele: 1200,
-    createTime: "2024-04-08 14:00:00"
-    },
-    {
-    id: 4,
-    location: "机房1-机柜4-PDU1",
-    ele: 300,
-    createTime: "2024-04-08 09:30:00"
-    },
-    {
-    id: 5,
-    location: "机房2-机柜1-PDU1",
-    ele: 1000,
-    createTime: "2024-04-08 13:00:00"
-    },
-    {
-    id: 6,
-    location: "机房2-机柜2-PDU2",
-    ele: 600,
-    createTime: "2024-04-08 16:00:00"
-    },
-    {
-    id: 7,
-    location: "机房2-机柜3-PDU3",
-    ele: 400,
-    createTime: "2024-04-08 11:30:00"
-    },
-    {
-    id: 8,
-    location: "机房2-机柜4-PDU6",
-    ele: 700,
-    createTime: "2024-04-08 15:00:00"
-    },
-    {
-    id: 9,
-    location: "机房2-机柜5-PDU4",
-    ele: 900,
-    createTime: "2024-04-08 12:45:00"
-    },
-    {
-    id: 10,
-    location: "机房2-机柜6-PDU5",
-    ele: 200,
-    createTime: "2024-04-08 14:30:00"
+    const data = await EnergyConsumptionApi.getRealtimeEQDataPage(queryParams)
+    list.value = data.list
+    realTotel.value = data.total
+    if (data.total > 10000){
+      total.value = 10000
+    }else{
+      total.value = data.total
     }
-    ];
-    list.value = fakeData
-    total.value = 10
   } finally {
     loading.value = false
   }
 }
 
-/** 搜索按钮操作 */
-const handleQuery = () => {
- queryParams.pageNo = 1
- getList()
+// 最后一页显示数据量过大的提示
+const shouldShowDataExceedMessage = computed(() => {
+  const lastPageNo = Math.ceil(total.value / queryParams.pageSize);
+  return queryParams.pageNo === lastPageNo && total.value >= 10000;
+});
+
+
+// 格式化电能列数据，保留1位小数
+function formatEle(row: any, column: any, cellValue: number): string {
+  return cellValue.toFixed(1);
 }
 
-/** 重置按钮操作 */
-const resetQuery = () => {
- queryFormRef.value.resetFields()
- handleQuery()
+// 禁选未来的日期
+const disabledDate = (date) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  // 设置date的时间为0时0分0秒，以便与today进行比较
+  date.setHours(0, 0, 0, 0);
+  // 如果date在今天之后，则禁用
+  return date > today;
+}
+
+// 格式化日期
+function formatTime(row: any, column: any, cellValue: number): string {
+  if (!cellValue) {
+    return ''
+  }
+  return dayjs(cellValue).format('YYYY-MM-DD HH:mm:ss')
+}
+
+// 获取参数类型最大值 例如lineId=6 表示下拉框为L1~L6
+const getTypeMaxValue = async () => {
+    const data = await HistoryDataApi.getTypeMaxValue()
+    const lineIdMaxValue = data.line_id_max_value;
+    const loopIdMaxValue = data.loop_id_max_value;
+    const outletIdMaxValue = data.outlet_id_max_value;
+    const typeSelectionValue  = [
+    {
+      value: "total",
+      label: '总'
+    },
+    {
+      value: "line",
+      label: '相',
+      children: (() => {
+        const lines: { value: any; label: string; }[] = [];
+        lines.push({ value: undefined, label: '全部' },)
+        for (let i = 1; i <= lineIdMaxValue; i++) {
+          lines.push({ value: `${i}`, label: `L${i}` });
+        }
+        return lines;
+      })(),
+    },
+    {
+      value: "loop",
+      label: '回路',
+      children: (() => {
+        const loops: { value: any; label: string; }[] = [];
+        loops.push({ value: undefined, label: '全部' },)
+        for (let i = 1; i <= loopIdMaxValue; i++) {
+          loops.push({ value: `${i}`, label: `C${i}` });
+        }
+        return loops;
+      })(),
+    },
+    {
+      value: "outlet",
+      label: '输出位',
+      children: (() => {
+        const outlets: { value: any; label: string; }[] = [];
+        outlets.push({ value: undefined, label: '全部' },)
+        for (let i = 1; i <= outletIdMaxValue; i++) {
+          outlets.push({ value: `${i}`, label: `${i}` });
+        }
+        return outlets;
+      })(),
+    },
+  ]
+  typeSelection.value = typeSelectionValue;
+}
+
+// 格式化相id
+function formatLineId(row: any, column: any, cellValue: number): string {
+   return 'L'+cellValue;
+}
+
+// 格式化回路id
+function formatLoopId(row: any, column: any, cellValue: number): string {
+   return 'C'+cellValue;
+}
+
+/** 搜索按钮操作 */
+const handleQuery = () => {
+  queryParams.pageNo = 1
+  getList()
 }
 
 
 /** 导出按钮操作 */
-const handleExport = async () => {
- try {
-   // 导出的二次确认
-   await message.exportConfirm()
-   // 发起导出
-   exportLoading.value = true
-   const data = await HistoryDataApi.exportHistoryData(queryParams)
-   download.excel(data, '电能分析.xls')
- } catch {
- } finally {
-   exportLoading.value = false
- }
-}
+// const handleExport = async () => {
+//  try {
+//    // 导出的二次确认
+//    await message.exportConfirm()
+//    // 发起导出
+//    exportLoading.value = true
+//    const data = await HistoryDataApi.exportHistoryData(queryParams)
+//    download.excel(data, '电能分析.xls')
+//  } catch {
+//  } finally {
+//    exportLoading.value = false
+//  }
+// }
 
 /** 初始化 **/
 onMounted(() => {
- getList();
+  getTypeMaxValue();
+  getList();
 })
 </script>
+
+<style scoped>
+.el-form-item__label{
+  width: auto;
+}
+.realTotal{
+  float: right;
+  padding-top: 20px;
+  padding-right: 20px;
+  font-size: 14px;
+  font-weight: 400; 
+  color: #606266
+}
+</style>
