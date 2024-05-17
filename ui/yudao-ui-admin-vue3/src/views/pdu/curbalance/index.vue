@@ -207,7 +207,7 @@
               <div v-if="item.acur != null">A相电流：{{item.acur}}A</div>
               <div v-if="item.bcur != null" >B相电流：{{item.bcur}}A</div>
               <div v-if="item.ccur != null" >C相电流：{{item.ccur}}A</div>
-              <div >网络地址：{{ item.devKey }}</div>
+              <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
@@ -235,7 +235,7 @@
               <div v-if="item.avol != null">A相电压：{{item.avol}}V</div>
               <div v-if="item.bvol != null" >B相电压：{{item.bvol}}V</div>
               <div v-if="item.cvol != null" >C相电压：{{item.cvol}}V</div>
-              <div >网络地址：{{ item.devKey }}</div>
+              <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
