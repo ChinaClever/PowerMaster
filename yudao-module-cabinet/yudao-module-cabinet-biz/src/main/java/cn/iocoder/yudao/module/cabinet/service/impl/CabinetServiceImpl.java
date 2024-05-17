@@ -9,24 +9,20 @@ import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetEnvSensor;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
+import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.enums.DisableEnums;
 import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetDTO;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetEnvSensorDTO;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetIndexDTO;
-import cn.iocoder.yudao.module.cabinet.enums.CabinetChannelEnum;
-import cn.iocoder.yudao.module.cabinet.enums.CabinetPduEnum;
-import cn.iocoder.yudao.module.cabinet.enums.CabinetPositionEnum;
-import cn.iocoder.yudao.module.cabinet.enums.SensorTypeEnum;
 import cn.iocoder.yudao.module.cabinet.mapper.*;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
-import cn.iocoder.yudao.framework.common.util.HttpUtil;
-import cn.iocoder.yudao.module.cabinet.util.TimeUtil;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexVo;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetVo;
 import com.alibaba.fastjson2.JSON;
@@ -80,6 +76,8 @@ public class CabinetServiceImpl implements CabinetService {
     CabinetEnvSensorMapper envSensorMapper;
     @Autowired
     RoomIndexMapper roomIndexMapper;
+    @Autowired
+    RackIndexMapper rackIndexMapper;
 
     @Autowired
     RedisTemplate redisTemplate;
@@ -97,6 +95,11 @@ public class CabinetServiceImpl implements CabinetService {
         try {
             Page<CabinetIndexDTO> page = new Page<>(vo.getPageNo(), vo.getPageSize());
             //获取机柜列表
+            if (Objects.nonNull(vo.getCabinetIds()) && CollectionUtils.isEmpty(vo.getCabinetIds())){
+                List<Integer> list = new ArrayList<>();
+                list.add(-1);
+                vo.setCabinetIds(list);
+            }
             Page<CabinetIndexDTO> indexDTOPage = cabinetCfgMapper.selectCabList(page, vo);
             List<JSONObject> result = new ArrayList<>();
             //获取redis 实时数据
@@ -193,6 +196,13 @@ public class CabinetServiceImpl implements CabinetService {
                     });
                    dto.setSensorList(sensorDtos);
 
+                }
+
+                List<RackIndex> rackIndexList = rackIndexMapper.selectList(new LambdaQueryWrapper<RackIndex>()
+                        .eq(RackIndex::getCabinetId,index.getId())
+                        .eq(RackIndex::getIsDelete,DelEnums.NO_DEL.getStatus()));
+                if (!CollectionUtils.isEmpty(rackIndexList)){
+                    dto.setRackIndexList(rackIndexList);
                 }
             }
             return dto;
@@ -303,6 +313,8 @@ public class CabinetServiceImpl implements CabinetService {
             }
             //保存环境数据
             saveEnvSensor(vo.getId(),vo);
+            //保存U位数据
+            saveRack(vo.getId(), vo);
 
             return CommonResult.success(vo.getId());
         } finally {
@@ -555,6 +567,34 @@ public class CabinetServiceImpl implements CabinetService {
                 cabinetEnvSensor.setCabinetId(cabinetId);
                 envSensorMapper.insert(cabinetEnvSensor);
             });
+        }
+    }
+
+    /**
+     * 保存机柜机架数据
+     */
+    private void saveRack(int cabinetId,CabinetVo vo) throws Exception{
+        //数据为空，清空数据
+        if (CollectionUtils.isEmpty(vo.getRackList())){
+           //取消绑定
+            List<RackIndex> rackIndexList = rackIndexMapper.selectList(new LambdaQueryWrapper<RackIndex>()
+                    .eq(RackIndex::getCabinetId,cabinetId)
+                    .eq(RackIndex::getIsDelete,DelEnums.NO_DEL.getStatus()));
+            if (!CollectionUtils.isEmpty(rackIndexList)){
+                rackIndexMapper.update(new LambdaUpdateWrapper<RackIndex>()
+                        .in(RackIndex::getId,rackIndexList)
+                        .set(RackIndex::getCabinetId,0));
+            }
+
+        }
+
+        if (!CollectionUtils.isEmpty(vo.getRackList())){
+            //修改
+            vo.getRackList().forEach(rackIndex -> {
+                rackIndexMapper.updateById(rackIndex);
+            });
+
+
         }
     }
 

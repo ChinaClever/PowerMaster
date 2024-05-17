@@ -47,4 +47,11 @@ public class EnergyConsumptionController {
         List<Object> listResult = energyConsumptionService.getOutletsEQData(reqVO);
         return success(listResult);
     }
+
+    @GetMapping("/realtime-page")
+    @Operation(summary = "获得pdu电量数据分页")
+    public CommonResult<PageResult<Object>> getRealtimeEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
+        PageResult<Object> pageResult = energyConsumptionService.getRealtimeEQDataPage(pageReqVO);
+        return success(pageResult);
+    }
 }

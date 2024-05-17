@@ -346,7 +346,7 @@ const handleDayPick = () => {
         visControll.isSameDay = false;
       }
       queryParams.oldTime = queryParams.timeArr[0];
-      queryParams.newTime = queryParams.timeArr[1];
+      queryParams.newTime = queryParams.timeArr[1].split(" ")[0]+ " " + "23:59:59";
 
 
     }
@@ -423,7 +423,6 @@ const loadNode = async (node: Node, resolve: (data: Tree[]) => void) => {
   }
   if (node.level === 1){
     var temp = await CabinetApi.getRoomPDUList({id : node.data.id});
-    console.log(temp)
     return resolve(temp[0].children);
   } 
   if (node.level >= 2){
@@ -432,7 +431,6 @@ const loadNode = async (node: Node, resolve: (data: Tree[]) => void) => {
 }
 
 const handleClick = (row) => {
-  console.log('Button clicked!', row);
   if(row.type != null  && row.type == 4){
     queryParams.ipAddr = row.ip
     queryParams.cascadeAddr = row?.unique?.split("-")[1];
@@ -619,7 +617,6 @@ const getList = async () => {
   var PDU = await PDUDeviceApi.PDUDisplay(queryParams);
   var temp = [] as any;
   var baseInfo = await PDUDeviceApi.getPDUDevicePage(queryParams);
-  console.log(baseInfo);
   // 假设 PDU.pdu_data.output_item_list.pow_value 是一个 double 数组
   var powValueArray = PDU.pdu_data?.output_item_list?.pow_value;
   // 过滤出大于 0 的元素，并将值与下标保存到对象数组中
@@ -851,7 +848,6 @@ const initChart =  () => {
     // 将 temChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
     instance.appContext.config.globalProperties.temChart = temChart;
   }
-  console.log(serverData.value.nameAndMax);
   if (serChartContainer.value && instance && serverData.value.nameAndMax && serverData.value.nameAndMax.length > 0) {
     serChart = echarts.init(serChartContainer.value);
     serChart.setOption({

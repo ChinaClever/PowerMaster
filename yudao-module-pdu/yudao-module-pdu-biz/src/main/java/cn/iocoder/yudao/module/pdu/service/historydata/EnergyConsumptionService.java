@@ -32,4 +32,12 @@ public interface EnergyConsumptionService {
      * @return pdu历史数据详情
      */
     List<Object> getOutletsEQData(EnergyConsumptionPageReqVO reqVO) throws IOException;
+
+    /**
+     * 获得pdu实时电量数据分页
+     *
+     * @param pageReqVO 分页查询
+     * @return pdu电量数据分页
+     */
+    PageResult<Object> getRealtimeEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException;
 }

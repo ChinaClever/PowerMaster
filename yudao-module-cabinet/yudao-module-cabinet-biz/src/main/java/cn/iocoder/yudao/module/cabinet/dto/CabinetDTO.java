@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.cabinet.dto;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetEnvSensor;
+import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -124,5 +125,8 @@ public class CabinetDTO {
 
     @Schema(description = "环境数据", example = "[]")
     private List<CabinetEnvSensorDTO> sensorList;
+
+    @Schema(description = "u位数据", example = "[]")
+    private List<RackIndex> rackIndexList;
 
 }

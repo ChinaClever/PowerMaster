@@ -328,7 +328,6 @@ const statusList = reactive([
 ])
 
 const handleClick = (row) => {
-  console.log('Button clicked!', row);
   if(row.type != null  && row.type == 3){
     queryParams.devKey = row.devKey
     handleQuery();
@@ -336,7 +335,6 @@ const handleClick = (row) => {
 }
 
 const handleCheck = async (row) => {
-  console.log('handleCheck!', row);
   const ids = [] as any
   row.forEach(item => {
     if (item.type == 3) {

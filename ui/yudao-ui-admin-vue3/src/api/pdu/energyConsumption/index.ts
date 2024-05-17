@@ -32,4 +32,9 @@ export const EnergyConsumptionApi = {
     return await request.get({ url: `/pdu/eq-data/outlets-details`, params })
   },
 
+  // 查询pdu实时电量数据分页
+  getRealtimeEQDataPage: async (params: any) => {
+    return await request.get({ url: `/pdu/eq-data/realtime-page`, params })
+  },
+
 }

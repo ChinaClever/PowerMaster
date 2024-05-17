@@ -148,7 +148,7 @@ defineOptions({ name: 'PDUEnvLine' })
 const activeName = ref('realtimeTabPane')
 const activeName1 = ref('myChart')
 const instance = getCurrentInstance();
-const tableData = ref<Array<{ }>>([]); // 列表数据
+const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
 const cascadeAddr = ref(0) // 数字类型的级联地址
 const needFlush = ref(0) // 是否需要刷新图表
@@ -258,7 +258,7 @@ const loading = ref(true) //  列表的加载中
 // 时间段快捷选项
 const shortcuts = [
   {
-    text: '最近1小时',
+    text: '最近一小时',
     value: () => {
       const end = new Date()
       const start = new Date()
@@ -267,7 +267,7 @@ const shortcuts = [
     },
   },
   {
-    text: '最近12小时',
+    text: '最近十二小时',
     value: () => {
       const end = new Date()
       const start = new Date()
@@ -276,7 +276,7 @@ const shortcuts = [
     },
   },
   {
-    text: '最近24小时',
+    text: '最近一天',
     value: () => {
       const end = new Date()
       const start = new Date()
@@ -285,7 +285,7 @@ const shortcuts = [
     },
   },
   {
-    text: '最近48小时',
+    text: '最近两天',
     value: () => {
       const end = new Date()
       const start = new Date()
@@ -296,7 +296,7 @@ const shortcuts = [
 ]
 const shortcuts1 = [
   {
-    text: '最近1天',
+    text: '最近一天',
     value: () => {
       const end = new Date()
       const start = new Date()
@@ -305,7 +305,7 @@ const shortcuts1 = [
     },
   },
   {
-    text: '最近3天',
+    text: '最近三天',
     value: () => {
       const end = new Date()
       const start = new Date()
@@ -314,7 +314,7 @@ const shortcuts1 = [
     },
   },
   {
-    text: '最近7天',
+    text: '最近七天',
     value: () => {
       const end = new Date()
       const start = new Date()
@@ -325,7 +325,7 @@ const shortcuts1 = [
 ]
 const shortcuts2 = [
   {
-    text: '最近1个月',
+    text: '最近一个月',
     value: () => {
       const end = new Date()
       const start = new Date()
@@ -334,7 +334,7 @@ const shortcuts2 = [
     },
   },
   {
-    text: '最近3个月',
+    text: '最近三个月',
     value: () => {
       const end = new Date()
       const start = new Date()
@@ -343,7 +343,7 @@ const shortcuts2 = [
     },
   },
   {
-    text: '最近6个月',
+    text: '最近六个月',
     value: () => {
       const end = new Date()
       const start = new Date()
