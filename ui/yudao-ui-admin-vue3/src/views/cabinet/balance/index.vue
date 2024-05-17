@@ -22,32 +22,92 @@
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
-          <el-button @click="handleSwitchModal(0)" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />阵列模式</el-button>
-          <el-button @click="handleSwitchModal(1)" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
+          <el-button @click="handleSwitchModal(0)" :type="switchValue==0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />电流阵列</el-button>
+          <el-button @click="handleSwitchModal(1)" :type="switchValue==1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />功率阵列</el-button>
+          <el-button @click="handleSwitchModal(2)" :type="switchValue==2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
         </el-form-item>
       </el-form>
     </template>
     <template #Content>
       <div v-loading="tableLoading">
-        <div v-if="switchValue == 0" class="matrixContainer">
+        <div v-if="switchValue == 0 || switchValue == 1" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
-            <div class="content">
-              <div class="info">
-                <div>昨日用能：{{item.yesterdayEq}}kW·h</div>
-                <div>上周用能：{{item.lastWeekEq}}kW·h</div>
-                <div>上月用能：{{item.lastMonthEq}}kW·h</div>
+            <div class="progressContainer" v-if="switchValue == 0">
+              <div class="text">AB路占比：</div>
+              <div class="progress" v-if="item.abdlzb">
+                <div class="left" :style="`flex: ${item.abdlzb}`">{{item.abdlzb}}%</div>
+                <div class="line"></div>
+                <div class="right" :style="`flex: ${100 - item.abdlzb}`">{{100 - item.abdlzb}}%</div>
+              </div>
+              <div class="progress" v-else>
+                <div class="left" :style="`flex: 50`">null</div>
+                <div class="line"></div>
+                <div class="right" :style="`flex: 50`">null</div>
+              </div>
+            </div>
+            <div class="progressContainer" v-if="switchValue == 1">
+              <div class="text">AB路占比：</div>
+              <div class="progress" v-if="item.abglzb">
+                <div class="left" :style="`flex: ${item.abglzb}`">{{item.abglzb}}%</div>
+                <div class="line"></div>
+                <div class="right" :style="`flex: ${100 - item.abglzb}`">{{100 - item.abglzb}}%</div>
+              </div>
+              <div class="progress" v-else>
+                <div class="left" :style="`flex: 50`">null</div>
+                <div class="line"></div>
+                <div class="right" :style="`flex: 50`">null</div>
+              </div>
+            </div>
+            <div class="content" v-if="switchValue == 0">
+              <div class="road">A路</div>
+              <div class="valueList">
+                <div>Ia：{{item.Ia0 || '0.00'}}A</div>
+                <div>Ia：{{item.Ia1 || '0.00'}}A</div>
+                <div>Ia：{{item.Ia2 || '0.00'}}A</div>
+              </div>
+              <div class="road">B路</div>
+              <div class="valueList">
+                <div>Ia：{{item.Ib0 || '0.00'}}A</div>
+                <div>Ia：{{item.Ib1 || '0.00'}}A</div>
+                <div>Ia：{{item.Ib2 || '0.00'}}A</div>
+              </div>
+            </div>
+            <div class="content" v-if="switchValue == 1">
+              <div class="road">A路</div>
+              <div class="valueList">
+                <div>Pa：{{item.Pa0 || '0.00'}}Kw</div>
+                <div>Pa：{{item.Pa1 || '0.00'}}Kw</div>
+                <div>Pa：{{item.Pa2 || '0.00'}}Kw</div>
+              </div>
+              <div class="road">B路</div>
+              <div class="valueList">
+                <div>Pa：{{item.Pb0 || '0.00'}}Kw</div>
+                <div>Pa：{{item.Pb1 || '0.00'}}Kw</div>
+                <div>Pa：{{item.Pb2 || '0.00'}}Kw</div>
               </div>
             </div>
             <div class="room">{{item.local}}</div>
           </div>
         </div>
-        <!-- <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" >
-          <el-table-column type="index" width="100" label="序号" align="center" />
-          <el-table-column label="位置" min-width="110" align="center" prop="local" />
-          <el-table-column label="昨日用能" min-width="110" align="center" prop="yesterdayEq" />
-          <el-table-column label="上周用能" min-width="110" align="center" prop="lastWeekEq" />
-          <el-table-column label="上月用能" min-width="110" align="center" prop="lastMonthEq" />
-        </el-table> -->
+        <el-table v-if="switchValue == 2" style="width: 100%;" :data="tableData" >
+          <el-table-column type="index" width="60" label="序号" align="center" />
+          <el-table-column label="A路" align="center">
+            <el-table-column label="I1(A)" min-width="90" align="center" prop="Ia0" />
+            <el-table-column label="I2(A)" min-width="90" align="center" prop="Ia1" />
+            <el-table-column label="I3(A)" min-width="90" align="center" prop="Ia2" />
+            <el-table-column label="P1(kW)" min-width="90" align="center" prop="Pa0" />
+            <el-table-column label="P2(kW)" min-width="90" align="center" prop="Pa1" />
+            <el-table-column label="P3(kW)" min-width="90" align="center" prop="Pa2" />
+          </el-table-column>
+          <el-table-column label="B路"  align="center">
+            <el-table-column label="I1(A)" min-width="90" align="center" prop="Ib0" />
+            <el-table-column label="I2(A)" min-width="90" align="center" prop="Ib1" />
+            <el-table-column label="I3(A)" min-width="90" align="center" prop="Ib2" />
+            <el-table-column label="P1(kW)" min-width="90" align="center" prop="Pb0" />
+            <el-table-column label="P2(kW)" min-width="90" align="center" prop="Pb1" />
+            <el-table-column label="P3(kW)" min-width="90" align="center" prop="Pb2" />
+          </el-table-column>
+        </el-table>
         <Pagination
           :total="queryParams.pageTotal"
           v-model:page="queryParams.pageNo"
@@ -97,28 +157,51 @@ const getTableData = async(reset = false) => {
     console.log('res', res)
     if (res.list) {
       const list = res.list.map(item => {
-        const tableItem = {
-          company: item.company,
-          cabinet_key: item.cabinet_key,
-          cabinetName: item.cabinet_name,
-          roomName: item.room_name,
-          status: item.status,
-          apparentTotal: item.cabinet_power.total_data.pow_apparent.toFixed(3),
-          apparentA: item.cabinet_power.path_a ? item.cabinet_power.path_a.pow_apparent.toFixed(3) : '-',
-          apparentB: item.cabinet_power.path_b ? item.cabinet_power.path_b.pow_apparent.toFixed(3) : '-',
-          activeTotal: item.cabinet_power.total_data.pow_active.toFixed(3),
-          activeA: item.cabinet_power.path_a ? item.cabinet_power.path_a.pow_active.toFixed(3) : '-',
-          activeB: item.cabinet_power.path_b ? item.cabinet_power.path_b.pow_active.toFixed(3) : '-',
-          eleTotal: item.cabinet_power.total_data.ele_active.toFixed(1),
-          eleA: item.cabinet_power.path_a ? item.cabinet_power.path_a.ele_active.toFixed(1) : '-',
-          eleB: item.cabinet_power.path_b ? item.cabinet_power.path_b.ele_active.toFixed(1) : '-',
-          powerFactorTotal: item.cabinet_power.total_data.power_factor,
-          powerReactiveTotal: item.cabinet_power.total_data.pow_reactive.toFixed(3),
-          loadFactor: Math.ceil(item.load_factor),
-          abzb: '-' as number | string
+        const tableItem = {} as any
+        const PathA = item.cabinet_power.path_a
+        const PathB = item.cabinet_power.path_b
+        if (PathA && PathA.cur_value.length > 0) { // A路电流
+        console.log('PathA.cur_value', PathA.cur_value)
+          PathA.cur_value.forEach((item, index) => {
+            tableItem['Ia'+index] = item.toFixed(2)
+          })
+        }
+        if (PathA && PathA.vol_value.length > 0) { // A路电压
+          PathA.vol_value.forEach((item, index) => {
+            tableItem['Ua'+index] = item.toFixed(2)
+          })
+        }
+        if (PathA && PathA.pow_value.length > 0) { // A路功率
+          PathA.pow_value.forEach((item, index) => {
+            tableItem['Pa'+index] = item.toFixed(2)
+          })
+        }
+        if (PathB && PathB.cur_value.length > 0) { // B路电流
+          PathB.cur_value.forEach((item, index) => {
+            tableItem['Ib'+index] = item.toFixed(2)
+          })
+        }
+        if (PathB && PathB.vol_value.length > 0) { // B路电压
+          PathB.vol_value.forEach((item, index) => {
+            tableItem['Ub'+index] = item.toFixed(2)
+          })
+        }
+        if (PathB && PathB.pow_value.length > 0) { // B路功率
+          PathB.pow_value.forEach((item, index) => {
+            tableItem['Pb'+index] = item.toFixed(2)
+          })
+        }
+        if (item.cabinet_power.path_a && item.cabinet_power.path_b) {
+          if (item.cabinet_power.path_a.pow_apparent == 0) tableItem.abdlzb = 0
+          else tableItem.abdlzb = (item.cabinet_power.path_a.pow_apparent / item.cabinet_power.total_data.pow_apparent as any).toFixed(2) * 100
+          if (item.cabinet_power.path_a.pow_active == 0) tableItem.abglzb = 0
+          else tableItem.abglzb = (item.cabinet_power.path_a.pow_active / item.cabinet_power.total_data.pow_active as any).toFixed(2) * 100
         }
         return tableItem
       })
+      console.log('list', list)
+      tableData.value = list
+      queryParams.pageTotal = res.total
     }
   } finally {
     tableLoading.value = false
@@ -129,7 +212,7 @@ const getTableData = async(reset = false) => {
 const handleSwitchModal = (value) => {
   if (switchValue.value == value) return
   switchValue.value = value
-  if (value == 0) { // 阵列
+  if (value == 0 || value == 1) { // 阵列
     queryParams.pageSize = 24
   } else {
     queryParams.pageSize = 10
@@ -172,18 +255,59 @@ onBeforeMount(() => {
   align-content: flex-start;
   .item {
     width: 25%;
-    min-width: 275px;
+    min-width: 290px;
     height: 130px;
     font-size: 12px;
     box-sizing: border-box;
     background-color: #eef4fc;
     border: 5px solid #fff;
-    padding-top: 36px;
     position: relative;
+    .progressContainer {
+      height: 50px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      .text {
+        font-size: 14px;
+      }
+      .progress {
+        width: 180px;
+        display: flex;
+        align-items: center;
+        font-size: 14px;
+        color: #eee;
+        box-sizing: border-box;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        .line {
+          width: 3px;
+          height: 25px;
+          background-color: #000;
+        }
+        .left {
+          text-align: center;
+          box-sizing: border-box;
+          background-color: #3b8bf5;
+          // border-right: 1px solid #000;
+        }
+        .right {
+          text-align: center;
+          background-color:  #f86f13;
+        }
+      }
+    }
     .content {
-      padding-left: 20px;
+      font-size: 14px;
       display: flex;
       align-items: center;
+      justify-content: center;
+      .road {
+        margin-right: 10px;
+      }
+      .valueList {
+        margin-right: 40px;
+      }
     }
     .room {
       position: absolute;
