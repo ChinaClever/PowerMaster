@@ -168,4 +168,9 @@ public class CabConstants {
      */
     public static final String CABINET_EQ_TOTAL_MONTH = "cabinet_eq_total_month";
 
+    /**
+     * pdu相历史数据表（按小时算
+     */
+    public static final String PDU_HDA_LINE_HOUR = "pdu_hda_line_hour" ;
+
 }

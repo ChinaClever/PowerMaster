@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.cabinet.service;
 
 import cn.iocoder.yudao.module.cabinet.dto.CabinetEleChainDTO;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetEqTrendDTO;
+import cn.iocoder.yudao.module.cabinet.dto.CabinetPduCurTrendDTO;
 
 import java.util.List;
 
@@ -29,4 +30,12 @@ public interface CabinetEleService {
      * @return
      */
     List<CabinetEqTrendDTO> eqTrend(int id, String type);
+
+    /**
+     * 机柜pdu电流趋势
+     * @param id
+     * @return
+     */
+    List<CabinetPduCurTrendDTO> curTrend(int id);
+
 }
