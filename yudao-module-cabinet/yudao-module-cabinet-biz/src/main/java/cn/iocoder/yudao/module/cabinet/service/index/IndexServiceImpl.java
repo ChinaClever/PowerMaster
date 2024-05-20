@@ -17,6 +17,8 @@ import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.PduIndex;
+import cn.iocoder.yudao.module.cabinet.dal.dataobject.temcolor.TemColorDO;
+import cn.iocoder.yudao.module.cabinet.dal.mysql.temcolor.TemColorMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.*;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
@@ -80,6 +82,9 @@ public class IndexServiceImpl implements IndexService {
 
     @Autowired
     private CabinetEnvSensorMapper cabinetEnvSensorMapper;
+
+    @Resource
+    private TemColorMapper temColorMapper;
 
     @Autowired
     private RestHighLevelClient client;
@@ -931,7 +936,7 @@ public class IndexServiceImpl implements IndexService {
                 .inIfPresent(IndexDO::getId, pageReqVO.getCabinetIds()));
 
         List<CabinetEnvAndHumRes> result = new ArrayList<>();
-
+        List<TemColorDO> temColorList = temColorMapper.selectList();
         for (IndexDO indexDO : indexDOPageResult.getList()) {
             CabinetEnvAndHumRes res = new CabinetEnvAndHumRes();
             result.add(res);
@@ -990,31 +995,61 @@ public class IndexServiceImpl implements IndexService {
                             if (cabinetEnvSensor.getChannel() == 1 && cabinetEnvSensor.getPosition() == 1) {
                                 Double tem = new Double(pduEnvRealtimeDo.getTem());
                                 Double hum = new Double(pduEnvRealtimeDo.getHum());
+                                for (TemColorDO temColorDO : temColorList) {
+                                    if(tem >= temColorDO.getMin() && tem <= temColorDO.getMax()){
+                                        res.setIceTopTemColor(temColorDO.getColor());
+                                    }
+                                }
                                 res.setIceTopTem(tem);
                                 res.setIceTopHum(hum);
                             } else if (cabinetEnvSensor.getChannel() == 1 && cabinetEnvSensor.getPosition() == 2) {
                                 Double tem = new Double(pduEnvRealtimeDo.getTem());
                                 Double hum = new Double(pduEnvRealtimeDo.getHum());
+                                for (TemColorDO temColorDO : temColorList) {
+                                    if(tem >= temColorDO.getMin() && tem <= temColorDO.getMax()){
+                                        res.setIceMidTemColor(temColorDO.getColor());
+                                    }
+                                }
                                 res.setIceMidTem(tem);
                                 res.setIceMidHum(hum);
                             } else if (cabinetEnvSensor.getChannel() == 1 && cabinetEnvSensor.getPosition() == 3) {
                                 Double tem = new Double(pduEnvRealtimeDo.getTem());
                                 Double hum = new Double(pduEnvRealtimeDo.getHum());
+                                for (TemColorDO temColorDO : temColorList) {
+                                    if(tem >= temColorDO.getMin() && tem <= temColorDO.getMax()){
+                                        res.setIceBomTemColor(temColorDO.getColor());
+                                    }
+                                }
                                 res.setIceBomTem(tem);
                                 res.setIceBomHum(hum);
                             } else if (cabinetEnvSensor.getChannel() == 2 && cabinetEnvSensor.getPosition() == 1) {
                                 Double tem = new Double(pduEnvRealtimeDo.getTem());
                                 Double hum = new Double(pduEnvRealtimeDo.getHum());
+                                for (TemColorDO temColorDO : temColorList) {
+                                    if(tem >= temColorDO.getMin() && tem <= temColorDO.getMax()){
+                                        res.setHotTopTemColor(temColorDO.getColor());
+                                    }
+                                }
                                 res.setHotTopTem(tem);
                                 res.setHotTopHum(hum);
                             } else if (cabinetEnvSensor.getChannel() == 2 && cabinetEnvSensor.getPosition() == 2) {
                                 Double tem = new Double(pduEnvRealtimeDo.getTem());
                                 Double hum = new Double(pduEnvRealtimeDo.getHum());
+                                for (TemColorDO temColorDO : temColorList) {
+                                    if(tem >= temColorDO.getMin() && tem <= temColorDO.getMax()){
+                                        res.setHotMidTemColor(temColorDO.getColor());
+                                    }
+                                }
                                 res.setHotMidTem(tem);
                                 res.setHotMidHum(hum);
                             } else if (cabinetEnvSensor.getChannel() == 2 && cabinetEnvSensor.getPosition() == 3) {
                                 Double tem = new Double(pduEnvRealtimeDo.getTem());
                                 Double hum = new Double(pduEnvRealtimeDo.getHum());
+                                for (TemColorDO temColorDO : temColorList) {
+                                    if(tem >= temColorDO.getMin() && tem <= temColorDO.getMax()){
+                                        res.setHotBomTemColor(temColorDO.getColor());
+                                    }
+                                }
                                 res.setHotBomTem(tem);
                                 res.setHotBomHum(hum);
                             }

@@ -80,9 +80,8 @@
             type="primary"
             plain
             @click="openForm('create')"
-            v-hasPermi="['pdu:PDU-device:create']"
           >
-            <Icon icon="ep:plus" class="mr-5px" /> 新增
+            <Icon icon="ep:plus" class="mr-5px" /> 温度范围颜色
           </el-button>
           <el-button
             type="success"
@@ -111,7 +110,7 @@
         <el-table-column label="前门" align="center" >
           <el-table-column label="上" align="center" >
             <template #default="scope" >
-              <el-text v-if="scope.row.iceTopTem != null && switchTemAndHum == 0">
+              <el-text v-if="scope.row.iceTopTem != null && switchTemAndHum == 0" :style="{ backgroundColor : scope.row.iceTopTemColor }">
                 {{ scope.row.iceTopTem }}°C
               </el-text>
               <el-text v-if="scope.row.iceTopHum != null && switchTemAndHum == 1">
@@ -121,7 +120,7 @@
           </el-table-column>        
           <el-table-column label="中" align="center" >
             <template #default="scope" >
-              <el-text v-if="scope.row.iceMidTem != null && switchTemAndHum == 0">
+              <el-text v-if="scope.row.iceMidTem != null && switchTemAndHum == 0" :style="{ backgroundColor : scope.row.iceMidTemColor }">
                 {{ scope.row.iceMidTem }}°C
               </el-text>
               <el-text v-if="scope.row.iceMidHum != null && switchTemAndHum == 1">
@@ -131,7 +130,7 @@
           </el-table-column>     
           <el-table-column label="下" align="center" >
             <template #default="scope" >
-              <el-text v-if="scope.row.iceBomTem != null && switchTemAndHum == 0">
+              <el-text v-if="scope.row.iceBomTem != null && switchTemAndHum == 0" :style="{ backgroundColor : scope.row.iceBomTemColor }">
                 {{ scope.row.iceBomTem }}°C
               </el-text>          
               <el-text v-if="scope.row.iceBomHum != null && switchTemAndHum == 1">
@@ -143,7 +142,7 @@
         <el-table-column label="后门" align="center" >
           <el-table-column label="上" align="center" >
             <template #default="scope" >
-              <el-text v-if="scope.row.hotTopTem != null && switchTemAndHum == 0">
+              <el-text v-if="scope.row.hotTopTem != null && switchTemAndHum == 0" :style="{ backgroundColor : scope.row.hotTopTemColor }">
                 {{ scope.row.hotTopTem }}°C
               </el-text>       
               <el-text v-if="scope.row.hotTopHum != null && switchTemAndHum == 1">
@@ -153,7 +152,7 @@
           </el-table-column>        
           <el-table-column label="中" align="center" >
             <template #default="scope" >
-              <el-text v-if="scope.row.hotMidTem != null && switchTemAndHum == 0">
+              <el-text v-if="scope.row.hotMidTem != null && switchTemAndHum == 0" :style="{ backgroundColor : scope.row.hotMidTemColor }">
                 {{ scope.row.hotMidTem }}°C
               </el-text>               
               <el-text v-if="scope.row.hotMidHum != null && switchTemAndHum == 1">
@@ -163,7 +162,7 @@
           </el-table-column>     
           <el-table-column label="下" align="center" >
             <template #default="scope" >
-              <el-text v-if="scope.row.hotBomTem != null && switchTemAndHum == 0">
+              <el-text v-if="scope.row.hotBomTem != null && switchTemAndHum == 0" :style="{ backgroundColor : scope.row.hotBomTemColor }">
                 {{ scope.row.hotBomTem }}°C
               </el-text>             
               <el-text v-if="scope.row.hotBomHum != null && switchTemAndHum == 1">
@@ -204,9 +203,9 @@
               </div>              
             </div>
             <div class="info">                  
-              <div v-if="item.hotTopTem != null">上层温度：{{item.hotTopTem}}°C</div>
-              <div v-if="item.hotMidTem != null" >中层温度：{{item.hotMidTem}}°C</div>
-              <div v-if="item.hotBomTem != null" >下层温度：{{item.hotBomTem}}°C</div>
+              <div v-if="item.hotTopTem != null" :style="{ backgroundColor : item.hotTopTemColor }">上层温度：{{item.hotTopTem}}°C</div>
+              <div v-if="item.hotMidTem != null" :style="{ backgroundColor : item.hotMidTemColor }">中层温度：{{item.hotMidTem}}°C</div>
+              <div v-if="item.hotBomTem != null" :style="{ backgroundColor : item.hotBomTemColor }">下层温度：{{item.hotBomTem}}°C</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
@@ -227,9 +226,9 @@
               </div>              
             </div>
             <div class="info">                  
-              <div v-if="item.iceTopTem != null">上层温度：{{item.iceTopTem}}°C</div>
-              <div v-if="item.iceMidTem != null" >中层温度：{{item.iceMidTem}}°C</div>
-              <div v-if="item.iceBomTem != null" >下层温度：{{item.iceBomTem}}°C</div>
+              <div v-if="item.iceTopTem != null" :style="{ backgroundColor : item.iceTopTemColor }">上层温度：{{item.iceTopTem}}°C</div>
+              <div v-if="item.iceMidTem != null" :style="{ backgroundColor : item.iceMidTemColor }">中层温度：{{item.iceMidTem}}°C</div>
+              <div v-if="item.iceBomTem != null" :style="{ backgroundColor : item.iceBomTemColor }">下层温度：{{item.iceBomTem}}°C</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
@@ -253,20 +252,20 @@
       </template>
     </template>
   </CommonMenu>
-
-
+  
   <!-- 表单弹窗：添加/修改 -->
-  <!-- <PDUDeviceForm ref="formRef" @success="getList" /> -->
+  <TemColorForm ref="temColorForm" @success="getList" />
 </template>
 
 <script setup lang="ts">
 // import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
-// import PDUDeviceForm from './PDUDeviceForm.vue'
+import TemColorForm from './TemColorForm.vue'
 import { ElTree } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
 import { IndexApi } from '@/api/cabinet/index'
+
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -274,6 +273,7 @@ defineOptions({ name: 'PDUDevice' })
 const { push } = useRouter()
 
 const switchTemAndHum = ref(0);
+const temColorForm = ref();
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48])
@@ -495,9 +495,8 @@ const resetQuery = () => {
 }
 
 /** 添加/修改操作 */
-const formRef = ref()
-const openForm = (type: string, id?: number) => {
-  formRef.value.open(type, id)
+const openForm = async (type: string) => {
+  temColorForm.value.open(type);
 }
 
 /** 删除按钮操作 */
