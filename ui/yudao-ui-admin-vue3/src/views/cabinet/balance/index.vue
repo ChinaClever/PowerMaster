@@ -1,5 +1,65 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" >
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="模块化机房" >
+    <template #NavInfo>
+      <div class="navInfo">
+        <!-- <div class="header">
+          <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
+          <div class="name">微模块机房</div>
+          <div>机房202</div>
+        </div>
+        <div class="line"></div> -->
+        <div class="status">
+          <div class="box">
+            <div class="top">
+              <div class="tag"></div>正常
+            </div>
+            <div class="value"><span class="number">24</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag empty"></div>空载
+            </div>
+            <div class="value"><span class="number">1</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag warn"></div>预警
+            </div>
+            <div class="value"><span class="number">1</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag error"></div>故障
+            </div>
+            <div class="value"><span class="number">0</span>个</div>
+          </div>
+        </div>
+        <div class="line"></div>
+        <!-- <div class="overview">
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+            <div class="info">
+              <div>总电能</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
+          </div>
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
+            <div class="info">
+              <div>今日用电</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
+          </div>
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+            <div class="info">
+              <div>今日用电</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
+          </div>
+        </div> -->
+      </div>
+    </template>
     <template #ActionBar>
       <el-form
         class="-mb-15px"
@@ -30,8 +90,9 @@
     </template>
     <template #Content>
       <div v-loading="tableLoading">
-        <div v-if="switchValue == 0 || switchValue == 1" class="matrixContainer">
+        <div v-if="(switchValue == 0 || switchValue == 1) && tableData.length > 0" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
+            <!-- 电流 -->
             <div class="progressContainer" v-if="switchValue == 0">
               <div class="text">AB路占比：</div>
               <div class="progress" v-if="item.abdlzb">
@@ -45,6 +106,7 @@
                 <div class="right" :style="`flex: 50`">null</div>
               </div>
             </div>
+            <!-- 功率 -->
             <div class="progressContainer" v-if="switchValue == 1">
               <div class="text">AB路占比：</div>
               <div class="progress" v-if="item.abglzb">
@@ -58,6 +120,7 @@
                 <div class="right" :style="`flex: 50`">null</div>
               </div>
             </div>
+            <!-- 电流 -->
             <div class="content" v-if="switchValue == 0">
               <div class="road">A路</div>
               <div class="valueList">
@@ -72,6 +135,7 @@
                 <div>Ia：{{item.Ib2 || '0.00'}}A</div>
               </div>
             </div>
+            <!-- 功率 -->
             <div class="content" v-if="switchValue == 1">
               <div class="road">A路</div>
               <div class="valueList">
@@ -87,6 +151,7 @@
               </div>
             </div>
             <div class="room">{{item.local}}</div>
+            <button class="detail" @click.prevent="toDetail(item.id)">详情</button>
           </div>
         </div>
         <el-table v-if="switchValue == 2" style="width: 100%;" :data="tableData" >
@@ -114,6 +179,9 @@
           v-model:limit="queryParams.pageSize"
           @pagination="getTableData(false)"
         />
+        <template v-if="tableData.length == 0 && switchValue != 2">
+          <el-empty description="暂无数据" :image-size="300" />
+        </template>
       </div>
     </template>
   </CommonMenu>
@@ -122,7 +190,10 @@
 <script lang="ts" setup>
 import { CabinetApi } from '@/api/cabinet/info'
 
+const { push } = useRouter() // 路由跳转
+const router = useRouter() // 路由跳转
 const tableLoading = ref(false) // 
+const isFirst = ref(true) // 是否第一次调用getTableData函数
 const navList = ref([]) // 左侧导航栏树结构列表
 const tableData = ref([])
 const switchValue = ref(0) // 表格(1) 矩阵(0)切换
@@ -148,7 +219,7 @@ const getTableData = async(reset = false) => {
     const res = await CabinetApi.getCabinetInfo({
       pageNo: queryParams.pageNo,
       pageSize: queryParams.pageSize,
-      cabinetIds: cabinetIds.value,
+      cabinetIds: isFirst.value ? null : cabinetIds.value,
       // roomId: null,
       runStatus: [],
       pduBox: 0,
@@ -158,6 +229,8 @@ const getTableData = async(reset = false) => {
     if (res.list) {
       const list = res.list.map(item => {
         const tableItem = {} as any
+        tableItem.local = item.room_name + '-' + item.cabinet_name
+        tableItem.id = item.cabinet_key.split('-')[1]
         const PathA = item.cabinet_power.path_a
         const PathB = item.cabinet_power.path_b
         if (PathA && PathA.cur_value.length > 0) { // A路电流
@@ -208,6 +281,12 @@ const getTableData = async(reset = false) => {
   }
 }
 
+// 详情跳转
+const toDetail = (id) => {
+  console.log('详情跳转', id, router, router.getRoutes())
+  push({path: '/cabinet/cab/balanceDetail', state: { id }})
+}
+
 // 处理切换 表格/阵列 模式
 const handleSwitchModal = (value) => {
   if (switchValue.value == value) return
@@ -222,6 +301,7 @@ const handleSwitchModal = (value) => {
 
 // 处理左侧树导航选择事件
 const handleCheck = (row) => {
+  isFirst.value = false
   const ids = [] as any
   row.forEach(item => {
     if (item.type == 3) {
@@ -247,6 +327,112 @@ onBeforeMount(() => {
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }
+.navInfo {
+  width: 215px;
+  height: 100%;
+  .overview {
+    padding: 0 20px;
+    .count {
+      height: 70px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-left: 15px;
+      padding-right: 10px;
+      box-shadow: 0 3px 4px 1px rgba(0,0,0,.12);
+      border-radius: 3px;
+      border: 1px solid #eee;
+      .info {
+        height: 46px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: space-between;
+        font-size: 13px;
+        .value {
+          font-size: 15px;
+          font-weight: bold;
+        }
+      }
+    }
+  }
+  .status {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 28px;
+    .box {
+      height: 70px;
+      width: 50%;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      .top {
+        display: flex;
+        align-items: center;
+        .tag {
+          width: 8px;
+          height: 8px;
+          background-color: #3bbb00;
+          margin-right: 3px;
+          margin-top: 2px;
+        }
+        .empty {
+          background-color: #ccc;
+        }
+        .warn {
+          background-color: #ffc402;
+        }
+        .error {
+          background-color: #fa3333;
+        }
+      }
+      .value {
+        font-size: 14px;
+        margin-top: 5px;
+        color: #aaa;
+        .number {
+          font-size: 14px;
+          font-weight: bold;
+          margin-right: 5px;
+          color: #000;
+        }
+      }
+    }
+  }
+  .header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 13px;
+    padding-top: 28px;
+    .header_img {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid #555;
+      img {
+        width: 75px;
+        height: 75px;
+      }
+    }
+    .name {
+      font-size: 15px;
+      margin: 15px 0;
+    }
+  }
+  .line {
+    height: 1px;
+    margin-top: 28px;
+    margin-bottom: 20px;
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
+}
 .matrixContainer {
   height: calc(100vh - 320px);
   overflow: auto;
@@ -256,7 +442,7 @@ onBeforeMount(() => {
   .item {
     width: 25%;
     min-width: 290px;
-    height: 130px;
+    height: 150px;
     font-size: 12px;
     box-sizing: border-box;
     background-color: #eef4fc;
@@ -267,6 +453,7 @@ onBeforeMount(() => {
       display: flex;
       justify-content: center;
       align-items: center;
+      margin-top: 20px;
       .text {
         font-size: 14px;
       }
@@ -302,6 +489,9 @@ onBeforeMount(() => {
       display: flex;
       align-items: center;
       justify-content: center;
+      & > .valueList:last-of-type {
+        margin-right: 0;
+      }
       .road {
         margin-right: 10px;
       }
@@ -314,6 +504,21 @@ onBeforeMount(() => {
       left: 10px;
       top: 8px;
       font-size: 13px;
+    }
+    .detail {
+      width: 35px;
+      height: 20px;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 10px;
+      top: 8px;
     }
   }
 }

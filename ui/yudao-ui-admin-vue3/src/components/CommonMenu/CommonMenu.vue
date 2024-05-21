@@ -7,16 +7,22 @@
           <!-- 左侧标题栏 -->
           <div class="navBar">{{navTitle}}</div>
           <!-- 信息展示模式 -->
-          <slot v-if="switchNav" name="NavInfo"></slot>
+          <slot v-if="!switchNav" name="NavInfo"></slot>
             <!-- 筛选模式 -->
-          <div v-else style="margin-top: 10px">
+          <div style="margin-top: 10px">
             <NavTree ref="navTree" @node-click="handleClick" @check="handleCheck" :showCheckbox="showCheckbox" :showSearch="true" :dataList="dataList" :load="load" :lazy="lazy" />
           </div>
         </div>
-        <div v-if="!isCloseNav" class="openNavtree" @click.prevent="handleSwitchNav">
-          <Icon icon="ep:switch" />切换
+        <div v-if="!isCloseNav" class="openNavtree" @click.prevent="isCloseNav = true">
+          <Icon icon="ep:arrow-left" />收起
+          <!-- <Icon icon="ep:switch" />收起 -->
         </div>
-        <div v-if="!isCloseNav" class="reduce" @click.prevent="isCloseNav = true"><Icon icon="ep:arrow-left" />收起</div>
+        <div v-if="!isCloseNav" class="reduce" @click.prevent="handleSwitchNav">
+          <Icon icon="ep:arrow-up" v-if="!switchNav" style="" />
+          <Icon icon="ep:arrow-down" v-if="switchNav" />{{!switchNav ? '收缩' : '扩展'}}
+        </div>
+        <!-- @click.prevent="handleSwitchNav" -->
+        <!-- <div v-if="!isCloseNav" class="reduce" @click.prevent="isCloseNav = true"><Icon icon="ep:arrow-left" />收起</div> -->
         <div v-if="isCloseNav" class="expand" @click.prevent="isCloseNav = false"><Icon icon="ep:arrow-right" /><span>展</span><span>开</span></div>
       </ContentWrap>
     </div>

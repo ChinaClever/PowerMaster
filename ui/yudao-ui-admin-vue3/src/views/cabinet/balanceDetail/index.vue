@@ -77,6 +77,7 @@
 <script lang="ts" setup>
 import { EChartsOption } from 'echarts'
 import { CabinetApi } from '@/api/cabinet/detail'
+import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 
 const cabinetId = history?.state?.id || 1
 
@@ -100,15 +101,15 @@ const getBalanceDetail = async() => {
   }
   if (res.cabinet_power.path_a) {
     const cur_valueA = res.cabinet_power.path_a.cur_value
-    const max = Math.max(...cur_valueA) // 最大值
-    // 计算平均值
-    let sum = 0
-    cur_valueA.forEach(item => {
-      sum = sum + item
-    })
-    const average = sum/cur_valueA.length
-    // 平衡度
-    balanceObj.imbalanceValueA =  +(((max - average) * 100 / average).toFixed(0))
+    // const max = Math.max(...cur_valueA) // 最大值
+    // // 计算平均值
+    // let sum = 0
+    // cur_valueA.forEach(item => {
+    //   sum = sum + item
+    // })
+    // const average = sum/cur_valueA.length
+    // // 平衡度
+    // balanceObj.imbalanceValueA =  +(((max - average) * 100 / average).toFixed(0))
     ABarOption.value = {
       title: {
         text: '电流柱形图',
@@ -156,15 +157,15 @@ const getBalanceDetail = async() => {
   }
   if (res.cabinet_power.path_b) {
     const cur_valueB = res.cabinet_power.path_b.cur_value
-    const max = Math.max(...cur_valueB) // 最大值
-    // 计算平均值
-    let sum = 0
-    cur_valueB.forEach(item => {
-      sum = sum + item
-    })
-    const average = sum / cur_valueB.length
-    // 平衡度
-    balanceObj.imbalanceValueB =  +(((max - average) * 100 / average).toFixed(0))
+    // const max = Math.max(...cur_valueB) // 最大值
+    // // 计算平均值
+    // let sum = 0
+    // cur_valueB.forEach(item => {
+    //   sum = sum + item
+    // })
+    // const average = sum / cur_valueB.length
+    // // 平衡度
+    // balanceObj.imbalanceValueB =  +(((max - average) * 100 / average).toFixed(0))
     BBarOption.value = {
       title: {
         text: '电流柱形图',
@@ -212,7 +213,114 @@ const getBalanceDetail = async() => {
   }
 }
 
-getBalanceDetail()
+// 获取平衡度
+const getBalanceDegree = async () => {
+  const res = await PDUDeviceApi.getPDUDevicePage({
+    pageNo: 1,
+    pageSize: 24,
+    cabinetIds : [cabinetId],
+  })
+  console.log('res', res)
+  if (res.list.length > 0) {
+    const itemA = res.list.find(item => item.location.includes('A路'))
+    const itemB = res.list.find(item => item.location.includes('B路'))
+    if (itemA) balanceObj.imbalanceValueA = itemA.curUnbalance
+    if (itemB) balanceObj.imbalanceValueB = itemB.curUnbalance
+  }
+}
+
+// 获取pdu电流趋势
+const getBalanceTrend = async () => {
+  const res = await CabinetApi.getBalanceTrend({
+    id: cabinetId
+  })
+  if (res.length > 0) {
+    const timeList = res.map(item => item.dateTime)
+    if(res[0].curA && res[0].curA.length == 1) {
+      ALineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      ALineOption.value.series = [
+        {
+          name: 'A1',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.curA[0].curValue),
+        },
+      ]
+    } else if (res[0].curA && res[0].curA.length == 3) {
+      ALineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      ALineOption.value.series = [
+        {
+          name: 'A1',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.curA[0].curValue),
+        },
+        {
+          name: 'A2',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.curA[1].curValue),
+        },
+        {
+          name: 'A3',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.curA[2].curValue),
+        },
+      ]
+    }
+    console.log('ALineOption', ALineOption)
+    if (res[0].curB && res[0].curB.length == 1) {
+      BLineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      BLineOption.value.series = [
+        {
+          name: 'B1',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.curB[0].curValue),
+        },
+      ]
+    } else if(res[0].curB && res[0].curB.length == 3) {
+      BLineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      BLineOption.value.series = [
+        {
+          name: 'B1',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.curB[0].curValue),
+        },
+        {
+          name: 'B2',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.curB[1].curValue),
+        },
+        {
+          name: 'B3',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.curB[2].curValue),
+        },
+      ]
+    }
+  }
+}
 
 const ABarOption = ref<EChartsOption>({})
 const BBarOption = ref<EChartsOption>({})
@@ -231,10 +339,30 @@ const ALineOption = ref<EChartsOption>({
     bottom: '3%',
     containLabel: true
   },
-  xAxis: {
-    type: 'category',
-    boundaryGap: false,
-    data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  yAxis: {
+    type: 'value',
+    name: '电流',
+    axisLabel: {
+      formatter: '{value} A'
+    }
+  },
+  xAxis:{},
+  series: []
+})
+
+const BLineOption = ref<EChartsOption>({
+  title: {
+    text: '电流趋势',
+    left: 'center'
+  },
+  tooltip: {
+    trigger: 'axis'
+  },
+  grid: {
+    left: '3%',
+    right: '4%',
+    bottom: '3%',
+    containLabel: true
   },
   yAxis: {
     type: 'value',
@@ -243,33 +371,18 @@ const ALineOption = ref<EChartsOption>({
       formatter: '{value} A'
     }
   },
-  series: [
-    {
-      name: 'A1',
-      type: 'line',
-      symbol: 'none',
-      data: [10, 11, 13, 11, 12, 12, 9],
-      markPoint: {
-        data: [
-          { type: 'max', name: 'Max' },
-          { type: 'min', name: 'Min' }
-        ]
-      },
-    },
-    {
-      name: 'A2',
-      type: 'line',
-      symbol: 'none',
-      data: [1, 2, 2, 5, 3, 2, 0],
-    },
-    {
-      name: 'A3',
-      type: 'line',
-      symbol: 'none',
-      data: [6, 3, 4, 5, 2, 1, 6],
-    },
-  ]
+  xAxis:{},
+  series: []
 })
+
+onBeforeMount(()=> {
+  getBalanceDetail()
+  getBalanceDegree()
+  getBalanceTrend()
+})
+
+
+
 
 </script>
 
