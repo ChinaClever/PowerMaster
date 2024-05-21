@@ -2,11 +2,11 @@
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="模块化机房">
     <template #NavInfo>
       <div class="navInfo">
-        <div class="header">
+        <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
           <div class="name">微模块机房</div>
           <div>机房202</div>
-        </div>
+        </div> -->
         <div class="line"></div>
         <div class="status">
           <div class="box">
@@ -35,7 +35,7 @@
           </div>
         </div>
         <div class="line"></div>
-        <div class="overview">
+        <!-- <div class="overview">
           <div class="count">
             <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
             <div class="info">
@@ -57,7 +57,7 @@
               <div class="value">295.87 kW·h</div>
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
     </template>
     <template #ActionBar>
@@ -89,7 +89,7 @@
     </template>
     <template #Content>
       <div v-loading="tableLoading">
-        <div v-if="switchValue == 0" class="matrixContainer">
+        <div v-if="switchValue == 0 && tableData.length > 0" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
             <div class="content">
               <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
@@ -100,7 +100,7 @@
               </div>
             </div>
             <div class="room">{{item.local}}</div>
-            <button class="detail" @click.prevent="toDetail(item.id)">详情</button>
+            <button class="detail" @click.prevent="toDetail(item.roomId, item.id)">详情</button>
           </div>
         </div>
         <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" >
@@ -116,6 +116,9 @@
           v-model:limit="queryParams.pageSize"
           @pagination="getTableData(false)"
         />
+        <template v-if="tableData.length == 0 && switchValue == 0">
+          <el-empty description="暂无数据" :image-size="300" />
+        </template>
       </div>
     </template>
   </CommonMenu>
@@ -128,6 +131,7 @@ import { CabinetEnergyApi } from '@/api/cabinet/energy'
 const { push } = useRouter() // 路由跳转
 
 const tableLoading = ref(false) // 
+const isFirst = ref(true) // 是否第一次调用getTableData函数
 const navList = ref([]) // 左侧导航栏树结构列表
 const tableData = ref([])
 const switchValue = ref(0) // 表格(1) 矩阵(0)切换
@@ -154,7 +158,7 @@ const getTableData = async(reset = false) => {
     const res = await CabinetEnergyApi.getEqPage({
       pageNo: queryParams.pageNo,
       pageSize: queryParams.pageSize,
-      cabinetIds: cabinetIds.value,
+      cabinetIds: isFirst.value ? null : cabinetIds.value,
       // roomId: null,
       runStatus: [],
       pduBox: 0,
@@ -191,6 +195,7 @@ const handleSwitchModal = (value) => {
 
 // 处理左侧树导航选择事件
 const handleCheck = (row) => {
+  isFirst.value = false
   const ids = [] as any
   row.forEach(item => {
     if (item.type == 3) {
@@ -202,9 +207,9 @@ const handleCheck = (row) => {
 }
 
 // 跳转详情
-const toDetail = (id) => {
+const toDetail = (roomId, id) => {
   console.log('跳转详情', id)
-  push({path: '/cabinet/cab/energyDetail', state: { id }})
+  push({path: '/cabinet/cab/energyDetail', state: { roomId, id }})
 }
 
 onBeforeMount(() => {

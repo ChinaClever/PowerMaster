@@ -240,7 +240,7 @@
     </div>
     <!-- <div id="cabinetDetail" ></div> -->
   </el-card>
-  <el-card class="card" shadow="never">
+  <!-- <el-card class="card" shadow="never">
     <template #header>
       <CardTitle title="智能分析" />
     </template>
@@ -287,8 +287,7 @@
       <div><Echart :height="500" :options="triphaseAOption" /></div>
       <div><Echart :height="500" :options="triphaseBOption" /></div>
     </div>
-    
-  </el-card>
+  </el-card> -->
 </template>
 
 <script lang="ts" setup>
