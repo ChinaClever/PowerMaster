@@ -1,7 +1,27 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU">
-    <template #ActionBar>
-      <el-form
+  <el-row :gutter="20">
+   <el-col :span="treeWidth" :xs="24">
+     <el-input
+       v-model="filterText"
+       style="width: 190px"
+       placeholder=""
+     />
+
+     <el-tree
+       ref="treeRef"
+       style="max-width: 600px"
+       class="filter-tree"
+       :data="serverRoomArr"
+       :props="defaultProps"
+       default-expand-all
+       show-checkbox
+       :filter-node-method="filterNode"
+     />
+   </el-col>
+   <el-col :span="24 - treeWidth" :xs="24">
+     <ContentWrap>
+       <!-- 搜索工作栏 -->
+       <el-form
          class="-mb-15px"
          :model="queryParams"
          ref="queryFormRef"
@@ -51,9 +71,10 @@
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
          </el-form-item>
-      </el-form>
-    </template>
-    <template #Content>
+       </el-form>
+    </ContentWrap>
+    <ContentWrap>
+     <!-- 列表 -->
       <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
         <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="80px">
@@ -87,11 +108,10 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"/>
       <div class="realTotal">共 {{ realTotel }} 条</div>
-    </template>
-  </CommonMenu>
-  <ContentWrap>
-    <div v-loading="loading" ref="rankChartContainer" id="rankChartContainer" style="height: 65vh"></div>
-  </ContentWrap>
+      </ContentWrap>
+   </el-col>
+  </el-row>
+ 
 </template>
 
 <script setup lang="ts">
@@ -99,14 +119,86 @@ import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption'
 import { HistoryDataApi } from '@/api/pdu/historydata'
-import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
-import { CabinetApi } from '@/api/cabinet/info'
-import type Node from 'element-plus/es/components/tree/src/model/node'
+import { ElTree, ElIcon, ElMessage } from 'element-plus'
+import { formatDate, endOfDay, convertDate, addTime, betweenDay} from '@/utils/formatTime'
 import * as echarts from 'echarts';
 const { push } = useRouter()
 defineOptions({ name: 'PowerAnalysis' })
 
-const navList = ref([]) as any // 左侧导航栏树结构列表
+//折叠功能
+const serverRoomArr =  [
+ {
+   value: '1',
+   label: '机房1',
+   children: [
+     {
+       value: '1-1',
+       label: '柜列1',
+     },
+   ],
+ },
+ {
+   value: '2',
+   label: '机房2',
+   children: [
+     {
+       value: '2-1',
+       label: '柜列1',
+       children: [
+       {
+         value: '2-1-1',
+         label: '机柜1',
+       },
+       {
+         value: '2-1-2',
+         label: '机柜2',
+       },]
+     },
+   ],
+ },
+ {
+   value: '3',
+   label: '机房3',
+   children: [
+     {
+       value: '3-1',
+       label: '柜列1',
+       children: [
+       {
+         value: '3-1-1',
+         label: '机柜1',
+       },
+       {
+         value: '3-1-2',
+         label: '机柜2',
+       },]
+     },
+   ],
+ },
+]
+let treeWidth = ref(3)
+let isCollapsed = ref(0);
+const toggleCollapse = () => {
+ treeWidth.value = isCollapsed.value == 0 ? 3 : 0;
+};
+//树型控件
+interface Tree {
+ [key: string]: any
+}
+const filterText = ref('')
+const treeRef = ref<InstanceType<typeof ElTree>>()
+const filterNode = (value: string, data: Tree) => {
+ if (!value) return true
+ return data.label.includes(value)
+}
+const defaultProps = {
+ children: 'children',
+ label: 'label',
+}
+watch(filterText, (val) => {
+ treeRef.value!.filter(val)
+})
+
 const instance = getCurrentInstance();
 const message = useMessage()
 const activeName = ref('myData') 
@@ -118,8 +210,6 @@ const selectTimeRange = ref(undefined)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
-  ipAddr: undefined,
-  cascadeAddr : 0,
   outletId: undefined,
   type: 'total',
   granularity: 'day',
@@ -166,73 +256,61 @@ const typeSelection = ref([]) as any;
 const typeCascaderChange = (selected) => {
   queryParams.type = selected[0];
   if (selected[0] === 'outlet'){
-    queryParams.outletId = selected[1];
-    // 检查是否已经存在 label 为 '输出位' 的行
-    const exists = tableColumns.value.some(column => column.label === '输出位');
-    if (!exists) {
-      // 在列表行索引1(位置后面)插入输出位行 
-      const newRow = { label: '输出位', align: 'center', prop: 'outlet_id', istrue: true };
-      tableColumns.value.splice(1, 0, newRow);
-    }
+    queryParams.outletId = selected[1]
   }else{
-    // 选择总，移除索引为 1 的位置上的行数据
-    tableColumns.value.splice(1, 1);
+    queryParams.outletId = undefined
   }
   handleQuery();
 }
 
-// 返回当前页的序号数组
-const getPageNumbers = (pageNumber) => {
-  const start = (pageNumber - 1) * queryParams.pageSize + 1;
-  const end = pageNumber * queryParams.pageSize;
-  const pageNumbers: string[] = [];
-  for (let i = start; i <= end; i++) {
-    pageNumbers.push('序号'+i);
+
+watch(() => [queryParams.granularity, queryParams.type], () => {
+  if (queryParams.type === 'outlet'){
+    if (queryParams.granularity == 'day'){
+      tableColumns.value = [
+        { label: '位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '输出位', align: 'center', prop: 'outlet_id' , istrue:true}, 
+        { label: '日期', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
+        { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
+        { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatEle},
+      ]
+    }else{
+       tableColumns.value = [
+        { label: '位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '输出位', align: 'center', prop: 'outlet_id' , istrue:true}, 
+        { label: '开始日期', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
+        { label: '结束日期', align: 'center', prop: 'end_time', formatter: formatTime, istrue:true},
+        { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
+        { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatEle},
+      ]
+    }
+  }else{
+    if (queryParams.granularity == 'day'){
+      tableColumns.value = [
+        { label: '位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
+        { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
+        { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
+      ]
+    }else{
+      tableColumns.value = [
+        { label: '位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '开始日期', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
+        { label: '结束日期', align: 'center', prop: 'end_time', formatter: formatTime, istrue:true},
+        { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
+        { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatEle},
+      ]
+    }
   }
-  return pageNumbers;
-};
-
-// 柱状图
-const rankChartContainer = ref<HTMLElement | null>(null);
-let rankChart = null as echarts.ECharts | null;
-const eqData = ref<number[]>([]);
-const initChart = () => {
-  if (rankChartContainer.value && instance) {
-    rankChart = echarts.init(rankChartContainer.value);
-    rankChart.setOption({
-      title: { text: '各PDU耗电量'},
-      tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-      legend: { data: []},
-      toolbox: {feature: {saveAsImage:{}}},
-      xAxis: {type: 'category', data: getPageNumbers(queryParams.pageNo)},
-      yAxis: { type: 'value', name: "kWh"},
-      series: [
-        {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
-      ],
-    });
-    instance.appContext.config.globalProperties.rankChart = rankChart;
-  }
-};
-
-window.addEventListener('resize', function() {
-  rankChart?.resize(); 
-});
-
-watch(() => queryParams.granularity, () => {
   handleQuery();
 });
 
 const tableColumns = ref([
-  { label: '位置', align: 'center', prop: 'address' , istrue:true, width: '180px'},
-  { label: '开始时间', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
-  { label: '开始电能(kWh)', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
-  { label: '结束时间', align: 'center', prop: 'end_time' , formatter: formatTime, width: '200px' , istrue:true},
-  { label: '结束电能(kWh)', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle},
+  { label: '位置', align: 'center', prop: 'location' , istrue:true},
+  { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
   { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
-  { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px' , istrue:true},
-  { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '150px'},
-  { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '120px'},
-]) as any;
+  { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
+]);
 
 /** 查询列表 */
 const getList = async () => {
@@ -246,8 +324,8 @@ const getList = async () => {
       const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
-    const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
-    eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
+  
+    const data = await EnergyConsumptionApi.getBillDataPage(queryParams)
     list.value = data.list
     realTotel.value = data.total
     if (data.total > 10000){
@@ -256,27 +334,8 @@ const getList = async () => {
       total.value = data.total
     }
   } finally {
-    initChart();
     loading.value = false
   }
-}
-
-// 自定义图表提示框
-function customTooltipFormatter(params: any[]) {
-  var tooltipContent = ''; 
-  var item = params[0]; // 获取第一个数据点的信息
-  // params.forEach(function(item) {
-  tooltipContent += '位置：'+list.value[item.dataIndex].location + '  '
-  // 添加条件判断
-  if (queryParams.type == 'outlet') {
-      tooltipContent += '输出位：' + list.value[item.dataIndex].outlet_id;
-  }
-  tooltipContent += '<br/>'+ item.marker + item.seriesName + ': ' + item.value + 'kWh 记录时间：'+formatTime(null, null, list.value[item.dataIndex].create_time) + '<br/>'                 
-                    +item.marker + '结束电能：'+list.value[item.dataIndex].end_ele + 'kWh 结束时间：'+formatTime(null, null, list.value[item.dataIndex].end_time) + '<br/>' 
-                    +item.marker +'开始电能：'+formatEle(null, null, list.value[item.dataIndex].start_ele) + 'kWh 开始时间：'+formatTime(null, null, list.value[item.dataIndex].start_time) + '<br/>'
-                    
-  // })
-  return tooltipContent;
 }
 
 // 最后一页显示数据量过大的提示
@@ -297,6 +356,11 @@ function formatTime(row: any, column: any, cellValue: number): string {
 // 格式化电能列数据，保留1位小数
 function formatEle(row: any, column: any, cellValue: number): string {
   return cellValue.toFixed(1);
+}
+
+// 格式化电费列数据
+function formatBill(row: any, column: any, cellValue: number): string {
+  return cellValue.toFixed(3);
 }
 
 // 格式化耗电量列数据，保留1位小数
@@ -349,40 +413,11 @@ const getTypeMaxValue = async () => {
   typeSelection.value = typeSelectionValue;
 }
 
-
-const handleCheck = async (node) => {
-    let arr = [] as any
-    node.forEach(item => { 
-      if(item.type == 4){
-        arr.push(item.unique);
-      }
-    });
-    console.log(arr)
-}
-
-// 接口获取机房导航列表
-const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
-  let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
-  arr = arr.concat(temp);
-  }
-  navList.value = arr
-}
-
-
-/** 详情操作*/
-const toDetails = (pduId: number) => {
-  push('/pdu/nenghao/ecdistribution?pduId='+pduId);
-}
-
 // /** 重置按钮操作 */
 // const resetQuery = () => {
 //  queryFormRef.value.resetFields()
 //  handleQuery()
 // }
-
 
 // /** 导出按钮操作 */
 // const handleExport = async () => {
@@ -401,7 +436,6 @@ const toDetails = (pduId: number) => {
 
 /** 初始化 **/
 onMounted(() => {
-    getNavList()
   getTypeMaxValue();
   getList();
 });

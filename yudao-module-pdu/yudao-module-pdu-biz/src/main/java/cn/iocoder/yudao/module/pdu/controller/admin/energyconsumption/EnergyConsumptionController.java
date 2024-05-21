@@ -34,6 +34,13 @@ public class EnergyConsumptionController {
         return success(pageResult);
     }
 
+    @GetMapping("/bill-page")
+    @Operation(summary = "获得pdu电费数据分页")
+    public CommonResult<PageResult<Object>> getBillDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
+        PageResult<Object> pageResult = energyConsumptionService.getBillDataPage(pageReqVO);
+        return success(pageResult);
+    }
+
     @GetMapping("/details")
     @Operation(summary = "获得pdu电量数据详情")
     public CommonResult<PageResult<Object>> getEQDataDetails(EnergyConsumptionPageReqVO reqVO) throws IOException {

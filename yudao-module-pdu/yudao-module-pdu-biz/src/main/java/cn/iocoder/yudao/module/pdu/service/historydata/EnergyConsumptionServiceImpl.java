@@ -77,7 +77,85 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
                 } else {
                     searchRequest.indices("pdu_eq_outlet_month");
                 }
-                if( pageReqVO.getLineId() != null){
+                if( pageReqVO.getOutletId() != null){
+                    Integer outletId = pageReqVO.getOutletId();
+                    // 创建匹配查询
+                    QueryBuilder termQuery = QueryBuilders.termQuery("outlet_id", outletId);
+                    boolQuery.must(termQuery);
+                    // 将布尔查询设置到SearchSourceBuilder中
+                    searchSourceBuilder.query(boolQuery);
+                }
+                break;
+            default:
+        }
+        searchRequest.source(searchSourceBuilder);
+        // 执行搜索,向ES发起http请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        // 搜索结果
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        SearchHits hits = searchResponse.getHits();
+        hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
+        // 匹配到的总记录数
+        Long totalHits = hits.getTotalHits().value;
+        // 返回的结果
+        pageResult = new PageResult<>();
+        pageResult.setList(historyDataService.getLocationsByPduIds(mapList))
+                .setTotal(totalHits);
+
+        return pageResult;
+    }
+
+    @Override
+    public PageResult<Object> getBillDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
+        PageResult<Object> pageResult = null;
+        // 创建BoolQueryBuilder对象
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        // 搜索源构建对象
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        // 设置要排除的字段
+        searchSourceBuilder.fetchSource(new String[]{"pdu_id", "start_time", "end_time", "eq_value",  "bill_value", "outlet_id"}, null);
+        int pageNo = pageReqVO.getPageNo();
+        int pageSize = pageReqVO.getPageSize();
+        int index = (pageNo - 1) * pageSize;
+        searchSourceBuilder.from(index);
+        // 最后一页请求超过一万，pageSize设置成请求刚好一万条
+        if (index + pageSize > 10000){
+            searchSourceBuilder.size(10000 - index);
+        }else{
+            searchSourceBuilder.size(pageSize);
+        }
+        searchSourceBuilder.trackTotalHits(true);
+        searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
+        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        if (pageReqVO.getTimeRange() != null && pageReqVO.getTimeRange().length != 0) {
+            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                    .from(pageReqVO.getTimeRange()[0])
+                    .to(pageReqVO.getTimeRange()[1]));
+        }
+        // 搜索请求对象
+        SearchRequest searchRequest = new SearchRequest();
+        switch (pageReqVO.getType()) {
+            case "total":
+                if ("day".equals(pageReqVO.getGranularity())) {
+                    searchRequest.indices("pdu_eq_total_day");
+                } else if ("week".equals(pageReqVO.getGranularity())) {
+                    searchRequest.indices("pdu_eq_total_week");
+                } else {
+                    searchRequest.indices("pdu_eq_total_month");
+                }
+                break;
+
+            case "outlet":
+                // 搜索请求对象
+                searchRequest = new SearchRequest();
+                if ("day".equals(pageReqVO.getGranularity())) {
+                    searchRequest.indices("pdu_eq_outlet_day");
+                } else if ("week".equals(pageReqVO.getGranularity())) {
+                    searchRequest.indices("pdu_eq_outlet_week");
+                } else {
+                    searchRequest.indices("pdu_eq_outlet_month");
+                }
+                if( pageReqVO.getOutletId() != null){
                     Integer outletId = pageReqVO.getOutletId();
                     // 创建匹配查询
                     QueryBuilder termQuery = QueryBuilders.termQuery("outlet_id", outletId);

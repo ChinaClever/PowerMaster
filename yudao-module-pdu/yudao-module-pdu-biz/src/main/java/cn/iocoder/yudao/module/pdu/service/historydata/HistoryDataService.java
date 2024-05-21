@@ -21,6 +21,8 @@ public interface HistoryDataService {
 
     List<Object> getLocationsByPduIds(List<Map<String, Object>> mapList);
 
+    String getAddressByLocation(String location);
+
     Integer getPduIdByAddr(String ipAddr, String cascadeAddr);
 
     Map getHistoryDataTypeMaxValue() throws IOException;

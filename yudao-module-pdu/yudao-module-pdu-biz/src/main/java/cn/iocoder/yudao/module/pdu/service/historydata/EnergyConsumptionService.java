@@ -18,6 +18,14 @@ public interface EnergyConsumptionService {
     PageResult<Object> getEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException;
 
     /**
+     * 获得pdu电费数据分页
+     *
+     * @param pageReqVO 分页查询
+     * @return pdu电量数据分页
+     */
+    PageResult<Object> getBillDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException;
+
+    /**
      * 获得pdu电量数据详情（曲线）
      *
      * @param reqVO 分页查询

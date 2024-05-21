@@ -1,5 +1,12 @@
 package cn.iocoder.yudao.module.pdu.service.historydata;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
+import cn.iocoder.yudao.module.cabinet.mapper.AisleIndexMapper;
+import cn.iocoder.yudao.module.cabinet.mapper.CabinetIndexMapper;
+import cn.iocoder.yudao.module.cabinet.mapper.CabinetPduMapper;
+import cn.iocoder.yudao.module.cabinet.mapper.RoomIndexMapper;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.EnvDataDetailsReqVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataDetailsReqVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataPageReqVO;
@@ -31,7 +38,20 @@ import java.util.*;
 public class HistoryDataServiceImpl implements HistoryDataService {
 
     @Autowired
-    private PduIndexMapper pDUDeviceMapper;
+    private PduIndexMapper pduIndexMapper;
+
+    @Autowired
+    private CabinetPduMapper cabinetPduMapper;
+
+    @Autowired
+    private CabinetIndexMapper cabinetIndexMapper;
+
+    @Autowired
+    private AisleIndexMapper aisleIndexMapper;
+
+    @Autowired
+    private RoomIndexMapper roomIndexMapper;
+
     @Autowired
     private RestHighLevelClient client;
 
@@ -42,14 +62,17 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             Object pduId = map.get("pdu_id");
             if (pduId instanceof Integer) {
                 // 查询位置
-                PduIndex pduIndex = pDUDeviceMapper.selectById( (int)pduId );
+                PduIndex pduIndex = pduIndexMapper.selectById( (int)pduId );
                 if (pduIndex != null){
                     map.put("location", pduIndex.getDevKey());
+                    map.put("address", getAddressByLocation(pduIndex.getDevKey()));
                 }else{
                     map.put("location", null);
+                    map.put("address", null);
                 }
             }else{
                 map.put("location", null);
+                map.put("address", null);
             }
             resultList.add(map);
         }
@@ -57,11 +80,48 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     }
 
     @Override
+    public String getAddressByLocation(String location) {
+        String[] ipParts = location.split("-");
+        String address = null;
+        CabinetPdu cabinetPduA = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
+                .eq(CabinetPdu::getPduIpA, ipParts[0])
+                .eq(CabinetPdu::getCasIdA, ipParts[1]));
+        CabinetPdu cabinetPduB = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
+                .eq(CabinetPdu::getPduIpB, ipParts[0])
+                .eq(CabinetPdu::getCasIdB, ipParts[1]));
+        if(cabinetPduA != null){
+            int cabinetId = cabinetPduA.getCabinetId();
+            CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
+            String cabinetName = cabinet.getName();
+            String roomName = roomIndexMapper.selectById(cabinet.getRoomId()).getName();
+            if(cabinet.getAisleId() != 0){
+                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+                address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
+            }else {
+                address = roomName + "-"  + cabinetName +  "-" + "A路";
+            }
+        }
+        if(cabinetPduB != null){
+            int cabinetId = cabinetPduB.getCabinetId();
+            CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
+            String cabinetName = cabinet.getName();
+            String roomName = roomIndexMapper.selectById(cabinet.getRoomId()).getName();
+            if(cabinet.getAisleId() != 0){
+                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+                address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";
+            }else {
+                address = roomName + "-"  + cabinetName +  "-" + "B路";
+            }
+        }
+        return address;
+    }
+
+    @Override
     public Integer getPduIdByAddr(String ipAddr, String cascadeAddr) {
         String devKey = ipAddr+"-"+cascadeAddr;
         QueryWrapper<PduIndex> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("dev_key", devKey); // 指定查询条件：name 字段等于给定的 name 值
-        PduIndex pduIndex = pDUDeviceMapper.selectOne(queryWrapper); // 执行查询，返回匹配的实体对象
+        PduIndex pduIndex = pduIndexMapper.selectOne(queryWrapper); // 执行查询，返回匹配的实体对象
         if (pduIndex != null){
             return Math.toIntExact(pduIndex.getId());
         }

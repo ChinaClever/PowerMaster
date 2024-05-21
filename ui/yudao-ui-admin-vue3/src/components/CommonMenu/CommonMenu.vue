@@ -10,7 +10,7 @@
           <slot v-if="switchNav" name="NavInfo"></slot>
             <!-- 筛选模式 -->
           <div v-else style="margin-top: 10px">
-            <NavTree ref="navTree" @node-click="handleClick" @check="handleCheck" :showCheckbox="showCheckbox" :showSearch="true" :dataList="dataList" :load="load" />
+            <NavTree ref="navTree" @node-click="handleClick" @check="handleCheck" :showCheckbox="showCheckbox" :showSearch="true" :dataList="dataList" :load="load" :lazy="lazy" />
           </div>
         </div>
         <div v-if="!isCloseNav" class="openNavtree" @click.prevent="handleSwitchNav">
