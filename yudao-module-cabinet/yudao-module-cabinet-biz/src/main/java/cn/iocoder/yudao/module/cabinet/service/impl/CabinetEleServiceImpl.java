@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.cabinet.service.impl;
 
+import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.thread.ThreadUtil;
@@ -8,15 +9,26 @@ import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalDay
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalMonthDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.pow.CabinetPowHourDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.line.PduHdaLineHourDo;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
+import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.module.cabinet.constant.CabConstants;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetEleChainDTO;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetEqTrendDTO;
+import cn.iocoder.yudao.module.cabinet.dto.CabinetPduCurTrendDTO;
+import cn.iocoder.yudao.module.cabinet.dto.CabinetPowDTO;
+import cn.iocoder.yudao.module.cabinet.mapper.CabPduIndexMapper;
+import cn.iocoder.yudao.module.cabinet.mapper.CabinetPduMapper;
 import cn.iocoder.yudao.module.cabinet.service.CabinetEleService;
 import cn.iocoder.yudao.module.cabinet.util.TimeUtil;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetPowVo;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.mzt.logapi.service.IFunctionService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -41,6 +53,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -50,9 +63,9 @@ import java.util.stream.Collectors;
 
 import static cn.hutool.core.date.DatePattern.NORM_DATETIME_MINUTE_PATTERN;
 import static cn.hutool.core.date.DatePattern.NORM_DATETIME_PATTERN;
-import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
-import static cn.iocoder.yudao.framework.common.constant.FieldConstant.EQ_VALUE;
+import static cn.iocoder.yudao.framework.common.constant.FieldConstant.*;
 import static cn.iocoder.yudao.module.cabinet.constant.CabConstants.*;
+import static cn.iocoder.yudao.module.cabinet.service.impl.CabinetPowServiceImpl.TIME_STR;
 
 /**
  * @author luowei
@@ -67,6 +80,10 @@ public class CabinetEleServiceImpl implements CabinetEleService {
 
     @Autowired
     private RestHighLevelClient client;
+    @Autowired
+    private CabinetPduMapper cabinetPduMapper;
+    @Autowired
+    private CabPduIndexMapper pduIndexMapper;
 
     public static final String HOUR_FORMAT = "yyyy-MM-dd";
 
@@ -119,6 +136,129 @@ public class CabinetEleServiceImpl implements CabinetEleService {
         }
 
         return list;
+    }
+
+    @Override
+    public List<CabinetPduCurTrendDTO> curTrend(int id) {
+
+        List<CabinetPduCurTrendDTO> list = new ArrayList<>();
+
+        try{
+            DateTime end = DateTime.now();
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR_OF_DAY, -24);
+            DateTime start = DateTime.of(calendar.getTime());
+
+            String startTime = DateUtil.formatDateTime(start);
+            String endTime = DateUtil.formatDateTime(end);
+            //获取pdu
+            CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>()
+                    .eq(CabinetPdu::getCabinetId,id));
+            List<String> keys = new ArrayList<>();
+
+
+            String aKey;
+            String bKey;
+
+            if (Objects.nonNull(cabinetPdu)){
+                String aPdu = cabinetPdu.getPduIpA();
+                String bPdu = cabinetPdu.getPduIpB();
+                if (StringUtils.isNotEmpty(aPdu)){
+                    aKey = aPdu + SPLIT + cabinetPdu.getCasIdA();
+                    keys.add(aKey);
+                } else {
+                    aKey = "";
+                }
+                if (StringUtils.isNotEmpty(bPdu)){
+                    bKey = bPdu  + SPLIT + cabinetPdu.getCasIdB();
+                    keys.add(bKey);
+                } else {
+                    bKey = "";
+                }
+            } else {
+                bKey = "";
+                aKey = "";
+            }
+
+            List<Integer> pduIds = new ArrayList<>();
+            Map<Integer,String> keyMap = new HashMap<>();
+            if (!CollectionUtils.isEmpty(keys)){
+                List<PduIndexDo> pduIndexDos = pduIndexMapper.selectList(new LambdaQueryWrapper<PduIndexDo>()
+                        .in(PduIndexDo::getDevKey,keys));
+                if (!CollectionUtils.isEmpty(pduIndexDos)){
+                    pduIds.addAll(pduIndexDos.stream().map(PduIndexDo::getId).distinct().collect(Collectors.toList()));
+                    pduIndexDos.forEach(pduIndexDo -> {
+                        keyMap.put(pduIndexDo.getId(),pduIndexDo.getDevKey());
+                    });
+                }
+            }
+            if (!CollectionUtils.isEmpty(pduIds)){
+
+                Map<String,List<PduHdaLineHourDo>> timePdus = new HashMap<>();
+
+                List<String> data = getPduData(startTime, endTime, pduIds, PDU_HDA_LINE_HOUR);
+                data.forEach(str -> {
+                    PduHdaLineHourDo hourDo = JsonUtils.parseObject(str, PduHdaLineHourDo.class);
+
+                    String dateTime  = DateUtil.format(hourDo.getCreateTime(), "yyyy-MM-dd HH") ;
+                    List<PduHdaLineHourDo> lineHourDos = timePdus.get(dateTime);
+                    if (CollectionUtils.isEmpty(lineHourDos)) {
+                        lineHourDos = new ArrayList<>();
+                    }
+                    lineHourDos.add(hourDo);
+                    timePdus.put(dateTime,lineHourDos);
+                });
+
+                timePdus.keySet().forEach(dateTime -> {
+                    //获取每个时间段数据
+                    List<PduHdaLineHourDo> pduHdaLineHourDos = timePdus.get(dateTime);
+                    Map<Integer,List<PduHdaLineHourDo>>  pduLines = pduHdaLineHourDos.stream().collect(Collectors.groupingBy(PduHdaLineHourDo::getPduId));
+
+                    CabinetPduCurTrendDTO trendDTO = new CabinetPduCurTrendDTO();
+                    trendDTO.setDateTime(dateTime);
+                    //获取相数据
+                    pduLines.keySet().forEach(pduId -> {
+                        trendDTO.setAKey(aKey);
+                        trendDTO.setBKey(bKey);
+
+                        //A路电流
+                        List<Map<String,Object>> curA = new ArrayList<>();
+                        if (aKey.equals(keyMap.get(pduId))){
+                            List<PduHdaLineHourDo> pdus = pduLines.get(pduId);
+                            pdus.forEach(hourDo -> {
+                                Map<String,Object> curMap = new HashMap<>();
+                                curMap.put("pduId",hourDo.getPduId());
+                                curMap.put("lineId",hourDo.getLineId());
+                                curMap.put("curValue",hourDo.getCurAvgValue());
+                                curA.add(curMap);
+
+                            });
+                            trendDTO.setCurA(curA);
+                        }
+                        //B路电流
+                        List<Map<String,Object>> curB = new ArrayList<>();
+                        if (bKey.equals(keyMap.get(pduId))){
+                            List<PduHdaLineHourDo> pdus = pduLines.get(pduId);
+                            pdus.forEach(hourDo -> {
+                                Map<String,Object> curMap = new HashMap<>();
+                                curMap.put("pduId",hourDo.getPduId());
+                                curMap.put("lineId",hourDo.getLineId());
+                                curMap.put("curValue",hourDo.getCurAvgValue());
+                                curB.add(curMap);
+                            });
+                            trendDTO.setCurB(curB);
+                        }
+                    });
+                    list.add(trendDTO);
+                });
+            }
+            return list.stream().sorted(Comparator.comparing(CabinetPduCurTrendDTO::getDateTime)).collect(Collectors.toList());
+        }catch (Exception e){
+            log.error("获取数据失败，",e);
+        }
+
+        return list;
+
     }
 
     /**
@@ -686,6 +826,42 @@ public class CabinetEleServiceImpl implements CabinetEleService {
 
     }
 
+    /**
+     * 获取es数据
+     *
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @param index     索引表
+     * @return
+     * @throws IOException
+     */
+    private List<String> getPduData(String startTime, String endTime, List<Integer> ids, String index) throws IOException {
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件，
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+
+        //获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
+                .must(QueryBuilders.termsQuery(PDU_ID, ids))));
+        builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
+        // 设置搜索条件
+        searchRequest.source(builder);
+        builder.size(1000);
+
+        List<String> list = new ArrayList<>();
+        // 执行ES请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                String str = hit.getSourceAsString();
+                list.add(str);
+            }
+        }
+        return list;
+
+    }
 
     /**
      * 获取小时

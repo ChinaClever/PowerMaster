@@ -107,12 +107,12 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     public PageResult<PDUDeviceDO> getPDUDevicePage(PDUDevicePageReqVO pageReqVO) {
 
         PageResult<PduIndex> pduIndexPageResult = null;
-
+        List<PDUDeviceDO> result = new ArrayList<>();
         if(pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
             List<String> devKeyList = new ArrayList<>();
 
             List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().inIfPresent(CabinetPdu::getCabinetId, pageReqVO.getCabinetIds()));
-            if(cabinetPduList != null){
+            if(cabinetPduList != null && cabinetPduList.size() > 0){
                 for (CabinetPdu cabinetPdu : cabinetPduList) {
                     if (!StringUtils.isEmpty(cabinetPdu.getPduIpA()) && cabinetPdu.getCasIdA() >= 0){
                         devKeyList.add(cabinetPdu.getPduIpA() + '-' +cabinetPdu.getCasIdA());
@@ -121,6 +121,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         devKeyList.add(cabinetPdu.getPduIpB() + '-' +cabinetPdu.getCasIdB());
                     }
                 }
+            }else{
+                return new PageResult<PDUDeviceDO>(result,0L);
             }
             pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
                     .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()).inIfPresent(PduIndex::getDevKey,devKeyList));
@@ -132,7 +134,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
         List<PduIndex> pduIndices = pduIndexPageResult.getList();
         ValueOperations ops = redisTemplate.opsForValue();
-        List<PDUDeviceDO> result = new ArrayList<>();
+
         long i = 0;
         for (PduIndex pduIndex : pduIndices) {
             i++;
@@ -252,11 +254,11 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     public PageResult<PDULineRes> getPDULineDevicePage(PDUDevicePageReqVO pageReqVO) {
 
         PageResult<PduIndex> pduIndexPageResult = null;
-
+        List<PDULineRes> result = new ArrayList<>();
         if(pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
             List<String> ipAddrList = new ArrayList<>();
             List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().inIfPresent(CabinetPdu::getCabinetId, pageReqVO.getCabinetIds()));
-            if(cabinetPduList != null){
+            if(cabinetPduList != null && cabinetPduList.size() > 0){
                 for (CabinetPdu cabinetPdu : cabinetPduList) {
                     if (!StringUtils.isEmpty(cabinetPdu.getPduIpA())){
                         ipAddrList.add(cabinetPdu.getPduIpA());
@@ -265,6 +267,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         ipAddrList.add(cabinetPdu.getPduIpB());
                     }
                 }
+            }else{
+                return new PageResult<PDULineRes>(result,0L);
             }
             pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
                     .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()).inIfPresent(PduIndex::getIpAddr,ipAddrList));
@@ -273,7 +277,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()));
         }
         List<PduIndex> pduIndices = pduIndexPageResult.getList();
-        List<PDULineRes> result = new ArrayList<>();
+
         for (PduIndex pduIndex : pduIndices) {
             PDULineRes pduLineRes = new PDULineRes();
             String ipAddr = pduIndex.getIpAddr();

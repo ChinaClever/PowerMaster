@@ -1,287 +1,261 @@
 <template>
-  <div class="master">
-    <!-- 左大侧 -->
-    <div class="master-left">
-      <ContentWrap style="height: calc(100% - 15px)">
-        <div v-if="!isCloseNav" class="nav-left">
-          <!-- 左侧标题栏 -->
-          <div class="navBar">微模块机房</div>
-          <!-- 信息展示模式 -->
-          <div v-if="switchNav">
-            <div class="header">
-              <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
-              <div class="name">微模块机房</div>
-              <div>机房202</div>
+  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="需量监测">
+    <template #NavInfo>
+      <div >
+        <div class="header">
+          <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
+          <div class="name">微模块机房</div>
+          <div>机房202</div>
+        </div>
+        <div class="line"></div>
+        <div class="status">
+          <div class="box">
+            <div class="top">
+              <div class="tag"></div>正常
             </div>
-            <div class="line"></div>
-            <div class="status">
-              <div class="box">
-                <div class="top">
-                  <div class="tag"></div>正常
-                </div>
-                <div class="value"><span class="number">{{ statusNumber.normal }}</span>个</div>
-              </div>
-              <div class="box">
-                <div class="top">
-                  <div class="tag empty"></div>离线
-                </div>
-                <div class="value"><span class="number">{{ statusNumber.offline }}</span>个</div>
-              </div>
-              <div class="box">
-                <div class="top">
-                  <div class="tag warn"></div>预警
-                </div>
-                <div class="value"><span class="number">{{ statusNumber.warn }}</span>个</div>
-              </div>
-              <div class="box">
-                <div class="top">
-                  <div class="tag error"></div>告警
-                </div>
-                <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
-              </div>
-            </div>
-            <div class="line"></div>
-            <div class="overview">
-              <div class="count">
-                <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-                <div class="info">
-                  <div>总电能</div>
-                  <div class="value">295.87 kW·h</div>
-                </div>
-              </div>
-              <div class="count">
-                <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
-                <div class="info">
-                  <div>今日用电</div>
-                  <div class="value">295.87 kW·h</div>
-                </div>
-              </div>
-              <div class="count">
-                <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-                <div class="info">
-                  <div>今日用电</div>
-                  <div class="value">295.87 kW·h</div>
-                </div>
-              </div>
-            </div>
+            <div class="value"><span class="number">{{ statusNumber.normal }}</span>个</div>
           </div>
-          <!-- 筛选模式 -->
-          <div v-else style="margin-top: 10px">
-            <NavTree :showCheckbox="true" ref="navTree"  @check="handleCheck" @node-click="handleClick" :showSearch="true"  :dataList="serverRoomArr" />
+          <div class="box">
+            <div class="top">
+              <div class="tag empty"></div>离线
+            </div>
+            <div class="value"><span class="number">{{ statusNumber.offline }}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag warn"></div>预警
+            </div>
+            <div class="value"><span class="number">{{ statusNumber.warn }}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag error"></div>告警
+            </div>
+            <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
           </div>
         </div>
-        <div v-if="!isCloseNav" class="openNavtree" @click.prevent="handleSwitchNav">
-          <Icon icon="ep:switch" />切换
+        <div class="line"></div>
+        <div class="overview">
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+            <div class="info">
+              <div>总电能</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
+          </div>
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
+            <div class="info">
+              <div>今日用电</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
+          </div>
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+            <div class="info">
+              <div>今日用电</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
+          </div>
         </div>
-        <div v-if="!isCloseNav" class="reduce" @click.prevent="isCloseNav = true"><Icon icon="ep:arrow-left" />收起</div>
-        <div v-if="isCloseNav" class="expand" @click.prevent="isCloseNav = false"><Icon icon="ep:arrow-right" /><span>展</span><span>开</span></div>
-      </ContentWrap>
-    </div>
-    <!-- 右大侧 -->
-    <div class="master-right">
-      <ContentWrap>
-          
-          <!-- 搜索工作栏 -->
-          <el-form
-            class="-mb-15px"
-            :model="queryParams"
-            ref="queryFormRef"
-            :inline="true"
-            label-width="68px"                          
+      </div>
+    </template>
+    <template #ActionBar>
+      <el-form
+        class="-mb-15px"
+        :model="queryParams"
+        ref="queryFormRef"
+        :inline="true"
+        label-width="68px"                          
+      >
+        <el-form-item label="时间段" prop="createTime" label-width="100px">
+          <el-button 
+            @click="queryParams.timeType = 0;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;" 
+            :type="queryParams.timeType == 0 ? 'primary' : ''"
           >
-            <el-form-item label="时间段" prop="createTime" label-width="100px">
-              <el-button 
-                @click="queryParams.timeType = 0;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;" 
-                :type="queryParams.timeType == 0 ? 'primary' : ''"
-              >
-                最近24小时
-              </el-button>
-              <el-button 
-                @click="queryParams.timeType = 1;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;" 
-                :type="queryParams.timeType == 1 ? 'primary' : ''"
-              >
-                月份
-              </el-button>
-              <el-button 
-                @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;" 
-                :type="queryParams.timeType == 2 ? 'primary' : ''"
-              >
-                自定义
-              </el-button>                            
-            </el-form-item>
-            <el-form-item>
-              <el-date-picker
-                v-if="queryParams.timeType == 1"
-                v-model="queryParams.oldTime"
-                value-format="YYYY-MM-DD HH:mm:ss"
-                type="month"
-                :disabled-date="disabledDate"
-                @change="handleMonthPick"
-                class="!w-160px"
-              />
-              <el-date-picker
-                v-if="queryParams.timeType == 2"
-                v-model="queryParams.timeArr"
-                value-format="YYYY-MM-DD HH:mm:ss"
-                type="daterange"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期"
-                :disabled-date="disabledDate"
-                @change="handleDayPick"
-                class="!w-200px"
-              />
-            </el-form-item>
-            <el-form-item>
-              <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-              <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
-              <el-button
-                type="primary"
-                plain
-                @click="openForm('create')"
-                v-hasPermi="['pdu:PDU-device:create']"
-              >
-                <Icon icon="ep:plus" class="mr-5px" /> 新增
-              </el-button>
-              <el-button
-                type="success"
-                plain
-                @click="handleExport"
-                :loading="exportLoading"
-                v-hasPermi="['pdu:PDU-device:export']"
-              >
-                <Icon icon="ep:download" class="mr-5px" /> 导出
-              </el-button>
-            </el-form-item>
-            <div style="float:right">
-              <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />电流矩阵</el-button>
-              <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />功率阵列</el-button>
-              <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
-            </div>
-          </el-form>
-        </ContentWrap>
-
-        <!-- 列表 -->
-        <ContentWrap  v-show="switchValue == 2">
-          <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
-            <el-table-column label="编号" align="center" prop="tableId" />
-            <!-- 数据库查询 -->
-            <el-table-column label="所在位置" align="center" prop="location" />
-            <el-table-column label="L1最大电流" align="center" prop="l1MaxCur" >
-              <template #default="scope" >
-                <el-text line-clamp="2" >
-                  {{ scope.row.l1MaxCur }}kA
-                </el-text>
-              </template>
-            </el-table-column>
-            <el-table-column label="L2最大电流" align="center" prop="l2MaxCur" width="130px" >
-              <template #default="scope" >
-                <el-text line-clamp="2" >
-                  {{ scope.row.l2MaxCur }}A
-                </el-text>
-              </template>
-            </el-table-column>
-            <el-table-column label="L3最大电流" align="center" prop="l3MaxCur" width="130px" >
-              <template #default="scope" >
-                <el-text line-clamp="2" >
-                  {{ scope.row.l3MaxCur }}A
-                </el-text>
-              </template>
-            </el-table-column>
-            <el-table-column label="L1最大功率" align="center" prop="l1MaxPow" width="130px" >
-              <template #default="scope" >
-                <el-text line-clamp="2" >
-                  {{ scope.row.l1MaxPow }}kW
-                </el-text>
-              </template>
-            </el-table-column>
-            <el-table-column label="L2最大功率" align="center" prop="l2MaxPow" width="130px" >
-              <template #default="scope" >
-                <el-text line-clamp="2" >
-                  {{ scope.row.l2MaxPow }}kW
-                </el-text>
-              </template>
-            </el-table-column>
-            <el-table-column label="L3最大功率" align="center" prop="l3MaxPow" width="130px" >
-              <template #default="scope" >
-                <el-text line-clamp="2" >
-                  {{ scope.row.l3MaxPow }}kW
-                </el-text>
-              </template>
-            </el-table-column>
-            
-            <el-table-column label="操作" align="center">
-              <template #default="scope">
-                <el-button
-                  link
-                  type="primary"
-                  @click="toPDUDisplayScreen(scope.row)"
-                >
-                设备详情
-                </el-button>
-                <el-button
-                  link
-                  type="danger"
-                  @click="handleDelete(scope.row.id)"
-                  v-if="scope.row.status == 5"
-                >
-                  删除
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-          <!-- 分页 -->
-        </ContentWrap>
-
-        <ContentWrap v-show="switchValue == 1">
-            <div class="arrayContainer">
-              <div class="arrayItem" v-for="item in list" :key="item.devKey">
-                <div class="devKey">{{ item.location }}</div>
-                <div class="content">
-                  <div class="icon"></div>
-                  <div class="info">
-                    
-                    <div >L1最大功率：{{item.l1MaxPow}}kW</div>
-                    <div >L2最大功率：{{item.l2MaxPow}}kW</div>
-                    <div >L3最大功率：{{ item.l3MaxPow }}kW</div>
-                    <!-- <div>AB路占比：{{item.fzb}}</div> -->
-                  </div>
-                </div>
-                <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->              
-                <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
-              </div>
-            </div>
-        </ContentWrap>
-
-        <ContentWrap v-show="switchValue == 0">
-            <div class="arrayContainer">
-              <div class="arrayItem" v-for="item in list" :key="item.devKey">
-                <div class="devKey">{{ item.location }}</div>
-                <div class="content">
-                  <div class="icon"></div>
-                  <div class="info">
-                    
-                    <div >L1最大电流：{{item.l1MaxCur}}A</div>
-                    <div >L2最大电流：{{item.l2MaxCur}}A</div>
-                    <div >L3最大电流：{{ item.l3MaxCur }}A</div>
-                    <!-- <div>AB路占比：{{item.fzb}}</div> -->
-                  </div>
-                </div>
-                <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->                
-                <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
-              </div>
-            </div>
-        </ContentWrap>
-        <ContentWrap>
-          <Pagination
-            :total="total"
-            :page-size-arr="pageSizeArr"
-            v-model:page="queryParams.pageNo"
-            v-model:limit="queryParams.pageSize"
-            @pagination="getList"
+            最近24小时
+          </el-button>
+          <el-button 
+            @click="queryParams.timeType = 1;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;" 
+            :type="queryParams.timeType == 1 ? 'primary' : ''"
+          >
+            月份
+          </el-button>
+          <el-button 
+            @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;" 
+            :type="queryParams.timeType == 2 ? 'primary' : ''"
+          >
+            自定义
+          </el-button>                            
+        </el-form-item>
+        <el-form-item>
+          <el-date-picker
+            v-if="queryParams.timeType == 1"
+            v-model="queryParams.oldTime"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            type="month"
+            :disabled-date="disabledDate"
+            @change="handleMonthPick"
+            class="!w-160px"
           />
-        </ContentWrap>   
-    </div>
-  </div>
+          <el-date-picker
+            v-if="queryParams.timeType == 2"
+            v-model="queryParams.timeArr"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            type="daterange"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            :disabled-date="disabledDate"
+            @change="handleDayPick"
+            class="!w-200px"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+          <el-button
+            type="primary"
+            plain
+            @click="openForm('create')"
+            v-hasPermi="['pdu:PDU-device:create']"
+          >
+            <Icon icon="ep:plus" class="mr-5px" /> 新增
+          </el-button>
+          <el-button
+            type="success"
+            plain
+            @click="handleExport"
+            :loading="exportLoading"
+            v-hasPermi="['pdu:PDU-device:export']"
+          >
+            <Icon icon="ep:download" class="mr-5px" /> 导出
+          </el-button>
+        </el-form-item>
+        <div style="float:right">
+          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />电流矩阵</el-button>
+          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />功率阵列</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
+        </div>
+      </el-form>
+    </template>
+    <template #Content>
+      <el-table v-show="switchValue == 2" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+        <el-table-column label="编号" align="center" prop="tableId" />
+        <!-- 数据库查询 -->
+        <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="L1最大电流" align="center" prop="l1MaxCur" >
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.l1MaxCur }}kA
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="L2最大电流" align="center" prop="l2MaxCur" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.l2MaxCur }}A
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="L3最大电流" align="center" prop="l3MaxCur" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.l3MaxCur }}A
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="L1最大功率" align="center" prop="l1MaxPow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.l1MaxPow }}kW
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="L2最大功率" align="center" prop="l2MaxPow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.l2MaxPow }}kW
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="L3最大功率" align="center" prop="l3MaxPow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.l3MaxPow }}kW
+            </el-text>
+          </template>
+        </el-table-column>
+        
+        <el-table-column label="操作" align="center">
+          <template #default="scope">
+            <el-button
+              link
+              type="primary"
+              @click="toPDUDisplayScreen(scope.row)"
+            >
+            设备详情
+            </el-button>
+            <el-button
+              link
+              type="danger"
+              @click="handleDelete(scope.row.id)"
+              v-if="scope.row.status == 5"
+            >
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div  v-show="switchValue == 1 && list.length > 0" class="arrayContainer">
+        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
+          <div class="content">
+            <div class="icon"></div>
+            <div class="info">
+              
+              <div >L1最大功率：{{item.l1MaxPow}}kW</div>
+              <div >L2最大功率：{{item.l2MaxPow}}kW</div>
+              <div >L3最大功率：{{ item.l3MaxPow }}kW</div>
+              <!-- <div>AB路占比：{{item.fzb}}</div> -->
+            </div>
+          </div>
+          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->              
+          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+        </div>
+      </div>
+
+      <div  v-show="switchValue == 0 && list.length > 0" class="arrayContainer">
+        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
+          <div class="content">
+            <div class="icon"></div>
+            <div class="info">
+              
+              <div >L1最大电流：{{item.l1MaxCur}}A</div>
+              <div >L2最大电流：{{item.l2MaxCur}}A</div>
+              <div >L3最大电流：{{ item.l3MaxCur }}A</div>
+              <!-- <div>AB路占比：{{item.fzb}}</div> -->
+            </div>
+          </div>
+          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->                
+          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+        </div>
+      </div>
+
+      <Pagination
+        :total="total"
+        :page-size-arr="pageSizeArr"
+        v-model:page="queryParams.pageNo"
+        v-model:limit="queryParams.pageSize"
+        @pagination="getList"
+      />
+
+      <template v-if="list.length == 0 && switchValue != 2">
+        <el-empty description="暂无数据" :image-size="300" />
+      </template>
+    </template>
+  </CommonMenu>
   
   <!-- 表单弹窗：添加/修改 -->
   <!-- <PDUDeviceForm ref="formRef" @success="getList" /> -->
@@ -294,15 +268,13 @@ import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 // import PDUDeviceForm from './PDUDeviceForm.vue'
 import { ElTree } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
-const navTree = ref() // 导航树组件
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
 const { push } = useRouter()
 
-const isCloseNav = ref(false) // 左侧导航是否收起
-const switchNav = ref(false) //false: 导航树 true：微模块展示
+
 const pageSizeArr = ref([24,36,48])
 const switchValue = ref(0)
 const statusNumber = reactive({
@@ -311,8 +283,6 @@ const statusNumber = reactive({
   alarm : 0,
   offline : 0
 })
-
-const ip = ref("ip");
 
 const statusList = reactive([
   {
@@ -355,20 +325,26 @@ const handleClick = (row) => {
 }
 
 const handleCheck = async (row) => {
-  console.log('handleCheck!', row);
+  if(row.length == 0){
+    queryParams.cabinetIds = null;
+    getList();
+    return;
+  }
   const ids = [] as any
+  var haveCabinet = false;
   row.forEach(item => {
     if (item.type == 3) {
       ids.push(item.id)
+      haveCabinet = true;
     }
   })
-  queryParams.cabinetIds = ids
-  getList();
-}
+  if(!haveCabinet ){
+    queryParams.cabinetIds = [-1]
+  }else{
+    queryParams.cabinetIds = ids
+  }
 
-// 处理切换按钮点击事件
-const handleSwitchNav = () => {
-  switchNav.value = !switchNav.value
+  getList();
 }
 
 const serverRoomArr =  ref([])
@@ -425,9 +401,8 @@ const handleDayPick = () => {
  if (queryParams.timeArr && queryParams.timeType == 2) {
 
     queryParams.oldTime = queryParams.timeArr[0];
-    queryParams.newTime = queryParams.timeArr[1];
+    queryParams.newTime = queryParams.timeArr[1].split(" ")[0]+ " " + "23:59:59";
   }
-  
 }
 
 const handleMonthPick = () => {

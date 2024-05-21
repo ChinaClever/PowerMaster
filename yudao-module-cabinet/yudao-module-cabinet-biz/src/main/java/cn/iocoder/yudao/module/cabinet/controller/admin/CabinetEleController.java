@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.cabinet.controller.admin;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetEleChainDTO;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetEqTrendDTO;
+import cn.iocoder.yudao.module.cabinet.dto.CabinetPduCurTrendDTO;
 import cn.iocoder.yudao.module.cabinet.service.CabinetEleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -50,6 +51,14 @@ public class CabinetEleController {
     @GetMapping("/cabinet/eleChain")
     public CommonResult<CabinetEleChainDTO> eleChain(@Param("id") int id) {
         CabinetEleChainDTO dto = eleService.getEleChain(id);
+        return success(dto);
+    }
+
+
+    @Operation(summary = "机柜平衡pdu电流趋势")
+    @GetMapping("/cabinet/curTrend")
+    public CommonResult<List<CabinetPduCurTrendDTO>> curTrend(@Param("id") int id) {
+        List<CabinetPduCurTrendDTO> dto = eleService.curTrend(id);
         return success(dto);
     }
 
