@@ -70,13 +70,13 @@
       >
         <el-form-item label="时间段" prop="createTime" label-width="100px">
           <el-button 
-            @click="queryParams.timeType = 0;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;" 
+            @click="queryParams.timeType = 0;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;handleQuery()" 
             :type="queryParams.timeType == 0 ? 'primary' : ''"
           >
             最近24小时
           </el-button>
           <el-button 
-            @click="queryParams.timeType = 1;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;" 
+            @click="queryParams.timeType = 1;now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;handleMonthPick();handleQuery()" 
             :type="queryParams.timeType == 1 ? 'primary' : ''"
           >
             月份
@@ -275,6 +275,7 @@ defineOptions({ name: 'PDUDevice' })
 const { push } = useRouter()
 
 
+const now = ref()
 const pageSizeArr = ref([24,36,48])
 const switchValue = ref(0)
 const statusNumber = reactive({
@@ -506,7 +507,7 @@ const toPDUDisplayScreen = (row) =>{
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
-  if(queryParams.timeType != 1 && queryParams.oldTime == null ){
+  if(queryParams.timeType != 0 && queryParams.oldTime == null ){
     return;
   }
   getList()

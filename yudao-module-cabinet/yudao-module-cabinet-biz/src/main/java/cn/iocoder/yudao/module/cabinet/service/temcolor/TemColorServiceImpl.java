@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.cabinet.service.temcolor;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
@@ -76,6 +77,30 @@ public class TemColorServiceImpl implements TemColorService {
     @Override
     public List<TemColorDO> getTemColorAll() {
         List<TemColorDO> temColorDOS = temColorMapper.selectList();
+        if(temColorDOS == null || temColorDOS.size() == 0){
+            temColorDOS = new ArrayList<>();
+            TemColorDO temColorDOOne = new TemColorDO();
+            TemColorDO temColorDOTwo = new TemColorDO();
+            TemColorDO temColorDOThree = new TemColorDO();
+            temColorDOOne.setId(1L);
+            temColorDOOne.setMin(0);
+            temColorDOOne.setMax(17);
+            temColorDOOne.setColor("#0059FF");
+            temColorDOS.add(temColorDOOne);
+            temColorDOTwo.setId(2L);
+            temColorDOTwo.setMin(18);
+            temColorDOTwo.setMax(27);
+            temColorDOTwo.setColor("#20FC03");
+            temColorDOS.add(temColorDOTwo);
+            temColorDOThree.setId(3L);
+            temColorDOThree.setMin(28);
+            temColorDOThree.setMax(45);
+            temColorDOThree.setColor("#FF005E");
+            temColorDOS.add(temColorDOThree);
+            if (CollectionUtil.isEmpty(temColorMapper.selectList())){
+                temColorMapper.insertBatch(temColorDOS);
+            }
+        }
         return temColorDOS;
     }
 

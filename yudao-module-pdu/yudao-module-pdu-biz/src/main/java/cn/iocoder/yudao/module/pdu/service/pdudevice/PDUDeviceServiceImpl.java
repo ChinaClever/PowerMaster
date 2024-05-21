@@ -16,6 +16,8 @@ import cn.iocoder.yudao.module.cabinet.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.CabinetPduMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.RoomIndexMapper;
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDULineRes;
+import cn.iocoder.yudao.module.pdu.dal.dataobject.curbalancecolor.CurbalanceColorDO;
+import cn.iocoder.yudao.module.pdu.dal.mysql.curbalancecolor.CurbalanceColorMapper;
 import org.elasticsearch.search.aggregations.metrics.Max;
 import org.elasticsearch.search.aggregations.metrics.Min;
 
@@ -103,11 +105,15 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     @Autowired
     private RoomIndexMapper roomIndexMapper;
 
+    @Resource
+    private CurbalanceColorMapper curbalanceColorMapper;
+
     @Override
     public PageResult<PDUDeviceDO> getPDUDevicePage(PDUDevicePageReqVO pageReqVO) {
 
         PageResult<PduIndex> pduIndexPageResult = null;
         List<PDUDeviceDO> result = new ArrayList<>();
+        CurbalanceColorDO curbalanceColorDO = curbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
         if(pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
             List<String> devKeyList = new ArrayList<>();
 
@@ -198,16 +204,30 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 curUnbalance = pduTgData.getDoubleValue("cur_unbalance");
                 bcur = curArr.getDoubleValue(1);
                 ccur = curArr.getDoubleValue(2);
-                if(a >= maxVal * 0.2 ){
-                    if(curUnbalance < 15 ){
-                        color = 2;
-                    } else if( curUnbalance < 30 ){
-                        color = 3;
+                if (curbalanceColorDO == null) {
+                    if (a >= maxVal * 0.2) {
+                        if (curUnbalance < 15) {
+                            color = 2;
+                        } else if (curUnbalance < 30) {
+                            color = 3;
+                        } else {
+                            color = 4;
+                        }
                     } else {
-                        color = 4;
+                        color = 1;
                     }
-                }else {
-                    color = 1;
+                } else {
+                    if (a >= maxVal * 0.2) {
+                        if (curUnbalance < curbalanceColorDO.getRangeOne()) {
+                            color = 2;
+                        } else if (curUnbalance < curbalanceColorDO.getRangeFour()) {
+                            color = 3;
+                        } else {
+                            color = 4;
+                        }
+                    } else {
+                        color = 1;
+                    }
                 }
             }
             Integer status1 = jsonObject.getInteger("status");
@@ -316,7 +336,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             pduLineRes.setLocation(localtion);
             pduLineRes.setPduId(pduIndex.getId());
             pduLineRes.setDevKey(pduIndex.getDevKey());
-            if(pageReqVO.getTimeType() == 0) {
+            if(pageReqVO.getTimeType() == 0  || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
                 pageReqVO.setNewTime(LocalDateTime.now());
                 pageReqVO.setOldTime(LocalDateTime.now().minusHours(24));
             } else {
@@ -329,7 +349,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             for (int lineId = 1; lineId <= 3; lineId++) {
                 SearchRequest searchRequest = null;
 
-                if(pageReqVO.getTimeType() == 0) {
+                if(pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
                     searchRequest = new SearchRequest("pdu_hda_line_hour");
                 } else {
                     searchRequest = new SearchRequest("pdu_hda_line_day");
@@ -539,7 +559,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         if(pduIndex != null){
             Long pduId = pduIndex.getId();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            if(timeType.equals(0) || oldTime.equals(newTime)){
+            if(timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())){
                 if(oldTime.equals(newTime)){
                     newTime = newTime.withHour(23).withMinute(59).withSecond(59);
                 }
@@ -689,7 +709,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         if(pduIndex != null){
             Long pduId = pduIndex.getId();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            if(timeType.equals(0) || oldTime.equals(newTime)){
+            if(timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())){
                 if(oldTime.equals(newTime)){
                     newTime = newTime.withHour(23).withMinute(59).withSecond(59);
                 }
@@ -859,7 +879,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         if(pduIndex != null){
             Long pduId = pduIndex.getId();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            if(timeType.equals(0) || oldTime.equals(newTime)){
+            if(timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())){
                 if(oldTime.equals(newTime)){
                     newTime = newTime.withHour(23).withMinute(59).withSecond(59);
                 }
@@ -1008,7 +1028,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         if(pduIndex != null){
             Long pduId = pduIndex.getId();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            if(timeType.equals(0) || oldTime.equals(newTime)){
+            if(timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())){
                 if(oldTime.equals(newTime)){
                     newTime = newTime.withHour(23).withMinute(59).withSecond(59);
                 }
