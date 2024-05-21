@@ -2,11 +2,11 @@
   <CommonMenu @check="handleCheck" :showSearch="true" :dataList="navList" navTitle="模块化机房">
     <template #NavInfo>
       <div class="navInfo">
-        <div class="header">
+        <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
           <div class="name">微模块机房</div>
           <div>机房202</div>
-        </div>
+        </div> -->
         <div class="line"></div>
         <div class="status">
           <div class="box">
@@ -35,7 +35,7 @@
           </div>
         </div>
         <div class="line"></div>
-        <div class="overview">
+        <!-- <div class="overview">
           <div class="count">
             <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
             <div class="info">
@@ -57,7 +57,7 @@
               <div class="value">295.87 kW·h</div>
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
     </template>
     <template #ActionBar>
@@ -734,6 +734,7 @@ onBeforeMount(() => {
   flex-wrap: wrap;
   align-content: flex-start;
   .arrayItem {
+    min-width: 290px;
     width: 25%;
     height: 120px;
     font-size: 13px;

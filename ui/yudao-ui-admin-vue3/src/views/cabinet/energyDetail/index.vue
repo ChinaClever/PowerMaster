@@ -11,16 +11,14 @@
           label-width="68px"
         >
           <el-form-item label="" prop="jf">
-            <el-select v-model="queryParams.jf" placeholder="请选择" class="!w-200px">
-              <el-option label="机房201" value="1" />
-              <el-option label="机房202" value="2" />
+            <el-select v-model="queryParams.cabinetroomId" placeholder="请选择" class="!w-200px">
+              <el-option v-for="item in roomList" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item >
           <span class="line"></span>
           <el-form-item label="" prop="jg">
-            <el-select v-model="queryParams.jg" placeholder="请选择" class="!w-200px">
-              <el-option label="机柜1" value="11" />
-              <el-option label="机柜2" value="22" />
+            <el-select v-model="queryParams.cabinetId" placeholder="请选择" class="!w-200px">
+              <el-option v-for="item in machineList" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
         </el-form>
@@ -115,9 +113,12 @@
 <script lang="ts" setup>
 // import * as echarts from 'echarts';
 import { EChartsOption } from 'echarts'
+import { CabinetApi } from '@/api/cabinet/info'
 import { CabinetEnergyApi } from '@/api/cabinet/energy'
 import 'echarts/lib/component/dataZoom';
 
+const roomList = ref([]) // 左侧导航栏树结构列表
+const machineList = ref([]) // 左侧导航栏树结构列表
 const radioBtn = ref('DAY')
 const EleTrendOption = {
   DAY: ['当日', '昨日'], 
@@ -126,8 +127,8 @@ const EleTrendOption = {
 }
 const EleTrendLoading = ref(false)
 const queryParams = reactive({
-  jf: '1',
-  jg: '11'
+  cabinetId: history?.state?.id || 1,
+  cabinetroomId: history?.state?.roomId || 1
 })
 const EleChain = reactive({
   todayEq: '',
@@ -141,11 +142,54 @@ const EleChain = reactive({
   monthRate: '',
 })
 const ActivePowTrend = reactive({})
-const cabinetId = history?.state?.id || 1
+
+watch(() => queryParams.cabinetroomId, (val) => {
+  machineList.value = handleNavList(val)
+  if (machineList.value.length == 0) {
+    queryParams.cabinetId = null
+    return
+  }
+  const defaultValue = machineList.value[0] as any
+  queryParams.cabinetId = defaultValue.id
+})
+
+watch(() => queryParams.cabinetId,(val) => {
+  console.log('wwwwwwwwwww', val)
+  getActivePowTrend()
+  getMachineEleChain()
+  getMachineEleTrend('DAY')
+})
+
+// 接口获取机房导航列表
+const getNavList = async() => {
+  const res = await CabinetApi.getRoomMenuAll({})
+  if (res.length > 0) {
+    roomList.value = res
+    machineList.value = handleNavList(queryParams.cabinetroomId)
+    console.log('接口获取机房导航列表', res)
+  }
+}
+const handleNavList = (cabinetroomId) => {
+  const data = roomList.value as any
+  const roomIndex = data.findIndex(item => item.id == cabinetroomId)
+  let list = [] as any
+  if (data[roomIndex].children.length > 0 && data[roomIndex].children[0].type == 2) {
+    data[roomIndex].children.forEach(child => {
+      if (child.children.length > 0)  {
+        child.children.forEach(grandChild => {
+          list.push(grandChild)
+        })
+      }
+    })
+  } else if(data[roomIndex].children.length > 0 && data[roomIndex].children[0].type == 3) {
+    list = data[roomIndex].children.map(item => item)
+  }
+  return list
+}
 
 // 获取机柜有功功率趋势
 const getActivePowTrend = async() => {
-  const res = await CabinetEnergyApi.getActivePowTrend({id:cabinetId})
+  const res = await CabinetEnergyApi.getActivePowTrend({id:queryParams.cabinetId})
   Object.assign(ActivePowTrend, res)
   console.log('获取机柜有功功率趋势------', res.yesterdayList.map(item => item.dateTime.split(' ')[1]))
   echartsOptionPowTrend.value = {
@@ -235,7 +279,7 @@ const getActivePowTrend = async() => {
 }
 // 获取机柜用能环比
 const getMachineEleChain = async() => {
-  const res = await CabinetEnergyApi.getEleChain({id:cabinetId})
+  const res = await CabinetEnergyApi.getEleChain({id:queryParams.cabinetId})
   Object.assign(EleChain, res)
   console.log('获取机柜用能环比', EleChain)
 }
@@ -243,7 +287,7 @@ const getMachineEleChain = async() => {
 const getMachineEleTrend = async(type) => {
   try {
     EleTrendLoading.value = true
-    const res = await CabinetEnergyApi.getEleTrend({ id: cabinetId, type })
+    const res = await CabinetEnergyApi.getEleTrend({ id: queryParams.cabinetId, type })
     echarsOptionEleTrend.value ={
       tooltip: {
         trigger: 'axis',
@@ -321,6 +365,7 @@ const getMachineEleTrend = async(type) => {
 }
 
 onBeforeMount(() => {
+  getNavList()
   getActivePowTrend()
   getMachineEleChain()
   getMachineEleTrend('DAY')
