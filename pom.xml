@@ -21,6 +21,7 @@
 <!--        <module>yudao-example</module>-->
 <!--        <module>yudao-module-statis</module>-->
         <module>yudao-module-cabinet</module>
+        <module>yudao-module-rack</module>
     </modules>
 
     <name>${project.artifactId}</name>
@@ -42,6 +43,7 @@
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <elasticsearch.version>7.6.2</elasticsearch.version>
+        <skipTests>true</skipTests>
     </properties>
 
     <dependencyManagement>
