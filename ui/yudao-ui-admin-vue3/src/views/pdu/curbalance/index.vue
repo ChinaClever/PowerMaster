@@ -11,7 +11,7 @@
         <div class="status">
           <div class="box">
             <div class="top">
-              <div class="tag"></div>&lt;15%
+              <div class="tag"></div>{{ statusList[0].name }}
             </div>
             <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
           </div>
@@ -23,13 +23,13 @@
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag warn"></div>15%-30%
+              <div class="tag warn"></div>{{ statusList[1].name }}
             </div>
             <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag error"></div>&gt;30
+              <div class="tag error"></div>{{ statusList[2].name }}
             </div>
             <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
           </div>

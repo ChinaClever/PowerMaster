@@ -79,7 +79,7 @@
           />
         </el-form-item> -->
 
-        <el-form-item label="机房Id" prop="ipAddr" >
+        <el-form-item label="机柜Id" prop="ipAddr" >
           <el-input
             v-model="queryParams.id"
             placeholder="请输入IP"
