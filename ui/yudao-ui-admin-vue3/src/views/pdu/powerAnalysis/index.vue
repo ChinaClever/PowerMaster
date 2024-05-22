@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU能耗趋势">
     <template #ActionBar>
       <el-form
          class="-mb-15px"
@@ -65,7 +65,7 @@
         <template v-for="column in tableColumns">
           <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue">
             <template #default="{ row }" v-if="column.slot === 'actions'">
-              <el-button link type="primary" @click="toDetails(row.pdu_id)">详情</el-button>
+              <el-button link type="primary" @click="toDetails(row.pdu_id, row.address)">详情</el-button>
             </template>
           </el-table-column>
         </template>
@@ -124,6 +124,7 @@ const queryParams = reactive({
   type: 'total',
   granularity: 'day',
   timeRange: undefined as string[] | undefined,
+  ipArray: [],
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
@@ -349,7 +350,7 @@ const getTypeMaxValue = async () => {
   typeSelection.value = typeSelectionValue;
 }
 
-
+// 导航栏选择后触发
 const handleCheck = async (node) => {
     let arr = [] as any
     node.forEach(item => { 
@@ -357,6 +358,8 @@ const handleCheck = async (node) => {
         arr.push(item.unique);
       }
     });
+    queryParams.ipArray = arr
+    handleQuery()
     console.log(arr)
 }
 
@@ -373,8 +376,8 @@ const getNavList = async() => {
 
 
 /** 详情操作*/
-const toDetails = (pduId: number) => {
-  push('/pdu/nenghao/ecdistribution?pduId='+pduId);
+const toDetails = (pduId: number, address: string) => {
+  push('/pdu/nenghao/ecdistribution?pduId='+pduId+'&address='+address);
 }
 
 // /** 重置按钮操作 */
@@ -401,7 +404,7 @@ const toDetails = (pduId: number) => {
 
 /** 初始化 **/
 onMounted(() => {
-    getNavList()
+  getNavList()
   getTypeMaxValue();
   getList();
 });

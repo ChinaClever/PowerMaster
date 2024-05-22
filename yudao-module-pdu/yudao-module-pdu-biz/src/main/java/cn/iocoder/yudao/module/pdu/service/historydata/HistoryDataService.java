@@ -25,6 +25,8 @@ public interface HistoryDataService {
 
     Integer getPduIdByAddr(String ipAddr, String cascadeAddr);
 
+    List<String> getPduIdsByIps(String[] ips);
+
     Map getHistoryDataTypeMaxValue() throws IOException;
 
     Map getSensorIdMaxValue() throws IOException;

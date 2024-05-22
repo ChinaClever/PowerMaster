@@ -22,4 +22,11 @@ public class EnergyConsumptionPageReqVO extends PageParam {
     private String granularity;
 
     private String[] timeRange;
+
+    private String[] ipArray;
+
+    private String ipAddr;
+
+    private String cascadeAddr;
+
 }

@@ -194,10 +194,11 @@ const exportLoading = ref(false) // 导出的加载中
 
 const tableColumns = ref([
    { label: '编号', align: 'center', prop: 'id' , istrue:true},
-   { label: '位置', align: 'center', prop: 'location' , istrue:true},
+   { label: '位置', align: 'center', prop: 'address' , istrue:true},
    { label: '总电能(kWh)', align: 'center', prop: 'totalEle' , istrue:true},
    { label: 'a路电能(kWh)', align: 'center', prop: 'aEle' , istrue:true},
    { label: 'b路电能(kWh)', align: 'center', prop: 'bEle' , istrue:true},
+   { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
    { label: '创建时间', align: 'center', prop: 'createTime', formatter: dateFormatter, istrue:true},
 ]);
 
