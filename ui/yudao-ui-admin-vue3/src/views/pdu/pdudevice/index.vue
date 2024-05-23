@@ -3,7 +3,7 @@
     <template #NavInfo>
       <div >
         <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
+          <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
 
         </div>
         <div class="line"></div>
@@ -405,6 +405,7 @@ const getListNoLoading = async () => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       if(obj?.dataUpdateTime == null && obj?.pow == null){
         obj.status = 5;
+        offline++;
         return;
       }
       const splitArray = obj?.dataUpdateTime?.split(' ');
@@ -421,9 +422,7 @@ const getListNoLoading = async () => {
         warn++;
       } else if (obj?.status == 2){
         alarm++;
-      } else if (obj?.status == 5){
-        offline++;
-      } 
+      }
     });
     statusNumber.normal = normal;
     statusNumber.offline = offline;
