@@ -53,7 +53,7 @@
         <template v-for="column in tableColumns">
           <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue">
             <template #default="{ row }" v-if="column.slot === 'actions'">
-              <el-button link type="primary" @click="toDetails(row.cabinetId, row.address)">详情</el-button>
+              <el-button link type="primary" @click="toDetails(row.cabinet_id, row.location)">详情</el-button>
             </template>
           </el-table-column>
         </template>
@@ -85,7 +85,7 @@
 <script setup lang="ts">
 import dayjs from 'dayjs'
 import download from '@/utils/download'
-import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption'
+import { EnergyConsumptionApi } from '@/api/cabinet/energyConsumption'
 import { HistoryDataApi } from '@/api/pdu/historydata'
 import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
 import { CabinetApi } from '@/api/cabinet/info'
@@ -108,6 +108,7 @@ const queryParams = reactive({
   pageSize: 15,
   granularity: 'day',
   timeRange: undefined as string[] | undefined,
+  cabinetIds:[]
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
@@ -186,7 +187,7 @@ watch(() => queryParams.granularity, () => {
 });
 
 const tableColumns = ref([
-  { label: '位置', align: 'center', prop: 'address' , istrue:true, width: '180px'},
+  { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
   { label: '开始时间', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
   { label: '开始电能(kWh)', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
   { label: '结束时间', align: 'center', prop: 'end_time' , formatter: formatTime, width: '200px' , istrue:true},
@@ -227,7 +228,7 @@ const getList = async () => {
 function customTooltipFormatter(params: any[]) {
   var tooltipContent = ''; 
   var item = params[0]; // 获取第一个数据点的信息
-  tooltipContent += '位置：'+list.value[item.dataIndex].address + '  '
+  tooltipContent += '位置：'+list.value[item.dataIndex].location + '  '
   tooltipContent += '<br/>'+ item.marker + item.seriesName + ': ' + item.value + 'kWh 记录时间：'+formatTime(null, null, list.value[item.dataIndex].create_time) + '<br/>'                 
                     +item.marker + '结束电能：'+list.value[item.dataIndex].end_ele + 'kWh 结束时间：'+formatTime(null, null, list.value[item.dataIndex].end_time) + '<br/>' 
                     +item.marker +'开始电能：'+formatEle(null, null, list.value[item.dataIndex].start_ele) + 'kWh 开始时间：'+formatTime(null, null, list.value[item.dataIndex].start_time) + '<br/>'
@@ -281,30 +282,26 @@ const handleQuery = () => {
 
 // 导航栏选择后触发
 const handleCheck = async (node) => {
-    let arr = [] as any
-    node.forEach(item => { 
-      if(item.type == 4){
-        arr.push(item.unique);
-      }
-    });
-    // handleQuery()
+  let arr = [] as any
+  node.forEach(item => { 
+    if(item.type == 3){
+      arr.push(item.id);
+    }
+  });
+  queryParams.cabinetIds = arr
+  handleQuery()
 }
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
-  let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
-  arr = arr.concat(temp);
-  }
-  navList.value = arr
+  const res = await CabinetApi.getRoomMenuAll({})
+  navList.value = res
 }
 
 
 /** 详情操作*/
-const toDetails = (cabinetId: number, address: string) => {
-  push('/cabinet/nenghao/ecdistribution?cabinetId='+cabinetId+'&address='+address);
+const toDetails = (cabinetId: number, location: string) => {
+  push('/cabinet/nenghao/ecdistribution?cabinetId='+cabinetId+'&address='+location);
 }
 
 /** 初始化 **/

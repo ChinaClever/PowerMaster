@@ -1,6 +1,5 @@
 import request from '@/config/axios'
 
-// pdu历史数据 API
 export const EnergyConsumptionApi = {
 
   // 查询电量数据分页

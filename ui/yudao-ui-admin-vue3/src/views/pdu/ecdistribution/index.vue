@@ -406,24 +406,30 @@ const initRankChart = () => {
           smooth: true,
           valueAnimation: true,
           label: {
-            show: true,
-            position: "right",
-            valueAnimation: true,
-            offset: [5, -2],
-            color: "#333",
-            fontSize: 16,
-            // formatter: '{value}kWh'
+            normal: {
+              show: true,
+              position: "right",
+              valueAnimation: true,
+              offset: [5, -2],
+              textStyle: {
+                color: "#333",
+                fontSize: 16,
+              },
+              // formatter: '{value}kWh'
+            },
           },
-          emphasis: {
-            itemStyle: {
-              borderRadius: 7,
+          itemStyle: {
+            emphasis: {
+              barBorderRadius: 7,
             },
             //颜色样式部分
-              borderRadius: 7,
+             normal: {
+              barBorderRadius: 7,
               color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
                 { offset: 0, color: "#3977E6" },
                 { offset: 1, color: "#37BBF8" },
               ]),
+            },
           },
         },
       ],
