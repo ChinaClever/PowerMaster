@@ -60,7 +60,7 @@ const open = async (type: string) => {
   resetForm();
   dialogTitle.value = t('action.' + type)
   formType.value = type
-  var data = await TemColorApi.getTemColorAll();
+  var data = await TemColorApi.getTemColorAll({});
   formData.value.colorArr = data;
   
 }

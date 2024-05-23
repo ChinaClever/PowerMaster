@@ -87,4 +87,16 @@ public class RoomController {
         List<RoomPduMenuDTO> dto = roomService.roomPduMenuList(id);
         return success(dto);
     }
+
+    /**
+     * 机房菜单
+     *
+     * @param id 机房id
+     */
+    @Operation(summary = "机房-机架菜单")
+    @GetMapping("/room/rack/menu")
+    public CommonResult<List<RoomMenuDTO>> getRoomRackMenu(@RequestParam(value = "id") Integer id) {
+        List<RoomMenuDTO> dto = roomService.roomRackMenuList(id);
+        return success(dto);
+    }
 }

@@ -98,13 +98,13 @@
         </el-form-item>
         <el-form-item label="时间段" prop="createTime" label-width="100px">
           <el-button 
-            @click="queryParams.timeType = 0;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 0;" 
+            @click="queryParams.timeType = 0;now = new Date();now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 0;handleDayPick();handleQuery()" 
             :type="switchValue == 0 ? 'primary' : ''"
           >
             日报
           </el-button>
           <el-button 
-            @click="queryParams.timeType = 1;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 1;" 
+            @click="queryParams.timeType = 1;now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 1;handleMonthPick();handleQuery()" 
             :type="switchValue == 1 ? 'primary' : ''"
           >
             月报
@@ -260,8 +260,7 @@ import type Node from 'element-plus/es/components/tree/src/model/node'
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
-
-
+const now = ref()
 const switchValue = ref(1);
 const instance = getCurrentInstance();
 const visControll = reactive({
@@ -327,8 +326,6 @@ const handleDayPick = () => {
       }
       queryParams.oldTime = queryParams.timeArr[0];
       queryParams.newTime = queryParams.timeArr[1].split(" ")[0]+ " " + "23:59:59";
-
-
     }
   }
   
@@ -801,7 +798,7 @@ const initChart =  () => {
                                     var result = params[0].name + '<br>';
                                     for (var i = 0; i < params.length; i++) {
                                       result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
-                                      if (params[i].seriesName.includes('平均温度')) {
+                                      if (params[i].seriesName.includes('温度')) {
                                         result += '°C'; 
                                       } 
                                       result += '<br>';

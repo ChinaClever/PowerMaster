@@ -20,6 +20,7 @@ import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.PduIndex;
 import cn.iocoder.yudao.module.cabinet.dal.dataobject.temcolor.TemColorDO;
 import cn.iocoder.yudao.module.cabinet.dal.mysql.temcolor.TemColorMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.*;
+import cn.iocoder.yudao.module.cabinet.service.temcolor.TemColorService;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -85,6 +86,9 @@ public class IndexServiceImpl implements IndexService {
 
     @Resource
     private TemColorMapper temColorMapper;
+
+    @Autowired
+    private TemColorService temColorService;
 
     @Autowired
     private RestHighLevelClient client;
@@ -936,7 +940,7 @@ public class IndexServiceImpl implements IndexService {
                 .inIfPresent(IndexDO::getId, pageReqVO.getCabinetIds()));
 
         List<CabinetEnvAndHumRes> result = new ArrayList<>();
-        List<TemColorDO> temColorList = temColorMapper.selectList();
+        List<TemColorDO> temColorList = temColorService.getTemColorAll();
         for (IndexDO indexDO : indexDOPageResult.getList()) {
             CabinetEnvAndHumRes res = new CabinetEnvAndHumRes();
             result.add(res);

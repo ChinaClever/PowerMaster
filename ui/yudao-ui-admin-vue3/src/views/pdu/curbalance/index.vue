@@ -11,7 +11,7 @@
         <div class="status">
           <div class="box">
             <div class="top">
-              <div class="tag"></div>&lt;15%
+              <div class="tag"></div>{{ statusList[0].name }}
             </div>
             <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
           </div>
@@ -23,13 +23,13 @@
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag warn"></div>15%-30%
+              <div class="tag warn"></div>{{ statusList[1].name }}
             </div>
             <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag error"></div>&gt;30
+              <div class="tag error"></div>{{ statusList[2].name }}
             </div>
             <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
           </div>
@@ -73,6 +73,13 @@
             <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
           </template>
         </el-form-item>
+        <el-button
+          type="primary"
+          plain
+          @click="openForm('create')"
+        >
+          <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
+        </el-button>
         <el-form-item label="网络地址" prop="devKey">
           <el-input
             v-model="queryParams.devKey"
@@ -262,22 +269,24 @@
 
 
   <!-- 表单弹窗：添加/修改 -->
-  <!-- <PDUDeviceForm ref="formRef" @success="getList" /> -->
+  <CurbalanceColorForm ref="curBalanceColorForm" @success="getList" />
 </template>
 
 <script setup lang="ts">
 // import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
-// import PDUDeviceForm from './PDUDeviceForm.vue'
+import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
+import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
 const { push } = useRouter()
 
+const curBalanceColorForm = ref()
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48])
@@ -400,7 +409,12 @@ const getList = async () => {
   loading.value = true
   try {
     const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
-
+    var range = await CurbalanceColorApi.getCurbalanceColor();
+    if(range != null){
+      statusList[0].name = '<' + range.rangeOne + '%';
+      statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
+      statusList[2].name = '>' + range.rangeFour + '%';
+    }
     list.value = data.list
     var tableIndex = 0;
     var lessFifteen = 0;
@@ -451,7 +465,13 @@ const getListNoLoading = async () => {
   try {
     const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
     list.value = data.list
-    var tableIndex = 0;
+    var range = await CurbalanceColorApi.getCurbalanceColor();
+    if(range != null){
+      statusList[0].name = '<' + range.rangeOne + '%';
+      statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
+      statusList[2].name = '>' + range.rangeFour + '%';
+    }
+    var tableIndex = 0;    
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       if(obj?.dataUpdateTime == null && obj?.pow == null){
@@ -526,9 +546,9 @@ const resetQuery = () => {
 }
 
 /** 添加/修改操作 */
-const formRef = ref()
-const openForm = (type: string, id?: number) => {
-  formRef.value.open(type, id)
+
+const openForm = (type: string) => {
+  curBalanceColorForm.value.open(type)
 }
 
 /** 删除按钮操作 */
