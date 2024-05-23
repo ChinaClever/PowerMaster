@@ -88,7 +88,7 @@ const initConnect = () => {
   }
   const paintStyleConfig = {
     strokeWidth: 2, // 设置连接线的宽度为 2 像素
-    stroke: frameList.length > 5 ? 'rgba(0, 0, 0, 0)' : '#000', // 设置连接线的颜色为黑色
+    stroke: frameList.length > 10 ? 'rgba(0, 0, 0, 0)' : '#000', // 设置连接线的颜色为黑色
     outlineWidth: 13,
     outlineStroke: 'rgba(0, 0, 0, 0)'
   }
@@ -119,7 +119,7 @@ const initConnect = () => {
     })
     if (!port.targetId) return
     const targetElement = document.getElementById(`frame${port.targetId}`) as Element
-    const connect = instance?.connect({
+    let connect = instance?.connect({
       source: portElement,
       target: targetElement,
       // endpoint: "Rectangle",
@@ -127,9 +127,62 @@ const initConnect = () => {
       anchors: ['Right', 'Left'],
       paintStyle: paintStyleConfig
     })
-    if (connect && frameList.length > 5) {
-      connect.hoverPaintStyle = hoverPaintStyleConfig
-    }
+    targetElement.addEventListener('mouseover', (e) => {
+      if (connect)
+      instance?.deleteConnection(connect)
+      console.log('connect', connect)
+      connect = instance?.connect({
+        source: portElement,
+        target: targetElement,
+        // endpoint: "Rectangle",
+        endpoint: { type:"Dot", options:{ radius:2, fillStyle: 'rgba(0, 0, 0, 0)'}},
+        anchors: ['Right', 'Left'],
+        paintStyle: {
+          strokeWidth: 2, // 设置连接线的宽度为 2 像素
+          stroke: 'red', // 设置连接线的颜色为黑色
+          outlineWidth: 13,
+          outlineStroke: 'rgba(0, 0, 0, 0)'
+        }
+      })
+      console.log('targetElement', connect)
+    })
+    targetElement.addEventListener('mouseout', (e) => {
+      if (connect)
+      {
+        console.log('------------------------------------instance?.deleteConnection(connect)')
+        // connect.setPaintStyle({stroke: 'rgba(0, 0, 0, 0)'})
+        instance?.deleteConnection(connect)
+        instance?.deleteConnection(connect)
+        instance?.deleteConnection(connect)
+        instance?.deleteConnection(connect)
+        instance?.deleteConnection(connect)
+        instance?.deleteConnection(connect)
+        instance?.deleteConnection(connect)
+        instance?.deleteConnection(connect)
+        instance?.deleteConnection(connect)
+        instance?.deleteConnection(connect)
+        instance?.deleteConnection(connect)
+        instance?.deleteConnection(connect)
+        // nextTick(() => {
+        //   instance?.connect({
+        //     source: portElement,
+        //     target: targetElement,
+        //     // endpoint: "Rectangle",
+        //     endpoint: { type:"Dot", options:{ radius:2, fillStyle: 'rgba(0, 0, 0, 0)'}},
+        //     anchors: ['Right', 'Left'],
+        //     paintStyle: {
+        //       strokeWidth: 2, // 设置连接线的宽度为 2 像素
+        //       stroke: '#000', // 设置连接线的颜色为黑色
+        //       outlineWidth: 13,
+        //       outlineStroke: 'rgba(0, 0, 0, 0)'
+        //     }
+        //   })
+        // })
+      }
+    })
+    // if (connect && frameList.length > 5) {
+    //   connect.hoverPaintStyle = hoverPaintStyleConfig
+    // }
   })
   // 右侧端口创建连接点并初始连接
   portRight.forEach(port => {
@@ -156,6 +209,10 @@ const initConnect = () => {
 
 onMounted(() => {
   initConnect()
+  // const frameList = document.querySelector('.frameContainer .frameList')
+  // frameList?.addEventListener('mouseover', (e) => {
+  //   console.log('mouseover', e.target?.id)
+  // })
 })
 
 const portLeft = reactive([

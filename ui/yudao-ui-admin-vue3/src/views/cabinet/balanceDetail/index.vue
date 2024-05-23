@@ -32,9 +32,9 @@
     </template>
     <div class="ImbalanceA">
       <el-card  class="cardChilc" shadow="hover">
-        <div class="box">
+        <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
           <div class="value">{{balanceObj.imbalanceValueA}}%</div>
-          <div class="day">电流不平衡度</div>
+          <div class="day" :style="{backgroundColor: colorList[balanceObj.colorIndex].color}">{{colorList[balanceObj.colorIndex].name}}</div>
         </div>
       </el-card>
       <el-card  class="cardChilc" style="margin: 0 10px" shadow="hover">
@@ -55,9 +55,9 @@
     </template>
     <div class="ImbalanceA">
       <el-card  class="cardChilc" shadow="hover">
-        <div class="box">
+        <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
           <div class="value">{{balanceObj.imbalanceValueB}}%</div>
-          <div class="day">电流不平衡度</div>
+          <div class="day" :style="{backgroundColor: colorList[balanceObj.colorIndex].color}">{{colorList[balanceObj.colorIndex].name}}</div>
         </div>
       </el-card>
       <el-card  class="cardChilc" style="margin: 0 10px" shadow="hover">
@@ -81,6 +81,20 @@ import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 
 const cabinetId = history?.state?.id || 1
 
+const colorList = [{
+  name: '小电流不平衡',
+  color: '#aaa',
+},{
+  name: '大电流不平衡',
+  color: '#3bbb00',
+},{
+  name: '大电流不平衡',
+  color: '#ffc402',
+},{
+  name: '大电流不平衡',
+  color: '#fa3333',
+}]
+
 const balanceObj = reactive({
   pow_apparent_percent: 0,
   pow_active_percent: 0,
@@ -88,6 +102,7 @@ const balanceObj = reactive({
   cur_valueB: [],
   imbalanceValueA: 0,
   imbalanceValueB: 0,
+  colorIndex: 0,
 })
 
 const getBalanceDetail = async() => {
@@ -224,8 +239,14 @@ const getBalanceDegree = async () => {
   if (res.list.length > 0) {
     const itemA = res.list.find(item => item.location.includes('A路'))
     const itemB = res.list.find(item => item.location.includes('B路'))
-    if (itemA) balanceObj.imbalanceValueA = itemA.curUnbalance
-    if (itemB) balanceObj.imbalanceValueB = itemB.curUnbalance
+    if (itemA) {
+      balanceObj.imbalanceValueA = itemA.curUnbalance
+      balanceObj.colorIndex = itemA.color - 1
+    }
+    if (itemB) {
+      balanceObj.imbalanceValueB = itemB.curUnbalance
+      balanceObj.colorIndex = itemB.color - 1
+    }
   }
 }
 

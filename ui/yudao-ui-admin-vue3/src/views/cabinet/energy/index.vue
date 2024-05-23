@@ -78,7 +78,7 @@
             />
           </el-form-item>
           <el-form-item>
-            <el-button style="margin-left: 12px" ><Icon icon="ep:search" />搜索</el-button>
+            <el-button style="margin-left: 12px" @click="getTableData(true)" ><Icon icon="ep:search" />搜索</el-button>
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
