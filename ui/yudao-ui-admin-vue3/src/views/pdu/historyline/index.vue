@@ -1,88 +1,75 @@
 <template>
-  <el-row :gutter="20">
-   <el-col :span="treeWidth" :xs="24">
-     <el-input
-       v-model="filterText"
-       style="width: 190px"
-       placeholder=""
-     />
-     <el-tree
-       ref="treeRef"
-       style="max-width: 600px"
-       class="filter-tree"
-       :data="serverRoomArr"
-       :props="defaultProps"
-       default-expand-all
-       show-checkbox
-       :filter-node-method="filterNode"
-     />
-   </el-col>
-   <el-col :span="24 - treeWidth" :xs="24">
-     <ContentWrap>
-       <el-tabs v-model="activeName">
+  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="PDU电力分析" :showCheckbox="false">
+    <template #NavInfo>
+      
+    </template>
+    <template #ActionBar>
+      <el-tabs v-model="activeName">
         <el-tab-pane label="原始数据" name="realtimeTabPane"/>
         <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
         <el-tab-pane label="天极值数据" name="dayExtremumTabPane"/>
       </el-tabs>
-       <!-- 搜索工作栏 -->
-       <el-form
-         class="-mb-5px"
-         :model="queryParams"
-         ref="queryFormRef"
-         :inline="true"
-         label-width="auto"
-       >
-        <el-form-item label="IP地址" prop="ipAddr">
-          <el-input
-            v-model="queryParams.ipAddr"
-            placeholder="请输入IP地址"
-            clearable
-            @keyup.enter="handleQuery"
-            class="!w-130px"
-          />
-        </el-form-item>
-        <el-form-item label="级联地址" prop="cascadeAddr">
-          <el-input-number
-            v-model="cascadeAddr"
-            :min="0"
-            controls-position="right"
-            :value-on-clear="0"
-            class="!w-100px"
-          />
-        </el-form-item>
-        <el-form-item label="参数类型" prop="type">
-          <el-cascader
-            v-model="defaultSelected"
-            collapse-tags
-            :options="typeSelection"
-            collapse-tags-tooltip
-            :show-all-levels="true"
-            @change="typeCascaderChange"
-            class="!w-110px"
-          />
-        </el-form-item>
-        <el-form-item label="时间段" prop="timeRange" >
-          <el-date-picker
-            value-format="YYYY-MM-DD HH:mm:ss"
-            v-model="queryParams.timeRange"
-            type="datetimerange"
-            :shortcuts="activeName === 'realtimeTabPane' ? shortcuts : (activeName === 'hourExtremumTabPane' ? shortcuts1 : (activeName === 'dayExtremumTabPane' ? shortcuts2 : []))"
-            range-separator="-"
-            start-placeholder="开始时间"
-            end-placeholder="结束时间"
-            :disabled-date="disabledDate"
+      <!-- 搜索工作栏 -->
+      <el-form
+        class="-mb-5px"
+        :model="queryParams"
+        ref="queryFormRef"
+        :inline="true"
+        label-width="auto"
+      >
+      <el-form-item label="IP地址" prop="ipAddr">
+        <el-input
+          v-model="queryParams.ipAddr"
+          placeholder="请输入IP地址"
+          clearable
+          @keyup.enter="handleQuery"
+          class="!w-130px"
+        />
+      </el-form-item>
+      <el-form-item label="级联地址" prop="cascadeAddr">
+        <el-input-number
+          v-model="cascadeAddr"
+          :min="0"
+          controls-position="right"
+          :value-on-clear="0"
+          class="!w-100px"
+        />
+      </el-form-item>
+      <el-form-item label="参数类型" prop="type">
+        <el-cascader
+          v-model="defaultSelected"
+          collapse-tags
+          :options="typeSelection"
+          collapse-tags-tooltip
+          :show-all-levels="true"
+          @change="typeCascaderChange"
+          class="!w-110px"
+        />
+      </el-form-item>
+      <el-form-item label="时间段" prop="timeRange" >
+        <el-date-picker
+          value-format="YYYY-MM-DD HH:mm:ss"
+          v-model="queryParams.timeRange"
+          type="datetimerange"
+          :shortcuts="activeName === 'realtimeTabPane' ? shortcuts : (activeName === 'hourExtremumTabPane' ? shortcuts1 : (activeName === 'dayExtremumTabPane' ? shortcuts2 : []))"
+          range-separator="-"
+          start-placeholder="开始时间"
+          end-placeholder="结束时间"
+          :disabled-date="disabledDate"
 
-            class="!w-350px"
-          />
-                      <!-- @change="handleDayPick" -->
+          class="!w-350px"
+        />
+                    <!-- @change="handleDayPick" -->
+      </el-form-item>
+
+        <el-form-item >
+          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button type="primary" plain><Icon icon="ep:download" class="mr-5px" /> 导出</el-button>
         </el-form-item>
 
-         <el-form-item >
-           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-           <el-button type="primary" plain><Icon icon="ep:download" class="mr-5px" /> 导出</el-button>
-         </el-form-item>
-
-       </el-form>
+      </el-form>
+    </template>
+    <template #Content>
       <div v-loading="loading">
         <el-tabs v-model="activeName1">
           <el-tab-pane label="图表" name="myChart">
@@ -143,30 +130,29 @@
         
         <!-- <el-empty v-show="!isHaveData" description="暂无数据" /> -->
       </div>
-
-    </ContentWrap>  
-   </el-col>
-  </el-row>
-
+    </template>
+  </CommonMenu>
 </template>
 
 <script setup lang="ts">
-import { ElTree, ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { HistoryDataApi } from '@/api/pdu/historydata'
 import { formatDate, convertDate, betweenDay } from '@/utils/formatTime'
 import { get } from 'http';
-/** pdu历史曲线 */
+import { CabinetApi } from '@/api/cabinet/info'
+
 defineOptions({ name: 'PDUHistoryLine' })
- // tab默认显示
-const activeName = ref('realtimeTabPane')
-const activeName1 = ref('myChart')
+
+const activeName = ref('realtimeTabPane') // tab默认显示
+const activeName1 = ref('myChart') // tab默认显示
+const navList = ref([]) as any // 左侧导航栏树结构列表
 const instance = getCurrentInstance();
 const tableData = ref<Array<{ }>>([]); // 列表数据
 const headerData = ref<any[]>([]);
 const cascadeAddr = ref(0) // 数字类型的级联地址
 const needFlush = ref(0) // 是否需要刷新图表
+const loading = ref(true) // 加载中
 const queryParams = reactive({
   pduId: undefined as number | undefined,
   lineId: undefined,
@@ -186,90 +172,6 @@ watch(() => queryParams.cascadeAddr, (newValue) => {
     queryParams.cascadeAddr = '0';
   }
 });
-
-//折叠功能
-const serverRoomArr =  [
- {
-   value: '1',
-   label: '机房1',
-   children: [
-     {
-       value: '1-1',
-       label: '柜列1',
-       children: [
-       {
-         value: '1-1-1',
-         label: '机柜1',
-       },
-       {
-         value: '1-1-2',
-         label: '机柜2',
-       },]
-     },
-   ],
- },
- {
-   value: '2',
-   label: '机房2',
-   children: [
-     {
-       value: '2-1',
-       label: '柜列1',
-       children: [
-       {
-         value: '2-1-1',
-         label: '机柜1',
-       },
-       {
-         value: '2-1-2',
-         label: '机柜2',
-       },]
-     },
-   ],
- },
- {
-   value: '3',
-   label: '机房3',
-   children: [
-     {
-       value: '3-1',
-       label: '柜列1',
-       children: [
-       {
-         value: '3-1-1',
-         label: '机柜1',
-       },
-       {
-         value: '3-1-2',
-         label: '机柜2',
-       },]
-     },
-   ],
- },
-]
-let treeWidth = ref(3)
-let isCollapsed = ref(0);
-const toggleCollapse = () => {
- treeWidth.value = isCollapsed.value == 0 ? 3 : 0;
-};
-interface Tree {
- [key: string]: any
-}
-const filterText = ref('')
-const treeRef = ref<InstanceType<typeof ElTree>>()
-const filterNode = (value: string, data: Tree) => {
- if (!value) return true
- return data.label.includes(value)
-}
-const defaultProps = {
- children: 'children',
- label: 'label',
-}
-watch(filterText, (val) => {
- treeRef.value!.filter(val)
-})
-
-const loading = ref(true) // 加载中
 
 // 时间段快捷选项
 const shortcuts = [
@@ -1242,6 +1144,43 @@ const getTypeMaxValue = async () => {
   typeSelection.value = typeSelectionValue;
 }
 
+// 导航栏选择后触发
+const handleClick = async (row) => {
+   if(row.type != null  && row.type == 4){
+    queryParams.pduId = undefined
+    queryParams.ipAddr = row.ip
+    queryParams.cascadeAddr = row?.unique?.split("-")[1];
+    // findFullName(navList.value, row.unique, fullName => {
+    //   nowAddress.value = fullName
+    // });
+    handleQuery();
+  }
+}
+
+// 得到位置全名
+// function findFullName(data, targetUnique, callback, fullName = '') {
+//   for (let item of data) {
+//     const newFullName = fullName === '' ? item.name : fullName + '-' + item.name;
+//     if (item.unique === targetUnique) {
+//       callback(newFullName);
+//     }
+//     if (item.children && item.children.length > 0) {
+//       findFullName(item.children, targetUnique, callback, newFullName);
+//     }
+//   }
+// }
+
+// 接口获取机房导航列表
+const getNavList = async() => {
+  const res = await CabinetApi.getRoomList({})
+  let arr = [] as any
+  for (let i=0; i<res.length;i++){
+  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  arr = arr.concat(temp);
+  }
+  navList.value = arr
+}
+
 /** 搜索按钮操作 */
 const handleQuery = () => {
   // IP地址的正则表达式
@@ -1259,18 +1198,20 @@ const handleQuery = () => {
 
 /** 初始化 **/
 onMounted( async () => {
+  getTypeMaxValue()
+  getNavList()
   // 获取路由参数中的 pdu_id
   const queryPduId = useRoute().query.pduId as string  | undefined;
   const queryLocation = useRoute().query.location as string  | undefined;
+  // const queryAddress = useRoute().query.address as string | undefined;
   const queryIpAddr = queryLocation?.split("-")[0];
   const queryCascadeAddr = queryLocation?.split("-")[1];
   queryParams.pduId = queryPduId ? parseInt(queryPduId, 10) : undefined;
   queryParams.ipAddr = queryIpAddr ? queryIpAddr : undefined;
   queryParams.cascadeAddr = queryCascadeAddr ? queryCascadeAddr : undefined;
   cascadeAddr.value = queryCascadeAddr ? parseInt(queryCascadeAddr, 10) : 0;
-
+  // nowAddress.value = queryAddress ? queryAddress : '';
   if (queryParams.pduId != undefined){
-    await getTypeMaxValue();
     await getList();
     initChart();
   }

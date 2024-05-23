@@ -4,7 +4,12 @@ import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.cabinet.controller.admin.historydata.vo.CabinetHistoryDataDetailsReqVO;
 import cn.iocoder.yudao.module.cabinet.controller.admin.historydata.vo.CabinetHistoryDataPageReqVO;
+import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.IndexDO;
+import cn.iocoder.yudao.module.cabinet.dal.mysql.index.IndexMapper;
+import cn.iocoder.yudao.module.cabinet.mapper.AisleIndexMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.CabinetIndexMapper;
+import cn.iocoder.yudao.module.cabinet.mapper.CabinetPduMapper;
+import cn.iocoder.yudao.module.cabinet.mapper.RoomIndexMapper;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -17,7 +22,9 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.*;
 
 
@@ -29,27 +36,44 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
 
     @Autowired
     private CabinetIndexMapper cabinetIndexMapper;
+
+    @Resource
+    private IndexMapper indexMapper;
+
+    @Autowired
+    private RoomIndexMapper roomIndexMapper;
+
+    @Autowired
+    private AisleIndexMapper aisleIndexMapper;
+
     @Autowired
     private RestHighLevelClient client;
 
     @Override
     public List<Object> getLocationsByCabinetIds(List<Map<String, Object>> mapList) {
         List<Object> resultList = new ArrayList<>();
-        for (Map<String, Object> map : mapList){
-            Object cabinetId = map.get("cabinet_id");
-            if (cabinetId instanceof Integer) {
-                // 查询位置
-                CabinetIndex cabinetIndex = cabinetIndexMapper.selectById( (int)cabinetId );
-                if (cabinetIndex != null){
-                    map.put("location", cabinetIndex.getRoomId());
-                }else{
+            for (Map<String, Object> map : mapList){
+                try{
+                    Object cabinetId = map.get("cabinet_id");
+                    if (cabinetId instanceof Integer) {
+                        String localtion = null;
+                        IndexDO indexDO = indexMapper.selectById((Serializable) cabinetId);
+                        String roomName = roomIndexMapper.selectById(indexDO.getRoomId()).getName();
+                        if(indexDO.getAisleId() != 0){
+                            String aisleName = aisleIndexMapper.selectById(indexDO.getAisleId()).getName();
+                            localtion = roomName + "-" + aisleName + "-" + indexDO.getName();
+                        }else {
+                            localtion = roomName + "-"  + indexDO.getName() ;
+                        }
+                        map.put("location", localtion);
+                    }else{
+                        map.put("location", null);
+                    }
+                } catch (Exception  e) {
                     map.put("location", null);
                 }
-            }else{
-                map.put("location", null);
+                resultList.add(map);
             }
-            resultList.add(map);
-        }
         return resultList;
     }
 

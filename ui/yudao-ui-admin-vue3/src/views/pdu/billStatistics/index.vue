@@ -1,80 +1,59 @@
 <template>
-  <el-row :gutter="20">
-   <el-col :span="treeWidth" :xs="24">
-     <el-input
-       v-model="filterText"
-       style="width: 190px"
-       placeholder=""
-     />
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU电费统计">
+    <template #ActionBar>
+      <el-form
+        class="-mb-15px"
+        :model="queryParams"
+        ref="queryFormRef"
+        :inline="true"
+        label-width="auto"
+      >
+        <el-form-item label="参数类型" prop="type">
+        <el-cascader
+          v-model="typeDefaultSelected"
+          collapse-tags
+          :options="typeSelection"
+          collapse-tags-tooltip
+          :show-all-levels="true"
+          @change="typeCascaderChange"
+          class="!w-140px"
+        />
+      </el-form-item>
 
-     <el-tree
-       ref="treeRef"
-       style="max-width: 600px"
-       class="filter-tree"
-       :data="serverRoomArr"
-       :props="defaultProps"
-       default-expand-all
-       show-checkbox
-       :filter-node-method="filterNode"
-     />
-   </el-col>
-   <el-col :span="24 - treeWidth" :xs="24">
-     <ContentWrap>
-       <!-- 搜索工作栏 -->
-       <el-form
-         class="-mb-15px"
-         :model="queryParams"
-         ref="queryFormRef"
-         :inline="true"
-         label-width="auto"
-       >
-         <el-form-item label="参数类型" prop="type">
-          <el-cascader
-            v-model="typeDefaultSelected"
-            collapse-tags
-            :options="typeSelection"
-            collapse-tags-tooltip
-            :show-all-levels="true"
-            @change="typeCascaderChange"
-            class="!w-140px"
-          />
+        <el-form-item label="颗粒度" prop="granularity">
+          <el-select
+            v-model="queryParams.granularity"
+            placeholder="请选择天/周/月"
+            class="!w-120px" >
+            <el-option label="天" value="day" />
+            <el-option label="周" value="week" />
+            <el-option label="月" value="month" />
+          </el-select>
         </el-form-item>
 
-         <el-form-item label="颗粒度" prop="granularity">
-            <el-select
-              v-model="queryParams.granularity"
-              placeholder="请选择天/周/月"
-              class="!w-120px" >
-              <el-option label="天" value="day" />
-              <el-option label="周" value="week" />
-              <el-option label="月" value="month" />
-            </el-select>
-          </el-form-item>
+        <el-form-item label="时间段" prop="timeRange">
+          <el-date-picker
+          value-format="YYYY-MM-DD"
+          v-model="selectTimeRange"
+          type="daterange"
+          :shortcuts="shortcuts"
+          range-separator="-"
+          start-placeholder="开始时间"
+          end-placeholder="结束时间"
+          :disabled-date="disabledDate"
+        />
+        </el-form-item>
 
-         <el-form-item label="时间段" prop="timeRange">
-            <el-date-picker
-            value-format="YYYY-MM-DD"
-            v-model="selectTimeRange"
-            type="daterange"
-            :shortcuts="shortcuts"
-            range-separator="-"
-            start-placeholder="开始时间"
-            end-placeholder="结束时间"
-            :disabled-date="disabledDate"
-          />
-          </el-form-item>
-
-         <el-form-item >
-           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-           <!-- <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button> -->
-           <el-button type="success" plain :loading="exportLoading">
-             <Icon icon="ep:download" class="mr-5px" /> 导出
-           </el-button>
-         </el-form-item>
-       </el-form>
-    </ContentWrap>
-    <ContentWrap>
-     <!-- 列表 -->
+        <el-form-item >
+          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <!-- <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button> -->
+          <el-button type="success" plain :loading="exportLoading">
+            <Icon icon="ep:download" class="mr-5px" /> 导出
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </template>
+    <template #Content>
       <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
         <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="80px">
@@ -108,10 +87,8 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"/>
       <div class="realTotal">共 {{ realTotel }} 条</div>
-      </ContentWrap>
-   </el-col>
-  </el-row>
- 
+    </template>
+  </CommonMenu>
 </template>
 
 <script setup lang="ts">
@@ -119,86 +96,14 @@ import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption'
 import { HistoryDataApi } from '@/api/pdu/historydata'
-import { ElTree, ElIcon, ElMessage } from 'element-plus'
 import { formatDate, endOfDay, convertDate, addTime, betweenDay} from '@/utils/formatTime'
+import { CabinetApi } from '@/api/cabinet/info'
 import * as echarts from 'echarts';
+
 const { push } = useRouter()
 defineOptions({ name: 'PowerAnalysis' })
 
-//折叠功能
-const serverRoomArr =  [
- {
-   value: '1',
-   label: '机房1',
-   children: [
-     {
-       value: '1-1',
-       label: '柜列1',
-     },
-   ],
- },
- {
-   value: '2',
-   label: '机房2',
-   children: [
-     {
-       value: '2-1',
-       label: '柜列1',
-       children: [
-       {
-         value: '2-1-1',
-         label: '机柜1',
-       },
-       {
-         value: '2-1-2',
-         label: '机柜2',
-       },]
-     },
-   ],
- },
- {
-   value: '3',
-   label: '机房3',
-   children: [
-     {
-       value: '3-1',
-       label: '柜列1',
-       children: [
-       {
-         value: '3-1-1',
-         label: '机柜1',
-       },
-       {
-         value: '3-1-2',
-         label: '机柜2',
-       },]
-     },
-   ],
- },
-]
-let treeWidth = ref(3)
-let isCollapsed = ref(0);
-const toggleCollapse = () => {
- treeWidth.value = isCollapsed.value == 0 ? 3 : 0;
-};
-//树型控件
-interface Tree {
- [key: string]: any
-}
-const filterText = ref('')
-const treeRef = ref<InstanceType<typeof ElTree>>()
-const filterNode = (value: string, data: Tree) => {
- if (!value) return true
- return data.label.includes(value)
-}
-const defaultProps = {
- children: 'children',
- label: 'label',
-}
-watch(filterText, (val) => {
- treeRef.value!.filter(val)
-})
-
+const navList = ref([]) as any // 左侧导航栏树结构列表
 const instance = getCurrentInstance();
 const message = useMessage()
 const activeName = ref('myData') 
@@ -214,6 +119,7 @@ const queryParams = reactive({
   type: 'total',
   granularity: 'day',
   timeRange: undefined as string[] | undefined,
+  ipArray: [],
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
@@ -268,36 +174,40 @@ watch(() => [queryParams.granularity, queryParams.type], () => {
   if (queryParams.type === 'outlet'){
     if (queryParams.granularity == 'day'){
       tableColumns.value = [
-        { label: '位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '位置', align: 'center', prop: 'address' , istrue:true},
         { label: '输出位', align: 'center', prop: 'outlet_id' , istrue:true}, 
         { label: '日期', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
+        { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
         { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatEle},
       ]
     }else{
        tableColumns.value = [
-        { label: '位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '位置', align: 'center', prop: 'address' , istrue:true},
         { label: '输出位', align: 'center', prop: 'outlet_id' , istrue:true}, 
         { label: '开始日期', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
         { label: '结束日期', align: 'center', prop: 'end_time', formatter: formatTime, istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
+        { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
         { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatEle},
       ]
     }
   }else{
     if (queryParams.granularity == 'day'){
       tableColumns.value = [
-        { label: '位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '位置', align: 'center', prop: 'address' , istrue:true},
         { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
+        { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
         { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
       ]
     }else{
       tableColumns.value = [
-        { label: '位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '位置', align: 'center', prop: 'address' , istrue:true},
         { label: '开始日期', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
         { label: '结束日期', align: 'center', prop: 'end_time', formatter: formatTime, istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
+        { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
         { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatEle},
       ]
     }
@@ -306,11 +216,12 @@ watch(() => [queryParams.granularity, queryParams.type], () => {
 });
 
 const tableColumns = ref([
-  { label: '位置', align: 'center', prop: 'location' , istrue:true},
+  { label: '位置', align: 'center', prop: 'address' , istrue:true},
   { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
   { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
+  { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
   { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
-]);
+]) as any;
 
 /** 查询列表 */
 const getList = async () => {
@@ -413,6 +324,30 @@ const getTypeMaxValue = async () => {
   typeSelection.value = typeSelectionValue;
 }
 
+// 导航栏选择后触发
+const handleCheck = async (node) => {
+    let arr = [] as any
+    node.forEach(item => { 
+      if(item.type == 4){
+        arr.push(item.unique);
+      }
+    });
+    queryParams.ipArray = arr
+    handleQuery()
+    console.log(arr)
+}
+
+// 接口获取机房导航列表
+const getNavList = async() => {
+  const res = await CabinetApi.getRoomList({})
+  let arr = [] as any
+  for (let i=0; i<res.length;i++){
+  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  arr = arr.concat(temp);
+  }
+  navList.value = arr
+}
+
 // /** 重置按钮操作 */
 // const resetQuery = () => {
 //  queryFormRef.value.resetFields()
@@ -436,6 +371,7 @@ const getTypeMaxValue = async () => {
 
 /** 初始化 **/
 onMounted(() => {
+  getNavList()
   getTypeMaxValue();
   getList();
 });

@@ -1,252 +1,145 @@
 <template>
-   <el-row :gutter="20">
-    <el-col :span="treeWidth" :xs="24">
-      <el-input
-        v-model="filterText"
-        style="width: 190px"
-        placeholder=""
-      />
-
-      <el-tree
-        ref="treeRef"
-        style="max-width: 600px"
-        class="filter-tree"
-        :data="serverRoomArr"
-        :props="defaultProps"
-        default-expand-all
-        show-checkbox
-        :filter-node-method="filterNode"
-      />
-    </el-col>
-    <el-col :span="24 - treeWidth" :xs="24">
-      <ContentWrap>
-        <!-- 搜索工作栏 -->
-        <el-form
-          class="-mb-15px"
-          :model="queryParams"
-          ref="queryFormRef"
-          :inline="true"
-          label-width="80px"
-        >
-          <el-form-item label="IP地址" prop="ipAddr">
-            <el-input
-              v-model="queryParams.ipAddr"
-              placeholder="请输入IP地址"
-              clearable
-              @keyup.enter="handleQuery"
-              class="!w-160px"
-            />
-          </el-form-item>
-
-          <el-form-item label="级联地址" prop="cascadeAddr">
-              <el-input-number
-                v-model="cascadeAddr"
-                :min="0"
-                controls-position="right"
-                :value-on-clear="0"
-                 class="!w-148px"
-              />
-          </el-form-item>
-
-          <el-form-item label="传感器" prop="sensorId">
-            <el-select
-              v-model="queryParams.sensorId"
-              class="!w-140px"
-              @change="handleQuery"
-              >
-              <el-option
-                v-for="item in sensorOptions"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              />
-            </el-select>
-          </el-form-item>
-
-          <el-form-item label="颗粒度" prop="type">
-            <el-select
-              v-model="queryParams.granularity"
-              placeholder="请选择分钟/小时/天"
-              class="!w-120px">
-              <el-option label="分钟" value="realtime" />
-              <el-option label="小时" value="hour" />
-              <el-option label="天" value="day" />
-            </el-select>
-          </el-form-item>
-
-          <el-form-item label="筛选列">
-            <el-cascader
-              v-model="defaultOptionsCol"
-              :options="optionsCol"
-              :props="props"
-              collapse-tags
-              collapse-tags-tooltip
-              :show-all-levels="false"
-              @change="cascaderChange"
-              class="!w-210px"
-            />
-          </el-form-item>
-
-          <el-form-item label="时间段" prop="timeRange">
-            <el-date-picker
-            value-format="YYYY-MM-DD HH:mm:ss"
-            v-model="queryParams.timeRange"
-            type="datetimerange"
-            :shortcuts="shortcuts"
-            range-separator="-"
-            start-placeholder="开始时间"
-            end-placeholder="结束时间"
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU环境数据">
+    <template #ActionBar>
+      <el-form
+        class="-mb-15px"
+        :model="queryParams"
+        ref="queryFormRef"
+        :inline="true"
+        label-width="80px"
+      >
+        <el-form-item label="IP地址" prop="ipAddr">
+          <el-input
+            v-model="queryParams.ipAddr"
+            placeholder="请输入IP地址"
+            clearable
+            @keyup.enter="handleQuery"
+            class="!w-160px"
           />
-          </el-form-item>
+        </el-form-item>
 
-          <!-- <div style="float:right; padding-right:78px"> -->
-          <el-form-item >
-            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-            <el-button type="success" plain @click="handleExport" :loading="exportLoading">
-              <Icon icon="ep:download" class="mr-5px" /> 导出
-            </el-button>
-          </el-form-item> 
-          <!-- </div> -->
-        </el-form>
+        <el-form-item label="级联地址" prop="cascadeAddr">
+            <el-input-number
+              v-model="cascadeAddr"
+              :min="0"
+              controls-position="right"
+              :value-on-clear="0"
+                class="!w-148px"
+            />
+        </el-form-item>
 
-      </ContentWrap>
-      <!-- 列表 -->
-      <ContentWrap>
-        <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
-           <!-- 添加行号列 -->
-          <el-table-column label="序号" align="center" width="100px">
-            <template #default="{ $index }">
-              {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
+        <el-form-item label="传感器" prop="sensorId">
+          <el-select
+            v-model="queryParams.sensorId"
+            class="!w-140px"
+            @change="handleQuery"
+            >
+            <el-option
+              v-for="item in sensorOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="颗粒度" prop="type">
+          <el-select
+            v-model="queryParams.granularity"
+            placeholder="请选择分钟/小时/天"
+            class="!w-120px">
+            <el-option label="分钟" value="realtime" />
+            <el-option label="小时" value="hour" />
+            <el-option label="天" value="day" />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="筛选列">
+          <el-cascader
+            v-model="defaultOptionsCol"
+            :options="optionsCol"
+            :props="props"
+            collapse-tags
+            collapse-tags-tooltip
+            :show-all-levels="false"
+            @change="cascaderChange"
+            class="!w-210px"
+          />
+        </el-form-item>
+
+        <el-form-item label="时间段" prop="timeRange">
+          <el-date-picker
+          value-format="YYYY-MM-DD HH:mm:ss"
+          v-model="queryParams.timeRange"
+          type="datetimerange"
+          :shortcuts="shortcuts"
+          range-separator="-"
+          start-placeholder="开始时间"
+          end-placeholder="结束时间"
+        />
+        </el-form-item>
+
+        <!-- <div style="float:right; padding-right:78px"> -->
+        <el-form-item >
+          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button type="success" plain @click="handleExport" :loading="exportLoading">
+            <Icon icon="ep:download" class="mr-5px" /> 导出
+          </el-button>
+        </el-form-item> 
+        <!-- </div> -->
+      </el-form>
+    </template>
+    <template #Content>
+      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+          <!-- 添加行号列 -->
+        <el-table-column label="序号" align="center" width="100px">
+          <template #default="{ $index }">
+            {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
+          </template>
+        </el-table-column>
+        <!-- 遍历其他列 -->
+        <template v-for="column in tableColumns">
+          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
+            <template #default="{ row }" v-if="column.slot === 'actions'">
+              <el-button link type="primary" @click="toDetails(row.pdu_id, row.location, row.sensor_id)">详情</el-button>
             </template>
           </el-table-column>
-          <!-- 遍历其他列 -->
-          <template v-for="column in tableColumns">
-            <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
-              <template #default="{ row }" v-if="column.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.pdu_id, row.location, row.sensor_id)">详情</el-button>
-              </template>
-            </el-table-column>
-          </template>
-          <!-- 超过一万条数据提示信息 -->
-          <template v-if="shouldShowDataExceedMessage" #append>
-            <tr>
-              <td colspan="列数" style="text-align: center; padding: 12px 0;">
-                <span style="margin:0 12px; color: red;">数据量过大，请筛选后查看更多数据。</span>
-              </td>
-            </tr>
-          </template>
-        </el-table>
-        <!-- 分页 -->
-          <Pagination
-            :total="total"
-            :page-size-arr="pageSizeArr"
-            layout = "sizes, prev, pager, next, jumper"
-            v-model:page="queryParams.pageNo"
-            v-model:limit="queryParams.pageSize"
-            @pagination="getList"
-          />
-          <div class="realTotal">共 {{ realTotel }} 条</div>
-      </ContentWrap>
-    </el-col>
-   </el-row>
-
+        </template>
+        <!-- 超过一万条数据提示信息 -->
+        <template v-if="shouldShowDataExceedMessage" #append>
+          <tr>
+            <td colspan="列数" style="text-align: center; padding: 12px 0;">
+              <span style="margin:0 12px; color: red;">数据量过大，请筛选后查看更多数据。</span>
+            </td>
+          </tr>
+        </template>
+      </el-table>
+      <!-- 分页 -->
+      <Pagination
+        :total="total"
+        :page-size-arr="pageSizeArr"
+        layout = "sizes, prev, pager, next, jumper"
+        v-model:page="queryParams.pageNo"
+        v-model:limit="queryParams.pageSize"
+        @pagination="getList"
+      />
+      <div class="realTotal">共 {{ realTotel }} 条</div>
+    </template>
+  </CommonMenu>
 </template>
 
 <script setup lang="ts">
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnvDataApi } from '@/api/pdu/envData'
-import { ElTree, ElIcon, ElMessage } from 'element-plus'
+import { CabinetApi } from '@/api/cabinet/info'
 const { push } = useRouter()
 /** pdu历史数据 列表 */
 defineOptions({ name: 'PDUEnvHistoryData' })
 
-//折叠功能
-const serverRoomArr =  [
-  {
-    value: '1',
-    label: '机房1',
-    children: [
-      {
-        value: '1-1',
-        label: '柜列1',
-        children: [
-        {
-          value: '1-1-1',
-          label: '机柜1',
-        },
-        {
-          value: '1-1-2',
-          label: '机柜2',
-        },]
-      },
-    ],
-  },
-  {
-    value: '2',
-    label: '机房2',
-    children: [
-      {
-        value: '2-1',
-        label: '柜列1',
-        children: [
-        {
-          value: '2-1-1',
-          label: '机柜1',
-        },
-        {
-          value: '2-1-2',
-          label: '机柜2',
-        },]
-      },
-    ],
-  },
-  {
-    value: '3',
-    label: '机房3',
-    children: [
-      {
-        value: '3-1',
-        label: '柜列1',
-        children: [
-        {
-          value: '3-1-1',
-          label: '机柜1',
-        },
-        {
-          value: '3-1-2',
-          label: '机柜2',
-        },]
-      },
-    ],
-  },
-]
-let treeWidth = ref(3)
-let isCollapsed = ref(0);
-const toggleCollapse = () => {
-  treeWidth.value = isCollapsed.value == 0 ? 3 : 0;
-};
-//树型控件
-interface Tree {
-  [key: string]: any
-}
-const filterText = ref('')
-const treeRef = ref<InstanceType<typeof ElTree>>()
-const filterNode = (value: string, data: Tree) => {
-  if (!value) return true
-  return data.label.includes(value)
-}
-const defaultProps = {
-  children: 'children',
-  label: 'label',
-}
-watch(filterText, (val) => {
-  treeRef.value!.filter(val)
-})
-
+const navList = ref([]) as any // 左侧导航栏树结构列表
 const message = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
-
 const loading = ref(true) // 列表的加载中
 const list = ref<Array<{ }>>([]); // 列表数据
 const total = ref(0) // 数据总条数 超过10000条为10000
@@ -260,6 +153,7 @@ const queryParams = reactive({
   cascadeAddr: '0',
   sensorId: 0,
   timeRange: undefined,
+  ipArray: [],
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref() // 搜索的表单
@@ -345,11 +239,12 @@ watch(() => queryParams.granularity, (newValues) => {
       originalArray.value =["tem", "hum"];
       // 配置表格列
       tableColumns.value =([
-        { label: '位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '位置', align: 'center', prop: 'address' , istrue:true},
         { label: '传感器', align: 'center', prop: 'sensor_id', istrue:true},
         { label: '温度(℃)', align: 'center', prop: 'tem_value', istrue:true, formatter: formatData},
         { label: '湿度(%RH)', align: 'center', prop: 'hum_value' , istrue:true, formatter: formatData},
         { label: '时间', align: 'center', prop: 'create_time', width: '230px', formatter: formatTime, istrue:true},
+        { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
         { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '230px'},
       ]);
       queryParams.pageNo = 1;
@@ -379,7 +274,7 @@ watch(() => queryParams.granularity, (newValues) => {
                           "hum_avg_value", "hum_max", "hum_min"],
       // 配置表格列
       tableColumns.value = [
-        { label: '位置', align: 'center', prop: 'location', istrue:true, width: '180px'}, 
+        { label: '位置', align: 'center', prop: 'address', istrue:true, width: '180px'}, 
         { label: '传感器', align: 'center', prop: 'sensor_id', istrue:true},
         { label: '平均温度(℃)', align: 'center', prop: 'tem_avg_value', istrue:true, width: '180px', formatter: formatData },
         { label: '最高温度(℃)', align: 'center', prop: 'tem_max_value', istrue:true, width: '180px', formatter: formatData },
@@ -392,7 +287,8 @@ watch(() => queryParams.granularity, (newValues) => {
         { label: '最小湿度(%RH)', align: 'center', prop: 'hum_min_value', istrue:false, width: '180px', formatter: formatData },
         { label: '最小湿度时间', align: 'center', prop: 'hum_min_time' , width: '230px', istrue:false},
         { label: '记录时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true},
-        { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '230px'},
+        { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
+        { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
       ] as any;
       queryParams.pageNo = 1;
       queryParams.pageSize = 15;
@@ -401,12 +297,13 @@ watch(() => queryParams.granularity, (newValues) => {
   });
 
 const tableColumns = ref([
-    { label: '位置', align: 'center', prop: 'location' , istrue:true},
+    { label: '位置', align: 'center', prop: 'address' , istrue:true},
     { label: '传感器', align: 'center', prop: 'sensor_id', istrue:true},
     { label: '温度(℃)', align: 'center', prop: 'tem_value', istrue:true},
     { label: '湿度(%RH)', align: 'center', prop: 'hum_value' , istrue:true},
     { label: '时间', align: 'center', prop: 'create_time', width: '230px', formatter: formatTime, istrue:true},
-    { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '230px'},
+    { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
+    { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '160px'},
 ]) as any;
 
 /** 查询列表 */
@@ -453,6 +350,30 @@ const getSensorIdMaxValue = async () => {
   sensorOptions.value = sensorSelectionValue;
 }
 
+// 导航栏选择后触发
+const handleCheck = async (node) => {
+    let arr = [] as any
+    node.forEach(item => { 
+      if(item.type == 4){
+        arr.push(item.unique);
+      }
+    });
+    queryParams.ipArray = arr
+    handleQuery()
+    console.log(arr)
+}
+
+// 接口获取机房导航列表
+const getNavList = async() => {
+  const res = await CabinetApi.getRoomList({})
+  let arr = [] as any
+  for (let i=0; i<res.length;i++){
+  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  arr = arr.concat(temp);
+  }
+  navList.value = arr
+}
+
 /** 搜索按钮操作 */
 const handleQuery = () => {
    // IP地址的正则表达式
@@ -490,6 +411,7 @@ const handleExport = async () => {
 
 /** 初始化 **/
 onMounted(async () => {
+  getNavList()
   await getSensorIdMaxValue();
   getList()
 });

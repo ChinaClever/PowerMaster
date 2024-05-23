@@ -1,71 +1,55 @@
 <template>
-  <el-row :gutter="20">
-   <el-col :span="treeWidth" :xs="24">
-     <el-input
-       v-model="filterText"
-       style="width: 190px"
-       placeholder=""
-     />
-
-     <el-tree
-       ref="treeRef"
-       style="max-width: 600px"
-       class="filter-tree"
-       :data="serverRoomArr"
-       :props="defaultProps"
-       default-expand-all
-       show-checkbox
-       :filter-node-method="filterNode"
-     />
-   </el-col>
-   <el-col :span="24 - treeWidth" :xs="24">
-     <ContentWrap>
+  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="PDU能耗排名" :showCheckbox="false">
+    <template #NavInfo>
+    
+    </template>
+    <template #ActionBar>
       <el-tabs v-model="activeName">
         <el-tab-pane label="日数据" name="dayTabPane"/>
         <el-tab-pane label="周数据" name="weekTabPane"/>
         <el-tab-pane label="月数据" name="monthTabPane"/>
       </el-tabs>
-       <!-- 搜索工作栏 -->
-       <el-form
-         class="-mb-15px"
-         :model="queryParams"
-         ref="queryFormRef"
-         :inline="true"
-         label-width="auto"
-       >
-        <el-form-item label="参数类型" prop="type">
-          <el-cascader
-            v-model="typeDefaultSelected"
-            collapse-tags
-            :options="typeSelection"
-            collapse-tags-tooltip
-            :show-all-levels="true"
-            @change="typeCascaderChange"
-            class="!w-140px"
-          />
-        </el-form-item>
+      <!-- 搜索工作栏 -->
+      <el-form
+        class="-mb-15px"
+        :model="queryParams"
+        ref="queryFormRef"
+        :inline="true"
+        label-width="auto"
+      >
+      <el-form-item label="参数类型" prop="type">
+        <el-cascader
+          v-model="typeDefaultSelected"
+          collapse-tags
+          :options="typeSelection"
+          collapse-tags-tooltip
+          :show-all-levels="true"
+          @change="typeCascaderChange"
+          class="!w-140px"
+        />
+      </el-form-item>
 
-        <el-form-item label="时间段" prop="timeRange" >
-          <el-date-picker
-            value-format="YYYY-MM-DD"
-            v-model="selectTimeRange"
-            type="daterange"
-            :shortcuts="shortcuts"
-            range-separator="-"
-            start-placeholder="开始时间"
-            end-placeholder="结束时间"
-            :disabled-date="disabledDate"
-            class="!w-350px"
-            @change="handleDayPick"
-          />
-        </el-form-item>
+      <el-form-item label="时间段" prop="timeRange" >
+        <el-date-picker
+          value-format="YYYY-MM-DD"
+          v-model="selectTimeRange"
+          type="daterange"
+          :shortcuts="shortcuts"
+          range-separator="-"
+          start-placeholder="开始时间"
+          end-placeholder="结束时间"
+          :disabled-date="disabledDate"
+          class="!w-350px"
+          @change="handleDayPick"
+        />
+      </el-form-item>
 
-         <el-form-item >
-           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-           <el-button type="primary" plain><Icon icon="ep:download" class="mr-5px" /> 导出</el-button>
-         </el-form-item>
-       </el-form>
-     <!-- 列表 -->
+        <el-form-item >
+          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button type="primary" plain><Icon icon="ep:download" class="mr-5px" /> 导出</el-button>
+        </el-form-item>
+      </el-form>
+      <!-- 列表 -->
       <el-tabs v-model="activeName1">
         <el-tab-pane label="图表" name="lineChart">
           <div v-loading="loading" ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
@@ -100,12 +84,13 @@
           </div>
         </el-tab-pane>
       </el-tabs>
-    </ContentWrap>
-    <ContentWrap style="overflow: visible;">
-      <div v-loading="loading1" ref="rankContainer" id="rankContainer" style="width: 70vw; height: 58vh;"></div>
-    </ContentWrap>
-   </el-col>
-  </el-row>
+    </template>
+    <template #Content>
+      <div style="overflow: visible;">
+        <div v-loading="loading1" ref="rankContainer" id="rankContainer" style="width: 70vw; height: 58vh;"></div>
+      </div>
+    </template>
+  </CommonMenu>
 
 </template>
 
@@ -113,11 +98,15 @@
 import { ElTree, ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
+import { CabinetApi } from '@/api/cabinet/info'
 import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
 import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption'
 import { HistoryDataApi } from '@/api/pdu/historydata'
 
 defineOptions({ name: 'ECDistribution' })
+
+const navList = ref([]) as any // 左侧导航栏树结构列表
+const nowAddress = ref('')
 const activeName = ref('dayTabPane')
 const activeName1 = ref('lineChart')
 const tableData = ref<Array<{ }>>([]); // 折线图表格数据
@@ -130,8 +119,9 @@ const queryParams = reactive({
   type: 'total',
   granularity: 'day',
   ipAddr: undefined,
+  cascadeAddr: undefined,
   // 进入页面原始数据默认显示最近2周
-  timeRange: ['', '']
+  timeRange: ['', ''],
 })
 
 // 默认查询的时间范围，单位：天
@@ -212,89 +202,8 @@ const shortcuts = [
   },
 ]
 
-const serverRoomArr =  [
- {
-   value: '1',
-   label: '机房1',
-   children: [
-     {
-       value: '1-1',
-       label: '柜列1',
-       children: [
-       {
-         value: '1-1-1',
-         label: '机柜1',
-       },
-       {
-         value: '1-1-2',
-         label: '机柜2',
-       },]
-     },
-   ],
- },
- {
-   value: '2',
-   label: '机房2',
-   children: [
-     {
-       value: '2-1',
-       label: '柜列1',
-       children: [
-       {
-         value: '2-1-1',
-         label: '机柜1',
-       },
-       {
-         value: '2-1-2',
-         label: '机柜2',
-       },]
-     },
-   ],
- },
- {
-   value: '3',
-   label: '机房3',
-   children: [
-     {
-       value: '3-1',
-       label: '柜列1',
-       children: [
-       {
-         value: '3-1-1',
-         label: '机柜1',
-       },
-       {
-         value: '3-1-2',
-         label: '机柜2',
-       },]
-     },
-   ],
- },
-]
-//折叠功能
-let treeWidth = ref(3)
-let isCollapsed = ref(0);
-const toggleCollapse = () => {
- treeWidth.value = isCollapsed.value == 0 ? 3 : 0;
-};
-interface Tree {
- [key: string]: any
-}
-const filterText = ref('')
-const treeRef = ref<InstanceType<typeof ElTree>>()
-const filterNode = (value: string, data: Tree) => {
- if (!value) return true
- return data.label.includes(value)
-}
-const defaultProps = {
- children: 'children',
- label: 'label',
-}
-watch(filterText, (val) => {
- treeRef.value!.filter(val)
-})
-const loading = ref(true) 
-const loading1 = ref(true) 
+const loading = ref(false) 
+const loading1 = ref(false) 
 // 总/输出位筛选
 const typeDefaultSelected = ref(['total'])
 const typeSelection = ref([]) as any;
@@ -413,10 +322,13 @@ loading1.value = true
 const chartContainer = ref<HTMLElement | null>(null);
 let lineChart = null as echarts.ECharts | null; 
 const initLineChart = () => {
+  if (lineChart) {
+    lineChart.dispose(); // 销毁之前的实例
+  }
   if (chartContainer.value && instance) {
     lineChart = echarts.init(chartContainer.value);
     lineChart.setOption({
-      title: { text: '[位置]总耗电量'+formatNumber(totalEqData.value, 1)+'kWh', top: -4},
+      title: { text: nowAddress.value+' 总耗电量'+formatNumber(totalEqData.value, 1)+'kWh', top: -4},
       tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
       legend: { data: []},
       grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true},
@@ -437,6 +349,9 @@ const initLineChart = () => {
 const rankContainer = ref<HTMLElement | null>(null);
 let rankChart = null as echarts.ECharts | null; 
 const initRankChart = () => {
+  if (rankChart) {
+    rankChart.dispose(); // 销毁之前的实例
+  }
   if (rankContainer.value && instance) {
     rankChart = echarts.init(rankContainer.value);
     rankChart.setOption({
@@ -491,24 +406,30 @@ const initRankChart = () => {
           smooth: true,
           valueAnimation: true,
           label: {
-            show: true,
-            position: "right",
-            valueAnimation: true,
-            offset: [5, -2],
-            color: "#333",
-            fontSize: 16,
-            // formatter: '{value}kWh'
+            normal: {
+              show: true,
+              position: "right",
+              valueAnimation: true,
+              offset: [5, -2],
+              textStyle: {
+                color: "#333",
+                fontSize: 16,
+              },
+              // formatter: '{value}kWh'
+            },
           },
-          emphasis: {
-            itemStyle: {
-              borderRadius: 7,
+          itemStyle: {
+            emphasis: {
+              barBorderRadius: 7,
             },
             //颜色样式部分
-              borderRadius: 7,
+             normal: {
+              barBorderRadius: 7,
               color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
                 { offset: 0, color: "#3977E6" },
                 { offset: 1, color: "#37BBF8" },
               ]),
+            },
           },
         },
       ],
@@ -612,6 +533,43 @@ window.addEventListener('resize', function() {
   rankChart?.resize();  
 });
 
+// 导航栏选择后触发
+const handleClick = async (row) => {
+   if(row.type != null  && row.type == 4){
+    queryParams.pduId = undefined
+    queryParams.ipAddr = row.ip
+    queryParams.cascadeAddr = row?.unique?.split("-")[1];
+    findFullName(navList.value, row.unique, fullName => {
+      nowAddress.value = fullName
+    });
+    handleQuery();
+  }
+}
+
+// 得到位置全名
+function findFullName(data, targetUnique, callback, fullName = '') {
+  for (let item of data) {
+    const newFullName = fullName === '' ? item.name : fullName + '-' + item.name;
+    if (item.unique === targetUnique) {
+      callback(newFullName);
+    }
+    if (item.children && item.children.length > 0) {
+      findFullName(item.children, targetUnique, callback, newFullName);
+    }
+  }
+}
+
+// 接口获取机房导航列表
+const getNavList = async() => {
+  const res = await CabinetApi.getRoomList({})
+  let arr = [] as any
+  for (let i=0; i<res.length;i++){
+  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  arr = arr.concat(temp);
+  }
+  navList.value = arr
+}
+
 /** 搜索按钮操作 */
 const handleQuery = async() => {
   await getLineChartData();
@@ -622,16 +580,19 @@ const handleQuery = async() => {
 
 /** 初始化 **/
 onMounted(async () => {
-   // 获取路由参数中的 pdu_id
+  getNavList()
+  getTypeMaxValue();
+  // 获取路由参数中的 pdu_id
   const queryPduId = useRoute().query.pduId as string | undefined;
-  queryParams.pduId = queryPduId ? parseInt(queryPduId, 10) : 22;
-  // if (queryParams.pduId != undefined){
-    getTypeMaxValue();
+  const queryAddress = useRoute().query.address as string | undefined;
+  queryParams.pduId = queryPduId ? parseInt(queryPduId, 10) : undefined;
+  nowAddress.value = queryAddress ? queryAddress : '';
+  if (queryParams.pduId != undefined){
     await getLineChartData();
     await getRankChartData();
     initLineChart();
     initRankChart();
-  // }
+  }
 })
 
 </script>

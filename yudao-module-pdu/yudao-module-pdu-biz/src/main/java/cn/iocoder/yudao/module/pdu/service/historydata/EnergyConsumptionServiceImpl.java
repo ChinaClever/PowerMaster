@@ -54,6 +54,12 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
         }
+        List<String> pduIds = null;
+        String[] ipArray = pageReqVO.getIpArray();
+        if (ipArray != null){
+            pduIds = historyDataService.getPduIdsByIps(ipArray);
+            searchSourceBuilder.query(QueryBuilders.termsQuery("pdu_id", pduIds));
+        }
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
         switch (pageReqVO.getType()) {
@@ -132,6 +138,12 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
         }
+        List<String> pduIds = null;
+        String[] ipArray = pageReqVO.getIpArray();
+        if (ipArray != null){
+            pduIds = historyDataService.getPduIdsByIps(ipArray);
+            searchSourceBuilder.query(QueryBuilders.termsQuery("pdu_id", pduIds));
+        }
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
         switch (pageReqVO.getType()) {
@@ -186,6 +198,12 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
     @Override
     public PageResult<Object> getEQDataDetails(EnergyConsumptionPageReqVO reqVO) throws IOException {
         Integer pduId = reqVO.getPduId();
+        if (Objects.equals(pduId, null)){
+            pduId = historyDataService.getPduIdByAddr(reqVO.getIpAddr(), reqVO.getCascadeAddr());
+            if (Objects.equals(pduId, null)){
+                return null;
+            }
+        }
         // 创建BoolQueryBuilder对象
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         // 搜索源构建对象
@@ -254,6 +272,12 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
     @Override
     public List<Object> getOutletsEQData(EnergyConsumptionPageReqVO reqVO) throws IOException {
         Integer pduId = reqVO.getPduId();
+        if (Objects.equals(pduId, null)){
+            pduId = historyDataService.getPduIdByAddr(reqVO.getIpAddr(), reqVO.getCascadeAddr());
+            if (Objects.equals(pduId, null)){
+                return null;
+            }
+        }
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
@@ -331,6 +355,12 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
         }
+        List<String> pduIds = null;
+        String[] ipArray = pageReqVO.getIpArray();
+        if (ipArray != null){
+            pduIds = historyDataService.getPduIdsByIps(ipArray);
+            searchSourceBuilder.query(QueryBuilders.termsQuery("pdu_id", pduIds));
+        }
         switch (pageReqVO.getType()) {
             case "total":
                 // 搜索请求对象
@@ -387,4 +417,5 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
 
         return pageResult;
     }
+
 }

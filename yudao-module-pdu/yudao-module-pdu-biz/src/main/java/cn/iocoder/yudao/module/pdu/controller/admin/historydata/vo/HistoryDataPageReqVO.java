@@ -36,4 +36,6 @@ public class HistoryDataPageReqVO extends PageParam {
 
     private String[] timeRange;
 
+    private String[] ipArray;
+
 }

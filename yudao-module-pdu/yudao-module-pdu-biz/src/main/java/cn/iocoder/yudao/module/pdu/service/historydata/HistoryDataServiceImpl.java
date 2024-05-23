@@ -129,6 +129,15 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     }
 
     @Override
+    public List<String> getPduIdsByIps(String[] ips){
+        QueryWrapper<PduIndex> queryWrapper = new QueryWrapper<>();
+        queryWrapper.select("id");
+        queryWrapper.in("dev_key", ips);  // your_column为数据库表中要查询的字段名
+        return pduIndexMapper.selectObjs(queryWrapper);
+
+    }
+
+    @Override
     public Map getHistoryDataTypeMaxValue() throws IOException {
         HashMap resultMap = new HashMap<>();
         String[] indexArr = new String[]{"pdu_hda_line_realtime", "pdu_hda_loop_realtime", "pdu_hda_outlet_realtime"};
@@ -211,6 +220,12 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
+        }
+        List<String> pduIds = null;
+        String[] ipArray = pageReqVO.getIpArray();
+        if (ipArray != null){
+            pduIds = getPduIdsByIps(ipArray);
+            searchSourceBuilder.query(QueryBuilders.termsQuery("pdu_id", pduIds));
         }
         switch (pageReqVO.getType()) {
             case "total":
@@ -478,7 +493,12 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 searchSourceBuilder.query(QueryBuilders.matchAllQuery());
             }
         }
-
+        List<String> pduIds = null;
+        String[] ipArray = pageReqVO.getIpArray();
+        if (ipArray != null){
+            pduIds = getPduIdsByIps(ipArray);
+            searchSourceBuilder.query(QueryBuilders.termsQuery("pdu_id", pduIds));
+        }
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
         if ("realtime".equals(pageReqVO.getGranularity())) {
