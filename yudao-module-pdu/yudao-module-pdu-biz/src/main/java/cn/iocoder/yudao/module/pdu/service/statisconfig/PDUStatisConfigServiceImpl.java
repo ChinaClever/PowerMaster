@@ -1,21 +1,17 @@
 package cn.iocoder.yudao.module.pdu.service.statisconfig;
 
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
 import cn.iocoder.yudao.module.pdu.controller.admin.statisconfig.vo.*;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.statisconfig.StatisConfigDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 
-import cn.iocoder.yudao.module.pdu.dal.mysql.statisconfig.StatisConfigMapper;
+import cn.iocoder.yudao.module.pdu.dal.mysql.statisconfig.PDUStatisConfigMapper;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.pdu.enums.ErrorCodeConstants.*;
@@ -27,19 +23,19 @@ import static cn.iocoder.yudao.module.pdu.enums.ErrorCodeConstants.*;
  */
 @Service
 @Validated
-public class StatisConfigServiceImpl implements StatisConfigService {
+public class PDUStatisConfigServiceImpl implements PDUStatisConfigService {
 
     @Value("${pdu-cal-refresh-url}")
     public String adder;
     @Resource
-    private StatisConfigMapper statisConfigMapper;
+    private PDUStatisConfigMapper PDUStatisConfigMapper;
 
     @Override
     public Integer createStatisConfig(StatisConfigSaveReqVO createReqVO) {
         try {
             // 插入
             StatisConfigDO statisConfig = BeanUtils.toBean(createReqVO, StatisConfigDO.class);
-            statisConfigMapper.insert(statisConfig);
+            PDUStatisConfigMapper.insert(statisConfig);
             // 返回
             return statisConfig.getId();
         }finally {
@@ -55,7 +51,7 @@ public class StatisConfigServiceImpl implements StatisConfigService {
             validateStatisConfigExists(updateReqVO.getId());
             // 更新
             StatisConfigDO updateObj = BeanUtils.toBean(updateReqVO, StatisConfigDO.class);
-            statisConfigMapper.updateById(updateObj);
+            PDUStatisConfigMapper.updateById(updateObj);
         }finally {
             HttpUtil.get(adder);
         }
@@ -68,7 +64,7 @@ public class StatisConfigServiceImpl implements StatisConfigService {
             // 校验存在
             validateStatisConfigExists(id);
             // 删除
-            statisConfigMapper.deleteById(id);
+            PDUStatisConfigMapper.deleteById(id);
         }finally {
             HttpUtil.get(adder);
         }
@@ -76,19 +72,19 @@ public class StatisConfigServiceImpl implements StatisConfigService {
     }
 
     private void validateStatisConfigExists(Integer id) {
-        if (statisConfigMapper.selectById(id) == null) {
+        if (PDUStatisConfigMapper.selectById(id) == null) {
             throw exception(STATIS_CONFIG_NOT_EXISTS);
         }
     }
 
     @Override
     public StatisConfigDO getStatisConfig(Integer id) {
-        return statisConfigMapper.selectById(id);
+        return PDUStatisConfigMapper.selectById(id);
     }
 
     @Override
     public PageResult<StatisConfigDO> getStatisConfigPage(StatisConfigPageReqVO pageReqVO) {
-        return statisConfigMapper.selectPage(pageReqVO);
+        return PDUStatisConfigMapper.selectPage(pageReqVO);
     }
 
 }

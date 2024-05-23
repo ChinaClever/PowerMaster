@@ -35,29 +35,7 @@
           </div>
         </div> -->
         <div class="line"></div>
-        <div class="overview">
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>总电能</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-        </div>
+
       </div>
     </template>
     <template #ActionBar>
@@ -751,7 +729,6 @@ const getList = async () => {
 
     var apow = CabinetInfo?.cabinet_power?.path_a?.pow_active;
     var bpow = CabinetInfo?.cabinet_power?.path_b?.pow_active;
-    console.log("apow",apow,"bpow",bpow)
     var percentageValue = 50 as any;
     if(apow == null && bpow == null){
       percentageValue = null;
@@ -767,9 +744,10 @@ const getList = async () => {
       percentageValue = apow / (apow + bpow);
       percentageValue *= 100;
     }
+    console.log("aisle_name",CabinetInfo)
     temp.push({
       baseInfoName : "所属位置",
-      baseInfoValue : CabinetInfo?.room_name + (CabinetInfo?.room_name ? '-' : null)  + CabinetInfo?.cabinet_name,
+      baseInfoValue : CabinetInfo?.aisle_name ? CabinetInfo?.room_name + '-' +  CabinetInfo?.aisle_name + '-'  + CabinetInfo?.cabinet_name : CabinetInfo?.room_name + '-' + CabinetInfo?.cabinet_name,
       consumeName : "当前总视在功率",
       consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_apparent?.toFixed(3) + "kVA",
       percentageName: "当前AB路占比",

@@ -58,4 +58,8 @@ export const IndexApi = {
   getRackAll: async (params: any) => {
     return await request.get({ url: `/room/rack/menu`, params })
   },
+
+  getRackRedis: async (params: any) => {
+    return await request.get({ url: `/rack/index/redisData`, params })
+  },
 }

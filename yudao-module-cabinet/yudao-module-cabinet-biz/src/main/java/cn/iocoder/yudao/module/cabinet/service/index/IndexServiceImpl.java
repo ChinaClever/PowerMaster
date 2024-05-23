@@ -21,6 +21,7 @@ import cn.iocoder.yudao.module.cabinet.dal.dataobject.temcolor.TemColorDO;
 import cn.iocoder.yudao.module.cabinet.dal.mysql.temcolor.TemColorMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.*;
 import cn.iocoder.yudao.module.cabinet.service.temcolor.TemColorService;
+import com.alibaba.fastjson2.JSONObject;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -36,6 +37,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -938,16 +940,17 @@ public class IndexServiceImpl implements IndexService {
 
         PageResult<IndexDO> indexDOPageResult = indexMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<IndexDO>()
                 .inIfPresent(IndexDO::getId, pageReqVO.getCabinetIds()));
-
+        ValueOperations ops = redisTemplate.opsForValue();
         List<CabinetEnvAndHumRes> result = new ArrayList<>();
         List<TemColorDO> temColorList = temColorService.getTemColorAll();
         for (IndexDO indexDO : indexDOPageResult.getList()) {
             CabinetEnvAndHumRes res = new CabinetEnvAndHumRes();
             result.add(res);
             String localtion = null;
-            String roomName = roomIndexMapper.selectById(indexDO.getRoomId()).getName();
+            JSONObject cabinetObject = (JSONObject) ops.get("packet:cabinet:" + indexDO.getRoomId() + '-' + indexDO.getId());
+            String roomName = cabinetObject.getString("room_name");
             if(indexDO.getAisleId() != 0){
-                String aisleName = aisleIndexMapper.selectById(indexDO.getAisleId()).getName();
+                String aisleName = cabinetObject.getString("aisle_name");
                 localtion = roomName + "-" + aisleName + "-" + indexDO.getName();
             }else {
                 localtion = roomName + "-"  + indexDO.getName() ;

@@ -524,7 +524,7 @@ const getList = async () => {
   }
   
 
-  // var PDU = await IndexApi.PDUDisplay(queryParams);
+  var PDU = await IndexApi.getRackRedis(queryParams);
   // var temp = [] as any;
   // var baseInfo = await IndexApi.getPDUDevicePage(queryParams);
   // // 假设 PDU.pdu_data.output_item_list.pow_value 是一个 double 数组

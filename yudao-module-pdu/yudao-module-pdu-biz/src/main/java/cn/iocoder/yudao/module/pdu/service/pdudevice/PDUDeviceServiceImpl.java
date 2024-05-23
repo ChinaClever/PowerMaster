@@ -158,10 +158,11 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             if(cabinetPduA != null){
                 int cabinetId = cabinetPduA.getCabinetId();
                 CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
-                String cabinetName = cabinet.getName();
-                String roomName = roomIndexMapper.selectById(cabinet.getRoomId()).getName();
+                JSONObject cabinetObject = (JSONObject) ops.get("packet:cabinet:" + cabinet.getRoomId() + '-' + cabinet.getId());
+                String cabinetName = cabinetObject.getString("cabinet_name");;
+                String roomName = cabinetObject.getString("room_name");;
                 if(cabinet.getAisleId() != 0){
-                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+                    String aisleName = cabinetObject.getString("aisle_name");;
                     localtion = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
                 }else {
                     localtion = roomName + "-"  + cabinetName +  "-" + "A路";
@@ -170,10 +171,11 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             if(cabinetPduB != null){
                 int cabinetId = cabinetPduB.getCabinetId();
                 CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
-                String cabinetName = cabinet.getName();
-                String roomName = roomIndexMapper.selectById(cabinet.getRoomId()).getName();
+                JSONObject cabinetObject = (JSONObject) ops.get("packet:cabinet:" + cabinet.getRoomId() + '-' + cabinet.getId());
+                String cabinetName = cabinetObject.getString("cabinet_name");;
+                String roomName = cabinetObject.getString("room_name");;
                 if(cabinet.getAisleId() != 0){
-                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+                    String aisleName = cabinetObject.getString("aisle_name");;
                     localtion = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";
                 }else {
                     localtion = roomName + "-"  + cabinetName +  "-" + "B路";
@@ -275,6 +277,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
         PageResult<PduIndex> pduIndexPageResult = null;
         List<PDULineRes> result = new ArrayList<>();
+        ValueOperations ops = redisTemplate.opsForValue();
         if(pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
             List<String> ipAddrList = new ArrayList<>();
             List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().inIfPresent(CabinetPdu::getCabinetId, pageReqVO.getCabinetIds()));
@@ -312,10 +315,11 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             if(cabinetPduA != null){
                 int cabinetId = cabinetPduA.getCabinetId();
                 CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
-                String cabinetName = cabinet.getName();
-                String roomName = roomIndexMapper.selectById(cabinet.getRoomId()).getName();
+                JSONObject cabinetObject = (JSONObject) ops.get("packet:cabinet:" + cabinet.getRoomId() + '-' + cabinet.getId());
+                String cabinetName = cabinetObject.getString("cabinet_name");;
+                String roomName = cabinetObject.getString("room_name");;
                 if(cabinet.getAisleId() != 0){
-                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+                    String aisleName = cabinetObject.getString("aisle_name");;
                     localtion = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
                 }else {
                     localtion = roomName + "-"  + cabinetName +  "-" + "A路";
@@ -324,10 +328,11 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             if(cabinetPduB != null){
                 int cabinetId = cabinetPduB.getCabinetId();
                 CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
-                String cabinetName = cabinet.getName();
-                String roomName = roomIndexMapper.selectById(cabinet.getRoomId()).getName();
+                JSONObject cabinetObject = (JSONObject) ops.get("packet:cabinet:" + cabinet.getRoomId() + '-' + cabinet.getId());
+                String cabinetName = cabinetObject.getString("cabinet_name");;
+                String roomName = cabinetObject.getString("room_name");;
                 if(cabinet.getAisleId() != 0){
-                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+                    String aisleName = cabinetObject.getString("aisle_name");;
                     localtion = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";
                 }else {
                     localtion = roomName + "-"  + cabinetName +  "-" + "B路";
