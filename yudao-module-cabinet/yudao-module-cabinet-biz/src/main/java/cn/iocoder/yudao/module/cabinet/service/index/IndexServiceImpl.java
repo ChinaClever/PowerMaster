@@ -140,7 +140,7 @@ public class IndexServiceImpl implements IndexService {
         Map result = new HashMap<>();
         if(Id != null){
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            if(timeType.equals(0) || oldTime.equals(newTime)){
+            if(timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())){
                 if(oldTime.equals(newTime)){
                     newTime = newTime.withHour(23).withMinute(59).withSecond(59);
                 }
@@ -288,7 +288,7 @@ public class IndexServiceImpl implements IndexService {
         Map result = new HashMap<>();
         if(Id != null){
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            if(timeType.equals(0) || oldTime.equals(newTime)){
+            if(timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())){
                 if(oldTime.equals(newTime)){
                     newTime = newTime.withHour(23).withMinute(59).withSecond(59);
                 }
@@ -652,7 +652,7 @@ public class IndexServiceImpl implements IndexService {
 //        if(Id != null){
 //
 //            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-//            if(timeType.equals(0) || oldTime.equals(newTime)){
+//            if(timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())){
 //                if(oldTime.equals(newTime)){
 //                    newTime = newTime.withHour(23).withMinute(59).withSecond(59);
 //                }
@@ -767,7 +767,7 @@ public class IndexServiceImpl implements IndexService {
         Map result = new HashMap<>();
         if(Id != null){
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            if(timeType.equals(0) || oldTime.equals(newTime)){
+            if(timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())){
                 if(oldTime.equals(newTime)){
                     newTime = newTime.withHour(23).withMinute(59).withSecond(59);
                 }

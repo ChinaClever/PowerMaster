@@ -7,4 +7,6 @@ public interface ErrorCodeConstants {
     ErrorCode INDEX_NOT_EXISTS = new ErrorCode(11111245, "机柜索引不存在");
 
 
+
+
 }

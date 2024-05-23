@@ -1,9 +1,11 @@
 <template>
-  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="false"  :lazy="true" :load="loadNode" navTitle="PDU报表">
+  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="false"  :lazy="true" :load="loadNode" navTitle="机架报表">
     <template #NavInfo>
       <div >
         <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
+          <div class="name">微模块机房</div>
+          <div>机房202</div>
         </div>
         <div class="line"></div>
         <!-- <div class="status">
@@ -33,7 +35,29 @@
           </div>
         </div> -->
         <div class="line"></div>
-
+        <div class="overview">
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+            <div class="info">
+              <div>总电能</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
+          </div>
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
+            <div class="info">
+              <div>今日用电</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
+          </div>
+          <div class="count">
+            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
+            <div class="info">
+              <div>今日用电</div>
+              <div class="value">295.87 kW·h</div>
+            </div>
+          </div>
+        </div>
       </div>
     </template>
     <template #ActionBar>
@@ -54,24 +78,15 @@
           />
         </el-form-item> -->
 
-        <el-form-item label="IP地址" prop="ipAddr" >
+        <el-form-item label="机架id" prop="Id" >
           <el-input
-            v-model="queryParams.ipAddr"
+            v-model="queryParams.Id"
             placeholder="请输入IP地址"
             clearable
             class="!w-140px"
           />
         </el-form-item>
 
-        <el-form-item label="级联地址" prop="cascadeAddr" label-width="70px">
-          <el-input-number
-            v-model="queryParams.cascadeAddr"
-            :min="0"
-            controls-position="right"
-            :value-on-clear="0"
-              class="!w-100px"
-          />
-        </el-form-item>
         <el-form-item label="时间段" prop="createTime" label-width="100px">
           <el-button 
             @click="queryParams.timeType = 0;now = new Date();now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 0;handleDayPick();handleQuery()" 
@@ -137,7 +152,7 @@
       <div v-show="visControll.visAllReport" class="page" >
         <div class="pageBox" >
           <div class="page-conTitle">
-            PDU基本信息
+            机架基本信息
           </div>
           <el-row :gutter="24" >
             <el-col :span="24 - serChartContainerWidth">
@@ -201,7 +216,7 @@
           <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kVA， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kVA， 发生时间{{powData.activePowMinTime}}</p>
           <div ref="powChartContainer" id="powChartContainer" style="width: 70vw; height: 58vh;"></div>
         </div>
-        <div class="pageBox" v-if="visControll.outletVis">
+        <!-- <div class="pageBox" v-if="visControll.outletVis">
           <div class="page-conTitle" >
             输出位电量排名
           </div>
@@ -215,7 +230,7 @@
           <p v-show="temData.temMaxValue">本周期内，最高温度{{temData.temMaxValue}}°C， 最高温度发生时间{{temData.temMaxTime}}，由温度传感器{{temData.temMaxSensorId}}采集得到</p>
           <p v-show="temData.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{temData.temMinValue}}°C， 最高温度发生时间{{temData.temMinTime}}，由温度传感器{{temData.temMinSensorId}}采集得到</p>
           <div ref="temChartContainer" id="temChartContainer" style="width: 70vw; height: 58vh;"></div>
-        </div>
+        </div> -->
       </div>
     </template>
   </CommonMenu>
@@ -226,7 +241,7 @@
 
 <script setup lang="ts">
 // import download from '@/utils/download'
-import { PDUDeviceApi } from '@/api/pdu/pdudevice'
+import { IndexApi } from '@/api/rack/index'
 import * as echarts from 'echarts';
 import { ElTree } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
@@ -247,7 +262,7 @@ const visControll = reactive({
   outletVis : false,
   temVis : false,
 })
-const serChartContainerWidth = ref(10)
+const serChartContainerWidth = ref(0)
 
 const disabledDate = (date) => {
   // 获取今天的日期
@@ -346,6 +361,20 @@ const areDatesEqual = (date1, date2) => {
 }
 
 
+const loadNode = async (node: Node, resolve: (data: Tree[]) => void) => {
+  if (node.level === 0) {
+    var temp = await CabinetApi.getRoomList({});
+    return resolve(temp)
+  }
+  if (node.level === 1){
+    var temp = await IndexApi.getRackAll({id : node.data.id});
+    return resolve(temp[0].children);
+  } 
+  if (node.level >= 2){
+    return resolve(node?.data?.children);
+  } 
+}
+
 // const activeNames = ref(["1","2","3","4","5"])
 
 const PDUTableData = ref([]) as any
@@ -369,24 +398,11 @@ const queryParams = reactive({
   cascadeAddr : 0
 }) as any
 
-const loadNode = async (node: Node, resolve: (data: Tree[]) => void) => {
-  if (node.level === 0) {
-    var temp = await CabinetApi.getRoomList({});
-    return resolve(temp)
-  }
-  if (node.level === 1){
-    var temp = await CabinetApi.getRoomPDUList({id : node.data.id});
-    return resolve(temp[0].children);
-  } 
-  if (node.level >= 2){
-    return resolve(node?.data?.children);
-  } 
-}
 
 const handleClick = (row) => {
-  if(row.type != null  && row.type == 4){
-    queryParams.ipAddr = row.ip
-    queryParams.cascadeAddr = row?.unique?.split("-")[1];
+  if(row.type != null  && row.type == 5){
+    console.log(row.id)
+    queryParams.Id = row.id
     handleQuery();
   }
 }
@@ -443,58 +459,55 @@ const powData = ref<PowData>({
   activePowMinTime : ""
 }) as any
 
-interface TemData {
-  temAvgValue: any;
-  time: string[];
-  temMaxValue : number;
-  temMaxTime : string;
-  temMaxSensorId : number;
-  temMinValue : number;
-  temMinTime : string;
-  temMinSensorId : number;
-}
-const temData = ref<TemData>({
-  temAvgValue : [],
-  time : [],
-  temMaxValue : 0,
-  temMaxTime : "",
-  temMaxSensorId : 0,
-  temMinValue : 0,
-  temMinTime : "",
-  temMinSensorId : 0,
-}) as any
+// interface TemData {
+//   temAvgValue: any;
+//   time: string[];
+//   temMaxValue : number;
+//   temMaxTime : string;
+//   temMaxSensorId : number;
+//   temMinValue : number;
+//   temMinTime : string;
+//   temMinSensorId : number;
+// }
+// const temData = ref<TemData>({
+//   temAvgValue : [],
+//   time : [],
+//   temMaxValue : 0,
+//   temMaxTime : "",
+//   temMaxSensorId : 0,
+//   temMinValue : 0,
+//   temMinTime : "",
+//   temMinSensorId : 0,
+// }) as any
 
-interface ServerData {
-  nameAndMax: object[];
-  value: number[];
-}
-const serverData = ref<ServerData>({
-  nameAndMax : [
-  ],
-  value: []
-}) as any
+// interface ServerData {
+//   nameAndMax: object[];
+//   value: number[];
+// }
+// const serverData = ref<ServerData>({
+//   nameAndMax : [
+//   ],
+//   value: []
+// }) as any
 
-interface OutLetRankData {
-  outLetId: string[];
-  eleValue: number[];
-}
+// interface OutLetRankData {
+//   outLetId: string[];
+//   eleValue: number[];
+// }
 
-const outletRankData = ref<OutLetRankData>({
-  outLetId : [],
-  eleValue : [],
-}) as any
+// const outletRankData = ref<OutLetRankData>({
+//   outLetId : [],
+//   eleValue : [],
+// }) as any
 
 //树型控件
-interface Tree {
-  [key: string]: any
-}
 
 const filterText = ref('')
 const treeRef = ref<InstanceType<typeof ElTree>>()
 
 const getList = async () => {
   loading.value = true
-  eqData.value = await PDUDeviceApi.getConsumeData(queryParams);
+  eqData.value = await IndexApi.getConsumeData(queryParams);
   if( eqData.value.eq && eqData.value.eq.length > 0){
     visControll.eqVis = true;
     eqData.value.eq.forEach((obj,index)=>{
@@ -514,7 +527,7 @@ const getList = async () => {
   }
   
 
-  powData.value = await PDUDeviceApi.getPowData(queryParams);
+  powData.value = await IndexApi.getPowData(queryParams);
   if(powData.value.activePowAvgValue && powData.value.activePowAvgValue.length > 0){
     visControll.powVis = true;
     powData.value.activePowAvgValue.forEach((obj,index)=>{
@@ -533,99 +546,71 @@ const getList = async () => {
     visControll.powVis = false;
   }
   
-  outletRankData.value = await PDUDeviceApi.getOutLetData(queryParams);
-  if(outletRankData.value.eleValue && outletRankData.value.eleValue.length > 0){
-    visControll.outletVis = true;
-    outletRankData.value.eleValue.forEach((obj,index)=>{
-      outletRankData.value.eleValue[index] = obj?.toFixed(1);
-    })
 
-    outletRankData.value.outLetId.forEach((obj,index)=>{
-      outletRankData.value.outLetId[index] = "输出位" + obj;
-    })
-  }else{
-    visControll.outletVis = false;
-  }
-  
-  temData.value = await PDUDeviceApi.getTemData(queryParams);
-  if(temData.value.temAvgValue && temData.value.temAvgValue[1] && temData.value.temAvgValue[1]?.length > 0){
-    visControll.temVis = true;
-    temData.value.temAvgValue?.forEach((obj,index) => {
-      obj?.forEach((element,innerIndex) => {
-        temData.value.temAvgValue[index][innerIndex] = element?.toFixed(2);
-      });
-    });
-    
-    temData.value.temMinValue = temData.value.temMinValue?.toFixed(2);
-    temData.value.temMaxValue = temData.value.temMaxValue?.toFixed(2);
-  }else{
-    visControll.temVis = false;
-  }
+  // var PDU = await IndexApi.PDUDisplay(queryParams);
+  // var temp = [] as any;
+  // var baseInfo = await IndexApi.getPDUDevicePage(queryParams);
+  // // 假设 PDU.pdu_data.output_item_list.pow_value 是一个 double 数组
+  // var powValueArray = PDU.pdu_data?.output_item_list?.pow_value;
+  // // 过滤出大于 0 的元素，并将值与下标保存到对象数组中
+  // if(powValueArray && powValueArray.length > 0){
+  //   var resultArray = [] as any;
+  //   for (var i = 0; i < powValueArray.length; i++) {
+  //     if (powValueArray[i] > 0) {
+  //       resultArray.push({
+  //         value: powValueArray[i],
+  //         index: i + 1
+  //       });
+  //     }
+  //   }
 
-  var PDU = await PDUDeviceApi.PDUDisplay(queryParams);
-  var temp = [] as any;
-  var baseInfo = await PDUDeviceApi.getPDUDevicePage(queryParams);
-  // 假设 PDU.pdu_data.output_item_list.pow_value 是一个 double 数组
-  var powValueArray = PDU.pdu_data?.output_item_list?.pow_value;
-  // 过滤出大于 0 的元素，并将值与下标保存到对象数组中
-  if(powValueArray && powValueArray.length > 0){
-    var resultArray = [] as any;
-    for (var i = 0; i < powValueArray.length; i++) {
-      if (powValueArray[i] > 0) {
-        resultArray.push({
-          value: powValueArray[i],
-          index: i + 1
-        });
-      }
-    }
+  //   // 按值进行排序
+  //   resultArray.sort(function(a, b) {
+  //     return a.value - b.value;
+  //   });
 
-    // 按值进行排序
-    resultArray.sort(function(a, b) {
-      return a.value - b.value;
-    });
+  //   // 只保留前十个元素
+  //   resultArray = resultArray.slice(0, 10);
 
-    // 只保留前十个元素
-    resultArray = resultArray.slice(0, 10);
-
-    // 根据 resultArray 中的元素生成 nameAndMax 数组和 value 数组
-    var element = [] as any;
-    var valueArr = [] as any;
-    for (var j = 0; j < resultArray.length; j++) {
-      var name = "输出位" + resultArray[j].index;
-      element.push({
-        name: name,
-        max: resultArray[j].value + 0.001
-      });
-      valueArr.push(resultArray[j].value?.toFixed(3))
-    }
-    serverData.value.nameAndMax = element;
-    serverData.value.value = valueArr;
-    serChartContainerWidth.value = 10;
-  }else{
-    serChartContainerWidth.value = 0;
-  }
+  //   // 根据 resultArray 中的元素生成 nameAndMax 数组和 value 数组
+  //   var element = [] as any;
+  //   var valueArr = [] as any;
+  //   for (var j = 0; j < resultArray.length; j++) {
+  //     var name = "输出位" + resultArray[j].index;
+  //     element.push({
+  //       name: name,
+  //       max: resultArray[j].value + 0.001
+  //     });
+  //     valueArr.push(resultArray[j].value?.toFixed(3))
+  //   }
+  //   serverData.value.nameAndMax = element;
+  //   serverData.value.value = valueArr;
+  //   serChartContainerWidth.value = 10;
+  // }else{
+  //   serChartContainerWidth.value = 0;
+  // }
   
 
-    temp.push({
-      baseInfoName : "所属位置",
-      baseInfoValue : baseInfo?.list && baseInfo?.list.length > 0 ? baseInfo?.list[0].location : "/",
-      consumeName : "消耗电量",
-      consumeValue : eqData.value.eq && eqData.value.eq.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '/',
-    })
-    temp.push({
-      baseInfoName : "网络地址",
-      baseInfoValue : queryParams.ipAddr + "-" + queryParams.cascadeAddr,
-      consumeName : "当前视在功率",
-      consumeValue : PDU?.pdu_data?.pdu_total_data ? PDU.pdu_data.pdu_total_data.pow_apparent.toFixed(3) + "kVA" : '/'
-    })
-    temp.push({
-      baseInfoName : "设备状态",
-      baseInfoValue : PDU.status != null ? PDU.status : '/',
-      pduAlarm : PDU.pdu_alarm,
-      consumeName : "当前功率因素",
-      consumeValue : PDU?.pdu_data?.pdu_total_data ? PDU.pdu_data.pdu_total_data.power_factor?.toFixed(2) : '/'
-    })
-    PDUTableData.value = temp;
+  //   temp.push({
+  //     baseInfoName : "所属位置",
+  //     baseInfoValue : baseInfo?.list && baseInfo?.list.length > 0 ? baseInfo?.list[0].location : "/",
+  //     consumeName : "消耗电量",
+  //     consumeValue : eqData.value.eq && eqData.value.eq.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '/',
+  //   })
+  //   temp.push({
+  //     baseInfoName : "网络地址",
+  //     baseInfoValue : queryParams.ipAddr + "-" + queryParams.cascadeAddr,
+  //     consumeName : "当前视在功率",
+  //     consumeValue : PDU?.pdu_data?.pdu_total_data ? PDU.pdu_data.pdu_total_data.pow_apparent.toFixed(3) + "kVA" : '/'
+  //   })
+  //   temp.push({
+  //     baseInfoName : "设备状态",
+  //     baseInfoValue : PDU.status != null ? PDU.status : '/',
+  //     pduAlarm : PDU.pdu_alarm,
+  //     consumeName : "当前功率因素",
+  //     consumeValue : PDU?.pdu_data?.pdu_total_data ? PDU.pdu_data.pdu_total_data.power_factor?.toFixed(2) : '/'
+  //   })
+  //   PDUTableData.value = temp;
   
   
   // initChart();
@@ -637,12 +622,12 @@ const rankChartContainer = ref<HTMLElement | null>(null);
 let rankChart = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
 const powChartContainer = ref<HTMLElement | null>(null);
 let powChart = null as echarts.ECharts | null; // 显式声明 powChart 的类型
-const temChartContainer = ref<HTMLElement | null>(null);
-let temChart = null as echarts.ECharts | null; // 显式声明 temChart 的类型
+// const temChartContainer = ref<HTMLElement | null>(null);
+// let temChart = null as echarts.ECharts | null; // 显式声明 temChart 的类型
 const serChartContainer = ref<HTMLElement | null>(null);
-let serChart = null as echarts.ECharts | null; // 显式声明 serChart 的类型
-const outputRankChartContainer = ref<HTMLElement | null>(null);
-let outputRankChart = null as echarts.ECharts | null; // 显式声明 serChart 的类型
+// let serChart = null as echarts.ECharts | null; // 显式声明 serChart 的类型
+// const outputRankChartContainer = ref<HTMLElement | null>(null);
+// let outputRankChart = null as echarts.ECharts | null; // 显式声明 serChart 的类型
 
 const initChart =  () => {
   if (rankChartContainer.value && instance && eqData.value.time && eqData.value.time.length > 0) {
@@ -681,41 +666,41 @@ const initChart =  () => {
     // 将 rankChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }
-  if (outputRankChartContainer.value && instance && outletRankData.value.outLetId  && outletRankData.value.outLetId.length > 0 ) {
-    outputRankChart = echarts.init(outputRankChartContainer.value);
-    outputRankChart.setOption({
-      // 这里设置 Echarts 的配置项和数据
-      dataZoom:[{ type:"inside"}],
-      title: { text: ''},
-      tooltip: { trigger: 'axis',formatter: function (params) {
-                                              var dataIndex = params[0].dataIndex;
-                                              var eleValue = outletRankData.value.eleValue[dataIndex];
-                                              return  outletRankData.value.outLetId[dataIndex] + "<br/>"  + params[0].marker + eleValue + " kWh"; // 自定义浮窗显示的内容
-                                            },},
-      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-      xAxis: { type: 'value' },
-      yAxis: {type: 'category' ,data:outletRankData.value.outLetId},
-      series: [
-        { type: 'bar', data: outletRankData.value.eleValue, label: { show: true, position: 'right' }, barWidth: barWid.value, 
-          itemStyle: {
-            emphasis: {
-              barBorderRadius: 7,
-            },
-            //颜色样式部分
-            normal: {
-              barBorderRadius: 7,
-              color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-                { offset: 0, color: "#3977E6" },
-                { offset: 1, color: "#37BBF8" },
-              ]),
-            },
-          },
-        },
-      ],
-    });
-    // 将 outputRankChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
-    instance.appContext.config.globalProperties.outputRankChart = outputRankChart;
-  }
+  // if (outputRankChartContainer.value && instance && outletRankData.value.outLetId  && outletRankData.value.outLetId.length > 0 ) {
+  //   outputRankChart = echarts.init(outputRankChartContainer.value);
+  //   outputRankChart.setOption({
+  //     // 这里设置 Echarts 的配置项和数据
+  //     dataZoom:[{ type:"inside"}],
+  //     title: { text: ''},
+  //     tooltip: { trigger: 'axis',formatter: function (params) {
+  //                                             var dataIndex = params[0].dataIndex;
+  //                                             var eleValue = outletRankData.value.eleValue[dataIndex];
+  //                                             return  outletRankData.value.outLetId[dataIndex] + "<br/>"  + params[0].marker + eleValue + " kWh"; // 自定义浮窗显示的内容
+  //                                           },},
+  //     toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+  //     xAxis: { type: 'value' },
+  //     yAxis: {type: 'category' ,data:outletRankData.value.outLetId},
+  //     series: [
+  //       { type: 'bar', data: outletRankData.value.eleValue, label: { show: true, position: 'right' }, barWidth: barWid.value, 
+  //         itemStyle: {
+  //           emphasis: {
+  //             barBorderRadius: 7,
+  //           },
+  //           //颜色样式部分
+  //           normal: {
+  //             barBorderRadius: 7,
+  //             color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+  //               { offset: 0, color: "#3977E6" },
+  //               { offset: 1, color: "#37BBF8" },
+  //             ]),
+  //           },
+  //         },
+  //       },
+  //     ],
+  //   });
+  //   // 将 outputRankChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+  //   instance.appContext.config.globalProperties.outputRankChart = outputRankChart;
+  // }
   if (powChartContainer.value && instance && powData.value.time && powData.value.time.length > 0) {
     powChart = echarts.init(powChartContainer.value);
     powChart.setOption({
@@ -750,63 +735,63 @@ const initChart =  () => {
     instance.appContext.config.globalProperties.powChart = powChart;
    
   }
-  if (temChartContainer.value && instance && temData.value.temAvgValue && temData.value.temAvgValue.length > 0) {
-    temChart = echarts.init(temChartContainer.value);
-    var seriesArr = [] as any;
-    var legendData = [] as any;
-    temData.value.temAvgValue?.forEach((obj,index) => {
-      if(index != 0 && temData.value.temAvgValue[index].length > 0){
-        seriesArr.push({
-          name: '温度传感器' + index,
-          type: 'line',
-          data: obj,
-          symbol: 'circle', 
-          symbolSize: 4,
-        });
-        legendData.push('温度传感器' + index)
-      }
-    });
-    temChart.setOption({
-      // 这里设置 Echarts 的配置项和数据
-      dataZoom:[{ type:"inside"}],
-      title: { text: ''},
-      tooltip: { trigger: 'axis',formatter: function(params) {
-                                    var result = params[0].name + '<br>';
-                                    for (var i = 0; i < params.length; i++) {
-                                      result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
-                                      if (params[i].seriesName.includes('温度')) {
-                                        result += '°C'; 
-                                      } 
-                                      result += '<br>';
-                                    }
-                                    return result;
-                                  } },
-      legend: { data: legendData},
+  // if (temChartContainer.value && instance && temData.value.temAvgValue && temData.value.temAvgValue.length > 0) {
+  //   temChart = echarts.init(temChartContainer.value);
+  //   var seriesArr = [] as any;
+  //   var legendData = [] as any;
+  //   temData.value.temAvgValue?.forEach((obj,index) => {
+  //     if(index != 0 && temData.value.temAvgValue[index].length > 0){
+  //       seriesArr.push({
+  //         name: '温度传感器' + index,
+  //         type: 'line',
+  //         data: obj,
+  //         symbol: 'circle', 
+  //         symbolSize: 4,
+  //       });
+  //       legendData.push('温度传感器' + index)
+  //     }
+  //   });
+  //   temChart.setOption({
+  //     // 这里设置 Echarts 的配置项和数据
+  //     dataZoom:[{ type:"inside"}],
+  //     title: { text: ''},
+  //     tooltip: { trigger: 'axis',formatter: function(params) {
+  //                                   var result = params[0].name + '<br>';
+  //                                   for (var i = 0; i < params.length; i++) {
+  //                                     result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
+  //                                     if (params[i].seriesName.includes('温度')) {
+  //                                       result += '°C'; 
+  //                                     } 
+  //                                     result += '<br>';
+  //                                   }
+  //                                   return result;
+  //                                 } },
+  //     legend: { data: legendData},
       
-      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-      xAxis: {
-          type: 'category', 
-          boundaryGap: false, 
-          data: temData.value.time[1]
-        },
-      yAxis: { type: 'value'},
-      series: seriesArr ,
-    });
-    // 将 temChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
-    instance.appContext.config.globalProperties.temChart = temChart;
-  }
-  if (serChartContainer.value && instance && serverData.value.nameAndMax && serverData.value.nameAndMax.length > 0) {
-    serChart = echarts.init(serChartContainer.value);
-    serChart.setOption({
-      radar: { indicator: serverData.value.nameAndMax },
-      series: [
-        { name: '服务器IT总视在功率', type: 'radar', label: { show: true, position: 'top' } ,data: [ { value: serverData.value.value, name: '总视在功率' }, ] }
-      ]
-    });
-    // 将 serChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
-    instance.appContext.config.globalProperties.serChart = serChart;
-  }
+  //     grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+  //     toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+  //     xAxis: {
+  //         type: 'category', 
+  //         boundaryGap: false, 
+  //         data: temData.value.time[1]
+  //       },
+  //     yAxis: { type: 'value'},
+  //     series: seriesArr ,
+  //   });
+  //   // 将 temChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+  //   instance.appContext.config.globalProperties.temChart = temChart;
+  // }
+  // if (serChartContainer.value && instance && serverData.value.nameAndMax && serverData.value.nameAndMax.length > 0) {
+  //   serChart = echarts.init(serChartContainer.value);
+  //   serChart.setOption({
+  //     radar: { indicator: serverData.value.nameAndMax },
+  //     series: [
+  //       { name: '服务器IT总视在功率', type: 'radar', label: { show: true, position: 'top' } ,data: [ { value: serverData.value.value, name: '总视在功率' }, ] }
+  //     ]
+  //   });
+  //   // 将 serChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+  //   instance.appContext.config.globalProperties.serChart = serChart;
+  // }
   visControll.visAllReport = true;
 };
 
@@ -815,17 +800,17 @@ const beforeRankUnmount = () => {
     rankChart?.dispose(); // 销毁图表实例
 };
 
-const beforeOutPutRankUnmount = () => {
-    outputRankChart?.dispose(); // 销毁图表实例
-};
+// const beforeOutPutRankUnmount = () => {
+//     outputRankChart?.dispose(); // 销毁图表实例
+// };
 
 const beforePowUnmount = () => {
     powChart?.dispose();  // 销毁图表实例
 };
 
-const beforeTemUnmount = () => {
-    temChart?.dispose(); // 销毁图表实例
-};
+// const beforeTemUnmount = () => {
+//     temChart?.dispose(); // 销毁图表实例
+// };
 
 // const beforeSerUnmount = () => {
 //     serChart?.dispose(); // 销毁图表实例
@@ -963,20 +948,21 @@ const arraySpanMethod = ({
 /** 搜索按钮操作 */
 const handleQuery = async () => {
 
-  if(queryParams.ipAddr){
+  if(queryParams.Id){
     if(queryParams.oldTime && queryParams.newTime){
-      queryParams.devKey = queryParams.ipAddr +'-' +  queryParams.cascadeAddr;
+
       await getList();
       beforeRankUnmount();
-      beforeOutPutRankUnmount();
+      // beforeOutPutRankUnmount();
       beforePowUnmount();
-      beforeTemUnmount();
+      // beforeTemUnmount();
       initChart();
-      queryParams.devKey = null;
+
     }
   }
   
 }
+
 
 /** 重置按钮操作 */
 // const resetQuery = () => {
@@ -1022,6 +1008,7 @@ const formRef = ref()
 onMounted( async () =>  {
   // getList();
   // initChart();
+
 })
 </script>
 <style scoped lang="scss">
