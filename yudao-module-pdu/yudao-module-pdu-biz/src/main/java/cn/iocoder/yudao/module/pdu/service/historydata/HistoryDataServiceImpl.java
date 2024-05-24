@@ -110,7 +110,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             }
         }
         if(cabinetPduB != null){
-            int cabinetId = cabinetPduA.getCabinetId();
+            int cabinetId = cabinetPduB.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
             String cabinetName = cabinet.getName();
             RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
