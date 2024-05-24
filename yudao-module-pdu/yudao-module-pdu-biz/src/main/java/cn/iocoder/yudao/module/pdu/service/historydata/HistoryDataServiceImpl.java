@@ -12,6 +12,7 @@ import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataDe
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataPageReqVO;
 import cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PduIndex;
 import cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PduIndexMapper;
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.elasticsearch.action.search.*;
 import org.elasticsearch.client.RequestOptions;
@@ -23,6 +24,8 @@ import org.elasticsearch.search.aggregations.metrics.Max;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 
@@ -36,6 +39,9 @@ import java.util.*;
  */
 @Service
 public class HistoryDataServiceImpl implements HistoryDataService {
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Autowired
     private PduIndexMapper pduIndexMapper;
@@ -83,6 +89,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     public String getAddressByLocation(String location) {
         String[] ipParts = location.split("-");
         String address = null;
+        ValueOperations ops = redisTemplate.opsForValue();
         CabinetPdu cabinetPduA = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
                 .eq(CabinetPdu::getPduIpA, ipParts[0])
                 .eq(CabinetPdu::getCasIdA, ipParts[1]));
@@ -92,10 +99,11 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         if(cabinetPduA != null){
             int cabinetId = cabinetPduA.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
-            String cabinetName = cabinet.getName();
-            String roomName = roomIndexMapper.selectById(cabinet.getRoomId()).getName();
+            JSONObject cabinetObject = (JSONObject) ops.get("packet:cabinet:" + cabinet.getRoomId() + '-' + cabinet.getId());
+            String cabinetName = cabinetObject.getString("cabinet_name");;
+            String roomName = cabinetObject.getString("room_name");;
             if(cabinet.getAisleId() != 0){
-                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+                String aisleName = cabinetObject.getString("aisle_name");;
                 address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
             }else {
                 address = roomName + "-"  + cabinetName +  "-" + "A路";
@@ -104,10 +112,11 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         if(cabinetPduB != null){
             int cabinetId = cabinetPduB.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
-            String cabinetName = cabinet.getName();
-            String roomName = roomIndexMapper.selectById(cabinet.getRoomId()).getName();
+            JSONObject cabinetObject = (JSONObject) ops.get("packet:cabinet:" + cabinet.getRoomId() + '-' + cabinet.getId());
+            String cabinetName = cabinetObject.getString("cabinet_name");;
+            String roomName = cabinetObject.getString("room_name");;
             if(cabinet.getAisleId() != 0){
-                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+                String aisleName = cabinetObject.getString("aisle_name");;
                 address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";
             }else {
                 address = roomName + "-"  + cabinetName +  "-" + "B路";

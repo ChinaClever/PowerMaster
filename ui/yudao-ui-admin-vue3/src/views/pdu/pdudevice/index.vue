@@ -3,9 +3,8 @@
     <template #NavInfo>
       <div >
         <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
-          <div class="name">微模块机房</div>
-          <div>机房202</div>
+          <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
+
         </div>
         <div class="line"></div>
         <div class="status">
@@ -35,29 +34,7 @@
           </div>
         </div>
         <div class="line"></div>
-        <div class="overview">
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>总电能</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-        </div>
+
       </div>
     </template>
     <template #ActionBar>
@@ -428,6 +405,7 @@ const getListNoLoading = async () => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       if(obj?.dataUpdateTime == null && obj?.pow == null){
         obj.status = 5;
+        offline++;
         return;
       }
       const splitArray = obj?.dataUpdateTime?.split(' ');
@@ -444,9 +422,7 @@ const getListNoLoading = async () => {
         warn++;
       } else if (obj?.status == 2){
         alarm++;
-      } else if (obj?.status == 5){
-        offline++;
-      } 
+      }
     });
     statusNumber.normal = normal;
     statusNumber.offline = offline;

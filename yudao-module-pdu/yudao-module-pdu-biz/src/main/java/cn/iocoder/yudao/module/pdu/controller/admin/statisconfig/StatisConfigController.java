@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Operation;
 
-import javax.validation.constraints.*;
 import javax.validation.*;
 import javax.servlet.http.*;
 import java.util.*;
@@ -27,7 +26,7 @@ import static cn.iocoder.yudao.framework.operatelog.core.enums.OperateTypeEnum.*
 
 import cn.iocoder.yudao.module.pdu.controller.admin.statisconfig.vo.*;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.statisconfig.StatisConfigDO;
-import cn.iocoder.yudao.module.pdu.service.statisconfig.StatisConfigService;
+import cn.iocoder.yudao.module.pdu.service.statisconfig.PDUStatisConfigService;
 
 @Tag(name = "管理后台 - pdu计算服务配置")
 @RestController
@@ -36,20 +35,20 @@ import cn.iocoder.yudao.module.pdu.service.statisconfig.StatisConfigService;
 public class StatisConfigController {
 
     @Resource
-    private StatisConfigService statisConfigService;
+    private PDUStatisConfigService PDUStatisConfigService;
 
     @PostMapping("/create")
     @Operation(summary = "创建pdu计算服务配置")
     @PreAuthorize("@ss.hasPermission('pdu:statis-config:create')")
     public CommonResult<Integer> createStatisConfig(@Valid @RequestBody StatisConfigSaveReqVO createReqVO) {
-        return success(statisConfigService.createStatisConfig(createReqVO));
+        return success(PDUStatisConfigService.createStatisConfig(createReqVO));
     }
 
     @PutMapping("/update")
     @Operation(summary = "更新pdu计算服务配置")
     @PreAuthorize("@ss.hasPermission('pdu:statis-config:update')")
     public CommonResult<Boolean> updateStatisConfig(@Valid @RequestBody StatisConfigSaveReqVO updateReqVO) {
-        statisConfigService.updateStatisConfig(updateReqVO);
+        PDUStatisConfigService.updateStatisConfig(updateReqVO);
         return success(true);
     }
 
@@ -58,7 +57,7 @@ public class StatisConfigController {
     @Parameter(name = "id", description = "编号", required = true)
     @PreAuthorize("@ss.hasPermission('pdu:statis-config:delete')")
     public CommonResult<Boolean> deleteStatisConfig(@RequestParam("id") Integer id) {
-        statisConfigService.deleteStatisConfig(id);
+        PDUStatisConfigService.deleteStatisConfig(id);
         return success(true);
     }
 
@@ -67,7 +66,7 @@ public class StatisConfigController {
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
     @PreAuthorize("@ss.hasPermission('pdu:statis-config:query')")
     public CommonResult<StatisConfigRespVO> getStatisConfig(@RequestParam("id") Integer id) {
-        StatisConfigDO statisConfig = statisConfigService.getStatisConfig(id);
+        StatisConfigDO statisConfig = PDUStatisConfigService.getStatisConfig(id);
         return success(BeanUtils.toBean(statisConfig, StatisConfigRespVO.class));
     }
 
@@ -75,7 +74,7 @@ public class StatisConfigController {
     @Operation(summary = "获得pdu计算服务配置分页")
     @PreAuthorize("@ss.hasPermission('pdu:statis-config:query')")
     public CommonResult<PageResult<StatisConfigRespVO>> getStatisConfigPage(@Valid StatisConfigPageReqVO pageReqVO) {
-        PageResult<StatisConfigDO> pageResult = statisConfigService.getStatisConfigPage(pageReqVO);
+        PageResult<StatisConfigDO> pageResult = PDUStatisConfigService.getStatisConfigPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, StatisConfigRespVO.class));
     }
 
@@ -86,7 +85,7 @@ public class StatisConfigController {
     public void exportStatisConfigExcel(@Valid StatisConfigPageReqVO pageReqVO,
               HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
-        List<StatisConfigDO> list = statisConfigService.getStatisConfigPage(pageReqVO).getList();
+        List<StatisConfigDO> list = PDUStatisConfigService.getStatisConfigPage(pageReqVO).getList();
         // 导出 Excel
         ExcelUtils.write(response, "pdu计算服务配置.xls", "数据", StatisConfigRespVO.class,
                         BeanUtils.toBean(list, StatisConfigRespVO.class));
