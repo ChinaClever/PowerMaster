@@ -22,6 +22,7 @@
 <!--        <module>yudao-module-statis</module>-->
         <module>yudao-module-cabinet</module>
         <module>yudao-module-rack</module>
+        <module>yudao-module-bus</module>
     </modules>
 
     <name>${project.artifactId}</name>

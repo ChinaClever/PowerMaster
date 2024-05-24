@@ -54,6 +54,12 @@
             <version>${revision}</version>
         </dependency>
 
+        <dependency>
+            <groupId>cn.iocoder.boot</groupId>
+            <artifactId>yudao-module-bus-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
 <!--        <dependency>-->
 <!--            <groupId>cn.iocoder.boot</groupId>-->
 <!--            <artifactId>yudao-module-statis-biz</artifactId>-->
