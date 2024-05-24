@@ -1,36 +1,35 @@
 <template>
-  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="PDU配电">
+  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="均衡配电">
     <template #NavInfo>
-      <div >
+      <div>
         <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
-
         </div>
         <div class="line"></div>
         <div class="status">
           <div class="box">
             <div class="top">
-              <div class="tag"></div>正常
+              <div class="tag"></div>&lt;30%
             </div>
-            <div class="value"><span class="number">{{ statusNumber.normal }}</span>个</div>
+            <div class="value"><span class="number">{{statusNumber.lessThirty}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag empty"></div>离线
+              <div class="tag blue"></div>30%-60%
             </div>
-            <div class="value"><span class="number">{{ statusNumber.offline }}</span>个</div>
+            <div class="value"><span class="number">{{statusNumber.greaterNinety}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag warn"></div>预警
+              <div class="tag blue"></div>60%-90%
             </div>
-            <div class="value"><span class="number">{{ statusNumber.warn }}</span>个</div>
+            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag error"></div>告警
+              <div class="tag error"></div>&gt;90%
             </div>
-            <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
+            <div class="value"><span class="number">{{statusNumber.greaterSixty}}</span>个</div>
           </div>
         </div>
         <div class="line"></div>
@@ -38,7 +37,6 @@
       </div>
     </template>
     <template #ActionBar>
-      <!-- 搜索工作栏 -->
       <el-form
         class="-mb-15px"
         :model="queryParams"
@@ -46,22 +44,27 @@
         :inline="true"
         label-width="68px"                          
       >
-        <el-form-item>
+        <el-form-item v-if="switchValue == 2 || switchValue == 3">
           <template v-for="(status, index) in statusList" :key="index">
             <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
           </template>
         </el-form-item>
-        <el-form-item label="网络地址" prop="devKey">
+        <!-- <el-button
+          type="primary"
+          plain
+          @click="openForm('create')"
+        >
+          <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
+        </el-button> -->
+        <el-form-item label="母线地址" prop="devKey">
           <el-input
-            v-model="queryParams.devKey"
-            placeholder="请输入网络地址"
+            v-model="queryParams.devAddr"
+            placeholder="请输入母线地址"
             clearable
             @keyup.enter="handleQuery"
             class="!w-200px"
           />
         </el-form-item>
-      
-
         <el-form-item>
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
@@ -84,61 +87,46 @@
           </el-button>
         </el-form-item>
         <div style="float:right">
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>                      
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
         </div>
       </el-form>
     </template>
     <template #Content>
-      <el-table  v-show="switchValue" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
-        <el-table-column label="运行状态" align="center" prop="status" >
-          <template #default="scope">
-            <el-tag  v-if="scope.row.status == 0 && scope.row.apparentPow == 0">空载</el-tag>
-            <el-tag  v-if="scope.row.status == 0 && scope.row.apparentPow != 0">正常</el-tag>
-            <el-tag type="warning" v-if="scope.row.status == 1">预警</el-tag>
-            <el-popover
-                placement="top-start"
-                title="告警内容"
-                :width="500"
-                trigger="hover"
-                :content="scope.row.pduAlarm"
-                v-if="scope.row.status == 2"
-              >
-                <template #reference>
-                  <el-tag type="danger">告警</el-tag>
-                </template>
-              </el-popover>
-            <el-tag type="info" v-if="scope.row.status == 4">故障</el-tag>
-            <el-tag type="info" v-if="scope.row.status == 5">离线</el-tag>
+        <el-table-column label="运行状态" align="center" prop="color" >
+          <template #default="scope" >
+            <el-tag type="success"  v-if="scope.row.color == 1">负载</el-tag>
+            <el-tag type="primary"  v-if="scope.row.color == 2">负载</el-tag>
+            <el-tag type="warning" v-if="scope.row.color == 3">负载</el-tag>
+            <el-tag type="danger" v-if="scope.row.color == 4">负载</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="总视在功率" align="center" prop="apparentPow" width="130px" >
+        <el-table-column label="A相负载率" align="center" prop="aloadRate" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if=" scope.row.apparentPow != null" >
-              {{ scope.row.apparentPow }}kVA
+            <el-text line-clamp="2" v-if="scope.row.aloadRate != null">
+              {{ scope.row.aloadRate }}%
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="总有功功率" align="center" prop="pow" width="130px">
+        <el-table-column label="B相负载率" align="center" prop="bloadRate" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if=" scope.row.pow != null" >
-              {{ scope.row.pow }}kW
+            <el-text line-clamp="2" v-if="scope.row.bloadRate != null">
+              {{ scope.row.bloadRate }}%
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="功率因素" align="center" prop="pf" width="180px" />
+        <el-table-column label="C相负载率" align="center" prop="cloadRate" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.cloadRate != null">
+              {{ scope.row.cloadRate }}%
+            </el-text>
+          </template>
+        </el-table-column>
         <!-- 数据库查询 -->
-        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" /> 
-        <el-table-column label="总电能" align="center" prop="ele" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if=" scope.row.ele != null" >
-              {{ scope.row.ele }}kWh
-            </el-text>
-          </template>
-        </el-table-column>
         <el-table-column label="操作" align="center">
           <template #default="scope">
             <el-button
@@ -159,44 +147,58 @@
           </template>
         </el-table-column>
       </el-table>
-      <!-- 分页 -->
-      <div class="arrayContainer" v-show="!switchValue && list.length > 0">
+
+      <!-- <div v-show="switchValue == 2  && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="icon">
-              <div v-if=" item.pow != null ">
-                {{item.pow}}<br/>kW
-              </div>                    
+            <div class="icon" >
+              <div v-if="item.curUnbalance != null" >
+                不平衡度<br/>{{ item.curUnbalance }}%
+              </div>              
             </div>
-            <div class="info">
-              
-              <div v-if="item.pf != null">功率因素：{{item.pf}}</div>
-              <div v-if="item.apparentPow != null">视在功率：{{item.apparentPow}}kVA</div>
+            <div class="info">                  
+              <div v-if="item.acur != null">A相电流：{{item.acur}}A</div>
+              <div v-if="item.bcur != null" >B相电流：{{item.bcur}}A</div>
+              <div v-if="item.ccur != null" >C相电流：{{item.ccur}}A</div>
+            </div>
+          </div>
+          <div class="status" v-if="item.color != 0">
+            <el-tag type="info"  v-if="item.color == 1">小电流不平衡</el-tag>
+            <el-tag type="success"  v-if="item.color == 2">大电流不平衡</el-tag>
+            <el-tag type="warning" v-if="item.color == 3">大电流不平衡</el-tag>
+            <el-tag type="danger" v-if="item.color == 4">大电流不平衡</el-tag>
+          </div>
+          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+        </div>
+      </div> -->
+
+      <div v-show="switchValue == 2  && list.length > 0" class="arrayContainer">
+        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
+          <div class="content">
+            <div class="icon" >
+              <div v-if="item.volUnbalance != null" >
+                <el-tag type="success"  v-if="item.color == 1">负载</el-tag>
+                <el-tag type="primary"  v-if="item.color == 2">负载</el-tag>
+                <el-tag type="warning" v-if="item.color == 3">负载</el-tag>
+                <el-tag type="danger" v-if="item.color == 4">负载</el-tag>
+              </div>              
+            </div>
+            <div class="info">                  
+              <div v-if="item.aloadRate != null">A相负载率：{{item.aloadRate}}%</div>
+              <div v-if="item.bloadRate != null" >B相负载率：{{item.bloadRate}}%</div>
+              <div v-if="item.cloadRate != null" >C相负载率：{{item.cloadRate}}%</div>
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
-          <div class="status">
-            <el-tag  v-if="item.status == 0 && item.apparentPow == 0">空载</el-tag>
-            <el-tag  v-if="item.status == 0 && item.apparentPow != 0">正常</el-tag>
-            <el-tag type="warning" v-if="item.status == 1">预警</el-tag>
-
-            <el-popover
-              placement="top-start"
-              title="告警内容"
-              :width="1000"
-              trigger="hover"
-              :content="item.pduAlarm"
-              v-if="item.status == 2"
-            >
-              <template #reference>
-                <el-tag type="danger">告警</el-tag>
-              </template>
-            </el-popover>
-            <el-tag type="info" v-if="item.status == 4">故障</el-tag>
-            <el-tag type="info" v-if="item.status == 5">离线</el-tag>
+          <div class="status" >
+            <el-tag type="success"  v-if="item.color == 1">负载</el-tag>
+            <el-tag type="primary"  v-if="item.color == 2">负载</el-tag>
+            <el-tag type="warning" v-if="item.color == 3">负载</el-tag>
+            <el-tag type="danger" v-if="item.color == 4">负载</el-tag>
           </div>
           <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
         </div>
@@ -208,20 +210,22 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
-      <template v-if="list.length == 0 && !switchValue">
+      <template v-if="list.length == 0 && switchValue != 3">
         <el-empty description="暂无数据" :image-size="300" />
       </template>
     </template>
   </CommonMenu>
+
+
   <!-- 表单弹窗：添加/修改 -->
-  <!-- <PDUDeviceForm ref="formRef" @success="getList" /> -->
+  <!-- <CurbalanceColorForm ref="curBalanceColorForm" @success="getList" /> -->
 </template>
 
 <script setup lang="ts">
 // import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
-import { PDUDeviceApi } from '@/api/pdu/pdudevice'
-// import PDUDeviceForm from './PDUDeviceForm.vue'
+import { IndexApi } from '@/api/bus/busindex'
+// import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
 
@@ -231,62 +235,63 @@ defineOptions({ name: 'PDUDevice' })
 
 const { push } = useRouter()
 
+const curBalanceColorForm = ref()
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48])
-const switchValue = ref(0)
+const switchValue = ref(2)
 const statusNumber = reactive({
-  normal : 0,
-  warn : 0,
-  alarm : 0,
-  offline : 0
+  lessThirty : 0,
+  greaterThirty : 0,
+  greaterSixty : 0,
+  greaterNinety : 0
 })
-
-const ip = ref("ip");
 
 const statusList = reactive([
   {
-    name: '正常',
+    name: '空载',
     selected: true,
     value: 0,
-    cssClass: 'btn_normal',
-    activeClass: 'btn_normal normal'
+    cssClass: 'btn_empty',
+    activeClass: 'btn_empty empty',
+    color: '#aaa'
   },
   {
-    name: '预警',
+    name: '负载量<30%',
     selected: true,
     value: 1,
-    cssClass: 'btn_warn',
-    activeClass: 'btn_warn warn'
+    cssClass: 'btn_normal',
+    activeClass: 'btn_normal normal',
+    color: '#3bbb00'
   },
   {
-    name: '告警',
+    name: '30%≤负载量<60%',
     selected: true,
     value: 2,
-    cssClass: 'btn_error',
-    activeClass: 'btn_error error'
+    cssClass: 'btn_warn',
+    activeClass: 'btn_warn warn',
+    color: '#ffc402'
   },
   {
-    name: '故障',
+    name: '60%≤负载量<90%',
+    selected: true,
+    value: 3,
+    cssClass: 'btn_error',
+    activeClass: 'btn_error error',
+    color: '#fa3333'
+  },
+  {
+    name: '负载量>90%',
     selected: true,
     value: 4,
-    cssClass: 'btn_offline',
-    activeClass: 'btn_offline offline'
-  },
-  {
-    name: '离线',
-    selected: true,
-    value: 5,
-    cssClass: 'btn_offline',
-    activeClass: 'btn_offline offline'
+    cssClass: 'btn_unbound',
+    activeClass: 'btn_unbound unbound',
+    color: '#05ebfc'
   },
 ])
 
 const handleClick = (row) => {
-  if(row.type != null  && row.type == 3){
-    queryParams.devKey = row.devKey
-    handleQuery();
-  }
+  console.log("click",row)
 }
 
 const handleCheck = async (row) => {
@@ -318,9 +323,11 @@ const serverRoomArr =  ref([])
 const filterText = ref('')
 const treeRef = ref<InstanceType<typeof ElTree>>()
 
+
 watch(filterText, (val) => {
   treeRef.value!.filter(val)
 })
+
 
 const message = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
@@ -337,20 +344,24 @@ const list = ref([
     location:null,
     dataUpdateTime : "",
     pduAlarm:"",
-    pf:null
+    pf:null,
+    aloadRate : null,
+    bloadRate : null,
+    cloadRate : null,
+    curUnbalance : null,
   }
 ]) as any// 列表的数据
 const total = ref(0) // 列表的总页数
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
-  devKey: undefined,
+  devAddr: undefined,
   createTime: [],
   cascadeNum: undefined,
   serverRoomData:undefined,
   status:[],
-  cabinetIds:[],
-}) as any
+  cabinetIds : [],
+})as any
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
@@ -358,40 +369,53 @@ const exportLoading = ref(false) // 导出的加载中
 const getList = async () => {
   loading.value = true
   try {
-    const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
+    const data = await IndexApi.getIndexPage(queryParams)
     list.value = data.list
     var tableIndex = 0;
-    var normal = 0;
-    var offline = 0;
-    var alarm = 0;
-    var warn = 0;
+    var lessThirty = 0;
+    var greaterThirty = 0;
+    var greaterSixty = 0;
+    var greaterNinety = 0;
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.dataUpdateTime == null && obj?.pow == null){
-        obj.status = 5;
-        offline++;
-        return;
+      if(obj.aloadRate != null){
+        obj.aloadRate = obj.aloadRate * 100;
+        obj.aloadRate = obj.aloadRate?.toFixed(0);
       }
-      const splitArray = obj.dataUpdateTime.split(' ');
-      obj.dataUpdateTime = splitArray[1];
-      
-      obj.apparentPow = obj.apparentPow.toFixed(3);
-      obj.pow = obj.pow.toFixed(3);
-      obj.ele = obj.ele.toFixed(1);
-      obj.pf = obj.pf.toFixed(2);
-      
-      if(obj.status == 0){
-        normal++;
-      } else if (obj.status == 1){
-        warn++;
-      } else if (obj.status == 2){
-        alarm++;
-      } 
+      if(obj.bloadRate != null){
+        obj.bloadRate = obj.bloadRate * 100;
+        obj.bloadRate = obj.bloadRate?.toFixed(0);
+      }
+      if(obj.cloadRate != null){
+        obj.cloadRate = obj.cloadRate * 100;
+        obj.cloadRate = obj.cloadRate?.toFixed(0);
+      }
+      // obj.apparentPow = obj.apparentPow.toFixed(3);
+      // obj.pow = obj.pow.toFixed(3);
+      // obj.ele = obj.ele.toFixed(1);
+      // obj.pf = obj.pf.toFixed(2);
+      // obj.acur = obj.acur?.toFixed(2);
+      // obj.bcur = obj.bcur?.toFixed(2);
+      // obj.ccur = obj.ccur?.toFixed(2);
+      // obj.curUnbalance = obj.curUnbalance?.toFixed(0);
+      // obj.avol = obj.avol?.toFixed(1);
+      // obj.bvol = obj.bvol?.toFixed(1);
+      // obj.cvol = obj.cvol?.toFixed(1);
+      // obj.volUnbalance = obj.volUnbalance?.toFixed(0);
+      if(obj.color == 4){
+        greaterNinety++;
+      } else if (obj.color == 1) {
+        lessThirty++;
+      } else if (obj.color == 2) {
+        greaterThirty++;
+      } else if (obj.color == 3) {
+        greaterSixty++;
+      }
     });
-    statusNumber.normal = normal;
-    statusNumber.offline = offline;
-    statusNumber.alarm = alarm;
-    statusNumber.warn = warn;
+    statusNumber.greaterNinety = greaterNinety;
+    statusNumber.lessThirty = lessThirty;
+    statusNumber.greaterThirty = greaterThirty;
+    statusNumber.greaterSixty = greaterSixty;
     total.value = data.total
   } finally {
     loading.value = false
@@ -400,41 +424,53 @@ const getList = async () => {
 
 const getListNoLoading = async () => {
   try {
-    const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
+    const data = await IndexApi.getIndexPage(queryParams)
     list.value = data.list
-    var tableIndex = 0;
-    var normal = 0;
-    var offline = 0;
-    var alarm = 0;
-    var warn = 0;
+    var tableIndex = 0;    
+    var lessThirty = 0;
+    var greaterThirty = 0;
+    var greaterSixty = 0;
+    var greaterNinety = 0;
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.dataUpdateTime == null && obj?.pow == null){
-        obj.status = 5;
-        offline++;
-        return;
+      if(obj.aloadRate != null){
+        obj.aloadRate = obj.aloadRate * 100;
+        obj.aloadRate = obj.aloadRate?.toFixed(0);
       }
-      const splitArray = obj?.dataUpdateTime?.split(' ');
-      obj.dataUpdateTime = splitArray[1];
-      
-      obj.apparentPow = obj?.apparentPow?.toFixed(3);
-      obj.pow = obj?.pow?.toFixed(3);
-      obj.ele = obj?.ele?.toFixed(1);
-      obj.pf = obj?.pf?.toFixed(2);
-
-      if(obj?.status == 0){
-        normal++;
-      } else if (obj?.status == 1){
-        warn++;
-      } else if (obj?.status == 2){
-        alarm++;
+      if(obj.bloadRate != null){
+        obj.bloadRate = obj.bloadRate * 100;
+        obj.bloadRate = obj.bloadRate?.toFixed(0);
+      }
+      if(obj.cloadRate != null){
+        obj.cloadRate = obj.cloadRate * 100;
+        obj.cloadRate = obj.cloadRate?.toFixed(0);
+      }
+      // obj.apparentPow = obj.apparentPow.toFixed(3);
+      // obj.pow = obj.pow.toFixed(3);
+      // obj.ele = obj.ele.toFixed(1);
+      // obj.pf = obj.pf.toFixed(2);
+      // obj.acur = obj.acur?.toFixed(2);
+      // obj.bcur = obj.bcur?.toFixed(2);
+      // obj.ccur = obj.ccur?.toFixed(2);
+      // obj.curUnbalance = obj.curUnbalance?.toFixed(0);
+      // obj.avol = obj.avol?.toFixed(1);
+      // obj.bvol = obj.bvol?.toFixed(1);
+      // obj.cvol = obj.cvol?.toFixed(1);
+      // obj.volUnbalance = obj.volUnbalance?.toFixed(0);
+      if(obj.color == 4){
+        greaterNinety++;
+      } else if (obj.color == 1) {
+        lessThirty++;
+      } else if (obj.color == 2) {
+        greaterThirty++;
+      } else if (obj.color == 3) {
+        greaterSixty++;
       }
     });
-    statusNumber.normal = normal;
-    statusNumber.offline = offline;
-    statusNumber.alarm = alarm;
-    statusNumber.warn = warn;
-
+    statusNumber.greaterNinety = greaterNinety;
+    statusNumber.lessThirty = lessThirty;
+    statusNumber.greaterThirty = greaterThirty;
+    statusNumber.greaterSixty = greaterSixty;
     total.value = data.total
   } catch (error) {
     
@@ -455,6 +491,7 @@ const getNavList = async() => {
       }
     })
   }
+
 }
 
 const toPDUDisplayScreen = (row) =>{
@@ -470,7 +507,7 @@ const handleSelectStatus = (index) => {
   statusList[index].selected = !statusList[index].selected
   const status =  statusList.filter(item => item.selected)
   const statusArr = status.map(item => item.value)
-  queryParams.status = statusArr;
+  queryParams.color = statusArr;
   handleQuery();
 }
 
@@ -484,14 +521,13 @@ const handleQuery = () => {
 const resetQuery = () => {
   queryFormRef.value.resetFields()
   statusList.forEach((item) => item.selected = true)
-  queryParams.status = [];
   handleQuery()
 }
 
 /** 添加/修改操作 */
-const formRef = ref()
-const openForm = (type: string, id?: number) => {
-  formRef.value.open(type, id)
+
+const openForm = (type: string) => {
+  curBalanceColorForm.value.open(type)
 }
 
 /** 删除按钮操作 */
@@ -500,7 +536,7 @@ const handleDelete = async (id: number) => {
     // 删除的二次确认
     await message.delConfirm()
     // 发起删除
-    await PDUDeviceApi.deletePDUDevice(id)
+    await IndexApi.deleteIndex(id)
     message.success(t('common.delSuccess'))
     // 刷新列表
     // await getList()
@@ -514,7 +550,7 @@ const handleExport = async () => {
     await message.exportConfirm()
     // 发起导出
     exportLoading.value = true
-    const data = await PDUDeviceApi.exportPDUDevice(queryParams)
+    const data = await IndexApi.exportIndex(queryParams)
     download.excel(data, 'PDU设备.xls')
   } catch {
   } finally {
@@ -545,7 +581,7 @@ onBeforeRouteLeave(()=>{
 })
 
 onActivated(() => {
-  getList();
+  getList()
   getNavList();
   if(!firstTimerCreate.value){
     flashListTimer.value = setInterval((getListNoLoading), 5000);
@@ -607,37 +643,28 @@ onActivated(() => {
   }
 }
 
-.btn_offline,
 .btn_normal,
+.btn_empty,
 .btn_warn,
-.btn_error {
-  width: 58px;
-  height: 35px;
+.btn_error,
+.btn_unbound,
+.btn_offline {
+  // width: 55px;
+  // height: 32px;
+  padding: 3px 8px;
   cursor: pointer;
   border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-right: 8px;
   &:hover {
     color: #7bc25a;
-  }
-}
-.btn_offline {
-  border: 1px solid #aaa;
-  background-color: #fff;
-  margin-right: 8px;
-}
-.offline {
-  background-color: #aaa;
-  color: #fff;
-  &:hover {
-    color: #fff;
   }
 }
 .btn_normal {
   border: 1px solid #3bbb00;
   background-color: #fff;
-  margin-right: 8px;
 }
 .normal {
   background-color: #3bbb00;
@@ -646,24 +673,44 @@ onActivated(() => {
     color: #fff;
   }
 }
-.btn_warn {
-  border: 1px solid #ffc402;
+.btn_empty {
+  border: 1px solid #aaa;
   background-color: #fff;
-  margin-right: 8px;
+}
+.empty {
+  background-color: #aaa;
+  color: #fff;
+  &:hover {
+    color: #fff;
+  }
+}
+.btn_warn {
+  border: 1px solid #3b8bf5;
+  background-color: #fff;
 }
 .warn {
-  background-color: #ffc402;
+  background-color: #3b8bf5;
   color: #fff;
   &:hover {
     color: #fff;
   }
 }
 .btn_error {
-  border: 1px solid #fa3333;
+  border: 1px solid #ffc402;
   background-color: #fff;
-  margin-right: 8px;
 }
 .error {
+  background-color: #ffc402;
+  color: #fff;
+  &:hover {
+    color: #fff;
+  }
+}
+.btn_unbound {
+  border: 1px solid #fa3333;
+  background-color: #fff;
+}
+.unbound {
   background-color: #fa3333;
   color: #fff;
   &:hover {
@@ -731,8 +778,8 @@ onActivated(() => {
           margin-right: 3px;
           margin-top: 2px;
         }
-        .empty {
-          background-color: #ccc;
+        .blue {
+          background-color: #3b8bf5;
         }
         .warn {
           background-color: #ffc402;

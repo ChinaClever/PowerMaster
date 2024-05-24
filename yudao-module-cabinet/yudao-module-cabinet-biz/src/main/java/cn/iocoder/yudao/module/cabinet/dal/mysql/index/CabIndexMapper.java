@@ -1,7 +1,5 @@
 package cn.iocoder.yudao.module.cabinet.dal.mysql.index;
 
-import java.util.*;
-
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
@@ -15,7 +13,7 @@ import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.*;
  * @author 芋道源码
  */
 @Mapper
-public interface IndexMapper extends BaseMapperX<IndexDO> {
+public interface CabIndexMapper extends BaseMapperX<IndexDO> {
 
     default PageResult<IndexDO> selectPage(IndexPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<IndexDO>()

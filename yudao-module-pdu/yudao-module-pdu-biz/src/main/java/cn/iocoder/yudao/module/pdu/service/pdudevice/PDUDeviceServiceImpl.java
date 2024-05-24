@@ -132,10 +132,10 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 return new PageResult<PDUDeviceDO>(result,0L);
             }
             pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
-                    .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()).inIfPresent(PduIndex::getDevKey,devKeyList));
+                    .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()).inIfPresent(PduIndex::getDevKey,devKeyList).inIfPresent(PduIndex::getRunStatus,pageReqVO.getStatus()));
         }else{
             pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
-                    .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()));
+                    .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()).inIfPresent(PduIndex::getRunStatus,pageReqVO.getStatus()));
         }
 
 
@@ -233,25 +233,16 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     }
                 }
             }
-            Integer status1 = jsonObject.getInteger("status");
-            if(pageReqVO.getStatus() != null){
-                if(!pageReqVO.getStatus().contains(status1)){
-                    continue;
-                }
-            }
             if(pageReqVO.getColor() != null){
                 if(!pageReqVO.getColor().contains(color)){
                     continue;
                 }
             }
 
-            if(status1 != null){
-                pduDeviceDO.setStatus(status1);
-            }
             pduDeviceDO.setId(pduIndex.getId());
 
             pduDeviceDO.setPf(pduTgData.getDoubleValue("power_factor"));
-
+            pduDeviceDO.setStatus(pduIndex.getRunStatus());
             pduDeviceDO.setEle(pduTgData.getDoubleValue("ele_active"));
             pduDeviceDO.setPow(pduTgData.getDoubleValue("pow_active"));
             pduDeviceDO.setApparentPow(pduTgData.getDoubleValue("pow_apparent"));
@@ -278,7 +269,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
         PageResult<PduIndex> pduIndexPageResult = null;
         List<PDULineRes> result = new ArrayList<>();
-        ValueOperations ops = redisTemplate.opsForValue();
         if(pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
             List<String> ipAddrList = new ArrayList<>();
             List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().inIfPresent(CabinetPdu::getCabinetId, pageReqVO.getCabinetIds()));

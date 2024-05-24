@@ -22,7 +22,6 @@ import cn.iocoder.yudao.module.cabinet.dal.dataobject.temcolor.TemColorDO;
 import cn.iocoder.yudao.module.cabinet.dal.mysql.temcolor.TemColorMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.*;
 import cn.iocoder.yudao.module.cabinet.service.temcolor.TemColorService;
-import com.alibaba.fastjson2.JSONObject;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -38,7 +37,6 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -52,7 +50,7 @@ import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.IndexDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 
-import cn.iocoder.yudao.module.cabinet.dal.mysql.index.IndexMapper;
+import cn.iocoder.yudao.module.cabinet.dal.mysql.index.CabIndexMapper;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.cabinet.enums.ErrorCodeConstants.*;
@@ -67,7 +65,7 @@ import static cn.iocoder.yudao.module.cabinet.enums.ErrorCodeConstants.*;
 public class IndexServiceImpl implements IndexService {
 
     @Resource
-    private IndexMapper indexMapper;
+    private CabIndexMapper cabIndexMapper;
 
     @Autowired
     private RoomIndexMapper roomIndexMapper;
@@ -100,7 +98,7 @@ public class IndexServiceImpl implements IndexService {
     public Integer createIndex(IndexSaveReqVO createReqVO) {
         // 插入
         IndexDO index = BeanUtils.toBean(createReqVO, IndexDO.class);
-        indexMapper.insert(index);
+        cabIndexMapper.insert(index);
         // 返回
         return index.getId();
     }
@@ -111,7 +109,7 @@ public class IndexServiceImpl implements IndexService {
         validateIndexExists(updateReqVO.getId());
         // 更新
         IndexDO updateObj = BeanUtils.toBean(updateReqVO, IndexDO.class);
-        indexMapper.updateById(updateObj);
+        cabIndexMapper.updateById(updateObj);
     }
 
     @Override
@@ -119,23 +117,23 @@ public class IndexServiceImpl implements IndexService {
         // 校验存在
         validateIndexExists(id);
         // 删除
-        indexMapper.deleteById(id);
+        cabIndexMapper.deleteById(id);
     }
 
     private void validateIndexExists(Integer id) {
-        if (indexMapper.selectById(id) == null) {
+        if (cabIndexMapper.selectById(id) == null) {
             throw exception(INDEX_NOT_EXISTS);
         }
     }
 
     @Override
     public IndexDO getIndex(Integer id) {
-        return indexMapper.selectById(id);
+        return cabIndexMapper.selectById(id);
     }
 
     @Override
     public PageResult<IndexDO> getIndexPage(IndexPageReqVO pageReqVO) {
-        return indexMapper.selectPage(pageReqVO);
+        return cabIndexMapper.selectPage(pageReqVO);
     }
 
     @Override
@@ -939,7 +937,7 @@ public class IndexServiceImpl implements IndexService {
     @Override
     public PageResult<CabinetEnvAndHumRes> getCabinetEnvPage(IndexPageReqVO pageReqVO) {
 
-        PageResult<IndexDO> indexDOPageResult = indexMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<IndexDO>()
+        PageResult<IndexDO> indexDOPageResult = cabIndexMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<IndexDO>()
                 .inIfPresent(IndexDO::getId, pageReqVO.getCabinetIds()));
         List<CabinetEnvAndHumRes> result = new ArrayList<>();
         List<TemColorDO> temColorList = temColorService.getTemColorAll();
