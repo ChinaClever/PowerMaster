@@ -48,4 +48,5 @@ public interface EnergyConsumptionService {
      * @return pdu电量数据分页
      */
     PageResult<Object> getRealtimeEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException;
+
 }

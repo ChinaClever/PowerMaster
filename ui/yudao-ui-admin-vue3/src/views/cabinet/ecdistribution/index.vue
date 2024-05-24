@@ -1,466 +1,543 @@
 <template>
-  <el-row :gutter="20">
-   <el-col :span="treeWidth" :xs="24">
-     <el-input
-       v-model="filterText"
-       style="width: 190px"
-       placeholder=""
-     />
+  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="机柜能耗排名" :showCheckbox="false">
+    <template #NavInfo>
+    
+    </template>
+    <template #ActionBar>
+      <el-tabs v-model="activeName">
+        <el-tab-pane label="日数据" name="dayTabPane"/>
+        <el-tab-pane label="周数据" name="weekTabPane"/>
+        <el-tab-pane label="月数据" name="monthTabPane"/>
+      </el-tabs>
+      <!-- 搜索工作栏 -->
+      <el-form
+        class="-mb-15px"
+        :model="queryParams"
+        ref="queryFormRef"
+        :inline="true"
+        label-width="auto"
+      >
 
-     <el-tree
-       ref="treeRef"
-       style="max-width: 600px"
-       class="filter-tree"
-       :data="serverRoomArr"
-       :props="defaultProps"
-       default-expand-all
-       show-checkbox
-       :filter-node-method="filterNode"
-     />
-   </el-col>
-   <el-col :span="24 - treeWidth" :xs="24">
-     <ContentWrap>
-       <!-- 搜索工作栏 -->
-       <el-form
-         class="-mb-15px"
-         :model="queryParams"
-         ref="queryFormRef"
-         :inline="true"
-         label-width="120px"
-       >
-         <el-form-item label="" prop="collaspe">
-           <el-switch 
-             v-model="isCollapsed"  
-             active-color="#409EFF" 
-             inactive-color="#909399"
-             active-text="折叠"  
-             active-value="100"
-             inactive-value="0" 
-             @change="toggleCollapse" />
-         </el-form-item>
-         <el-form-item label="时间段" prop="createTime">
-           <el-date-picker
-             v-model="queryParams.createTime"
-             value-format="YYYY-MM-DD HH:mm:ss"
-             type="daterange"
-             start-placeholder="开始日期"
-             end-placeholder="结束日期"
-             :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-             class="!w-210px"
-           />
-         </el-form-item>
+      <el-form-item label="时间段" prop="timeRange" >
+        <el-date-picker
+          value-format="YYYY-MM-DD"
+          v-model="selectTimeRange"
+          type="daterange"
+          :shortcuts="shortcuts"
+          range-separator="-"
+          start-placeholder="开始时间"
+          end-placeholder="结束时间"
+          :disabled-date="disabledDate"
+          class="!w-350px"
+          @change="handleDayPick"
+        />
+      </el-form-item>
 
-         <el-form-item label="颗粒度" prop="type">
-            <el-select
-              v-model="queryParams.granularity"
-              placeholder="请选择天/周/月"
-              class="!w-120px" >
-              <el-option label="天" value="day" />
-              <el-option label="周" value="week" />
-              <el-option label="月" value="month" />
-            </el-select>
-          </el-form-item>
-
-         <el-form-item >
-           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
-           <el-button type="primary" plain><Icon icon="ep:download" class="mr-5px" /> 导出</el-button>
-         </el-form-item>
-
-       </el-form>
-
-
-     </ContentWrap>
-     <!-- 列表 -->
-     <ContentWrap style="overflow: visible;">
-      <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
-    </ContentWrap>
-    <ContentWrap style="overflow: visible;">
-      <div ref="rankContainer" id="rankContainer" style="width: 70vw; height: 58vh;"></div>
-    </ContentWrap>
-   </el-col>
-  </el-row>
+        <el-form-item >
+          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button type="primary" plain><Icon icon="ep:download" class="mr-5px" /> 导出</el-button>
+        </el-form-item>
+      </el-form>
+      <!-- 列表 -->
+      <el-tabs v-model="activeName1">
+        <el-tab-pane label="图表" name="lineChart">
+          <div v-loading="loading" ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
+        </el-tab-pane>
+        <el-tab-pane label="数据" name="lineChartData">
+          <div style="height: 58vh;">
+            <el-table  
+              border
+              :data="tableData"
+              style="height: 58vh; width: 99.97%;--el-table-border-color: none;border-right: 1px #143275 solid;border-left: 1px #143275 solid;border-bottom: 1px #143275 solid;"
+              :highlight-current-row="false"
+              :header-cell-style="{ backgroundColor: '#143275', color: '#ffffff', fontSize: '18px', textAlign: 'center', borderLeft: '0.5px #ffffff solid', borderBottom: '1px #ffffff solid' }"
+              :cell-style="{ color: '#000000', fontSize: '16px', textAlign: 'center', borderBottom: '0.5px #143275 solid', borderLeft: '0.5px #143275 solid' }"
+              :row-style="{ color: '#fff', fontSize: '14px', textAlign: 'center', }"
+              empty-text="暂无数据" max-height="818">
+              <!-- 动态生成表头 -->
+              <template v-for="item in headerData" :key="item.name">
+                <el-table-column  label="开始电能">
+                  <el-table-column prop="startEleData" label="数值"/>   
+                  <el-table-column prop="startTimeData" label="发生时间"/>
+                </el-table-column>
+                <el-table-column  label="结束电能">
+                  <el-table-column prop="endEleData" label="数值"/>   
+                  <el-table-column prop="endTimeData" label="发生时间"/>
+                </el-table-column>
+                <el-table-column v-if="item.name === '耗电量'" label="耗电量">
+                  <el-table-column :prop="item.name" label="数值"/>   
+                  <el-table-column prop="create_time" label="记录时间"/>
+                </el-table-column>
+              </template>
+            </el-table>
+          </div>
+        </el-tab-pane>
+      </el-tabs>
+    </template>
+    <template #Content>
+      <!-- <div style="overflow: visible;">
+        <div v-loading="loading1" ref="rankContainer" id="rankContainer" style="width: 70vw; height: 58vh;"></div>
+      </div> -->
+    </template>
+  </CommonMenu>
 
 </template>
 
 <script setup lang="ts">
-import { ElTree } from 'element-plus'
+import { ElTree, ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
+import { CabinetApi } from '@/api/cabinet/info'
+import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
+import { EnergyConsumptionApi } from '@/api/cabinet/energyConsumption'
+
 defineOptions({ name: 'ECDistribution' })
 
+const navList = ref([]) as any // 左侧导航栏树结构列表
+const nowAddress = ref('')
+const activeName = ref('dayTabPane')
+const activeName1 = ref('lineChart')
+const tableData = ref<Array<{ }>>([]); // 折线图表格数据
+const headerData = ref<any[]>([]);
+const instance = getCurrentInstance();
+const selectTimeRange = ref(defaultDayTimeRange(14))
+const loading = ref(false) 
+const loading1 = ref(false) 
 const queryParams = reactive({
-  pageNo: 1,
-  pageSize: 10,
-  id: undefined,
-  type: 'total',
-  granularity: '天',
-  ipAddr: undefined,
-  createTime: undefined,
+  cabinetId: undefined as number | undefined,
+  granularity: 'day',
+  // 进入页面原始数据默认显示最近2周
+  timeRange: ['', ''],
 })
 
-const serverRoomArr =  [
- {
-   value: '1',
-   label: '机房1',
-   children: [
-     {
-       value: '1-1',
-       label: '柜列1',
-       children: [
-       {
-         value: '1-1-1',
-         label: '机柜1',
-       },
-       {
-         value: '1-1-2',
-         label: '机柜2',
-       },]
-     },
-   ],
- },
- {
-   value: '2',
-   label: '机房2',
-   children: [
-     {
-       value: '2-1',
-       label: '柜列1',
-       children: [
-       {
-         value: '2-1-1',
-         label: '机柜1',
-       },
-       {
-         value: '2-1-2',
-         label: '机柜2',
-       },]
-     },
-   ],
- },
- {
-   value: '3',
-   label: '机房3',
-   children: [
-     {
-       value: '3-1',
-       label: '柜列1',
-       children: [
-       {
-         value: '3-1-1',
-         label: '机柜1',
-       },
-       {
-         value: '3-1-2',
-         label: '机柜2',
-       },]
-     },
-   ],
- },
+// 默认查询的时间范围，单位：天
+function defaultDayTimeRange(day: number){
+  // 获取当前日期
+  var endDate = new Date();
+  // 计算半个月前的日期
+  var startDate = new Date();
+  startDate.setDate(startDate.getDate() - day); // 15天为半个月
+  // 格式化日期并返回
+  return [
+    startDate.toISOString().slice(0, 10),
+    endDate.toISOString().slice(0, 10)
+  ];
+}
+
+// 默认查询的时间范围，单位：月
+function defaultMonthTimeRange(month) {
+  // 获取当前日期
+  var endDate = new Date();
+
+  // 计算指定月数前的日期
+  var startDate = new Date();
+  startDate.setMonth(startDate.getMonth() - month);
+
+  // 格式化日期并返回
+  return [
+    startDate.toISOString().slice(0, 10), 
+    endDate.toISOString().slice(0, 10) 
+  ];
+}
+
+const shortcuts = [
+  {
+    text: '最近两周',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setHours(start.getHours() - 24 * 7 * 2)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近一个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setUTCMonth(start.getUTCMonth() - 1)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近三个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setUTCMonth(start.getUTCMonth() - 3)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近六个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setUTCMonth(start.getUTCMonth() - 6)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近一年',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setFullYear(start.getFullYear() - 1)
+      return [start, end]
+    },
+  },
 ]
-//折叠功能
-let treeWidth = ref(3)
-let isCollapsed = ref(0);
-const toggleCollapse = () => {
- treeWidth.value = isCollapsed.value == 0 ? 3 : 0;
-};
-//树型控件
-interface Tree {
- [key: string]: any
-}
-const filterText = ref('')
-const treeRef = ref<InstanceType<typeof ElTree>>()
-const filterNode = (value: string, data: Tree) => {
- if (!value) return true
- return data.label.includes(value)
-}
-const defaultProps = {
- children: 'children',
- label: 'label',
-}
-watch(filterText, (val) => {
- treeRef.value!.filter(val)
-})
-const loading = ref(true) // 列表的加载中
 
-// 处理折线图数据
+// 监听切换日周月tab切换
+watch( ()=>activeName.value, async(newActiveName)=>{
+  if ( newActiveName == 'dayTabPane'){
+    queryParams.granularity = 'day'
+    selectTimeRange.value = defaultDayTimeRange(14)
+  }else if (newActiveName == 'weekTabPane'){
+    queryParams.granularity = 'week'
+    selectTimeRange.value = defaultMonthTimeRange(3)
+  }else{
+    queryParams.granularity = 'month'
+    selectTimeRange.value = defaultMonthTimeRange(12)
+  }
+  handleQuery();
+});
+
+// 表格映射图数据
+const updateTableData = () => {
+  const data: any[] = [];
+  const length = headerData.value[0]?.data?.length || 0;
+  for (let i = 0; i < length; i++) {
+    const rowData: { [key: string]: any } = {};
+    rowData['create_time'] = createTimeData.value[i];
+    rowData['startEleData'] = startEleData.value[i];
+    rowData['startTimeData'] = startTimeData.value[i];
+    rowData['endEleData'] = endEleData.value[i];
+    rowData['endTimeData'] = endTimeData.value[i];
+    for (const item of headerData.value) {
+      rowData[item.name] = item.data[i];
+    }
+    data.push(rowData);
+  }
+  tableData.value = data;
+};
+
+// 折线图数据
 const startEleData = ref<number[]>([]);
 const startTimeData = ref<string[]>([]);
 const endEleData = ref<number[]>([]);
 const endTimeData = ref<string[]>([]);
 const eqData = ref<number[]>([]);
 const createTimeData = ref<string[]>([]);
-
-/** 查询列表 */
-const getList = () => {
+const totalEqData = ref(0);
+// 获取折线图数据
+const getLineChartData =async () => {
 loading.value = true
  try {
-    // 生成假数据
-    const fakeData = [
-      {
-        id: 1,
-        location: "机房1-机柜1",
-        cabinetId: 123,
-        startEle: 2000,
-        startTime: "2024-03-21",
-        endEle: 3000,
-        endTime: "2024-03-22",
-        eq: 1000,
-        bill: 700,
-        createTime: "2024-03-22",
-      },
-      {
-        id: 2,
-        location: "机房1-机柜1",
-        cabinetId: 123,
-        startEle: 3000,
-        startTime: "2024-03-22",
-        endEle: 4200,
-        endTime: "2024-03-23",
-        eq: 1200,
-        bill: 700,
-        createTime: "2024-03-23",
-      },
-      {
-        id: 3,
-        location: "机房1-机柜1",
-        cabinetId: 123,
-        startEle: 4200,
-        startTime: "2024-03-23",
-        endEle: 5100,
-        endTime: "2024-03-24",
-        eq: 900,
-        bill: 700,
-        createTime: "2024-03-24",
-      },
-      {
-        id: 4,
-        location: "机房1-机柜1",
-        cabinetId: 123,
-        startEle: 5100,
-        startTime: "2024-03-24",
-        endEle: 6500,
-        endTime: "2024-03-25",
-        eq: 1400,
-        bill: 1200,
-        createTime: "2024-03-25",
-      },
-      {
-        id: 5,
-        location: "机房1-机柜1",
-        cabinetId: 123,
-        startEle: 6500,
-        startTime: "2024-03-25",
-        endEle: 7100,
-        endTime: "2024-03-26",
-        eq: 600,
-        bill: 500,
-        createTime: "2024-03-26",
-      },
-    ];
-  
-    startEleData.value = fakeData.map((item) => item.startEle);
-    startTimeData.value = fakeData.map((item) => item.startTime);
-    endEleData.value = fakeData.map((item) => item.endEle);
-    endTimeData.value = fakeData.map((item) => item.endTime);
-    eqData.value = fakeData.map((item) => item.eq);
-    createTimeData.value = fakeData.map((item) => item.createTime);
+    // 格式化时间范围 加上23:59:59的时分秒 
+    queryParams.timeRange[0] = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+    // 结束时间的天数多加一天 ，  一天的毫秒数
+    const oneDay = 24 * 60 * 60 * 1000;
+    queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
 
+    const data = await EnergyConsumptionApi.getEQDataDetails(queryParams);
+    if (data != null && data.total != 0){
+      totalEqData.value = 0;
+      startEleData.value = data.list.map((item) => formatNumber(item.start_ele, 1));
+      startTimeData.value = data.list.map((item) => formatDate(item.start_time, 'YYYY-MM-DD'));
+      endEleData.value = data.list.map((item) => formatNumber(item.end_ele, 1));
+      endTimeData.value = data.list.map((item) => formatDate(item.end_time, 'YYYY-MM-DD'));
+      eqData.value = data.list.map((item) => formatNumber(item.eq_value, 1));
+      createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
+      eqData.value.forEach(function(num) {
+        totalEqData.value += Number(num);
+      });
+    }else{
+      ElMessage({
+        message: '暂无数据',
+        type: 'warning',
+      });
+    }
  } finally {
    loading.value = false
  }
 }
 
+// 排行榜图数据
+// const outletIdData = ref<string[]>([]);
+// const sumEqData = ref<number[]>([]);
+// const getRankChartData =async () => {
+// loading1.value = true
+//  try {
+//     // 格式化时间范围 加上23:59:59的时分秒 
+//     queryParams.timeRange[0] = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+//     // 结束时间的天数多加一天 ，  一天的毫秒数
+//     const oneDay = 24 * 60 * 60 * 1000;
+//     queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+
+//     const data = await EnergyConsumptionApi.getEQDataPage(queryParams);
+//     if (data != null && data.total != 0){
+//       outletIdData.value = data.map((item) => '输出位 '+item.outlet_id);
+//       sumEqData.value = data.map((item) => formatNumber(item.sum_eq_value, 1));
+//     }else{
+//       ElMessage({
+//         message: '暂无数据',
+//         type: 'warning',
+//       });
+//     }
+//  } finally {
+//    loading1.value = false
+//  }
+// }
+
+// 初始化折线图
 const chartContainer = ref<HTMLElement | null>(null);
-let myChart = null as echarts.ECharts | null; // 显式声明 myChart 的类型
-const rankContainer = ref<HTMLElement | null>(null);
-let myChart1 = null as echarts.ECharts | null; // 显式声明 myChart 的类型
-const initChart = () => {
-  const instance = getCurrentInstance();
+let lineChart = null as echarts.ECharts | null; 
+const initLineChart = () => {
+  if (lineChart) {
+    lineChart.dispose(); // 销毁之前的实例
+  }
   if (chartContainer.value && instance) {
-    myChart = echarts.init(chartContainer.value);
-    myChart.setOption({
-      // 这里设置 Echarts 的配置项和数据
-      title: { text: '机柜1总耗电量5100kWh', top: -4},
-      tooltip: { trigger: 'axis' },
+    lineChart = echarts.init(chartContainer.value);
+    lineChart.setOption({
+      title: { text: nowAddress.value+' 总耗电量'+formatNumber(totalEqData.value, 1)+'kWh', top: -4},
+      tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
       legend: { data: []},
       grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true},
-      toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{},saveAsImage: {}}},
-      xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
+      toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+      xAxis: {type: 'category', boundaryGap: false, data:startTimeData.value},
       yAxis: { type: 'value', name: "kWh"},
       series: [{name: '耗电量', type: 'line', data: eqData.value}],
-
+      dataZoom:[{type: "inside"}],
     });
-    // 将 myChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
-    instance.appContext.config.globalProperties.myChart = myChart;
-  }
-
-  if (rankContainer.value && instance) {
-    myChart1 = echarts.init(rankContainer.value);
-    myChart1.setOption({
-      // 这里设置 Echarts 的配置项和数据
-      title: { text: '机架耗电量排行', top: -4},
-      tooltip: { trigger: 'axis',  axisPointer: { type: "shadow"} },
-      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-      toolbox: {feature: { dataView:{}, dataZoom:{}, restore:{},saveAsImage: {}}},
-      xAxis: {
-        type: "value",
-        axisLine: {
-          show: false,
-        },
-        axisTick: {
-          show: false,
-        },
-        //不显示X轴刻度线和数字
-        splitLine: { show: false },
-        axisLabel: { show: false },
-      },
-      yAxis: {
-        type: "category",
-        data: [ "机架1", "机架2", "机架3", "机架4", "机架5",],
-        //升序
-        inverse: true,
-        splitLine: { show: false },
-        axisLine: {
-          show: false,
-        },
-        axisLabel: { fontSize: 16 },
-        axisTick: {
-          show: false,
-        },
-        //key和图间距
-        offset: 10,
-        //动画部分
-        animationDuration: 300,
-        animationDurationUpdate: 300,
-        //key文字大小
-        nameTextStyle: {
-          fontSize: 15,
-        },
-      },
-      series: [
-        {
-          //柱状图自动排序，排序自动让Y轴名字跟着数据动
-          realtimeSort: true,
-          name: "耗电量",
-          type: "bar",
-          data: eqData.value,
-          barWidth: 20,
-          barGap: 5,
-          smooth: true,
-          valueAnimation: true,
-          label: {
-            normal: {
-              show: true,
-              position: "right",
-              valueAnimation: true,
-              offset: [5, -2],
-              textStyle: {
-                color: "#333",
-                fontSize: 16,
-              },
-              // formatter: '{value}kWh'
-            },
-          },
-          itemStyle: {
-            emphasis: {
-              barBorderRadius: 7,
-            },
-            //颜色样式部分
-            normal: {
-              barBorderRadius: 7,
-              color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-                { offset: 0, color: "#3977E6" },
-                { offset: 1, color: "#37BBF8" },
-              ]),
-            },
-          },
-        },
-      ],
-      //动画部分
-      animationDuration: 0,
-      animationDurationUpdate: 3000,
-      animationEasing: "linear",
-      animationEasingUpdate: "linear",
-    });
-    window.addEventListener('resize', function() {
-        myChart1?.resize(); 
-    });
-
-    // 将 myChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
-    instance.appContext.config.globalProperties.myChart1 = myChart1;
+    instance.appContext.config.globalProperties.lineChart = lineChart;
+    // 每次切换图就要动态生成数据表头
+    headerData.value = lineChart?.getOption().series as any[];
+    updateTableData();
   }
 };
 
-watch(() => queryParams.granularity, (newValues) => {
-  const newGranularity = newValues;
-  if ( newGranularity == 'day'){
-    myChart?.setOption({
-      title: { text: '机柜1总耗电量5100kWh', top: -4},
-      xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
-      series: [{name: '耗电量', type: 'line', data: eqData.value}],
-    });
-    myChart1?.setOption({
-      series: [{data:['1400', '1200', '1000', '900', '600']}],
-    })
-  }
-  if ( newGranularity == 'week'){
-    myChart?.setOption({
-      title: { text: '机柜1总耗电量24210kWh', top: -4},  
-      xAxis: {type: 'category', boundaryGap: false, data:[
-        '2024年3月第一周',
-        '2024年3月第二周',
-        '2024年3月第三周',
-        '2024年3月第四周',]},
-      series: [{name: '耗电量', type: 'line', data:['6000', '6500', '5500', '6210'] }],
-    });
-    myChart1?.setOption({
-      series: [{data: ['6000', '6500', '6210', '5800', '5990']}],
-    })
-  }
-  if ( newGranularity == 'month'){
-    myChart?.setOption({
-      title: { text: '机柜1总耗电量150100kWh', top: -4},  
-      xAxis: {type: 'category', boundaryGap: false, data:[
-        '2024年1月',
-        '2024年2月',
-        '2024年3月',
-        '2024年4月',
-        '2024年5月',
-        '2024年6月',]},
-      series: [{name: '耗电量', type: 'line', data:['24000', '25000', '27000', '24500', '25000', '26000'] }],
-    });
-    myChart1?.setOption({
-      series: [{data: ['24000', '25500', '24600', '25100', '26100']}],
-    })
+// 初始化pdu排行榜图表
+// const rankContainer = ref<HTMLElement | null>(null);
+// let rankChart = null as echarts.ECharts | null; 
+// const initRankChart = () => {
+//   if (rankChart) {
+//     rankChart.dispose(); // 销毁之前的实例
+//   }
+//   if (rankContainer.value && instance) {
+//     rankChart = echarts.init(rankContainer.value);
+//     rankChart.setOption({
+//       title: { text: selectTimeRange.value[0]+' 至 '+selectTimeRange.value[1]+' PDU耗电量排行', top: -4},
+//       tooltip: { show: false, trigger: 'axis',  axisPointer: { type: "shadow"} },
+//       grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true},
+//       toolbox: {feature: {saveAsImage: {}}},
+//       xAxis: {
+//         type: "value",
+//         axisLine: {
+//           show: false,
+//         },
+//         axisTick: {
+//           show: false,
+//         },
+//         //不显示X轴刻度线和数字
+//         splitLine: { show: false },
+//         axisLabel: { show: false },
+//       },
+//       yAxis: {
+//         type: "category",
+//         data: outletIdData.value,
+//         //升序
+//         inverse: true,
+//         splitLine: { show: false },
+//         axisLine: {
+//           show: false,
+//         },
+//         axisLabel: { fontSize: 16 },
+//         axisTick: {
+//           show: false,
+//         },
+//         //key和图间距
+//         offset: 10,
+//         //动画部分
+//         animationDuration: 300,
+//         animationDurationUpdate: 300,
+//         //key文字大小
+//         nameTextStyle: {
+//           fontSize: 15,
+//         },
+//       },
+//       series: [
+//         {
+//           //柱状图自动排序，排序自动让Y轴名字跟着数据动
+//           realtimeSort: true,
+//           name: "耗电量",
+//           type: "bar",
+//           data: sumEqData.value,
+//           barWidth: 20,
+//           barGap: 5,
+//           smooth: true,
+//           valueAnimation: true,
+//           label: {
+//             normal: {
+//               show: true,
+//               position: "right",
+//               valueAnimation: true,
+//               offset: [5, -2],
+//               textStyle: {
+//                 color: "#333",
+//                 fontSize: 16,
+//               },
+//               // formatter: '{value}kWh'
+//             },
+//           },
+//           itemStyle: {
+//             emphasis: {
+//               barBorderRadius: 7,
+//             },
+//             //颜色样式部分
+//              normal: {
+//               barBorderRadius: 7,
+//               color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+//                 { offset: 0, color: "#3977E6" },
+//                 { offset: 1, color: "#37BBF8" },
+//               ]),
+//             },
+//           },
+//         },
+//       ],
+//       //动画部分
+//       animationDuration: 0,
+//       animationDurationUpdate: 3000,
+//       animationEasing: "linear",
+//       animationEasingUpdate: "linear",
+//     });
+//     instance.appContext.config.globalProperties.rankChart = rankChart;
+//   }
 
+// };
+
+// 处理数据后有几位小数点
+function formatNumber(value, decimalPlaces) {
+    if (!isNaN(value)) {
+        return value.toFixed(decimalPlaces);
+    } else {
+        return null; // 或者其他默认值
+    }
+}
+
+// 给折线图提示框的数据加单位
+function customTooltipFormatter(params: any[]) {
+  var tooltipContent = '';
+  params.forEach(function(item) {
+    switch( item.seriesName ){
+      case '耗电量':
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kWh';
+        break;
+    }
+  });
+  return tooltipContent;
+}
+
+// 处理时间选择不超过xxx范围
+const handleDayPick = () => {
+  if (activeName.value=='weekTabPane'){
+    // 计算两个日期之间的天数差
+    const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
+    // 如果天数差不超过7天，则重置选择的日期
+    if (diffDays < 7) {
+      selectTimeRange.value = defaultDayTimeRange(7)
+      ElMessage({
+        message: '时间选择不少于7天,已默认选择最近一周',
+        type: 'warning',
+      })
+    }
   }
+  if (activeName.value=='monthTabPane'){
+    // 计算两个日期之间的天数差
+    const diffDays = betweenDay(convertDate(selectTimeRange.value[0]), convertDate(selectTimeRange.value[1]))
+    // 如果天数差超过30天，则重置选择的日期
+    if (diffDays < 30) {
+      selectTimeRange.value = defaultMonthTimeRange(1)
+      ElMessage({
+        message: '时间选择不少于1个月,已默认选择最近一个月',
+        type: 'warning',
+      })
+    }
+  }
+}
 
-
-});
+// 禁选未来的日期
+const disabledDate = (date) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  // 设置date的时间为0时0分0秒，以便与today进行比较
+  date.setHours(0, 0, 0, 0);
+  // 如果date在今天之后，则禁用
+  return date > today;
+}
 
 window.addEventListener('resize', function() {
-  myChart?.resize();
-  myChart1?.resize();  
+  lineChart?.resize();
+  // rankChart?.resize();  
 });
 
+// 导航栏选择后触发
+const handleClick = async (row) => {
+   if(row.type != null  && row.type == 3){
+    queryParams.cabinetId = row.id
+    //没数据不换位置
+      //没数据不换位置
+        //没数据不换位置
+          //没数据不换位置
+            //没数据不换位置
+    findFullName(navList.value, row.unique, fullName => {
+      nowAddress.value = fullName
+    });
+    handleQuery();
+  }
+}
+
+// 得到位置全名
+function findFullName(data, targetUnique, callback, fullName = '') {
+  for (let item of data) {
+    const newFullName = fullName === '' ? item.name : fullName + '-' + item.name;
+    if (item.unique === targetUnique) {
+      callback(newFullName);
+    }
+    if (item.children && item.children.length > 0) {
+      findFullName(item.children, targetUnique, callback, newFullName);
+    }
+  }
+}
+
+// 接口获取机房导航列表
+const getNavList = async() => {
+  const res = await CabinetApi.getRoomMenuAll({})
+  navList.value = res
+}
 
 /** 搜索按钮操作 */
-const handleQuery = () => {
- getList()
+const handleQuery = async() => {
+  await getLineChartData();
+  // await getRankChartData();
+  initLineChart();
+  // initRankChart();
 }
-
-/** 重置按钮操作 */
-const resetQuery = () => {
- handleQuery()
-}
-
 
 /** 初始化 **/
-onMounted(() => {
- getList();
-  initChart();
-
+onMounted(async () => {
+  getNavList()
+  // 获取路由参数中的 pdu_id
+  const queryCabinetId = useRoute().query.cabinetId as string | undefined;
+  const queryAddress = useRoute().query.address as string | undefined;
+  queryParams.cabinetId = queryCabinetId ? parseInt(queryCabinetId, 10) : undefined;
+  nowAddress.value = queryAddress ? queryAddress : '';
+  if (queryParams.cabinetId != undefined){
+    await getLineChartData();
+    // await getRankChartData();
+    initLineChart();
+    // initRankChart();
+  }
 })
 
 </script>

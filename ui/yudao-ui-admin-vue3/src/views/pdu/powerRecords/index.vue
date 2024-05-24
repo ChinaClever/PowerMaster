@@ -1,69 +1,48 @@
 <template>
-  <el-row :gutter="20">
-   <el-col :span="treeWidth" :xs="24">
-     <el-input
-       v-model="filterText"
-       style="width: 190px"
-       placeholder=""
-     />
-
-     <el-tree
-       ref="treeRef"
-       style="max-width: 600px"
-       class="filter-tree"
-       :data="serverRoomArr"
-       :props="defaultProps"
-       default-expand-all
-       show-checkbox
-       :filter-node-method="filterNode"
-     />
-   </el-col>
-   <el-col :span="24 - treeWidth" :xs="24">
-     <ContentWrap>
-       <!-- 搜索工作栏 -->
-       <el-form
-         class="-mb-15px"
-         :model="queryParams"
-         ref="queryFormRef"
-         :inline="true"
-         label-width="auto"
-       >
-          <el-form-item label="参数类型" prop="type">
-          <el-cascader
-            v-model="typeDefaultSelected"
-            collapse-tags
-            :options="typeSelection"
-            collapse-tags-tooltip
-            :show-all-levels="true"
-            @change="typeCascaderChange"
-            class="!w-140px"
-          />
-        </el-form-item>
-
-        <el-form-item label="时间段" prop="timeRange">
-          <el-date-picker
-          value-format="YYYY-MM-DD HH:mm:ss"
-          v-model="queryParams.timeRange"
-          type="datetimerange"
-          :shortcuts="shortcuts"
-          range-separator="-"
-          start-placeholder="开始时间"
-          end-placeholder="结束时间"
-          :disabled-date="disabledDate"
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU电能记录">
+    <template #ActionBar>
+      <el-form
+        class="-mb-15px"
+        :model="queryParams"
+        ref="queryFormRef"
+        :inline="true"
+        label-width="auto"
+      >
+        <el-form-item label="参数类型" prop="type">
+        <el-cascader
+          v-model="typeDefaultSelected"
+          collapse-tags
+          :options="typeSelection"
+          collapse-tags-tooltip
+          :show-all-levels="true"
+          @change="typeCascaderChange"
+          class="!w-140px"
         />
-        </el-form-item>
+      </el-form-item>
 
-         <el-form-item >
-           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-           <!-- <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button> -->
-           <el-button type="success" plain :loading="exportLoading">
-             <Icon icon="ep:download" class="mr-5px" /> 导出
-           </el-button>
-         </el-form-item>
-       </el-form>
-     </ContentWrap>
-      <ContentWrap>
-   <!-- 列表 -->
+      <el-form-item label="时间段" prop="timeRange">
+        <el-date-picker
+        value-format="YYYY-MM-DD HH:mm:ss"
+        v-model="queryParams.timeRange"
+        type="datetimerange"
+        :shortcuts="shortcuts"
+        range-separator="-"
+        start-placeholder="开始时间"
+        end-placeholder="结束时间"
+        :disabled-date="disabledDate"
+      />
+      </el-form-item>
+
+        <el-form-item >
+          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <!-- <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button> -->
+          <el-button type="success" plain :loading="exportLoading">
+            <Icon icon="ep:download" class="mr-5px" /> 导出
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </template>
+    <template #Content>
       <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
         <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="80px">
@@ -97,10 +76,8 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"/>
       <div class="realTotal">共 {{ realTotel }} 条</div>
-      </ContentWrap>
-   </el-col>
-  </el-row>
- 
+     </template>
+  </CommonMenu>
 </template>
 
 <script setup lang="ts">
@@ -108,94 +85,12 @@ import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption'
 import { HistoryDataApi } from '@/api/pdu/historydata'
-import { ElTree, ElIcon, ElMessage } from 'element-plus'
+import { CabinetApi } from '@/api/cabinet/info'
 import * as echarts from 'echarts';
 
 defineOptions({ name: 'PowerRecords' })
 
-const serverRoomArr =  [
- {
-   value: '1',
-   label: '机房1',
-   children: [
-     {
-       value: '1-1',
-       label: '柜列1',
-       children: [
-       {
-         value: '1-1-1',
-         label: '机柜1',
-       },
-       {
-         value: '1-1-2',
-         label: '机柜2',
-       },]
-     },
-   ],
- },
- {
-   value: '2',
-   label: '机房2',
-   children: [
-     {
-       value: '2-1',
-       label: '柜列1',
-       children: [
-       {
-         value: '2-1-1',
-         label: '机柜1',
-       },
-       {
-         value: '2-1-2',
-         label: '机柜2',
-       },]
-     },
-   ],
- },
- {
-   value: '3',
-   label: '机房3',
-   children: [
-     {
-       value: '3-1',
-       label: '柜列1',
-       children: [
-       {
-         value: '3-1-1',
-         label: '机柜1',
-       },
-       {
-         value: '3-1-2',
-         label: '机柜2',
-       },]
-     },
-   ],
- },
-]
-//折叠功能
-let treeWidth = ref(3)
-let isCollapsed = ref(0);
-const toggleCollapse = () => {
- treeWidth.value = isCollapsed.value == 0 ? 3 : 0;
-};
-//树型控件
-interface Tree {
- [key: string]: any
-}
-const filterText = ref('')
-const treeRef = ref<InstanceType<typeof ElTree>>()
-const filterNode = (value: string, data: Tree) => {
- if (!value) return true
- return data.label.includes(value)
-}
-const defaultProps = {
- children: 'children',
- label: 'label',
-}
-watch(filterText, (val) => {
- treeRef.value!.filter(val)
-})
-
+const navList = ref([]) as any // 左侧导航栏树结构列表
 const instance = getCurrentInstance();
 const message = useMessage()
 const activeName = ref('myData') 
@@ -211,6 +106,7 @@ const queryParams = reactive({
   outletId: undefined,
   type: 'total',
   timeRange: undefined as string[] | undefined,
+  ipArray: [],
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
@@ -255,10 +151,11 @@ const typeCascaderChange = (selected) => {
   switch(selected[0]){
     case 'line':
       tableColumns.value = [
-        { label: '位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '位置', align: 'center', prop: 'address' , istrue:true},
         { label: '相', align: 'center', prop: 'line_id' , istrue:true, formatter: formatLineId}, 
         { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
         { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
         { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '130px'},
       ]
       queryParams.lineId = selected[1];
@@ -267,10 +164,11 @@ const typeCascaderChange = (selected) => {
       break;
     case 'loop':
       tableColumns.value = [
-        { label: '位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '位置', align: 'center', prop: 'address' , istrue:true},
         { label: '回路', align: 'center', prop: 'loop_id' , istrue:true, formatter: formatLoopId},
         { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
-        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime,   istrue:true},
+        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
         { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '130px'},
       ]
       queryParams.loopId = selected[1];
@@ -279,10 +177,11 @@ const typeCascaderChange = (selected) => {
       break;
     case 'outlet':
       tableColumns.value = [
-        { label: '位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '位置', align: 'center', prop: 'address' , istrue:true},
         { label: '输出位', align: 'center', prop: 'outlet_id' , istrue:true},
         { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
-        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime,   istrue:true},
+        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
         { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '130px'},
       ]
       queryParams.outletId = selected[1];
@@ -291,9 +190,10 @@ const typeCascaderChange = (selected) => {
       break;
     case 'total':
       tableColumns.value = [
-        { label: '位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '位置', align: 'center', prop: 'address' , istrue:true},
         { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
-        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime,   istrue:true},
+        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
         { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '130px'},
       ]
       queryParams.lineId = undefined;
@@ -306,9 +206,10 @@ const typeCascaderChange = (selected) => {
 }
 
 const tableColumns = ref([
-  { label: '位置', align: 'center', prop: 'location' , istrue:true},
+  { label: '位置', align: 'center', prop: 'address' , istrue:true},
   { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
-  { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime,   istrue:true},
+  { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+  { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
   { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '130px'},
 ]);
 
@@ -420,6 +321,30 @@ function formatLoopId(row: any, column: any, cellValue: number): string {
    return 'C'+cellValue;
 }
 
+// 导航栏选择后触发
+const handleCheck = async (node) => {
+    let arr = [] as any
+    node.forEach(item => { 
+      if(item.type == 4){
+        arr.push(item.unique);
+      }
+    });
+    queryParams.ipArray = arr
+    handleQuery()
+    console.log(arr)
+}
+
+// 接口获取机房导航列表
+const getNavList = async() => {
+  const res = await CabinetApi.getRoomList({})
+  let arr = [] as any
+  for (let i=0; i<res.length;i++){
+  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  arr = arr.concat(temp);
+  }
+  navList.value = arr
+}
+
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
@@ -444,6 +369,7 @@ const handleQuery = () => {
 
 /** 初始化 **/
 onMounted(() => {
+  getNavList()
   getTypeMaxValue();
   getList();
 })

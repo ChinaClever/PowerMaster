@@ -1,251 +1,147 @@
 <template>
-   <el-row :gutter="20">
-    <el-col :span="treeWidth" :xs="24">
-      <el-input
-        v-model="filterText"
-        style="width: 190px"
-        placeholder=""
-      />
-
-      <el-tree
-        ref="treeRef"
-        style="max-width: 600px"
-        class="filter-tree"
-        :data="serverRoomArr"
-        :props="defaultProps"
-        default-expand-all
-        show-checkbox
-        :filter-node-method="filterNode"
-      />
-    </el-col>
-    <el-col :span="24 - treeWidth" :xs="24">
-      <ContentWrap>
-        <!-- 搜索工作栏 -->
-        <el-form
-          class="-mb-15px"
-          :model="queryParams"
-          ref="queryFormRef"
-          :inline="true"
-          label-width="80px"
-        >
-          <el-form-item label="IP地址" prop="ipAddr">
-            <el-input
-              v-model="queryParams.ipAddr"
-              placeholder="请输入IP地址"
-              clearable
-              @keyup.enter="handleQuery"
-              class="!w-160px"
-            />
-          </el-form-item>
-
-          <el-form-item label="级联地址" prop="cascadeAddr">
-              <el-input-number
-                v-model="cascadeAddr"
-                :min="0"
-                controls-position="right"
-                :value-on-clear="0"
-                 class="!w-148px"
-              />
-          </el-form-item>
-
-          <el-form-item label="参数类型" prop="type">
-          <el-cascader
-            v-model="defaultSelected"
-            collapse-tags
-            :options="typeSelection"
-            collapse-tags-tooltip
-            :show-all-levels="true"
-            @change="typeCascaderChange"
-            class="!w-140px"
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU历史数据">
+    <template #NavInfo>
+      
+    </template>
+    <template #ActionBar>
+      <el-form
+        class="-mb-15px"
+        :model="queryParams"
+        ref="queryFormRef"
+        :inline="true"
+        label-width="80px"
+      >
+        <el-form-item label="IP地址" prop="ipAddr">
+          <el-input
+            v-model="queryParams.ipAddr"
+            placeholder="请输入IP地址"
+            clearable
+            @keyup.enter="handleQuery"
+            class="!w-160px"
           />
         </el-form-item>
 
-          <el-form-item label="颗粒度" prop="granularity">
-            <el-select
-              v-model="queryParams.granularity"
-              placeholder="请选择分钟/小时/天"
-              class="!w-120px">
-              <el-option label="分钟" value="realtime" />
-              <el-option label="小时" value="hour" />
-              <el-option label="天" value="day" />
-            </el-select>
-          </el-form-item>
-
-          <el-form-item label="筛选列" prop="optionsCol">
-            <el-cascader
-              v-model="defaultOptionsCol"
-              :options="optionsCol"
-              :props="props"
-              collapse-tags
-              collapse-tags-tooltip
-              :show-all-levels="false"
-              @change="cascaderChange"
-              class="!w-210px"
+        <el-form-item label="级联地址" prop="cascadeAddr">
+            <el-input-number
+              v-model="cascadeAddr"
+              :min="0"
+              controls-position="right"
+              :value-on-clear="0"
+                class="!w-148px"
             />
-          </el-form-item>
+        </el-form-item>
 
-          <el-form-item label="时间段" prop="timeRange">
-            <el-date-picker
-            value-format="YYYY-MM-DD HH:mm:ss"
-            v-model="queryParams.timeRange"
-            type="datetimerange"
-            :shortcuts="shortcuts"
-            range-separator="-"
-            start-placeholder="开始时间"
-            end-placeholder="结束时间"
-            :disabled-date="disabledDate"
+        <el-form-item label="参数类型" prop="type">
+        <el-cascader
+          v-model="defaultSelected"
+          collapse-tags
+          :options="typeSelection"
+          collapse-tags-tooltip
+          :show-all-levels="true"
+          @change="typeCascaderChange"
+          class="!w-140px"
+        />
+      </el-form-item>
+
+        <el-form-item label="颗粒度" prop="granularity">
+          <el-select
+            v-model="queryParams.granularity"
+            placeholder="请选择分钟/小时/天"
+            class="!w-120px">
+            <el-option label="分钟" value="realtime" />
+            <el-option label="小时" value="hour" />
+            <el-option label="天" value="day" />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="筛选列" prop="optionsCol">
+          <el-cascader
+            v-model="defaultOptionsCol"
+            :options="optionsCol"
+            :props="props"
+            collapse-tags
+            collapse-tags-tooltip
+            :show-all-levels="false"
+            @change="cascaderChange"
+            class="!w-210px"
           />
-          </el-form-item>
+        </el-form-item>
 
-          <!-- <div style="float:right; padding-right:78px"> -->
-          <el-form-item >
-            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-            <!-- <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button> -->
-            <el-button type="success" plain @click="handleExport" :loading="exportLoading">
-              <Icon icon="ep:download" class="mr-5px" /> 导出
-            </el-button>
-          </el-form-item>
-          <!-- </div> -->
-        </el-form>
+        <el-form-item label="时间段" prop="timeRange">
+          <el-date-picker
+          value-format="YYYY-MM-DD HH:mm:ss"
+          v-model="queryParams.timeRange"
+          type="datetimerange"
+          :shortcuts="shortcuts"
+          range-separator="-"
+          start-placeholder="开始时间"
+          end-placeholder="结束时间"
+          :disabled-date="disabledDate"
+        />
+        </el-form-item>
 
-      </ContentWrap>
-      <!-- 列表 -->
-      <ContentWrap>
-        <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
-           <!-- 添加行号列 -->
-          <el-table-column label="序号" align="center" width="100px">
-            <template #default="{ $index }">
-              {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
+        <!-- <div style="float:right; padding-right:78px"> -->
+        <el-form-item >
+          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <!-- <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button> -->
+          <el-button type="success" plain @click="handleExport" :loading="exportLoading">
+            <Icon icon="ep:download" class="mr-5px" /> 导出
+          </el-button>
+        </el-form-item>
+        <!-- </div> -->
+      </el-form>
+    </template>
+    <template #Content>
+      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+          <!-- 添加行号列 -->
+        <el-table-column label="序号" align="center" width="100px">
+          <template #default="{ $index }">
+            {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
+          </template>
+        </el-table-column>
+        <!-- 遍历其他列 -->
+        <template v-for="column in tableColumns">
+          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
+            <template #default="{ row }" v-if="column.slot === 'actions'">
+              <el-button link type="primary" @click="toDetails(row.pdu_id, row.location, row.address)">详情</el-button>
             </template>
           </el-table-column>
-          <!-- 遍历其他列 -->
-          <template v-for="column in tableColumns">
-            <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
-              <template #default="{ row }" v-if="column.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.pdu_id, row.location)">详情</el-button>
-              </template>
-            </el-table-column>
-          </template>
-          <!-- 超过一万条数据提示信息 -->
-          <template v-if="shouldShowDataExceedMessage" #append>
-            <tr>
-              <td colspan="列数" style="text-align: center; padding: 12px 0;">
-                <span style="margin:0 12px; color: red;">数据量过大，请筛选后查看更多数据。</span>
-              </td>
-            </tr>
-          </template>
-        </el-table>
-        <!-- 分页 -->
-          <Pagination
-            :total="total"
-            :page-size-arr="pageSizeArr"
-            layout = "sizes, prev, pager, next, jumper"
-            v-model:page="queryParams.pageNo"
-            v-model:limit="queryParams.pageSize"
-            @pagination="getList"
-          />
-          <div class="realTotal">共 {{ realTotel }} 条</div>
-      </ContentWrap>
-    </el-col>
-   </el-row>
-
+        </template>
+        <!-- 超过一万条数据提示信息 -->
+        <template v-if="shouldShowDataExceedMessage" #append>
+          <tr>
+            <td colspan="列数" style="text-align: center; padding: 12px 0;">
+              <span style="margin:0 12px; color: red;">数据量过大，请筛选后查看更多数据。</span>
+            </td>
+          </tr>
+        </template>
+      </el-table>
+      <!-- 分页 -->
+      <Pagination
+        :total="total"
+        :page-size-arr="pageSizeArr"
+        layout = "sizes, prev, pager, next, jumper"
+        v-model:page="queryParams.pageNo"
+        v-model:limit="queryParams.pageSize"
+        @pagination="getList"
+      />
+      <div class="realTotal">共 {{ realTotel }} 条</div>
+    </template>
+  </CommonMenu>
 </template>
 
 <script setup lang="ts">
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { HistoryDataApi } from '@/api/pdu/historydata'
-import { ElTree, ElIcon, ElMessage } from 'element-plus'
+import { CabinetApi } from '@/api/cabinet/info'
 const { push } = useRouter()
 /** pdu历史数据 列表 */
 defineOptions({ name: 'HistoryData' })
 
-//折叠功能
-const serverRoomArr =  [
-  {
-    value: '1',
-    label: '机房1',
-    children: [
-      {
-        value: '1-1',
-        label: '柜列1',
-        children: [
-        {
-          value: '1-1-1',
-          label: '机柜1',
-        },
-        {
-          value: '1-1-2',
-          label: '机柜2',
-        },]
-      },
-    ],
-  },
-  {
-    value: '2',
-    label: '机房2',
-    children: [
-      {
-        value: '2-1',
-        label: '柜列1',
-        children: [
-        {
-          value: '2-1-1',
-          label: '机柜1',
-        },
-        {
-          value: '2-1-2',
-          label: '机柜2',
-        },]
-      },
-    ],
-  },
-  {
-    value: '3',
-    label: '机房3',
-    children: [
-      {
-        value: '3-1',
-        label: '柜列1',
-        children: [
-        {
-          value: '3-1-1',
-          label: '机柜1',
-        },
-        {
-          value: '3-1-2',
-          label: '机柜2',
-        },]
-      },
-    ],
-  },
-]
-let treeWidth = ref(3)
-let isCollapsed = ref(0);
-const toggleCollapse = () => {
-  treeWidth.value = isCollapsed.value == 0 ? 3 : 0;
-};
-//树型控件
-interface Tree {
-  [key: string]: any
-}
-const filterText = ref('')
-const treeRef = ref<InstanceType<typeof ElTree>>()
-const filterNode = (value: string, data: Tree) => {
-  if (!value) return true
-  return data.label.includes(value)
-}
-const defaultProps = {
-  children: 'children',
-  label: 'label',
-}
-watch(filterText, (val) => {
-  treeRef.value!.filter(val)
-})
-
+const navList = ref([]) as any // 左侧导航栏树结构列表
 const message = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
-
 const loading = ref(true) // 列表的加载中
 const list = ref<Array<{ }>>([]); // 列表数据
 const total = ref(0) // 数据总条数 超过10000条为10000
@@ -262,6 +158,7 @@ const queryParams = reactive({
   ipAddr: undefined,
   cascadeAddr: '0',
   timeRange: undefined,
+  ipArray: [],
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref() // 搜索的表单
@@ -381,12 +278,13 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         originalArray.value =["pow_active", "pow_apparent", "power_factor"];
         // 配置表格列
         tableColumns.value =([
-            { label: '位置', align: 'center', prop: 'location' , istrue:true},
+            { label: '位置', align: 'center', prop: 'address' , istrue:true},
             { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower},
             { label: '总视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, formatter: formatPower},
             { label: '功率因素', align: 'center', prop: 'power_factor' , istrue:true, formatter: formatPowerFactor},
             { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
-            { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '230px'},
+            { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
+            { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '160px'},
         ]);
         queryParams.pageNo = 1;
         getList();
@@ -414,7 +312,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
                             "pow_apparent_avg_value", "pow_apparent_max", "pow_apparent_min"],
         // 配置表格列
         tableColumns.value = [
-          { label: '位置', align: 'center', prop: 'location', istrue:true, width: '180px'},
+          { label: '位置', align: 'center', prop: 'address', istrue:true, width: '180px'},
           { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '180px', formatter: formatPower},
           { label: '最大有功功率(kW)', align: 'center', prop: 'pow_active_max_value', istrue:true, width: '180px', formatter: formatPower},
           { label: '最大有功功率时间', align: 'center', prop: 'pow_active_max_time', formatter: formatTime, width: '230px', istrue:true},
@@ -426,7 +324,8 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '最小视在功率(kVA)', align: 'center', prop: 'pow_apparent_min_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最小视在功率时间', align: 'center', prop: 'pow_apparent_min_time', formatter: formatTime, width: '230px', istrue:false},
           { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
-          { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '230px'},
+          { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
+          { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
         ] as any;
         queryParams.pageNo = 1;
         getList();
@@ -447,15 +346,16 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         originalArray.value =["vol_value", "cur_value", "pow_active", "pow_apparent", "power_factor"];
         // 配置表格列
         tableColumns.value = [
-          { label: '位置', align: 'center', prop: 'location', istrue:true},
+          { label: '位置', align: 'center', prop: 'address', istrue:true, width: '180px'},
           { label: '相', align: 'center', prop: 'line_id', istrue:true, formatter: formatLineId},
           { label: '电压(V)', align: 'center', prop: 'vol_value', istrue:true, formatter: formatVoltage},
           { label: '电流(A)', align: 'center', prop: 'cur_value', istrue:true, formatter: formatCurrent},
-          { label: '有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower},
-          { label: '视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, formatter: formatPower},
+          { label: '有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower, width: '140px'},
+          { label: '视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, formatter: formatPower, width: '140px'},
           { label: '功率因素', align: 'center', prop: 'power_factor', istrue:true, formatter: formatPowerFactor},
           { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '230px'},
-          { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '230px'},
+          { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
+          { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
         ] as any;
         queryParams.pageNo = 1;
         getList();
@@ -498,7 +398,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
                             "pow_apparent_avg_value", "pow_apparent_max", "pow_apparent_min"],
         // 配置表格列
         tableColumns.value = [
-          { label: '位置', align: 'center', prop: 'location', istrue:true, width: '180px'},
+          { label: '位置', align: 'center', prop: 'address', istrue:true, width: '180px'},
           { label: '相', align: 'center', prop: 'line_id', istrue:true, width: '100px', formatter: formatLineId},
           { label: '平均电压(V)', align: 'center', prop: 'vol_avg_value', istrue:false, width: '140px', formatter: formatVoltage},
           { label: '最大电压(V)', align: 'center', prop: 'vol_max_value', istrue:false, width: '120px', formatter: formatVoltage},
@@ -521,7 +421,8 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '最小视在功率(kVA)', align: 'center', prop: 'pow_apparent_min_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最小视在功率时间', align: 'center', prop: 'pow_apparent_min_time', formatter: formatTime, width: '230px', istrue:false},
           { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
-          { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '230px'},
+          { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
+          { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
         ] as any;
         queryParams.pageNo = 1;
         getList();
@@ -542,7 +443,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         originalArray.value =["vol_value", "cur_value", "pow_active", "pow_apparent", "power_factor"];
         // 配置表格列
         tableColumns.value = [
-          { label: '位置', align: 'center', prop: 'location', istrue:true},
+          { label: '位置', align: 'center', prop: 'address', istrue:true, width: '180px'},
           { label: '回路', align: 'center', prop: 'loop_id', istrue:true, formatter: formatLoopId},
           { label: '电压(V)', align: 'center', prop: 'vol_value', istrue:true, formatter: formatVoltage},
           { label: '电流(A)', align: 'center', prop: 'cur_value', istrue:true, formatter: formatCurrent},
@@ -550,7 +451,8 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, formatter: formatPower},
           { label: '功率因素', align: 'center', prop: 'power_factor', istrue:true, formatter: formatPowerFactor},
           { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '230px'},
-          { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '230px'},
+          { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
+          { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
         ] as any ;
         queryParams.pageNo = 1;
         getList();
@@ -593,7 +495,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
                             "pow_apparent_avg_value", "pow_apparent_max", "pow_apparent_min"],
         // 配置表格列
         tableColumns.value = [
-          { label: '位置', align: 'center', prop: 'location', istrue:true, width: '180px'},
+          { label: '位置', align: 'center', prop: 'address', istrue:true, width: '180px'},
           { label: '回路', align: 'center', prop: 'loop_id', istrue:true, width: '100px', formatter: formatLoopId},
           { label: '平均电压(V)', align: 'center', prop: 'vol_avg_value', istrue:false, width: '140px', formatter: formatVoltage},
           { label: '最大电压(V)', align: 'center', prop: 'vol_max_value', istrue:false, width: '140px', formatter: formatVoltage},
@@ -616,7 +518,8 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '最小视在功率(kVA)', align: 'center', prop: 'pow_apparent_min_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最小视在功率时间', align: 'center', prop: 'pow_apparent_min_time', formatter: formatTime, width: '230px', istrue:false},
           { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
-          { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '230px'},
+          { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
+          { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
         ] as any;
         queryParams.pageNo = 1;
         getList();
@@ -636,14 +539,15 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         originalArray.value =["cur_value", "pow_active", "pow_apparent", "power_factor"];
         // 配置表格列
         tableColumns.value = [
-          { label: '位置', align: 'center', prop: 'location', istrue:true},
+          { label: '位置', align: 'center', prop: 'address', istrue:true, width: '180px'},
           { label: '输出位', align: 'center', prop: 'outlet_id', istrue:true},
           { label: '电流(A)', align: 'center', prop: 'cur_value', istrue:true, formatter: formatCurrent},
-          { label: '有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower},
-          { label: '视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, formatter: formatPower},
+          { label: '有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower, width: '160px'},
+          { label: '视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, formatter: formatPower, width: '160px'},
           { label: '功率因素', align: 'center', prop: 'power_factor', istrue:true, formatter: formatPowerFactor},
           { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '230px'},
-          { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '230px'},
+          { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
+          { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
         ] as any;
         queryParams.pageNo = 1;
         getList();
@@ -679,7 +583,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
                             "pow_apparent_avg_value", "pow_apparent_max", "pow_apparent_min"],
         // 配置表格列
         tableColumns.value = [
-          { label: '位置', align: 'center', prop: 'location', istrue:true, width: '180px'},
+          { label: '位置', align: 'center', prop: 'address', istrue:true, width: '180px'},
           { label: '输出位', align: 'center', prop: 'outlet_id', istrue:true, width: '100px'},
           { label: '平均电流(A)', align: 'center', prop: 'cur_avg_value', istrue:false, width: '140px', formatter: formatCurrent},
           { label: '最大电流(A)', align: 'center', prop: 'cur_max_value', istrue:false, width: '140px', formatter: formatCurrent},
@@ -697,7 +601,8 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '最小视在功率(kVA)', align: 'center', prop: 'pow_apparent_min_value', istrue:false, width: '180px', formatter: formatPower},
           { label: '最小视在功率时间', align: 'center', prop: 'pow_apparent_min_time', formatter: formatTime, width: '230px', istrue:false},
           { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
-          { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '230px'},
+          { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
+          { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
         ] as any;
         queryParams.pageNo = 1;
         getList();
@@ -706,12 +611,13 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
   });
 
 const tableColumns = ref([
-    { label: '位置', align: 'center', prop: 'location' , istrue:true},
+    { label: '位置', align: 'center', prop: 'address' , istrue:true},
     { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower },
     { label: '总视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, formatter: formatPower },
     { label: '功率因素', align: 'center', prop: 'power_factor' , istrue:true, formatter: formatPowerFactor },
     { label: '时间', align: 'center', prop: 'create_time', width: '230px',formatter: formatTime, istrue:true},
-    { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '230px'},
+    { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
+    { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '160px'},
 ]);
 
 /** 查询列表 */
@@ -837,6 +743,31 @@ const getTypeMaxValue = async () => {
   typeSelection.value = typeSelectionValue;
 }
 
+// 导航栏选择后触发
+const handleCheck = async (node) => {
+    let arr = [] as any
+    node.forEach(item => { 
+      if(item.type == 4){
+        arr.push(item.unique);
+      }
+    });
+    queryParams.ipArray = arr
+    handleQuery()
+    console.log(arr)
+}
+
+// 接口获取机房导航列表
+const getNavList = async() => {
+  const res = await CabinetApi.getRoomList({})
+  let arr = [] as any
+  for (let i=0; i<res.length;i++){
+  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  arr = arr.concat(temp);
+  }
+  navList.value = arr
+}
+
+
 /** 搜索按钮操作 */
 const handleQuery = () => {
    // IP地址的正则表达式
@@ -860,8 +791,8 @@ const handleQuery = () => {
 
 
 //详情操作 跳转电力分析
-const toDetails = (pduId: number, location: string) => {
-  push('/pdu/record/historyLine?pduId='+pduId+'&location='+location);
+const toDetails = (pduId: number, location: string, address: string) => {
+  push('/pdu/record/historyLine?pduId='+pduId+'&location='+location+'&address='+address);
 }
 
 /** 导出按钮操作 */
@@ -882,6 +813,7 @@ const handleExport = async () => {
 
 /** 初始化 **/
 onMounted( () => {
+  getNavList()
   getTypeMaxValue();
   getList();
 });
