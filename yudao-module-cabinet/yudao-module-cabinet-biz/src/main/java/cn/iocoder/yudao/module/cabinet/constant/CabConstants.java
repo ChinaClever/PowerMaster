@@ -173,4 +173,19 @@ public class CabConstants {
      */
     public static final String PDU_HDA_LINE_HOUR = "pdu_hda_line_hour" ;
 
+    /**
+     * 数据包
+     */
+    public static final String PDU_DATA = "pdu_data";
+
+    /**
+     * 输出位数据
+     */
+    public static final String OUTPUT_ITEM_LIST = "output_item_list";
+
+    /**
+     * 相电流
+     */
+    public static final String CUR_VALUE = "cur_value";
+
 }
