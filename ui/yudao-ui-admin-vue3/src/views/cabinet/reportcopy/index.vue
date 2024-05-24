@@ -725,47 +725,48 @@ const getList = async () => {
   // }else{
   //   serChartContainerWidth.value = 0;
   // }
-    var CabinetInfo = await CabinetApi.getCabinetDetail({id : queryParams.Id});
-
-    var apow = CabinetInfo?.cabinet_power?.path_a?.pow_active;
-    var bpow = CabinetInfo?.cabinet_power?.path_b?.pow_active;
-    var percentageValue = 50 as any;
-    if(apow == null && bpow == null){
-      percentageValue = null;
-    } else if (apow != null && bpow == null){
-      percentageValue = 100;
-    } else if (apow == null && bpow != null){
-      percentageValue = 0;
-    } else if (apow != 0 && bpow == 0){
-      percentageValue = 100;
-    } else if (apow == 0 && bpow != 0){
-      percentageValue = 0;
-    } else if (apow != 0 && bpow != 0) {
-      percentageValue = apow / (apow + bpow);
-      percentageValue *= 100;
-    }
-    console.log("aisle_name",CabinetInfo)
-    temp.push({
-      baseInfoName : "所属位置",
-      baseInfoValue : CabinetInfo?.aisle_name ? CabinetInfo?.room_name + '-' +  CabinetInfo?.aisle_name + '-'  + CabinetInfo?.cabinet_name : CabinetInfo?.room_name + '-' + CabinetInfo?.cabinet_name,
-      consumeName : "当前总视在功率",
-      consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_apparent?.toFixed(3) + "kVA",
-      percentageName: "当前AB路占比",
-      percentageValue: percentageValue?.toFixed(0),
-    })
-    temp.push({
-      baseInfoName : "电力容量",
-      baseInfoValue : CabinetInfo?.pow_capacity,
-      consumeName : "当前总有功功率",
-      consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_active?.toFixed(3) + "kW"
-    })
-    temp.push({
-      baseInfoName : "负载率",
-      baseInfoValue : CabinetInfo?.load_factor?.toFixed(2) + "%",
-      consumeName : "当前总无功功率",
-      consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_reactive?.toFixed(3) + "kVar"
-    })
-    CabinetTableData.value = temp;
+  
+  var CabinetInfo = await CabinetApi.getCabinetDetail({id : queryParams.Id});
+    console.log("CabinetInfo",CabinetInfo)
+  var apow = CabinetInfo?.cabinet_power?.path_a?.pow_active;
+  var bpow = CabinetInfo?.cabinet_power?.path_b?.pow_active;
+  var percentageValue = 50 as any;
+  if(apow == null && bpow == null){
+    percentageValue = null;
+  } else if (apow != null && bpow == null){
+    percentageValue = 100;
+  } else if (apow == null && bpow != null){
+    percentageValue = 0;
+  } else if (apow != 0 && bpow == 0){
+    percentageValue = 100;
+  } else if (apow == 0 && bpow != 0){
+    percentageValue = 0;
+  } else if (apow != 0 && bpow != 0) {
+    percentageValue = apow / (apow + bpow);
+    percentageValue *= 100;
+  }
+  
+  temp.push({
+    baseInfoName : "所属位置",
+    baseInfoValue : CabinetInfo?.aisle_name ? CabinetInfo?.room_name + '-' +  CabinetInfo?.aisle_name + '-'  + CabinetInfo?.cabinet_name : CabinetInfo?.room_name + '-' + CabinetInfo?.cabinet_name,
+    consumeName : "当前总视在功率",
+    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_apparent?.toFixed(3) + "kVA",
+    percentageName: "当前AB路占比",
+    percentageValue: percentageValue?.toFixed(0),
+  })
+  temp.push({
+    baseInfoName : "电力容量",
+    baseInfoValue : CabinetInfo?.pow_capacity,
+    consumeName : "当前总有功功率",
+    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_active?.toFixed(3) + "kW"
+  })
+  temp.push({
+    baseInfoName : "负载率",
+    baseInfoValue : CabinetInfo?.load_factor?.toFixed(2) + "%",
+    consumeName : "当前总无功功率",
+    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_reactive?.toFixed(3) + "kVar"
+  })
+  CabinetTableData.value = temp;
   
   
   // initChart();

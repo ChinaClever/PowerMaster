@@ -142,23 +142,9 @@
                     <el-table-column  align="center" label="基本信息"  prop="baseInfoName" />
                     <el-table-column  prop="baseInfoValue" >
                       <template #default="scope">
-                        <span v-if="scope.$index === 2">
-                          <el-tag  v-if="scope.row.baseInfoValue == 0">正常</el-tag>
-                          <el-tag type="warning" v-if="scope.row.baseInfoValue == 1">预警</el-tag>
-                          <el-popover
-                              placement="top-start"
-                              title="告警内容"
-                              :width="500"
-                              trigger="hover"
-                              :content="scope.row.pduAlarm"
-                              v-if="scope.row.baseInfoValue == 2"
-                            >
-                              <template #reference>
-                                <el-tag type="danger">告警</el-tag>
-                              </template>
-                            </el-popover>
-                          <el-tag type="info" v-if="scope.row.baseInfoValue == 4">故障</el-tag>
-                          <el-tag type="info" v-if="scope.row.baseInfoValue == 5">离线</el-tag>
+                        <span v-if="scope.$index === 1">
+                          <el-tag  v-if="scope.row.baseInfoValue == 0">开机</el-tag>
+                          <el-tag type="warning" v-if="scope.row.baseInfoValue == 1">关机</el-tag>                        
                         </span>
                         <span v-else>{{ scope.row.baseInfoValue }}</span>
                       </template>
@@ -524,8 +510,8 @@ const getList = async () => {
   }
   
 
-  var PDU = await IndexApi.getRackRedis(queryParams);
-  // var temp = [] as any;
+  // var PDU = await IndexApi.PDUDisplay(queryParams);
+  var temp = [] as any;
   // var baseInfo = await IndexApi.getPDUDevicePage(queryParams);
   // // 假设 PDU.pdu_data.output_item_list.pow_value 是一个 double 数组
   // var powValueArray = PDU.pdu_data?.output_item_list?.pow_value;
@@ -567,28 +553,29 @@ const getList = async () => {
   //   serChartContainerWidth.value = 0;
   // }
   
+  var rackInfo =  await IndexApi.getRackRedis(queryParams);
 
-  //   temp.push({
-  //     baseInfoName : "所属位置",
-  //     baseInfoValue : baseInfo?.list && baseInfo?.list.length > 0 ? baseInfo?.list[0].location : "/",
-  //     consumeName : "消耗电量",
-  //     consumeValue : eqData.value.eq && eqData.value.eq.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '/',
-  //   })
-  //   temp.push({
-  //     baseInfoName : "网络地址",
-  //     baseInfoValue : queryParams.ipAddr + "-" + queryParams.cascadeAddr,
-  //     consumeName : "当前视在功率",
-  //     consumeValue : PDU?.pdu_data?.pdu_total_data ? PDU.pdu_data.pdu_total_data.pow_apparent.toFixed(3) + "kVA" : '/'
-  //   })
-  //   temp.push({
-  //     baseInfoName : "设备状态",
-  //     baseInfoValue : PDU.status != null ? PDU.status : '/',
-  //     pduAlarm : PDU.pdu_alarm,
-  //     consumeName : "当前功率因素",
-  //     consumeValue : PDU?.pdu_data?.pdu_total_data ? PDU.pdu_data.pdu_total_data.power_factor?.toFixed(2) : '/'
-  //   })
-  //   PDUTableData.value = temp;
-  
+  console.log("rackInfo",rackInfo)
+  if(rackInfo != null){
+    temp.push({
+      baseInfoName : "所属位置",
+      baseInfoValue : rackInfo?.aisle_name ? rackInfo?.room_name + '-' +  rackInfo?.aisle_name + '-'  + rackInfo?.cabinet_name + '-' +  rackInfo?.rack_name : rackInfo?.room_name + '-' + rackInfo?.cabinet_name + '-' +  rackInfo?.rack_name,
+      consumeName : "当前总视在功率",
+    consumeValue : rackInfo?.rack_power != null ? rackInfo?.rack_power?.total_data?.pow_apparent?.toFixed(3) + "kVA" : '/',
+    })
+    temp.push({
+      baseInfoName : "设备状态",
+      baseInfoValue : rackInfo?.status != null ? rackInfo.status : '/',
+      consumeName : "当前总有功功率",
+      consumeValue : rackInfo?.rack_power != null ? (rackInfo?.rack_power?.total_data?.pow_active?.toFixed(3) + "kW") : '/',
+    })
+    temp.push({
+      consumeName : "当前总无功功率",
+      consumeValue : rackInfo?.rack_power != null ? rackInfo?.rack_power?.total_data?.pow_reactive?.toFixed(3) + "kVar" : '/'
+    })
+
+    PDUTableData.value = temp;
+  }
   
   // initChart();
   loading.value = false

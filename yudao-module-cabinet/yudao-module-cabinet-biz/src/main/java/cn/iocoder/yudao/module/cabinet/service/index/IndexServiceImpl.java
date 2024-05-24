@@ -14,6 +14,7 @@ import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetEnvSensor;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
+import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.PduIndex;
@@ -940,17 +941,16 @@ public class IndexServiceImpl implements IndexService {
 
         PageResult<IndexDO> indexDOPageResult = indexMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<IndexDO>()
                 .inIfPresent(IndexDO::getId, pageReqVO.getCabinetIds()));
-        ValueOperations ops = redisTemplate.opsForValue();
         List<CabinetEnvAndHumRes> result = new ArrayList<>();
         List<TemColorDO> temColorList = temColorService.getTemColorAll();
         for (IndexDO indexDO : indexDOPageResult.getList()) {
             CabinetEnvAndHumRes res = new CabinetEnvAndHumRes();
             result.add(res);
             String localtion = null;
-            JSONObject cabinetObject = (JSONObject) ops.get("packet:cabinet:" + indexDO.getRoomId() + '-' + indexDO.getId());
-            String roomName = cabinetObject.getString("room_name");
+            RoomIndex roomIndex = roomIndexMapper.selectById(indexDO.getRoomId());
+            String roomName = roomIndex.getName();
             if(indexDO.getAisleId() != 0){
-                String aisleName = cabinetObject.getString("aisle_name");
+                String aisleName = aisleIndexMapper.selectById(indexDO.getAisleId()).getName();
                 localtion = roomName + "-" + aisleName + "-" + indexDO.getName();
             }else {
                 localtion = roomName + "-"  + indexDO.getName() ;

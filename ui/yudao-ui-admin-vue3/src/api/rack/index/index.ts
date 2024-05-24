@@ -60,6 +60,6 @@ export const IndexApi = {
   },
 
   getRackRedis: async (params: any) => {
-    return await request.get({ url: `/rack/index/redisData`, params })
+    return await request.download({ url: `/rack/index/redisData`, params })
   },
 }

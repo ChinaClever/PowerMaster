@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.pdu.service.historydata;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
+import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.cabinet.mapper.AisleIndexMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.CabinetIndexMapper;
@@ -89,7 +90,6 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     public String getAddressByLocation(String location) {
         String[] ipParts = location.split("-");
         String address = null;
-        ValueOperations ops = redisTemplate.opsForValue();
         CabinetPdu cabinetPduA = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
                 .eq(CabinetPdu::getPduIpA, ipParts[0])
                 .eq(CabinetPdu::getCasIdA, ipParts[1]));
@@ -99,24 +99,24 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         if(cabinetPduA != null){
             int cabinetId = cabinetPduA.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
-            JSONObject cabinetObject = (JSONObject) ops.get("packet:cabinet:" + cabinet.getRoomId() + '-' + cabinet.getId());
-            String cabinetName = cabinetObject.getString("cabinet_name");;
-            String roomName = cabinetObject.getString("room_name");;
+            String cabinetName = cabinet.getName();
+            RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
+            String roomName = roomIndex.getName();
             if(cabinet.getAisleId() != 0){
-                String aisleName = cabinetObject.getString("aisle_name");;
+                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
                 address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
             }else {
                 address = roomName + "-"  + cabinetName +  "-" + "A路";
             }
         }
         if(cabinetPduB != null){
-            int cabinetId = cabinetPduB.getCabinetId();
+            int cabinetId = cabinetPduA.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
-            JSONObject cabinetObject = (JSONObject) ops.get("packet:cabinet:" + cabinet.getRoomId() + '-' + cabinet.getId());
-            String cabinetName = cabinetObject.getString("cabinet_name");;
-            String roomName = cabinetObject.getString("room_name");;
+            String cabinetName = cabinet.getName();
+            RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
+            String roomName = roomIndex.getName();
             if(cabinet.getAisleId() != 0){
-                String aisleName = cabinetObject.getString("aisle_name");;
+                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
                 address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";
             }else {
                 address = roomName + "-"  + cabinetName +  "-" + "B路";
