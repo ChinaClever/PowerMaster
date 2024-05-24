@@ -44,6 +44,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -176,6 +177,54 @@ public class CabinetServiceImpl implements CabinetService {
                     dto.setPduIpB(pdu.getPduIpB());
                     dto.setCasIdA(pdu.getCasIdA());
                     dto.setCasIdB(pdu.getCasIdB());
+
+                    //获取pdu数据
+                    StringBuilder aKey = new StringBuilder();
+                    aKey.append(REDIS_KEY_PDU);
+                    aKey.append(pdu.getPduIpA());
+                    aKey.append(SPLIT_KEY);
+                    aKey.append(pdu.getCasIdA());
+
+                    ValueOperations ops = redisTemplate.opsForValue();
+
+                    Object aPdu = ops.get(aKey.toString());
+                    if (Objects.nonNull(aPdu)){
+                        JSONObject aPduJson = JSON.parseObject(JSON.toJSONString(aPdu));
+                        if (aPduJson.containsKey(PDU_DATA)) {
+                            JSONObject pduData = aPduJson.getJSONObject(PDU_DATA);
+                            if (pduData.containsKey(OUTPUT_ITEM_LIST)) {
+                                JSONObject outData = pduData.getJSONObject(OUTPUT_ITEM_LIST);
+                                //电流
+                                double[] curs = outData.getObject(CUR_VALUE, double[].class);
+                                if (Objects.nonNull(curs)) {
+                                    dto.setOutletA(curs.length);
+                                }
+                            }
+                        }
+
+                    }
+                    StringBuilder bKey = new StringBuilder();
+                    bKey.append(REDIS_KEY_PDU);
+                    bKey.append(pdu.getPduIpB());
+                    bKey.append(SPLIT_KEY);
+                    bKey.append(pdu.getCasIdB());
+
+                    Object bPdu = ops.get(bKey.toString());
+                    if (Objects.nonNull(bPdu)){
+                        JSONObject bPduJson = JSON.parseObject(JSON.toJSONString(bPdu));
+                        if (bPduJson.containsKey(PDU_DATA)) {
+                            JSONObject pduData = bPduJson.getJSONObject(PDU_DATA);
+                            if (pduData.containsKey(OUTPUT_ITEM_LIST)) {
+                                JSONObject outData = pduData.getJSONObject(OUTPUT_ITEM_LIST);
+                                //电流
+                                double[] curs = outData.getObject(CUR_VALUE, double[].class);
+                                if (Objects.nonNull(curs)) {
+                                    dto.setOutletB(curs.length);
+                                }
+                            }
+                        }
+
+                    }
                 }
 
                 List<CabinetEnvSensor> envSensorList = envSensorMapper.selectList(new LambdaQueryWrapper<CabinetEnvSensor>()
@@ -204,6 +253,10 @@ public class CabinetServiceImpl implements CabinetService {
                 if (!CollectionUtils.isEmpty(rackIndexList)){
                     dto.setRackIndexList(rackIndexList);
                 }
+
+
+
+
             }
             return dto;
         } catch (Exception e) {

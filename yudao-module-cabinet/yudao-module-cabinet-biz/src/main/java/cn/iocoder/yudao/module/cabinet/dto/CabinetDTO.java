@@ -129,4 +129,11 @@ public class CabinetDTO {
     @Schema(description = "u位数据", example = "[]")
     private List<RackIndex> rackIndexList;
 
+
+    @Schema(description = "A路输出位长度", example = "10")
+    private int outletA;
+
+    @Schema(description = "B路输出位长度", example = "10")
+    private int outletB;
+
 }
