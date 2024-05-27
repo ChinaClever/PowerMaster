@@ -564,11 +564,11 @@ onMounted(async () => {
   getNavList()
   // 获取路由参数中的 pdu_id
   const queryCabinetId = useRoute().query.cabinetId as string | undefined;
-  const queryAddress = useRoute().query.address as string | undefined;
+  const queryAddress = useRoute().query.address as string;
   queryParams.cabinetId = queryCabinetId ? parseInt(queryCabinetId, 10) : undefined;
-  nowAddress.value = queryAddress ? queryAddress : '';
   if (queryParams.cabinetId != undefined){
     await getLineChartData();
+    nowAddress.value = queryAddress;
     // await getRankChartData();
     initLineChart();
     // initRankChart();

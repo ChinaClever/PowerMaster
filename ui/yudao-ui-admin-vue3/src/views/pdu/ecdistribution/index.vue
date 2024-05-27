@@ -630,12 +630,12 @@ onMounted(async () => {
   getTypeMaxValue();
   // 获取路由参数中的 pdu_id
   const queryPduId = useRoute().query.pduId as string | undefined;
-  const queryAddress = useRoute().query.address as string | undefined;
+  const queryAddress = useRoute().query.address as string;
   queryParams.pduId = queryPduId ? parseInt(queryPduId, 10) : undefined;
-  nowAddress.value = queryAddress ? queryAddress : '';
   if (queryParams.pduId != undefined){
     await getLineChartData();
     await getRankChartData();
+    nowAddress.value = queryAddress;
     initLineChart();
     initRankChart();
   }

@@ -90,7 +90,7 @@
           <template v-for="column in tableColumns">
             <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
               <template #default="{ row }" v-if="column.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.cabinet_id)">详情</el-button>
+                <el-button link type="primary" @click="toDetails(row.cabinet_id, row.location)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -141,6 +141,7 @@ const queryParams = reactive({
   pageSize: 15,
   granularity: 'realtime',
   timeRange: undefined,
+  cabinetIds:[]
 })
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
@@ -452,6 +453,18 @@ const handleQuery = () => {
   getList()
 }
 
+// 导航栏选择后触发
+const handleCheck = async (node) => {
+  let arr = [] as any
+  node.forEach(item => { 
+    if(item.type == 3){
+      arr.push(item.id);
+    }
+  });
+  queryParams.cabinetIds = arr
+  handleQuery()
+}
+
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await CabinetApi.getRoomMenuAll({})
@@ -465,8 +478,8 @@ const getNavOneHourData = async() => {
 }
 
 /** 详情操作*/
-const toDetails = (cabinetId: number) => {
-  push('/cabinet/record/historyLine?cabinetId='+cabinetId);
+const toDetails = (cabinetId: number, location:string) => {
+  push('/cabinet/record/historyLine?cabinetId='+cabinetId+'&location='+location);
 }
 
 /** 导出按钮操作 */

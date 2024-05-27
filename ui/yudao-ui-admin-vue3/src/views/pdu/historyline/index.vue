@@ -166,6 +166,7 @@ import { HistoryDataApi } from '@/api/pdu/historydata'
 import { formatDate, convertDate, betweenDay } from '@/utils/formatTime'
 import { get } from 'http';
 import { CabinetApi } from '@/api/cabinet/info'
+import { ElMessage } from 'element-plus'
 
 defineOptions({ name: 'PDUHistoryLine' })
 
@@ -1248,13 +1249,13 @@ const handleQuery = () => {
 }
 
 /** 初始化 **/
-onMounted( async () => {
+onMounted( async () => { 
   getTypeMaxValue()
   getNavList()
   // 获取路由参数中的 pdu_id
   const queryPduId = useRoute().query.pduId as string  | undefined;
   const queryLocation = useRoute().query.location as string  | undefined;
-  // const queryAddress = useRoute().query.address as string | undefined;
+  const queryAddress = useRoute().query.address as string;
   const queryIpAddr = queryLocation?.split("-")[0];
   const queryCascadeAddr = queryLocation?.split("-")[1];
   queryParams.pduId = queryPduId ? parseInt(queryPduId, 10) : undefined;
@@ -1263,7 +1264,8 @@ onMounted( async () => {
   cascadeAddr.value = queryCascadeAddr ? parseInt(queryCascadeAddr, 10) : 0;
   // nowAddress.value = queryAddress ? queryAddress : '';
   if (queryParams.pduId != undefined){
-    await getList();
+    await getList(); 
+    nowAddress.value = queryAddress
     initChart();
   }
 })

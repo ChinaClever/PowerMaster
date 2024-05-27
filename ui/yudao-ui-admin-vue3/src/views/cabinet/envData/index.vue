@@ -1,8 +1,8 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU环境数据">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜环境数据">
     <template #NavInfo>
       <div class="nav_header">
-        <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
+        <div class="nav_header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
         <br/>
         <span>全部传感器最近一小时新增记录</span>
           <br/>
@@ -17,29 +17,10 @@
       <el-form
         class="-mb-15px"
         :model="queryParams"
-        ref="queryFormRef"
+        ref="queryFormRef" 
         :inline="true"
         label-width="auto"
       >
-        <!-- <el-form-item label="IP地址" prop="ipAddr">
-          <el-input
-            v-model="queryParams.ipAddr"
-            placeholder="请输入IP地址"
-            clearable
-            @keyup.enter="handleQuery"
-            class="!w-160px"
-          />
-        </el-form-item>
-
-        <el-form-item label="级联地址" prop="cascadeAddr">
-            <el-input-number
-              v-model="cascadeAddr"
-              :min="0"
-              controls-position="right"
-              :value-on-clear="0"
-                class="!w-148px"
-            />
-        </el-form-item> -->
 
         <el-form-item label="传感器" prop="sensorId">
           <el-select
@@ -94,7 +75,6 @@
         />
         </el-form-item>
 
-        <!-- <div style="float:right; padding-right:78px"> -->
         <el-form-item >
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <el-button type="success" plain @click="handleExport" :loading="exportLoading">
@@ -116,7 +96,7 @@
         <template v-for="column in tableColumns">
           <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
             <template #default="{ row }" v-if="column.slot === 'actions'">
-              <el-button link type="primary" @click="toDetails(row.pdu_id, row.location, row.address, row.sensor_id)">详情</el-button>
+              <el-button link type="primary" @click="toDetails(row.cabinet_id, row.location, row.sensor_id)">详情</el-button>
             </template>
           </el-table-column>
         </template>
@@ -146,12 +126,12 @@
 <script setup lang="ts">
 import dayjs from 'dayjs'
 import download from '@/utils/download'
-import { EnvDataApi } from '@/api/pdu/envData'
+import { EnvDataApi } from '@/api/cabinet/envData'
 import { CabinetApi } from '@/api/cabinet/info'
 import { ElMessage } from 'element-plus'
 const { push } = useRouter()
 /** pdu历史数据 列表 */
-defineOptions({ name: 'PDUEnvHistoryData' })
+defineOptions({ name: 'CabinetEnvHistoryData' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const navTotalData = ref(0)
@@ -165,11 +145,9 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
   granularity: 'realtime',
-  ipAddr: undefined,
-  cascadeAddr: '0',
+  cabinetIds:[],
   sensorId: 0,
   timeRange: undefined,
-  ipArray: [],
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref() // 搜索的表单
@@ -386,26 +364,20 @@ const getSensorIdMaxValue = async () => {
 
 // 导航栏选择后触发
 const handleCheck = async (node) => {
-    let arr = [] as any
-    node.forEach(item => { 
-      if(item.type == 4){
-        arr.push(item.unique);
-      }
-    });
-    queryParams.ipArray = arr
-    handleQuery()
-    console.log(arr)
+  let arr = [] as any
+  node.forEach(item => { 
+    if(item.type == 3){
+      arr.push(item.id);
+    }
+  });
+  queryParams.cabinetIds = arr
+  handleQuery()
 }
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
-  let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
-  arr = arr.concat(temp);
-  }
-  navList.value = arr
+  const res = await CabinetApi.getRoomMenuAll({})
+  navList.value = res
 }
 
 // 禁选未来的日期
@@ -416,37 +388,29 @@ const disabledDate = (date) => {
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
-   // IP地址的正则表达式
-  // const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-  // if (queryParams.ipAddr == null || queryParams.ipAddr == '' || ipRegex.test(queryParams.ipAddr)){
-    queryParams.pageNo = 1
-    // queryParams.cascadeAddr = cascadeAddr.value.toString();
-    getList()
-  // }else{
-  //   ElMessage.error('IP地址格式有误,请重新输入！')
-  // }
-
+  queryParams.pageNo = 1
+  getList()
 }
 
 /** 详情操作*/
-const toDetails = (pduId: number, location: string, address: string, sensorId: number) => {
-  push('/pdu/record/envAnalysis?pduId='+pduId+'&location='+location+'&address='+address+'&sensorId='+sensorId);
+const toDetails = (cabinetId: number, location: string, sensorId: number) => {
+  push('/cabinet/record/envAnalysis?cabinetId='+cabinetId+'&location='+location+'&sensorId='+sensorId);
 }
 
 /** 导出按钮操作 */
-const handleExport = async () => {
-  try {
-    // 导出的二次确认
-    await message.exportConfirm()
-    // 发起导出
-    exportLoading.value = true
-    const data = await EnvDataApi.exportEnvData(queryParams)
-    download.excel(data, 'pdu历史数据.xls')
-  } catch {
-  } finally {
-    exportLoading.value = false
-  }
-}
+// const handleExport = async () => {
+//   try {
+//     // 导出的二次确认
+//     await message.exportConfirm()
+//     // 发起导出
+//     exportLoading.value = true
+//     const data = await EnvDataApi.exportEnvData(queryParams)
+//     download.excel(data, 'pdu历史数据.xls')
+//   } catch {
+//   } finally {
+//     exportLoading.value = false
+//   }
+// }
 
 // 获取导航的数据显示
 const getNavOneHourData = async() => {

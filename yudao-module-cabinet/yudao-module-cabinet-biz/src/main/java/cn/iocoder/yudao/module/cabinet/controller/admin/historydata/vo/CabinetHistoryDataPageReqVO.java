@@ -18,4 +18,6 @@ public class CabinetHistoryDataPageReqVO extends PageParam {
 
     private String[] timeRange;
 
+    private String[] cabinetIds;
+
 }

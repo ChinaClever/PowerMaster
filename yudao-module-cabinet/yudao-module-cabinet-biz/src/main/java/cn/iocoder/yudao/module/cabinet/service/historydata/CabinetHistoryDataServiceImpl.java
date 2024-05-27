@@ -100,9 +100,13 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
         searchSourceBuilder.trackTotalHits(true);
         searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
-
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
+
+        String[] cabinetIds = pageReqVO.getCabinetIds();
+        if (cabinetIds != null){
+            searchSourceBuilder.query(QueryBuilders.termsQuery("cabinet_id", cabinetIds));
+        }
         if ("realtime".equals(pageReqVO.getGranularity())) {
             searchRequest.indices("cabinet_hda_pow_realtime");
         } else if ("hour".equals(pageReqVO.getGranularity())) {
@@ -160,7 +164,7 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
                     .from(reqVO.getTimeRange()[0])
                     .to(reqVO.getTimeRange()[1]));
         }
-        searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.rangeQuery("cabinet_id").gte(cabinetId).lte(cabinetId)));
+        searchSourceBuilder.query(QueryBuilders.termQuery("cabinet_id", cabinetId));
         searchRequest.source(searchSourceBuilder);
         // 执行搜索,向ES发起http请求
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);

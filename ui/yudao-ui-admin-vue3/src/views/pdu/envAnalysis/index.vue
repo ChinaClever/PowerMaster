@@ -152,6 +152,7 @@ import { formatDate } from '@/utils/formatTime'
 
 /** pdu曲线 */
 defineOptions({ name: 'PDUEnvLine' })
+import { ElMessage } from 'element-plus'
 const activeName = ref('realtimeTabPane') // tab默认显示
 const activeName1 = ref('myChart') // tab默认显示
 const navList = ref([]) as any // 左侧导航栏树结构列表
@@ -764,6 +765,7 @@ onMounted( async () => {
   const queryPduId = useRoute().query.pduId as string | undefined;
   const querySensorId = useRoute().query.sensorId as string | undefined;
   const queryLocation = useRoute().query.location as string | undefined;
+  const queryAddress = useRoute().query.address as string;
   const queryIpAddr = queryLocation?.split("-")[0];
   const queryCascadeAddr = queryLocation?.split("-")[1];
   queryParams.pduId = queryPduId ? parseInt(queryPduId, 10) : undefined;
@@ -773,6 +775,7 @@ onMounted( async () => {
   cascadeAddr.value = queryCascadeAddr ? parseInt(queryCascadeAddr, 10) : 0;
   if (queryParams.pduId != undefined){
     await getList();
+    nowAddress.value = queryAddress
     initChart();
   }
 })

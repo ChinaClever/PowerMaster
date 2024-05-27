@@ -154,6 +154,7 @@
 </template>
 
 <script setup lang="ts">
+import { ElMessage } from 'element-plus'
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { HistoryDataApi } from '@/api/pdu/historydata'
@@ -179,7 +180,7 @@ const queryParams = reactive({
   lineId: undefined,
   loopId: undefined,
   outletId: undefined,
-  type: 'total',
+  type: 'total', 
   granularity: 'realtime',
   ipAddr: undefined,
   cascadeAddr: '0',
