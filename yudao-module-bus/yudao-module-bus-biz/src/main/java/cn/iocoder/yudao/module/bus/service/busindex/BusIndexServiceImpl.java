@@ -116,7 +116,93 @@ public class BusIndexServiceImpl implements BusIndexService {
 
         }
 
+        return new PageResult<>(res,busIndexDOPageResult.getTotal());
+    }
 
+    @Override
+    public PageResult<BusRedisDataRes> getBusRedisPage(BusIndexPageReqVO pageReqVO) {
+        PageResult<BusIndexDO> busIndexDOPageResult = busIndexMapper.selectPage(pageReqVO);
+        List<BusIndexDO> list = busIndexDOPageResult.getList();
+        List<BusRedisDataRes> res = new ArrayList<>();
+        ValueOperations ops = redisTemplate.opsForValue();
+        for (BusIndexDO busIndexDO : list) {
+            BusRedisDataRes busRedisDataRes = new BusRedisDataRes();
+            res.add(busRedisDataRes);
+            JSONObject jsonObject = (JSONObject) ops.get("packet:bus:" + busIndexDO.getDevKey());
+            if (jsonObject == null){
+                continue;
+            }
+            JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
+            JSONArray volValue = lineItemList.getJSONArray("vol_value");
+            JSONArray volStatus = lineItemList.getJSONArray("vol_status");
+            JSONArray curValue = lineItemList.getJSONArray("cur_value");
+            JSONArray curStatus = lineItemList.getJSONArray("cur_status");
+            JSONArray powValue = lineItemList.getJSONArray("pow_value");
+            JSONArray powStatus = lineItemList.getJSONArray("pow_status");
+            JSONArray powReactive = lineItemList.getJSONArray("pow_reactive");
+            for (int i = 0; i < 3; i++) {
+                double vol = volValue.getDoubleValue(i);
+                Integer volSta = volStatus.getInteger(i);
+                double cur = curValue.getDoubleValue(i);
+                Integer curSta =curStatus.getInteger(i);
+                double activePow = powValue.getDoubleValue(i);
+                Integer activePowSta =powStatus.getInteger(i);
+                double reactivePow = powReactive.getDoubleValue(i);
+                if (i == 0){
+                    busRedisDataRes.setACur(cur);
+                    busRedisDataRes.setACurStatus(curSta);
+                    if(curSta != 0){
+                        busRedisDataRes.setACurColor("red");
+                    }
+                    busRedisDataRes.setAVol(vol);
+                    busRedisDataRes.setAVolStatus(volSta);
+                    if(volSta != 0){
+                        busRedisDataRes.setAVolColor("red");
+                    }
+                    busRedisDataRes.setAActivePow(activePow);
+                    busRedisDataRes.setAActivePowStatus(activePowSta);
+                    if(activePowSta != 0){
+                        busRedisDataRes.setAActivePowColor("red");
+                    }
+                    busRedisDataRes.setAReactivePow(reactivePow);
+                }else if(i == 1){
+                    busRedisDataRes.setBCur(cur);
+                    busRedisDataRes.setBCurStatus(curSta);
+                    if(curSta != 0){
+                        busRedisDataRes.setBCurColor("red");
+                    }
+                    busRedisDataRes.setBVol(vol);
+                    busRedisDataRes.setBVolStatus(volSta);
+                    if(volSta != 0){
+                        busRedisDataRes.setBVolColor("red");
+                    }
+                    busRedisDataRes.setBActivePow(activePow);
+                    busRedisDataRes.setBActivePowStatus(activePowSta);
+                    if(activePowSta != 0){
+                        busRedisDataRes.setBActivePowColor("red");
+                    }
+                    busRedisDataRes.setBReactivePow(reactivePow);
+                }else if(i == 2){
+                    busRedisDataRes.setCCur(cur);
+                    busRedisDataRes.setCCurStatus(curSta);
+                    if(curSta != 0){
+                        busRedisDataRes.setCCurColor("red");
+                    }
+                    busRedisDataRes.setCVol(vol);
+                    busRedisDataRes.setCVolStatus(volSta);
+                    if(volSta != 0){
+                        busRedisDataRes.setCVolColor("red");
+                    }
+                    busRedisDataRes.setCActivePow(activePow);
+                    busRedisDataRes.setCActivePowStatus(activePowSta);
+                    if(activePowSta != 0){
+                        busRedisDataRes.setCActivePowColor("red");
+                    }
+                    busRedisDataRes.setCReactivePow(reactivePow);
+                }
+            }
+
+        }
         return new PageResult<>(res,busIndexDOPageResult.getTotal());
     }
 

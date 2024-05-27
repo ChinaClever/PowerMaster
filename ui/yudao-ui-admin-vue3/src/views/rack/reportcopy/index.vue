@@ -143,8 +143,8 @@
                     <el-table-column  prop="baseInfoValue" >
                       <template #default="scope">
                         <span v-if="scope.$index === 1">
-                          <el-tag  v-if="scope.row.baseInfoValue == 0">开机</el-tag>
-                          <el-tag type="warning" v-if="scope.row.baseInfoValue == 1">关机</el-tag>                        
+                          <el-tag type="warning" v-if="scope.row.baseInfoValue == 0">关机</el-tag>
+                          <el-tag  v-if="scope.row.baseInfoValue == 1">开机</el-tag>                        
                         </span>
                         <span v-else>{{ scope.row.baseInfoValue }}</span>
                       </template>

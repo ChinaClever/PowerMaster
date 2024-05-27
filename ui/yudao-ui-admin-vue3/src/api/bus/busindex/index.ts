@@ -43,4 +43,8 @@ export const IndexApi = {
   exportIndex: async (params) => {
     return await request.download({ url: `/bus/index/export-excel`, params })
   },
-}
+
+  getBusRedisPage: async (params: any) => {
+    return await request.get({ url: `/bus/index/buspage`, params })
+  },
+}

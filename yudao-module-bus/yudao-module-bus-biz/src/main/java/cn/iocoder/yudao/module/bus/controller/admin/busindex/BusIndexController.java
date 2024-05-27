@@ -3,27 +3,16 @@ package cn.iocoder.yudao.module.bus.controller.admin.busindex;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.security.access.prepost.PreAuthorize;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Operation;
 
-import javax.validation.constraints.*;
 import javax.validation.*;
-import javax.servlet.http.*;
-import java.util.*;
-import java.io.IOException;
 
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
-
-import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
-
-import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
-import static cn.iocoder.yudao.framework.operatelog.core.enums.OperateTypeEnum.*;
 
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
@@ -76,6 +65,13 @@ public class BusIndexController {
     public CommonResult<PageResult<BusIndexRes>> getIndexPage(@Valid BusIndexPageReqVO pageReqVO) {
         PageResult<BusIndexRes> pageResult = indexService.getIndexPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BusIndexRes.class));
+    }
+
+    @GetMapping("/buspage")
+    @Operation(summary = "获得始端箱索引分页")
+    public CommonResult<PageResult<BusRedisDataRes>> getBusPage(@Valid BusIndexPageReqVO pageReqVO) {
+        PageResult<BusRedisDataRes> pageResult = indexService.getBusRedisPage(pageReqVO);
+        return success(BeanUtils.toBean(pageResult, BusRedisDataRes.class));
     }
 
 //    @GetMapping("/export-excel")
