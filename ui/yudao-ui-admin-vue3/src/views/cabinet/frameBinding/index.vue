@@ -1,39 +1,43 @@
 <template>
-  <div style="display: flex; justify-content: center;">
-    <div ref="frameContainer" class="frameContainer" style="position: relative;">
-      <div class="portLeft">
-        <div class="port" v-for="port in portLeft" :key="port.id" :id="'portLeft' + port.id">{{port.name}}</div>
-      </div>
-      <draggable
-        class="frameList"
-        :list="frameList"
-        :itemKey="item => item.id"
-        ghost-class="ghost"
-        chosen-class="chosenClass"
-        animation="100"
-        @start="onStart"
-        @end.prevent="onEnd"
-      >
-        <template #item="{ element }">
-          <div :class="element.targetId ? 'frame active' : 'frame'" :id="'frame' + element.id">
-            {{ element.name }}
-          </div>
-        </template>
-      </draggable>
-      <div class="portRight">
-        <div class="port" v-for="port in portRight" :key="port.id" :id="'portRight' + port.id">{{port.name}}</div>
+  <ContentWrap>
+    <div style="display: flex; justify-content: center;">
+      <div ref="frameContainer" class="frameContainer" style="position: relative;">
+        <div class="portLeft">
+          <div class="port" v-for="port in portLeft" :key="port.id" :id="'portLeft' + port.id">{{port.name}}</div>
+        </div>
+        <draggable
+          class="frameList"
+          :list="frameList"
+          :itemKey="item => item.id"
+          ghost-class="ghost"
+          chosen-class="chosenClass"
+          animation="100"
+          @start="onStart"
+          @end.prevent="onEnd"
+          @click.right="handleRightClick"
+        >
+          <template #item="{ element }">
+            <div :class="element.target ? 'frame active' : 'frame'" :id="'frame' + element.id">
+              {{ element.name }}
+            </div>
+          </template>
+        </draggable>
+        <div class="portRight">
+          <div class="port" v-for="port in portRight" :key="port.id" :id="'portRight' + port.id">{{port.name}}</div>
+        </div>
       </div>
     </div>
-  </div>
+  </ContentWrap>
 </template>
 
 <script lang="ts" setup>
 import { newInstance, BezierConnector, BrowserJsPlumbInstance } from '@jsplumb/browser-ui'
-import { ref, reactive, onMounted  } from 'vue'
 import { string } from 'vue-types';
 import draggable from "vuedraggable";
+import { CabinetApi } from '@/api/cabinet/info'
 
 const frameContainer = ref()
+const maxHiddenNumber = 10
 let instance: BrowserJsPlumbInstance | null = null
 
 //拖拽开始的事件
@@ -45,11 +49,9 @@ const onStart = (e) => {
 const onEnd = (e) => {
   // 如果没有进行置换的拖拽直接返回
   if (e.oldIndex == e.newIndex) return false
-  console.log('拖拽结束的事件frameList', e, frameList, instance?.connections)
   // const oldFrameId = frameList[e.oldIndex].id
   // const newFrameId = frameList[e.newIndex].id
   const instances = instance?.connections
-  
   interface Type {
     sourceId: string;
     targetId: string;
@@ -70,6 +72,13 @@ const onEnd = (e) => {
         source: document.getElementById(item.sourceId) as Element,
         target: document.getElementById(item.targetId) as Element,
         anchor: ['Right', 'Left'],
+        endpoint: { type:"Dot", options:{ radius:2, fillStyle: 'rgba(0, 0, 0, 0)'}},
+        paintStyle: {
+          strokeWidth: 2, // 设置连接线的宽度为 2 像素
+          stroke: frameList.length > maxHiddenNumber ? 'rgba(0, 0, 0, 0)' : '#000', // 设置连接线的颜色为黑色
+          outlineWidth: 13,
+          outlineStroke: 'rgba(0, 0, 0, 0)'
+        }
       })
     })
   })
@@ -88,7 +97,7 @@ const initConnect = () => {
   }
   const paintStyleConfig = {
     strokeWidth: 2, // 设置连接线的宽度为 2 像素
-    stroke: frameList.length > 10 ? 'rgba(0, 0, 0, 0)' : '#000', // 设置连接线的颜色为黑色
+    stroke: frameList.length > maxHiddenNumber ? 'rgba(0, 0, 0, 0)' : '#000', // 设置连接线的颜色为黑色
     outlineWidth: 13,
     outlineStroke: 'rgba(0, 0, 0, 0)'
   }
@@ -100,6 +109,7 @@ const initConnect = () => {
   instance.bind('beforeDrop', connection => connection.sourceId.slice(0, 5) != connection.targetId.slice(0, 5))
   // 机柜创建连接点
   frameList.forEach(frame => {
+    if (!frame.target) return
     const frameElement = document.getElementById(`frame${frame.id}`) as Element
     instance?.addEndpoint(frameElement, {
       ...addEndpointConfig,
@@ -113,48 +123,37 @@ const initConnect = () => {
   // 左侧端口创建连接点并初始连接
   portLeft.forEach(port => {
     const portElement = document.getElementById(`portLeft${port.id}`) as Element
+    // 添加瞄点
     instance?.addEndpoint(portElement, {
       ...addEndpointConfig,
       anchor: 'Right',
     })
     if (!port.targetId) return
     const targetElement = document.getElementById(`frame${port.targetId}`) as Element
+    // 进行连线
     let connect = instance?.connect({
       source: portElement,
       target: targetElement,
-      // endpoint: "Rectangle",
       endpoint: { type:"Dot", options:{ radius:2, fillStyle: 'rgba(0, 0, 0, 0)'}},
       anchors: ['Right', 'Left'],
       paintStyle: paintStyleConfig
     })
+    // 监听鼠标移入服务器事件
     targetElement.addEventListener('mouseover', (e) => {
       if (connect)
       instance?.deleteConnection(connect)
-      console.log('connect', connect)
       connect = instance?.connect({
         source: portElement,
         target: targetElement,
-        // endpoint: "Rectangle",
         endpoint: { type:"Dot", options:{ radius:2, fillStyle: 'rgba(0, 0, 0, 0)'}},
         anchors: ['Right', 'Left'],
-        paintStyle: {
-          strokeWidth: 2, // 设置连接线的宽度为 2 像素
-          stroke: 'red', // 设置连接线的颜色为黑色
-          outlineWidth: 13,
-          outlineStroke: 'rgba(0, 0, 0, 0)'
-        }
+        paintStyle: hoverPaintStyleConfig
       })
-      console.log('targetElement', connect)
     })
+    // 监听鼠标移出服务器事件
     targetElement.addEventListener('mouseout', (e) => {
-      if (connect)
-      {
-        instance?.deleteConnection(connect)
-      }
+      if (connect) instance?.deleteConnection(connect)
     })
-    // if (connect && frameList.length > 5) {
-    //   connect.hoverPaintStyle = hoverPaintStyleConfig
-    // }
   })
   // 右侧端口创建连接点并初始连接
   portRight.forEach(port => {
@@ -165,93 +164,226 @@ const initConnect = () => {
     })
     if (!port.targetId) return
     const targetElement = document.getElementById(`frame${port.targetId}`) as Element
-    const connect = instance?.connect({
+    let connect = instance?.connect({
       source: targetElement,
       target: portElement,
       // endpoint: "Rectangle",
-      anchors: ['Right', 'Left'],
+      anchors: ['Left', 'Right'],
       endpoint: { type:"Dot", options:{ radius:2, fillStyle: 'rgba(0, 0, 0, 0)'}},
-      paintStyle: paintStyleConfig
+      paintStyle: paintStyleConfig,
     })
-    if (connect && frameList.length > 5) {
-      connect.hoverPaintStyle = hoverPaintStyleConfig
-    }
+    // 监听鼠标移入服务器事件
+    targetElement.addEventListener('mouseover', (e) => {
+      if (connect) {
+        instance?.deleteConnection(connect)
+        connect = instance?.connect({
+          source: portElement,
+          target: targetElement,
+          endpoint: { type:"Dot", options:{ radius:2, fillStyle: 'rgba(0, 0, 0, 0)'}},
+          anchors: ['Left', 'Right'],
+          paintStyle: hoverPaintStyleConfig
+        })
+      }
+    })
+    // 监听鼠标移出服务器事件
+    targetElement.addEventListener('mouseout', (e) => {
+      if (connect) instance?.deleteConnection(connect)
+    })
   })
+}
+
+const handleRightClick = (e) => {
+  e.preventDefault()
+  console.log('handleRightClick', e)
+}
+
+// const createPortList = (num) => {
+//   for (let i = 0; i < num; i++) {
+
+//   }
+// }
+
+const getData = async() => {
+  const res = await CabinetApi.getCabinetInfoItem({id: 1})
+  console.log('res', res)
+  // const leftPort = res.outletA
+  // const rightPort = res.outletB
 }
 
 onMounted(() => {
   initConnect()
+  getData()
 })
 
 const portLeft = reactive([
   {
     id: 101,
-    name: '端口1',
+    name: '插座位1',
     targetId: 201,
   },
   {
     id: 102,
-    name: '端口2',
+    name: '插座位2',
     targetId: 202,
   },
   {
     id: 103,
-    name: '端口3',
+    name: '插座位3',
     targetId: 203,
   },
   {
     id: 104,
-    name: '端口4',
+    name: '插座位4',
     targetId: 204,
   },
   {
     id: 105,
-    name: '端口1',
+    name: '插座位5',
     targetId: null,
   },
   {
     id: 106,
-    name: '端口2',
+    name: '插座位6',
     targetId: null,
   },
   {
     id: 107,
-    name: '端口3',
+    name: '插座位7',
     targetId: null,
   },
   {
     id: 108,
-    name: '端口4',
+    name: '插座位8',
+    targetId: null,
+  },
+  {
+    id: 109,
+    name: '插座位9',
+    targetId: null,
+  },
+  {
+    id: 110,
+    name: '插座位10',
+    targetId: null,
+  },
+  {
+    id: 111,
+    name: '插座位11',
+    targetId: null,
+  },
+  {
+    id: 112,
+    name: '插座位12',
+    targetId: null,
+  },
+  {
+    id: 113,
+    name: '插座位13',
+    targetId: null,
+  },
+  {
+    id: 114,
+    name: '插座位14',
+    targetId: null,
+  },
+  {
+    id: 115,
+    name: '插座位15',
+    targetId: null,
+  },
+  {
+    id: 116,
+    name: '插座位16',
     targetId: null,
   },
 ])
 const portRight = reactive([
   {
     id: 301,
-    name: '端口1',
+    name: '插座位1',
     targetId: 201,
   },
   {
     id: 302,
-    name: '端口2',
+    name: '插座位2',
     targetId: 202,
   },
   {
     id: 303,
-    name: '端口3',
+    name: '插座位3',
     targetId: 203,
   },
   {
     id: 304,
-    name: '端口4',
+    name: '插座位4',
     targetId: 204,
+  },
+  {
+    id: 305,
+    name: '插座位5',
+    targetId: null,
+  },
+  {
+    id: 306,
+    name: '插座位6',
+    targetId: null,
+  },
+  {
+    id: 307,
+    name: '插座位7',
+    targetId: null,
+  },
+  {
+    id: 308,
+    name: '插座位8',
+    targetId: null,
+  },
+  {
+    id: 309,
+    name: '插座位9',
+    targetId: null,
+  },
+  {
+    id: 310,
+    name: '插座位10',
+    targetId: null,
+  },
+  {
+    id: 311,
+    name: '插座位11',
+    targetId: null,
+  },
+  {
+    id: 312,
+    name: '插座位12',
+    targetId: null,
+  },
+  {
+    id: 313,
+    name: '插座位13',
+    targetId: null,
+  },
+  {
+    id: 314,
+    name: '插座位14',
+    targetId: null,
+  },
+  {
+    id: 315,
+    name: '插座位15',
+    targetId: null,
+  },
+  {
+    id: 316,
+    name: '插座位16',
+    targetId: null,
   },
 ])
 let frameList = reactive([
-  {id: 201,name: '1'},
-  {id: 202,name: '2'},
-  {id: 203,name: '3'},
-  {id: 204,name: '4'},
+  {id: 201,name: '1', target:[]},
+  {id: 202,name: '2', target:[]},
+  {id: 203,name: '3', target:[]},
+  {id: 204,name: '4', target:[]},
   {id: 2042,name: '5'},
   {id: 2043,name: '6'},
   {id: 2044,name: '7'},
@@ -291,6 +423,10 @@ let frameList = reactive([
   {id: 202124,name: '41'},
   {id: 2021234,name: '42'},
 ])
+
+frameList.reverse()
+// portLeft.reverse()
+// portRight.reverse()
 </script>
 
 <style lang="scss" scoped>
@@ -302,31 +438,58 @@ let frameList = reactive([
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-evenly;
   padding: 0 30px;
-  padding-top: 30px;
-  border: 1px solid;
   .port {
-    width: 50px;
-    height: 25px;
-    border: 1px solid #000;
-    line-height: 25px;
-    text-align: center;
-    margin-bottom: 15px;
+    position: relative;
+    width: 55px;
+    height: 26px;
     font-size: 12px;
+    // border-bottom: 1px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-sizing: border-box;
+    background-color: antiquewhite;
+    margin-bottom: 10px;
+  }
+  .port::before {
+    position: absolute;
+    top: -50px;
+    left: -40px;
+    content: '';
+    width: 60px;
+    height: 60px;
+    border-radius: 60px;
+    // border: 1px solid #000;
+    background-color: #fff;
+  }
+  .port::after {
+    position: absolute;
+    top: -50px;
+    right: -40px;
+    content: '';
+    width: 60px;
+    height: 60px;
+    border-radius: 60px;
+    // border: 1px solid #000;
+    background-color: #fff;
   }
 }
 .frameList {
-  width: 150px;
-  border: 5px solid #415beb;
+  width: 250px;
+  border: 5px solid #90b8df;
   box-sizing: border-box;
-  margin: 10px 100px;
+  margin: 10px 180px;
+  font-size: 12px;
   .frame {
-    padding: 5px 15px;
+    padding: 3px 10px;
     background-color: #fff;
-    border-bottom: 1px solid #415beb;
+    border-bottom: 1px solid #fafafa;
   }
   .active {
-    background-color: #6fff9a;
+    background-color: #5298df;
   }
 }
 .ghost {
