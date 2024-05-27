@@ -28,7 +28,7 @@ public class BusIndexPageReqVO extends PageParam {
     private Integer barId;
 
     @Schema(description = "运行状态 0：正常 1：预警 2：告警 3: 升级 4：故障 5：离线", example = "2")
-    private Integer runStatus;
+    private List<Integer> runStatus;
 
     @Schema(description = "节点IP")
     private String nodeIp;
