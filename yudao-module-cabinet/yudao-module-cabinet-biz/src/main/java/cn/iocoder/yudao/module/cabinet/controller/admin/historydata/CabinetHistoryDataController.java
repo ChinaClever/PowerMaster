@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.util.Map;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
@@ -38,6 +39,13 @@ public class CabinetHistoryDataController {
     public CommonResult<PageResult<Object>> getHistoryDataDetails(CabinetHistoryDataDetailsReqVO reqVO) throws IOException {
         PageResult<Object> pageResult = cabinetHistoryDataService.getHistoryDataDetails(reqVO);
         return success(pageResult);
+    }
+
+    @GetMapping("/one-hour")
+    @Operation(summary = "获得pdu最近一小时插入的数据量")
+    public CommonResult<Map<String, Object>> getOneHourSumData() throws IOException {
+        Map<String, Object> map = cabinetHistoryDataService.getOneHourSumData();
+        return success(map);
     }
 
 

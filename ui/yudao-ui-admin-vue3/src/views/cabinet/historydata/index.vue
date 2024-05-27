@@ -1,26 +1,19 @@
 <template>
-   <el-row :gutter="20">
-    <el-col :span="treeWidth" :xs="24">
-      <el-input
-        v-model="filterText"
-        style="width: 190px"
-        placeholder=""
-      />
-
-      <el-tree
-        ref="treeRef"
-        style="max-width: 600px"
-        class="filter-tree"
-        :data="serverRoomArr"
-        :props="defaultProps"
-        default-expand-all
-        show-checkbox
-        :filter-node-method="filterNode"
-      />
-    </el-col>
-    <el-col :span="24 - treeWidth" :xs="24">
-      <ContentWrap>
-        <!-- 搜索工作栏 -->
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜电力数据">
+    <template #NavInfo>
+      <div class="nav_header">
+        <div class="nav_header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
+        <br/>
+        <span>全部机柜最近一小时新增记录</span>
+          <br/>
+      </div>
+      <div class="nav_data">
+        <el-statistic title="" :value="navTotalData">
+            <template #suffix>条</template>
+        </el-statistic>
+      </div>
+    </template>
+      <template #ActionBar>
         <el-form
           class="-mb-15px"
           :model="queryParams"
@@ -84,10 +77,9 @@
             </el-button>
           </el-form-item>
         </el-form>
-      </ContentWrap>
-      <!-- 列表 -->
-      <ContentWrap>
-          <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+      </template>
+      <template #Content>
+        <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
            <!-- 添加行号列 -->
           <el-table-column label="序号" align="center" width="100px">
             <template #default="{ $index }">
@@ -121,108 +113,23 @@
             @pagination="getList"
           />
           <div class="realTotal">共 {{ realTotel }} 条</div>
-      </ContentWrap>
-
-    </el-col>
-   </el-row>
-
+     </template>
+  </CommonMenu>
 </template>
 
 <script setup lang="ts">
 import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { HistoryDataApi } from '@/api/cabinet/historydata'
+import { CabinetApi } from '@/api/cabinet/info'
 import { ElTree } from 'element-plus'
 const { push } = useRouter()
 /** pdu历史数据 列表 */
 defineOptions({ name: 'CabinetHistoryData' })
 
-const serverRoomArr =  [
-  {
-    value: '1',
-    label: '机房1',
-    children: [
-      {
-        value: '1-1',
-        label: '柜列1',
-        children: [
-        {
-          value: '1-1-1',
-          label: '机柜1',
-        },
-        {
-          value: '1-1-2',
-          label: '机柜2',
-        },]
-      },
-    ],
-  },
-  {
-    value: '2',
-    label: '机房2',
-    children: [
-      {
-        value: '2-1',
-        label: '柜列1',
-        children: [
-        {
-          value: '2-1-1',
-          label: '机柜1',
-        },
-        {
-          value: '2-1-2',
-          label: '机柜2',
-        },]
-      },
-    ],
-  },
-  {
-    value: '3',
-    label: '机房3',
-    children: [
-      {
-        value: '3-1',
-        label: '柜列1',
-        children: [
-        {
-          value: '3-1-1',
-          label: '机柜1',
-        },
-        {
-          value: '3-1-2',
-          label: '机柜2',
-        },]
-      },
-    ],
-  },
-]
-//折叠功能
-let treeWidth = ref(3)
-let isCollapsed = ref(0);
-const toggleCollapse = () => {
-  treeWidth.value = isCollapsed.value == 0 ? 3 : 0;
-};
-//树型控件
-interface Tree {
-  [key: string]: any
-}
-const filterText = ref('')
-const treeRef = ref<InstanceType<typeof ElTree>>()
-const filterNode = (value: string, data: Tree) => {
-  if (!value) return true
-  return data.label.includes(value)
-}
-const defaultProps = {
-  children: 'children',
-  label: 'label',
-}
-watch(filterText, (val) => {
-  treeRef.value!.filter(val)
-})
-
+const navList = ref([]) as any // 左侧导航栏树结构列表
+const navTotalData = ref(0)
 const message = useMessage() // 消息弹窗
-const { t } = useI18n() // 国际化
-
 const loading = ref(true) // 列表的加载中
 const list = ref<Array<{ }>>([]); // 列表数据
 const total = ref(0) // 数据总条数 超过10000条为10000
@@ -240,6 +147,24 @@ const exportLoading = ref(false) // 导出的加载中
 
 // 时间段快捷选项
 const shortcuts = [
+   {
+    text: '最近一小时',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setHours(start.getHours() - 1)
+      return [start, end]
+    },
+  },
+    {
+    text: '最近一天',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setDate(start.getDate() - 1)
+      return [start, end]
+    },
+  },
   {
     text: '最近一周',
     value: () => {
@@ -357,7 +282,7 @@ watch(() => queryParams.granularity, (newValues) => {
       originalArray.value = ["active_total", "apparent_total", "active_a", "apparent_a", "active_b", "apparent_b"]        
  
       tableColumns.value =[
-        { label: '位置', align: 'center', prop: 'location' , width: '100px' , istrue:true},
+        { label: '位置', align: 'center', prop: 'location' , width: '160px' , istrue:true},
         { label: '总有功功率(kW)', align: 'center', prop: 'active_total' , istrue:true, formatter: formatPower},
         { label: '总视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, formatter: formatPower},
         { label: 'A路有功功率(kW)', align: 'center', prop: 'active_a' , istrue:true, formatter: formatPower},
@@ -437,7 +362,7 @@ watch(() => queryParams.granularity, (newValues) => {
                           ]    
 
       tableColumns.value = [
-        { label: '位置', align: 'center', prop: 'location' , width: '100px' , istrue:true},
+        { label: '位置', align: 'center', prop: 'location' , width: '160px' , istrue:true},
         { label: '总平均有功功率(kW)', align: 'center', prop: 'active_total_avg_value', istrue:true, width: '180px', formatter: formatPower},
         { label: '总最大有功功率(kW)', align: 'center', prop: 'active_total_max_value', istrue:false, width: '180px', formatter: formatPower},
         { label: '总最大有功功率时间', align: 'center', prop: 'active_total_max_time', formatter: dateFormatter, width: '200px', istrue:false},
@@ -481,7 +406,7 @@ watch(() => queryParams.granularity, (newValues) => {
 });
 
 const tableColumns = ref([
-  { label: '位置', align: 'center', prop: 'location' , width: '100px' , istrue:true},
+  { label: '位置', align: 'center', prop: 'location' , width: '160px' , istrue:true},
   { label: '总有功功率(kW)', align: 'center', prop: 'active_total' , istrue:true, formatter: formatPower},
   { label: '总视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, formatter: formatPower},
   { label: 'A路有功功率(kW)', align: 'center', prop: 'active_a' , istrue:true, formatter: formatPower},
@@ -527,6 +452,18 @@ const handleQuery = () => {
   getList()
 }
 
+// 接口获取机房导航列表
+const getNavList = async() => {
+  const res = await CabinetApi.getRoomMenuAll({})
+  navList.value = res
+}
+
+// 获取导航的数据显示
+const getNavOneHourData = async() => {
+  const res = await HistoryDataApi.getNavOneHourData({})
+  navTotalData.value = res.total
+}
+
 /** 详情操作*/
 const toDetails = (cabinetId: number) => {
   push('/cabinet/record/historyLine?cabinetId='+cabinetId);
@@ -549,6 +486,8 @@ const handleExport = async () => {
 
 /** 初始化 **/
 onMounted(() => {
+  getNavList()
+  getNavOneHourData()
   getList()
 })
 </script>
@@ -565,4 +504,36 @@ onMounted(() => {
   font-weight: 400; 
   color: #606266
 }
+ .nav_header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 13px;
+    padding-top: 28px;
+  }
+  .nav_header_img {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #555;
+  }
+
+  img {
+      width: 75px;
+      height: 75px;
+  }
+
+.nav_data{
+  padding-left: 48px;
+}
+
+  .line {
+    height: 1px;
+    margin-top: 28px;
+    margin-bottom: 20px;
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
 </style>

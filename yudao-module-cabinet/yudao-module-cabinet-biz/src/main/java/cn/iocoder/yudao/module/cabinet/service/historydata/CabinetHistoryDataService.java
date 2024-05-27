@@ -32,6 +32,8 @@ public interface CabinetHistoryDataService {
      */
     PageResult<Object> getHistoryDataDetails(CabinetHistoryDataDetailsReqVO reqVO) throws IOException;
 
+    Map<String, Object> getOneHourSumData() throws IOException;
+
     /**
      * 获得pdu环境数据分页
      *

@@ -1,7 +1,8 @@
-package cn.iocoder.yudao.module.pdu.service.historydata;
+package cn.iocoder.yudao.module.pdu.service.energyconsumption;
 
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.EnergyConsumptionPageReqVO;
+import cn.iocoder.yudao.module.pdu.service.historydata.HistoryDataService;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -10,12 +11,16 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.metrics.ValueCount;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -416,6 +421,51 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
                 .setTotal(totalHits);
 
         return pageResult;
+    }
+
+    @Override
+    public Map<String, Object> getSumData(String[] indices, String[] name, LocalDateTime timeAgo) throws IOException {
+        Map<String, Object> resultItem = new HashMap<>();
+        // 添加范围查询 最近24小时
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        for (int i = 0; i < indices.length; i++) {
+            SearchRequest searchRequest = new SearchRequest(indices[i]);
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
+                    .from(timeAgo.format(formatter))
+                    .to(now.format(formatter)));
+            // 添加计数聚合
+            searchSourceBuilder.aggregation(
+                    AggregationBuilders.count("total_insertions").field("pdu_id")
+            );
+            searchRequest.source(searchSourceBuilder);
+            // 执行搜索请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            // 从聚合结果中获取文档数量
+            ValueCount totalInsertionsAggregation = searchResponse.getAggregations().get("total_insertions");
+            long totalInsertions = totalInsertionsAggregation.getValue();
+            resultItem.put(name[i], totalInsertions);
+        }
+        return resultItem;
+    }
+
+    @Override
+    public Map<String, Object> getOneWeekSumData() throws IOException {
+        String[] indices = new String[]{"pdu_eq_total_day", "pdu_eq_outlet_day"};
+        String[] name = new String[]{"total", "outlet"};
+        LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
+        Map<String, Object> map = getSumData(indices, name, oneWeekAgo);
+        return map;
+    }
+
+    @Override
+    public Map<String, Object> getOneDaySumData() throws IOException {
+        String[] indices = new String[]{"pdu_ele_total_realtime", "pdu_ele_line", "pdu_ele_loop", "pdu_ele_outlet"};
+        String[] name = new String[]{"total", "line", "loop", "outlet"};
+        LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
+        Map<String, Object> map = getSumData(indices, name, oneDayAgo);
+        return map;
     }
 
 }

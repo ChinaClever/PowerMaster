@@ -1,5 +1,22 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU能耗趋势">
+    <template #NavInfo>
+        <div class="nav_header">
+          <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
+          <br/>
+          <span>全部PDU最近一周新增记录</span>
+            <br/>
+        </div>
+        <div class="nav_data">
+          <el-statistic title="总电能" :value="navTotalData">
+              <template #suffix>条</template>
+          </el-statistic>
+          <br/>
+          <el-statistic title="输出位电能" :value="navOutletData"> 
+            <template #suffix>条</template>
+          </el-statistic>
+        </div>
+    </template>
     <template #ActionBar>
       <el-form
          class="-mb-15px"
@@ -107,6 +124,8 @@ const { push } = useRouter()
 defineOptions({ name: 'PowerAnalysis' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
+const navTotalData = ref(0)
+const navOutletData = ref(0)
 const instance = getCurrentInstance();
 const message = useMessage()
 const activeName = ref('myData') 
@@ -172,7 +191,7 @@ const typeCascaderChange = (selected) => {
     const exists = tableColumns.value.some(column => column.label === '输出位');
     if (!exists) {
       // 在列表行索引1(位置后面)插入输出位行 
-      const newRow = { label: '输出位', align: 'center', prop: 'outlet_id', istrue: true };
+      const newRow = { label: '输出位', align: 'center', prop: 'outlet_id', istrue: true};
       tableColumns.value.splice(1, 0, newRow);
     }
   }else{
@@ -225,12 +244,12 @@ watch(() => queryParams.granularity, () => {
 
 const tableColumns = ref([
   { label: '位置', align: 'center', prop: 'address' , istrue:true, width: '180px'},
-  { label: '开始时间', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
+  { label: '开始时间', align: 'center', prop: 'start_time' , formatter: formatTime, width: '150px' , istrue:true},
   { label: '开始电能(kWh)', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
-  { label: '结束时间', align: 'center', prop: 'end_time' , formatter: formatTime, width: '200px' , istrue:true},
+  { label: '结束时间', align: 'center', prop: 'end_time' , formatter: formatTime, width: '150px' , istrue:true},
   { label: '结束电能(kWh)', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle},
   { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
-  { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px' , istrue:true},
+  { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '150px' , istrue:true},
   { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '150px'},
   { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '120px'},
 ]) as any;
@@ -363,7 +382,7 @@ const handleCheck = async (node) => {
     console.log(arr)
 }
 
-// 接口获取机房导航列表
+// 接口获取导航列表
 const getNavList = async() => {
   const res = await CabinetApi.getRoomList({})
   let arr = [] as any
@@ -374,6 +393,12 @@ const getNavList = async() => {
   navList.value = arr
 }
 
+// 获取导航的数据显示
+const getNavOneWeekData = async() => {
+  const res = await EnergyConsumptionApi.getNavOneWeekData({})
+  navTotalData.value = res.total
+  navOutletData.value = res.outlet
+}
 
 /** 详情操作*/
 const toDetails = (pduId: number, address: string) => {
@@ -405,6 +430,7 @@ const toDetails = (pduId: number, address: string) => {
 /** 初始化 **/
 onMounted(() => {
   getNavList()
+  getNavOneWeekData()
   getTypeMaxValue();
   getList();
 });
@@ -423,4 +449,30 @@ onMounted(() => {
   font-weight: 400; 
   color: #606266
 }
+  .nav_header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 13px;
+    padding-top: 28px;
+  }
+  .nav_header_img {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #555;
+  }
+
+  img {
+      width: 75px;
+      height: 75px;
+  }
+
+.nav_data{
+  padding-left: 55px;
+}
+
 </style>

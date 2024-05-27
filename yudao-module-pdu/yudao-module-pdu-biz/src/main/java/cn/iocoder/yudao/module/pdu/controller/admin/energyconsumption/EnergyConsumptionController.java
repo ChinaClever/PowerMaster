@@ -3,9 +3,7 @@ package cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.EnergyConsumptionPageReqVO;
-import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataDetailsReqVO;
-import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataPageReqVO;
-import cn.iocoder.yudao.module.pdu.service.historydata.EnergyConsumptionService;
+import cn.iocoder.yudao.module.pdu.service.energyconsumption.EnergyConsumptionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.validation.annotation.Validated;
@@ -16,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
@@ -51,8 +50,8 @@ public class EnergyConsumptionController {
     @GetMapping("/outlets-details")
     @Operation(summary = "获得pdu电量数据详情")
     public CommonResult<List<Object>> getOutletsEQData(EnergyConsumptionPageReqVO reqVO) throws IOException {
-        List<Object> listResult = energyConsumptionService.getOutletsEQData(reqVO);
-        return success(listResult);
+        List<Object> list = energyConsumptionService.getOutletsEQData(reqVO);
+        return success(list);
     }
 
     @GetMapping("/realtime-page")
@@ -60,5 +59,19 @@ public class EnergyConsumptionController {
     public CommonResult<PageResult<Object>> getRealtimeEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = energyConsumptionService.getRealtimeEQDataPage(pageReqVO);
         return success(pageResult);
+    }
+
+    @GetMapping("/one-week")
+    @Operation(summary = "获得pdu能耗最近一周插入的数据量")
+    public CommonResult<Map<String, Object>> getOneWeekSumData() throws IOException {
+        Map<String, Object> map = energyConsumptionService.getOneWeekSumData();
+        return success(map);
+    }
+
+    @GetMapping("/one-day")
+    @Operation(summary = "获得pdu能耗最近一天插入的数据量")
+    public CommonResult<Map<String, Object>> getOneDaySumData() throws IOException {
+        Map<String, Object> map = energyConsumptionService.getOneDaySumData();
+        return success(map);
     }
 }

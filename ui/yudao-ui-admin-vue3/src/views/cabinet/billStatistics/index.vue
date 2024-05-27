@@ -1,14 +1,14 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜电能记录">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜电费统计">
     <template #NavInfo>
       <div class="nav_header">
         <div class="nav_header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
         <br/>
-        <span>全部机柜最近24小时新增记录</span>
+        <span>全部机柜最近一周新增记录</span>
           <br/>
       </div>
       <div class="nav_data">
-        <el-statistic title="电能" :value="navTotalData">
+        <el-statistic title="电费" :value="navTotalData">
             <template #suffix>条</template>
         </el-statistic>
       </div>
@@ -21,18 +21,29 @@
         :inline="true"
         label-width="auto"
       >
-      <el-form-item label="时间段" prop="timeRange">
-        <el-date-picker
-        value-format="YYYY-MM-DD HH:mm:ss"
-        v-model="queryParams.timeRange"
-        type="datetimerange"
-        :shortcuts="shortcuts"
-        range-separator="-"
-        start-placeholder="开始时间"
-        end-placeholder="结束时间"
-        :disabled-date="disabledDate"
-      />
-      </el-form-item>
+        <el-form-item label="颗粒度" prop="granularity">
+          <el-select
+            v-model="queryParams.granularity"
+            placeholder="请选择天/周/月"
+            class="!w-120px" >
+            <el-option label="天" value="day" />
+            <el-option label="周" value="week" />
+            <el-option label="月" value="month" />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="时间段" prop="timeRange">
+          <el-date-picker
+          value-format="YYYY-MM-DD"
+          v-model="selectTimeRange"
+          type="daterange"
+          :shortcuts="shortcuts"
+          range-separator="-"
+          start-placeholder="开始时间"
+          end-placeholder="结束时间"
+          :disabled-date="disabledDate"
+        />
+        </el-form-item>
 
         <el-form-item >
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
@@ -72,7 +83,7 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"/>
       <div class="realTotal">共 {{ realTotel }} 条</div>
-     </template>
+    </template>
   </CommonMenu>
 </template>
 
@@ -80,10 +91,12 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/cabinet/energyConsumption'
+import { formatDate, endOfDay, convertDate, addTime, betweenDay} from '@/utils/formatTime'
 import { CabinetApi } from '@/api/cabinet/info'
 import * as echarts from 'echarts';
 
-defineOptions({ name: 'PowerRecords' })
+const { push } = useRouter()
+defineOptions({ name: 'BillStatistics' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const navTotalData = ref(0)
@@ -93,11 +106,13 @@ const loading = ref(true)
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
+const selectTimeRange = ref(undefined)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
+  granularity: 'day',
   timeRange: undefined as string[] | undefined,
-  cabinetIds: [],
+  cabinetIds:[]
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
@@ -105,15 +120,6 @@ const exportLoading = ref(false)
 
 // 时间段快捷选项
 const shortcuts = [
-  {
-    text: '最近一天',
-    value: () => {
-      const end = new Date()
-      const start = new Date()
-      start.setHours(start.getHours() - 24)
-      return [start, end]
-    },
-  },
   {
     text: '最近一周',
     value: () => {
@@ -143,19 +149,49 @@ const shortcuts = [
   },
 ]
 
+
+watch(() => queryParams.granularity, () => {
+    if (queryParams.granularity == 'day'){
+      tableColumns.value = [
+        { label: '位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
+        { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
+        { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
+      ]
+    }else{
+      tableColumns.value = [
+        { label: '位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '开始日期', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
+        { label: '结束日期', align: 'center', prop: 'end_time', formatter: formatTime, istrue:true},
+        { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
+        { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatEle},
+      ]
+    }
+
+  handleQuery();
+});
+
 const tableColumns = ref([
   { label: '位置', align: 'center', prop: 'location' , istrue:true},
-  { label: 'A路电能(kWh)', align: 'center', prop: 'ele_a' , istrue:true, formatter: formatEle},
-  { label: 'B路电能(kWh)', align: 'center', prop: 'ele_b' , istrue:true, formatter: formatEle},
-  { label: '电能(kWh)', align: 'center', prop: 'ele_total' , istrue:true, formatter: formatEle},
-  { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
-]);
+  { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
+  { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
+  { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
+]) as any;
 
-/** 初始化数据 */
+/** 查询列表 */
 const getList = async () => {
   loading.value = true
   try {
-    const data = await EnergyConsumptionApi.getRealtimeEQDataPage(queryParams)
+    if ( selectTimeRange.value != undefined){
+      // 格式化时间范围 加上23:59:59的时分秒 
+      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+      // 结束时间的天数多加一天 ，  一天的毫秒数
+      const oneDay = 24 * 60 * 60 * 1000;
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+      queryParams.timeRange = [selectedStartTime, selectedEndTime];
+    }
+  
+    const data = await EnergyConsumptionApi.getBillDataPage(queryParams)
     list.value = data.list
     realTotel.value = data.total
     if (data.total > 10000){
@@ -174,10 +210,32 @@ const shouldShowDataExceedMessage = computed(() => {
   return queryParams.pageNo === lastPageNo && total.value >= 10000;
 });
 
+// 格式化日期
+function formatTime(row: any, column: any, cellValue: number): string {
+  if (!cellValue) {
+    return ''
+  }
+
+  return dayjs(cellValue).format('YYYY-MM-DD')
+}
 
 // 格式化电能列数据，保留1位小数
 function formatEle(row: any, column: any, cellValue: number): string {
   return cellValue.toFixed(1);
+}
+
+// 格式化电费列数据
+function formatBill(row: any, column: any, cellValue: number): string {
+  return cellValue.toFixed(3);
+}
+
+// 格式化耗电量列数据，保留1位小数
+function formatEQ(value, decimalPlaces){
+  if (!isNaN(value)) {
+    return value.toFixed(decimalPlaces);
+  } else {
+      return null; // 或者其他默认值
+  }
 }
 
 // 禁选未来的日期
@@ -190,12 +248,10 @@ const disabledDate = (date) => {
   return date > today;
 }
 
-// 格式化日期
-function formatTime(row: any, column: any, cellValue: number): string {
-  if (!cellValue) {
-    return ''
-  }
-  return dayjs(cellValue).format('YYYY-MM-DD HH:mm:ss')
+/** 搜索按钮操作 */
+const handleQuery = () => {
+ queryParams.pageNo = 1
+ getList()
 }
 
 
@@ -218,23 +274,18 @@ const getNavList = async() => {
 }
 
 // 获取导航的数据显示
-const getNavOneDayData = async() => {
-  const res = await EnergyConsumptionApi.getNavOneDayData({})
+const getNavOneWeekData = async() => {
+  const res = await EnergyConsumptionApi.getNavOneWeekData({})
   navTotalData.value = res.total
-}
-
-/** 搜索按钮操作 */
-const handleQuery = () => {
-  queryParams.pageNo = 1
-  getList()
 }
 
 /** 初始化 **/
 onMounted(() => {
   getNavList()
-  getNavOneDayData()
+  getNavOneWeekData()
   getList();
-})
+});
+
 </script>
 
 <style scoped>
@@ -249,7 +300,7 @@ onMounted(() => {
   font-weight: 400; 
   color: #606266
 }
- .nav_header {
+  .nav_header {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -272,13 +323,6 @@ onMounted(() => {
   }
 
 .nav_data{
-  padding-left: 48px;
+  padding-left: 55px;
 }
-
-  .line {
-    height: 1px;
-    margin-top: 28px;
-    margin-bottom: 20px;
-    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
-  }
 </style>

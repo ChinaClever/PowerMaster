@@ -8,6 +8,7 @@ import cn.iocoder.yudao.module.cabinet.dal.mysql.index.CabIndexMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.AisleIndexMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.RoomIndexMapper;
+import cn.iocoder.yudao.module.cabinet.service.energyconsumption.CabinetEnergyConsumptionService;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -34,7 +36,8 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
 
     @Autowired
     private CabinetIndexMapper cabinetIndexMapper;
-
+    @Autowired
+    private CabinetEnergyConsumptionService cabinetEnergyConsumptionService;
     @Resource
     private CabIndexMapper cabIndexMapper;
 
@@ -171,6 +174,15 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
                 .setTotal(totalHits);
 
         return pageResult;
+    }
+
+    @Override
+    public Map<String, Object> getOneHourSumData() throws IOException {
+        String[] indices = new String[]{"cabinet_hda_pow_realtime"};
+        String[] name = new String[]{"total"};
+        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
+        Map<String, Object> map = cabinetEnergyConsumptionService.getSumData(indices, name, oneHourAgo);
+        return map;
     }
 
 //    @Override

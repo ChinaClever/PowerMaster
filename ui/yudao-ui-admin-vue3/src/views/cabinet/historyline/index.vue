@@ -1,25 +1,33 @@
 <template>
-  <el-row :gutter="20">
-   <el-col :span="treeWidth" :xs="24">
-     <el-input
-       v-model="filterText"
-       style="width: 190px"
-       placeholder=""
-     />
-
-     <el-tree
-       ref="treeRef"
-       style="max-width: 600px"
-       class="filter-tree"
-       :data="serverRoomArr"
-       :props="defaultProps"
-       default-expand-all
-       show-checkbox
-       :filter-node-method="filterNode"
-     />
-   </el-col>
-   <el-col :span="24 - treeWidth" :xs="24">
-     <ContentWrap>
+ <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="机柜电力分析" :showCheckbox="false">
+    <template #NavInfo>
+      <div class="nav_header">
+        <div class="nav_header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
+        <br/>
+        <span v-if="nowAddress">{{nowAddress}}</span>
+        <br/>
+        <template v-if="queryParams.granularity == 'realtime' && paramType == 'total'">
+          <span>{{queryParams.timeRange[0]}}</span>
+          <span>至</span>
+          <span>{{queryParams.timeRange[1]}}</span>
+        </template>
+        <br/>
+      </div>
+      <div class="nav_data" v-if="queryParams.granularity == 'realtime' && paramType == 'total'">
+      <el-statistic title="总有功功率最大值" :value="formatNumber(maxActivePowDataTemp, 3)">
+          <template #suffix>kW</template>
+        </el-statistic>
+        <el-statistic v-if="formatNumber(maxActivePowDataTemp, 3) != 0.0" title="发生于" :value="maxActivePowDataTimeTemp"/>
+        <el-statistic v-if="formatNumber(maxActivePowDataTemp, 3) == 0.0" title="发生于" :value="Object('-')"/>
+          <br/>
+        <el-statistic title="总有功功率最小值" :value="formatNumber(minActivePowDataTemp, 3)">
+          <template #suffix>kW</template>
+        </el-statistic>
+        <el-statistic v-if="formatNumber(minActivePowDataTemp, 3) != 0.0" title="发生于" :value="minActivePowDataTimeTemp"/>
+        <el-statistic v-if="formatNumber(minActivePowDataTemp, 3) == 0.0" title="发生于" :value="Object('-')"/>
+      </div>
+    </template>
+    <template #ActionBar>
       <el-tabs v-model="activeName">
         <el-tab-pane label="原始数据" name="realtimeTabPane"/>
         <el-tab-pane label="小时极值数据" name="hourExtremumTabPane"/>
@@ -33,7 +41,6 @@
          :inline="true"
          label-width="70px"
        >
-
         <el-form-item label="参数类型" prop="type">
            <el-select
              v-model="paramType"
@@ -64,7 +71,8 @@
            <el-button type="primary" plain><Icon icon="ep:download" class="mr-5px" /> 导出</el-button>
          </el-form-item>
        </el-form>
-
+    </template>
+    <template #Content>
       <div v-loading="loading">
         <el-tabs v-model="activeName1">
           <el-tab-pane label="图表" name="myChart">
@@ -143,12 +151,8 @@
         
         <!-- <el-empty v-show="!isHaveData" description="暂无数据" /> -->
       </div>
-
-     </ContentWrap>
-     <!-- 列表 -->
-   </el-col>
-  </el-row>
-
+    </template>
+  </CommonMenu>
 </template>
 
 <script setup lang="ts">
@@ -157,11 +161,14 @@ import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { HistoryDataApi } from '@/api/cabinet/historydata'
 import { formatDate } from '@/utils/formatTime'
+import { CabinetApi } from '@/api/cabinet/info'
 
 /** 机柜历史曲线 */
 defineOptions({ name: 'CabinetHistoryLine' })
- // tab默认显示
-const activeName = ref('realtimeTabPane')
+const navList = ref([]) as any // 左侧导航栏树结构列表
+const nowAddress = ref('')// 导航栏的位置信息
+const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
+const activeName = ref('realtimeTabPane') // tab默认显示
 const activeName1 = ref('myChart')
 const instance = getCurrentInstance()
 const tableData = ref<Array<{ }>>([]) // 列表数据
@@ -173,90 +180,7 @@ const queryParams = reactive({
   granularity: 'realtime',
   timeRange: defaultHourTimeRange(1),
 })
-
-//折叠功能
-const serverRoomArr =  [
- {
-   value: '1',
-   label: '机房1',
-   children: [
-     {
-       value: '1-1',
-       label: '柜列1',
-       children: [
-       {
-         value: '1-1-1',
-         label: '机柜1',
-       },
-       {
-         value: '1-1-2',
-         label: '机柜2',
-       },]
-     },
-   ],
- },
- {
-   value: '2',
-   label: '机房2',
-   children: [
-     {
-       value: '2-1',
-       label: '柜列1',
-       children: [
-       {
-         value: '2-1-1',
-         label: '机柜1',
-       },
-       {
-         value: '2-1-2',
-         label: '机柜2',
-       },]
-     },
-   ],
- },
- {
-   value: '3',
-   label: '机房3',
-   children: [
-     {
-       value: '3-1',
-       label: '柜列1',
-       children: [
-       {
-         value: '3-1-1',
-         label: '机柜1',
-       },
-       {
-         value: '3-1-2',
-         label: '机柜2',
-       },]
-     },
-   ],
- },
-]
-let treeWidth = ref(3)
-let isCollapsed = ref(0)
-const toggleCollapse = () => {
- treeWidth.value = isCollapsed.value == 0 ? 3 : 0;
-};
-//树型控件
-interface Tree {
- [key: string]: any
-}
-const filterText = ref('')
-const treeRef = ref<InstanceType<typeof ElTree>>()
-const filterNode = (value: string, data: Tree) => {
- if (!value) return true
- return data.label.includes(value)
-}
-const defaultProps = {
- children: 'children',
- label: 'label',
-}
-watch(filterText, (val) => {
- treeRef.value!.filter(val)
-})
-const loading = ref(true) // 列表的加载中
+const loading = ref(false) // 列表的加载中
 
 // 时间段快捷选项
 const shortcuts = [
@@ -401,6 +325,11 @@ const bApparentPowMaxTimeData = ref<string[]>([]);
 const bApparentPowMinValueData = ref<number[]>([]);
 const bApparentPowMinTimeData = ref<string[]>([]);
 
+const maxActivePowDataTemp = ref(0);// 最大有功功率 
+const maxActivePowDataTimeTemp = ref();// 最大有功功率的发生时间 
+const minActivePowDataTemp = ref(0);// 最小有功功率 
+const minActivePowDataTimeTemp = ref();// 最小有功功率的发生时间 
+
 /** 查询列表 */
 const isHaveData = ref(false);
 const getList = async () => {
@@ -456,6 +385,20 @@ loading.value = true
       bApparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.apparent_a_max_time));
       bApparentPowMinValueData.value = data.list.map((item) => formatNumber(item.apparent_b_min_value, 3));
       bApparentPowMinTimeData.value = data.list.map((item) => formatDate(item.apparent_a_min_time));
+
+      maxActivePowDataTemp.value = Math.max(...totalActivePowData.value);
+      minActivePowDataTemp.value = Math.min(...totalActivePowData.value);
+      totalActivePowData.value.forEach(function(num, index) {
+        if (num == maxActivePowDataTemp.value){
+          maxActivePowDataTimeTemp.value = createTimeData.value[index]
+        }
+        if (num == minActivePowDataTemp.value){
+          minActivePowDataTimeTemp.value = createTimeData.value[index]
+        }
+      });
+      // 图表显示的位置变化
+      nowAddress.value = nowAddressTemp.value
+
     }else{
       isHaveData.value = false;
       ElMessage({
@@ -672,9 +615,6 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
     headerData.value = realtimeChart?.getOption().series as any[];
     updateTableData();
   }
-
-
-  // if (newType == 'a'){
   //    if ( newGranularity == 'realtime'){
   //     // 销毁原有的图表实例
   //     beforeUnmount()
@@ -782,7 +722,6 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
   //     }
   //   } 
 });
-
 
 // 表格映射图数据
 const updateTableData = () => {
@@ -1003,19 +942,51 @@ function formatNumber(value, decimalPlaces) {
 }
 
 /** 搜索按钮操作 */
-const handleQuery = () => {
- getList()
+const handleQuery = async() => {
+  await getList();
+  // await getRankChartData();
+  initChart();
+  // initRankChart();
+}
+
+// 导航栏选择后触发
+const handleClick = async (row) => {
+   if(row.type != null  && row.type == 3){
+    queryParams.cabinetId = row.id
+    findFullName(navList.value, row.unique, fullName => {
+      nowAddressTemp.value = fullName
+    });
+    handleQuery();
+  }
+}
+
+// 得到位置全名
+function findFullName(data, targetUnique, callback, fullName = '') {
+  for (let item of data) {
+    const newFullName = fullName === '' ? item.name : fullName + '-' + item.name;
+    if (item.unique === targetUnique) {
+      callback(newFullName);
+    }
+    if (item.children && item.children.length > 0) {
+      findFullName(item.children, targetUnique, callback, newFullName);
+    }
+  }
+}
+
+// 接口获取机房导航列表
+const getNavList = async() => {
+  const res = await CabinetApi.getRoomMenuAll({})
+  navList.value = res
 }
 
 /** 初始化 **/
 onMounted( async () => {
+  getNavList()
   // 获取路由参数中的 pdu_id
   const queryCabinetId = useRoute().query.cabinetId as string  | undefined;
   queryParams.cabinetId = queryCabinetId ? parseInt(queryCabinetId, 10) : undefined;
-    console.log(queryParams.cabinetId)
   if (queryParams.cabinetId != undefined){
-    await getList();
-    initChart();
+    handleQuery();
   }
 })
 
@@ -1089,4 +1060,37 @@ onMounted( async () => {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.nav_header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 13px;
+    padding-top: 28px;
+  }
+  .nav_header_img {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #555;
+  }
+
+  img {
+      width: 75px;
+      height: 75px;
+  }
+
+.nav_data{
+  padding-left: 50px;
+}
+
+  .line {
+    height: 1px;
+    margin-top: 28px;
+    margin-bottom: 20px;
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
 </style>

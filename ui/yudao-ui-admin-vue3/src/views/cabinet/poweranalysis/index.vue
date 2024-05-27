@@ -1,5 +1,18 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜能耗趋势">
+    <template #NavInfo>
+    <div class="nav_header">
+      <div class="nav_header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
+      <br/>
+      <span>全部机柜最近一周新增记录</span>
+        <br/>
+      </div>
+      <div class="nav_data">
+        <el-statistic title="耗电量" :value="navTotalData">
+            <template #suffix>条</template>
+        </el-statistic>
+      </div>
+    </template>
     <template #ActionBar>
       <el-form
          class="-mb-15px"
@@ -86,7 +99,6 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/cabinet/energyConsumption'
-import { HistoryDataApi } from '@/api/pdu/historydata'
 import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
 import { CabinetApi } from '@/api/cabinet/info'
 import type Node from 'element-plus/es/components/tree/src/model/node'
@@ -95,6 +107,7 @@ const { push } = useRouter()
 defineOptions({ name: 'PowerAnalysis' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
+const navTotalData = ref(0)
 const instance = getCurrentInstance();
 const message = useMessage()
 const activeName = ref('myData') 
@@ -298,6 +311,12 @@ const getNavList = async() => {
   navList.value = res
 }
 
+// 获取导航的数据显示
+const getNavOneWeekData = async() => {
+  const res = await EnergyConsumptionApi.getNavOneWeekData({})
+  navTotalData.value = res.total
+}
+
 
 /** 详情操作*/
 const toDetails = (cabinetId: number, location: string) => {
@@ -307,6 +326,7 @@ const toDetails = (cabinetId: number, location: string) => {
 /** 初始化 **/
 onMounted(() => {
   getNavList()
+  getNavOneWeekData()
   getList();
 });
 
@@ -323,5 +343,31 @@ onMounted(() => {
   font-size: 14px;
   font-weight: 400; 
   color: #606266
+}
+
+  .nav_header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 13px;
+    padding-top: 28px;
+  }
+  .nav_header_img {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #555;
+  }
+
+  img {
+      width: 75px;
+      height: 75px;
+  }
+
+.nav_data{
+  padding-left: 55px;
 }
 </style>

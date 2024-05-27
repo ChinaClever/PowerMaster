@@ -13,6 +13,7 @@ import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataDe
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataPageReqVO;
 import cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PduIndex;
 import cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PduIndexMapper;
+import cn.iocoder.yudao.module.pdu.service.energyconsumption.EnergyConsumptionService;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.elasticsearch.action.search.*;
@@ -32,6 +33,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -61,6 +63,9 @@ public class HistoryDataServiceImpl implements HistoryDataService {
 
     @Autowired
     private RestHighLevelClient client;
+
+    @Autowired
+    private EnergyConsumptionService energyConsumptionService;
 
     @Override
     public List<Object> getLocationsByPduIds(List<Map<String, Object>> mapList) {
@@ -594,6 +599,24 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 .setTotal(totalHits3);
 
         return pageResult;
+    }
+
+    @Override
+    public Map<String, Object> getOneHourSumData() throws IOException {
+        String[] indices = new String[]{"pdu_hda_total_realtime", "pdu_hda_line_realtime", "pdu_hda_loop_realtime", "pdu_hda_outlet_realtime"};
+        String[] name = new String[]{"total", "line", "loop", "outlet"};
+        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
+        Map<String, Object> map = energyConsumptionService.getSumData(indices, name, oneHourAgo);
+        return map;
+    }
+
+    @Override
+    public Map<String, Object> getEnvOneHourSumData() throws IOException {
+        String[] indices = new String[]{"pdu_env_realtime"};
+        String[] name = new String[]{"total"};
+        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
+        Map<String, Object> map = energyConsumptionService.getSumData(indices, name, oneHourAgo);
+        return map;
     }
 
 }

@@ -1,7 +1,32 @@
 <template>
   <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="PDU电力分析" :showCheckbox="false">
     <template #NavInfo>
-      
+      <div class="nav_header">
+        <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
+        <br/>
+        <span v-if="nowAddress">{{nowAddress}}</span>
+        <span v-if="nowLocation">( {{nowLocation}} ) </span>
+        <br/>
+        <template v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total'">
+          <span>{{queryParams.timeRange[0]}}</span>
+          <span>至</span>
+          <span>{{queryParams.timeRange[1]}}</span>
+        </template>
+        <br/>
+      </div>
+      <div class="nav_data" v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total'">
+        <el-statistic title="有功功率最大值" :value="formatNumber(maxActivePowDataTemp, 3)">
+          <template #suffix>kW</template>
+        </el-statistic>
+        <el-statistic v-if="formatNumber(maxActivePowDataTemp, 3) != 0.0" title="发生于" :value="maxActivePowDataTimeTemp"/>
+        <el-statistic v-if="formatNumber(maxActivePowDataTemp, 3) == 0.0" title="发生于" :value="Object('-')"/>
+          <br/>
+        <el-statistic title="有功功率最小值" :value="formatNumber(minActivePowDataTemp, 3)">
+          <template #suffix>kW</template>
+        </el-statistic>
+        <el-statistic v-if="formatNumber(minActivePowDataTemp, 3) != 0.0" title="发生于" :value="minActivePowDataTimeTemp"/>
+        <el-statistic v-if="formatNumber(minActivePowDataTemp, 3) == 0.0" title="发生于" :value="Object('-')"/>
+      </div>
     </template>
     <template #ActionBar>
       <el-tabs v-model="activeName">
@@ -17,7 +42,7 @@
         :inline="true"
         label-width="auto"
       >
-      <el-form-item label="IP地址" prop="ipAddr">
+      <!-- <el-form-item label="IP地址" prop="ipAddr">
         <el-input
           v-model="queryParams.ipAddr"
           placeholder="请输入IP地址"
@@ -34,7 +59,7 @@
           :value-on-clear="0"
           class="!w-100px"
         />
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="参数类型" prop="type">
         <el-cascader
           v-model="defaultSelected"
@@ -147,12 +172,16 @@ defineOptions({ name: 'PDUHistoryLine' })
 const activeName = ref('realtimeTabPane') // tab默认显示
 const activeName1 = ref('myChart') // tab默认显示
 const navList = ref([]) as any // 左侧导航栏树结构列表
+const nowAddress = ref('')// 导航栏的位置信息
+const nowLocation = ref('')// 导航栏的位置信息
+const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
+const nowLocationTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
 const instance = getCurrentInstance();
 const tableData = ref<Array<{ }>>([]); // 列表数据
 const headerData = ref<any[]>([]);
 const cascadeAddr = ref(0) // 数字类型的级联地址
 const needFlush = ref(0) // 是否需要刷新图表
-const loading = ref(true) // 加载中
+const loading = ref(false) // 加载中
 const queryParams = reactive({
   pduId: undefined as number | undefined,
   lineId: undefined,
@@ -335,6 +364,11 @@ const apparentPowMaxTimeData = ref<string[]>([]);
 const apparentPowMinValueData = ref<number[]>([]);
 const apparentPowMinTimeData = ref<string[]>([]);
 
+const maxActivePowDataTemp = ref(0);// 最大有功功率 
+const maxActivePowDataTimeTemp = ref();// 最大有功功率的发生时间 
+const minActivePowDataTemp = ref(0);// 最小有功功率 
+const minActivePowDataTimeTemp = ref();// 最小有功功率的发生时间 
+
 /** 查询列表 */
 const isHaveData = ref(false);
 const getList = async () => {
@@ -376,6 +410,22 @@ const getList = async () => {
       apparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.pow_apparent_max_time));
       apparentPowMinValueData.value = data.list.map((item) => formatNumber(item.pow_apparent_min_value, 3));
       apparentPowMinTimeData.value = data.list.map((item) => formatDate(item.pow_apparent_min_time));
+
+      maxActivePowDataTemp.value = Math.max(...activePowData.value);
+      minActivePowDataTemp.value = Math.min(...activePowData.value);
+      activePowData.value.forEach(function(num, index) {
+        if (num == maxActivePowDataTemp.value){
+          maxActivePowDataTimeTemp.value = createTimeData.value[index]
+        }
+        if (num == minActivePowDataTemp.value){
+          minActivePowDataTimeTemp.value = createTimeData.value[index]
+        }
+      });
+
+      // 图表显示的位置变化
+      nowAddress.value = nowAddressTemp.value
+      nowLocation.value = nowLocationTemp.value
+
     }else{
       isHaveData.value = false;
       ElMessage({
@@ -1049,9 +1099,9 @@ function defaultHourTimeRange(hour: number){
 // 禁选未来的日期
 const disabledDate = (date) => {
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  // 设置date的时间为0时0分0秒，以便与today进行比较
-  date.setHours(0, 0, 0, 0);
+  // today.setHours(0, 0, 0, 0);
+  // // 设置date的时间为0时0分0秒，以便与today进行比较
+  // date.setHours(0, 0, 0, 0);
   // 如果date在今天之后，则禁用
   return date > today;
 }
@@ -1150,25 +1200,26 @@ const handleClick = async (row) => {
     queryParams.pduId = undefined
     queryParams.ipAddr = row.ip
     queryParams.cascadeAddr = row?.unique?.split("-")[1];
-    // findFullName(navList.value, row.unique, fullName => {
-    //   nowAddress.value = fullName
-    // });
+    findFullName(navList.value, row.unique, fullName => {
+      nowAddressTemp.value = fullName
+      nowLocationTemp.value = row.unique
+    });
     handleQuery();
   }
 }
 
 // 得到位置全名
-// function findFullName(data, targetUnique, callback, fullName = '') {
-//   for (let item of data) {
-//     const newFullName = fullName === '' ? item.name : fullName + '-' + item.name;
-//     if (item.unique === targetUnique) {
-//       callback(newFullName);
-//     }
-//     if (item.children && item.children.length > 0) {
-//       findFullName(item.children, targetUnique, callback, newFullName);
-//     }
-//   }
-// }
+function findFullName(data, targetUnique, callback, fullName = '') {
+  for (let item of data) {
+    const newFullName = fullName === '' ? item.name : fullName + '-' + item.name;
+    if (item.unique === targetUnique) {
+      callback(newFullName);
+    }
+    if (item.children && item.children.length > 0) {
+      findFullName(item.children, targetUnique, callback, newFullName);
+    }
+  }
+}
 
 // 接口获取机房导航列表
 const getNavList = async() => {
@@ -1288,4 +1339,38 @@ onMounted( async () => {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.nav_header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 13px;
+    padding-top: 28px;
+  }
+  .nav_header_img {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #555;
+  }
+
+  img {
+      width: 75px;
+      height: 75px;
+  }
+
+.nav_data{
+  padding-left: 50px;
+}
+
+  .line {
+    height: 1px;
+    margin-top: 28px;
+    margin-bottom: 20px;
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
+
 </style>

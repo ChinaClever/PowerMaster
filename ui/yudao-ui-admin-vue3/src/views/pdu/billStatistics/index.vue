@@ -1,5 +1,22 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU电费统计">
+    <template #NavInfo>
+      <div class="nav_header">
+        <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
+        <br/>
+        <span>全部PDU最近一周新增记录</span>
+          <br/>
+      </div>
+      <div class="nav_data">
+        <el-statistic title="总电费" :value="navTotalData">
+            <template #suffix>条</template>
+        </el-statistic>
+        <br/>
+        <el-statistic title="输出位电费" :value="navOutletData">
+          <template #suffix>条</template>
+        </el-statistic>
+      </div>
+    </template>
     <template #ActionBar>
       <el-form
         class="-mb-15px"
@@ -63,11 +80,7 @@
         </el-table-column>
         <!-- 遍历其他列 -->  
         <template v-for="column in tableColumns">
-          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue">
-            <template #default="{ row }" v-if="column.slot === 'actions'">
-              <el-button link type="primary" @click="toDetails(row.pdu_id)">详情</el-button>
-            </template>
-          </el-table-column>
+          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue"/>
         </template>
         <!-- 超过一万条数据提示信息 -->
           <template v-if="shouldShowDataExceedMessage" #append>
@@ -101,9 +114,11 @@ import { CabinetApi } from '@/api/cabinet/info'
 import * as echarts from 'echarts';
 
 const { push } = useRouter()
-defineOptions({ name: 'PowerAnalysis' })
+defineOptions({ name: 'BillStatistics' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
+const navTotalData = ref(0)
+const navOutletData = ref(0)
 const instance = getCurrentInstance();
 const message = useMessage()
 const activeName = ref('myData') 
@@ -348,6 +363,13 @@ const getNavList = async() => {
   navList.value = arr
 }
 
+// 获取导航的数据显示
+const getNavOneWeekData = async() => {
+  const res = await EnergyConsumptionApi.getNavOneWeekData({})
+  navTotalData.value = res.total
+  navOutletData.value = res.outlet
+}
+
 // /** 重置按钮操作 */
 // const resetQuery = () => {
 //  queryFormRef.value.resetFields()
@@ -372,6 +394,7 @@ const getNavList = async() => {
 /** 初始化 **/
 onMounted(() => {
   getNavList()
+  getNavOneWeekData()
   getTypeMaxValue();
   getList();
 });
@@ -390,4 +413,36 @@ onMounted(() => {
   font-weight: 400; 
   color: #606266
 }
+  .nav_header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 13px;
+    padding-top: 28px;
+  }
+  .nav_header_img {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #555;
+  }
+
+  img {
+      width: 75px;
+      height: 75px;
+  }
+
+.nav_data{
+  padding-left: 55px;
+}
+
+  .line {
+    height: 1px;
+    margin-top: 28px;
+    margin-bottom: 20px;
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
 </style>

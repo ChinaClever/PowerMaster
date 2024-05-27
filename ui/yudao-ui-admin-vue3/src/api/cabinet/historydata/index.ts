@@ -21,4 +21,9 @@ export const HistoryDataApi = {
   exportHistoryData: async (params) => {
     return await request.download({ url: `/cabinet/history-data/export-excel`, params })
   },
+
+  // 查询pdu导航的一小时数据显示
+  getNavOneHourData: async (params: any) => {
+    return await request.get({ url: `/cabinet/history-data/one-hour`, params })
+  },
 }

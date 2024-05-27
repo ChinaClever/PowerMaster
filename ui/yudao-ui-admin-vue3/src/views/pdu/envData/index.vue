@@ -1,14 +1,27 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU环境数据">
+    <template #NavInfo>
+      <div class="nav_header">
+        <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
+        <br/>
+        <span>全部传感器最近一小时新增记录</span>
+          <br/>
+      </div>
+      <div class="nav_data">
+        <el-statistic title="" :value="navTotalData">
+            <template #suffix>条</template>
+        </el-statistic>
+      </div>
+    </template>
     <template #ActionBar>
       <el-form
         class="-mb-15px"
         :model="queryParams"
         ref="queryFormRef"
         :inline="true"
-        label-width="80px"
+        label-width="auto"
       >
-        <el-form-item label="IP地址" prop="ipAddr">
+        <!-- <el-form-item label="IP地址" prop="ipAddr">
           <el-input
             v-model="queryParams.ipAddr"
             placeholder="请输入IP地址"
@@ -26,12 +39,12 @@
               :value-on-clear="0"
                 class="!w-148px"
             />
-        </el-form-item>
+        </el-form-item> -->
 
         <el-form-item label="传感器" prop="sensorId">
           <el-select
             v-model="queryParams.sensorId"
-            class="!w-140px"
+            class="!w-130px"
             @change="handleQuery"
             >
             <el-option
@@ -47,7 +60,7 @@
           <el-select
             v-model="queryParams.granularity"
             placeholder="请选择分钟/小时/天"
-            class="!w-120px">
+            class="!w-100px">
             <el-option label="分钟" value="realtime" />
             <el-option label="小时" value="hour" />
             <el-option label="天" value="day" />
@@ -63,7 +76,7 @@
             collapse-tags-tooltip
             :show-all-levels="false"
             @change="cascaderChange"
-            class="!w-210px"
+            class="!w-200px"
           />
         </el-form-item>
 
@@ -76,6 +89,8 @@
           range-separator="-"
           start-placeholder="开始时间"
           end-placeholder="结束时间"
+          :disabled-date="disabledDate" 
+          class="!w-335px"
         />
         </el-form-item>
 
@@ -138,8 +153,8 @@ const { push } = useRouter()
 defineOptions({ name: 'PDUEnvHistoryData' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
+const navTotalData = ref(0)
 const message = useMessage() // 消息弹窗
-const { t } = useI18n() // 国际化
 const loading = ref(true) // 列表的加载中
 const list = ref<Array<{ }>>([]); // 列表数据
 const total = ref(0) // 数据总条数 超过10000条为10000
@@ -160,6 +175,24 @@ const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 // 时间段快捷选项
 const shortcuts = [
+    {
+    text: '最近一小时',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setHours(start.getHours() - 1)
+      return [start, end]
+    },
+  },
+    {
+    text: '最近一天',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setDate(start.getDate() - 1)
+      return [start, end]
+    },
+  },
   {
     text: '最近一周',
     value: () => {
@@ -374,6 +407,12 @@ const getNavList = async() => {
   navList.value = arr
 }
 
+// 禁选未来的日期
+const disabledDate = (date) => {
+  const today = new Date();
+  return date > today;
+}
+
 /** 搜索按钮操作 */
 const handleQuery = () => {
    // IP地址的正则表达式
@@ -387,7 +426,6 @@ const handleQuery = () => {
   }
 
 }
-
 
 /** 详情操作*/
 const toDetails = (pduId: number, location: string, sensorId: number) => {
@@ -409,10 +447,17 @@ const handleExport = async () => {
   }
 }
 
+// 获取导航的数据显示
+const getNavOneHourData = async() => {
+  const res = await EnvDataApi.getNavOneHourData({})
+  navTotalData.value = res.total
+}
+
 /** 初始化 **/
-onMounted(async () => {
+onMounted( () => {
   getNavList()
-  await getSensorIdMaxValue();
+  getNavOneHourData()
+  getSensorIdMaxValue();
   getList()
 });
 
@@ -430,4 +475,36 @@ onMounted(async () => {
   font-weight: 400; 
   color: #606266
 }
+.nav_header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 13px;
+    padding-top: 28px;
+  }
+  .nav_header_img {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #555;
+  }
+
+  img {
+      width: 75px;
+      height: 75px;
+  }
+
+.nav_data{
+  padding-left: 48px;
+}
+
+  .line {
+    height: 1px;
+    margin-top: 28px;
+    margin-bottom: 20px;
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
 </style>

@@ -3,6 +3,8 @@ package cn.iocoder.yudao.module.cabinet.service.energyconsumption;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.cabinet.controller.admin.energyconsumption.VO.CabinetEnergyConsumptionPageReqVO;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Map;
 
 public interface CabinetEnergyConsumptionService {
     /**
@@ -36,5 +38,11 @@ public interface CabinetEnergyConsumptionService {
      * @return pdu电量数据分页
      */
     PageResult<Object> getRealtimeEQDataPage(CabinetEnergyConsumptionPageReqVO pageReqVO) throws IOException;
+
+    Map<String, Object> getSumData(String[] indices, String[] name, LocalDateTime timeAgo) throws IOException;
+
+    Map<String, Object> getOneWeekSumData() throws IOException;
+
+    Map<String, Object> getOneDaySumData() throws IOException;
 
 }

@@ -1,7 +1,29 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU历史数据">
     <template #NavInfo>
-      
+      <div class="nav_header">
+        <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
+        <br/>
+        <span>全部PDU最近一小时新增记录</span>
+          <br/>
+      </div>
+      <div class="nav_data">
+        <el-statistic title="总数据" :value="navTotalData">
+            <template #suffix>条</template>
+        </el-statistic>
+           <br/>
+        <el-statistic title="相数据" :value="navLineData">
+          <template #suffix>条</template>
+        </el-statistic>
+           <br/>
+        <el-statistic title="回路数据" :value="navLoopData">
+          <template #suffix>条</template>
+        </el-statistic>
+        <br/>
+        <el-statistic title="输出位数据" :value="navOutletData">
+          <template #suffix>条</template>
+        </el-statistic>
+      </div>
     </template>
     <template #ActionBar>
       <el-form
@@ -9,9 +31,9 @@
         :model="queryParams"
         ref="queryFormRef"
         :inline="true"
-        label-width="80px"
+        label-width="auto"
       >
-        <el-form-item label="IP地址" prop="ipAddr">
+        <!-- <el-form-item label="IP地址" prop="ipAddr">
           <el-input
             v-model="queryParams.ipAddr"
             placeholder="请输入IP地址"
@@ -29,7 +51,7 @@
               :value-on-clear="0"
                 class="!w-148px"
             />
-        </el-form-item>
+        </el-form-item> -->
 
         <el-form-item label="参数类型" prop="type">
         <el-cascader
@@ -39,7 +61,7 @@
           collapse-tags-tooltip
           :show-all-levels="true"
           @change="typeCascaderChange"
-          class="!w-140px"
+          class="!w-130px"
         />
       </el-form-item>
 
@@ -47,7 +69,7 @@
           <el-select
             v-model="queryParams.granularity"
             placeholder="请选择分钟/小时/天"
-            class="!w-120px">
+            class="!w-100px">
             <el-option label="分钟" value="realtime" />
             <el-option label="小时" value="hour" />
             <el-option label="天" value="day" />
@@ -63,7 +85,7 @@
             collapse-tags-tooltip
             :show-all-levels="false"
             @change="cascaderChange"
-            class="!w-210px"
+            class="!w-200px"
           />
         </el-form-item>
 
@@ -76,7 +98,8 @@
           range-separator="-"
           start-placeholder="开始时间"
           end-placeholder="结束时间"
-          :disabled-date="disabledDate"
+          :disabled-date="disabledDate" 
+          class="!w-335px"
         />
         </el-form-item>
 
@@ -140,8 +163,11 @@ const { push } = useRouter()
 defineOptions({ name: 'HistoryData' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
+const navTotalData = ref(0)
+const navLineData = ref(0)
+const navLoopData = ref(0)
+const navOutletData = ref(0)
 const message = useMessage() // 消息弹窗
-const { t } = useI18n() // 国际化
 const loading = ref(true) // 列表的加载中
 const list = ref<Array<{ }>>([]); // 列表数据
 const total = ref(0) // 数据总条数 超过10000条为10000
@@ -165,6 +191,24 @@ const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 // 时间段快捷选项
 const shortcuts = [
+    {
+    text: '最近一小时',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setHours(start.getHours() - 1)
+      return [start, end]
+    },
+  },
+    {
+    text: '最近一天',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setDate(start.getDate() - 1)
+      return [start, end]
+    },
+  },
   {
     text: '最近一周',
     value: () => {
@@ -684,10 +728,6 @@ function formatTime(row: any, column: any, cellValue: number): string {
 // 禁选未来的日期
 const disabledDate = (date) => {
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  // 设置date的时间为0时0分0秒，以便与today进行比较
-  date.setHours(0, 0, 0, 0);
-  // 如果date在今天之后，则禁用
   return date > today;
 }
 
@@ -810,10 +850,19 @@ const handleExport = async () => {
   }
 }
 
+// 获取导航的数据显示
+const getNavOneHourData = async() => {
+  const res = await HistoryDataApi.getNavOneHourData({})
+  navTotalData.value = res.total
+  navLineData.value = res.line
+  navLoopData.value = res.loop
+  navOutletData.value = res.outlet
+}
 
 /** 初始化 **/
 onMounted( () => {
   getNavList()
+  getNavOneHourData()
   getTypeMaxValue();
   getList();
 });
@@ -832,4 +881,36 @@ onMounted( () => {
   font-weight: 400; 
   color: #606266
 }
+.nav_header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 13px;
+    padding-top: 28px;
+  }
+  .nav_header_img {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #555;
+  }
+
+  img {
+      width: 75px;
+      height: 75px;
+  }
+
+.nav_data{
+  padding-left: 48px;
+}
+
+  .line {
+    height: 1px;
+    margin-top: 28px;
+    margin-bottom: 20px;
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
 </style>
