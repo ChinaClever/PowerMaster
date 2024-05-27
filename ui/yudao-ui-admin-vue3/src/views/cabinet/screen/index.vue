@@ -41,19 +41,10 @@
       <div class="machine">
         <div class="mainBorder">
           <div class="main">
-            <div class="Uitem"></div>
-            <div class="Uitem"></div>
-            <div class="Uitem"></div>
-            <div class="Uitem"></div>
-            <div class="Uitem"></div>
-            <div class="Uitem active"></div>
-            <div class="Uitem active"></div>
-            <div class="Uitem"></div>
-            <div class="Uitem active"></div>
-            <div class="Uitem"></div>
-            <div class="Uitem"></div>
-            <div class="Uitem"></div>
-            <div class="Uitem"></div>
+            <template v-for="(item, index) in a" :key="index">
+              <div v-if="item.U位 > 0" class="Uitem active" :style="`min-height: ${height}`"></div>
+              <div v-else class="Uitem"></div>
+            </template>
           </div>
         </div>
         <div class="base"></div>
@@ -121,7 +112,89 @@
 </template>
 
 <script lang="ts" setup>
+const height = ref('0px')
+const b = [
+  {
+    local: 3,
+    U:2,
+  },
+  {
+    local: 5,
+    U:2,
+  },
+  {
+    local: 12,
+    U:2,
+  },
+  {
+    local: 20,
+    U:3,
+  },
+  {
+    local: 24,
+    U:4,
+  },
+  {
+    local: 30,
+    U:1,
+  },
+  {
+    local: 32,
+    U:1,
+  },
+  {
+    local: 34,
+    U:1,
+  },
+  {
+    local: 36,
+    U:1,
+  },
+  {
+    local: 38,
+    U:1,
+  },
+  {
+    local: 33,
+    U:1,
+  },
+  {
+    local: 35,
+    U:1,
+  },
+  {
+    local: 37,
+    U:1,
+  },
+  {
+    local: 39,
+    U:1,
+  },
+]
+const a = [] as any
+for (let i =0; i < 42; i++) {
+  a.push({
+    U位: 0
+  })
+}
+const handleData = () => {
+ b.forEach(item => {
+  const local = item.local
+  a.splice(local, 1, {U位: item.U})
+ })
+ console.log('aaaaa-----------', a, b.length)
+ if (b.length < 11) {
+  height.value = '30px'
+ } else if (b.length < 16) {
+  height.value = '25px'
+ } else if (b.length < 21) {
+  height.value = '20px'
+ } else if (b.length < 26) {
+  height.value = '15px'
+ }
+}
 
+handleData()
 </script>
 
 <style lang="scss" scoped>
@@ -144,8 +217,8 @@
       border: 1px solid #eee;
       .name {
         padding: 10px 8px;
-        // background-color: #eee;
-        background: linear-gradient(to bottom right, #000c4248, #0004ff);
+        background-color: #eee;
+        // background: linear-gradient(to bottom right, #000c4248, #0004ff);
         
       }
       .info {
@@ -158,17 +231,17 @@
   }
   .machine {
     position: relative;
-    width: 300px;
+    width: 260px;
     height: fit-content;
     box-sizing: border-box;
     &::before {
       content: "";
       position: absolute;
-      bottom: -20px; /* 控制梯形的上方边长 */
+      bottom: -15px; /* 控制梯形的上方边长 */
       left: 20px;
       width: 12px;
       height: 0;
-      border-bottom: 20px solid #90b8df; /* 控制梯形的底边长度和颜色 */
+      border-bottom: 15px solid #90b8df; /* 控制梯形的底边长度和颜色 */
       border-left: 10px solid transparent; /* 控制梯形的左侧斜边 */
       border-right: 10px solid transparent; /* 控制梯形的右侧斜边 */
       transform: rotateX(180deg)
@@ -176,11 +249,11 @@
     &::after {
       content: "";
       position: absolute;
-      bottom: -20px; /* 控制梯形的上方边长 */
+      bottom: -15px; /* 控制梯形的上方边长 */
       right: 20px;
       width: 12px;
       height: 0;
-      border-bottom: 20px solid #90b8df; /* 控制梯形的底边长度和颜色 */
+      border-bottom: 15px solid #90b8df; /* 控制梯形的底边长度和颜色 */
       border-left: 10px solid transparent; /* 控制梯形的左侧斜边 */
       border-right: 10px solid transparent; /* 控制梯形的右侧斜边 */
       transform: rotateX(180deg)
@@ -189,22 +262,28 @@
       // height: calc(100% - 20px);
       background-color: #90b8df;
       box-sizing: border-box;
-      padding: 20px 20px 50px 20px;
+      padding: 18px 18px 40px 18px;
       .main {
+        height: 500px;
+        display: flex;
+        flex-direction: column;
         width: 100%;
         // height: 100%;
         box-sizing: border-box;
-        padding: 10px 5px 10px 5px;
+        padding: 5px 5px 5px 5px;
         background-color: #000;
         .Uitem {
+          flex: 1;
           width: 100%;
-          height: 30px;
           background-color: #fff;
-          border-radius: 5px;
-          margin-bottom: 5px;
         }
         .active {
+          min-height: 20px;
+          height: 30px;
           background-color: #5298df;
+          border-radius: 5px;
+          margin-top: 1px;
+          margin-bottom: 1px;
         }
       }
     }

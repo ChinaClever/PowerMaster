@@ -11,7 +11,7 @@
               <div class="info">
                 <div>已用空间：</div>
                 <div>空间容量：</div>
-                <div>上月用能：</div>
+                <div>设备总数：</div>
               </div>
             </div>
             <div class="room">机房1-机柜1</div>
