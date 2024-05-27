@@ -84,7 +84,7 @@
             />
           </el-form-item>
           <el-form-item>
-            <el-button style="margin-left: 12px" ><Icon icon="ep:search" />搜索</el-button>
+            <el-button style="margin-left: 12px" @click="getTableData(true)"><Icon icon="ep:search" />搜索</el-button>
             <!-- <el-button @click="openForm('add')" type="primary" plain><Icon icon="ep:plus" />添加</el-button> -->
           </el-form-item>
         </div>
@@ -128,7 +128,7 @@
             </div>
             <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
           </div>
-          <div class="room">机房1-机柜1</div>
+          <div class="room">{{load.local}}</div>
           <button class="detail" @click.prevent="toMachineDetail">详情</button>
         </div>
       </div>

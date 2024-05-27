@@ -14,6 +14,7 @@ import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetEnvSensor;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
+import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.PduIndex;
@@ -21,6 +22,7 @@ import cn.iocoder.yudao.module.cabinet.dal.dataobject.temcolor.TemColorDO;
 import cn.iocoder.yudao.module.cabinet.dal.mysql.temcolor.TemColorMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.*;
 import cn.iocoder.yudao.module.cabinet.service.temcolor.TemColorService;
+import com.alibaba.fastjson2.JSONObject;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -36,6 +38,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -938,14 +941,14 @@ public class IndexServiceImpl implements IndexService {
 
         PageResult<IndexDO> indexDOPageResult = indexMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<IndexDO>()
                 .inIfPresent(IndexDO::getId, pageReqVO.getCabinetIds()));
-
         List<CabinetEnvAndHumRes> result = new ArrayList<>();
         List<TemColorDO> temColorList = temColorService.getTemColorAll();
         for (IndexDO indexDO : indexDOPageResult.getList()) {
             CabinetEnvAndHumRes res = new CabinetEnvAndHumRes();
             result.add(res);
             String localtion = null;
-            String roomName = roomIndexMapper.selectById(indexDO.getRoomId()).getName();
+            RoomIndex roomIndex = roomIndexMapper.selectById(indexDO.getRoomId());
+            String roomName = roomIndex.getName();
             if(indexDO.getAisleId() != 0){
                 String aisleName = aisleIndexMapper.selectById(indexDO.getAisleId()).getName();
                 localtion = roomName + "-" + aisleName + "-" + indexDO.getName();

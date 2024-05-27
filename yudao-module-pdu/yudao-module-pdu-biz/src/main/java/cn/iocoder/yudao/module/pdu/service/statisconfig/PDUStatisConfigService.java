@@ -1,18 +1,16 @@
 package cn.iocoder.yudao.module.pdu.service.statisconfig;
 
-import java.util.*;
 import javax.validation.*;
 import cn.iocoder.yudao.module.pdu.controller.admin.statisconfig.vo.*;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.statisconfig.StatisConfigDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
 
 /**
  * pdu计算服务配置 Service 接口
  *
  * @author clever
  */
-public interface StatisConfigService {
+public interface PDUStatisConfigService {
 
     /**
      * 创建pdu计算服务配置

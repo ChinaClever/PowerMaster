@@ -103,4 +103,11 @@ public class RackController {
     public CommonResult<Map> getReportPowDataById(String Id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
         return success(rackService.getReportPowDataById(Id,timeType,oldTime,newTime));
     }
+
+    @GetMapping("/redisData")
+    @Operation(summary = "获得机架索引")
+    @Parameter(name = "Id", description = "编号", required = true, example = "1024")
+    public String getRackRedisById(@RequestParam("Id") Integer Id) {
+        return rackService.getRackRedisById(Id);
+    }
 }

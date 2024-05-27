@@ -6,6 +6,8 @@ import cn.iocoder.yudao.framework.common.entity.es.rack.ele.RackEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.rack.pow.RackPowDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.rack.pow.RackPowHourDo;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
+import com.alibaba.druid.util.StringUtils;
+import com.alibaba.fastjson2.JSONObject;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -19,6 +21,8 @@ import org.elasticsearch.search.aggregations.metrics.Sum;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -55,6 +59,9 @@ public class RackServiceImpl implements RackService {
 
     @Autowired
     private RestHighLevelClient client;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Override
     public Integer createIndex(IndexSaveReqVO createReqVO) {
@@ -430,6 +437,17 @@ public class RackServiceImpl implements RackService {
             return result;
         }else {
             return result;
+        }
+    }
+
+    @Override
+    public String getRackRedisById(Integer id) {
+        if (id == null){
+            return null;
+        }else {
+            ValueOperations ops = redisTemplate.opsForValue();
+            JSONObject jsonObject = (JSONObject) ops.get("packet:rack:" + id);
+            return jsonObject != null ? jsonObject.toJSONString() : null;
         }
     }
 

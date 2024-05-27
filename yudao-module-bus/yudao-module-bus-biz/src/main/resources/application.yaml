@@ -1,0 +1,16 @@
+spring:
+  elasticsearch:
+    rest:
+      uris: 127.0.0.1:9200
+      connection-timeout: 1s
+      read-timeout: 30s
+
+
+#定时任务配置
+cron:
+  #按小时执行  每小时执行
+  hour: 0 0 * * * ?
+  #按天执行 每天凌晨六点执行
+  day: 0 0 6 * * ?
+#ES一次性最大写入数据量
+max-deal-count: 2000

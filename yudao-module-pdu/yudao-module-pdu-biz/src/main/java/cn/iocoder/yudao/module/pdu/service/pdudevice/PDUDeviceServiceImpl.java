@@ -11,6 +11,7 @@ import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
+import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.module.cabinet.mapper.AisleIndexMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.CabinetPduMapper;
@@ -159,7 +160,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 int cabinetId = cabinetPduA.getCabinetId();
                 CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
                 String cabinetName = cabinet.getName();
-                String roomName = roomIndexMapper.selectById(cabinet.getRoomId()).getName();
+                RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
+                String roomName = roomIndex.getName();
                 if(cabinet.getAisleId() != 0){
                     String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
                     localtion = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
@@ -171,7 +173,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 int cabinetId = cabinetPduB.getCabinetId();
                 CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
                 String cabinetName = cabinet.getName();
-                String roomName = roomIndexMapper.selectById(cabinet.getRoomId()).getName();
+                RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
+                String roomName = roomIndex.getName();
                 if(cabinet.getAisleId() != 0){
                     String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
                     localtion = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";
@@ -275,6 +278,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
         PageResult<PduIndex> pduIndexPageResult = null;
         List<PDULineRes> result = new ArrayList<>();
+        ValueOperations ops = redisTemplate.opsForValue();
         if(pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
             List<String> ipAddrList = new ArrayList<>();
             List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().inIfPresent(CabinetPdu::getCabinetId, pageReqVO.getCabinetIds()));
@@ -313,7 +317,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 int cabinetId = cabinetPduA.getCabinetId();
                 CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
                 String cabinetName = cabinet.getName();
-                String roomName = roomIndexMapper.selectById(cabinet.getRoomId()).getName();
+                RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
+                String roomName = roomIndex.getName();
                 if(cabinet.getAisleId() != 0){
                     String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
                     localtion = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
@@ -325,7 +330,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 int cabinetId = cabinetPduB.getCabinetId();
                 CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
                 String cabinetName = cabinet.getName();
-                String roomName = roomIndexMapper.selectById(cabinet.getRoomId()).getName();
+                RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
+                String roomName = roomIndex.getName();
                 if(cabinet.getAisleId() != 0){
                     String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
                     localtion = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";

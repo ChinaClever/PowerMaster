@@ -9,4 +9,8 @@ export const CabinetApi = {
   getPowTrend: async (params: any) => {
     return await request.get({ url: `/cabinet/powTrend`, params })
   },
+  // 平衡详情电流趋势
+  getBalanceTrend: async (params: any) => {
+    return await request.get({ url: `/cabinet/curTrend`, params })
+  },
 }
