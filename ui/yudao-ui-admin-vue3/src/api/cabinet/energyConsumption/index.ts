@@ -22,4 +22,14 @@ export const EnergyConsumptionApi = {
     return await request.get({ url: `/cabinet/eq-data/realtime-page`, params })
   },
 
+  // 查询pdu导航的一周数据显示
+  getNavOneWeekData: async (params: any) => {
+    return await request.get({ url: `/cabinet/eq-data/one-week`, params })
+  },
+
+  // 查询pdu导航的一天数据显示
+  getNavOneDayData: async (params: any) => {
+    return await request.get({ url: `/cabinet/eq-data/one-day`, params })
+  },
+
 }

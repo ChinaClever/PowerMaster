@@ -1,5 +1,30 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU电能记录">
+    <template #NavInfo>
+      <div class="nav_header">
+        <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
+        <br/>
+        <span>全部PDU最近24小时新增记录</span>
+          <br/>
+      </div>
+      <div class="nav_data">
+        <el-statistic title="总电能" :value="navTotalData">
+            <template #suffix>条</template>
+        </el-statistic>
+           <br/>
+        <el-statistic title="相电能" :value="navLineData">
+          <template #suffix>条</template>
+        </el-statistic>
+           <br/>
+        <el-statistic title="回路电能" :value="navLoopData">
+          <template #suffix>条</template>
+        </el-statistic>
+        <br/>
+        <el-statistic title="输出位电能" :value="navOutletData">
+          <template #suffix>条</template>
+        </el-statistic>
+      </div>
+    </template>
     <template #ActionBar>
       <el-form
         class="-mb-15px"
@@ -52,11 +77,7 @@
         </el-table-column>
         <!-- 遍历其他列 -->  
         <template v-for="column in tableColumns">
-          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue">
-            <template #default="{ row }" v-if="column.slot === 'actions'">
-              <el-button link type="primary" @click="toDetails(row.pdu_id)">详情</el-button>
-            </template>
-          </el-table-column>
+          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue"/>
         </template>
         <!-- 超过一万条数据提示信息 -->
           <template v-if="shouldShowDataExceedMessage" #append>
@@ -91,6 +112,10 @@ import * as echarts from 'echarts';
 defineOptions({ name: 'PowerRecords' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
+const navTotalData = ref(0)
+const navLineData = ref(0)
+const navLoopData = ref(0)
+const navOutletData = ref(0)
 const instance = getCurrentInstance();
 const message = useMessage()
 const activeName = ref('myData') 
@@ -114,6 +139,15 @@ const exportLoading = ref(false)
 
 // 时间段快捷选项
 const shortcuts = [
+   {
+    text: '最近一天',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setDate(start.getDate() - 1)
+      return [start, end]
+    },
+  },
   {
     text: '最近一周',
     value: () => {
@@ -156,7 +190,6 @@ const typeCascaderChange = (selected) => {
         { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
         { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
         { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
-        { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '130px'},
       ]
       queryParams.lineId = selected[1];
       queryParams.loopId = undefined;
@@ -169,7 +202,6 @@ const typeCascaderChange = (selected) => {
         { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
         { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
         { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
-        { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '130px'},
       ]
       queryParams.loopId = selected[1];
       queryParams.lineId = undefined;
@@ -182,7 +214,6 @@ const typeCascaderChange = (selected) => {
         { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
         { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
         { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
-        { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '130px'},
       ]
       queryParams.outletId = selected[1];
       queryParams.loopId = undefined;
@@ -194,7 +225,6 @@ const typeCascaderChange = (selected) => {
         { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
         { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
         { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
-        { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '130px'},
       ]
       queryParams.lineId = undefined;
       queryParams.loopId = undefined;
@@ -210,7 +240,6 @@ const tableColumns = ref([
   { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
   { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
   { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
-  { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '130px'},
 ]);
 
 /** 初始化数据 */
@@ -345,6 +374,15 @@ const getNavList = async() => {
   navList.value = arr
 }
 
+// 获取导航的数据显示
+const getNavOneDayData = async() => {
+  const res = await EnergyConsumptionApi.getNavOneDayData({})
+  navTotalData.value = res.total
+  navLineData.value = res.line
+  navLoopData.value = res.loop
+  navOutletData.value = res.outlet
+}
+
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
@@ -370,6 +408,7 @@ const handleQuery = () => {
 /** 初始化 **/
 onMounted(() => {
   getNavList()
+  getNavOneDayData()
   getTypeMaxValue();
   getList();
 })
@@ -387,4 +426,36 @@ onMounted(() => {
   font-weight: 400; 
   color: #606266
 }
+ .nav_header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 13px;
+    padding-top: 28px;
+  }
+  .nav_header_img {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #555;
+  }
+
+  img {
+      width: 75px;
+      height: 75px;
+  }
+
+.nav_data{
+  padding-left: 48px;
+}
+
+  .line {
+    height: 1px;
+    margin-top: 28px;
+    margin-bottom: 20px;
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
 </style>

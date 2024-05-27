@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
@@ -51,5 +52,19 @@ public class CabinetEnergyConsumptionController {
     public CommonResult<PageResult<Object>> getRealtimeEQDataPage(CabinetEnergyConsumptionPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = cabinetEnergyConsumptionService.getRealtimeEQDataPage(pageReqVO);
         return success(pageResult);
+    }
+
+    @GetMapping("/one-week")
+    @Operation(summary = "获得机柜能耗最近一周插入的数据量")
+    public CommonResult<Map<String, Object>> getOneWeekSumData() throws IOException {
+        Map<String, Object> map = cabinetEnergyConsumptionService.getOneWeekSumData();
+        return success(map);
+    }
+
+    @GetMapping("/one-day")
+    @Operation(summary = "获得机柜能耗最近一天插入的数据量")
+    public CommonResult<Map<String, Object>> getOneDaySumData() throws IOException {
+        Map<String, Object> map = cabinetEnergyConsumptionService.getOneDaySumData();
+        return success(map);
     }
 }

@@ -11,12 +11,16 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.metrics.ValueCount;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -93,7 +97,7 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         // 设置要排除的字段
-        searchSourceBuilder.fetchSource(new String[]{"pdu_id", "start_time", "end_time", "eq_value",  "bill_value", "outlet_id"}, null);
+        searchSourceBuilder.fetchSource(new String[]{"cabinet_id", "start_time", "end_time", "eq_value",  "bill_value", }, null);
         int pageNo = pageReqVO.getPageNo();
         int pageSize = pageReqVO.getPageSize();
         int index = (pageNo - 1) * pageSize;
@@ -111,6 +115,10 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
+        }
+        String[] cabinetIds = pageReqVO.getCabinetIds();
+        if (cabinetIds != null){
+            searchSourceBuilder.query(QueryBuilders.termsQuery("cabinet_id", cabinetIds));
         }
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
@@ -205,6 +213,10 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
         }
+        String[] cabinetIds = pageReqVO.getCabinetIds();
+        if (cabinetIds != null){
+            searchSourceBuilder.query(QueryBuilders.termsQuery("cabinet_id", cabinetIds));
+        }
         searchRequest.indices("cabinet_ele_total_realtime");
         searchRequest.source(searchSourceBuilder);
         // 执行搜索,向ES发起http请求
@@ -221,6 +233,51 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
                 .setTotal(totalHits);
 
         return pageResult;
+    }
+
+    @Override
+    public Map<String, Object> getSumData(String[] indices, String[] name, LocalDateTime timeAgo) throws IOException {
+        Map<String, Object> resultItem = new HashMap<>();
+        // 添加范围查询 最近24小时
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        for (int i = 0; i < indices.length; i++) {
+            SearchRequest searchRequest = new SearchRequest(indices[i]);
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
+                    .from(timeAgo.format(formatter))
+                    .to(now.format(formatter)));
+            // 添加计数聚合
+            searchSourceBuilder.aggregation(
+                    AggregationBuilders.count("total_insertions").field("cabinet_id")
+            );
+            searchRequest.source(searchSourceBuilder);
+            // 执行搜索请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            // 从聚合结果中获取文档数量
+            ValueCount totalInsertionsAggregation = searchResponse.getAggregations().get("total_insertions");
+            long totalInsertions = totalInsertionsAggregation.getValue();
+            resultItem.put(name[i], totalInsertions);
+        }
+        return resultItem;
+    }
+
+    @Override
+    public Map<String, Object> getOneWeekSumData() throws IOException {
+        String[] indices = new String[]{"cabinet_eq_total_day"};
+        String[] name = new String[]{"total"};
+        LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
+        Map<String, Object> map = getSumData(indices, name, oneWeekAgo);
+        return map;
+    }
+
+    @Override
+    public Map<String, Object> getOneDaySumData() throws IOException {
+        String[] indices = new String[]{"cabinet_ele_total_realtime"};
+        String[] name = new String[]{"total"};
+        LocalDateTime oneWeekAgo = LocalDateTime.now().minusDays(1);
+        Map<String, Object> map = getSumData(indices, name, oneWeekAgo);
+        return map;
     }
 
 }

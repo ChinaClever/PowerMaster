@@ -63,4 +63,8 @@ public interface HistoryDataService {
      */
     PageResult<Object> getEnvDataDetails(EnvDataDetailsReqVO reqVO) throws IOException;
 
+    Map<String, Object> getOneHourSumData() throws IOException;
+
+    Map<String, Object> getEnvOneHourSumData() throws IOException;
+
 }

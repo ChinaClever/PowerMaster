@@ -1,6 +1,32 @@
 <template>
   <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="PDU环境分析" :showCheckbox="false">
     <template #NavInfo>
+      <div class="nav_header">
+        <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
+        <br/>
+        <span v-if="nowAddress">{{nowAddress}}</span>
+        <span v-if="nowLocation">( {{nowLocation}} ) </span>
+        <br/>
+        <template v-if="queryParams.granularity == 'realtime'">
+          <span>{{queryParams.timeRange[0]}}</span>
+          <span>至</span>
+          <span>{{queryParams.timeRange[1]}}</span>
+        </template>
+        <br/>
+      </div>
+      <div class="nav_data" v-if="queryParams.granularity == 'realtime'">
+        <el-statistic title="最高温度" :value="formatNumber(maxTemDataTemp, 1)">
+          <template #suffix>℃</template>
+        </el-statistic>
+        <el-statistic v-if="formatNumber(maxTemDataTemp, 1) != 0.0" title="发生于" :value="maxTemDataTimeTemp"/>
+        <el-statistic v-if="formatNumber(maxTemDataTemp, 1) == 0.0" title="发生于" :value="Object('-')"/>
+          <br/>
+        <el-statistic title="最低温度" :value="formatNumber(minTemDataTemp, 1)">
+          <template #suffix>℃</template>
+        </el-statistic>
+        <el-statistic v-if="formatNumber(minTemDataTemp, 1) != 0.0" title="发生于" :value="minTemDataTimeTemp"/>
+        <el-statistic v-if="formatNumber(minTemDataTemp, 1) == 0.0" title="发生于" :value="Object('-')"/>
+      </div>
     </template>
     <template #ActionBar>
       <el-tabs v-model="activeName">
@@ -16,7 +42,7 @@
         :inline="true"
         label-width="70px"
       >
-      <el-form-item label="IP地址" prop="ipAddr">
+      <!-- <el-form-item label="IP地址" prop="ipAddr">
         <el-input
           v-model="queryParams.ipAddr"
           clearable
@@ -32,7 +58,7 @@
           :value-on-clear="0"
           class="!w-100px"
         />
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="传感器" prop="sensorId">
         <el-select
           v-model="queryParams.sensorId"
@@ -129,13 +155,17 @@ defineOptions({ name: 'PDUEnvLine' })
 const activeName = ref('realtimeTabPane') // tab默认显示
 const activeName1 = ref('myChart') // tab默认显示
 const navList = ref([]) as any // 左侧导航栏树结构列表
+const nowAddress = ref('')// 导航栏的位置信息
+const nowLocation = ref('')// 导航栏的位置信息
+const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
+const nowLocationTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
 const instance = getCurrentInstance();
 const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
 const cascadeAddr = ref(0) // 数字类型的级联地址
 const needFlush = ref(0) // 是否需要刷新图表
 const sensorOptions = ref([]) as any;// 传感器选项
-const loading = ref(true) //  列表的加载中
+const loading = ref(false) //  列表的加载中
 const queryParams = reactive({
   pduId: undefined as number | undefined,
   sensorId: 1,
@@ -270,6 +300,11 @@ const temMaxTimeData = ref<string[]>([]);
 const temMinValueData = ref<number[]>([]);
 const temMinTimeData = ref<string[]>([]);
 
+const maxTemDataTemp = ref(0);// 最高温度
+const maxTemDataTimeTemp = ref();// 最高温度的发生时间 
+const minTemDataTemp = ref(0);// 最低温度 
+const minTemDataTimeTemp = ref();// 最低温度的发生时间 
+
 /** 查询列表 */
 const isHaveData = ref(false);
 const getList = async () => {
@@ -296,6 +331,21 @@ const getList = async () => {
       temMaxTimeData.value = data.list.map((item) => formatDate(item.tem_max_time));
       temMinValueData.value = data.list.map((item) => formatNumber(item.tem_min_value, 1));
       temMinTimeData.value = data.list.map((item) => formatDate(item.tem_min_time));
+
+      maxTemDataTemp.value = Math.max(...temValueData.value);
+      minTemDataTemp.value = Math.min(...temValueData.value);
+      temValueData.value.forEach(function(num, index) {
+        if (num == maxTemDataTemp.value){
+          maxTemDataTimeTemp.value = createTimeData.value[index]
+        }
+        if (num == minTemDataTemp.value){
+          minTemDataTimeTemp.value = createTimeData.value[index]
+        }
+      });
+
+      // 图表显示的位置变化
+      nowAddress.value = nowAddressTemp.value
+      nowLocation.value = nowLocationTemp.value
       
     }else{
       isHaveData.value = false;
@@ -582,9 +632,9 @@ function defaultHourTimeRange(hour: number){
 // 禁选未来的日期
 const disabledDate = (date) => {
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  // 设置date的时间为0时0分0秒，以便与today进行比较
-  date.setHours(0, 0, 0, 0);
+  // today.setHours(0, 0, 0, 0);
+  // // 设置date的时间为0时0分0秒，以便与today进行比较
+  // date.setHours(0, 0, 0, 0);
   // 如果date在今天之后，则禁用
   return date > today;
 }
@@ -659,7 +709,24 @@ const handleClick = async (row) => {
     queryParams.pduId = undefined
     queryParams.ipAddr = row.ip
     queryParams.cascadeAddr = row?.unique?.split("-")[1];
+    findFullName(navList.value, row.unique, fullName => {
+      nowAddressTemp.value = fullName
+      nowLocationTemp.value = row.unique
+    });
     handleQuery();
+  }
+}
+
+// 得到位置全名
+function findFullName(data, targetUnique, callback, fullName = '') {
+  for (let item of data) {
+    const newFullName = fullName === '' ? item.name : fullName + '-' + item.name;
+    if (item.unique === targetUnique) {
+      callback(newFullName);
+    }
+    if (item.children && item.children.length > 0) {
+      findFullName(item.children, targetUnique, callback, newFullName);
+    }
   }
 }
 
@@ -782,4 +849,37 @@ onMounted( async () => {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.nav_header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 13px;
+    padding-top: 28px;
+  }
+  .nav_header_img {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #555;
+  }
+
+  img {
+      width: 75px;
+      height: 75px;
+  }
+
+.nav_data{
+  padding-left: 50px;
+}
+
+  .line {
+    height: 1px;
+    margin-top: 28px;
+    margin-bottom: 20px;
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
 </style>

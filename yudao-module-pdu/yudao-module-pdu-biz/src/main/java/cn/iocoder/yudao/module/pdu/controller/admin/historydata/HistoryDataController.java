@@ -72,6 +72,20 @@ public class HistoryDataController {
         return success(pageResult);
     }
 
+    @GetMapping("/one-hour")
+    @Operation(summary = "获得pdu最近一小时插入的数据量")
+    public CommonResult<Map<String, Object>> getOneHourSumData() throws IOException {
+        Map<String, Object> map = historyDataService.getOneHourSumData();
+        return success(map);
+    }
+
+    @GetMapping("/env-one-hour")
+    @Operation(summary = "获得pdu环境数据最近一小时插入的数据量")
+    public CommonResult<Map<String, Object>> getEnvOneHourSumData() throws IOException {
+        Map<String, Object> map = historyDataService.getEnvOneHourSumData();
+        return success(map);
+    }
+
 
 //    @GetMapping("/export-excel")
 //    @Operation(summary = "导出pdu历史数据 Excel")

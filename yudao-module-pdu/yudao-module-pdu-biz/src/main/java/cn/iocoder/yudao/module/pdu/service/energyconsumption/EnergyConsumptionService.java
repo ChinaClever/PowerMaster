@@ -1,10 +1,11 @@
-package cn.iocoder.yudao.module.pdu.service.historydata;
+package cn.iocoder.yudao.module.pdu.service.energyconsumption;
 
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.EnergyConsumptionPageReqVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataDetailsReqVO;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -48,5 +49,11 @@ public interface EnergyConsumptionService {
      * @return pdu电量数据分页
      */
     PageResult<Object> getRealtimeEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException;
+
+    Map<String, Object> getSumData(String[] indices, String[] name, LocalDateTime timeAgo) throws IOException;
+
+    Map<String, Object> getOneWeekSumData() throws IOException;
+
+    Map<String, Object> getOneDaySumData() throws IOException;
 
 }

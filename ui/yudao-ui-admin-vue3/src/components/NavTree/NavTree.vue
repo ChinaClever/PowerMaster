@@ -71,7 +71,8 @@ const initCheck = (keys) => {
 /** 基于名字过滤 */
 const filterNode = (value:string, data) => {
   if (!value) return true
-  return data.name.includes(value)
+
+  return data.name.includes(value) || data.unique.includes(value);
 }
 
 /** 处理部门被点击 */
