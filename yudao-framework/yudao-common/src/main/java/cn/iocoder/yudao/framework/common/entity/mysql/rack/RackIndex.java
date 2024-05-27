@@ -71,6 +71,11 @@ public class RackIndex implements Serializable {
     private int uHeight;
 
     /**
+     * 设备类型
+     */
+    private String type;
+
+    /**
      * 更新时间
      */
     @TableField(fill = FieldFill.INSERT_UPDATE)
