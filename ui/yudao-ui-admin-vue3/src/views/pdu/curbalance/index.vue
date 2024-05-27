@@ -448,6 +448,10 @@ const getListNoLoading = async () => {
       statusList[2].name = '>' + range.rangeFour + '%';
     }
     var tableIndex = 0;    
+    var lessFifteen = 0;
+    var greaterFifteen = 0;
+    var greaterThirty = 0;
+    var smallCurrent = 0;
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       if(obj?.dataUpdateTime == null && obj?.pow == null){
@@ -467,7 +471,20 @@ const getListNoLoading = async () => {
       obj.bvol = obj.bvol?.toFixed(1);
       obj.cvol = obj.cvol?.toFixed(1);
       obj.volUnbalance = obj.volUnbalance?.toFixed(0);
+      if(obj.color == 1){
+        smallCurrent++;
+      } else if (obj.color == 2) {
+        lessFifteen++;
+      } else if (obj.color == 3) {
+        greaterFifteen++;
+      } else if (obj.color == 4) {
+        greaterThirty++;
+      }
     });
+    statusNumber.smallCurrent = smallCurrent;
+    statusNumber.lessFifteen = lessFifteen;
+    statusNumber.greaterFifteen = greaterFifteen;
+    statusNumber.greaterThirty = greaterThirty;
     total.value = data.total
   } catch (error) {
     

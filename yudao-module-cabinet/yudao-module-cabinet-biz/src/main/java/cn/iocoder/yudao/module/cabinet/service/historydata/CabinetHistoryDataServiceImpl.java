@@ -1,14 +1,12 @@
 package cn.iocoder.yudao.module.cabinet.service.historydata;
 
-import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.cabinet.controller.admin.historydata.vo.CabinetHistoryDataDetailsReqVO;
 import cn.iocoder.yudao.module.cabinet.controller.admin.historydata.vo.CabinetHistoryDataPageReqVO;
 import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.IndexDO;
-import cn.iocoder.yudao.module.cabinet.dal.mysql.index.IndexMapper;
+import cn.iocoder.yudao.module.cabinet.dal.mysql.index.CabIndexMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.AisleIndexMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.CabinetIndexMapper;
-import cn.iocoder.yudao.module.cabinet.mapper.CabinetPduMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.RoomIndexMapper;
 import cn.iocoder.yudao.module.cabinet.service.energyconsumption.CabinetEnergyConsumptionService;
 import org.elasticsearch.action.search.SearchRequest;
@@ -41,7 +39,7 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
     @Autowired
     private CabinetEnergyConsumptionService cabinetEnergyConsumptionService;
     @Resource
-    private IndexMapper indexMapper;
+    private CabIndexMapper cabIndexMapper;
 
     @Autowired
     private RoomIndexMapper roomIndexMapper;
@@ -60,7 +58,7 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
                     Object cabinetId = map.get("cabinet_id");
                     if (cabinetId instanceof Integer) {
                         String localtion = null;
-                        IndexDO indexDO = indexMapper.selectById((Serializable) cabinetId);
+                        IndexDO indexDO = cabIndexMapper.selectById((Serializable) cabinetId);
                         String roomName = roomIndexMapper.selectById(indexDO.getRoomId()).getName();
                         if(indexDO.getAisleId() != 0){
                             String aisleName = aisleIndexMapper.selectById(indexDO.getAisleId()).getName();
