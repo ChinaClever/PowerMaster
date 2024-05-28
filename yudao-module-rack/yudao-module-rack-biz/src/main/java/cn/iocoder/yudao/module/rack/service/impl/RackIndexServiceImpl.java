@@ -4,6 +4,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.exception.ServerException;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.rack.dto.RackIndexDTO;
@@ -19,6 +20,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +50,9 @@ public class RackIndexServiceImpl implements RackIndexService {
 
     @Autowired
     RedisTemplate redisTemplate;
+
+    @Value("${rack-cal-refresh-url}")
+    public String adder;
 
 
     @Override
@@ -130,46 +135,50 @@ public class RackIndexServiceImpl implements RackIndexService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public List<RackIndex> batchSave(RackSaveVo vo) {
+        try {
+            //新增
+            if (!CollectionUtils.isEmpty(vo.getInsertRacks())){
+                List<RackIndex> inserts = vo.getInsertRacks();
 
-        //新增
-        if (!CollectionUtils.isEmpty(vo.getInsertRacks())){
-            List<RackIndex> inserts = vo.getInsertRacks();
+                inserts.forEach(rackIndex -> {
 
-            inserts.forEach(rackIndex -> {
+                    //判断名称是否重复
+                    RackIndex index = rackIndexDoMapper.selectOne(new LambdaQueryWrapper<RackIndex>()
+                            .eq(RackIndex::getRackName,rackIndex.getRackName())
+                            .eq(RackIndex::getCabinetId,vo.getCabinetId()));
+                    if (Objects.nonNull(index)){
+                        throw new ServerException(NAME_REPEAT.getCode(),NAME_REPEAT.getMsg());
+                    }
 
-                //判断名称是否重复
-                RackIndex index = rackIndexDoMapper.selectOne(new LambdaQueryWrapper<RackIndex>()
-                        .eq(RackIndex::getRackName,rackIndex.getRackName())
-                        .eq(RackIndex::getCabinetId,vo.getCabinetId()));
-                if (Objects.nonNull(index)){
-                    throw new ServerException(NAME_REPEAT.getCode(),NAME_REPEAT.getMsg());
-                }
+                    rackIndex.setCabinetId(vo.getCabinetId());
+                    rackIndex.setRoomId(vo.getRoomId());
+                    rackIndexDoMapper.insert(rackIndex);
+                });
+            }
+            //修改
+            if (!CollectionUtils.isEmpty(vo.getUpdateRacks())){
+                List<RackIndex> updates = vo.getUpdateRacks();
+                updates.forEach(rackIndex ->
+                {
+                    RackIndex index = rackIndexDoMapper.selectOne(new LambdaQueryWrapper<RackIndex>()
+                            .eq(RackIndex::getRackName,rackIndex.getRackName())
+                            .eq(RackIndex::getCabinetId,vo.getCabinetId())
+                            .ne(RackIndex::getId,rackIndex.getId()));
+                    if (Objects.nonNull(index)){
+                        throw new ServerException(NAME_REPEAT.getCode(),NAME_REPEAT.getMsg());
+                    }
+                    rackIndexDoMapper.updateById(rackIndex);
 
-                rackIndex.setCabinetId(vo.getCabinetId());
-                rackIndex.setRoomId(vo.getRoomId());
-                rackIndexDoMapper.insert(rackIndex);
-            });
+                });
+            }
+            return rackIndexDoMapper.selectList(new LambdaQueryWrapperX<RackIndex>()
+                    .eq(RackIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
+                    .eq(RackIndex::getCabinetId,vo.getCabinetId()));
+        }finally {
+            //刷新机柜计算服务缓存
+            log.info("刷新计算服务缓存 --- " + adder);
+            HttpUtil.get(adder);
         }
-        //修改
-        if (!CollectionUtils.isEmpty(vo.getUpdateRacks())){
-            List<RackIndex> updates = vo.getUpdateRacks();
-            updates.forEach(rackIndex ->
-            {
-                RackIndex index = rackIndexDoMapper.selectOne(new LambdaQueryWrapper<RackIndex>()
-                        .eq(RackIndex::getRackName,rackIndex.getRackName())
-                        .eq(RackIndex::getCabinetId,vo.getCabinetId())
-                        .ne(RackIndex::getId,rackIndex.getId()));
-                if (Objects.nonNull(index)){
-                    throw new ServerException(NAME_REPEAT.getCode(),NAME_REPEAT.getMsg());
-                }
-                rackIndexDoMapper.updateById(rackIndex);
-
-            });
-        }
-        return rackIndexDoMapper.selectList(new LambdaQueryWrapperX<RackIndex>()
-                .eq(RackIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
-                .eq(RackIndex::getCabinetId,vo.getCabinetId()));
-
     }
 
     @Override
@@ -179,22 +188,34 @@ public class RackIndexServiceImpl implements RackIndexService {
         if (CollectionUtils.isEmpty(ids)){
             return;
         }
-
-        List<RackIndex> rackIndexList = rackIndexDoMapper.selectList(new LambdaQueryWrapperX<RackIndex>()
-                .in(RackIndex::getId,ids));
-        if (CollectionUtils.isEmpty(rackIndexList)){
-            return;
-        }
-        rackIndexList.forEach(rackIndex -> {
-            //已经删除则物理删除
-            if (rackIndex.getIsDelete() == DelEnums.DELETE.getStatus()) {
-                rackIndexDoMapper.deleteById(rackIndex);
-            }else {
-                //逻辑删除
-                rackIndexDoMapper.update(new LambdaUpdateWrapper<RackIndex>()
-                        .eq(RackIndex::getId, rackIndex.getId())
-                        .set(RackIndex::getIsDelete, DelEnums.DELETE.getStatus()));
+        try {
+            List<RackIndex> rackIndexList = rackIndexDoMapper.selectList(new LambdaQueryWrapperX<RackIndex>()
+                    .in(RackIndex::getId,ids));
+            if (CollectionUtils.isEmpty(rackIndexList)){
+                return;
             }
-        });
+            rackIndexList.forEach(rackIndex -> {
+                //已经删除则物理删除
+                if (rackIndex.getIsDelete() == DelEnums.DELETE.getStatus()) {
+                    rackIndexDoMapper.deleteById(rackIndex);
+                }else {
+                    //逻辑删除
+                    rackIndexDoMapper.update(new LambdaUpdateWrapper<RackIndex>()
+                            .eq(RackIndex::getId, rackIndex.getId())
+                            .set(RackIndex::getIsDelete, DelEnums.DELETE.getStatus()));
+                }
+
+                //删除key
+                String key = REDIS_KEY_RACK + rackIndex.getId();
+
+                boolean flag = redisTemplate.delete(key);
+                log.info("key: " + key + " flag : " + flag);
+            });
+
+        }finally {
+            //刷新机柜计算服务缓存
+            log.info("刷新计算服务缓存 --- " + adder);
+            HttpUtil.get(adder);
+        }
     }
 }
