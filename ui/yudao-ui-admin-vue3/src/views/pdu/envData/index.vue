@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU环境数据">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="环境数据">
     <template #NavInfo>
       <div class="nav_header">
         <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
@@ -115,8 +115,13 @@
         <!-- 遍历其他列 -->
         <template v-for="column in tableColumns">
           <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
-            <template #default="{ row }" v-if="column.slot === 'actions'">
-              <el-button link type="primary" @click="toDetails(row.pdu_id, row.location, row.address, row.sensor_id)">详情</el-button>
+            <template #default="{ row }">
+              <div v-if="column.slot === 'actions'">
+                <el-button link type="primary" @click="toDetails(row.pdu_id, row.location, row.address, row.sensor_id)">详情</el-button>
+              </div>
+              <div v-else-if="column.slot === 'detect'">
+                {{ getCombinedString(row.address?.channel, row.address?.position) }}
+              </div>
             </template>
           </el-table-column>
         </template>
@@ -165,11 +170,13 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
   granularity: 'realtime',
-  ipAddr: undefined,
-  cascadeAddr: '0',
-  sensorId: 0,
+  channel: undefined as number | undefined,
+  position: undefined as number | undefined,
+  // ipAddr: undefined,
+  // cascadeAddr: '0',
+  // sensorId: 0,
   timeRange: undefined,
-  ipArray: [],
+  cabinetIds:[]
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref() // 搜索的表单
@@ -232,8 +239,9 @@ const defaultOptionsCol = ref([["tem"], ["hum"]])
 const optionsCol = ref([
   { value: "tem", label: '温度'},
   { value: "hum", label: '湿度'},
+  { value: "location", label: '网络地址'},
 ])
-const originalArray = ref(["tem", "hum"])
+const originalArray = ref(["tem", "hum", "location"])
 
 // 处理筛选列变化
 const cascaderChange = (selectedCol) => {
@@ -269,12 +277,13 @@ watch(() => queryParams.granularity, (newValues) => {
       optionsCol.value = [
         { value: "tem", label: '温度'},
         { value: "hum", label: '湿度'},
+        { value: "location", label: '网络地址'},
       ];
-      originalArray.value =["tem", "hum"];
+      originalArray.value =["tem", "hum", "location"];
       // 配置表格列
       tableColumns.value =([
-        { label: '位置', align: 'center', prop: 'address' , istrue:true},
-        { label: '传感器', align: 'center', prop: 'sensor_id', istrue:true},
+        { label: '位置', align: 'center', prop: 'address.address' , istrue:true},
+        { label: '检测点', align: 'center', slot: 'detect' , istrue: true},
         { label: '温度(℃)', align: 'center', prop: 'tem_value', istrue:true, formatter: formatData},
         { label: '湿度(%RH)', align: 'center', prop: 'hum_value' , istrue:true, formatter: formatData},
         { label: '时间', align: 'center', prop: 'create_time', width: '230px', formatter: formatTime, istrue:true},
@@ -303,13 +312,16 @@ watch(() => queryParams.granularity, (newValues) => {
             { value: "hum_min", label: '最小湿度' },
           ]
         },
+        {
+          value: "location", label: '网络地址'
+        }
       ] as any;
       originalArray.value =["tem_avg_value", "tem_max", "tem_min", 
-                          "hum_avg_value", "hum_max", "hum_min"],
+                          "hum_avg_value", "hum_max", "hum_min", "location"],
       // 配置表格列
       tableColumns.value = [
-        { label: '位置', align: 'center', prop: 'address', istrue:true, width: '180px'}, 
-        { label: '传感器', align: 'center', prop: 'sensor_id', istrue:true},
+        { label: '位置', align: 'center', prop: 'address.address', istrue:true, width: '180px'}, 
+        { label: '检测点', align: 'center', slot: 'detect' , istrue: true},
         { label: '平均温度(℃)', align: 'center', prop: 'tem_avg_value', istrue:true, width: '180px', formatter: formatData },
         { label: '最高温度(℃)', align: 'center', prop: 'tem_max_value', istrue:true, width: '180px', formatter: formatData },
         { label: '最高温度时间', align: 'center', prop: 'tem_max_time' , width: '230px', istrue:true},
@@ -321,7 +333,7 @@ watch(() => queryParams.granularity, (newValues) => {
         { label: '最小湿度(%RH)', align: 'center', prop: 'hum_min_value', istrue:false, width: '180px', formatter: formatData },
         { label: '最小湿度时间', align: 'center', prop: 'hum_min_time' , width: '230px', istrue:false},
         { label: '记录时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true},
-        { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
+        { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
         { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
       ] as any;
       queryParams.pageNo = 1;
@@ -331,12 +343,12 @@ watch(() => queryParams.granularity, (newValues) => {
   });
 
 const tableColumns = ref([
-    { label: '位置', align: 'center', prop: 'address' , istrue:true},
-    { label: '传感器', align: 'center', prop: 'sensor_id', istrue:true},
+    { label: '位置', align: 'center', prop: 'address.address' , istrue:true},
+    { label: '检测点', align: 'center', slot: 'detect' , istrue: true},
     { label: '温度(℃)', align: 'center', prop: 'tem_value', istrue:true},
     { label: '湿度(%RH)', align: 'center', prop: 'hum_value' , istrue:true},
     { label: '时间', align: 'center', prop: 'create_time', width: '230px', formatter: formatTime, istrue:true},
-    { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '160px'},
+    { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
     { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '160px'},
 ]) as any;
 
@@ -358,6 +370,26 @@ const getList = async () => {
   }
 }
 
+// 格式化检测位置
+function getCombinedString(channel: number, position: number) {
+  let channelText = '';
+  let positionText = '';
+
+   if (channel === 1) {
+    channelText = '前';
+  } else if (channel === 2) {
+    channelText = '后';
+  }
+  if (position === 1) {
+    positionText = '上';
+  } else if (position === 2) {
+    positionText = '中';
+  } else if (position === 3) {
+    positionText = '下';
+  }
+  return `${channelText}${positionText}`;
+}
+
 // 格式化日期
 function formatTime(row: any, column: any, cellValue: number): string {
   if (!cellValue) {
@@ -373,39 +405,33 @@ function formatData(row: any, column: any, cellValue: number): string {
 }
 
 // 获取参数类型最大值 例如lineId=6 表示下拉框为L1~L6
-const getSensorIdMaxValue = async () => {
-  const data = await EnvDataApi.getSensorIdMaxValue()
-  const sensorIdMaxValue = data.sensor_id_max_value;
-  const sensorSelectionValue: { value: number; label: string; }[] = [];
-  sensorSelectionValue.push({ value: 0, label: '全部' },)
-  for (let i = 1; i <= sensorIdMaxValue; i++) {
-    sensorSelectionValue.push({ value: i, label: `${i}`});
-  }
-  sensorOptions.value = sensorSelectionValue;
-}
+// const getSensorIdMaxValue = async () => {
+//   const data = await EnvDataApi.getSensorIdMaxValue()
+//   const sensorIdMaxValue = data.sensor_id_max_value;
+//   const sensorSelectionValue: { value: number; label: string; }[] = [];
+//   sensorSelectionValue.push({ value: 0, label: '全部' },)
+//   for (let i = 1; i <= sensorIdMaxValue; i++) {
+//     sensorSelectionValue.push({ value: i, label: `${i}`});
+//   }
+//   sensorOptions.value = sensorSelectionValue;
+// }
 
 // 导航栏选择后触发
 const handleCheck = async (node) => {
-    let arr = [] as any
-    node.forEach(item => { 
-      if(item.type == 4){
-        arr.push(item.unique);
-      }
-    });
-    queryParams.ipArray = arr
-    handleQuery()
-    console.log(arr)
+   let arr = [] as any
+  node.forEach(item => { 
+    if(item.type == 3){
+      arr.push(item.id);
+    }
+  });
+  queryParams.cabinetIds = arr
+  handleQuery()
 }
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
-  let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
-  arr = arr.concat(temp);
-  }
-  navList.value = arr
+  const res = await CabinetApi.getRoomMenuAll({})
+  navList.value = res
 }
 
 // 禁选未来的日期
@@ -458,7 +484,7 @@ const getNavOneHourData = async() => {
 onMounted( () => {
   getNavList()
   getNavOneHourData()
-  getSensorIdMaxValue();
+  // getSensorIdMaxValue();
   getList()
 });
 

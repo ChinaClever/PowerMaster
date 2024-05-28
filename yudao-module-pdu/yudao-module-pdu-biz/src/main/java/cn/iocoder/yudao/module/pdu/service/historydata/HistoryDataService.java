@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.pdu.service.historydata;
 
 
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.EnvDataDetailsReqVO;
+import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.EnvDataPageReqVo;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataDetailsReqVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataPageReqVO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
@@ -21,7 +22,11 @@ public interface HistoryDataService {
 
     List<Object> getLocationsByPduIds(List<Map<String, Object>> mapList);
 
-    String getAddressByLocation(String location);
+    List<Object> getSensorLocationsByPduIds(List<Map<String, Object>> mapList);
+
+    String getAddressByIpAddr(String location);
+
+    Map<String, Object> getSensorAddressByIpAddr(String location, Integer sensorId);
 
     Integer getPduIdByAddr(String ipAddr, String cascadeAddr);
 
@@ -53,7 +58,7 @@ public interface HistoryDataService {
      * @param pageReqVO 分页查询
      * @return pdu环境数据分页
      */
-    PageResult<Object> getEnvDataPage(HistoryDataPageReqVO pageReqVO) throws IOException;
+    PageResult<Object> getEnvDataPage(EnvDataPageReqVo pageReqVO) throws IOException;
 
     /**
      * 获得pdu环境数据详情（曲线）
