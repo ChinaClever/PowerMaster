@@ -323,11 +323,9 @@ public class BusIndexServiceImpl implements BusIndexService {
             JSONObject busTotalData = jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data");
             JSONArray curAlarmArr = lineItemList.getJSONArray("cur_max");
             curAlarmArr.sort(Collections.reverseOrder());
-            System.out.println(curAlarmArr);
             double maxVal = curAlarmArr.getDouble(0);
             List<Double> temp = curValue.toList(Double.class);
             temp.sort(Collections.reverseOrder());
-            System.out.println(temp);
             double a = temp.get(0) - temp.get(2);
             int color = 0;
             for (int i = 0; i < 3; i++) {
