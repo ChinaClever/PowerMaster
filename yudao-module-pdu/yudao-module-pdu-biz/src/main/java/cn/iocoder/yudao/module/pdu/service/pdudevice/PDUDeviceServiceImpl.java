@@ -5,7 +5,6 @@ import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEleTotalReal
 import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvHourDo;
-import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalRealtimeDo;
@@ -17,8 +16,8 @@ import cn.iocoder.yudao.module.cabinet.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.CabinetPduMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.RoomIndexMapper;
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDULineRes;
-import cn.iocoder.yudao.module.pdu.dal.dataobject.curbalancecolor.CurbalanceColorDO;
-import cn.iocoder.yudao.module.pdu.dal.mysql.curbalancecolor.CurbalanceColorMapper;
+import cn.iocoder.yudao.module.pdu.dal.dataobject.curbalancecolor.PDUCurbalanceColorDO;
+import cn.iocoder.yudao.module.pdu.dal.mysql.curbalancecolor.PDUCurbalanceColorMapper;
 import org.elasticsearch.search.aggregations.metrics.Max;
 import org.elasticsearch.search.aggregations.metrics.Min;
 
@@ -50,13 +49,11 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.BucketOrder;
 import org.elasticsearch.search.aggregations.PipelineAggregatorBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.ParsedLongTerms;
-import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 
 import org.elasticsearch.search.aggregations.metrics.Sum;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -107,14 +104,14 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     private RoomIndexMapper roomIndexMapper;
 
     @Resource
-    private CurbalanceColorMapper curbalanceColorMapper;
+    private PDUCurbalanceColorMapper PDUCurbalanceColorMapper;
 
     @Override
     public PageResult<PDUDeviceDO> getPDUDevicePage(PDUDevicePageReqVO pageReqVO) {
 
         PageResult<PduIndex> pduIndexPageResult = null;
         List<PDUDeviceDO> result = new ArrayList<>();
-        CurbalanceColorDO curbalanceColorDO = curbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
+        PDUCurbalanceColorDO PDUCurbalanceColorDO = PDUCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
         if(pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
             List<String> devKeyList = new ArrayList<>();
 
@@ -207,7 +204,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 curUnbalance = pduTgData.getDoubleValue("cur_unbalance");
                 bcur = curArr.getDoubleValue(1);
                 ccur = curArr.getDoubleValue(2);
-                if (curbalanceColorDO == null) {
+                if (PDUCurbalanceColorDO == null) {
                     if (a >= maxVal * 0.2) {
                         if (curUnbalance < 15) {
                             color = 2;
@@ -221,9 +218,9 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     }
                 } else {
                     if (a >= maxVal * 0.2) {
-                        if (curUnbalance < curbalanceColorDO.getRangeOne()) {
+                        if (curUnbalance < PDUCurbalanceColorDO.getRangeOne()) {
                             color = 2;
-                        } else if (curUnbalance < curbalanceColorDO.getRangeFour()) {
+                        } else if (curUnbalance < PDUCurbalanceColorDO.getRangeFour()) {
                             color = 3;
                         } else {
                             color = 4;

@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.bus.controller.admin.busindex;
 
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusIndexDTO;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -72,6 +73,25 @@ public class BusIndexController {
     public CommonResult<PageResult<BusRedisDataRes>> getBusPage(@Valid BusIndexPageReqVO pageReqVO) {
         PageResult<BusRedisDataRes> pageResult = indexService.getBusRedisPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BusRedisDataRes.class));
+    }
+
+    /**
+     * 机柜用能页面
+     *
+     * @param pageReqVO
+     */
+    @Operation(summary = "机柜用能列表分页")
+    @PostMapping("/eq/page")
+    public CommonResult<PageResult<BusIndexDTO>> getEqPage(@RequestBody BusIndexPageReqVO pageReqVO) {
+        PageResult<BusIndexDTO> pageResult = indexService.getEqPage(pageReqVO);
+        return success(pageResult);
+    }
+
+    @PostMapping("/balance")
+    @Operation(summary = "获得始端箱索引分页")
+    public CommonResult<PageResult<BusBalanceDataRes>> getBusBalancePage(@Valid BusIndexPageReqVO pageReqVO) {
+        PageResult<BusBalanceDataRes> pageResult = indexService.getBusBalancePage(pageReqVO);
+        return success(BeanUtils.toBean(pageResult, BusBalanceDataRes.class));
     }
 
 //    @GetMapping("/export-excel")

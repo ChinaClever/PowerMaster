@@ -26,7 +26,7 @@ public class BusIndexDO {
      * id
      */
     @TableId
-    private Long id;
+    private Integer id;
     /**
      * 设备识别码
      */

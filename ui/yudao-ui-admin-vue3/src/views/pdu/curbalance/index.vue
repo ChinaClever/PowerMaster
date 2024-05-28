@@ -178,6 +178,8 @@
       </el-table>
 
       <div v-show="switchValue == 2  && list.length > 0" class="arrayContainer">
+
+        
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">

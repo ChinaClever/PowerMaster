@@ -304,6 +304,8 @@ cabinet-refresh-url: 127.0.0.1:48082/cabinet/refresh
 pdu-dc-refresh-url: 127.0.0.1:48082/pdu-dc/refresh
 #pdu计算配置刷新地址
 pdu-cal-refresh-url: 127.0.0.1:48082/pdu-cal/refresh
+#机架计算配置刷新地址
+rack-cal-refresh-url: 127.0.0.1:48082/rack/refresh
 
 mybatis-plus:
   configuration:

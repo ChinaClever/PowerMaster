@@ -1,6 +1,8 @@
 package cn.iocoder.yudao.module.bus.service.busindex;
 
 import javax.validation.*;
+
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusIndexDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
@@ -51,4 +53,8 @@ public interface BusIndexService {
     PageResult<BusIndexRes> getIndexPage(BusIndexPageReqVO pageReqVO);
 
     PageResult<BusRedisDataRes> getBusRedisPage(BusIndexPageReqVO pageReqVO);
+
+    PageResult<BusIndexDTO> getEqPage(BusIndexPageReqVO pageReqVO);
+
+    PageResult<BusBalanceDataRes> getBusBalancePage(BusIndexPageReqVO pageReqVO);
 }

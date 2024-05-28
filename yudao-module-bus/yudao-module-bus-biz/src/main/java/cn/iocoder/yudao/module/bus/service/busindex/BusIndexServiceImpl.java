@@ -1,15 +1,43 @@
 package cn.iocoder.yudao.module.bus.service.busindex;
 
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
+import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalDayDo;
+import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalMonthDo;
+import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalWeekDo;
+import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalDayDo;
+import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalMonthDo;
+import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalWeekDo;
+import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusIndexDTO;
+import cn.iocoder.yudao.module.bus.dal.dataobject.buscurbalancecolor.BusCurbalanceColorDO;
+import cn.iocoder.yudao.module.bus.dal.mysql.buscurbalancecolor.BusCurbalanceColorMapper;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
+
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 
+import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
+
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
@@ -17,6 +45,7 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 
 import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 
+import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.*;
 
@@ -25,6 +54,7 @@ import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.*;
  *
  * @author clever
  */
+@Slf4j
 @Service
 @Validated
 public class BusIndexServiceImpl implements BusIndexService {
@@ -32,16 +62,21 @@ public class BusIndexServiceImpl implements BusIndexService {
     @Resource
     private BusIndexMapper busIndexMapper;
 
+    @Resource
+    private BusCurbalanceColorMapper busCurbalanceColorMapper;
+
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @Autowired
+    private RestHighLevelClient client;
     @Override
     public Long createIndex(BusIndexSaveReqVO createReqVO) {
         // 插入
         BusIndexDO index = BeanUtils.toBean(createReqVO, BusIndexDO.class);
         busIndexMapper.insert(index);
         // 返回
-        return index.getId();
+        return new Long(index.getId());
     }
 
     @Override
@@ -206,4 +241,171 @@ public class BusIndexServiceImpl implements BusIndexService {
         return new PageResult<>(res,busIndexDOPageResult.getTotal());
     }
 
+    @Override
+    public PageResult<BusIndexDTO> getEqPage(BusIndexPageReqVO pageReqVO) {
+        try {
+            PageResult<BusIndexDO> busIndexDOPageResult = busIndexMapper.selectPage(pageReqVO);
+            List<BusIndexDO> busIndexDOList = busIndexDOPageResult.getList();
+            List<BusIndexDTO> result = new ArrayList<>();
+            List<Integer> ids = busIndexDOList.stream().map(BusIndexDO::getId).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(ids)){
+                return new PageResult<>(result, busIndexDOPageResult.getTotal());
+            }
+            //昨日
+            ids.forEach(dto -> {
+                result.add(new BusIndexDTO().setId(dto));
+            });
+            String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+            String endTime =DateUtil.formatDateTime(DateTime.now());
+            List<String>  yesterdayList = getData(startTime,endTime, ids,"bus_eq_total_day");
+            Map<Integer,Double> yesterdayMap = new HashMap<>();
+            if (!CollectionUtils.isEmpty(yesterdayList)){
+                yesterdayList.forEach(str -> {
+                    BusEqTotalDayDo dayDo = JsonUtils.parseObject(str, BusEqTotalDayDo.class);
+                    yesterdayMap.put(dayDo.getBusId(),dayDo.getEq());
+                });
+            }
+
+            //上周
+            startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
+            endTime =DateUtil.formatDateTime(DateTime.now());
+            List<String>  weekList = getData(startTime,endTime, ids,"bus_eq_total_week");
+            Map<Integer,Double> weekMap = new HashMap<>();
+            if (!CollectionUtils.isEmpty(weekList)){
+                weekList.forEach(str -> {
+                    BusEqTotalWeekDo weekDo = JsonUtils.parseObject(str, BusEqTotalWeekDo.class);
+                    weekMap.put(weekDo.getBusId(),weekDo.getEq());
+                });
+            }
+
+            //上月
+            startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
+            endTime =DateUtil.formatDateTime(DateTime.now());
+            List<String>  monthList = getData(startTime,endTime, ids,"bus_eq_total_month");
+            Map<Integer,Double> monthMap = new HashMap<>();
+            if (!CollectionUtils.isEmpty(monthList)){
+                monthList.forEach(str -> {
+                    BusEqTotalMonthDo monthDo = JsonUtils.parseObject(str, BusEqTotalMonthDo.class);
+                    monthMap.put(monthDo.getBusId(),monthDo.getEq());
+                });
+            }
+
+            result.forEach(dto -> {
+                dto.setYesterdayEq(yesterdayMap.get(dto.getId()));
+                dto.setLastWeekEq(weekMap.get(dto.getId()));
+                dto.setLastMonthEq(monthMap.get(dto.getId()));
+            });
+            return new PageResult<>(result, busIndexDOPageResult.getTotal());
+        }catch (Exception e) {
+            log.error("获取数据失败：", e);
+        }
+        return new PageResult<>(new ArrayList<>(), 0L);
+    }
+
+    @Override
+    public PageResult<BusBalanceDataRes> getBusBalancePage(BusIndexPageReqVO pageReqVO) {
+
+        PageResult<BusIndexDO> busIndexDOPageResult = busIndexMapper.selectPage(pageReqVO);
+        BusCurbalanceColorDO busCurbalanceColorDO = busCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
+        List<BusIndexDO> list = busIndexDOPageResult.getList();
+        List<BusBalanceDataRes> res = new ArrayList<>();
+        ValueOperations ops = redisTemplate.opsForValue();
+        for (BusIndexDO busIndexDO : list) {
+            BusBalanceDataRes busBalanceDataRes = new BusBalanceDataRes();
+            res.add(busBalanceDataRes);
+            JSONObject jsonObject = (JSONObject) ops.get("packet:bus:" + busIndexDO.getDevKey());
+            if (jsonObject == null){
+                continue;
+            }
+            JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
+            JSONArray volValue = lineItemList.getJSONArray("vol_value");
+            JSONArray curValue = lineItemList.getJSONArray("cur_value");
+            JSONObject busTotalData = jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data");
+            JSONArray curAlarmArr = lineItemList.getJSONArray("cur_max");
+            curAlarmArr.sort(Collections.reverseOrder());
+            double maxVal = curAlarmArr.getDouble(0);
+            List<Double> temp = curValue.toList(Double.class);
+            temp.sort(Collections.reverseOrder());
+            double a = temp.get(0) - temp.get(2);
+            int color = 0;
+            for (int i = 0; i < 3; i++) {
+                double vol = volValue.getDoubleValue(i);
+                double cur = curValue.getDoubleValue(i);
+                if (i == 0){
+                    busBalanceDataRes.setACur(cur);
+                    busBalanceDataRes.setAVol(vol);
+                }else if(i == 1){
+                    busBalanceDataRes.setBCur(cur);
+                    busBalanceDataRes.setBVol(vol);
+                }else if(i == 2){
+                    busBalanceDataRes.setCCur(cur);
+                    busBalanceDataRes.setCVol(vol);
+                }
+            }
+            if (busCurbalanceColorDO == null) {
+                if (a >= maxVal * 0.2) {
+                    if (busTotalData.getDouble("cur_unbalance") < 15) {
+                        color = 2;
+                    } else if (busTotalData.getDouble("cur_unbalance") < 30) {
+                        color = 3;
+                    } else {
+                        color = 4;
+                    }
+                } else {
+                    color = 1;
+                }
+            } else {
+                if (a >= maxVal * 0.2) {
+                    if (busTotalData.getDouble("cur_unbalance") < busCurbalanceColorDO.getRangeOne()) {
+                        color = 2;
+                    } else if (busTotalData.getDouble("cur_unbalance") < busCurbalanceColorDO.getRangeFour()) {
+                        color = 3;
+                    } else {
+                        color = 4;
+                    }
+                } else {
+                    color = 1;
+                }
+            }
+            busBalanceDataRes.setCurUnbalance(busTotalData.getDouble("cur_unbalance"));
+            busBalanceDataRes.setVolUnbalance(busTotalData.getDouble("vol_unbalance"));
+            busBalanceDataRes.setColor(color);
+        }
+        return new PageResult<>(res,busIndexDOPageResult.getTotal());
+    }
+
+    /**
+     * 获取数据
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param ids 机柜id列表
+     * @param index 索引表
+     */
+    private List<String> getData(String startTime, String endTime, List<Integer> ids, String index) throws IOException {
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件，
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+
+        //获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime))
+                .must(QueryBuilders.termsQuery("bus_id", ids))));
+        builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+        // 设置搜索条件
+        searchRequest.source(builder);
+        builder.size(1000);
+
+        List<String> list = new ArrayList<>();
+        // 执行ES请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                String str = hit.getSourceAsString();
+                list.add(str);
+            }
+        }
+        return list;
+
+    }
 }

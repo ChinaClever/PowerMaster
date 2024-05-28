@@ -136,4 +136,22 @@ public class CabinetDTO {
     @Schema(description = "B路输出位长度", example = "10")
     private int outletB;
 
+    /**
+     * 已用空间
+     */
+    @Schema(description = "已用空间", example = "1")
+    private int usedSpace;
+
+    /**
+     * 设备总数
+     */
+    @Schema(description = "设备总数", example = "1")
+    private int rackNum;
+
+    /**
+     * 剩余空间
+     */
+    @Schema(description = "剩余空间", example = "1")
+    private int freeSpace;
+
 }

@@ -2,6 +2,7 @@ package cn.iocoder.yudao.framework.common.entity.mysql.rack;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -26,12 +27,12 @@ public class RackIndex implements Serializable {
     /**
      * 机柜id
      */
-    private int cabinetId;
+    private Integer cabinetId;
 
     /**
      * 机房id
      */
-    private int roomId;
+    private Integer roomId;
 
     /**
      * 机架名称
@@ -63,12 +64,19 @@ public class RackIndex implements Serializable {
     /**
      * U位位置
      */
-    private int uAddress;
+    @JsonProperty(value="uAddress")
+    private Integer uAddress;
 
     /**
      * U位高度
      */
-    private int uHeight;
+    @JsonProperty(value="uHeight")
+    private Integer uHeight;
+
+    /**
+     * 设备类型
+     */
+    private String type;
 
     /**
      * 更新时间

@@ -8,5 +8,7 @@ public interface ErrorCodeConstants {
 
     ErrorCode STATIS_CONFIG_NOT_EXISTS = new ErrorCode(11111246, "机架计算服务配置不存在");
 
+    ErrorCode NAME_REPEAT = new ErrorCode(11111247, "机架名称重复");
+
 
 }
