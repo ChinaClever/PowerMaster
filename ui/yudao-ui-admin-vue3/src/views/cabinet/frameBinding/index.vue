@@ -1,29 +1,58 @@
 <template>
   <ContentWrap>
     <div style="display: flex; justify-content: center;">
-      <div ref="frameContainer" class="frameContainer" style="position: relative;">
+      <div ref="frameContainer" class="frameContainer" style="position: relative;"  @click.right="handleRightClick">
         <div class="portLeft">
           <div class="port" v-for="port in portLeft" :key="port.id" :id="'portLeft' + port.id">{{port.name}}</div>
         </div>
-        <draggable
+        <div class="frameList">
+          <template v-for="(frame,index) in frameList" :key="index">
+            <draggable
+              class="frame"
+              :id="index"
+              :list="frame"
+              :itemKey="item => item.id"
+              :group="frame[0] ? groupFrameFill : groupFrameBlank"
+              tag="div"
+              animation="100"
+              @start="onStart"
+              @end.prevent="onEnd"
+            >
+              <template #item="{ element }">
+                <div v-if="element" class="active" :id="'frame' + element.id" >
+                  服务器{{ index }}
+                </div>
+              </template>
+            </draggable>
+          </template>
+          <div class="bottomFrame">
+            <div v-for="(frame,index) in frameList.length" :key="index" class="frame">{{frameList.length - index}}</div>
+          </div>
+          
+        </div>
+        
+        <!-- <draggable
           class="frameList"
           :list="frameList"
           :itemKey="item => item.id"
-          ghost-class="ghost"
-          chosen-class="chosenClass"
+          :group="{ name: 'myGroup', pull: 'clone', put: true }"
           animation="100"
           @start="onStart"
           @end.prevent="onEnd"
-          @click.right="handleRightClick"
         >
           <template #item="{ element }">
             <div :class="element.target ? 'frame active' : 'frame'" :id="'frame' + element.id">
               {{ element.name }}
             </div>
           </template>
-        </draggable>
+        </draggable> -->
         <div class="portRight">
           <div class="port" v-for="port in portRight" :key="port.id" :id="'portRight' + port.id">{{port.name}}</div>
+        </div>
+        <div class="menu" v-if="operateMenu.show" :style="{left: `${operateMenu.left}`, top: `${operateMenu.top}`}">
+          <div class="menu_item" v-if="showMenuAdd" @click="addMachine">新增</div>
+          <div class="menu_item" v-if="!showMenuAdd" @click="editMachine">编辑</div>
+          <div class="menu_item" v-if="!showMenuAdd" @click="deleteMachine">删除</div>
         </div>
       </div>
     </div>
@@ -35,7 +64,24 @@ import { newInstance, BezierConnector, BrowserJsPlumbInstance } from '@jsplumb/b
 import { string } from 'vue-types';
 import draggable from "vuedraggable";
 import { CabinetApi } from '@/api/cabinet/info'
+import { debug } from 'console';
 
+const groupFrameFill = {
+  name: 'FrameFill',
+  pull: true, //允许拖出,如果设置 字符串'clone' 表示该组拖出的元素会被克隆
+  put: false // 拖入
+}
+const groupFrameBlank = {
+  name: 'FrameBlank',
+  pull: false, //允许拖出,如果设置 字符串'clone' 表示该组拖出的元素会被克隆
+  put: true, // 拖入
+}
+const showMenuAdd = ref(true)
+const operateMenu = ref({
+  left: '0px',
+  top: '0px',
+  show: false,
+})
 const frameContainer = ref()
 const maxHiddenNumber = 10
 let instance: BrowserJsPlumbInstance | null = null
@@ -47,8 +93,9 @@ const onStart = (e) => {
 
 //拖拽结束的事件
 const onEnd = (e) => {
+  console.log('拖拽结束的事件', e)
   // 如果没有进行置换的拖拽直接返回
-  if (e.oldIndex == e.newIndex) return false
+  if (e.from == e.to) return false
   // const oldFrameId = frameList[e.oldIndex].id
   // const newFrameId = frameList[e.newIndex].id
   const instances = instance?.connections
@@ -56,6 +103,7 @@ const onEnd = (e) => {
     sourceId: string;
     targetId: string;
   }
+  console.log('instances', instances)
   let config: Type[] = []
   instances?.forEach(item => {
     config.push({
@@ -65,23 +113,28 @@ const onEnd = (e) => {
   })
   // 删除所有连接
   instance?.deleteEveryConnection()
+  window.removeEventListener('mouseover', ()=>{})
+  window.removeEventListener('mouseout', ()=>{})
+  initConnect()
   // 重连
-  nextTick(() => {
-    config.forEach((item, index) => {
-      instance?.connect({
-        source: document.getElementById(item.sourceId) as Element,
-        target: document.getElementById(item.targetId) as Element,
-        anchor: ['Right', 'Left'],
-        endpoint: { type:"Dot", options:{ radius:2, fillStyle: 'rgba(0, 0, 0, 0)'}},
-        paintStyle: {
-          strokeWidth: 2, // 设置连接线的宽度为 2 像素
-          stroke: frameList.length > maxHiddenNumber ? 'rgba(0, 0, 0, 0)' : '#000', // 设置连接线的颜色为黑色
-          outlineWidth: 13,
-          outlineStroke: 'rgba(0, 0, 0, 0)'
-        }
-      })
-    })
-  })
+  // nextTick(() => {
+  //   console.log('config', config)
+  //   config.forEach((item, index) => {
+  //     console.log('document.getElementById(item.sourceId) as Element', document.getElementById(item.sourceId) as Element)
+  //     instance?.connect({
+  //       source: document.getElementById(item.sourceId) as Element,
+  //       target: document.getElementById(item.targetId) as Element,
+  //       anchor: ['Right', 'Left'],
+  //       endpoint: { type:"Dot", options:{ radius:2, fillStyle: 'rgba(0, 0, 0, 0)'}},
+  //       paintStyle: {
+  //         strokeWidth: 2, // 设置连接线的宽度为 2 像素
+  //         stroke: frameList.length > maxHiddenNumber ? 'rgba(0, 0, 0, 0)' : '#000', // 设置连接线的颜色为黑色
+  //         outlineWidth: 13,
+  //         outlineStroke: 'rgba(0, 0, 0, 0)'
+  //       }
+  //     })
+  //   })
+  // })
 }
 
 const initConnect = () => {
@@ -109,8 +162,8 @@ const initConnect = () => {
   instance.bind('beforeDrop', connection => connection.sourceId.slice(0, 5) != connection.targetId.slice(0, 5))
   // 机柜创建连接点
   frameList.forEach(frame => {
-    if (!frame.target) return
-    const frameElement = document.getElementById(`frame${frame.id}`) as Element
+    if (!frame[0]) return
+    const frameElement = document.getElementById(`frame${frame[0].id}`) as Element
     instance?.addEndpoint(frameElement, {
       ...addEndpointConfig,
       anchor: 'Left',
@@ -140,6 +193,7 @@ const initConnect = () => {
     })
     // 监听鼠标移入服务器事件
     targetElement.addEventListener('mouseover', (e) => {
+      console.log('监听鼠标移入服务器事件', e, connect)
       if (connect)
       instance?.deleteConnection(connect)
       connect = instance?.connect({
@@ -168,7 +222,7 @@ const initConnect = () => {
       source: targetElement,
       target: portElement,
       // endpoint: "Rectangle",
-      anchors: ['Left', 'Right'],
+      anchors: ['Right', 'Left'],
       endpoint: { type:"Dot", options:{ radius:2, fillStyle: 'rgba(0, 0, 0, 0)'}},
       paintStyle: paintStyleConfig,
     })
@@ -194,7 +248,18 @@ const initConnect = () => {
 
 const handleRightClick = (e) => {
   e.preventDefault()
-  console.log('handleRightClick', e)
+  const container = e.currentTarget
+  const currentId = e.target.id
+  const rect = container.getBoundingClientRect()
+  const offsetX = e.clientX - Math.ceil(rect.left) + 1
+  const offsetY = e.clientY - Math.ceil(rect.top) + 1
+  console.log('handleRightClick',e.target, currentId, offsetX, offsetY, Math.ceil(rect.left), Math.ceil(rect.top), e.clientX, e.clientY)
+  if (!currentId.includes('frame')) return
+  operateMenu.value = {
+    left: offsetX + 'px',
+    top: offsetY + 'px',
+    show: true,
+  }
 }
 
 // const createPortList = (num) => {
@@ -380,48 +445,79 @@ const portRight = reactive([
   },
 ])
 let frameList = reactive([
-  {id: 201,name: '1', target:[]},
-  {id: 202,name: '2', target:[]},
-  {id: 203,name: '3', target:[]},
-  {id: 204,name: '4', target:[]},
-  {id: 2042,name: '5'},
-  {id: 2043,name: '6'},
-  {id: 2044,name: '7'},
-  {id: 2045,name: '8'},
-  {id: 2046,name: '9'},
-  {id: 2012,name: '10'},
-  {id: 2014,name: '11'},
-  {id: 2013,name: '12'},
-  {id: 2011,name: '13'},
-  {id: 2015,name: '14'},
-  {id: 2016,name: '15'},
-  {id: 2017,name: '16'},
-  {id: 2018,name: '17'},
-  {id: 2019,name: '18'},
-  {id: 2010,name: '19'},
-  {id: 20211,name: '20'},
-  {id: 20210,name: '21'},
-  {id: 20212,name: '22'},
-  {id: 20213,name: '23'},
-  {id: 20214,name: '24'},
-  {id: 20215,name: '25'},
-  {id: 20216,name: '26'},
-  {id: 20217,name: '27'},
-  {id: 20218,name: '28'},
-  {id: 20219,name: '29'},
-  {id: 202567,name: '30'},
-  {id: 2022942,name: '31'},
-  {id: 2023242,name: '32'},
-  {id: 2022342,name: '33'},
-  {id: 202131,name: '34'},
-  {id: 202123,name: '35'},
-  {id: 2021231,name: '36'},
-  {id: 2024235,name: '37'},
-  {id: 202364,name: '38'},
-  {id: 202634,name: '39'},
-  {id: 202135,name: '40'},
-  {id: 202124,name: '41'},
-  {id: 2021234,name: '42'},
+  [{id: 201,name: '1', target:[1]}],
+  [{id: 202,name: '2', target:[2]}],
+  [{id: 203,name: '3', target:[3]}],
+  [{id: 204,name: '4', target:[6]}],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  // {id: 2042,name: '5', target:[]}
+  // {id: 2043,name: '6'},
+  // {id: 2044,name: '7'},
+  // {id: 2045,name: '8'},
+  // {id: 2046,name: '9'},
+  // {id: 2012,name: '10'},
+  // {id: 2014,name: '11'},
+  // {id: 2013,name: '12'},
+  // {id: 2011,name: '13'},
+  // {id: 2015,name: '14'},
+  // {id: 2016,name: '15'},
+  // {id: 2017,name: '16'},
+  // {id: 2018,name: '17'},
+  // {id: 2019,name: '18'},
+  // {id: 2010,name: '19'},
+  // {id: 20211,name: '20'},
+  // {id: 20210,name: '21'},
+  // {id: 20212,name: '22'},
+  // {id: 20213,name: '23'},
+  // {id: 20214,name: '24'},
+  // {id: 20215,name: '25'},
+  // {id: 20216,name: '26'},
+  // {id: 20217,name: '27'},
+  // {id: 20218,name: '28'},
+  // {id: 20219,name: '29'},
+  // {id: 202567,name: '30'},
+  // {id: 2022942,name: '31'},
+  // {id: 2023242,name: '32'},
+  // {id: 2022342,name: '33'},
+  // {id: 202131,name: '34'},
+  // {id: 202123,name: '35'},
+  // {id: 2021231,name: '36'},
+  // {id: 2024235,name: '37'},
+  // {id: 202364,name: '38'},
+  // {id: 202634,name: '39'},
+  // {id: 202135,name: '40'},
+  // {id: 202124,name: '41'},
+  // {id: 2021234,name: '42'},
 ])
 
 frameList.reverse()
@@ -432,6 +528,27 @@ frameList.reverse()
 <style lang="scss" scoped>
 .frameContainer {
   display: flex;
+  .menu {
+    box-sizing: border-box;
+    position: absolute;
+    padding: 10px 0;
+    background-color: #fff;
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+    z-index: 999;
+    .menu_item {
+      width: 70px;
+      height: 30px;
+      padding: 0 10px;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .menu_item:hover {
+      background-color: rgb(231, 245, 255);
+      color: rgb(82, 177, 255);
+    }
+  }
 }
 .portRight,
 .portLeft {
@@ -478,18 +595,36 @@ frameList.reverse()
   }
 }
 .frameList {
+  position: relative;
   width: 250px;
   border: 5px solid #90b8df;
   box-sizing: border-box;
-  margin: 10px 180px;
+  // margin:  0;
   font-size: 12px;
   .frame {
-    padding: 3px 10px;
+    height: 23px;
+    box-sizing: border-box;
     background-color: #fff;
     border-bottom: 1px solid #fafafa;
+    .active {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #5298df;
+    }
   }
-  .active {
-    background-color: #5298df;
+  .bottomFrame {
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    // height: 23px;
+    // box-sizing: border-box;
+    // background-color: #fff;
+    // border-bottom: 1px solid #fafafa;
   }
 }
 .ghost {
