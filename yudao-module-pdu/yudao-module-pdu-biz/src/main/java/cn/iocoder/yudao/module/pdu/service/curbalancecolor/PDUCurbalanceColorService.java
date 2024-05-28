@@ -1,18 +1,16 @@
 package cn.iocoder.yudao.module.pdu.service.curbalancecolor;
 
-import java.util.*;
 import javax.validation.*;
 import cn.iocoder.yudao.module.pdu.controller.admin.curbalancecolor.vo.*;
-import cn.iocoder.yudao.module.pdu.dal.dataobject.curbalancecolor.CurbalanceColorDO;
+import cn.iocoder.yudao.module.pdu.dal.dataobject.curbalancecolor.PDUCurbalanceColorDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
 
 /**
  * PDU不平衡度颜色 Service 接口
  *
  * @author clever
  */
-public interface CurbalanceColorService {
+public interface PDUCurbalanceColorService {
 
     /**
      * 创建PDU不平衡度颜色
@@ -42,7 +40,7 @@ public interface CurbalanceColorService {
      *
      * @return PDU不平衡度颜色
      */
-    CurbalanceColorDO getCurbalanceColor();
+    PDUCurbalanceColorDO getCurbalanceColor();
 
     /**
      * 获得PDU不平衡度颜色分页
@@ -50,6 +48,6 @@ public interface CurbalanceColorService {
      * @param pageReqVO 分页查询
      * @return PDU不平衡度颜色分页
      */
-    PageResult<CurbalanceColorDO> getCurbalanceColorPage(CurbalanceColorPageReqVO pageReqVO);
+    PageResult<PDUCurbalanceColorDO> getCurbalanceColorPage(CurbalanceColorPageReqVO pageReqVO);
 
 }

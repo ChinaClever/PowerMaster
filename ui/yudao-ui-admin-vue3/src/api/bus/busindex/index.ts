@@ -51,4 +51,8 @@ export const IndexApi = {
   getEqPage: async (data: any) => {
     return await request.post({ url: `/bus/index/eq/page`, data })
   },
+
+  getBalancePage: async (data: any) => {
+    return await request.post({ url: `/bus/index/balance`, data })
+  },
 }

@@ -55,4 +55,6 @@ public interface BusIndexService {
     PageResult<BusRedisDataRes> getBusRedisPage(BusIndexPageReqVO pageReqVO);
 
     PageResult<BusIndexDTO> getEqPage(BusIndexPageReqVO pageReqVO);
+
+    PageResult<BusBalanceDataRes> getBusBalancePage(BusIndexPageReqVO pageReqVO);
 }

@@ -9,7 +9,10 @@ import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalDay
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalMonthDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusIndexDTO;
+import cn.iocoder.yudao.module.bus.dal.dataobject.buscurbalancecolor.BusCurbalanceColorDO;
+import cn.iocoder.yudao.module.bus.dal.mysql.buscurbalancecolor.BusCurbalanceColorMapper;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +61,9 @@ public class BusIndexServiceImpl implements BusIndexService {
 
     @Resource
     private BusIndexMapper busIndexMapper;
+
+    @Resource
+    private BusCurbalanceColorMapper busCurbalanceColorMapper;
 
     @Autowired
     private RedisTemplate redisTemplate;
@@ -294,6 +300,80 @@ public class BusIndexServiceImpl implements BusIndexService {
             log.error("获取数据失败：", e);
         }
         return new PageResult<>(new ArrayList<>(), 0L);
+    }
+
+    @Override
+    public PageResult<BusBalanceDataRes> getBusBalancePage(BusIndexPageReqVO pageReqVO) {
+
+        PageResult<BusIndexDO> busIndexDOPageResult = busIndexMapper.selectPage(pageReqVO);
+        BusCurbalanceColorDO busCurbalanceColorDO = busCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
+        List<BusIndexDO> list = busIndexDOPageResult.getList();
+        List<BusBalanceDataRes> res = new ArrayList<>();
+        ValueOperations ops = redisTemplate.opsForValue();
+        for (BusIndexDO busIndexDO : list) {
+            BusBalanceDataRes busBalanceDataRes = new BusBalanceDataRes();
+            res.add(busBalanceDataRes);
+            JSONObject jsonObject = (JSONObject) ops.get("packet:bus:" + busIndexDO.getDevKey());
+            if (jsonObject == null){
+                continue;
+            }
+            JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
+            JSONArray volValue = lineItemList.getJSONArray("vol_value");
+            JSONArray curValue = lineItemList.getJSONArray("cur_value");
+            JSONObject busTotalData = jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data");
+            JSONArray curAlarmArr = lineItemList.getJSONArray("cur_max");
+            curAlarmArr.sort(Collections.reverseOrder());
+            System.out.println(curAlarmArr);
+            double maxVal = curAlarmArr.getDouble(0);
+            List<Double> temp = curValue.toList(Double.class);
+            temp.sort(Collections.reverseOrder());
+            System.out.println(temp);
+            double a = temp.get(0) - temp.get(2);
+            int color = 0;
+            for (int i = 0; i < 3; i++) {
+                double vol = volValue.getDoubleValue(i);
+                double cur = curValue.getDoubleValue(i);
+                if (i == 0){
+                    busBalanceDataRes.setACur(cur);
+                    busBalanceDataRes.setAVol(vol);
+                }else if(i == 1){
+                    busBalanceDataRes.setBCur(cur);
+                    busBalanceDataRes.setBVol(vol);
+                }else if(i == 2){
+                    busBalanceDataRes.setCCur(cur);
+                    busBalanceDataRes.setCVol(vol);
+                }
+            }
+            if (busCurbalanceColorDO == null) {
+                if (a >= maxVal * 0.2) {
+                    if (busTotalData.getDouble("cur_unbalance") < 15) {
+                        color = 2;
+                    } else if (busTotalData.getDouble("cur_unbalance") < 30) {
+                        color = 3;
+                    } else {
+                        color = 4;
+                    }
+                } else {
+                    color = 1;
+                }
+            } else {
+                if (a >= maxVal * 0.2) {
+                    if (busTotalData.getDouble("cur_unbalance") < busCurbalanceColorDO.getRangeOne()) {
+                        color = 2;
+                    } else if (busTotalData.getDouble("cur_unbalance") < busCurbalanceColorDO.getRangeFour()) {
+                        color = 3;
+                    } else {
+                        color = 4;
+                    }
+                } else {
+                    color = 1;
+                }
+            }
+            busBalanceDataRes.setCurUnbalance(busTotalData.getDouble("cur_unbalance"));
+            busBalanceDataRes.setVolUnbalance(busTotalData.getDouble("vol_unbalance"));
+            busBalanceDataRes.setColor(color);
+        }
+        return new PageResult<>(res,busIndexDOPageResult.getTotal());
     }
 
     /**

@@ -253,11 +253,11 @@
 <script setup lang="ts">
 // import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
-import { PDUDeviceApi } from '@/api/pdu/pdudevice'
+import { IndexApi } from '@/api/bus/busindex'
 import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
-import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
+import { CurbalanceColorApi } from '@/api/bus/buscurbalancecolor'
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -386,7 +386,7 @@ const exportLoading = ref(false) // 导出的加载中
 const getList = async () => {
   loading.value = true
   try {
-    const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
+    const data = await IndexApi.getBalancePage(queryParams)
     var range = await CurbalanceColorApi.getCurbalanceColor();
     if(range != null){
       statusList[0].name = '<' + range.rangeOne + '%';
@@ -441,7 +441,7 @@ const getList = async () => {
 
 const getListNoLoading = async () => {
   try {
-    const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
+    const data = await IndexApi.getBalancePage(queryParams)
     list.value = data.list
     var range = await CurbalanceColorApi.getCurbalanceColor();
     if(range != null){
@@ -552,7 +552,7 @@ const handleDelete = async (id: number) => {
     // 删除的二次确认
     await message.delConfirm()
     // 发起删除
-    await PDUDeviceApi.deletePDUDevice(id)
+    await IndexApi.deleteIndex(id)
     message.success(t('common.delSuccess'))
     // 刷新列表
     // await getList()
@@ -566,7 +566,7 @@ const handleExport = async () => {
     await message.exportConfirm()
     // 发起导出
     exportLoading.value = true
-    const data = await PDUDeviceApi.exportPDUDevice(queryParams)
+    const data = await IndexApi.exportIndex(queryParams)
     download.excel(data, 'PDU设备.xls')
   } catch {
   } finally {

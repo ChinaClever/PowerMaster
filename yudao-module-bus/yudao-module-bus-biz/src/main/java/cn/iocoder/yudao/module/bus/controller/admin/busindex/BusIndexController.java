@@ -87,6 +87,13 @@ public class BusIndexController {
         return success(pageResult);
     }
 
+    @PostMapping("/balance")
+    @Operation(summary = "获得始端箱索引分页")
+    public CommonResult<PageResult<BusBalanceDataRes>> getBusBalancePage(@Valid BusIndexPageReqVO pageReqVO) {
+        PageResult<BusBalanceDataRes> pageResult = indexService.getBusBalancePage(pageReqVO);
+        return success(BeanUtils.toBean(pageResult, BusBalanceDataRes.class));
+    }
+
 //    @GetMapping("/export-excel")
 //    @Operation(summary = "导出始端箱索引 Excel")
 //    @PreAuthorize("@ss.hasPermission('bus:index:export')")

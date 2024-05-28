@@ -3,12 +3,10 @@ package cn.iocoder.yudao.module.pdu.controller.admin.curbalancecolor;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.security.access.prepost.PreAuthorize;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Operation;
 
-import javax.validation.constraints.*;
 import javax.validation.*;
 import javax.servlet.http.*;
 import java.util.*;
@@ -26,8 +24,8 @@ import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
 import static cn.iocoder.yudao.framework.operatelog.core.enums.OperateTypeEnum.*;
 
 import cn.iocoder.yudao.module.pdu.controller.admin.curbalancecolor.vo.*;
-import cn.iocoder.yudao.module.pdu.dal.dataobject.curbalancecolor.CurbalanceColorDO;
-import cn.iocoder.yudao.module.pdu.service.curbalancecolor.CurbalanceColorService;
+import cn.iocoder.yudao.module.pdu.dal.dataobject.curbalancecolor.PDUCurbalanceColorDO;
+import cn.iocoder.yudao.module.pdu.service.curbalancecolor.PDUCurbalanceColorService;
 
 @Tag(name = "管理后台 - PDU不平衡度颜色")
 @RestController
@@ -36,20 +34,20 @@ import cn.iocoder.yudao.module.pdu.service.curbalancecolor.CurbalanceColorServic
 public class CurbalanceColorController {
 
     @Resource
-    private CurbalanceColorService curbalanceColorService;
+    private PDUCurbalanceColorService PDUCurbalanceColorService;
 
     @PostMapping("/create")
     @Operation(summary = "创建PDU不平衡度颜色")
 
     public CommonResult<Long> createCurbalanceColor(@Valid @RequestBody CurbalanceColorSaveReqVO createReqVO) {
-        return success(curbalanceColorService.createCurbalanceColor(createReqVO));
+        return success(PDUCurbalanceColorService.createCurbalanceColor(createReqVO));
     }
 
     @PutMapping("/update")
     @Operation(summary = "更新PDU不平衡度颜色")
 
     public CommonResult<Boolean> updateCurbalanceColor(@Valid @RequestBody CurbalanceColorSaveReqVO updateReqVO) {
-        curbalanceColorService.updateCurbalanceColor(updateReqVO);
+        PDUCurbalanceColorService.updateCurbalanceColor(updateReqVO);
         return success(true);
     }
 
@@ -58,7 +56,7 @@ public class CurbalanceColorController {
     @Parameter(name = "id", description = "编号", required = true)
 
     public CommonResult<Boolean> deleteCurbalanceColor(@RequestParam("id") Long id) {
-        curbalanceColorService.deleteCurbalanceColor(id);
+        PDUCurbalanceColorService.deleteCurbalanceColor(id);
         return success(true);
     }
 
@@ -66,7 +64,7 @@ public class CurbalanceColorController {
     @Operation(summary = "获得PDU不平衡度颜色")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
     public CommonResult<CurbalanceColorRespVO> getCurbalanceColor() {
-        CurbalanceColorDO curbalanceColor = curbalanceColorService.getCurbalanceColor();
+        PDUCurbalanceColorDO curbalanceColor = PDUCurbalanceColorService.getCurbalanceColor();
         return success(BeanUtils.toBean(curbalanceColor, CurbalanceColorRespVO.class));
     }
 
@@ -74,7 +72,7 @@ public class CurbalanceColorController {
     @Operation(summary = "获得PDU不平衡度颜色分页")
 
     public CommonResult<PageResult<CurbalanceColorRespVO>> getCurbalanceColorPage(@Valid CurbalanceColorPageReqVO pageReqVO) {
-        PageResult<CurbalanceColorDO> pageResult = curbalanceColorService.getCurbalanceColorPage(pageReqVO);
+        PageResult<PDUCurbalanceColorDO> pageResult = PDUCurbalanceColorService.getCurbalanceColorPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, CurbalanceColorRespVO.class));
     }
 
@@ -85,7 +83,7 @@ public class CurbalanceColorController {
     public void exportCurbalanceColorExcel(@Valid CurbalanceColorPageReqVO pageReqVO,
               HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
-        List<CurbalanceColorDO> list = curbalanceColorService.getCurbalanceColorPage(pageReqVO).getList();
+        List<PDUCurbalanceColorDO> list = PDUCurbalanceColorService.getCurbalanceColorPage(pageReqVO).getList();
         // 导出 Excel
         ExcelUtils.write(response, "PDU不平衡度颜色.xls", "数据", CurbalanceColorRespVO.class,
                         BeanUtils.toBean(list, CurbalanceColorRespVO.class));

@@ -1,11 +1,10 @@
 package cn.iocoder.yudao.module.pdu.dal.dataobject.curbalancecolor;
 
 import lombok.*;
-import java.util.*;
+
 import java.time.LocalDateTime;
-import java.time.LocalDateTime;
+
 import com.baomidou.mybatisplus.annotation.*;
-import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 
 /**
  * PDU不平衡度颜色 DO
@@ -19,7 +18,7 @@ import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CurbalanceColorDO {
+public class PDUCurbalanceColorDO {
 
     /**
      * 自增id
