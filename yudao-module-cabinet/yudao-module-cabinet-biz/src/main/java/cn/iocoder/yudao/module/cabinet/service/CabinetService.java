@@ -67,4 +67,11 @@ public interface CabinetService {
      * @param vo 搜索参数
      */
     PageResult<CabinetIndexDTO> getEqPage(CabinetIndexVo vo);
+
+    /**
+     * 机柜容量列表页面
+     *
+     * @param vo 搜索参数
+     */
+    PageResult<CabinetIndexDTO> getCapacityPage(CabinetIndexVo vo);
 }
