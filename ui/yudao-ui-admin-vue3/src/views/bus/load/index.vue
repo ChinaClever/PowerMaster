@@ -3,7 +3,7 @@
     <template #NavInfo>
       <div>
         <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
+          <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
         </div>
         <div class="line"></div>
         <div class="status">
@@ -21,7 +21,7 @@
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag blue"></div>60%-90%
+              <div class="tag warn"></div>60%-90%
             </div>
             <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
           </div>
