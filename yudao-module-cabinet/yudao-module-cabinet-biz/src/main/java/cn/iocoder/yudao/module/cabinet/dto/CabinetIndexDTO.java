@@ -110,6 +110,24 @@ public class CabinetIndexDTO {
 
 
     /**
+     * 已用空间
+     */
+    @Schema(description = "已用空间", example = "1")
+    private int usedSpace;
+
+    /**
+     * 设备总数
+     */
+    @Schema(description = "设备总数", example = "1")
+    private int rackNum;
+
+    /**
+     * 剩余空间
+     */
+    @Schema(description = "剩余空间", example = "1")
+    private int freeSpace;
+
+    /**
      * 更新时间
      */
     @Schema(description = "更新时间")

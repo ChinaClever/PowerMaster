@@ -10,7 +10,7 @@ import cn.iocoder.yudao.framework.common.enums.DisableEnums;
 import cn.iocoder.yudao.module.cabinet.dto.RoomMenuDTO;
 import cn.iocoder.yudao.module.cabinet.dto.RoomPduMenuDTO;
 import cn.iocoder.yudao.module.cabinet.mapper.*;
-import cn.iocoder.yudao.module.pdu.enums.MenuTypeEnums;
+import cn.iocoder.yudao.module.cabinet.enums.MenuTypeEnums;
 import cn.iocoder.yudao.module.cabinet.service.RoomService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;

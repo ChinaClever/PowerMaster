@@ -124,4 +124,17 @@ public class CabinetController {
         PageResult<CabinetIndexDTO> pageResult = cabinetService.getEqPage(pageReqVO);
         return success(pageResult);
     }
+
+
+    /**
+     * 机柜用能页面
+     *
+     * @param pageReqVO
+     */
+    @Operation(summary = "机柜容量列表分页")
+    @PostMapping("/cabinet/capacity/page")
+    public CommonResult<PageResult<CabinetIndexDTO>> getCapacityPage(@RequestBody CabinetIndexVo pageReqVO) {
+        PageResult<CabinetIndexDTO> pageResult = cabinetService.getCapacityPage(pageReqVO);
+        return success(pageResult);
+    }
 }

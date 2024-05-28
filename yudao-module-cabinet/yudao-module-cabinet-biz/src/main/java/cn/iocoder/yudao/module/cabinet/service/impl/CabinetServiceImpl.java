@@ -252,17 +252,22 @@ public class CabinetServiceImpl implements CabinetService {
                         .eq(RackIndex::getIsDelete,DelEnums.NO_DEL.getStatus()));
                 if (!CollectionUtils.isEmpty(rackIndexList)){
                     dto.setRackIndexList(rackIndexList);
+                    int usedSpace = rackIndexList.stream().map(RackIndex::getUHeight).reduce(0,Integer::sum);
+                    int rackNum = rackIndexList.size();
+                    int freeSpace = dto.getCabinetHeight() - usedSpace;
+                    dto.setUsedSpace(usedSpace);
+                    dto.setRackNum(rackNum);
+                    dto.setFreeSpace(freeSpace);
+                }else {
+                    dto.setFreeSpace(dto.getCabinetHeight());
                 }
-
-
-
 
             }
             return dto;
         } catch (Exception e) {
             log.error("获取机柜信息失败：", e);
         }
-        return null;
+        return dto;
     }
 
 
@@ -511,6 +516,76 @@ public class CabinetServiceImpl implements CabinetService {
 
     }
 
+    @Override
+    public PageResult<CabinetIndexDTO> getCapacityPage(CabinetIndexVo vo) {
+        try {
+            Page<CabinetIndexDTO> page = new Page<>(vo.getPageNo(), vo.getPageSize());
+            //获取机柜列表
+            if (Objects.nonNull(vo.getCabinetIds()) && CollectionUtils.isEmpty(vo.getCabinetIds())){
+                List<Integer> list = new ArrayList<>();
+                list.add(-1);
+                vo.setCabinetIds(list);
+            }
+            //获取机柜列表
+            Page<CabinetIndexDTO> indexDTOPage = cabinetCfgMapper.selectCabList(page, vo);
+            List<CabinetIndexDTO> result = new ArrayList<>();
+            //获取机房数据
+            if (!CollectionUtils.isEmpty(indexDTOPage.getRecords())){
+                List<Integer> roomIds = indexDTOPage.getRecords().stream().map(CabinetIndexDTO::getRoomId).distinct().collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(roomIds)){
+                    List<RoomIndex> roomIndexList = roomIndexMapper.selectBatchIds(roomIds);
+                    if (!CollectionUtils.isEmpty(roomIndexList)){
+                        Map<Integer,String>  map = roomIndexList.stream().collect(Collectors.toMap(RoomIndex::getId,RoomIndex::getName));
+
+                        if (Objects.nonNull(map)){
+                            indexDTOPage.getRecords().forEach(dto -> {
+                                dto.setRoomName(map.get(dto.getRoomId()));
+                                result.add(dto);
+                            });
+                        }
+                    }
+                }
+            }
+
+            List<Integer> ids = result.stream().map(CabinetIndexDTO::getId).distinct().collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(ids)){
+                return new PageResult<>(result, indexDTOPage.getTotal());
+            }
+            //获取机架列表
+            List<RackIndex> rackIndexList = rackIndexMapper.selectList(new LambdaQueryWrapper<RackIndex>()
+                    .eq(RackIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
+                    .in(RackIndex::getCabinetId,ids));
+
+            if (!CollectionUtils.isEmpty(rackIndexList)){
+                Map<Integer,List<RackIndex>> cabRacks = rackIndexList.stream().collect(Collectors.groupingBy(RackIndex::getCabinetId));
+
+                result.forEach(dto -> {
+                    List<RackIndex> racks = cabRacks.get(dto.getId());
+                    if (!CollectionUtils.isEmpty(racks)){
+                        int usedSpace = racks.stream().map(RackIndex::getUHeight).reduce(0,Integer::sum);
+                        int rackNum = racks.size();
+                        int freeSpace = dto.getCabinetHeight() - usedSpace;
+                        dto.setUsedSpace(usedSpace);
+                        dto.setRackNum(rackNum);
+                        dto.setFreeSpace(freeSpace);
+                    }
+                });
+
+            }
+
+            result.forEach(dto -> {
+               if (dto.getUsedSpace() == 0){
+                   dto.setFreeSpace(dto.getCabinetHeight());
+               }
+            });
+            return new PageResult<>(result, indexDTOPage.getTotal());
+        } catch (Exception e) {
+            log.error("获取数据失败：", e);
+        }
+        return new PageResult<>(new ArrayList<>(), 0L);
+
+    }
+
     /**
      * 实体转换
      *
@@ -649,9 +724,7 @@ public class CabinetServiceImpl implements CabinetService {
 
         if (!CollectionUtils.isEmpty(vo.getRackList())){
             //修改
-            vo.getRackList().forEach(rackIndex -> {
-                rackIndexMapper.updateById(rackIndex);
-            });
+            vo.getRackList().forEach(rackIndex -> rackIndexMapper.updateById(rackIndex));
 
 
         }
