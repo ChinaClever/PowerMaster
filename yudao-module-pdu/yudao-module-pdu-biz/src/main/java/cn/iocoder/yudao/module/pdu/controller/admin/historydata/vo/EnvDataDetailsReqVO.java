@@ -15,9 +15,16 @@ public class EnvDataDetailsReqVO extends PageParam {
 
     private String granularity;
 
-    private String ipAddr;
+    /**
+     * 机柜前后通道 1前2后
+     */
+    private Integer channel;
+    /**
+     * 位置 1 上 2 中 3下
+     */
+    private Integer position;
 
-    private String cascadeAddr;
+    private Integer cabinetId;
 
     private String[] timeRange;
 

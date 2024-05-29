@@ -66,7 +66,7 @@ public interface HistoryDataService {
      * @param reqVO 分页查询
      * @return pdu历史数据详情
      */
-    PageResult<Object> getEnvDataDetails(EnvDataDetailsReqVO reqVO) throws IOException;
+    Map<String, Object> getEnvDataDetails(EnvDataDetailsReqVO reqVO) throws IOException;
 
     Map<String, Object> getOneHourSumData() throws IOException;
 

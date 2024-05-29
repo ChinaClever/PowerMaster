@@ -68,8 +68,8 @@ public class HistoryDataController {
 
     @GetMapping("/env-details")
     @Operation(summary = "获得pdu环境历史数据详情")
-    public CommonResult<PageResult<Object>> getEnvDataDetails(EnvDataDetailsReqVO reqVO) throws IOException {
-        PageResult<Object> pageResult = historyDataService.getEnvDataDetails(reqVO);
+    public CommonResult<Map<String, Object>> getEnvDataDetails(EnvDataDetailsReqVO reqVO) throws IOException {
+        Map<String, Object> pageResult = historyDataService.getEnvDataDetails(reqVO);
         return success(pageResult);
     }
 

@@ -42,27 +42,10 @@
         :inline="true"
         label-width="70px"
       >
-      <!-- <el-form-item label="IP地址" prop="ipAddr">
-        <el-input
-          v-model="queryParams.ipAddr"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-130px"
-        />
-      </el-form-item>
-      <el-form-item label="级联地址" prop="cascadeAddr">
-        <el-input-number
-          v-model="cascadeAddr"
-          :min="0"
-          controls-position="right"
-          :value-on-clear="0"
-          class="!w-100px"
-        />
-      </el-form-item> -->
-      <el-form-item label="传感器" prop="sensorId">
+      <el-form-item label="检测点" prop="detect">
         <el-select
-          v-model="queryParams.sensorId"
-          class="!w-100px"
+          v-model="detect"
+          class="!w-130px"
           @change="handleQuery"
           >
           <el-option
@@ -73,6 +56,7 @@
           />
         </el-select>
       </el-form-item>
+
       <el-form-item label="时间段" prop="timeRange" >
         <el-date-picker
           value-format="YYYY-MM-DD HH:mm:ss"
@@ -156,34 +140,37 @@ import { ElMessage } from 'element-plus'
 const activeName = ref('realtimeTabPane') // tab默认显示
 const activeName1 = ref('myChart') // tab默认显示
 const navList = ref([]) as any // 左侧导航栏树结构列表
-const nowAddress = ref('')// 导航栏的位置信息
+const nowAddress = ref('') as any// 导航栏的位置信息
 const nowLocation = ref('')// 导航栏的位置信息
-const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
-const nowLocationTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
 const instance = getCurrentInstance();
 const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
 const cascadeAddr = ref(0) // 数字类型的级联地址
 const needFlush = ref(0) // 是否需要刷新图表
-const sensorOptions = ref([]) as any;// 传感器选项
 const loading = ref(false) //  列表的加载中
+const detect = ref('11') as any// 检测点的值 默认全部
 const queryParams = reactive({
   pduId: undefined as number | undefined,
-  sensorId: 1,
-  type: 'total',
+  sensorId: undefined as number | undefined,
+  channel: undefined as number | undefined,
+  position: undefined as number | undefined,
   granularity: 'realtime',
-  ipAddr: undefined as string | undefined,
-  cascadeAddr: '0',
+  // ipAddr: undefined as string | undefined,
+  // cascadeAddr: '0',
+  cabinetId: undefined as number | undefined,
   // 进入页面原始数据默认显示最近一小时
   timeRange: defaultHourTimeRange(1)
 })
 
-// 监控 cascadeAddr 如果变为 null 将其设置为 0
-watch(() => queryParams.cascadeAddr, (newValue) => {
-  if (newValue == null ) {
-    queryParams.cascadeAddr = '0';
-  }
-});
+// 传感器选项
+const sensorOptions = ref([
+  { value: "11", label: '前上'},
+  { value: "12", label: '前中'},
+  { value: "13", label: '前下'},
+  { value: "21", label: '后上'},
+  { value: "22", label: '后中'},
+  { value: "23", label: '后下'}
+]) 
 
 // 时间段快捷选项
 const shortcuts = [
@@ -283,7 +270,6 @@ const shortcuts2 = [
   },
 ]
 
-
 // 处理折线图数据
 const humValueData = ref<number[]>([]);
 const temValueData = ref<number[]>([]);
@@ -344,9 +330,8 @@ const getList = async () => {
         }
       });
 
-      // 图表显示的位置变化
-      nowAddress.value = nowAddressTemp.value
-      nowLocation.value = nowLocationTemp.value
+      // 图表显示的ip变化
+      nowLocation.value = data.ipAddr
       
     }else{
       isHaveData.value = false;
@@ -690,30 +675,23 @@ const disabledDate = (date) => {
 //       })
 //     }
 //   }
-  
 // }
 
-// 获取参数类型最大值 例如lineId=6 表示下拉框为L1~L6
-const getSensorIdMaxValue = async () => {
-  const data = await EnvDataApi.getSensorIdMaxValue()
-  const sensorIdMaxValue = data.sensor_id_max_value;
-  const sensorSelectionValue: { value: number; label: string; }[] = [];
-  for (let i = 1; i <= sensorIdMaxValue; i++) {
-    sensorSelectionValue.push({ value: i, label: `${i}`});
-  }
-  sensorOptions.value = sensorSelectionValue;
-}
 
 // 导航栏选择后触发
 const handleClick = async (row) => {
-   if(row.type != null  && row.type == 4){
-    queryParams.pduId = undefined
-    queryParams.ipAddr = row.ip
-    queryParams.cascadeAddr = row?.unique?.split("-")[1];
+   if(row.type != null  && row.type == 3){
+    nowLocation.value = ''
+    maxTemDataTemp.value = 0
+    minTemDataTemp.value = 0
+    //切换机柜要把初始化sensorId， 不然传到接口报错
+    queryParams.sensorId = undefined
+    queryParams.cabinetId = row.id
     findFullName(navList.value, row.unique, fullName => {
-      nowAddressTemp.value = fullName
-      nowLocationTemp.value = row.unique
+      nowAddress.value = fullName
     });
+    let data: any[] = [];
+    tableData.value = data;
     handleQuery();
   }
 }
@@ -733,49 +711,38 @@ function findFullName(data, targetUnique, callback, fullName = '') {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
-  let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
-  arr = arr.concat(temp);
-  }
-  navList.value = arr
+  const res = await CabinetApi.getRoomMenuAll({})
+  navList.value = res
 }
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
-  // IP地址的正则表达式
-  const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-  if (queryParams.ipAddr == null || queryParams.ipAddr == '' || ipRegex.test(queryParams.ipAddr)){
-    queryParams.cascadeAddr = cascadeAddr.value.toString();
-    if (queryParams.ipAddr != undefined && ipRegex.test(queryParams.ipAddr)){
-      queryParams.pduId = undefined;
-    }
+    queryParams.pduId = undefined;
+    queryParams.channel = Number(detect.value.split('')[0])
+    queryParams.position = Number(detect.value.split('')[1])
     needFlush.value++;
-  }else{
-    ElMessage.error('IP地址格式有误,请重新输入！')
-  }
 }
 
 /** 初始化 **/
 onMounted( async () => {
-  getSensorIdMaxValue()
   getNavList()
   // 获取路由参数中的 pdu_id
-  const queryPduId = useRoute().query.pduId as string | undefined;
-  const querySensorId = useRoute().query.sensorId as string | undefined;
-  const queryLocation = useRoute().query.location as string | undefined;
-  const queryAddress = useRoute().query.address as string;
-  const queryIpAddr = queryLocation?.split("-")[0];
-  const queryCascadeAddr = queryLocation?.split("-")[1];
+  let queryPduId = useRoute().query.pduId as string | undefined;
+  let querySensorId = useRoute().query.sensorId as string | undefined;
+  let queryLocation = useRoute().query.location as string;
+  let queryAddress = useRoute().query.address as string;
+  let queryDetectValue = useRoute().query.detectValue as string;
   queryParams.pduId = queryPduId ? parseInt(queryPduId, 10) : undefined;
-  queryParams.sensorId = querySensorId ? parseInt(querySensorId, 10) : 1;
-  queryParams.ipAddr = queryIpAddr ? queryIpAddr : undefined;
-  queryParams.cascadeAddr = queryCascadeAddr ? queryCascadeAddr : '0';
-  cascadeAddr.value = queryCascadeAddr ? parseInt(queryCascadeAddr, 10) : 0;
+  queryParams.sensorId = querySensorId ? parseInt(querySensorId, 10) : undefined;
   if (queryParams.pduId != undefined){
     await getList();
-    nowAddress.value = queryAddress
+    if (queryAddress == null) {
+      nowAddress.value = '';
+    } else {
+      nowAddress.value = queryAddress;
+    }
+    nowLocation.value = queryLocation
+    detect.value = queryDetectValue == null ? undefined : queryDetectValue
     initChart();
   }
 })
@@ -829,11 +796,6 @@ onMounted( async () => {
 :deep( .el-table tbody tr) {
   pointer-events: none;
 }
- 
-/* 修改表头样式-加边框 */
-/* ::v-deep .el-table__header-wrapper {
-  border: solid 1px #04c2ed;
-} */
  
 /* // 表格斑马自定义颜色 */
 :deep(.el-table__row.warning-row)  {

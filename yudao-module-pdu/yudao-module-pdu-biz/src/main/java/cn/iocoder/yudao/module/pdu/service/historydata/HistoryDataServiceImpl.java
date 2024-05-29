@@ -543,7 +543,6 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     @Override
     public PageResult<Object> getEnvDataPage(EnvDataPageReqVo pageReqVO) throws IOException {
         PageResult<Object> pageResult = null;
-
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         int pageNo = pageReqVO.getPageNo();
@@ -601,20 +600,10 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         Integer channel = pageReqVO.getChannel();
         Integer position = pageReqVO.getPosition();
 
-        // 探测点查出传感器id和ab路
-        if ( channel != null && position != null ){
-            QueryWrapper<CabinetEnvSensor> cabinetEnvSensorQueryWrapper = new QueryWrapper<>();
-            if( cabinetIds.length != 0 ){
-                cabinetEnvSensorQueryWrapper.in("cabinet_id", cabinetIds);
-            }
-            cabinetEnvSensorQueryWrapper.eq("channel", channel).eq("position", position);
-            List<CabinetEnvSensor> cabinetEnvSensorList = cabinetEnvSensorMapper.selectObjs(cabinetEnvSensorQueryWrapper);
-        }
-
-        if (cabinetIds != null){
+        // 前端筛选机柜但没筛选探测点触发
+        if (cabinetIds != null && channel == null){
             QueryWrapper<CabinetPdu> cabinetPduQueryWrapper = new QueryWrapper<>();
             cabinetPduQueryWrapper.in("cabinet_id", cabinetIds);
-
             List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(cabinetPduQueryWrapper);
             for (CabinetPdu cabinetPdu1 : cabinetPduList){
                 Integer ipA = getPduIdByAddr(cabinetPdu1.getPduIpA(), String.valueOf(cabinetPdu1.getCasIdA()));
@@ -625,10 +614,54 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             if (!pduIds.isEmpty()) {
                 searchSourceBuilder.query(QueryBuilders.termsQuery("pdu_id", pduIds));
             }else{
-                searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+                // 查不到pdu 直接返回空数据
+                pageResult = new PageResult<>();
+                pageResult.setList(null)
+                        .setTotal(0L);
+                return pageResult;
             }
         }else{
             searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        }
+
+        // 前端筛选某个机柜和探测点后触发
+        if (cabinetIds!= null && channel != null && position != null){
+            QueryWrapper<CabinetEnvSensor> cabinetEnvSensorQueryWrapper = new QueryWrapper<>();
+            cabinetEnvSensorQueryWrapper.eq("cabinet_id", cabinetIds[0])
+                    .eq("channel", channel)
+                    .eq("position", position);
+            CabinetEnvSensor cabinetEnvSensor = cabinetEnvSensorMapper.selectOne(cabinetEnvSensorQueryWrapper);
+            // 表示此机柜此位置没有传感器 直接返回
+            if ( cabinetEnvSensor == null ){
+                pageResult = new PageResult<>();
+                pageResult.setList(null)
+                        .setTotal(0L);
+                return pageResult;
+            }
+            QueryWrapper<CabinetPdu> cabinetPduQueryWrapper = new QueryWrapper<>();
+            cabinetPduQueryWrapper.eq("cabinet_id", cabinetIds[0]);
+            CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(cabinetPduQueryWrapper);
+            Integer pduId = null;
+            if (cabinetEnvSensor.getPathPdu() == 'A'){
+                pduId = getPduIdByAddr(cabinetPdu.getPduIpA(), String.valueOf(cabinetPdu.getCasIdA()));
+            }
+            if (cabinetEnvSensor.getPathPdu() == 'B'){
+                pduId = getPduIdByAddr(cabinetPdu.getPduIpB(), String.valueOf(cabinetPdu.getCasIdB()));
+            }
+            // 创建范围查询
+            if (pduId != null) {
+                QueryBuilder termQuery = QueryBuilders.termQuery("pdu_id", pduId);
+                // 创建匹配查询
+                QueryBuilder termQuery1 = QueryBuilders.termQuery("sensor_id", cabinetEnvSensor.getSensorId());
+                // 创建BoolQueryBuilder对象
+                BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+                // 将范围查询和匹配查询添加到布尔查询中
+                boolQuery.must(termQuery);
+                boolQuery.must(termQuery1);
+                // 将布尔查询设置到SearchSourceBuilder中
+                searchSourceBuilder.query(boolQuery);
+            }
+
         }
 
         // 搜索请求对象
@@ -663,23 +696,13 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     }
 
     @Override
-    public PageResult<Object> getEnvDataDetails(EnvDataDetailsReqVO reqVO) throws IOException {
-        Integer sensorId = reqVO.getSensorId();
-        Integer pduId = reqVO.getPduId();
-        if (Objects.equals(pduId, null)){
-            pduId = getPduIdByAddr(reqVO.getIpAddr(), reqVO.getCascadeAddr());
-            if (Objects.equals(pduId, null)){
-                return null;
-            }
-        }
+    public Map<String, Object> getEnvDataDetails(EnvDataDetailsReqVO reqVO) throws IOException {
         // 创建BoolQueryBuilder对象
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-        // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
         searchSourceBuilder.size(10000);
         searchSourceBuilder.trackTotalHits(true);
-        PageResult<Object> pageResult = null;
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
         if ("realtime".equals(reqVO.getGranularity()) ){
@@ -694,6 +717,43 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                     .from(reqVO.getTimeRange()[0])
                     .to(reqVO.getTimeRange()[1]));
         }
+        Map<String, Object> map = new HashMap<>();
+        Integer sensorId = reqVO.getSensorId();
+        Integer pduId = reqVO.getPduId();
+        Integer cabinetId = reqVO.getCabinetId();
+        Integer channel = reqVO.getChannel();
+        Integer position = reqVO.getPosition();
+        String ipAddr = null;
+        /**
+         * 不是跳转到环境分析的情况 此时没有pduId和sensorId 要用cabinetId、channel和position来查
+         */
+        if (pduId == null && sensorId == null){
+            QueryWrapper<CabinetEnvSensor> cabinetEnvSensorQueryWrapper = new QueryWrapper<>();
+            cabinetEnvSensorQueryWrapper.eq("cabinet_id", cabinetId)
+                    .eq("channel", channel)
+                    .eq("position", position);
+            CabinetEnvSensor cabinetEnvSensor = cabinetEnvSensorMapper.selectOne(cabinetEnvSensorQueryWrapper);
+            // 表示此机柜此位置没有传感器 直接返回
+            if ( cabinetEnvSensor == null ){
+                System.out.println("机柜此位置没有传感器");
+                map.put("list", null);
+                map.put("total", 0);
+                map.put("ipAddr", null);
+                return map;
+            }
+            sensorId = cabinetEnvSensor.getSensorId();
+            QueryWrapper<CabinetPdu> cabinetPduQueryWrapper = new QueryWrapper<>();
+            cabinetPduQueryWrapper.eq("cabinet_id", cabinetId);
+            CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(cabinetPduQueryWrapper);
+            if (cabinetEnvSensor.getPathPdu() == 'A'){
+                pduId = getPduIdByAddr(cabinetPdu.getPduIpA(), String.valueOf(cabinetPdu.getCasIdA()));
+                ipAddr = cabinetPdu.getPduIpA()+'-'+ cabinetPdu.getCasIdA();
+            } else if (cabinetEnvSensor.getPathPdu() == 'B') {
+                pduId = getPduIdByAddr(cabinetPdu.getPduIpB(), String.valueOf(cabinetPdu.getCasIdB()));
+                ipAddr = cabinetPdu.getPduIpB()+'-'+ cabinetPdu.getCasIdB();
+            }
+        }
+
         // 创建匹配查询
         QueryBuilder termQuery = QueryBuilders.termQuery("pdu_id", pduId);
         QueryBuilder termQuery1 = QueryBuilders.termQuery("sensor_id", sensorId);
@@ -704,19 +764,19 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         searchSourceBuilder.query(boolQuery);
         searchRequest.source(searchSourceBuilder);
         // 执行搜索,向ES发起http请求
-        SearchResponse searchResponse3 = client.search(searchRequest, RequestOptions.DEFAULT);
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
         // 搜索结果
-        List<Object> resultList3 = new ArrayList<>();
-        SearchHits hits3 = searchResponse3.getHits();
-        hits3.forEach(searchHit -> resultList3.add(searchHit.getSourceAsMap()));
+        List<Object> resultList = new ArrayList<>();
+        SearchHits hits = searchResponse.getHits();
+        hits.forEach(searchHit -> resultList.add(searchHit.getSourceAsMap()));
         // 匹配到的总记录数
-        Long totalHits3 = hits3.getTotalHits().value;
+        Long totalHits = hits.getTotalHits().value;
         // 返回的结果
-        pageResult = new PageResult<>();
-        pageResult.setList(resultList3)
-                .setTotal(totalHits3);
+        map.put("list", resultList);
+        map.put("total", totalHits);
+        map.put("ipAddr", ipAddr);
 
-        return pageResult;
+        return map;
     }
 
     @Override

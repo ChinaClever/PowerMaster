@@ -41,9 +41,9 @@
             />
         </el-form-item> -->
 
-        <el-form-item label="传感器" prop="sensorId">
+        <el-form-item label="检测点" prop="detect">
           <el-select
-            v-model="queryParams.sensorId"
+            v-model="detect"
             class="!w-130px"
             @change="handleQuery"
             >
@@ -117,7 +117,7 @@
           <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
             <template #default="{ row }">
               <div v-if="column.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.pdu_id, row.location, row.address, row.sensor_id)">详情</el-button>
+                <el-button link type="primary" @click="toDetails(row.pdu_id, row.location, row.address.address, row.address.channel, row.address.position, row.sensor_id)">详情</el-button>
               </div>
               <div v-else-if="column.slot === 'detect'">
                 {{ getCombinedString(row.address?.channel, row.address?.position) }}
@@ -166,6 +166,7 @@ const list = ref<Array<{ }>>([]); // 列表数据
 const total = ref(0) // 数据总条数 超过10000条为10000
 const realTotel = ref(0) // 数据的真实总条数
 const cascadeAddr = ref(0) // 数字类型的级联地址
+const detect = ref('all') // 检测点的值 默认全部
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -231,7 +232,15 @@ const shortcuts = [
 ]
 
 // 传感器选项
-const sensorOptions = ref([]) as any;
+const sensorOptions = ref([
+  { value: 'all', label: '全部'},
+  { value: "11", label: '前上'},
+  { value: "12", label: '前中'},
+  { value: "13", label: '前下'},
+  { value: "21", label: '后上'},
+  { value: "22", label: '后中'},
+  { value: "23", label: '后下'}
+])
 
 //筛选选项
 const props = { multiple: true}
@@ -239,9 +248,10 @@ const defaultOptionsCol = ref([["tem"], ["hum"]])
 const optionsCol = ref([
   { value: "tem", label: '温度'},
   { value: "hum", label: '湿度'},
+  { value: "sensor_id", label: '传感器ID'},
   { value: "location", label: '网络地址'},
 ])
-const originalArray = ref(["tem", "hum", "location"])
+const originalArray = ref(["tem", "hum", "location", "sensor_id"])
 
 // 处理筛选列变化
 const cascaderChange = (selectedCol) => {
@@ -277,17 +287,19 @@ watch(() => queryParams.granularity, (newValues) => {
       optionsCol.value = [
         { value: "tem", label: '温度'},
         { value: "hum", label: '湿度'},
+        { value: "sensor_id", label: '传感器ID'},
         { value: "location", label: '网络地址'},
       ];
-      originalArray.value =["tem", "hum", "location"];
+      originalArray.value =["tem", "hum", "location", "sensor_id"];
       // 配置表格列
       tableColumns.value =([
         { label: '位置', align: 'center', prop: 'address.address' , istrue:true},
         { label: '检测点', align: 'center', slot: 'detect' , istrue: true},
+        { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:false, width: '160px'},
         { label: '温度(℃)', align: 'center', prop: 'tem_value', istrue:true, formatter: formatData},
         { label: '湿度(%RH)', align: 'center', prop: 'hum_value' , istrue:true, formatter: formatData},
         { label: '时间', align: 'center', prop: 'create_time', width: '230px', formatter: formatTime, istrue:true},
-        { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
+        { label: '网络地址', align: 'center', prop: 'location' , istrue:false},
         { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '230px'},
       ]);
       queryParams.pageNo = 1;
@@ -313,15 +325,19 @@ watch(() => queryParams.granularity, (newValues) => {
           ]
         },
         {
+          value: "sensor_id", label: '传感器ID'
+        },
+        {
           value: "location", label: '网络地址'
         }
       ] as any;
       originalArray.value =["tem_avg_value", "tem_max", "tem_min", 
-                          "hum_avg_value", "hum_max", "hum_min", "location"],
+                          "hum_avg_value", "hum_max", "hum_min", "location", "sensor_id"],
       // 配置表格列
       tableColumns.value = [
         { label: '位置', align: 'center', prop: 'address.address', istrue:true, width: '180px'}, 
         { label: '检测点', align: 'center', slot: 'detect' , istrue: true},
+        { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:false, width: '160px'},
         { label: '平均温度(℃)', align: 'center', prop: 'tem_avg_value', istrue:true, width: '180px', formatter: formatData },
         { label: '最高温度(℃)', align: 'center', prop: 'tem_max_value', istrue:true, width: '180px', formatter: formatData },
         { label: '最高温度时间', align: 'center', prop: 'tem_max_time' , width: '230px', istrue:true},
@@ -345,10 +361,11 @@ watch(() => queryParams.granularity, (newValues) => {
 const tableColumns = ref([
     { label: '位置', align: 'center', prop: 'address.address' , istrue:true},
     { label: '检测点', align: 'center', slot: 'detect' , istrue: true},
+    { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:false, width: '160px'},
     { label: '温度(℃)', align: 'center', prop: 'tem_value', istrue:true},
     { label: '湿度(%RH)', align: 'center', prop: 'hum_value' , istrue:true},
     { label: '时间', align: 'center', prop: 'create_time', width: '230px', formatter: formatTime, istrue:true},
-    { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
+    { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '120px'},
     { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '160px'},
 ]) as any;
 
@@ -442,21 +459,29 @@ const disabledDate = (date) => {
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
-   // IP地址的正则表达式
-  // const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-  // if (queryParams.ipAddr == null || queryParams.ipAddr == '' || ipRegex.test(queryParams.ipAddr)){
     queryParams.pageNo = 1
-    // queryParams.cascadeAddr = cascadeAddr.value.toString();
-    getList()
-  // }else{
-  //   ElMessage.error('IP地址格式有误,请重新输入！')
-  // }
+    if (detect.value != 'all'){
+      if (queryParams.cabinetIds?.length != 1){
+        ElMessage.error('仅选定一个机柜时可以筛选监测点！')
+        detect.value = 'all'
+        queryParams.channel = undefined
+        queryParams.position = undefined
+          return
+      }
 
+      queryParams.channel = Number(detect.value.split('')[0])
+      queryParams.position = Number(detect.value.split('')[1])
+    }else{
+      queryParams.channel = undefined
+      queryParams.position = undefined
+    }
+    getList()
 }
 
 /** 详情操作*/
-const toDetails = (pduId: number, location: string, address: string, sensorId: number) => {
-  push('/pdu/record/envAnalysis?pduId='+pduId+'&location='+location+'&address='+address+'&sensorId='+sensorId);
+const toDetails = (pduId: number, location: string, address: string, channel: number, position: number, sensorId: number) => {
+  let detectValue = channel?.toString()+position?.toString()
+  push('/pdu/record/envAnalysis?pduId='+pduId+'&location='+location+'&address='+address+'&detectValue='+detectValue+'&sensorId='+sensorId);
 }
 
 /** 导出按钮操作 */
