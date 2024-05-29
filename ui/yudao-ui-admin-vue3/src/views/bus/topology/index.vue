@@ -45,6 +45,7 @@
               </div>
             </div>
           </div>
+          <div class="tip">A路</div>
         </div>
       </div>
       <div class="loadB">
@@ -84,6 +85,7 @@
             <div class="stage"></div>
             <div class="layer"></div>
           </div>
+          <div class="tip">B路</div>
         </div>
       </div>
     </div>
@@ -172,7 +174,7 @@ const btns = [
     value: 3
   },
   {
-    name: '环境因素',
+    name: '功率因素',
     value: 4
   },
   {
@@ -198,9 +200,9 @@ const switchBtn = (value) => {
 .topologyContainer {
   box-sizing: border-box;
   height: calc(100vh - 250px);
-  // display: flex;
-  // flex-direction: column;
-  // justify-content: space-around;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   // height: calc(100% - var(--app-content-padding) - var(--app-content-padding) - var(--app-footer-height)) !important;
   overflow: auto;
   padding: 20px 0;
@@ -235,6 +237,7 @@ const switchBtn = (value) => {
       margin-top: 48px;
     }
     .boxList {
+      position: relative;
       flex: 1;
       box-sizing: border-box;
       display: flex;
@@ -257,6 +260,14 @@ const switchBtn = (value) => {
           height: 10px;
           background-color: red;
         }
+      }
+      .tip {
+        position: absolute;
+        left: 25px;
+        top: -35px;
+        color: red;
+        font-size: 20px;
+        font-weight: bold;
       }
     }
   }
@@ -282,6 +293,10 @@ const switchBtn = (value) => {
         .stage {
           background-color: green;
         }
+      }
+      .tip {
+        top: 170px;
+        color: green;
       }
     }
   }
