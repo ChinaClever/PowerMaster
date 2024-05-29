@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="PDU环境分析" :showCheckbox="false">
+  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="环境数据分析" :showCheckbox="false">
     <template #NavInfo>
       <div class="nav_header">
         <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
@@ -42,7 +42,7 @@
         :inline="true"
         label-width="70px"
       >
-      <el-form-item label="检测点" prop="detect">
+      <el-form-item label="监测点" prop="detect">
         <el-select
           v-model="detect"
           class="!w-130px"
@@ -148,7 +148,7 @@ const headerData = ref<any[]>([]);
 const cascadeAddr = ref(0) // 数字类型的级联地址
 const needFlush = ref(0) // 是否需要刷新图表
 const loading = ref(false) //  列表的加载中
-const detect = ref('11') as any// 检测点的值 默认全部
+const detect = ref('11') as any// 监测点的值 默认全部
 const queryParams = reactive({
   pduId: undefined as number | undefined,
   sensorId: undefined as number | undefined,

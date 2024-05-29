@@ -41,7 +41,7 @@
             />
         </el-form-item> -->
 
-        <el-form-item label="检测点" prop="detect">
+        <el-form-item label="监测点" prop="detect">
           <el-select
             v-model="detect"
             class="!w-130px"
@@ -166,7 +166,7 @@ const list = ref<Array<{ }>>([]); // 列表数据
 const total = ref(0) // 数据总条数 超过10000条为10000
 const realTotel = ref(0) // 数据的真实总条数
 const cascadeAddr = ref(0) // 数字类型的级联地址
-const detect = ref('all') // 检测点的值 默认全部
+const detect = ref('all') // 监测点的值 默认全部
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -294,7 +294,7 @@ watch(() => queryParams.granularity, (newValues) => {
       // 配置表格列
       tableColumns.value =([
         { label: '位置', align: 'center', prop: 'address.address' , istrue:true},
-        { label: '检测点', align: 'center', slot: 'detect' , istrue: true},
+        { label: '监测点', align: 'center', slot: 'detect' , istrue: true},
         { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:false, width: '160px'},
         { label: '温度(℃)', align: 'center', prop: 'tem_value', istrue:true, formatter: formatData},
         { label: '湿度(%RH)', align: 'center', prop: 'hum_value' , istrue:true, formatter: formatData},
@@ -336,7 +336,7 @@ watch(() => queryParams.granularity, (newValues) => {
       // 配置表格列
       tableColumns.value = [
         { label: '位置', align: 'center', prop: 'address.address', istrue:true, width: '180px'}, 
-        { label: '检测点', align: 'center', slot: 'detect' , istrue: true},
+        { label: '监测点', align: 'center', slot: 'detect' , istrue: true},
         { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:false, width: '160px'},
         { label: '平均温度(℃)', align: 'center', prop: 'tem_avg_value', istrue:true, width: '180px', formatter: formatData },
         { label: '最高温度(℃)', align: 'center', prop: 'tem_max_value', istrue:true, width: '180px', formatter: formatData },
@@ -360,7 +360,7 @@ watch(() => queryParams.granularity, (newValues) => {
 
 const tableColumns = ref([
     { label: '位置', align: 'center', prop: 'address.address' , istrue:true},
-    { label: '检测点', align: 'center', slot: 'detect' , istrue: true},
+    { label: '监测点', align: 'center', slot: 'detect' , istrue: true},
     { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:false, width: '160px'},
     { label: '温度(℃)', align: 'center', prop: 'tem_value', istrue:true},
     { label: '湿度(%RH)', align: 'center', prop: 'hum_value' , istrue:true},
@@ -387,7 +387,7 @@ const getList = async () => {
   }
 }
 
-// 格式化检测位置
+// 格式化监测位置
 function getCombinedString(channel: number, position: number) {
   let channelText = '';
   let positionText = '';

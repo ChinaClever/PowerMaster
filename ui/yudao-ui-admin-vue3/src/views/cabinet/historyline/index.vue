@@ -2,7 +2,7 @@
  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="机柜电力分析" :showCheckbox="false">
     <template #NavInfo>
       <div class="nav_header">
-        <div class="nav_header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
+        <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div> -->
         <br/>
         <span v-if="nowAddress">{{nowAddress}}</span>
         <br/>

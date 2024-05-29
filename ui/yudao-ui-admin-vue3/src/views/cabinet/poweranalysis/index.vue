@@ -2,7 +2,7 @@
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜能耗趋势">
     <template #NavInfo>
     <div class="nav_header">
-      <div class="nav_header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
+      <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div> -->
       <br/>
       <span>全部机柜最近一周新增记录</span>
         <br/>
