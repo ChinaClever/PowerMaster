@@ -365,6 +365,7 @@ const apparentPowMaxTimeData = ref<string[]>([]);
 const apparentPowMinValueData = ref<number[]>([]);
 const apparentPowMinTimeData = ref<string[]>([]);
 
+// 侧边栏显示需要
 const maxActivePowDataTemp = ref(0);// 最大有功功率 
 const maxActivePowDataTimeTemp = ref();// 最大有功功率的发生时间 
 const minActivePowDataTemp = ref(0);// 最小有功功率 

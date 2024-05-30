@@ -794,7 +794,6 @@ const handleCheck = async (node) => {
     });
     queryParams.ipArray = arr
     handleQuery()
-    console.log(arr)
 }
 
 // 接口获取机房导航列表

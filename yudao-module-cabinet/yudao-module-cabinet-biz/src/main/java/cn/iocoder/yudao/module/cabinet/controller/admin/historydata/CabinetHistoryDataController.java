@@ -42,39 +42,10 @@ public class CabinetHistoryDataController {
     }
 
     @GetMapping("/one-hour")
-    @Operation(summary = "获得pdu最近一小时插入的数据量")
+    @Operation(summary = "获得机柜最近一小时插入的数据量")
     public CommonResult<Map<String, Object>> getOneHourSumData() throws IOException {
         Map<String, Object> map = cabinetHistoryDataService.getOneHourSumData();
         return success(map);
     }
-
-
-//    @GetMapping("/env-page")
-//    @Operation(summary = "获得机柜环境数据分页")
-//    public CommonResult<PageResult<Object>> getEnvDataPage(HistoryDataPageReqVO pageReqVO) throws IOException {
-//        PageResult<Object> pageResult = historyDataService.getEnvDataPage(pageReqVO);
-//        return success(pageResult);
-//    }
-//
-//    @GetMapping("/env-details")
-//    @Operation(summary = "获得机柜历史数据详情")
-//    public CommonResult<PageResult<Object>> getEnvDataDetails(EnvDataDetailsReqVO reqVO) throws IOException {
-//        PageResult<Object> pageResult = historyDataService.getEnvDataDetails(reqVO);
-//        return success(pageResult);
-//    }
-
-
-//    @GetMapping("/export-excel")
-//    @Operation(summary = "导出pdu历史数据 Excel")
-////    @PreAuthorize("@ss.hasPermission('pdu:history-data:export')")
-//    @OperateLog(type = EXPORT)
-//    public void exportHistoryDataExcel(@Valid HistoryDataPageReqVO pageReqVO,
-//              HttpServletResponse response) throws IOException {
-//        pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
-//        List<PduHdaTotalRealtimeDO> list = historyDataService.getHistoryDataPage(pageReqVO).getList();
-//        // 导出 Excel
-//        ExcelUtils.write(response, "pdu历史数据.xls", "数据", HistoryDataRespVO.class,
-//                        BeanUtils.toBean(list, HistoryDataRespVO.class));
-//    }
 
 }
