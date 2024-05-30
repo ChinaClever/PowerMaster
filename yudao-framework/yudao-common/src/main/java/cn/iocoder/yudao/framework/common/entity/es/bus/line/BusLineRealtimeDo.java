@@ -4,6 +4,8 @@ import cn.iocoder.yudao.framework.common.entity.es.bus.BusBaseDo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author luowei
  * @version 1.0
@@ -66,4 +68,17 @@ public class BusLineRealtimeDo extends BusBaseDo {
      */
     @JsonProperty("vol_line")
     private float volLine;
+
+    /**
+     * 电流谐波含量
+     */
+    @JsonProperty("cur_thd")
+    private float[] curThd;
+
+    /**
+     * 电压谐波含量
+     */
+    @JsonProperty("vol_thd")
+    private float[]  volThd;
+
 }

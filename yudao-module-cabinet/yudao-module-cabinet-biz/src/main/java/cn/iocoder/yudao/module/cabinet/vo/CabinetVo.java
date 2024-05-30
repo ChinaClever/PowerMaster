@@ -125,4 +125,33 @@ public class CabinetVo {
     @Schema(description = "u位绑定", example = "[]")
     private List<RackIndex>  rackList;
 
+    @Schema(description = "A路母线ip地址", example = "1")
+    private String busIpA;
+
+    @Schema(description = "A路母线名称", example = "1")
+    private String busNameA;
+
+
+    @Schema(description = "A路插接箱名称", example = "1")
+    private String boxNameA;
+
+
+    @Schema(description = "A路插接箱输出位id", example = "1")
+    private Integer boxOutletIdA;
+
+
+    @Schema(description = "B路母线ip地址", example = "1")
+    private String busIpB;
+
+    @Schema(description = "B路母线名称", example = "1")
+    private String busNameB;
+
+
+    @Schema(description = "B路插接箱名称", example = "1")
+    private String boxNameB;
+
+
+    @Schema(description = "B路插接箱输出位id", example = "1")
+    private Integer boxOutletIdB;
+
 }
