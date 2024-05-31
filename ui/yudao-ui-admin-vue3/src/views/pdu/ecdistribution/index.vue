@@ -636,6 +636,7 @@ onMounted(async () => {
     await getLineChartData();
     await getRankChartData();
     nowAddress.value = queryAddress;
+    nowAddressTemp.value = queryAddress;
     initLineChart();
     initRankChart();
   }

@@ -66,7 +66,7 @@
         <template v-for="column in tableColumns">
           <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue">
             <template #default="{ row }" v-if="column.slot === 'actions'">
-              <el-button link type="primary" @click="toDetails(row.rack_id, row.location)">详情</el-button>
+              <el-button link type="primary" @click="toDetails(row.rack_id, row.location, row.rack_name)">详情</el-button>
             </template>
           </el-table-column>
         </template>
@@ -326,8 +326,9 @@ const getNavOneWeekData = async() => {
 
 
 /** 详情操作*/
-const toDetails = (rackId: number, location: string) => {
-  push('/rack/nenghao/ecdistribution?rackId='+rackId+'&address='+location);
+const toDetails = (rackId: number, location: string, rackName: string) => {
+  location += '-' + rackName
+  push('/u/nenghao/ecdistribution?rackId='+rackId+'&location='+location);
 }
 
 /** 初始化 **/

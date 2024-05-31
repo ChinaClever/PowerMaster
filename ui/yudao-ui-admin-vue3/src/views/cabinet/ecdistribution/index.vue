@@ -309,7 +309,7 @@ const initLineChart = () => {
   if (chartContainer.value && instance) {
     lineChart = echarts.init(chartContainer.value);
     lineChart.setOption({
-      title: { text: nowAddress.value+' 总耗电量'+formatNumber(totalEqData.value, 1)+'kWh', top: -4},
+      title: { text: '耗电量趋势图', top: -4},
       tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
       legend: { data: []},
       grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true},
@@ -439,6 +439,7 @@ onMounted(async () => {
   if (queryParams.cabinetId != undefined){
     await getLineChartData();
     nowAddress.value = queryAddress;
+    nowAddressTemp.value = queryAddress;
     initLineChart();
   }
 })
