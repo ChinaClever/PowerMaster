@@ -1,14 +1,13 @@
-package cn.iocoder.yudao.module.cabinet.service.energyconsumption;
+package cn.iocoder.yudao.module.rack.service.energyconsumption;
 
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.module.cabinet.controller.admin.energyconsumption.VO.CabinetEnergyConsumptionPageReqVO;
-import cn.iocoder.yudao.module.cabinet.service.historydata.CabinetHistoryDataService;
+import cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO.RackEnergyConsumptionPageReqVO;
+import cn.iocoder.yudao.module.rack.service.historydata.RackHistoryDataService;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
@@ -24,16 +23,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
-public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsumptionService {
+public class RackEnergyConsumptionServiceImpl implements RackEnergyConsumptionService {
 
     @Autowired
     private RestHighLevelClient client;
 
     @Autowired
-    private CabinetHistoryDataService cabinetHistoryDataService;
+    private RackHistoryDataService rackHistoryDataService;
 
     @Override
-    public PageResult<Object> getEQDataPage(CabinetEnergyConsumptionPageReqVO pageReqVO) throws IOException {
+    public PageResult<Object> getEQDataPage(RackEnergyConsumptionPageReqVO pageReqVO) throws IOException {
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         // 设置要排除的字段
@@ -56,18 +55,18 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
         }
-        String[] cabinetIds = pageReqVO.getCabinetIds();
-        if (cabinetIds != null){
-            searchSourceBuilder.query(QueryBuilders.termsQuery("cabinet_id", cabinetIds));
+        String[] rackIds = pageReqVO.getRackIds();
+        if (rackIds != null){
+            searchSourceBuilder.query(QueryBuilders.termsQuery("rack_id", rackIds));
         }
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
         if ("day".equals(pageReqVO.getGranularity()) ){
-            searchRequest.indices("cabinet_eq_total_day");
+            searchRequest.indices("rack_eq_total_day");
         }else if ("week".equals(pageReqVO.getGranularity()) ){
-            searchRequest.indices("cabinet_eq_total_week");
+            searchRequest.indices("rack_eq_total_week");
         }else {
-            searchRequest.indices("cabinet_eq_total_month");
+            searchRequest.indices("rack_eq_total_month");
         }
         searchRequest.source(searchSourceBuilder);
         // 执行搜索,向ES发起http请求
@@ -80,18 +79,18 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
         Long totalHits = hits.getTotalHits().value;
         // 返回的结果
         PageResult<Object> pageResult = new PageResult<>();
-        pageResult.setList(cabinetHistoryDataService.getLocationsByCabinetIds(mapList))
+        pageResult.setList(rackHistoryDataService.getRackNameAndLocationsByCabinetIds(mapList))
                 .setTotal(totalHits);
 
         return pageResult;
     }
 
     @Override
-    public PageResult<Object> getBillDataPage(CabinetEnergyConsumptionPageReqVO pageReqVO) throws IOException {
+    public PageResult<Object> getBillDataPage(RackEnergyConsumptionPageReqVO pageReqVO) throws IOException {
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         // 设置要排除的字段
-        searchSourceBuilder.fetchSource(new String[]{"cabinet_id", "start_time", "end_time", "eq_value",  "bill_value", }, null);
+        searchSourceBuilder.fetchSource(new String[]{"rack_id", "cabinet_id", "start_time", "end_time", "eq_value",  "bill_value", }, null);
         int pageNo = pageReqVO.getPageNo();
         int pageSize = pageReqVO.getPageSize();
         int index = (pageNo - 1) * pageSize;
@@ -110,18 +109,18 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
         }
-        String[] cabinetIds = pageReqVO.getCabinetIds();
-        if (cabinetIds != null){
-            searchSourceBuilder.query(QueryBuilders.termsQuery("cabinet_id", cabinetIds));
+        String[] rackIds = pageReqVO.getRackIds();
+        if (rackIds != null){
+            searchSourceBuilder.query(QueryBuilders.termsQuery("rack_id", rackIds));
         }
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
         if ("day".equals(pageReqVO.getGranularity()) ){
-            searchRequest.indices("cabinet_eq_total_day");
+            searchRequest.indices("rack_eq_total_day");
         }else if ("week".equals(pageReqVO.getGranularity()) ){
-            searchRequest.indices("cabinet_eq_total_week");
+            searchRequest.indices("rack_eq_total_week");
         }else {
-            searchRequest.indices("cabinet_eq_total_month");
+            searchRequest.indices("rack_eq_total_month");
         }
         searchRequest.source(searchSourceBuilder);
         // 执行搜索,向ES发起http请求
@@ -134,16 +133,16 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
         Long totalHits = hits.getTotalHits().value;
         // 返回的结果
         PageResult<Object> pageResult = new PageResult<>();
-        pageResult.setList(cabinetHistoryDataService.getLocationsByCabinetIds(mapList))
+        pageResult.setList(rackHistoryDataService.getRackNameAndLocationsByCabinetIds(mapList))
                 .setTotal(totalHits);
 
         return pageResult;
     }
 
     @Override
-    public PageResult<Object> getEQDataDetails(CabinetEnergyConsumptionPageReqVO reqVO) throws IOException {
-        Integer cabinetId = reqVO.getCabinetId();
-        if (Objects.equals(cabinetId, null)){
+    public PageResult<Object> getEQDataDetails(RackEnergyConsumptionPageReqVO reqVO) throws IOException {
+        Integer rackId = reqVO.getRackId();
+        if (Objects.equals(rackId, null)){
             return null;
         }
         // 搜索源构建对象
@@ -159,13 +158,13 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
         if ("day".equals(reqVO.getGranularity()) ){
-            searchRequest.indices("cabinet_eq_total_day");
+            searchRequest.indices("rack_eq_total_day");
         }else if ("week".equals(reqVO.getGranularity()) ){
-            searchRequest.indices("cabinet_eq_total_week");
+            searchRequest.indices("rack_eq_total_week");
         }else {
-            searchRequest.indices("cabinet_eq_total_month");
+            searchRequest.indices("rack_eq_total_month");
         }
-        searchSourceBuilder.query(QueryBuilders.termQuery("cabinet_id", cabinetId));
+        searchSourceBuilder.query(QueryBuilders.termQuery("rack_id", rackId));
         searchRequest.source(searchSourceBuilder);
         // 执行搜索,向ES发起http请求
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -183,7 +182,7 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
     }
 
     @Override
-    public PageResult<Object> getRealtimeEQDataPage(CabinetEnergyConsumptionPageReqVO pageReqVO) throws IOException {
+    public PageResult<Object> getRealtimeEQDataPage(RackEnergyConsumptionPageReqVO pageReqVO) throws IOException {
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         int pageNo = pageReqVO.getPageNo();
@@ -205,11 +204,11 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
         }
-        String[] cabinetIds = pageReqVO.getCabinetIds();
-        if (cabinetIds != null){
-            searchSourceBuilder.query(QueryBuilders.termsQuery("cabinet_id", cabinetIds));
+        String[] rackIds = pageReqVO.getRackIds();
+        if (rackIds != null){
+            searchSourceBuilder.query(QueryBuilders.termsQuery("rack_id", rackIds));
         }
-        searchRequest.indices("cabinet_ele_total_realtime");
+        searchRequest.indices("rack_ele_total_realtime");
         searchRequest.source(searchSourceBuilder);
         // 执行搜索,向ES发起http请求
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -221,7 +220,7 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
         Long totalHits = hits.getTotalHits().value;
         // 返回的结果
         PageResult<Object> pageResult = new PageResult<>();
-        pageResult.setList(cabinetHistoryDataService.getLocationsByCabinetIds(mapList))
+        pageResult.setList(rackHistoryDataService.getRackNameAndLocationsByCabinetIds(mapList))
                 .setTotal(totalHits);
 
         return pageResult;
@@ -241,7 +240,7 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
                     .to(now.format(formatter)));
             // 添加计数聚合
             searchSourceBuilder.aggregation(
-                    AggregationBuilders.count("total_insertions").field("cabinet_id")
+                    AggregationBuilders.count("total_insertions").field("rack_id")
             );
             searchRequest.source(searchSourceBuilder);
             // 执行搜索请求
@@ -256,7 +255,7 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
 
     @Override
     public Map<String, Object> getOneWeekSumData() throws IOException {
-        String[] indices = new String[]{"cabinet_eq_total_day"};
+        String[] indices = new String[]{"rack_eq_total_day"};
         String[] name = new String[]{"total"};
         LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
         Map<String, Object> map = getSumData(indices, name, oneWeekAgo);
@@ -265,7 +264,7 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
 
     @Override
     public Map<String, Object> getOneDaySumData() throws IOException {
-        String[] indices = new String[]{"cabinet_ele_total_realtime"};
+        String[] indices = new String[]{"rack_ele_total_realtime"};
         String[] name = new String[]{"total"};
         LocalDateTime oneWeekAgo = LocalDateTime.now().minusDays(1);
         Map<String, Object> map = getSumData(indices, name, oneWeekAgo);

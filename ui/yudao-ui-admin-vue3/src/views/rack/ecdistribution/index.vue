@@ -1,11 +1,10 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="PDU能耗排名" :showCheckbox="false">
+  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="机架能耗排名" :showCheckbox="false">
     <template #NavInfo>
       <div class="nav_header">
-        <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
+        <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div> -->
         <br/>
         <span v-if="nowAddress">{{nowAddress}}</span>
-        <span v-if="nowLocation">( {{nowLocation}} ) </span>
         <br/>
         <span>{{selectTimeRange[0]}} 至 {{selectTimeRange[1]}}</span>
         <br/>
@@ -34,6 +33,7 @@
         <el-tab-pane label="周数据" name="weekTabPane"/>
         <el-tab-pane label="月数据" name="monthTabPane"/>
       </el-tabs>
+
       <!-- 搜索工作栏 -->
       <el-form
         class="-mb-15px"
@@ -42,17 +42,6 @@
         :inline="true"
         label-width="auto"
       >
-      <el-form-item label="参数类型" prop="type">
-        <el-cascader
-          v-model="typeDefaultSelected"
-          collapse-tags
-          :options="typeSelection"
-          collapse-tags-tooltip
-          :show-all-levels="true"
-          @change="typeCascaderChange"
-          class="!w-140px"
-        />
-      </el-form-item>
 
       <el-form-item label="时间段" prop="timeRange" >
         <el-date-picker
@@ -74,6 +63,8 @@
           <el-button type="primary" plain><Icon icon="ep:download" class="mr-5px" /> 导出</el-button>
         </el-form-item>
       </el-form>
+    </template>
+    <template #Content>
       <!-- 列表 -->
       <el-tabs v-model="activeName1">
         <el-tab-pane label="图表" name="lineChart">
@@ -110,11 +101,6 @@
         </el-tab-pane>
       </el-tabs>
     </template>
-    <template #Content>
-      <div style="overflow: visible;">
-        <div v-loading="loading1" ref="rankContainer" id="rankContainer" style="width: 70vw; height: 90vh;"></div>
-      </div>
-    </template>
   </CommonMenu>
 
 </template>
@@ -124,30 +110,25 @@ import { ElTree, ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { CabinetApi } from '@/api/cabinet/info'
+import { IndexApi } from '@/api/rack/index'
 import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
-import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption'
-import { HistoryDataApi } from '@/api/pdu/historydata'
+import { EnergyConsumptionApi } from '@/api/rack/energyConsumption'
 
 defineOptions({ name: 'ECDistribution' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const nowAddress = ref('')// 导航栏的位置信息
-const nowLocation = ref('')// 导航栏的位置信息
 const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
-const nowLocationTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
 const activeName = ref('dayTabPane')
 const activeName1 = ref('lineChart')
 const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
 const instance = getCurrentInstance();
 const selectTimeRange = ref(defaultDayTimeRange(14))
+const loading = ref(false) 
 const queryParams = reactive({
-  pduId: undefined as number | undefined,
-  outletId: undefined as number | undefined,
-  type: 'total',
+  rackId: undefined as number | undefined,
   granularity: 'day',
-  ipAddr: undefined,
-  cascadeAddr: undefined,
   // 进入页面原始数据默认显示最近2周
   timeRange: ['', ''],
 })
@@ -230,20 +211,6 @@ const shortcuts = [
   },
 ]
 
-const loading = ref(false) 
-const loading1 = ref(false) 
-// 总/输出位筛选
-const typeDefaultSelected = ref(['total'])
-const typeSelection = ref([]) as any;
-const typeCascaderChange = async (selected) => {
-  queryParams.type = selected[0];
-  if (selected[0] === 'outlet'){
-    queryParams.outletId = selected[1];
-  }
-  await getLineChartData();
-  initLineChart();
-}
-
 // 监听切换日周月tab切换
 watch( ()=>activeName.value, async(newActiveName)=>{
   if ( newActiveName == 'dayTabPane'){
@@ -283,7 +250,7 @@ const startEleData = ref<number[]>([]);
 const startTimeData = ref<string[]>([]);
 const endEleData = ref<number[]>([]);
 const endTimeData = ref<string[]>([]);
-const eqData = ref<number[]>([]);// 耗电量数组
+const eqData = ref<number[]>([]);
 const createTimeData = ref<string[]>([]);
 const totalEqData = ref(0);
 const maxEqDataTemp = ref(0);// 最大耗电量 
@@ -309,7 +276,7 @@ loading.value = true
       endTimeData.value = data.list.map((item) => formatDate(item.end_time, 'YYYY-MM-DD'));
       eqData.value = data.list.map((item) => formatNumber(item.eq_value, 1));
       createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
-     
+
       maxEqDataTemp.value = Math.max(...eqData.value);
       minEqDataTemp.value = Math.min(...eqData.value);
       eqData.value.forEach(function(num, index) {
@@ -321,10 +288,8 @@ loading.value = true
         }
         totalEqData.value += Number(num);
       });
-
       // 图表显示的位置变化
       nowAddress.value = nowAddressTemp.value
-      nowLocation.value = nowLocationTemp.value
     }else{
       ElMessage({
         message: '暂无数据',
@@ -333,33 +298,6 @@ loading.value = true
     }
  } finally {
    loading.value = false
- }
-}
-
-// 排行榜图数据
-const outletIdData = ref<string[]>([]);
-const sumEqData = ref<number[]>([]);
-const getRankChartData =async () => {
-loading1.value = true
- try {
-    // 格式化时间范围 加上23:59:59的时分秒 
-    queryParams.timeRange[0] = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
-    // 结束时间的天数多加一天 ，  一天的毫秒数
-    const oneDay = 24 * 60 * 60 * 1000;
-    queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
-
-    const data = await EnergyConsumptionApi.getOutletsEQData(queryParams);
-    if (data != null && data.total != 0){
-      outletIdData.value = data.map((item) => '输出位 '+item.outlet_id);
-      sumEqData.value = data.map((item) => formatNumber(item.sum_eq_value, 1));
-    }else{
-      ElMessage({
-        message: '暂无数据',
-        type: 'warning',
-      });
-    }
- } finally {
-   loading1.value = false
  }
 }
 
@@ -373,7 +311,7 @@ const initLineChart = () => {
   if (chartContainer.value && instance) {
     lineChart = echarts.init(chartContainer.value);
     lineChart.setOption({
-      title: { text: "耗电量趋势图", top: -4},
+      title: { text: nowAddress.value+' 总耗电量'+formatNumber(totalEqData.value, 1)+'kWh', top: -4},
       tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
       legend: { data: []},
       grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true},
@@ -390,104 +328,104 @@ const initLineChart = () => {
   }
 };
 
-// 初始化输出位排行榜图表
-const rankContainer = ref<HTMLElement | null>(null);
-let rankChart = null as echarts.ECharts | null; 
-const initRankChart = () => {
-  if (rankChart) {
-    rankChart.dispose(); // 销毁之前的实例
-  }
-  if (rankContainer.value && instance) {
-    rankChart = echarts.init(rankContainer.value);
-    rankChart.setOption({
-      title: { text: '输出位耗电量排行图', top: -4},
-      tooltip: { show: false, trigger: 'axis',  axisPointer: { type: "shadow"} },
-      grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true},
-      toolbox: {feature: {saveAsImage: {}}},
-      xAxis: {
-        type: "value",
-        axisLine: {
-          show: false,
-        },
-        axisTick: {
-          show: false,
-        },
-        //不显示X轴刻度线和数字
-        splitLine: { show: false },
-        axisLabel: { show: false },
-      },
-      yAxis: {
-        type: "category",
-        data: outletIdData.value,
-        //升序
-        inverse: true,
-        splitLine: { show: false },
-        axisLine: {
-          show: false,
-        },
-        axisLabel: { fontSize: 16 },
-        axisTick: {
-          show: false,
-        },
-        //key和图间距
-        offset: 10,
-        //动画部分
-        animationDuration: 300,
-        animationDurationUpdate: 300,
-        //key文字大小
-        nameTextStyle: {
-          fontSize: 15,
-        },
-      },
-      series: [
-        {
-          //柱状图自动排序，排序自动让Y轴名字跟着数据动
-          realtimeSort: true,
-          name: "耗电量",
-          type: "bar",
-          data: sumEqData.value,
-          barWidth: 20,
-          barGap: 5,
-          smooth: true,
-          valueAnimation: true,
-          label: {
-            normal: {
-              show: true,
-              position: "right",
-              valueAnimation: true,
-              offset: [5, -2],
-              textStyle: {
-                color: "#333",
-                fontSize: 16,
-              },
-              // formatter: '{value}kWh'
-            },
-          },
-          itemStyle: {
-            emphasis: {
-              barBorderRadius: 7,
-            },
-            //颜色样式部分
-             normal: {
-              barBorderRadius: 7,
-              color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-                { offset: 0, color: "#3977E6" },
-                { offset: 1, color: "#37BBF8" },
-              ]),
-            },
-          },
-        },
-      ],
-      //动画部分
-      animationDuration: 0,
-      animationDurationUpdate: 3000,
-      animationEasing: "linear",
-      animationEasingUpdate: "linear",
-    });
-    instance.appContext.config.globalProperties.rankChart = rankChart;
-  }
+// 初始化pdu排行榜图表
+// const rankContainer = ref<HTMLElement | null>(null);
+// let rankChart = null as echarts.ECharts | null; 
+// const initRankChart = () => {
+//   if (rankChart) {
+//     rankChart.dispose(); // 销毁之前的实例
+//   }
+//   if (rankContainer.value && instance) {
+//     rankChart = echarts.init(rankContainer.value);
+//     rankChart.setOption({
+//       title: { text: selectTimeRange.value[0]+' 至 '+selectTimeRange.value[1]+' PDU耗电量排行', top: -4},
+//       tooltip: { show: false, trigger: 'axis',  axisPointer: { type: "shadow"} },
+//       grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true},
+//       toolbox: {feature: {saveAsImage: {}}},
+//       xAxis: {
+//         type: "value",
+//         axisLine: {
+//           show: false,
+//         },
+//         axisTick: {
+//           show: false,
+//         },
+//         //不显示X轴刻度线和数字
+//         splitLine: { show: false },
+//         axisLabel: { show: false },
+//       },
+//       yAxis: {
+//         type: "category",
+//         data: outletIdData.value,
+//         //升序
+//         inverse: true,
+//         splitLine: { show: false },
+//         axisLine: {
+//           show: false,
+//         },
+//         axisLabel: { fontSize: 16 },
+//         axisTick: {
+//           show: false,
+//         },
+//         //key和图间距
+//         offset: 10,
+//         //动画部分
+//         animationDuration: 300,
+//         animationDurationUpdate: 300,
+//         //key文字大小
+//         nameTextStyle: {
+//           fontSize: 15,
+//         },
+//       },
+//       series: [
+//         {
+//           //柱状图自动排序，排序自动让Y轴名字跟着数据动
+//           realtimeSort: true,
+//           name: "耗电量",
+//           type: "bar",
+//           data: sumEqData.value,
+//           barWidth: 20,
+//           barGap: 5,
+//           smooth: true,
+//           valueAnimation: true,
+//           label: {
+//             normal: {
+//               show: true,
+//               position: "right",
+//               valueAnimation: true,
+//               offset: [5, -2],
+//               textStyle: {
+//                 color: "#333",
+//                 fontSize: 16,
+//               },
+//               // formatter: '{value}kWh'
+//             },
+//           },
+//           itemStyle: {
+//             emphasis: {
+//               barBorderRadius: 7,
+//             },
+//             //颜色样式部分
+//              normal: {
+//               barBorderRadius: 7,
+//               color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+//                 { offset: 0, color: "#3977E6" },
+//                 { offset: 1, color: "#37BBF8" },
+//               ]),
+//             },
+//           },
+//         },
+//       ],
+//       //动画部分
+//       animationDuration: 0,
+//       animationDurationUpdate: 3000,
+//       animationEasing: "linear",
+//       animationEasingUpdate: "linear",
+//     });
+//     instance.appContext.config.globalProperties.rankChart = rankChart;
+//   }
 
-};
+// };
 
 // 处理数据后有几位小数点
 function formatNumber(value, decimalPlaces) {
@@ -539,30 +477,6 @@ const handleDayPick = () => {
   }
 }
 
-// 获取参数类型最大值 例如lineId=6 表示下拉框为L1~L6
-const getTypeMaxValue = async () => {
-    const data = await HistoryDataApi.getTypeMaxValue()
-    const outletIdMaxValue = data.outlet_id_max_value;
-    const typeSelectionValue  = [
-    {
-      value: "total",
-      label: '总'
-    },
-    {
-      value: "outlet",
-      label: '输出位',
-      children: (() => {
-        const outlets: { value: any; label: string; }[] = [];
-        for (let i = 1; i <= outletIdMaxValue; i++) {
-          outlets.push({ value: `${i}`, label: `${i}` });
-        }
-        return outlets;
-      })(),
-    },
-  ]
-  typeSelection.value = typeSelectionValue;
-}
-
 // 禁选未来的日期
 const disabledDate = (date) => {
   const today = new Date();
@@ -575,18 +489,15 @@ const disabledDate = (date) => {
 
 window.addEventListener('resize', function() {
   lineChart?.resize();
-  rankChart?.resize();  
+  // rankChart?.resize();  
 });
 
 // 导航栏选择后触发
 const handleClick = async (row) => {
-   if(row.type != null  && row.type == 4){
-    queryParams.pduId = undefined
-    queryParams.ipAddr = row.ip
-    queryParams.cascadeAddr = row?.unique?.split("-")[1];
+   if(row.type != null  && row.type == 5){
+    queryParams.rackId = row.id
     findFullName(navList.value, row.unique, fullName => {
       nowAddressTemp.value = fullName
-      nowLocationTemp.value = row.unique
     });
     handleQuery();
   }
@@ -610,7 +521,7 @@ const getNavList = async() => {
   const res = await CabinetApi.getRoomList({})
   let arr = [] as any
   for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  var temp = await IndexApi.getRackAll({id : res[i].id})
   arr = arr.concat(temp);
   }
   navList.value = arr
@@ -619,25 +530,22 @@ const getNavList = async() => {
 /** 搜索按钮操作 */
 const handleQuery = async() => {
   await getLineChartData();
-  await getRankChartData();
+  // await getRankChartData();
   initLineChart();
-  initRankChart();
+  // initRankChart();
 }
 
 /** 初始化 **/
 onMounted(async () => {
   getNavList()
-  getTypeMaxValue();
   // 获取路由参数中的 pdu_id
-  const queryPduId = useRoute().query.pduId as string | undefined;
-  const queryAddress = useRoute().query.address as string;
-  queryParams.pduId = queryPduId ? parseInt(queryPduId, 10) : undefined;
-  if (queryParams.pduId != undefined){
+  const queryRackId = useRoute().query.rackId as string  | undefined;
+  const queryLocation = useRoute().query.location as string;
+  queryParams.rackId = queryRackId ? parseInt(queryRackId, 10) : undefined;
+  if (queryParams.rackId != undefined){
     await getLineChartData();
-    await getRankChartData();
-    nowAddress.value = queryAddress;
+    nowAddress.value = queryLocation;
     initLineChart();
-    initRankChart();
   }
 })
 

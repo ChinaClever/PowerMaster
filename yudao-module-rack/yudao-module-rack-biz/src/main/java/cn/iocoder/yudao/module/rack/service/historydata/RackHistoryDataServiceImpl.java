@@ -61,7 +61,7 @@ public class RackHistoryDataServiceImpl implements RackHistoryDataService {
                 try{
                     Object cabinetId = map.get("cabinet_id");
                     if (cabinetId instanceof Integer) {
-                        String localtion = null;
+                        String localtion;
                         IndexDO indexDO = cabIndexMapper.selectById((Serializable) cabinetId);
                         String roomName = roomIndexMapper.selectById(indexDO.getRoomId()).getName();
                         if(indexDO.getAisleId() != 0){
@@ -70,7 +70,6 @@ public class RackHistoryDataServiceImpl implements RackHistoryDataService {
                         }else {
                             localtion = roomName + "-"  + indexDO.getName() ;
                         }
-
                         Object rackId = map.get("rack_id");
                         String rackName = rackIndexMapper.selectById((Serializable) rackId).getRackName();
                         map.put("location", localtion);
