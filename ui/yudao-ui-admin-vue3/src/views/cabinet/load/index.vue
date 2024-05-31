@@ -118,9 +118,9 @@
               <!-- <div>电力容量：{{load.pow_capacity}}</div> -->
             </div>
             <div class="info" v-else>
-              <div>总有功功率：{{load.activeTotal}}KVA</div>
-              <div>A路有功功率：{{load.activeA}}KVA</div>
-              <div>B路有功功率：{{load.activeB}}KVA</div>
+              <div>总有功功率：{{load.activeTotal}}kW</div>
+              <div>A路有功功率：{{load.activeA}}kW</div>
+              <div>B路有功功率：{{load.activeB}}kW</div>
               <!-- <div>电力容量：{{load.pow_capacity}}</div> -->
             </div>
             <div class="waterPoloBox">
