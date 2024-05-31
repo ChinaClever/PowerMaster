@@ -30,6 +30,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.module.rack.constant.RackConstant.REDIS_KEY_RACK;
 import static cn.iocoder.yudao.module.rack.enums.ErrorCodeConstants.NAME_REPEAT;
@@ -137,8 +138,10 @@ public class RackIndexServiceImpl implements RackIndexService {
     public List<RackIndex> batchSave(RackSaveVo vo) {
         try {
             //新增
-            if (!CollectionUtils.isEmpty(vo.getInsertRacks())){
-                List<RackIndex> inserts = vo.getInsertRacks();
+            if (!CollectionUtils.isEmpty(vo.getRacks())){
+                List<RackIndex> racks = vo.getRacks();
+
+                List<RackIndex> inserts = racks.stream().filter(rackIndex -> rackIndex.getId() == 0).collect(Collectors.toList());
 
                 inserts.forEach(rackIndex -> {
 
@@ -154,10 +157,8 @@ public class RackIndexServiceImpl implements RackIndexService {
                     rackIndex.setRoomId(vo.getRoomId());
                     rackIndexDoMapper.insert(rackIndex);
                 });
-            }
-            //修改
-            if (!CollectionUtils.isEmpty(vo.getUpdateRacks())){
-                List<RackIndex> updates = vo.getUpdateRacks();
+
+                List<RackIndex> updates = racks.stream().filter(rackIndex -> rackIndex.getId() > 0).collect(Collectors.toList());
                 updates.forEach(rackIndex ->
                 {
                     RackIndex index = rackIndexDoMapper.selectOne(new LambdaQueryWrapper<RackIndex>()
@@ -167,6 +168,8 @@ public class RackIndexServiceImpl implements RackIndexService {
                     if (Objects.nonNull(index)){
                         throw new ServerException(NAME_REPEAT.getCode(),NAME_REPEAT.getMsg());
                     }
+                    rackIndex.setCabinetId(vo.getCabinetId());
+                    rackIndex.setRoomId(vo.getRoomId());
                     rackIndexDoMapper.updateById(rackIndex);
 
                 });

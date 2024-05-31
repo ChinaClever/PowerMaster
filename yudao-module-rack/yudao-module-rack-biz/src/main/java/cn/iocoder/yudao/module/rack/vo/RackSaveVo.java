@@ -30,9 +30,7 @@ public class RackSaveVo {
 
 
 
-    @Schema(description = "新增机架列表", example = "[]")
-    private List<RackIndex> insertRacks;
+    @Schema(description = "保存机架列表", example = "[]")
+    private List<RackIndex> racks;
 
-    @Schema(description = "修改机架列表", example = "[]")
-    private List<RackIndex> updateRacks;
 }
