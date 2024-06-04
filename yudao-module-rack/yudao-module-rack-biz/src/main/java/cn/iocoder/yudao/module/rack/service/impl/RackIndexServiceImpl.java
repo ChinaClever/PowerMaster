@@ -72,6 +72,7 @@ public class RackIndexServiceImpl implements RackIndexService {
                     .like(StringUtils.isNotEmpty(vo.getRackName()),RackIndex::getRackName,vo.getRackName())
                     .like(StringUtils.isNotEmpty(vo.getCompany()),RackIndex::getCompany,vo.getCompany())
                     .like(StringUtils.isNotEmpty(vo.getType()),RackIndex::getType,vo.getType())
+                     .eq(Objects.nonNull(vo.getCabinetId()),RackIndex::getCabinetId,vo.getCabinetId())
                     .in(!CollectionUtils.isEmpty(vo.getRackIds()),RackIndex::getId,vo.getRackIds()));
 
             List<JSONObject> indexRes = new ArrayList<>();
