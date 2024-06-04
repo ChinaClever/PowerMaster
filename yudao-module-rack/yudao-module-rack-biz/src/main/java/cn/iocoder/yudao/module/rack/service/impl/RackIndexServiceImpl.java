@@ -81,6 +81,7 @@ public class RackIndexServiceImpl implements RackIndexService {
                     String key = REDIS_KEY_RACK  + dto.getId();
                     JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(redisTemplate.opsForValue().get(key)));
                     if (Objects.nonNull(jsonObject)) {
+                        jsonObject.put("type",dto.getType());
                         indexRes.add(jsonObject);
                     }else {
                         indexRes.add(new JSONObject());
