@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.error;
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
@@ -136,5 +138,16 @@ public class CabinetController {
     public CommonResult<PageResult<CabinetIndexDTO>> getCapacityPage(@RequestBody CabinetIndexVo pageReqVO) {
         PageResult<CabinetIndexDTO> pageResult = cabinetService.getCapacityPage(pageReqVO);
         return success(pageResult);
+    }
+
+    /**
+     * 机柜负载状态统计
+     *
+     */
+    @Operation(summary = "机柜负载状态统计")
+    @GetMapping("/cabinet/load/count")
+    public CommonResult<Map<Integer,Integer>> loadStatusCount() {
+        Map<Integer,Integer> result = cabinetService.loadStatusCount();
+        return success(result);
     }
 }

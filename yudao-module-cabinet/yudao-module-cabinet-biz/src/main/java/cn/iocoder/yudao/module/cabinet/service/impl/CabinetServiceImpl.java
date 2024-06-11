@@ -19,6 +19,7 @@ import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetDTO;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetEnvSensorDTO;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetIndexDTO;
+import cn.iocoder.yudao.module.cabinet.enums.CabinetLoadEnums;
 import cn.iocoder.yudao.module.cabinet.mapper.*;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexVo;
@@ -658,6 +659,23 @@ public class CabinetServiceImpl implements CabinetService {
         }
         return new PageResult<>(new ArrayList<>(), 0L);
 
+    }
+
+    @Override
+    public Map<Integer, Integer> loadStatusCount() {
+        Map<Integer,Integer> map = new HashMap<>();
+        for (int i = 0; i < CabinetLoadEnums.values().length; i++) {
+            map.put(CabinetLoadEnums.values()[i].getStatus(),0);
+        }
+        LambdaQueryWrapper<CabinetIndex> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.select(CabinetIndex::getLoadStatus,CabinetIndex::getCount);
+        queryWrapper.groupBy(CabinetIndex::getLoadStatus);
+        List<CabinetIndex> list = cabinetIndexMapper.selectList(queryWrapper);
+        if (!CollectionUtils.isEmpty(list)){
+            Map<Integer,Integer>  statusMap = list.stream().collect(Collectors.toMap(CabinetIndex::getLoadStatus,CabinetIndex::getCount));
+            statusMap.keySet().forEach(key -> map.put(key,statusMap.get(key)));
+        }
+        return map;
     }
 
     /**
