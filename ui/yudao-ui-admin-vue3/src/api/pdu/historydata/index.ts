@@ -1,15 +1,4 @@
 import request from '@/config/axios'
-
-// pdu历史数据 VO
-export interface HistoryDataVO {
-  id: number 
-  pduId: number 
-  activePow: number 
-  apparentPow: number
-  powerFactor: number 
-  createTime: string 
-}
-
 // pdu历史数据 API
 export const HistoryDataApi = {
   // 查询pdu数据参数类型各id最大值

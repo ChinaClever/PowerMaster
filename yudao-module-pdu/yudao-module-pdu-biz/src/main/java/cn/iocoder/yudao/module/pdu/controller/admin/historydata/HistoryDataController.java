@@ -80,10 +80,10 @@ public class HistoryDataController {
         return success(map);
     }
 
-    @GetMapping("/env-one-hour")
-    @Operation(summary = "获得pdu环境数据最近一小时插入的数据量")
-    public CommonResult<Map<String, Object>> getEnvOneHourSumData() throws IOException {
-        Map<String, Object> map = historyDataService.getEnvOneHourSumData();
+    @GetMapping("/env-new-data")
+    @Operation(summary = "查询pdu环境数据导航的新增多少条记录数据")
+    public CommonResult<Map<String, Object>> getEnvNavNewData() throws IOException {
+        Map<String, Object> map = historyDataService.getEnvNavNewData();
         return success(map);
     }
 

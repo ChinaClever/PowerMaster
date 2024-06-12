@@ -30,8 +30,8 @@ export const EnvDataApi = {
     return await request.download({ url: `/pdu/history-data/env-export-excel`, params })
   },
 
-  // 查询pdu导航的一小时数据显示
-  getNavOneHourData: async (params: any) => {
-    return await request.get({ url: `/pdu/history-data/env-one-hour`, params })
+  // 查询pdu环境数据导航的新增多少条记录数据
+  getEnvNavNewData: async (params: any) => {
+    return await request.get({ url: `/pdu/history-data/env-new-data`, params })
   },
 }

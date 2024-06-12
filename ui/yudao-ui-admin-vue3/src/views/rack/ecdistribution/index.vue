@@ -328,105 +328,6 @@ const initLineChart = () => {
   }
 };
 
-// 初始化pdu排行榜图表
-// const rankContainer = ref<HTMLElement | null>(null);
-// let rankChart = null as echarts.ECharts | null; 
-// const initRankChart = () => {
-//   if (rankChart) {
-//     rankChart.dispose(); // 销毁之前的实例
-//   }
-//   if (rankContainer.value && instance) {
-//     rankChart = echarts.init(rankContainer.value);
-//     rankChart.setOption({
-//       title: { text: selectTimeRange.value[0]+' 至 '+selectTimeRange.value[1]+' PDU耗电量排行', top: -4},
-//       tooltip: { show: false, trigger: 'axis',  axisPointer: { type: "shadow"} },
-//       grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true},
-//       toolbox: {feature: {saveAsImage: {}}},
-//       xAxis: {
-//         type: "value",
-//         axisLine: {
-//           show: false,
-//         },
-//         axisTick: {
-//           show: false,
-//         },
-//         //不显示X轴刻度线和数字
-//         splitLine: { show: false },
-//         axisLabel: { show: false },
-//       },
-//       yAxis: {
-//         type: "category",
-//         data: outletIdData.value,
-//         //升序
-//         inverse: true,
-//         splitLine: { show: false },
-//         axisLine: {
-//           show: false,
-//         },
-//         axisLabel: { fontSize: 16 },
-//         axisTick: {
-//           show: false,
-//         },
-//         //key和图间距
-//         offset: 10,
-//         //动画部分
-//         animationDuration: 300,
-//         animationDurationUpdate: 300,
-//         //key文字大小
-//         nameTextStyle: {
-//           fontSize: 15,
-//         },
-//       },
-//       series: [
-//         {
-//           //柱状图自动排序，排序自动让Y轴名字跟着数据动
-//           realtimeSort: true,
-//           name: "耗电量",
-//           type: "bar",
-//           data: sumEqData.value,
-//           barWidth: 20,
-//           barGap: 5,
-//           smooth: true,
-//           valueAnimation: true,
-//           label: {
-//             normal: {
-//               show: true,
-//               position: "right",
-//               valueAnimation: true,
-//               offset: [5, -2],
-//               textStyle: {
-//                 color: "#333",
-//                 fontSize: 16,
-//               },
-//               // formatter: '{value}kWh'
-//             },
-//           },
-//           itemStyle: {
-//             emphasis: {
-//               barBorderRadius: 7,
-//             },
-//             //颜色样式部分
-//              normal: {
-//               barBorderRadius: 7,
-//               color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-//                 { offset: 0, color: "#3977E6" },
-//                 { offset: 1, color: "#37BBF8" },
-//               ]),
-//             },
-//           },
-//         },
-//       ],
-//       //动画部分
-//       animationDuration: 0,
-//       animationDurationUpdate: 3000,
-//       animationEasing: "linear",
-//       animationEasingUpdate: "linear",
-//     });
-//     instance.appContext.config.globalProperties.rankChart = rankChart;
-//   }
-
-// };
-
 // 处理数据后有几位小数点
 function formatNumber(value, decimalPlaces) {
     if (!isNaN(value)) {
@@ -530,9 +431,7 @@ const getNavList = async() => {
 /** 搜索按钮操作 */
 const handleQuery = async() => {
   await getLineChartData();
-  // await getRankChartData();
   initLineChart();
-  // initRankChart();
 }
 
 /** 初始化 **/

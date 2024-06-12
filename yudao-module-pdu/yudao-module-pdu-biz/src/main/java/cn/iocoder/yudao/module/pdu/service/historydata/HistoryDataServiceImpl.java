@@ -783,17 +783,17 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     public Map<String, Object> getOneHourSumData() throws IOException {
         String[] indices = new String[]{"pdu_hda_total_realtime", "pdu_hda_line_realtime", "pdu_hda_loop_realtime", "pdu_hda_outlet_realtime"};
         String[] name = new String[]{"total", "line", "loop", "outlet"};
-        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
-        Map<String, Object> map = energyConsumptionService.getSumData(indices, name, oneHourAgo);
+        LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1)};
+        Map<String, Object> map = energyConsumptionService.getSumData(indices, name, timeAgo);
         return map;
     }
 
     @Override
-    public Map<String, Object> getEnvOneHourSumData() throws IOException {
-        String[] indices = new String[]{"pdu_env_realtime"};
-        String[] name = new String[]{"total"};
-        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
-        Map<String, Object> map = energyConsumptionService.getSumData(indices, name, oneHourAgo);
+    public Map<String, Object> getEnvNavNewData() throws IOException {
+        String[] indices = new String[]{"pdu_env_realtime", "pdu_env_hour", "pdu_env_day"};
+        String[] name = new String[]{"hour", "day", "week"};
+        LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1)};
+        Map<String, Object> map = energyConsumptionService.getSumData(indices, name, timeAgo);
         return map;
     }
 

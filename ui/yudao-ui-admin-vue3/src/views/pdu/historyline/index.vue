@@ -2,7 +2,7 @@
   <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="PDU电力分析" :showCheckbox="false">
     <template #NavInfo>
       <div class="nav_header">
-        <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
+        <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div> -->
         <br/>
         <span v-if="nowAddress">{{nowAddress}}</span>
         <span v-if="nowLocation">( {{nowLocation}} ) </span>
@@ -340,6 +340,7 @@ const curData = ref<number[]>([]);
 const createTimeData = ref<string[]>([]);
 const activePowData = ref<number[]>([]);
 const apparentPowData = ref<number[]>([]);
+const powerFactorData = ref<number[]>([]);
 
 const curAvgValueData = ref<number[]>([]);
 const curMaxValueData = ref<number[]>([]);
@@ -388,6 +389,7 @@ const getList = async () => {
       }
       activePowData.value = data.list.map((item) => formatNumber(item.pow_active, 3));
       apparentPowData.value = data.list.map((item) => formatNumber(item.pow_apparent, 3));
+      powerFactorData.value = data.list.map((item) => formatNumber(item.power_factor, 2));
 
       curAvgValueData.value = data.list.map((item) => formatNumber(item.cur_avg_value, 2));
       curMaxValueData.value = data.list.map((item) => formatNumber(item.cur_max_value, 2));
@@ -451,7 +453,7 @@ const initChart = () => {
         realtimeChart.setOption({
           title: { text: ''},
           tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-          legend: { data: ['总有功功率', '总视在功率'] },
+          legend: { data: ['总有功功率', '总视在功率', '功率因素'] },
           grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
           toolbox: {feature: {  restore:{}, saveAsImage: {}}},
           xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
@@ -459,6 +461,7 @@ const initChart = () => {
           series: [
             {name: '总有功功率', type: 'line', symbol: 'none', data: activePowData.value},
             {name: '总视在功率', type: 'line', symbol: 'none', data: apparentPowData.value},
+            {name: '功率因素', type: 'line', symbol: 'none', data: powerFactorData.value},
           ],
           dataZoom:[{type: "inside"}],
         });
@@ -537,7 +540,9 @@ watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], asyn
               // 这里设置 Echarts 的配置项和数据
               title: { text: ''},
               tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-              legend: { data: ['总有功功率', '总视在功率'] },
+              legend: { data: ['总有功功率', '总视在功率', '功率因素'],
+                        selected: {  "总有功功率": true, "总视在功率": true, "功率因素": false, }
+               },
               grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
               toolbox: {feature: {  restore:{},saveAsImage: {}}},
               xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
@@ -545,11 +550,14 @@ watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], asyn
               series: [
                 {name: '总有功功率', type: 'line', symbol: 'none', data: activePowData.value},
                 {name: '总视在功率', type: 'line', symbol: 'none', data: apparentPowData.value},
+                {name: '功率因素', type: 'line', symbol: 'none', data: powerFactorData.value},
               ],
               dataZoom:[{type: "inside"}],
             });
           }
         }
+        // 图例切换监听
+        totalRealtimeLegendListener(realtimeChart);
          // 每次切换图就要动态生成数据表头
         headerData.value = realtimeChart?.getOption().series as any[];
         updateTableData();
@@ -607,8 +615,8 @@ watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], asyn
                 // 这里设置 Echarts 的配置项和数据
                 title: { text: ''},
                 tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-                legend: { data: ['电压', '电流', '有功功率', '视在功率'],
-                          selected: {  "电压": true, "电流": false, "有功功率": false, "视在功率": false }},
+                legend: { data: ['电压', '电流', '有功功率', '视在功率', '功率因素'],
+                          selected: {  "电压": true, "电流": false, "有功功率": false, "视在功率": false, '功率因素': false }},
                 grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
                 toolbox: {feature: {  restore:{}, saveAsImage: {}}},
                 xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
@@ -618,6 +626,7 @@ watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], asyn
                   {name: '电流', type: 'line', symbol: 'none', data: curData.value},
                   {name: '有功功率', type: 'line', symbol: 'none', data: activePowData.value},
                   {name: '视在功率', type: 'line', symbol: 'none', data: apparentPowData.value},
+                  {name: '功率因素', type: 'line', symbol: 'none', data: powerFactorData.value},
                 ],
                 dataZoom:[{type: "inside"}],
               });
@@ -692,8 +701,8 @@ watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], asyn
               // 这里设置 Echarts 的配置项和数据
               title: { text: ''},
               tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-              legend: { data: ['电压', '电流', '有功功率', '视在功率'],
-                        selected: {  "电压": true, "电流": false, "有功功率": false, "视在功率": false }},
+              legend: { data: ['电压', '电流', '有功功率', '视在功率', '功率因素'],
+                        selected: {  "电压": true, "电流": false, "有功功率": false, "视在功率": false, '功率因素': false }},
               grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
               toolbox: {feature: {  restore:{}, saveAsImage: {}}},
               xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
@@ -703,6 +712,7 @@ watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], asyn
                 {name: '电流', type: 'line', symbol: 'none', data: curData.value},
                 {name: '有功功率', type: 'line', symbol: 'none', data: activePowData.value},
                 {name: '视在功率', type: 'line', symbol: 'none', data: apparentPowData.value},
+                {name: '功率因素', type: 'line', symbol: 'none', data: powerFactorData.value},
               ],
               dataZoom:[{type: "inside"}],
             });
@@ -777,8 +787,8 @@ watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], asyn
             // 这里设置 Echarts 的配置项和数据
             title: { text: ''},
             tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-            legend: { data: [ '电流', '有功功率', '视在功率'],
-                  selected: { "电流": true, "有功功率": false, "视在功率": false }},
+            legend: { data: [ '电流', '有功功率', '视在功率', '功率因素'],
+                  selected: { "电流": true, "有功功率": false, "视在功率": false, '功率因素': false }},
             grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
             toolbox: {feature: {  restore:{}, saveAsImage: {}}},
             xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
@@ -787,6 +797,7 @@ watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], asyn
               {name: '电流', type: 'line', symbol: 'none', data: curData.value },
               {name: '有功功率', type: 'line', symbol: 'none', data: activePowData.value },
               {name: '视在功率', type: 'line', symbol: 'none', data: apparentPowData.value },
+              {name: '功率因素', type: 'line', symbol: 'none', data: powerFactorData.value},
             ],
             dataZoom:[{type: "inside"}],
           });
@@ -840,7 +851,7 @@ watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], asyn
     }
 });
 
-// 实时图例切换函数
+// (除了总的实时)实时图例切换函数
 function setupLegendListener(realtimeChart) {
   realtimeChart?.on('legendselectchanged', function (params) {
     var legendName = params.name;
@@ -851,25 +862,30 @@ function setupLegendListener(realtimeChart) {
       var optionsToUpdate = {};
       switch (legendName) {
         case '电流':
-          optionsToUpdate = { "电流": true, "有功功率": false, "视在功率": false };
+          optionsToUpdate = { "电流": true, "有功功率": false, "视在功率": false, "功率因素": false };
           break;
         case '有功功率':
           if (params.selected[legendName]){
-            optionsToUpdate = {"电流": false, "有功功率": true};
+            optionsToUpdate = {"电流": false, "有功功率": true, "功率因素": false};
           }
           break;
         case '视在功率':
-        if (params.selected[legendName]){
-          optionsToUpdate = {"电流": false, "视在功率": true };
-        }
+          if (params.selected[legendName]){
+            optionsToUpdate = {"电流": false, "视在功率": true, "功率因素": false };
+          }
           break;
+        case '功率因素':
+          if (params.selected[legendName]){
+              optionsToUpdate = {  "功率因素": true , "有功功率": false, "电流": false, "视在功率": false};
+          }
+        break;
         default:
           break;
       }
 
       realtimeChart?.setOption({
         legend: {
-          data: ['电流', '有功功率', '视在功率'],
+          data: ['电流', '有功功率', '视在功率', '功率因素'],
           selected: optionsToUpdate
         },
       });
@@ -880,32 +896,29 @@ function setupLegendListener(realtimeChart) {
     var optionsToUpdate = {};
     switch (legendName) {
       case '电压':
-        optionsToUpdate = { "电压": true, "电流": false, "有功功率": false, "视在功率": false };
+        optionsToUpdate = { "电压": true, "电流": false, "有功功率": false, "视在功率": false, "功率因素": false };
         break;
 
       case '电流':
-        optionsToUpdate = { "电压": false, "电流": true, "有功功率": false, "视在功率": false };
+        optionsToUpdate = { "电压": false, "电流": true, "有功功率": false, "视在功率": false, "功率因素": false };
         break;
 
       case '有功功率':
         if (params.selected[legendName]){
-          optionsToUpdate = { "电压": false, "电流": false, "有功功率": true};
+          optionsToUpdate = { "电压": false, "电流": false, "有功功率": true, "功率因素": false};
         }
         break;
 
       case '视在功率':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "电压": false, "电流": false, "视在功率": true };
-      }
+        if (params.selected[legendName]){
+          optionsToUpdate = { "电压": false, "电流": false, "视在功率": true, "功率因素": false };
+        }
         break;
-
-      case '平均电流':
-      if (params.selected[legendName]){
-        optionsToUpdate = { "平均电压": false, "最大电压": false, "最小电压": false, "平均视在功率": false, "最大视在功率": false, "最小视在功率": false,
-                            "平均有功功率": false, "最大有功功率": false, "最小有功功率": false, };
-      }
+      case '功率因素':
+        if (params.selected[legendName]){
+            optionsToUpdate = {  "功率因素": true , "有功功率": false, "电流": false, "电压": false, "视在功率": false};
+        }
         break;
-
         
       default:
         break;
@@ -913,7 +926,7 @@ function setupLegendListener(realtimeChart) {
 
     realtimeChart?.setOption({
       legend: {
-        data: ['电压', '电流', '有功功率', '视在功率'],
+        data: ['电压', '电流', '有功功率', '视在功率', '功率因素'],
         selected: optionsToUpdate
       },
     });
@@ -965,12 +978,53 @@ function customTooltipFormatter(params: any[]) {
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' V  发生时间: ' +volMaxTimeData.value[item.dataIndex] + '<br/>';
         break;
       case '最小电压':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' V  发生时间: ' +volMinTimeData.value[item.dataIndex] + '<br/>';
-      break;
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' V  发生时间: ' +volMinTimeData.value[item.dataIndex] + '<br/>';
+        break;
+      case '功率因素': 
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '   记录时间: ' +params[0].name + '<br/>';
+        break;
+
     }
     
   });
   return tooltipContent;
+}
+
+// 总数据实时图例切换函数
+function totalRealtimeLegendListener(realtimeChart) {
+  realtimeChart?.on('legendselectchanged', function (params) {
+    var legendName = params.name;
+    var optionsToUpdate = {};
+    switch (legendName) {
+      case '总有功功率':
+     if (params.selected[legendName]){
+          optionsToUpdate = {  "总有功功率": true , "功率因素": false};
+        }
+        break;
+
+      case '总视在功率':
+      if (params.selected[legendName]){
+          optionsToUpdate = {  "总视在功率": true , "功率因素": false};
+      }
+        break;
+
+      case '功率因素':
+      if (params.selected[legendName]){
+          optionsToUpdate = {  "功率因素": true , "总有功功率": false, "总视在功率": false};
+      }
+        break;
+
+      default:
+        break;
+    }
+
+    realtimeChart?.setOption({
+      legend: {
+        data: ['总有功功率', '总视在功率', '功率因素'],
+        selected: optionsToUpdate
+      },
+    });
+  });
 }
 
 // 小时、天 图例切换函数

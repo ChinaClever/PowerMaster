@@ -70,6 +70,6 @@ public interface HistoryDataService {
 
     Map<String, Object> getOneHourSumData() throws IOException;
 
-    Map<String, Object> getEnvOneHourSumData() throws IOException;
+    Map<String, Object> getEnvNavNewData() throws IOException;
 
 }
