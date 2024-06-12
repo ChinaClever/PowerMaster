@@ -227,7 +227,7 @@ public class RackEnergyConsumptionServiceImpl implements RackEnergyConsumptionSe
     }
 
     @Override
-    public Map<String, Object> getSumData(String[] indices, String[] name, LocalDateTime timeAgo) throws IOException {
+    public Map<String, Object> getSumData(String[] indices, String[] name, LocalDateTime[] timeAgo) throws IOException {
         Map<String, Object> resultItem = new HashMap<>();
         // 添加范围查询 最近24小时
         LocalDateTime now = LocalDateTime.now();
@@ -236,7 +236,7 @@ public class RackEnergyConsumptionServiceImpl implements RackEnergyConsumptionSe
             SearchRequest searchRequest = new SearchRequest(indices[i]);
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
             searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(timeAgo.format(formatter))
+                    .from(timeAgo[i].format(formatter))
                     .to(now.format(formatter)));
             // 添加计数聚合
             searchSourceBuilder.aggregation(
@@ -254,11 +254,11 @@ public class RackEnergyConsumptionServiceImpl implements RackEnergyConsumptionSe
     }
 
     @Override
-    public Map<String, Object> getOneWeekSumData() throws IOException {
-        String[] indices = new String[]{"rack_eq_total_day"};
-        String[] name = new String[]{"total"};
-        LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
-        Map<String, Object> map = getSumData(indices, name, oneWeekAgo);
+    public Map<String, Object> getNewData() throws IOException {
+        String[] indices = new String[]{"rack_eq_total_day", "rack_eq_total_week", "rack_eq_total_month"};
+        String[] name = new String[]{"day", "week", "month"};
+        LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1), LocalDateTime.now().minusMonths(1)};
+        Map<String, Object> map = getSumData(indices, name, timeAgo);
         return map;
     }
 
@@ -266,8 +266,8 @@ public class RackEnergyConsumptionServiceImpl implements RackEnergyConsumptionSe
     public Map<String, Object> getOneDaySumData() throws IOException {
         String[] indices = new String[]{"rack_ele_total_realtime"};
         String[] name = new String[]{"total"};
-        LocalDateTime oneWeekAgo = LocalDateTime.now().minusDays(1);
-        Map<String, Object> map = getSumData(indices, name, oneWeekAgo);
+        LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1)};
+        Map<String, Object> map = getSumData(indices, name, timeAgo);
         return map;
     }
 

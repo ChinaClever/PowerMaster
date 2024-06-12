@@ -4,6 +4,7 @@ import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.EnvDataDetail
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.EnvDataPageReqVo;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataPageReqVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataDetailsReqVO;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -73,10 +74,10 @@ public class HistoryDataController {
         return success(pageResult);
     }
 
-    @GetMapping("/one-hour")
-    @Operation(summary = "获得pdu最近一小时插入的数据量")
-    public CommonResult<Map<String, Object>> getOneHourSumData() throws IOException {
-        Map<String, Object> map = historyDataService.getOneHourSumData();
+    @GetMapping("/new-data/{granularity}")
+    @Operation(summary = "获得pdu电力分析导航显示的插入的数据量")
+    public CommonResult<Map<String, Object>> getNavNewData(@PathVariable("granularity") String granularity) throws IOException {
+        Map<String, Object> map = historyDataService.getNavNewData(granularity);
         return success(map);
     }
 

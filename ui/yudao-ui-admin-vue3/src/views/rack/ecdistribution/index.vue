@@ -9,22 +9,33 @@
         <span>{{selectTimeRange[0]}} 至 {{selectTimeRange[1]}}</span>
         <br/>
       </div>
-      <div class="nav_data">
-        <el-statistic title="总耗电量" :value="formatNumber(totalEqData, 1)">
+       <div class="nav_data">
+        <el-statistic title="" :value="formatNumber(totalEqData, 1)">
+          <template #prefix>总耗电量</template>
           <template #suffix>kWh</template>
         </el-statistic>
           <br/>
-        <el-statistic title="最大耗电量" :value="formatNumber(maxEqDataTemp, 1)">
+        <el-statistic title="" :value="formatNumber(maxEqDataTemp, 1)">
+          <template #prefix>最大耗电量</template>
           <template #suffix>kWh</template>
         </el-statistic>
-        <el-statistic v-if="formatNumber(totalEqData, 1) != 0.0" title="发生于" :value="maxEqDataTimeTemp"/>
-        <el-statistic v-if="formatNumber(totalEqData, 1) == 0.0" title="发生于" :value="Object('-')"/>
+        <el-statistic v-if="formatNumber(totalEqData, 1) != 0.0" title="" :value="maxEqDataTimeTemp">
+          <template #prefix>发生于</template>
+        </el-statistic>
+        <el-statistic v-if="formatNumber(totalEqData, 1) == 0.0" title="" :value="Object('-')">
+          <template #prefix>发生于</template>
+        </el-statistic>
           <br/>
-        <el-statistic title="最小耗电量" :value="formatNumber(minEqDataTemp, 1)">
+        <el-statistic title="" :value="formatNumber(minEqDataTemp, 1)">
+          <template #prefix>最小耗电量</template>
           <template #suffix>kWh</template>
         </el-statistic>
-        <el-statistic v-if="formatNumber(totalEqData, 1) != 0.0" title="发生于" :value="minEqDataTimeTemp"/>
-        <el-statistic v-if="formatNumber(totalEqData, 1) == 0.0" title="发生于" :value="Object('-')"/>
+        <el-statistic v-if="formatNumber(totalEqData, 1) != 0.0" title="" :value="minEqDataTimeTemp">
+         <template #prefix>发生于</template>
+        </el-statistic>
+        <el-statistic v-if="formatNumber(totalEqData, 1) == 0.0" title="" :value="Object('-')">
+         <template #prefix>发生于</template>
+        </el-statistic>
       </div>
     </template>
     <template #ActionBar>
@@ -456,7 +467,7 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 13px;
+    font-size: 15px;
     padding-top: 28px;
   }
   .nav_header_img {
@@ -475,7 +486,7 @@ onMounted(async () => {
   }
 
 .nav_data{
-  padding-left: 50px;
+  padding-left: 15px;
 }
 
   .line {

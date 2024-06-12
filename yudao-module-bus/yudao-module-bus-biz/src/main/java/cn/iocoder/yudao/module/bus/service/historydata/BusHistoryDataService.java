@@ -85,10 +85,8 @@ public interface BusHistoryDataService {
 //     */
 //    Map<String, Object> getEnvDataDetails(EnvDataDetailsReqVO reqVO) throws IOException;
 //
-    Map<String, Object> getSumData(String[] indices, String[] name, LocalDateTime timeAgo, String field) throws IOException;
-    Map<String, Object> getBusOneHourSumData() throws IOException;
-    Map<String, Object> getBoxOneHourSumData() throws IOException;
-//
-//    Map<String, Object> getEnvOneHourSumData() throws IOException;
+    Map<String, Object> getSumData(String[] indices, String[] name, LocalDateTime[] timeAgo, String field) throws IOException;
+    Map<String, Object> getBusNavNewData(String granularity) throws IOException;
+    Map<String, Object> getBoxNavNewData(String granularity) throws IOException;
 
 }

@@ -33,13 +33,13 @@ export const HistoryDataApi = {
     return await request.download({ url: `/bus/history-data/export-excel`, params })
   },
 
-  // 查询母线导航始端箱的一小时数据显示
-  getNavBusOneHourData: async (params: any) => {
-    return await request.get({ url: `/bus/history-data/bus-one-hour`, params })
+  // 查询母线始端箱电力数据导航的新增记录数据显示
+  getBusNavNewData: async (granularity: string) => {
+    return await request.get({ url: `/bus/history-data/bus-new-data/`+granularity})
   },
 
-  // 查询母线导航始端箱的一小时数据显示
-  getNavBoxOneHourData: async (params: any) => {
-    return await request.get({ url: `/bus/history-data/box-one-hour`, params })
+  // 查询母线插接箱电力数据导航的新增记录数据显示
+  getBoxNavNewData: async (granularity: string) => {
+    return await request.get({ url: `/bus/history-data/box-new-data/`+granularity})
   },
 }

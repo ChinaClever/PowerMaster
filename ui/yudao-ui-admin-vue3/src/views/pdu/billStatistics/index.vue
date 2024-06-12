@@ -8,18 +8,18 @@
           <br/>
       </div>
       <div class="nav_data">
-          <el-statistic title="最近一天" :value="lastDayTotalData">
-              <template #suffix>条</template>
-          </el-statistic>
-          <br/>
-          <el-statistic title="最近一周" :value="lastWeekTotalData"> 
+        <el-statistic title="最近一天" :value="lastDayTotalData">
             <template #suffix>条</template>
-          </el-statistic>
-          <br/>
-          <el-statistic title="最近一月" :value="lastMonthTotalData"> 
-            <template #suffix>条</template>
-          </el-statistic>
-        </div>
+        </el-statistic>
+        <br/>
+        <el-statistic title="最近一周" :value="lastWeekTotalData"> 
+          <template #suffix>条</template>
+        </el-statistic>
+        <br/>
+        <el-statistic title="最近一月" :value="lastMonthTotalData"> 
+          <template #suffix>条</template>
+        </el-statistic>
+      </div>
     </template>
     <template #ActionBar>
       <el-form

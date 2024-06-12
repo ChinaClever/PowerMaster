@@ -929,7 +929,7 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
 //    }
 
     @Override
-    public Map<String, Object> getSumData(String[] indices, String[] name, LocalDateTime timeAgo, String field) throws IOException {
+    public Map<String, Object> getSumData(String[] indices, String[] name, LocalDateTime[] timeAgo, String field) throws IOException {
         Map<String, Object> resultItem = new HashMap<>();
         // 添加范围查询
         LocalDateTime now = LocalDateTime.now();
@@ -938,7 +938,7 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
             SearchRequest searchRequest = new SearchRequest(indices[i]);
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
             searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(timeAgo.format(formatter))
+                    .from(timeAgo[i].format(formatter))
                     .to(now.format(formatter)));
             // 添加计数聚合
             searchSourceBuilder.aggregation(
@@ -954,31 +954,56 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
         }
         return resultItem;
     }
+
     @Override
-    public Map<String, Object> getBusOneHourSumData() throws IOException {
-        String[] indices = new String[]{"bus_hda_total_realtime", "bus_hda_line_realtime"};
-        String[] name = new String[]{"total", "line"};
-        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
-        Map<String, Object> map = getSumData(indices, name, oneHourAgo, "bus_id");
+    public Map<String, Object> getBusNavNewData(String granularity) throws IOException {
+        String[] indices = new String[0];
+        String[] key = new String[]{"total", "line"};
+        LocalDateTime[] timeAgo = new LocalDateTime[0];
+        Map<String, Object> map;
+        switch (granularity){
+            case "realtime":
+                indices = new String[]{"bus_hda_total_realtime", "bus_hda_line_realtime"};
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1)};
+                break;
+            case "hour":
+                indices = new String[]{"bus_hda_total_hour", "bus_hda_line_hour"};
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1)};
+                break;
+            case "day":
+                indices = new String[]{"bus_hda_total_day", "bus_hda_line_day"};
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1)};
+                break;
+            default:
+        }
+        map = getSumData(indices, key, timeAgo,"bus_id");
         return map;
     }
 
     @Override
-    public Map<String, Object> getBoxOneHourSumData() throws IOException {
-        String[] indices = new String[]{"box_hda_total_realtime", "box_hda_line_realtime", "box_hda_loop_realtime", "box_hda_outlet_realtime"};
-        String[] name = new String[]{"total", "line", "loop", "outlet"};
-        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
-        Map<String, Object> map = getSumData(indices, name, oneHourAgo, "box_id");
+    public Map<String, Object> getBoxNavNewData(String granularity) throws IOException {
+        String[] indices = new String[0];
+        String[] key = new String[]{"total", "line", "loop", "outlet"};
+        LocalDateTime[] timeAgo = new LocalDateTime[0];
+        Map<String, Object> map;
+        switch (granularity){
+            case "realtime":
+                indices = new String[]{"box_hda_total_realtime", "box_hda_line_realtime", "box_hda_loop_realtime", "box_hda_outlet_realtime"};
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1)};
+                break;
+            case "hour":
+                indices = new String[]{"box_hda_total_hour", "box_hda_line_hour", "box_hda_loop_hour", "box_hda_outlet_hour"};
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1)};
+                break;
+            case "day":
+                indices = new String[]{"box_hda_total_day", "box_hda_line_day", "box_hda_loop_day", "box_hda_outlet_day"};
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1)};
+                break;
+            default:
+        }
+        map = getSumData(indices, key, timeAgo,"box_id");
         return map;
     }
-//
-//    @Override
-//    public Map<String, Object> getEnvOneHourSumData() throws IOException {
-//        String[] indices = new String[]{"pdu_env_realtime"};
-//        String[] name = new String[]{"total"};
-//        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
-//        Map<String, Object> map = energyConsumptionService.getSumData(indices, name, oneHourAgo);
-//        return map;
-//    }
+
 
 }

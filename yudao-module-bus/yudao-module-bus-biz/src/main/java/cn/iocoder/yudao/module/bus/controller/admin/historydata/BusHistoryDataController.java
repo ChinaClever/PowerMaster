@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -81,27 +82,19 @@ public class BusHistoryDataController {
         return success(pageResult);
     }
 
-    @GetMapping("/bus-one-hour")
-    @Operation(summary = "获得母线始端箱最近一小时插入的数据量")
-    public CommonResult<Map<String, Object>> getBusOneHourSumData() throws IOException {
-        Map<String, Object> map = busHistoryDataService.getBusOneHourSumData();
+    @GetMapping("/bus-new-data/{granularity}")
+    @Operation(summary = "获得母线始端箱电力分析导航显示的插入的数据量")
+    public CommonResult<Map<String, Object>> getBusNavNewData(@PathVariable("granularity") String granularity) throws IOException {
+        Map<String, Object> map = busHistoryDataService.getBusNavNewData(granularity);
         return success(map);
     }
 
-    @GetMapping("/box-one-hour")
-    @Operation(summary = "获得母线始端箱最近一小时插入的数据量")
-    public CommonResult<Map<String, Object>> getBoxOneHourSumData() throws IOException {
-        Map<String, Object> map = busHistoryDataService.getBoxOneHourSumData();
+    @GetMapping("/box-new-data/{granularity}")
+    @Operation(summary = "获得母线插接箱电力分析导航显示的插入的数据量")
+    public CommonResult<Map<String, Object>> getBoxNavNewData(@PathVariable("granularity") String granularity) throws IOException {
+        Map<String, Object> map = busHistoryDataService.getBoxNavNewData(granularity);
         return success(map);
     }
-//
-//    @GetMapping("/env-one-hour")
-//    @Operation(summary = "获得母线环境数据最近一小时插入的数据量")
-//    public CommonResult<Map<String, Object>> getEnvOneHourSumData() throws IOException {
-//        Map<String, Object> map = historyDataService.getEnvOneHourSumData();
-//        return success(map);
-
-
 
     @GetMapping("/export-excel")
     @Operation(summary = "导出母线历史数据 Excel")

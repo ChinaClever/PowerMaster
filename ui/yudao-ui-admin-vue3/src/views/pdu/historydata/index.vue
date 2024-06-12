@@ -4,23 +4,29 @@
       <div class="nav_header">
         <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div> -->
         <br/>
-        <span>全部PDU最近一小时新增记录</span>
-          <br/>
+        <span v-if="queryParams.granularity == 'realtime' ">全部PDU最近一分钟新增记录</span>
+        <span v-if="queryParams.granularity == 'hour' ">全部PDU最近一小时新增记录</span>
+        <span v-if="queryParams.granularity == 'day' ">全部PDU最近一天新增记录</span>
+        <br/>
       </div>
       <div class="nav_data">
-        <el-statistic title="总数据" :value="navTotalData">
+        <el-statistic title="" :value="navTotalData">
+            <template #prefix>总数据</template>
             <template #suffix>条</template>
         </el-statistic>
            <br/>
-        <el-statistic title="相数据" :value="navLineData">
+        <el-statistic title="" :value="navLineData">
+          <template #prefix>相数据</template>
           <template #suffix>条</template>
         </el-statistic>
            <br/>
-        <el-statistic title="回路数据" :value="navLoopData">
+        <el-statistic title="" :value="navLoopData">
+          <template #prefix>回路数据</template>
           <template #suffix>条</template>
         </el-statistic>
         <br/>
-        <el-statistic title="输出位数据" :value="navOutletData">
+        <el-statistic title="" :value="navOutletData">
+          <template #prefix>输出位数据</template>
           <template #suffix>条</template>
         </el-statistic>
       </div>
@@ -69,6 +75,7 @@
           <el-select
             v-model="queryParams.granularity"
             placeholder="请选择分钟/小时/天"
+            @change="granularityChange"
             class="!w-100px">
             <el-option label="分钟" value="realtime" />
             <el-option label="小时" value="hour" />
@@ -301,6 +308,11 @@ const cascaderChange = (selectedCol) => {
       }
     }
   });
+}
+
+// 处理颗粒度筛选变化 有变化重新获取导航栏显示的新增记录
+const granularityChange = () => {
+   getNavNewData()
 }
 
 // 最后一页显示数据量过大的提示
@@ -860,8 +872,8 @@ const handleExport = async () => {
 }
 
 // 获取导航的数据显示
-const getNavOneHourData = async() => {
-  const res = await HistoryDataApi.getNavOneHourData({})
+const getNavNewData = async() => {
+  const res = await HistoryDataApi.getNavNewData(queryParams.granularity)
   navTotalData.value = res.total
   navLineData.value = res.line
   navLoopData.value = res.loop
@@ -871,7 +883,7 @@ const getNavOneHourData = async() => {
 /** 初始化 **/
 onMounted( () => {
   getNavList()
-  getNavOneHourData()
+  getNavNewData()
   getTypeMaxValue();
   getList();
 });
@@ -894,7 +906,7 @@ onMounted( () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 13px;
+    font-size: 14px;
     padding-top: 28px;
   }
   .nav_header_img {

@@ -4,18 +4,21 @@
       <div class="nav_header">
         <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div> -->
         <br/>
-        <span>全部始端箱最近一小时新增记录</span>
+        <span v-if="queryParams.granularity == 'realtime' ">全部始端箱最近一分钟新增记录</span>
+        <span v-if="queryParams.granularity == 'hour' ">全部始端箱最近一小时新增记录</span>
+        <span v-if="queryParams.granularity == 'day' ">全部始端箱最近一天新增记录</span>
           <br/>
       </div>
       <div class="nav_data">
-        <el-statistic title="总数据" :value="navTotalData">
+        <el-statistic title="" :value="navTotalData">
+            <template #prefix>总数据</template>
             <template #suffix>条</template>
         </el-statistic>
            <br/>
-        <el-statistic title="相数据" :value="navLineData">
+        <el-statistic title="" :value="navLineData">
+          <template #prefix>相数据</template>
           <template #suffix>条</template>
         </el-statistic>
-           <br/>
       </div>
     </template>
     <template #ActionBar>
@@ -42,6 +45,7 @@
           <el-select
             v-model="queryParams.granularity"
             placeholder="请选择分钟/小时/天"
+            @change="granularityChange"
             class="!w-100px">
             <el-option label="分钟" value="realtime" />
             <el-option label="小时" value="hour" />
@@ -132,7 +136,7 @@ import download from '@/utils/download'
 import { HistoryDataApi } from '@/api/bus/historydata'
 import { CabinetApi } from '@/api/cabinet/info'
 const { push } = useRouter()
-/** pdu历史数据 列表 */
+/** 始端箱历史数据 列表 */
 defineOptions({ name: 'BusHistoryData' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
@@ -257,6 +261,12 @@ const cascaderChange = (selectedCol) => {
     }
   });
 }
+
+// 处理颗粒度筛选变化 有变化重新获取导航栏显示的新增记录
+const granularityChange = () => {
+   getBusNavNewData()
+}
+
 
 // 最后一页显示数据量过大的提示
 const shouldShowDataExceedMessage = computed(() => {
@@ -651,7 +661,7 @@ const handleExport = async () => {
     // 发起导出
     exportLoading.value = true
     const data = await HistoryDataApi.exportHistoryData(queryParams)
-    download.excel(data, 'pdu历史数据.xls')
+    download.excel(data, '始端箱历史数据.xls')
   } catch {
   } finally {
     exportLoading.value = false
@@ -659,8 +669,8 @@ const handleExport = async () => {
 }
 
 // 获取导航的数据显示
-const getNavOneHourData = async() => {
-  const res = await HistoryDataApi.getNavBusOneHourData({})
+const getBusNavNewData = async() => {
+  const res = await HistoryDataApi.getBusNavNewData(queryParams.granularity)
   navTotalData.value = res.total
   navLineData.value = res.line
 }
@@ -691,7 +701,7 @@ const getTypeMaxValue = async () => {
 /** 初始化 **/
 onMounted( () => {
   getNavList()
-  getNavOneHourData()
+  getBusNavNewData()
   getTypeMaxValue();
   getList();
 });

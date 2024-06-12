@@ -37,7 +37,7 @@ export const EnergyConsumptionApi = {
     return await request.get({ url: `/pdu/eq-data/new-data`, params })
   },
 
-  // 查询pdu导航的一天数据显示
+  // 查询pdu电能记录导航的一天数据显示
   getNavOneDayData: async (params: any) => {
     return await request.get({ url: `/pdu/eq-data/one-day`, params })
   },
