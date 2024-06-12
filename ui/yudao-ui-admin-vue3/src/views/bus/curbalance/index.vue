@@ -393,13 +393,13 @@ const getList = async () => {
       statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
       statusList[2].name = '>' + range.rangeFour + '%';
     }
-    list.value = data.list
+    
     var tableIndex = 0;
     var lessFifteen = 0;
     var greaterFifteen = 0;
     var greaterThirty = 0;
     var smallCurrent = 0;
-    list.value.forEach((obj) => {
+    data.list.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       if(obj?.dataUpdateTime == null && obj?.pow == null){
         return;
@@ -433,6 +433,7 @@ const getList = async () => {
     statusNumber.lessFifteen = lessFifteen;
     statusNumber.greaterFifteen = greaterFifteen;
     statusNumber.greaterThirty = greaterThirty;
+    list.value = data.list
     total.value = data.total
   } finally {
     loading.value = false
@@ -442,7 +443,7 @@ const getList = async () => {
 const getListNoLoading = async () => {
   try {
     const data = await IndexApi.getBalancePage(queryParams)
-    list.value = data.list
+    
     var range = await CurbalanceColorApi.getCurbalanceColor();
     if(range != null){
       statusList[0].name = '<' + range.rangeOne + '%';
@@ -454,7 +455,7 @@ const getListNoLoading = async () => {
     var greaterFifteen = 0;
     var greaterThirty = 0;
     var smallCurrent = 0;
-    list.value.forEach((obj) => {
+    data.list.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       if(obj?.dataUpdateTime == null && obj?.pow == null){
         return;
@@ -487,6 +488,7 @@ const getListNoLoading = async () => {
     statusNumber.lessFifteen = lessFifteen;
     statusNumber.greaterFifteen = greaterFifteen;
     statusNumber.greaterThirty = greaterThirty;
+    list.value = data.list
     total.value = data.total
   } catch (error) {
     

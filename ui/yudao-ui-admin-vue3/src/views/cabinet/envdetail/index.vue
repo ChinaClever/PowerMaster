@@ -3,9 +3,8 @@
     <template #NavInfo>
       <div >
         <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
-          <div class="name">微模块机房</div>
-          <div>机房202</div>
+          <div class="header_img"><img alt="" src="@/assets/imgs/temhum.png" /></div>
+          <div class="name">温湿度</div>
         </div>
         <div class="line"></div>
         <!-- <div class="status">
@@ -34,7 +33,7 @@
             <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
           </div>
         </div> -->
-        <div class="line"></div>
+        <!-- <div class="line"></div>
         <div class="overview">
           <div class="count">
             <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
@@ -57,7 +56,7 @@
               <div class="value">295.87 kW·h</div>
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
     </template>
     <template #ActionBar>
@@ -104,12 +103,12 @@
                 <el-row :gutter="24">
                   <el-col :span="12">
                     <div style="float:left">
-                      <h2>冷通道</h2>
+                      <h2>前门</h2>
                     </div>
                   </el-col>
                   <el-col :span="12">
                     <div style="float:right">
-                      <h2>热通道</h2>
+                      <h2>后门</h2>
                     </div>
                   </el-col>
                 </el-row>
@@ -173,120 +172,112 @@
               </el-col>
             </el-row>
           </el-card>
+          <el-card >
+            <template #header>
+              <div class="card-header">
+                <el-row :gutter="24">
+                  <el-col :span="12">
+                    <div style="float:left">
+                      <h1>前门</h1>
+                    </div>
+                  </el-col>
+                  <el-col :span="12">
+                    <div style="float:right">
+                      <h1>后门</h1>                          
+                    </div>
+                  </el-col>
+                </el-row>
+              </div>
+            </template>
+            <el-row :gutter="24">
+              <el-col :span="12">
+                <div style="float:left">
+                  门禁状态：
+                </div>
+                
+              </el-col>
+              <el-col :span="12">
+                <div style="float:right">
+                  门禁状态：
+                </div>
+                
+              </el-col>
+            </el-row>
+          </el-card>
+          <el-card >
+            <template #header>
+              <div class="card-header">
+                <el-row :gutter="24">
+                  <el-col :span="12">
+                    <div style="float:left">
+                      <h1>前门</h1>
+                    </div>
+                  </el-col>
+                  <el-col :span="12">
+                    <div style="float:right">
+                      <h1>后门</h1>
+                      
+                    </div>
+                  </el-col>
+                </el-row>
+              </div>
+            </template>
+            <el-row :gutter="24">
+              <el-col :span="12">
+                <div style="float:left">
+                  水浸状态：
+                </div>
+                
+              </el-col>
+              <el-col :span="12">
+                <div style="float:right">
+                  水浸状态：
+                </div>
+                
+              </el-col>
+            </el-row>
+          </el-card>
+          <el-card >
+            <template #header>
+              <div class="card-header">
+                <el-row :gutter="24">
+                  <el-col :span="12">
+                    <div style="float:left">
+                      <h1>前门</h1>
+                    </div>
+                  </el-col>
+                  <el-col :span="12">
+                    <div style="float:right">
+                      <h1>后门</h1>
+                      
+                    </div>
+                  </el-col>
+                </el-row>
+              </div>
+            </template>
+            <el-row :gutter="24">
+              <el-col :span="12">
+                <div style="float:left">
+                  烟雾状态：
+                </div>
+                
+              </el-col>
+              <el-col :span="12">
+                <div style="float:right">
+                  烟雾状态：
+                </div>
+                
+              </el-col>
+            </el-row>
+          </el-card>
         </el-col>
         <el-col :span="18">
-          <el-row :gutter="24">
-            <el-col :span="8">
-              <el-card >
-                <template #header>
-                  <div class="card-header">
-                    <el-row :gutter="24">
-                      <el-col :span="12">
-                        <div style="float:left">
-                          <h1>前门</h1>
-                        </div>
-                      </el-col>
-                      <el-col :span="12">
-                        <div style="float:right">
-                          <h1>后门</h1>
-                          
-                        </div>
-                      </el-col>
-                    </el-row>
-                  </div>
-                </template>
-                <el-row :gutter="24">
-                  <el-col :span="12">
-                    <div style="float:left">
-                      门禁状态：
-                    </div>
-                    
-                  </el-col>
-                  <el-col :span="12">
-                    <div style="float:right">
-                      门禁状态：
-                    </div>
-                    
-                  </el-col>
-                </el-row>
-              </el-card>
-            </el-col>
-            <el-col :span="8">
-              <el-card >
-                <template #header>
-                  <div class="card-header">
-                    <el-row :gutter="24">
-                      <el-col :span="12">
-                        <div style="float:left">
-                          <h1>前门</h1>
-                        </div>
-                      </el-col>
-                      <el-col :span="12">
-                        <div style="float:right">
-                          <h1>后门</h1>
-                          
-                        </div>
-                      </el-col>
-                    </el-row>
-                  </div>
-                </template>
-                <el-row :gutter="24">
-                  <el-col :span="12">
-                    <div style="float:left">
-                      水浸状态：
-                    </div>
-                    
-                  </el-col>
-                  <el-col :span="12">
-                    <div style="float:right">
-                      水浸状态：
-                    </div>
-                    
-                  </el-col>
-                </el-row>
-              </el-card>
-            </el-col>
-            <el-col :span="8">
-              <el-card >
-                <template #header>
-                  <div class="card-header">
-                    <el-row :gutter="24">
-                      <el-col :span="12">
-                        <div style="float:left">
-                          <h1>前门</h1>
-                        </div>
-                      </el-col>
-                      <el-col :span="12">
-                        <div style="float:right">
-                          <h1>后门</h1>
-                          
-                        </div>
-                      </el-col>
-                    </el-row>
-                  </div>
-                </template>
-                <el-row :gutter="24">
-                  <el-col :span="12">
-                    <div style="float:left">
-                      烟雾状态：
-                    </div>
-                    
-                  </el-col>
-                  <el-col :span="12">
-                    <div style="float:right">
-                      烟雾状态：
-                    </div>
-                    
-                  </el-col>
-                </el-row>
-              </el-card>
-            </el-col>
-          </el-row>
+
           <el-row>
             <el-card>
               <el-row>
                 <el-col >
-                  <h1 style="width: 100%">冷通道</h1>
+                  <h1 style="width: 100%">前门</h1>
                 </el-col>
                 <el-col>                    
                   <el-form>
@@ -321,7 +312,7 @@
             <el-card>
               <el-row>
                 <el-col >
-                  <h1 style="width: 100%">热通道</h1>
+                  <h1 style="width: 100%">后门</h1>
                 </el-col>
                 <el-col >
                   <el-form>          

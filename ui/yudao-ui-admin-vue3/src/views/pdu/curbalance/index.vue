@@ -57,12 +57,13 @@
           <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
         </el-button>
         <el-form-item label="网络地址" prop="devKey">
-          <el-input
+          <el-autocomplete
             v-model="queryParams.devKey"
-            placeholder="请输入网络地址"
+            :fetch-suggestions="querySearch"
             clearable
-            @keyup.enter="handleQuery"
             class="!w-200px"
+            placeholder="请输入网络地址"
+            @select="handleQuery"
           />
         </el-form-item>
         <el-form-item>
@@ -185,7 +186,7 @@
           <div class="content">
             <div class="icon" >
               <div v-if="item.curUnbalance != null" >
-                不平衡度<br/>{{ item.curUnbalance }}%
+                {{ item.curUnbalance }}%<br/>不平衡度
               </div>              
             </div>
             <div class="info">                  
@@ -264,6 +265,7 @@ defineOptions({ name: 'PDUDevice' })
 
 const { push } = useRouter()
 
+const devKeyList = ref([])
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
@@ -306,6 +308,32 @@ const statusList = reactive([
     activeClass: 'btn_offline offline'
   },
 ])
+
+const loadAll = async () => {
+  var data = await PDUDeviceApi.devKeyList();
+  var objectArray = data.map((str) => {
+    return { value: str };
+  });
+  console.log(objectArray)
+  return objectArray;
+}
+
+const querySearch = (queryString: string, cb: any) => {
+  console.log(devKeyList.value)
+  const results = queryString
+    ? devKeyList.value.filter(createFilter(queryString))
+    : devKeyList.value
+  // call callback function to return suggestions
+  cb(results)
+}
+
+const createFilter = (queryString: string) => {
+  return (devKeyList) => {
+    return (
+      devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+    )
+  }
+}
 
 const handleClick = (row) => {
   console.log("click",row)
@@ -393,13 +421,13 @@ const getList = async () => {
       statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
       statusList[2].name = '>' + range.rangeFour + '%';
     }
-    list.value = data.list
+    
     var tableIndex = 0;
     var lessFifteen = 0;
     var greaterFifteen = 0;
     var greaterThirty = 0;
     var smallCurrent = 0;
-    list.value.forEach((obj) => {
+    data.list.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       if(obj?.dataUpdateTime == null && obj?.pow == null){
         return;
@@ -434,6 +462,7 @@ const getList = async () => {
     statusNumber.greaterFifteen = greaterFifteen;
     statusNumber.greaterThirty = greaterThirty;
     total.value = data.total
+    list.value = data.list
   } finally {
     loading.value = false
   }
@@ -442,7 +471,6 @@ const getList = async () => {
 const getListNoLoading = async () => {
   try {
     const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
-    list.value = data.list
     var range = await CurbalanceColorApi.getCurbalanceColor();
     if(range != null){
       statusList[0].name = '<' + range.rangeOne + '%';
@@ -454,7 +482,7 @@ const getListNoLoading = async () => {
     var greaterFifteen = 0;
     var greaterThirty = 0;
     var smallCurrent = 0;
-    list.value.forEach((obj) => {
+    data.list.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       if(obj?.dataUpdateTime == null && obj?.pow == null){
         return;
@@ -483,10 +511,12 @@ const getListNoLoading = async () => {
         greaterThirty++;
       }
     });
+    
     statusNumber.smallCurrent = smallCurrent;
     statusNumber.lessFifteen = lessFifteen;
     statusNumber.greaterFifteen = greaterFifteen;
     statusNumber.greaterThirty = greaterThirty;
+    list.value = data.list
     total.value = data.total
   } catch (error) {
     
@@ -575,7 +605,8 @@ const handleExport = async () => {
 }
 
 /** 初始化 **/
-onMounted(() => {
+onMounted(async () => {
+  devKeyList.value = await loadAll();
   getList()
   getNavList();
   flashListTimer.value = setInterval((getListNoLoading), 5000);
