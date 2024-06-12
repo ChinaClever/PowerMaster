@@ -2,14 +2,22 @@
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="环境数据">
     <template #NavInfo>
       <div class="nav_header">
-        <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
+        <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div> -->
         <br/>
-        <span>全部传感器最近一小时新增记录</span>
+        <span>全部传感器新增环境记录</span>
           <br/>
       </div>
       <div class="nav_data">
-        <el-statistic title="" :value="navTotalData">
+        <el-statistic title="最近一小时" :value="lastHourTotalData"> 
+          <template #suffix>条</template>
+        </el-statistic>
+          <br/>
+        <el-statistic title="最近一天" :value="lastDayTotalData">
             <template #suffix>条</template>
+        </el-statistic>
+        <br/>
+        <el-statistic title="最近一周" :value="lastWeekTotalData"> 
+          <template #suffix>条</template>
         </el-statistic>
       </div>
     </template>
@@ -143,7 +151,7 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
-      <div class="realTotal">共 {{ realTotel }} 条</div>
+      <div class="realTotal" v-if="list.length != 0">共 {{ realTotel }} 条</div>
     </template>
   </CommonMenu>
 </template>
@@ -159,7 +167,9 @@ const { push } = useRouter()
 defineOptions({ name: 'PDUEnvHistoryData' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
-const navTotalData = ref(0)
+const lastHourTotalData = ref(0)
+const lastDayTotalData = ref(0)
+const lastWeekTotalData = ref(0)
 const message = useMessage() // 消息弹窗
 const loading = ref(true) // 列表的加载中
 const list = ref<Array<{ }>>([]); // 列表数据
@@ -293,14 +303,14 @@ watch(() => queryParams.granularity, (newValues) => {
       originalArray.value =["tem", "hum", "location", "sensor_id"];
       // 配置表格列
       tableColumns.value =([
-        { label: '位置', align: 'center', prop: 'address.address' , istrue:true},
+        { label: '位置', align: 'center', prop: 'address.address' , istrue:true, width: '180px'},
+        { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '180px'},
+        { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
         { label: '监测点', align: 'center', slot: 'detect' , istrue: true},
-        { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:false, width: '160px'},
+        { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:false, width: '120px'},
         { label: '温度(℃)', align: 'center', prop: 'tem_value', istrue:true, formatter: formatData},
         { label: '湿度(%RH)', align: 'center', prop: 'hum_value' , istrue:true, formatter: formatData},
-        { label: '时间', align: 'center', prop: 'create_time', width: '230px', formatter: formatTime, istrue:true},
-        { label: '网络地址', align: 'center', prop: 'location' , istrue:false},
-        { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '230px'},
+        { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '120px'},
       ]);
       queryParams.pageNo = 1;
       queryParams.pageSize = 15;
@@ -359,14 +369,14 @@ watch(() => queryParams.granularity, (newValues) => {
   });
 
 const tableColumns = ref([
-    { label: '位置', align: 'center', prop: 'address.address' , istrue:true},
-    { label: '监测点', align: 'center', slot: 'detect' , istrue: true},
-    { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:false, width: '160px'},
-    { label: '温度(℃)', align: 'center', prop: 'tem_value', istrue:true},
-    { label: '湿度(%RH)', align: 'center', prop: 'hum_value' , istrue:true},
-    { label: '时间', align: 'center', prop: 'create_time', width: '230px', formatter: formatTime, istrue:true},
-    { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '120px'},
-    { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '160px'},
+  { label: '位置', align: 'center', prop: 'address.address' , istrue:true, width: '180px'},
+  { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '180px'},
+  { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
+  { label: '监测点', align: 'center', slot: 'detect' , istrue: true},
+  { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:false, width: '120px'},
+  { label: '温度(℃)', align: 'center', prop: 'tem_value', istrue:true, formatter: formatData},
+  { label: '湿度(%RH)', align: 'center', prop: 'hum_value' , istrue:true, formatter: formatData},
+  { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '120px'},
 ]) as any;
 
 /** 查询列表 */
@@ -420,18 +430,6 @@ function formatTime(row: any, column: any, cellValue: number): string {
 function formatData(row: any, column: any, cellValue: number): string {
   return cellValue.toFixed(1);
 }
-
-// 获取参数类型最大值 例如lineId=6 表示下拉框为L1~L6
-// const getSensorIdMaxValue = async () => {
-//   const data = await EnvDataApi.getSensorIdMaxValue()
-//   const sensorIdMaxValue = data.sensor_id_max_value;
-//   const sensorSelectionValue: { value: number; label: string; }[] = [];
-//   sensorSelectionValue.push({ value: 0, label: '全部' },)
-//   for (let i = 1; i <= sensorIdMaxValue; i++) {
-//     sensorSelectionValue.push({ value: i, label: `${i}`});
-//   }
-//   sensorOptions.value = sensorSelectionValue;
-// }
 
 // 导航栏选择后触发
 const handleCheck = async (node) => {
@@ -500,16 +498,17 @@ const handleExport = async () => {
 }
 
 // 获取导航的数据显示
-const getNavOneHourData = async() => {
-  const res = await EnvDataApi.getNavOneHourData({})
-  navTotalData.value = res.total
+const getNavNewData = async() => {
+  const res = await EnvDataApi.getEnvNavNewData({})
+  lastHourTotalData.value = res.hour
+  lastDayTotalData.value = res.day
+  lastWeekTotalData.value = res.week
 }
 
 /** 初始化 **/
 onMounted( () => {
   getNavList()
-  getNavOneHourData()
-  // getSensorIdMaxValue();
+  getNavNewData()
   getList()
 });
 

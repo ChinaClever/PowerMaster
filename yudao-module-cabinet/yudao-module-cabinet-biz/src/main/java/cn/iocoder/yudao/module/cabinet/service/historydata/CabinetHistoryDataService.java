@@ -32,22 +32,7 @@ public interface CabinetHistoryDataService {
      */
     PageResult<Object> getHistoryDataDetails(CabinetHistoryDataDetailsReqVO reqVO) throws IOException;
 
-    Map<String, Object> getOneHourSumData() throws IOException;
+    Map<String, Object> getNavNewData(String granularity) throws IOException;
 
-    /**
-     * 获得pdu环境数据分页
-     *
-     * @param pageReqVO 分页查询
-     * @return pdu环境数据分页
-     */
-//    PageResult<Object> getEnvDataPage(HistoryDataPageReqVO pageReqVO) throws IOException;
-
-    /**
-     * 获得pdu环境数据详情（曲线）
-     *
-     * @param reqVO 分页查询
-     * @return pdu历史数据详情
-     */
-//    PageResult<Object> getEnvDataDetails(EnvDataDetailsReqVO reqVO) throws IOException;
 
 }

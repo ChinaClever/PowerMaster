@@ -39,9 +39,9 @@ public interface CabinetEnergyConsumptionService {
      */
     PageResult<Object> getRealtimeEQDataPage(CabinetEnergyConsumptionPageReqVO pageReqVO) throws IOException;
 
-    Map<String, Object> getSumData(String[] indices, String[] name, LocalDateTime timeAgo) throws IOException;
+    Map<String, Object> getSumData(String[] indices, String[] name, LocalDateTime[] timeAgo) throws IOException;
 
-    Map<String, Object> getOneWeekSumData() throws IOException;
+    Map<String, Object> getNewData() throws IOException;
 
     Map<String, Object> getOneDaySumData() throws IOException;
 

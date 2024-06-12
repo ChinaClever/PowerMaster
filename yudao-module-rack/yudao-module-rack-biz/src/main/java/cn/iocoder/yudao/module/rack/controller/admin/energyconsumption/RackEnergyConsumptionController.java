@@ -53,10 +53,10 @@ public class RackEnergyConsumptionController {
         return success(pageResult);
     }
 
-    @GetMapping("/one-week")
-    @Operation(summary = "获得机架能耗最近一周插入的数据量")
-    public CommonResult<Map<String, Object>> getOneWeekSumData() throws IOException {
-        Map<String, Object> map = rackEnergyConsumptionService.getOneWeekSumData();
+    @GetMapping("/new-data")
+    @Operation(summary = "获得机架能耗最近一天、一周、一月插入的数据量")
+    public CommonResult<Map<String, Object>> getNewData() throws IOException {
+        Map<String, Object> map = rackEnergyConsumptionService.getNewData();
         return success(map);
     }
 

@@ -10,6 +10,7 @@ import cn.iocoder.yudao.module.cabinet.mapper.RoomIndexMapper;
 import cn.iocoder.yudao.module.cabinet.service.energyconsumption.CabinetEnergyConsumptionService;
 import cn.iocoder.yudao.module.rack.controller.admin.historydata.vo.RackHistoryDataDetailsReqVO;
 import cn.iocoder.yudao.module.rack.controller.admin.historydata.vo.RackHistoryDataPageReqVO;
+import cn.iocoder.yudao.module.rack.service.energyconsumption.RackEnergyConsumptionService;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -39,9 +40,7 @@ import java.util.*;
 public class RackHistoryDataServiceImpl implements RackHistoryDataService {
 
     @Autowired
-    private CabinetIndexMapper cabinetIndexMapper;
-    @Autowired
-    private CabinetEnergyConsumptionService cabinetEnergyConsumptionService;
+    private RackEnergyConsumptionService rackEnergyConsumptionService;
     @Resource
     private CabIndexMapper cabIndexMapper;
     @Autowired
@@ -187,38 +186,27 @@ public class RackHistoryDataServiceImpl implements RackHistoryDataService {
     }
 
     @Override
-    public Map<String, Object> getSumData(String[] indices, String[] name, LocalDateTime timeAgo) throws IOException {
-        Map<String, Object> resultItem = new HashMap<>();
-        // 添加范围查询 最近24小时
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        for (int i = 0; i < indices.length; i++) {
-            SearchRequest searchRequest = new SearchRequest(indices[i]);
-            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-            searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(timeAgo.format(formatter))
-                    .to(now.format(formatter)));
-            // 添加计数聚合
-            searchSourceBuilder.aggregation(
-                    AggregationBuilders.count("total_insertions").field("rack_id")
-            );
-            searchRequest.source(searchSourceBuilder);
-            // 执行搜索请求
-            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-            // 从聚合结果中获取文档数量
-            ValueCount totalInsertionsAggregation = searchResponse.getAggregations().get("total_insertions");
-            long totalInsertions = totalInsertionsAggregation.getValue();
-            resultItem.put(name[i], totalInsertions);
+    public Map<String, Object> getNavNewData(String granularity) throws IOException {
+        String[] indices = new String[0];
+        String[] key = new String[]{"total"};
+        LocalDateTime[] timeAgo = new LocalDateTime[0];
+        Map<String, Object> map;
+        switch (granularity){
+            case "realtime":
+                indices = new String[]{"rack_hda_pow_realtime"};
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMinutes(1)};
+                break;
+            case "hour":
+                indices = new String[]{"rack_hda_pow_hour"};
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1)};
+                break;
+            case "day":
+                indices = new String[]{"rack_hda_pow_day"};
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1)};
+                break;
+            default:
         }
-        return resultItem;
-    }
-
-    @Override
-    public Map<String, Object> getOneHourSumData() throws IOException {
-        String[] indices = new String[]{"rack_hda_pow_realtime"};
-        String[] name = new String[]{"total"};
-        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
-        Map<String, Object> map = getSumData(indices, name, oneHourAgo);
+        map = rackEnergyConsumptionService.getSumData(indices, key, timeAgo);
         return map;
     }
 

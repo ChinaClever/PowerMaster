@@ -4,8 +4,10 @@
       <div class="nav_header">
         <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div> -->
         <br/>
-        <span>全部机柜最近一小时新增记录</span>
-          <br/>
+        <span v-if="queryParams.granularity == 'realtime' ">全部机柜最近一分钟新增记录</span>
+        <span v-if="queryParams.granularity == 'hour' ">全部机柜最近一小时新增记录</span>
+        <span v-if="queryParams.granularity == 'day' ">全部机柜最近一天新增记录</span>
+        <br/>
       </div>
       <div class="nav_data">
         <el-statistic title="" :value="navTotalData">
@@ -19,12 +21,13 @@
           :model="queryParams"
           ref="queryFormRef"
           :inline="true"
-          label-width="80px"
+          label-width="auto"
         >
           <el-form-item label="颗粒度" prop="type">
             <el-select
               v-model="queryParams.granularity"
               placeholder="请选择分钟/小时/天"
+              @change="granularityChange"
               class="!w-120px" >
               <el-option label="分钟" value="realtime" />
               <el-option label="小时" value="hour" />
@@ -81,7 +84,7 @@
       <template #Content>
         <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
            <!-- 添加行号列 -->
-          <el-table-column label="序号" align="center" width="100px">
+          <el-table-column label="序号" align="center" width="60px">
             <template #default="{ $index }">
               {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
             </template>
@@ -247,6 +250,11 @@ const cascaderChange = (selectedCol) => {
   });
 }
 
+// 处理颗粒度筛选变化 有变化重新获取导航栏显示的新增记录
+const granularityChange = () => {
+   getNavNewData()
+}
+
 watch(() => queryParams.granularity, (newValues) => { 
     const newGranularity = newValues;
     if ( newGranularity == 'realtime'){
@@ -284,13 +292,13 @@ watch(() => queryParams.granularity, (newValues) => {
  
       tableColumns.value =[
         { label: '位置', align: 'center', prop: 'location' , width: '160px' , istrue:true},
+        { label: '时间', align: 'center', prop: 'create_time', formatter: dateFormatter, width: '200px' , istrue:true},
         { label: '总有功功率(kW)', align: 'center', prop: 'active_total' , istrue:true, formatter: formatPower},
         { label: '总视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, formatter: formatPower},
         { label: 'A路有功功率(kW)', align: 'center', prop: 'active_a' , istrue:true, formatter: formatPower},
         { label: 'A路视在功率(kVA)', align: 'center', prop: 'apparent_a' , istrue:true, formatter: formatPower},
         { label: 'B路有功功率(kW)', align: 'center', prop: 'active_b' , istrue:true, formatter: formatPower},
         { label: 'B路视在功率(kVA)', align: 'center', prop: 'apparent_b' , istrue:true, formatter: formatPower},
-        { label: '时间', align: 'center', prop: 'create_time', formatter: dateFormatter, width: '230px' , istrue:true},
         { label: '操作', align: 'center', slot: 'actions' , istrue:true},
       ]
       queryParams.pageNo = 1;
@@ -364,6 +372,7 @@ watch(() => queryParams.granularity, (newValues) => {
 
       tableColumns.value = [
         { label: '位置', align: 'center', prop: 'location' , width: '160px' , istrue:true},
+        { label: '记录时间', align: 'center', prop: 'create_time' , width: '200px', istrue:true},
         { label: '总平均有功功率(kW)', align: 'center', prop: 'active_total_avg_value', istrue:true, width: '180px', formatter: formatPower},
         { label: '总最大有功功率(kW)', align: 'center', prop: 'active_total_max_value', istrue:false, width: '180px', formatter: formatPower},
         { label: '总最大有功功率时间', align: 'center', prop: 'active_total_max_time', formatter: dateFormatter, width: '200px', istrue:false},
@@ -396,7 +405,6 @@ watch(() => queryParams.granularity, (newValues) => {
         { label: 'B路最大视在功率时间', align: 'center', prop: 'apparent_b_max_time', formatter: dateFormatter, width: '200px', istrue:false},
         { label: 'B路最小视在功率(kVA)', align: 'center', prop: 'apparent_b_min_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'B路最小视在功率时间', align: 'center', prop: 'apparent_b_min_time', formatter: dateFormatter, width: '200px', istrue:false},
-        { label: '记录时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true},
         { label: '操作', align: 'center', slot: 'actions', istrue:true},
       ];
       queryParams.pageNo = 1;
@@ -408,13 +416,13 @@ watch(() => queryParams.granularity, (newValues) => {
 
 const tableColumns = ref([
   { label: '位置', align: 'center', prop: 'location' , width: '160px' , istrue:true},
+  { label: '时间', align: 'center', prop: 'create_time', formatter: dateFormatter, width: '180px' , istrue:true},
   { label: '总有功功率(kW)', align: 'center', prop: 'active_total' , istrue:true, formatter: formatPower},
   { label: '总视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, formatter: formatPower},
   { label: 'A路有功功率(kW)', align: 'center', prop: 'active_a' , istrue:true, formatter: formatPower},
   { label: 'A路视在功率(kVA)', align: 'center', prop: 'apparent_a' , istrue:true, formatter: formatPower},
   { label: 'B路有功功率(kW)', align: 'center', prop: 'active_b' , istrue:true, formatter: formatPower},
   { label: 'B路视在功率(kVA)', align: 'center', prop: 'apparent_b' , istrue:true, formatter: formatPower},
-  { label: '时间', align: 'center', prop: 'create_time', formatter: dateFormatter, width: '180px' , istrue:true},
   { label: '操作', align: 'center', slot: 'actions' , istrue:true},
 ]);
 
@@ -472,8 +480,8 @@ const getNavList = async() => {
 }
 
 // 获取导航的数据显示
-const getNavOneHourData = async() => {
-  const res = await HistoryDataApi.getNavOneHourData({})
+const getNavNewData = async() => {
+  const res = await HistoryDataApi.getNavNewData(queryParams.granularity)
   navTotalData.value = res.total
 }
 
@@ -500,7 +508,7 @@ const handleExport = async () => {
 /** 初始化 **/
 onMounted(() => {
   getNavList()
-  getNavOneHourData()
+  getNavNewData()
   getList()
 })
 </script>

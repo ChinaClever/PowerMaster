@@ -4,8 +4,10 @@
       <div class="nav_header">
         <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div> -->
         <br/>
-        <span>全部机架最近一小时新增记录</span>
-          <br/>
+        <span v-if="queryParams.granularity == 'realtime' ">全部机架最近一分钟新增记录</span>
+        <span v-if="queryParams.granularity == 'hour' ">全部机架最近一小时新增记录</span>
+        <span v-if="queryParams.granularity == 'day' ">全部机架最近一天新增记录</span>
+        <br/>
       </div>
       <div class="nav_data">
         <el-statistic title="" :value="navTotalData">
@@ -24,6 +26,7 @@
           <el-form-item label="颗粒度" prop="type">
             <el-select
               v-model="queryParams.granularity"
+              @change="granularityChange"
               placeholder="请选择分钟/小时/天"
               class="!w-120px" >
               <el-option label="分钟" value="realtime" />
@@ -224,6 +227,11 @@ const cascaderChange = (selectedCol) => {
   });
 }
 
+// 处理颗粒度筛选变化 有变化重新获取导航栏显示的新增记录
+const granularityChange = () => {
+   getNavNewData()
+}
+
 watch(() => queryParams.granularity, (newValues) => { 
     const newGranularity = newValues;
     if ( newGranularity == 'realtime'){
@@ -357,8 +365,8 @@ const getNavList = async() => {
 }
 
 // 获取导航的数据显示
-const getNavOneHourData = async() => {
-  const res = await HistoryDataApi.getNavOneHourData({})
+const getNavNewData = async() => {
+  const res = await HistoryDataApi.getNavNewData(queryParams.granularity)
   navTotalData.value = res.total
 }
 
@@ -386,7 +394,7 @@ const handleExport = async () => {
 /** 初始化 **/
 onMounted(() => {
   getNavList()
-  getNavOneHourData()
+  getNavNewData()
   getList()
 })
 </script>
