@@ -911,7 +911,7 @@ const getTestData = async()=>{
 
 
   if(testData.value?.pdu_data?.pdu_total_data?.pow_active == null){
-    message.error("请输入正确的地址");
+    message.error("设备离线或者输入的地址不正确");
     return;
   }
   

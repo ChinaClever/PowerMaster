@@ -128,6 +128,13 @@
             </el-text>
           </template>
         </el-table-column>
+        <el-table-column label="电流不平衡度" align="center" prop="curUnbalance" width="130px">
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.curUnbalance != null" >
+              {{ scope.row.curUnbalance }}%
+            </el-text>
+          </template>
+        </el-table-column>
         <el-table-column label="A相电压" align="center" prop="avol" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.avol">
@@ -149,10 +156,10 @@
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="不平衡度" align="center" prop="curUnbalance" width="130px">
+        <el-table-column label="电压不平衡度" align="center" prop="volUnbalance" width="130px">
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.curUnbalance != null" >
-              {{ scope.row.curUnbalance }}%
+            <el-text line-clamp="2" v-if="scope.row.volUnbalance != null" >
+              {{ scope.row.volUnbalance }}%
             </el-text>
           </template>
         </el-table-column>
@@ -163,6 +170,7 @@
               link
               type="primary"
               @click="toPDUDisplayScreen(scope.row)"
+              v-if="scope.row.status != null && scope.row.status != 5"
             >
             设备详情
             </el-button>
@@ -179,14 +187,12 @@
       </el-table>
 
       <div v-show="switchValue == 2  && list.length > 0" class="arrayContainer">
-
-        
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="icon" >
               <div v-if="item.curUnbalance != null" >
-                {{ item.curUnbalance }}%<br/>不平衡度
+                <span style="font-size: 20px;">{{ item.curUnbalance }}%</span><br/>不平衡度
               </div>              
             </div>
             <div class="info">                  
@@ -204,7 +210,7 @@
             <el-tag type="warning" v-if="item.color == 3">大电流不平衡</el-tag>
             <el-tag type="danger" v-if="item.color == 4">大电流不平衡</el-tag>
           </div>
-          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+          <button v-if="item.status != null && item.status != 5" class="detail" @click="toPDUDisplayScreen(item)">详情</button>
         </div>
       </div>
 
@@ -214,7 +220,7 @@
           <div class="content">
             <div class="icon" >
               <div v-if="item.volUnbalance != null" >
-                不平衡度<br/>{{ item.volUnbalance }}%
+                <span style="font-size: 20px;">{{ item.volUnbalance }}%</span><br/>不平衡度
               </div>              
             </div>
             <div class="info">                  
@@ -230,7 +236,7 @@
             <el-tag type="info" >电压不平衡</el-tag>
 
           </div>
-          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+          <button v-if="item.status != null && item.status != 5" class="detail" @click="toPDUDisplayScreen(item)">详情</button>
         </div>
       </div>
       <Pagination
