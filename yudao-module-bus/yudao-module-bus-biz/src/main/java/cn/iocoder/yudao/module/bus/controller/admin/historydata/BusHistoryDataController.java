@@ -25,6 +25,7 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -100,14 +101,16 @@ public class BusHistoryDataController {
     @Operation(summary = "导出母线历史数据 Excel")
 //    @PreAuthorize("@ss.hasPermission('母线:history-data:export')")
     @OperateLog(type = EXPORT)
-    public void exportHistoryDataExcel(@Valid BusHistoryDataPageReqVO pageReqVO,
+    public void exportHistoryDataExcel(BusHistoryDataPageReqVO pageReqVO,
                                        HttpServletResponse response) throws IOException {
-        pageReqVO.setPageSize(5000);
+        System.out.println(new Date());
+        pageReqVO.setPageSize(10000);
         List<Object> list = busHistoryDataService.getBoxHistoryDataPage(pageReqVO).getList();
-
+        System.out.println(new Date());
         // 导出 Excel
-        ExcelUtils.write(response, "母线插接箱历史数据.xls", "数据", BoxPageRespVO.class,
+        ExcelUtils.write(response, "母线插接箱历史数据.xlsx", "数据", BoxPageRespVO.class,
                 BeanUtils.toBean(list, BoxPageRespVO.class));
+        System.out.println(new Date());
     }
 
 }

@@ -858,10 +858,20 @@ const handleExport = async () => {
     // 导出的二次确认
     await message.exportConfirm()
     // 发起导出
+    queryParams.pageNo = 1
     exportLoading.value = true
-    const data = await HistoryDataApi.exportHistoryData(queryParams)
-    download.excel(data, '母线插接箱历史数据.xls')
-  } catch {
+    console.log(new Date())
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await HistoryDataApi.exportHistoryData(queryParams, axiosConfig)
+        console.log(new Date())
+    await download.excel(data, '母线插接箱历史数据.xlsx')
+        console.log(new Date())
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
+    message.error('导出失败，请稍后重试')
   } finally {
     exportLoading.value = false
   }

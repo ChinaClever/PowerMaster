@@ -278,7 +278,7 @@ onMounted(() => {
   }
 
 .nav_data{
-  padding-left: 48px;
+  padding-left: 15px;
 }
 
   .line {

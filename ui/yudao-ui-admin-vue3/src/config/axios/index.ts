@@ -5,7 +5,7 @@ import { config } from './config'
 const { default_headers } = config
 
 const request = (option: any) => {
-  const { url, method, params, data, headersType, responseType, ...config } = option
+  const { url, method, params, data, headersType, responseType, timeout, ...config } = option
   return service({
     url: url,
     method,
@@ -13,6 +13,7 @@ const request = (option: any) => {
     data,
     ...config,
     responseType: responseType,
+    timeout: timeout !== undefined ? timeout : config.request_timeout, // 使用传入的timeout，或者默认的超时时间
     headers: {
       'Content-Type': headersType || default_headers
     }
