@@ -52,12 +52,13 @@
           </template>
         </el-form-item>
         <el-form-item label="网络地址" prop="devKey">
-          <el-input
+          <el-autocomplete
             v-model="queryParams.devKey"
-            placeholder="请输入网络地址"
+            :fetch-suggestions="querySearch"
             clearable
-            @keyup.enter="handleQuery"
             class="!w-200px"
+            placeholder="请输入网络地址"
+            @select="handleQuery"
           />
         </el-form-item>
       
@@ -131,7 +132,6 @@
         </el-table-column>
         <el-table-column label="功率因素" align="center" prop="pf" width="180px" />
         <!-- 数据库查询 -->
-        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" /> 
         <el-table-column label="总电能" align="center" prop="ele" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if=" scope.row.ele != null" >
@@ -139,12 +139,14 @@
             </el-text>
           </template>
         </el-table-column>
+        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" /> 
         <el-table-column label="操作" align="center">
           <template #default="scope">
             <el-button
               link
               type="primary"
               @click="toPDUDisplayScreen(scope.row)"
+              v-if="scope.row.status != null && scope.row.status != 5"
             >
             设备详情
             </el-button>
@@ -198,7 +200,7 @@
             <el-tag type="info" v-if="item.status == 4">故障</el-tag>
             <el-tag type="info" v-if="item.status == 5">离线</el-tag>
           </div>
-          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+          <button v-if="item.status != null && item.status != 5" class="detail" @click="toPDUDisplayScreen(item)">详情</button>
         </div>
       </div>
       <Pagination
@@ -232,6 +234,7 @@ defineOptions({ name: 'PDUDevice' })
 const { push } = useRouter()
 
 const flashListTimer = ref();
+const devKeyList = ref([])
 const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48])
 const switchValue = ref(0)
@@ -241,6 +244,32 @@ const statusNumber = reactive({
   alarm : 0,
   offline : 0
 })
+
+const loadAll = async () => {
+  var data = await PDUDeviceApi.devKeyList();
+  var objectArray = data.map((str) => {
+    return { value: str };
+  });
+  console.log(objectArray)
+  return objectArray;
+}
+
+const querySearch = (queryString: string, cb: any) => {
+  console.log(devKeyList.value)
+  const results = queryString
+    ? devKeyList.value.filter(createFilter(queryString))
+    : devKeyList.value
+  // call callback function to return suggestions
+  cb(results)
+}
+
+const createFilter = (queryString: string) => {
+  return (devKeyList) => {
+    return (
+      devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+    )
+  }
+}
 
 const ip = ref("ip");
 
@@ -523,7 +552,8 @@ const handleExport = async () => {
 }
 
 /** 初始化 **/
-onMounted(() => {
+onMounted(async () => {
+  devKeyList.value = await loadAll();
   getList()
   getNavList();
   flashListTimer.value = setInterval((getListNoLoading), 5000);

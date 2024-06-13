@@ -93,4 +93,15 @@ public class PDUDeviceController {
         return success(pDUDeviceService.getReportTemDataByDevKey(devKey,timeType,oldTime,newTime));
     }
 
+    @GetMapping("/devKeyList")
+    @Operation(summary = "获得PDU设备devKey列表")
+    public List<String> getDevKeyList() {
+        return pDUDeviceService.getDevKeyList();
+    }
+
+    @GetMapping("/ipList")
+    @Operation(summary = "获得PDU设备Ip列表")
+    public List<String> getIpList() {
+        return pDUDeviceService.getIpList();
+    }
 }

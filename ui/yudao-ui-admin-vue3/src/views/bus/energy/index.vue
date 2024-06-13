@@ -2,12 +2,12 @@
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="模块化机房">
     <template #NavInfo>
       <div class="navInfo">
-        <!-- <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
+        <div class="header">
+          <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
           <div class="name">微模块机房</div>
           <div>机房202</div>
-        </div> -->
-        <div class="line"></div>
+        </div>
+        <!-- <div class="line"></div>
         <div class="status">
           <div class="box">
             <div class="top">
@@ -34,7 +34,7 @@
             <div class="value"><span class="number">0</span>个</div>
           </div>
         </div>
-        <div class="line"></div>
+        <div class="line"></div> -->
         <!-- <div class="overview">
           <div class="count">
             <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
