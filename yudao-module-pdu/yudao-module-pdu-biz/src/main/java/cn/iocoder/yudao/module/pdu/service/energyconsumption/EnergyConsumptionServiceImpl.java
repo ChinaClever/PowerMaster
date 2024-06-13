@@ -336,7 +336,6 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
 
     @Override
     public PageResult<Object> getRealtimeEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
-        PageResult<Object> pageResult = null;
         // 创建BoolQueryBuilder对象
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         // 搜索源构建对象
@@ -360,10 +359,9 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
         }
-        List<String> pduIds = null;
         String[] ipArray = pageReqVO.getIpArray();
         if (ipArray != null){
-            pduIds = historyDataService.getPduIdsByIps(ipArray);
+            List<String> pduIds = historyDataService.getPduIdsByIps(ipArray);
             searchSourceBuilder.query(QueryBuilders.termsQuery("pdu_id", pduIds));
         }
         switch (pageReqVO.getType()) {
@@ -416,7 +414,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
         // 匹配到的总记录数
         Long totalHits = hits.getTotalHits().value;
         // 返回的结果
-        pageResult = new PageResult<>();
+        PageResult<Object> pageResult = new PageResult<>();
         pageResult.setList(historyDataService.getLocationsByPduIds(mapList))
                 .setTotal(totalHits);
 
@@ -424,7 +422,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
     }
 
     @Override
-    public Map<String, Object> getSumData(String[] indices, String[] name, LocalDateTime timeAgo) throws IOException {
+    public Map<String, Object> getSumData(String[] indices, String[] name, LocalDateTime[] timeAgo) throws IOException {
         Map<String, Object> resultItem = new HashMap<>();
         // 添加范围查询 最近24小时
         LocalDateTime now = LocalDateTime.now();
@@ -433,7 +431,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
             SearchRequest searchRequest = new SearchRequest(indices[i]);
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
             searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(timeAgo.format(formatter))
+                    .from(timeAgo[i].format(formatter))
                     .to(now.format(formatter)));
             // 添加计数聚合
             searchSourceBuilder.aggregation(
@@ -451,11 +449,11 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
     }
 
     @Override
-    public Map<String, Object> getOneWeekSumData() throws IOException {
-        String[] indices = new String[]{"pdu_eq_total_day", "pdu_eq_outlet_day"};
-        String[] name = new String[]{"total", "outlet"};
-        LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
-        Map<String, Object> map = getSumData(indices, name, oneWeekAgo);
+    public Map<String, Object> getNewData() throws IOException {
+        String[] indices = new String[]{"pdu_eq_total_day", "pdu_eq_total_week", "pdu_eq_total_month"};
+        String[] name = new String[]{"day", "week", "month"};
+        LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1), LocalDateTime.now().minusMonths(1)};
+        Map<String, Object> map = getSumData(indices, name, timeAgo);
         return map;
     }
 
@@ -463,8 +461,8 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
     public Map<String, Object> getOneDaySumData() throws IOException {
         String[] indices = new String[]{"pdu_ele_total_realtime", "pdu_ele_line", "pdu_ele_loop", "pdu_ele_outlet"};
         String[] name = new String[]{"total", "line", "loop", "outlet"};
-        LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
-        Map<String, Object> map = getSumData(indices, name, oneDayAgo);
+        LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1)};
+        Map<String, Object> map = getSumData(indices, name, timeAgo);
         return map;
     }
 

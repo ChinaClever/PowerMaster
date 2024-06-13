@@ -72,6 +72,9 @@ public class CabinetPowServiceImpl implements CabinetPowService {
                     CabinetPowDTO dto = new CabinetPowDTO();
                     dto.setActivePow(cabinetPowRealtimeDo.getActiveTotal());
                     dto.setApparentPow(cabinetPowRealtimeDo.getApparentTotal());
+                    dto.setReactivePow(cabinetPowRealtimeDo.getActiveTotal());
+                    dto.setPowerFactor(cabinetPowRealtimeDo.getFactorTotal());
+                    dto.setLoadRate(cabinetPowRealtimeDo.getLoadRate());
                     dto.setDateTime(cabinetPowRealtimeDo.getCreateTime());
                     list.add(dto);
                 });
@@ -91,6 +94,9 @@ public class CabinetPowServiceImpl implements CabinetPowService {
                     CabinetPowDTO dto = new CabinetPowDTO();
                     dto.setActivePow(hourDo.getActiveTotalAvgValue());
                     dto.setApparentPow(hourDo.getApparentTotalAvgValue());
+                    dto.setReactivePow(hourDo.getReactiveTotalAvgValue());
+                    dto.setPowerFactor(hourDo.getFactorTotalAvgValue());
+                    dto.setLoadRate(hourDo.getLoadRateTotalAvgValue());
                     dto.setDateTime(hourDo.getCreateTime());
                     list.add(dto);
                 });

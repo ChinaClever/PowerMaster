@@ -27,7 +27,7 @@ public class RackIndexVo extends PageParam {
      * 机柜编号
      */
     @Schema(description = "机柜编号", example = "1")
-    private Integer cabinetId;
+    private List<Integer> cabinetIds;
 
     /**
      * 机房编号

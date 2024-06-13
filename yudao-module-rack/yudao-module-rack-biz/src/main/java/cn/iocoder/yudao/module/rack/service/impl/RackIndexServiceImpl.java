@@ -65,6 +65,12 @@ public class RackIndexServiceImpl implements RackIndexService {
                 list.add(-1);
                 vo.setRackIds(list);
             }
+            //获取列表
+            if (Objects.nonNull(vo.getCabinetIds()) && CollectionUtils.isEmpty(vo.getCabinetIds())){
+                List<Integer> list = new ArrayList<>();
+                list.add(-1);
+                vo.setCabinetIds(list);
+            }
             Page<RackIndex> page =  new Page<>(vo.getPageNo(), vo.getPageSize());
 
             Page<RackIndex> result = rackIndexDoMapper.selectPage(page,new LambdaQueryWrapperX<RackIndex>()
@@ -72,6 +78,7 @@ public class RackIndexServiceImpl implements RackIndexService {
                     .like(StringUtils.isNotEmpty(vo.getRackName()),RackIndex::getRackName,vo.getRackName())
                     .like(StringUtils.isNotEmpty(vo.getCompany()),RackIndex::getCompany,vo.getCompany())
                     .like(StringUtils.isNotEmpty(vo.getType()),RackIndex::getType,vo.getType())
+                    .in(!CollectionUtils.isEmpty(vo.getCabinetIds()),RackIndex::getCabinetId,vo.getCabinetIds())
                     .in(!CollectionUtils.isEmpty(vo.getRackIds()),RackIndex::getId,vo.getRackIds()));
 
             List<JSONObject> indexRes = new ArrayList<>();
@@ -81,6 +88,7 @@ public class RackIndexServiceImpl implements RackIndexService {
                     String key = REDIS_KEY_RACK  + dto.getId();
                     JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(redisTemplate.opsForValue().get(key)));
                     if (Objects.nonNull(jsonObject)) {
+                        jsonObject.put("type",dto.getType());
                         indexRes.add(jsonObject);
                     }else {
                         indexRes.add(new JSONObject());

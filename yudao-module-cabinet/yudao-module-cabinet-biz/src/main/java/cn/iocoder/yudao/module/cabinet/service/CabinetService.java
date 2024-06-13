@@ -8,6 +8,8 @@ import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexVo;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetVo;
 import com.alibaba.fastjson2.JSONObject;
 
+import java.util.Map;
+
 /**
  * @author luowei
  * @version 1.0
@@ -74,4 +76,10 @@ public interface CabinetService {
      * @param vo 搜索参数
      */
     PageResult<CabinetIndexDTO> getCapacityPage(CabinetIndexVo vo);
+
+    /**
+     * 根据负载状态统计
+     * @return
+     */
+    Map<Integer,Integer>  loadStatusCount();
 }

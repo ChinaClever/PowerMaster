@@ -1,15 +1,4 @@
 import request from '@/config/axios'
-
-// pdu历史数据 VO
-export interface HistoryDataVO {
-  id: number 
-  pduId: number 
-  activePow: number 
-  apparentPow: number
-  powerFactor: number 
-  createTime: string 
-}
-
 // pdu历史数据 API
 export const HistoryDataApi = {
   // 查询pdu数据参数类型各id最大值
@@ -32,8 +21,8 @@ export const HistoryDataApi = {
     return await request.download({ url: `/pdu/history-data/export-excel`, params })
   },
 
-  // 查询pdu导航的一小时数据显示
-  getNavOneHourData: async (params: any) => {
-    return await request.get({ url: `/pdu/history-data/one-hour`, params })
+  // 查询pdu电力数据导航的新增记录数据显示
+  getNavNewData: async (granularity: string) => {
+    return await request.get({ url: `/pdu/history-data/new-data/`+granularity})
   },
 }
