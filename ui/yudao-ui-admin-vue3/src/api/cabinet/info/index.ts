@@ -13,6 +13,10 @@ export const CabinetApi = {
   getRoomMenuAll: async (params: any) => {
     return await request.get({ url: `/room/menuAll`, params })
   },
+  // 获取机架菜单（全部）
+  getRackMenuAll: async (params: any) => {
+    return await request.get({ url: `room/rack/menu`, params })
+  },
   // 保存机柜
   saveCabinetInfo: async (data: any) => {
     return await request.post({ url: `/cabinet/save`, data })
@@ -25,6 +29,10 @@ export const CabinetApi = {
   getRoomList: async (params: any) => {
     return await request.get({ url: `/room/list`, params })
   },
+  // 机柜负载状态统计
+  getLoadStatus: async (params: any) => {
+    return await request.get({ url: `/cabinet/load/count`, params })
+  },
   // 获取机房菜单
   getRoomPDUList: async (params: any) => {
     return await request.get({ url: `/room/pdu/menu`, params })
@@ -32,6 +40,14 @@ export const CabinetApi = {
   // 获取机柜详情
   getCabinetDetail: async (params: any) => {
     return await request.get({ url: `/cabinet/detail`, params })
+  },
+  // 机架保存
+  saveRackBatch: async (data: any) => {
+    return await request.post({ url: `/rack/batch/save`, data })
+  },
+  // 机架主页面
+  getRackPage: async (data: any) => {
+    return await request.post({ url: `/rack/data/page`, data })
   },
 }
 
