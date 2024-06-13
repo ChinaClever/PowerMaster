@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.framework.common.entity.es.cabinet.pow;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 /**
@@ -10,4 +11,24 @@ import lombok.Data;
  */
 @Data
 public class CabinetPowHourDo extends CabinetPowBaseDo {
+
+    /**
+     * 总平均无功功率
+     */
+    @JsonProperty("reactive_total_avg_value")
+    private float reactiveTotalAvgValue;
+
+
+    /**
+     * 总平均功率因素
+     */
+    @JsonProperty("factor_total_avg_value")
+    private float factorTotalAvgValue;
+
+
+    /**
+     * 平均负载率
+     */
+    @JsonProperty("load_rate_total_avg_value")
+    private float loadRateTotalAvgValue;
 }

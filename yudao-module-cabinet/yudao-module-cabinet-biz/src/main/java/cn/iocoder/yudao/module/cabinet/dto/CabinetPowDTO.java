@@ -30,4 +30,25 @@ public class CabinetPowDTO {
      */
     @Schema(description = "视在功率", example = "2")
     private float apparentPow;
+
+    /**
+     * 无功功率
+     */
+    @Schema(description = "无功功率", example = "0.12")
+    private float reactivePow;
+
+    /**
+     * 功率因素
+     */
+    @Schema(description = "功率因素", example = "2")
+    private float powerFactor;
+
+
+
+    /**
+     * 负载率
+     */
+    @Schema(description = "负载率", example = "2")
+    private float loadRate;
+
 }

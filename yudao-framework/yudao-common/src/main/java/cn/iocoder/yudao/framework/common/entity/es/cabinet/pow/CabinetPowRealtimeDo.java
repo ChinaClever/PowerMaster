@@ -45,4 +45,44 @@ public class CabinetPowRealtimeDo extends CabinetBaseDo {
     private float activeB;
 
 
+    /**
+     * 总无功功率
+     */
+    @JsonProperty("reactive_total")
+    private float reactiveTotal;
+    /**
+     * a路无功功率
+     */
+    @JsonProperty("reactive_a")
+    private float reactiveA;
+    /**
+     * b路无功功率
+     */
+    @JsonProperty("reactive_b")
+    private float reactiveB;
+
+
+    /**
+     * 总功率因素
+     */
+    @JsonProperty("factor_total")
+    private float factorTotal;
+    /**
+     * a路功率因素
+     */
+    @JsonProperty("factor_a")
+    private float factorA;
+    /**
+     * b路功率因素
+     */
+    @JsonProperty("factor_b")
+    private float factorB;
+
+    /**
+     * 负载率
+     */
+    @JsonProperty("load_rate")
+    private float loadRate;
+
+
 }
