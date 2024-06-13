@@ -66,3 +66,6 @@ auto-*.d.ts
 .history
 
 *.local
+/yudao-module-rack/yudao-module-rack-biz/src/test
+/yudao-module-bus/yudao-module-bus-biz/src/test
+/yudao-module-system/yudao-module-system-biz/src/test
