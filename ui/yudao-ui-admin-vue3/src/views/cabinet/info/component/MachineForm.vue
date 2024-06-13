@@ -12,11 +12,9 @@
       <el-collapse v-model="activeNames" @change="handleChange" accordion>
         <el-collapse-item title="机柜参数" name="1">
           <div class="collapseItem">
-            <el-form-item label="机房：" prop="roomName">
-              <el-select v-model="machineFormData.roomName" placeholder="请选择">
-                <el-option label="机房1" value="机房1" />
-                <el-option label="机房2" value="机房2" />
-                <el-option label="机房3" value="机房3" />
+            <el-form-item label="机房：" prop="roomId">
+              <el-select v-model="machineFormData.roomId" placeholder="请选择">
+                <el-option v-for="room in roomList" :key="room.id" :label="room.name" :value="room.id" />
               </el-select>
             </el-form-item>
             <el-form-item label="机柜名称：" prop="cabinetName">
@@ -44,44 +42,78 @@
             </el-form-item>
           </div>
         </el-collapse-item>
-        <el-collapse-item title="PDU绑定" name="2">
-          <div class="collapseItem">
-            <el-form-item label="A路：">
-              <el-col :span="4" class="text-center">
-                <span class="text-gray-500">IP地址</span>
-              </el-col>
-              <el-col :span="8">
-                <el-input v-model="machineFormData.pduIpA" placeholder="请输入" />
-              </el-col>
-              <el-col :span="4" class="text-center">
-                <span class="text-gray-500">级联地址</span>
-              </el-col>
-              <el-col :span="8">
-                <el-input v-model="machineFormData.casIdA" placeholder="请输入" />
-              </el-col>
-            </el-form-item>
-            <el-form-item label="B路：">
-              <el-col :span="4" class="text-center">
-                <span class="text-gray-500">IP地址</span>
-              </el-col>
-              <el-col :span="8">
-                <el-input v-model="machineFormData.pduIpB" placeholder="请输入" />
-              </el-col>
-              <el-col :span="4" class="text-center">
-                <span class="text-gray-500">级联地址</span>
-              </el-col>
-              <el-col :span="8">
-                <el-input v-model="machineFormData.casIdB" placeholder="请输入" />
-              </el-col>
-            </el-form-item>
-          </div>
+        <el-collapse-item title="PDU/母线绑定" name="2">
+          <el-tabs type="border-card" class="demo-tabs" v-model="machineFormData.pduBox">
+            <el-tab-pane label="PDU" :name="0">
+              <div class="pduBus">
+                <el-form-item label="A路：">
+                  <el-col :span="4" class="text-center">
+                    <span class="text-gray-500">IP地址</span>
+                  </el-col>
+                  <el-col :span="8">
+                    <el-input v-model="machineFormData.pduIpA" placeholder="请输入" />
+                  </el-col>
+                  <el-col :span="4" class="text-center">
+                    <span class="text-gray-500">级联地址</span>
+                  </el-col>
+                  <el-col :span="8">
+                    <el-input v-model="machineFormData.casIdA" placeholder="请输入" />
+                  </el-col>
+                </el-form-item>
+                <el-form-item label="B路：">
+                  <el-col :span="4" class="text-center">
+                    <span class="text-gray-500">IP地址</span>
+                  </el-col>
+                  <el-col :span="8">
+                    <el-input v-model="machineFormData.pduIpB" placeholder="请输入" />
+                  </el-col>
+                  <el-col :span="4" class="text-center">
+                    <span class="text-gray-500">级联地址</span>
+                  </el-col>
+                  <el-col :span="8">
+                    <el-input v-model="machineFormData.casIdB" placeholder="请输入" />
+                  </el-col>
+                </el-form-item>
+              </div>
+            </el-tab-pane>
+            <el-tab-pane label="母线" :name="1">
+              <div class="Bus">
+                <div>
+                  <div class="title">A路</div>
+                  <el-form-item label="母线名称：">
+                    <el-input v-model="machineFormData.busNameA" placeholder="请输入" />
+                  </el-form-item>
+                  <el-form-item label="母线地址：">
+                    <el-input v-model="machineFormData.busIpA" placeholder="请输入" />
+                  </el-form-item>
+                  <el-form-item label="插接箱名称：">
+                    <el-input v-model="machineFormData.boxNameA" placeholder="请输入" />
+                  </el-form-item>
+                  <el-form-item label="插接箱输出位：">
+                    <el-input v-model="machineFormData.boxOutletIdA" placeholder="请输入" />
+                  </el-form-item>
+                </div>
+                <div>
+                  <div class="title">B路</div>
+                  <el-form-item label="母线名称：">
+                    <el-input v-model="machineFormData.busNameB" placeholder="请输入" />
+                  </el-form-item>
+                  <el-form-item label="母线地址：">
+                    <el-input v-model="machineFormData.busIpB" placeholder="请输入" />
+                  </el-form-item>
+                  <el-form-item label="插接箱名称：">
+                    <el-input v-model="machineFormData.boxNameB" placeholder="请输入" />
+                  </el-form-item>
+                  <el-form-item label="插接箱输出位：">
+                    <el-input v-model="machineFormData.boxOutletIdB" placeholder="请输入" />
+                  </el-form-item>
+                </div>
+              </div>
+            </el-tab-pane>
+          </el-tabs>
+          
         </el-collapse-item>
-        <el-collapse-item title="U位绑定" name="3">
-          <div class="collapseItem">
-            <TopologyEdit />
-          </div>
-        </el-collapse-item>
-        <el-collapse-item title="机柜与传感器" name="4">
+        <el-collapse-item v-if="machineFormData.pduBox == 0" title="机柜与传感器" name="4">
           <div class="sensorContainer">
             <div class="list">
               <template v-for="(item, index) in sensorListLeft" :key="index">
@@ -169,8 +201,12 @@
 import { FormRules } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
 import TopologyEdit from './TopologyEdit.vue'
-import { fa } from 'element-plus/es/locale'
 
+const {roomList} = defineProps({
+  roomList: {
+    type: Array
+  },
+})
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
 
@@ -279,7 +315,7 @@ const sensorListRight = reactive([
   },
 ])
 const machineFormData = ref({
-  roomName: '',
+  roomId: '',
   cabinetName: '',
   type: '',
   cabinetHeight: 42, //U
@@ -289,7 +325,16 @@ const machineFormData = ref({
   casIdA: '',
   pduIpB: '',
   casIdB: '',
-  sensorList: [] as any
+  sensorList: [] as any,
+  busIpA: '',
+  busNameA: '',
+  boxNameA: '',
+  boxOutletIdA: '',
+  busIpB: '',
+  busNameB: '',
+  boxNameB: '',
+  boxOutletIdB: '',
+  pduBox: 0, // 0 pdu 1母线
 })
 const PDUFormData = ref({
   ipdzA: '',
@@ -299,7 +344,7 @@ const PDUFormData = ref({
 })
 
 const machineFormRules = reactive<FormRules>({
-  roomName: [{ required: true, message: '所属机房不能为空', trigger: 'blur' }],
+  roomId: [{ required: true, message: '所属机房不能为空', trigger: 'blur' }],
   cabinetName: [{ required: true, message: '机柜名称不能为空', trigger: 'blur' }],
   type: [{ required: true, message: '机柜类型不能为空', trigger: 'blur' }],
   cabinetHeight: [{ required: true, message: '机柜高度不能为空', trigger: 'blur' }],
@@ -378,7 +423,7 @@ const sensorForm = ref() // 传感器表单 Ref
 // const postList = ref([] as PostApi.PostVO[]) // 岗位列表
 
 /** 打开弹窗 */
-const open = async (type: string, data) => {
+const open = async (type: string, data, roomList) => {
   dialogVisible.value = true
   dialogTitle.value = type == 'edit' ? '编辑': '添加'
   formType.value = type
@@ -409,7 +454,7 @@ const open = async (type: string, data) => {
   }
   machineFormData.value = data || {
     cabinetName: '',
-    roomName: '',
+    roomId: '',
     type: '',
     cabinetHeight: 42,
     powCapacity: 8,
@@ -418,7 +463,16 @@ const open = async (type: string, data) => {
     casIdA: '',
     pduIpB: '',
     casIdB: '',
-    sensorList: []
+    sensorList: [],
+    busIpA: '',
+    busNameA: '',
+    boxNameA: '',
+    boxOutletIdA: '',
+    busIpB: '',
+    busNameB: '',
+    boxNameB: '',
+    boxOutletIdB: '',
+    pduBox: 0, // 0 pdu 1母线
   }
   // 修改时，设置数据
   // if (id) {
@@ -449,7 +503,6 @@ const submitForm = async () => {
     console.log('roomName', machineFormData.value)
     const res = await CabinetApi.saveCabinetInfo({
       ...machineFormData.value,
-      roomId: 1,
     })
     console.log('res', res, machineFormData.value)
     // const data = machineFormData.value as unknown as UserApi.UserVO
@@ -473,7 +526,7 @@ const submitForm = async () => {
 const resetForm = () => {
   machineFormData.value = {
     cabinetName: '',
-    roomName: '',
+    roomId: '',
     type: '',
     cabinetHeight: 42,
     powCapacity: 8,
@@ -482,7 +535,16 @@ const resetForm = () => {
     casIdA: '',
     pduIpB: '',
     casIdB: '',
-    sensorList: []
+    sensorList: [],
+    busIpA: '',
+    busNameA: '',
+    boxNameA: '',
+    boxOutletIdA: '',
+    busIpB: '',
+    busNameB: '',
+    boxNameB: '',
+    boxOutletIdB: '',
+    pduBox: 0, // 0 pdu 1母线
   }
   machineForm.value?.resetFields()
 }
@@ -548,6 +610,22 @@ const resetForm = () => {
 .collapseItem {
   border: 1px solid #efefef;
   padding: 30px 50px 10px 0;
+}
+.pduBus {
+  padding: 30px 50px 10px 0;
+}
+.Bus {
+  display: flex;
+  &>div {
+    width: 50%;
+    box-sizing: border-box;
+    padding-right: 20px;
+  }
+  .title {
+    font-size: 14px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
 }
 :deep(.el-collapse-item__content) {
   padding: 0 20px 20px;

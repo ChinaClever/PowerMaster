@@ -192,7 +192,7 @@
     </template>
   </CommonMenu>
   <!-- 添加或修改用户对话框 -->
-  <MachineForm ref="machineForm" @success="saveMachine" />
+  <MachineForm ref="machineForm" @success="saveMachine" :roomList="navList" />
 </template>
 
 <script lang="ts" setup>
@@ -231,7 +231,7 @@ const optionsCol = reactive([{
   }],
 },{
   value: 4,
-  label: 'A组',
+  label: 'A路',
   children: [{
     value: 5,
     label: 'A视在功率'
@@ -244,7 +244,7 @@ const optionsCol = reactive([{
   }],
 },{
   value: 8,
-  label: 'B组',
+  label: 'B路',
   children: [{
     value: 9,
     label: 'B视在功率'
@@ -343,7 +343,6 @@ const getTableData = async(reset = false) => {
       cabinetIds: isFirst.value ? null : cabinetIds.value,
       // roomId: null,
       runStatus: status.map(item => item.value),
-      pduBox: 0,
       company: queryParams.company
     })
     if (res.list) {

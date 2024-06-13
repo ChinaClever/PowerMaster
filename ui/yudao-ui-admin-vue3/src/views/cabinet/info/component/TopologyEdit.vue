@@ -30,7 +30,6 @@
 <script lang="ts" setup>
 import { newInstance, BezierConnector, BrowserJsPlumbInstance } from '@jsplumb/browser-ui'
 import { ref, reactive, onMounted  } from 'vue'
-import { string } from 'vue-types';
 import draggable from "vuedraggable";
 
 const frameContainer = ref()

@@ -98,7 +98,7 @@
               <div class="info">
                 <div>名称：{{item.name}}</div>
                 <div>型号：{{item.xh}}</div>
-                <div>电流：{{item.dl}}A</div>
+                <div>A路电流：{{item.adl}}A</div>
                 <div>B路电流：{{item.bdl}}A</div>
               </div>
             </div>
@@ -111,10 +111,11 @@
           <el-table-column label="位置" min-width="110" align="center" prop="local" />
           <el-table-column label="设备名" min-width="110" align="center" prop="sbm" />
           <el-table-column label="设备型号" min-width="110" align="center" prop="sbxh" />
-          <el-table-column label="高度" min-width="110" align="center" prop="gd" />
           <el-table-column label="A路电流" min-width="110" align="center" prop="adl" />
           <el-table-column label="B路电流" min-width="110" align="center" prop="bdl" />
           <el-table-column label="有功功率" min-width="110" align="center" prop="yggl" />
+          <el-table-column label="无功功率" min-width="110" align="center" prop="wggl" />
+          <el-table-column label="功率因素" min-width="110" align="center" prop="glys" />
         </el-table>
         <Pagination
           :total="queryParams.pageTotal"
@@ -135,73 +136,7 @@ import { CabinetApi } from '@/api/cabinet/info'
 
 const tableLoading = ref(false)
 const switchValue = ref(0)
-const tableData = ref([
-  {
-    bh: '1',
-    name: '为谔谔',
-    xh: 'b',
-    local: '机房1-机柜2',
-    sbm: '服务器1',
-    sbxh: '服务器123',
-    gd: '1',
-    dl: 1.12,
-    adl: 0.59,
-    bdl: 0.53,
-    yggl: 5.112
-  },
-  {
-    bh: '1',
-    name: '为谔谔',
-    xh: 'b',
-    local: '机房1-机柜2',
-    sbm: '服务器1',
-    sbxh: '服务器123',
-    gd: '1',
-    dl: 1.12,
-    adl: 0.59,
-    bdl: 0.53,
-    yggl: 5.112
-  },
-  {
-    bh: '1',
-    name: '为谔谔',
-    xh: 'b',
-    local: '机房1-机柜2',
-    sbm: '服务器1',
-    sbxh: '服务器123',
-    gd: '1',
-    dl: 1.12,
-    adl: 0.59,
-    bdl: 0.53,
-    yggl: 5.112
-  },
-  {
-    bh: '1',
-    name: '为谔谔',
-    xh: 'b',
-    local: '机房1-机柜2',
-    sbm: '服务器1',
-    sbxh: '服务器123',
-    gd: '1',
-    dl: 1.12,
-    adl: 0.59,
-    bdl: 0.53,
-    yggl: 5.112
-  },
-  {
-    bh: '1',
-    name: '为谔谔',
-    xh: 'b',
-    local: '机房1-机柜2',
-    sbm: '服务器1',
-    sbxh: '服务器123',
-    gd: '1',
-    dl: 1.12,
-    adl: 0.59,
-    bdl: 0.53,
-    yggl: 5.112
-  },
-])
+const tableData = ref([])
 const navList = ref([]) // 左侧导航列表数据
 const isFirst = ref(true) // 是否第一次调用getTableData函数
 const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
@@ -216,6 +151,43 @@ const queryParams = reactive({
 const getNavList = async() => {
   const res = await CabinetApi.getRoomMenuAll({})
   navList.value = res
+}
+
+// 获取机架表格数据
+const getTableData = async(reset = false) => {
+  tableLoading.value = true
+  if (reset) queryParams.pageNo = 1
+  try {
+    const res = await CabinetApi.getRackPage({
+      pageNo: queryParams.pageNo,
+      pageSize: queryParams.pageSize,
+      company: queryParams.company,
+      cabinetIds: isFirst.value ? null : cabinetIds.value,
+      // rackIds: [1, 2, 3, 4, 5],
+      // roomId: null,
+    })
+    console.log('res', res)
+    if (res.list) {
+      tableData.value = res.list.map(item => {
+        return {
+          bh: item.rack_key,
+          name: item.rack_name,
+          local: item.room_name + '-' + item.cabinet_name,
+          sbm: item.rack_name,
+          sbxh: item.type,
+          adl: item.rack_power.total_data.cur_a,
+          bdl: item.rack_power.total_data.cur_b,
+          yggl: item.rack_power.total_data.pow_active,
+          wggl: item.rack_power.total_data.pow_reactive,
+          glys: item.rack_power.total_data.power_factor
+        }
+      })
+      queryParams.pageTotal = res.total
+    }
+  } finally {
+    tableLoading.value = false
+  }
+  
 }
 
 // 处理切换 表格/阵列 模式
@@ -240,9 +212,10 @@ const handleCheck = (row) => {
     }
   })
   cabinetIds.value = ids
-  // getTableData(true)
+  getTableData(true)
 }
 getNavList()
+getTableData()
 </script>
 
 <style lang="scss" scoped>
