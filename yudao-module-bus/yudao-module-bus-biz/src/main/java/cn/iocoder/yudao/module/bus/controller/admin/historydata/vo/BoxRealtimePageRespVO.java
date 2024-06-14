@@ -5,10 +5,10 @@ import com.alibaba.excel.annotation.ExcelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-@Schema(description = "管理后台 - 插接箱返回数据")
+@Schema(description = "管理后台 - 母线插接箱 导出数据")
 @Data
 @ExcelIgnoreUnannotated
-public class BoxPageRespVO {
+public class BoxRealtimePageRespVO {
 
     @ExcelProperty("母线名称")
     private String bus_name;
@@ -21,9 +21,6 @@ public class BoxPageRespVO {
 
     @ExcelProperty("IP地址")
     private String ip_addr;
-
-    @ExcelProperty("记录时间")
-    private String create_time;
 
     @ExcelProperty("有功功率")
     private Double pow_active;
@@ -49,7 +46,8 @@ public class BoxPageRespVO {
     @ExcelProperty("负载率")
     private Double load_rate;
 
-
+    @ExcelProperty("记录时间")
+    private String create_time;
 
 
 
