@@ -1,15 +1,15 @@
 <template>
-  <div class="local">
-    <el-tag size="large" type="primary">机房5-机柜2</el-tag>
-  </div>
   <div class="descriptionContainer">
     <div class="all-left">
       <el-card class="card" shadow="hover">
         <div class="progressBox">
           <div class="title">总负载率</div>
-          <el-progress type="dashboard" :percentage="50"  />
+          <el-progress type="dashboard" :percentage="detailInfo.load_factor ? Number(detailInfo.load_factor).toFixed(2) : 0"  />
           <div class="power">电力容量</div>
           <div>20KW</div>
+          <div class="local">
+            <el-tag size="large" type="primary">{{detailInfo.room_name}}-{{detailInfo.cabinet_name}}</el-tag>
+          </div>
         </div>
       </el-card>
     </div>
@@ -23,9 +23,9 @@
                 <div>{{scope.row.pow_apparent ? Number(scope.row.pow_apparent).toFixed(3) : ''}}</div>
               </template>
             </el-table-column>
-            <el-table-column prop="ele_active" label="有功功率(kW)" min-width="100" align="center">
+            <el-table-column prop="pow_active" label="有功功率(kW)" min-width="100" align="center">
               <template #default="scope">
-                <div>{{scope.row.ele_active ? Number(scope.row.ele_active).toFixed(3) : ''}}</div>
+                <div>{{scope.row.pow_active ? Number(scope.row.pow_active).toFixed(3) : ''}}</div>
               </template>
             </el-table-column>
             <el-table-column prop="pow_reactive" label="无功功率(kVar)" min-width="100" align="center">
@@ -38,7 +38,7 @@
                 <div>{{scope.row.power_factor ? Number(scope.row.power_factor).toFixed(2) : ''}}</div>
               </template>
             </el-table-column>
-            <el-table-column prop="zb" label="负载率%" min-width="100" align="center">
+            <el-table-column prop="zb" label="负载率(%)" min-width="100" align="center">
               <template #default="scope">
                 <div v-if="scope.row.zb == '-'">-</div>
                 <div v-else>{{scope.row.zb ? Number(scope.row.zb).toFixed(2) : ''}}</div>
@@ -105,102 +105,53 @@ import TopologyShow from "./component/TopologyShow.vue"
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 import { CabinetApi } from '@/api/cabinet/detail'
 import { EChartsOption } from 'echarts'
-import * as echarts from 'echarts';
 
 const radioBtn = ref('')
-const allDetail = reactive({})
 const detailInfo = reactive({})
 const ABTotalData = ref({})
 const tableDataA = ref({})
 const tableDataB = ref({})
-const ADetail = reactive({})
-const BDetail = reactive({})
-const APDUData = ref<any>([])
-const APDUTriphase = ref([])
-const APDUTriphaseMax = ref(0)
-const APDUParam = ref<string[]>([])
-const CPDUData = ref([])
-const CPDUParam = ref<string[]>([])
-const SPDUData = ref([])
-const SPDUParam = ref<string[]>([])
-const {push} = useRouter() // 路由跳转
-const activeName = ref('first')
-const alarmClass = {
-  0: 'normal',
-  1: 'error',
-  2: 'warn',
-  4: 'warn',
-  8: 'error',
-}
+// const APDUData = ref<any>([])
+// const APDUTriphase = ref([])
+// const APDUTriphaseMax = ref(0)
+// const APDUParam = ref<string[]>([])
+// const CPDUData = ref([])
+// const CPDUParam = ref<string[]>([])
+// const SPDUData = ref([])
+// const SPDUParam = ref<string[]>([])
+// const {push} = useRouter() // 路由跳转
+// const alarmClass = {
+//   0: 'normal',
+//   1: 'error',
+//   2: 'warn',
+//   4: 'warn',
+//   8: 'error',
+// }
 const cabinetId = history?.state?.id || 1
-console.log('router', history?.state?.id)
-const toPDU = () => {
-  push('/pdu/pdudisplayscreen')
-}
 
 const echartsOption = ref<EChartsOption>({})
 
-const loadOption = reactive<EChartsOption>({
-  legend: {
-    data: ['视在功率', '有功功率'],
-    selectedMode: 'single'
-  },
-  radar: {
-    // shape: 'circle',
-    indicator: [
-      { name: '服务器1', max: 6500 },
-      { name: '服务器2', max: 16000 },
-      { name: '服务器3', max: 30000 },
-      { name: '服务器4', max: 38000 },
-      { name: '服务器5', max: 52000 },
-      { name: '服务器6', max: 25000 },
-      { name: '服务器7', max: 6500 },
-      { name: '服务器8', max: 16000 },
-      { name: '服务器9', max: 30000 },
-      { name: '服务器10', max: 38000 },
-      { name: '服务器11', max: 52000 },
-      { name: '服务器12', max: 25000 }
-    ]
-  },
-  series: [
-    {
-      name: 'Budget vs spending',
-      type: 'radar',
-      data: [
-        {
-          value: [4200, 8000, 20000, 35000, 50000, 18000, 4200, 13000, 20000, 35000, 55000, 21000],
-          name: '视在功率'
-        },
-        {
-          value: [5000, 14000, 28000, 26000, 42000, 21000, 4000, 14500, 28000, 26500, 42000, 21000],
-          name: '有功功率'
-        }
-      ]
-    }
-  ]
-})
+// const triphaseAOption = reactive<EChartsOption>({}) as EChartsOption
 
-const triphaseAOption = reactive<EChartsOption>({}) as EChartsOption
+// const triphaseBOption = reactive<EChartsOption>({}) as EChartsOption
 
-const triphaseBOption = reactive<EChartsOption>({}) as EChartsOption
-
-const regulateData = (data) => {
-  const lineKeys = Object.keys(data)
-  const result = [] as any
-  if (lineKeys.length > 0) {
-    for (let i = 0; i < data[lineKeys[0]].length; i++) {
-      const obj = {}
-      lineKeys.forEach(key => {
-        obj[key] = data[key][i]
-      })
-      result.push(obj)
-    }
-  }
-  return {
-    data: result,
-    keys: lineKeys
-  }
-}
+// const regulateData = (data) => {
+//   const lineKeys = Object.keys(data)
+//   const result = [] as any
+//   if (lineKeys.length > 0) {
+//     for (let i = 0; i < data[lineKeys[0]].length; i++) {
+//       const obj = {}
+//       lineKeys.forEach(key => {
+//         obj[key] = data[key][i]
+//       })
+//       result.push(obj)
+//     }
+//   }
+//   return {
+//     data: result,
+//     keys: lineKeys
+//   }
+// }
 
 const getMachineDetail = async() => {
   const res = await CabinetApi.getDetail({id:cabinetId})
@@ -216,12 +167,6 @@ const getMachineDetail = async() => {
       }
     })
     tableData.push(res.cabinet_power.path_a)
-    Object.assign(ADetail, {
-      pow_apparent: res.cabinet_power.path_a.pow_apparent.toFixed(3),
-      ele_active: res.cabinet_power.path_a.ele_active.toFixed(3),
-      pow_reactive: res.cabinet_power.path_a.pow_reactive.toFixed(3),
-      zb: Number((res.cabinet_power.path_a.pow_apparent/res.cabinet_power.total_data.pow_apparent).toFixed(2)) * 100
-    })
   }
   if (res.cabinet_power && res.cabinet_power.path_b) {
     res.cabinet_power.path_b.name = 'B路'
@@ -233,24 +178,11 @@ const getMachineDetail = async() => {
         V: res.cabinet_power.path_b.vol_value[index]
       }
     })
-    Object.assign(BDetail, {
-      pow_apparent: res.cabinet_power.path_b.pow_apparent.toFixed(3),
-      ele_active: res.cabinet_power.path_b.ele_active.toFixed(3),
-      pow_reactive: res.cabinet_power.path_b.pow_reactive.toFixed(3),
-      zb: Number((res.cabinet_power.path_b.pow_apparent/res.cabinet_power.total_data.pow_apparent).toFixed(2)) * 100
-    })
   }
   if (res.cabinet_power && res.cabinet_power.total_data) {
     res.cabinet_power.total_data.name = '统计'
     res.cabinet_power.total_data.zb = '-'
     tableData.push(res.cabinet_power.total_data)
-    Object.assign(allDetail, {
-      pow_apparent: res.cabinet_power.total_data.pow_apparent.toFixed(3),
-      ele_active: res.cabinet_power.total_data.ele_active.toFixed(3),
-      pow_reactive: res.cabinet_power.total_data.pow_reactive.toFixed(3),
-      power_factor: res.cabinet_power.total_data.power_factor.toFixed(3),
-      pow_capacity: res.pow_capacity
-    })
   }
   ABTotalData.value = tableData
   Object.assign(detailInfo, res)
@@ -269,8 +201,14 @@ const getPowTrend = async(type) => {
     },
     legend: {
       top: '2',
-      left: '260',
+      left: '180',
       selectedMode: 'single'
+    },
+    grid: {
+      left: '8%',
+      right: '8%',
+      bottom: '35',
+      top: '55'
     },
     xAxis: {
       type: 'category',
@@ -279,9 +217,9 @@ const getPowTrend = async(type) => {
     },
     yAxis: {
       type: 'value',
-      axisLabel: {
-        formatter: '{value} W'
-      }
+      // axisLabel: {
+      //   formatter: '{value} '
+      // }
     },
     series: [
       {
@@ -358,89 +296,89 @@ const getData =  async() => {
     devKey: '192.168.1.93-0'
   })
   console.log('res', res)
-  if (res && res.pdu_data) {
-    APDUData.value = regulateData(res.pdu_data.line_item_list || []).data
-    APDUParam.value = Object.keys(res.pdu_data.line_item_list || [])
-    APDUTriphase.value = APDUData.value.map(item => {
-      if (item.cur_alarm_max > APDUTriphaseMax.value) APDUTriphaseMax.value = item.cur_alarm_max
-      return item.cur_value
-    })
-    Object.assign(triphaseAOption, {
-      title: [
-        {
-          text: 'A路电流',
-          left: 'center',
-          top: 'bottom'
-        }
-      ],
-      polar: {
-        radius: [10, '80%']
-      },
-      radiusAxis: {
-        max: APDUTriphaseMax.value,
-        // axisLine: false
-      },
-      angleAxis: {
-        type: 'category',
-        data: ['a','a', 'a','b', 'b', 'b','c', 'c', 'c'],
-        startAngle: 110,
-        axisLabel: false,
-        axisTick: false
-      },
-      tooltip: {},
-      series: {
-        type: 'bar',
-        data: ['32.25', , , '20.20', , ,'29.90'],
-        coordinateSystem: 'polar',
-        label: {
-          show: true,
-          position: 'middle',
-          formatter: '{c}A'
-        }
-      },
-      animation: false
-    })
-    Object.assign(triphaseBOption, {
-      title: [
-        {
-          text: 'B路电流',
-          left: 'center',
-          top: 'bottom'
-        }
-      ],
-      polar: {
-        radius: [10, '80%']
-      },
-      radiusAxis: {
-        max: APDUTriphaseMax.value,
-        // axisLine: false
-      },
-      angleAxis: {
-        type: 'category',
-        data: ['a','a', 'a','b', 'b', 'b','c', 'c', 'c'],
-        startAngle: 110,
-        axisLabel: false,
-        axisTick: false
-      },
-      tooltip: {},
-      series: {
-        type: 'bar',
-        data: ['32.00', , , '22.00', , ,'28.00'],
-        coordinateSystem: 'polar',
-        label: {
-          show: true,
-          position: 'middle',
-          formatter: '{c}A'
-        }
-      },
-      animation: false
-    })
-    CPDUData.value = regulateData(res.pdu_data.loop_item_list || []).data
-    CPDUParam.value = Object.keys(res.pdu_data.loop_item_list || [])
-    SPDUData.value = regulateData(res.pdu_data.output_item_list || []).data
-    SPDUParam.value = Object.keys(res.pdu_data.output_item_list || [])
-  }
-  console.log('APDUParam', APDUData.value, APDUTriphase.value)
+  // if (res && res.pdu_data) {
+  //   APDUData.value = regulateData(res.pdu_data.line_item_list || []).data
+  //   APDUParam.value = Object.keys(res.pdu_data.line_item_list || [])
+  //   APDUTriphase.value = APDUData.value.map(item => {
+  //     if (item.cur_alarm_max > APDUTriphaseMax.value) APDUTriphaseMax.value = item.cur_alarm_max
+  //     return item.cur_value
+  //   })
+  //   Object.assign(triphaseAOption, {
+  //     title: [
+  //       {
+  //         text: 'A路电流',
+  //         left: 'center',
+  //         top: 'bottom'
+  //       }
+  //     ],
+  //     polar: {
+  //       radius: [10, '80%']
+  //     },
+  //     radiusAxis: {
+  //       max: APDUTriphaseMax.value,
+  //       // axisLine: false
+  //     },
+  //     angleAxis: {
+  //       type: 'category',
+  //       data: ['a','a', 'a','b', 'b', 'b','c', 'c', 'c'],
+  //       startAngle: 110,
+  //       axisLabel: false,
+  //       axisTick: false
+  //     },
+  //     tooltip: {},
+  //     series: {
+  //       type: 'bar',
+  //       data: ['32.25', , , '20.20', , ,'29.90'],
+  //       coordinateSystem: 'polar',
+  //       label: {
+  //         show: true,
+  //         position: 'middle',
+  //         formatter: '{c}A'
+  //       }
+  //     },
+  //     animation: false
+  //   })
+  //   Object.assign(triphaseBOption, {
+  //     title: [
+  //       {
+  //         text: 'B路电流',
+  //         left: 'center',
+  //         top: 'bottom'
+  //       }
+  //     ],
+  //     polar: {
+  //       radius: [10, '80%']
+  //     },
+  //     radiusAxis: {
+  //       max: APDUTriphaseMax.value,
+  //       // axisLine: false
+  //     },
+  //     angleAxis: {
+  //       type: 'category',
+  //       data: ['a','a', 'a','b', 'b', 'b','c', 'c', 'c'],
+  //       startAngle: 110,
+  //       axisLabel: false,
+  //       axisTick: false
+  //     },
+  //     tooltip: {},
+  //     series: {
+  //       type: 'bar',
+  //       data: ['32.00', , , '22.00', , ,'28.00'],
+  //       coordinateSystem: 'polar',
+  //       label: {
+  //         show: true,
+  //         position: 'middle',
+  //         formatter: '{c}A'
+  //       }
+  //     },
+  //     animation: false
+  //   })
+  //   CPDUData.value = regulateData(res.pdu_data.loop_item_list || []).data
+  //   CPDUParam.value = Object.keys(res.pdu_data.loop_item_list || [])
+  //   SPDUData.value = regulateData(res.pdu_data.output_item_list || []).data
+  //   SPDUParam.value = Object.keys(res.pdu_data.output_item_list || [])
+  // }
+  // console.log('APDUParam', APDUData.value, APDUTriphase.value)
 }
 
 getData()
@@ -451,12 +389,7 @@ onMounted(()=> {
 </script>
 
 <style lang="scss" scoped>
-.local {
-  // width: auto;
-  // padding: 10px 15px;
-  // background-color: #fff;
-  margin-top: -18px;
-}
+
 .descriptionContainer {
   // width: 100%;
   // box-sizing: border-box;
@@ -490,6 +423,15 @@ onMounted(()=> {
       justify-content: center;
       align-items: center;
       font-size: 18px;
+      position: relative;
+      .local {
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        // width: auto;
+        // padding: 10px 15px;
+        // background-color: #fff;
+      }
       .title {
         // font-size: 16px;
         margin-bottom: 10px;
@@ -513,7 +455,7 @@ onMounted(()=> {
       .btns {
         position: absolute;
         z-index: 9;
-        right: 200px;
+        right: 30px;
         top: 20px;
       }
     
