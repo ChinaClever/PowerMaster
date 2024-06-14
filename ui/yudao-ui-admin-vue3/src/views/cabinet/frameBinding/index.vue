@@ -1,11 +1,16 @@
 <template>
   <ContentWrap>
-    <div class="cab-info">机房202-机柜2</div>
+    <div class="cab-info">
+      <el-tag class="tag" size="large" type="primary">机房5-机柜2</el-tag>
+    </div>
     <el-button class="btn-save" @click="handleSubmit" type="primary">保存</el-button>
     <div style="display: flex; justify-content: center;">
       <div ref="frameContainer" class="frameContainer" style="position: relative;z-index: 1"  @click.right="handleRightClick">
         <div class="portLeft">
-          <div class="port" v-for="port in portLeft" :key="port" :id="'portLeft' + port">插座位{{port}}</div>
+          <div class="port" v-for="port in portLeft" :key="port" :id="'portLeft' + port.id"> 
+            <div class="info">{{port.id}}：{{port.value}}A</div>
+            <img class="plug" alt="" src="@/assets/svgs/plug-n.svg" />
+          </div>
         </div>
         <div class="frameList">
           <div class="bottomFrame">
@@ -14,7 +19,7 @@
           <div class="topFrame">
             <template v-for="(frame,index) in frameList" :key="index">
               <draggable
-                :style="`height: ${frame[0] ? (frame[0].uHeight)*28 : 28}px`"
+                :style="`height: ${frame[0] ? (frame[0].uHeight)*26 : 26}px`"
                 class="frame"
                 :id="'frame-' + index"
                 :list="frame"
@@ -35,7 +40,11 @@
           </div>
         </div>
         <div class="portRight">
-          <div class="port" v-for="port in portRight" :key="port" :id="'portRight' + port">插座位{{port}}</div>
+          <div class="port" v-for="port in portRight" :key="port" :id="'portRight' + port.id"> 
+            <img class="plug" alt="" src="@/assets/svgs/plug-n.svg" />
+            <div class="info">{{port.id}}：{{port.value}}A</div>
+          </div>
+          <!-- <div class="port" v-for="port in portRight" :key="port" :id="'portRight' + port">插座位{{port}}</div> -->
         </div>
         <div class="menu" v-if="operateMenu.show" :style="{left: `${operateMenu.left}`, top: `${operateMenu.top}`}">
           <div class="menu_item" v-if="operateMenu.add" @click="openBindingFrom('add')">新增</div>
@@ -52,16 +61,16 @@
 import { newInstance, BezierConnector, BrowserJsPlumbInstance } from '@jsplumb/browser-ui'
 import draggable from "vuedraggable";
 import { CabinetApi } from '@/api/cabinet/info'
+import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 import BindingFrom from './component/bindingFrom.vue'
 import { ElMessageBox } from 'element-plus'
-import { count } from 'console';
 
 
 const message = useMessage() // 消息弹窗
 const binding = ref() // 绑定编辑弹窗组件
 const frameContainer = ref() // 机架容量
-const portLeft = ref<number[]>([]) // 左侧端口
-const portRight = ref<number[]>([]) // 右侧端口
+const portLeft = ref<any[]>([]) // 左侧端口
+const portRight = ref<any[]>([]) // 右侧端口
 const frameList = ref([]) // 实际设备列表
 const frameListInit = ref<any>([]) // 初始空的设备列表
 const cabinetInfo = ref<any>({}) // 设备信息
@@ -117,6 +126,7 @@ const toCreatConnect = () => {
   const paintStyleConfig = {
     strokeWidth: 2, // 设置连接线的宽度为 2 像素
     stroke: frameList.value.length > maxHiddenNumber ? 'rgba(0, 0, 0, 0)' : '#000', // 设置连接线的颜色为黑色
+    dashstyle: '5 5',
     outlineWidth: 13,
     outlineStroke: 'rgba(0, 0, 0, 0)'
   }
@@ -126,7 +136,7 @@ const toCreatConnect = () => {
   }
   // 左侧端口创建连接点
   portLeft.value.forEach(port => {
-    const portElement = document.getElementById(`portLeft${port}`) as Element
+    const portElement = document.getElementById(`portLeft${port.id}`) as Element
     // 添加瞄点
     instance?.addEndpoint(portElement, {
       ...addEndpointConfig,
@@ -135,7 +145,7 @@ const toCreatConnect = () => {
   })
   // 右侧端口创建连接点
   portRight.value.forEach(port => {
-    const portElement = document.getElementById(`portRight${port}`) as Element
+    const portElement = document.getElementById(`portRight${port.id}`) as Element
     // 添加瞄点
     instance?.addEndpoint(portElement, {
       ...addEndpointConfig,
@@ -307,14 +317,22 @@ const getData = async() => {
   const res = await CabinetApi.getCabinetInfoItem({id: 1})
   console.log('res', res)
   cabinetInfo.value = res
-  const leftPort = [] as number[]
-  const rightPort = [] as number[]
+  const leftPort = [] as any
+  const rightPort = [] as any
   const frames = [] as any
   for(let i = 1; i <= res.outletA; i++) {
-    leftPort.push(i)
+    leftPort.push({
+      id: i,
+      value: null,
+      status: null
+    })
   }
   for(let i = 1; i <= res.outletB; i++) {
-    rightPort.push(i)
+    rightPort.push({
+      id: i,
+      value: null,
+      status: null
+    })
   }
   for(let i = 1; i <= res.cabinetHeight; i++) {
     frames.push([])
@@ -322,6 +340,7 @@ const getData = async() => {
   frameListInit.value = [...frames]
   let count = 0
   if (res.rackIndexList.length > 0) {
+    res.rackIndexList.sort((a,b) => a.uAddress - b.uAddress)
     res.rackIndexList.forEach(item => {
       frames.splice(item.uAddress-1-count, item.uHeight, [{
         id: item.id,
@@ -334,14 +353,41 @@ const getData = async() => {
         outletIdB: item.outletIdB,
       }])
       count = (count + item.uHeight - 1)
-      // debugger
     })
   }
   frameList.value = frames.reverse()
   portLeft.value = leftPort.reverse()
   portRight.value = rightPort.reverse()
   console.log('leftPort', frameList.value, frameListInit.value)
+  getPortList()
   nextTick(toCreatConnect)
+}
+
+// 获取端口
+const getPortList=  async() => {
+  const cabinetInfoValue = cabinetInfo.value
+  if (cabinetInfoValue.pduIpA) {
+    const res = await PDUDeviceApi.PDUDisplay({devKey: cabinetInfoValue.pduIpA + '-' + cabinetInfoValue.casIdA})
+    if (res.pdu_data && res.pdu_data.output_item_list) {
+      const current = res.pdu_data.output_item_list.cur_value.reverse()
+      const state = res.pdu_data.output_item_list.relay_state.reverse()
+      portLeft.value.forEach((item, index) => {
+        portLeft.value[index].value = current[index]
+        portLeft.value[index].status = state[index]
+      })
+    }
+  }
+  if (cabinetInfoValue.pduIpB) {
+    const res = await PDUDeviceApi.PDUDisplay({devKey: cabinetInfoValue.pduIpB + '-' + cabinetInfoValue.casIdB})
+    if (res.pdu_data && res.pdu_data.output_item_list) {
+      const current = res.pdu_data.output_item_list.cur_value.reverse()
+      const state = res.pdu_data.output_item_list.relay_state.reverse()
+      portRight.value.forEach((item, index) => {
+        portRight.value[index].value = current[index]
+        portRight.value[index].status = state[index]
+      })
+    }
+  }
 }
 
 // 处理保存提交事件
@@ -478,6 +524,14 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
+.cab-info {
+  position: relative;
+  .tag {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+}
 .frameContainer {
   display: flex;
   align-items: center;
@@ -511,40 +565,24 @@ onUnmounted(() => {
   justify-content: space-evenly;
   padding: 0 30px;
   .port {
-    position: relative;
-    width: 55px;
-    height: 26px;
+    width: 108px;
+    height: 32px;
     font-size: 12px;
-    // border-bottom: 1px solid #000;
     display: flex;
     align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    box-sizing: border-box;
-    background-color: antiquewhite;
-    margin-bottom: 10px;
+    justify-content: space-between;
+    .plug {
+      width: 40px;
+      height: 22px;
+    }
   }
-  .port::before {
-    position: absolute;
-    top: -50px;
-    left: -40px;
-    content: '';
-    width: 60px;
-    height: 60px;
-    border-radius: 60px;
-    // border: 1px solid #000;
-    background-color: #fff;
-  }
-  .port::after {
-    position: absolute;
-    top: -50px;
-    right: -40px;
-    content: '';
-    width: 60px;
-    height: 60px;
-    border-radius: 60px;
-    // border: 1px solid #000;
-    background-color: #fff;
+}
+.portRight {
+  .port {
+    width: 128px;
+    .info {
+      width: 60px;
+    }
   }
 }
 .frameList {
@@ -559,7 +597,7 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 28px;
+    height: 26px;
     box-sizing: border-box;
     background-color: transparent;
     border-bottom: 1px solid #eaeaea;
