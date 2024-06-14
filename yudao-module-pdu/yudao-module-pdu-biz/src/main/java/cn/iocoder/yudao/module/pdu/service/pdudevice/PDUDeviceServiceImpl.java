@@ -53,6 +53,7 @@ import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 
 import org.elasticsearch.search.aggregations.metrics.Sum;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.metrics.TopHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +72,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -356,9 +358,19 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         .filter(QueryBuilders.termQuery("line_id", lineId))
                         .filter(QueryBuilders.rangeQuery("create_time.keyword").gte(pageReqVO.getOldTime()).lte(pageReqVO.getNewTime())));
 
-                sourceBuilder.aggregation(AggregationBuilders.max("vol_max").field("vol_max_value"));
-                sourceBuilder.aggregation(AggregationBuilders.max("cur_max").field("cur_max_value"));
-                sourceBuilder.aggregation(AggregationBuilders.max("pow_max").field("pow_active_max_value"));
+                // Top hits aggregations to get the max value records
+                sourceBuilder.aggregation(AggregationBuilders.topHits("top_vol_max")
+                        .sort("vol_max_value", SortOrder.DESC)
+                        .size(1)
+                        .fetchSource(new String[]{"vol_max_value", "create_time"}, null));
+                sourceBuilder.aggregation(AggregationBuilders.topHits("top_cur_max")
+                        .sort("cur_max_value", SortOrder.DESC)
+                        .size(1)
+                        .fetchSource(new String[]{"cur_max_value", "create_time"}, null));
+                sourceBuilder.aggregation(AggregationBuilders.topHits("top_pow_max")
+                        .sort("pow_active_max_value", SortOrder.DESC)
+                        .size(1)
+                        .fetchSource(new String[]{"pow_active_max_value", "create_time"}, null));
 
                 searchRequest.source(sourceBuilder);
                 request.add(searchRequest);
@@ -367,22 +379,135 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 MultiSearchResponse response = client.msearch(request, RequestOptions.DEFAULT);
 
                 if(response.getResponses().length > 2){
-                    pduLineRes.setL1MaxCur(((Max)(response.getResponses()[0].getResponse().getAggregations().get("cur_max"))).getValue());
-                    if(((Max)(response.getResponses()[0].getResponse().getAggregations().get("cur_max"))).getValue() < 0){
+                    // Process the first response
+                    SearchResponse searchResponse1 = response.getResponses()[0].getResponse();
+                    TopHits topHitsCurMax1 = searchResponse1.getAggregations().get("top_cur_max");
+                    TopHits topHitsVolMax1 = searchResponse1.getAggregations().get("top_vol_max");
+                    TopHits topHitsPowMax1 = searchResponse1.getAggregations().get("top_pow_max");
+
+                    if (topHitsCurMax1.getHits().getHits().length > 0) {
+                        Map<String, Object> sourceMap = topHitsCurMax1.getHits().getHits()[0].getSourceAsMap();
+                        double l1CurMaxValue = (double) sourceMap.get("cur_max_value");
+                        String l1CurMaxTime = (String) sourceMap.get("create_time");
+                        if (l1CurMaxValue < 0) {
+                            continue;
+                        }
+                        pduLineRes.setL1MaxCur(l1CurMaxValue);
+                        pduLineRes.setL1MaxCurTime(l1CurMaxTime);
+                    }else {
                         continue;
                     }
-                    pduLineRes.setL1MaxVol(((Max)(response.getResponses()[0].getResponse().getAggregations().get("vol_max"))).getValue());
-                    pduLineRes.setL1MaxPow(((Max)(response.getResponses()[0].getResponse().getAggregations().get("pow_max"))).getValue());
-                    pduLineRes.setL2MaxCur(((Max)(response.getResponses()[1].getResponse().getAggregations().get("cur_max"))).getValue());
-                    pduLineRes.setL2MaxVol(((Max)(response.getResponses()[1].getResponse().getAggregations().get("vol_max"))).getValue());
-                    pduLineRes.setL2MaxPow(((Max)(response.getResponses()[1].getResponse().getAggregations().get("pow_max"))).getValue());
-                    pduLineRes.setL3MaxCur(((Max)(response.getResponses()[2].getResponse().getAggregations().get("cur_max"))).getValue());
-                    pduLineRes.setL3MaxVol(((Max)(response.getResponses()[2].getResponse().getAggregations().get("vol_max"))).getValue());
-                    pduLineRes.setL3MaxPow(((Max)(response.getResponses()[2].getResponse().getAggregations().get("pow_max"))).getValue());
+
+                    if (topHitsVolMax1.getHits().getHits().length > 0) {
+                        Map<String, Object> sourceMap = topHitsVolMax1.getHits().getHits()[0].getSourceAsMap();
+                        double l1VolMaxValue = (double) sourceMap.get("vol_max_value");
+                        String l1VolMaxTime = (String) sourceMap.get("create_time");
+                        pduLineRes.setL1MaxVol(l1VolMaxValue);
+                        pduLineRes.setL1MaxVolTime(l1VolMaxTime);
+                    }
+
+                    if (topHitsPowMax1.getHits().getHits().length > 0) {
+                        Map<String, Object> sourceMap = topHitsPowMax1.getHits().getHits()[0].getSourceAsMap();
+                        double l1PowMaxValue = (double) sourceMap.get("pow_active_max_value");
+                        String l1PowMaxTime = (String) sourceMap.get("create_time");
+                        pduLineRes.setL1MaxPow(l1PowMaxValue);
+                        pduLineRes.setL1MaxPowTime(l1PowMaxTime);
+                    }
+
+                    // Process the second response
+                    SearchResponse searchResponse2 = response.getResponses()[1].getResponse();
+                    TopHits topHitsCurMax2 = searchResponse2.getAggregations().get("top_cur_max");
+                    TopHits topHitsVolMax2 = searchResponse2.getAggregations().get("top_vol_max");
+                    TopHits topHitsPowMax2 = searchResponse2.getAggregations().get("top_pow_max");
+
+                    if (topHitsCurMax2.getHits().getHits().length > 0) {
+                        Map<String, Object> sourceMap = topHitsCurMax2.getHits().getHits()[0].getSourceAsMap();
+                        double l2CurMaxValue = (double) sourceMap.get("cur_max_value");
+                        String l2CurMaxTime = (String) sourceMap.get("create_time");
+                        pduLineRes.setL2MaxCur(l2CurMaxValue);
+                        pduLineRes.setL2MaxCurTime(l2CurMaxTime);
+                    }
+
+                    if (topHitsVolMax2.getHits().getHits().length > 0) {
+                        Map<String, Object> sourceMap = topHitsVolMax2.getHits().getHits()[0].getSourceAsMap();
+                        double l2VolMaxValue = (double) sourceMap.get("vol_max_value");
+                        String l2VolMaxTime = (String) sourceMap.get("create_time");
+                        pduLineRes.setL2MaxVol(l2VolMaxValue);
+                        pduLineRes.setL2MaxVolTime(l2VolMaxTime);
+                    }
+
+                    if (topHitsPowMax2.getHits().getHits().length > 0) {
+                        Map<String, Object> sourceMap = topHitsPowMax2.getHits().getHits()[0].getSourceAsMap();
+                        double l2PowMaxValue = (double) sourceMap.get("pow_active_max_value");
+                        String l2PowMaxTime = (String) sourceMap.get("create_time");
+                        pduLineRes.setL2MaxPow(l2PowMaxValue);
+                        pduLineRes.setL2MaxPowTime(l2PowMaxTime);
+                    }
+
+                    // Process the third response
+                    SearchResponse searchResponse3 = response.getResponses()[2].getResponse();
+                    TopHits topHitsCurMax3 = searchResponse3.getAggregations().get("top_cur_max");
+                    TopHits topHitsVolMax3 = searchResponse3.getAggregations().get("top_vol_max");
+                    TopHits topHitsPowMax3 = searchResponse2.getAggregations().get("top_pow_max");
+
+                    if (topHitsCurMax3.getHits().getHits().length > 0) {
+                        Map<String, Object> sourceMap = topHitsCurMax3.getHits().getHits()[0].getSourceAsMap();
+                        double l3CurMaxValue = (double) sourceMap.get("cur_max_value");
+                        String l3CurMaxTime = (String) sourceMap.get("create_time");
+                        pduLineRes.setL3MaxCur(l3CurMaxValue);
+                        pduLineRes.setL3MaxCurTime(l3CurMaxTime);
+                    }
+
+                    if (topHitsVolMax3.getHits().getHits().length > 0) {
+                        Map<String, Object> sourceMap = topHitsVolMax3.getHits().getHits()[0].getSourceAsMap();
+                        double l3VolMaxValue = (double) sourceMap.get("vol_max_value");
+                        String l3VolMaxTime = (String) sourceMap.get("create_time");
+                        pduLineRes.setL3MaxVol(l3VolMaxValue);
+                        pduLineRes.setL3MaxVolTime(l3VolMaxTime);
+                    }
+
+                    if (topHitsPowMax3.getHits().getHits().length > 0) {
+                        Map<String, Object> sourceMap = topHitsPowMax3.getHits().getHits()[0].getSourceAsMap();
+                        double l3PowMaxValue = (double) sourceMap.get("pow_active_max_value");
+                        String l3PowMaxTime = (String) sourceMap.get("create_time");
+                        pduLineRes.setL3MaxPow(l3PowMaxValue);
+                        pduLineRes.setL3MaxPowTime(l3PowMaxTime);
+                    }
                 }else {
-                    pduLineRes.setL1MaxCur(((Max)(response.getResponses()[0].getResponse().getAggregations().get("cur_max"))).getValue());
-                    pduLineRes.setL1MaxVol(((Max)(response.getResponses()[0].getResponse().getAggregations().get("vol_max"))).getValue());
-                    pduLineRes.setL1MaxPow(((Max)(response.getResponses()[0].getResponse().getAggregations().get("pow_max"))).getValue());
+                    // Process the first response
+                    SearchResponse searchResponse1 = response.getResponses()[0].getResponse();
+                    TopHits topHitsCurMax1 = searchResponse1.getAggregations().get("top_cur_max");
+                    TopHits topHitsVolMax1 = searchResponse1.getAggregations().get("top_vol_max");
+                    TopHits topHitsPowMax1 = searchResponse1.getAggregations().get("top_pow_max");
+
+                    if (topHitsCurMax1.getHits().getHits().length > 0) {
+                        Map<String, Object> sourceMap = topHitsCurMax1.getHits().getHits()[0].getSourceAsMap();
+                        double l1CurMaxValue = (double) sourceMap.get("cur_max_value");
+                        String l1CurMaxTime = (String) sourceMap.get("create_time");
+                        if (l1CurMaxValue < 0) {
+                            continue;
+                        }
+                        pduLineRes.setL1MaxCur(l1CurMaxValue);
+                        pduLineRes.setL1MaxCurTime(l1CurMaxTime);
+                    }else {
+                        continue;
+                    }
+
+                    if (topHitsVolMax1.getHits().getHits().length > 0) {
+                        Map<String, Object> sourceMap = topHitsVolMax1.getHits().getHits()[0].getSourceAsMap();
+                        double l1VolMaxValue = (double) sourceMap.get("vol_max_value");
+                        String l1VolMaxTime = (String) sourceMap.get("create_time");
+                        pduLineRes.setL1MaxVol(l1VolMaxValue);
+                        pduLineRes.setL1MaxVolTime(l1VolMaxTime);
+                    }
+
+                    if (topHitsPowMax1.getHits().getHits().length > 0) {
+                        Map<String, Object> sourceMap = topHitsPowMax1.getHits().getHits()[0].getSourceAsMap();
+                        double l1PowMaxValue = (double) sourceMap.get("pow_active_max_value");
+                        String l1PowMaxTime = (String) sourceMap.get("create_time");
+                        pduLineRes.setL1MaxPow(l1PowMaxValue);
+                        pduLineRes.setL1MaxPowTime(l1PowMaxTime);
+                    }
                 }
 
             } catch (IOException e) {
@@ -393,6 +518,20 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         }
 
         return new PageResult<PDULineRes>(result,pduIndexPageResult.getTotal());
+    }
+
+    @Override
+    public List<String> getDevKeyList() {
+        List<String> result = pDUDeviceMapper.selectList().stream().limit(10).collect(Collectors.toList())
+                .stream().map(PduIndex::getDevKey).collect(Collectors.toList());
+        return result;
+    }
+
+    @Override
+    public List<String> getIpList() {
+        List<String> result = pDUDeviceMapper.selectList().stream().limit(10).collect(Collectors.toList())
+                .stream().map(PduIndex::getIpAddr).collect(Collectors.toList());
+        return result;
     }
 
     @Override

@@ -71,4 +71,12 @@ export const PDUDeviceApi = {
   getPDULinePage: async (params) => {
     return await request.get({ url: `/pdu/PDU-device/line/page`,params})
   },
+
+  devKeyList: async () => {
+    return await request.download({ url: `/pdu/PDU-device/devKeyList` })
+  },
+
+  ipList: async () => {
+    return await request.download({ url: `/pdu/PDU-device/ipList` })
+  },
 }

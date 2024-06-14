@@ -99,6 +99,7 @@
         <el-table-column label="所在位置" align="center" prop="location" />
         <el-table-column label="运行状态" align="center" prop="color" >
           <template #default="scope" >
+            <el-tag type="info"  v-if="scope.row.color == 0">负载</el-tag>
             <el-tag type="success"  v-if="scope.row.color == 1">负载</el-tag>
             <el-tag type="primary"  v-if="scope.row.color == 2">负载</el-tag>
             <el-tag type="warning" v-if="scope.row.color == 3">负载</el-tag>
@@ -195,6 +196,7 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
+            <el-tag type="info"  v-if="item.color == 0">负载</el-tag>
             <el-tag type="success"  v-if="item.color == 1">负载</el-tag>
             <el-tag type="primary"  v-if="item.color == 2">负载</el-tag>
             <el-tag type="warning" v-if="item.color == 3">负载</el-tag>

@@ -214,7 +214,6 @@ public class IndexServiceImpl implements IndexService {
                 // 设置时间范围查询条件
 
                 cabinetEqTotalDaySourceBuilder.query(QueryBuilders.boolQuery()
-                        //今天的数据 cabinet_ele_total_realtime的时间范围查询必须使用字符串
                         .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime.plusDays(1))).lte(formatter.format(newTime.plusDays(1))))
                         .must(QueryBuilders.termQuery("cabinet_id", Id))); // 添加cabinet_id条件
                 // 设置聚合条件
@@ -938,7 +937,7 @@ public class IndexServiceImpl implements IndexService {
     public PageResult<CabinetEnvAndHumRes> getCabinetEnvPage(IndexPageReqVO pageReqVO) {
 
         PageResult<IndexDO> indexDOPageResult = cabIndexMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<IndexDO>()
-                .inIfPresent(IndexDO::getId, pageReqVO.getCabinetIds()));
+                .inIfPresent(IndexDO::getId, pageReqVO.getCabinetIds()).ne(IndexDO::getPduBox,1));
         List<CabinetEnvAndHumRes> result = new ArrayList<>();
         List<TemColorDO> temColorList = temColorService.getTemColorAll();
         for (IndexDO indexDO : indexDOPageResult.getList()) {
@@ -956,6 +955,9 @@ public class IndexServiceImpl implements IndexService {
             res.setLocation(localtion);
             res.setId(indexDO.getId());
             CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, indexDO.getId()));
+            if (cabinetPdu == null){
+                continue;
+            }
             List<CabinetEnvSensor> envList = cabinetEnvSensorMapper.selectList(new LambdaQueryWrapperX<CabinetEnvSensor>()
                     .eq(CabinetEnvSensor::getCabinetId, indexDO.getId())
                     .eq(CabinetEnvSensor::getType,1));

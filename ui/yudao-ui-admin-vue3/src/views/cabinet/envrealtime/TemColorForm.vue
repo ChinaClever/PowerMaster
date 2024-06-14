@@ -9,13 +9,13 @@
     >
       <el-button @click="addTemColor">添加温度范围颜色</el-button>
       <el-button @click="deleteTemColor" v-if="formData.colorArr.length > 0">删除最后一个</el-button>
+      <div><br/></div>
       <div v-for="item in formData.colorArr" :key="item.id">        
         <el-form-item label="温度">
           <el-input style="width: 33.3%;" type="number" v-model="item.min"  />°C~
           <el-input style="width: 33.3%;" type="number" v-model="item.max"  />°C
           颜色<el-color-picker v-model="item.color" />      
-        </el-form-item>
-        
+        </el-form-item>    
       </div>
     </el-form>
     <template #footer>
