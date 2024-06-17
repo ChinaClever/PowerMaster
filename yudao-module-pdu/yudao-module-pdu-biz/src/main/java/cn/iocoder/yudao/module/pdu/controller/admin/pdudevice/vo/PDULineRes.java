@@ -46,4 +46,6 @@ public class PDULineRes {
     private String L3MaxPowTime;
 
     private String Location;
+
+    private Integer status;
 }

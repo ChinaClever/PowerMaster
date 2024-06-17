@@ -27,7 +27,7 @@ public interface BusIndexMapper extends BaseMapperX<BusIndexDO> {
                 .eqIfPresent(BusIndexDO::getNodeIp, reqVO.getNodeIp())
                 .eqIfPresent(BusIndexDO::getIsDeleted, reqVO.getIsDeleted())
                 .betweenIfPresent(BusIndexDO::getCreateTime, reqVO.getCreateTime())
-                .orderByDesc(BusIndexDO::getId));
+                .orderByAsc(BusIndexDO::getId));
     }
 
 }

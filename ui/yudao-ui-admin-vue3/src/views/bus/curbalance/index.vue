@@ -98,7 +98,7 @@
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
-        <el-table-column label="运行状态" align="center" prop="status" >
+        <el-table-column label="运行状态" align="center" prop="color" >
           <template #default="scope" >
               <el-tag type="info"  v-if="scope.row.color == 1">小电流不平衡</el-tag>
               <el-tag type="success"  v-if="scope.row.color == 2">大电流不平衡</el-tag>
@@ -162,6 +162,7 @@
               link
               type="primary"
               @click="toPDUDisplayScreen(scope.row)"
+              v-if="scope.row.status != null && scope.row.status != 5"
             >
             设备详情
             </el-button>
@@ -178,8 +179,6 @@
       </el-table>
 
       <div v-show="switchValue == 2  && list.length > 0" class="arrayContainer">
-
-        
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
@@ -203,7 +202,7 @@
             <el-tag type="warning" v-if="item.color == 3">大电流不平衡</el-tag>
             <el-tag type="danger" v-if="item.color == 4">大电流不平衡</el-tag>
           </div>
-          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
       </div>
 
@@ -229,7 +228,7 @@
             <el-tag type="info" >电压不平衡</el-tag>
 
           </div>
-          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
       </div>
       <Pagination

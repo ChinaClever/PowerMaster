@@ -116,10 +116,10 @@
     </template>
     <template #Content>
       <el-table v-show="switchValue == 2" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
-        <el-table-column label="编号" align="center" prop="tableId" />
+        <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" />
-        <el-table-column label="L1最大电流" align="center" prop="l1MaxCur" width="130px" >
+        <el-table-column label="所在位置" align="center" prop="location" width="180px" />
+        <el-table-column label="L1最大电流" align="center" prop="l1MaxCur" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
               {{ scope.row.l1MaxCur }}kA
@@ -127,7 +127,7 @@
           </template>
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l1MaxCurTime" />
-        <el-table-column label="L2最大电流" align="center" prop="l2MaxCur" width="130px" >
+        <el-table-column label="L2最大电流" align="center" prop="l2MaxCur" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
               {{ scope.row.l2MaxCur }}A
@@ -135,7 +135,7 @@
           </template>
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l2MaxCurTime" />
-        <el-table-column label="L3最大电流" align="center" prop="l3MaxCur" width="130px" >
+        <el-table-column label="L3最大电流" align="center" prop="l3MaxCur" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
               {{ scope.row.l3MaxCur }}A
@@ -143,36 +143,14 @@
           </template>
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l3MaxCurTime" />
-        <el-table-column label="L1最大功率" align="center" prop="l1MaxPow" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" >
-              {{ scope.row.l1MaxPow }}kW
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column label="发生时间" align="center" prop="l1MaxPowTime" />
-        <el-table-column label="L2最大功率" align="center" prop="l2MaxPow" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" >
-              {{ scope.row.l2MaxPow }}kW
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column label="发生时间" align="center" prop="l2MaxPowTime" />
-        <el-table-column label="L3最大功率" align="center" prop="l3MaxPow" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" >
-              {{ scope.row.l3MaxPow }}kW
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column label="发生时间" align="center" prop="l3MaxPowTime" />
-        <el-table-column label="操作" align="center">
+
+        <el-table-column label="操作" align="center" width="130px">
           <template #default="scope">
             <el-button
               link
               type="primary"
               @click="toPDUDisplayScreen(scope.row)"
+              v-if="scope.row.status != null && scope.row.status != 5"
             >
             设备详情
             </el-button>
@@ -187,7 +165,54 @@
           </template>
         </el-table-column>
       </el-table>
-
+      <el-table v-show="switchValue == 2" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+        <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
+        <el-table-column label="所在位置" align="center" prop="location" width="180px" />
+        <el-table-column label="L1最大功率" align="center" prop="l1MaxPow" width="100px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.l1MaxPow }}kW
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="发生时间" align="center" prop="l1MaxPowTime" />
+        <el-table-column label="L2最大功率" align="center" prop="l2MaxPow" width="100px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.l2MaxPow }}kW
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="发生时间" align="center" prop="l2MaxPowTime" />
+        <el-table-column label="L3最大功率" align="center" prop="l3MaxPow" width="100px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.l3MaxPow }}kW
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="发生时间" align="center" prop="l3MaxPowTime" />
+        <el-table-column label="操作" align="center" width="130px">
+          <template #default="scope">
+            <el-button
+              link
+              type="primary"
+              @click="toPDUDisplayScreen(scope.row)"
+              v-if="scope.row.status != null && scope.row.status != 5"
+            >
+            设备详情
+            </el-button>
+            <el-button
+              link
+              type="danger"
+              @click="handleDelete(scope.row.id)"
+              v-if="scope.row.status == 5"
+            >
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
       <div  v-show="switchValue == 1 && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
@@ -201,7 +226,7 @@
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->              
-          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
       </div>
 
@@ -219,7 +244,7 @@
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->                
-          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
       </div>
 

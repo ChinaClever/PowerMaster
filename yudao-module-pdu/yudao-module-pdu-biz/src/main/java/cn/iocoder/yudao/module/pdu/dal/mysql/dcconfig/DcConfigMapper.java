@@ -40,7 +40,7 @@ public interface DcConfigMapper extends BaseMapperX<DcConfigDO> {
                 .eqIfPresent(DcConfigDO::getChangeStore, reqVO.getChangeStore())
                 .eqIfPresent(DcConfigDO::getEleStore, reqVO.getEleStore())
                 .eqIfPresent(DcConfigDO::getRedisSwitch, reqVO.getRedisSwitch())
-                .orderByDesc(DcConfigDO::getId));
+                .orderByAsc(DcConfigDO::getId));
     }
 
 }

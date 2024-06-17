@@ -134,6 +134,7 @@
               link
               type="primary"
               @click="toPDUDisplayScreen(scope.row)"
+              v-if="scope.row.status != null && scope.row.status != 5"
             >
             设备详情
             </el-button>
@@ -202,7 +203,7 @@
             <el-tag type="warning" v-if="item.color == 3">负载</el-tag>
             <el-tag type="danger" v-if="item.color == 4">负载</el-tag>
           </div>
-          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
       </div>
       <Pagination

@@ -32,7 +32,8 @@ const echartsOption = reactive({
       label: {
         show: false // 设置为false，不显示饼图上的名称
       },
-      radius: '100%'
+      radius: ['50%', '65%'],
+      emphasis:{disabled:false,scale:false,scaleSize:0,}
     }
   ]
 })

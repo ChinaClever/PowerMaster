@@ -115,6 +115,7 @@ public class BusIndexServiceImpl implements BusIndexService {
         ValueOperations ops = redisTemplate.opsForValue();
         for (BusIndexDO busIndexDO : list) {
             BusIndexRes busIndexRes = new BusIndexRes();
+            busIndexRes.setStatus(busIndexDO.getRunStatus());
             res.add(busIndexRes);
             JSONObject jsonObject = (JSONObject) ops.get("packet:bus:" + busIndexDO.getDevKey());
             if (jsonObject == null){
@@ -162,6 +163,7 @@ public class BusIndexServiceImpl implements BusIndexService {
         ValueOperations ops = redisTemplate.opsForValue();
         for (BusIndexDO busIndexDO : list) {
             BusRedisDataRes busRedisDataRes = new BusRedisDataRes();
+            busRedisDataRes.setStatus(busIndexDO.getRunStatus());
             res.add(busRedisDataRes);
             JSONObject jsonObject = (JSONObject) ops.get("packet:bus:" + busIndexDO.getDevKey());
             if (jsonObject == null){
@@ -252,8 +254,8 @@ public class BusIndexServiceImpl implements BusIndexService {
                 return new PageResult<>(result, busIndexDOPageResult.getTotal());
             }
             //昨日
-            ids.forEach(dto -> {
-                result.add(new BusIndexDTO().setId(dto));
+            busIndexDOList.forEach(busIndexDO -> {
+                result.add(new BusIndexDTO().setId(busIndexDO.getId()).setRunStatus(busIndexDO.getRunStatus()));
             });
             String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
             String endTime =DateUtil.formatDateTime(DateTime.now());
@@ -312,6 +314,7 @@ public class BusIndexServiceImpl implements BusIndexService {
         ValueOperations ops = redisTemplate.opsForValue();
         for (BusIndexDO busIndexDO : list) {
             BusBalanceDataRes busBalanceDataRes = new BusBalanceDataRes();
+            busBalanceDataRes.setStatus(busIndexDO.getRunStatus());
             res.add(busBalanceDataRes);
             JSONObject jsonObject = (JSONObject) ops.get("packet:bus:" + busIndexDO.getDevKey());
             if (jsonObject == null){
@@ -382,6 +385,7 @@ public class BusIndexServiceImpl implements BusIndexService {
         ValueOperations ops = redisTemplate.opsForValue();
         for (BusIndexDO busIndexDO : list) {
             BusTemRes busTemRes = new BusTemRes();
+            busTemRes.setStatus(busIndexDO.getRunStatus());
             res.add(busTemRes);
             JSONObject jsonObject = (JSONObject) ops.get("packet:bus:" + busIndexDO.getDevKey());
             if (jsonObject == null){
@@ -432,6 +436,7 @@ public class BusIndexServiceImpl implements BusIndexService {
         ValueOperations ops = redisTemplate.opsForValue();
         for (BusIndexDO busIndexDO : list) {
             BusPFRes busPFRes = new BusPFRes();
+            busPFRes.setStatus(busIndexDO.getRunStatus());
             res.add(busPFRes);
             JSONObject jsonObject = (JSONObject) ops.get("packet:bus:" + busIndexDO.getDevKey());
             if (jsonObject == null){
@@ -463,6 +468,7 @@ public class BusIndexServiceImpl implements BusIndexService {
         ValueOperations ops = redisTemplate.opsForValue();
         for (BusIndexDO busIndexDO : list) {
             BusHarmonicRes busHarmonicRes = new BusHarmonicRes();
+            busHarmonicRes.setStatus(busIndexDO.getRunStatus());
             res.add(busHarmonicRes);
             JSONObject jsonObject = (JSONObject) ops.get("packet:bus:" + busIndexDO.getDevKey());
             if (jsonObject == null){

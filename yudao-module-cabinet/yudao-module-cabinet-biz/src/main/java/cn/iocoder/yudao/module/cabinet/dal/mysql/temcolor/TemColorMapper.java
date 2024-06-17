@@ -23,7 +23,7 @@ public interface TemColorMapper extends BaseMapperX<TemColorDO> {
                 .eqIfPresent(TemColorDO::getMax, reqVO.getMax())
                 .eqIfPresent(TemColorDO::getColor, reqVO.getColor())
                 .betweenIfPresent(TemColorDO::getCreateTime, reqVO.getCreateTime())
-                .orderByDesc(TemColorDO::getId));
+                .orderByAsc(TemColorDO::getId));
     }
 
 }
