@@ -55,4 +55,16 @@ export const IndexApi = {
   getBalancePage: async (data: any) => {
     return await request.post({ url: `/bus/index/balance`, data })
   },
+
+  getBusTemPage: async (params: any) => {
+    return await request.get({ url: `/bus/index/bustempage`, params })
+  },
+
+  getBusPFPage: async (params: any) => {
+    return await request.get({ url: `/bus/index/buspfpage`, params })
+  },
+
+  getBusHarmonicPage: async (params: any) => {
+    return await request.get({ url: `/bus/index/busharmonicpage`, params })
+  },
 }

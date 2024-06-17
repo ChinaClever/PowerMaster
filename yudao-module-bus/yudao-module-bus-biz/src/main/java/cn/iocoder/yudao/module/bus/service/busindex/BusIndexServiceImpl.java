@@ -374,6 +374,122 @@ public class BusIndexServiceImpl implements BusIndexService {
         return new PageResult<>(res,busIndexDOPageResult.getTotal());
     }
 
+    @Override
+    public PageResult<BusTemRes> getBusTemPage(BusIndexPageReqVO pageReqVO) {
+        PageResult<BusIndexDO> busIndexDOPageResult = busIndexMapper.selectPage(pageReqVO);
+        List<BusIndexDO> list = busIndexDOPageResult.getList();
+        List<BusTemRes> res = new ArrayList<>();
+        ValueOperations ops = redisTemplate.opsForValue();
+        for (BusIndexDO busIndexDO : list) {
+            BusTemRes busTemRes = new BusTemRes();
+            res.add(busTemRes);
+            JSONObject jsonObject = (JSONObject) ops.get("packet:bus:" + busIndexDO.getDevKey());
+            if (jsonObject == null){
+                continue;
+            }
+            JSONObject envItemList = jsonObject.getJSONObject("env_item_list");
+            JSONArray temValue = envItemList.getJSONArray("tem_value");
+            JSONArray temStatus = envItemList.getJSONArray("tem_status");
+            for (int i = 0; i < 4; i++) {
+                double tem = temValue.getDoubleValue(i);
+                Integer temSta = temStatus.getInteger(i);
+                if (i == 0){
+                    busTemRes.setATem(tem);
+                    busTemRes.setATemStatus(temSta);
+                    if(temSta != 0){
+                        busTemRes.setATemColor("red");
+                    }
+                }else if(i == 1){
+                    busTemRes.setBTem(tem);
+                    busTemRes.setBTemStatus(temSta);
+                    if(temSta != 0){
+                        busTemRes.setBTemColor("red");
+                    }
+                }else if(i == 2){
+                    busTemRes.setCTem(tem);
+                    busTemRes.setCTemStatus(temSta);
+                    if(temSta != 0){
+                        busTemRes.setCTemColor("red");
+                    }
+                }else if(i == 3){
+                    busTemRes.setNTem(tem);
+                    busTemRes.setNTemStatus(temSta);
+                    if(temSta != 0){
+                        busTemRes.setNTemColor("red");
+                    }
+                }
+            }
+
+        }
+        return new PageResult<>(res,busIndexDOPageResult.getTotal());
+    }
+
+    @Override
+    public PageResult<BusPFRes> getBusPFPage(BusIndexPageReqVO pageReqVO) {
+        PageResult<BusIndexDO> busIndexDOPageResult = busIndexMapper.selectPage(pageReqVO);
+        List<BusIndexDO> list = busIndexDOPageResult.getList();
+        List<BusPFRes> res = new ArrayList<>();
+        ValueOperations ops = redisTemplate.opsForValue();
+        for (BusIndexDO busIndexDO : list) {
+            BusPFRes busPFRes = new BusPFRes();
+            res.add(busPFRes);
+            JSONObject jsonObject = (JSONObject) ops.get("packet:bus:" + busIndexDO.getDevKey());
+            if (jsonObject == null){
+                continue;
+            }
+            JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
+            JSONArray pfValue = lineItemList.getJSONArray("power_factor");
+
+            for (int i = 0; i < 3; i++) {
+                double pf = pfValue.getDoubleValue(i);
+                if (i == 0){
+                    busPFRes.setApf(pf);
+                }else if(i == 1){
+                    busPFRes.setBpf(pf);
+                }else if(i == 2){
+                    busPFRes.setCpf(pf);
+                }
+            }
+            busPFRes.setTotalPf(jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getDoubleValue("power_factor"));
+        }
+        return new PageResult<>(res,busIndexDOPageResult.getTotal());
+    }
+
+    @Override
+    public PageResult<BusHarmonicRes> getBusHarmonicPage(BusIndexPageReqVO pageReqVO) {
+        PageResult<BusIndexDO> busIndexDOPageResult = busIndexMapper.selectPage(pageReqVO);
+        List<BusIndexDO> list = busIndexDOPageResult.getList();
+        List<BusHarmonicRes> res = new ArrayList<>();
+        ValueOperations ops = redisTemplate.opsForValue();
+        for (BusIndexDO busIndexDO : list) {
+            BusHarmonicRes busHarmonicRes = new BusHarmonicRes();
+            res.add(busHarmonicRes);
+            JSONObject jsonObject = (JSONObject) ops.get("packet:bus:" + busIndexDO.getDevKey());
+            if (jsonObject == null){
+                continue;
+            }
+            JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
+            JSONArray curThd = lineItemList.getJSONArray("cur_thd");
+            JSONArray volThd = lineItemList.getJSONArray("vol_thd");
+            for (int i = 0; i < 3; i++) {
+                double curThdValue = curThd.getDoubleValue(i);
+                double volThdValue = volThd.getDoubleValue(i);
+                if (i == 0){
+                    busHarmonicRes.setAcurThd(curThdValue);
+                    busHarmonicRes.setAvolThd(volThdValue);
+                }else if(i == 1){
+                    busHarmonicRes.setBcurThd(curThdValue);
+                    busHarmonicRes.setBvolThd(volThdValue);
+                }else if(i == 2){
+                    busHarmonicRes.setCcurThd(curThdValue);
+                    busHarmonicRes.setCvolThd(volThdValue);
+                }
+            }
+
+        }
+        return new PageResult<>(res,busIndexDOPageResult.getTotal());
+    }
+
     /**
      * 获取数据
      * @param startTime 开始时间

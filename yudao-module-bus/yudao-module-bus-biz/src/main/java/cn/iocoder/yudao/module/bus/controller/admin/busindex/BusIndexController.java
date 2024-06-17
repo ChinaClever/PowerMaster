@@ -75,6 +75,27 @@ public class BusIndexController {
         return success(BeanUtils.toBean(pageResult, BusRedisDataRes.class));
     }
 
+    @GetMapping("/bustempage")
+    @Operation(summary = "获得始端箱索引分页")
+    public CommonResult<PageResult<BusTemRes>> getBusTemPage(@Valid BusIndexPageReqVO pageReqVO) {
+        PageResult<BusTemRes> pageResult = indexService.getBusTemPage(pageReqVO);
+        return success(BeanUtils.toBean(pageResult, BusTemRes.class));
+    }
+
+    @GetMapping("/buspfpage")
+    @Operation(summary = "获得始端箱索引分页")
+    public CommonResult<PageResult<BusPFRes>> getBusPFPage(@Valid BusIndexPageReqVO pageReqVO) {
+        PageResult<BusPFRes> pageResult = indexService.getBusPFPage(pageReqVO);
+        return success(BeanUtils.toBean(pageResult, BusPFRes.class));
+    }
+
+    @GetMapping("/busharmonicpage")
+    @Operation(summary = "获得始端箱索引分页")
+    public CommonResult<PageResult<BusHarmonicRes>> getBusHarmonicPage(@Valid BusIndexPageReqVO pageReqVO) {
+        PageResult<BusHarmonicRes> pageResult = indexService.getBusHarmonicPage(pageReqVO);
+        return success(BeanUtils.toBean(pageResult, BusHarmonicRes.class));
+    }
+
     /**
      * 机柜用能页面
      *
