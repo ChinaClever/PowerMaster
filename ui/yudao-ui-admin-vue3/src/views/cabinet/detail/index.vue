@@ -1,293 +1,103 @@
 <template>
   <div class="descriptionContainer">
     <div class="all-left">
-      <el-card class="card" shadow="never">
-        <template #header>
-          <CardTitle title="详细信息" />
-        </template>
-        <el-descriptions title="总参数" class="ABRord" direction="horizontal" :column="2" >
-          <el-descriptions-item label="总负载率：">35%</el-descriptions-item>
-          <el-descriptions-item label="视在功率：">{{allDetail.pow_apparent || ''}}kVA</el-descriptions-item>
-          <el-descriptions-item label="有功功率：">{{allDetail.ele_active || ''}}kW</el-descriptions-item>
-          <el-descriptions-item label="无功功率：">{{allDetail.pow_reactive || ''}}kVar</el-descriptions-item>
-          <el-descriptions-item label="功率因素：">{{allDetail.power_factor || ''}}</el-descriptions-item>
-          <el-descriptions-item label="电力容量：">{{allDetail.pow_capacity}}</el-descriptions-item>
-        </el-descriptions>
-      </el-card>
-      <el-card class="card" shadow="never">
-        <template #header>
-          <CardTitle title="A路" />
-        </template>
-        <el-descriptions class="ABRord" direction="horizontal" :column="2" >
-          <el-descriptions-item label="视在功率">{{ADetail.pow_apparent || ''}}kVA</el-descriptions-item>
-          <el-descriptions-item label="有功功率">{{ADetail.ele_active || ''}}kW</el-descriptions-item>
-          <el-descriptions-item label="无功功率">{{ADetail.pow_reactive || ''}}kVar</el-descriptions-item>
-          <el-descriptions-item label="A路占比">{{ADetail.zb}}%</el-descriptions-item>
-        </el-descriptions>
-      </el-card>
-      <el-card class="card" shadow="never">
-        <template #header>
-          <CardTitle title="B路" />
-        </template>
-        <el-descriptions class="ABRord" direction="horizontal" :column="2" >
-          <el-descriptions-item label="视在功率">{{BDetail.pow_apparent || ''}}kVA</el-descriptions-item>
-          <el-descriptions-item label="有功功率">{{BDetail.ele_active || ''}}kW</el-descriptions-item>
-          <el-descriptions-item label="无功功率">{{BDetail.pow_reactive || ''}}kVar</el-descriptions-item>
-          <el-descriptions-item label="B路占比：">{{BDetail.zb}}%</el-descriptions-item>
-        </el-descriptions>
+      <el-card class="card" shadow="hover">
+        <div class="progressBox">
+          <div class="title">总负载率</div>
+          <el-progress type="dashboard" :percentage="detailInfo.load_factor ? Number(detailInfo.load_factor).toFixed(2) : 0"  />
+          <div class="power">电力容量</div>
+          <div>20KW</div>
+          <div class="local">
+            <el-tag size="large" type="primary">{{detailInfo.room_name}}-{{detailInfo.cabinet_name}}</el-tag>
+          </div>
+        </div>
       </el-card>
     </div>
-    <div class="all-right">
-      <el-card class="card" shadow="never">
-        <!-- <template #header>
-          <CardTitle title="拓扑展示" />
-        </template> -->
-        <el-tabs v-model="activeName" class="tabs-container">
-          <el-tab-pane label="A路" name="first">
-            <div class="title">
-              <span>所在位置：机房-机柜-A </span>
-              <span>网络位置：192.168.1.93-0</span>
-            </div>
-            <el-button class="btn-jump" @click="toPDU" plain>PDU</el-button>
-            <el-table v-if="APDUData.length > 0" :data="APDUData" max-height="160">
-              <el-table-column label="相" width="100" align="center" >
-                <template #default="scope">
-                  <div>L{{scope.$index + 1}}</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="APDUParam.includes('vol_value')" prop="vol_value" label="电压" width="100" align="center">
-                <template #default="scope">
-                  <div>{{scope.row.vol_value.toFixed(1)}}V</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="APDUParam.includes('cur_value')" prop="cur_value" label="电流" width="100" align="center">
-                <template #default="scope">
-                  <div>{{scope.row.cur_value.toFixed(2)}}A</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="APDUParam.includes('pow_value')" prop="pow_value" label="有功功率" width="100" align="center">
-                <template #default="scope">
-                  <div>{{scope.row.pow_value || ''}}kW</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="APDUParam.includes('power_factor')" prop="power_factor" label="功率因素" width="100" align="center">
-                <template #default="scope">
-                  <div>{{scope.row.power_factor.toFixed(2)}}</div>
-                </template>
-              </el-table-column>
-            </el-table>
-            <el-table v-if="CPDUData.length > 0" :data="CPDUData" max-height="160">
-              <el-table-column label="回路" width="100" align="center" >
-                <template #default="scope">
-                  <div>C{{scope.$index + 1}}</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="CPDUParam.includes('vol_value')" prop="vol_value" label="电压" width="100" align="center">
-                <template #default="scope">
-                  <div>{{scope.row.vol_value.toFixed(1)}}V</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="CPDUParam.includes('cur_value')" prop="cur_value" label="电流" width="100" align="center">
-                <template #default="scope">
-                  <div>{{scope.row.cur_value.toFixed(2)}}A</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="CPDUParam.includes('pow_value')" prop="pow_value" label="有功功率" width="100" align="center">
-                <template #default="scope">
-                  <div>{{scope.row.pow_value || ''}}kW</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="CPDUParam.includes('power_factor')" prop="power_factor" label="功率因素" width="100" align="center">
-                <template #default="scope">
-                  <div>{{scope.row.power_factor.toFixed(2)}}</div>
-                </template>
-              </el-table-column>
-            </el-table>
-            <el-table v-if="SPDUData.length > 0" :data="SPDUData" max-height="160" style="width: 500px">
-              <el-table-column label="输出位" width="100" align="center" >
-                <template #default="scope">
-                  <div>{{scope.$index + 1}}</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="SPDUParam.includes('relay_state')" prop="relay_state" label="开关" width="100" align="center">
-                <template #default="scope">
-                  <div>{{scope.row.relay_state == 1 ? '开' : '关'}}</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="SPDUParam.includes('cur_value')" prop="cur_value" label="电流" width="100" align="center">
-                <template #default="scope">
-                  <div>{{scope.row.cur_value.toFixed(2)}}A</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="SPDUParam.includes('pow_value')" prop="pow_value" label="有功功率" width="100" align="center">
-                <template #default="scope">
-                  <div>{{scope.row.pow_value || ''}}kW</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="SPDUParam.includes('power_factor')" prop="power_factor" label="功率因素" width="100" align="center">
-                <template #default="scope">
-                  <div>{{scope.row.power_factor.toFixed(2)}}</div>
-                </template>
-              </el-table-column>
-            </el-table>
-          </el-tab-pane>
-          <el-tab-pane label="B路" name="second">
-            <div class="title">
-              <span>所在位置：机房-机柜-B</span>
-              <span>网络位置：192.168.1.165-0</span>
-            </div>
-            <el-table v-if="APDUData.length > 0" :data="APDUData" max-height="160">
-              <el-table-column label="相" width="100" align="center" >
-                <template #default="scope">
-                  <div>L{{scope.$index + 1}}</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="APDUParam.includes('vol_value')" prop="vol_value" label="电压" width="100" align="center">
-                <template #default="scope">
-                  <div>{{scope.row.vol_value.toFixed(1)}}V</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="APDUParam.includes('cur_value')" prop="cur_value" label="电流" width="100" align="center">
-                <template #default="scope">
-                  <div>{{scope.row.cur_value.toFixed(2)}}A</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="APDUParam.includes('pow_value')" prop="pow_value" label="有功功率" width="100" align="center">
-                <template #default="scope">
-                  <div>{{scope.row.pow_value || ''}}kW</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="APDUParam.includes('power_factor')" prop="power_factor" label="功率因素" width="100" align="center">
-                <template #default="scope">
-                  <div>{{scope.row.power_factor.toFixed(2)}}</div>
-                </template>
-              </el-table-column>
-            </el-table>
-            <el-table v-if="CPDUData.length > 0" :data="CPDUData" max-height="160">
-              <el-table-column label="回路" width="100" align="center" >
-                <template #default="scope">
-                  <div>C{{scope.$index + 1}}</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="CPDUParam.includes('vol_value')" prop="vol_value" label="电压" width="100" align="center">
-                <template #default="scope">
-                  <div :class="scope.row.vol_alarm_status == undefined ? '' : alarmClass[scope.row.vol_alarm_status]">{{scope.row.vol_value.toFixed(1)}}V</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="CPDUParam.includes('cur_value')" prop="cur_value" label="电流" width="100" align="center">
-                <template #default="scope">
-                  <div>{{scope.row.cur_value.toFixed(2)}}A</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="CPDUParam.includes('pow_value')" prop="pow_value" label="有功功率" width="100" align="center">
-                <template #default="scope">
-                  <div>{{scope.row.pow_value || ''}}kW</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="CPDUParam.includes('power_factor')" prop="power_factor" label="功率因素" width="100" align="center">
-                <template #default="scope">
-                  <div>{{scope.row.power_factor.toFixed(2)}}</div>
-                </template>
-              </el-table-column>
-            </el-table>
-            <el-table v-if="SPDUData.length > 0" :data="SPDUData" max-height="160" style="width: 500px">
-              <el-table-column label="输出位" width="100" align="center" >
-                <template #default="scope">
-                  <div>{{scope.$index + 1}}</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="SPDUParam.includes('relay_state')" prop="relay_state" label="开关" width="100" align="center">
-                <template #default="scope">
-                  <div>{{scope.row.relay_state == 1 ? '开' : '关'}}</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="SPDUParam.includes('cur_value')" prop="cur_value" label="电流" width="100" align="center">
-                <template #default="scope">
-                  <div>{{scope.row.cur_value.toFixed(2)}}A</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="SPDUParam.includes('pow_value')" prop="pow_value" label="有功功率" width="100" align="center">
-                <template #default="scope">
-                  <div>{{scope.row.pow_value || ''}}kW</div>
-                </template>
-              </el-table-column>
-              <el-table-column v-if="SPDUParam.includes('power_factor')" prop="power_factor" label="功率因素" width="100" align="center">
-                <template #default="scope">
-                  <div>{{scope.row.power_factor.toFixed(2)}}</div>
-                </template>
-              </el-table-column>
-            </el-table>
-          </el-tab-pane>
-          <el-tab-pane label="U位" name="third" />
-          <el-tab-pane label="负载" name="fouth">
-            <Echart :height="500" :options="loadOption" />
-          </el-tab-pane>
-          <TopologyShow v-if="activeName == 'third'" />
-        </el-tabs>
+    <!-- <div > -->
+      <el-card class="all-right" shadow="hover">
+        <div class="ABTotalData">
+          <el-table border v-if="ABTotalData.length > 0" :data="ABTotalData" max-height="160">
+            <el-table-column prop="name" label="" min-width="100" align="center" />
+            <el-table-column prop="pow_apparent" label="视在功率(kVA)" min-width="100" align="center">
+              <template #default="scope">
+                <div>{{scope.row.pow_apparent ? Number(scope.row.pow_apparent).toFixed(3) : ''}}</div>
+              </template>
+            </el-table-column>
+            <el-table-column prop="pow_active" label="有功功率(kW)" min-width="100" align="center">
+              <template #default="scope">
+                <div>{{scope.row.pow_active ? Number(scope.row.pow_active).toFixed(3) : ''}}</div>
+              </template>
+            </el-table-column>
+            <el-table-column prop="pow_reactive" label="无功功率(kVar)" min-width="100" align="center">
+              <template #default="scope">
+                <div>{{scope.row.pow_reactive ? Number(scope.row.pow_reactive).toFixed(3) : ''}}</div>
+              </template>
+            </el-table-column>
+            <el-table-column prop="power_factor" label="功率因素" min-width="100" align="center">
+              <template #default="scope">
+                <div>{{scope.row.power_factor ? Number(scope.row.power_factor).toFixed(2) : ''}}</div>
+              </template>
+            </el-table-column>
+            <el-table-column prop="zb" label="负载率(%)" min-width="100" align="center">
+              <template #default="scope">
+                <div v-if="scope.row.zb == '-'">-</div>
+                <div v-else>{{scope.row.zb ? Number(scope.row.zb).toFixed(2) : ''}}</div>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
       </el-card>
-    </div>
+    <!-- </div> -->
   </div>
-  <el-card class="card" shadow="never">
-    <template #header>
-      <CardTitle title="实时曲线" />
-    </template>
-    <div class="echart">
+  <div class="descriptionContainer">
+    <div class="all-left" v-if="tableDataA.length > 0 || tableDataB.length > 0" >
+      <el-card class="card" shadow="hover">
+        <div class="tableContainer">
+          <el-table v-if="tableDataA.length > 0" :data="tableDataA" max-height="160">
+            <el-table-column label="A路" width="100" align="center" >
+              <template #default="scope">
+                <div>L{{scope.$index + 1}}</div>
+              </template>
+            </el-table-column>
+            <el-table-column prop="V" label="电压" width="100" align="center">
+              <template #default="scope">
+                <div>{{scope.row.V.toFixed(1)}}V</div>
+              </template>
+            </el-table-column>
+            <el-table-column prop="A" label="电流" width="100" align="center">
+              <template #default="scope">
+                <div>{{scope.row.A.toFixed(2)}}A</div>
+              </template>
+            </el-table-column>
+          </el-table>
+          <el-table v-if="tableDataB.length > 0" :data="tableDataB" max-height="160">
+            <el-table-column label="B路" width="100" align="center" >
+              <template #default="scope">
+                <div>L{{scope.$index + 1}}</div>
+              </template>
+            </el-table-column>
+            <el-table-column prop="V" label="电压" width="100" align="center">
+              <template #default="scope">
+                <div>{{scope.row.V.toFixed(1)}}V</div>
+              </template>
+            </el-table-column>
+            <el-table-column prop="A" label="电流" width="100" align="center">
+              <template #default="scope">
+                <div>{{scope.row.A.toFixed(2)}}A</div>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </el-card>
+    </div>
+    <el-card class="all-right" shadow="hover">
+      <Echart :options="echartsOption" :height="450" />
       <div class="btns">
         <el-button class="btn" size="small" :plain="!(radioBtn == 'HOUR')" type="primary" @click="getPowTrend('HOUR')">最近1小时</el-button>
         <el-button class="btn" size="small" :plain="!(radioBtn == 'DAY')" type="primary" @click="getPowTrend('DAY')">最近24小时</el-button>
       </div>
-      <Echart :height="500" :options="echartsOption" />
-    </div>
-    <!-- <div id="cabinetDetail" ></div> -->
-  </el-card>
-  <!-- <el-card class="card" shadow="never">
-    <template #header>
-      <CardTitle title="智能分析" />
-    </template>
-    <div class="powerContainer">
-      <div class="power">
-        <div class="label">有功功率：</div>
-        <div class="progressContainer">
-          <div class="progress">
-            <div class="left" :style="`flex: ${33}`">{{33}}%</div>
-            <div class="line"></div>
-            <div class="right" :style="`flex: ${100 - 33}`">{{100 - 33}}%</div>
-          </div>
-        </div>
-      </div>
-      <div class="power">
-        <div class="label">视在功率：</div>
-        <div class="progressContainer">
-          <div class="progress">
-            <div class="left" :style="`flex: ${58}`">{{58}}%</div>
-            <div class="line"></div>
-            <div class="right" :style="`flex: ${100 - 58}`">{{100 - 58}}%</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <div v-if="false" class="triphase">
-      <div class="round1 commonRound"></div>
-      <div class="round2 commonRound"></div>
-      <div class="round3 commonRound"></div>
-      <div class="round4 commonRound"></div>
-      <div class="round5 commonRound"></div>
-      <div class="line1 commonLine">
-        <div class="lineSon"></div>
-      </div>
-      <div class="line2 commonLine">
-        <div class="lineSon"></div>
-      </div>
-      <div class="line3 commonLine">
-        <div class="lineSon"></div>
-      </div>
-    </div>
-    <div class="triphaseContainer">
-      <div><Echart :height="500" :options="triphaseAOption" /></div>
-      <div><Echart :height="500" :options="triphaseBOption" /></div>
-    </div>
-  </el-card> -->
+    </el-card>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -296,125 +106,86 @@ import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 import { CabinetApi } from '@/api/cabinet/detail'
 import { EChartsOption } from 'echarts'
 
-
 const radioBtn = ref('')
-const allDetail = reactive({})
-const ADetail = reactive({})
-const BDetail = reactive({})
-const APDUData = ref<any>([])
-const APDUTriphase = ref([])
-const APDUTriphaseMax = ref(0)
-const APDUParam = ref<string[]>([])
-const CPDUData = ref([])
-const CPDUParam = ref<string[]>([])
-const SPDUData = ref([])
-const SPDUParam = ref<string[]>([])
-const {push} = useRouter() // 路由跳转
-const activeName = ref('first')
-const alarmClass = {
-  0: 'normal',
-  1: 'error',
-  2: 'warn',
-  4: 'warn',
-  8: 'error',
-}
+const detailInfo = reactive({})
+const ABTotalData = ref({})
+const tableDataA = ref({})
+const tableDataB = ref({})
+// const APDUData = ref<any>([])
+// const APDUTriphase = ref([])
+// const APDUTriphaseMax = ref(0)
+// const APDUParam = ref<string[]>([])
+// const CPDUData = ref([])
+// const CPDUParam = ref<string[]>([])
+// const SPDUData = ref([])
+// const SPDUParam = ref<string[]>([])
+// const {push} = useRouter() // 路由跳转
+// const alarmClass = {
+//   0: 'normal',
+//   1: 'error',
+//   2: 'warn',
+//   4: 'warn',
+//   8: 'error',
+// }
 const cabinetId = history?.state?.id || 1
-console.log('router', history?.state?.id)
-const toPDU = () => {
-  push('/pdu/pdudisplayscreen')
-}
 
 const echartsOption = ref<EChartsOption>({})
 
-const loadOption = reactive<EChartsOption>({
-  legend: {
-    data: ['视在功率', '有功功率']
-  },
-  radar: {
-    // shape: 'circle',
-    indicator: [
-      { name: '服务器1', max: 6500 },
-      { name: '服务器2', max: 16000 },
-      { name: '服务器3', max: 30000 },
-      { name: '服务器4', max: 38000 },
-      { name: '服务器5', max: 52000 },
-      { name: '服务器6', max: 25000 },
-      { name: '服务器7', max: 6500 },
-      { name: '服务器8', max: 16000 },
-      { name: '服务器9', max: 30000 },
-      { name: '服务器10', max: 38000 },
-      { name: '服务器11', max: 52000 },
-      { name: '服务器12', max: 25000 }
-    ]
-  },
-  series: [
-    {
-      name: 'Budget vs spending',
-      type: 'radar',
-      data: [
-        {
-          value: [4200, 8000, 20000, 35000, 50000, 18000, 4200, 13000, 20000, 35000, 55000, 21000],
-          name: '视在功率'
-        },
-        {
-          value: [5000, 14000, 28000, 26000, 42000, 21000, 4000, 14500, 28000, 26500, 42000, 21000],
-          name: '有功功率'
-        }
-      ]
-    }
-  ]
-})
+// const triphaseAOption = reactive<EChartsOption>({}) as EChartsOption
 
-const triphaseAOption = reactive<EChartsOption>({}) as EChartsOption
+// const triphaseBOption = reactive<EChartsOption>({}) as EChartsOption
 
-const triphaseBOption = reactive<EChartsOption>({}) as EChartsOption
-
-const regulateData = (data) => {
-  const lineKeys = Object.keys(data)
-  const result = [] as any
-  if (lineKeys.length > 0) {
-    for (let i = 0; i < data[lineKeys[0]].length; i++) {
-      const obj = {}
-      lineKeys.forEach(key => {
-        obj[key] = data[key][i]
-      })
-      result.push(obj)
-    }
-  }
-  return {
-    data: result,
-    keys: lineKeys
-  }
-}
+// const regulateData = (data) => {
+//   const lineKeys = Object.keys(data)
+//   const result = [] as any
+//   if (lineKeys.length > 0) {
+//     for (let i = 0; i < data[lineKeys[0]].length; i++) {
+//       const obj = {}
+//       lineKeys.forEach(key => {
+//         obj[key] = data[key][i]
+//       })
+//       result.push(obj)
+//     }
+//   }
+//   return {
+//     data: result,
+//     keys: lineKeys
+//   }
+// }
 
 const getMachineDetail = async() => {
   const res = await CabinetApi.getDetail({id:cabinetId})
   console.log('---------------', res)
+  const tableData = [] as any
   if (res.cabinet_power && res.cabinet_power.path_a) {
-    Object.assign(ADetail, {
-      pow_apparent: res.cabinet_power.path_a.pow_apparent.toFixed(3),
-      ele_active: res.cabinet_power.path_a.ele_active.toFixed(3),
-      pow_reactive: res.cabinet_power.path_a.pow_reactive.toFixed(3),
-      zb: Number((res.cabinet_power.path_a.pow_apparent/res.cabinet_power.total_data.pow_apparent).toFixed(2)) * 100
+    res.cabinet_power.path_a.name = 'A路'
+    res.cabinet_power.path_a.zb = Number((res.cabinet_power.path_a.pow_apparent/res.cabinet_power.total_data.pow_apparent).toFixed(2)) * 100
+    tableDataA.value = res.cabinet_power.path_a.cur_value.map((item,index) => {
+      return {
+        A: item,
+        V: res.cabinet_power.path_a.vol_value[index]
+      }
     })
+    tableData.push(res.cabinet_power.path_a)
   }
   if (res.cabinet_power && res.cabinet_power.path_b) {
-    Object.assign(BDetail, {
-      pow_apparent: res.cabinet_power.path_b.pow_apparent.toFixed(3),
-      ele_active: res.cabinet_power.path_b.ele_active.toFixed(3),
-      pow_reactive: res.cabinet_power.path_b.pow_reactive.toFixed(3),
-      zb: Number((res.cabinet_power.path_b.pow_apparent/res.cabinet_power.total_data.pow_apparent).toFixed(2)) * 100
+    res.cabinet_power.path_b.name = 'B路'
+    res.cabinet_power.path_b.zb = Number((res.cabinet_power.path_b.pow_apparent/res.cabinet_power.total_data.pow_apparent).toFixed(2)) * 100
+    tableData.push(res.cabinet_power.path_b)
+    tableDataB.value = res.cabinet_power.path_b.cur_value.map((item,index) => {
+      return {
+        A: item,
+        V: res.cabinet_power.path_b.vol_value[index]
+      }
     })
   }
   if (res.cabinet_power && res.cabinet_power.total_data) {
-    Object.assign(allDetail, {
-      pow_apparent: res.cabinet_power.total_data.pow_apparent.toFixed(3),
-      ele_active: res.cabinet_power.total_data.ele_active.toFixed(3),
-      pow_reactive: res.cabinet_power.total_data.pow_reactive.toFixed(3),
-      power_factor: res.cabinet_power.total_data.power_factor.toFixed(3),
-      pow_capacity: res.pow_capacity
-    })
+    res.cabinet_power.total_data.name = '统计'
+    res.cabinet_power.total_data.zb = '-'
+    tableData.push(res.cabinet_power.total_data)
   }
+  ABTotalData.value = tableData
+  Object.assign(detailInfo, res)
 }
 
 const getPowTrend = async(type) => {
@@ -428,7 +199,17 @@ const getPowTrend = async(type) => {
     tooltip: {
       trigger: 'axis'
     },
-    legend: {},
+    legend: {
+      top: '2',
+      left: '180',
+      selectedMode: 'single'
+    },
+    grid: {
+      left: '8%',
+      right: '8%',
+      bottom: '35',
+      top: '55'
+    },
     xAxis: {
       type: 'category',
       boundaryGap: false,
@@ -436,16 +217,16 @@ const getPowTrend = async(type) => {
     },
     yAxis: {
       type: 'value',
-      axisLabel: {
-        formatter: '{value} W'
-      }
+      // axisLabel: {
+      //   formatter: '{value} '
+      // }
     },
     series: [
       {
         name: '有功功率',
         type: 'line',
         symbol: 'none',
-        data: res.map(item => item.activePow),
+        data: res.map(item => +item.activePow.toFixed(3)),
         markPoint: {
           data: [
             { type: 'max', name: 'Max' },
@@ -457,7 +238,7 @@ const getPowTrend = async(type) => {
         name: '视在功率',
         type: 'line',
         symbol: 'none',
-        data: res.map(item => item.apparentPow),
+        data: res.map(item => +item.apparentPow.toFixed(3)),
         markPoint: {
           // data: [{ name: '周最低', value: -2, xAxis: 1, yAxis: -1.5 }]
           data: [
@@ -465,7 +246,46 @@ const getPowTrend = async(type) => {
             { type: 'min', name: 'Min' }
           ]
         },
-      }
+      },
+      {
+        name: '无功功率',
+        type: 'line',
+        symbol: 'none',
+        data: res.map(item => +item.reactivePow.toFixed(3)),
+        markPoint: {
+          // data: [{ name: '周最低', value: -2, xAxis: 1, yAxis: -1.5 }]
+          data: [
+            { type: 'max', name: 'Max' },
+            { type: 'min', name: 'Min' }
+          ]
+        },
+      },
+      {
+        name: '功率因素',
+        type: 'line',
+        symbol: 'none',
+        data: res.map(item => +item.powerFactor),
+        markPoint: {
+          // data: [{ name: '周最低', value: -2, xAxis: 1, yAxis: -1.5 }]
+          data: [
+            { type: 'max', name: 'Max' },
+            { type: 'min', name: 'Min' }
+          ]
+        },
+      },
+      {
+        name: '负载率',
+        type: 'line',
+        symbol: 'none',
+        data: res.map(item => +item.loadRate),
+        markPoint: {
+          // data: [{ name: '周最低', value: -2, xAxis: 1, yAxis: -1.5 }]
+          data: [
+            { type: 'max', name: 'Max' },
+            { type: 'min', name: 'Min' }
+          ]
+        },
+      },
     ]
   }
   console.log('getPowTrend res', res)
@@ -476,118 +296,176 @@ const getData =  async() => {
     devKey: '192.168.1.93-0'
   })
   console.log('res', res)
-  if (res && res.pdu_data) {
-    APDUData.value = regulateData(res.pdu_data.line_item_list || []).data
-    APDUParam.value = Object.keys(res.pdu_data.line_item_list || [])
-    APDUTriphase.value = APDUData.value.map(item => {
-      if (item.cur_alarm_max > APDUTriphaseMax.value) APDUTriphaseMax.value = item.cur_alarm_max
-      return item.cur_value
-    })
-    Object.assign(triphaseAOption, {
-      title: [
-        {
-          text: 'A路电流',
-          left: 'center',
-          top: 'bottom'
-        }
-      ],
-      polar: {
-        radius: [10, '80%']
-      },
-      radiusAxis: {
-        max: APDUTriphaseMax.value,
-        // axisLine: false
-      },
-      angleAxis: {
-        type: 'category',
-        data: ['a','a', 'a','b', 'b', 'b','c', 'c', 'c'],
-        startAngle: 110,
-        axisLabel: false,
-        axisTick: false
-      },
-      tooltip: {},
-      series: {
-        type: 'bar',
-        data: ['32.25', , , '20.20', , ,'29.90'],
-        coordinateSystem: 'polar',
-        label: {
-          show: true,
-          position: 'middle',
-          formatter: '{c}A'
-        }
-      },
-      animation: false
-    })
-    Object.assign(triphaseBOption, {
-      title: [
-        {
-          text: 'B路电流',
-          left: 'center',
-          top: 'bottom'
-        }
-      ],
-      polar: {
-        radius: [10, '80%']
-      },
-      radiusAxis: {
-        max: APDUTriphaseMax.value,
-        // axisLine: false
-      },
-      angleAxis: {
-        type: 'category',
-        data: ['a','a', 'a','b', 'b', 'b','c', 'c', 'c'],
-        startAngle: 110,
-        axisLabel: false,
-        axisTick: false
-      },
-      tooltip: {},
-      series: {
-        type: 'bar',
-        data: ['32.00', , , '22.00', , ,'28.00'],
-        coordinateSystem: 'polar',
-        label: {
-          show: true,
-          position: 'middle',
-          formatter: '{c}A'
-        }
-      },
-      animation: false
-    })
-    CPDUData.value = regulateData(res.pdu_data.loop_item_list || []).data
-    CPDUParam.value = Object.keys(res.pdu_data.loop_item_list || [])
-    SPDUData.value = regulateData(res.pdu_data.output_item_list || []).data
-    SPDUParam.value = Object.keys(res.pdu_data.output_item_list || [])
-  }
-  console.log('APDUParam', APDUData.value, APDUTriphase.value)
+  // if (res && res.pdu_data) {
+  //   APDUData.value = regulateData(res.pdu_data.line_item_list || []).data
+  //   APDUParam.value = Object.keys(res.pdu_data.line_item_list || [])
+  //   APDUTriphase.value = APDUData.value.map(item => {
+  //     if (item.cur_alarm_max > APDUTriphaseMax.value) APDUTriphaseMax.value = item.cur_alarm_max
+  //     return item.cur_value
+  //   })
+  //   Object.assign(triphaseAOption, {
+  //     title: [
+  //       {
+  //         text: 'A路电流',
+  //         left: 'center',
+  //         top: 'bottom'
+  //       }
+  //     ],
+  //     polar: {
+  //       radius: [10, '80%']
+  //     },
+  //     radiusAxis: {
+  //       max: APDUTriphaseMax.value,
+  //       // axisLine: false
+  //     },
+  //     angleAxis: {
+  //       type: 'category',
+  //       data: ['a','a', 'a','b', 'b', 'b','c', 'c', 'c'],
+  //       startAngle: 110,
+  //       axisLabel: false,
+  //       axisTick: false
+  //     },
+  //     tooltip: {},
+  //     series: {
+  //       type: 'bar',
+  //       data: ['32.25', , , '20.20', , ,'29.90'],
+  //       coordinateSystem: 'polar',
+  //       label: {
+  //         show: true,
+  //         position: 'middle',
+  //         formatter: '{c}A'
+  //       }
+  //     },
+  //     animation: false
+  //   })
+  //   Object.assign(triphaseBOption, {
+  //     title: [
+  //       {
+  //         text: 'B路电流',
+  //         left: 'center',
+  //         top: 'bottom'
+  //       }
+  //     ],
+  //     polar: {
+  //       radius: [10, '80%']
+  //     },
+  //     radiusAxis: {
+  //       max: APDUTriphaseMax.value,
+  //       // axisLine: false
+  //     },
+  //     angleAxis: {
+  //       type: 'category',
+  //       data: ['a','a', 'a','b', 'b', 'b','c', 'c', 'c'],
+  //       startAngle: 110,
+  //       axisLabel: false,
+  //       axisTick: false
+  //     },
+  //     tooltip: {},
+  //     series: {
+  //       type: 'bar',
+  //       data: ['32.00', , , '22.00', , ,'28.00'],
+  //       coordinateSystem: 'polar',
+  //       label: {
+  //         show: true,
+  //         position: 'middle',
+  //         formatter: '{c}A'
+  //       }
+  //     },
+  //     animation: false
+  //   })
+  //   CPDUData.value = regulateData(res.pdu_data.loop_item_list || []).data
+  //   CPDUParam.value = Object.keys(res.pdu_data.loop_item_list || [])
+  //   SPDUData.value = regulateData(res.pdu_data.output_item_list || []).data
+  //   SPDUParam.value = Object.keys(res.pdu_data.output_item_list || [])
+  // }
+  // console.log('APDUParam', APDUData.value, APDUTriphase.value)
 }
 
 getData()
 getMachineDetail()
 getPowTrend('DAY')
 onMounted(()=> {
-  
 })
 </script>
 
 <style lang="scss" scoped>
+
 .descriptionContainer {
+  // width: 100%;
+  // box-sizing: border-box;
   display: flex;
   justify-content: space-between;
-  align-items: stretch;
+  flex-shrink: 0;
   margin-bottom: 16px;
   .all-left {
-    width: calc(60% - 16px);
+    // flex: 3;
+    width: 30%;
     box-sizing: border-box;
-    margin-right: 15xpx;
+    flex-shrink: 0;
+    // overflow: hidden;
+    margin-right: 15px;
     .card {
       // height: 100%;
     }
+    .tableContainer {
+      height: 100%;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-around;
+    }
+    .progressBox {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-size: 18px;
+      position: relative;
+      .local {
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        // width: auto;
+        // padding: 10px 15px;
+        // background-color: #fff;
+      }
+      .title {
+        // font-size: 16px;
+        margin-bottom: 10px;
+      }
+      .power {
+        margin-top: 15px;
+      }
+    }
   }
   .all-right {
-    width: 40%;
+    // margin-left: 16px;
+    height: auto !important;
+    // width: calc(70% - 15px);
+    flex: 1;
+    overflow: hidden;
+    // flex: 1 !important;
+    // flex-shrink: 0 !important;
     color: #606060;
+    position: relative;
     box-sizing: border-box;
-    .card {
+      .btns {
+        position: absolute;
+        z-index: 9;
+        right: 30px;
+        top: 20px;
+      }
+    
+    // .card {
+      .ABTotalData {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+      }
       height: 100%;
       box-sizing: border-box;
       .tabs-container {
@@ -617,7 +495,7 @@ onMounted(()=> {
           color: #fd0808;
         }
       }
-    }
+    // }
   }
 }
 .powerContainer {
@@ -752,22 +630,24 @@ onMounted(()=> {
     }
   }
 }
-.echart {
-  position: relative;
-  .btns {
-    position: absolute;
-    z-index: 9;
-    right: 200px;
-    top: 0px;
-  }
+:deep(.el-card__body) {
+  height: 100%;
+  box-sizing: border-box;
 }
-:deep(.el-table__row .el-table__cell) {
-  border: none;
+:deep(.el-card) {
+  height: 100%;
+  box-sizing: border-box;
 }
-:deep(.el-table__header-wrapper .el-table__header .el-table__cell) {
-  border: none;
-}
+// :deep(.el-table__row .el-table__cell) {
+//   border: none;
+// }
+// :deep(.el-table__header-wrapper .el-table__header .el-table__cell) {
+//   border: none;
+// }
 :deep(.el-table) :before {
   height: 0;
+}
+:deep(.tableContainer .el-table){
+  width: auto;
 }
 </style>

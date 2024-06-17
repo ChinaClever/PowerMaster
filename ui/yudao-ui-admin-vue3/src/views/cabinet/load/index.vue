@@ -11,27 +11,33 @@
         <div class="status">
           <div class="box">
             <div class="top">
-              <div class="tag"></div>正常
+              <div class="tag empty"></div>未开通
             </div>
-            <div class="value"><span class="number">24</span>个</div>
+            <div class="value"><span class="number">{{Loadstatus[0]}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag empty"></div>空载
+              <div class="tag"></div>&lt;=30%
             </div>
-            <div class="value"><span class="number">1</span>个</div>
+            <div class="value"><span class="number">{{Loadstatus[1]}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag warn"></div>预警
+              <div class="tag normal"></div>30%~60%
             </div>
-            <div class="value"><span class="number">1</span>个</div>
+            <div class="value"><span class="number">{{Loadstatus[2]}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag error"></div>故障
+              <div class="tag warn"></div>60%~90%
             </div>
-            <div class="value"><span class="number">0</span>个</div>
+            <div class="value"><span class="number">{{Loadstatus[3]}}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag error"></div>&gt;90%
+            </div>
+            <div class="value"><span class="number">{{Loadstatus[4]}}</span>个</div>
           </div>
         </div>
         <div class="line"></div>
@@ -99,13 +105,13 @@
       <el-table v-show="switchValue == 2" style="width: 100%;" v-loading="loading" :data="listPage" >
         <el-table-column label="位置" min-width="110" align="center" prop="local" />
         <el-table-column label="负载率" min-width="80" align="center" prop="load_factor" />
+        <el-table-column label="电力容量(kVA)" min-width="100" align="center" prop="pow_capacity" />
         <el-table-column label="总视在功率(kVA)" min-width="110" align="center" prop="apparentTotal" />
         <el-table-column label="A路视在功率(kVA)" min-width="120" align="center" prop="apparentA" />
         <el-table-column label="B路视在功率(kVA)" min-width="120" align="center" prop="apparentB" />
         <el-table-column label="总有功功率(kW)" min-width="110" align="center" prop="activeTotal" />
         <el-table-column label="A路有功功率(kW)" min-width="120" align="center" prop="activeA" />
         <el-table-column label="B路有功功率(kW)" min-width="120" align="center" prop="activeB" />
-        <el-table-column label="电力容量" min-width="80" align="center" prop="pow_capacity" />
         <el-table-column label="更新时间" min-width="110" align="center" prop="date_time" />
       </el-table>
       <div v-show="(switchValue == 0 || switchValue == 1) && listPage.length > 0" v-loading="loading" class="loadContainer">
@@ -154,6 +160,7 @@ import LiquidBall from './compoent/LiquidBall.vue'
 const loading = ref(false)
 const isFirst = ref(true) // 是否第一次调用getTableData函数
 const navList = ref([])
+const Loadstatus = ref([0,0,0,0,0])
 const switchValue = ref(0)
 const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
 const listPage = ref<any>([]) // 表格数据
@@ -281,6 +288,13 @@ const getNavList = async() => {
   navList.value = res
 }
 
+// 接口获取负载状态
+const getLoadStatusList = async() => {
+  const res = await CabinetApi.getLoadStatus({})
+  console.log('接口获取机房导航列表', res)
+  Loadstatus.value = res
+}
+
 const handleClick = (row) => {
   console.log('Button clicked!', row);
 }
@@ -319,6 +333,7 @@ const handleSwitchModal = (value) => {
 onBeforeMount(() => {
   getNavList()
   getTableData()
+  getLoadStatusList()
 })
 </script>
 
@@ -448,6 +463,9 @@ onBeforeMount(() => {
         }
         .warn {
           background-color: #ffc402;
+        }
+        .normal {
+          background-color: #3B8BF5;
         }
         .error {
           background-color: #fa3333;

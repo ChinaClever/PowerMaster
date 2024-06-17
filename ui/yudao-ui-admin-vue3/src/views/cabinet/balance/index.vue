@@ -2,36 +2,14 @@
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="模块化机房" >
     <template #NavInfo>
       <div class="navInfo">
-        <!-- <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
-          <div class="name">微模块机房</div>
-          <div>机房202</div>
-        </div>
-        <div class="line"></div> -->
-        <div class="status">
-          <div class="box">
-            <div class="top">
-              <div class="tag"></div>正常
+        <div class="line"></div>
+        <div class="header">
+          <div class="header_img">
+            <div class="progress">
+              <div class="left" :style="{flex: 1}">50%</div>
+              <div class="progress-line"></div>
+              <div class="right" :style="{flex: 1}">50%</div>
             </div>
-            <div class="value"><span class="number">24</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag empty"></div>空载
-            </div>
-            <div class="value"><span class="number">1</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag warn"></div>预警
-            </div>
-            <div class="value"><span class="number">1</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag error"></div>故障
-            </div>
-            <div class="value"><span class="number">0</span>个</div>
           </div>
         </div>
         <div class="line"></div>
@@ -82,33 +60,39 @@
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
-          <el-button @click="handleSwitchModal(0)" :type="switchValue==0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />电流阵列</el-button>
-          <el-button @click="handleSwitchModal(1)" :type="switchValue==1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />功率阵列</el-button>
-          <el-button @click="handleSwitchModal(2)" :type="switchValue==2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
+          <el-button @click="handleSwitchModal(0)" :type="switchValue==0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />AB路占比</el-button>
+          <el-button @click="handleSwitchModal(1)" :type="switchValue==1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
         </el-form-item>
       </el-form>
     </template>
     <template #Content>
       <div v-loading="tableLoading">
-        <div v-if="(switchValue == 0 || switchValue == 1) && tableData.length > 0" class="matrixContainer">
+        <div v-if="switchValue == 0 && tableData.length > 0" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
             <!-- 电流 -->
-            <div class="progressContainer" v-if="switchValue == 0">
-              <div class="text">AB路占比：</div>
+            <div class="progressContainer">
               <div class="progress" v-if="item.abdlzb">
                 <div class="left" :style="`flex: ${item.abdlzb}`">{{item.abdlzb}}%</div>
                 <div class="line"></div>
                 <div class="right" :style="`flex: ${100 - item.abdlzb}`">{{100 - item.abdlzb}}%</div>
+                <div class="tip">
+                  <span>A路</span>
+                  <span>B路</span>
+                </div>
               </div>
               <div class="progress" v-else>
                 <div class="left" :style="`flex: 50`">null</div>
                 <div class="line"></div>
                 <div class="right" :style="`flex: 50`">null</div>
+                <div class="tip">
+                  <span>A路</span>
+                  <span>B路</span>
+                </div>
               </div>
             </div>
             <!-- 功率 -->
-            <div class="progressContainer" v-if="switchValue == 1">
-              <div class="text">AB路占比：</div>
+            <!-- <div class="progressContainer">
+              <div class="text">功率占比：</div>
               <div class="progress" v-if="item.abglzb">
                 <div class="left" :style="`flex: ${item.abglzb}`">{{item.abglzb}}%</div>
                 <div class="line"></div>
@@ -119,9 +103,13 @@
                 <div class="line"></div>
                 <div class="right" :style="`flex: 50`">null</div>
               </div>
-            </div>
+              <div class="tip">
+                <span>A路</span>
+                B路
+              </div>
+            </div> -->
             <!-- 电流 -->
-            <div class="content" v-if="switchValue == 0">
+            <div class="content" v-if="switchValue == 1">
               <div class="road">A路</div>
               <div class="valueList">
                 <div>Ia：{{item.Ia0 || '0.00'}}A</div>
@@ -154,7 +142,7 @@
             <button class="detail" @click.prevent="toDetail(item.id)">详情</button>
           </div>
         </div>
-        <el-table v-if="switchValue == 2" style="width: 100%;" :data="tableData" >
+        <el-table v-if="switchValue == 1" style="width: 100%;" :data="tableData" >
           <el-table-column type="index" width="60" label="序号" align="center" />
           <el-table-column label="A路" align="center">
             <el-table-column label="I1(A)" min-width="90" align="center" prop="Ia0" />
@@ -179,7 +167,7 @@
           v-model:limit="queryParams.pageSize"
           @pagination="getTableData(false)"
         />
-        <template v-if="tableData.length == 0 && switchValue != 2">
+        <template v-if="tableData.length == 0 && switchValue == 0">
           <el-empty description="暂无数据" :image-size="300" />
         </template>
       </div>
@@ -266,9 +254,9 @@ const getTableData = async(reset = false) => {
         }
         if (item.cabinet_power.path_a && item.cabinet_power.path_b) {
           if (item.cabinet_power.path_a.pow_apparent == 0) tableItem.abdlzb = 0
-          else tableItem.abdlzb = (item.cabinet_power.path_a.pow_apparent / item.cabinet_power.total_data.pow_apparent as any).toFixed(2) * 100
+          else tableItem.abdlzb = Math.floor((item.cabinet_power.path_a.pow_apparent / item.cabinet_power.total_data.pow_apparent as any).toFixed(2) * 100)
           if (item.cabinet_power.path_a.pow_active == 0) tableItem.abglzb = 0
-          else tableItem.abglzb = (item.cabinet_power.path_a.pow_active / item.cabinet_power.total_data.pow_active as any).toFixed(2) * 100
+          else tableItem.abglzb = Math.floor((item.cabinet_power.path_a.pow_active / item.cabinet_power.total_data.pow_active as any).toFixed(2) * 100)
         }
         return tableItem
       })
@@ -291,7 +279,7 @@ const toDetail = (id) => {
 const handleSwitchModal = (value) => {
   if (switchValue.value == value) return
   switchValue.value = value
-  if (value == 0 || value == 1) { // 阵列
+  if (value == 0) { // 阵列
     queryParams.pageSize = 24
   } else {
     queryParams.pageSize = 10
@@ -357,51 +345,6 @@ onBeforeMount(() => {
       }
     }
   }
-  .status {
-    display: flex;
-    flex-wrap: wrap;
-    margin-top: 28px;
-    .box {
-      height: 70px;
-      width: 50%;
-      box-sizing: border-box;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      .top {
-        display: flex;
-        align-items: center;
-        .tag {
-          width: 8px;
-          height: 8px;
-          background-color: #3bbb00;
-          margin-right: 3px;
-          margin-top: 2px;
-        }
-        .empty {
-          background-color: #ccc;
-        }
-        .warn {
-          background-color: #ffc402;
-        }
-        .error {
-          background-color: #fa3333;
-        }
-      }
-      .value {
-        font-size: 14px;
-        margin-top: 5px;
-        color: #aaa;
-        .number {
-          font-size: 14px;
-          font-weight: bold;
-          margin-right: 5px;
-          color: #000;
-        }
-      }
-    }
-  }
   .header {
     display: flex;
     flex-direction: column;
@@ -416,9 +359,31 @@ onBeforeMount(() => {
       justify-content: center;
       align-items: center;
       border: 1px solid #555;
-      img {
-        width: 75px;
-        height: 75px;
+      .progress {
+        width: 100px;
+        display: flex;
+        align-items: center;
+        font-size: 14px;
+        color: #eee;
+        box-sizing: border-box;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        .progress-line {
+          width: 3px;
+          height: 25px;
+          background-color: #000;
+        }
+        .left {
+          text-align: center;
+          box-sizing: border-box;
+          background-color: #3b8bf5;
+          // border-right: 1px solid #000;
+        }
+        .right {
+          text-align: center;
+          background-color:  #f86f13;
+        }
       }
     }
     .name {
@@ -442,21 +407,19 @@ onBeforeMount(() => {
   .item {
     width: 25%;
     min-width: 290px;
-    height: 150px;
+    height: 120px;
     font-size: 12px;
     box-sizing: border-box;
     background-color: #eef4fc;
     border: 5px solid #fff;
     position: relative;
     .progressContainer {
+      position: relative;
       height: 50px;
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-top: 20px;
-      .text {
-        font-size: 14px;
-      }
+      margin-top: 40px;
       .progress {
         width: 180px;
         display: flex;
@@ -467,6 +430,16 @@ onBeforeMount(() => {
         position: relative;
         display: flex;
         justify-content: center;
+        .tip {
+          width: 180px;
+          position: absolute;
+          top: -12px;
+          left: 0;
+          display: flex;
+          justify-content: space-between;
+          color: #000;
+          font-size: 12px;
+        }
         .line {
           width: 3px;
           height: 25px;

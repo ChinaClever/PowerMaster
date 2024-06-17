@@ -2,47 +2,19 @@
   <ContentWrap>
     <div class="screenContiner">
       <div class="deviceList">
-        <div class="device">
-          <div class="name">设备名称： 127.0.0.1</div>
+        <div v-for="item in deviceRight" :key="item.id" class="device">
+          <div class="name">设备名称： {{item.rackName}}</div>
           <div class="info">
-            <div>型号：S15SF2-49T5-QW</div>
-            <div>占用：1</div>
-          </div>
-        </div>
-        <div class="device">
-          <div class="name">设备名称： 127.0.0.1</div>
-          <div class="info">
-            <div>型号：S15SF2-49T5-QW</div>
-            <div>占用：1</div>
-          </div>
-        </div>
-        <div class="device">
-          <div class="name">设备名称： 127.0.0.1</div>
-          <div class="info">
-            <div>型号：S15SF2-49T5-QW</div>
-            <div>占用：1</div>
-          </div>
-        </div>
-        <div class="device">
-          <div class="name">设备名称： 127.0.0.1</div>
-          <div class="info">
-            <div>型号：S15SF2-49T5-QW</div>
-            <div>占用：1</div>
-          </div>
-        </div>
-        <div class="device">
-          <div class="name">设备名称： 127.0.0.1</div>
-          <div class="info">
-            <div>型号：S15SF2-49T5-QW</div>
-            <div>占用：1</div>
+            <div>型号：{{item.type}}</div>
+            <div>占用：{{item.uHeight}}</div>
           </div>
         </div>
       </div>
       <div class="machine">
         <div class="mainBorder">
           <div class="main">
-            <template v-for="(item, index) in a" :key="index">
-              <div v-if="item.U位 > 0" class="Uitem active" :style="`min-height: ${height}`"></div>
+            <template v-for="(item, index) in frameList" :key="index">
+              <div v-if="item.uHeight > 0" class="Uitem active" :style="`min-height: ${height}`">{{item.rackName}}</div>
               <div v-else class="Uitem"></div>
             </template>
           </div>
@@ -50,61 +22,34 @@
         <div class="base"></div>
       </div>
       <div class="deviceList">
-        <div class="device">
-          <div class="name">设备名称： 127.0.0.1</div>
+        <div v-for="item in deviceLeft" :key="item.id" class="device">
+          <div class="name">设备名称： {{item.rackName}}</div>
           <div class="info">
-            <div>型号：S15SF2-49T5-QW</div>
-            <div>占用：1</div>
-          </div>
-        </div>
-        <div class="device">
-          <div class="name">设备名称： 127.0.0.1</div>
-          <div class="info">
-            <div>型号：S15SF2-49T5-QW</div>
-            <div>占用：1</div>
-          </div>
-        </div>
-        <div class="device">
-          <div class="name">设备名称： 127.0.0.1</div>
-          <div class="info">
-            <div>型号：S15SF2-49T5-QW</div>
-            <div>占用：1</div>
-          </div>
-        </div>
-        <div class="device">
-          <div class="name">设备名称： 127.0.0.1</div>
-          <div class="info">
-            <div>型号：S15SF2-49T5-QW</div>
-            <div>占用：1</div>
-          </div>
-        </div>
-        <div class="device">
-          <div class="name">设备名称： 127.0.0.1</div>
-          <div class="info">
-            <div>型号：S15SF2-49T5-QW</div>
-            <div>占用：1</div>
+            <div>型号：{{item.type}}</div>
+            <div>占用：{{item.uHeight}}</div>
           </div>
         </div>
       </div>
     </div>
+    <div class="local">{{cabinetInfo.roomName}}-{{cabinetInfo.cabinetName}}</div>
     <div class="infomation">
       <div class="infoItem">
-        <span class="num">42</span>
+        <span class="num">{{cabinetInfo.cabinetHeight}}</span>
         <span>空间总容量</span>
       </div>
       <div class="line"></div>
       <div class="infoItem">
-        <span class="num">30U</span>
+        <span class="num">{{cabinetInfo.usedSpace}}U</span>
         <span>已用空间</span>
       </div>
       <div class="line"></div>
       <div class="infoItem">
-        <span class="num">12U</span>
+        <span class="num">{{cabinetInfo.freeSpace}}U</span>
         <span>未用空间</span>
       </div>
       <div class="line"></div>
       <div class="infoItem">
-        <span class="num">8</span>
+        <span class="num">{{cabinetInfo.rackNum}}</span>
         <span>设备总数</span>
       </div>
     </div>
@@ -112,89 +57,45 @@
 </template>
 
 <script lang="ts" setup>
+import { CabinetApi } from '@/api/cabinet/info'
+
+const cabinetInfo = ref({})
+const deviceLeft = ref([])
+const deviceRight = ref([])
+const frameList = ref([])
 const height = ref('0px')
-const b = [
-  {
-    local: 3,
-    U:2,
-  },
-  {
-    local: 5,
-    U:2,
-  },
-  {
-    local: 12,
-    U:2,
-  },
-  {
-    local: 20,
-    U:3,
-  },
-  {
-    local: 24,
-    U:4,
-  },
-  {
-    local: 30,
-    U:1,
-  },
-  {
-    local: 32,
-    U:1,
-  },
-  {
-    local: 34,
-    U:1,
-  },
-  {
-    local: 36,
-    U:1,
-  },
-  {
-    local: 38,
-    U:1,
-  },
-  {
-    local: 33,
-    U:1,
-  },
-  {
-    local: 35,
-    U:1,
-  },
-  {
-    local: 37,
-    U:1,
-  },
-  {
-    local: 39,
-    U:1,
-  },
-]
-const a = [] as any
-for (let i =0; i < 42; i++) {
-  a.push({
-    U位: 0
-  })
-}
-const handleData = () => {
- b.forEach(item => {
-  const local = item.local
-  a.splice(local, 1, {U位: item.U})
- })
- console.log('aaaaa-----------', a, b.length)
- if (b.length < 11) {
-  height.value = '30px'
- } else if (b.length < 16) {
-  height.value = '25px'
- } else if (b.length < 21) {
-  height.value = '20px'
- } else if (b.length < 26) {
-  height.value = '15px'
- }
+const cabinetId = history?.state?.id || 1
+console.log('cabinetId', cabinetId)
+
+const getData = async() => {
+  const res = await CabinetApi.getCabinetInfoItem({id: cabinetId})
+  console.log('res', res)
+  cabinetInfo.value = res
+  if (res.rackIndexList && res.rackIndexList.length > 0) {
+    deviceLeft.value = res.rackIndexList.filter((item,index) => index%2 == 0)
+    deviceRight.value = res.rackIndexList.filter((item,index) => index%2 == 1)
+    const frames = [] as any
+    for(let i = 1; i <= res.cabinetHeight; i++) {
+      frames.push({})
+    }
+    res.rackIndexList.forEach(item => {
+      frames.splice(item.uAddress-1, item.uHeight, item)
+    })
+    frameList.value = frames.reverse()
+    console.log('frames', frames)
+    if (res.rackIndexList.length < 11) {
+      height.value = '30px'
+    } else if (res.rackIndexList.length.length < 16) {
+      height.value = '25px'
+    } else if (res.rackIndexList.length.length < 21) {
+      height.value = '20px'
+    } else if (res.rackIndexList.length.length < 26) {
+      height.value = '15px'
+    }
+  }
 }
 
-handleData()
+getData()
 </script>
 
 <style lang="scss" scoped>
@@ -270,12 +171,17 @@ handleData()
         width: 100%;
         // height: 100%;
         box-sizing: border-box;
-        padding: 5px 5px 5px 5px;
-        background-color: #000;
+        border: 5px solid;
+        background-color: #fff;
         .Uitem {
           flex: 1;
           width: 100%;
           background-color: #fff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #eee;
+          font-size: 14px;
         }
         .active {
           min-height: 20px;
@@ -293,12 +199,18 @@ handleData()
     }
   }
 }
+.local {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 15px;
+}
 .infomation {
   display: flex;
   justify-content: center;
   align-items: center;
   .infoItem {
-    padding: 30px;
+    padding: 20px 30px;
     display: flex;
     flex-direction: column;
     // justify-content: center;

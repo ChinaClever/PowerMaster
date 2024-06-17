@@ -1,30 +1,24 @@
 package cn.iocoder.yudao.module.bus.controller.admin.historydata;
 
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
+import cn.iocoder.yudao.module.bus.controller.admin.historydata.vo.BoxRealtimePageRespVO;
 import cn.iocoder.yudao.module.bus.controller.admin.historydata.vo.BusHistoryDataDetailsReqVO;
 import cn.iocoder.yudao.module.bus.controller.admin.historydata.vo.BusHistoryDataPageReqVO;
-import cn.iocoder.yudao.module.bus.controller.admin.historydata.vo.BoxPageRespVO;
 import cn.iocoder.yudao.module.bus.service.historydata.BusHistoryDataService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -100,14 +94,13 @@ public class BusHistoryDataController {
     @Operation(summary = "导出母线历史数据 Excel")
 //    @PreAuthorize("@ss.hasPermission('母线:history-data:export')")
     @OperateLog(type = EXPORT)
-    public void exportHistoryDataExcel(@Valid BusHistoryDataPageReqVO pageReqVO,
+    public void exportHistoryDataExcel(BusHistoryDataPageReqVO pageReqVO,
                                        HttpServletResponse response) throws IOException {
-        pageReqVO.setPageSize(5000);
+        pageReqVO.setPageSize(10000);
         List<Object> list = busHistoryDataService.getBoxHistoryDataPage(pageReqVO).getList();
-
         // 导出 Excel
-        ExcelUtils.write(response, "母线插接箱历史数据.xls", "数据", BoxPageRespVO.class,
-                BeanUtils.toBean(list, BoxPageRespVO.class));
+        ExcelUtils.write(response, "母线插接箱历史数据.xlsx", "数据", BoxRealtimePageRespVO.class,
+                BeanUtils.toBean(list, BoxRealtimePageRespVO.class));
     }
 
 }

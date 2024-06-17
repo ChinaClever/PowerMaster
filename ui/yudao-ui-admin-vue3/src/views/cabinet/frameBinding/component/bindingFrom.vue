@@ -23,6 +23,16 @@
       <el-form-item label="容量高度" prop="uHeight">
         <el-input type="number" v-model="formData.uHeight" placeholder="请输入" />
       </el-form-item>
+      <el-form-item label="插座位A">
+        <el-select multiple v-model="formData.outletIdA" >
+          <el-option v-for="item in outletIdAOpions" :key="item" :label="'插座位' + item" :value="item" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="插座位B">
+        <el-select multiple v-model="formData.outletIdB" >
+          <el-option v-for="item in outletIdAOpions" :key="item" :label="'插座位' + item" :value="item" />
+        </el-select>
+      </el-form-item>
     </el-form>
     <template #footer>
       <el-button @click="dialogVisible = false">取 消</el-button>
@@ -46,7 +56,11 @@ const formData = ref({
   company: '', // 公司
   uAddress: 0, // 位置
   uHeight: 0, // 容量高度
+  outletIdA: [],
+  outletIdB: [],
 })
+const outletIdAOpions = ref<number[]>([])
+const outletIdBOpions = ref<number[]>([])
 const formRules = reactive<FormRules>({
   rackName: [{ required: true, message: '用名称不能为空', trigger: 'blur' }],
   type: [{ required: true, message: '类型不能为空', trigger: 'blur' }],
@@ -56,19 +70,28 @@ const formRules = reactive<FormRules>({
 const machineForm = ref() // 表单 Ref
 
 /** 打开弹窗 */
-const open = async (type: string, data, Uindex) => {
+const open = async (type: string, data, Uindex, outletIdALength:number, outletIdBLength:number) => {
   dialogVisible.value = true
   dialogTitle.value = type == 'edit' ? '编辑': '添加'
   formType.value = type
   resetForm()
-  console.log('data', data, Uindex)
+  console.log('data', data, Uindex, outletIdALength)
   formData.value = {
     rackName: data.rackName || '',
     type: data.type || '',
     company: data.company || '',
     uAddress: data.uAddress || Uindex || 1,
     uHeight: data.uHeight || 1,
+    outletIdA: data.outletIdA || [],
+    outletIdB: data.outletIdB || [],
   }
+  for (let i = 1; i <= outletIdALength; i++) {
+    outletIdAOpions.value.push(i)
+  }
+  for (let i = 1; i <= outletIdBLength; i++) {
+    outletIdBOpions.value.push(i)
+  }
+  console.log('outletIdBOpions', outletIdBOpions)
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 
@@ -106,6 +129,8 @@ const resetForm = () => {
     company: '',
     uAddress: 0,
     uHeight: 0,
+    outletIdA: [],
+    outletIdB: [],
   }
   machineForm.value?.resetFields()
 }

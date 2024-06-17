@@ -297,6 +297,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         tableColumns.value =([
           { label: '母线名称', align: 'center', prop: 'bus_name', width: '120px', istrue:true},
           { label: '位置', align: 'center', prop: 'address' , istrue:true},
+          { label: '网络地址', align: 'center', prop: 'ip_addr', width: '160px', istrue:true},
           { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, width: '160px', formatter: formatPower},
           { label: '总无功功率(kW)', align: 'center', prop: 'pow_reactive', istrue:true, width: '160px', formatter: formatPower},
           { label: '总视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, width: '160px', formatter: formatPower},
@@ -306,7 +307,6 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '电压三相不平衡', align: 'center', prop: 'vol_unbalance' , istrue:true, width: '160px', formatter: formatVoltage},
           { label: '电流三相不平衡', align: 'center', prop: 'cur_unbalance' , istrue:true, width: '160px', formatter: formatCurrent},
           { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px', istrue:true},
-          { label: '网络地址', align: 'center', prop: 'ip_addr', width: '160px', istrue:true},
           { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '160px'},
         ]);
         queryParams.pageNo = 1;
@@ -357,6 +357,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         tableColumns.value = [
           { label: '母线名称', align: 'center', prop: 'bus_name' , istrue:true, width: '180px'},
           { label: '位置', align: 'center', prop: 'address', istrue:true, width: '180px'},
+          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
           { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '180px', formatter: formatPower},
           { label: '最大有功功率(kW)', align: 'center', prop: 'pow_active_max_value', istrue:true, width: '180px', formatter: formatPower},
           { label: '最大有功功率时间', align: 'center', prop: 'pow_active_max_time', formatter: formatTime, width: '230px', istrue:true},
@@ -388,7 +389,6 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '最小零线电流时间', align: 'center', prop: 'cur_zero_min_time', formatter: formatTime, width: '230px', istrue:false},
 
           { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
-          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
         ] as any;
         queryParams.pageNo = 1;
@@ -418,6 +418,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         tableColumns.value = [
           { label: '母线名称', align: 'center', prop: 'bus_name' , istrue:true, width: '140px'},
           { label: '位置', align: 'center', prop: 'address', istrue:true, width: '180px'},
+          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
           { label: '相', align: 'center', prop: 'line_id', istrue:true, formatter: formatLineId, width: '140px'},
           { label: '有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower, width: '140px'},
           { label: '无功功率(kW)', align: 'center', prop: 'pow_reactive', istrue:true, formatter: formatPower, width: '140px'},
@@ -430,7 +431,6 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '电流谐波含量', align: 'center', prop: 'cur_thd', istrue:true, width: '140px'},
           { label: '电压谐波含量', align: 'center', prop: 'vol_thd', istrue:true, width: '140px'},
           { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '220px'},
-          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
         ] as any;
         queryParams.pageNo = 1;
@@ -488,6 +488,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         tableColumns.value = [
           { label: '母线名称', align: 'center', prop: 'bus_name' , istrue:true, width: '180px'},
           { label: '位置', align: 'center', prop: 'address', istrue:true, width: '180px'},
+          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
           { label: '相', align: 'center', prop: 'line_id', istrue:true, width: '100px', formatter: formatLineId},
 
           { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '180px', formatter: formatPower},
@@ -527,7 +528,6 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '最小线电压时间', align: 'center', prop: 'vol_line_min_time', formatter: formatTime, width: '230px', istrue:false},
 
           { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
-          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
         ] as any;
         queryParams.pageNo = 1;
@@ -539,6 +539,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
 const tableColumns = ref([
     { label: '母线名称', align: 'center', prop: 'bus_name', width: '120px', istrue:true},
     { label: '位置', align: 'center', prop: 'address' , istrue:true},
+    { label: '网络地址', align: 'center', prop: 'ip_addr', width: '160px', istrue:true},
     { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, width: '160px', formatter: formatPower},
     { label: '总无功功率(kW)', align: 'center', prop: 'pow_reactive', istrue:true, width: '160px', formatter: formatPower},
     { label: '总视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, width: '160px', formatter: formatPower},
@@ -548,7 +549,6 @@ const tableColumns = ref([
     { label: '电压三相不平衡', align: 'center', prop: 'vol_unbalance' , istrue:true, width: '160px', formatter: formatVoltage},
     { label: '电流三相不平衡', align: 'center', prop: 'cur_unbalance' , istrue:true, width: '160px', formatter: formatCurrent},
     { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px', istrue:true},
-    { label: '网络地址', align: 'center', prop: 'ip_addr', width: '160px', istrue:true},
     { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '160px'},
 ]);
 
@@ -654,19 +654,19 @@ const toDetails = (busId: number, location?: string, address?: string) => {
 }
 
 /** 导出按钮操作 */
-const handleExport = async () => {
-  try {
-    // 导出的二次确认
-    await message.exportConfirm()
-    // 发起导出
-    exportLoading.value = true
-    const data = await HistoryDataApi.exportHistoryData(queryParams)
-    download.excel(data, '始端箱历史数据.xls')
-  } catch {
-  } finally {
-    exportLoading.value = false
-  }
-}
+// const handleExport = async () => {
+//   try {
+//     // 导出的二次确认
+//     await message.exportConfirm()
+//     // 发起导出
+//     exportLoading.value = true
+//     const data = await HistoryDataApi.exportHistoryData(queryParams)
+//     download.excel(data, '始端箱历史数据.xls')
+//   } catch {
+//   } finally {
+//     exportLoading.value = false
+//   }
+// }
 
 // 获取导航的数据显示
 const getBusNavNewData = async() => {

@@ -316,12 +316,12 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '母线名称', align: 'center', prop: 'bus_name', width: '160px', istrue:true},
           { label: '插接箱名称', align: 'center', prop: 'box_name', width: '160px', istrue:true},
           { label: '位置', align: 'center', prop: 'address' , istrue:true},
+          { label: '网络地址', align: 'center', prop: 'ip_addr', width: '160px', istrue:true},
           { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, width: '160px', formatter: formatPower},
           { label: '总无功功率(kW)', align: 'center', prop: 'pow_reactive', istrue:true, width: '160px', formatter: formatPower},
           { label: '总视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, width: '160px', formatter: formatPower},
           { label: '功率因素', align: 'center', prop: 'power_factor' , istrue:true, width: '160px', formatter: formatPowerFactor},
           { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px', istrue:true},
-          { label: '网络地址', align: 'center', prop: 'ip_addr', width: '160px', istrue:true},
           { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '160px'},
         ]);
         queryParams.pageNo = 1;
@@ -360,6 +360,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '母线名称', align: 'center', prop: 'bus_name' , istrue:true, width: '160px'},
           { label: '插接箱名称', align: 'center', prop: 'box_name', width: '160px', istrue:true},
           { label: '位置', align: 'center', prop: 'address', istrue:true, width: '160px'},
+          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
           { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '160px', formatter: formatPower},
           { label: '最大有功功率(kW)', align: 'center', prop: 'pow_active_max_value', istrue:true, width: '160px', formatter: formatPower},
           { label: '最大有功功率时间', align: 'center', prop: 'pow_active_max_time', formatter: formatTime, width: '200px', istrue:true},
@@ -379,7 +380,6 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '最小视在功率时间', align: 'center', prop: 'pow_apparent_min_time', formatter: formatTime, width: '200px', istrue:false},
 
           { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px', istrue:true},
-          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
         ] as any;
         queryParams.pageNo = 1;
@@ -408,6 +408,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '母线名称', align: 'center', prop: 'bus_name' , istrue:true, width: '140px'},
           { label: '插接箱名称', align: 'center', prop: 'box_name', width: '140px', istrue:true},
           { label: '位置', align: 'center', prop: 'address', istrue:true, width: '180px'},
+          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
           { label: '相', align: 'center', prop: 'line_id', istrue:true, formatter: formatLineId, width: '140px'},
           { label: '有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower, width: '140px'},
           { label: '无功功率(kW)', align: 'center', prop: 'pow_reactive', istrue:true, formatter: formatPower, width: '140px'},
@@ -418,7 +419,6 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '负载率', align: 'center', prop: 'load_rate', istrue:true, width: '140px'},
           { label: '电流谐波含量', align: 'center', prop: 'cur_thd', istrue:true, width: '140px'},
           { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '220px'},
-          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
         ] as any;
         queryParams.pageNo = 1;
@@ -478,6 +478,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '母线名称', align: 'center', prop: 'bus_name' , istrue:true, width: '140px'},
           { label: '插接箱名称', align: 'center', prop: 'box_name', width: '140px', istrue:true},
           { label: '位置', align: 'center', prop: 'address', istrue:true, width: '140px'},
+          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
           { label: '相', align: 'center', prop: 'line_id', istrue:true, width: '100px', formatter: formatLineId},
 
           { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '180px', formatter: formatPower},
@@ -517,7 +518,6 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '最小电流谐波含量时间', align: 'center', prop: 'cur_thd_min_time', formatter: formatTime, width: '230px', istrue:false},
 
           { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
-          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
         ] as any;
         queryParams.pageNo = 1;
@@ -543,6 +543,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '母线名称', align: 'center', prop: 'bus_name' , istrue:true, width: '140px'},
           { label: '插接箱名称', align: 'center', prop: 'box_name', width: '140px', istrue:true},
           { label: '位置', align: 'center', prop: 'address', istrue:true, width: '180px'},
+          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
           { label: '回路', align: 'center', prop: 'loop_id', istrue:true, formatter: formatLoopId, width: '140px'},
           { label: '有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower, width: '140px'},
           { label: '无功功率(kW)', align: 'center', prop: 'pow_reactive', istrue:true, formatter: formatPower, width: '140px'},
@@ -551,7 +552,6 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '电压(V)', align: 'center', prop: 'vol_value', istrue:true, formatter: formatVoltage, width: '140px'},
           { label: '电流(A)', align: 'center', prop: 'cur_value', istrue:true, formatter: formatCurrent, width: '140px'},
           { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '220px'},
-          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
         ] as any;
         queryParams.pageNo = 1;
@@ -605,6 +605,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '母线名称', align: 'center', prop: 'bus_name' , istrue:true, width: '140px'},
           { label: '插接箱名称', align: 'center', prop: 'box_name', width: '140px', istrue:true},
           { label: '位置', align: 'center', prop: 'address', istrue:true, width: '140px'},
+          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
           { label: '回路', align: 'center', prop: 'loop_id', istrue:true, width: '100px', formatter: formatLoopId},
 
           { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '180px', formatter: formatPower},
@@ -638,7 +639,6 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '最小电流时间', align: 'center', prop: 'cur_min_time', formatter: formatTime, width: '230px', istrue:false},
 
           { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
-          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
         ] as any;
         queryParams.pageNo = 1;
@@ -662,13 +662,13 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '母线名称', align: 'center', prop: 'bus_name' , istrue:true, width: '140px'},
           { label: '插接箱名称', align: 'center', prop: 'box_name', width: '140px', istrue:true},
           { label: '位置', align: 'center', prop: 'address', istrue:true, width: '180px'},
+          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
           { label: '输出位', align: 'center', prop: 'outlet_id', istrue:true, width: '140px'},
           { label: '有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower, width: '140px'},
           { label: '无功功率(kW)', align: 'center', prop: 'pow_reactive', istrue:true, formatter: formatPower, width: '140px'},
           { label: '视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, formatter: formatPower, width: '140px'},
           { label: '功率因素', align: 'center', prop: 'power_factor', istrue:true, formatter: formatPowerFactor, width: '140px'},
           { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '220px'},
-          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
         ] as any;
         queryParams.pageNo = 1;
@@ -708,6 +708,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '母线名称', align: 'center', prop: 'bus_name' , istrue:true, width: '140px'},
           { label: '插接箱名称', align: 'center', prop: 'box_name', width: '140px', istrue:true},
           { label: '位置', align: 'center', prop: 'address', istrue:true, width: '140px'},
+          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
           { label: '输出位', align: 'center', prop: 'outlet_id', istrue:true, width: '100px'},
 
           { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '180px', formatter: formatPower},
@@ -729,7 +730,6 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           { label: '最小视在功率时间', align: 'center', prop: 'pow_apparent_min_time', formatter: formatTime, width: '230px', istrue:false},
   
           { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '230px', istrue:true},
-          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
           { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
         ] as any;
         queryParams.pageNo = 1;
@@ -742,12 +742,12 @@ const tableColumns = ref([
   { label: '母线名称', align: 'center', prop: 'bus_name', width: '120px', istrue:true},
   { label: '插接箱名称', align: 'center', prop: 'box_name', width: '120px', istrue:true},
   { label: '位置', align: 'center', prop: 'address' , istrue:true},
+  { label: '网络地址', align: 'center', prop: 'ip_addr', width: '160px', istrue:true},
   { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, width: '160px', formatter: formatPower},
   { label: '总无功功率(kW)', align: 'center', prop: 'pow_reactive', istrue:true, width: '160px', formatter: formatPower},
   { label: '总视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, width: '160px', formatter: formatPower},
   { label: '功率因素', align: 'center', prop: 'power_factor' , istrue:true, width: '140px', formatter: formatPowerFactor},
   { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px', istrue:true},
-  { label: '网络地址', align: 'center', prop: 'ip_addr', width: '160px', istrue:true},
   { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '160px'},
 ]);
 
@@ -858,10 +858,17 @@ const handleExport = async () => {
     // 导出的二次确认
     await message.exportConfirm()
     // 发起导出
+    queryParams.pageNo = 1
     exportLoading.value = true
-    const data = await HistoryDataApi.exportHistoryData(queryParams)
-    download.excel(data, '母线插接箱历史数据.xls')
-  } catch {
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await HistoryDataApi.exportHistoryData(queryParams, axiosConfig)
+    await download.excel(data, '母线插接箱历史数据.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
+    message.error('导出失败，请稍后重试')
   } finally {
     exportLoading.value = false
   }
