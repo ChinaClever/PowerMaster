@@ -15,12 +15,11 @@ import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 @TableName("box_curbalance_color")
 @KeySequence("box_curbalance_color_seq") // 用于 Oracle、PostgreSQL、Kingbase、DB2、H2 数据库的主键自增。如果是 MySQL 等数据库，可不写。
 @Data
-@EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BoxCurbalanceColorDO extends BaseDO {
+public class BoxCurbalanceColorDO{
 
     /**
      * 自增id
@@ -44,4 +43,14 @@ public class BoxCurbalanceColorDO extends BaseDO {
      */
     private Integer rangeFour;
 
+    /**
+     * 创建时间
+     */
+    @TableField(fill = FieldFill.INSERT)
+    private LocalDateTime createTime;
+    /**
+     * 最后更新时间
+     */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updateTime;
 }

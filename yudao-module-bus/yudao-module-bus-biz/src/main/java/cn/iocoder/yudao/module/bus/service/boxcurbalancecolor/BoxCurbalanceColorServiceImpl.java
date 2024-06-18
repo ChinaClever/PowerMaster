@@ -1,17 +1,13 @@
 package cn.iocoder.yudao.module.bus.service.boxcurbalancecolor;
 
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
-import cn.iocoder.yudao.module.bus.dal.dataobject.buscurbalancecolor.BusCurbalanceColorDO;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
 import cn.iocoder.yudao.module.bus.controller.admin.boxcurbalancecolor.vo.*;
 import cn.iocoder.yudao.module.bus.dal.dataobject.boxcurbalancecolor.BoxCurbalanceColorDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 
 import cn.iocoder.yudao.module.bus.dal.mysql.boxcurbalancecolor.BoxCurbalanceColorMapper;
@@ -64,7 +60,7 @@ public class BoxCurbalanceColorServiceImpl implements BoxCurbalanceColorService 
     }
 
     @Override
-    public BoxCurbalanceColorDO getBoxCurbalanceColor(Long id) {
+    public BoxCurbalanceColorDO getBoxCurbalanceColor() {
         BoxCurbalanceColorDO boxCurbalanceColorDO = boxCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(),false);
         if (boxCurbalanceColorDO == null){
             boxCurbalanceColorDO = new BoxCurbalanceColorDO();

@@ -234,7 +234,6 @@ defineOptions({ name: 'PDUDevice' })
 const { push } = useRouter()
 
 const flashListTimer = ref();
-const devKeyList = ref([])
 const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48])
 const switchValue = ref(0)
@@ -245,6 +244,7 @@ const statusNumber = reactive({
   offline : 0
 })
 
+const devKeyList = ref([])
 const loadAll = async () => {
   var data = await PDUDeviceApi.devKeyList();
   var objectArray = data.map((str) => {
@@ -255,7 +255,7 @@ const loadAll = async () => {
 }
 
 const querySearch = (queryString: string, cb: any) => {
-  console.log(devKeyList.value)
+
   const results = queryString
     ? devKeyList.value.filter(createFilter(queryString))
     : devKeyList.value

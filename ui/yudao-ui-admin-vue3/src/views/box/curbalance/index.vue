@@ -6,7 +6,7 @@
           <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div>
         </div>
         <div class="line"></div>
-        <!-- <div class="status">
+        <div class="status">
           <div class="box">
             <div class="top">
               <div class="tag"></div>{{ statusList[0].name }}
@@ -31,7 +31,7 @@
             </div>
             <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
           </div>
-        </div> -->
+        </div>
         <div class="line"></div>
 
       </div>
@@ -44,6 +44,18 @@
         :inline="true"
         label-width="68px"                          
       >
+        <el-form-item v-if="switchValue == 2 || switchValue == 3">
+          <template v-for="(status, index) in statusList" :key="index">
+            <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
+          </template>
+        </el-form-item>
+        <el-button
+          type="primary"
+          plain
+          @click="openForm('create')"
+        >
+          <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
+        </el-button>
         <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
             v-model="queryParams.devKey"
@@ -76,11 +88,8 @@
           </el-button>
         </el-form-item>
         <div style="float:right">
-          <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
-          <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压</el-button>            
-          <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />有功功率</el-button>            
-          <el-button @click="valueMode = 3;" :type="valueMode == 3 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />无功功率</el-button>                     
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流阵列</el-button>            
+          <el-button @click="statusList.forEach((item) => item.selected = true);pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压阵列</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
         </div>
       </el-form>
@@ -90,144 +99,60 @@
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
-        <el-table-column v-if="valueMode == 0" label="A相电流" align="center" prop="acur" width="130px" >
+        <el-table-column label="运行状态" align="center" prop="color" >
+          <template #default="scope" >
+              <el-tag type="info"  v-if="scope.row.color == 1">小电流不平衡</el-tag>
+              <el-tag type="success"  v-if="scope.row.color == 2">大电流不平衡</el-tag>
+              <el-tag type="warning" v-if="scope.row.color == 3">大电流不平衡</el-tag>
+              <el-tag type="danger" v-if="scope.row.color == 4">大电流不平衡</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="A相电流" align="center" prop="acur" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.acur != null">
               {{ scope.row.acur }}A
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="A相电流状态" align="center" prop="acurStatus" width="130px" >
-          <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.acurStatus != 0" >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="B相电流" align="center" prop="bcur" width="130px" >
+        <el-table-column label="B相电流" align="center" prop="bcur" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.bcur != null">
               {{ scope.row.bcur }}A
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="B相电流状态" align="center" prop="bcurStatus" width="130px" >
-          <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.bcurStatus != 0" >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="C相电流" align="center" prop="ccur" width="130px" >
+        <el-table-column label="C相电流" align="center" prop="ccur" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.ccur != null">
               {{ scope.row.ccur }}A
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="C相电流状态" align="center" prop="ccurStatus" width="130px" >
-          <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.ccurStatus != 0 " >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column  v-if="valueMode == 1"  label="A相电压" align="center" prop="avol" width="130px" >
+        <el-table-column label="A相电压" align="center" prop="avol" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.avol">
               {{ scope.row.avol }}V
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 1" label="A相电压状态" align="center" prop="avolStatus" width="130px" >
-          <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.avolStatus != 0" >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-            <el-text line-clamp="2" v-if="scope.row.avolStatus != null">
-              {{ scope.row.avolStatus }}
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 1" label="B相电压" align="center" prop="bvol" width="130px" >
+        <el-table-column label="B相电压" align="center" prop="bvol" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.bvol">
               {{ scope.row.bvol }}V
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 1" label="B相电压状态" align="center" prop="bvolStatus" width="130px" >
-          <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.bvolStatus != 0" >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 1" label="C相电压" align="center" prop="cvol" width="130px" >
+        <el-table-column label="C相电压" align="center" prop="cvol" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.cvol">
               {{ scope.row.cvol }}V
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 1" label="C相电压状态" align="center" prop="cvolStatus" width="130px" >
+        <el-table-column label="不平衡度" align="center" prop="curUnbalance" width="130px">
           <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.cvolStatus != 0 " >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 2" label="A相有功功率" align="center" prop="aactivePow" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.aactivePow">
-              {{ scope.row.aactivePow }}kW
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 2" label="A相有功功率状态" align="center" prop="aactivePowStatus" width="150px" >
-          <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.aactivePowStatus != 0 " >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 2" label="B相有功功率" align="center" prop="bactivePow" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.bactivePow">
-              {{ scope.row.bactivePow }}kW
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 2" label="B相有功功率状态" align="center" prop="bactivePowStatus" width="150px" >
-          <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.bactivePowStatus != 0" >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 2" label="C相有功功率" align="center" prop="cactivePow" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.cactivePow">
-              {{ scope.row.cactivePow }}kW
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 2" label="C相有功功率状态" align="center" prop="cactivePowStatus" width="150px" >
-          <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.cactivePowStatus != 0" >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 3" label="A相无功功率" align="center" prop="areactivePow" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.aactivePow">
-              {{ scope.row.aactivePow }}kVar
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 3" label="B相无功功率" align="center" prop="breactivePow" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.breactivePow">
-              {{ scope.row.breactivePow }}kVar
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 3" label="C相无功功率" align="center" prop="creactivePow" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.creactivePow">
-              {{ scope.row.creactivePow }}kVar
+            <el-text line-clamp="2" v-if="scope.row.curUnbalance != null" >
+              {{ scope.row.curUnbalance }}%
             </el-text>
           </template>
         </el-table-column>
@@ -252,53 +177,57 @@
             </el-button>
           </template>
         </el-table-column>
-      </el-table>    
+      </el-table>
+
+      <div v-show="switchValue == 2  && list.length > 0" class="arrayContainer">
+        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
+          <div class="content">
+            <div class="icon" >
+              <div v-if="item.curUnbalance != null" >
+                不平衡度<br/>{{ item.curUnbalance }}%
+              </div>              
+            </div>
+            <div class="info">                  
+              <div v-if="item.acur != null">A相电流：{{item.acur}}A</div>
+              <div v-if="item.bcur != null" >B相电流：{{item.bcur}}A</div>
+              <div v-if="item.ccur != null" >C相电流：{{item.ccur}}A</div>
+              <!-- <div >网络地址：{{ item.devKey }}</div> -->
+              <!-- <div>AB路占比：{{item.fzb}}</div> -->
+            </div>
+          </div>
+          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
+          <div class="status" v-if="item.color != 0">
+            <el-tag type="info"  v-if="item.color == 1">小电流不平衡</el-tag>
+            <el-tag type="success"  v-if="item.color == 2">大电流不平衡</el-tag>
+            <el-tag type="warning" v-if="item.color == 3">大电流不平衡</el-tag>
+            <el-tag type="danger" v-if="item.color == 4">大电流不平衡</el-tag>
+          </div>
+          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
+        </div>
+      </div>
 
       <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="icon" >
-              <div v-if="false" >
+              <div v-if="item.volUnbalance != null" >
                 不平衡度<br/>{{ item.volUnbalance }}%
               </div>              
             </div>
-            <div class="info" v-if="valueMode == 0" >                  
-              <div :style="{backgroundColor : item.acurColor}" v-if="item.acur != null">A相电流：{{item.acur}}A</div>
-              <div :style="{backgroundColor : item.bcurColor}" v-if="item.bcur != null">B相电流：{{item.bcur}}A</div>
-              <div :style="{backgroundColor : item.ccurColor}" v-if="item.ccur != null">C相电流：{{item.ccur}}A</div>
-            </div>
-            <div class="info" v-if="valueMode == 1">                  
-              <div :style="{backgroundColor : item.avolColor}"  v-if="item.avol != null">A相电压：{{item.avol}}V</div>
-              <div :style="{backgroundColor : item.bvolColor}" v-if="item.bvol != null">B相电压：{{item.bvol}}V</div>
-              <div :style="{backgroundColor : item.cvolColor}" v-if="item.cvol != null">C相电压：{{item.cvol}}V</div>
-            </div>
-            <div class="info" v-if="valueMode == 2">                  
-              <div :style="{backgroundColor : item.aactivePowColor}" v-if="item.aactivePow != null">A相有功功率：{{item.aactivePow}}kW</div>
-              <div :style="{backgroundColor : item.bactivePowColor}" v-if="item.bactivePow != null">B相有功功率：{{item.bactivePow}}kW</div>
-              <div :style="{backgroundColor : item.cactivePowColor}" v-if="item.cactivePow != null">C相有功功率：{{item.cactivePow}}kW</div>
-            </div>
-            <div class="info" v-if="valueMode == 3">                  
-              <div v-if="item.areactivePow != null">A相无功功率：{{item.areactivePow}}kVar</div>
-              <div v-if="item.breactivePow != null">B相无功功率：{{item.breactivePow}}kVar</div>
-              <div v-if="item.creactivePow != null">C相无功功率：{{item.creactivePow}}kVar</div>
+            <div class="info">                  
+              <div v-if="item.avol != null">A相电压：{{item.avol}}V</div>
+              <div v-if="item.bvol != null" >B相电压：{{item.bvol}}V</div>
+              <div v-if="item.cvol != null" >C相电压：{{item.cvol}}V</div>
+              <!-- <div >网络地址：{{ item.devKey }}</div> -->
+              <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
-          <div class="status" v-if="valueMode == 0">
-            <el-tag type="info" v-if="item.acurStatus == null " >离线</el-tag>
-            <el-tag type="danger" v-else-if="item.acurStatus != 0 || item.bcurStatus != 0  || item.ccurStatus != 0 " >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </div>
-          <div class="status" v-if="valueMode == 1">
-            <el-tag type="info" v-if="item.avolStatus == null " >离线</el-tag>
-            <el-tag type="danger" v-else-if="item.avolStatus != 0 || item.bvolStatus != 0 || item.cvolStatus != 0 " >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </div>
-          <div class="status" v-if="valueMode == 2">
-            <el-tag type="info" v-if="item.aactivePowStatus == null " >离线</el-tag>
-            <el-tag type="danger" v-else-if="item.aactivePowStatus != 0 || item.bactivePowStatus != 0 || item.cactivePowStatus != 0" >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
+          <div class="status" >
+            <el-tag type="info" >电压不平衡</el-tag>
+
           </div>
           <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
@@ -318,17 +247,17 @@
 
 
   <!-- 表单弹窗：添加/修改 -->
-  <!-- <CurbalanceColorForm ref="curBalanceColorForm" @success="getList" /> -->
+  <CurbalanceColorForm ref="curBalanceColorForm" @success="getList" />
 </template>
 
 <script setup lang="ts">
 // import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { IndexApi } from '@/api/bus/boxindex'
-// import CurbalanceColorForm from './CurbalanceColorForm.vue'
+import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
-// import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
+import { BoxCurbalanceColorApi } from '@/api/bus/boxcurbalancecolor'
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -339,8 +268,44 @@ const curBalanceColorForm = ref()
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48])
-const switchValue = ref(0)
-const valueMode = ref(0)
+const switchValue = ref(2)
+const statusNumber = reactive({
+  lessFifteen : 0,
+  greaterFifteen : 0,
+  greaterThirty : 0,
+  smallCurrent : 0
+})
+
+const statusList = reactive([
+  {
+    name: '<15%',
+    selected: true,
+    value: 2,
+    cssClass: 'btn_normal',
+    activeClass: 'btn_normal normal'
+  },
+  {
+    name: '15%-30%',
+    selected: true,
+    value: 3,
+    cssClass: 'btn_warn',
+    activeClass: 'btn_warn warn'
+  },
+  {
+    name: '>30%',
+    selected: true,
+    value: 4,
+    cssClass: 'btn_error',
+    activeClass: 'btn_error error'
+  },
+  {
+    name: '小电流',
+    selected: true,
+    value: 1,
+    cssClass: 'btn_offline',
+    activeClass: 'btn_offline offline'
+  },
+])
 
 const devKeyList = ref([])
 const loadAll = async () => {
@@ -395,10 +360,12 @@ const handleCheck = async (row) => {
   getList();
 }
 
+
 const serverRoomArr =  ref([])
 
 const filterText = ref('')
 const treeRef = ref<InstanceType<typeof ElTree>>()
+
 
 watch(filterText, (val) => {
   treeRef.value!.filter(val)
@@ -445,30 +412,55 @@ const exportLoading = ref(false) // 导出的加载中
 const getList = async () => {
   loading.value = true
   try {
-    const data = await IndexApi.getBoxRedisPage(queryParams)
-
-    list.value = data.list
+    console.log(queryParams)
+    const data = await IndexApi.getBalancePage(queryParams)
+    var range = await BoxCurbalanceColorApi.getBoxCurbalanceColor();
+    if(range != null){
+      statusList[0].name = '<' + range.rangeOne + '%';
+      statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
+      statusList[2].name = '>' + range.rangeFour + '%';
+    }
+    
     var tableIndex = 0;
-
-    list.value.forEach((obj) => {
+    var lessFifteen = 0;
+    var greaterFifteen = 0;
+    var greaterThirty = 0;
+    var smallCurrent = 0;
+    data.list.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.acur == null){
+      if(obj?.dataUpdateTime == null && obj?.pow == null){
         return;
-      } 
+      }
+      const splitArray = obj.dataUpdateTime.split(' ');
+      obj.dataUpdateTime = splitArray[1];
+      
+      obj.apparentPow = obj.apparentPow.toFixed(3);
+      obj.pow = obj.pow.toFixed(3);
+      obj.ele = obj.ele.toFixed(1);
+      obj.pf = obj.pf.toFixed(2);
       obj.acur = obj.acur?.toFixed(2);
       obj.bcur = obj.bcur?.toFixed(2);
       obj.ccur = obj.ccur?.toFixed(2);
+      obj.curUnbalance = obj.curUnbalance?.toFixed(0);
       obj.avol = obj.avol?.toFixed(1);
       obj.bvol = obj.bvol?.toFixed(1);
       obj.cvol = obj.cvol?.toFixed(1);
-      obj.aactivePow = obj.aactivePow?.toFixed(3);
-      obj.bactivePow = obj.bactivePow?.toFixed(3);
-      obj.cactivePow = obj.cactivePow?.toFixed(3);
-      obj.areactivePow = obj.areactivePow?.toFixed(3);
-      obj.breactivePow = obj.breactivePow?.toFixed(3);
-      obj.creactivePow = obj.creactivePow?.toFixed(3);
+      obj.volUnbalance = obj.volUnbalance?.toFixed(0);
+      if(obj.color == 1){
+        smallCurrent++;
+      } else if (obj.color == 2) {
+        lessFifteen++;
+      } else if (obj.color == 3) {
+        greaterFifteen++;
+      } else if (obj.color == 4) {
+        greaterThirty++;
+      }
     });
-
+    statusNumber.smallCurrent = smallCurrent;
+    statusNumber.lessFifteen = lessFifteen;
+    statusNumber.greaterFifteen = greaterFifteen;
+    statusNumber.greaterThirty = greaterThirty;
+    list.value = data.list
     total.value = data.total
   } finally {
     loading.value = false
@@ -477,29 +469,54 @@ const getList = async () => {
 
 const getListNoLoading = async () => {
   try {
-    const data = await IndexApi.getBoxRedisPage(queryParams)
-    list.value = data.list
+    console.log(queryParams)
+    const data = await IndexApi.getBalancePage(queryParams)
+    
+    var range = await BoxCurbalanceColorApi.getBoxCurbalanceColor();
+    if(range != null){
+      statusList[0].name = '<' + range.rangeOne + '%';
+      statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
+      statusList[2].name = '>' + range.rangeFour + '%';
+    }
     var tableIndex = 0;    
-
-    list.value.forEach((obj) => {
+    var lessFifteen = 0;
+    var greaterFifteen = 0;
+    var greaterThirty = 0;
+    var smallCurrent = 0;
+    data.list.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.acur == null){
+      if(obj?.dataUpdateTime == null && obj?.pow == null){
         return;
-      } 
+      }
+      const splitArray = obj.dataUpdateTime.split(' ');
+      obj.dataUpdateTime = splitArray[1];      
+      obj.apparentPow = obj.apparentPow.toFixed(3);
+      obj.pow = obj.pow.toFixed(3);
+      obj.ele = obj.ele.toFixed(1);
+      obj.pf = obj.pf.toFixed(2);
       obj.acur = obj.acur?.toFixed(2);
       obj.bcur = obj.bcur?.toFixed(2);
       obj.ccur = obj.ccur?.toFixed(2);
+      obj.curUnbalance = obj.curUnbalance?.toFixed(0);
       obj.avol = obj.avol?.toFixed(1);
       obj.bvol = obj.bvol?.toFixed(1);
       obj.cvol = obj.cvol?.toFixed(1);
-      obj.aactivePow = obj.aactivePow?.toFixed(3);
-      obj.bactivePow = obj.bactivePow?.toFixed(3);
-      obj.cactivePow = obj.cactivePow?.toFixed(3);
-      obj.areactivePow = obj.areactivePow?.toFixed(3);
-      obj.breactivePow = obj.breactivePow?.toFixed(3);
-      obj.creactivePow = obj.creactivePow?.toFixed(3);
+      obj.volUnbalance = obj.volUnbalance?.toFixed(0);
+      if(obj.color == 1){
+        smallCurrent++;
+      } else if (obj.color == 2) {
+        lessFifteen++;
+      } else if (obj.color == 3) {
+        greaterFifteen++;
+      } else if (obj.color == 4) {
+        greaterThirty++;
+      }
     });
-
+    statusNumber.smallCurrent = smallCurrent;
+    statusNumber.lessFifteen = lessFifteen;
+    statusNumber.greaterFifteen = greaterFifteen;
+    statusNumber.greaterThirty = greaterThirty;
+    list.value = data.list
     total.value = data.total
   } catch (error) {
     
@@ -532,6 +549,13 @@ const toPDUDisplayScreen = (row) =>{
 //   window.open(url, '_blank');
 // }
 
+const handleSelectStatus = (index) => {
+  statusList[index].selected = !statusList[index].selected
+  const status =  statusList.filter(item => item.selected)
+  const statusArr = status.map(item => item.value)
+  queryParams.color = statusArr;
+  handleQuery();
+}
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
@@ -542,6 +566,7 @@ const handleQuery = () => {
 /** 重置按钮操作 */
 const resetQuery = () => {
   queryFormRef.value.resetFields()
+  statusList.forEach((item) => item.selected = true)
   handleQuery()
 }
 

@@ -67,4 +67,8 @@ export const IndexApi = {
   getBusHarmonicPage: async (params: any) => {
     return await request.get({ url: `/bus/index/busharmonicpage`, params })
   },
+
+  devKeyList: async () => {
+    return await request.download({ url: `/bus/index/devKeyList` })
+  },
 }

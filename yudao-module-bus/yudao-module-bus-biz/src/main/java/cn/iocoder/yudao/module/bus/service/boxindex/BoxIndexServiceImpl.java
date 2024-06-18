@@ -153,7 +153,6 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
     @Override
     public PageResult<BoxRedisDataRes> getBoxRedisPage(BoxIndexPageReqVO pageReqVO) {
-        
         PageResult<BoxIndex> boxIndexDOPageResult = boxIndexCopyMapper.selectPage(pageReqVO);
         List<BoxIndex> list = boxIndexDOPageResult.getList();
         List<BoxRedisDataRes> res = new ArrayList<>();
@@ -473,24 +472,26 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             }
             JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");
             JSONArray curThd = lineItemList.getJSONArray("cur_thd");
-            JSONArray volThd = lineItemList.getJSONArray("vol_thd");
             for (int i = 0; i < 3; i++) {
                 double curThdValue = curThd.getDoubleValue(i);
-                double volThdValue = volThd.getDoubleValue(i);
                 if (i == 0){
                     boxHarmonicRes.setAcurThd(curThdValue);
-                    boxHarmonicRes.setAvolThd(volThdValue);
                 }else if(i == 1){
                     boxHarmonicRes.setBcurThd(curThdValue);
-                    boxHarmonicRes.setBvolThd(volThdValue);
                 }else if(i == 2){
                     boxHarmonicRes.setCcurThd(curThdValue);
-                    boxHarmonicRes.setCvolThd(volThdValue);
                 }
             }
 
         }
         return new PageResult<>(res,boxIndexDOPageResult.getTotal());
+    }
+
+    @Override
+    public List<String> getDevKeyList() {
+        List<String> result = boxIndexCopyMapper.selectList().stream().limit(10).collect(Collectors.toList())
+                .stream().map(BoxIndex::getDevKey).collect(Collectors.toList());
+        return result;
     }
 
     /**
