@@ -1,7 +1,6 @@
 package cn.iocoder.yudao.module.bus.mapper;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
-import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 
