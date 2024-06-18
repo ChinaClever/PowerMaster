@@ -1,18 +1,16 @@
 package cn.iocoder.yudao.module.pdu.service.dcconfig;
 
-import java.util.*;
 import javax.validation.*;
 import cn.iocoder.yudao.module.pdu.controller.admin.dcconfig.vo.*;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.dcconfig.DcConfigDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
 
 /**
  * pdu数据采集配置 Service 接口
  *
  * @author clever
  */
-public interface DcConfigService {
+public interface PDUDcConfigService {
 
     /**
      * 创建pdu数据采集配置

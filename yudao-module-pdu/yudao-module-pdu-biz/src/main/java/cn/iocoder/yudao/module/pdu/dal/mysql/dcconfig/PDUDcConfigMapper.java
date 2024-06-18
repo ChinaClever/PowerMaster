@@ -1,7 +1,5 @@
 package cn.iocoder.yudao.module.pdu.dal.mysql.dcconfig;
 
-import java.util.*;
-
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
@@ -15,7 +13,7 @@ import cn.iocoder.yudao.module.pdu.controller.admin.dcconfig.vo.*;
  * @author clever
  */
 @Mapper
-public interface DcConfigMapper extends BaseMapperX<DcConfigDO> {
+public interface PDUDcConfigMapper extends BaseMapperX<DcConfigDO> {
 
     default PageResult<DcConfigDO> selectPage(DcConfigPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<DcConfigDO>()
