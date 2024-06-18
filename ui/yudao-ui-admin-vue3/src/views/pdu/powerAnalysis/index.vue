@@ -294,7 +294,7 @@ const tableColumns = ref([
       { label: '电能(kWh)', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle},
     ]
   },
-  { label: '耗电量\n(kWh)', align: 'center', prop: 'eq_value' ,istrue: true,formatter: formatEle },
+  { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' ,istrue: true,formatter: formatEle },
   { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '120px'},
 ]) as any;
 

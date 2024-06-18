@@ -25,7 +25,7 @@
         :inline="true"
         label-width="auto"
       >
-      <el-form-item label="时间段" prop="timeRange">
+      <el-form-item label="时间段" prop="timeRange"> 
         <el-date-picker
         value-format="YYYY-MM-DD HH:mm:ss"
         v-model="queryParams.timeRange"
@@ -40,7 +40,7 @@
 
         <el-form-item >
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          <el-button type="success" plain :loading="exportLoading">
+          <el-button type="success" plain :loading="exportLoading" @click="handleExport">
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
         </el-form-item>
@@ -82,7 +82,7 @@
 
 <script setup lang="ts">
 import dayjs from 'dayjs'
-// import download from '@/utils/download'
+import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/rack/energyConsumption'
 import { CabinetApi } from '@/api/cabinet/info'
 import { IndexApi } from '@/api/rack/index'
@@ -92,6 +92,7 @@ defineOptions({ name: 'PowerRecords' })
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const navTotalData = ref(0)
 const loading = ref(true)
+const message = useMessage() // 消息弹窗
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
@@ -148,8 +149,8 @@ const shortcuts = [
 const tableColumns = ref([
   { label: '机架名', align: 'center', prop: 'rack_name' , istrue:true},
   { label: '位置', align: 'center', prop: 'location' , istrue:true},
-  { label: '电能(kWh)', align: 'center', prop: 'ele_total' , istrue:true, formatter: formatEle},
   { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+  { label: '电能(kWh)', align: 'center', prop: 'ele_total' , istrue:true, formatter: formatEle},
 ]);
 
 /** 初始化数据 */
@@ -233,6 +234,27 @@ const getNavOneDayData = async() => {
 const handleQuery = () => {
   queryParams.pageNo = 1
   getList()
+}
+
+/** 导出按钮操作 */
+const handleExport = async () => {
+  try {
+    // 导出的二次确认
+    await message.exportConfirm()
+    // 发起导出
+    queryParams.pageNo = 1
+    exportLoading.value = true
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await EnergyConsumptionApi.exportRealtimeEQPageData(queryParams, axiosConfig)
+    await download.excel(data, '机架电能记录.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
+  } finally {
+    exportLoading.value = false
+  }
 }
 
 /** 初始化 **/

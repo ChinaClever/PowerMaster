@@ -24,7 +24,7 @@
         class="-mb-15px"
         :model="queryParams"
         ref="queryFormRef"
-        :inline="true"
+        :inline="true" 
         label-width="auto"
       >
         <el-form-item label="颗粒度" prop="granularity">
@@ -53,7 +53,7 @@
 
         <el-form-item >
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          <el-button type="success" plain :loading="exportLoading">
+          <el-button type="success" plain :loading="exportLoading" @click="handleExport">
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
         </el-form-item>
@@ -95,7 +95,7 @@
 
 <script setup lang="ts">
 import dayjs from 'dayjs'
-// import download from '@/utils/download'
+import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/rack/energyConsumption'
 import { formatDate, endOfDay, convertDate, addTime} from '@/utils/formatTime'
 import { CabinetApi } from '@/api/cabinet/info'
@@ -108,6 +108,7 @@ const lastDayTotalData = ref(0)
 const lastWeekTotalData = ref(0)
 const lastMonthTotalData = ref(0)
 const loading = ref(true)
+const message = useMessage() // 消息弹窗
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
@@ -283,6 +284,27 @@ const getNavNewData = async() => {
   lastDayTotalData.value = res.day
   lastWeekTotalData.value = res.week
   lastMonthTotalData.value = res.month
+}
+
+/** 导出按钮操作 */
+const handleExport = async () => {
+  try {
+    // 导出的二次确认
+    await message.exportConfirm()
+    // 发起导出
+    queryParams.pageNo = 1
+    exportLoading.value = true
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await EnergyConsumptionApi.exportBillPageData(queryParams, axiosConfig)
+    await download.excel(data, '机架电费统计.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
+  } finally {
+    exportLoading.value = false
+  }
 }
 
 /** 初始化 **/

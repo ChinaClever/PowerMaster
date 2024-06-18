@@ -381,10 +381,16 @@ const handleExport = async () => {
     // 导出的二次确认
     await message.exportConfirm()
     // 发起导出
+    queryParams.pageNo = 1
     exportLoading.value = true
-    const data = await HistoryDataApi.exportHistoryData(queryParams)
-    download.excel(data, '机架历史数据.xls')
-  } catch {
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await HistoryDataApi.exportHistoryData(queryParams, axiosConfig)
+    await download.excel(data, '机架电力历史数据.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
   } finally {
     exportLoading.value = false
   }

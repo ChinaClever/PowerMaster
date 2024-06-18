@@ -11,7 +11,7 @@
             </el-carousel> -->
           </div>
           <div class="nav_content">
-            <el-descriptions title="" direction="vertical" :column="1" border >
+            <el-descriptions title="全部机架新增能耗记录" direction="vertical" :column="1" border >
               <el-descriptions-item label="最近一天"><span >{{ lastDayTotalData }} 条</span></el-descriptions-item>
               <el-descriptions-item label="最近一周"><span >{{ lastWeekTotalData }} 条</span></el-descriptions-item>
               <el-descriptions-item label="最近一月" ><span >{{ lastMonthTotalData }} 条</span></el-descriptions-item>
@@ -53,8 +53,7 @@
 
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-           <!-- <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button> -->
-           <el-button type="success" plain :loading="exportLoading">
+           <el-button type="success" plain :loading="exportLoading" @click="handleExport">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
          </el-form-item>
@@ -135,7 +134,7 @@
 
 <script setup lang="ts">
 import dayjs from 'dayjs'
-// import download from '@/utils/download'
+import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/rack/energyConsumption'
 import { formatDate, endOfDay, convertDate, addTime } from '@/utils/formatTime'
 import { CabinetApi } from '@/api/cabinet/info'
@@ -150,12 +149,13 @@ const lastWeekTotalData = ref(0)
 const lastMonthTotalData = ref(0)
 const instance = getCurrentInstance();
 const loading = ref(true)
+const message = useMessage() // 消息弹窗
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
 const selectTimeRange = ref(undefined)
 const queryParams = reactive({
-  pageNo: 1,
+  pageNo: 1, 
   pageSize: 15,
   granularity: 'day',
   timeRange: undefined as string[] | undefined,
@@ -240,21 +240,18 @@ watch(() => queryParams.granularity, () => {
 const tableColumns = ref([
   { label: '机架名', align: 'center', prop: 'rack_name' , istrue:true, width: '100px'},
   { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
- { label: '开始电能(kWh)', align: 'center', istrue: true, children: [
-      { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '150px' , istrue:true},
-      { label: '值', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
+  { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '150px' , istrue:true},
+  { label: '开始', align: 'center', istrue: true, children: [
+      { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime1, width: '150px' , istrue:true},
+      { label: '电能(kWh)', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
     ]
   },
-  { label: '结束电能(kWh)', align: 'center', istrue: true, children: [
-      { label: '日期', align: 'center', prop: 'end_time' , formatter: formatTime, width: '150px' , istrue:true},
-      { label: '值', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle},
+  { label: '结束', align: 'center', istrue: true, children: [
+      { label: '日期', align: 'center', prop: 'end_time' , formatter: formatTime1, width: '150px' , istrue:true},
+      { label: '电能(kWh)', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle},
     ]
   },
-  { label: '耗电量(kWh)', align: 'center', istrue: true, children: [
-      { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '150px' , istrue:true},
-      { label: '值', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
-    ]
-  },
+  { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' ,istrue: true,formatter: formatEle },
   { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '100px'},
 ]) as any;
 
@@ -309,6 +306,14 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
   }
 
   return dayjs(cellValue).format('YYYY-MM-DD')
+}
+
+// 格式化日期(表格列的时间去掉时分秒和年)
+function formatTime1(_row: any, _column: any, cellValue: number): string {
+  if (!cellValue) {
+    return ''
+  }
+  return dayjs(cellValue).format('MM-DD')
 }
 
 // 格式化电能列数据，保留1位小数
@@ -377,6 +382,27 @@ const getNavNewData = async() => {
 const toDetails = (rackId: number, location: string, rackName: string) => {
   location += '-' + rackName
   push('/u/nenghao/ecdistribution?rackId='+rackId+'&location='+location);
+}
+
+/** 导出按钮操作 */
+const handleExport = async () => {
+  try {
+    // 导出的二次确认
+    await message.exportConfirm()
+    // 发起导出
+    queryParams.pageNo = 1
+    exportLoading.value = true
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await EnergyConsumptionApi.exportEQPageData(queryParams, axiosConfig)
+    await download.excel(data, '机架能耗趋势.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
+  } finally {
+    exportLoading.value = false
+  }
 }
 
 /** 初始化 **/

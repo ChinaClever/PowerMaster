@@ -152,10 +152,10 @@ const shortcuts = [
 
 const tableColumns = ref([
   { label: '位置', align: 'center', prop: 'location' , istrue:true},
+  { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
   { label: 'A路电能(kWh)', align: 'center', prop: 'ele_a' , istrue:true, formatter: formatEle},
   { label: 'B路电能(kWh)', align: 'center', prop: 'ele_b' , istrue:true, formatter: formatEle},
   { label: '电能(kWh)', align: 'center', prop: 'ele_total' , istrue:true, formatter: formatEle},
-  { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
 ]);
 
 /** 初始化数据 */
