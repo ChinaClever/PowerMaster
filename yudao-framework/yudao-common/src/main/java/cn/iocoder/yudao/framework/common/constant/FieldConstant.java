@@ -262,4 +262,30 @@ public class FieldConstant {
      */
     public static final String END_ELE = "end_ele";
 
+
+    /**
+     * Redis设置key
+     */
+    public static final String REDIS_KEY_PDU = "packet:pdu:";
+
+    /**
+     * Redis设置key
+     */
+    public static final String REDIS_KEY_BUS = "packet:bus:";
+
+
+    /**
+     * Redis设置key
+     */
+    public static final String REDIS_KEY_BOX = "packet:box:";
+
+    /**
+     * 分隔符
+     */
+    public static final String SPLIT_KEY_BUS = "_";
+
+    /**
+     * 分隔符
+     */
+    public static final String SPLIT_KEY = "-";
 }
