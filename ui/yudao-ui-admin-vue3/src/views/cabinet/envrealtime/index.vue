@@ -3,12 +3,11 @@
     <template #NavInfo>
       <div >
         <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
-          <div class="name">微模块机房</div>
-          <div>机房202</div>
+          <div class="header_img"><img alt="" src="@/assets/imgs/temhum.png" /></div>
+          <div class="name">温湿度</div>
         </div>
         <div class="line"></div>
-        <div class="status">
+        <!-- <div class="status">
           <div class="box">
             <div class="top">
               <div class="tag"></div>&lt;15%
@@ -57,7 +56,7 @@
               <div class="value">295.87 kW·h</div>
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
     </template>
     <template #ActionBar>
@@ -94,11 +93,11 @@
           </el-button>
         </el-form-item>
         <div style="float:right">
-          <el-button v-if="switchValue == 2" @click="switchTemAndHum = 0;" :type="switchTemAndHum == 0 ? 'primary' : ''"><Icon icon="mdi:temperature-celsius" style="margin-right: 4px" />温度</el-button>
-          <el-button v-if="switchValue == 2" @click="switchTemAndHum = 1;" :type="switchTemAndHum == 1 ? 'primary' : ''"><Icon icon="carbon:humidity" style="margin-right: 4px" />温度</el-button>
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />冷通道阵列</el-button>
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />热通道阵列</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />电压表格</el-button>
+          <el-button @click="switchTemAndHum = 0;" :type="switchTemAndHum == 0 ? 'primary' : ''"><Icon icon="mdi:temperature-celsius" style="margin-right: 4px" />温度</el-button>
+          <el-button @click="switchTemAndHum = 1;" :type="switchTemAndHum == 1 ? 'primary' : ''"><Icon icon="carbon:humidity" style="margin-right: 4px" />温度</el-button>
+          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />前门环境</el-button>
+          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />后门环境</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />环境表格</el-button>
         </div>
       </el-form>
     </template>
@@ -203,9 +202,12 @@
               </div>              
             </div>
             <div class="info">                  
-              <div v-if="item.hotTopTem != null" :style="{ backgroundColor : item.hotTopTemColor }">上层温度：{{item.hotTopTem}}°C</div>
-              <div v-if="item.hotMidTem != null" :style="{ backgroundColor : item.hotMidTemColor }">中层温度：{{item.hotMidTem}}°C</div>
-              <div v-if="item.hotBomTem != null" :style="{ backgroundColor : item.hotBomTemColor }">下层温度：{{item.hotBomTem}}°C</div>
+              <div v-if="item.hotTopTem != null && switchTemAndHum == 0" :style="{ backgroundColor : item.hotTopTemColor }">上层温度：{{item.hotTopTem}}°C</div>
+              <div v-if="item.hotMidTem != null && switchTemAndHum == 0" :style="{ backgroundColor : item.hotMidTemColor }">中层温度：{{item.hotMidTem}}°C</div>
+              <div v-if="item.hotBomTem != null && switchTemAndHum == 0" :style="{ backgroundColor : item.hotBomTemColor }">下层温度：{{item.hotBomTem}}°C</div>
+              <div v-if="item.hotTopHum != null && switchTemAndHum == 1" >上层湿度：{{item.hotTopHum}}%</div>
+              <div v-if="item.hotMidHum != null && switchTemAndHum == 1" >中层湿度：{{item.hotMidHum}}%</div>
+              <div v-if="item.hotBomHum != null && switchTemAndHum == 1" >下层湿度：{{item.hotBomHum}}%</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
@@ -226,9 +228,12 @@
               </div>              
             </div>
             <div class="info">                  
-              <div v-if="item.iceTopTem != null" :style="{ backgroundColor : item.iceTopTemColor }">上层温度：{{item.iceTopTem}}°C</div>
-              <div v-if="item.iceMidTem != null" :style="{ backgroundColor : item.iceMidTemColor }">中层温度：{{item.iceMidTem}}°C</div>
-              <div v-if="item.iceBomTem != null" :style="{ backgroundColor : item.iceBomTemColor }">下层温度：{{item.iceBomTem}}°C</div>
+              <div v-if="item.iceTopTem != null && switchTemAndHum == 0" :style="{ backgroundColor : item.iceTopTemColor }">上层温度：{{item.iceTopTem}}°C</div>
+              <div v-if="item.iceMidTem != null && switchTemAndHum == 0" :style="{ backgroundColor : item.iceMidTemColor }">中层温度：{{item.iceMidTem}}°C</div>
+              <div v-if="item.iceBomTem != null && switchTemAndHum == 0" :style="{ backgroundColor : item.iceBomTemColor }">下层温度：{{item.iceBomTem}}°C</div>
+              <div v-if="item.iceTopHum != null && switchTemAndHum == 1" >上层湿度：{{item.iceTopHum}}%</div>
+              <div v-if="item.iceMidHum != null && switchTemAndHum == 1" >中层湿度：{{item.iceMidHum}}%</div>
+              <div v-if="item.iceBomHum != null && switchTemAndHum == 1" >下层湿度：{{item.iceBomHum}}%</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
@@ -278,12 +283,12 @@ const flashListTimer = ref();
 const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48])
 const switchValue = ref(0)
-const statusNumber = reactive({
-  lessFifteen : 0,
-  greaterFifteen : 0,
-  greaterThirty : 0,
-  smallCurrent : 0
-})
+// const statusNumber = reactive({
+//   lessFifteen : 0,
+//   greaterFifteen : 0,
+//   greaterThirty : 0,
+//   smallCurrent : 0
+// })
 
 const toCabinetEnvDetail = (row) =>{
   push('/cabinet/cab/cabinetenvdetail?id=' + row.id);

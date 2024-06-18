@@ -237,6 +237,7 @@
               link
               type="primary"
               @click="toPDUDisplayScreen(scope.row)"
+              v-if="scope.row.status != null && scope.row.status != 5"
             >
             设备详情
             </el-button>
@@ -284,18 +285,21 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" v-if="valueMode == 0">
-            <el-tag type="danger" v-if="item.acurStatus != 0 || item.bcurStatus != 0  || item.ccurStatus != 0 " >告警</el-tag>
+            <el-tag type="info" v-if="item.acurStatus == null " >离线</el-tag>
+            <el-tag type="danger" v-else-if="item.acurStatus != 0 || item.bcurStatus != 0  || item.ccurStatus != 0 " >告警</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>
           <div class="status" v-if="valueMode == 1">
-            <el-tag type="danger" v-if="item.avolStatus != 0 || item.bvolStatus != 0 || item.cvolStatus != 0 " >告警</el-tag>
+            <el-tag type="info" v-if="item.avolStatus == null " >离线</el-tag>
+            <el-tag type="danger" v-else-if="item.avolStatus != 0 || item.bvolStatus != 0 || item.cvolStatus != 0 " >告警</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>
           <div class="status" v-if="valueMode == 2">
-            <el-tag type="danger" v-if="item.aactivePowStatus != 0 || item.bactivePowStatus != 0 || item.cactivePowStatus != 0" >告警</el-tag>
+            <el-tag type="info" v-if="item.aactivePowStatus == null " >离线</el-tag>
+            <el-tag type="danger" v-else-if="item.aactivePowStatus != 0 || item.bactivePowStatus != 0 || item.cactivePowStatus != 0" >告警</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>
-          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
       </div>
       <Pagination

@@ -40,4 +40,10 @@ public interface PDUDeviceService {
     Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
     PageResult<PDULineRes> getPDULineDevicePage(PDUDevicePageReqVO pageReqVO);
+
+
+    List<String> getDevKeyList();
+
+    List<String> getIpList();
+
 }

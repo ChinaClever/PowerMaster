@@ -94,21 +94,22 @@
             <div class="content">
               <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
               <div class="info">
-                <div>昨日用能：{{item.yesterdayEq}}kW·h</div>
-                <div>上周用能：{{item.lastWeekEq}}kW·h</div>
-                <div>上月用能：{{item.lastMonthEq}}kW·h</div>
+                <div>昨日：{{item.yesterdayEq}}kW·h</div>
+                <div>上周：{{item.lastWeekEq}}kW·h</div>
+                <div>上月：{{item.lastMonthEq}}kW·h</div>
               </div>
             </div>
             <div class="room">{{item.local}}</div>
-            <button class="detail" @click.prevent="toDetail(item.roomId, item.id)">详情</button>
+            <button class="detail" @click.prevent="toDetail(item.roomId, item.id)">用能详情</button>
           </div>
         </div>
         <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" >
           <el-table-column type="index" width="100" label="序号" align="center" />
           <el-table-column label="位置" min-width="110" align="center" prop="local" />
-          <el-table-column label="昨日用能" min-width="110" align="center" prop="yesterdayEq" />
-          <el-table-column label="上周用能" min-width="110" align="center" prop="lastWeekEq" />
-          <el-table-column label="上月用能" min-width="110" align="center" prop="lastMonthEq" />
+          <el-table-column label="公司" min-width="110" align="center" prop="company" />
+          <el-table-column label="昨日用能(kW·h)" min-width="110" align="center" prop="yesterdayEq" />
+          <el-table-column label="上周用能(kW·h)" min-width="110" align="center" prop="lastWeekEq" />
+          <el-table-column label="上月用能(kW·h)" min-width="110" align="center" prop="lastMonthEq" />
         </el-table>
         <Pagination
           :total="queryParams.pageTotal"
@@ -169,6 +170,7 @@ const getTableData = async(reset = false) => {
         return {
           id: item.id,
           local: item.roomName + '-' + item.name,
+          company: item.company ,
           yesterdayEq: item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0',
           lastWeekEq: item.lastWeekEq ? item.lastWeekEq.toFixed(1) : '0.0',
           lastMonthEq: item.lastMonthEq ? item.lastMonthEq.toFixed(1) : '0.0',
@@ -365,7 +367,7 @@ onBeforeMount(() => {
       font-size: 13px;
     }
     .detail {
-      width: 35px;
+      width: 55px;
       height: 20px;
       cursor: pointer;
       font-size: 12px;

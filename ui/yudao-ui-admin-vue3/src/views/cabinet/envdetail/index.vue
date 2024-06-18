@@ -3,9 +3,8 @@
     <template #NavInfo>
       <div >
         <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
-          <div class="name">微模块机房</div>
-          <div>机房202</div>
+          <div class="header_img"><img alt="" src="@/assets/imgs/temhum.png" /></div>
+          <div class="name">温湿度</div>
         </div>
         <div class="line"></div>
         <!-- <div class="status">
@@ -34,7 +33,7 @@
             <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
           </div>
         </div> -->
-        <div class="line"></div>
+        <!-- <div class="line"></div>
         <div class="overview">
           <div class="count">
             <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
@@ -57,7 +56,7 @@
               <div class="value">295.87 kW·h</div>
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
     </template>
     <template #ActionBar>
@@ -97,19 +96,19 @@
     </template>
     <template #Content>
       <el-row v-show="visControll.visAllReport" :gutter="24" >
-        <el-col :span="6">
+        <el-col :span="9">
           <el-card >
             <template #header>
               <div class="card-header">
                 <el-row :gutter="24">
                   <el-col :span="12">
                     <div style="float:left">
-                      <h2>冷通道</h2>
+                      <h2>前门</h2>
                     </div>
                   </el-col>
                   <el-col :span="12">
                     <div style="float:right">
-                      <h2>热通道</h2>
+                      <h2>后门</h2>
                     </div>
                   </el-col>
                 </el-row>
@@ -121,16 +120,16 @@
             <el-row :gutter="24">
               <el-col :span="12">
                 <div style="float:left">
-                  {{  cabinetEnvData?.iceTopTem != null ? "温度:" + cabinetEnvData?.iceTopTem : ''}}
+                  {{  cabinetEnvData?.iceTopTem != null ? "温度:" + cabinetEnvData?.iceTopTem + "°C" : ''}}
                   <br/>
-                  {{  cabinetEnvData?.iceTopHum != null ? "湿度:" + cabinetEnvData?.iceTopHum : ''}}
+                  {{  cabinetEnvData?.iceTopHum != null ? "湿度:" + cabinetEnvData?.iceTopHum + "%" : ''}}
                 </div>
               </el-col>
               <el-col :span="12">
                 <div style="float:right">
-                  {{  cabinetEnvData?.hotTopTem != null ? "温度:" + cabinetEnvData?.hotTopTem : ''}}
+                  {{  cabinetEnvData?.hotTopTem != null ? "温度:" + cabinetEnvData?.hotTopTem + "°C" : ''}}
                   <br/>
-                  {{  cabinetEnvData?.hotTopHum != null ? "湿度:" + cabinetEnvData?.hotTopHum : ''}}
+                  {{  cabinetEnvData?.hotTopHum != null ? "湿度:" + cabinetEnvData?.hotTopHum + "%"  : ''}}
                 </div>
               </el-col>
             </el-row>
@@ -140,16 +139,16 @@
             <el-row :gutter="24">
               <el-col :span="12">
                 <div style="float:left">
-                  {{  cabinetEnvData?.iceMidTem != null ? "温度:" + cabinetEnvData?.iceMidTem : ''}}
+                  {{  cabinetEnvData?.iceMidTem != null ? "温度:" + cabinetEnvData?.iceMidTem + "°C" : ''}}
                   <br/>
-                  {{  cabinetEnvData?.iceMidHum != null ? "湿度:" + cabinetEnvData?.iceMidHum : ''}}
+                  {{  cabinetEnvData?.iceMidHum != null ? "湿度:" + cabinetEnvData?.iceMidHum + "%" : ''}}
                 </div>
               </el-col>
               <el-col :span="12">
                 <div style="float:right">
-                  {{  cabinetEnvData?.hotMidTem != null ? "温度:" + cabinetEnvData?.hotMidTem : ''}}
+                  {{  cabinetEnvData?.hotMidTem != null ? "温度:" + cabinetEnvData?.hotMidTem + "°C" : ''}}
                   <br/>
-                  {{  cabinetEnvData?.hotMidHum != null ? "湿度:" + cabinetEnvData?.hotMidHum : ''}}
+                  {{  cabinetEnvData?.hotMidHum != null ? "湿度:" + cabinetEnvData?.hotMidHum + "%" : ''}}
                 </div>
               </el-col>
             </el-row>
@@ -159,134 +158,79 @@
             <el-row :gutter="24">
               <el-col :span="12">
                 <div style="float:left">
-                  {{  cabinetEnvData?.iceBomTem != null ? "温度:" + cabinetEnvData?.iceBomTem : ''}}
+                  {{  cabinetEnvData?.iceBomTem != null ? "温度:" + cabinetEnvData?.iceBomTem + "°C" : ''}}
                   <br/>
-                  {{  cabinetEnvData?.iceBomHum != null ? "湿度:" + cabinetEnvData?.iceBomHum : ''}}
+                  {{  cabinetEnvData?.iceBomHum != null ? "湿度:" + cabinetEnvData?.iceBomHum + "%" : ''}}
                 </div>
               </el-col>
               <el-col :span="12">
                 <div style="float:right">
-                  {{  cabinetEnvData?.hotBomTem != null ? "温度:" + cabinetEnvData?.hotBomTem : ''}}
+                  {{  cabinetEnvData?.hotBomTem != null ? "温度:" + cabinetEnvData?.hotBomTem + "°C" : ''}}
                   <br/>
-                  {{  cabinetEnvData?.hotBomHum != null ? "湿度:" + cabinetEnvData?.hotBomHum : ''}}
+                  {{  cabinetEnvData?.hotBomHum != null ? "湿度:" + cabinetEnvData?.hotBomHum + "%" : ''}}
                 </div>
               </el-col>
             </el-row>
           </el-card>
+          <el-card >
+
+            <el-row :gutter="24">
+              <el-col :span="13">
+                <div style="float:left">
+                  门禁状态：
+                </div>
+                
+              </el-col>
+              <el-col :span="11">
+                <div >
+                  门禁状态：未检测出状态
+                </div>
+                
+              </el-col>
+            </el-row>
+          </el-card>
+          <el-card >
+
+            <el-row :gutter="24">
+              <el-col :span="13">
+                <div style="float:left">
+                  水浸状态：
+                </div>
+                
+              </el-col>
+              <el-col :span="11">
+                <div >
+                  水浸状态：
+                </div>
+                
+              </el-col>
+            </el-row>
+          </el-card>
+          <el-card >
+
+            <el-row :gutter="24">
+              <el-col :span="13">
+                <div style="float:left">
+                  烟雾状态：
+                </div>
+                
+              </el-col>
+              <el-col :span="11">
+                <div >
+                  烟雾状态：
+                </div>
+                
+              </el-col>
+            </el-row>
+          </el-card>
         </el-col>
-        <el-col :span="18">
-          <el-row :gutter="24">
-            <el-col :span="8">
-              <el-card >
-                <template #header>
-                  <div class="card-header">
-                    <el-row :gutter="24">
-                      <el-col :span="12">
-                        <div style="float:left">
-                          <h1>前门</h1>
-                        </div>
-                      </el-col>
-                      <el-col :span="12">
-                        <div style="float:right">
-                          <h1>后门</h1>
-                          
-                        </div>
-                      </el-col>
-                    </el-row>
-                  </div>
-                </template>
-                <el-row :gutter="24">
-                  <el-col :span="12">
-                    <div style="float:left">
-                      门禁状态：
-                    </div>
-                    
-                  </el-col>
-                  <el-col :span="12">
-                    <div style="float:right">
-                      门禁状态：
-                    </div>
-                    
-                  </el-col>
-                </el-row>
-              </el-card>
-            </el-col>
-            <el-col :span="8">
-              <el-card >
-                <template #header>
-                  <div class="card-header">
-                    <el-row :gutter="24">
-                      <el-col :span="12">
-                        <div style="float:left">
-                          <h1>前门</h1>
-                        </div>
-                      </el-col>
-                      <el-col :span="12">
-                        <div style="float:right">
-                          <h1>后门</h1>
-                          
-                        </div>
-                      </el-col>
-                    </el-row>
-                  </div>
-                </template>
-                <el-row :gutter="24">
-                  <el-col :span="12">
-                    <div style="float:left">
-                      水浸状态：
-                    </div>
-                    
-                  </el-col>
-                  <el-col :span="12">
-                    <div style="float:right">
-                      水浸状态：
-                    </div>
-                    
-                  </el-col>
-                </el-row>
-              </el-card>
-            </el-col>
-            <el-col :span="8">
-              <el-card >
-                <template #header>
-                  <div class="card-header">
-                    <el-row :gutter="24">
-                      <el-col :span="12">
-                        <div style="float:left">
-                          <h1>前门</h1>
-                        </div>
-                      </el-col>
-                      <el-col :span="12">
-                        <div style="float:right">
-                          <h1>后门</h1>
-                          
-                        </div>
-                      </el-col>
-                    </el-row>
-                  </div>
-                </template>
-                <el-row :gutter="24">
-                  <el-col :span="12">
-                    <div style="float:left">
-                      烟雾状态：
-                    </div>
-                    
-                  </el-col>
-                  <el-col :span="12">
-                    <div style="float:right">
-                      烟雾状态：
-                    </div>
-                    
-                  </el-col>
-                </el-row>
-              </el-card>
-            </el-col>
-          </el-row>
+        <el-col :span="15">
+
           <el-row>
             <el-card>
               <el-row>
                 <el-col >
-                  <h1 style="width: 100%">冷通道</h1>
+                  <h1 style="width: 100%">前门</h1>
                 </el-col>
                 <el-col>                    
                   <el-form>
@@ -321,7 +265,7 @@
             <el-card>
               <el-row>
                 <el-col >
-                  <h1 style="width: 100%">热通道</h1>
+                  <h1 style="width: 100%">后门</h1>
                 </el-col>
                 <el-col >
                   <el-form>          

@@ -23,7 +23,7 @@ public interface EqBillConfigMapper extends BaseMapperX<EqBillConfigDO> {
                 .eqIfPresent(EqBillConfigDO::getBillMode, reqVO.getBillMode())
                 .likeIfPresent(EqBillConfigDO::getBillPeriod, reqVO.getBillPeriod())
                 .betweenIfPresent(EqBillConfigDO::getCreateTime, reqVO.getCreateTime())
-                .orderByDesc(EqBillConfigDO::getId));
+                .orderByAsc(EqBillConfigDO::getId));
     }
 
 }

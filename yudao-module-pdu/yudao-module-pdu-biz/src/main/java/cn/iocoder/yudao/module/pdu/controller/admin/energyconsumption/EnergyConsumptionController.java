@@ -55,16 +55,16 @@ public class EnergyConsumptionController {
     }
 
     @GetMapping("/realtime-page")
-    @Operation(summary = "获得pdu电量数据分页")
+    @Operation(summary = "获得pdu电量实时数据分页")
     public CommonResult<PageResult<Object>> getRealtimeEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
         PageResult<Object> pageResult = energyConsumptionService.getRealtimeEQDataPage(pageReqVO);
         return success(pageResult);
     }
 
-    @GetMapping("/one-week")
-    @Operation(summary = "获得pdu能耗最近一周插入的数据量")
-    public CommonResult<Map<String, Object>> getOneWeekSumData() throws IOException {
-        Map<String, Object> map = energyConsumptionService.getOneWeekSumData();
+    @GetMapping("/new-data")
+    @Operation(summary = "获得pdu能耗最近一天、一周、一月插入的数据量")
+    public CommonResult<Map<String, Object>> getNewData() throws IOException {
+        Map<String, Object> map = energyConsumptionService.getNewData();
         return success(map);
     }
 

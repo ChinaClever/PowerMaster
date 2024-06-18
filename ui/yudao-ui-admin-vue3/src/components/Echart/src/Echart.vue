@@ -68,6 +68,7 @@ watch(
   (options) => {
     if (echartRef) {
       echartRef?.setOption(options)
+      resizeHandler()
     }
   },
   {

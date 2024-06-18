@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { PropType } from 'vue'
+import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
 import { i18nChangeLanguage, IDomEditor, IEditorConfig } from '@wangeditor/editor'
 import { propTypes } from '@/utils/propTypes'
 import { isNumber } from '@/utils/is'

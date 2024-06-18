@@ -33,9 +33,7 @@ public interface RackHistoryDataService {
      */
     PageResult<Object> getHistoryDataDetails(RackHistoryDataDetailsReqVO reqVO) throws IOException;
 
-    Map<String, Object> getSumData(String[] indices, String[] name, LocalDateTime timeAgo) throws IOException;
-
-    Map<String, Object> getOneHourSumData() throws IOException;
+    Map<String, Object> getNavNewData(String granularity) throws IOException;
 
 
 }

@@ -4,12 +4,20 @@
       <div class="nav_header">
         <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div> -->
         <br/>
-        <span>全部机柜最近一周新增记录</span>
+        <span>全部机柜新增电费记录</span>
           <br/>
       </div>
       <div class="nav_data">
-        <el-statistic title="电费" :value="navTotalData">
+        <el-statistic title="最近一天" :value="lastDayTotalData">
             <template #suffix>条</template>
+        </el-statistic>
+        <br/>
+        <el-statistic title="最近一周" :value="lastWeekTotalData"> 
+          <template #suffix>条</template>
+        </el-statistic>
+        <br/>
+        <el-statistic title="最近一月" :value="lastMonthTotalData"> 
+          <template #suffix>条</template>
         </el-statistic>
       </div>
     </template>
@@ -99,7 +107,9 @@ const { push } = useRouter()
 defineOptions({ name: 'BillStatistics' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
-const navTotalData = ref(0)
+const lastDayTotalData = ref(0)
+const lastWeekTotalData = ref(0)
+const lastMonthTotalData = ref(0)
 const instance = getCurrentInstance();
 const message = useMessage()
 const loading = ref(true)
@@ -274,15 +284,17 @@ const getNavList = async() => {
 }
 
 // 获取导航的数据显示
-const getNavOneWeekData = async() => {
-  const res = await EnergyConsumptionApi.getNavOneWeekData({})
-  navTotalData.value = res.total
+const getNavNewData = async() => {
+  const res = await EnergyConsumptionApi.getNavNewData({})
+  lastDayTotalData.value = res.day
+  lastWeekTotalData.value = res.week
+  lastMonthTotalData.value = res.month
 }
 
 /** 初始化 **/
 onMounted(() => {
   getNavList()
-  getNavOneWeekData()
+  getNavNewData()
   getList();
 });
 

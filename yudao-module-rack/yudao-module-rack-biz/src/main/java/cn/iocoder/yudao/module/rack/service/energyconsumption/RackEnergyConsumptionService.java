@@ -40,9 +40,9 @@ public interface RackEnergyConsumptionService {
      */
     PageResult<Object> getRealtimeEQDataPage(RackEnergyConsumptionPageReqVO pageReqVO) throws IOException;
 
-    Map<String, Object> getSumData(String[] indices, String[] name, LocalDateTime timeAgo) throws IOException;
+    Map<String, Object> getSumData(String[] indices, String[] name, LocalDateTime[] timeAgo) throws IOException;
 
-    Map<String, Object> getOneWeekSumData() throws IOException;
+    Map<String, Object> getNewData() throws IOException;
 
     Map<String, Object> getOneDaySumData() throws IOException;
 

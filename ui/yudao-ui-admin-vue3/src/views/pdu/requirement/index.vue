@@ -7,7 +7,7 @@
   
         </div>
         <div class="line"></div>
-        <div class="status">
+        <!-- <div class="status">
           <div class="box">
             <div class="top">
               <div class="tag"></div>正常
@@ -32,7 +32,7 @@
             </div>
             <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
           </div>
-        </div>
+        </div> -->
         <div class="line"></div>
       </div>
     </template>
@@ -116,58 +116,41 @@
     </template>
     <template #Content>
       <el-table v-show="switchValue == 2" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
-        <el-table-column label="编号" align="center" prop="tableId" />
+        <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" />
-        <el-table-column label="L1最大电流" align="center" prop="l1MaxCur" >
+        <el-table-column label="所在位置" align="center" prop="location" width="180px" />
+        <el-table-column label="L1最大电流" align="center" prop="l1MaxCur" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
               {{ scope.row.l1MaxCur }}kA
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="L2最大电流" align="center" prop="l2MaxCur" width="130px" >
+        <el-table-column label="发生时间" align="center" prop="l1MaxCurTime" />
+        <el-table-column label="L2最大电流" align="center" prop="l2MaxCur" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
               {{ scope.row.l2MaxCur }}A
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="L3最大电流" align="center" prop="l3MaxCur" width="130px" >
+        <el-table-column label="发生时间" align="center" prop="l2MaxCurTime" />
+        <el-table-column label="L3最大电流" align="center" prop="l3MaxCur" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
               {{ scope.row.l3MaxCur }}A
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="L1最大功率" align="center" prop="l1MaxPow" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" >
-              {{ scope.row.l1MaxPow }}kW
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column label="L2最大功率" align="center" prop="l2MaxPow" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" >
-              {{ scope.row.l2MaxPow }}kW
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column label="L3最大功率" align="center" prop="l3MaxPow" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" >
-              {{ scope.row.l3MaxPow }}kW
-            </el-text>
-          </template>
-        </el-table-column>
-        
-        <el-table-column label="操作" align="center">
+        <el-table-column label="发生时间" align="center" prop="l3MaxCurTime" />
+
+        <el-table-column label="操作" align="center" width="130px">
           <template #default="scope">
             <el-button
               link
               type="primary"
               @click="toPDUDisplayScreen(scope.row)"
+              v-if="scope.row.status != null && scope.row.status != 5"
             >
             设备详情
             </el-button>
@@ -182,14 +165,60 @@
           </template>
         </el-table-column>
       </el-table>
-
+      <el-table v-show="switchValue == 2" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+        <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
+        <el-table-column label="所在位置" align="center" prop="location" width="180px" />
+        <el-table-column label="L1最大功率" align="center" prop="l1MaxPow" width="100px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.l1MaxPow }}kW
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="发生时间" align="center" prop="l1MaxPowTime" />
+        <el-table-column label="L2最大功率" align="center" prop="l2MaxPow" width="100px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.l2MaxPow }}kW
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="发生时间" align="center" prop="l2MaxPowTime" />
+        <el-table-column label="L3最大功率" align="center" prop="l3MaxPow" width="100px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.l3MaxPow }}kW
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="发生时间" align="center" prop="l3MaxPowTime" />
+        <el-table-column label="操作" align="center" width="130px">
+          <template #default="scope">
+            <el-button
+              link
+              type="primary"
+              @click="toPDUDisplayScreen(scope.row)"
+              v-if="scope.row.status != null && scope.row.status != 5"
+            >
+            设备详情
+            </el-button>
+            <el-button
+              link
+              type="danger"
+              @click="handleDelete(scope.row.id)"
+              v-if="scope.row.status == 5"
+            >
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
       <div  v-show="switchValue == 1 && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="icon"></div>
+            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
             <div class="info">
-              
               <div >L1最大功率：{{item.l1MaxPow}}kW</div>
               <div >L2最大功率：{{item.l2MaxPow}}kW</div>
               <div >L3最大功率：{{ item.l3MaxPow }}kW</div>
@@ -197,7 +226,7 @@
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->              
-          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
       </div>
 
@@ -205,7 +234,7 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="icon"></div>
+            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
             <div class="info">
               
               <div >L1最大电流：{{item.l1MaxCur}}A</div>
@@ -215,7 +244,7 @@
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->                
-          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
       </div>
 
@@ -241,6 +270,7 @@
 // import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
+import Pie from './component/Pie.vue'
 // import PDUDeviceForm from './PDUDeviceForm.vue'
 import { ElTree } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
@@ -254,12 +284,12 @@ const { push } = useRouter()
 const now = ref()
 const pageSizeArr = ref([24,36,48])
 const switchValue = ref(0)
-const statusNumber = reactive({
-  normal : 0,
-  warn : 0,
-  alarm : 0,
-  offline : 0
-})
+// const statusNumber = reactive({
+//   normal : 0,
+//   warn : 0,
+//   alarm : 0,
+//   offline : 0
+// })
 
 const statusList = reactive([
   {

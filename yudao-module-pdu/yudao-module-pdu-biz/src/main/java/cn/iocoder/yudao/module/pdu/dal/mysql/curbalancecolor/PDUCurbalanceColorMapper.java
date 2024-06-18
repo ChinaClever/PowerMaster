@@ -22,7 +22,7 @@ public interface PDUCurbalanceColorMapper extends BaseMapperX<PDUCurbalanceColor
                 .eqIfPresent(PDUCurbalanceColorDO::getRangeThree, reqVO.getRangeThree())
                 .eqIfPresent(PDUCurbalanceColorDO::getRangeFour, reqVO.getRangeFour())
                 .betweenIfPresent(PDUCurbalanceColorDO::getCreateTime, reqVO.getCreateTime())
-                .orderByDesc(PDUCurbalanceColorDO::getId));
+                .orderByAsc(PDUCurbalanceColorDO::getId));
     }
 
 }

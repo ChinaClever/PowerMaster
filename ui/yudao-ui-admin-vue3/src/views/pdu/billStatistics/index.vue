@@ -2,17 +2,21 @@
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU电费统计">
     <template #NavInfo>
       <div class="nav_header">
-        <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
+        <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div> -->
         <br/>
-        <span>全部PDU最近一周新增记录</span>
+        <span>全部PDU新增电费记录</span>
           <br/>
       </div>
       <div class="nav_data">
-        <el-statistic title="总电费" :value="navTotalData">
+        <el-statistic title="最近一天" :value="lastDayTotalData">
             <template #suffix>条</template>
         </el-statistic>
         <br/>
-        <el-statistic title="输出位电费" :value="navOutletData">
+        <el-statistic title="最近一周" :value="lastWeekTotalData"> 
+          <template #suffix>条</template>
+        </el-statistic>
+        <br/>
+        <el-statistic title="最近一月" :value="lastMonthTotalData"> 
           <template #suffix>条</template>
         </el-statistic>
       </div>
@@ -55,8 +59,8 @@
           type="daterange"
           :shortcuts="shortcuts"
           range-separator="-"
-          start-placeholder="开始时间"
-          end-placeholder="结束时间"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
           :disabled-date="disabledDate"
         />
         </el-form-item>
@@ -99,7 +103,7 @@
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
         @pagination="getList"/>
-      <div class="realTotal">共 {{ realTotel }} 条</div>
+      <div class="realTotal" v-if="list.length != 0">共 {{ realTotel }} 条</div>
     </template>
   </CommonMenu>
 </template>
@@ -117,8 +121,9 @@ const { push } = useRouter()
 defineOptions({ name: 'BillStatistics' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
-const navTotalData = ref(0)
-const navOutletData = ref(0)
+const lastDayTotalData = ref(0)
+const lastWeekTotalData = ref(0)
+const lastMonthTotalData = ref(0)
 const instance = getCurrentInstance();
 const message = useMessage()
 const activeName = ref('myData') 
@@ -140,7 +145,7 @@ const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
 const exportLoading = ref(false)
 
-// 时间段快捷选项
+// 日期段快捷选项
 const shortcuts = [
   {
     text: '最近一周',
@@ -191,19 +196,19 @@ watch(() => [queryParams.granularity, queryParams.type], () => {
       tableColumns.value = [
         { label: '位置', align: 'center', prop: 'address' , istrue:true},
         { label: '输出位', align: 'center', prop: 'outlet_id' , istrue:true}, 
+        { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
         { label: '日期', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
-        { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
         { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatEle},
       ]
     }else{
        tableColumns.value = [
         { label: '位置', align: 'center', prop: 'address' , istrue:true},
         { label: '输出位', align: 'center', prop: 'outlet_id' , istrue:true}, 
+        { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
         { label: '开始日期', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
         { label: '结束日期', align: 'center', prop: 'end_time', formatter: formatTime, istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
-        { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
         { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatEle},
       ]
     }
@@ -211,18 +216,18 @@ watch(() => [queryParams.granularity, queryParams.type], () => {
     if (queryParams.granularity == 'day'){
       tableColumns.value = [
         { label: '位置', align: 'center', prop: 'address' , istrue:true},
+        { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
         { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
-        { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
         { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
       ]
     }else{
       tableColumns.value = [
         { label: '位置', align: 'center', prop: 'address' , istrue:true},
+        { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
         { label: '开始日期', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
         { label: '结束日期', align: 'center', prop: 'end_time', formatter: formatTime, istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
-        { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
         { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatEle},
       ]
     }
@@ -232,9 +237,9 @@ watch(() => [queryParams.granularity, queryParams.type], () => {
 
 const tableColumns = ref([
   { label: '位置', align: 'center', prop: 'address' , istrue:true},
+  { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
   { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
   { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
-  { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
   { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
 ]) as any;
 
@@ -243,9 +248,9 @@ const getList = async () => {
   loading.value = true
   try {
     if ( selectTimeRange.value != undefined){
-      // 格式化时间范围 加上23:59:59的时分秒 
+      // 格式化日期范围 加上23:59:59的时分秒 
       const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
-      // 结束时间的天数多加一天 ，  一天的毫秒数
+      // 结束日期的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
       const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
@@ -302,7 +307,7 @@ function formatEQ(value, decimalPlaces){
 const disabledDate = (date) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  // 设置date的时间为0时0分0秒，以便与today进行比较
+  // 设置date的日期为0时0分0秒，以便与today进行比较
   date.setHours(0, 0, 0, 0);
   // 如果date在今天之后，则禁用
   return date > today;
@@ -364,10 +369,11 @@ const getNavList = async() => {
 }
 
 // 获取导航的数据显示
-const getNavOneWeekData = async() => {
-  const res = await EnergyConsumptionApi.getNavOneWeekData({})
-  navTotalData.value = res.total
-  navOutletData.value = res.outlet
+const getNavNewData = async() => {
+  const res = await EnergyConsumptionApi.getNavNewData({})
+  lastDayTotalData.value = res.day
+  lastWeekTotalData.value = res.week
+  lastMonthTotalData.value = res.month
 }
 
 // /** 重置按钮操作 */
@@ -394,7 +400,7 @@ const getNavOneWeekData = async() => {
 /** 初始化 **/
 onMounted(() => {
   getNavList()
-  getNavOneWeekData()
+  getNavNewData()
   getTypeMaxValue();
   getList();
 });

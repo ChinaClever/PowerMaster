@@ -25,7 +25,7 @@ public interface MqConfigMapper extends BaseMapperX<MqConfigDO> {
                 .eqIfPresent(MqConfigDO::getTopic, reqVO.getTopic())
                 .eqIfPresent(MqConfigDO::getMq, reqVO.getMq())
                 .betweenIfPresent(MqConfigDO::getCreateTime, reqVO.getCreateTime())
-                .orderByDesc(MqConfigDO::getId));
+                .orderByAsc(MqConfigDO::getId));
     }
 
 }

@@ -77,14 +77,14 @@ const filterNode = (value:string, data) => {
 
 /** 处理部门被点击 */
 const handleNodeClick = async (row: { [key: string]: any }) => {
-  console.log('row', row)
+  console.log('处理部门被点击row', row)
   emits('node-click', row)
 }
 
 /** 处理多选被点击 */
 const handleCheckedNodes = async (checkedNodes, checkedKeys) => {
   emits('check', treeRef.value?.getCheckedNodes())
-  console.log('处理多选被点击', checkedNodes, checkedKeys, treeRef.value?.getCheckedNodes())
+  console.log('处理多选被点击', treeRef.value?.getCheckedKeys(true), treeRef.value?.getCheckedNodes())
 }
 
 /** 监听deptName */

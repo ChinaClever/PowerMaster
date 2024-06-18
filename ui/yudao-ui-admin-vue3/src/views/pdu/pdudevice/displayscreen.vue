@@ -206,7 +206,10 @@
         </div>
         
       </el-card>
-      <el-collapse-item title="回路" name="1" v-if="controlVis.haveCircle">
+      <el-collapse-item name="1" v-if="controlVis.haveCircle">
+        <template #title>
+          <div style="width: 5%;font-size: 16px;">回路</div>
+        </template>
         <ContentWrap>
           <el-table  :data="circleList" :stripe="true" :show-overflow-tooltip="true">
             <el-table-column label="回路" align="center" prop="circuit" />
@@ -237,6 +240,13 @@
                 </el-text>
               </template>
             </el-table-column>
+            <el-table-column label="功率因素" align="center" prop="pow_value" v-if="controlVis.circleTableCol.power_factor" >
+              <template #default="scope">
+                <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.powerColor }">
+                  {{ scope.row.power_factor }}
+                </el-text>
+              </template>
+            </el-table-column>
             <el-table-column label="电能消耗" align="center" prop="ele_active" v-if="controlVis.circleTableCol.ele_active">
               <template #default="scope">
               {{ scope.row.ele_active }}kWh
@@ -245,7 +255,10 @@
           </el-table>
         </ContentWrap>
       </el-collapse-item>
-      <el-collapse-item title="输出位" name="3" v-if="controlVis.haveOutPut">
+      <el-collapse-item  name="3" v-if="controlVis.haveOutPut">
+        <template #title>
+          <div style="width: 5%;font-size: 16px;">输出位</div>
+        </template>
         <ContentWrap>
           <el-table  :data="output" :stripe="true" :show-overflow-tooltip="true">
             <el-table-column label="序号" align="center" prop="no" />
@@ -270,7 +283,13 @@
                 </el-text>
               </template>
             </el-table-column>
-            <el-table-column label="功率因数" align="center" prop="pf"  v-if="controlVis.outPutTableCol.pf"/>
+            <el-table-column label="功率因素" align="center" prop="pow_value" v-if="controlVis.outPutTableCol.power_factor" >
+              <template #default="scope">
+                <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.powerColor }">
+                  {{ scope.row.power_factor }}
+                </el-text>
+              </template>
+            </el-table-column>
             <el-table-column label="电能消耗(kWh)" align="center" prop="ele_active"  v-if="controlVis.outPutTableCol.ele_active">
               <template #default="scope">
               {{ scope.row.ele_active }}kWh
@@ -279,7 +298,10 @@
           </el-table>
         </ContentWrap>
       </el-collapse-item>
-      <el-collapse-item title="传感器" name="2" v-if="controlVis.haveSensor">
+      <el-collapse-item name="2" v-if="controlVis.haveSensor">
+        <template #title>
+          <div style="width: 5%;font-size: 16px;">传感器</div>
+        </template>
         <ContentWrap>
           <el-table  :data="sensorList" :stripe="true" :show-overflow-tooltip="true">
             <el-table-column label="传感器名称" align="center" prop="temName" />
@@ -344,14 +366,16 @@ const controlVis = ref({
     cur_value : false,
     vol_value : false,
     pow_value : false,
-    ele_active : false
+    ele_active : false,
+    power_factor : false,
   },
   outPutTableCol : {
     relay_state : false,
     cur_value : false, 
     pow_value : false,
     pf : false,
-    ele_active : false
+    ele_active : false,
+    power_factor : false
   },
   envTableCol : {
     hum_value : false,
@@ -577,14 +601,18 @@ const initChart = async () => {
   }
   if (AChartContainer.value && instance) {
     AChart = echarts.init(AChartContainer.value);
+    var aCurMax =  A.value.cur_alarm_max - A.value.cur_value;
     AChart.setOption({
       // 这里设置 Echarts 的配置项和数据
       title: { text: ''},
       // tooltip: { trigger: 'item', formatter: '{b}: {c}A' },
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       series: [
-        { type: 'pie', radius: ['50%', '65%'], avoidLabelOverlap: false,  labelLine: { show: false },
-          data: [{value : A.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13 ,backgroundColor : A.value.curColor },itemStyle: { color: '#0AD0EE' }  },],
+        { type: 'pie', radius: ['50%', '65%'], avoidLabelOverlap: false,  labelLine: { show: false } , emphasis:{disabled:false,scale:false,scaleSize:0,},
+          data: [
+            {value : A.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13 ,backgroundColor : A.value.curColor },itemStyle: { color: '#0AD0EE' } },
+            {value : aCurMax, itemStyle: { color: '#CCCCCC',shadowBlur:0 } },
+          ],
         },
       ],
     });
@@ -593,14 +621,18 @@ const initChart = async () => {
   }
   if (BChartContainer.value && instance) {
     BChart = echarts.init(BChartContainer.value);
+    var bCurMax =  B.value.cur_alarm_max - B.value.cur_value;
     BChart.setOption({
       // 这里设置 Echarts 的配置项和数据
       title: { text: ''},
       // tooltip: { trigger: 'item', formatter: '{b}: {c}A' },
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       series: [
-        { type: 'pie', radius: ['50%', '65%'], avoidLabelOverlap: false,  labelLine: { show: false },
-          data: [{value : B.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13, backgroundColor : B.value.curColor },itemStyle: { color: '#0AD0EE' }  },],
+        { type: 'pie', radius: ['50%', '65%'], avoidLabelOverlap: false,  labelLine: { show: false },emphasis:{disabled:false,scale:false,scaleSize:0,},
+          data: [
+            {value : B.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13, backgroundColor : B.value.curColor },itemStyle: { color: '#0AD0EE' }  },
+            {value : bCurMax,itemStyle: { color: '#CCCCCC',shadowBlur:0 } },
+          ],
         },
       ],
     });
@@ -609,14 +641,18 @@ const initChart = async () => {
   }
   if (CChartContainer.value && instance) {
     CChart = echarts.init(CChartContainer.value);
+    var cCurMax =  C.value.cur_alarm_max - C.value.cur_value;
     CChart.setOption({
       // 这里设置 Echarts 的配置项和数据
       title: { text: ''},
       // tooltip: { trigger: 'item', formatter: '{b}: {c}A' },
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       series: [
-        { type: 'pie', radius: ['50%', '65%'], avoidLabelOverlap: false,  labelLine: { show: false },
-          data: [{value : C.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13, backgroundColor : C.value.curColor },itemStyle: { color: '#0AD0EE' }  },],
+        { type: 'pie', radius: ['50%', '65%'], avoidLabelOverlap: false,  labelLine: { show: false },emphasis:{disabled:false,scale:false,scaleSize:0,},
+          data: [
+            {value : C.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13, backgroundColor : C.value.curColor },itemStyle: { color: '#0AD0EE' }  },
+            {value : cCurMax , itemStyle: { color: '#CCCCCC',shadowBlur:0 } },
+          ],
         },
       ],
     });
@@ -722,26 +758,37 @@ const flashChartData = async () =>{
     ],
   });
 
+  var aCurMax = A.value.cur_alarm_max - A.value.cur_value;
   AChart?.setOption({
     series: [
         { 
-          data: [{value : A.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13 ,backgroundColor : A.value.curColor },itemStyle: { color: '#0AD0EE' }  },],
+          data: [
+            {value : A.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13 ,backgroundColor : A.value.curColor },itemStyle: { color: '#0AD0EE' }},
+            {value : aCurMax , itemStyle: { color: '#CCCCCC' } },],
         },
       ],
   });
 
+  var bCurMax =  B.value.cur_alarm_max - B.value.cur_value;
   BChart?.setOption({
     series: [
         { 
-          data: [{value : B.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13 ,backgroundColor : A.value.curColor },itemStyle: { color: '#0AD0EE' }  },],
+          data: [
+            {value : B.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13 ,backgroundColor : A.value.curColor },itemStyle: { color: '#0AD0EE' }  },
+            {value : bCurMax,itemStyle: { color: '#CCCCCC',shadowBlur:0 } },
+          ],
         },
       ],
   });
 
+  var cCurMax =  C.value.cur_alarm_max - C.value.cur_value;
   CChart?.setOption({
     series: [
         { 
-          data: [{value : C.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13 ,backgroundColor : A.value.curColor },itemStyle: { color: '#0AD0EE' }  },],
+          data: [
+            {value : C.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13 ,backgroundColor : A.value.curColor },itemStyle: { color: '#0AD0EE' }},
+            {value : cCurMax,itemStyle: { color: '#CCCCCC',shadowBlur:0 } },
+          ],
         },
       ],
   });
@@ -801,6 +848,7 @@ const getTestData = async()=>{
     element.vol_value = element.vol_value?.toFixed(1);
     element.pow_value = element.pow_value?.toFixed(3);
     element.ele_active = element.ele_active?.toFixed(1);
+    element.power_factor = element.power_factor?.toFixed(2);
   });
 
   
@@ -836,11 +884,15 @@ const getTestData = async()=>{
     element.pow_value = element.pow_value?.toFixed(3);
     element.pf = element.pf?.toFixed(2);
     element.ele_active = element.ele_active?.toFixed(1);
+    element.power_factor = element.power_factor?.toFixed(2);
   });
 
   if(testData.value.pdu_data?.env_item_list?.tem_value){
     var temp = [] as any;
     for(let i = 0; i < testData.value.pdu_data.env_item_list["tem_value"].length; i++){
+      if(testData.value.pdu_data.env_item_list.insert[i] != 1){
+        continue;
+      }
       let loopItem = {} as any;
       for (let key in testData.value.pdu_data.env_item_list) {
         loopItem[key] = testData.value.pdu_data.env_item_list[key][i];
@@ -868,7 +920,7 @@ const getTestData = async()=>{
 
 
   if(testData.value?.pdu_data?.pdu_total_data?.pow_active == null){
-    message.error("请输入正确的地址");
+    message.error("设备离线或者输入的地址不正确");
     return;
   }
   
@@ -882,6 +934,7 @@ const getTestData = async()=>{
   
   A.value.cur_value = testData.value.pdu_data.line_item_list.cur_value[0]?.toFixed(2);
   A.value.curPercemtage = (testData.value.pdu_data.line_item_list.cur_value[0] / testData.value.pdu_data.line_item_list.cur_alarm_max[0]) * 100;
+  A.value.cur_alarm_max = testData.value.pdu_data.line_item_list.cur_alarm_max[0];
   let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[0];
   if(curalarm == 1 || curalarm == 8 ){
     A.value.curColor = "red";
@@ -916,6 +969,7 @@ const getTestData = async()=>{
   if(testData.value.pdu_data.line_item_list.ele_active.length > 1){
     B.value.cur_value = testData.value.pdu_data.line_item_list.cur_value[1]?.toFixed(2);
     B.value.curPercemtage = (testData.value.pdu_data.line_item_list.cur_value[1] / testData.value.pdu_data.line_item_list.cur_alarm_max[1]) * 100;
+    B.value.cur_alarm_max = testData.value.pdu_data.line_item_list.cur_alarm_max[1];
     let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[1];
     if(curalarm == 1 || curalarm == 8 ){
       B.value.curColor = "red";
@@ -951,6 +1005,7 @@ const getTestData = async()=>{
   if(testData.value.pdu_data.line_item_list.ele_active.length > 2){
     C.value.cur_value = testData.value.pdu_data.line_item_list.cur_value[2]?.toFixed(2);
     C.value.curPercemtage = (testData.value.pdu_data.line_item_list.cur_value[2] / testData.value.pdu_data.line_item_list.cur_alarm_max[2]) * 100;
+    C.value.cur_alarm_max = testData.value.pdu_data.line_item_list.cur_alarm_max[2];
     let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[2];
     if(curalarm == 1 || curalarm == 8 ){
       C.value.curColor = "red";

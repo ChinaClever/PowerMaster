@@ -55,11 +55,13 @@
         </el-form-item> -->
 
         <el-form-item label="IP地址" prop="ipAddr" >
-          <el-input
+          <el-autocomplete
             v-model="queryParams.ipAddr"
-            placeholder="请输入IP地址"
+            :fetch-suggestions="querySearch"
             clearable
             class="!w-140px"
+            placeholder="请输入IP地址"
+            @select="handleQuery"
           />
         </el-form-item>
 
@@ -238,6 +240,7 @@ defineOptions({ name: 'PDUDevice' })
 
 const now = ref()
 const switchValue = ref(1);
+const ipList = ref([])
 const instance = getCurrentInstance();
 const visControll = reactive({
   visAllReport : false,
@@ -248,6 +251,32 @@ const visControll = reactive({
   temVis : false,
 })
 const serChartContainerWidth = ref(10)
+
+const loadAll = async () => {
+  var data = await PDUDeviceApi.ipList();
+  var objectArray = data.map((str) => {
+    return { value: str };
+  });
+  console.log(objectArray)
+  return objectArray;
+}
+
+const querySearch = (queryString: string, cb: any) => {
+  console.log(ipList.value)
+  const results = queryString
+    ? ipList.value.filter(createFilter(queryString))
+    : ipList.value
+  // call callback function to return suggestions
+  cb(results)
+}
+
+const createFilter = (queryString: string) => {
+  return (ipList) => {
+    return (
+      ipList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+    )
+  }
+}
 
 const disabledDate = (date) => {
   // 获取今天的日期
@@ -1022,6 +1051,7 @@ const formRef = ref()
 onMounted( async () =>  {
   // getList();
   // initChart();
+  ipList.value = await loadAll();
 })
 </script>
 <style scoped lang="scss">

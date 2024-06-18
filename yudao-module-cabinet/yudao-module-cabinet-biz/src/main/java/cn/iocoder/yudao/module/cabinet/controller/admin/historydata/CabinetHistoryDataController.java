@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -41,10 +42,10 @@ public class CabinetHistoryDataController {
         return success(pageResult);
     }
 
-    @GetMapping("/one-hour")
-    @Operation(summary = "获得机柜最近一小时插入的数据量")
-    public CommonResult<Map<String, Object>> getOneHourSumData() throws IOException {
-        Map<String, Object> map = cabinetHistoryDataService.getOneHourSumData();
+    @GetMapping("/new-data/{granularity}")
+    @Operation(summary = "获得机柜电力分析导航显示的插入的数据量")
+    public CommonResult<Map<String, Object>> getNavNewData(@PathVariable("granularity") String granularity) throws IOException {
+        Map<String, Object> map = cabinetHistoryDataService.getNavNewData(granularity);
         return success(map);
     }
 

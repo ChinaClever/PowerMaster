@@ -2,12 +2,12 @@
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="模块化机房">
     <template #NavInfo>
       <div class="navInfo">
-        <!-- <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
+        <div class="header">
+          <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
           <div class="name">微模块机房</div>
           <div>机房202</div>
-        </div> -->
-        <div class="line"></div>
+        </div>
+        <!-- <div class="line"></div>
         <div class="status">
           <div class="box">
             <div class="top">
@@ -34,7 +34,7 @@
             <div class="value"><span class="number">0</span>个</div>
           </div>
         </div>
-        <div class="line"></div>
+        <div class="line"></div> -->
         <!-- <div class="overview">
           <div class="count">
             <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
@@ -100,7 +100,7 @@
               </div>
             </div>
             <div class="room">{{item.local}}</div>
-            <button class="detail" @click.prevent="toDetail(item.roomId, item.id)">详情</button>
+            <button class="detail" @click.prevent="toDetail(item.roomId, item.id)" v-if="item.status != null && item.status != 5">详情</button>
           </div>
         </div>
         <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" >
@@ -172,6 +172,7 @@ const getTableData = async(reset = false) => {
           yesterdayEq: item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0',
           lastWeekEq: item.lastWeekEq ? item.lastWeekEq.toFixed(1) : '0.0',
           lastMonthEq: item.lastMonthEq ? item.lastMonthEq.toFixed(1) : '0.0',
+          status : item.runStatus
         }
       })
       queryParams.pageTotal = res.total

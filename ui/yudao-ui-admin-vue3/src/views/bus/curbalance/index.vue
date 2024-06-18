@@ -98,7 +98,7 @@
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
-        <el-table-column label="运行状态" align="center" prop="status" >
+        <el-table-column label="运行状态" align="center" prop="color" >
           <template #default="scope" >
               <el-tag type="info"  v-if="scope.row.color == 1">小电流不平衡</el-tag>
               <el-tag type="success"  v-if="scope.row.color == 2">大电流不平衡</el-tag>
@@ -162,6 +162,7 @@
               link
               type="primary"
               @click="toPDUDisplayScreen(scope.row)"
+              v-if="scope.row.status != null && scope.row.status != 5"
             >
             设备详情
             </el-button>
@@ -178,8 +179,6 @@
       </el-table>
 
       <div v-show="switchValue == 2  && list.length > 0" class="arrayContainer">
-
-        
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
@@ -203,7 +202,7 @@
             <el-tag type="warning" v-if="item.color == 3">大电流不平衡</el-tag>
             <el-tag type="danger" v-if="item.color == 4">大电流不平衡</el-tag>
           </div>
-          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
       </div>
 
@@ -229,7 +228,7 @@
             <el-tag type="info" >电压不平衡</el-tag>
 
           </div>
-          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
       </div>
       <Pagination
@@ -393,13 +392,13 @@ const getList = async () => {
       statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
       statusList[2].name = '>' + range.rangeFour + '%';
     }
-    list.value = data.list
+    
     var tableIndex = 0;
     var lessFifteen = 0;
     var greaterFifteen = 0;
     var greaterThirty = 0;
     var smallCurrent = 0;
-    list.value.forEach((obj) => {
+    data.list.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       if(obj?.dataUpdateTime == null && obj?.pow == null){
         return;
@@ -433,6 +432,7 @@ const getList = async () => {
     statusNumber.lessFifteen = lessFifteen;
     statusNumber.greaterFifteen = greaterFifteen;
     statusNumber.greaterThirty = greaterThirty;
+    list.value = data.list
     total.value = data.total
   } finally {
     loading.value = false
@@ -442,7 +442,7 @@ const getList = async () => {
 const getListNoLoading = async () => {
   try {
     const data = await IndexApi.getBalancePage(queryParams)
-    list.value = data.list
+    
     var range = await CurbalanceColorApi.getCurbalanceColor();
     if(range != null){
       statusList[0].name = '<' + range.rangeOne + '%';
@@ -454,7 +454,7 @@ const getListNoLoading = async () => {
     var greaterFifteen = 0;
     var greaterThirty = 0;
     var smallCurrent = 0;
-    list.value.forEach((obj) => {
+    data.list.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       if(obj?.dataUpdateTime == null && obj?.pow == null){
         return;
@@ -487,6 +487,7 @@ const getListNoLoading = async () => {
     statusNumber.lessFifteen = lessFifteen;
     statusNumber.greaterFifteen = greaterFifteen;
     statusNumber.greaterThirty = greaterThirty;
+    list.value = data.list
     total.value = data.total
   } catch (error) {
     

@@ -99,6 +99,7 @@
         <el-table-column label="所在位置" align="center" prop="location" />
         <el-table-column label="运行状态" align="center" prop="color" >
           <template #default="scope" >
+            <el-tag type="info"  v-if="scope.row.color == 0">负载</el-tag>
             <el-tag type="success"  v-if="scope.row.color == 1">负载</el-tag>
             <el-tag type="primary"  v-if="scope.row.color == 2">负载</el-tag>
             <el-tag type="warning" v-if="scope.row.color == 3">负载</el-tag>
@@ -133,6 +134,7 @@
               link
               type="primary"
               @click="toPDUDisplayScreen(scope.row)"
+              v-if="scope.row.status != null && scope.row.status != 5"
             >
             设备详情
             </el-button>
@@ -195,12 +197,13 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
+            <el-tag type="info"  v-if="item.color == 0">负载</el-tag>
             <el-tag type="success"  v-if="item.color == 1">负载</el-tag>
             <el-tag type="primary"  v-if="item.color == 2">负载</el-tag>
             <el-tag type="warning" v-if="item.color == 3">负载</el-tag>
             <el-tag type="danger" v-if="item.color == 4">负载</el-tag>
           </div>
-          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
       </div>
       <Pagination

@@ -2,25 +2,29 @@
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU电能记录">
     <template #NavInfo>
       <div class="nav_header">
-        <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
+        <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div> -->
         <br/>
-        <span>全部PDU最近24小时新增记录</span>
+        <span>全部PDU最近一天新增记录</span>
           <br/>
       </div>
       <div class="nav_data">
-        <el-statistic title="总电能" :value="navTotalData">
+        <el-statistic title="" :value="navTotalData">
+            <template #prefix>总电能</template>
             <template #suffix>条</template>
         </el-statistic>
            <br/>
-        <el-statistic title="相电能" :value="navLineData">
+        <el-statistic title="" :value="navLineData">
+          <template #prefix>相电能</template>
           <template #suffix>条</template>
         </el-statistic>
            <br/>
-        <el-statistic title="回路电能" :value="navLoopData">
+        <el-statistic title="" :value="navLoopData">
+          <template #prefix>回路电能</template>
           <template #suffix>条</template>
         </el-statistic>
         <br/>
-        <el-statistic title="输出位电能" :value="navOutletData">
+        <el-statistic title="" :value="navOutletData">
+          <template #prefix>输出位电能</template>
           <template #suffix>条</template>
         </el-statistic>
       </div>
@@ -96,7 +100,7 @@
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
         @pagination="getList"/>
-      <div class="realTotal">共 {{ realTotel }} 条</div>
+      <div class="realTotal" v-if="list.length != 0">共 {{ realTotel }} 条</div>
      </template>
   </CommonMenu>
 </template>
@@ -187,9 +191,9 @@ const typeCascaderChange = (selected) => {
       tableColumns.value = [
         { label: '位置', align: 'center', prop: 'address' , istrue:true},
         { label: '相', align: 'center', prop: 'line_id' , istrue:true, formatter: formatLineId}, 
-        { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
-        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
         { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
+        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
       ]
       queryParams.lineId = selected[1];
       queryParams.loopId = undefined;
@@ -199,9 +203,9 @@ const typeCascaderChange = (selected) => {
       tableColumns.value = [
         { label: '位置', align: 'center', prop: 'address' , istrue:true},
         { label: '回路', align: 'center', prop: 'loop_id' , istrue:true, formatter: formatLoopId},
-        { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
-        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
         { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
+        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
       ]
       queryParams.loopId = selected[1];
       queryParams.lineId = undefined;
@@ -211,9 +215,9 @@ const typeCascaderChange = (selected) => {
       tableColumns.value = [
         { label: '位置', align: 'center', prop: 'address' , istrue:true},
         { label: '输出位', align: 'center', prop: 'outlet_id' , istrue:true},
-        { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
-        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
         { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
+        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
       ]
       queryParams.outletId = selected[1];
       queryParams.loopId = undefined;
@@ -224,7 +228,7 @@ const typeCascaderChange = (selected) => {
         { label: '位置', align: 'center', prop: 'address' , istrue:true},
         { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
         { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
-        { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
+        { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
       ]
       queryParams.lineId = undefined;
       queryParams.loopId = undefined;
@@ -239,7 +243,7 @@ const tableColumns = ref([
   { label: '位置', align: 'center', prop: 'address' , istrue:true},
   { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
   { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
-  { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
+  { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
 ]);
 
 /** 初始化数据 */
@@ -449,7 +453,7 @@ onMounted(() => {
   }
 
 .nav_data{
-  padding-left: 48px;
+  padding-left: 15px;
 }
 
   .line {

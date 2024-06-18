@@ -31,12 +31,6 @@
       <CardTitle title="A路电流不平衡" />
     </template>
     <div class="ImbalanceA">
-      <el-card  class="cardChilc" shadow="hover">
-        <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
-          <div class="value">{{balanceObj.imbalanceValueA}}%</div>
-          <div class="day" :style="{backgroundColor: colorList[balanceObj.colorIndex].color}">{{colorList[balanceObj.colorIndex].name}}</div>
-        </div>
-      </el-card>
       <el-card  class="cardChilc" style="margin: 0 10px" shadow="hover">
         <div class="IechartBar">
           <Echart :options="ABarOption" :height="300"/>
@@ -47,6 +41,20 @@
           <Echart :options="ALineOption" :height="300"/>
         </div>
       </el-card>
+      <el-card  class="cardChilc" shadow="hover">
+        <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
+          <div class="value">{{balanceObj.imbalanceValueA}}%</div>
+          <div class="day" :style="{backgroundColor: colorList[balanceObj.colorIndex].color}">{{colorList[balanceObj.colorIndex].name}}</div>
+          <el-tooltip
+            class="box-item"
+            effect="dark"
+            content="小电流不平衡是指"
+            placement="right"
+          >
+            <div @click.prevent="" class="question">?</div>
+          </el-tooltip>
+        </div>
+      </el-card>
     </div>
   </el-card>
   <el-card class="card" shadow="never"> 
@@ -54,12 +62,6 @@
       <CardTitle title="B路电流不平衡" />
     </template>
     <div class="ImbalanceA">
-      <el-card  class="cardChilc" shadow="hover">
-        <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
-          <div class="value">{{balanceObj.imbalanceValueB}}%</div>
-          <div class="day" :style="{backgroundColor: colorList[balanceObj.colorIndex].color}">{{colorList[balanceObj.colorIndex].name}}</div>
-        </div>
-      </el-card>
       <el-card  class="cardChilc" style="margin: 0 10px" shadow="hover">
         <div class="IechartBar">
           <Echart :options="BBarOption" :height="300"/>
@@ -68,6 +70,20 @@
       <el-card  class="cardChilc" shadow="hover">
         <div class="IechartBar">
           <Echart :options="ALineOption" :height="300"/>
+        </div>
+      </el-card>
+      <el-card  class="cardChilc" shadow="hover">
+        <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
+          <div class="value">{{balanceObj.imbalanceValueB}}%</div>
+          <div class="day" :style="{backgroundColor: colorList[balanceObj.colorIndex].color}">{{colorList[balanceObj.colorIndex].name}}</div>
+          <el-tooltip
+            class="box-item"
+            effect="dark"
+            content="小电流不平衡是指"
+            placement="right"
+          >
+            <div @click.prevent="" class="question">?</div>
+          </el-tooltip>
         </div>
       </el-card>
     </div>
@@ -462,12 +478,27 @@ onBeforeMount(()=> {
   align-items: center;
   justify-content: space-around;
   padding: 10px 0;
+  .question {
+    width: 12px;
+    height: 12px;
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid;
+    border-radius: 50%;
+    font-size: 12px;
+    cursor: pointer;
+  }
   .cardChilc {
     flex: 1;
     height: 100%;
     // margin: 10px 5px;
   }
   .box {
+    position: relative;
     height: 121px;
     width: 200px;
     display: flex;
@@ -475,6 +506,7 @@ onBeforeMount(()=> {
     align-items: center;
     border: 1px solid #00289e;
     margin: 72px auto;
+    
     .value {
       font-size: 30px;
       padding: 20px 0;

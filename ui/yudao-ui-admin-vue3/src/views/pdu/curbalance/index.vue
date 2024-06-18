@@ -57,12 +57,13 @@
           <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
         </el-button>
         <el-form-item label="网络地址" prop="devKey">
-          <el-input
+          <el-autocomplete
             v-model="queryParams.devKey"
-            placeholder="请输入网络地址"
+            :fetch-suggestions="querySearch"
             clearable
-            @keyup.enter="handleQuery"
             class="!w-200px"
+            placeholder="请输入网络地址"
+            @select="handleQuery"
           />
         </el-form-item>
         <el-form-item>
@@ -95,10 +96,10 @@
     </template>
     <template #Content>
       <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
-        <el-table-column label="编号" align="center" prop="tableId" />
+        <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" />
-        <el-table-column label="运行状态" align="center" prop="status" >
+        <el-table-column label="所在位置" align="center" prop="location" width="180px" />
+        <el-table-column label="运行状态" align="center" prop="color" >
           <template #default="scope" >
               <el-tag type="info"  v-if="scope.row.color == 1">小电流不平衡</el-tag>
               <el-tag type="success"  v-if="scope.row.color == 2">大电流不平衡</el-tag>
@@ -106,62 +107,75 @@
               <el-tag type="danger" v-if="scope.row.color == 4">大电流不平衡</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="A相电流" align="center" prop="acur" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.acur != null">
-              {{ scope.row.acur }}A
-            </el-text>
-          </template>
+        <el-table-column label="电流" align="center">
+          <el-table-column label="A相" align="center" prop="acur" width="100px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" v-if="scope.row.acur != null">
+                {{ scope.row.acur }}A
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="B相" align="center" prop="bcur" width="100px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" v-if="scope.row.bcur != null">
+                {{ scope.row.bcur }}A
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="C相" align="center" prop="ccur" width="100px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" v-if="scope.row.ccur != null">
+                {{ scope.row.ccur }}A
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="不平衡度" align="center" prop="curUnbalance" width="100px">
+            <template #default="scope" >
+              <el-text line-clamp="2" v-if="scope.row.curUnbalance != null" >
+                {{ scope.row.curUnbalance }}%
+              </el-text>
+            </template>
+          </el-table-column>
         </el-table-column>
-        <el-table-column label="B相电流" align="center" prop="bcur" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.bcur != null">
-              {{ scope.row.bcur }}A
-            </el-text>
-          </template>
+        <el-table-column label="电压" align="center">
+          <el-table-column label="A相" align="center" prop="avol" width="100px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" v-if="scope.row.avol">
+                {{ scope.row.avol }}V
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="B相" align="center" prop="bvol" width="100px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" v-if="scope.row.bvol">
+                {{ scope.row.bvol }}V
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="C相" align="center" prop="cvol" width="100px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" v-if="scope.row.cvol">
+                {{ scope.row.cvol }}V
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="不平衡度" align="center" prop="volUnbalance" width="100px">
+            <template #default="scope" >
+              <el-text line-clamp="2" v-if="scope.row.volUnbalance != null" >
+                {{ scope.row.volUnbalance }}%
+              </el-text>
+            </template>
+          </el-table-column>
         </el-table-column>
-        <el-table-column label="C相电流" align="center" prop="ccur" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.ccur != null">
-              {{ scope.row.ccur }}A
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column label="A相电压" align="center" prop="avol" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.avol">
-              {{ scope.row.avol }}V
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column label="B相电压" align="center" prop="bvol" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.bvol">
-              {{ scope.row.bvol }}V
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column label="C相电压" align="center" prop="cvol" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.cvol">
-              {{ scope.row.cvol }}V
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column label="不平衡度" align="center" prop="curUnbalance" width="130px">
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.curUnbalance != null" >
-              {{ scope.row.curUnbalance }}%
-            </el-text>
-          </template>
-        </el-table-column>
+        
         <!-- 数据库查询 -->
-        <el-table-column label="操作" align="center">
+        <el-table-column label="操作" align="center" width="100px">
           <template #default="scope">
             <el-button
               link
               type="primary"
               @click="toPDUDisplayScreen(scope.row)"
+              v-if="scope.row.status != null && scope.row.status != 5"
             >
             设备详情
             </el-button>
@@ -178,14 +192,12 @@
       </el-table>
 
       <div v-show="switchValue == 2  && list.length > 0" class="arrayContainer">
-
-        
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="icon" >
               <div v-if="item.curUnbalance != null" >
-                不平衡度<br/>{{ item.curUnbalance }}%
+                <span style="font-size: 20px;">{{ item.curUnbalance }}%</span><br/>不平衡度
               </div>              
             </div>
             <div class="info">                  
@@ -203,7 +215,7 @@
             <el-tag type="warning" v-if="item.color == 3">大电流不平衡</el-tag>
             <el-tag type="danger" v-if="item.color == 4">大电流不平衡</el-tag>
           </div>
-          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+          <button v-if="item.status != null && item.status != 5" class="detail" @click="toPDUDisplayScreen(item)">详情</button>
         </div>
       </div>
 
@@ -213,7 +225,7 @@
           <div class="content">
             <div class="icon" >
               <div v-if="item.volUnbalance != null" >
-                不平衡度<br/>{{ item.volUnbalance }}%
+                <span style="font-size: 20px;">{{ item.volUnbalance }}%</span><br/>不平衡度
               </div>              
             </div>
             <div class="info">                  
@@ -229,7 +241,7 @@
             <el-tag type="info" >电压不平衡</el-tag>
 
           </div>
-          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+          <button v-if="item.status != null && item.status != 5" class="detail" @click="toPDUDisplayScreen(item)">详情</button>
         </div>
       </div>
       <Pagination
@@ -264,6 +276,7 @@ defineOptions({ name: 'PDUDevice' })
 
 const { push } = useRouter()
 
+const devKeyList = ref([])
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
@@ -306,6 +319,32 @@ const statusList = reactive([
     activeClass: 'btn_offline offline'
   },
 ])
+
+const loadAll = async () => {
+  var data = await PDUDeviceApi.devKeyList();
+  var objectArray = data.map((str) => {
+    return { value: str };
+  });
+  console.log(objectArray)
+  return objectArray;
+}
+
+const querySearch = (queryString: string, cb: any) => {
+  console.log(devKeyList.value)
+  const results = queryString
+    ? devKeyList.value.filter(createFilter(queryString))
+    : devKeyList.value
+  // call callback function to return suggestions
+  cb(results)
+}
+
+const createFilter = (queryString: string) => {
+  return (devKeyList) => {
+    return (
+      devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+    )
+  }
+}
 
 const handleClick = (row) => {
   console.log("click",row)
@@ -393,13 +432,13 @@ const getList = async () => {
       statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
       statusList[2].name = '>' + range.rangeFour + '%';
     }
-    list.value = data.list
+    
     var tableIndex = 0;
     var lessFifteen = 0;
     var greaterFifteen = 0;
     var greaterThirty = 0;
     var smallCurrent = 0;
-    list.value.forEach((obj) => {
+    data.list.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       if(obj?.dataUpdateTime == null && obj?.pow == null){
         return;
@@ -434,6 +473,7 @@ const getList = async () => {
     statusNumber.greaterFifteen = greaterFifteen;
     statusNumber.greaterThirty = greaterThirty;
     total.value = data.total
+    list.value = data.list
   } finally {
     loading.value = false
   }
@@ -442,7 +482,6 @@ const getList = async () => {
 const getListNoLoading = async () => {
   try {
     const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
-    list.value = data.list
     var range = await CurbalanceColorApi.getCurbalanceColor();
     if(range != null){
       statusList[0].name = '<' + range.rangeOne + '%';
@@ -454,7 +493,7 @@ const getListNoLoading = async () => {
     var greaterFifteen = 0;
     var greaterThirty = 0;
     var smallCurrent = 0;
-    list.value.forEach((obj) => {
+    data.list.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       if(obj?.dataUpdateTime == null && obj?.pow == null){
         return;
@@ -483,10 +522,12 @@ const getListNoLoading = async () => {
         greaterThirty++;
       }
     });
+    
     statusNumber.smallCurrent = smallCurrent;
     statusNumber.lessFifteen = lessFifteen;
     statusNumber.greaterFifteen = greaterFifteen;
     statusNumber.greaterThirty = greaterThirty;
+    list.value = data.list
     total.value = data.total
   } catch (error) {
     
@@ -575,7 +616,8 @@ const handleExport = async () => {
 }
 
 /** 初始化 **/
-onMounted(() => {
+onMounted(async () => {
+  devKeyList.value = await loadAll();
   getList()
   getNavList();
   flashListTimer.value = setInterval((getListNoLoading), 5000);

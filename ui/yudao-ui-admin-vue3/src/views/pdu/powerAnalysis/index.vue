@@ -2,17 +2,21 @@
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU能耗趋势">
     <template #NavInfo>
         <div class="nav_header">
-          <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
+          <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div> -->
           <br/>
-          <span>全部PDU最近一周新增记录</span>
+          <span>全部PDU新增能耗记录</span>
             <br/>
         </div>
         <div class="nav_data">
-          <el-statistic title="总电能" :value="navTotalData">
+          <el-statistic title="最近一天" :value="lastDayTotalData">
               <template #suffix>条</template>
           </el-statistic>
           <br/>
-          <el-statistic title="输出位电能" :value="navOutletData"> 
+          <el-statistic title="最近一周" :value="lastWeekTotalData"> 
+            <template #suffix>条</template>
+          </el-statistic>
+          <br/>
+          <el-statistic title="最近一月" :value="lastMonthTotalData"> 
             <template #suffix>条</template>
           </el-statistic>
         </div>
@@ -55,8 +59,8 @@
             type="daterange"
             :shortcuts="shortcuts"
             range-separator="-"
-            start-placeholder="开始时间"
-            end-placeholder="结束时间"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
             :disabled-date="disabledDate"
           />
           </el-form-item>
@@ -78,22 +82,52 @@
             {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
           </template>
         </el-table-column>
-        <!-- 遍历其他列 -->  
-        <template v-for="column in tableColumns">
-          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue">
-            <template #default="{ row }" v-if="column.slot === 'actions'">
-              <el-button link type="primary" @click="toDetails(row.pdu_id, row.address)">详情</el-button>
-            </template>
-          </el-table-column>
-        </template>
-        <!-- 超过一万条数据提示信息 -->
-          <template v-if="shouldShowDataExceedMessage" #append>
-            <tr>
-              <td colspan="列数" style="text-align: center; padding: 12px 0;">
-                <span style="margin:0 12px; color: red;">数据量过大，请筛选后查看更多数据。</span>
-              </td>
-            </tr>
+       <!-- 遍历其他列 -->
+      <template v-for="column in tableColumns" :key="column.label">
+        <el-table-column
+          v-if="!column.children && column.istrue"
+          :key="column.prop"
+          :label="column.label"
+          :align="column.align"
+          :prop="column.prop"
+          :formatter="column.formatter"
+          :width="column.width"
+        >
+          <template #default="{ row }" v-if="column.slot === 'actions'">
+            <el-button link type="primary" @click="toDetails(row.pdu_id, row.address)">详情</el-button>
           </template>
+        </el-table-column>
+        
+        <el-table-column
+          v-else-if="column.istrue"
+          :label="column.label"
+          :align="column.align"
+        >
+          <template v-for="child in column.children" :key="child.prop">
+            <el-table-column
+              :key="child.prop"
+              :label="child.label"
+              :align="child.align"
+              :prop="child.prop"
+              :formatter="child.formatter"
+              :width="child.width"
+              v-if="child.istrue"
+            >
+              <template #default="{ row }" v-if="child.slot === 'actions'">
+                <el-button link type="primary" @click="toDetails(row.pdu_id, row.address)">详情</el-button>
+              </template>
+            </el-table-column>
+          </template>
+        </el-table-column>
+      </template>
+      <!-- 超过一万条数据提示信息 -->
+      <template v-if="shouldShowDataExceedMessage" #append>
+        <tr>
+          <td colspan="列数" style="text-align: center; padding: 12px 0;">
+            <span style="margin:0 12px; color: red;">数据量过大，请筛选后查看更多数据。</span>
+          </td>
+        </tr>
+      </template>
       </el-table>
       <!-- 分页 -->
       <Pagination
@@ -103,12 +137,13 @@
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
         @pagination="getList"/>
-      <div class="realTotal">共 {{ realTotel }} 条</div>
+      <div class="realTotal" v-if="list.length != 0">共 {{ realTotel }} 条</div>
+      <br/><br/><br/><br/>
+      <ContentWrap>
+        <div v-loading="loading" ref="rankChartContainer" id="rankChartContainer" style="height: 65vh"></div>
+      </ContentWrap>
     </template>
   </CommonMenu>
-  <ContentWrap>
-    <div v-loading="loading" ref="rankChartContainer" id="rankChartContainer" style="height: 65vh"></div>
-  </ContentWrap>
 </template>
 
 <script setup lang="ts">
@@ -124,8 +159,9 @@ const { push } = useRouter()
 defineOptions({ name: 'PowerAnalysis' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
-const navTotalData = ref(0)
-const navOutletData = ref(0)
+const lastDayTotalData = ref(0)
+const lastWeekTotalData = ref(0)
+const lastMonthTotalData = ref(0)
 const instance = getCurrentInstance();
 const message = useMessage()
 const activeName = ref('myData') 
@@ -244,13 +280,22 @@ watch(() => queryParams.granularity, () => {
 
 const tableColumns = ref([
   { label: '位置', align: 'center', prop: 'address' , istrue:true, width: '180px'},
-  { label: '开始时间', align: 'center', prop: 'start_time' , formatter: formatTime, width: '150px' , istrue:true},
-  { label: '开始电能(kWh)', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
-  { label: '结束时间', align: 'center', prop: 'end_time' , formatter: formatTime, width: '150px' , istrue:true},
-  { label: '结束电能(kWh)', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle},
-  { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
-  { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '150px' , istrue:true},
   { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '150px'},
+  { label: '开始电能(kWh)', align: 'center', istrue: true, children: [
+      { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '150px' , istrue:true},
+      { label: '值', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
+    ]
+  },
+  { label: '结束电能(kWh)', align: 'center', istrue: true, children: [
+      { label: '日期', align: 'center', prop: 'end_time' , formatter: formatTime, width: '150px' , istrue:true},
+      { label: '值', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle},
+    ]
+  },
+  { label: '耗电量(kWh)', align: 'center', istrue: true, children: [
+      { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '150px' , istrue:true},
+      { label: '值', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
+    ]
+  },
   { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '120px'},
 ]) as any;
 
@@ -291,9 +336,9 @@ function customTooltipFormatter(params: any[]) {
   if (queryParams.type == 'outlet') {
       tooltipContent += '输出位：' + list.value[item.dataIndex].outlet_id;
   }
-  tooltipContent += '<br/>'+ item.marker + item.seriesName + ': ' + item.value + 'kWh 记录时间：'+formatTime(null, null, list.value[item.dataIndex].create_time) + '<br/>'                 
-                    +item.marker + '结束电能：'+list.value[item.dataIndex].end_ele + 'kWh 结束时间：'+formatTime(null, null, list.value[item.dataIndex].end_time) + '<br/>' 
-                    +item.marker +'开始电能：'+formatEle(null, null, list.value[item.dataIndex].start_ele) + 'kWh 开始时间：'+formatTime(null, null, list.value[item.dataIndex].start_time) + '<br/>'
+  tooltipContent += '<br/>'+ item.marker + item.seriesName + ': ' + item.value + 'kWh 记录日期：'+formatTime(null, null, list.value[item.dataIndex].create_time) + '<br/>'                 
+                    +item.marker + '结束电能：'+list.value[item.dataIndex].end_ele + 'kWh 结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) + '<br/>' 
+                    +item.marker +'开始电能：'+formatEle(null, null, list.value[item.dataIndex].start_ele) + 'kWh 开始日期：'+formatTime(null, null, list.value[item.dataIndex].start_time) + '<br/>'
                     
   // })
   return tooltipContent;
@@ -394,10 +439,11 @@ const getNavList = async() => {
 }
 
 // 获取导航的数据显示
-const getNavOneWeekData = async() => {
-  const res = await EnergyConsumptionApi.getNavOneWeekData({})
-  navTotalData.value = res.total
-  navOutletData.value = res.outlet
+const getNavNewData = async() => {
+  const res = await EnergyConsumptionApi.getNavNewData({})
+  lastDayTotalData.value = res.day
+  lastWeekTotalData.value = res.week
+  lastMonthTotalData.value = res.month
 }
 
 /** 详情操作*/
@@ -430,7 +476,7 @@ const toDetails = (pduId: number, address: string) => {
 /** 初始化 **/
 onMounted(() => {
   getNavList()
-  getNavOneWeekData()
+  getNavNewData()
   getTypeMaxValue();
   getList();
 });

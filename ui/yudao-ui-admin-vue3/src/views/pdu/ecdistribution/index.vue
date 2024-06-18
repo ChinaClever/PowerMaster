@@ -2,7 +2,7 @@
   <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="PDU能耗排名" :showCheckbox="false">
     <template #NavInfo>
       <div class="nav_header">
-        <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
+        <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div> -->
         <br/>
         <span v-if="nowAddress">{{nowAddress}}</span>
         <span v-if="nowLocation">( {{nowLocation}} ) </span>
@@ -11,21 +11,32 @@
         <br/>
       </div>
       <div class="nav_data">
-        <el-statistic title="总耗电量" :value="formatNumber(totalEqData, 1)">
+        <el-statistic title="" :value="formatNumber(totalEqData, 1)">
+          <template #prefix>总耗电量</template>
           <template #suffix>kWh</template>
         </el-statistic>
           <br/>
-        <el-statistic title="最大耗电量" :value="formatNumber(maxEqDataTemp, 1)">
+        <el-statistic title="" :value="formatNumber(maxEqDataTemp, 1)">
+          <template #prefix>最大耗电量</template>
           <template #suffix>kWh</template>
         </el-statistic>
-        <el-statistic v-if="formatNumber(totalEqData, 1) != 0.0" title="发生于" :value="maxEqDataTimeTemp"/>
-        <el-statistic v-if="formatNumber(totalEqData, 1) == 0.0" title="发生于" :value="Object('-')"/>
+        <el-statistic v-if="formatNumber(totalEqData, 1) != 0.0" title="" :value="maxEqDataTimeTemp">
+          <template #prefix>发生于</template>
+        </el-statistic>
+        <el-statistic v-if="formatNumber(totalEqData, 1) == 0.0" title="" :value="Object('-')">
+          <template #prefix>发生于</template>
+        </el-statistic>
           <br/>
-        <el-statistic title="最小耗电量" :value="formatNumber(minEqDataTemp, 1)">
+        <el-statistic title="" :value="formatNumber(minEqDataTemp, 1)">
+          <template #prefix>最小耗电量</template>
           <template #suffix>kWh</template>
         </el-statistic>
-        <el-statistic v-if="formatNumber(totalEqData, 1) != 0.0" title="发生于" :value="minEqDataTimeTemp"/>
-        <el-statistic v-if="formatNumber(totalEqData, 1) == 0.0" title="发生于" :value="Object('-')"/>
+        <el-statistic v-if="formatNumber(totalEqData, 1) != 0.0" title="" :value="minEqDataTimeTemp">
+         <template #prefix>发生于</template>
+        </el-statistic>
+        <el-statistic v-if="formatNumber(totalEqData, 1) == 0.0" title="" :value="Object('-')">
+         <template #prefix>发生于</template>
+        </el-statistic>
       </div>
     </template>
     <template #ActionBar>
@@ -61,8 +72,8 @@
           type="daterange"
           :shortcuts="shortcuts"
           range-separator="-"
-          start-placeholder="开始时间"
-          end-placeholder="结束时间"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
           :disabled-date="disabledDate"
           class="!w-350px"
           @change="handleDayPick"
@@ -94,15 +105,15 @@
               <template v-for="item in headerData" :key="item.name">
                 <el-table-column  label="开始电能">
                   <el-table-column prop="startEleData" label="数值"/>   
-                  <el-table-column prop="startTimeData" label="发生时间"/>
+                  <el-table-column prop="startTimeData" label="发生日期"/>
                 </el-table-column>
                 <el-table-column  label="结束电能">
                   <el-table-column prop="endEleData" label="数值"/>   
-                  <el-table-column prop="endTimeData" label="发生时间"/>
+                  <el-table-column prop="endTimeData" label="发生日期"/>
                 </el-table-column>
                 <el-table-column v-if="item.name === '耗电量'" label="耗电量">
                   <el-table-column :prop="item.name" label="数值"/>   
-                  <el-table-column prop="create_time" label="记录时间"/>
+                  <el-table-column prop="create_time" label="记录日期"/>
                 </el-table-column>
               </template>
             </el-table>
@@ -152,7 +163,7 @@ const queryParams = reactive({
   timeRange: ['', ''],
 })
 
-// 默认查询的时间范围，单位：天
+// 默认查询的日期范围，单位：天
 function defaultDayTimeRange(day: number){
   // 获取当前日期
   var endDate = new Date();
@@ -166,7 +177,7 @@ function defaultDayTimeRange(day: number){
   ];
 }
 
-// 默认查询的时间范围，单位：月
+// 默认查询的日期范围，单位：月
 function defaultMonthTimeRange(month) {
   // 获取当前日期
   var endDate = new Date();
@@ -287,16 +298,16 @@ const eqData = ref<number[]>([]);// 耗电量数组
 const createTimeData = ref<string[]>([]);
 const totalEqData = ref(0);
 const maxEqDataTemp = ref(0);// 最大耗电量 
-const maxEqDataTimeTemp = ref();// 最大耗电量的发生时间 
+const maxEqDataTimeTemp = ref();// 最大耗电量的发生日期 
 const minEqDataTemp = ref(0);// 最小耗电量 
-const minEqDataTimeTemp = ref();// 最小耗电量的发生时间 
+const minEqDataTimeTemp = ref();// 最小耗电量的发生日期 
 // 获取折线图数据
 const getLineChartData =async () => {
 loading.value = true
  try {
-    // 格式化时间范围 加上23:59:59的时分秒 
+    // 格式化日期范围 加上23:59:59的时分秒 
     queryParams.timeRange[0] = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
-    // 结束时间的天数多加一天 ，  一天的毫秒数
+    // 结束日期的天数多加一天 ，  一天的毫秒数
     const oneDay = 24 * 60 * 60 * 1000;
     queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
 
@@ -342,15 +353,21 @@ const sumEqData = ref<number[]>([]);
 const getRankChartData =async () => {
 loading1.value = true
  try {
-    // 格式化时间范围 加上23:59:59的时分秒 
+    // 格式化日期范围 加上23:59:59的时分秒 
     queryParams.timeRange[0] = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
-    // 结束时间的天数多加一天 ，  一天的毫秒数
+    // 结束日期的天数多加一天 ，  一天的毫秒数
     const oneDay = 24 * 60 * 60 * 1000;
     queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
 
     const data = await EnergyConsumptionApi.getOutletsEQData(queryParams);
     if (data != null && data.total != 0){
-      outletIdData.value = data.map((item) => '输出位 '+item.outlet_id);
+      outletIdData.value = data.map((item) => {
+        if (item.outlet_id < 10) {
+          return '输出位 0' + item.outlet_id;
+        } else {
+          return '输出位 ' + item.outlet_id;
+        }
+      });
       sumEqData.value = data.map((item) => formatNumber(item.sum_eq_value, 1));
     }else{
       ElMessage({
@@ -460,7 +477,7 @@ const initRankChart = () => {
                 color: "#333",
                 fontSize: 16,
               },
-              // formatter: '{value}kWh'
+              formatter: '{c} kWh'  // 设置数据标签的格式化字符串
             },
           },
           itemStyle: {
@@ -511,7 +528,7 @@ function customTooltipFormatter(params: any[]) {
   return tooltipContent;
 }
 
-// 处理时间选择不超过xxx范围
+// 处理日期选择不超过xxx范围
 const handleDayPick = () => {
   if (activeName.value=='weekTabPane'){
     // 计算两个日期之间的天数差
@@ -520,7 +537,7 @@ const handleDayPick = () => {
     if (diffDays < 7) {
       selectTimeRange.value = defaultDayTimeRange(7)
       ElMessage({
-        message: '时间选择不少于7天,已默认选择最近一周',
+        message: '日期选择不少于7天,已默认选择最近一周',
         type: 'warning',
       })
     }
@@ -532,7 +549,7 @@ const handleDayPick = () => {
     if (diffDays < 30) {
       selectTimeRange.value = defaultMonthTimeRange(1)
       ElMessage({
-        message: '时间选择不少于1个月,已默认选择最近一个月',
+        message: '日期选择不少于1个月,已默认选择最近一个月',
         type: 'warning',
       })
     }
@@ -567,7 +584,7 @@ const getTypeMaxValue = async () => {
 const disabledDate = (date) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  // 设置date的时间为0时0分0秒，以便与today进行比较
+  // 设置date的日期为0时0分0秒，以便与today进行比较
   date.setHours(0, 0, 0, 0);
   // 如果date在今天之后，则禁用
   return date > today;
@@ -649,7 +666,7 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 13px;
+    font-size: 16px;
     padding-top: 28px;
   }
   .nav_header_img {
@@ -668,7 +685,7 @@ onMounted(async () => {
   }
 
 .nav_data{
-  padding-left: 50px;
+  padding-left: 15px;
 }
 
   .line {
