@@ -57,12 +57,13 @@
           <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
         </el-button>
         <el-form-item label="网络地址" prop="devKey">
-          <el-input
+          <el-autocomplete
             v-model="queryParams.devKey"
-            placeholder="请输入网络地址"
+            :fetch-suggestions="querySearch"
             clearable
-            @keyup.enter="handleQuery"
             class="!w-200px"
+            placeholder="请输入网络地址"
+            @select="handleQuery"
           />
         </el-form-item>
         <el-form-item>
@@ -98,7 +99,7 @@
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
-        <el-table-column label="运行状态" align="center" prop="status" >
+        <el-table-column label="运行状态" align="center" prop="color" >
           <template #default="scope" >
               <el-tag type="info"  v-if="scope.row.color == 1">小电流不平衡</el-tag>
               <el-tag type="success"  v-if="scope.row.color == 2">大电流不平衡</el-tag>
@@ -162,6 +163,7 @@
               link
               type="primary"
               @click="toPDUDisplayScreen(scope.row)"
+              v-if="scope.row.status != null && scope.row.status != 5"
             >
             设备详情
             </el-button>
@@ -178,8 +180,6 @@
       </el-table>
 
       <div v-show="switchValue == 2  && list.length > 0" class="arrayContainer">
-
-        
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
@@ -203,7 +203,7 @@
             <el-tag type="warning" v-if="item.color == 3">大电流不平衡</el-tag>
             <el-tag type="danger" v-if="item.color == 4">大电流不平衡</el-tag>
           </div>
-          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
       </div>
 
@@ -229,7 +229,7 @@
             <el-tag type="info" >电压不平衡</el-tag>
 
           </div>
-          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
       </div>
       <Pagination
@@ -306,6 +306,33 @@ const statusList = reactive([
     activeClass: 'btn_offline offline'
   },
 ])
+
+const devKeyList = ref([])
+const loadAll = async () => {
+  var data = await IndexApi.devKeyList();
+  var objectArray = data.map((str) => {
+    return { value: str };
+  });
+  console.log(objectArray)
+  return objectArray;
+}
+
+const querySearch = (queryString: string, cb: any) => {
+
+  const results = queryString
+    ? devKeyList.value.filter(createFilter(queryString))
+    : devKeyList.value
+  // call callback function to return suggestions
+  cb(results)
+}
+
+const createFilter = (queryString: string) => {
+  return (devKeyList) => {
+    return (
+      devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+    )
+  }
+}
 
 const handleClick = (row) => {
   console.log("click",row)
@@ -577,7 +604,8 @@ const handleExport = async () => {
 }
 
 /** 初始化 **/
-onMounted(() => {
+onMounted(async () => {
+  devKeyList.value = await loadAll();
   getList()
   getNavList();
   flashListTimer.value = setInterval((getListNoLoading), 5000);

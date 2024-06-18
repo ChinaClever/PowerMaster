@@ -7,6 +7,8 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 
+import java.util.List;
+
 /**
  * 始端箱索引 Service 接口
  *
@@ -57,4 +59,12 @@ public interface BusIndexService {
     PageResult<BusIndexDTO> getEqPage(BusIndexPageReqVO pageReqVO);
 
     PageResult<BusBalanceDataRes> getBusBalancePage(BusIndexPageReqVO pageReqVO);
+
+    PageResult<BusTemRes> getBusTemPage(BusIndexPageReqVO pageReqVO);
+
+    PageResult<BusPFRes> getBusPFPage(BusIndexPageReqVO pageReqVO);
+
+    PageResult<BusHarmonicRes> getBusHarmonicPage(BusIndexPageReqVO pageReqVO);
+
+    List<String> getDevKeyList();
 }

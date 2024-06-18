@@ -25,6 +25,9 @@ public class BusIndexRes {
     @Schema(description = "负载率所在范围")
     private Integer color;
 
+    @Schema(description = "运行状态")
+    private Integer status;
+
     @Schema(description = "数据更新时间")
     private String dataUpdateTime;
 

@@ -56,13 +56,14 @@
         >
           <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
         </el-button> -->
-        <el-form-item label="母线地址" prop="devKey">
-          <el-input
-            v-model="queryParams.devAddr"
-            placeholder="请输入母线地址"
+        <el-form-item label="网络地址" prop="devKey">
+          <el-autocomplete
+            v-model="queryParams.devKey"
+            :fetch-suggestions="querySearch"
             clearable
-            @keyup.enter="handleQuery"
             class="!w-200px"
+            placeholder="请输入网络地址"
+            @select="handleQuery"
           />
         </el-form-item>
         <el-form-item>
@@ -134,6 +135,7 @@
               link
               type="primary"
               @click="toPDUDisplayScreen(scope.row)"
+              v-if="scope.row.status != null && scope.row.status != 5"
             >
             设备详情
             </el-button>
@@ -202,7 +204,7 @@
             <el-tag type="warning" v-if="item.color == 3">负载</el-tag>
             <el-tag type="danger" v-if="item.color == 4">负载</el-tag>
           </div>
-          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
       </div>
       <Pagination
@@ -291,6 +293,32 @@ const statusList = reactive([
     color: '#05ebfc'
   },
 ])
+
+const devKeyList = ref([])
+const loadAll = async () => {
+  var data = await IndexApi.devKeyList();
+  var objectArray = data.map((str) => {
+    return { value: str };
+  });
+  return objectArray;
+}
+
+const querySearch = (queryString: string, cb: any) => {
+
+  const results = queryString
+    ? devKeyList.value.filter(createFilter(queryString))
+    : devKeyList.value
+  // call callback function to return suggestions
+  cb(results)
+}
+
+const createFilter = (queryString: string) => {
+  return (devKeyList) => {
+    return (
+      devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+    )
+  }
+}
 
 const handleClick = (row) => {
   console.log("click",row)
@@ -561,7 +589,8 @@ const handleExport = async () => {
 }
 
 /** 初始化 **/
-onMounted(() => {
+onMounted(async () => {
+  devKeyList.value = await loadAll();
   getList()
   getNavList();
   flashListTimer.value = setInterval((getListNoLoading), 5000);

@@ -148,6 +148,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             String ipAddr = pduIndex.getIpAddr();
             String cascadeAddr = pduIndex.getCascadeAddr();
             PDUDeviceDO pduDeviceDO = new PDUDeviceDO();
+            pduDeviceDO.setStatus(pduIndex.getRunStatus());
             result.add(pduDeviceDO);
             CabinetPdu cabinetPduA = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
                             .eq(CabinetPdu::getPduIpA, ipAddr)
@@ -241,7 +242,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             pduDeviceDO.setId(pduIndex.getId());
 
             pduDeviceDO.setPf(pduTgData.getDoubleValue("power_factor"));
-            pduDeviceDO.setStatus(pduIndex.getRunStatus());
+
             pduDeviceDO.setEle(pduTgData.getDoubleValue("ele_active"));
             pduDeviceDO.setPow(pduTgData.getDoubleValue("pow_active"));
             pduDeviceDO.setApparentPow(pduTgData.getDoubleValue("pow_apparent"));
@@ -290,9 +291,9 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()));
         }
         List<PduIndex> pduIndices = pduIndexPageResult.getList();
-
         for (PduIndex pduIndex : pduIndices) {
             PDULineRes pduLineRes = new PDULineRes();
+            pduLineRes.setStatus(pduIndex.getRunStatus());
             String ipAddr = pduIndex.getIpAddr();
             String cascadeAddr = pduIndex.getCascadeAddr();
             String localtion = null;

@@ -26,7 +26,7 @@ public interface CabIndexMapper extends BaseMapperX<IndexDO> {
                 .eqIfPresent(IndexDO::getIsDeleted, reqVO.getIsDeleted())
                 .betweenIfPresent(IndexDO::getCreateTime, reqVO.getCreateTime())
                 .eqIfPresent(IndexDO::getRunStatus, reqVO.getRunStatus())
-                .orderByDesc(IndexDO::getId));
+                .orderByAsc(IndexDO::getId));
     }
 
 }

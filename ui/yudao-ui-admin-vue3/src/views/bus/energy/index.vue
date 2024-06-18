@@ -100,7 +100,7 @@
               </div>
             </div>
             <div class="room">{{item.local}}</div>
-            <button class="detail" @click.prevent="toDetail(item.roomId, item.id)">详情</button>
+            <button class="detail" @click.prevent="toDetail(item.roomId, item.id)" v-if="item.status != null && item.status != 5">详情</button>
           </div>
         </div>
         <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" >
@@ -172,6 +172,7 @@ const getTableData = async(reset = false) => {
           yesterdayEq: item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0',
           lastWeekEq: item.lastWeekEq ? item.lastWeekEq.toFixed(1) : '0.0',
           lastMonthEq: item.lastMonthEq ? item.lastMonthEq.toFixed(1) : '0.0',
+          status : item.runStatus
         }
       })
       queryParams.pageTotal = res.total

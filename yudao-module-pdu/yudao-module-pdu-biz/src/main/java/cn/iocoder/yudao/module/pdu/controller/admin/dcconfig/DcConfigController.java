@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Operation;
 
-import javax.validation.constraints.*;
 import javax.validation.*;
 import javax.servlet.http.*;
 import java.util.*;
@@ -27,7 +26,7 @@ import static cn.iocoder.yudao.framework.operatelog.core.enums.OperateTypeEnum.*
 
 import cn.iocoder.yudao.module.pdu.controller.admin.dcconfig.vo.*;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.dcconfig.DcConfigDO;
-import cn.iocoder.yudao.module.pdu.service.dcconfig.DcConfigService;
+import cn.iocoder.yudao.module.pdu.service.dcconfig.PDUDcConfigService;
 
 @Tag(name = "管理后台 - pdu数据采集配置")
 @RestController
@@ -36,20 +35,20 @@ import cn.iocoder.yudao.module.pdu.service.dcconfig.DcConfigService;
 public class DcConfigController {
 
     @Resource
-    private DcConfigService dcConfigService;
+    private PDUDcConfigService PDUDcConfigService;
 
     @PostMapping("/create")
     @Operation(summary = "创建pdu数据采集配置")
     @PreAuthorize("@ss.hasPermission('pdu:dc-config:create')")
     public CommonResult<Short> createDcConfig(@Valid @RequestBody DcConfigSaveReqVO createReqVO) {
-        return success(dcConfigService.createDcConfig(createReqVO));
+        return success(PDUDcConfigService.createDcConfig(createReqVO));
     }
 
     @PutMapping("/update")
     @Operation(summary = "更新pdu数据采集配置")
     @PreAuthorize("@ss.hasPermission('pdu:dc-config:update')")
     public CommonResult<Boolean> updateDcConfig(@Valid @RequestBody DcConfigSaveReqVO updateReqVO) {
-        dcConfigService.updateDcConfig(updateReqVO);
+        PDUDcConfigService.updateDcConfig(updateReqVO);
         return success(true);
     }
 
@@ -58,7 +57,7 @@ public class DcConfigController {
     @Parameter(name = "id", description = "编号", required = true)
     @PreAuthorize("@ss.hasPermission('pdu:dc-config:delete')")
     public CommonResult<Boolean> deleteDcConfig(@RequestParam("id") Short id) {
-        dcConfigService.deleteDcConfig(id);
+        PDUDcConfigService.deleteDcConfig(id);
         return success(true);
     }
 
@@ -67,7 +66,7 @@ public class DcConfigController {
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
     @PreAuthorize("@ss.hasPermission('pdu:dc-config:query')")
     public CommonResult<DcConfigRespVO> getDcConfig(@RequestParam("id") Short id) {
-        DcConfigDO dcConfig = dcConfigService.getDcConfig(id);
+        DcConfigDO dcConfig = PDUDcConfigService.getDcConfig(id);
         return success(BeanUtils.toBean(dcConfig, DcConfigRespVO.class));
     }
 
@@ -75,7 +74,7 @@ public class DcConfigController {
     @Operation(summary = "获得pdu数据采集配置分页")
     @PreAuthorize("@ss.hasPermission('pdu:dc-config:query')")
     public CommonResult<PageResult<DcConfigRespVO>> getDcConfigPage(@Valid DcConfigPageReqVO pageReqVO) {
-        PageResult<DcConfigDO> pageResult = dcConfigService.getDcConfigPage(pageReqVO);
+        PageResult<DcConfigDO> pageResult = PDUDcConfigService.getDcConfigPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, DcConfigRespVO.class));
     }
 
@@ -86,7 +85,7 @@ public class DcConfigController {
     public void exportDcConfigExcel(@Valid DcConfigPageReqVO pageReqVO,
               HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
-        List<DcConfigDO> list = dcConfigService.getDcConfigPage(pageReqVO).getList();
+        List<DcConfigDO> list = PDUDcConfigService.getDcConfigPage(pageReqVO).getList();
         // 导出 Excel
         ExcelUtils.write(response, "pdu数据采集配置.xls", "数据", DcConfigRespVO.class,
                         BeanUtils.toBean(list, DcConfigRespVO.class));

@@ -36,7 +36,7 @@ public interface CabinetStatisConfigMapper extends BaseMapperX<CabinetStatisConf
                 .eqIfPresent(CabinetStatisConfigDO::getTimingPush, reqVO.getTimingPush())
                 .betweenIfPresent(CabinetStatisConfigDO::getCreateTime, reqVO.getCreateTime())
                 .eqIfPresent(CabinetStatisConfigDO::getRedisCron, reqVO.getRedisCron())
-                .orderByDesc(CabinetStatisConfigDO::getId));
+                .orderByAsc(CabinetStatisConfigDO::getId));
     }
 
 }

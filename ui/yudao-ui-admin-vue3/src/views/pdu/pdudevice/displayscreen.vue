@@ -206,7 +206,10 @@
         </div>
         
       </el-card>
-      <el-collapse-item title="回路" name="1" v-if="controlVis.haveCircle">
+      <el-collapse-item name="1" v-if="controlVis.haveCircle">
+        <template #title>
+          <div style="width: 5%;font-size: 16px;">回路</div>
+        </template>
         <ContentWrap>
           <el-table  :data="circleList" :stripe="true" :show-overflow-tooltip="true">
             <el-table-column label="回路" align="center" prop="circuit" />
@@ -252,7 +255,10 @@
           </el-table>
         </ContentWrap>
       </el-collapse-item>
-      <el-collapse-item title="输出位" name="3" v-if="controlVis.haveOutPut">
+      <el-collapse-item  name="3" v-if="controlVis.haveOutPut">
+        <template #title>
+          <div style="width: 5%;font-size: 16px;">输出位</div>
+        </template>
         <ContentWrap>
           <el-table  :data="output" :stripe="true" :show-overflow-tooltip="true">
             <el-table-column label="序号" align="center" prop="no" />
@@ -292,7 +298,10 @@
           </el-table>
         </ContentWrap>
       </el-collapse-item>
-      <el-collapse-item title="传感器" name="2" v-if="controlVis.haveSensor">
+      <el-collapse-item name="2" v-if="controlVis.haveSensor">
+        <template #title>
+          <div style="width: 5%;font-size: 16px;">传感器</div>
+        </template>
         <ContentWrap>
           <el-table  :data="sensorList" :stripe="true" :show-overflow-tooltip="true">
             <el-table-column label="传感器名称" align="center" prop="temName" />

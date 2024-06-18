@@ -24,7 +24,7 @@ public interface PDUStatisConfigMapper extends BaseMapperX<StatisConfigDO> {
                 .eqIfPresent(StatisConfigDO::getEqDayCron, reqVO.getEqDayCron())
                 .eqIfPresent(StatisConfigDO::getEqWeekCron, reqVO.getEqWeekCron())
                 .eqIfPresent(StatisConfigDO::getEqMonthCron, reqVO.getEqMonthCron())
-                .orderByDesc(StatisConfigDO::getId));
+                .orderByAsc(StatisConfigDO::getId));
     }
 
 }

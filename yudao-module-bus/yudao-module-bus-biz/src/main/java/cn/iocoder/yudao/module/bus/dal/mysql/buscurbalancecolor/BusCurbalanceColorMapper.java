@@ -24,7 +24,7 @@ public interface BusCurbalanceColorMapper extends BaseMapperX<BusCurbalanceColor
                 .eqIfPresent(BusCurbalanceColorDO::getRangeThree, reqVO.getRangeThree())
                 .eqIfPresent(BusCurbalanceColorDO::getRangeFour, reqVO.getRangeFour())
                 .betweenIfPresent(BusCurbalanceColorDO::getCreateTime, reqVO.getCreateTime())
-                .orderByDesc(BusCurbalanceColorDO::getId));
+                .orderByAsc(BusCurbalanceColorDO::getId));
     }
 
 }

@@ -19,6 +19,8 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.service.busindex.BusIndexService;
 
+import java.util.List;
+
 @Tag(name = "管理后台 - 始端箱索引")
 @RestController
 @RequestMapping("/bus/index")
@@ -75,6 +77,27 @@ public class BusIndexController {
         return success(BeanUtils.toBean(pageResult, BusRedisDataRes.class));
     }
 
+    @GetMapping("/bustempage")
+    @Operation(summary = "获得始端箱索引分页")
+    public CommonResult<PageResult<BusTemRes>> getBusTemPage(@Valid BusIndexPageReqVO pageReqVO) {
+        PageResult<BusTemRes> pageResult = indexService.getBusTemPage(pageReqVO);
+        return success(BeanUtils.toBean(pageResult, BusTemRes.class));
+    }
+
+    @GetMapping("/buspfpage")
+    @Operation(summary = "获得始端箱索引分页")
+    public CommonResult<PageResult<BusPFRes>> getBusPFPage(@Valid BusIndexPageReqVO pageReqVO) {
+        PageResult<BusPFRes> pageResult = indexService.getBusPFPage(pageReqVO);
+        return success(BeanUtils.toBean(pageResult, BusPFRes.class));
+    }
+
+    @GetMapping("/busharmonicpage")
+    @Operation(summary = "获得始端箱索引分页")
+    public CommonResult<PageResult<BusHarmonicRes>> getBusHarmonicPage(@Valid BusIndexPageReqVO pageReqVO) {
+        PageResult<BusHarmonicRes> pageResult = indexService.getBusHarmonicPage(pageReqVO);
+        return success(BeanUtils.toBean(pageResult, BusHarmonicRes.class));
+    }
+
     /**
      * 机柜用能页面
      *
@@ -89,9 +112,15 @@ public class BusIndexController {
 
     @PostMapping("/balance")
     @Operation(summary = "获得始端箱索引分页")
-    public CommonResult<PageResult<BusBalanceDataRes>> getBusBalancePage(@Valid BusIndexPageReqVO pageReqVO) {
+    public CommonResult<PageResult<BusBalanceDataRes>> getBusBalancePage(@RequestBody BusIndexPageReqVO pageReqVO) {
         PageResult<BusBalanceDataRes> pageResult = indexService.getBusBalancePage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BusBalanceDataRes.class));
+    }
+
+    @GetMapping("/devKeyList")
+    @Operation(summary = "获得始端箱devKey列表")
+    public List<String> getDevKeyList() {
+        return indexService.getDevKeyList();
     }
 
 //    @GetMapping("/export-excel")
