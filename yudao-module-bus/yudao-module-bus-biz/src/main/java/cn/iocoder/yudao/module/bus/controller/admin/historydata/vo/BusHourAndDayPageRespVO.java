@@ -5,25 +5,19 @@ import com.alibaba.excel.annotation.ExcelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-@Schema(description = "管理后台 - 母线插接箱（小时、天数据） 导出数据")
+@Schema(description = "管理后台 - 母线始端箱（小时、天数据） 导出数据")
 @Data
 @ExcelIgnoreUnannotated
-public class BoxHourAndDayPageRespVO {
+public class BusHourAndDayPageRespVO {
 
     @ExcelProperty("母线名称")
     private String bus_name;
-
-    @ExcelProperty("插接箱名称")
-    private String box_name;
 
     @ExcelProperty("位置")
     private String location;
 
     @ExcelProperty("IP地址")
     private String ip_addr;
-
-    @ExcelProperty("输出位")
-    private Integer outlet_id;
 
     @ExcelProperty("记录时间")
     private String create_time;
@@ -73,9 +67,39 @@ public class BoxHourAndDayPageRespVO {
     @ExcelProperty("最小视在功率(kVA)")
     private String pow_apparent_min_value;
 
-    //回路
-    @ExcelProperty("回路")
-    private Integer loop_id;
+    @ExcelProperty("平均剩余电流(A)")
+    private String cur_residual_avg_value;
+
+    @ExcelProperty("最大剩余电流时间")
+    private String cur_residual_max_time;
+
+    @ExcelProperty("最大剩余电流(A)")
+    private String cur_residual_max_value;
+
+    @ExcelProperty("最小剩余电流时间")
+    private String cur_residual_min_time;
+
+    @ExcelProperty("最小剩余电流(A)")
+    private String cur_residual_min_value;
+
+    @ExcelProperty("平均零线电流(A)")
+    private String cur_zero_avg_value;
+
+    @ExcelProperty("最大零线电流时间")
+    private String cur_zero_max_time;
+
+    @ExcelProperty("最大零线电流(A)")
+    private String cur_zero_max_value;
+
+    @ExcelProperty("最小零线电流时间")
+    private String cur_zero_min_time;
+
+    @ExcelProperty("最小零线电流(A)")
+    private String cur_zero_min_value;
+
+    // 相
+    @ExcelProperty("相")
+    private String line_id;
 
     @ExcelProperty("平均电压(V)")
     private String vol_avg_value;
@@ -107,24 +131,19 @@ public class BoxHourAndDayPageRespVO {
     @ExcelProperty("最小电流(A)")
     private String cur_min_value;
 
-    // 相
-    @ExcelProperty("相")
-    private Integer line_id;
+    @ExcelProperty("平均线电压(V)")
+    private String vol_line_avg_value;
 
-    @ExcelProperty("平均电流谐波含量")
-    private String cur_thd_avg_value;
+    @ExcelProperty("最大线电压时间")
+    private String vol_line_max_time;
 
-    @ExcelProperty("最大电流谐波含量时间")
-    private String cur_thd_max_time;
+    @ExcelProperty("最大线电压(V)")
+    private String vol_line_max_value;
 
-    @ExcelProperty("最大电流谐波含量")
-    private String cur_thd_max_value;
+    @ExcelProperty("最小线电压时间")
+    private String vol_line_min_time;
 
-    @ExcelProperty("最小电流谐波含量时间")
-    private String cur_thd_min_time;
-
-    @ExcelProperty("最小电流谐波含量")
-    private String cur_thd_min_value;
-
+    @ExcelProperty("最小线电压(V)")
+    private String vol_line_min_value;
 
 }

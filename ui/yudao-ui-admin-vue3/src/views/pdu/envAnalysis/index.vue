@@ -1,9 +1,16 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="环境数据分析" :showCheckbox="false">
+  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="环境数据分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
+      <br/>    <br/> 
+      <div class="nav_data">
+        <div class="carousel-container">
+          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
+            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
+              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
+            </el-carousel-item>
+          </el-carousel>
+        </div> 
       <div class="nav_header">
-        <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div> -->
-        <br/>
         <span v-if="nowAddress">{{nowAddress}}</span>
         <span v-if="nowLocation">( {{nowLocation}} ) </span>
         <br/>
@@ -14,19 +21,19 @@
         </template>
         <br/>
       </div>
-      <div class="nav_data" v-if="queryParams.granularity == 'realtime'">
-        <el-statistic title="最高温度" :value="formatNumber(maxTemDataTemp, 1)">
-          <template #suffix>℃</template>
-        </el-statistic>
-        <el-statistic v-if="formatNumber(maxTemDataTemp, 1) != 0.0" title="发生于" :value="maxTemDataTimeTemp"/>
-        <el-statistic v-if="formatNumber(maxTemDataTemp, 1) == 0.0" title="发生于" :value="Object('-')"/>
-          <br/>
-        <el-statistic title="最低温度" :value="formatNumber(minTemDataTemp, 1)">
-          <template #suffix>℃</template>
-        </el-statistic>
-        <el-statistic v-if="formatNumber(minTemDataTemp, 1) != 0.0" title="发生于" :value="minTemDataTimeTemp"/>
-        <el-statistic v-if="formatNumber(minTemDataTemp, 1) == 0.0" title="发生于" :value="Object('-')"/>
+      <div class="nav_content" v-if="queryParams.granularity == 'realtime'">
+        <el-descriptions title="" direction="vertical" :column="1" border >
+          <el-descriptions-item label="最高温度 | 发生时间">
+            <span>{{ formatNumber(maxTemDataTemp, 1) }} kWh</span><br/>
+            <span v-if="maxTemDataTimeTemp">{{ maxTemDataTimeTemp }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="最低温度 | 发生时间">
+            <span>{{ formatNumber(minTemDataTemp, 1) }} kWh</span><br/>
+            <span v-if="minTemDataTimeTemp">{{ minTemDataTimeTemp }}</span>
+          </el-descriptions-item>
+        </el-descriptions>
       </div>
+    </div>
     </template>
     <template #ActionBar>
       <el-tabs v-model="activeName">
@@ -132,7 +139,7 @@ import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { EnvDataApi } from '@/api/pdu/envData'
 import { formatDate } from '@/utils/formatTime'
-
+import PDUImage from '@/assets/imgs/PDU.jpg'
 
 /** pdu曲线 */
 defineOptions({ name: 'PDUEnvLine' })
@@ -145,7 +152,6 @@ const nowLocation = ref('')// 导航栏的位置信息
 const instance = getCurrentInstance();
 const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
-const cascadeAddr = ref(0) // 数字类型的级联地址
 const needFlush = ref(0) // 是否需要刷新图表
 const loading = ref(false) //  列表的加载中
 const detect = ref('11') as any// 监测点的值 默认全部
@@ -161,7 +167,12 @@ const queryParams = reactive({
   // 进入页面原始数据默认显示最近一小时
   timeRange: defaultHourTimeRange(1)
 })
-
+const carouselItems = ref([
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+    ]);//侧边栏轮播图图片路径
 // 传感器选项
 const sensorOptions = ref([
   { value: "11", label: '前上'},
@@ -819,32 +830,24 @@ onMounted( async () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 13px;
-    padding-top: 28px;
-  }
-  .nav_header_img {
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid #555;
-  }
-
-  img {
-      width: 75px;
-      height: 75px;
+    font-size: 16px;
   }
 
 .nav_data{
-  padding-left: 50px;
+  padding-left: 5px;
+  width: 195px;
+}
+.nav_content span{
+  font-size: 18px;
+}
+.carousel-container {
+  width: 100%;
+  max-width: 100%;
+}
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
 }
 
-  .line {
-    height: 1px;
-    margin-top: 28px;
-    margin-bottom: 20px;
-    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
-  }
 </style>

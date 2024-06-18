@@ -1,25 +1,23 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机架能耗趋势">
     <template #NavInfo>
-    <div class="nav_header">
-      <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div> -->
-      <br/>
-          <span>全部机架新增能耗记录</span>
-        <br/>
-      </div>
-      <div class="nav_data">
-        <el-statistic title="最近一天" :value="lastDayTotalData">
-            <template #suffix>条</template>
-        </el-statistic>
-        <br/>
-        <el-statistic title="最近一周" :value="lastWeekTotalData"> 
-          <template #suffix>条</template>
-        </el-statistic>
-        <br/>
-        <el-statistic title="最近一月" :value="lastMonthTotalData"> 
-          <template #suffix>条</template>
-        </el-statistic>
-      </div>
+   <br/>    <br/> 
+        <div class="nav_data">
+          <div class="carousel-container">
+            <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
+              <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
+                <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
+              </el-carousel-item>
+            </el-carousel> -->
+          </div>
+          <div class="nav_content">
+            <el-descriptions title="" direction="vertical" :column="1" border >
+              <el-descriptions-item label="最近一天"><span >{{ lastDayTotalData }} 条</span></el-descriptions-item>
+              <el-descriptions-item label="最近一周"><span >{{ lastWeekTotalData }} 条</span></el-descriptions-item>
+              <el-descriptions-item label="最近一月" ><span >{{ lastMonthTotalData }} 条</span></el-descriptions-item>
+            </el-descriptions>
+          </div>
+        </div>
     </template>
     <template #ActionBar>
       <el-form
@@ -82,7 +80,7 @@
             :width="column.width"
           >
             <template #default="{ row }" v-if="column.slot === 'actions'">
-              <el-button link type="primary" @click="toDetails(row.pdu_id, row.address)">详情</el-button>
+              <el-button link type="primary" @click="toDetails(row.rack_id, row.location, row.rack_name)">详情</el-button>
             </template>
           </el-table-column>
           
@@ -102,7 +100,7 @@
                 v-if="child.istrue"
               >
                 <template #default="{ row }" v-if="child.slot === 'actions'">
-                  <el-button link type="primary" @click="toDetails(row.pdu_id, row.address)">详情</el-button>
+                   <el-button link type="primary" @click="toDetails(row.rack_id, row.location, row.rack_name)">详情</el-button>
                 </template>
               </el-table-column>
             </template>
@@ -137,12 +135,11 @@
 
 <script setup lang="ts">
 import dayjs from 'dayjs'
-import download from '@/utils/download'
+// import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/rack/energyConsumption'
-import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime } from '@/utils/formatTime'
 import { CabinetApi } from '@/api/cabinet/info'
 import { IndexApi } from '@/api/rack/index'
-import type Node from 'element-plus/es/components/tree/src/model/node'
 import * as echarts from 'echarts';
 const { push } = useRouter()
 defineOptions({ name: 'PowerAnalysis' })
@@ -152,8 +149,6 @@ const lastDayTotalData = ref(0)
 const lastWeekTotalData = ref(0)
 const lastMonthTotalData = ref(0)
 const instance = getCurrentInstance();
-const message = useMessage()
-const activeName = ref('myData') 
 const loading = ref(true)
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
@@ -308,7 +303,7 @@ const shouldShowDataExceedMessage = computed(() => {
 });
 
 // 格式化日期
-function formatTime(row: any, column: any, cellValue: number): string {
+function formatTime(_row: any, _column: any, cellValue: number): string {
   if (!cellValue) {
     return ''
   }
@@ -317,7 +312,7 @@ function formatTime(row: any, column: any, cellValue: number): string {
 }
 
 // 格式化电能列数据，保留1位小数
-function formatEle(row: any, column: any, cellValue: number): string {
+function formatEle(_row: any, _column: any, cellValue: number): string {
   return cellValue.toFixed(1);
 }
 
@@ -394,9 +389,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.el-form-item__label{
-  width: auto;
-}
 .realTotal{
   float: right;
   padding-top: 20px;
@@ -406,29 +398,21 @@ onMounted(() => {
   color: #606266
 }
 
-  .nav_header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: 13px;
-    padding-top: 28px;
-  }
-  .nav_header_img {
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid #555;
-  }
-
-  img {
-      width: 75px;
-      height: 75px;
-  }
-
 .nav_data{
-  padding-left: 55px;
+  padding-left: 20px;
+  width: 170px;
+}
+.nav_content span{
+  font-size: 18px;
+}
+.carousel-container {
+  width: 100%;
+  max-width: 100%;
+}
+
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
 }
 </style>

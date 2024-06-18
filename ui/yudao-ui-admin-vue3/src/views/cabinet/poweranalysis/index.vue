@@ -1,25 +1,23 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜能耗趋势">
     <template #NavInfo>
-      <div class="nav_header">
-      <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div> -->
-      <br/>
-      <span>全部机柜新增能耗记录</span>
-        <br/>
-      </div>
-      <div class="nav_data">
-        <el-statistic title="最近一天" :value="lastDayTotalData">
-            <template #suffix>条</template>
-        </el-statistic>
-        <br/>
-        <el-statistic title="最近一周" :value="lastWeekTotalData"> 
-          <template #suffix>条</template>
-        </el-statistic>
-        <br/>
-        <el-statistic title="最近一月" :value="lastMonthTotalData"> 
-          <template #suffix>条</template>
-        </el-statistic>
-      </div>
+    <br/>    <br/> 
+        <div class="nav_data">
+          <div class="carousel-container">
+            <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
+              <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
+                <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
+              </el-carousel-item>
+            </el-carousel>
+          </div>
+          <div class="nav_content">
+          <el-descriptions title="" direction="vertical" :column="1" border >
+              <el-descriptions-item label="最近一天"><span>{{ lastDayTotalData }} 条</span></el-descriptions-item>
+              <el-descriptions-item label="最近一周"><span>{{ lastWeekTotalData }} 条</span></el-descriptions-item>
+              <el-descriptions-item label="最近一月" ><span>{{ lastMonthTotalData }} 条</span></el-descriptions-item>
+            </el-descriptions>
+          </div>
+        </div>
     </template>
     <template #ActionBar>
       <el-form
@@ -55,12 +53,11 @@
 
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-           <!-- <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button> -->
-           <el-button type="success" plain :loading="exportLoading">
+           <el-button type="success" plain :loading="exportLoading" @click="handleExport">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
          </el-form-item>
-      </el-form>
+      </el-form> 
     </template>
     <template #Content>
       <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
@@ -82,7 +79,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.pdu_id, row.address)">详情</el-button>
+            <el-button link type="primary" @click="toDetails(row.cabinet_id, row.address)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -138,10 +135,11 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/cabinet/energyConsumption'
-import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime } from '@/utils/formatTime'
 import { CabinetApi } from '@/api/cabinet/info'
-import type Node from 'element-plus/es/components/tree/src/model/node'
 import * as echarts from 'echarts';
+const message = useMessage() // 消息弹窗
+import PDUImage from '@/assets/imgs/PDU.jpg'
 const { push } = useRouter()
 defineOptions({ name: 'PowerAnalysis' })
 
@@ -150,8 +148,6 @@ const lastDayTotalData = ref(0)
 const lastWeekTotalData = ref(0)
 const lastMonthTotalData = ref(0)
 const instance = getCurrentInstance();
-const message = useMessage()
-const activeName = ref('myData') 
 const loading = ref(true)
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
@@ -167,7 +163,12 @@ const queryParams = reactive({
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
 const exportLoading = ref(false)
-
+const carouselItems = ref([
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+    ]);//侧边栏轮播图图片路径
 // 时间段快捷选项
 const shortcuts = [
   {
@@ -242,21 +243,18 @@ watch(() => queryParams.granularity, () => {
 
 const tableColumns = ref([
   { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
-  { label: '开始电能(kWh)', align: 'center', istrue: true, children: [
-      { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
-      { label: '值', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
+  { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px' , istrue:true},
+  { label: '开始', align: 'center', istrue: true, children: [
+      { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime1, width: '150px' , istrue:true},
+      { label: '电能(kWh)', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
     ]
   },
-  { label: '结束电能(kWh)', align: 'center', istrue: true, children: [
-      { label: '日期', align: 'center', prop: 'end_time' , formatter: formatTime, width: '200px' , istrue:true},
-      { label: '值', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle},
+  { label: '结束', align: 'center', istrue: true, children: [
+      { label: '日期', align: 'center', prop: 'end_time' , formatter: formatTime1, width: '150px' , istrue:true},
+      { label: '电能(kWh)', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle},
     ]
   },
-  { label: '耗电量(kWh)', align: 'center', istrue: true, children: [
-      { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px' , istrue:true},
-      { label: '值', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
-    ]
-  },
+  { label: '耗电量\n(kWh)', align: 'center', prop: 'eq_value' ,istrue: true,formatter: formatEle },
   { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '120px'},
 ]) as any;
 
@@ -304,17 +302,24 @@ const shouldShowDataExceedMessage = computed(() => {
   return queryParams.pageNo === lastPageNo && total.value >= 10000;
 });
 
-// 格式化日期
-function formatTime(row: any, column: any, cellValue: number): string {
+// 格式化日期(表格列的时间去掉时分秒 不用传参)
+function formatTime(_row: any, _column: any, cellValue: number): string {
   if (!cellValue) {
     return ''
   }
 
   return dayjs(cellValue).format('YYYY-MM-DD')
 }
+// 格式化日期(表格列的时间去掉时分秒和年)
+function formatTime1(_row: any, _column: any, cellValue: number): string {
+  if (!cellValue) {
+    return ''
+  }
+  return dayjs(cellValue).format('MM-DD')
+}
 
 // 格式化电能列数据，保留1位小数
-function formatEle(row: any, column: any, cellValue: number): string {
+function formatEle(_row: any, _column: any, cellValue: number): string {
   return cellValue.toFixed(1);
 }
 
@@ -369,6 +374,27 @@ const getNavNewData = async() => {
   lastMonthTotalData.value = res.month
 }
 
+/** 导出按钮操作 */
+const handleExport = async () => {
+  try {
+    // 导出的二次确认
+    await message.exportConfirm()
+    // 发起导出
+    queryParams.pageNo = 1
+    exportLoading.value = true
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await EnergyConsumptionApi.exportEQPageData(queryParams, axiosConfig)
+    await download.excel(data, '机柜能耗趋势.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
+  } finally {
+    exportLoading.value = false
+  }
+}
+
 
 /** 详情操作*/
 const toDetails = (cabinetId: number, location: string) => {
@@ -385,9 +411,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.el-form-item__label{
-  width: auto;
-}
+
 .realTotal{
   float: right;
   padding-top: 20px;
@@ -397,29 +421,21 @@ onMounted(() => {
   color: #606266
 }
 
-  .nav_header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: 13px;
-    padding-top: 28px;
-  }
-  .nav_header_img {
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid #555;
-  }
-
-  img {
-      width: 75px;
-      height: 75px;
-  }
-
 .nav_data{
-  padding-left: 55px;
+  padding-left: 20px;
+  width: 170px;
+}
+.nav_content span{
+  font-size: 18px;
+}
+.carousel-container {
+  width: 100%;
+  max-width: 100%;
+}
+
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
 }
 </style>

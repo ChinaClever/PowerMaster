@@ -32,4 +32,20 @@ export const EnergyConsumptionApi = {
     return await request.get({ url: `/cabinet/eq-data/one-day`, params })
   },
 
+  // 导出机柜能耗趋势历史数据 Excel
+  exportEQPageData: async (params, axiosConfig) => {
+    return await request.download({ url: `/cabinet/eq-data/export-excel`, params, ...axiosConfig })
+  },
+
+  // 导出机柜电费统计历史数据 Excel
+  exportBillPageData: async (params, axiosConfig) => {
+    return await request.download({ url: `/cabinet/eq-data/bill-export-excel`, params, ...axiosConfig })
+  },
+
+  // 导出机柜电能记录历史数据 Excel
+  exportRealtimeEQPageData: async (params, axiosConfig) => {
+    return await request.download({ url: `/cabinet/eq-data/realtime-export-excel`, params, ...axiosConfig })
+  },
+  
+
 }

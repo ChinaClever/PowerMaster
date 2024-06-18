@@ -1,12 +1,14 @@
 package cn.iocoder.yudao.module.pdu.controller.admin.historydata;
 
-import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.EnvDataDetailsReqVO;
-import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.EnvDataPageReqVo;
-import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataPageReqVO;
-import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataDetailsReqVO;
+import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
+import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
+import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.*;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.validation.annotation.Validated;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,11 +16,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
+import static cn.iocoder.yudao.framework.operatelog.core.enums.OperateTypeEnum.EXPORT;
 
 import cn.iocoder.yudao.module.pdu.service.historydata.HistoryDataService;
 
@@ -89,17 +93,40 @@ public class HistoryDataController {
     }
 
 
-//    @GetMapping("/export-excel")
-//    @Operation(summary = "导出pdu历史数据 Excel")
-////    @PreAuthorize("@ss.hasPermission('pdu:history-data:export')")
-//    @OperateLog(type = EXPORT)
-//    public void exportHistoryDataExcel(@Valid HistoryDataPageReqVO pageReqVO,
-//              HttpServletResponse response) throws IOException {
-//        pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
-//        List<PduHdaTotalRealtimeDO> list = historyDataService.getHistoryDataPage(pageReqVO).getList();
-//        // 导出 Excel
-//        ExcelUtils.write(response, "pdu历史数据.xls", "数据", HistoryDataRespVO.class,
-//                        BeanUtils.toBean(list, HistoryDataRespVO.class));
-//    }
+    @GetMapping("/export-excel")
+    @Operation(summary = "导出pdu电力历史数据 Excel")
+//    @PreAuthorize("@ss.hasPermission('pdu:history-data:export')")
+    @OperateLog(type = EXPORT)
+    public void exportHistoryDataExcel(HistoryDataPageReqVO pageReqVO,
+              HttpServletResponse response) throws IOException {
+        pageReqVO.setPageSize(10000);
+        List<Object> list = historyDataService.getHistoryDataPage(pageReqVO).getList();
+        // 导出 Excel
+        if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+            ExcelUtils.write(response, "pdu电力历史数据.xlsx", "数据", RealtimePageRespVO.class,
+                    BeanUtils.toBean(list, RealtimePageRespVO.class));
+        } else {
+            ExcelUtils.write(response, "pdu电力历史数据.xlsx", "数据", HourAndDayPageRespVO.class,
+                    BeanUtils.toBean(list, HourAndDayPageRespVO.class));
+        }
+    }
+
+    @GetMapping("/env-export-excel")
+    @Operation(summary = "导出pdu环境历史数据 Excel")
+//    @PreAuthorize("@ss.hasPermission('pdu:env-history-data:export')")
+    @OperateLog(type = EXPORT)
+    public void exportEnvHistoryDataExcel(EnvDataPageReqVo pageReqVO,
+                                       HttpServletResponse response) throws IOException {
+        pageReqVO.setPageSize(10000);
+        List<Object> list = historyDataService.getEnvDataPage(pageReqVO).getList();
+        // 导出 Excel
+        if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+            ExcelUtils.write(response, "pdu环境历史数据.xlsx", "数据", EnvRealtimePageRespVO.class,
+                    BeanUtils.toBean(list, EnvRealtimePageRespVO.class));
+        } else {
+            ExcelUtils.write(response, "pdu环境历史数据.xlsx", "数据", EnvHourAndDayPageRespVO.class,
+                    BeanUtils.toBean(list, EnvHourAndDayPageRespVO.class));
+        }
+    }
 
 }

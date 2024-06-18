@@ -5,9 +5,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
-import cn.iocoder.yudao.module.bus.controller.admin.historydata.vo.BoxRealtimePageRespVO;
-import cn.iocoder.yudao.module.bus.controller.admin.historydata.vo.BusHistoryDataDetailsReqVO;
-import cn.iocoder.yudao.module.bus.controller.admin.historydata.vo.BusHistoryDataPageReqVO;
+import cn.iocoder.yudao.module.bus.controller.admin.historydata.vo.*;
 import cn.iocoder.yudao.module.bus.service.historydata.BusHistoryDataService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,9 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
+import java.util.*;
+import java.util.stream.Collectors;
+import java.lang.reflect.Field;
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 import static cn.iocoder.yudao.framework.operatelog.core.enums.OperateTypeEnum.EXPORT;
 
@@ -40,13 +38,6 @@ public class BusHistoryDataController {
         Map resultList = busHistoryDataService.getHistoryDataTypeMaxValue(boxIds);
         return success(resultList);
     }
-
-//    @GetMapping("/sensorId-max-value")
-//    @Operation(summary = "获得母线环境数据传感器数量的最大值")
-//    public CommonResult<Map> getSensorIdMaxValue() throws IOException {
-//        Map resultList = historyDataService.getSensorIdMaxValue();
-//        return success(resultList);
-//    }
 
     @GetMapping("/bus-page")
     @Operation(summary = "获得母线始端箱历史数据分页")
@@ -90,17 +81,42 @@ public class BusHistoryDataController {
         return success(map);
     }
 
-    @GetMapping("/export-excel")
-    @Operation(summary = "导出母线历史数据 Excel")
+    @GetMapping("/box-export-excel")
+    @Operation(summary = "导出母线插接箱历史数据 Excel")
 //    @PreAuthorize("@ss.hasPermission('母线:history-data:export')")
     @OperateLog(type = EXPORT)
-    public void exportHistoryDataExcel(BusHistoryDataPageReqVO pageReqVO,
+    public void exportBoxHistoryDataExcel(BusHistoryDataPageReqVO pageReqVO,
                                        HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = busHistoryDataService.getBoxHistoryDataPage(pageReqVO).getList();
         // 导出 Excel
-        ExcelUtils.write(response, "母线插接箱历史数据.xlsx", "数据", BoxRealtimePageRespVO.class,
-                BeanUtils.toBean(list, BoxRealtimePageRespVO.class));
+        if (Objects.equals(pageReqVO.getGranularity(), "realtime")){
+            ExcelUtils.write(response, "母线插接箱历史数据.xlsx", "数据", BoxRealtimePageRespVO.class,
+                    BeanUtils.toBean(list, BoxRealtimePageRespVO.class));
+        }else{
+            ExcelUtils.write(response, "母线插接箱历史数据.xlsx", "数据", BoxHourAndDayPageRespVO.class,
+                    BeanUtils.toBean(list, BoxHourAndDayPageRespVO.class));
+        }
+
+    }
+
+    @GetMapping("/bus-export-excel")
+    @Operation(summary = "导出母线始端箱历史数据 Excel")
+//    @PreAuthorize("@ss.hasPermission('母线:history-data:export')")
+    @OperateLog(type = EXPORT)
+    public void exportBusHistoryDataExcel(BusHistoryDataPageReqVO pageReqVO,
+                                       HttpServletResponse response) throws IOException {
+
+        pageReqVO.setPageSize(10000);
+        List<Object> list = busHistoryDataService.getBusHistoryDataPage(pageReqVO).getList();
+        // 导出 Excel
+        if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+            ExcelUtils.write(response, "母线始端箱历史数据.xlsx", "数据", BusRealtimePageRespVO.class,
+                    BeanUtils.toBean(list, BusRealtimePageRespVO.class));
+        } else {
+            ExcelUtils.write(response, "母线始端箱历史数据.xlsx", "数据", BusHourAndDayPageRespVO.class,
+                    BeanUtils.toBean(list, BusHourAndDayPageRespVO.class));
+        }
     }
 
 }

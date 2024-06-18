@@ -1,24 +1,22 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU能耗趋势">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU能耗趋势" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
-        <div class="nav_header">
-          <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div> -->
-          <br/>
-          <span>全部PDU新增能耗记录</span>
-            <br/>
-        </div>
+        <br/>    <br/> 
         <div class="nav_data">
-          <el-statistic title="最近一天" :value="lastDayTotalData">
-              <template #suffix>条</template>
-          </el-statistic>
-          <br/>
-          <el-statistic title="最近一周" :value="lastWeekTotalData"> 
-            <template #suffix>条</template>
-          </el-statistic>
-          <br/>
-          <el-statistic title="最近一月" :value="lastMonthTotalData"> 
-            <template #suffix>条</template>
-          </el-statistic>
+          <div class="carousel-container">
+            <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
+              <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
+                <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
+              </el-carousel-item>
+            </el-carousel>
+          </div>
+          <div class="nav_content">
+            <el-descriptions title="全部PDU新增能耗记录" direction="vertical" :column="1" width="60px" border >
+              <el-descriptions-item label="最近一天"><span >{{ lastDayTotalData }} 条</span></el-descriptions-item>
+              <el-descriptions-item label="最近一周"><span >{{ lastWeekTotalData }} 条</span></el-descriptions-item>
+              <el-descriptions-item label="最近一月" ><span >{{ lastMonthTotalData }} 条</span></el-descriptions-item>
+            </el-descriptions>
+          </div>
         </div>
     </template>
     <template #ActionBar>
@@ -67,8 +65,7 @@
 
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-           <!-- <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button> -->
-           <el-button type="success" plain :loading="exportLoading">
+           <el-button type="success" plain @click="handleExport" :loading="exportLoading">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
          </el-form-item>
@@ -148,13 +145,13 @@
 
 <script setup lang="ts">
 import dayjs from 'dayjs'
-import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption'
 import { HistoryDataApi } from '@/api/pdu/historydata'
-import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime } from '@/utils/formatTime'
 import { CabinetApi } from '@/api/cabinet/info'
-import type Node from 'element-plus/es/components/tree/src/model/node'
 import * as echarts from 'echarts';
+import PDUImage from '@/assets/imgs/PDU.jpg';
+import download from '@/utils/download'
 const { push } = useRouter()
 defineOptions({ name: 'PowerAnalysis' })
 
@@ -163,13 +160,18 @@ const lastDayTotalData = ref(0)
 const lastWeekTotalData = ref(0)
 const lastMonthTotalData = ref(0)
 const instance = getCurrentInstance();
-const message = useMessage()
-const activeName = ref('myData') 
 const loading = ref(true)
+const message = useMessage() // 消息弹窗
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
 const selectTimeRange = ref(undefined)
+const carouselItems = ref([
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+    ]);//侧边栏轮播图图片路径
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -281,21 +283,18 @@ watch(() => queryParams.granularity, () => {
 const tableColumns = ref([
   { label: '位置', align: 'center', prop: 'address' , istrue:true, width: '180px'},
   { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '150px'},
-  { label: '开始电能(kWh)', align: 'center', istrue: true, children: [
-      { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '150px' , istrue:true},
-      { label: '值', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
+  { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '150px' , istrue:true},
+  { label: '开始', align: 'center', istrue: true, children: [
+      { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime1, width: '150px' , istrue:true},
+      { label: '电能(kWh)', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
     ]
   },
-  { label: '结束电能(kWh)', align: 'center', istrue: true, children: [
-      { label: '日期', align: 'center', prop: 'end_time' , formatter: formatTime, width: '150px' , istrue:true},
-      { label: '值', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle},
+  { label: '结束', align: 'center', istrue: true, children: [
+      { label: '日期', align: 'center', prop: 'end_time' , formatter: formatTime1, width: '150px' , istrue:true},
+      { label: '电能(kWh)', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle},
     ]
   },
-  { label: '耗电量(kWh)', align: 'center', istrue: true, children: [
-      { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '150px' , istrue:true},
-      { label: '值', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
-    ]
-  },
+  { label: '耗电量\n(kWh)', align: 'center', prop: 'eq_value' ,istrue: true,formatter: formatEle },
   { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '120px'},
 ]) as any;
 
@@ -350,17 +349,24 @@ const shouldShowDataExceedMessage = computed(() => {
   return queryParams.pageNo === lastPageNo && total.value >= 10000;
 });
 
-// 格式化日期
-function formatTime(row: any, column: any, cellValue: number): string {
+// 格式化日期(表格列的时间去掉时分秒 不用传参)
+function formatTime(_row: any, _column: any, cellValue: number): string {
   if (!cellValue) {
     return ''
   }
-
   return dayjs(cellValue).format('YYYY-MM-DD')
 }
 
-// 格式化电能列数据，保留1位小数
-function formatEle(row: any, column: any, cellValue: number): string {
+// 格式化日期(表格列的时间去掉时分秒和年)
+function formatTime1(_row: any, _column: any, cellValue: number): string {
+  if (!cellValue) {
+    return ''
+  }
+  return dayjs(cellValue).format('MM-DD')
+}
+
+// 格式化电能列数据，保留1位小数（不用传参）
+function formatEle(_row: any, _column: any, cellValue: number): string {
   return cellValue.toFixed(1);
 }
 
@@ -451,27 +457,26 @@ const toDetails = (pduId: number, address: string) => {
   push('/pdu/nenghao/ecdistribution?pduId='+pduId+'&address='+address);
 }
 
-// /** 重置按钮操作 */
-// const resetQuery = () => {
-//  queryFormRef.value.resetFields()
-//  handleQuery()
-// }
-
-
-// /** 导出按钮操作 */
-// const handleExport = async () => {
-//  try {
-//    // 导出的二次确认
-//    await message.exportConfirm()
-//    // 发起导出
-//    exportLoading.value = true
-//    const data = await HistoryDataApi.exportHistoryData(queryParams)
-//    download.excel(data, '电能分析.xls')
-//  } catch {
-//  } finally {
-//    exportLoading.value = false
-//  }
-// }
+/** 导出按钮操作 */
+const handleExport = async () => {
+  try {
+    // 导出的二次确认
+    await message.exportConfirm()
+    // 发起导出
+    queryParams.pageNo = 1
+    exportLoading.value = true
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await EnergyConsumptionApi.exportEQPageData(queryParams, axiosConfig)
+    await download.excel(data, 'PDU能耗趋势.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
+  } finally {
+    exportLoading.value = false
+  }
+}
 
 /** 初始化 **/
 onMounted(() => {
@@ -480,13 +485,10 @@ onMounted(() => {
   getTypeMaxValue();
   getList();
 });
-
+ 
 </script>
 
 <style scoped>
-.el-form-item__label{
-  width: auto;
-}
 .realTotal{
   float: right;
   padding-top: 20px;
@@ -495,30 +497,22 @@ onMounted(() => {
   font-weight: 400; 
   color: #606266
 }
-  .nav_header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: 13px;
-    padding-top: 28px;
-  }
-  .nav_header_img {
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid #555;
-  }
-
-  img {
-      width: 75px;
-      height: 75px;
-  }
 
 .nav_data{
-  padding-left: 55px;
+  padding-left: 20px;
+  width: 170px;
+}
+.nav_content span{
+  font-size: 18px;
+}
+.carousel-container {
+  width: 100%;
+  max-width: 100%;
 }
 
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+}
 </style>
