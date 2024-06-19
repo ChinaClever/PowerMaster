@@ -3,13 +3,10 @@ package cn.iocoder.yudao.module.bus.service.busdcconfig;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busdcconfig.vo.*;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busdcconfig.BusDcConfigDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 
 import cn.iocoder.yudao.module.bus.dal.mysql.busdcconfig.BusDcConfigMapper;
@@ -27,13 +24,13 @@ import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.*;
 public class BusDcConfigServiceImpl implements BusDcConfigService {
 
     @Resource
-    private BusDcConfigMapper dcConfigMapper;
+    private BusDcConfigMapper busDcConfigMapper;
 
     @Override
     public Short createDcConfig(BusDcConfigSaveReqVO createReqVO) {
         // 插入
         BusDcConfigDO dcConfig = BeanUtils.toBean(createReqVO, BusDcConfigDO.class);
-        dcConfigMapper.insert(dcConfig);
+        busDcConfigMapper.insert(dcConfig);
         // 返回
         return dcConfig.getId();
     }
@@ -44,7 +41,7 @@ public class BusDcConfigServiceImpl implements BusDcConfigService {
         validateDcConfigExists(updateReqVO.getId());
         // 更新
         BusDcConfigDO updateObj = BeanUtils.toBean(updateReqVO, BusDcConfigDO.class);
-        dcConfigMapper.updateById(updateObj);
+        busDcConfigMapper.updateById(updateObj);
     }
 
     @Override
@@ -52,23 +49,23 @@ public class BusDcConfigServiceImpl implements BusDcConfigService {
         // 校验存在
         validateDcConfigExists(id);
         // 删除
-        dcConfigMapper.deleteById(id);
+        busDcConfigMapper.deleteById(id);
     }
 
     private void validateDcConfigExists(Short id) {
-        if (dcConfigMapper.selectById(id) == null) {
+        if (busDcConfigMapper.selectById(id) == null) {
             throw exception(DC_CONFIG_NOT_EXISTS);
         }
     }
 
     @Override
     public BusDcConfigDO getDcConfig(Short id) {
-        return dcConfigMapper.selectById(id);
+        return busDcConfigMapper.selectById(id);
     }
 
     @Override
     public PageResult<BusDcConfigDO> getDcConfigPage(BusDcConfigPageReqVO pageReqVO) {
-        return dcConfigMapper.selectPage(pageReqVO);
+        return busDcConfigMapper.selectPage(pageReqVO);
     }
 
 }
