@@ -6,6 +6,7 @@ import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.*;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * 始端箱索引 Service 接口
@@ -63,4 +64,6 @@ public interface BoxIndexService {
     PageResult<BoxPFRes> getBoxPFPage(BoxIndexPageReqVO pageReqVO);
 
     PageResult<BoxHarmonicRes> getBoxHarmonicPage(BoxIndexPageReqVO pageReqVO);
+
+    List<String> getDevKeyList();
 }

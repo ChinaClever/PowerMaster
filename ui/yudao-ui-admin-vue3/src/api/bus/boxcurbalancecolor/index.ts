@@ -17,8 +17,8 @@ export const BoxCurbalanceColorApi = {
   },
 
   // 查询插接箱不平衡度颜色详情
-  getBoxCurbalanceColor: async (id: number) => {
-    return await request.get({ url: `/bus/box-curbalance-color/get?id=` + id })
+  getBoxCurbalanceColor: async () => {
+    return await request.get({ url: `/bus/box-curbalance-color/get`  })
   },
 
   // 新增插接箱不平衡度颜色
@@ -40,4 +40,4 @@ export const BoxCurbalanceColorApi = {
   exportBoxCurbalanceColor: async (params) => {
     return await request.download({ url: `/bus/box-curbalance-color/export-excel`, params })
   },
-}
+}

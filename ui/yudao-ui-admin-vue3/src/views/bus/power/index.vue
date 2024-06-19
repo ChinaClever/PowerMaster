@@ -45,12 +45,13 @@
         label-width="68px"                          
       >
         <el-form-item label="网络地址" prop="devKey">
-          <el-input
+          <el-autocomplete
             v-model="queryParams.devKey"
-            placeholder="请输入网络地址"
+            :fetch-suggestions="querySearch"
             clearable
-            @keyup.enter="handleQuery"
             class="!w-200px"
+            placeholder="请输入网络地址"
+            @select="handleQuery"
           />
         </el-form-item>
         <el-form-item>
@@ -139,9 +140,6 @@
           <template #default="scope" >
             <el-tag type="danger" v-if="scope.row.avolStatus != 0" >告警</el-tag>
             <el-tag v-else >正常</el-tag>
-            <el-text line-clamp="2" v-if="scope.row.avolStatus != null">
-              {{ scope.row.avolStatus }}
-            </el-text>
           </template>
         </el-table-column>
         <el-table-column v-if="valueMode == 1" label="B相电压" align="center" prop="bvol" width="130px" >
@@ -341,6 +339,31 @@ const pageSizeArr = ref([24,36,48])
 const switchValue = ref(0)
 const valueMode = ref(0)
 
+const devKeyList = ref([])
+const loadAll = async () => {
+  var data = await IndexApi.devKeyList();
+  var objectArray = data.map((str) => {
+    return { value: str };
+  });
+  return objectArray;
+}
+
+const querySearch = (queryString: string, cb: any) => {
+
+  const results = queryString
+    ? devKeyList.value.filter(createFilter(queryString))
+    : devKeyList.value
+  // call callback function to return suggestions
+  cb(results)
+}
+
+const createFilter = (queryString: string) => {
+  return (devKeyList) => {
+    return (
+      devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+    )
+  }
+}
 
 const handleClick = (row) => {
   console.log("click",row)
@@ -554,7 +577,8 @@ const handleExport = async () => {
 }
 
 /** 初始化 **/
-onMounted(() => {
+onMounted(async () => {
+  devKeyList.value = await loadAll();
   getList()
   getNavList();
   flashListTimer.value = setInterval((getListNoLoading), 5000);

@@ -8,6 +8,7 @@ import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalWeekD
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalMonthDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalWeekDo;
+import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusIndexDTO;
@@ -306,7 +307,6 @@ public class BusIndexServiceImpl implements BusIndexService {
 
     @Override
     public PageResult<BusBalanceDataRes> getBusBalancePage(BusIndexPageReqVO pageReqVO) {
-
         PageResult<BusIndexDO> busIndexDOPageResult = busIndexMapper.selectPage(pageReqVO);
         BusCurbalanceColorDO busCurbalanceColorDO = busCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
         List<BusIndexDO> list = busIndexDOPageResult.getList();
@@ -494,6 +494,13 @@ public class BusIndexServiceImpl implements BusIndexService {
 
         }
         return new PageResult<>(res,busIndexDOPageResult.getTotal());
+    }
+
+    @Override
+    public List<String> getDevKeyList() {
+        List<String> result = busIndexMapper.selectList().stream().limit(10).collect(Collectors.toList())
+                .stream().map(BusIndexDO::getDevKey).collect(Collectors.toList());
+        return result;
     }
 
     /**

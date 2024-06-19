@@ -1,31 +1,38 @@
 <template>
   <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="母线始端箱电力分析" :showCheckbox="false">
     <template #NavInfo>
-      <div class="nav_header">
-        <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div> -->
-        <br/>
-        <span v-if="nowAddress">{{nowAddress}}</span>
-        <span v-if="nowLocation">( {{nowLocation}} ) </span>
-        <br/>
-        <template v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total'">
-          <span>{{queryParams.timeRange[0]}}</span>
-          <span>至</span>
-          <span>{{queryParams.timeRange[1]}}</span>
-        </template>
-        <br/>
-      </div>
-      <div class="nav_data" v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total'">
-        <el-statistic title="有功功率最大值" :value="formatNumber(maxActivePowDataTemp, 3)">
-          <template #suffix>kW</template>
-        </el-statistic>
-        <el-statistic v-if="formatNumber(maxActivePowDataTemp, 3) != 0.0" title="发生于" :value="maxActivePowDataTimeTemp"/>
-        <el-statistic v-if="formatNumber(maxActivePowDataTemp, 3) == 0.0" title="发生于" :value="Object('-')"/>
+      <br/>    <br/> 
+      <div class="nav_data">
+        <div class="carousel-container">
+          <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
+            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
+              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
+            </el-carousel-item>
+          </el-carousel> -->
+        </div> 
+        <div class="nav_header">
+          <span v-if="nowAddress">{{nowAddress}}</span>
+          <span v-if="nowLocation">( {{nowLocation}} ) </span>
           <br/>
-        <el-statistic title="有功功率最小值" :value="formatNumber(minActivePowDataTemp, 3)">
-          <template #suffix>kW</template>
-        </el-statistic>
-        <el-statistic v-if="formatNumber(minActivePowDataTemp, 3) != 0.0" title="发生于" :value="minActivePowDataTimeTemp"/>
-        <el-statistic v-if="formatNumber(minActivePowDataTemp, 3) == 0.0" title="发生于" :value="Object('-')"/>
+          <template v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total'">
+            <span>{{queryParams.timeRange[0]}}</span>
+            <span>至</span>
+            <span>{{queryParams.timeRange[1]}}</span>
+          </template>
+          <br/>
+        </div>
+        <div class="nav_content" v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total'">
+        <el-descriptions title="" direction="vertical" :column="1" border >
+          <el-descriptions-item label="有功功率最大值 | 发生时间">
+            <span>{{ formatNumber(maxActivePowDataTemp, 3) }} kWh</span> <br/>
+            <span v-if="maxActivePowDataTimeTemp">{{ maxActivePowDataTimeTemp }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="有功功率最小值 | 发生时间">
+            <span>{{ formatNumber(minActivePowDataTemp, 3) }} kWh</span><br/>
+            <span v-if="minActivePowDataTimeTemp">{{ minActivePowDataTimeTemp }}</span>
+          </el-descriptions-item>
+        </el-descriptions>
+        </div>
       </div>
     </template>
     <template #ActionBar>
@@ -184,8 +191,7 @@
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { HistoryDataApi } from '@/api/bus/historydata'
-import { formatDate, convertDate, betweenDay } from '@/utils/formatTime'
-import { get } from 'http';
+import { formatDate} from '@/utils/formatTime'
 import { CabinetApi } from '@/api/cabinet/info'
 import { ElMessage } from 'element-plus'
 
@@ -201,7 +207,6 @@ const nowLocationTemp = ref('')// 暂时存储点击导航栏的位置信息 确
 const instance = getCurrentInstance();
 const tableData = ref<Array<{ }>>([]); // 列表数据
 const headerData = ref<any[]>([]);
-const cascadeAddr = ref(0) // 数字类型的级联地址
 const needFlush = ref(0) // 是否需要刷新图表
 const loading = ref(false) // 加载中
 const queryParams = reactive({
@@ -1403,33 +1408,24 @@ onMounted( async () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 13px;
-    padding-top: 28px;
-  }
-  .nav_header_img {
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid #555;
-  }
-
-  img {
-      width: 75px;
-      height: 75px;
+    font-size: 16px;
   }
 
 .nav_data{
-  padding-left: 50px;
+  padding-left: 5px;
+  width: 195px;
 }
-
-  .line {
-    height: 1px;
-    margin-top: 28px;
-    margin-bottom: 20px;
-    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
-  }
+.nav_content span{
+  font-size: 18px;
+}
+.carousel-container {
+  width: 100%;
+  max-width: 100%;
+}
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+}
 
 </style>

@@ -1,42 +1,39 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="PDU能耗排名" :showCheckbox="false">
+  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="PDU能耗排名" :showCheckbox="false" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
+      <br/>    <br/> 
+      <div class="nav_data">
+        <div class="carousel-container">
+          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
+            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
+              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
+            </el-carousel-item>
+          </el-carousel>
+        </div> 
       <div class="nav_header">
-        <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div> -->
-        <br/>
         <span v-if="nowAddress">{{nowAddress}}</span>
         <span v-if="nowLocation">( {{nowLocation}} ) </span>
         <br/>
-        <span>{{selectTimeRange[0]}} 至 {{selectTimeRange[1]}}</span>
+        <span>{{selectTimeRange[0]}} </span>
+        <span>至</span> 
+        <span>{{selectTimeRange[1]}}</span>
         <br/>
       </div>
-      <div class="nav_data">
-        <el-statistic title="" :value="formatNumber(totalEqData, 1)">
-          <template #prefix>总耗电量</template>
-          <template #suffix>kWh</template>
-        </el-statistic>
-          <br/>
-        <el-statistic title="" :value="formatNumber(maxEqDataTemp, 1)">
-          <template #prefix>最大耗电量</template>
-          <template #suffix>kWh</template>
-        </el-statistic>
-        <el-statistic v-if="formatNumber(totalEqData, 1) != 0.0" title="" :value="maxEqDataTimeTemp">
-          <template #prefix>发生于</template>
-        </el-statistic>
-        <el-statistic v-if="formatNumber(totalEqData, 1) == 0.0" title="" :value="Object('-')">
-          <template #prefix>发生于</template>
-        </el-statistic>
-          <br/>
-        <el-statistic title="" :value="formatNumber(minEqDataTemp, 1)">
-          <template #prefix>最小耗电量</template>
-          <template #suffix>kWh</template>
-        </el-statistic>
-        <el-statistic v-if="formatNumber(totalEqData, 1) != 0.0" title="" :value="minEqDataTimeTemp">
-         <template #prefix>发生于</template>
-        </el-statistic>
-        <el-statistic v-if="formatNumber(totalEqData, 1) == 0.0" title="" :value="Object('-')">
-         <template #prefix>发生于</template>
-        </el-statistic>
+      <div class="nav_content">
+        <el-descriptions title="" direction="vertical" :column="1" border >
+          <el-descriptions-item label="总耗电量">
+            <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="最大耗电量 | 发生时间">
+            <span >{{ formatNumber(maxEqDataTemp, 1) }} kWh</span> <br/>
+            <span  v-if="maxEqDataTimeTemp">{{ maxEqDataTimeTemp }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="最小耗电量 | 发生时间">
+            <span >{{ formatNumber(minEqDataTemp, 1) }} kWh</span> <br/>
+            <span  v-if="minEqDataTimeTemp">{{ minEqDataTimeTemp }}</span>
+          </el-descriptions-item>
+        </el-descriptions>
+      </div>
       </div>
     </template>
     <template #ActionBar>
@@ -131,14 +128,14 @@
 </template>
 
 <script setup lang="ts">
-import { ElTree, ElMessage } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { CabinetApi } from '@/api/cabinet/info'
 import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
 import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption'
 import { HistoryDataApi } from '@/api/pdu/historydata'
-
+import PDUImage from '@/assets/imgs/PDU.jpg';
 defineOptions({ name: 'ECDistribution' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
@@ -152,6 +149,12 @@ const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
 const instance = getCurrentInstance();
 const selectTimeRange = ref(defaultDayTimeRange(14))
+const carouselItems = ref([
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+    ]);//侧边栏轮播图图片路径
 const queryParams = reactive({
   pduId: undefined as number | undefined,
   outletId: undefined as number | undefined,
@@ -667,33 +670,25 @@ onMounted(async () => {
     flex-direction: column;
     align-items: center;
     font-size: 16px;
-    padding-top: 28px;
-  }
-  .nav_header_img {
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid #555;
   }
 
-  img {
-      width: 75px;
-      height: 75px;
-  }
 
 .nav_data{
-  padding-left: 15px;
+  padding-left: 5px;
+  width: 195px;
+}
+.nav_content span{
+  font-size: 18px;
+}
+.carousel-container {
+  width: 100%;
+  max-width: 100%;
 }
 
-  .line {
-    height: 1px;
-    margin-top: 28px;
-    margin-bottom: 20px;
-    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
-  }
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+}
 
-  
 </style>

@@ -67,4 +67,8 @@ export const IndexApi = {
   getBoxHarmonicPage: async (params: any) => {
     return await request.get({ url: `/box/index/boxharmonicpage`, params })
   },
+
+  devKeyList: async () => {
+    return await request.download({ url: `/box/index/devKeyList` })
+  },
 }

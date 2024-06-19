@@ -1,17 +1,20 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机架电能记录">
     <template #NavInfo>
-      <div class="nav_header">
-        <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div> -->
-        <br/>
-        <span>全部机架最近一天新增记录</span>
-          <br/>
-      </div>
+      <br/>    <br/> 
       <div class="nav_data">
-        <el-statistic title="" :value="navTotalData">
-            <template #prefix>电能</template>
-            <template #suffix>条</template>
-        </el-statistic>
+        <div class="carousel-container">
+          <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
+            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
+              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
+            </el-carousel-item>
+          </el-carousel> -->
+        </div>
+        <div class="nav_content">
+          <el-descriptions title="全部机架最近一天新增记录" direction="vertical" :column="1" border >
+            <el-descriptions-item label="电能"><span>{{ navTotalData }} 条</span></el-descriptions-item>
+          </el-descriptions>
+        </div>
       </div>
     </template>
     <template #ActionBar>
@@ -22,7 +25,7 @@
         :inline="true"
         label-width="auto"
       >
-      <el-form-item label="时间段" prop="timeRange">
+      <el-form-item label="时间段" prop="timeRange"> 
         <el-date-picker
         value-format="YYYY-MM-DD HH:mm:ss"
         v-model="queryParams.timeRange"
@@ -37,7 +40,7 @@
 
         <el-form-item >
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          <el-button type="success" plain :loading="exportLoading">
+          <el-button type="success" plain :loading="exportLoading" @click="handleExport">
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
         </el-form-item>
@@ -83,15 +86,13 @@ import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/rack/energyConsumption'
 import { CabinetApi } from '@/api/cabinet/info'
 import { IndexApi } from '@/api/rack/index'
-import * as echarts from 'echarts';
 
 defineOptions({ name: 'PowerRecords' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const navTotalData = ref(0)
-const instance = getCurrentInstance();
-const message = useMessage()
 const loading = ref(true)
+const message = useMessage() // 消息弹窗
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
@@ -148,8 +149,8 @@ const shortcuts = [
 const tableColumns = ref([
   { label: '机架名', align: 'center', prop: 'rack_name' , istrue:true},
   { label: '位置', align: 'center', prop: 'location' , istrue:true},
-  { label: '电能(kWh)', align: 'center', prop: 'ele_total' , istrue:true, formatter: formatEle},
   { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+  { label: '电能(kWh)', align: 'center', prop: 'ele_total' , istrue:true, formatter: formatEle},
 ]);
 
 /** 初始化数据 */
@@ -177,7 +178,7 @@ const shouldShowDataExceedMessage = computed(() => {
 
 
 // 格式化电能列数据，保留1位小数
-function formatEle(row: any, column: any, cellValue: number): string {
+function formatEle(_row: any, _column: any, cellValue: number): string {
   return cellValue.toFixed(1);
 }
 
@@ -192,7 +193,7 @@ const disabledDate = (date) => {
 }
 
 // 格式化日期
-function formatTime(row: any, column: any, cellValue: number): string {
+function formatTime(_row: any, _column: any, cellValue: number): string {
   if (!cellValue) {
     return ''
   }
@@ -235,6 +236,27 @@ const handleQuery = () => {
   getList()
 }
 
+/** 导出按钮操作 */
+const handleExport = async () => {
+  try {
+    // 导出的二次确认
+    await message.exportConfirm()
+    // 发起导出
+    queryParams.pageNo = 1
+    exportLoading.value = true
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await EnergyConsumptionApi.exportRealtimeEQPageData(queryParams, axiosConfig)
+    await download.excel(data, '机架电能记录.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
+  } finally {
+    exportLoading.value = false
+  }
+}
+
 /** 初始化 **/
 onMounted(() => {
   getNavList()
@@ -244,9 +266,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.el-form-item__label{
-  width: auto;
-}
 .realTotal{
   float: right;
   padding-top: 20px;
@@ -255,36 +274,21 @@ onMounted(() => {
   font-weight: 400; 
   color: #606266
 }
- .nav_header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: 13px;
-    padding-top: 28px;
-  }
-  .nav_header_img {
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid #555;
-  }
-
-  img {
-      width: 75px;
-      height: 75px;
-  }
-
 .nav_data{
-  padding-left: 15px;
+  padding-left: 7px;
+  width: 200px;
+}
+.nav_content span{
+  font-size: 18px;
+}
+.carousel-container {
+  width: 100%;
+  max-width: 100%;
 }
 
-  .line {
-    height: 1px;
-    margin-top: 28px;
-    margin-bottom: 20px;
-    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
-  }
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+}
 </style>

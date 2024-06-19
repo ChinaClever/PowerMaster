@@ -62,8 +62,8 @@ public class BoxCurbalanceColorController {
     @GetMapping("/get")
     @Operation(summary = "获得插接箱不平衡度颜色")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
-    public CommonResult<BoxCurbalanceColorRespVO> getBoxCurbalanceColor(@RequestParam("id") Long id) {
-        BoxCurbalanceColorDO boxCurbalanceColor = boxCurbalanceColorService.getBoxCurbalanceColor(id);
+    public CommonResult<BoxCurbalanceColorRespVO> getBoxCurbalanceColor() {
+        BoxCurbalanceColorDO boxCurbalanceColor = boxCurbalanceColorService.getBoxCurbalanceColor();
         return success(BeanUtils.toBean(boxCurbalanceColor, BoxCurbalanceColorRespVO.class));
     }
 

@@ -1,34 +1,29 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU电力数据">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU电力数据" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
-      <div class="nav_header">
-        <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div> -->
-        <br/>
-        <span v-if="queryParams.granularity == 'realtime' ">全部PDU最近一分钟新增记录</span>
-        <span v-if="queryParams.granularity == 'hour' ">全部PDU最近一小时新增记录</span>
-        <span v-if="queryParams.granularity == 'day' ">全部PDU最近一天新增记录</span>
-        <br/>
-      </div>
+      <br/>    <br/> 
       <div class="nav_data">
-        <el-statistic title="" :value="navTotalData">
-            <template #prefix>总数据</template>
-            <template #suffix>条</template>
-        </el-statistic>
-           <br/>
-        <el-statistic title="" :value="navLineData">
-          <template #prefix>相数据</template>
-          <template #suffix>条</template>
-        </el-statistic>
-           <br/>
-        <el-statistic title="" :value="navLoopData">
-          <template #prefix>回路数据</template>
-          <template #suffix>条</template>
-        </el-statistic>
-        <br/>
-        <el-statistic title="" :value="navOutletData">
-          <template #prefix>输出位数据</template>
-          <template #suffix>条</template>
-        </el-statistic>
+        <div class="carousel-container">
+          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
+            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
+              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
+            </el-carousel-item>
+          </el-carousel>
+        </div>
+        <div class="nav_header">
+          <br/>
+          <span v-if="queryParams.granularity == 'realtime' ">全部PDU最近一分钟新增记录</span>
+          <span v-if="queryParams.granularity == 'hour' ">全部PDU最近一小时新增记录</span>
+          <span v-if="queryParams.granularity == 'day' ">全部PDU最近一天新增记录</span>
+        </div>
+        <div class="nav_content" >
+          <el-descriptions title="" direction="vertical" :column="1" border >
+            <el-descriptions-item label="总数据"><span >{{ navTotalData }} 条</span></el-descriptions-item>
+            <el-descriptions-item label="相数据"><span >{{ navLineData }} 条</span></el-descriptions-item>
+            <el-descriptions-item label="回路数据" ><span >{{ navLoopData }} 条</span></el-descriptions-item>
+            <el-descriptions-item label="输出位数据" ><span >{{ navOutletData }} 条</span></el-descriptions-item>
+          </el-descriptions>
+        </div>
       </div>
     </template>
     <template #ActionBar>
@@ -39,26 +34,6 @@
         :inline="true"
         label-width="auto"
       >
-        <!-- <el-form-item label="IP地址" prop="ipAddr">
-          <el-input
-            v-model="queryParams.ipAddr"
-            placeholder="请输入IP地址"
-            clearable
-            @keyup.enter="handleQuery"
-            class="!w-160px"
-          />
-        </el-form-item>
-
-        <el-form-item label="级联地址" prop="cascadeAddr">
-            <el-input-number
-              v-model="cascadeAddr"
-              :min="0"
-              controls-position="right"
-              :value-on-clear="0"
-                class="!w-148px"
-            />
-        </el-form-item> -->
-
         <el-form-item label="参数类型" prop="type">
         <el-cascader
           v-model="defaultSelected"
@@ -166,6 +141,7 @@ import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { HistoryDataApi } from '@/api/pdu/historydata'
 import { CabinetApi } from '@/api/cabinet/info'
+import PDUImage from '@/assets/imgs/PDU.jpg';
 const { push } = useRouter()
 /** pdu历史数据 列表 */
 defineOptions({ name: 'HistoryData' })
@@ -197,6 +173,12 @@ const queryParams = reactive({
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
+const carouselItems = ref([
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+    ]);//侧边栏轮播图图片路径
 // 时间段快捷选项
 const shortcuts = [
     {
@@ -705,42 +687,37 @@ const getList = async () => {
 }
 
 // 格式化电压(V)列数据，保留一位小数
-function formatVoltage(row: any, column: any, cellValue: number): string {
+function formatVoltage(_row: any, _column: any, cellValue: number): string {
   return cellValue.toFixed(1);
 }
 
 // 格式化电流(A)列数据，保留两位小数
-function formatCurrent(row: any, column: any, cellValue: number): string {
+function formatCurrent(_row: any, _column: any, cellValue: number): string {
   return cellValue.toFixed(2);
 }
 
 // 格式化功率列数据，保留三位小数
-function formatPower(row: any, column: any, cellValue: number): string {
+function formatPower(_row: any, _column: any, cellValue: number): string {
   return cellValue.toFixed(3);
 }
 
-// 格式化电能列数据，保留一位小数
-function formatEle(row: any, column: any, cellValue: number): string {
-  return cellValue.toFixed(1);
-}
-
 // 格式化功率因素列数据，保留两位小数
-function formatPowerFactor(row: any, column: any, cellValue: number): string {
+function formatPowerFactor(_row: any, _column: any, cellValue: number): string {
   return cellValue.toFixed(2);
 }
 
 // 格式化相id
-function formatLineId(row: any, column: any, cellValue: number): string {
+function formatLineId(_row: any, _column: any, cellValue: number): string {
    return 'L'+cellValue;
 }
 
 // 格式化回路id
-function formatLoopId(row: any, column: any, cellValue: number): string {
+function formatLoopId(_row: any, _column: any, cellValue: number): string {
    return 'C'+cellValue;
 }
 
 // 格式化日期
-function formatTime(row: any, column: any, cellValue: number): string {
+function formatTime(_row: any, _column: any, cellValue: number): string {
   if (!cellValue) {
     return ''
   }
@@ -862,10 +839,16 @@ const handleExport = async () => {
     // 导出的二次确认
     await message.exportConfirm()
     // 发起导出
+    queryParams.pageNo = 1
     exportLoading.value = true
-    const data = await HistoryDataApi.exportHistoryData(queryParams)
-    download.excel(data, 'pdu历史数据.xls')
-  } catch {
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await HistoryDataApi.exportHistoryData(queryParams, axiosConfig)
+    await download.excel(data, 'PDU电力历史数据.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
   } finally {
     exportLoading.value = false
   }
@@ -891,9 +874,6 @@ onMounted( () => {
 </script>
 
 <style scoped>
-.el-form-item__label{
-  width: auto;
-}
 .realTotal{
   float: right;
   padding-top: 20px;
@@ -906,32 +886,27 @@ onMounted( () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 14px;
-    padding-top: 28px;
-  }
-  .nav_header_img {
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid #555;
+    font-size: 15px; 
+    font-weight: bold;
   }
 
-  img {
-      width: 75px;
-      height: 75px;
-  }
 
 .nav_data{
-  padding-left: 48px;
+  padding-left: 7px;
+  width: 200px;
+}
+.nav_content span{
+  font-size: 18px;
+}
+.carousel-container {
+  width: 100%;
+  max-width: 100%;
 }
 
-  .line {
-    height: 1px;
-    margin-top: 28px;
-    margin-bottom: 20px;
-    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
-  }
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+}
+
 </style>

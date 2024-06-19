@@ -1,11 +1,9 @@
 package cn.iocoder.yudao.module.bus.service.boxcurbalancecolor;
 
-import java.util.*;
 import javax.validation.*;
 import cn.iocoder.yudao.module.bus.controller.admin.boxcurbalancecolor.vo.*;
 import cn.iocoder.yudao.module.bus.dal.dataobject.boxcurbalancecolor.BoxCurbalanceColorDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
 
 /**
  * 插接箱不平衡度颜色 Service 接口
@@ -39,10 +37,9 @@ public interface BoxCurbalanceColorService {
     /**
      * 获得插接箱不平衡度颜色
      *
-     * @param id 编号
      * @return 插接箱不平衡度颜色
      */
-    BoxCurbalanceColorDO getBoxCurbalanceColor(Long id);
+    BoxCurbalanceColorDO getBoxCurbalanceColor();
 
     /**
      * 获得插接箱不平衡度颜色分页

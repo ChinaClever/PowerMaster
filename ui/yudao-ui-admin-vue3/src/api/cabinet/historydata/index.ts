@@ -14,8 +14,8 @@ export const HistoryDataApi = {
   },
 
   // 导出机柜历史数据 Excel
-  exportHistoryData: async (params) => {
-    return await request.download({ url: `/cabinet/history-data/export-excel`, params })
+  exportHistoryData: async (params, axiosConfig) => {
+    return await request.download({ url: `/cabinet/history-data/export-excel`, params, ...axiosConfig })
   },
 
   // 查询机柜电力数据导航的新增记录数据显示

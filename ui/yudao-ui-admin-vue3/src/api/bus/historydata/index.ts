@@ -28,9 +28,14 @@ export const HistoryDataApi = {
     return await request.get({ url: `/bus/history-data/box-details`, params })
   },
 
-  // 导出母线历史数据 Excel
-  exportHistoryData: async (params, axiosConfig) => {
-    return await request.download({ url: `/bus/history-data/export-excel`, params, ...axiosConfig })
+  // 导出母线插接箱历史数据 Excel
+  exportBoxHistoryData: async (params, axiosConfig) => {
+    return await request.download({ url: `/bus/history-data/box-export-excel`, params, ...axiosConfig })
+  },
+
+  // 导出母线始端箱历史数据 Excel
+  exportBusHistoryData: async (params, axiosConfig) => {
+    return await request.download({ url: `/bus/history-data/bus-export-excel`, params, ...axiosConfig })
   },
 
   // 查询母线始端箱电力数据导航的新增记录数据显示
