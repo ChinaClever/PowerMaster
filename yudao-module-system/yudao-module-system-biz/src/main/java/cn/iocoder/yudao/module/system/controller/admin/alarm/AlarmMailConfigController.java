@@ -78,4 +78,10 @@ public class AlarmMailConfigController {
 
     }
 
+    @PostMapping("/sendSms")
+    @PermitAll
+    public void sendSms(@RequestBody SystemAlarmRecord record){
+        mailConfigService.sendSms(record);
+    }
+
 }
