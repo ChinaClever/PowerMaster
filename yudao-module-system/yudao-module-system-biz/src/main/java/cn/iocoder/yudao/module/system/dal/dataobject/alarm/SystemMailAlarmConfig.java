@@ -32,6 +32,11 @@ public class SystemMailAlarmConfig implements Serializable {
      */
     private int isEnable;
 
+    /**
+     * 描述
+     */
+    private String mailDesc;
+
 
     /**
      * 更新时间

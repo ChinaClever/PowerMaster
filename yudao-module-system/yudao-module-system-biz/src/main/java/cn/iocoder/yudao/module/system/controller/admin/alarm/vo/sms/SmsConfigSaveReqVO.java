@@ -24,4 +24,10 @@ public class SmsConfigSaveReqVO {
     @NotNull(message = "是否启用")
     private Integer isEnable;
 
+    /**
+     * 描述
+     */
+    @Schema(description = "描述",  example = "0")
+    private String smsDesc;
+
 }
