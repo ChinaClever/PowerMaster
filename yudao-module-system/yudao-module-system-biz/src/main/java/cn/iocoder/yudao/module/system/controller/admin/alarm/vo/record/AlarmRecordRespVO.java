@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.system.controller.admin.alarm.vo.record;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -44,8 +45,10 @@ public class AlarmRecordRespVO {
     private String alarmLevelDesc;
 
     @Schema(description = "开始时间", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date startTime;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     @Schema(description = "结束时间", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
     private Date endTime;
 
@@ -62,9 +65,11 @@ public class AlarmRecordRespVO {
     private String confirmReason;
 
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
     private LocalDateTime createTime;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     @Schema(description = "修改时间", requiredMode = Schema.RequiredMode.REQUIRED)
     private LocalDateTime updateTime;
 
