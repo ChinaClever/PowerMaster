@@ -34,6 +34,11 @@ public class SystemSmsAlarmConfig implements Serializable {
 
 
     /**
+     * 描述
+     */
+    private String smsDesc;
+
+    /**
      * 更新时间
      */
     @TableField(fill = FieldFill.INSERT_UPDATE)
