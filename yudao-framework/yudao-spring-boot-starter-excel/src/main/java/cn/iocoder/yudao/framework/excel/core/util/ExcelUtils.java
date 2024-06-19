@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -68,4 +69,29 @@ public class ExcelUtils {
                 .doReadAllSync();
     }
 
+    public static void write(HttpServletResponse response, String filename, String sheetName, List<String> head, List<Object> data, List<KeyValue<ExcelColumn, List<String>>> selectMap) throws IOException {
+        // 输出 Excel
+        EasyExcel.write(response.getOutputStream().toString())
+                .head(generateHead(head))
+                .autoCloseStream(false) // 不要自动关闭，交给 Servlet 自己处理
+                .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy()) // 基于 column 长度，自动适配。最大 255 宽度
+                .registerWriteHandler(new SelectSheetWriteHandler(selectMap)) // 基于固定 sheet 实现下拉框
+                .registerConverter(new LongStringConverter()) // 避免 Long 类型丢失精度
+                .sheet(sheetName).doWrite(data);
+        // 设置 header 和 contentType。写在最后的原因是，避免报错时，响应 contentType 已经被修改了
+        response.addHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(filename, StandardCharsets.UTF_8.name()));
+        response.setContentType("application/vnd.ms-excel;charset=UTF-8");
+    }
+
+    // 生成表头方法
+    private static List<List<String>> generateHead(List<String> headers) {
+        List<List<String>> head = new ArrayList<>();
+        for (String header : headers) {
+            List<String> headColumn = new ArrayList<>();
+            headColumn.add(header);
+            head.add(headColumn);
+            System.out.println(head);
+        }
+        return head;
+    }
 }

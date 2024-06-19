@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div v-if="showSearch" class="head-container">
-      <el-input v-model="deptName" class="mb-20px" clearable placeholder="请输入">
+      <el-input v-model="deptName" class="mb-20px" clearable :placeholder="placeholder">
         <template #prefix>
           <Icon icon="ep:search" />
         </template>
@@ -30,6 +30,7 @@ import { ElTree } from 'element-plus'
 import * as DeptApi from '@/api/system/dept'
 import { defineProps } from 'vue'
 import type Node from 'element-plus/es/components/tree/src/model/node'
+import { string } from 'vue-types'
 
 const emits = defineEmits(['node-click', 'check'])
 const props = defineProps({
@@ -49,6 +50,11 @@ const props = defineProps({
   },
   load: {
     type: Function,
+    required: false
+  },
+  placeholder: {
+    type: String,
+    default: "请输入",
     required: false
   }
 })

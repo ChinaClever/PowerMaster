@@ -1,31 +1,38 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="PDU电力分析" :showCheckbox="false">
+  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="PDU电力分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
-      <div class="nav_header">
-        <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div> -->
-        <br/>
-        <span v-if="nowAddress">{{nowAddress}}</span>
-        <span v-if="nowLocation">( {{nowLocation}} ) </span>
-        <br/>
-        <template v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total'">
-          <span>{{queryParams.timeRange[0]}}</span>
-          <span>至</span>
-          <span>{{queryParams.timeRange[1]}}</span>
-        </template>
-        <br/>
-      </div>
-      <div class="nav_data" v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total'">
-        <el-statistic title="有功功率最大值" :value="formatNumber(maxActivePowDataTemp, 3)">
-          <template #suffix>kW</template>
-        </el-statistic>
-        <el-statistic v-if="formatNumber(maxActivePowDataTemp, 3) != 0.0" title="发生于" :value="maxActivePowDataTimeTemp"/>
-        <el-statistic v-if="formatNumber(maxActivePowDataTemp, 3) == 0.0" title="发生于" :value="Object('-')"/>
+      <br/>    <br/> 
+      <div class="nav_data">
+        <div class="carousel-container">
+          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
+            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
+              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
+            </el-carousel-item>
+          </el-carousel>
+        </div> 
+        <div class="nav_header">
+          <span v-if="nowAddress">{{nowAddress}}</span>
+          <span v-if="nowLocation">( {{nowLocation}} ) </span>
           <br/>
-        <el-statistic title="有功功率最小值" :value="formatNumber(minActivePowDataTemp, 3)">
-          <template #suffix>kW</template>
-        </el-statistic>
-        <el-statistic v-if="formatNumber(minActivePowDataTemp, 3) != 0.0" title="发生于" :value="minActivePowDataTimeTemp"/>
-        <el-statistic v-if="formatNumber(minActivePowDataTemp, 3) == 0.0" title="发生于" :value="Object('-')"/>
+          <template v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total'">
+            <span>{{queryParams.timeRange[0]}}</span>
+            <span>至</span>
+            <span>{{queryParams.timeRange[1]}}</span>
+          </template>
+          <br/>
+        </div>
+        <div class="nav_content" v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total'">
+        <el-descriptions title="" direction="vertical" :column="1" border >
+          <el-descriptions-item label="有功功率最大值 | 发生时间">
+            <span>{{ formatNumber(maxActivePowDataTemp, 3) }} kWh</span> <br/>
+            <span v-if="maxActivePowDataTimeTemp">{{ maxActivePowDataTimeTemp }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="有功功率最小值 | 发生时间">
+            <span>{{ formatNumber(minActivePowDataTemp, 3) }} kWh</span><br/>
+            <span v-if="minActivePowDataTimeTemp">{{ minActivePowDataTimeTemp }}</span>
+          </el-descriptions-item>
+        </el-descriptions>
+        </div>
       </div>
     </template>
     <template #ActionBar>
@@ -42,24 +49,6 @@
         :inline="true"
         label-width="auto"
       >
-      <!-- <el-form-item label="IP地址" prop="ipAddr">
-        <el-input
-          v-model="queryParams.ipAddr"
-          placeholder="请输入IP地址"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-130px"
-        />
-      </el-form-item>
-      <el-form-item label="级联地址" prop="cascadeAddr">
-        <el-input-number
-          v-model="cascadeAddr"
-          :min="0"
-          controls-position="right"
-          :value-on-clear="0"
-          class="!w-100px"
-        />
-      </el-form-item> -->
       <el-form-item label="参数类型" prop="type">
         <el-cascader
           v-model="defaultSelected"
@@ -163,11 +152,10 @@
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { HistoryDataApi } from '@/api/pdu/historydata'
-import { formatDate, convertDate, betweenDay } from '@/utils/formatTime'
-import { get } from 'http';
+import { formatDate} from '@/utils/formatTime'
 import { CabinetApi } from '@/api/cabinet/info'
 import { ElMessage } from 'element-plus'
-
+import PDUImage from '@/assets/imgs/PDU.jpg'
 defineOptions({ name: 'PDUHistoryLine' })
 
 const activeName = ref('realtimeTabPane') // tab默认显示
@@ -195,7 +183,12 @@ const queryParams = reactive({
   // 进入页面原始数据默认显示最近一小时
   timeRange: defaultHourTimeRange(1)
 })
-
+const carouselItems = ref([
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+    ]);//侧边栏轮播图图片路径
 // 监控 cascadeAddr 如果变为 null 将其设置为 0
 watch(() => queryParams.cascadeAddr, (newValue) => {
   if (newValue == null ) {
@@ -1401,33 +1394,23 @@ onMounted( async () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 13px;
-    padding-top: 28px;
-  }
-  .nav_header_img {
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid #555;
-  }
-
-  img {
-      width: 75px;
-      height: 75px;
+    font-size: 16px;
   }
 
 .nav_data{
-  padding-left: 50px;
+  padding-left: 5px;
+  width: 195px;
 }
-
-  .line {
-    height: 1px;
-    margin-top: 28px;
-    margin-bottom: 20px;
-    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
-  }
-
+.nav_content span{
+  font-size: 18px;
+}
+.carousel-container {
+  width: 100%;
+  max-width: 100%;
+}
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+}
 </style>

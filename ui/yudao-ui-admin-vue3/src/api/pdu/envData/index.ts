@@ -25,9 +25,9 @@ export const EnvDataApi = {
     return await request.get({ url: `/pdu/history-data/env-details`, params })
   },
 
-  // 导出pdu历史数据 Excel
-  exportEnvData: async (params) => {
-    return await request.download({ url: `/pdu/history-data/env-export-excel`, params })
+  // 导出pdu环境历史数据 Excel
+  exportEnvHistoryData: async (params, axiosConfig) => {
+    return await request.download({ url: `/pdu/history-data/env-export-excel`, params, ...axiosConfig })
   },
 
   // 查询pdu环境数据导航的新增多少条记录数据

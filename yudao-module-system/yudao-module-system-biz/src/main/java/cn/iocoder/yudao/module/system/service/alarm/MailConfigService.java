@@ -58,6 +58,12 @@ public interface MailConfigService {
      */
     void sendMail(SystemAlarmRecord record);
 
+    /**
+     * 发送短信
+     * @param record 发送短信的内容
+     */
+    void sendSms(SystemAlarmRecord record);
+
 
     /**
      * 播放声音

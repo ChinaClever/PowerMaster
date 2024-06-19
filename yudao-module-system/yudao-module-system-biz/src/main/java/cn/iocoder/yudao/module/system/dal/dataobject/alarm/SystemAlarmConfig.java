@@ -31,6 +31,10 @@ public class SystemAlarmConfig implements Serializable {
      * 告警声音开关
      */
     private int voiceAlarm;
+    /**
+     * 短信告警开关
+     */
+    private int smsAlarm;
 
 
     /**

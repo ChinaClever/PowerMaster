@@ -1,41 +1,39 @@
 <template>
   <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="机柜能耗排名" :showCheckbox="false">
     <template #NavInfo>
+      <br/>    <br/> 
+      <div class="nav_data">
+        <div class="carousel-container">
+          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
+            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
+              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
+            </el-carousel-item>
+          </el-carousel>
+        </div> 
       <div class="nav_header">
-        <!-- <div class="nav_header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div> -->
-        <br/>
         <span v-if="nowAddress">{{nowAddress}}</span>
         <br/>
-        <span>{{selectTimeRange[0]}} 至 {{selectTimeRange[1]}}</span>
+        <span>{{selectTimeRange[0]}} </span>
+        <span>至</span> 
+        <span>{{selectTimeRange[1]}}</span>
         <br/>
       </div>
-      <div class="nav_data">
-        <el-statistic title="" :value="formatNumber(totalEqData, 1)">
-          <template #prefix>总耗电量</template>
-          <template #suffix>kWh</template>
-        </el-statistic>
-          <br/>
-        <el-statistic title="" :value="formatNumber(maxEqDataTemp, 1)">
-          <template #prefix>最大耗电量</template>
-          <template #suffix>kWh</template>
-        </el-statistic>
-        <el-statistic v-if="formatNumber(totalEqData, 1) != 0.0" title="" :value="maxEqDataTimeTemp">
-          <template #prefix>发生于</template>
-        </el-statistic>
-        <el-statistic v-if="formatNumber(totalEqData, 1) == 0.0" title="" :value="Object('-')">
-          <template #prefix>发生于</template>
-        </el-statistic>
-          <br/>
-        <el-statistic title="" :value="formatNumber(minEqDataTemp, 1)">
-          <template #prefix>最小耗电量</template>
-          <template #suffix>kWh</template>
-        </el-statistic>
-        <el-statistic v-if="formatNumber(totalEqData, 1) != 0.0" title="" :value="minEqDataTimeTemp">
-         <template #prefix>发生于</template>
-        </el-statistic>
-        <el-statistic v-if="formatNumber(totalEqData, 1) == 0.0" title="" :value="Object('-')">
-         <template #prefix>发生于</template>
-        </el-statistic>     </div>
+      <div class="nav_content">
+        <el-descriptions title="" direction="vertical" :column="1" border >
+          <el-descriptions-item label="总耗电量">
+            <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="最大耗电量 | 发生时间">
+            <span >{{ formatNumber(maxEqDataTemp, 1) }} kWh</span> <br/>
+            <span  v-if="maxEqDataTimeTemp">{{ maxEqDataTimeTemp }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="最小耗电量 | 发生时间">
+            <span >{{ formatNumber(minEqDataTemp, 1) }} kWh</span> <br/>
+            <span  v-if="minEqDataTimeTemp">{{ minEqDataTimeTemp }}</span>
+          </el-descriptions-item>
+        </el-descriptions>
+      </div>
+      </div>
     </template>
     <template #ActionBar>
       <el-tabs v-model="activeName">
@@ -115,13 +113,13 @@
 </template>
 
 <script setup lang="ts">
-import { ElTree, ElMessage } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { CabinetApi } from '@/api/cabinet/info'
 import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
 import { EnergyConsumptionApi } from '@/api/cabinet/energyConsumption'
-
+import PDUImage from '@/assets/imgs/PDU.jpg';
 defineOptions({ name: 'ECDistribution' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
@@ -140,7 +138,12 @@ const queryParams = reactive({
   // 进入页面原始数据默认显示最近2周
   timeRange: ['', ''],
 })
-
+const carouselItems = ref([
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+    ]);//侧边栏轮播图图片路径
 // 默认查询的时间范围，单位：天
 function defaultDayTimeRange(day: number){
   // 获取当前日期
@@ -464,31 +467,21 @@ onMounted(async () => {
     font-size: 16px;
     padding-top: 28px;
   }
-  .nav_header_img {
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid #555;
-  }
-
-  img {
-      width: 75px;
-      height: 75px;
-  }
-
 .nav_data{
-  padding-left: 15px;
+  padding-left: 5px;
+  width: 195px;
+}
+.nav_content span{
+  font-size: 18px;
+}
+.carousel-container {
+  width: 100%;
+  max-width: 100%;
 }
 
-  .line {
-    height: 1px;
-    margin-top: 28px;
-    margin-bottom: 20px;
-    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
-  }
-
-  
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+}
 </style>

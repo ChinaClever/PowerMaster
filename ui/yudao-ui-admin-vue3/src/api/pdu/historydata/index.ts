@@ -16,11 +16,10 @@ export const HistoryDataApi = {
     return await request.get({ url: `/pdu/history-data/details`, params })
   },
 
-  // 导出pdu历史数据 Excel
-  exportHistoryData: async (params) => {
-    return await request.download({ url: `/pdu/history-data/export-excel`, params })
+  // 导出pdu能耗趋势数据 Excel
+  exportHistoryData: async (params, axiosConfig) => {
+    return await request.download({ url: `/pdu/history-data/export-excel`, params, ...axiosConfig })
   },
-
   // 查询pdu电力数据导航的新增记录数据显示
   getNavNewData: async (granularity: string) => {
     return await request.get({ url: `/pdu/history-data/new-data/`+granularity})

@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 /**
  * @author luowei
  * @version 1.0
- * @description: 系统告警记录
+ * @description: 系统邮件告警
  * @date 2024/6/12 10:57
  */
 @Mapper

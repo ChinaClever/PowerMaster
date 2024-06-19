@@ -2,8 +2,13 @@ package cn.iocoder.yudao.module.rack.controller.admin.historydata;
 
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
+import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
+import cn.iocoder.yudao.module.rack.controller.admin.historydata.vo.HourAndDayPageRespVO;
 import cn.iocoder.yudao.module.rack.controller.admin.historydata.vo.RackHistoryDataDetailsReqVO;
 import cn.iocoder.yudao.module.rack.controller.admin.historydata.vo.RackHistoryDataPageReqVO;
+import cn.iocoder.yudao.module.rack.controller.admin.historydata.vo.RealtimePageRespVO;
 import cn.iocoder.yudao.module.rack.service.historydata.RackHistoryDataService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,10 +19,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
+import static cn.iocoder.yudao.framework.operatelog.core.enums.OperateTypeEnum.EXPORT;
 
 @Tag(name = "管理后台 - 机架历史数据")
 @RestController
@@ -47,6 +56,24 @@ public class RackHistoryDataController {
     public CommonResult<Map<String, Object>> getNavNewData(@PathVariable("granularity") String granularity) throws IOException {
         Map<String, Object> map = rackHistoryDataService.getNavNewData(granularity);
         return success(map);
+    }
+
+    @GetMapping("/export-excel")
+    @Operation(summary = "导出机架电力历史数据 Excel")
+//    @PreAuthorize("@ss.hasPermission('pdu:history-data:export')")
+    @OperateLog(type = EXPORT)
+    public void exportHistoryDataExcel(RackHistoryDataPageReqVO pageReqVO,
+                                       HttpServletResponse response) throws IOException {
+        pageReqVO.setPageSize(10000);
+        List<Object> list = rackHistoryDataService.getHistoryDataPage(pageReqVO).getList();
+        // 导出 Excel
+        if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+            ExcelUtils.write(response, "机架电力历史数据.xlsx", "数据", RealtimePageRespVO.class,
+                    BeanUtils.toBean(list, RealtimePageRespVO.class));
+        } else {
+            ExcelUtils.write(response, "机架电力历史数据.xlsx", "数据", HourAndDayPageRespVO.class,
+                    BeanUtils.toBean(list, HourAndDayPageRespVO.class));
+        }
     }
 
 }
