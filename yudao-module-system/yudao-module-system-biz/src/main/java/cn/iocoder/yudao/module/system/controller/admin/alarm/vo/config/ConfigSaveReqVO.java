@@ -20,4 +20,7 @@ public class ConfigSaveReqVO {
     @Schema(description = "告警声音开关", requiredMode = Schema.RequiredMode.REQUIRED, example = "0")
     private Integer voiceAlarm;
 
+    @Schema(description = "短信告警开关", requiredMode = Schema.RequiredMode.REQUIRED, example = "0")
+    private Integer smsAlarm;
+
 }

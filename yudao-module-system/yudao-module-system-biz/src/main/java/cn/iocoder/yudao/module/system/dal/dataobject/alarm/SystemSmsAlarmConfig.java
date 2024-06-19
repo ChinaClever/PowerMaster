@@ -9,12 +9,12 @@ import java.time.LocalDateTime;
 /**
  * @author luowei
  * @version 1.0
- * @description: 系统告警配置
- * @date 2024/6/12 10:21
+ * @description: 告警邮件发送配置
+ * @date 2024/6/13 11:43
  */
 @Data
-@TableName(value = "sys_alarm_config")
-public class SystemAlarmConfig implements Serializable {
+@TableName(value = "sys_sms_alarm_config")
+public class SystemSmsAlarmConfig implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -22,19 +22,15 @@ public class SystemAlarmConfig implements Serializable {
     private int id;
 
     /**
-     * 告警发送邮件开关
+     * 手机号
      */
-    private int mailAlarm;
+    private String phone;
 
 
     /**
-     * 告警声音开关
+     * 是否启用
      */
-    private int voiceAlarm;
-    /**
-     * 短信告警开关
-     */
-    private int smsAlarm;
+    private int isEnable;
 
 
     /**
@@ -47,7 +43,4 @@ public class SystemAlarmConfig implements Serializable {
      */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
-
-
-
 }

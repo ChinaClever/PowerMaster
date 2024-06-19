@@ -124,6 +124,12 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
                 .eqIfPresent(SystemAlarmRecord::getAlarmType , pageReqVO.getAlarmType())
                 .eqIfPresent(SystemAlarmRecord::getDevType , pageReqVO.getDevType())
                 .inIfPresent(SystemAlarmRecord::getStatus,pageReqVO.getStatus())
+                .and(StringUtils.isNotEmpty(pageReqVO.getLikeName()),wrapper ->wrapper
+                        .like(SystemAlarmRecord::getDevKey, pageReqVO.getLikeName())
+                        .or()
+                        .like(SystemAlarmRecord::getDevName, pageReqVO.getLikeName())
+                        .or()
+                        .like(SystemAlarmRecord::getDevPosition, pageReqVO.getLikeName()))
                 .orderByDesc(SystemAlarmRecord::getCreateTime));
         List<AlarmRecordRespVO> recordRespVOS = new ArrayList<>();
         if (Objects.nonNull(recordPageResult)){
