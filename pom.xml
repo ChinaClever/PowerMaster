@@ -23,6 +23,8 @@
         <module>yudao-module-cabinet</module>
         <module>yudao-module-rack</module>
         <module>yudao-module-bus</module>
+        <module>yudao-module-aisle</module>
+        <module>yudao-module-room</module>
     </modules>
 
     <name>${project.artifactId}</name>
