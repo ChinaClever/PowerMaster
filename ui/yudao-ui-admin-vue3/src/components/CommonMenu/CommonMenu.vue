@@ -9,7 +9,7 @@
           <!-- 信息展示模式 -->
           <slot v-if="!switchNav" name="NavInfo"></slot>
             <!-- 筛选模式 -->
-          <div style="margin-top: 10px">
+          <div v-if="showNavTree" style="margin-top: 10px">
             <NavTree ref="navTree" @node-click="handleClick" @check="handleCheck" :showCheckbox="showCheckbox" :showSearch="true" :dataList="dataList" :load="load" :lazy="lazy" />
           </div>
         </div>
@@ -44,6 +44,10 @@ const props = defineProps({
   isAccordion: {
     type: Boolean,
     default: false
+  },
+  showNavTree: {
+    type: Boolean,
+    default: true
   },
   showCheckbox: {
     type: Boolean,

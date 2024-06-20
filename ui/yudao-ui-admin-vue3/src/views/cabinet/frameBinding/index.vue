@@ -1,11 +1,16 @@
 <template>
   <ContentWrap>
     <div class="cab-info">
-      <el-tag class="tag" size="large" type="primary">机房5-机柜2</el-tag>
+      <el-tag class="tag" size="large">{{cabinetInfo.roomName}}-{{cabinetInfo.cabinetName}}</el-tag>
     </div>
-    <el-button class="btn-save" @click="handleSubmit" type="primary">保存</el-button>
+    <div class="cab-btns">
+      <el-button v-if="!editEnable" @click="editEnable = true" type="primary">编辑</el-button>
+      <el-button v-else @click="editEnable = false" plain type="primary">取消</el-button>
+      <el-button v-if="editEnable" @click="handleSubmit" plain type="primary">保存</el-button>
+    </div>
     <div style="display: flex; justify-content: center;">
-      <div ref="frameContainer" class="frameContainer" style="position: relative;z-index: 1"  @click.right="handleRightClick">
+      <div ref="frameContainer" class="frameContainer" style="position: relative;z-index: 1;"  @click.right="handleRightClick">
+        <div v-if="!editEnable" @click.prevent="" class="mask"></div>
         <div class="portLeft">
           <div class="port" v-for="port in portLeft" :key="port" :id="'portLeft' + port.id"> 
             <div class="info">{{port.id}}：{{port.value}}A</div>
@@ -67,6 +72,7 @@ import { ElMessageBox } from 'element-plus'
 
 
 const message = useMessage() // 消息弹窗
+const editEnable = ref(false) // 能否编辑
 const binding = ref() // 绑定编辑弹窗组件
 const frameContainer = ref() // 机架容量
 const portLeft = ref<any[]>([]) // 左侧端口
@@ -505,12 +511,11 @@ onMounted(() => {
   initConnect()
   getData()
   document.addEventListener('mouseup',(event) => {
-    console.log('event', event)
     const element = event.target as HTMLElement
     if (event.button == 0 && operateMenu.value.show && element.className != 'menu_item') {
       operateMenu.value.show = false
     }
-    if (event.button == 0 && element.className && element.className.includes('active')) {
+    if (event.button == 0 && element.className && typeof element.className === 'string' && element.className.includes('active')) {
       console.log('element', element.className)
       instance?.deleteEveryConnection()
     }
@@ -535,6 +540,14 @@ onUnmounted(() => {
 .frameContainer {
   display: flex;
   align-items: center;
+  position: relative;
+  .mask {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    height: 100%;
+  }
   .menu {
     box-sizing: border-box;
     position: absolute;
@@ -629,8 +642,9 @@ onUnmounted(() => {
     // border-bottom: 1px solid #fafafa;
   }
 }
-.btn-save {
-  float: right;
+.cab-btns {
+  position: absolute;
+  right: 38px;
 }
 .ghost {
   border: solid 1px rgb(19, 41, 239);

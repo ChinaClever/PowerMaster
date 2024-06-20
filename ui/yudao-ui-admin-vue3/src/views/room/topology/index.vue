@@ -5,13 +5,14 @@
       <div>
         <el-button v-if="!editEnable" @click="editEnable = true" type="primary">编辑</el-button>
         <el-button v-if="editEnable" @click="editEnable = false" plain type="primary">取消</el-button>
-        <el-button v-if="editEnable" plain type="primary"><Icon :size="16" icon="ep:setting" style="margin-right: 5px" @click="openSetting" />设置</el-button>
+        <el-button v-if="editEnable" @click="openSetting" plain type="primary"><Icon :size="16" icon="ep:setting" style="margin-right: 5px" />配置</el-button>
         <el-button v-if="editEnable" @click="handleSubmit" plain type="primary">保存</el-button>
       </div>
     </div>
   </el-card>
   <el-card>
     <div class="dragContainer" @click.right="handleRightClick">
+      <div class="mask" v-if="!editEnable" @click.prevent=""></div>
       <el-table class="dragTable" :data="tableData" border style="width: 100%;" :row-style="{background: 'revert'}" >
         <el-table-column fixed type="index" width="80" align="center" :resizable="false" />
         <template v-for="(formItem, index) in formParam" :key="index">
@@ -55,14 +56,14 @@
     </el-form>
     <template #footer>
       <el-button @click="dialogVisible = false">取 消</el-button>
-      <el-button type="primary" @click="submitForm">确 定</el-button>
+      <el-button type="primary" @click="submitSetting">确 定</el-button>
     </template>
   </Dialog>
 </template>
 
 <script lang="ts" setup>
 import draggable from "vuedraggable";
-import layoutForm from './layoutForm.vue'
+import layoutForm from './component/layoutForm.vue'
 
 const roomInfo = reactive({
   row: 10,
@@ -130,7 +131,6 @@ const onStart = () => {
 const onEnd = () => {
   console.log('onsEnd',showMenuAdd.value)
 }
-
 // 增加机柜弹框
 const addMachine = () => {
   machineForm.value.open('add')
@@ -157,6 +157,30 @@ const handleChange = (data) => {
   const Y = operateMenu.value.lndexY
   const X = formParam[operateMenu.value.lndexX]
   tableData[Y][X].splice(0, 1, data)
+}
+// 处理设置提交
+const submitSetting = () => {
+  const rowNum = roomInfo.row
+  const colNum = roomInfo.col
+  const data = [] as any
+  // 根据设置的宽高来修改数据
+  if (tableData.length == 0) {
+    console.log('根据设置的宽高来修改数据')
+  } else { // 根据设置的宽高来创建数据
+    const Obj = {}
+    for(let i=0; i < rowNum; i++) {
+      Obj[String.fromCharCode(65 + i)] = []
+    }
+    for(let i=0; i < colNum; i++) {
+      data.push(Obj)
+    }
+    console.log('data', data)
+  }
+  dialogVisible.value = false
+}
+// 处理提交保存事件
+const handleSubmit = () => {
+  console.log('handleSubmit')
 }
 
 const tableData = reactive([
@@ -445,6 +469,14 @@ onUnmounted(() => {
 }
 .dragContainer {
   position: relative;
+  .mask {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
+  }
   .menu {
     box-sizing: border-box;
     position: absolute;
