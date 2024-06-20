@@ -13,6 +13,7 @@ import lombok.Data;
 public class PduTotalBaseDo {
 
 
+
     private int id;
 
     /**
@@ -90,5 +91,42 @@ public class PduTotalBaseDo {
      */
     @JsonProperty("create_time")
     private DateTime createTime;
+
+    /**
+     * 平均无功功率
+     */
+    @JsonProperty("pow_reactive_avg_value")
+    private float powReactiveAvgValue;
+
+    /**
+     * 最大无功功率时间
+     */
+    @JsonProperty("pow_reactive_max_time")
+    private DateTime powReactiveMaxTime;
+
+    /**
+     * 最大无功功率
+     */
+    @JsonProperty("pow_reactive_max_value")
+    private float powReactiveMaxValue;
+
+
+    /**
+     * 最小无功功率时间
+     */
+    @JsonProperty("pow_reactive_min_time")
+    private DateTime powReactiveMinTime;
+
+    /**
+     * 最小无功功率
+     */
+    @JsonProperty("pow_reactive_min_value")
+    private float powReactiveMinValue;
+
+    /**
+     * 平均功率因素
+     */
+    @JsonProperty("power_factor_avg_value")
+    private float powerFactorAvgValue;
 
 }

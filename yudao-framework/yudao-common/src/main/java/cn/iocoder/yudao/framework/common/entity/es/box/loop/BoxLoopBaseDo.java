@@ -174,4 +174,9 @@ public class BoxLoopBaseDo extends BoxBaseDo {
     @JsonProperty("cur_min_value")
     private float curMinValue;
 
+    /**
+     * 平均功率因素
+     */
+    @JsonProperty("power_factor_avg_value")
+    private float powerFactorAvgValue;
 }

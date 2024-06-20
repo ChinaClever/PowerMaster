@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -35,6 +36,17 @@ public class AlarmMailConfigController {
     public CommonResult<Integer> saveMailConfig(@Valid @RequestBody MailConfigSaveReqVO saveReqVO) {
         return success(mailConfigService.saveMailConfig(saveReqVO));
     }
+
+    @PostMapping("/mail/batchSave")
+    @Operation(summary = "批量保存邮件配置")
+    @PreAuthorize("@ss.hasPermission('system:alarm:mail:save')")
+    public CommonResult<Integer> batchSave(@Valid @RequestBody List<MailConfigSaveReqVO> saveReqVOS) {
+        if (!CollectionUtils.isEmpty(saveReqVOS)){
+            saveReqVOS.forEach(saveReqVO -> mailConfigService.saveMailConfig(saveReqVO));
+        }
+        return success(saveReqVOS.size());
+    }
+
 
 
     @DeleteMapping("/mail/delete")

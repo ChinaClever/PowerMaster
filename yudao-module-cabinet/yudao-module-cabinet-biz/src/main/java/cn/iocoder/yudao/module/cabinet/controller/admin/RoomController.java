@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.cabinet.controller.admin;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
+import cn.iocoder.yudao.module.cabinet.dto.RoomBusMenuDTO;
 import cn.iocoder.yudao.module.cabinet.dto.RoomMenuDTO;
 import cn.iocoder.yudao.module.cabinet.dto.RoomPduMenuDTO;
 import cn.iocoder.yudao.module.cabinet.service.RoomService;
@@ -97,6 +98,29 @@ public class RoomController {
     @GetMapping("/room/rack/menu")
     public CommonResult<List<RoomMenuDTO>> getRoomRackMenu(@RequestParam(value = "id") Integer id) {
         List<RoomMenuDTO> dto = roomService.roomRackMenuList(id);
+        return success(dto);
+    }
+
+
+    /**
+     * 机房菜单
+     *
+     */
+    @Operation(summary = "机房-始端箱菜单")
+    @GetMapping("/room/bus/menu")
+    public CommonResult<List<RoomMenuDTO>> getRoomBusMenu() {
+        List<RoomMenuDTO> dto = roomService.roomBusMenuList();
+        return success(dto);
+    }
+
+    /**
+     * 机房菜单
+     *
+     */
+    @Operation(summary = "机房-插接箱菜单")
+    @GetMapping("/room/box/menu")
+    public CommonResult<List<RoomMenuDTO>> getRoomBoxMenu() {
+        List<RoomMenuDTO> dto = roomService.roomBoxMenuList();
         return success(dto);
     }
 }

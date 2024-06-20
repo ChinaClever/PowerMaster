@@ -66,4 +66,42 @@ public class RackPowBaseDo extends RackBaseDo {
     @JsonProperty("active_total_min_value")
     private float activeTotalMinValue;
 
+
+    /**
+     * 平均无功功率
+     */
+    @JsonProperty("reactive_total_avg_value")
+    private float reactiveTotalAvgValue;
+
+    /**
+     * 最大无功功率时间
+     */
+    @JsonProperty("reactive_total_max_time")
+    private DateTime reactiveTotalMaxTime;
+
+    /**
+     * 最大无功功率
+     */
+    @JsonProperty("reactive_total_max_value")
+    private float reactiveTotalMaxValue;
+
+
+    /**
+     * 最小无功功率时间
+     */
+    @JsonProperty("reactive_total_min_time")
+    private DateTime reactiveTotalMinTime;
+
+    /**
+     * 最小无功功率
+     */
+    @JsonProperty("reactive_total_min_value")
+    private float reactiveTotalMinValue;
+
+    /**
+     * 平均功率因素
+     */
+    @JsonProperty("power_factor_avg_value")
+    private float powerFactorAvgValue;
+
 }
