@@ -107,4 +107,10 @@ public class BoxTotalBaseDo extends BoxBaseDo {
      */
     @JsonProperty("pow_reactive_min_value")
     private float powReactiveMinValue;
+
+    /**
+     * 平均功率因素
+     */
+    @JsonProperty("power_factor_avg_value")
+    private float powerFactorAvgValue;
 }

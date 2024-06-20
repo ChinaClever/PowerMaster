@@ -1,17 +1,18 @@
-package cn.iocoder.yudao.framework.common.entity.es.cabinet.pow;
+package cn.iocoder.yudao.framework.common.entity.es.aisle.pow;
 
-import cn.iocoder.yudao.framework.common.entity.es.cabinet.CabinetBaseDo;
+import cn.hutool.core.date.DateTime;
+import cn.iocoder.yudao.framework.common.entity.es.aisle.AisleBaseDo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 /**
  * @author luowei
  * @version 1.0
- * @description: 机柜历史基础数据
+ * @description: 柜列历史基础数据
  * @date 2024/4/23 9:23
  */
 @Data
-public class CabinetPowBaseDo extends CabinetBaseDo {
+public class AislePowBaseDo extends AisleBaseDo {
 
     /**
      * 总平均视在功率
@@ -27,12 +28,12 @@ public class CabinetPowBaseDo extends CabinetBaseDo {
      * 最大总视在功率时间
      */
     @JsonProperty("apparent_total_max_time")
-    private String apparentTotalMaxTime;
+    private DateTime apparentTotalMaxTime;
     /**
      * 最小总视在功率时间
      */
     @JsonProperty("apparent_total_min_time")
-    private String apparentTotalMinTime;
+    private DateTime apparentTotalMinTime;
     /**
      * 最小总视在功率
      */
@@ -54,12 +55,12 @@ public class CabinetPowBaseDo extends CabinetBaseDo {
      * a路最大视在功率时间
      */
     @JsonProperty("apparent_a_max_time")
-    private String apparentAMaxTime;
+    private DateTime apparentAMaxTime;
     /**
      * a路最小视在功率时间
      */
     @JsonProperty("apparent_a_min_time")
-    private String apparentAMinTime;
+    private DateTime apparentAMinTime;
     /**
      * a路最小视在功率
      */
@@ -80,12 +81,12 @@ public class CabinetPowBaseDo extends CabinetBaseDo {
      * b路最大视在功率时间
      */
     @JsonProperty("apparent_b_max_time")
-    private String apparentBMaxTime;
+    private DateTime apparentBMaxTime;
     /**
      * b路最小视在功率时间
      */
     @JsonProperty("apparent_b_min_time")
-    private String apparentBMinTime;
+    private DateTime apparentBMinTime;
     /**
      * b路最小视在功率
      */
@@ -106,12 +107,12 @@ public class CabinetPowBaseDo extends CabinetBaseDo {
      * 总最大有功功率时间
      */
     @JsonProperty("active_total_max_time")
-    private String activeTotalMaxTime;
+    private DateTime activeTotalMaxTime;
     /**
      * 总最小有功功率时间
      */
     @JsonProperty("active_total_min_time")
-    private String activeTotalMinTime;
+    private DateTime activeTotalMinTime;
     /**
      * 总最小有功功率
      */
@@ -132,12 +133,12 @@ public class CabinetPowBaseDo extends CabinetBaseDo {
      * a路最大有功功率时间
      */
     @JsonProperty("active_a_max_time")
-    private String activeAMaxTime;
+    private DateTime activeAMaxTime;
     /**
      * a路最小有功功率时间
      */
     @JsonProperty("active_a_min_time")
-    private String activeAMinTime;
+    private DateTime activeAMinTime;
     /**
      * a路最小有功功率
      */
@@ -158,19 +159,17 @@ public class CabinetPowBaseDo extends CabinetBaseDo {
      * b路最大有功功率时间
      */
     @JsonProperty("active_b_max_time")
-    private String activeBMaxTime;
+    private DateTime activeBMaxTime;
     /**
      * b路最小有功功率时间
      */
     @JsonProperty("active_b_min_time")
-    private String activeBMinTime;
+    private DateTime activeBMinTime;
     /**
      * b路最小有功功率
      */
     @JsonProperty("active_b_min_value")
     private float activeBMinValue;
-
-
 
     /**
      * 总平均无功功率
@@ -186,12 +185,12 @@ public class CabinetPowBaseDo extends CabinetBaseDo {
      * 总最大无功功率时间
      */
     @JsonProperty("reactive_total_max_time")
-    private String reactiveTotalMaxTime;
+    private DateTime reactiveTotalMaxTime;
     /**
      * 总最小无功功率时间
      */
     @JsonProperty("reactive_total_min_time")
-    private String reactiveTotalMinTime;
+    private DateTime reactiveTotalMinTime;
     /**
      * 总最小无功功率
      */
@@ -227,12 +226,4 @@ public class CabinetPowBaseDo extends CabinetBaseDo {
      */
     @JsonProperty("factor_b_avg_value")
     private float factorBAvgValue;
-
-
-    /**
-     * 平均负载率
-     */
-    @JsonProperty("load_rate_total_avg_value")
-    private float loadRateTotalAvgValue;
-
 }

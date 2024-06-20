@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.cabinet.service.impl;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
@@ -7,6 +9,9 @@ import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.enums.DisableEnums;
+import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
+import cn.iocoder.yudao.framework.common.mapper.AisleBoxMapper;
+import cn.iocoder.yudao.module.cabinet.dto.RoomBusMenuDTO;
 import cn.iocoder.yudao.module.cabinet.dto.RoomMenuDTO;
 import cn.iocoder.yudao.module.cabinet.dto.RoomPduMenuDTO;
 import cn.iocoder.yudao.module.cabinet.mapper.*;
@@ -46,6 +51,11 @@ public class RoomServiceImpl implements RoomService {
     CabinetPduMapper cabinetPduMapper;
     @Autowired
     RackIndexMapper rackIndexMapper;
+    @Autowired
+    AisleBarMapper aisleBarMapper;
+    @Autowired
+    AisleBoxMapper aisleBoxMapper;
+
 
     @Override
     public List<RoomIndex> roomList(String name) {
@@ -443,6 +453,184 @@ public class RoomServiceImpl implements RoomService {
             log.error("获取菜单失败：", e);
         }
 
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<RoomMenuDTO> roomBusMenuList() {
+        try {
+
+            //获取柜列
+            List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>()
+                    .eq(AisleIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
+
+            //获取机房
+            List<RoomIndex> roomIndexList = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>()
+                    .eq(RoomIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
+
+
+            List<RoomMenuDTO> menuDTOS = new ArrayList<>();
+
+            if (!CollectionUtils.isEmpty(roomIndexList)) {
+                roomIndexList.forEach(roomIndex -> {
+                    RoomMenuDTO roomMenuDTO = new RoomMenuDTO();
+                    roomMenuDTO.setChildren(new ArrayList<>());
+                    roomMenuDTO.setId(roomIndex.getId());
+                    roomMenuDTO.setType(MenuTypeEnums.ROOM.getType());
+                    roomMenuDTO.setName(roomIndex.getName());
+                    roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.ROOM.getType()) + SPLIT + roomIndex.getId());
+                    //父id设置0
+                    roomMenuDTO.setParentId(0);
+                    roomMenuDTO.setParentType(0);
+                    menuDTOS.add(roomMenuDTO);
+                });
+
+            }
+
+            if (!CollectionUtils.isEmpty(aisleIndexList)) {
+                aisleIndexList.forEach(aisleIndex -> {
+                    RoomMenuDTO roomMenuDTO = new RoomMenuDTO();
+                    roomMenuDTO.setChildren(new ArrayList<>());
+                    roomMenuDTO.setId(aisleIndex.getId());
+                    roomMenuDTO.setType(MenuTypeEnums.AISLE.getType());
+                    roomMenuDTO.setName(aisleIndex.getName());
+                    roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.AISLE.getType()) + SPLIT + aisleIndex.getId());
+                    //父id设置机房
+                    roomMenuDTO.setParentId(aisleIndex.getRoomId());
+                    roomMenuDTO.setParentType(MenuTypeEnums.ROOM.getType());
+                    menuDTOS.add(roomMenuDTO);
+                });
+
+                List<Integer> ids = aisleIndexList.stream().map(AisleIndex::getId).collect(Collectors.toList());
+
+                List<AisleBar>  barList = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
+                        .in(AisleBar::getAisleId,ids));
+
+                if (!CollectionUtils.isEmpty(barList)){
+                    barList.forEach(aisleBar -> {
+                        if (StringUtils.isNotEmpty(aisleBar.getBarKey())){
+                            RoomMenuDTO roomMenuDTOA = new RoomMenuDTO();
+                            roomMenuDTOA.setChildren(new ArrayList<>());
+                            roomMenuDTOA.setType(MenuTypeEnums.BUS.getType());
+                            roomMenuDTOA.setName(aisleBar.getPath() + "路");
+                            roomMenuDTOA.setUnique(aisleBar.getBarKey());
+                            //父id设置柜列
+                            roomMenuDTOA.setParentId(aisleBar.getAisleId());
+                            roomMenuDTOA.setParentType( MenuTypeEnums.AISLE.getType());
+                            //非始端箱id  绑定ID
+                            roomMenuDTOA.setId(aisleBar.getId());
+                            menuDTOS.add(roomMenuDTOA);
+                        }
+                    });
+                }
+
+            }
+
+            return buildTree(menuDTOS);
+        } catch (Exception e) {
+            log.error("获取菜单失败：", e);
+        }
+
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<RoomMenuDTO> roomBoxMenuList() {
+        try {
+
+            //获取柜列
+            List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>()
+                    .eq(AisleIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
+
+            //获取机房
+            List<RoomIndex> roomIndexList = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>()
+                    .eq(RoomIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
+
+
+            List<RoomMenuDTO> menuDTOS = new ArrayList<>();
+
+            if (!CollectionUtils.isEmpty(roomIndexList)) {
+                roomIndexList.forEach(roomIndex -> {
+                    RoomMenuDTO roomMenuDTO = new RoomMenuDTO();
+                    roomMenuDTO.setChildren(new ArrayList<>());
+                    roomMenuDTO.setId(roomIndex.getId());
+                    roomMenuDTO.setType(MenuTypeEnums.ROOM.getType());
+                    roomMenuDTO.setName(roomIndex.getName());
+                    roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.ROOM.getType()) + SPLIT + roomIndex.getId());
+                    //父id设置0
+                    roomMenuDTO.setParentId(0);
+                    roomMenuDTO.setParentType(0);
+                    menuDTOS.add(roomMenuDTO);
+                });
+
+            }
+
+            if (!CollectionUtils.isEmpty(aisleIndexList)) {
+                aisleIndexList.forEach(aisleIndex -> {
+                    RoomMenuDTO roomMenuDTO = new RoomMenuDTO();
+                    roomMenuDTO.setChildren(new ArrayList<>());
+                    roomMenuDTO.setId(aisleIndex.getId());
+                    roomMenuDTO.setType(MenuTypeEnums.AISLE.getType());
+                    roomMenuDTO.setName(aisleIndex.getName());
+                    roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.AISLE.getType()) + SPLIT + aisleIndex.getId());
+                    //父id设置机房
+                    roomMenuDTO.setParentId(aisleIndex.getRoomId());
+                    roomMenuDTO.setParentType(MenuTypeEnums.ROOM.getType());
+                    menuDTOS.add(roomMenuDTO);
+                });
+
+                List<Integer> ids = aisleIndexList.stream().map(AisleIndex::getId).collect(Collectors.toList());
+
+                List<AisleBar>  barList = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
+                        .in(AisleBar::getAisleId,ids));
+
+                if (!CollectionUtils.isEmpty(barList)){
+                    barList.forEach(aisleBar -> {
+                        if (StringUtils.isNotEmpty(aisleBar.getBarKey())){
+                            RoomMenuDTO roomMenuDTOA = new RoomMenuDTO();
+                            roomMenuDTOA.setChildren(new ArrayList<>());
+                            roomMenuDTOA.setType(MenuTypeEnums.BUS.getType());
+                            roomMenuDTOA.setName(aisleBar.getPath() + "路");
+                            roomMenuDTOA.setUnique(aisleBar.getBarKey());
+                            //父id设置柜列
+                            roomMenuDTOA.setParentId(aisleBar.getAisleId());
+                            roomMenuDTOA.setParentType( MenuTypeEnums.AISLE.getType());
+                            //非始端箱id  绑定ID
+                            roomMenuDTOA.setId(aisleBar.getId());
+                            menuDTOS.add(roomMenuDTOA);
+                        }
+                    });
+
+                    List<Integer> aisleBarIds = barList.stream().map(AisleBar::getId).collect(Collectors.toList());
+
+                    List<AisleBox>  boxList = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
+                            .in(AisleBox::getAisleBarId,aisleBarIds));
+
+                    if (!CollectionUtils.isEmpty(boxList)) {
+                        boxList.forEach(aisleBox -> {
+                            if (StringUtils.isNotEmpty(aisleBox.getBarKey())) {
+                                RoomMenuDTO roomMenuDTOA = new RoomMenuDTO();
+                                roomMenuDTOA.setChildren(new ArrayList<>());
+                                roomMenuDTOA.setType(MenuTypeEnums.BOX.getType());
+                                roomMenuDTOA.setName(aisleBox.getBoxName());
+                                roomMenuDTOA.setUnique(aisleBox.getBarKey());
+                                //父id设置柜列
+                                roomMenuDTOA.setParentId(aisleBox.getAisleBarId());
+                                roomMenuDTOA.setParentType(MenuTypeEnums.BUS.getType());
+                                //非插接箱id  绑定ID
+                                roomMenuDTOA.setId(aisleBox.getId());
+                                menuDTOS.add(roomMenuDTOA);
+                            }
+                        });
+                    }
+                }
+
+            }
+
+            return buildTree(menuDTOS);
+        } catch (Exception e) {
+            log.error("获取菜单失败：", e);
+        }
         return new ArrayList<>();
     }
 

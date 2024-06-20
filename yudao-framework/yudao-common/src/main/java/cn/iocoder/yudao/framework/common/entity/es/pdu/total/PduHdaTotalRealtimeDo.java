@@ -29,5 +29,11 @@ public class PduHdaTotalRealtimeDo extends PduBaseDo {
      * 功率因素
      */
     @JsonProperty("power_factor")
-    private int powerFactor;
+    private float powerFactor;
+
+    /**
+     * 无功功率
+     */
+    @JsonProperty("pow_reactive")
+    private float powReactive;
 }

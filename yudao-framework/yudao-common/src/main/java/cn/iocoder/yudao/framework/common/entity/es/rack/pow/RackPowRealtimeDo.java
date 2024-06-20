@@ -25,5 +25,16 @@ public class RackPowRealtimeDo extends RackBaseDo {
     @JsonProperty("active_total")
     private float activeTotal;
 
+    /**
+     * 功率因素
+     */
+    @JsonProperty("power_factor")
+    private float powerFactor;
+
+    /**
+     * 无功功率
+     */
+    @JsonProperty("reactive_total")
+    private float reactiveTotal;
 
 }

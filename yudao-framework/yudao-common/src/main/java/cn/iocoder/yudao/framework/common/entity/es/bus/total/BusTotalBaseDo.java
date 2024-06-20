@@ -172,4 +172,9 @@ public class BusTotalBaseDo extends BusBaseDo {
     @JsonProperty("cur_zero_min_value")
     private float curZeroMinValue;
 
+    /**
+     * 平均功率因素
+     */
+    @JsonProperty("power_factor_avg_value")
+    private float powerFactorAvgValue;
 }
