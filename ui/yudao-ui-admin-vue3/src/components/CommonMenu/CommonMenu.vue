@@ -9,13 +9,8 @@
           <!-- 信息展示模式 -->
           <slot v-if="!switchNav" name="NavInfo"></slot>
             <!-- 筛选模式 -->
-<<<<<<< HEAD
-          <div style="margin-top: 10px">
-            <NavTree ref="navTree" @node-click="handleClick" @check="handleCheck" :showCheckbox="showCheckbox" :showSearch="true" :dataList="dataList" :load="load" :lazy="lazy" :placeholder="placeholder" />
-=======
           <div v-if="showNavTree" style="margin-top: 10px">
             <NavTree ref="navTree" @node-click="handleClick" @check="handleCheck" :showCheckbox="showCheckbox" :showSearch="true" :dataList="dataList" :load="load" :lazy="lazy" />
->>>>>>> quanzhiwei
           </div>
         </div>
         <div v-if="!isCloseNav" class="openNavtree" @click.prevent="isCloseNav = true">
