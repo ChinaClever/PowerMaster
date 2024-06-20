@@ -210,7 +210,7 @@
     </el-form>
 </template>
 <script setup lang="ts">
-import { DcConfigApi, DcConfigVO } from '@/api/pdu/dcconfig'
+import { DcConfigApi, DcConfigVO } from '@/api/bus/busdcconfig'
 
 /** pdu数据采集配置 表单 */
 defineOptions({ name: 'DcConfigForm' })

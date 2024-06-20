@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
  * @date 2024/6/13 11:43
  */
 @Data
-@TableName(value = "sys_mail_alarm_config")
-public class SystemMailAlarmConfig implements Serializable {
+@TableName(value = "sys_sms_alarm_config")
+public class SystemSmsAlarmConfig implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -22,9 +22,9 @@ public class SystemMailAlarmConfig implements Serializable {
     private int id;
 
     /**
-     * 告警发送邮件
+     * 手机号
      */
-    private String mail;
+    private String phone;
 
 
     /**
@@ -32,11 +32,11 @@ public class SystemMailAlarmConfig implements Serializable {
      */
     private int isEnable;
 
+
     /**
      * 描述
      */
-    private String mailDesc;
-
+    private String smsDesc;
 
     /**
      * 更新时间

@@ -9,14 +9,17 @@ import cn.iocoder.yudao.module.system.controller.admin.alarm.vo.mail.MailConfigP
 import cn.iocoder.yudao.module.system.controller.admin.alarm.vo.mail.MailConfigSaveReqVO;
 import cn.iocoder.yudao.module.system.dal.dataobject.alarm.SystemAlarmRecord;
 import cn.iocoder.yudao.module.system.dal.dataobject.alarm.SystemMailAlarmConfig;
+import cn.iocoder.yudao.module.system.dal.dataobject.alarm.SystemSmsAlarmConfig;
 import cn.iocoder.yudao.module.system.dal.dataobject.mail.MailAccountDO;
 import cn.iocoder.yudao.module.system.dal.dataobject.mail.MailTemplateDO;
 import cn.iocoder.yudao.module.system.dal.mysql.alarm.SysAlarmMailConfigMapper;
+import cn.iocoder.yudao.module.system.dal.mysql.alarm.SysAlarmSmsConfigMapper;
 import cn.iocoder.yudao.module.system.mq.message.mail.MailSendMessage;
 import cn.iocoder.yudao.module.system.service.mail.MailAccountService;
 import cn.iocoder.yudao.module.system.service.mail.MailLogService;
 import cn.iocoder.yudao.module.system.service.mail.MailSendService;
 import cn.iocoder.yudao.module.system.service.mail.MailTemplateService;
+import cn.iocoder.yudao.module.system.service.sms.SmsSendService;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
@@ -56,8 +59,14 @@ public class MailConfigServiceImpl implements MailConfigService {
     private MailSendService mailSendService;
     @Resource
     private MailLogService mailLogService;
+    @Resource
+    private SysAlarmSmsConfigMapper smsConfigMapper;
+    @Resource
+    SmsSendService smsSendService;
 
     public static final String TEMPLATE_CODE = "ALARM_MAIL";
+
+    public static final String TEMPLATE_CODE_SMS = "ALARM_SMS";
 
     @Override
     public Integer saveMailConfig(MailConfigSaveReqVO saveReqVO) {
@@ -134,6 +143,30 @@ public class MailConfigServiceImpl implements MailConfigService {
             });
         }
 
+
+    }
+
+    @Override
+    public void sendSms(SystemAlarmRecord record) {
+
+        List<SystemSmsAlarmConfig> smsAlarmConfigs = smsConfigMapper.selectList(new LambdaQueryWrapperX<SystemSmsAlarmConfig>()
+                .eq(SystemSmsAlarmConfig::getIsEnable, DisableEnums.ENABLE.getStatus()));
+
+        //报警信息
+        Map<String, Object> templateParams = new HashMap<>();
+        templateParams.put("devKey",record.getDevKey());
+        templateParams.put("devName",record.getDevName());
+        templateParams.put("devType", DeviceTypeEnums.getNameByStatus(record.getDevType()));
+        templateParams.put("alarmType", AlarmTypeEnums.getNameByStatus(record.getAlarmType()));
+        templateParams.put("alarmLevel", AlarmLevelEnums.getNameByStatus(record.getAlarmLevel()));
+        templateParams.put("position",record.getDevPosition());
+
+        if (!CollectionUtils.isEmpty(smsAlarmConfigs)){
+            smsAlarmConfigs.forEach(config -> {
+                String phone = config.getPhone();
+                smsSendService.sendSingleSms(phone,null,null,TEMPLATE_CODE_SMS,templateParams);
+            });
+        }
 
     }
 
