@@ -10,16 +10,17 @@ import lombok.Data;
 @ExcelIgnoreUnannotated
 public class BusPFRes {
 
+    @Schema(description = "busId")
+    private Integer busId;
+
     @Schema(description = "位置")
     private String location;
 
     @Schema(description = "A的功率因素")
     private Double apf;
 
-
     @Schema(description = "B的功率因素")
     private Double bpf;
-
 
     @Schema(description = "C的功率因素")
     private Double cpf;

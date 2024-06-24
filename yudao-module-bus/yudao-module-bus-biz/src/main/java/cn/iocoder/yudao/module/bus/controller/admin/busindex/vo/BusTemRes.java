@@ -10,6 +10,9 @@ import lombok.Data;
 @ExcelIgnoreUnannotated
 public class BusTemRes {
 
+    @Schema(description = "busId")
+    private Integer busId;
+
     @Schema(description = "位置")
     private String location;
 

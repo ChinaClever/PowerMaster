@@ -1,12 +1,11 @@
-package cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo;
+package cn.iocoder.yudao.module.bus.controller.admin.busindex.vo;
 
-import cn.iocoder.yudao.module.pdu.dal.dataobject.pdudevice.PDUDeviceDO;
 import lombok.Data;
 
 @Data
-public class PDULineRes extends PDUDeviceDO {
+public class BusLineRes  {
 
-    private Long pduId;
+    private Integer busId;
 
     private String devKey;
 

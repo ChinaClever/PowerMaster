@@ -8,6 +8,7 @@ import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 始端箱索引 Service 接口
@@ -67,4 +68,10 @@ public interface BusIndexService {
     PageResult<BusHarmonicRes> getBusHarmonicPage(BusIndexPageReqVO pageReqVO);
 
     List<String> getDevKeyList();
+
+    PageResult<BusLineRes> getBusLineDevicePage(BusIndexPageReqVO pageReqVO);
+
+    Map getBusTemDetail(BusIndexPageReqVO pageReqVO);
+
+    Map getBusPFDetail(BusIndexPageReqVO pageReqVO);
 }

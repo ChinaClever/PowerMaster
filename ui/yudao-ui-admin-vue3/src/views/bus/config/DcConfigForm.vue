@@ -256,7 +256,7 @@ const formData = ref({
   changePushCronValue : undefined,
   alarmPushCronType : undefined,
   alarmPushCronValue : undefined,
-})
+}) as any
 
 const checkCronValue = (rule: any, value: any, callback: any) => {
 

@@ -1,39 +1,39 @@
 <template>
-  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="均衡配电">
+  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="需量监测">
     <template #NavInfo>
-      <div>
+      <div >
         <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
+  
         </div>
         <div class="line"></div>
         <!-- <div class="status">
           <div class="box">
             <div class="top">
-              <div class="tag"></div>{{ statusList[0].name }}
+              <div class="tag"></div>正常
             </div>
-            <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
+            <div class="value"><span class="number">{{ statusNumber.normal }}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag empty"></div>小电流
+              <div class="tag empty"></div>离线
             </div>
-            <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
+            <div class="value"><span class="number">{{ statusNumber.offline }}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag warn"></div>{{ statusList[1].name }}
+              <div class="tag warn"></div>预警
             </div>
-            <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
+            <div class="value"><span class="number">{{ statusNumber.warn }}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag error"></div>{{ statusList[2].name }}
+              <div class="tag error"></div>告警
             </div>
-            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
+            <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
           </div>
         </div> -->
         <div class="line"></div>
-
       </div>
     </template>
     <template #ActionBar>
@@ -44,14 +44,46 @@
         :inline="true"
         label-width="68px"                          
       >
-        <el-form-item label="网络地址" prop="devKey">
-          <el-autocomplete
-            v-model="queryParams.devKey"
-            :fetch-suggestions="querySearch"
-            clearable
+        <el-form-item label="时间段" prop="createTime" label-width="100px">
+          <el-button 
+            @click="queryParams.timeType = 0;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;handleQuery()" 
+            :type="queryParams.timeType == 0 ? 'primary' : ''"
+          >
+            最近24小时
+          </el-button>
+          <el-button 
+            @click="queryParams.timeType = 1;now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;handleMonthPick();handleQuery()" 
+            :type="queryParams.timeType == 1 ? 'primary' : ''"
+          >
+            月份
+          </el-button>
+          <el-button 
+            @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;" 
+            :type="queryParams.timeType == 2 ? 'primary' : ''"
+          >
+            自定义
+          </el-button>                            
+        </el-form-item>
+        <el-form-item>
+          <el-date-picker
+            v-if="queryParams.timeType == 1"
+            v-model="queryParams.oldTime"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            type="month"
+            :disabled-date="disabledDate"
+            @change="handleMonthPick"
+            class="!w-160px"
+          />
+          <el-date-picker
+            v-if="queryParams.timeType == 2"
+            v-model="queryParams.timeArr"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            type="daterange"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            :disabled-date="disabledDate"
+            @change="handleDayPick"
             class="!w-200px"
-            placeholder="请输入网络地址"
-            @select="handleQuery"
           />
         </el-form-item>
         <el-form-item>
@@ -76,62 +108,49 @@
           </el-button>
         </el-form-item>
         <div style="float:right">
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />电流矩阵</el-button>
+          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />功率阵列</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
         </div>
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openTemDetail" >
-        <el-table-column label="编号" align="center" prop="tableId" />
+      <el-table v-show="switchValue == 2" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+        <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" />
-        <el-table-column v-if="valueMode == 0" label="A相温度" align="center" prop="atem" width="130px" >
+        <el-table-column label="所在位置" align="center" prop="location" width="180px" />
+        <el-table-column label="L1最大电流" align="center" prop="l1MaxCur" width="100px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.atem != null">
-              {{ scope.row.atem }}°C
+            <el-text line-clamp="2" >
+              {{ scope.row.l1MaxCur }}kA
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="A相温度状态" align="center" prop="atemStatus" width="130px" >
+        <el-table-column label="发生时间" align="center" prop="l1MaxCurTime" />
+        <el-table-column label="L2最大电流" align="center" prop="l2MaxCur" width="100px" >
           <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.atemStatus != 0" >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="B相温度" align="center" prop="btem" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.btem != null">
-              {{ scope.row.btem }}°C
+            <el-text line-clamp="2" >
+              {{ scope.row.l2MaxCur }}A
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="B相温度状态" align="center" prop="btemStatus" width="130px" >
+        <el-table-column label="发生时间" align="center" prop="l2MaxCurTime" />
+        <el-table-column label="L3最大电流" align="center" prop="l3MaxCur" width="100px" >
           <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.btemStatus != 0" >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="C相温度" align="center" prop="ctem" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.ctem != null">
-              {{ scope.row.ctem }}°C
+            <el-text line-clamp="2" >
+              {{ scope.row.l3MaxCur }}A
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="C相温度状态" align="center" prop="ctemStatus" width="130px" >
-          <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.ctemStatus != 0 " >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </template>
-        </el-table-column>
-        <!-- 数据库查询 -->
-        <el-table-column label="操作" align="center">
+        <el-table-column label="发生时间" align="center" prop="l3MaxCurTime" />
+
+        <el-table-column label="操作" align="center" width="130px">
           <template #default="scope">
             <el-button
               link
               type="primary"
-              @click="openTemDetail(scope.row)"
+              @click="toPDUDisplayScreen(scope.row)"
+              v-if="scope.row.status != null && scope.row.status != 5"
             >
             设备详情
             </el-button>
@@ -145,29 +164,90 @@
             </el-button>
           </template>
         </el-table-column>
-      </el-table>    
-
-      <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
+      </el-table>
+      <el-table v-show="switchValue == 2" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+        <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
+        <el-table-column label="所在位置" align="center" prop="location" width="180px" />
+        <el-table-column label="L1最大功率" align="center" prop="l1MaxPow" width="100px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.l1MaxPow }}kW
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="发生时间" align="center" prop="l1MaxPowTime" />
+        <el-table-column label="L2最大功率" align="center" prop="l2MaxPow" width="100px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.l2MaxPow }}kW
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="发生时间" align="center" prop="l2MaxPowTime" />
+        <el-table-column label="L3最大功率" align="center" prop="l3MaxPow" width="100px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.l3MaxPow }}kW
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="发生时间" align="center" prop="l3MaxPowTime" />
+        <el-table-column label="操作" align="center" width="130px">
+          <template #default="scope">
+            <el-button
+              link
+              type="primary"
+              @click="toPDUDisplayScreen(scope.row)"
+              v-if="scope.row.status != null && scope.row.status != 5"
+            >
+            设备详情
+            </el-button>
+            <el-button
+              link
+              type="danger"
+              @click="handleDelete(scope.row.id)"
+              v-if="scope.row.status == 5"
+            >
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div  v-show="switchValue == 1 && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <img  class="icon"  src="@/assets/imgs/temicon.png" />    
-            <div class="info" >                  
-              <div :style="{backgroundColor : item.atemColor}" v-if="item.atem != null">A:{{item.atem}}°C</div>
-              <div :style="{backgroundColor : item.btemColor}" v-if="item.btem != null">B:{{item.btem}}°C</div>
-              <div :style="{backgroundColor : item.ctemColor}" v-if="item.ctem != null">C:{{item.ctem}}°C</div>
-              <div :style="{backgroundColor : item.ntemColor}" v-if="item.ntem != null">N:{{item.ntem}}°C</div>
-            </div>          
+            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
+            <div class="info">
+              <div >L1最大功率：{{item.l1MaxPow}}kW</div>
+              <div >L2最大功率：{{item.l2MaxPow}}kW</div>
+              <div >L3最大功率：{{ item.l3MaxPow }}kW</div>
+              <!-- <div>AB路占比：{{item.fzb}}</div> -->
+            </div>
           </div>
-          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
-          <div class="status" v-if="valueMode == 0">
-            <el-tag type="info" v-if="item.atemStatus == null " >离线</el-tag>
-            <el-tag type="danger" v-else-if="item.atemStatus != 0 || item.btemStatus != 0  || item.ctemStatus != 0 " >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </div>
-          <button class="detail" @click="openTemDetail(item)" >详情</button>
+          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->              
+          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
       </div>
+
+      <div  v-show="switchValue == 0 && list.length > 0" class="arrayContainer">
+        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
+          <div class="content">
+            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
+            <div class="info">
+              
+              <div >L1最大电流：{{item.l1MaxCur}}A</div>
+              <div >L2最大电流：{{item.l2MaxCur}}A</div>
+              <div >L3最大电流：{{ item.l3MaxCur }}A</div>
+              <!-- <div>AB路占比：{{item.fzb}}</div> -->
+            </div>
+          </div>
+          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->                
+          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
+        </div>
+      </div>
+
       <Pagination
         :total="total"
         :page-size-arr="pageSizeArr"
@@ -175,121 +255,80 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
-      <template v-if="list.length == 0 && switchValue != 3">
+
+      <template v-if="list.length == 0 && switchValue != 2">
         <el-empty description="暂无数据" :image-size="300" />
       </template>
-
-      <el-dialog v-model="detailVis" title="温度详情" width="800">
-        <el-row>
-          <div >
-            日期:
-            <el-date-picker
-              v-model="queryParams.oldTime"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              type="date"
-              :disabled-date="disabledDate"
-              @change="handleDayPick"
-              class="!w-160px"
-            />
-          </div>
-          
-          
-          <el-button 
-            @click="subtractOneDay();handleDayPick()" 
-            :type=" 'primary'"
-          >
-            &lt;前一日
-          </el-button>
-          <el-button 
-            @click="addtractOneDay();handleDayPick()" 
-            :type=" 'primary'"
-          >
-            &gt;后一日
-          </el-button>
-          <el-button 
-            @click="switchChartOrTable = 0" 
-            :type=" 'primary'"
-          >
-            图表
-          </el-button>
-          <el-button 
-            @click="switchChartOrTable = 1" 
-            :type=" 'primary'"
-          >
-            数据
-          </el-button>
-
-        </el-row>
-        <br/>
-        <TemDetail v-show="switchChartOrTable == 0" :width="700" :height="600" :list="temESList"  />
-        <el-table v-show="switchChartOrTable == 1" :data="temTableList" :stripe="true" :show-overflow-tooltip="true" >
-          <el-table-column label="时间" align="center" prop="temAvgTime" />
-          <el-table-column label="A相温度" align="center" prop="temAvgValueA" />
-          <el-table-column label="B相温度" align="center" prop="temAvgValueB" />
-          <el-table-column label="C相温度" align="center" prop="temAvgValueC" />
-          <el-table-column label="N相温度" align="center" prop="temAvgValueN" />
-        </el-table>
-      </el-dialog>
     </template>
   </CommonMenu>
-
-
+  
   <!-- 表单弹窗：添加/修改 -->
-  <!-- <CurbalanceColorForm ref="curBalanceColorForm" @success="getList" /> -->
+  <!-- <PDUDeviceForm ref="formRef" @success="getList" /> -->
 </template>
 
 <script setup lang="ts">
 // import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { IndexApi } from '@/api/bus/busindex'
-// import CurbalanceColorForm from './CurbalanceColorForm.vue'
+import Pie from './component/Pie.vue'
+// import PDUDeviceForm from './PDUDeviceForm.vue'
 import { ElTree } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
-import TemDetail from './component/TemDetail.vue'
-// import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
-// const { push } = useRouter()
+const { push } = useRouter()
 
-const detailVis = ref(false);
-const curBalanceColorForm = ref()
-const flashListTimer = ref();
-const firstTimerCreate = ref(true);
+
+const now = ref()
 const pageSizeArr = ref([24,36,48])
 const switchValue = ref(0)
-const switchChartOrTable = ref(0);
-const valueMode = ref(0)
+// const statusNumber = reactive({
+//   normal : 0,
+//   warn : 0,
+//   alarm : 0,
+//   offline : 0
+// })
 
-const devKeyList = ref([])
-const loadAll = async () => {
-  var data = await IndexApi.devKeyList();
-  var objectArray = data.map((str) => {
-    return { value: str };
-  });
-  return objectArray;
-}
+const statusList = reactive([
+  {
+    name: '正常',
+    selected: true,
+    value: 0,
+    cssClass: 'btn_normal',
+    activeClass: 'btn_normal normal'
+  },
+  {
+    name: '预警',
+    selected: true,
+    value: 1,
+    cssClass: 'btn_warn',
+    activeClass: 'btn_warn warn'
+  },
+  {
+    name: '告警',
+    selected: true,
+    value: 2,
+    cssClass: 'btn_error',
+    activeClass: 'btn_error error'
+  },
+  {
+    name: '离线',
+    selected: true,
+    value: 5,
+    cssClass: 'btn_offline',
+    activeClass: 'btn_offline offline'
 
-const querySearch = (queryString: string, cb: any) => {
-
-  const results = queryString
-    ? devKeyList.value.filter(createFilter(queryString))
-    : devKeyList.value
-  // call callback function to return suggestions
-  cb(results)
-}
-
-const createFilter = (queryString: string) => {
-  return (devKeyList) => {
-    return (
-      devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
-    )
-  }
-}
+  },
+])
 
 const handleClick = (row) => {
-  console.log("click",row)
+  console.log('Button clicked!', row);
+  if(row.type != null  && row.type == 3){
+    queryParams.devKey = row.devKey
+    handleQuery();
+  }
 }
 
 const handleCheck = async (row) => {
@@ -315,11 +354,31 @@ const handleCheck = async (row) => {
   getList();
 }
 
-const openTemDetail = async (row) =>{
-  queryParams.busId = row.busId;
-  queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
-  await getDetail();
-  detailVis.value = true;
+const serverRoomArr =  ref([])
+
+const filterText = ref('')
+const treeRef = ref<InstanceType<typeof ElTree>>()
+
+watch(filterText, (val) => {
+  treeRef.value!.filter(val)
+})
+
+const message = useMessage() // 消息弹窗
+const { t } = useI18n() // 国际化
+
+const getFullTimeByDate = (date) => {
+  var year = date.getFullYear();//年
+  var month = date.getMonth();//月
+  var day = date.getDate();//日
+  var hours = date.getHours();//时
+  var min = date.getMinutes();//分
+  var second = date.getSeconds();//秒
+  return year + "-" +
+      ((month + 1) > 9 ? (month + 1) : "0" + (month + 1)) + "-" +
+      (day > 9 ? day : ("0" + day)) + " " +
+      (hours > 9 ? hours : ("0" + hours)) + ":" +
+      (min > 9 ? min : ("0" + min)) + ":" +
+      (second > 9 ? second : ("0" + second));
 }
 
 const disabledDate = (date) => {
@@ -331,7 +390,7 @@ const disabledDate = (date) => {
   date.setHours(0, 0, 0, 0);
 
   // 如果date在今天之后，则禁用
-  if(switchValue.value == 0){
+  if(queryParams.timeType == 0){
     return date > today;
   }else {
     return date >= today;
@@ -339,45 +398,36 @@ const disabledDate = (date) => {
   
 }
 
-const handleDayPick = async () => {
+const handleDayPick = () => {
+  if(queryParams?.oldTime && queryParams.timeType == 2){
 
-  if(queryParams?.oldTime ){
-    await getDetail();
-  } 
+    queryParams.oldTime = null;
+    queryParams.newTime = null;
+  }
+
+ if (queryParams.timeArr && queryParams.timeType == 2) {
+
+    queryParams.oldTime = queryParams.timeArr[0];
+    queryParams.newTime = queryParams.timeArr[1].split(" ")[0]+ " " + "23:59:59";
+  }
 }
 
-const subtractOneDay = () => {
-  var date = new Date(queryParams.oldTime + "Z"); // 添加 "Z" 表示 UTC 时间
+const handleMonthPick = () => {
 
-  date.setDate(date.getDate() - 1); // 减去一天
+  if(queryParams.oldTime){
+    var newTime = new Date(queryParams.oldTime);
+    newTime.setMonth(newTime.getMonth() + 1);
+    newTime.setDate(newTime.getDate() - 1);
+    newTime.setHours(23,59,59)
+    queryParams.newTime = getFullTimeByDate(newTime);
 
-  queryParams.oldTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
-};
+  }else {
+    queryParams.newTime = null;
+  }
 
-const addtractOneDay = () => {
-  var date = new Date(queryParams.oldTime + "Z"); // 添加 "Z" 表示 UTC 时间
-
-  date.setDate(date.getDate() + 1); // 减去一天
-
-  queryParams.oldTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
-};
-
-const serverRoomArr =  ref([])
-
-const filterText = ref('')
-const treeRef = ref<InstanceType<typeof ElTree>>()
-
-watch(filterText, (val) => {
-  treeRef.value!.filter(val)
-})
-
-
-const message = useMessage() // 消息弹窗
-const { t } = useI18n() // 国际化
+} 
 
 const loading = ref(false) // 列表的加载中
-const temESList = ref([]) as any;
-const temTableList = ref([]) as any;
 const list = ref([
   { 
     id:null,
@@ -389,11 +439,7 @@ const list = ref([
     location:null,
     dataUpdateTime : "",
     pduAlarm:"",
-    pf:null,
-    atem : null,
-    btem : null,
-    ctem : null,
-    temUnbalance : null,
+    pf:null
   }
 ]) as any// 列表的数据
 const total = ref(0) // 列表的总页数
@@ -405,81 +451,41 @@ const queryParams = reactive({
   cascadeNum: undefined,
   serverRoomData:undefined,
   status:[],
-  cabinetIds : [],
-  busId:undefined,
-})as any
+  cabinetIds:[],
+  timeType : 0,
+  timeArr:[],
+  oldTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),1,0,0,0)),
+  newTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth() + 1,1,23,59,59)),
+}) as any
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
+
+
 /** 查询列表 */
-const getDetail = async () => {
-  const data = await IndexApi.getBusTemDetail(queryParams);
-  temESList.value = data?.chart;
-  temESList.value?.temAvgValueA?.forEach((obj) => {
-    obj = obj?.toFixed(2);
-  });
-  temESList.value?.temAvgValueB?.forEach((obj) => {
-    obj = obj?.toFixed(2);
-  });
-  temESList.value?.temAvgValueC?.forEach((obj) => {
-    obj = obj?.toFixed(2);
-  });
-  temESList.value?.temAvgValueN?.forEach((obj) => {
-    obj = obj?.toFixed(2);
-  });
-  temTableList.value = data?.table;
-  temTableList.value?.forEach((obj) => {
-    obj.temAvgValueA = obj?.temAvgValueA?.toFixed(2);
-    obj.temAvgValueB = obj?.temAvgValueB?.toFixed(2);
-    obj.temAvgValueC = obj?.temAvgValueC?.toFixed(2);
-    obj.temAvgValueN = obj?.temAvgValueN?.toFixed(2);
-  });
-}
 const getList = async () => {
   loading.value = true
   try {
-    const data = await IndexApi.getBusTemPage(queryParams)
-
+    const data = await IndexApi.getBusLinePage(queryParams)
     list.value = data.list
     var tableIndex = 0;
-
     list.value.forEach((obj) => {
+
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.atem == null){
-        return;
-      } 
-      obj.atem = obj.atem?.toFixed(2);
-      obj.btem = obj.btem?.toFixed(2);
-      obj.ctem = obj.ctem?.toFixed(2);
-      obj.ntem = obj.ntem?.toFixed(2);
+      obj.l1MaxCur = obj.l1MaxCur?.toFixed(1);
+      obj.l1MaxVol = obj.l1MaxVol?.toFixed(1);
+      obj.l1MaxPow = obj.l1MaxPow?.toFixed(3);
+      obj.l2MaxCur = obj.l2MaxCur?.toFixed(1);
+      obj.l2MaxVol = obj.l2MaxVol?.toFixed(1);
+      obj.l2MaxPow = obj.l2MaxPow?.toFixed(3);
+      obj.l3MaxCur = obj.l3MaxCur?.toFixed(1);
+      obj.l3MaxVol = obj.l3MaxVol?.toFixed(1);
+      obj.l3MaxPow = obj.l3MaxPow?.toFixed(3);
     });
 
     total.value = data.total
   } finally {
     loading.value = false
-  }
-}
-
-const getListNoLoading = async () => {
-  try {
-    const data = await IndexApi.getBusTemPage(queryParams)
-    list.value = data.list
-    var tableIndex = 0;    
-
-    list.value.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.atem == null){
-        return;
-      } 
-      obj.atem = obj.atem?.toFixed(2);
-      obj.btem = obj.btem?.toFixed(2);
-      obj.ctem = obj.ctem?.toFixed(2);    
-      obj.ntem = obj.ntem?.toFixed(2);
-    });
-
-    total.value = data.total
-  } catch (error) {
-    
   }
 }
 
@@ -497,46 +503,34 @@ const getNavList = async() => {
       }
     })
   }
-
 }
 
-const getFullTimeByDate = (date) => {
-  var year = date.getFullYear();//年
-  var month = date.getMonth();//月
-  var day = date.getDate();//日
-  var hours = date.getHours();//时
-  var min = date.getMinutes();//分
-  var second = date.getSeconds();//秒
-  return year + "-" +
-      ((month + 1) > 9 ? (month + 1) : "0" + (month + 1)) + "-" +
-      (day > 9 ? day : ("0" + day)) + " " +
-      (hours > 9 ? hours : ("0" + hours)) + ":" +
-      (min > 9 ? min : ("0" + min)) + ":" +
-      (second > 9 ? second : ("0" + second));
+const toPDUDisplayScreen = (row) =>{
+  push('/pdu/pdudisplayscreen?devKey=' + row.devKey + '&location=' + row.location + '&id=' + row.id);
 }
-
-// const openNewPage = (scope) => {
-//   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
-//   window.open(url, '_blank');
-// }
 
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
+  if(queryParams.timeType != 0 && queryParams.oldTime == null ){
+    return;
+  }
   getList()
 }
 
 /** 重置按钮操作 */
 const resetQuery = () => {
   queryFormRef.value.resetFields()
+  statusList.forEach((item) => item.selected = true)
+  queryParams.status = [];
   handleQuery()
 }
 
 /** 添加/修改操作 */
-
-const openForm = (type: string) => {
-  curBalanceColorForm.value.open(type)
+const formRef = ref()
+const openForm = (type: string, id?: number) => {
+  formRef.value.open(type, id)
 }
 
 /** 删除按钮操作 */
@@ -568,35 +562,13 @@ const handleExport = async () => {
 }
 
 /** 初始化 **/
-onMounted(async () => {
-  devKeyList.value = await loadAll();
+onMounted(() => {
   getList()
   getNavList();
-  flashListTimer.value = setInterval((getListNoLoading), 5000);
+
 })
 
-onBeforeUnmount(()=>{
-  if(flashListTimer.value){
-    clearInterval(flashListTimer.value)
-    flashListTimer.value = null;
-  }
-})
 
-onBeforeRouteLeave(()=>{
-  if(flashListTimer.value){
-    clearInterval(flashListTimer.value)
-    flashListTimer.value = null;
-    firstTimerCreate.value = false;
-  }
-})
-
-onActivated(() => {
-  getList()
-  getNavList();
-  if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getListNoLoading), 5000);
-  }
-})
 </script>
 
 <style scoped lang="scss">
@@ -874,15 +846,11 @@ onActivated(() => {
     padding-top: 40px;
     position: relative;
     .content {
-      padding-left: 20px;
       display: flex;
       align-items: center;
-      .count_img {
-        margin: 0 35px 0 13px;
-      }
       .icon {
         width: 60px;
-        height: 60px;
+        height: 30px;
         margin: 0 28px;
         text-align: center;
       }

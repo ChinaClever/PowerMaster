@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.bus.controller.admin.busindex;
 
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusTemDetailRes;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusIndexDTO;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
@@ -20,6 +21,7 @@ import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.service.busindex.BusIndexService;
 
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "管理后台 - 始端箱索引")
 @RestController
@@ -57,7 +59,6 @@ public class BusIndexController {
     @GetMapping("/get")
     @Operation(summary = "获得始端箱索引")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
-
     public CommonResult<BusIndexRespVO> getIndex(@RequestParam("id") Long id) {
         BusIndexDO index = indexService.getIndex(id);
         return success(BeanUtils.toBean(index, BusIndexRespVO.class));
@@ -70,6 +71,12 @@ public class BusIndexController {
         return success(BeanUtils.toBean(pageResult, BusIndexRes.class));
     }
 
+    @PostMapping("/line/page")
+    @Operation(summary = "获得始端箱需量分页")
+    public CommonResult<PageResult<BusLineRes>> getBusLineDevicePage(@RequestBody BusIndexPageReqVO pageReqVO) {
+        return success(indexService.getBusLineDevicePage(pageReqVO));
+    }
+
     @GetMapping("/buspage")
     @Operation(summary = "获得始端箱索引分页")
     public CommonResult<PageResult<BusRedisDataRes>> getBusPage(@Valid BusIndexPageReqVO pageReqVO) {
@@ -77,16 +84,16 @@ public class BusIndexController {
         return success(BeanUtils.toBean(pageResult, BusRedisDataRes.class));
     }
 
-    @GetMapping("/bustempage")
+    @PostMapping("/bustempage")
     @Operation(summary = "获得始端箱索引分页")
     public CommonResult<PageResult<BusTemRes>> getBusTemPage(@Valid BusIndexPageReqVO pageReqVO) {
         PageResult<BusTemRes> pageResult = indexService.getBusTemPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BusTemRes.class));
     }
 
-    @GetMapping("/buspfpage")
+    @PostMapping("/buspfpage")
     @Operation(summary = "获得始端箱索引分页")
-    public CommonResult<PageResult<BusPFRes>> getBusPFPage(@Valid BusIndexPageReqVO pageReqVO) {
+    public CommonResult<PageResult<BusPFRes>> getBusPFPage(@RequestBody BusIndexPageReqVO pageReqVO) {
         PageResult<BusPFRes> pageResult = indexService.getBusPFPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BusPFRes.class));
     }
@@ -99,15 +106,27 @@ public class BusIndexController {
     }
 
     /**
-     * 机柜用能页面
+     * 始端箱用能页面
      *
      * @param pageReqVO
      */
-    @Operation(summary = "机柜用能列表分页")
+    @Operation(summary = "始端箱用能列表分页")
     @PostMapping("/eq/page")
     public CommonResult<PageResult<BusIndexDTO>> getEqPage(@RequestBody BusIndexPageReqVO pageReqVO) {
         PageResult<BusIndexDTO> pageResult = indexService.getEqPage(pageReqVO);
         return success(pageResult);
+    }
+
+    @Operation(summary = "始端箱温度详情分页")
+    @PostMapping("/tem/detail")
+    public CommonResult<Map> getBusTemDetail(@RequestBody BusIndexPageReqVO pageReqVO) {
+        return success(indexService.getBusTemDetail(pageReqVO));
+    }
+
+    @Operation(summary = "始端箱功率因素详情分页")
+    @PostMapping("/pf/detail")
+    public CommonResult<Map> getBusPFDetail(@RequestBody BusIndexPageReqVO pageReqVO) {
+        return success(indexService.getBusPFDetail(pageReqVO));
     }
 
     @PostMapping("/balance")

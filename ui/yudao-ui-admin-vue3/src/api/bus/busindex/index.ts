@@ -56,12 +56,12 @@ export const IndexApi = {
     return await request.post({ url: `/bus/index/balance`, data })
   },
 
-  getBusTemPage: async (params: any) => {
-    return await request.get({ url: `/bus/index/bustempage`, params })
+  getBusTemPage: async (data: any) => {
+    return await request.post({ url: `/bus/index/bustempage`, data })
   },
 
-  getBusPFPage: async (params: any) => {
-    return await request.get({ url: `/bus/index/buspfpage`, params })
+  getBusPFPage: async (data: any) => {
+    return await request.post({ url: `/bus/index/buspfpage`, data })
   },
 
   getBusHarmonicPage: async (params: any) => {
@@ -70,5 +70,17 @@ export const IndexApi = {
 
   devKeyList: async () => {
     return await request.download({ url: `/bus/index/devKeyList` })
+  },
+
+  getBusLinePage: async (data: any) => {
+    return await request.post({ url: `/bus/index/line/page`,data})
+  },
+
+  getBusTemDetail: async (data: any) => {
+    return await request.post({ url: `/bus/index/tem/detail`, data })
+  },
+
+  getBusPFDetail: async (data: any) => {
+    return await request.post({ url: `/bus/index/pf/detail`, data })
   },
 }

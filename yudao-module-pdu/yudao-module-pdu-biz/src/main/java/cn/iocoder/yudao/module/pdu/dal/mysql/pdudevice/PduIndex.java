@@ -11,7 +11,7 @@ public class PduIndex {
 
     private String ipAddr;
 
-    private String cascadeAddr;
+    private Integer cascadeAddr;
 
     private Integer runStatus;
 }

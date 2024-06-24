@@ -29,7 +29,7 @@ const dcQueryParams = reactive({
   pageSize: 10,
   alarmPush: undefined,
 })
-const dcQueryFormRef = ref() // 搜索的表单
+
 
 const staticList = ref<StatisConfigVO[]>([]) as any// 列表的数据
 const staticTotal = ref(0) // 列表的总页数
@@ -89,7 +89,7 @@ onMounted(async () => {
 
 const activeName = ref('second')
 
-const handleClick = (tab: TabsPaneContext, event: Event) => {
+const handleClick = (tab: TabsPaneContext) => {
   if(tab.props.label === "数据采集"){
     if(dcList.value && dcList.value.length > 0 && dcList.value[0].id){
       openDCForm('update', dcList.value[0].id);

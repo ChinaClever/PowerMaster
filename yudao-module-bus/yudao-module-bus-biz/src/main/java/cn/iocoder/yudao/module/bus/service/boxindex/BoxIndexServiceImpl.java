@@ -5,15 +5,17 @@ import cn.hutool.core.date.DateUtil;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalMonthDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalWeekDo;
+import cn.iocoder.yudao.framework.common.entity.es.bus.line.BusLineHourDo;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.dto.BoxIndexDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.*;
-import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusIndexDTO;
+
 import cn.iocoder.yudao.module.bus.dal.dataobject.boxcurbalancecolor.BoxCurbalanceColorDO;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
+
 import cn.iocoder.yudao.module.bus.dal.mysql.boxcurbalancecolor.BoxCurbalanceColorMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxindex.BoxIndexCopyMapper;
 import com.alibaba.fastjson2.JSONArray;
@@ -37,6 +39,8 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -494,6 +498,146 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         return result;
     }
 
+    @Override
+    public PageResult<BoxLineRes> getBoxLineDevicePage(BoxIndexPageReqVO pageReqVO) {
+        try {
+            PageResult<BoxIndex> busIndexPageResult = null;
+            List<BoxLineRes> result = new ArrayList<>();
+//            if(pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
+//                List<String> ipAddrList = new ArrayList<>();
+//                List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().inIfPresent(CabinetPdu::getCabinetId, pageReqVO.getCabinetIds()));
+//                if(cabinetPduList != null && cabinetPduList.size() > 0){
+//                    for (CabinetPdu cabinetPdu : cabinetPduList) {
+//                        if (!StringUtils.isEmpty(cabinetPdu.getPduIpA())){
+//                            ipAddrList.add(cabinetPdu.getPduIpA());
+//                        }
+//                        if (!StringUtils.isEmpty(cabinetPdu.getPduIpB())){
+//                            ipAddrList.add(cabinetPdu.getPduIpB());
+//                        }
+//                    }
+//                }else{
+//                    return new PageResult<BoxLineRes>(result,0L);
+//                }
+//                busIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<BoxIndex>()
+//                        .likeIfPresent(BoxIndex::getDevKey,pageReqVO.getDevKey()).inIfPresent(BoxIndex::getIpAddr,ipAddrList));
+//            }else{
+//                busIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<BoxIndex>()
+//                        .likeIfPresent(BoxIndex::getDevKey,pageReqVO.getDevKey()));
+//            }
+
+            busIndexPageResult = boxIndexCopyMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<BoxIndex>()
+                    .likeIfPresent(BoxIndex::getDevKey,pageReqVO.getDevKey()));
+
+            List<BoxIndex> busIndices = busIndexPageResult.getList();
+
+//            Set<String> ipAddrSet = new HashSet<>();
+//            Set<Integer> cascadeAddrSet = new HashSet<>();
+//            for (BoxIndex busIndex : busIndices) {
+//                ipAddrSet.add(busIndex.getIpAddr());
+//                cascadeAddrSet.add(busIndex.getCascadeAddr());
+//            }
+//
+//            // 批量查询 CabinetPdu 表
+//            List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>()
+//                    .in(CabinetPdu::getPduIpA, ipAddrSet).in(CabinetPdu::getCasIdA, cascadeAddrSet)
+//                    .or().in(CabinetPdu::getPduIpB,ipAddrSet).in(CabinetPdu::getCasIdB,cascadeAddrSet));
+//
+//            // 将查询结果按 ipAddr 和 cascadeAddr 分组
+//            Map<String, List<CabinetPdu>> cabinetPduAMap = cabinetPdus.stream()
+//                    .filter(cabinetPdu -> ipAddrSet.contains(cabinetPdu.getPduIpA()) && cascadeAddrSet.contains(cabinetPdu.getCasIdA()))
+//                    .collect(Collectors.groupingBy(cabinetPdu -> cabinetPdu.getPduIpA() + "-" + cabinetPdu.getCasIdA()));
+//
+//            Map<String, List<CabinetPdu>> cabinetPduBMap = cabinetPdus.stream()
+//                    .filter(cabinetPdu -> ipAddrSet.contains(cabinetPdu.getPduIpB()) && cascadeAddrSet.contains(cabinetPdu.getCasIdB()))
+//                    .collect(Collectors.groupingBy(cabinetPdu -> cabinetPdu.getPduIpB() + "-" + cabinetPdu.getCasIdB()));
+
+            if(pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
+                pageReqVO.setNewTime(LocalDateTime.now());
+                pageReqVO.setOldTime(LocalDateTime.now().minusHours(24));
+            } else {
+                pageReqVO.setNewTime(pageReqVO.getNewTime().plusDays(1));
+                pageReqVO.setOldTime(pageReqVO.getOldTime().plusDays(1));
+            }
+            List<Integer> ids = busIndices.stream().map(BoxIndex::getId).collect(Collectors.toList());
+            List<String> esCurMaxResult = null;
+            List<String> esPowMaxResult = null;
+            Map<Integer,Map<Integer, BusLineHourDo>> curMap = new HashMap<>();
+            Map<Integer,Map<Integer,BusLineHourDo>> powMap = new HashMap<>();
+            String index = null;
+            if(pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
+                index = "box_hda_line_hour";
+            } else {
+                index = "box_hda_line_day";
+            }
+            String startTime = localDateTimeToString(pageReqVO.getOldTime());
+            String endTime = localDateTimeToString(pageReqVO.getNewTime());
+            esCurMaxResult = getBoxLineData(startTime,endTime,ids,index,"cur_max_value");
+            esPowMaxResult = getBoxLineData(startTime,endTime,ids,index,"pow_active_max_value");
+            if (!CollectionUtils.isEmpty(esCurMaxResult)){
+                esCurMaxResult.forEach(str -> {
+                    BusLineHourDo hourDo = JsonUtils.parseObject(str, BusLineHourDo.class);
+                    curMap.computeIfAbsent(hourDo.getBusId(), k -> new HashMap<>()).put(hourDo.getLineId(), hourDo);
+                });
+            }
+
+            if (!CollectionUtils.isEmpty(esPowMaxResult)){
+                esPowMaxResult.forEach(str -> {
+                    BusLineHourDo hourDo = JsonUtils.parseObject(str, BusLineHourDo.class);
+                    powMap.computeIfAbsent(hourDo.getBusId(), k -> new HashMap<>()).put(hourDo.getLineId(), hourDo);
+                });
+            }
+
+            for (BoxIndex busIndex : busIndices) {
+                Integer id = busIndex.getId();
+                if (curMap.get(id) == null){
+                    continue;
+                }
+                BoxLineRes busLineRes = new BoxLineRes();
+                busLineRes.setStatus(busIndex.getRunStatus());
+
+                busLineRes.setBoxId(busIndex.getId());
+                busLineRes.setDevKey(busIndex.getDevKey());
+
+                BusLineHourDo curl1 = curMap.get(id).get(1);
+                busLineRes.setL1MaxCur(curl1.getCurMaxValue());
+                busLineRes.setL1MaxCurTime(curl1.getCurMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                BusLineHourDo curl2 = curMap.get(id).get(2);
+                if(curl2 != null){
+                    busLineRes.setL2MaxCur(curl2.getCurMaxValue());
+                    busLineRes.setL2MaxCurTime(curl2.getCurMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                BusLineHourDo curl3 = curMap.get(id).get(3);
+                if(curl3 != null){
+                    busLineRes.setL3MaxCur(curl3.getCurMaxValue());
+                    busLineRes.setL3MaxCurTime(curl3.getCurMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+
+                BusLineHourDo powl1 = powMap.get(id).get(1);
+                busLineRes.setL1MaxPow(powl1.getPowActiveMaxValue());
+                busLineRes.setL1MaxPowTime(powl1.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                BusLineHourDo powl2 = powMap.get(id).get(2);
+                if(powl2 != null) {
+                    busLineRes.setL2MaxPow(powl2.getPowActiveMaxValue());
+                    busLineRes.setL2MaxPowTime(powl2.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                BusLineHourDo powl3 = powMap.get(id).get(3);
+                if(powl3 != null) {
+                    busLineRes.setL3MaxPow(powl3.getPowActiveMaxValue());
+                    busLineRes.setL3MaxPowTime(powl3.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+
+                result.add(busLineRes);
+            }
+            return new PageResult<BoxLineRes>(result,busIndexPageResult.getTotal());
+
+        }catch (Exception e){
+            System.out.println(e);
+        }
+
+
+        return new PageResult<>(new ArrayList<>(), 0L);
+    }
+
     /**
      * 获取数据
      * @param startTime 开始时间
@@ -527,5 +671,38 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         }
         return list;
 
+    }
+
+    private List<String> getBoxLineData(String startTime, String endTime, List<Integer> ids, String index, String sort) throws IOException {
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件，
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+
+        //获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime))
+                .must(QueryBuilders.termsQuery("bus_id", ids))));
+        builder.sort(sort, SortOrder.DESC);
+        // 设置搜索条件
+        searchRequest.source(builder);
+        builder.size(1000);
+
+        List<String> list = new ArrayList<>();
+        // 执行ES请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                String str = hit.getSourceAsString();
+                list.add(str);
+            }
+        }
+        return list;
+
+    }
+
+    private String localDateTimeToString(LocalDateTime time){
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return time.format(fmt);
     }
 }

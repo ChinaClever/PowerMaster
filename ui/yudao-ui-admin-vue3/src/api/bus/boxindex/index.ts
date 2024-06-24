@@ -71,4 +71,8 @@ export const IndexApi = {
   devKeyList: async () => {
     return await request.download({ url: `/box/index/devKeyList` })
   },
+
+  getBoxLinePage: async (data) => {
+    return await request.post({ url: `/box/index/line/page`,data})
+  },
 }
