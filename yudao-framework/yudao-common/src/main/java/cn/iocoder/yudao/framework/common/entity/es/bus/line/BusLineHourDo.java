@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.framework.common.entity.es.bus.line;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 /**
@@ -10,4 +11,16 @@ import lombok.Data;
  */
 @Data
 public class BusLineHourDo extends BusLineBaseDo {
+
+    /**
+     * 电流谐波含量
+     */
+    @JsonProperty("cur_thd")
+    private float[] curThd;
+
+    /**
+     * 电压谐波含量
+     */
+    @JsonProperty("vol_thd")
+    private float[]  volThd;
 }
