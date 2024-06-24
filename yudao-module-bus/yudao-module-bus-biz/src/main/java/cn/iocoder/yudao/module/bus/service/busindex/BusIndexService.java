@@ -74,4 +74,8 @@ public interface BusIndexService {
     Map getBusTemDetail(BusIndexPageReqVO pageReqVO);
 
     Map getBusPFDetail(BusIndexPageReqVO pageReqVO);
+
+    BusHarmonicRedisRes getHarmonicRedis(BusIndexPageReqVO pageReqVO);
+
+    BusHarmonicLineRes getHarmonicLine(BusIndexPageReqVO pageReqVO);
 }

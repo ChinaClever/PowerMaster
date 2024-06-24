@@ -213,7 +213,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             pduDeviceDO.setDevKey(pduIndex.getDevKey());
 
             JSONObject jsonObject = (JSONObject) ops.get("packet:pdu:" + pduIndex.getDevKey());
-            if (jsonObject == null){
+            if (jsonObject == null || jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list") == null || jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list").size() <= 0){
                 continue;
             }
             JSONObject pduTgData = jsonObject.getJSONObject("pdu_data").getJSONObject("pdu_total_data");

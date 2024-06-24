@@ -80,7 +80,11 @@ export const IndexApi = {
     return await request.post({ url: `/bus/index/tem/detail`, data })
   },
 
-  getBusPFDetail: async (data: any) => {
-    return await request.post({ url: `/bus/index/pf/detail`, data })
+  getHarmonicRedis: async (data: any) => {
+    return await request.post({ url: `/bus/index/harmonic/redis`, data })
+  },
+
+  getHarmonicLine: async (data: any) => {
+    return await request.post({ url: `/bus/index/harmonic/line`, data })
   },
 }

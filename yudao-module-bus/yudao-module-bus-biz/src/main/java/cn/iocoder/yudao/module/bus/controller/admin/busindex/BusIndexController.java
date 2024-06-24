@@ -142,6 +142,20 @@ public class BusIndexController {
         return indexService.getDevKeyList();
     }
 
+    @Operation(summary = "始端箱用能列表分页")
+    @PostMapping("/harmonic/redis")
+    public CommonResult<BusHarmonicRedisRes> getHarmonicRedis(@RequestBody BusIndexPageReqVO pageReqVO) {
+        BusHarmonicRedisRes pageResult = indexService.getHarmonicRedis(pageReqVO);
+        return success(pageResult);
+    }
+
+    @Operation(summary = "始端箱用能列表分页")
+    @PostMapping("/harmonic/line")
+    public CommonResult<BusHarmonicLineRes> getHarmonicLine(@RequestBody BusIndexPageReqVO pageReqVO) {
+        BusHarmonicLineRes pageResult = indexService.getHarmonicLine(pageReqVO);
+        return success(pageResult);
+    }
+
 //    @GetMapping("/export-excel")
 //    @Operation(summary = "导出始端箱索引 Excel")
 //    @PreAuthorize("@ss.hasPermission('bus:index:export')")

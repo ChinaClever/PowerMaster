@@ -13,6 +13,11 @@ public class BusHarmonicRes {
     @Schema(description = "位置")
     private String location;
 
+    /**
+     * 设备识别码
+     */
+    private String devKey;
+
     @Schema(description = "A的电流谐波")
     private Double acurThd;
 

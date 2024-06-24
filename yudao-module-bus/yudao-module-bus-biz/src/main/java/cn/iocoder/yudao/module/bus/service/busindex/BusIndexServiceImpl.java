@@ -472,6 +472,7 @@ public class BusIndexServiceImpl implements BusIndexService {
         for (BusIndexDO busIndexDO : list) {
             BusHarmonicRes busHarmonicRes = new BusHarmonicRes();
             busHarmonicRes.setStatus(busIndexDO.getRunStatus());
+            busHarmonicRes.setDevKey(busIndexDO.getDevKey());
             res.add(busHarmonicRes);
             JSONObject jsonObject = (JSONObject) ops.get("packet:bus:" + busIndexDO.getDevKey());
             if (jsonObject == null){
@@ -766,6 +767,82 @@ public class BusIndexServiceImpl implements BusIndexService {
         return null;
     }
 
+    @Override
+    public BusHarmonicRedisRes getHarmonicRedis(BusIndexPageReqVO pageReqVO) {
+        Integer harmonicType = 0;
+        BusHarmonicRedisRes result = new BusHarmonicRedisRes();
+        if(pageReqVO.getHarmonicType() > 2){
+            harmonicType = pageReqVO.getHarmonicType() - 3;
+        }else{
+            harmonicType = pageReqVO.getHarmonicType();
+        }
+        ValueOperations ops = redisTemplate.opsForValue();
+
+        JSONObject jsonObject = (JSONObject) ops.get("packet:bus:" + pageReqVO.getDevKey());
+        if (jsonObject == null){
+            return result;
+        }
+        JSONArray jsonArray = null;
+        if (pageReqVO.getHarmonicType() > 2){
+            jsonArray = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list").getJSONArray("cur_thd");
+        }else{
+            jsonArray = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list").getJSONArray("vol_thd");
+        }
+        List<Float> harmoicList = new ArrayList<>();
+        List<Integer> times = new ArrayList<>();
+        for (int i = 1; i < 33; i++) {
+            times.add(i);
+        }
+        for (int i = harmonicType; i < jsonArray.size(); i+=3) {
+            harmoicList.add(jsonArray.getFloat(i));
+        }
+
+        result.setHarmonicList(harmoicList);
+        result.setTimes(times);
+        return result;
+    }
+
+    @Override
+    public BusHarmonicLineRes getHarmonicLine(BusIndexPageReqVO pageReqVO) {
+        BusHarmonicLineRes result = new BusHarmonicLineRes();
+        for (int i = 0; i < 33; i++) {
+            result.getSeries().add(new LineSeries());
+        }
+        pageReqVO.setNewTime(pageReqVO.getOldTime().withHour(23).withMinute(59).withSecond(59));
+        try {
+            Integer lineId = 0;
+            if (pageReqVO.getHarmonicType() == 0 || pageReqVO.getHarmonicType() == 3){
+                lineId = 1;
+            } else if (pageReqVO.getHarmonicType() == 1 || pageReqVO.getHarmonicType() == 4) {
+                lineId = 2;
+            } else {
+                lineId = 3;
+            }
+            String startTime = localDateTimeToString(pageReqVO.getOldTime());
+            String endTime = localDateTimeToString(pageReqVO.getNewTime());
+            List<Integer> ids = Arrays.asList(pageReqVO.getBusId());
+            List<Integer> lines = Arrays.asList(lineId);
+            List<String> busHdaLineHour = getBusHarmonicData(startTime, endTime, ids, lines,"bus_hda_line_realtime");
+            busHdaLineHour.forEach(str ->{
+                BusLineHourDo busLineHourDo = JsonUtils.parseObject(str, BusLineHourDo.class);
+                result.getTime().add(busLineHourDo.getCreateTime().toString("HH:mm"));
+                if(pageReqVO.getHarmonicType() < 3){
+                    float[] volThd = busLineHourDo.getVolThd();
+                    for (int i = 0; i < volThd.length; i++) {
+                        LineSeries lineSeries = result.getSeries().get(i + 1);
+                        lineSeries.setName( (i+1) + "次谐波");
+                        lineSeries.getData().add(volThd[i]);
+                    }
+                }
+            });
+            return result;
+        } catch (Exception e){
+            log.error("获取数据失败",e);
+        }
+
+        return result;
+    }
+
     /**
      * 获取数据
      * @param startTime 开始时间
@@ -782,6 +859,35 @@ public class BusIndexServiceImpl implements BusIndexService {
         //获取需要处理的数据
         builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
                 .must(QueryBuilders.termsQuery("bus_id", ids))));
+        builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+        // 设置搜索条件
+        searchRequest.source(builder);
+        builder.size(1000);
+
+        List<String> list = new ArrayList<>();
+        // 执行ES请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                String str = hit.getSourceAsString();
+                list.add(str);
+            }
+        }
+        return list;
+
+    }
+
+    private List<String> getBusHarmonicData(String startTime, String endTime, List<Integer> ids, List<Integer> lines,String index) throws IOException {
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件，
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+
+        //获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
+                .must(QueryBuilders.termsQuery("bus_id", ids))
+                .must(QueryBuilders.termsQuery("line_id", lines))));
         builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
         // 设置搜索条件
         searchRequest.source(builder);

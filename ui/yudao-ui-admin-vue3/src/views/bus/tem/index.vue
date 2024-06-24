@@ -435,6 +435,7 @@ const getDetail = async () => {
     obj.temAvgValueN = obj?.temAvgValueN?.toFixed(2);
   });
 }
+
 const getList = async () => {
   loading.value = true
   try {

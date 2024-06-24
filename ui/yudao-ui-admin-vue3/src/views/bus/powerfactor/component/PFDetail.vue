@@ -41,7 +41,7 @@ const echartsOption = ref({
 
 watchEffect(() => {
   // 直接访问即可，watchEffect会自动跟踪变化
-  console.log(1)
+
   powerFactorA.value = prop.list.powerFactorAvgValueA;
   powerFactorB.value = prop.list.powerFactorAvgValueB;
   powerFactorC.value = prop.list.powerFactorAvgValueC;
