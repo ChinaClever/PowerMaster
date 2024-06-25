@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.cabinet.vo;
+package cn.iocoder.yudao.framework.common.dto.cabinet;
 
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import io.swagger.v3.oas.annotations.media.Schema;

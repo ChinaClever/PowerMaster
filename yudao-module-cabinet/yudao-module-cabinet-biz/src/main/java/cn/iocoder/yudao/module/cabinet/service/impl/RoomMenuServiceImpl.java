@@ -9,14 +9,12 @@ import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.enums.DisableEnums;
-import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
-import cn.iocoder.yudao.framework.common.mapper.AisleBoxMapper;
-import cn.iocoder.yudao.module.cabinet.dto.RoomBusMenuDTO;
+import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.module.cabinet.dto.RoomMenuDTO;
 import cn.iocoder.yudao.module.cabinet.dto.RoomPduMenuDTO;
 import cn.iocoder.yudao.module.cabinet.mapper.*;
 import cn.iocoder.yudao.module.cabinet.enums.MenuTypeEnums;
-import cn.iocoder.yudao.module.cabinet.service.RoomService;
+import cn.iocoder.yudao.module.cabinet.service.RoomMenuService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -39,7 +37,7 @@ import static cn.iocoder.yudao.module.cabinet.constant.CabConstants.SPLIT;
  */
 @Slf4j
 @Service
-public class RoomServiceImpl implements RoomService {
+public class RoomMenuServiceImpl implements RoomMenuService {
 
     @Autowired
     RoomIndexMapper roomIndexMapper;

@@ -1,5 +1,6 @@
-package cn.iocoder.yudao.module.cabinet.dto;
+package cn.iocoder.yudao.framework.common.dto.cabinet;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -77,11 +78,13 @@ public class CabinetIndexDTO {
     /**
      * 注释
      */
+    @JsonProperty(value="xCoordinate")
     private int xCoordinate;
 
     /**
      * 类名
      */
+    @JsonProperty(value="yCoordinate")
     private int yCoordinate;
 
     /**

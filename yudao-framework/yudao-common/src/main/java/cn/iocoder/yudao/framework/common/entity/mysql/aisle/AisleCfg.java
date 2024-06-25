@@ -1,7 +1,8 @@
-package cn.iocoder.yudao.framework.common.entity.mysql.cabinet;
+package cn.iocoder.yudao.framework.common.entity.mysql.aisle;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -10,12 +11,12 @@ import java.time.LocalDateTime;
 /**
  * @author luowei
  * @version 1.0
- * @description: 机柜配置表
+ * @description: 柜列配置表
  * @date 2024/4/28 13:53
  */
 @Data
-@TableName(value = "cabinet_cfg")
-public class CabinetCfg implements Serializable {
+@TableName(value = "aisle_cfg")
+public class AisleCfg implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
@@ -23,41 +24,27 @@ public class CabinetCfg implements Serializable {
 
 
     /**
-     * 机柜id
+     * 柜列id
      */
-    private int cabinetId;
+    private Integer aisleId;
+
 
     /**
-     * 机柜名称
-     */
-    private String cabinetName;
-
-    /**
-     * 机柜高度
-     */
-    private int cabinetHeight;
-
-    /**
-     * 机柜类型
-     */
-    private String type;
-
-    /**
-     * x坐标
+     * 起始x坐标
      */
     @JsonProperty(value="xCoordinate")
     private int xCoordinate;
 
     /**
-     * y坐标
+     * 起始y坐标
      */
     @JsonProperty(value="yCoordinate")
     private int yCoordinate;
 
     /**
-     * 所属于公司
+     * 柜列方向 x y
      */
-    private String company;
+    private String direction;
 
     /**
      * 更新时间
