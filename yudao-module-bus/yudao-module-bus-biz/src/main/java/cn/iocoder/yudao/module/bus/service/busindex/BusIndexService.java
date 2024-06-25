@@ -2,6 +2,9 @@ package cn.iocoder.yudao.module.bus.service.busindex;
 
 import javax.validation.*;
 
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusActivePowDTO;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusEleChainDTO;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusEqTrendDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusIndexDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
@@ -78,4 +81,12 @@ public interface BusIndexService {
     BusHarmonicRedisRes getHarmonicRedis(BusIndexPageReqVO pageReqVO);
 
     BusHarmonicLineRes getHarmonicLine(BusIndexPageReqVO pageReqVO);
+
+    Integer getBusIdByDevKey(String devKey);
+
+    BusActivePowDTO getActivePow(BusPowVo vo);
+
+    List<BusEqTrendDTO> eqTrend(int id, String type);
+
+    BusEleChainDTO getEleChain(int id);
 }

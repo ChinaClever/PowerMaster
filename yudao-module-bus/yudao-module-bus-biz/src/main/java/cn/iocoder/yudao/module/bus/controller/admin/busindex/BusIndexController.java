@@ -1,7 +1,11 @@
 package cn.iocoder.yudao.module.bus.controller.admin.busindex;
 
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusActivePowDTO;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusEleChainDTO;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusEqTrendDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusTemDetailRes;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusIndexDTO;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -154,6 +158,51 @@ public class BusIndexController {
     public CommonResult<BusHarmonicLineRes> getHarmonicLine(@RequestBody BusIndexPageReqVO pageReqVO) {
         BusHarmonicLineRes pageResult = indexService.getHarmonicLine(pageReqVO);
         return success(pageResult);
+    }
+
+    @Operation(summary = "始端箱用能列表分页")
+    @PostMapping("/getid")
+    public CommonResult<Integer> getBusIdByDevKey(@RequestBody BusIndexPageReqVO pageReqVO) {
+        Integer result = indexService.getBusIdByDevKey(pageReqVO.getDevKey());
+        return success(result);
+    }
+
+    /**
+     * 机柜有功功率趋势
+     *
+     * @param id 机柜id
+     */
+    @Operation(summary = "始端箱有功功率趋势")
+    @GetMapping("/activePowTrend")
+    public CommonResult<BusActivePowDTO> activePowTrend(@Param("id") int id) {
+        BusPowVo vo = new BusPowVo();
+        vo.setId(id);
+        BusActivePowDTO dto = indexService.getActivePow(vo);
+        return success(dto);
+    }
+
+    /**
+     * 机柜用能趋势
+     *
+     * @param id 机柜id
+     */
+    @Operation(summary = "机柜用能趋势")
+    @GetMapping("/eleTrend")
+    public CommonResult<List<BusEqTrendDTO>> eleTrend(@Param("id") int id, @Param("type") String type) {
+        List<BusEqTrendDTO> dto = indexService.eqTrend(id, type);
+        return success(dto);
+    }
+
+    /**
+     * 机柜用能环比
+     *
+     * @param id 机柜id
+     */
+    @Operation(summary = "机柜用能环比")
+    @GetMapping("/eleChain")
+    public CommonResult<BusEleChainDTO> eleChain(@Param("id") int id) {
+        BusEleChainDTO dto = indexService.getEleChain(id);
+        return success(dto);
     }
 
 //    @GetMapping("/export-excel")

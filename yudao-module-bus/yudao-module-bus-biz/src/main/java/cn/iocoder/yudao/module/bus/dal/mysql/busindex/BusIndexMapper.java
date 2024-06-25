@@ -20,6 +20,7 @@ public interface BusIndexMapper extends BaseMapperX<BusIndexDO> {
     default PageResult<BusIndexDO> selectPage(BusIndexPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<BusIndexDO>()
                 .eqIfPresent(BusIndexDO::getDevKey, reqVO.getDevKey())
+                .inIfPresent(BusIndexDO::getDevKey,reqVO.getBusDevKeyList())
                 .eqIfPresent(BusIndexDO::getIpAddr, reqVO.getIpAddr())
                 .eqIfPresent(BusIndexDO::getDevAddr, reqVO.getDevAddr())
                 .eqIfPresent(BusIndexDO::getBarId, reqVO.getBarId())

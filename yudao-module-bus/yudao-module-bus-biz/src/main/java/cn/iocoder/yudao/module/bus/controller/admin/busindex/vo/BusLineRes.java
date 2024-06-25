@@ -3,11 +3,7 @@ package cn.iocoder.yudao.module.bus.controller.admin.busindex.vo;
 import lombok.Data;
 
 @Data
-public class BusLineRes  {
-
-    private Integer busId;
-
-    private String devKey;
+public class BusLineRes  extends BusResBase {
 
     private Float L1MaxCur;
 

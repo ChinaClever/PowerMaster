@@ -44,8 +44,8 @@ public class BusIndexPageReqVO extends PageParam {
     @Schema(description = "节点IP")
     private String nodeIp;
 
-    @Schema(description = "机柜ID列表")
-    private List<Integer> cabinetIds;
+    @Schema(description = "始端箱ID列表")
+    private List<String> busDevKeyList;
 
     @Schema(description = "时间类型")
     private Integer timeType;

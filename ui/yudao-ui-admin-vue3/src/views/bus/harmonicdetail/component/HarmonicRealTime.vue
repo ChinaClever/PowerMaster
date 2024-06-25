@@ -10,11 +10,11 @@ const prop = defineProps({
     required: true
   },
   height: {
-    type: Number,
+    type: [Number,String],
     default: 60
   },
   width: {
-    type: Number,
+    type: [Number,String],
     default: 60
   }
 })
@@ -39,7 +39,6 @@ watchEffect(() => {
   // 直接访问即可，watchEffect会自动跟踪变化
 
   harmonicRealTime.value = prop.list.harmonicList;
-
   times.value = prop.list.times;
 
 });

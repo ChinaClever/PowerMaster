@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="false"  :lazy="true" :load="loadNode" navTitle="PDU报表">
+  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="PDU报表">
     <template #NavInfo>
       <div >
         <div class="header">
@@ -57,7 +57,6 @@
         <el-select
           v-model="queryParams.harmonicType"
           placeholder="请选择"
-
           style="width: 240px"
         >
           <el-option label="A相电压谐波" :value = 0 />
@@ -116,11 +115,11 @@
     <template #Content>
       <div >
         <div v-if="realTimeVis">
-          <HarmonicRealTime  :width="700" :height="600" :list="harmonicRealTime"/>
+          <HarmonicRealTime  width="70vw" height="58vh" :list="harmonicRealTime"/>
         </div>
         <br/>
         <div v-if="lineVis">
-          <HarmonicLine  :width="700" :height="600" :list="harmonicLine"/>
+          <HarmonicLine  width="70vw" height="58vh" :list="harmonicLine"/>
         </div>
       </div>
     </template>
@@ -133,21 +132,20 @@
 // import download from '@/utils/download'
 import { IndexApi } from '@/api/bus/busindex'
 import { ElTree } from 'element-plus'
-import { CabinetApi } from '@/api/cabinet/info'
-import type Node from 'element-plus/es/components/tree/src/model/node'
 import HarmonicRealTime from './component/HarmonicRealTime.vue'
 import HarmonicLine from './component/HarmonicLine.vue'
+import router from '@/router';
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
-
+const haveSearch = ref(false);
 const switchValue = ref(1);
 const harmonicRealTime = ref();
-const harmonicLine = ref();
+const harmonicLine = ref({ value: { series: [], time: [] } }) as any;
 const realTimeVis = ref(false);
 const lineVis = ref(false);
-
+const seriesAndTimeArr = ref() as any;
 const harmonicMultiple = ref([
   {
   label: "A相电压1次谐波含量",
@@ -279,6 +277,8 @@ const harmonicMultiple = ref([
   }
 ])
 
+const serverRoomArr =  ref([])
+
 const selectAll = () => {
 
   if(queryParams.harmonicArr != null && queryParams.harmonicArr?.length < 33 ){
@@ -353,8 +353,8 @@ const queryParams = reactive({
   pageSize: 10,
   harmonicType : 0,
   harmonicArr:[1],
-  devKey : undefined,
-  busId: undefined,
+  devKey : history?.state?.devKey,
+  busId: history?.state?.busId,
   outputNumber : 10,
   createTime: undefined,
   timeArr:[],
@@ -362,40 +362,36 @@ const queryParams = reactive({
   newTime : undefined,
 }) as any
 
-const loadNode = async (node: Node, resolve: (data: Tree[]) => void) => {
-  if (node.level === 0) {
-    var temp = await CabinetApi.getRoomList({});
-    return resolve(temp)
-  }
-  if (node.level === 1){
-    var temp = await CabinetApi.getRoomPDUList({id : node.data.id});
-    return resolve(temp[0].children);
-  } 
-  if (node.level >= 2){
-    return resolve(node?.data?.children);
-  } 
-}
 
-const handleClick = (row) => {
-  if(row.type != null  && row.type == 4){
-    queryParams.ipAddr = row.ip
-    queryParams.cascadeAddr = row?.unique?.split("-")[1];
+const handleClick = async (row) => {
+  if(row.type != null  && row.type == 6){
+    queryParams.devKey = row.unique
+    const data = await IndexApi.getBusIdByDevKey({devKey : queryParams.devKey});
+    queryParams.busId = data;
+    haveSearch.value = false;
     handleQuery();
   }
 }
 
 const getDetail = async () => {
-  queryParams.busId = 9;
-  const data = await IndexApi.getHarmonicRedis(queryParams);
-  harmonicRealTime.value = data;
-  if(harmonicRealTime.value.times != null){
-    realTimeVis.value = true;
-  }else{
-    realTimeVis.value = false;
+
+  if(!haveSearch.value){
+    const data = await IndexApi.getHarmonicRedis(queryParams);
+    harmonicRealTime.value = data;
+    if(harmonicRealTime.value.times != null){
+      realTimeVis.value = true;
+    }else{
+      realTimeVis.value = false;
+    }
+    haveSearch.value = true;
   }
+
   const lineData = await IndexApi.getHarmonicLine(queryParams);
-  harmonicLine.value = lineData;
-  if(harmonicLine.value.time != null && harmonicLine.value.time?.length > 0){
+  seriesAndTimeArr.value = lineData;
+  if(seriesAndTimeArr.value.time != null && seriesAndTimeArr.value.time?.length > 0){
+    const filteredSeries = seriesAndTimeArr.value.series.filter((item,index) => queryParams.harmonicArr.includes(index));
+    harmonicLine.value.series = filteredSeries;
+    harmonicLine.value.time = seriesAndTimeArr.value.time;
     lineVis.value = true;
   } else {
     lineVis.value = false;
@@ -403,15 +399,8 @@ const getDetail = async () => {
 }
 
 
-//树型控件
-interface Tree {
-  [key: string]: any
-}
-
 const filterText = ref('')
 const treeRef = ref<InstanceType<typeof ElTree>>()
-
-
 
 // const beforeSerUnmount = () => {
 //     serChart?.dispose(); // 销毁图表实例
@@ -1215,13 +1204,39 @@ watch(() => [queryParams.harmonicType], () => {
       value: 32
     }]
   }
+  haveSearch.value = false;
+  handleQuery();
 });
 
-const loading = ref(false) // 列表的加载中
+watch(() => [queryParams.harmonicArr], () => {
+  if(seriesAndTimeArr.value.series != null && seriesAndTimeArr.value.series?.length > 0){
+    const filteredSeries = seriesAndTimeArr.value.series.filter((item,index) => queryParams.harmonicArr.includes(index));
+    harmonicLine.value.series = filteredSeries;
+    harmonicLine.value.time = seriesAndTimeArr.value.time;
+  }
+});
+
+// const loading = ref(false) // 列表的加载中
 
 // const total = ref(0) // 列表的总页数
 const queryFormRef = ref() // 搜索的表单
 // const exportLoading = ref(false) // 导出的加载中
+
+const getNavList = async() => {
+  const res = await IndexApi.getBusMenu()
+  serverRoomArr.value = res
+  if (res && res.length > 0) {
+    const room = res[0]
+    const keys = [] as string[]
+    room.children.forEach(child => {
+      if(child.children.length > 0) {
+        child.children.forEach(son => {
+          keys.push(son.id + '-' + son.type)
+        })
+      }
+    })
+  }
+}
 
 
 /** 搜索按钮操作 */
@@ -1232,6 +1247,11 @@ const handleQuery = async () => {
   }
 }
 
+onBeforeMount(async () =>{
+  await getNavList();
+  await getDetail();
+})
+
 /** 重置按钮操作 */
 // const resetQuery = () => {
 //   queryFormRef.value.resetFields()
@@ -1239,7 +1259,7 @@ const handleQuery = async () => {
 // }
 
 /** 添加/修改操作 */
-const formRef = ref()
+// const formRef = ref()
 // const openForm = (type: string, id?: number) => {
 //   formRef.value.open(type, id)
 // }

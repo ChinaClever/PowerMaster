@@ -64,6 +64,10 @@ export const IndexApi = {
     return await request.post({ url: `/bus/index/buspfpage`, data })
   },
 
+  getBusPFDetail: async (data: any) => {
+    return await request.post({ url: `/bus/index/pf/detail`, data })
+  },
+
   getBusHarmonicPage: async (params: any) => {
     return await request.get({ url: `/bus/index/busharmonicpage`, params })
   },
@@ -86,5 +90,13 @@ export const IndexApi = {
 
   getHarmonicLine: async (data: any) => {
     return await request.post({ url: `/bus/index/harmonic/line`, data })
+  },
+
+  getBusMenu: async () => {
+    return await request.get({ url: `/room/bus/menu` })
+  },
+
+  getBusIdByDevKey: async (data: any) => {
+    return await request.post({ url: `/bus/index/getid` ,  data})
   },
 }

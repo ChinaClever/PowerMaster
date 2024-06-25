@@ -487,7 +487,11 @@ const getNavList = async() => {
 }
 
 const toPDUDisplayScreen = (row) =>{
-  push('/pdu/pdudisplayscreen?devKey=' + row.devKey + '&location=' + row.location + '&id=' + row.id);
+  const devKey = row.devKey;
+  const location = row.location;
+  const id = row.id;
+  console.log(devKey,location,id)
+  push({path: '/pdu/pdudisplayscreen', state: { devKey, id, location }})
 }
 
 // const openNewPage = (scope) => {

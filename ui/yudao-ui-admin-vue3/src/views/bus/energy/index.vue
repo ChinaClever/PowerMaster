@@ -210,7 +210,7 @@ const handleCheck = (row) => {
 // 跳转详情
 const toDetail = (roomId, id) => {
   console.log('跳转详情', id)
-  push({path: '/cabinet/cab/energyDetail', state: { roomId, id }})
+  push({path: '/bus/busmonitor/busenergydetail', state: { roomId, id }})
 }
 
 onBeforeMount(() => {

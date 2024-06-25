@@ -17,7 +17,7 @@
           </el-form-item >
           <span class="line"></span>
           <el-form-item label="" prop="jg">
-            <el-select v-model="queryParams.cabinetId" placeholder="请选择" class="!w-200px">
+            <el-select v-model="queryParams.busId" placeholder="请选择" class="!w-200px">
               <el-option v-for="item in machineList" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
@@ -114,7 +114,7 @@
 // import * as echarts from 'echarts';
 import { EChartsOption } from 'echarts'
 import { CabinetApi } from '@/api/cabinet/info'
-import { CabinetEnergyApi } from '@/api/cabinet/energy'
+import { BusEnergyApi } from '@/api/bus/busenergy'
 import 'echarts/lib/component/dataZoom';
 
 const roomList = ref([]) // 左侧导航栏树结构列表
@@ -127,7 +127,7 @@ const EleTrendOption = {
 }
 const EleTrendLoading = ref(false)
 const queryParams = reactive({
-  cabinetId: history?.state?.id || 1,
+  busId: history?.state?.id || 1,
   cabinetroomId: history?.state?.roomId || 1
 })
 const EleChain = reactive({
@@ -146,14 +146,14 @@ const ActivePowTrend = reactive({})
 watch(() => queryParams.cabinetroomId, (val) => {
   machineList.value = handleNavList(val)
   if (machineList.value.length == 0) {
-    queryParams.cabinetId = null
+    queryParams.busId = null
     return
   }
   const defaultValue = machineList.value[0] as any
-  queryParams.cabinetId = defaultValue.id
+  queryParams.busId = defaultValue.id
 })
 
-watch(() => queryParams.cabinetId,(val) => {
+watch(() => queryParams.busId,(val) => {
   console.log('wwwwwwwwwww', val)
   getActivePowTrend()
   getMachineEleChain()
@@ -189,9 +189,9 @@ const handleNavList = (cabinetroomId) => {
 
 // 获取机柜有功功率趋势
 const getActivePowTrend = async() => {
-  const res = await CabinetEnergyApi.getActivePowTrend({id:queryParams.cabinetId})
+  const res = await BusEnergyApi.getActivePowTrend({id:queryParams.busId})
   Object.assign(ActivePowTrend, res)
-  console.log('获取机柜有功功率趋势------', res.yesterdayList.map(item => item.dateTime.split(' ')[1]))
+  console.log('获取机柜有功功率趋势------', res.yesterdayList?.map(item => item?.dateTime?.split(' ')[1]))
   echartsOptionPowTrend.value = {
     grid: {
       left: '3%',
@@ -255,7 +255,7 @@ const getActivePowTrend = async() => {
         emphasis: {
           focus: 'series'
         },
-        data: res.yesterdayList.map(item => item.activePow)
+        data: res.yesterdayList?.map(item => item?.activePow)
       },
       {
         name: '当日',
@@ -271,7 +271,7 @@ const getActivePowTrend = async() => {
         markLine: {
           data: [{ type: 'average', name: 'Avg2' }]
         },
-        data: res.todayList.map(item => item.activePow)
+        data: res.todayList?.map(item => item?.activePow)
       }
     ]
   }
@@ -279,7 +279,7 @@ const getActivePowTrend = async() => {
 }
 // 获取机柜用能环比
 const getMachineEleChain = async() => {
-  const res = await CabinetEnergyApi.getEleChain({id:queryParams.cabinetId})
+  const res = await BusEnergyApi.getEleChain({id:queryParams.busId})
   Object.assign(EleChain, res)
   console.log('获取机柜用能环比', EleChain)
 }
@@ -287,7 +287,7 @@ const getMachineEleChain = async() => {
 const getMachineEleTrend = async(type) => {
   try {
     EleTrendLoading.value = true
-    const res = await CabinetEnergyApi.getEleTrend({ id: queryParams.cabinetId, type })
+    const res = await BusEnergyApi.getEleTrend({ id: queryParams.busId, type })
     echarsOptionEleTrend.value ={
       tooltip: {
         trigger: 'axis',

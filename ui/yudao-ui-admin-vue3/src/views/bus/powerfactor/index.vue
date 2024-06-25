@@ -230,7 +230,6 @@ import download from '@/utils/download'
 import { IndexApi } from '@/api/bus/busindex'
 // import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
-import { CabinetApi } from '@/api/cabinet/info'
 import PFDetail from './component/PFDetail.vue'
 // import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
 
@@ -470,7 +469,7 @@ const getListNoLoading = async () => {
 }
 
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
+  const res = await IndexApi.getBusMenu()
   serverRoomArr.value = res
   if (res && res.length > 0) {
     const room = res[0]
@@ -483,7 +482,6 @@ const getNavList = async() => {
       }
     })
   }
-
 }
 
 

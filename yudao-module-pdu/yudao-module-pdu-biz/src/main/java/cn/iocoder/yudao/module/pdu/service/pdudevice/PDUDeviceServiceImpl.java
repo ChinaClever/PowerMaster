@@ -185,6 +185,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             Integer cascadeAddr = pduIndex.getCascadeAddr();
             PDUDeviceDO pduDeviceDO = new PDUDeviceDO();
             pduDeviceDO.setStatus(pduIndex.getRunStatus());
+            pduDeviceDO.setId(pduIndex.getId());
             result.add(pduDeviceDO);
 
             List<CabinetPdu> cabinetPduAList = cabinetPduAMap.get(ipAddr + "-" + cascadeAddr);
@@ -265,9 +266,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     continue;
                 }
             }
-
-            pduDeviceDO.setId(pduIndex.getId());
-
             pduDeviceDO.setPf(pduTgData.getDoubleValue("power_factor"));
 
             pduDeviceDO.setEle(pduTgData.getDoubleValue("ele_active"));
@@ -299,7 +297,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             if(pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
                 List<String> ipAddrList = new ArrayList<>();
                 List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().inIfPresent(CabinetPdu::getCabinetId, pageReqVO.getCabinetIds()));
-                if(cabinetPduList != null && cabinetPduList.size() > 0){
+                if(cabinetPduList != null && !cabinetPduList.isEmpty()){
                     for (CabinetPdu cabinetPdu : cabinetPduList) {
                         if (!StringUtils.isEmpty(cabinetPdu.getPduIpA())){
                             ipAddrList.add(cabinetPdu.getPduIpA());
@@ -309,7 +307,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         }
                     }
                 }else{
-                    return new PageResult<PDULineRes>(result,0L);
+                    return new PageResult<>(result, 0L);
                 }
                 pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
                         .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()).inIfPresent(PduIndex::getIpAddr,ipAddrList));
@@ -1256,21 +1254,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         }
 
 
-    }
-    private void updateLocation(CabinetPdu cabinetPdu, String route, PDUDeviceDO pduDeviceDO) {
-        int cabinetId = cabinetPdu.getCabinetId();
-        CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
-        String cabinetName = cabinet.getName();
-        RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
-        String roomName = roomIndex.getName();
-        String location;
-        if (cabinet.getAisleId() != 0) {
-            String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
-            location = roomName + "-" + aisleName + "-" + cabinetName + "-" + route;
-        } else {
-            location = roomName + "-" + cabinetName + "-" + route;
-        }
-        pduDeviceDO.setLocation(location);
     }
 
     private List<String> getPDULineData(String startTime, String endTime, List<Long> ids, String index,String sort) throws IOException {
