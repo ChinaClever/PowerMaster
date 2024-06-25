@@ -48,6 +48,17 @@ public class AisleIndex implements Serializable {
     @Schema(description = "是否删除 0未删除 1已删除", example = "0")
     private Integer isDelete;
 
+
+    /**
+     * 长度
+     */
+    private Integer length;
+
+    /**
+     * 类型
+     */
+    private String type;
+
     /**
      * 创建时间
      */

@@ -15,6 +15,8 @@ import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetEnvSensor;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
+import cn.iocoder.yudao.framework.common.mapper.AisleIndexMapper;
+import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.PduIndex;

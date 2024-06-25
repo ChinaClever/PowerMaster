@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.cabinet.mapper;
+package cn.iocoder.yudao.framework.common.mapper;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;

@@ -1,8 +1,8 @@
-package cn.iocoder.yudao.module.cabinet.mapper;
+package cn.iocoder.yudao.framework.common.mapper;
 
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO;
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCfg;
-import cn.iocoder.yudao.module.cabinet.dto.CabinetIndexDTO;
-import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexVo;
 import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;

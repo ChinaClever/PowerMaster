@@ -11,10 +11,10 @@ import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalRealtime
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
-import cn.iocoder.yudao.module.cabinet.mapper.AisleIndexMapper;
-import cn.iocoder.yudao.module.cabinet.mapper.CabinetIndexMapper;
+import cn.iocoder.yudao.framework.common.mapper.AisleIndexMapper;
+import cn.iocoder.yudao.framework.common.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.module.cabinet.mapper.CabinetPduMapper;
-import cn.iocoder.yudao.module.cabinet.mapper.RoomIndexMapper;
+import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDULineRes;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.curbalancecolor.PDUCurbalanceColorDO;
 import cn.iocoder.yudao.module.pdu.dal.mysql.curbalancecolor.PDUCurbalanceColorMapper;

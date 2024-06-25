@@ -3,10 +3,9 @@ package cn.iocoder.yudao.module.cabinet.controller.admin;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
-import cn.iocoder.yudao.module.cabinet.dto.RoomBusMenuDTO;
 import cn.iocoder.yudao.module.cabinet.dto.RoomMenuDTO;
 import cn.iocoder.yudao.module.cabinet.dto.RoomPduMenuDTO;
-import cn.iocoder.yudao.module.cabinet.service.RoomService;
+import cn.iocoder.yudao.module.cabinet.service.RoomMenuService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,15 +20,15 @@ import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 /**
  * @author luowei
  * @version 1.0
- * @description: 机房操作
+ * @description: 机房菜单操作
  * @date 2024/5/6 9:09
  */
 @Tag(name = "管理后台 - 机房数据")
 @RestController
-public class RoomController {
+public class RoomMenuController {
 
     @Autowired
-    RoomService roomService;
+    RoomMenuService roomService;
 
     /**
      * 机房列表

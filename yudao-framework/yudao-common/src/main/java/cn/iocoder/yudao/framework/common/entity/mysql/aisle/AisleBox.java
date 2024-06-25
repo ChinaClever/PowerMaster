@@ -51,6 +51,11 @@ public class AisleBox implements Serializable {
      */
     private Integer type;
 
+    /**
+     * 标记位
+     */
+    private Integer boxIndex;
+
 
     /**
      * 创建时间
