@@ -89,24 +89,49 @@ public class BusIndexController {
     }
 
     @PostMapping("/bustempage")
-    @Operation(summary = "获得始端箱索引分页")
-    public CommonResult<PageResult<BusTemRes>> getBusTemPage(@Valid BusIndexPageReqVO pageReqVO) {
+    @Operation(summary = "获得始端箱温度分页")
+    public CommonResult<PageResult<BusTemRes>> getBusTemPage(@RequestBody BusIndexPageReqVO pageReqVO) {
         PageResult<BusTemRes> pageResult = indexService.getBusTemPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BusTemRes.class));
     }
 
+    @Operation(summary = "始端箱温度详情分页")
+    @PostMapping("/tem/detail")
+    public CommonResult<Map> getBusTemDetail(@RequestBody BusIndexPageReqVO pageReqVO) {
+        return success(indexService.getBusTemDetail(pageReqVO));
+    }
+
     @PostMapping("/buspfpage")
-    @Operation(summary = "获得始端箱索引分页")
+    @Operation(summary = "获得始端箱功率因素分页")
     public CommonResult<PageResult<BusPFRes>> getBusPFPage(@RequestBody BusIndexPageReqVO pageReqVO) {
         PageResult<BusPFRes> pageResult = indexService.getBusPFPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BusPFRes.class));
     }
 
+    @Operation(summary = "始端箱功率因素详情分页")
+    @PostMapping("/pf/detail")
+    public CommonResult<Map> getBusPFDetail(@RequestBody BusIndexPageReqVO pageReqVO) {
+        return success(indexService.getBusPFDetail(pageReqVO));
+    }
     @GetMapping("/busharmonicpage")
-    @Operation(summary = "获得始端箱索引分页")
+    @Operation(summary = "获得始端箱谐波监测分页")
     public CommonResult<PageResult<BusHarmonicRes>> getBusHarmonicPage(@Valid BusIndexPageReqVO pageReqVO) {
         PageResult<BusHarmonicRes> pageResult = indexService.getBusHarmonicPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BusHarmonicRes.class));
+    }
+
+    @Operation(summary = "始端箱谐波监测实时数据图表")
+    @PostMapping("/harmonic/redis")
+    public CommonResult<BusHarmonicRedisRes> getHarmonicRedis(@RequestBody BusIndexPageReqVO pageReqVO) {
+        BusHarmonicRedisRes pageResult = indexService.getHarmonicRedis(pageReqVO);
+        return success(pageResult);
+    }
+
+    @Operation(summary = "始端箱谐波监测ES数据图表")
+    @PostMapping("/harmonic/line")
+    public CommonResult<BusHarmonicLineRes> getHarmonicLine(@RequestBody BusIndexPageReqVO pageReqVO) {
+        BusHarmonicLineRes pageResult = indexService.getHarmonicLine(pageReqVO);
+        return success(pageResult);
     }
 
     /**
@@ -121,56 +146,10 @@ public class BusIndexController {
         return success(pageResult);
     }
 
-    @Operation(summary = "始端箱温度详情分页")
-    @PostMapping("/tem/detail")
-    public CommonResult<Map> getBusTemDetail(@RequestBody BusIndexPageReqVO pageReqVO) {
-        return success(indexService.getBusTemDetail(pageReqVO));
-    }
-
-    @Operation(summary = "始端箱功率因素详情分页")
-    @PostMapping("/pf/detail")
-    public CommonResult<Map> getBusPFDetail(@RequestBody BusIndexPageReqVO pageReqVO) {
-        return success(indexService.getBusPFDetail(pageReqVO));
-    }
-
-    @PostMapping("/balance")
-    @Operation(summary = "获得始端箱索引分页")
-    public CommonResult<PageResult<BusBalanceDataRes>> getBusBalancePage(@RequestBody BusIndexPageReqVO pageReqVO) {
-        PageResult<BusBalanceDataRes> pageResult = indexService.getBusBalancePage(pageReqVO);
-        return success(BeanUtils.toBean(pageResult, BusBalanceDataRes.class));
-    }
-
-    @GetMapping("/devKeyList")
-    @Operation(summary = "获得始端箱devKey列表")
-    public List<String> getDevKeyList() {
-        return indexService.getDevKeyList();
-    }
-
-    @Operation(summary = "始端箱用能列表分页")
-    @PostMapping("/harmonic/redis")
-    public CommonResult<BusHarmonicRedisRes> getHarmonicRedis(@RequestBody BusIndexPageReqVO pageReqVO) {
-        BusHarmonicRedisRes pageResult = indexService.getHarmonicRedis(pageReqVO);
-        return success(pageResult);
-    }
-
-    @Operation(summary = "始端箱用能列表分页")
-    @PostMapping("/harmonic/line")
-    public CommonResult<BusHarmonicLineRes> getHarmonicLine(@RequestBody BusIndexPageReqVO pageReqVO) {
-        BusHarmonicLineRes pageResult = indexService.getHarmonicLine(pageReqVO);
-        return success(pageResult);
-    }
-
-    @Operation(summary = "始端箱用能列表分页")
-    @PostMapping("/getid")
-    public CommonResult<Integer> getBusIdByDevKey(@RequestBody BusIndexPageReqVO pageReqVO) {
-        Integer result = indexService.getBusIdByDevKey(pageReqVO.getDevKey());
-        return success(result);
-    }
-
     /**
-     * 机柜有功功率趋势
+     * 始端箱有功功率趋势
      *
-     * @param id 机柜id
+     * @param id 始端箱id
      */
     @Operation(summary = "始端箱有功功率趋势")
     @GetMapping("/activePowTrend")
@@ -182,11 +161,11 @@ public class BusIndexController {
     }
 
     /**
-     * 机柜用能趋势
+     * 始端箱用能趋势
      *
-     * @param id 机柜id
+     * @param id 始端箱id
      */
-    @Operation(summary = "机柜用能趋势")
+    @Operation(summary = "始端箱用能趋势")
     @GetMapping("/eleTrend")
     public CommonResult<List<BusEqTrendDTO>> eleTrend(@Param("id") int id, @Param("type") String type) {
         List<BusEqTrendDTO> dto = indexService.eqTrend(id, type);
@@ -194,16 +173,37 @@ public class BusIndexController {
     }
 
     /**
-     * 机柜用能环比
+     * 始端箱用能环比
      *
-     * @param id 机柜id
+     * @param id 始端箱id
      */
-    @Operation(summary = "机柜用能环比")
+    @Operation(summary = "始端箱用能环比")
     @GetMapping("/eleChain")
     public CommonResult<BusEleChainDTO> eleChain(@Param("id") int id) {
         BusEleChainDTO dto = indexService.getEleChain(id);
         return success(dto);
     }
+
+    @PostMapping("/balance")
+    @Operation(summary = "获得始端箱不平衡度分页")
+    public CommonResult<PageResult<BusBalanceDataRes>> getBusBalancePage(@RequestBody BusIndexPageReqVO pageReqVO) {
+        PageResult<BusBalanceDataRes> pageResult = indexService.getBusBalancePage(pageReqVO);
+        return success(BeanUtils.toBean(pageResult, BusBalanceDataRes.class));
+    }
+
+    @GetMapping("/devKeyList")
+    @Operation(summary = "获得始端箱devKey列表")
+    public List<String> getDevKeyList() {
+        return indexService.getDevKeyList();
+    }
+
+    @Operation(summary = "始端箱通过devKey获取id")
+    @PostMapping("/getid")
+    public CommonResult<Integer> getBusIdByDevKey(@RequestBody BusIndexPageReqVO pageReqVO) {
+        Integer result = indexService.getBusIdByDevKey(pageReqVO.getDevKey());
+        return success(result);
+    }
+
 
 //    @GetMapping("/export-excel")
 //    @Operation(summary = "导出始端箱索引 Excel")

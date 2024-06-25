@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="模块化机房">
+  <CommonMenu :dataList="navList" @check="handleCheck"  navTitle="模块化机房">
     <template #NavInfo>
       <div class="navInfo">
         <div class="header">
@@ -125,7 +125,6 @@
 </template>
 
 <script lang="ts" setup>
-import { CabinetApi } from '@/api/cabinet/info'
 import { IndexApi } from '@/api/bus/busindex'
 
 const { push } = useRouter() // 路由跳转
@@ -145,8 +144,19 @@ const queryParams = reactive({
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
+  const res = await IndexApi.getBusMenu()
   navList.value = res
+  if (res && res.length > 0) {
+    const room = res[0]
+    const keys = [] as string[]
+    room.children.forEach(child => {
+      if(child.children.length > 0) {
+        child.children.forEach(son => {
+          keys.push(son.id + '-' + son.type)
+        })
+      }
+    })
+  }
 }
 
 // 获取表格数据

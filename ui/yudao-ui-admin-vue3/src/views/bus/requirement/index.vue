@@ -273,7 +273,7 @@ import { IndexApi } from '@/api/bus/busindex'
 import Pie from './component/Pie.vue'
 // import PDUDeviceForm from './PDUDeviceForm.vue'
 import { ElTree } from 'element-plus'
-import { CabinetApi } from '@/api/cabinet/info'
+
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -333,22 +333,22 @@ const handleClick = (row) => {
 
 const handleCheck = async (row) => {
   if(row.length == 0){
-    queryParams.cabinetIds = null;
+    queryParams.busDevKeyList = null;
     getList();
     return;
   }
   const ids = [] as any
   var haveCabinet = false;
   row.forEach(item => {
-    if (item.type == 3) {
-      ids.push(item.id)
+    if (item.type == 6) {
+      ids.push(item.unique)
       haveCabinet = true;
     }
   })
   if(!haveCabinet ){
-    queryParams.cabinetIds = [-1]
+    queryParams.busDevKeyList = [-1]
   }else{
-    queryParams.cabinetIds = ids
+    queryParams.busDevKeyList = ids
   }
 
   getList();
@@ -490,7 +490,7 @@ const getList = async () => {
 }
 
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
+  const res = await IndexApi.getBusMenu()
   serverRoomArr.value = res
   if (res && res.length > 0) {
     const room = res[0]
