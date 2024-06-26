@@ -1,14 +1,14 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="机架能耗排名" :showCheckbox="false">
+  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="插接箱能耗排名" :showCheckbox="false">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
         <div class="carousel-container">
-          <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
+          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
             <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
               <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
             </el-carousel-item>
-          </el-carousel> -->
+          </el-carousel>
         </div> 
       <div class="nav_header">
         <span v-if="nowAddress">{{nowAddress}}</span>
@@ -41,7 +41,6 @@
         <el-tab-pane label="周数据" name="weekTabPane"/>
         <el-tab-pane label="月数据" name="monthTabPane"/>
       </el-tabs>
-
       <!-- 搜索工作栏 -->
       <el-form
         class="-mb-15px"
@@ -113,14 +112,13 @@
 </template>
 
 <script setup lang="ts">
-import {ElMessage } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { CabinetApi } from '@/api/cabinet/info'
-import { IndexApi } from '@/api/rack/index'
 import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
-import { EnergyConsumptionApi } from '@/api/rack/energyConsumption'
-
+import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption'
+import PDUImage from '@/assets/imgs/PDU.jpg';
 defineOptions({ name: 'ECDistribution' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
@@ -134,12 +132,17 @@ const instance = getCurrentInstance();
 const selectTimeRange = ref(defaultDayTimeRange(14))
 const loading = ref(false) 
 const queryParams = reactive({
-  rackId: undefined as number | undefined,
+  boxId: undefined as number | undefined,
   granularity: 'day',
   // 进入页面原始数据默认显示最近2周
   timeRange: ['', ''],
 })
-
+const carouselItems = ref([
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+    ]);//侧边栏轮播图图片路径
 // 默认查询的时间范围，单位：天
 function defaultDayTimeRange(day: number){
   // 获取当前日期
@@ -274,7 +277,7 @@ loading.value = true
     const oneDay = 24 * 60 * 60 * 1000;
     queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
 
-    const data = await EnergyConsumptionApi.getEQDataDetails(queryParams);
+    const data = await EnergyConsumptionApi.getBoxEQDataDetails(queryParams);
     if (data != null && data.total != 0){
       totalEqData.value = 0;
       startEleData.value = data.list.map((item) => formatNumber(item.start_ele, 1));
@@ -402,8 +405,8 @@ window.addEventListener('resize', function() {
 
 // 导航栏选择后触发
 const handleClick = async (row) => {
-   if(row.type != null  && row.type == 5){
-    queryParams.rackId = row.id
+   if(row.type != null  && row.type == 3){
+    queryParams.cabinetId = row.id
     findFullName(navList.value, row.unique, fullName => {
       nowAddressTemp.value = fullName
     });
@@ -426,32 +429,29 @@ function findFullName(data, targetUnique, callback, fullName = '') {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
-  let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await IndexApi.getRackAll({id : res[i].id})
-  arr = arr.concat(temp);
-  }
-  navList.value = arr
+  const res = await CabinetApi.getRoomMenuAll({})
+  navList.value = res
 }
 
 /** 搜索按钮操作 */
 const handleQuery = async() => {
   await getLineChartData();
+  // await getRankChartData();
   initLineChart();
+  // initRankChart();
 }
 
-/** 初始化 **/
+/** 初始化 **/ 
 onMounted(async () => {
   getNavList()
-  // 获取路由参数中的 pdu_id
-  const queryRackId = useRoute().query.rackId as string  | undefined;
-  const queryLocation = useRoute().query.location as string;
-  queryParams.rackId = queryRackId ? parseInt(queryRackId, 10) : undefined;
-  if (queryParams.rackId != undefined){
+  // 获取路由参数中的 box_id
+  const queryBoxId = useRoute().query.boxId as string | undefined;
+  const queryAddress = useRoute().query.address as string;
+  queryParams.boxId = queryBoxId ? parseInt(queryBoxId, 10) : undefined;
+  if (queryParams.boxId != undefined){
     await getLineChartData();
-    nowAddress.value = queryLocation;
-    nowAddressTemp.value = queryLocation;
+    nowAddress.value = queryAddress;
+    nowAddressTemp.value = queryAddress;
     initLineChart();
   }
 })
@@ -463,7 +463,8 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 14px;
+    font-size: 16px;
+    padding-top: 28px;
   }
 .nav_data{
   padding-left: 5px;
@@ -482,6 +483,4 @@ onMounted(async () => {
   height: 100%;
   object-fit: cover; 
 }
-
-  
 </style>

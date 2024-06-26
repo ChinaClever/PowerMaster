@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜能耗趋势">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="母线插接箱能耗趋势">
     <template #NavInfo>
     <br/>    <br/> 
         <div class="nav_data">
@@ -79,7 +79,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.cabinet_id, row.address)">详情</el-button>
+            <el-button link type="primary" @click="toDetails(row.box_id, row.address)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -99,7 +99,7 @@
               v-if="child.istrue"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.cabinet_id, row.address)">详情</el-button>
+                <el-button link type="primary" @click="toDetails(row.box_id, row.address)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -134,7 +134,7 @@
 <script setup lang="ts">
 import dayjs from 'dayjs'
 import download from '@/utils/download'
-import { EnergyConsumptionApi } from '@/api/cabinet/energyConsumption'
+import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption'
 import { formatDate, endOfDay, convertDate, addTime } from '@/utils/formatTime'
 import { CabinetApi } from '@/api/cabinet/info'
 import * as echarts from 'echarts';
@@ -158,7 +158,7 @@ const queryParams = reactive({
   pageSize: 15,
   granularity: 'day',
   timeRange: undefined as string[] | undefined,
-  cabinetIds:[]
+  boxIds:[]
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
@@ -219,7 +219,7 @@ const initChart = () => {
   if (rankChartContainer.value && instance) {
     rankChart = echarts.init(rankChartContainer.value);
     rankChart.setOption({
-      title: { text: '各机柜耗电量'},
+      title: { text: '各插接箱耗电量'},
       tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
       legend: { data: []},
       toolbox: {feature: {saveAsImage:{}}},
@@ -242,15 +242,18 @@ watch(() => queryParams.granularity, () => {
 });
 
 const tableColumns = ref([
+  { label: '母线名称', align: 'center', prop: 'bus_name', width: '100px', istrue:true},
+  { label: '插接箱名称', align: 'center', prop: 'box_name', width: '100px', istrue:true},
   { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
-  { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px' , istrue:true},
+  { label: '网络地址', align: 'center', prop: 'ip_addr', istrue:true, width: '120px'},
+  { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '140px' , istrue:true},
   { label: '开始', align: 'center', istrue: true, children: [
-      { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime1, width: '150px' , istrue:true},
+      { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime1, width: '100px' , istrue:true},
       { label: '电能(kWh)', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
     ]
   },
   { label: '结束', align: 'center', istrue: true, children: [
-      { label: '日期', align: 'center', prop: 'end_time' , formatter: formatTime1, width: '150px' , istrue:true},
+      { label: '日期', align: 'center', prop: 'end_time' , formatter: formatTime1, width: '100px' , istrue:true},
       { label: '电能(kWh)', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle},
     ]
   },
@@ -270,7 +273,7 @@ const getList = async () => {
       const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
-    const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
+    const data = await EnergyConsumptionApi.getBoxEQDataPage(queryParams)
     eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
     list.value = data.list
     realTotel.value = data.total
@@ -356,7 +359,7 @@ const handleCheck = async (node) => {
       arr.push(item.id);
     }
   });
-  queryParams.cabinetIds = arr
+  queryParams.boxIds = arr
   handleQuery()
 }
 
@@ -368,7 +371,7 @@ const getNavList = async() => {
 
 // 获取导航的数据显示
 const getNavNewData = async() => {
-  const res = await EnergyConsumptionApi.getNavNewData({})
+  const res = await EnergyConsumptionApi.getBoxNavNewData({})
   lastDayTotalData.value = res.day
   lastWeekTotalData.value = res.week
   lastMonthTotalData.value = res.month
@@ -386,7 +389,7 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnergyConsumptionApi.exportEQPageData(queryParams, axiosConfig)
-    await download.excel(data, '机柜能耗趋势.xlsx')
+    await download.excel(data, '插接箱能耗趋势.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -397,8 +400,8 @@ const handleExport = async () => {
 
 
 /** 详情操作*/
-const toDetails = (cabinetId: number, location: string) => {
-  push('/cabinet/nenghao/ecdistribution?cabinetId='+cabinetId+'&address='+location);
+const toDetails = (boxId: number, location: string) => {
+  push('/busbar/nenghao/ecdistribution/box?boxId='+boxId+'&address='+location);
 }
 
 /** 初始化 **/
