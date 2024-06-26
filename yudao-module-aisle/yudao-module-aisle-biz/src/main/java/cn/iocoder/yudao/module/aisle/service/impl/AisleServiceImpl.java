@@ -16,7 +16,7 @@ import cn.iocoder.yudao.framework.common.dto.aisle.AisleDetailDTO;
 import cn.iocoder.yudao.module.aisle.service.AisleService;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleBarDTO;
 import cn.iocoder.yudao.module.aisle.vo.AisleBusSaveVo;
-import cn.iocoder.yudao.module.aisle.vo.AisleSaveVo;
+import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;

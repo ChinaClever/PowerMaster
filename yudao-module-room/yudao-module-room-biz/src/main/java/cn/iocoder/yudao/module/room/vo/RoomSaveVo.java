@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.room.vo;
 
+import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetEnvSensor;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -58,4 +60,9 @@ public class RoomSaveVo {
     @JsonProperty(value="yLength")
     private int yLength;
 
+    @Schema(description = "柜列列表", example = "[]")
+    private List<AisleSaveVo>  aisleList;
+
+    @Schema(description = "机柜列表", example = "[]")
+    private List<CabinetVo>  cabinetList;
 }

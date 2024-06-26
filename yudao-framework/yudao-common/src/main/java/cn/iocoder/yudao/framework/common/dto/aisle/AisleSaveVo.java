@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.aisle.vo;
+package cn.iocoder.yudao.framework.common.dto.aisle;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;

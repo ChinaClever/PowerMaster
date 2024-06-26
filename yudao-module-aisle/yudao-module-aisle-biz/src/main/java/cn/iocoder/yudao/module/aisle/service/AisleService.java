@@ -2,7 +2,7 @@ package cn.iocoder.yudao.module.aisle.service;
 
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleDetailDTO;
 import cn.iocoder.yudao.module.aisle.vo.AisleBusSaveVo;
-import cn.iocoder.yudao.module.aisle.vo.AisleSaveVo;
+import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
 
 import java.util.List;
 
