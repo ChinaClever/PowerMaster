@@ -7,7 +7,7 @@ import cn.iocoder.yudao.module.cabinet.dto.CabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
-import cn.iocoder.yudao.module.cabinet.vo.CabinetVo;
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
 import com.alibaba.fastjson2.JSONObject;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

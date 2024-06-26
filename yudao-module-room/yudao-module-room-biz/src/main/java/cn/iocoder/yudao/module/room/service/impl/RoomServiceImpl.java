@@ -3,17 +3,23 @@ package cn.iocoder.yudao.module.room.service.impl;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleBarDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleCabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleDetailDTO;
+import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
-import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCfg;
-import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.*;
+import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.enums.DisableEnums;
+import cn.iocoder.yudao.framework.common.enums.PduBoxEnums;
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.framework.common.mapper.*;
+import cn.iocoder.yudao.framework.common.pojo.CommonResult;
+import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.room.dto.RoomDetailDTO;
 import cn.iocoder.yudao.module.room.service.RoomService;
@@ -21,6 +27,7 @@ import cn.iocoder.yudao.module.room.vo.RoomSaveVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -113,6 +120,22 @@ public class RoomServiceImpl implements RoomService {
             cfg.setYLength(roomSaveVo.getYLength());
             cfg.setXLength(roomSaveVo.getXLength());
             roomCfgMapper.insert(cfg);
+        }
+
+        //柜列
+        if (!CollectionUtils.isEmpty(roomSaveVo.getAisleList())){
+            roomSaveVo.getAisleList().forEach(aisleSaveVo -> {
+                aisleSaveVo.setRoomId(index.getId());
+                aisleSave(aisleSaveVo);
+            });
+        }
+
+        //机柜
+        if (!CollectionUtils.isEmpty(roomSaveVo.getCabinetList())){
+            roomSaveVo.getCabinetList().forEach(cabinetVo -> {
+                cabinetVo.setRoomId(index.getId());
+                saveCabinet(cabinetVo);
+            });
         }
 
         return index.getId();
@@ -291,6 +314,210 @@ public class RoomServiceImpl implements RoomService {
         }
 
         return detailDTOList;
+    }
+
+
+    /**
+     * 柜列新增/修改
+     * @param aisleSaveVo
+     * @return
+     */
+    private Integer aisleSave(AisleSaveVo aisleSaveVo) {
+
+        AisleIndex index = new AisleIndex();
+        index.setName(aisleSaveVo.getAisleName());
+        index.setLength(aisleSaveVo.getLength());
+        index.setRoomId(aisleSaveVo.getRoomId());
+        index.setType(aisleSaveVo.getType());
+        index.setPduBar(aisleSaveVo.getPduBar());
+
+        if (Objects.nonNull(aisleSaveVo.getId())){
+            //编辑
+            AisleIndex aisleIndex = aisleIndexMapper.selectOne(new LambdaQueryWrapper<AisleIndex>()
+                    .eq(AisleIndex::getId,aisleSaveVo.getId()));
+            if (Objects.nonNull(aisleIndex)){
+                index.setId(aisleSaveVo.getId());
+                aisleIndexMapper.updateById(index);
+
+                //修改配置表
+                AisleCfg aisleCfg = aisleCfgMapper.selectOne(new LambdaQueryWrapper<AisleCfg>()
+                        .eq(AisleCfg::getAisleId,aisleIndex.getId()));
+                AisleCfg cfg = new AisleCfg();
+                cfg.setAisleId(aisleIndex.getId());
+                cfg.setDirection(aisleSaveVo.getDirection());
+                cfg.setXCoordinate(aisleSaveVo.getXCoordinate());
+                cfg.setYCoordinate(aisleSaveVo.getYCoordinate());
+
+                if (Objects.nonNull(aisleCfg)){
+                    //修改
+                    cfg.setId(aisleCfg.getId());
+                    aisleCfgMapper.updateById(cfg);
+                    //柜列位置变动修改
+                    if (aisleSaveVo.getXCoordinate() != aisleCfg.getXCoordinate()
+                            || aisleSaveVo.getYCoordinate() != aisleCfg.getYCoordinate()
+                            || !aisleSaveVo.getDirection().equals(aisleCfg.getDirection()) ){
+                        //修改柜列下机柜
+                        List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
+                                .eq(CabinetIndex::getAisleId,aisleIndex.getId())
+                                .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
+                                .eq(CabinetIndex::getIsDisabled,DisableEnums.ENABLE.getStatus()));
+
+                        if (!CollectionUtils.isEmpty(cabinetIndexList)){
+                            List<Integer> cabinetIds = cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList());
+                            List<CabinetCfg> cabinetCfgList = cabinetCfgMapper.selectList(new LambdaQueryWrapper<CabinetCfg>()
+                                    .in(CabinetCfg::getCabinetId,cabinetIds));
+                            Map<Integer,CabinetCfg> cfgMap = cabinetCfgList.stream().collect(Collectors.toMap(CabinetCfg::getCabinetId,Function.identity()));
+                            Map<Integer,Integer>  indexMap = new HashMap<>();
+                            if ("x".equals(aisleCfg.getDirection())){
+                                //横向  计算机柜位置
+                                cabinetIds.forEach(id -> {
+                                    Integer i = cfgMap.get(id).getXCoordinate()-aisleCfg.getXCoordinate();
+                                    indexMap.put(id,i);
+                                });
+                            }
+                            if ("y".equals(aisleCfg.getDirection())){
+                                //纵向  计算机柜位置
+                                cabinetIds.forEach(id -> {
+                                    Integer i = cfgMap.get(id).getYCoordinate()-aisleCfg.getYCoordinate();
+                                    indexMap.put(id,i);
+                                });
+                            }
+
+                            //修改
+                            cabinetCfgList.forEach(cabinetCfg ->{
+                                int x = 0;
+                                int y = 0;
+                                if ("x".equals(aisleSaveVo.getDirection())){
+                                    //横向  计算机柜位置
+                                    x = aisleSaveVo.getXCoordinate() + indexMap.get(cabinetCfg.getCabinetId());
+                                    y = aisleSaveVo.getYCoordinate();
+                                }
+                                if ("y".equals(aisleSaveVo.getDirection())){
+                                    //纵向  计算机柜位置
+                                    y = aisleSaveVo.getYCoordinate() + indexMap.get(cabinetCfg.getId());
+                                    x = aisleSaveVo.getXCoordinate();
+                                }
+                                cabinetCfg.setYCoordinate(y);
+                                cabinetCfg.setXCoordinate(x);
+                                cabinetCfgMapper.updateById(cabinetCfg);
+                            });
+                        }
+
+                    }
+
+                }else {
+                    aisleCfgMapper.insert(cfg);
+                }
+            }
+
+        }else {
+            //新增
+            aisleIndexMapper.insert(index);
+            AisleCfg cfg = new AisleCfg();
+            cfg.setAisleId(index.getId());
+            cfg.setDirection(aisleSaveVo.getDirection());
+            cfg.setXCoordinate(aisleSaveVo.getXCoordinate());
+            cfg.setYCoordinate(aisleSaveVo.getYCoordinate());
+            aisleCfgMapper.insert(cfg);
+        }
+        return index.getId();
+    }
+
+    /**
+     * 保存机柜
+     * @param vo
+     * @throws Exception
+     */
+    public void saveCabinet(CabinetVo vo) {
+
+
+        CabinetIndex index;
+        //编辑
+        if (vo.getId() > 0) {
+            //index 索引表
+            index = cabinetIndexMapper.selectById(vo.getId());
+
+            //修改
+            cabinetIndexMapper.updateById( convertIndex(vo, index));
+        } else {
+            //新增
+            //判断机柜名称是否重复（已删除的或者已禁用的恢复）
+            index = cabinetIndexMapper.selectOne(new LambdaQueryWrapper<CabinetIndex>()
+                    .eq(CabinetIndex::getName, vo.getCabinetName())
+                    .eq(CabinetIndex::getRoomId, vo.getRoomId()));
+            if (Objects.nonNull(index)) {
+                if (index.getIsDeleted() == DelEnums.DELETE.getStatus() || index.getIsDisabled() == DisableEnums.DISABLE.getStatus()) {
+                    //index 索引表
+                    //修改
+                    cabinetIndexMapper.updateById(convertIndex(vo, index));
+                }
+
+            } else {
+                index = new CabinetIndex();
+                //index 索引表
+                //新增
+                CabinetIndex cabinetIndex = convertIndex(vo, index);
+                cabinetIndexMapper.insert(cabinetIndex);
+                vo.setId(cabinetIndex.getId());
+            }
+        }
+
+        log.info("vo : " + vo);
+
+        //配置表
+        CabinetCfg cfg = cabinetCfgMapper.selectOne(new LambdaQueryWrapper<CabinetCfg>()
+                .eq(CabinetCfg::getCabinetId, vo.getId()));
+        if (Objects.nonNull(cfg)) {
+            //修改
+            cabinetCfgMapper.updateById(convertCfg(vo, cfg));
+        } else {
+            cfg = new CabinetCfg();
+
+            //新增
+            cabinetCfgMapper.insert(convertCfg(vo, cfg));
+        }
+    }
+    /**
+     * 实体转换
+     *
+     * @param vo
+     * @param index
+     * @return
+     */
+    private CabinetIndex convertIndex(CabinetVo vo, CabinetIndex index) {
+        CabinetIndex cabinetIndex = new CabinetIndex();
+        cabinetIndex.setAisleId(vo.getAisleId());
+        cabinetIndex.setName(vo.getCabinetName());
+        cabinetIndex.setPduBox(vo.getPduBox());
+        //未删除
+        cabinetIndex.setIsDeleted(DelEnums.NO_DEL.getStatus());
+        //未禁用
+        cabinetIndex.setIsDisabled(DisableEnums.ENABLE.getStatus());
+        cabinetIndex.setPowCapacity(vo.getPowCapacity());
+        cabinetIndex.setRoomId(vo.getRoomId());
+        cabinetIndex.setId(index.getId());
+        return cabinetIndex;
+    }
+
+
+    /**
+     * 实体转换
+     *
+     * @param vo
+     * @param cfg
+     * @return
+     */
+    private CabinetCfg convertCfg(CabinetVo vo, CabinetCfg cfg) {
+        CabinetCfg cabinetCfg = new CabinetCfg();
+        cabinetCfg.setCabinetId(vo.getId());
+        cabinetCfg.setCabinetHeight(vo.getCabinetHeight());
+        cabinetCfg.setCabinetName(vo.getCabinetName());
+        cabinetCfg.setCompany(vo.getCompany());
+        cabinetCfg.setType(vo.getType());
+        cabinetCfg.setXCoordinate(vo.getXCoordinate());
+        cabinetCfg.setYCoordinate(vo.getYCoordinate());
+        cabinetCfg.setId(cfg.getId());
+        return cabinetCfg;
     }
 
 }
