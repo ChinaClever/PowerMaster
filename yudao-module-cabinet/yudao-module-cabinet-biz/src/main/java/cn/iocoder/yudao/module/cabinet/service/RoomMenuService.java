@@ -2,7 +2,6 @@ package cn.iocoder.yudao.module.cabinet.service;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
-import cn.iocoder.yudao.module.cabinet.dto.RoomBusMenuDTO;
 import cn.iocoder.yudao.module.cabinet.dto.RoomMenuDTO;
 import cn.iocoder.yudao.module.cabinet.dto.RoomPduMenuDTO;
 
@@ -14,7 +13,7 @@ import java.util.List;
  * @description: 机房操作
  * @date 2024/4/30 15:02
  */
-public interface RoomService {
+public interface RoomMenuService {
 
     /**
      * 获取机房列表

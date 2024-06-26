@@ -280,6 +280,11 @@ public class FieldConstant {
     public static final String REDIS_KEY_BOX = "packet:box:";
 
     /**
+     * Redis设置key
+     */
+    public static final String REDIS_KEY_AISLE = "packet:aisle:";
+
+    /**
      * 分隔符
      */
     public static final String SPLIT_KEY_BUS = "_";

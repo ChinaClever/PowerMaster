@@ -99,7 +99,7 @@
               v-if="child.istrue"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.pdu_id, row.address)">详情</el-button>
+                <el-button link type="primary" @click="toDetails(row.cabinet_id, row.address)">详情</el-button>
               </template>
             </el-table-column>
           </template>
