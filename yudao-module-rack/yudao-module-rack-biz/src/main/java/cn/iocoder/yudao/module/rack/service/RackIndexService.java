@@ -2,7 +2,9 @@ package cn.iocoder.yudao.module.rack.service;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.rack.dto.RackEqTrendDTO;
 import cn.iocoder.yudao.module.rack.dto.RackIndexDTO;
+import cn.iocoder.yudao.module.rack.dto.RackPowDTO;
 import cn.iocoder.yudao.module.rack.vo.RackIndexVo;
 import cn.iocoder.yudao.module.rack.vo.RackSaveVo;
 import com.alibaba.fastjson2.JSONObject;
@@ -52,5 +54,24 @@ public interface RackIndexService {
      * @param ids
      */
     void batchDel(List<Integer> ids);
+
+
+    /**
+     * 获取详情实时曲线
+     * @param id 机架id
+     * @param type 类型
+     * @return
+     */
+    List<RackPowDTO> rackPowTrend(Integer id, String type);
+
+
+    /**
+     * 获取机架能耗趋势
+     *
+     * @param id   机架id
+     * @param type 数据时间类型
+     * @return
+     */
+    List<RackEqTrendDTO> eqTrend(int id, String type);
 
 }

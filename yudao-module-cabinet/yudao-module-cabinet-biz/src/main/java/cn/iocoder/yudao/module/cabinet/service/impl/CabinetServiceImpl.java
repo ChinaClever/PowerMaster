@@ -26,7 +26,7 @@ import cn.iocoder.yudao.module.cabinet.enums.CabinetLoadEnums;
 import cn.iocoder.yudao.module.cabinet.mapper.*;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
-import cn.iocoder.yudao.module.cabinet.vo.CabinetVo;
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
