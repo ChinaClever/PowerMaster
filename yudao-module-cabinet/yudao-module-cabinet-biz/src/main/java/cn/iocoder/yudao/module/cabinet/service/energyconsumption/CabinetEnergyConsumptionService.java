@@ -8,34 +8,34 @@ import java.util.Map;
 
 public interface CabinetEnergyConsumptionService {
     /**
-     * 获得pdu电量数据分页
+     * 获得机柜电量数据分页
      *
      * @param pageReqVO 分页查询
-     * @return pdu电量数据分页
+     * @return 机柜电量数据分页
      */
     PageResult<Object> getEQDataPage(CabinetEnergyConsumptionPageReqVO pageReqVO) throws IOException;
 
     /**
-     * 获得pdu电费数据分页
+     * 获得机柜电费数据分页
      *
      * @param pageReqVO 分页查询
-     * @return pdu电量数据分页
+     * @return 机柜电量数据分页
      */
     PageResult<Object> getBillDataPage(CabinetEnergyConsumptionPageReqVO pageReqVO) throws IOException;
 
     /**
-     * 获得pdu电量数据详情（曲线）
+     * 获得机柜电量数据详情（曲线）
      *
      * @param reqVO 分页查询
-     * @return pdu历史数据详情
+     * @return 机柜历史数据详情
      */
     PageResult<Object> getEQDataDetails(CabinetEnergyConsumptionPageReqVO reqVO) throws IOException;
 
     /**
-     * 获得pdu实时电量数据分页
+     * 获得机柜实时电量数据分页
      *
      * @param pageReqVO 分页查询
-     * @return pdu电量数据分页
+     * @return 机柜电量数据分页
      */
     PageResult<Object> getRealtimeEQDataPage(CabinetEnergyConsumptionPageReqVO pageReqVO) throws IOException;
 

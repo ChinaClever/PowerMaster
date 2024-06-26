@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -38,6 +39,16 @@ public class AlarmSmsConfigController {
     @PreAuthorize("@ss.hasPermission('system:alarm:sms:save')")
     public CommonResult<Integer> saveSmsConfig(@Valid @RequestBody SmsConfigSaveReqVO saveReqVO) {
         return success(smsConfigService.saveSmsConfig(saveReqVO));
+    }
+
+    @PostMapping("/sms/batchSave")
+    @Operation(summary = "保存配置")
+    @PreAuthorize("@ss.hasPermission('system:alarm:sms:save')")
+    public CommonResult<Integer> batchSave(@Valid @RequestBody List<SmsConfigSaveReqVO> saveReqVOS) {
+        if (!CollectionUtils.isEmpty(saveReqVOS)){
+            saveReqVOS.forEach(smsConfigSaveReqVO -> smsConfigService.saveSmsConfig(smsConfigSaveReqVO));
+        }
+        return success(saveReqVOS.size());
     }
 
 

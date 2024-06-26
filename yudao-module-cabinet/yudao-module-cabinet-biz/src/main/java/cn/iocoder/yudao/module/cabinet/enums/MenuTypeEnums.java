@@ -17,6 +17,8 @@ public enum MenuTypeEnums {
     CABINET(3, "机柜"),
     PDU(4, "pdu"),
     RACK(5, "机架"),
+    BUS(6, "始端箱"),
+    BOX(7, "插接箱")
     ;
 
     /**

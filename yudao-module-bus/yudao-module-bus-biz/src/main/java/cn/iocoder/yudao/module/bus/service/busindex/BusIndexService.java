@@ -2,12 +2,13 @@ package cn.iocoder.yudao.module.bus.service.busindex;
 
 import javax.validation.*;
 
-import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusIndexDTO;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 始端箱索引 Service 接口
@@ -67,4 +68,28 @@ public interface BusIndexService {
     PageResult<BusHarmonicRes> getBusHarmonicPage(BusIndexPageReqVO pageReqVO);
 
     List<String> getDevKeyList();
+
+    PageResult<BusLineRes> getBusLineDevicePage(BusIndexPageReqVO pageReqVO);
+
+    Map getBusTemDetail(BusIndexPageReqVO pageReqVO);
+
+    Map getBusPFDetail(BusIndexPageReqVO pageReqVO);
+
+    BusHarmonicRedisRes getHarmonicRedis(BusIndexPageReqVO pageReqVO);
+
+    BusHarmonicLineRes getHarmonicLine(BusIndexPageReqVO pageReqVO);
+
+    Integer getBusIdByDevKey(String devKey);
+
+    BusActivePowDTO getActivePow(BusPowVo vo);
+
+    List<BusEqTrendDTO> eqTrend(int id, String type);
+
+    BusEleChainDTO getEleChain(int id);
+
+    BusBalanceDeatilRes getBusBalanceDetail(String devKey);
+
+    List<BusTrendDTO> getBusBalanceTrend(Integer busId);
+
+    BusLineResBase getBusLineCurLine(BusIndexPageReqVO pageReqVO);
 }

@@ -5,9 +5,8 @@ import cn.iocoder.yudao.module.cabinet.controller.admin.historydata.vo.CabinetHi
 import cn.iocoder.yudao.module.cabinet.controller.admin.historydata.vo.CabinetHistoryDataPageReqVO;
 import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.IndexDO;
 import cn.iocoder.yudao.module.cabinet.dal.mysql.index.CabIndexMapper;
-import cn.iocoder.yudao.module.cabinet.mapper.AisleIndexMapper;
-import cn.iocoder.yudao.module.cabinet.mapper.CabinetIndexMapper;
-import cn.iocoder.yudao.module.cabinet.mapper.RoomIndexMapper;
+import cn.iocoder.yudao.framework.common.mapper.AisleIndexMapper;
+import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
 import cn.iocoder.yudao.module.cabinet.service.energyconsumption.CabinetEnergyConsumptionService;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;

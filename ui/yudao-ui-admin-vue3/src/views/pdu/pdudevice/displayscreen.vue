@@ -334,8 +334,6 @@
 // import download from '@/utils/download'
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 import * as echarts from 'echarts';
-import router from '@/router';
-
 // import { object } from 'vue-types';
 
 /** PDU设备 列表 */
@@ -384,7 +382,7 @@ const controlVis = ref({
   display: false,
 })
 
-const location = ref("");
+const location = ref(history?.state?.location || "/");
 // const message = useMessage() // 消息弹窗
 // const { t } = useI18n() // 国际化
 
@@ -410,12 +408,12 @@ const chartData = ref({
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  devKey: "",
+  devKey: history?.state?.devKey,
   ipAddr: null,
   cascadeAddr:0,
   createTime: [],
   cascadeNum: undefined,
-  id : '',
+  id : history?.state?.id,
   powGranularity: "oneHour",
 })
 
@@ -1131,13 +1129,7 @@ onMounted(() => {
 })
 
 onBeforeMount(async () =>{
-  location.value = router.currentRoute.value.query.location as string;
-  if(location.value == null || location.value == "null"){
-    location.value = "";
-  }
-  queryParams.devKey = router.currentRoute.value.query.devKey as string;
-  queryParams.id = router.currentRoute.value.query.id as string;
-  
+
   await getTestData();
   initChart();
   flashListTimer.value.tableDataTimer = setInterval((getTestData), 5000);

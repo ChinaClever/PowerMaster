@@ -8,7 +8,7 @@ import lombok.Data;
 @Schema(description = "管理后台 - 始端箱索引 Response VO")
 @Data
 @ExcelIgnoreUnannotated
-public class BusHarmonicRes {
+public class BusHarmonicRes  extends BusResBase{
 
     @Schema(description = "位置")
     private String location;

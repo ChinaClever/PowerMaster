@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.cabinet.dto;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetEnvSensor;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -84,12 +85,14 @@ public class CabinetDTO {
      * 注释
      */
     @Schema(description = "注释", example = "xxx")
+    @JsonProperty(value="xCoordinate")
     private int xCoordinate;
 
     /**
      * 类名
      */
     @Schema(description = "类名", example = "yyy")
+    @JsonProperty(value="yCoordinate")
     private int yCoordinate;
 
     /**

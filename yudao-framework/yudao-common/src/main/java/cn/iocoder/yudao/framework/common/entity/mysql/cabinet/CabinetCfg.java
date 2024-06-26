@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.framework.common.entity.mysql.cabinet;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -42,13 +43,15 @@ public class CabinetCfg implements Serializable {
     private String type;
 
     /**
-     * 注释
+     * x坐标
      */
+    @JsonProperty(value="xCoordinate")
     private int xCoordinate;
 
     /**
-     * 类名
+     * y坐标
      */
+    @JsonProperty(value="yCoordinate")
     private int yCoordinate;
 
     /**

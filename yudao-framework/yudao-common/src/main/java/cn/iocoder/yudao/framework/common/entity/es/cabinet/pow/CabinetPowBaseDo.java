@@ -170,4 +170,69 @@ public class CabinetPowBaseDo extends CabinetBaseDo {
     @JsonProperty("active_b_min_value")
     private float activeBMinValue;
 
+
+
+    /**
+     * 总平均无功功率
+     */
+    @JsonProperty("reactive_total_avg_value")
+    private float reactiveTotalAvgValue;
+    /**
+     * 总最大无功功率
+     */
+    @JsonProperty("reactive_total_max_value")
+    private float reactiveTotalMaxValue;
+    /**
+     * 总最大无功功率时间
+     */
+    @JsonProperty("reactive_total_max_time")
+    private String reactiveTotalMaxTime;
+    /**
+     * 总最小无功功率时间
+     */
+    @JsonProperty("reactive_total_min_time")
+    private String reactiveTotalMinTime;
+    /**
+     * 总最小无功功率
+     */
+    @JsonProperty("reactive_total_min_value")
+    private float reactiveTotalMinValue;
+
+    /**
+     * a路平均无功功率
+     */
+    @JsonProperty("reactive_a_avg_value")
+    private float reactiveAAvgValue;
+
+    /**
+     * b路平均无功功率
+     */
+    @JsonProperty("reactive_b_avg_value")
+    private float reactiveBAvgValue;
+
+    /**
+     * 总平均功率因素
+     */
+    @JsonProperty("factor_total_avg_value")
+    private float factorTotalAvgValue;
+
+    /**
+     * a路平均功率因素
+     */
+    @JsonProperty("factor_a_avg_value")
+    private float factorAAvgValue;
+
+    /**
+     * b路平均功率因素
+     */
+    @JsonProperty("factor_b_avg_value")
+    private float factorBAvgValue;
+
+
+    /**
+     * 平均负载率
+     */
+    @JsonProperty("load_rate_total_avg_value")
+    private float loadRateTotalAvgValue;
+
 }

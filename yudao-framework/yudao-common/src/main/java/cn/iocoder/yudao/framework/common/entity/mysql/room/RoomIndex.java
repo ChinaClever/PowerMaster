@@ -1,8 +1,6 @@
 package cn.iocoder.yudao.framework.common.entity.mysql.room;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -44,14 +42,20 @@ public class RoomIndex implements Serializable {
      */
     @Schema(description = "电力容量", example = "0")
     private float powerCapacity;
+
+
+
+
     /**
      * 更新时间
      */
     @Schema(description = "更新时间", example = "2024-05-07 01:00:00")
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
     /**
      * 创建时间
      */
     @Schema(description = "创建时间", example = "2024-05-07 01:00:00")
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 }

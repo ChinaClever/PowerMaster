@@ -66,4 +66,6 @@ public interface BoxIndexService {
     PageResult<BoxHarmonicRes> getBoxHarmonicPage(BoxIndexPageReqVO pageReqVO);
 
     List<String> getDevKeyList();
+
+    PageResult<BoxLineRes> getBoxLineDevicePage(BoxIndexPageReqVO pageReqVO);
 }

@@ -9,8 +9,8 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
-    <select id="selectCabList" parameterType="cn.iocoder.yudao.module.cabinet.vo.CabinetIndexVo"
-            resultType="cn.iocoder.yudao.module.cabinet.dto.CabinetIndexDTO">
+    <select id="selectCabList" parameterType="cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo"
+            resultType="cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO">
 
         select
         ci.id ,

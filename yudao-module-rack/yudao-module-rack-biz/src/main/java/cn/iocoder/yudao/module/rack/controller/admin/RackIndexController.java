@@ -4,7 +4,9 @@ import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.exception.ServerException;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.rack.dto.RackEqTrendDTO;
 import cn.iocoder.yudao.module.rack.dto.RackIndexDTO;
+import cn.iocoder.yudao.module.rack.dto.RackPowDTO;
 import cn.iocoder.yudao.module.rack.service.RackIndexService;
 import cn.iocoder.yudao.module.rack.vo.RackIndexVo;
 import cn.iocoder.yudao.module.rack.vo.RackSaveVo;
@@ -98,6 +100,30 @@ public class RackIndexController {
     public CommonResult<Integer> batchDel(@RequestParam("ids") List<Integer> ids) {
         rackIndexService.batchDel(ids);
         return success(0);
+    }
+
+    /**
+     * 机柜实时曲线
+     *
+     * @param id 机柜id
+     */
+    @Operation(summary = "机架功率实时曲线")
+    @GetMapping("/rack/pow/trend")
+    public CommonResult<List<RackPowDTO>> rackPowTrend(@Param("id") int id, @Param("type") String type) {
+        List<RackPowDTO> dto = rackIndexService.rackPowTrend(id,type);
+        return success(dto);
+    }
+
+    /**
+     * 机柜用能趋势
+     *
+     * @param id 机柜id
+     */
+    @Operation(summary = "机柜用能趋势")
+    @GetMapping("/rack/ele/trend")
+    public CommonResult<List<RackEqTrendDTO>> eleTrend(@Param("id") int id, @Param("type") String type) {
+        List<RackEqTrendDTO> dto = rackIndexService.eqTrend(id, type);
+        return success(dto);
     }
 
 }

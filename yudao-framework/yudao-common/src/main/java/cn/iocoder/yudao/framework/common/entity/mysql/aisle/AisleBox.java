@@ -44,12 +44,17 @@ public class AisleBox implements Serializable {
     /**
      * 对应绑定母线id
      */
-    private String aisleBarId;
+    private Integer aisleBarId;
 
     /**
      * 类型 0 插接箱 1 连接单元
      */
     private Integer type;
+
+    /**
+     * 标记位
+     */
+    private Integer boxIndex;
 
 
     /**

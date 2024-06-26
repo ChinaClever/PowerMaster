@@ -226,7 +226,7 @@ const getActivePowTrend = async() => {
         type: 'category',
         boundaryGap: false,
         axisLine: { onZero: false },
-        data: res.yesterdayList.map(item => item.dateTime.split(' ')[1])
+        data: res.yesterdayList?.length > 0 ? res.yesterdayList?.map(item => item?.dateTime?.split(' ')[1]) : res.todayList?.map(item => item?.dateTime?.split(' ')[1]) 
       }
     ],
     yAxis: [

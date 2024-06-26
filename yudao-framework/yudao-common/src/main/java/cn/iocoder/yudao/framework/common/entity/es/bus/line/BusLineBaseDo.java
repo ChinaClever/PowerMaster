@@ -209,4 +209,10 @@ public class BusLineBaseDo extends BusBaseDo {
     private float volLineMinValue;
 
 
+    /**
+     * 平均功率因素
+     */
+    @JsonProperty("power_factor_avg_value")
+    private float powerFactorAvgValue;
+
 }

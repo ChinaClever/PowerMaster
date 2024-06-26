@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="模块化机房">
+  <CommonMenu :dataList="navList" @check="handleCheck"  navTitle="模块化机房">
     <template #NavInfo>
       <div class="navInfo">
         <div class="header">
@@ -100,7 +100,7 @@
               </div>
             </div>
             <div class="room">{{item.local}}</div>
-            <button class="detail" @click.prevent="toDetail(item.roomId, item.id)" v-if="item.status != null && item.status != 5">详情</button>
+            <button class="detail" @click.prevent="toDetail(item.roomId, item.id)" >详情</button>
           </div>
         </div>
         <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" >
@@ -125,7 +125,6 @@
 </template>
 
 <script lang="ts" setup>
-import { CabinetApi } from '@/api/cabinet/info'
 import { IndexApi } from '@/api/bus/busindex'
 
 const { push } = useRouter() // 路由跳转
@@ -145,8 +144,19 @@ const queryParams = reactive({
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
+  const res = await IndexApi.getBusMenu()
   navList.value = res
+  if (res && res.length > 0) {
+    const room = res[0]
+    const keys = [] as string[]
+    room.children.forEach(child => {
+      if(child.children.length > 0) {
+        child.children.forEach(son => {
+          keys.push(son.id + '-' + son.type)
+        })
+      }
+    })
+  }
 }
 
 // 获取表格数据
@@ -210,7 +220,7 @@ const handleCheck = (row) => {
 // 跳转详情
 const toDetail = (roomId, id) => {
   console.log('跳转详情', id)
-  push({path: '/cabinet/cab/energyDetail', state: { roomId, id }})
+  push({path: '/bus/busmonitor/busenergydetail', state: { roomId, id }})
 }
 
 onBeforeMount(() => {

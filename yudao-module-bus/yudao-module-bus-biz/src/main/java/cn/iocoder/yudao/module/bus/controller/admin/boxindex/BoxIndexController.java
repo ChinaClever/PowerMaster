@@ -6,6 +6,8 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.dto.BoxIndexDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.*;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusIndexPageReqVO;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusLineRes;
 import cn.iocoder.yudao.module.bus.service.boxindex.BoxIndexService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -60,6 +62,12 @@ public class BoxIndexController {
     public CommonResult<BoxIndexRespVO> getIndex(@RequestParam("id") Long id) {
         BoxIndex index = indexService.getIndex(id);
         return success(BeanUtils.toBean(index, BoxIndexRespVO.class));
+    }
+
+    @PostMapping("/line/page")
+    @Operation(summary = "获得始端箱需量分页")
+    public CommonResult<PageResult<BoxLineRes>> getBoxLineDevicePage(@RequestBody BoxIndexPageReqVO pageReqVO) {
+        return success(indexService.getBoxLineDevicePage(pageReqVO));
     }
 
     @GetMapping("/page")

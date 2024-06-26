@@ -13,6 +13,15 @@ public class BusBalanceDataRes {
     @Schema(description = "位置")
     private String location;
 
+    /**
+     * 设备识别码
+     */
+    @Schema(description = "设备识别码")
+    private String devKey;
+
+    @Schema(description = "始端箱Id")
+    private Integer busId;
+
     @Schema(description = "A的电流")
     private Double aCur;
 
