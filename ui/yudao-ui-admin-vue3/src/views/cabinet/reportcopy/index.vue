@@ -129,119 +129,124 @@
     </template>
     <template #Content>
       <div v-show="visControll.visAllReport" class="page" >
-        <div class="pageBox" >
-          <div class="page-conTitle">
-            机柜基本信息
-          </div>
-          <el-row :gutter="24" >
-            <el-col :span="24 - serChartContainerWidth">
-              <div class="centered-div">
-                <el-table 
-                  :data="CabinetTableData" 
-                  :header-cell-style="arraySpanMethod"
-                  >
-                  <el-table-column  align="center" label="基本信息" >
-                    <el-table-column :show-header="false" prop="baseInfoName" />
-                    <el-table-column :show-header="false" prop="baseInfoValue" />
-                  </el-table-column>
-                  
-                    <!-- <template #default="scope">
-                      <span v-if="scope.$index === 2">
-                        <el-tag  v-if="scope.row.baseInfoValue == 0">正常</el-tag>
-                        <el-tag type="warning" v-if="scope.row.baseInfoValue == 1">预警</el-tag>
-                        <el-popover
-                            placement="top-start"
-                            title="告警内容"
-                            :width="500"
-                            trigger="hover"
-                            :content="scope.row.pduAlarm"
-                            v-if="scope.row.baseInfoValue == 2"
-                          >
-                            <template #reference>
-                              <el-tag type="danger">告警</el-tag>
-                            </template>
-                          </el-popover>
-                        <el-tag type="info" v-if="scope.row.baseInfoValue == 4">故障</el-tag>
-                        <el-tag type="info" v-if="scope.row.baseInfoValue == 5">离线</el-tag>
-                      </span>
-                      <span v-else>{{ scope.row.baseInfoValue }}</span>
-                    </template>
-                  </el-table-column> -->
-                  <el-table-column  align="center" label="能耗" >
-                    <el-table-column :show-header="false" prop="consumeName"  />
-                    <el-table-column :show-header="false" prop="consumeValue" />
-                  </el-table-column>
-                  <el-table-column  align="center" label="占比" >
-                    <el-table-column :show-header="false" prop="percentageName"  />
-                    <el-table-column :show-header="false" prop="percentageValue" >
-                      <template #default="scope">
-                        <span v-if="scope.$index === 0 && scope.row.percentageValue != null">
-                          <div class="progressContainer">
-                            <div class="progress">
-                              <div class="left" :style="`flex: ${scope.row.percentageValue}`">{{scope.row.percentageValue}}%</div>
-                              <div class="line"></div>
-                              <div class="right" :style="`flex: ${100 - scope.row.percentageValue}`">{{100 - scope.row.percentageValue}}%</div>
-                            </div>
-                          </div>                            
-                        </span>
-                      </template>
+        <div class="page-con">
+          <div class="pageBox" >
+            <div class="page-conTitle">
+              机柜基本信息
+            </div>
+            <br/>
+            <el-row :gutter="24" >
+              <el-col :span="24 - serChartContainerWidth">
+                <div class="centered-div">
+                  <el-table 
+                    :data="CabinetTableData" 
+                    :header-cell-style="arraySpanMethod"
+                    >
+                    <el-table-column  align="center" label="基本信息" >
+                      <el-table-column :show-header="false" prop="baseInfoName" />
+                      <el-table-column :show-header="false" prop="baseInfoValue" />
                     </el-table-column>
-                  </el-table-column>
-                  
-                </el-table>
-              </div>
-            </el-col>
-            <!-- <el-col :span="serChartContainerWidth">
-              <div class="right-div" ref="serChartContainer" id="serChartContainer" style="width: 29vw; height: 25vh;"></div>
-            </el-col> -->
-          </el-row>
-        </div>
-        <div class="pageBox" v-if="visControll.eqVis" >
-          <div class="page-conTitle" >
-            电量分布
+                    
+                      <!-- <template #default="scope">
+                        <span v-if="scope.$index === 2">
+                          <el-tag  v-if="scope.row.baseInfoValue == 0">正常</el-tag>
+                          <el-tag type="warning" v-if="scope.row.baseInfoValue == 1">预警</el-tag>
+                          <el-popover
+                              placement="top-start"
+                              title="告警内容"
+                              :width="500"
+                              trigger="hover"
+                              :content="scope.row.pduAlarm"
+                              v-if="scope.row.baseInfoValue == 2"
+                            >
+                              <template #reference>
+                                <el-tag type="danger">告警</el-tag>
+                              </template>
+                            </el-popover>
+                          <el-tag type="info" v-if="scope.row.baseInfoValue == 4">故障</el-tag>
+                          <el-tag type="info" v-if="scope.row.baseInfoValue == 5">离线</el-tag>
+                        </span>
+                        <span v-else>{{ scope.row.baseInfoValue }}</span>
+                      </template>
+                    </el-table-column> -->
+                    <el-table-column  align="center" label="能耗" >
+                      <el-table-column :show-header="false" prop="consumeName"  />
+                      <el-table-column :show-header="false" prop="consumeValue" />
+                    </el-table-column>
+                    <el-table-column  align="center" label="占比" >
+                      <el-table-column :show-header="false" prop="percentageName"  />
+                      <el-table-column :show-header="false" prop="percentageValue" >
+                        <template #default="scope">
+                          <span v-if="scope.$index === 0 && scope.row.percentageValue != null">
+                            <div class="progressContainer">
+                              <div class="progress">
+                                <div class="left" :style="`flex: ${scope.row.percentageValue}`">{{scope.row.percentageValue}}%</div>
+                                <div class="line"></div>
+                                <div class="right" :style="`flex: ${100 - scope.row.percentageValue}`">{{100 - scope.row.percentageValue}}%</div>
+                              </div>
+                            </div>                            
+                          </span>
+                        </template>
+                      </el-table-column>
+                    </el-table-column>
+                    
+                  </el-table>
+                </div>
+              </el-col>
+              <!-- <el-col :span="serChartContainerWidth">
+                <div class="right-div" ref="serChartContainer" id="serChartContainer" style="width: 29vw; height: 25vh;"></div>
+              </el-col> -->
+            </el-row>
           </div>
-          <p v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大用电量{{eqData.maxEle}}kWh， 最大负荷发生时间{{eqData.maxEleTime}}</p>
-          <p v-if="visControll.isSameDay && eqData.eq">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
-          <div ref="rankChartContainer" id="rankChartContainer" style="width: 70vw; height: 58vh;"></div>
-        </div>
-        <div class="pageBox"  v-if="visControll.powVis">
-          <div class="page-conTitle">
-            总平均功率曲线
+
+          <div class="pageBox" v-if="visControll.eqVis" >
+            <div class="page-conTitle" >
+              电量分布
+            </div>
+            <p class="paragraph" v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大用电量{{eqData.maxEle}}kWh， 最大负荷发生时间{{eqData.maxEleTime}}</p>
+            <p class="paragraph" v-if="visControll.isSameDay && eqData.eq">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
+            <div ref="rankChartContainer" id="rankChartContainer" style="width: 70vw; height: 58vh;"></div>
           </div>
-          <p>本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
-          <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kVA， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kVA， 发生时间{{powData.activePowMinTime}}</p>
-          <div ref="powChartContainer" id="powChartContainer" style="width: 70vw; height: 58vh;"></div>
-        </div>
-        <div class="pageBox"  v-if="visControll.ApowVis">
-          <div class="page-conTitle">
-            A路平均功率曲线
+          <div class="pageBox"  v-if="visControll.powVis">
+            <div class="page-conTitle">
+              总平均功率曲线
+            </div>
+            <p class="paragraph">本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kVA， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kVA， 发生时间{{powData.activePowMinTime}}</p>
+            <div ref="powChartContainer" id="powChartContainer" style="width: 70vw; height: 58vh;"></div>
           </div>
-          <p>本周期内，最大视在功率{{powData.AapparentPowMaxValue}}kVA， 发生时间{{powData.AapparentPowMaxTime}}。最小视在功率{{powData.AapparentPowMinValue}}kVA， 发生时间{{powData.AapparentPowMinTime}}</p>
-          <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.AactivePowMaxValue}}kVA， 发生时间{{powData.AactivePowMaxTime}}。最小有功功率{{powData.AactivePowMinValue}}kVA， 发生时间{{powData.AactivePowMinTime}}</p>
-          <div ref="ApowChartContainer" id="ApowChartContainer" style="width: 70vw; height: 58vh;"></div>
-        </div>
-        <div class="pageBox"  v-if="visControll.BpowVis">
-          <div class="page-conTitle">
-            B路平均功率曲线
+          <div class="pageBox"  v-if="visControll.ApowVis">
+            <div class="page-conTitle">
+              A路平均功率曲线
+            </div>
+            <p class="paragraph" >本周期内，最大视在功率{{powData.AapparentPowMaxValue}}kVA， 发生时间{{powData.AapparentPowMaxTime}}。最小视在功率{{powData.AapparentPowMinValue}}kVA， 发生时间{{powData.AapparentPowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.AactivePowMaxValue}}kVA， 发生时间{{powData.AactivePowMaxTime}}。最小有功功率{{powData.AactivePowMinValue}}kVA， 发生时间{{powData.AactivePowMinTime}}</p>
+            <div ref="ApowChartContainer" id="ApowChartContainer" style="width: 70vw; height: 58vh;"></div>
           </div>
-          <p>本周期内，最大视在功率{{powData.BapparentPowMaxValue}}kVA， 发生时间{{powData.BapparentPowMaxTime}}。最小视在功率{{powData.BapparentPowMinValue}}kVA， 发生时间{{powData.BapparentPowMinTime}}</p>
-          <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.BactivePowMaxValue}}kVA， 发生时间{{powData.BactivePowMaxTime}}。最小有功功率{{powData.BactivePowMinValue}}kVA， 发生时间{{powData.BactivePowMinTime}}</p>
-          <div ref="BpowChartContainer" id="BpowChartContainer" style="width: 70vw; height: 58vh;"></div>
-        </div>
-        <!-- <div class="pageBox" v-if="visControll.outletVis">
-          <div class="page-conTitle" >
-            输出位电量排名
+          <div class="pageBox"  v-if="visControll.BpowVis">
+            <div class="page-conTitle">
+              B路平均功率曲线
+            </div>
+            <p class="paragraph" >本周期内，最大视在功率{{powData.BapparentPowMaxValue}}kVA， 发生时间{{powData.BapparentPowMaxTime}}。最小视在功率{{powData.BapparentPowMinValue}}kVA， 发生时间{{powData.BapparentPowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.BactivePowMaxValue}}kVA， 发生时间{{powData.BactivePowMaxTime}}。最小有功功率{{powData.BactivePowMinValue}}kVA， 发生时间{{powData.BactivePowMinTime}}</p>
+            <div ref="BpowChartContainer" id="BpowChartContainer" style="width: 70vw; height: 58vh;"></div>
           </div>
-          <div ref="outputRankChartContainer" id="outputRankChartContainer" style="width: 70vw; height: 58vh;"></div>
-        </div> -->
-        <div class="pageBox" v-if="visControll.temVis">
-          <div class="page-conTitle">
-            温度曲线
+          <!-- <div class="pageBox" v-if="visControll.outletVis">
+            <div class="page-conTitle" >
+              输出位电量排名
+            </div>
+            <div ref="outputRankChartContainer" id="outputRankChartContainer" style="width: 70vw; height: 58vh;"></div>
+          </div> -->
+          <div class="pageBox" v-if="visControll.temVis">
+            <div class="page-conTitle">
+              温度曲线
+            </div>
+            <p class="paragraph" v-show="temData.temMaxValue">本周期内，最高温度{{temData.temMaxValue}}°C， 最高温度发生时间{{temData.temMaxTime}}，由温度传感器{{temData.temMaxSensorId}}采集得到</p>
+            <p class="paragraph" v-show="temData.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{temData.temMinValue}}°C， 最高温度发生时间{{temData.temMinTime}}，由温度传感器{{temData.temMinSensorId}}采集得到</p>
+            <div ref="temChartContainer" id="temChartContainer" style="width: 70vw; height: 58vh;"></div>
           </div>
-          <p v-show="temData.temMaxValue">本周期内，最高温度{{temData.temMaxValue}}°C， 最高温度发生时间{{temData.temMaxTime}}，由温度传感器{{temData.temMaxSensorId}}采集得到</p>
-          <p v-show="temData.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{temData.temMinValue}}°C， 最高温度发生时间{{temData.temMinTime}}，由温度传感器{{temData.temMinSensorId}}采集得到</p>
-          <div ref="temChartContainer" id="temChartContainer" style="width: 70vw; height: 58vh;"></div>
         </div>
+        
       </div>
     </template>
   </CommonMenu>
@@ -1446,6 +1451,53 @@ onMounted( async () =>  {
   }
 }
 
+.page-conTitle {
+    font-size: 18px;
+    font-weight: 600;
+    padding: 10px 0;
+}
+
+.paragraph {
+    text-indent: 25px;
+    font-size: 16px;
+    font-weight: 530;
+    line-height: 1.7;
+}
+
+.page-con {
+    padding: 0 20px 0 20px;
+}
+
+.page {
+    -webkit-box-shadow: 0 0px 0px rgba(0, 0, 0, .1);
+    box-shadow: 0 0px 0px rgba(0, 0, 0, .1);
+    background: #fff;
+    color: rgba(0, 0, 0, .8);
+}
+
+.Container{
+  position: absolute; 
+  left: 0px; 
+  top: 0px; 
+  user-select: none; 
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0); 
+  padding: 0px; 
+  margin: 0px; 
+  border-width: 0px;
+}
+
+.el-table--border {
+    border: 1px solid #e8e8e8 !important;
+}
+
+.el-table {
+    color: #2c2c2c !important;
+}
+
+:deep .el-table thead tr th {
+    background: #01ada8 !important;
+    color: #fff;
+}
 :deep(.master-left .el-card__body) {
   padding: 0;
 }

@@ -144,13 +144,12 @@
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l3MaxCurTime" />
 
-        <el-table-column label="操作" align="center" width="130px">
+        <el-table-column label="操作" align="center" width="135px">
           <template #default="scope">
             <el-button
               link
               type="primary"
-              @click="openDetail(scope.row)"
-
+              @click="queryParams.lineType = 0;openDetail(scope.row)"
             >
             设备详情
             </el-button>
@@ -192,13 +191,13 @@
           </template>
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l3MaxPowTime" />
-        <el-table-column label="操作" align="center" width="130px">
+        <el-table-column label="操作" align="center" width="135px">
           <template #default="scope">
             <el-button
               link
               type="primary"
-              @click="openDetail(scope.row)"
-              v-if="scope.row.status != null && scope.row.status != 5"
+              @click="queryParams.lineType = 1;openDetail(scope.row)"
+
             >
             设备详情
             </el-button>
@@ -226,7 +225,7 @@
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->              
-          <button class="detail" @click="openDetail(item)" >详情</button>
+          <button class="detail" @click="queryParams.lineType = 1;openDetail(item)" >详情</button>
         </div>
       </div>
 
@@ -244,7 +243,7 @@
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->                
-          <button class="detail" @click="openDetail(item)" >详情</button>
+          <button class="detail" @click="queryParams.lineType = 0;openDetail(item)" >详情</button>
         </div>
       </div>
 
@@ -260,7 +259,7 @@
         <el-empty description="暂无数据" :image-size="300" />
       </template>
 
-      <el-dialog v-model="detailVis" :title="switchValue == 0 ? `电流详情`: `功率详情`"  width="70vw" height="58vh" >
+      <el-dialog v-model="detailVis" :title="queryParams.lineType == 0 ? `电流详情`: `功率详情`"  width="70vw" height="58vh" >
         <div>
           <RequirementLine width="68vw" height="58vh" :list="requirementLine"  />
         </div>
@@ -516,10 +515,9 @@ const getNavList = async() => {
 
 const openDetail = async (row) =>{
   queryParams.busId = row.busId;
-  queryParams.lineType = switchValue.value;
   const lineData = await IndexApi.getBusLineCurLine(queryParams);
   requirementLine.value = lineData;
-  requirementLine.value.formatter = switchValue.value == 0 ? '{value} A' : '{value} kW';
+  requirementLine.value.formatter = queryParams.lineType == 0 ? '{value} A' : '{value} kW';
   console.log("requirementLine",requirementLine.value)
   detailVis.value = true;
 }

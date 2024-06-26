@@ -10,11 +10,11 @@ const prop = defineProps({
     required: true
   },
   height: {
-    type: Number,
+    type: [Number,String],
     default: 60
   },
   width: {
-    type: Number,
+    type: [Number,String],
     default: 60
   }
 })
@@ -29,7 +29,17 @@ const legendList = ref() ;
 // 设置饼图的选项
 const echartsOption = reactive({
   legend: { data: legendList},
-  tooltip: { trigger: 'axis' },
+  tooltip: { 
+    trigger: 'axis',
+    formatter: function(params) {
+      var result = params[0].name + '<br>';
+      for (var i = 0; i < params.length; i++) {
+        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value.toFixed(2) + ' °C';
+        result += '<br>';
+      }
+      return result;
+    } 
+   },
   xAxis: {type: 'category', boundaryGap: false, data : temAvgTime},
   yAxis: { type: 'value'},
   toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},

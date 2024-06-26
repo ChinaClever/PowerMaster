@@ -807,7 +807,7 @@ public class BusIndexServiceImpl implements BusIndexService {
             for (BusLineHourDo busLineHourDo : pfMap.get(2)) {
                 result.getPowerFactorAvgValueB().add(busLineHourDo.getPowerFactorAvgValue());
                 if (i == 0 || j >= i){
-                    continue;
+                    break;
                 }else if(j < i){
                     tableList.get(j).setPowerFactorAvgValueB(busLineHourDo.getPowerFactorAvgValue());
                     j++;
@@ -817,15 +817,12 @@ public class BusIndexServiceImpl implements BusIndexService {
             for (BusLineHourDo busLineHourDo : pfMap.get(3)) {
                 result.getPowerFactorAvgValueC().add(busLineHourDo.getPowerFactorAvgValue());
                 if (i == 0 || j >= i){
-                    continue;
+                    break;
                 }else if(j < i){
                     tableList.get(j).setPowerFactorAvgValueC(busLineHourDo.getPowerFactorAvgValue());
                     j++;
                 }
             }
-
-
-
             return resultMap;
         }catch (Exception e){
             log.error("获取数据失败：", e);

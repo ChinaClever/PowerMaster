@@ -37,11 +37,11 @@ const echartsOption = ref({
     formatter: function(params) {
       var result = params[0].name + '<br>';
       for (var i = 0; i < params.length; i++) {
-        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
+        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' ;
         if (params[i].seriesName.includes("电流")) {
-          result += ' A'; 
+          result += params[i].value.toFixed(2) +  ' A'; 
         } else if (params[i].seriesName.includes("功率")) {
-          result += ' kW';
+          result += params[i].value.toFixed(3) + ' kW';
         }
         result += '<br>';
       }

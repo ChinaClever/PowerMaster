@@ -166,7 +166,7 @@
         <el-empty description="暂无数据" :image-size="300" />
       </template>
 
-      <el-dialog v-model="detailVis" title="温度详情" width="800">
+      <el-dialog v-model="detailVis" title="温度详情"  width="70vw" height="58vh" >
         <el-row>
           <div >
             日期:
@@ -208,7 +208,7 @@
 
         </el-row>
         <br/>
-        <PFDetail v-show="switchChartOrTable == 0" :width="700" :height="600" :list="pfESList"   />
+        <PFDetail v-show="switchChartOrTable == 0"  width="68vw" height="58vh"  :list="pfESList"   />
         <el-table v-show="switchChartOrTable == 1" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" >
           <el-table-column label="时间" align="center" prop="time" />
           <el-table-column label="A相功率因素" align="center" prop="powerFactorAvgValueA" />
