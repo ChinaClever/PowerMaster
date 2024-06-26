@@ -136,7 +136,7 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { HistoryDataApi } from '@/api/bus/historydata'
-import { CabinetApi } from '@/api/cabinet/info'
+import { IndexApi } from '@/api/bus/busindex'
 const { push } = useRouter()
 /** 始端箱历史数据 列表 */
 defineOptions({ name: 'BusHistoryData' })
@@ -615,8 +615,8 @@ const disabledDate = (date) => {
 const handleCheck = async (node) => {
     let arr = [] as any
     node.forEach(item => { 
-      if(item.type == 4){
-        arr.push(item.unique);
+      if(item.type == 6){
+        arr.push(item.id);
       }
     });
     queryParams.busIds = arr
@@ -625,13 +625,8 @@ const handleCheck = async (node) => {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
-  let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
-  arr = arr.concat(temp);
-  }
-  navList.value = arr
+  const res = await IndexApi.getBoxMenu()
+  navList.value = res
 }
 
 /** 搜索按钮操作 */

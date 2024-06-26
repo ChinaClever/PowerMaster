@@ -108,6 +108,10 @@ export const IndexApi = {
     return await request.get({ url: `/room/bus/menu` })
   },
 
+  getBoxMenu: async () => {
+    return await request.get({ url: `/room/box/menu` })
+  },
+
   getBusIdByDevKey: async (data: any) => {
     return await request.post({ url: `/bus/index/getid` ,  data})
   },
