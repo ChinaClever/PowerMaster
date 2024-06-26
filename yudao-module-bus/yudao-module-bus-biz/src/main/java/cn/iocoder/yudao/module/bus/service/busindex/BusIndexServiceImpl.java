@@ -1,6 +1,5 @@
 package cn.iocoder.yudao.module.bus.service.busindex;
 
-import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEleTotalDo;
@@ -10,6 +9,7 @@ import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalWeekD
 import cn.iocoder.yudao.framework.common.entity.es.bus.line.BusLineHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.tem.BusTemHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.total.BusTotalHourDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.line.PduHdaLineHourDo;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.bus.constant.BusConstants;
@@ -21,7 +21,7 @@ import cn.iocoder.yudao.module.bus.util.TimeUtil;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.time.DateUtils;
+
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -46,7 +46,6 @@ import org.springframework.validation.annotation.Validated;
 
 import java.io.IOException;
 import java.text.NumberFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -63,7 +62,6 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 
 import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 
-import static cn.hutool.core.date.DatePattern.NORM_DATETIME_PATTERN;
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.bus.constant.BusConstants.*;
@@ -336,6 +334,8 @@ public class BusIndexServiceImpl implements BusIndexService {
         for (BusIndexDO busIndexDO : list) {
             BusBalanceDataRes busBalanceDataRes = new BusBalanceDataRes();
             busBalanceDataRes.setStatus(busIndexDO.getRunStatus());
+            busBalanceDataRes.setBusId(busIndexDO.getId());
+            busBalanceDataRes.setDevKey(busIndexDO.getDevKey());
             res.add(busBalanceDataRes);
             JSONObject jsonObject = (JSONObject) ops.get("packet:bus:" + busIndexDO.getDevKey());
             if (jsonObject == null){
@@ -670,6 +670,52 @@ public class BusIndexServiceImpl implements BusIndexService {
     }
 
     @Override
+    public BusLineResBase getBusLineCurLine(BusIndexPageReqVO pageReqVO) {
+        BusLineResBase result = new BusLineResBase();
+        try {
+            String startTime = localDateTimeToString(pageReqVO.getOldTime());
+            String endTime = localDateTimeToString(pageReqVO.getNewTime());
+            String index = null;
+            if (pageReqVO.getTimeType() == 0){
+                index = BUS_HDA_LINE_HOUR;
+            }else {
+                index = BUS_HDA_LINE_DAY;
+            }
+            List<Integer> ids = Arrays.asList(pageReqVO.getBusId());
+            List<String> data = getData(startTime,endTime,ids,index);
+
+
+            if (pageReqVO.getLineType() == 0){
+                result.getSeries().add(new LineSeries().setName("A路电流"));
+                result.getSeries().add(new LineSeries().setName("B路电流"));
+                result.getSeries().add(new LineSeries().setName("C路电流"));
+                data.forEach(str -> {
+                    BusLineHourDo lineDo = JsonUtils.parseObject(str, BusLineHourDo.class);
+                    if(lineDo.getLineId() == 1){
+                        result.getTime().add(lineDo.getCurMaxTime().toString("yyyy-MM-dd HH"));
+                    }
+                    result.getSeries().get(lineDo.getLineId() - 1).getData().add(lineDo.getCurMaxValue());
+                });
+            }else{
+                result.getSeries().add(new LineSeries().setName("A路功率"));
+                result.getSeries().add(new LineSeries().setName("B路功率"));
+                result.getSeries().add(new LineSeries().setName("C路功率"));
+                data.forEach(str -> {
+                    BusLineHourDo lineDo = JsonUtils.parseObject(str, BusLineHourDo.class);
+                    if(lineDo.getLineId() == 1){
+                        result.getTime().add(lineDo.getPowActiveMaxTime().toString("yyyy-MM-dd HH"));
+                    }
+                    result.getSeries().get(lineDo.getLineId() - 1).getData().add(lineDo.getPowActiveMaxValue());
+                });
+            }
+            return result;
+        }catch (Exception e){
+            log.error("获取数据失败",e);
+        }
+        return result;
+    }
+
+    @Override
     public Map getBusTemDetail(BusIndexPageReqVO pageReqVO) {
         try {
             pageReqVO.setNewTime(pageReqVO.getOldTime().withHour(23).withMinute(59).withSecond(59));
@@ -996,6 +1042,121 @@ public class BusIndexServiceImpl implements BusIndexService {
         }
         return chainDTO;
     }
+
+    @Override
+    public BusBalanceDeatilRes getBusBalanceDetail(String devKey) {
+        BusBalanceDeatilRes result = new BusBalanceDeatilRes();
+        BusCurbalanceColorDO busCurbalanceColorDO = busCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
+        ValueOperations ops = redisTemplate.opsForValue();
+        JSONObject jsonObject = (JSONObject) ops.get("packet:bus:" + devKey);
+        if (jsonObject == null){
+            return result;
+        }
+        JSONObject busTotalData = jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data");
+        JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
+        JSONArray curValue = lineItemList.getJSONArray("cur_value");
+        JSONArray volValue = lineItemList.getJSONArray("vol_value");
+        Double curUnbalance = busTotalData.getDouble("cur_unbalance");
+        Double volUnbalance = busTotalData.getDouble("vol_unbalance");
+        result.setCur_value(curValue.toArray(Float.class));
+        result.setVol_value(volValue.toArray(Float.class));
+        result.setCurUnbalance(curUnbalance);
+        result.setVolUnbalance(volUnbalance);
+        JSONArray curAlarmArr = lineItemList.getJSONArray("cur_max");
+        curAlarmArr.sort(Collections.reverseOrder());
+        double maxVal = curAlarmArr.getDouble(0);
+        List<Double> temp = curValue.toList(Double.class);
+        temp.sort(Collections.reverseOrder());
+        double a = temp.get(0) - temp.get(2);
+        int color = 0;
+        if (busCurbalanceColorDO == null) {
+            if (a >= maxVal * 0.2) {
+                if (curUnbalance < 15) {
+                    color = 2;
+                } else if (curUnbalance < 30) {
+                    color = 3;
+                } else {
+                    color = 4;
+                }
+            } else {
+                color = 1;
+            }
+        } else {
+            if (a >= maxVal * 0.2) {
+                if (curUnbalance < busCurbalanceColorDO.getRangeOne()) {
+                    color = 2;
+                } else if (curUnbalance < busCurbalanceColorDO.getRangeFour()) {
+                    color = 3;
+                } else {
+                    color = 4;
+                }
+            } else {
+                color = 1;
+            }
+        }
+        result.setColor(color);
+        return result;
+    }
+
+    @Override
+    public List<BusTrendDTO> getBusBalanceTrend(Integer busId) {
+        List<BusTrendDTO> result = new ArrayList<>();
+        try {
+            DateTime end = DateTime.now();
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR_OF_DAY, -24);
+            DateTime start = DateTime.of(calendar.getTime());
+
+            String startTime = DateUtil.formatDateTime(start);
+            String endTime = DateUtil.formatDateTime(end);
+            List<Integer> ids = Arrays.asList(busId);
+            List<String> data = getData(startTime, endTime, ids, BUS_HDA_LINE_HOUR);
+            Map<String,List<BusLineHourDo>> timeBus = new HashMap<>();
+            data.forEach(str -> {
+                BusLineHourDo hourDo = JsonUtils.parseObject(str, BusLineHourDo.class);
+
+                String dateTime  = DateUtil.format(hourDo.getCreateTime(), "yyyy-MM-dd HH") ;
+                List<BusLineHourDo> lineHourDos = timeBus.get(dateTime);
+                if (CollectionUtils.isEmpty(lineHourDos)) {
+                    lineHourDos = new ArrayList<>();
+                }
+                lineHourDos.add(hourDo);
+                timeBus.put(dateTime,lineHourDos);
+            });
+
+            timeBus.keySet().forEach(dateTime -> {
+                //获取每个时间段数据
+                List<BusLineHourDo> busLineHourDos = timeBus.get(dateTime);
+
+                BusTrendDTO trendDTO = new BusTrendDTO();
+                trendDTO.setDateTime(dateTime);
+                //获取相数据
+                List<Map<String,Object>> cur = new ArrayList<>();
+                List<Map<String,Object>> vol = new ArrayList<>();
+                busLineHourDos.forEach(hourDo -> {
+                    Map<String,Object> curMap = new HashMap<>();
+                    curMap.put("lineId",hourDo.getLineId());
+                    curMap.put("curValue",hourDo.getCurAvgValue());
+                    Map<String,Object> volMap = new HashMap<>();
+                    volMap.put("lineId",hourDo.getLineId());
+                    volMap.put("volValue",hourDo.getVolAvgValue());
+                    cur.add(curMap);
+                    vol.add(volMap);
+                });
+                trendDTO.setCur(cur);
+                trendDTO.setVol(vol);
+
+                result.add(trendDTO);
+            });
+            return result.stream().sorted(Comparator.comparing(BusTrendDTO::getDateTime)).collect(Collectors.toList());
+        } catch (Exception e){
+            log.error("获取数据失败",e);
+        }
+        return result;
+    }
+
+
+
     /**
      * 获取日环比
      *

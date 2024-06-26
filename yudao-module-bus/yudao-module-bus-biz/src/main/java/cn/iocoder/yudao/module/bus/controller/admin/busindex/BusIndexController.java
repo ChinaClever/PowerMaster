@@ -1,10 +1,7 @@
 package cn.iocoder.yudao.module.bus.controller.admin.busindex;
 
-import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusActivePowDTO;
-import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusEleChainDTO;
-import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusEqTrendDTO;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusTemDetailRes;
-import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusIndexDTO;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
@@ -79,6 +76,13 @@ public class BusIndexController {
     @Operation(summary = "获得始端箱需量分页")
     public CommonResult<PageResult<BusLineRes>> getBusLineDevicePage(@RequestBody BusIndexPageReqVO pageReqVO) {
         return success(indexService.getBusLineDevicePage(pageReqVO));
+    }
+
+    @Operation(summary = "始端箱需量ES数据图表")
+    @PostMapping("/line/cur")
+    public CommonResult<BusLineResBase> getBusLineCurLine(@RequestBody BusIndexPageReqVO pageReqVO) {
+        BusLineResBase pageResult = indexService.getBusLineCurLine(pageReqVO);
+        return success(pageResult);
     }
 
     @GetMapping("/buspage")
@@ -189,6 +193,20 @@ public class BusIndexController {
     public CommonResult<PageResult<BusBalanceDataRes>> getBusBalancePage(@RequestBody BusIndexPageReqVO pageReqVO) {
         PageResult<BusBalanceDataRes> pageResult = indexService.getBusBalancePage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BusBalanceDataRes.class));
+    }
+
+    @PostMapping("/balance/detail")
+    @Operation(summary = "获得始端箱不平衡度分页")
+    public CommonResult<BusBalanceDeatilRes> getBusBalanceDetail(@RequestBody BusIndexPageReqVO pageReqVO) {
+        BusBalanceDeatilRes result = indexService.getBusBalanceDetail(pageReqVO.getDevKey());
+        return success(result);
+    }
+
+    @PostMapping("/balance/trend")
+    @Operation(summary = "获得始端箱不平衡度分页")
+    public CommonResult<List<BusTrendDTO>> getBusBalanceTrend(@RequestBody BusIndexPageReqVO pageReqVO) {
+        List<BusTrendDTO> result = indexService.getBusBalanceTrend(pageReqVO.getBusId());
+        return success(result);
     }
 
     @GetMapping("/devKeyList")

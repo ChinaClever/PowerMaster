@@ -87,13 +87,13 @@
     <div class="bottom">
       <el-card class="card-day" shadow="never">
         <template #header>
-          <CardTitle title="日用电总有功功率曲线" />
+          <CardTitle title="日用电有功功率曲线" />
         </template>
         <Echart :options="echartsOptionPowTrend" :height="260" />
       </el-card>
       <el-card class="card-dayTop" shadow="never">
         <template #header>
-          <CardTitle title="总有功功率峰值" />
+          <CardTitle title="有功功率峰值" />
         </template>
         <div class="box" style="margin-bottom: 10px;" @click="test">
           <div class="value">{{ActivePowTrend.todayMax && ActivePowTrend.todayMax.toFixed(3)}}</div>

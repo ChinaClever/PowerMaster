@@ -108,14 +108,14 @@
           </el-button>
         </el-form-item>
         <div style="float:right">
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />电流矩阵</el-button>
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />功率阵列</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />电流矩阵</el-button>
+          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />功率阵列</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
         </div>
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 2" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-show="switchValue == 2" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
@@ -149,8 +149,8 @@
             <el-button
               link
               type="primary"
-              @click="toPDUDisplayScreen(scope.row)"
-              v-if="scope.row.status != null && scope.row.status != 5"
+              @click="openDetail(scope.row)"
+
             >
             设备详情
             </el-button>
@@ -165,7 +165,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-table v-show="switchValue == 2" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-show="switchValue == 2" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
         <el-table-column label="L1最大功率" align="center" prop="l1MaxPow" width="100px" >
@@ -197,7 +197,7 @@
             <el-button
               link
               type="primary"
-              @click="toPDUDisplayScreen(scope.row)"
+              @click="openDetail(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 5"
             >
             设备详情
@@ -226,7 +226,7 @@
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->              
-          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <button class="detail" @click="openDetail(item)" >详情</button>
         </div>
       </div>
 
@@ -244,7 +244,7 @@
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->                
-          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <button class="detail" @click="openDetail(item)" >详情</button>
         </div>
       </div>
 
@@ -259,6 +259,13 @@
       <template v-if="list.length == 0 && switchValue != 2">
         <el-empty description="暂无数据" :image-size="300" />
       </template>
+
+      <el-dialog v-model="detailVis" :title="switchValue == 0 ? `电流详情`: `功率详情`"  width="70vw" height="58vh" >
+        <div>
+          <RequirementLine width="68vw" height="58vh" :list="requirementLine"  />
+        </div>
+
+      </el-dialog>
     </template>
   </CommonMenu>
   
@@ -271,6 +278,7 @@
 import download from '@/utils/download'
 import { IndexApi } from '@/api/bus/busindex'
 import Pie from './component/Pie.vue'
+import RequirementLine from './component/RequirementLine.vue'
 // import PDUDeviceForm from './PDUDeviceForm.vue'
 import { ElTree } from 'element-plus'
 
@@ -278,9 +286,10 @@ import { ElTree } from 'element-plus'
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
-const { push } = useRouter()
+// const { push } = useRouter()
 
-
+const requirementLine = ref([]) as any;
+const detailVis = ref(false);
 const now = ref()
 const pageSizeArr = ref([24,36,48])
 const switchValue = ref(0)
@@ -505,8 +514,14 @@ const getNavList = async() => {
   }
 }
 
-const toPDUDisplayScreen = (row) =>{
-  push('/pdu/pdudisplayscreen?devKey=' + row.devKey + '&location=' + row.location + '&id=' + row.id);
+const openDetail = async (row) =>{
+  queryParams.busId = row.busId;
+  queryParams.lineType = switchValue.value;
+  const lineData = await IndexApi.getBusLineCurLine(queryParams);
+  requirementLine.value = lineData;
+  requirementLine.value.formatter = switchValue.value == 0 ? '{value} A' : '{value} kW';
+  console.log("requirementLine",requirementLine.value)
+  detailVis.value = true;
 }
 
 

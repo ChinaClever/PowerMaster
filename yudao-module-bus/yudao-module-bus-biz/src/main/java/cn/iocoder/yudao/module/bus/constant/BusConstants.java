@@ -15,7 +15,7 @@ public class BusConstants {
     /**
      * Redis设置key
      */
-    public static final String REDIS_KEY_PDU = "packet:pdu:";
+    public static final String REDIS_KEY_PDU = "packet:始端箱:";
 
     /**
      * 分隔符
@@ -39,9 +39,9 @@ public class BusConstants {
     public static final String BY_OUTLET = "by_outlet";
 
     /**
-     * pdu聚合名称
+     * 始端箱聚合名称
      */
-    public static final String BY_PDU = "by_pdu";
+    public static final String BY_PDU = "by_始端箱";
 
     /**
      * line聚合名称
@@ -129,54 +129,59 @@ public class BusConstants {
      */
     public static final String MONTH = "MONTH";
     /**
-     * 机柜id
+     * 始端箱id
      */
     public static final String BUS_ID = "bus_id";
 
     /**
-     * 机柜功率历史数据表（实时）
+     * 始端箱功率历史数据表（实时）
      */
     public static final String BUS_HDA_POW_REALTIME = "bus_hda_pow_realtime";
 
     /**
-     * 机柜功率历史数据表（按小时算）
+     * 始端箱功率历史数据表（按小时算）
      */
     public static final String BUS_HDA_POW_HOUR = "bus_hda_pow_hour";
 
     /**
-     * 机柜功率历史数据表（按天算）
+     * 始端箱功率历史数据表（按天算）
      */
     public static final String BUS_HDA_POW_DAY = "bus_hda_pow_day";
 
     /**
-     * 机柜总电能表(实时)
+     * 始端箱总电能表(实时)
      */
     public static final String BUS_ELE_TOTAL_REALTIME = "bus_ele_total_realtime";
 
     /**
-     * 机柜电量表（按天算）
+     * 始端箱电量表（按天算）
      */
     public static final String BUS_EQ_TOTAL_DAY = "bus_eq_total_day";
 
     /**
-     * 机柜电量表（按周算）
+     * 始端箱电量表（按周算）
      */
     public static final String BUS_EQ_TOTAL_WEEK = "bus_eq_total_week";
 
     /**
-     * 机柜电量表（按月算）
+     * 始端箱电量表（按月算）
      */
     public static final String BUS_EQ_TOTAL_MONTH = "bus_eq_total_month";
 
     /**
-     * pdu相历史数据表（按小时算
+     * 始端箱相历史数据表（按小时算
      */
-    public static final String PDU_HDA_LINE_HOUR = "pdu_hda_line_hour" ;
+    public static final String BUS_HDA_LINE_HOUR = "bus_hda_line_hour" ;
+    
+    /**
+     * 始端箱相历史数据表（按小时算
+     */
+    public static final String BUS_HDA_LINE_DAY = "bus_hda_line_day";
 
     /**
      * 数据包
      */
-    public static final String PDU_DATA = "pdu_data";
+    public static final String PDU_DATA = "始端箱_data";
 
     /**
      * 输出位数据

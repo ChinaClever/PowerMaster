@@ -56,8 +56,20 @@ export const IndexApi = {
     return await request.post({ url: `/bus/index/balance`, data })
   },
 
+  getBusBalanceDetail: async (data: any) => {
+    return await request.post({ url: `/bus/index/balance/detail` ,  data})
+  },
+
+  getBusBalanceTrend: async (data: any) => {
+    return await request.post({ url: `/bus/index/balance/trend` ,  data})
+  },
+
   getBusTemPage: async (data: any) => {
     return await request.post({ url: `/bus/index/bustempage`, data })
+  },
+
+  getBusTemDetail: async (data: any) => {
+    return await request.post({ url: `/bus/index/tem/detail`, data })
   },
 
   getBusPFPage: async (data: any) => {
@@ -72,6 +84,14 @@ export const IndexApi = {
     return await request.get({ url: `/bus/index/busharmonicpage`, params })
   },
 
+  getHarmonicRedis: async (data: any) => {
+    return await request.post({ url: `/bus/index/harmonic/redis`, data })
+  },
+
+  getHarmonicLine: async (data: any) => {
+    return await request.post({ url: `/bus/index/harmonic/line`, data })
+  },
+
   devKeyList: async () => {
     return await request.download({ url: `/bus/index/devKeyList` })
   },
@@ -80,16 +100,8 @@ export const IndexApi = {
     return await request.post({ url: `/bus/index/line/page`,data})
   },
 
-  getBusTemDetail: async (data: any) => {
-    return await request.post({ url: `/bus/index/tem/detail`, data })
-  },
-
-  getHarmonicRedis: async (data: any) => {
-    return await request.post({ url: `/bus/index/harmonic/redis`, data })
-  },
-
-  getHarmonicLine: async (data: any) => {
-    return await request.post({ url: `/bus/index/harmonic/line`, data })
+  getBusLineCurLine: async (data: any) => {
+    return await request.post({ url: `/bus/index/line/cur`,data})
   },
 
   getBusMenu: async () => {
@@ -99,4 +111,6 @@ export const IndexApi = {
   getBusIdByDevKey: async (data: any) => {
     return await request.post({ url: `/bus/index/getid` ,  data})
   },
+
+ 
 }

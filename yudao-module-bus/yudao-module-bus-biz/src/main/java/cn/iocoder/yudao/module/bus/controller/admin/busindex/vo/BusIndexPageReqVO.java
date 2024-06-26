@@ -62,6 +62,9 @@ public class BusIndexPageReqVO extends PageParam {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime newTime;
 
+    @Schema(description = "图表类型")
+    private Integer lineType;
+
     @Schema(description = "颜色")
     private List<Integer> color;
 
