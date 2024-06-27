@@ -157,4 +157,9 @@ public class CabinetVo {
     @Schema(description = "B路插接箱输出位id", example = "1")
     private Integer boxOutletIdB;
 
+    /**
+     * 机柜位置，柜列里传
+     */
+    private Integer index;
+
 }

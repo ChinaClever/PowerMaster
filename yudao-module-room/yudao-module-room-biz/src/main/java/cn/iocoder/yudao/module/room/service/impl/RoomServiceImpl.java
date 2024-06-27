@@ -281,12 +281,12 @@ public class RoomServiceImpl implements RoomService {
                     detailDTO.setXCoordinate(aisleCfg.getXCoordinate());
                     detailDTO.setYCoordinate(aisleCfg.getYCoordinate());
                 }
-
-
                 List<AisleCabinetDTO> aisleCabinetDTOList = new ArrayList<>();
-                if (!CollectionUtils.isEmpty(cabinetIndexMap.get(aisleIndex.getId()))){
 
-                    cabinetIndexMap.get(aisleIndex.getId()).forEach(cabinetIndex ->{
+               Map<Integer,AisleCabinetDTO> cabMap = new HashMap<>();
+                List<CabinetIndex> cabs = cabinetIndexMap.get(aisleIndex.getId());
+                if (!CollectionUtils.isEmpty(cabs)){
+                    cabs.forEach(cabinetIndex ->{
                         AisleCabinetDTO cabinetDTO = BeanUtils.toBean(cabinetIndex,AisleCabinetDTO.class);
                         CabinetCfg cfg = cabinetCfgMap.get(cabinetIndex.getId());
                         if (Objects.nonNull(cfg)){
@@ -305,10 +305,21 @@ public class RoomServiceImpl implements RoomService {
                                 cabinetDTO.setIndex(cfg.getYCoordinate() - aisleCfg.getYCoordinate() + 1);
                             }
                         }
-                        aisleCabinetDTOList.add(cabinetDTO);
+                        cabMap.put(cabinetDTO.getIndex(),cabinetDTO);
 
                     });
                 }
+
+                for (int i = 0; i< aisleIndex.getLength();i ++ ){
+                    AisleCabinetDTO cabinetDTO = cabMap.get(i+1);
+                    if (Objects.isNull(cabinetDTO)){
+
+                        cabinetDTO = new AisleCabinetDTO();
+                        cabinetDTO.setIndex(i+1);
+                    }
+                    aisleCabinetDTOList.add(i,cabinetDTO);
+                }
+
                 detailDTO.setCabinetList(aisleCabinetDTOList);
                 detailDTOList.add(detailDTO);
             });
