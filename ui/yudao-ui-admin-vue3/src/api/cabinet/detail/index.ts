@@ -13,4 +13,9 @@ export const CabinetApi = {
   getBalanceTrend: async (params: any) => {
     return await request.get({ url: `/cabinet/curTrend`, params })
   },
+  // 获取机架设备详情
+  getframeDeviceDetail: async (params: any) => {
+    return await request.get({ url: `/cabinet/frameDeviceDetail`, params })
+  }, 
+
 }
