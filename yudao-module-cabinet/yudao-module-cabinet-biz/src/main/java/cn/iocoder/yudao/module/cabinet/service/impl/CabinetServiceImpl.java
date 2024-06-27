@@ -5,6 +5,8 @@ import cn.hutool.core.date.DateUtil;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalMonthDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalWeekDo;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleCfg;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.*;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
@@ -12,6 +14,7 @@ import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.enums.DisableEnums;
 import cn.iocoder.yudao.framework.common.enums.PduBoxEnums;
 import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
+import cn.iocoder.yudao.framework.common.mapper.AisleCfgMapper;
 import cn.iocoder.yudao.framework.common.mapper.CabinetCfgMapper;
 import cn.iocoder.yudao.framework.common.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
@@ -51,6 +54,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -84,6 +88,8 @@ public class CabinetServiceImpl implements CabinetService {
     @Autowired
     CabinetBusMapper cabinetBusMapper;
 
+    @Resource
+    AisleCfgMapper aisleCfgMapper;
     @Autowired
     RedisTemplate redisTemplate;
 
@@ -362,6 +368,22 @@ public class CabinetServiceImpl implements CabinetService {
                     if (vo.getPduIpA().equals(vo.getPduIpB()) && vo.getCasIdA() == vo.getCasIdB()) {
                         return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "AB路pdu一致，请重新输入");
                     }
+                }
+            }
+            //计算机柜位置
+            if (Objects.nonNull(vo.getIndex())){
+                AisleCfg aisleCfg = aisleCfgMapper.selectOne(new LambdaQueryWrapper<AisleCfg>()
+                        .eq(AisleCfg::getAisleId,vo.getAisleId()));
+
+                if (Objects.nonNull(aisleCfg) && "x".equals(aisleCfg.getDirection())){
+                    //横向
+                    vo.setXCoordinate(aisleCfg.getXCoordinate() + vo.getIndex() - 1);
+                    vo.setYCoordinate(aisleCfg.getYCoordinate());
+                }
+                if (Objects.nonNull(aisleCfg) && "y".equals(aisleCfg.getDirection())){
+                    //纵向
+                    vo.setYCoordinate(aisleCfg.getYCoordinate() + vo.getIndex() - 1);
+                    vo.setXCoordinate(aisleCfg.getXCoordinate());
                 }
             }
 
