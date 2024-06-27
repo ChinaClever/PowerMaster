@@ -178,12 +178,13 @@ public class RoomServiceImpl implements RoomService {
         RoomIndex roomIndex = roomIndexMapper.selectById(roomId);
         RoomCfg roomCfg = roomCfgMapper.selectOne(new LambdaQueryWrapper<RoomCfg>()
                 .eq(RoomCfg::getRoomId,roomId));
+        roomDetailDTO.setRoomName(roomIndex.getName());
+        roomDetailDTO.setId(roomId);
+        roomDetailDTO.setPowerCapacity(roomIndex.getPowerCapacity());
         if (Objects.nonNull(roomIndex) && Objects.nonNull(roomCfg)){
-            roomDetailDTO.setRoomName(roomIndex.getName());
-            roomDetailDTO.setId(roomId);
             roomDetailDTO.setXLength(roomCfg.getXLength());
             roomDetailDTO.setYLength(roomCfg.getYLength());
-            roomDetailDTO.setPowerCapacity(roomIndex.getPowerCapacity());
+
         }
         //获取机柜
         //无柜列机柜
@@ -295,11 +296,11 @@ public class RoomServiceImpl implements RoomService {
                             cabinetDTO.setXCoordinate(cfg.getXCoordinate());
                             cabinetDTO.setYCoordinate(cfg.getYCoordinate());
                             cabinetDTO.setType(cfg.getType());
-                            if ("x".equals(aisleCfg.getDirection())){
+                            if (Objects.nonNull(aisleCfg) && "x".equals(aisleCfg.getDirection())){
                                 //横向
                                 cabinetDTO.setIndex(cfg.getXCoordinate() - aisleCfg.getXCoordinate() + 1);
                             }
-                            if ("y".equals(aisleCfg.getDirection())){
+                            if (Objects.nonNull(aisleCfg) && "y".equals(aisleCfg.getDirection())){
                                 //纵向
                                 cabinetDTO.setIndex(cfg.getYCoordinate() - aisleCfg.getYCoordinate() + 1);
                             }
