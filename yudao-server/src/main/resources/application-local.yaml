@@ -306,6 +306,10 @@ pdu-dc-refresh-url: 127.0.0.1:48082/pdu-dc/refresh
 pdu-cal-refresh-url: 127.0.0.1:48082/pdu-cal/refresh
 #机架计算配置刷新地址
 rack-cal-refresh-url: 127.0.0.1:48082/rack/refresh
+#母线配置刷新地址
+bus-cal-refresh-url: 127.0.0.1:48082/bus-cal/refresh
+#柜列配置刷新地址
+aisle-refresh-url: 127.0.0.1:48082/aisle/refresh
 
 mybatis-plus:
   configuration:

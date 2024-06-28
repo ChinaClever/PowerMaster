@@ -406,7 +406,7 @@ public class RoomServiceImpl implements RoomService {
                                 }
                                 if ("y".equals(aisleSaveVo.getDirection())){
                                     //纵向  计算机柜位置
-                                    y = aisleSaveVo.getYCoordinate() + indexMap.get(cabinetCfg.getId());
+                                    y = aisleSaveVo.getYCoordinate() + indexMap.get(cabinetCfg.getCabinetId());
                                     x = aisleSaveVo.getXCoordinate();
                                 }
                                 cabinetCfg.setYCoordinate(y);
