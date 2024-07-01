@@ -82,7 +82,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" >
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -114,8 +114,7 @@
             <el-button
               link
               type="primary"
-              @click="toPDUDisplayScreen(scope.row)"
-              v-if="scope.row.status != null && scope.row.status != 5"
+              @click="openPFDetail(scope.row)"
             >
             设备详情
             </el-button>
@@ -152,7 +151,7 @@
             <el-tag type="danger" v-else-if="item.atemStatus != 0 || item.btemStatus != 0  || item.ctemStatus != 0 " >告警</el-tag>
             <el-tag v-else >正常</el-tag>
           </div> -->
-          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <button class="detail" @click="openPFDetail(item)" >详情</button>
         </div>
       </div>
       <Pagination
@@ -165,6 +164,57 @@
       <template v-if="list.length == 0 && switchValue != 3">
         <el-empty description="暂无数据" :image-size="300" />
       </template>
+
+      <el-dialog v-model="detailVis" title="功率因素详情"  width="70vw" height="58vh" >
+        <el-row>
+          <div >
+            日期:
+            <el-date-picker
+              v-model="queryParams.oldTime"
+              value-format="YYYY-MM-DD HH:mm:ss"
+              type="date"
+              :disabled-date="disabledDate"
+              @change="handleDayPick"
+              class="!w-160px"
+            />
+          </div>
+          
+          
+          <el-button 
+            @click="subtractOneDay();handleDayPick()" 
+            :type=" 'primary'"
+          >
+            &lt;前一日
+          </el-button>
+          <el-button 
+            @click="addtractOneDay();handleDayPick()" 
+            :type=" 'primary'"
+          >
+            &gt;后一日
+          </el-button>
+          <el-button 
+            @click="switchChartOrTable = 0" 
+            :type=" 'primary'"
+          >
+            图表
+          </el-button>
+          <el-button 
+            @click="switchChartOrTable = 1" 
+            :type=" 'primary'"
+          >
+            数据
+          </el-button>
+
+        </el-row>
+        <br/>
+        <PFDetail v-show="switchChartOrTable == 0"  width="68vw" height="58vh"  :list="pfESList"   />
+        <el-table v-show="switchChartOrTable == 1" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" >
+          <el-table-column label="时间" align="center" prop="time" />
+          <el-table-column label="A相功率因素" align="center" prop="powerFactorAvgValueA" />
+          <el-table-column label="B相功率因素" align="center" prop="powerFactorAvgValueB" />
+          <el-table-column label="C相功率因素" align="center" prop="powerFactorAvgValueC" />
+        </el-table>
+      </el-dialog>
     </template>
   </CommonMenu>
 
@@ -185,15 +235,17 @@ import { CabinetApi } from '@/api/cabinet/info'
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
-const { push } = useRouter()
-
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48])
 const switchValue = ref(0)
 const valueMode = ref(0)
+const switchChartOrTable = ref(0)
+const detailVis = ref(false);
 
+const pfESList = ref({}) as any
+const pfTableList = ref([]) as any
 const devKeyList = ref([])
 const loadAll = async () => {
   var data = await IndexApi.devKeyList();
@@ -218,6 +270,69 @@ const createFilter = (queryString: string) => {
       devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
     )
   }
+}
+
+const openPFDetail = async (row) =>{
+  queryParams.boxId = row.boxId;
+  queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
+  await getDetail();
+  detailVis.value = true;
+}
+
+const disabledDate = (date) => {
+  // 获取今天的日期
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // 设置date的时间为0时0分0秒，以便与today进行比较
+  date.setHours(0, 0, 0, 0);
+
+  // 如果date在今天之后，则禁用
+  if(switchValue.value == 0){
+    return date > today;
+  }else {
+    return date >= today;
+  }
+  
+}
+
+const handleDayPick = async () => {
+
+  if(queryParams?.oldTime ){
+    await getDetail();
+    
+  } 
+}
+
+const subtractOneDay = () => {
+  var date = new Date(queryParams.oldTime + "Z"); // 添加 "Z" 表示 UTC 时间
+
+  date.setDate(date.getDate() - 1); // 减去一天
+
+  queryParams.oldTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
+};
+
+const addtractOneDay = () => {
+  var date = new Date(queryParams.oldTime + "Z"); // 添加 "Z" 表示 UTC 时间
+
+  date.setDate(date.getDate() + 1); // 减去一天
+
+  queryParams.oldTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
+};
+
+const getFullTimeByDate = (date) => {
+  var year = date.getFullYear();//年
+  var month = date.getMonth();//月
+  var day = date.getDate();//日
+  var hours = date.getHours();//时
+  var min = date.getMinutes();//分
+  var second = date.getSeconds();//秒
+  return year + "-" +
+      ((month + 1) > 9 ? (month + 1) : "0" + (month + 1)) + "-" +
+      (day > 9 ? day : ("0" + day)) + " " +
+      (hours > 9 ? hours : ("0" + hours)) + ":" +
+      (min > 9 ? min : ("0" + min)) + ":" +
+      (second > 9 ? second : ("0" + second));
 }
 
 const handleClick = (row) => {
@@ -294,6 +409,17 @@ const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
 /** 查询列表 */
+const getDetail = async () => {
+  const data = await IndexApi.getBoxPFDetail(queryParams);
+  pfESList.value = data?.chart;
+
+  pfTableList.value = data?.table;
+  pfTableList.value?.forEach((obj) => {
+    obj.powerFactorAvgValueA = obj?.powerFactorAvgValueA?.toFixed(2);
+    obj.powerFactorAvgValueB = obj?.powerFactorAvgValueB?.toFixed(2);
+    obj.powerFactorAvgValueC = obj?.powerFactorAvgValueC?.toFixed(2);
+  });
+}
 const getList = async () => {
   loading.value = true
   try {
@@ -359,9 +485,6 @@ const getNavList = async() => {
 
 }
 
-const toPDUDisplayScreen = (row) =>{
-  push('/pdu/pdudisplayscreen?devKey=' + row.devKey + '&location=' + row.location + '&id=' + row.id);
-}
 
 // const openNewPage = (scope) => {
 //   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';

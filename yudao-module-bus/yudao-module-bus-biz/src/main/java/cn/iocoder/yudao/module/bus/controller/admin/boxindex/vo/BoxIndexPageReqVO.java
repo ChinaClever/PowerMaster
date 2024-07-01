@@ -32,6 +32,9 @@ public class BoxIndexPageReqVO extends PageParam {
     @Schema(description = "母线地址")
     private String devAddr;
 
+    @Schema(description = "boxId")
+    private Integer boxId;
+
     @Schema(description = "母线编号", example = "16770")
     private Integer barId;
 
@@ -58,6 +61,9 @@ public class BoxIndexPageReqVO extends PageParam {
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime newTime;
+
+    @Schema(description = "图表类型")
+    private Integer lineType;
 
     @Schema(description = "逻辑删除")
     private Integer isDeleted;

@@ -4,9 +4,18 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.dto.BoxIndexDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.*;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusActivePowDTO;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusEleChainDTO;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusEqTrendDTO;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusTrendDTO;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusBalanceDeatilRes;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusIndexPageReqVO;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusLineResBase;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusPowVo;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 始端箱索引 Service 接口
@@ -68,4 +77,20 @@ public interface BoxIndexService {
     List<String> getDevKeyList();
 
     PageResult<BoxLineRes> getBoxLineDevicePage(BoxIndexPageReqVO pageReqVO);
+
+    BusLineResBase getBoxLineCurLine(BoxIndexPageReqVO pageReqVO);
+
+    Map getBoxTemDetail(BoxIndexPageReqVO pageReqVO);
+
+    Map getBoxPFDetail(BoxIndexPageReqVO pageReqVO);
+
+    BusBalanceDeatilRes getBoxBalanceDetail(String devKey);
+
+    List<BusTrendDTO> getBoxBalanceTrend(Integer boxId);
+
+    BusActivePowDTO getActivePow(BusPowVo vo);
+
+    List<BusEqTrendDTO> eqTrend(int id, String type);
+
+    BusEleChainDTO getEleChain(int id);
 }

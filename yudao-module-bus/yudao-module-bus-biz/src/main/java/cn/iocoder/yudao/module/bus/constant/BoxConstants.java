@@ -6,7 +6,7 @@ package cn.iocoder.yudao.module.bus.constant;
  * @description: 常量类
  * @date 2024/4/15 9:40
  */
-public class BusConstants {
+public class BoxConstants {
 
     /**
      * Redis设置key
@@ -64,7 +64,7 @@ public class BusConstants {
     /**
      * 数据包字段
      */
-    public static final String BUS_POWER = "bus_power";
+    public static final String BOX_POWER = "box_power";
 
     /**
      * 数据包字段
@@ -101,7 +101,7 @@ public class BusConstants {
     /**
      * 聚合名称
      */
-    public static final String BY_BUS = "by_bus";
+    public static final String BY_BOX = "by_box";
     /**
      * 公司
      */
@@ -131,52 +131,52 @@ public class BusConstants {
     /**
      * 始端箱id
      */
-    public static final String BUS_ID = "bus_id";
+    public static final String BOX_ID = "box_id";
 
     /**
      * 始端箱功率历史数据表（实时）
      */
-    public static final String BUS_HDA_POW_REALTIME = "bus_hda_pow_realtime";
+    public static final String BOX_HDA_POW_REALTIME = "box_hda_pow_realtime";
 
     /**
      * 始端箱功率历史数据表（按小时算）
      */
-    public static final String BUS_HDA_POW_HOUR = "bus_hda_pow_hour";
+    public static final String BOX_HDA_POW_HOUR = "box_hda_pow_hour";
 
     /**
      * 始端箱功率历史数据表（按天算）
      */
-    public static final String BUS_HDA_POW_DAY = "bus_hda_pow_day";
+    public static final String BOX_HDA_POW_DAY = "box_hda_pow_day";
 
     /**
      * 始端箱总电能表(实时)
      */
-    public static final String BUS_ELE_TOTAL_REALTIME = "bus_ele_total_realtime";
+    public static final String BOX_ELE_TOTAL_REALTIME = "box_ele_total_realtime";
 
     /**
      * 始端箱电量表（按天算）
      */
-    public static final String BUS_EQ_TOTAL_DAY = "bus_eq_total_day";
+    public static final String BOX_EQ_TOTAL_DAY = "box_eq_total_day";
 
     /**
      * 始端箱电量表（按周算）
      */
-    public static final String BUS_EQ_TOTAL_WEEK = "bus_eq_total_week";
+    public static final String BOX_EQ_TOTAL_WEEK = "box_eq_total_week";
 
     /**
      * 始端箱电量表（按月算）
      */
-    public static final String BUS_EQ_TOTAL_MONTH = "bus_eq_total_month";
+    public static final String BOX_EQ_TOTAL_MONTH = "box_eq_total_month";
 
     /**
      * 始端箱相历史数据表（按小时算
      */
-    public static final String BUS_HDA_LINE_HOUR = "bus_hda_line_hour" ;
-    
+    public static final String BOX_HDA_LINE_HOUR = "box_hda_line_hour" ;
+
     /**
      * 始端箱相历史数据表（按小时算
      */
-    public static final String BUS_HDA_LINE_DAY = "bus_hda_line_day";
+    public static final String BOX_HDA_LINE_DAY = "box_hda_line_day";
 
 
 

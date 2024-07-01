@@ -518,7 +518,6 @@ const openDetail = async (row) =>{
   const lineData = await IndexApi.getBusLineCurLine(queryParams);
   requirementLine.value = lineData;
   requirementLine.value.formatter = queryParams.lineType == 0 ? '{value} A' : '{value} kW';
-  console.log("requirementLine",requirementLine.value)
   detailVis.value = true;
 }
 

@@ -399,6 +399,118 @@ public class BusIndexServiceImpl implements BusIndexService {
     }
 
     @Override
+    public BusBalanceDeatilRes getBusBalanceDetail(String devKey) {
+        BusBalanceDeatilRes result = new BusBalanceDeatilRes();
+        BusCurbalanceColorDO busCurbalanceColorDO = busCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
+        ValueOperations ops = redisTemplate.opsForValue();
+        JSONObject jsonObject = (JSONObject) ops.get("packet:bus:" + devKey);
+        if (jsonObject == null){
+            return result;
+        }
+        JSONObject busTotalData = jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data");
+        JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
+        JSONArray curValue = lineItemList.getJSONArray("cur_value");
+        JSONArray volValue = lineItemList.getJSONArray("vol_value");
+        Double curUnbalance = busTotalData.getDouble("cur_unbalance");
+        Double volUnbalance = busTotalData.getDouble("vol_unbalance");
+        result.setCur_value(curValue.toArray(Float.class));
+        result.setVol_value(volValue.toArray(Float.class));
+        result.setCurUnbalance(curUnbalance);
+        result.setVolUnbalance(volUnbalance);
+        JSONArray curAlarmArr = lineItemList.getJSONArray("cur_max");
+        curAlarmArr.sort(Collections.reverseOrder());
+        double maxVal = curAlarmArr.getDouble(0);
+        List<Double> temp = curValue.toList(Double.class);
+        temp.sort(Collections.reverseOrder());
+        double a = temp.get(0) - temp.get(2);
+        int color = 0;
+        if (busCurbalanceColorDO == null) {
+            if (a >= maxVal * 0.2) {
+                if (curUnbalance < 15) {
+                    color = 2;
+                } else if (curUnbalance < 30) {
+                    color = 3;
+                } else {
+                    color = 4;
+                }
+            } else {
+                color = 1;
+            }
+        } else {
+            if (a >= maxVal * 0.2) {
+                if (curUnbalance < busCurbalanceColorDO.getRangeOne()) {
+                    color = 2;
+                } else if (curUnbalance < busCurbalanceColorDO.getRangeFour()) {
+                    color = 3;
+                } else {
+                    color = 4;
+                }
+            } else {
+                color = 1;
+            }
+        }
+        result.setColor(color);
+        return result;
+    }
+
+    @Override
+    public List<BusTrendDTO> getBusBalanceTrend(Integer busId) {
+        List<BusTrendDTO> result = new ArrayList<>();
+        try {
+            DateTime end = DateTime.now();
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR_OF_DAY, -24);
+            DateTime start = DateTime.of(calendar.getTime());
+
+            String startTime = DateUtil.formatDateTime(start);
+            String endTime = DateUtil.formatDateTime(end);
+            List<Integer> ids = Arrays.asList(busId);
+            List<String> data = getData(startTime, endTime, ids, BUS_HDA_LINE_HOUR);
+            Map<String,List<BusLineHourDo>> timeBus = new HashMap<>();
+            data.forEach(str -> {
+                BusLineHourDo hourDo = JsonUtils.parseObject(str, BusLineHourDo.class);
+
+                String dateTime  = DateUtil.format(hourDo.getCreateTime(), "yyyy-MM-dd HH") ;
+                List<BusLineHourDo> lineHourDos = timeBus.get(dateTime);
+                if (CollectionUtils.isEmpty(lineHourDos)) {
+                    lineHourDos = new ArrayList<>();
+                }
+                lineHourDos.add(hourDo);
+                timeBus.put(dateTime,lineHourDos);
+            });
+
+            timeBus.keySet().forEach(dateTime -> {
+                //获取每个时间段数据
+                List<BusLineHourDo> busLineHourDos = timeBus.get(dateTime);
+
+                BusTrendDTO trendDTO = new BusTrendDTO();
+                trendDTO.setDateTime(dateTime);
+                //获取相数据
+                List<Map<String,Object>> cur = new ArrayList<>();
+                List<Map<String,Object>> vol = new ArrayList<>();
+                busLineHourDos.forEach(hourDo -> {
+                    Map<String,Object> curMap = new HashMap<>();
+                    curMap.put("lineId",hourDo.getLineId());
+                    curMap.put("curValue",hourDo.getCurAvgValue());
+                    Map<String,Object> volMap = new HashMap<>();
+                    volMap.put("lineId",hourDo.getLineId());
+                    volMap.put("volValue",hourDo.getVolAvgValue());
+                    cur.add(curMap);
+                    vol.add(volMap);
+                });
+                trendDTO.setCur(cur);
+                trendDTO.setVol(vol);
+
+                result.add(trendDTO);
+            });
+            return result.stream().sorted(Comparator.comparing(BusTrendDTO::getDateTime)).collect(Collectors.toList());
+        } catch (Exception e){
+            log.error("获取数据失败",e);
+        }
+        return result;
+    }
+
+    @Override
     public PageResult<BusTemRes> getBusTemPage(BusIndexPageReqVO pageReqVO) {
         PageResult<BusIndexDO> busIndexDOPageResult = busIndexMapper.selectPage(pageReqVO);
         List<BusIndexDO> list = busIndexDOPageResult.getList();
@@ -1039,119 +1151,6 @@ public class BusIndexServiceImpl implements BusIndexService {
         }
         return chainDTO;
     }
-
-    @Override
-    public BusBalanceDeatilRes getBusBalanceDetail(String devKey) {
-        BusBalanceDeatilRes result = new BusBalanceDeatilRes();
-        BusCurbalanceColorDO busCurbalanceColorDO = busCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
-        ValueOperations ops = redisTemplate.opsForValue();
-        JSONObject jsonObject = (JSONObject) ops.get("packet:bus:" + devKey);
-        if (jsonObject == null){
-            return result;
-        }
-        JSONObject busTotalData = jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data");
-        JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
-        JSONArray curValue = lineItemList.getJSONArray("cur_value");
-        JSONArray volValue = lineItemList.getJSONArray("vol_value");
-        Double curUnbalance = busTotalData.getDouble("cur_unbalance");
-        Double volUnbalance = busTotalData.getDouble("vol_unbalance");
-        result.setCur_value(curValue.toArray(Float.class));
-        result.setVol_value(volValue.toArray(Float.class));
-        result.setCurUnbalance(curUnbalance);
-        result.setVolUnbalance(volUnbalance);
-        JSONArray curAlarmArr = lineItemList.getJSONArray("cur_max");
-        curAlarmArr.sort(Collections.reverseOrder());
-        double maxVal = curAlarmArr.getDouble(0);
-        List<Double> temp = curValue.toList(Double.class);
-        temp.sort(Collections.reverseOrder());
-        double a = temp.get(0) - temp.get(2);
-        int color = 0;
-        if (busCurbalanceColorDO == null) {
-            if (a >= maxVal * 0.2) {
-                if (curUnbalance < 15) {
-                    color = 2;
-                } else if (curUnbalance < 30) {
-                    color = 3;
-                } else {
-                    color = 4;
-                }
-            } else {
-                color = 1;
-            }
-        } else {
-            if (a >= maxVal * 0.2) {
-                if (curUnbalance < busCurbalanceColorDO.getRangeOne()) {
-                    color = 2;
-                } else if (curUnbalance < busCurbalanceColorDO.getRangeFour()) {
-                    color = 3;
-                } else {
-                    color = 4;
-                }
-            } else {
-                color = 1;
-            }
-        }
-        result.setColor(color);
-        return result;
-    }
-
-    @Override
-    public List<BusTrendDTO> getBusBalanceTrend(Integer busId) {
-        List<BusTrendDTO> result = new ArrayList<>();
-        try {
-            DateTime end = DateTime.now();
-            Calendar calendar = Calendar.getInstance();
-            calendar.add(Calendar.HOUR_OF_DAY, -24);
-            DateTime start = DateTime.of(calendar.getTime());
-
-            String startTime = DateUtil.formatDateTime(start);
-            String endTime = DateUtil.formatDateTime(end);
-            List<Integer> ids = Arrays.asList(busId);
-            List<String> data = getData(startTime, endTime, ids, BUS_HDA_LINE_HOUR);
-            Map<String,List<BusLineHourDo>> timeBus = new HashMap<>();
-            data.forEach(str -> {
-                BusLineHourDo hourDo = JsonUtils.parseObject(str, BusLineHourDo.class);
-
-                String dateTime  = DateUtil.format(hourDo.getCreateTime(), "yyyy-MM-dd HH") ;
-                List<BusLineHourDo> lineHourDos = timeBus.get(dateTime);
-                if (CollectionUtils.isEmpty(lineHourDos)) {
-                    lineHourDos = new ArrayList<>();
-                }
-                lineHourDos.add(hourDo);
-                timeBus.put(dateTime,lineHourDos);
-            });
-
-            timeBus.keySet().forEach(dateTime -> {
-                //获取每个时间段数据
-                List<BusLineHourDo> busLineHourDos = timeBus.get(dateTime);
-
-                BusTrendDTO trendDTO = new BusTrendDTO();
-                trendDTO.setDateTime(dateTime);
-                //获取相数据
-                List<Map<String,Object>> cur = new ArrayList<>();
-                List<Map<String,Object>> vol = new ArrayList<>();
-                busLineHourDos.forEach(hourDo -> {
-                    Map<String,Object> curMap = new HashMap<>();
-                    curMap.put("lineId",hourDo.getLineId());
-                    curMap.put("curValue",hourDo.getCurAvgValue());
-                    Map<String,Object> volMap = new HashMap<>();
-                    volMap.put("lineId",hourDo.getLineId());
-                    volMap.put("volValue",hourDo.getVolAvgValue());
-                    cur.add(curMap);
-                    vol.add(volMap);
-                });
-                trendDTO.setCur(cur);
-                trendDTO.setVol(vol);
-
-                result.add(trendDTO);
-            });
-            return result.stream().sorted(Comparator.comparing(BusTrendDTO::getDateTime)).collect(Collectors.toList());
-        } catch (Exception e){
-            log.error("获取数据失败",e);
-        }
-        return result;
-    }
-
 
 
     /**

@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class PduIndex {
 
-    private Long id;
+    private Integer id;
 
     private String devKey;
 

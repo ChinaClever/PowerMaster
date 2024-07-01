@@ -166,7 +166,7 @@
         <el-empty description="暂无数据" :image-size="300" />
       </template>
 
-      <el-dialog v-model="detailVis" title="温度详情"  width="70vw" height="58vh" >
+      <el-dialog v-model="detailVis" title="功率因素详情"  width="70vw" height="58vh" >
         <el-row>
           <div >
             日期:

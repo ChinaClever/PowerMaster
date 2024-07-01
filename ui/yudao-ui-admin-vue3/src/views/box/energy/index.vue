@@ -100,7 +100,7 @@
               </div>
             </div>
             <div class="room">{{item.local}}</div>
-            <button class="detail" @click.prevent="toDetail(item.roomId, item.id)" v-if="item.status != null && item.status != 5">详情</button>
+            <button class="detail" @click.prevent="toDetail(item.roomId, item.id)" >详情</button>
           </div>
         </div>
         <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" >
@@ -210,7 +210,7 @@ const handleCheck = (row) => {
 // 跳转详情
 const toDetail = (roomId, id) => {
   console.log('跳转详情', id)
-  push({path: '/cabinet/cab/energyDetail', state: { roomId, id }})
+  push({path: '/bus/boxmonitor/boxenergydetail', state: { roomId, id }})
 }
 
 onBeforeMount(() => {

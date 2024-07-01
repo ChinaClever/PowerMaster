@@ -95,7 +95,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" >
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -162,8 +162,7 @@
             <el-button
               link
               type="primary"
-              @click="toPDUDisplayScreen(scope.row)"
-              v-if="scope.row.status != null && scope.row.status != 5"
+              @click="toDeatil(scope.row)"
             >
             设备详情
             </el-button>
@@ -203,7 +202,7 @@
             <el-tag type="warning" v-if="item.color == 3">大电流不平衡</el-tag>
             <el-tag type="danger" v-if="item.color == 4">大电流不平衡</el-tag>
           </div>
-          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <button class="detail" @click="toDeatil(item)">详情</button>
         </div>
       </div>
 
@@ -229,7 +228,7 @@
             <el-tag type="info" >电压不平衡</el-tag>
 
           </div>
-          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <button class="detail" @click="toDeatil(item)" >详情</button>
         </div>
       </div>
       <Pagination
@@ -540,8 +539,10 @@ const getNavList = async() => {
 
 }
 
-const toPDUDisplayScreen = (row) =>{
-  push('/pdu/pdudisplayscreen?devKey=' + row.devKey + '&location=' + row.location + '&id=' + row.id);
+const toDeatil = (row) =>{
+  const devKey = row.devKey;
+  const boxId = row.boxId;
+  push({path: '/bus/boxmonitor/boxbalancedetail', state: { devKey, boxId }})
 }
 
 // const openNewPage = (scope) => {

@@ -56,12 +56,28 @@ export const IndexApi = {
     return await request.post({ url: `/box/index/balance`, data })
   },
 
-  getBoxTemPage: async (params: any) => {
-    return await request.get({ url: `/box/index/boxtempage`, params })
+  getBoxBalanceDetail: async (data: any) => {
+    return await request.post({ url: `/box/index/balance/detail` ,  data})
   },
 
-  getBoxPFPage: async (params: any) => {
-    return await request.get({ url: `/box/index/boxpfpage`, params })
+  getBoxBalanceTrend: async (data: any) => {
+    return await request.post({ url: `/box/index/balance/trend` ,  data})
+  },
+
+  getBoxTemPage: async (data: any) => {
+    return await request.post({ url: `/box/index/boxtempage`, data })
+  },
+
+  getBoxTemDetail: async (data: any) => {
+    return await request.post({ url: `/box/index/tem/detail`, data })
+  },
+
+  getBoxPFPage: async (data: any) => {
+    return await request.post({ url: `/box/index/boxpfpage`, data })
+  },
+
+  getBoxPFDetail: async (data: any) => {
+    return await request.post({ url: `/box/index/pf/detail`, data })
   },
 
   getBoxHarmonicPage: async (params: any) => {
@@ -74,5 +90,9 @@ export const IndexApi = {
 
   getBoxLinePage: async (data) => {
     return await request.post({ url: `/box/index/line/page`,data})
+  },
+
+  getBoxLineCurLine: async (data: any) => {
+    return await request.post({ url: `/box/index/line/cur`,data})
   },
 }
