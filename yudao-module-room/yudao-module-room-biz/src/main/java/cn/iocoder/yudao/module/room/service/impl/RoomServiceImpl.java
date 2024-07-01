@@ -124,18 +124,82 @@ public class RoomServiceImpl implements RoomService {
 
         //柜列
         if (!CollectionUtils.isEmpty(roomSaveVo.getAisleList())){
+            //删除
+            List<Integer> ids =  roomSaveVo.getAisleList().stream().map(AisleSaveVo::getId).filter(Objects::nonNull).collect(Collectors.toList());
+            if (!CollectionUtils.isEmpty(ids)){
+                aisleIndexMapper.update(new LambdaUpdateWrapper<AisleIndex>()
+                        .eq(AisleIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
+                        .eq(AisleIndex::getRoomId,roomSaveVo.getId())
+                        .notIn(AisleIndex::getId,ids)
+                        .set(AisleIndex::getIsDelete,DelEnums.DELETE.getStatus()));
+                //删除柜列下机柜
+                cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
+                        .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
+                        .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
+                        .gt(CabinetIndex::getAisleId,0)
+                        .notIn(CabinetIndex::getAisleId,ids)
+                        .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
+            }else {
+                aisleIndexMapper.update(new LambdaUpdateWrapper<AisleIndex>()
+                        .eq(AisleIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
+                        .eq(AisleIndex::getRoomId,roomSaveVo.getId())
+                        .set(AisleIndex::getIsDelete,DelEnums.DELETE.getStatus()));
+                //删除柜列下机柜
+                cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
+                        .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
+                        .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
+                        .gt(CabinetIndex::getAisleId,0)
+                        .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
+            }
+
             roomSaveVo.getAisleList().forEach(aisleSaveVo -> {
                 aisleSaveVo.setRoomId(index.getId());
                 aisleSave(aisleSaveVo);
             });
+        }else {
+            aisleIndexMapper.update(new LambdaUpdateWrapper<AisleIndex>()
+                    .eq(AisleIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
+                    .eq(AisleIndex::getRoomId,roomSaveVo.getId())
+                    .set(AisleIndex::getIsDelete,DelEnums.DELETE.getStatus()));
+            //删除柜列下机柜
+            cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
+                    .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
+                    .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
+                            .gt(CabinetIndex::getAisleId,0)
+                    .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
         }
 
         //机柜
         if (!CollectionUtils.isEmpty(roomSaveVo.getCabinetList())){
+            //删除
+            List<Integer> ids =  roomSaveVo.getCabinetList().stream().map(CabinetVo::getId).filter(id -> id >0).collect(Collectors.toList());
+            if (!CollectionUtils.isEmpty(ids)){
+                cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
+                        .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
+                        .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
+                        .eq(CabinetIndex::getAisleId,0)
+                        .notIn(CabinetIndex::getId,ids)
+                        .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
+            }else {
+                cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
+                        .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
+                        .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
+                        .eq(CabinetIndex::getAisleId,0)
+                        .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
+            }
+
+            //新增/保存
             roomSaveVo.getCabinetList().forEach(cabinetVo -> {
                 cabinetVo.setRoomId(index.getId());
                 saveCabinet(cabinetVo);
             });
+
+        }else {
+            cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
+                    .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
+                    .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
+                    .eq(CabinetIndex::getAisleId,0)
+                    .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
         }
 
         return index.getId();
@@ -178,12 +242,13 @@ public class RoomServiceImpl implements RoomService {
         RoomIndex roomIndex = roomIndexMapper.selectById(roomId);
         RoomCfg roomCfg = roomCfgMapper.selectOne(new LambdaQueryWrapper<RoomCfg>()
                 .eq(RoomCfg::getRoomId,roomId));
+        roomDetailDTO.setRoomName(roomIndex.getName());
+        roomDetailDTO.setId(roomId);
+        roomDetailDTO.setPowerCapacity(roomIndex.getPowerCapacity());
         if (Objects.nonNull(roomIndex) && Objects.nonNull(roomCfg)){
-            roomDetailDTO.setRoomName(roomIndex.getName());
-            roomDetailDTO.setId(roomId);
             roomDetailDTO.setXLength(roomCfg.getXLength());
             roomDetailDTO.setYLength(roomCfg.getYLength());
-            roomDetailDTO.setPowerCapacity(roomIndex.getPowerCapacity());
+
         }
         //获取机柜
         //无柜列机柜
@@ -280,12 +345,12 @@ public class RoomServiceImpl implements RoomService {
                     detailDTO.setXCoordinate(aisleCfg.getXCoordinate());
                     detailDTO.setYCoordinate(aisleCfg.getYCoordinate());
                 }
-
-
                 List<AisleCabinetDTO> aisleCabinetDTOList = new ArrayList<>();
-                if (!CollectionUtils.isEmpty(cabinetIndexMap.get(aisleIndex.getId()))){
 
-                    cabinetIndexMap.get(aisleIndex.getId()).forEach(cabinetIndex ->{
+               Map<Integer,AisleCabinetDTO> cabMap = new HashMap<>();
+                List<CabinetIndex> cabs = cabinetIndexMap.get(aisleIndex.getId());
+                if (!CollectionUtils.isEmpty(cabs)){
+                    cabs.forEach(cabinetIndex ->{
                         AisleCabinetDTO cabinetDTO = BeanUtils.toBean(cabinetIndex,AisleCabinetDTO.class);
                         CabinetCfg cfg = cabinetCfgMap.get(cabinetIndex.getId());
                         if (Objects.nonNull(cfg)){
@@ -295,19 +360,30 @@ public class RoomServiceImpl implements RoomService {
                             cabinetDTO.setXCoordinate(cfg.getXCoordinate());
                             cabinetDTO.setYCoordinate(cfg.getYCoordinate());
                             cabinetDTO.setType(cfg.getType());
-                            if ("x".equals(aisleCfg.getDirection())){
+                            if (Objects.nonNull(aisleCfg) && "x".equals(aisleCfg.getDirection())){
                                 //横向
                                 cabinetDTO.setIndex(cfg.getXCoordinate() - aisleCfg.getXCoordinate() + 1);
                             }
-                            if ("y".equals(aisleCfg.getDirection())){
+                            if (Objects.nonNull(aisleCfg) && "y".equals(aisleCfg.getDirection())){
                                 //纵向
                                 cabinetDTO.setIndex(cfg.getYCoordinate() - aisleCfg.getYCoordinate() + 1);
                             }
                         }
-                        aisleCabinetDTOList.add(cabinetDTO);
+                        cabMap.put(cabinetDTO.getIndex(),cabinetDTO);
 
                     });
                 }
+
+                for (int i = 0; i< aisleIndex.getLength();i ++ ){
+                    AisleCabinetDTO cabinetDTO = cabMap.get(i+1);
+                    if (Objects.isNull(cabinetDTO)){
+
+                        cabinetDTO = new AisleCabinetDTO();
+                        cabinetDTO.setIndex(i+1);
+                    }
+                    aisleCabinetDTOList.add(i,cabinetDTO);
+                }
+
                 detailDTO.setCabinetList(aisleCabinetDTOList);
                 detailDTOList.add(detailDTO);
             });
@@ -394,7 +470,7 @@ public class RoomServiceImpl implements RoomService {
                                 }
                                 if ("y".equals(aisleSaveVo.getDirection())){
                                     //纵向  计算机柜位置
-                                    y = aisleSaveVo.getYCoordinate() + indexMap.get(cabinetCfg.getId());
+                                    y = aisleSaveVo.getYCoordinate() + indexMap.get(cabinetCfg.getCabinetId());
                                     x = aisleSaveVo.getXCoordinate();
                                 }
                                 cabinetCfg.setYCoordinate(y);

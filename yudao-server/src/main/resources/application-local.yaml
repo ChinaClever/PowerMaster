@@ -301,11 +301,17 @@ max-deal-count: 2000
 #机柜刷新地址
 cabinet-refresh-url: 127.0.0.1:48082/cabinet/refresh
 #pdu采集配置刷新地址
-pdu-dc-refresh-url: 127.0.0.1:48082/pdu-dc/refresh
+pdu-dc-refresh-url: 127.0.0.1:48080/pdu-dc/refresh
 #pdu计算配置刷新地址
 pdu-cal-refresh-url: 127.0.0.1:48082/pdu-cal/refresh
 #机架计算配置刷新地址
 rack-cal-refresh-url: 127.0.0.1:48082/rack/refresh
+#母线配置刷新地址
+bus-cal-refresh-url: 127.0.0.1:48082/bus-cal/refresh
+#母线配置刷新地址
+bus-dc-refresh-url: 127.0.0.1:48080/bus-dc/refresh
+#柜列配置刷新地址
+aisle-refresh-url: 127.0.0.1:48082/aisle/refresh
 
 mybatis-plus:
   configuration:

@@ -28,6 +28,10 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.lucene.search.TotalHits;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -685,4 +689,47 @@ public class RackIndexServiceImpl implements RackIndexService {
         LocalDateTime startOfDay = localDateTime.with(LocalTime.MIN);
         return Date.from(startOfDay.atZone(ZoneId.systemDefault()).toInstant());
     }
+
+
+    public void deleteData() throws IOException {
+
+        // 构建查询请求
+        SearchRequest searchRequest = new SearchRequest("your_index_name"); // 替换为实际的索引名称
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+        sourceBuilder.query(QueryBuilders.termQuery("查询条件", "查询条件对应值"));
+        sourceBuilder.size(100); // 设置每次查询的文档数量
+        searchRequest.source(sourceBuilder);
+
+        // 执行查询请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        TotalHits totalHits = searchResponse.getHits().getTotalHits(); // 获取查询结果的总命中数
+
+        // 批量删除
+        int batchSize = 100; // 每批处理的文档数量
+        for (int i = 0; i < totalHits.value; i += batchSize) {
+            BulkRequest bulkRequest = new BulkRequest();
+            for (SearchHit hit : searchResponse.getHits().getHits()) {
+                String documentId = hit.getId();
+                DeleteRequest deleteRequest = new DeleteRequest("your_index_name", "your_index_name_type", documentId); // 替换为实际的索引名称和文档类型
+                bulkRequest.add(deleteRequest);
+            }
+
+            BulkResponse bulkResponse = client.bulk(bulkRequest, RequestOptions.DEFAULT);
+
+            // 处理删除结果
+            if (bulkResponse.hasFailures()) {
+                System.out.println("Failed to delete documents");
+            } else {
+                System.out.println("Delete documents successfully");
+            }
+
+            // 获取下一批文档
+            if (i + batchSize < totalHits.value) {
+                sourceBuilder.from(i + batchSize); // 设置下一批查询的起始位置
+                searchRequest.source(sourceBuilder);
+                searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            }
+        }
+    }
+
 }
