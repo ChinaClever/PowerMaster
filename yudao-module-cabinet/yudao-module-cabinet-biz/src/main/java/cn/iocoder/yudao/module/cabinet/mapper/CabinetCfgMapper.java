@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.framework.common.mapper;
+package cn.iocoder.yudao.module.cabinet.mapper;
 
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;

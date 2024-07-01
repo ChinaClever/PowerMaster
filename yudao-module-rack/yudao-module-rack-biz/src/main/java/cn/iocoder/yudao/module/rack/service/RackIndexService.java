@@ -74,4 +74,7 @@ public interface RackIndexService {
      */
     List<RackEqTrendDTO> eqTrend(int id, String type);
 
+
+    void deleteData(String startTime,String endTime);
+
 }

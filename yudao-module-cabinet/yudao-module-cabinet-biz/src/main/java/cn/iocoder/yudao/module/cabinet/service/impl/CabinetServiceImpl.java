@@ -6,7 +6,6 @@ import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalDay
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalMonthDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleCfg;
-import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.*;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
@@ -15,7 +14,7 @@ import cn.iocoder.yudao.framework.common.enums.DisableEnums;
 import cn.iocoder.yudao.framework.common.enums.PduBoxEnums;
 import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.framework.common.mapper.AisleCfgMapper;
-import cn.iocoder.yudao.framework.common.mapper.CabinetCfgMapper;
+import cn.iocoder.yudao.module.cabinet.mapper.CabinetCfgMapper;
 import cn.iocoder.yudao.framework.common.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
