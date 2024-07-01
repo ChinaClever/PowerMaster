@@ -62,7 +62,7 @@ public class AisleServiceImpl implements AisleService {
     @Resource
     CabinetIndexMapper cabinetIndexMapper;
     @Resource
-    CabinetCfgMapper cabinetCfgMapper;
+    CabinetCfgDoMapper cfgDoMapper;
 
     @Value("${aisle-refresh-url}")
     public String adder;
@@ -116,7 +116,7 @@ public class AisleServiceImpl implements AisleService {
 
                             if (!CollectionUtils.isEmpty(cabinetIndexList)){
                                 List<Integer> cabinetIds = cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList());
-                                List<CabinetCfg> cabinetCfgList = cabinetCfgMapper.selectList(new LambdaQueryWrapper<CabinetCfg>()
+                                List<CabinetCfg> cabinetCfgList = cfgDoMapper.selectList(new LambdaQueryWrapper<CabinetCfg>()
                                         .in(CabinetCfg::getCabinetId,cabinetIds));
                                 Map<Integer,CabinetCfg> cfgMap = cabinetCfgList.stream().collect(Collectors.toMap(CabinetCfg::getCabinetId,Function.identity()));
                                 Map<Integer,Integer>  indexMap = new HashMap<>();
@@ -151,7 +151,7 @@ public class AisleServiceImpl implements AisleService {
                                     }
                                     cabinetCfg.setYCoordinate(y);
                                     cabinetCfg.setXCoordinate(x);
-                                    cabinetCfgMapper.updateById(cabinetCfg);
+                                    cfgDoMapper.updateById(cabinetCfg);
                                 });
                             }
 
@@ -356,7 +356,7 @@ public class AisleServiceImpl implements AisleService {
         List<AisleCabinetDTO> aisleCabinetDTOList = new ArrayList<>();
        if (!CollectionUtils.isEmpty(cabinetIndexList)){
            List<Integer> cabinetIds = cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList());
-           List<CabinetCfg> cabinetCfgList = cabinetCfgMapper.selectList(new LambdaQueryWrapper<CabinetCfg>()
+           List<CabinetCfg> cabinetCfgList = cfgDoMapper.selectList(new LambdaQueryWrapper<CabinetCfg>()
                    .in(CabinetCfg::getCabinetId,cabinetIds));
            Map<Integer,CabinetCfg> cfgMap;
            if (!CollectionUtils.isEmpty(cabinetCfgList)){
