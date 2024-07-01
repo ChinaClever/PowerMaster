@@ -10,6 +10,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.enums.DisableEnums;
 import cn.iocoder.yudao.framework.common.mapper.*;
+import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleCabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleDetailDTO;
@@ -20,6 +21,7 @@ import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,6 +64,9 @@ public class AisleServiceImpl implements AisleService {
     @Resource
     CabinetCfgMapper cabinetCfgMapper;
 
+    @Value("${aisle-refresh-url}")
+    public String adder;
+
     /**
      * 柜列保存
      * @param aisleSaveVo 保存参数
@@ -70,142 +75,155 @@ public class AisleServiceImpl implements AisleService {
     @Override
     public Integer aisleSave(AisleSaveVo aisleSaveVo) {
 
-        AisleIndex index = new AisleIndex();
-        index.setName(aisleSaveVo.getAisleName());
-        index.setLength(aisleSaveVo.getLength());
-        index.setRoomId(aisleSaveVo.getRoomId());
-        index.setType(aisleSaveVo.getType());
-        index.setPduBar(aisleSaveVo.getPduBar());
+        try {
+            AisleIndex index = new AisleIndex();
+            index.setName(aisleSaveVo.getAisleName());
+            index.setLength(aisleSaveVo.getLength());
+            index.setRoomId(aisleSaveVo.getRoomId());
+            index.setType(aisleSaveVo.getType());
+            index.setPduBar(aisleSaveVo.getPduBar());
 
-        if (Objects.nonNull(aisleSaveVo.getId())){
-            //编辑
-            AisleIndex aisleIndex = aisleIndexMapper.selectOne(new LambdaQueryWrapper<AisleIndex>()
-                    .eq(AisleIndex::getId,aisleSaveVo.getId()));
-            if (Objects.nonNull(aisleIndex)){
-                index.setId(aisleSaveVo.getId());
-                aisleIndexMapper.updateById(index);
+            if (Objects.nonNull(aisleSaveVo.getId())){
+                //编辑
+                AisleIndex aisleIndex = aisleIndexMapper.selectOne(new LambdaQueryWrapper<AisleIndex>()
+                        .eq(AisleIndex::getId,aisleSaveVo.getId()));
+                if (Objects.nonNull(aisleIndex)){
+                    index.setId(aisleSaveVo.getId());
+                    aisleIndexMapper.updateById(index);
 
-                //修改配置表
-                AisleCfg aisleCfg = aisleCfgMapper.selectOne(new LambdaQueryWrapper<AisleCfg>()
-                        .eq(AisleCfg::getAisleId,aisleIndex.getId()));
+                    //修改配置表
+                    AisleCfg aisleCfg = aisleCfgMapper.selectOne(new LambdaQueryWrapper<AisleCfg>()
+                            .eq(AisleCfg::getAisleId,aisleIndex.getId()));
+                    AisleCfg cfg = new AisleCfg();
+                    cfg.setAisleId(aisleIndex.getId());
+                    cfg.setDirection(aisleSaveVo.getDirection());
+                    cfg.setXCoordinate(aisleSaveVo.getXCoordinate());
+                    cfg.setYCoordinate(aisleSaveVo.getYCoordinate());
+
+                    if (Objects.nonNull(aisleCfg)){
+                        //修改
+                        cfg.setId(aisleCfg.getId());
+                        aisleCfgMapper.updateById(cfg);
+                        //柜列位置变动修改
+                        if (aisleSaveVo.getXCoordinate() != aisleCfg.getXCoordinate()
+                                || aisleSaveVo.getYCoordinate() != aisleCfg.getYCoordinate()
+                                || !aisleSaveVo.getDirection().equals(aisleCfg.getDirection()) ){
+                            //修改柜列下机柜
+                            List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
+                                    .eq(CabinetIndex::getAisleId,aisleIndex.getId())
+                                    .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
+                                    .eq(CabinetIndex::getIsDisabled,DisableEnums.ENABLE.getStatus()));
+
+                            if (!CollectionUtils.isEmpty(cabinetIndexList)){
+                                List<Integer> cabinetIds = cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList());
+                                List<CabinetCfg> cabinetCfgList = cabinetCfgMapper.selectList(new LambdaQueryWrapper<CabinetCfg>()
+                                        .in(CabinetCfg::getCabinetId,cabinetIds));
+                                Map<Integer,CabinetCfg> cfgMap = cabinetCfgList.stream().collect(Collectors.toMap(CabinetCfg::getCabinetId,Function.identity()));
+                                Map<Integer,Integer>  indexMap = new HashMap<>();
+                                if ("x".equals(aisleCfg.getDirection())){
+                                    //横向  计算机柜位置
+                                    cabinetIds.forEach(id -> {
+                                        Integer i = cfgMap.get(id).getXCoordinate()-aisleCfg.getXCoordinate();
+                                        indexMap.put(id,i);
+                                    });
+                                }
+                                if ("y".equals(aisleCfg.getDirection())){
+                                    //纵向  计算机柜位置
+                                    cabinetIds.forEach(id -> {
+                                        Integer i = cfgMap.get(id).getYCoordinate()-aisleCfg.getYCoordinate();
+                                        indexMap.put(id,i);
+                                    });
+                                }
+
+                                //修改
+                                cabinetCfgList.forEach(cabinetCfg ->{
+                                    int x = 0;
+                                    int y = 0;
+                                    if ("x".equals(aisleSaveVo.getDirection())){
+                                        //横向  计算机柜位置
+                                        x = aisleSaveVo.getXCoordinate() + indexMap.get(cabinetCfg.getCabinetId());
+                                        y = aisleSaveVo.getYCoordinate();
+                                    }
+                                    if ("y".equals(aisleSaveVo.getDirection())){
+                                        //纵向  计算机柜位置
+                                        y = aisleSaveVo.getYCoordinate() + indexMap.get(cabinetCfg.getCabinetId());
+                                        x = aisleSaveVo.getXCoordinate();
+                                    }
+                                    cabinetCfg.setYCoordinate(y);
+                                    cabinetCfg.setXCoordinate(x);
+                                    cabinetCfgMapper.updateById(cabinetCfg);
+                                });
+                            }
+
+                        }
+
+                    }else {
+                        aisleCfgMapper.insert(cfg);
+                    }
+                }
+
+            }else {
+                //新增
+                aisleIndexMapper.insert(index);
                 AisleCfg cfg = new AisleCfg();
-                cfg.setAisleId(aisleIndex.getId());
+                cfg.setAisleId(index.getId());
                 cfg.setDirection(aisleSaveVo.getDirection());
                 cfg.setXCoordinate(aisleSaveVo.getXCoordinate());
                 cfg.setYCoordinate(aisleSaveVo.getYCoordinate());
-
-                if (Objects.nonNull(aisleCfg)){
-                    //修改
-                    cfg.setId(aisleCfg.getId());
-                    aisleCfgMapper.updateById(cfg);
-                    //柜列位置变动修改
-                    if (aisleSaveVo.getXCoordinate() != aisleCfg.getXCoordinate()
-                            || aisleSaveVo.getYCoordinate() != aisleCfg.getYCoordinate()
-                            || !aisleSaveVo.getDirection().equals(aisleCfg.getDirection()) ){
-                        //修改柜列下机柜
-                        List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
-                                .eq(CabinetIndex::getAisleId,aisleIndex.getId())
-                                .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
-                                .eq(CabinetIndex::getIsDisabled,DisableEnums.ENABLE.getStatus()));
-
-                        if (!CollectionUtils.isEmpty(cabinetIndexList)){
-                            List<Integer> cabinetIds = cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList());
-                            List<CabinetCfg> cabinetCfgList = cabinetCfgMapper.selectList(new LambdaQueryWrapper<CabinetCfg>()
-                                    .in(CabinetCfg::getCabinetId,cabinetIds));
-                            Map<Integer,CabinetCfg> cfgMap = cabinetCfgList.stream().collect(Collectors.toMap(CabinetCfg::getCabinetId,Function.identity()));
-                            Map<Integer,Integer>  indexMap = new HashMap<>();
-                            if ("x".equals(aisleCfg.getDirection())){
-                                //横向  计算机柜位置
-                                cabinetIds.forEach(id -> {
-                                    Integer i = cfgMap.get(id).getXCoordinate()-aisleCfg.getXCoordinate();
-                                    indexMap.put(id,i);
-                                });
-                            }
-                            if ("y".equals(aisleCfg.getDirection())){
-                                //纵向  计算机柜位置
-                                cabinetIds.forEach(id -> {
-                                    Integer i = cfgMap.get(id).getYCoordinate()-aisleCfg.getYCoordinate();
-                                    indexMap.put(id,i);
-                                });
-                            }
-
-                            //修改
-                            cabinetCfgList.forEach(cabinetCfg ->{
-                                int x = 0;
-                                int y = 0;
-                                if ("x".equals(aisleSaveVo.getDirection())){
-                                    //横向  计算机柜位置
-                                    x = aisleSaveVo.getXCoordinate() + indexMap.get(cabinetCfg.getCabinetId());
-                                    y = aisleSaveVo.getYCoordinate();
-                                }
-                                if ("y".equals(aisleSaveVo.getDirection())){
-                                    //纵向  计算机柜位置
-                                    y = aisleSaveVo.getYCoordinate() + indexMap.get(cabinetCfg.getId());
-                                    x = aisleSaveVo.getXCoordinate();
-                                }
-                                cabinetCfg.setYCoordinate(y);
-                                cabinetCfg.setXCoordinate(x);
-                                cabinetCfgMapper.updateById(cabinetCfg);
-                            });
-                        }
-
-                    }
-
-                }else {
-                    aisleCfgMapper.insert(cfg);
-                }
+                aisleCfgMapper.insert(cfg);
             }
-
-        }else {
-            //新增
-            aisleIndexMapper.insert(index);
-            AisleCfg cfg = new AisleCfg();
-            cfg.setAisleId(index.getId());
-            cfg.setDirection(aisleSaveVo.getDirection());
-            cfg.setXCoordinate(aisleSaveVo.getXCoordinate());
-            cfg.setYCoordinate(aisleSaveVo.getYCoordinate());
-            aisleCfgMapper.insert(cfg);
+            return index.getId();
+        }finally {
+            //刷新柜列计算服务缓存
+            log.info("刷新计算服务缓存 --- " + adder);
+            HttpUtil.get(adder);
         }
-        return index.getId();
+
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void aisleBusSave(AisleBusSaveVo busSaveVo) {
 
-        Integer aisleId = busSaveVo.getAisleId();
+        try {
+            Integer aisleId = busSaveVo.getAisleId();
 
-        if (!CollectionUtils.isEmpty(busSaveVo.getBarVos())){
-            //绑定始端箱
-            List<AisleBarDTO> barVos = busSaveVo.getBarVos();
-            barVos.forEach(barVo -> {
-                AisleBar  bar = BeanUtils.toBean(barVo,AisleBar.class);
-                bar.setAisleId(aisleId);
-                bar.setBarKey(barVo.getDevIp() + SPLIT_KEY_BUS + barVo.getBusName());
-                if (bar.getId()>0){
-                    aisleBarMapper.updateById(bar);
-                }else {
-                    aisleBarMapper.insert(bar);
-                }
+            if (!CollectionUtils.isEmpty(busSaveVo.getBarVos())){
+                //绑定始端箱
+                List<AisleBarDTO> barVos = busSaveVo.getBarVos();
+                barVos.forEach(barVo -> {
+                    AisleBar  bar = BeanUtils.toBean(barVo,AisleBar.class);
+                    bar.setAisleId(aisleId);
+                    bar.setBarKey(barVo.getDevIp() + SPLIT_KEY_BUS + barVo.getBusName());
+                    if (bar.getId()>0){
+                        aisleBarMapper.updateById(bar);
+                    }else {
+                        aisleBarMapper.insert(bar);
+                    }
 
-                List<AisleBox> boxList = barVo.getBoxList();
-                if (!CollectionUtils.isEmpty(boxList)){
-                    boxList.forEach(box ->{
-                        box.setAisleId(aisleId);
-                        box.setAisleBarId(bar.getId());
-                        box.setBarKey(bar.getBarKey() + SPLIT_KEY_BUS + box.getBoxName());
+                    List<AisleBox> boxList = barVo.getBoxList();
+                    if (!CollectionUtils.isEmpty(boxList)){
+                        boxList.forEach(box ->{
+                            box.setAisleId(aisleId);
+                            box.setAisleBarId(bar.getId());
+                            box.setBarKey(bar.getBarKey() + SPLIT_KEY_BUS + box.getBoxName());
 
-                        if (box.getId()>0){
-                            aisleBoxMapper.updateById(box);
+                            if (box.getId()>0){
+                                aisleBoxMapper.updateById(box);
 
-                        }else {
-                            aisleBoxMapper.insert(box);
-                        }
-                    });
-                }
+                            }else {
+                                aisleBoxMapper.insert(box);
+                            }
+                        });
+                    }
 
-            });
+                });
 
+            }
+        }finally {
+            //刷新柜列计算服务缓存
+            log.info("刷新计算服务缓存 --- " + adder);
+            HttpUtil.get(adder);
         }
 
     }
@@ -213,56 +231,74 @@ public class AisleServiceImpl implements AisleService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void batchDeleteBox(List<Integer> boxIds) {
-        if (!CollectionUtils.isEmpty(boxIds)){
-            aisleBoxMapper.deleteBatchIds(boxIds);
+        try {
+            if (!CollectionUtils.isEmpty(boxIds)){
+                aisleBoxMapper.deleteBatchIds(boxIds);
+            }
+        }finally {
+            log.info("刷新计算服务缓存 --- " + adder);
+            HttpUtil.get(adder);
         }
+
 
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void deleteBus(Integer barId) {
-        //删除母线需要先删除插接箱
-        List<AisleBox>  boxList = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
-                .eq(AisleBox::getAisleBarId,barId));
-        if (!CollectionUtils.isEmpty(boxList)){
-            aisleBoxMapper.delete(new LambdaQueryWrapper<AisleBox>()
+        try {
+            //删除母线需要先删除插接箱
+            List<AisleBox>  boxList = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
                     .eq(AisleBox::getAisleBarId,barId));
+            if (!CollectionUtils.isEmpty(boxList)){
+                aisleBoxMapper.delete(new LambdaQueryWrapper<AisleBox>()
+                        .eq(AisleBox::getAisleBarId,barId));
+            }
+            aisleBarMapper.deleteById(barId);
+        }finally {
+            log.info("刷新计算服务缓存 --- " + adder);
+            HttpUtil.get(adder);
         }
-        aisleBarMapper.deleteById(barId);
+
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void deleteAisle(Integer aisleId) {
-        //删除柜列
-        AisleIndex aisleIndex = aisleIndexMapper.selectById(aisleId);
-        if (Objects.nonNull(aisleIndex)){
-            //逻辑删除
-            if (aisleIndex.getIsDelete().equals(DelEnums.NO_DEL.getStatus())){
-                aisleIndexMapper.update(new LambdaUpdateWrapper<AisleIndex>()
-                        .eq(AisleIndex::getId, aisleId)
-                        .set(AisleIndex::getIsDelete, DelEnums.DELETE.getStatus()));
+        try {
+            //删除柜列
+            AisleIndex aisleIndex = aisleIndexMapper.selectById(aisleId);
+            if (Objects.nonNull(aisleIndex)){
+                //逻辑删除
+                if (aisleIndex.getIsDelete().equals(DelEnums.NO_DEL.getStatus())){
+                    aisleIndexMapper.update(new LambdaUpdateWrapper<AisleIndex>()
+                            .eq(AisleIndex::getId, aisleId)
+                            .set(AisleIndex::getIsDelete, DelEnums.DELETE.getStatus()));
 
-            }else {
-                //物理删除
-                //1.删除绑定关系
-                aisleBoxMapper.delete(new LambdaQueryWrapper<AisleBox>()
-                        .eq(AisleBox::getAisleId,aisleId));
-                aisleBarMapper.delete(new LambdaQueryWrapper<AisleBar>()
-                        .eq(AisleBar::getAisleId,aisleId));
-                //2.删除配置
-                aisleCfgMapper.delete(new LambdaQueryWrapper<AisleCfg>()
-                        .eq(AisleCfg::getAisleId,aisleId));
-                //3.删除柜列
-                aisleIndexMapper.deleteById(aisleId);
+                }else {
+                    //物理删除
+                    //1.删除绑定关系
+                    aisleBoxMapper.delete(new LambdaQueryWrapper<AisleBox>()
+                            .eq(AisleBox::getAisleId,aisleId));
+                    aisleBarMapper.delete(new LambdaQueryWrapper<AisleBar>()
+                            .eq(AisleBar::getAisleId,aisleId));
+                    //2.删除配置
+                    aisleCfgMapper.delete(new LambdaQueryWrapper<AisleCfg>()
+                            .eq(AisleCfg::getAisleId,aisleId));
+                    //3.删除柜列
+                    aisleIndexMapper.deleteById(aisleId);
+                }
             }
-        }
-       //删除key
-        String key = REDIS_KEY_AISLE + aisleId;
+            //删除key
+            String key = REDIS_KEY_AISLE + aisleId;
 
-        boolean flag = redisTemplate.delete(key);
-        log.info("key: " + key + " flag : " + flag);
+            boolean flag = redisTemplate.delete(key);
+            log.info("key: " + key + " flag : " + flag);
+        }finally {
+            log.info("刷新计算服务缓存 --- " + adder);
+            HttpUtil.get(adder);
+        }
+
     }
 
     @Override

@@ -191,7 +191,7 @@ import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { HistoryDataApi } from '@/api/bus/historydata'
 import { formatDate} from '@/utils/formatTime'
-import { CabinetApi } from '@/api/cabinet/info'
+import { IndexApi } from '@/api/bus/busindex'
 import { ElMessage } from 'element-plus'
 
 defineOptions({ name: 'PDUHistoryLine' })
@@ -214,7 +214,8 @@ const queryParams = reactive({
   type: 'total',
   granularity: 'realtime',
   // 进入页面原始数据默认显示最近一小时
-  timeRange: defaultHourTimeRange(36)
+  timeRange: defaultHourTimeRange(1),
+  devkey: undefined as string | undefined,
 })
 
 // 时间段快捷选项
@@ -1278,8 +1279,9 @@ const disabledDate = (date) => {
 
 // 导航栏选择后触发
 const handleClick = async (row) => {
-   if(row.type != null  && row.type == 4){
+   if(row.type != null  && row.type == 6){
     queryParams.busId = undefined
+    queryParams.devkey = row.unique
     findFullName(navList.value, row.unique, fullName => {
       nowAddressTemp.value = fullName
       nowLocationTemp.value = row.unique
@@ -1303,13 +1305,8 @@ function findFullName(data, targetUnique, callback, fullName = '') {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
-  let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
-  arr = arr.concat(temp);
-  }
-  navList.value = arr
+  const res = await IndexApi.getBusMenu()
+  navList.value = res
 }
 
 /** 搜索按钮操作 */

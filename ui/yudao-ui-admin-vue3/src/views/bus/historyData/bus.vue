@@ -156,7 +156,7 @@ const queryParams = reactive({
   type: 'total', 
   granularity: 'realtime',
   timeRange: undefined,
-  busIds: [],
+  devkeys: [],
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref() // 搜索的表单
@@ -613,19 +613,19 @@ const disabledDate = (date) => {
 
 // 导航栏选择后触发
 const handleCheck = async (node) => {
-    let arr = [] as any
-    node.forEach(item => { 
-      if(item.type == 6){
-        arr.push(item.id);
-      }
-    });
-    queryParams.busIds = arr
-    handleQuery()
+  let arr = [] as any
+  node.forEach(item => { 
+    if(item.type == 6){
+      arr.push(item.unique);
+    }
+  });
+  queryParams.devkeys = arr
+  handleQuery()
 }
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await IndexApi.getBoxMenu()
+  const res = await IndexApi.getBusMenu()
   navList.value = res
 }
 

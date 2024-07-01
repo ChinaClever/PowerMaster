@@ -98,7 +98,7 @@ import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption'
 import { formatDate, endOfDay, convertDate, addTime} from '@/utils/formatTime'
-import { CabinetApi } from '@/api/cabinet/info'
+import { IndexApi } from '@/api/bus/busindex'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 defineOptions({ name: 'BillStatistics' })
 
@@ -117,7 +117,7 @@ const queryParams = reactive({
   pageSize: 15,
   granularity: 'day',
   timeRange: undefined as string[] | undefined,
-  boxIds:[]
+  devkeys: [],
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
@@ -288,18 +288,18 @@ const handleExport = async () => {
 // 导航栏选择后触发
 const handleCheck = async (node) => {
   let arr = [] as any
-  node.forEach(item => { 
-    if(item.type == 3){
-      arr.push(item.id);
-    }
-  });
-  queryParams.boxIds = arr
-  handleQuery()
+    node.forEach(item => { 
+      if(item.type == 7){
+        arr.push(item.unique);
+      }
+    });
+    queryParams.devkeys = arr
+    handleQuery()
 }
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
+  const res = await IndexApi.getBoxMenu()
   navList.value = res
 }
 

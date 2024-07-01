@@ -84,7 +84,7 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption'
-import { CabinetApi } from '@/api/cabinet/info'
+import { IndexApi } from '@/api/bus/busindex'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 defineOptions({ name: 'PowerRecords' })
 
@@ -99,7 +99,7 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
   timeRange: undefined as string[] | undefined,
-  插接箱Ids: [],
+  devkeys: [],
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
@@ -211,11 +211,11 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
 const handleCheck = async (node) => {
   let arr = [] as any
   node.forEach(item => { 
-    if(item.type == 3){
-      arr.push(item.id);
+    if(item.type == 7){
+      arr.push(item.unique);
     }
   });
-  queryParams.插接箱Ids = arr
+  queryParams.devkeys = arr
   handleQuery()
 }
 
@@ -232,7 +232,7 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnergyConsumptionApi.exportBoxRealtimeEQPageData(queryParams, axiosConfig)
-    await download.excel(data, 'PDU电能记录.xlsx')
+    await download.excel(data, '母线插接箱电能记录.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -243,7 +243,7 @@ const handleExport = async () => {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
+  const res = await IndexApi.getBoxMenu()
   navList.value = res
 }
 

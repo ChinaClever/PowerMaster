@@ -160,7 +160,7 @@ const queryParams = reactive({
   type: 'total', 
   granularity: 'realtime',
   timeRange: undefined,
-  boxIds: [],
+  devkeys: [],
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref() // 搜索的表单
@@ -807,14 +807,14 @@ const disabledDate = (date) => {
 
 // 导航栏选择后触发
 const handleCheck = async (node) => {
-    let arr = [] as any
-    node.forEach(item => { 
-      if(item.type == 7){
-        arr.push(item.id);
-      }
-    });
-    queryParams.boxIds = arr
-    handleQuery()
+  let arr = [] as any
+  node.forEach(item => { 
+    if(item.type == 7){
+      arr.push(item.unique);
+    }
+  });
+  queryParams.devkeys = arr
+  handleQuery()
 }
 
 // 接口获取机房导航列表
@@ -871,7 +871,7 @@ const getBoxNavNewData = async() => {
 
 // 参数类型选择框初始化，相固定3相
 const getTypeMaxValue = async () => {
-    const data = await HistoryDataApi.getTypeMaxValue(queryParams.boxIds)
+    const data = await HistoryDataApi.getTypeMaxValue(queryParams.devkeys)
     const lineIdMaxValue = data.line_id_max_value;
     const loopIdMaxValue = data.loop_id_max_value;
     const outletIdMaxValue = data.outlet_id_max_value;
