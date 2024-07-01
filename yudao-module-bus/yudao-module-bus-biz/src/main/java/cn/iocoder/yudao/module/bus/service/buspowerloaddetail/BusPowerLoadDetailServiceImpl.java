@@ -23,6 +23,8 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -40,11 +42,11 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
         if (jsonObject == null) {
             return null;
         }
-        Double runLoad = jsonObject.getJSONObject("bus_total_data").getDouble("pow_apparent");
-        Double ratedCapacity = jsonObject.getJSONObject("bus_cfg").getDouble("cur_specs") * 220 * 3;
+        Double runLoad = jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getDouble("pow_apparent");
+        Double ratedCapacity = jsonObject.getJSONObject("bus_data").getJSONObject("bus_cfg").getDouble("cur_specs") * 220 * 3;
         Double reserveMargin = ratedCapacity - runLoad;
-        Double powActive = jsonObject.getJSONObject("bus_total_data").getDouble("pow_value");
-        Double powReactive = jsonObject.getJSONObject("bus_total_data").getDouble("pow_reactive");
+        Double powActive = jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getDouble("pow_value");
+        Double powReactive = jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getDouble("pow_reactive");
 
         // 异步执行 Elasticsearch 查询bus_hda_total_hour近24小时有功功率最大值
         CompletableFuture<Double> peakDemandFuture = CompletableFuture.supplyAsync(() -> {
@@ -90,6 +92,11 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
     @Override
     public Map<String, Object> getLineChartDetailData(BusPowerLoadDetailReqVO reqVO) throws IOException {
         Long busId = reqVO.getId();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime oneHourAgo =LocalDateTime.now().minusHours(1);
+        LocalDateTime oneDayAgo =LocalDateTime.now().minusDays(1);
+        LocalDateTime oneMonthAgo =LocalDateTime.now().minusMonths(1);
         if (busId == null){
             return null;
         }
@@ -101,27 +108,35 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
         searchSourceBuilder.query(QueryBuilders.termQuery("bus_id", busId));
-        System.out.println(reqVO);
         if (Objects.equals(reqVO.getGranularity(), "realtime")){
             searchRequest.indices("bus_hda_line_realtime");
+            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id", "pow_active", "vol_value",  "cur_value", "create_time"}, null);
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from("now-1h")
-                    .to("now"));
+                    .from(oneHourAgo.format(formatter))
+                    .to(now.format(formatter)));
         } else if (Objects.equals(reqVO.getGranularity(), "hour")) {
             searchRequest.indices("bus_hda_line_hour");
+            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id", "pow_active_avg_value", "vol_avg_value",  "cur_avg_value", "create_time"}, null);
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from("now-24h")
-                    .to("now"));
+                    .from(oneDayAgo.format(formatter))
+                    .to(now.format(formatter)));
         }else{
             searchRequest.indices("bus_hda_line_day");
+            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id", "pow_active_avg_value", "vol_avg_value",  "cur_avg_value", "create_time"}, null);
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from("now-1M")
-                    .to("now"));
+                    .from(oneMonthAgo.format(formatter))
+                    .to(now.format(formatter)));
         }
         searchRequest.source(searchSourceBuilder);
         // 执行搜索,向ES发起http请求
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        // 搜索结果
         SearchHits hits = searchResponse.getHits();
+        // 匹配到的总记录数
+        Long totalHits = hits.getTotalHits().value;
+        if (totalHits == 0){
+            return null;
+        }
         Map<String, Object> resultMap = new HashMap<>();
         List<Object> resultLine1 = new ArrayList<>();
         List<Object> resultLine2 = new ArrayList<>();
@@ -130,15 +145,15 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
             // 获取文档内容，假设它以 Map 的形式存储
             Map<String, Object> sourceAsMap = searchHit.getSourceAsMap();
             // 从文档内容中获取 line_id
-            String lineId = (String) sourceAsMap.get("line_id");
+            Integer lineId = (Integer) sourceAsMap.get("line_id");
             switch (lineId) {
-                case "1":
+                case 1:
                     resultLine1.add(sourceAsMap);
                     break;
-                case "2":
+                case 2:
                     resultLine2.add(sourceAsMap);
                     break;
-                case "3":
+                case 3:
                     resultLine3.add(sourceAsMap);
                     break;
                 default:

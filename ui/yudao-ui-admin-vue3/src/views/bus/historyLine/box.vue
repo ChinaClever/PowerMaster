@@ -180,7 +180,7 @@ import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { HistoryDataApi } from '@/api/bus/historydata'
 import { formatDate} from '@/utils/formatTime'
-import { CabinetApi } from '@/api/cabinet/info'
+import { IndexApi } from '@/api/bus/busindex'
 import { ElMessage } from 'element-plus'
 
 defineOptions({ name: 'PDUHistoryLine' })
@@ -198,15 +198,15 @@ const headerData = ref<any[]>([]);
 const needFlush = ref(0) // 是否需要刷新图表
 const loading = ref(false) // 加载中
 const queryParams = reactive({
-  boxId: 5 as number | undefined,
+  boxId: undefined as number | undefined,
   lineId: undefined,
   loopId: undefined,
   outletId: undefined,
   type: 'total',
   granularity: 'realtime',
   // 进入页面原始数据默认显示最近一小时
-  timeRange: defaultHourTimeRange(50),
-  boxIds: [],
+  timeRange: defaultHourTimeRange(1),
+  devkey: undefined as string | undefined,
 })
 
 // 时间段快捷选项
@@ -1492,8 +1492,9 @@ const disabledDate = (date) => {
 
 // 导航栏选择后触发
 const handleClick = async (row) => {
-   if(row.type != null  && row.type == 4){
+   if(row.type != null  && row.type == 7){
     queryParams.boxId = undefined
+    queryParams.devkey = row.unique
     findFullName(navList.value, row.unique, fullName => {
       nowAddressTemp.value = fullName
       nowLocationTemp.value = row.unique
@@ -1517,13 +1518,8 @@ function findFullName(data, targetUnique, callback, fullName = '') {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
-  let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
-  arr = arr.concat(temp);
-  }
-  navList.value = arr
+  const res = await IndexApi.getBoxMenu()
+  navList.value = res
 }
 
 /** 搜索按钮操作 */
@@ -1533,10 +1529,7 @@ const handleQuery = () => {
 
 // 参数类型选择框初始化
 const getTypeMaxValue = async () => {
-    let arr = [] as any
-    arr.push(queryParams.boxId)
-    queryParams.boxIds = arr
-    const data = await HistoryDataApi.getTypeMaxValue(queryParams.boxIds)
+    const data = await HistoryDataApi.getTypeMaxValue(queryParams.boxId)
     const lineIdMaxValue = data.line_id_max_value;
     const loopIdMaxValue = data.loop_id_max_value;
     const outletIdMaxValue = data.outlet_id_max_value;

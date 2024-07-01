@@ -115,7 +115,7 @@
 import { ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
-import { CabinetApi } from '@/api/cabinet/info'
+import { IndexApi } from '@/api/bus/busindex'
 import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
 import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption'
 import PDUImage from '@/assets/imgs/PDU.jpg';
@@ -136,6 +136,7 @@ const queryParams = reactive({
   granularity: 'day',
   // 进入页面原始数据默认显示最近2周
   timeRange: ['', ''],
+  devkey: undefined as string | undefined,
 })
 const carouselItems = ref([
       { imgUrl: PDUImage},
@@ -405,8 +406,9 @@ window.addEventListener('resize', function() {
 
 // 导航栏选择后触发
 const handleClick = async (row) => {
-   if(row.type != null  && row.type == 3){
-    queryParams.cabinetId = row.id
+  if(row.type != null  && row.type == 7){
+    queryParams.boxId = undefined
+    queryParams.devkey = row.unique
     findFullName(navList.value, row.unique, fullName => {
       nowAddressTemp.value = fullName
     });
@@ -429,7 +431,7 @@ function findFullName(data, targetUnique, callback, fullName = '') {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
+  const res = await IndexApi.getBoxMenu()
   navList.value = res
 }
 

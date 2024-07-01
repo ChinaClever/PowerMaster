@@ -38,7 +38,7 @@
              <span style="padding-left: 3vw;color: white; font-size: 14px;" >负荷余量</span>
           </el-card>
         </el-col>
-        <div ref="chartContainer" id="chartContainer" style="width: 75vw; height: 20vh;"></div>
+        <div ref="chartContainer" id="chartContainer" style="width: 75vw; height: 20vh;margin-top: 20px; "></div>
       </el-row>
 
     </el-col>
@@ -70,7 +70,7 @@
           </el-row>
         </el-col>
         <el-col :span="13">
-          <div ref="chartContainer1" id="chartContainer1" style="width: 350px; height: 350px; margin-top: -80px;"></div>
+          <div ref="chartContainer1" id="chartContainer1" style="width: 420px; height: 350px; margin-top: -80px;"></div>
         </el-col>
       </el-row>
     </el-col>
@@ -81,7 +81,7 @@
     <el-radio-group v-model="typeRadio">
       <el-radio-button label="电流" value="电流" />
       <el-radio-button label="电压" value="电压" />
-      <el-radio-button label="有效电能" value="有效电能" />
+      <el-radio-button label="有效电能" value="有效电能" :disabled="isPowActiveDisabled"/>
     </el-radio-group>
   </el-col>
   <el-col :span="4">
@@ -100,20 +100,23 @@
 import { ref } from 'vue'
 import * as echarts from 'echarts';
 import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
+import { ElMessage } from 'element-plus';
+import { formatDate} from '@/utils/formatTime'
 const input = ref('')
 // const value1 = ref('')
 const instance = getCurrentInstance();
 const typeRadio = ref('电流')
 const timeRadio = ref('近一小时')
 const isHourDisabled = ref(false)
+const isPowActiveDisabled = ref(true)
  let intervalId: number | null = null; // 定时器
 const queryParams = reactive({
-  id: undefined as number | undefined,
-  devKey : undefined as string | undefined,
+  id: 4 as number | undefined,
+  devKey : "192.168.1.163_Busbar-1" as string | undefined,
 })
 const lineChartQueryParams = reactive({
   id: 4 as number | undefined,
-  granularity: 'day',
+  granularity: 'realtime',
 })
 const runLoad = ref();
 const ratedCapacity = ref();
@@ -121,94 +124,108 @@ const reserveMargin = ref();
 const powActive = ref();
 const powReactive = ref();
 const peakDemand = ref();
-
 const powActivepPercentage = ref();
 const powReactivepPercentage = ref();
-// interface AxisData {
-//   value: string;
-//   symbol: 'normal' | 'economy' | 'high-loss';
-//   color: string;
-// }
-// const xAxisData: AxisData[] = [
-//   { value: '0%', symbol: 'normal', color: 'yellow' },
-//   { value: '10%', symbol: 'normal', color: 'yellow' },
-//   { value: '20%', symbol: 'normal', color: 'yellow' },
-//   { value: '30%', symbol: 'normal', color: 'yellow' },
-//   { value: '40%', symbol: 'normal', color: 'yellow' },
-//   { value: '50%', symbol: 'economy', color: 'green' },
-//   { value: '60%', symbol: 'economy', color: 'green' },
-//   { value: '70%', symbol: 'economy', color: 'green' },
-//   { value: '80%', symbol: 'economy', color: 'green' },
-//   { value: '90%', symbol: 'economy', color: 'green' },
-//   { value: '100%', symbol: 'high-loss', color: 'yellow' },
-//   { value: '', symbol: 'high-loss', color: 'red' }
-// ];
-
+const loadPercentage = ref();
+const xAxisLabel = ref('');
 const chartContainer = ref<HTMLElement | null>(null);
 let myChart = null as echarts.ECharts | null; 
 const initChart = () => {
   if (chartContainer.value && instance) {
     myChart = echarts.init(chartContainer.value);
     myChart.setOption(
-      {
+      {        
         legend: {
-        orient: 'horizontal',
-        left: 'center'
-    },
-    tooltip: {
-      show: false  // 是否显示 tooltip
-    },
-    xAxis: {
-        type: 'category',
-        data: ['10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', '100%'],
-        axisTick: { alignWithLabel: true },
-        axisLabel: {
-            interval: 0,
-            rotate: 0,
-            formatter: function(value: string, _index: number) {
-                return value;
+            orient: 'horizontal',
+            left: 80,
+            top: 5,
+            data: ['正常运行', '经济运行', '高损耗运行'],
+            icon: 'rect',
+            selected: {
+              正常运行: true,
+              经济运行: true,
+              高损耗运行: true
+            },
+        },
+
+        tooltip: {
+          show: false  // 是否显示 tooltip
+        },
+        xAxis: {
+            min: 0,
+            max: 100,
+            type: 'value',
+            data: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100], 
+            axisTick: { alignWithLabel: true, show: false },
+            axisLabel: {
+              interval: 0,
+              rotate: 0,
+              formatter: function(value, _index) {
+                if (value == 0) {
+                    return value;
+                }
+                return value + '%'; // 去掉前导零并在数值后加上百分号
+              }
+            },
+            axisLine: {
+                lineStyle: {
+                    color: 'blue'
+                }
             }
         },
-        axisLine: {
-            lineStyle: {
-                color: 'blue' // 设置x轴线颜色为蓝色
-            }
-        }
+        yAxis: {
+          show: false // 不显示y轴
         },
-    yAxis: {
-        show: false // 不显示y轴
-    },
-    series: [
-    {
-        name: '',
-        type: 'line',
-        data: [[ '20%' , 50]],
-        markLine: {
-          // symbol: ['none', 'arrow'], 
-          // data: [{
-          //     lineStyle: {
-          //     type: 'solid',  // 线的类型，可以是 'solid', 'dashed', 'dotted'
-          //     color: 'blue',  // 线的颜色
-          //     width: 2  // 线的宽度
-          //   },
-          //   tooltip: {
-          //       show: false  // 是否显示 tooltip
-          //   },
-          //   label: {
-          //       show: true,
-          //       position: 'end',  // 标签的位置在终点
-          //       formatter: '箭头'  // 标签内容，这里可以根据需要自定义
-          //   },
-          //   data: [ 
-          //     ['20%' , 0]
-          //         ]  // 终点在 x 轴上，x 坐标保持和数据点一致，y 坐标为 0
-          // }]
-        }
-      },
-    ],
-  }
-);
-  instance.appContext.config.globalProperties.myChart = myChart;
+        series: [
+          {
+              name: '正常运行',
+              type: 'line',
+              data: [],
+              show: false  // 设置为 false 隐藏该系列数据
+          },
+          {
+              name: '经济运行',
+              type: 'line',
+              data: [],
+              show: false  // 设置为 false 隐藏该系列数据
+          },
+          {
+              name: '高损耗运行',
+              type: 'line',
+              data: [],
+              show: false  // 设置为 false 隐藏该系列数据
+          },
+          {
+            name: '',
+            type: 'line',
+            data: [[ loadPercentage.value , 50]],
+            markLine: {
+              data: [
+                [
+                  { xAxis: loadPercentage.value, yAxis: 50, symbol: 'none',  label: {
+                            show: true,
+                            position: 'start',
+                            formatter: loadPercentage.value + ' %'+ xAxisLabel.value,
+                            textStyle: {
+                              fontSize: 16,
+                              fontWeight: 'bold',
+                            }
+                        }},
+                  { xAxis: loadPercentage.value, yAxis: 0, symbol: 'arrow' },
+                ]
+              ],
+              lineStyle: {
+                normal: {
+                    type: 'solid',
+                    color: 'green',
+                  },
+              },
+            }
+          },
+        ],
+      }
+    )
+    instance.appContext.config.globalProperties.myChart = myChart;
 
   } 
 };
@@ -226,20 +243,24 @@ const initChart1 = () => {
           left: 'center'
         },
         tooltip: {
-          trigger: 'item'
+          trigger: 'item',
+          formatter: '{a} <br/>{b} : {c}%'
         },
         legend: {
           orient: 'horizontal',
-          bottom: '25'
+          bottom: '25',
         },
         series: [
           {
-            name: 'Access From',
+            name: '',
             type: 'pie',
             radius: '50%',
+            label: {
+              formatter: '{b}: {d}%',
+            },
             data: [
-              { value: powActivepPercentage, name: '有功功率' },
-              { value: powReactivepPercentage, name: '无功功率' },
+              { value: powReactivepPercentage.value, name: '无功功率', },
+              { value: powActivepPercentage.value, name: '有功功率' },
             ],
             emphasis: {
               itemStyle: {
@@ -257,6 +278,13 @@ const initChart1 = () => {
   }
 }
 
+// 处理折线图数据
+const createTimeData = ref<string[]>([]);
+const allLineData = ref<string[]>([]);
+const L1Data = ref<number[]>([]);
+const L2Data = ref<number[]>([]);
+const L3Data = ref<number[]>([]);
+
 const chartContainer2 = ref<HTMLElement | null>(null);
 let myChart2 = null as echarts.ECharts | null; 
 const initChart2 = () => {
@@ -264,57 +292,17 @@ const initChart2 = () => {
     myChart2 = echarts.init(chartContainer2.value);
     myChart2.setOption(
       {
-        title: {
-          text: ''
-        },
-        tooltip: {
-          trigger: 'axis'
-        },
-        legend: {
-          orient: 'horizontal',
-          right: '25'
-        },
-        xAxis: {
-          type: 'category',
-          boundaryGap: false,
-          data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-        },
-        yAxis: {
-          type: 'value',
-          axisLabel: {
-            formatter: '{value} °C'
-          }
-        },
+        title: { text: ''},
+        tooltip: { trigger: 'axis'},
+        legend: { orient: 'horizontal', right: '25'},
+        dataZoom:[{type: "inside"}],
+        xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
+        yAxis: { type: 'value'},
         series: [
-          {
-            name: 'Highest',
-            type: 'line',
-            data: [10, 11, 13, 11, 12, 12, 9],
-            markPoint: {
-              data: [
-                { type: 'max', name: 'Max' },
-                { type: 'min', name: 'Min' }
-              ]
-            },
-            markLine: {
-              data: [{ type: 'average', name: 'Avg' }]
-            }
-          },
-          {
-            name: 'Lowest',
-            type: 'line',
-            data: [1, -2, 2, 5, 3, 2, 0],
-            markPoint: {
-              data: [
-                { type: 'max', name: 'Max' },
-                { type: 'min', name: 'Min' }
-              ]
-            },
-            markLine: {
-              data: [{ type: 'average', name: 'Avg' }]
-            }
-          }
-        ]
+          {name: 'L1', type: 'line', symbol: 'none', data: L1Data.value},
+          {name: 'L2', type: 'line', symbol: 'none', data: L2Data.value},
+          {name: 'L3', type: 'line', symbol: 'none', data: L3Data.value},
+        ],
       }
     );
     instance.appContext.config.globalProperties.myChart2 = myChart2;
@@ -325,16 +313,25 @@ const initChart2 = () => {
 const getDetailData =async () => {
  try {
     const data = await BusPowerLoadDetailApi.getDetailData(queryParams);
-    console.log(data)
     if (data != null){
-      runLoad.value = formatNumber(data.data.runLoad, 2);
-      ratedCapacity.value = formatNumber(data.data.ratedCapacity, 1);
-      reserveMargin.value = formatNumber(data.data.reserveMargin, 2);
-      powActive.value = formatNumber(data.data.powActive, 2);
-      powReactive.value = formatNumber(data.data.powReactive, 2);
-      peakDemand.value = formatNumber(data.data.peakDemand, 1);
-      powActivepPercentage.value = ((powActive.value / peakDemand.value) * 100 ).toFixed(2)
-      powReactivepPercentage.value = ((powReactive.value / peakDemand.value) * 100 ).toFixed(2)
+      runLoad.value = formatNumber(data.runLoad, 2);
+      ratedCapacity.value = formatNumber(data.ratedCapacity, 1);
+      reserveMargin.value = formatNumber(data.reserveMargin, 2);
+      powActive.value = formatNumber(data.powActive, 2);
+      powReactive.value = formatNumber(data.powReactive, 2);
+      peakDemand.value = formatNumber(data.peakDemand, 1);
+      powActivepPercentage.value = peakDemand.value == 0 ? 0 :  ((powActive.value / peakDemand.value) * 100).toFixed(2);
+      powReactivepPercentage.value = peakDemand.value == 0 ? 0 : ((powReactive.value / peakDemand.value) * 100 ).toFixed(2)
+      loadPercentage.value = ratedCapacity.value == 0 ? 0 :  ((runLoad.value / ratedCapacity.value) * 100).toFixed(2);
+      if (loadPercentage.value < 40){
+        xAxisLabel.value = '正常运行'
+      }else if (loadPercentage.value < 80){
+        xAxisLabel.value = '经济运行'
+      }else if (loadPercentage.value < 100){
+        xAxisLabel.value = '正常运行'
+      }else{
+        xAxisLabel.value = '高损耗运行'
+      }
     }else{
       ElMessage({
         message: '暂无数据',
@@ -347,53 +344,142 @@ const getDetailData =async () => {
 
 // 监听切换类型
 watch( ()=>typeRadio.value, async(value)=>{
-  if ( value == '电流'){
-    isHourDisabled.value = false
-
-  }else if (value == '电压'){
-    isHourDisabled.value = false
-
+  await initData();
+  if ( value == '有效电能'){
+     // 选有效电能不能选近一小时
+     isHourDisabled.value = true
   }else{
-    // 有效电能的情况把时间颗粒度的近一小时变成禁选 如果已经选了近一小时 默认自动变成选近一天
-    if (timeRadio.value == '近一小时'){
-      timeRadio.value = '近一天'
-    }
-    isHourDisabled.value = true
+    isHourDisabled.value = false
   }
+  // 更新数据后重新渲染图表
+  myChart2?.setOption({
+      series: [
+        {name: 'L1', type: 'line', symbol: 'none', data: L1Data.value},
+        {name: 'L2', type: 'line', symbol: 'none', data: L2Data.value},
+        {name: 'L3', type: 'line', symbol: 'none', data: L3Data.value},
+      ],
+    });
 });
 
 // 监听切换时间颗粒度
 watch( ()=>timeRadio.value, async(value)=>{
   if ( value == '近一小时'){
+    // 选近一小时不能选有效电能
+    isPowActiveDisabled.value = true
     lineChartQueryParams.granularity = 'realtime'
   }else if (value == '近一天'){
+    isPowActiveDisabled.value = false
     lineChartQueryParams.granularity = 'hour'
   }else{
+    isPowActiveDisabled.value = false
     lineChartQueryParams.granularity = 'day'
   }
+  await getLineChartData();
+  // 更新数据后重新渲染图表
+  if (isHaveData.value == true){
+    console.log(L1Data.value)
+    myChart2?.setOption({
+    title: { text: ''},
+    tooltip: { trigger: 'axis'},
+    legend: { orient: 'horizontal', right: '25'},
+    dataZoom:[{type: "inside"}],
+    xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
+    yAxis: { type: 'value'},
+    series: [
+      {name: 'L1', type: 'line', symbol: 'none', data: L1Data.value},
+      {name: 'L2', type: 'line', symbol: 'none', data: L2Data.value},
+      {name: 'L3', type: 'line', symbol: 'none', data: L3Data.value},
+    ],
+  }, true);
+  }
+ 
 });
 
+const isHaveData = ref(true)
+// 获取折线图数据
 const getLineChartData =async () => {
  try {
     const data = await BusPowerLoadDetailApi.getLineChartData(lineChartQueryParams);
     if (data != null){
-      // runLoad.value = formatNumber(data.data.runLoad, 2);
-      // ratedCapacity.value = formatNumber(data.data.ratedCapacity, 1);
-      // reserveMargin.value = formatNumber(data.data.reserveMargin, 2);
-      // powActive.value = formatNumber(data.data.powActive, 2);
-      // powReactive.value = formatNumber(data.data.powReactive, 2);
-      // peakDemand.value = formatNumber(data.data.peakDemand, 1);
-      // powActivepPercentage.value = ((powActive.value / peakDemand.value) * 100 ).toFixed(2)
-      // powReactivepPercentage.value = ((powReactive.value / peakDemand.value) * 100 ).toFixed(2)
+      // 查到数据
+      allLineData.value = data
+      if (timeRadio.value == '近一小时'){
+        createTimeData.value = data.L1.map((item) => formatDate(item.create_time));
+      }else{
+        createTimeData.value = data.L1.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
+      }
+      await initData();
+      isHaveData.value = true
     }else{
+      // 没查到数据
+      isHaveData.value = false
       ElMessage({
         message: '暂无数据',
         type: 'warning',
-      });  
+      }); 
+      myChart2?.setOption({
+        title: {
+          text: '暂无数据',
+          x: 'center',
+          y: 'center',
+          textStyle: {
+            fontSize: 16,
+            fontWeight: 'normal',
+          }
+        }
+      }, true);
     }
  } finally {
  }
 }
+
+function initData (){
+  if(timeRadio.value == '近一小时'){
+    switch (typeRadio.value){
+      case '电流':
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.cur_value, 2));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.cur_value, 2));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.cur_value, 2));
+        break;
+      case '电压':
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.vol_value, 1));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.vol_value, 1));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.vol_value, 1));
+        break;
+      case '有效电能':
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_active, 3));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_active, 3));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_active, 3));
+        break;
+    }
+  }else{
+    switch (typeRadio.value){
+      case '电流':
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.cur_avg_value, 2));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.cur_avg_value, 2));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.cur_avg_value, 2));
+        break;
+      case '电压':
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.vol_avg_value, 1));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.vol_avg_value, 1));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.vol_avg_value, 1));
+        break;
+      case '有效电能':
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_active_avg_value, 3));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_active_avg_value, 3));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_active_avg_value, 3));
+        break;
+      }
+  }
+  
+}
+
+// 折线图随着窗口大小改变
+window.addEventListener('resize', function() {
+  myChart?.resize(); 
+  myChart1?.resize(); 
+  myChart2?.resize(); 
+});
 
 // 处理数据后有几位小数点
 function formatNumber(value, decimalPlaces) {
@@ -404,7 +490,6 @@ function formatNumber(value, decimalPlaces) {
     }
 }
 
-   
 /** 初始化 **/
 onMounted(async () => {
   await getDetailData();

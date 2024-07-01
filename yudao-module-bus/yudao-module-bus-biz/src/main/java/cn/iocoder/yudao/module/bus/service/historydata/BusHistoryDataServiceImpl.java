@@ -1,13 +1,14 @@
 package cn.iocoder.yudao.module.bus.service.historydata;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
-import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.bus.controller.admin.historydata.vo.BusHistoryDataDetailsReqVO;
 import cn.iocoder.yudao.module.bus.controller.admin.historydata.vo.BusHistoryDataPageReqVO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 import cn.iocoder.yudao.module.bus.mapper.BoxIndexMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -45,6 +46,30 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
     @Autowired
     private RestHighLevelClient client;
 
+
+    @Override
+    public String[] getBusIdsbyBusDevkeys(String[] devkeys) {
+        LambdaQueryWrapper<BusIndexDO> queryWrapper = Wrappers.lambdaQuery();
+        queryWrapper.in(BusIndexDO::getDevKey, devkeys);
+        List<BusIndexDO> list = busIndexMapper.selectList(queryWrapper);
+        String[] busIds = new String[0];
+        for(int i=0; i<=list.size(); i++){
+            busIds[i] = String.valueOf(list.get(i).getId());
+        }
+        return busIds;
+    }
+
+    @Override
+    public String[] getBoxIdsbyBoxDevkeys(String[] devkeys) {
+        LambdaQueryWrapper<BoxIndex> queryWrapper = Wrappers.lambdaQuery();
+        queryWrapper.in(BoxIndex::getDevKey, devkeys);
+        List<BoxIndex> list = boxIndexMapper.selectList(queryWrapper);
+        String[] boxIds = new String[0];
+        for(int i=0; i<=list.size(); i++){
+            boxIds[i] = String.valueOf(list.get(i).getId());
+        }
+        return boxIds;
+    }
 
     @Override
     public List<Object> getLocationsAndNameByBusIds(List<Map<String, Object>> mapList) {
@@ -108,6 +133,8 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
             SearchRequest searchRequest = new SearchRequest(indexArr[i]);
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
             if (boxIds != null){
+                // 这里boxIds实际上是devkey 要先查到真正的boxIds
+                boxIds = getBoxIdsbyBoxDevkeys(boxIds);
                 searchSourceBuilder.query(QueryBuilders.termsQuery("box_id", boxIds));
             }
             // 添加最大值聚合
@@ -129,7 +156,6 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
 
     @Override
     public PageResult<Object> getBusHistoryDataPage(BusHistoryDataPageReqVO pageReqVO) throws IOException {
-        PageResult<Object> pageResult = null;
         // 创建BoolQueryBuilder对象
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         // 搜索源构建对象
@@ -154,8 +180,10 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
         }
-        String[] busIds = pageReqVO.getBusIds();
-        if (busIds != null){
+        String[] devkeys = pageReqVO.getDevkeys();
+        String[] busIds = new String[0];
+        if (devkeys != null){
+            busIds = getBusIdsbyBusDevkeys(devkeys);
             searchSourceBuilder.query(QueryBuilders.termsQuery("bus_id", busIds));
         }
         switch (pageReqVO.getType()) {
@@ -201,7 +229,7 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
         // 匹配到的总记录数
         Long totalHits = hits.getTotalHits().value;
         // 返回的结果
-        pageResult = new PageResult<>();
+        PageResult<Object> pageResult = new PageResult<>();
         pageResult.setList(getLocationsAndNameByBusIds(mapList))
                 .setTotal(totalHits);
 
@@ -235,8 +263,10 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
         }
-        String[] boxIds = pageReqVO.getBoxIds();
-        if (boxIds != null){
+        String[] devkeys = pageReqVO.getDevkeys();
+        String[] boxIds = new String[0];
+        if (devkeys != null){
+            boxIds = getBoxIdsbyBoxDevkeys(devkeys);
             searchSourceBuilder.query(QueryBuilders.termsQuery("box_id", boxIds));
         }
         switch (pageReqVO.getType()) {
@@ -336,6 +366,13 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
     @Override
     public PageResult<Object> getBusHistoryDataDetails(BusHistoryDataDetailsReqVO reqVO) throws IOException{
         Integer busId = reqVO.getBusId();
+        if (busId == null){
+            String devkey = reqVO.getDevkey();
+            String[] devkeys = new String[0];
+            devkeys[0] = devkey;
+            String[] busIds = getBusIdsbyBusDevkeys(devkeys);
+            busId = Integer.valueOf(busIds[0]);
+        }
         // 创建BoolQueryBuilder对象
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         // 搜索源构建对象
@@ -405,6 +442,13 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
     @Override
     public PageResult<Object> getBoxHistoryDataDetails(BusHistoryDataDetailsReqVO reqVO) throws IOException{
         Integer boxId = reqVO.getBoxId();
+        if (boxId == null){
+            String devkey = reqVO.getDevkey();
+            String[] devkeys = new String[0];
+            devkeys[0] = devkey;
+            String[] boxIds = getBusIdsbyBusDevkeys(devkeys);
+            boxId = Integer.valueOf(boxIds[0]);
+        }
         // 创建BoolQueryBuilder对象
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         // 搜索源构建对象
@@ -587,5 +631,228 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
         return map;
     }
 
+    @Override
+    public PageResult<Object> getBusEnvDataPage(BusHistoryDataPageReqVO pageReqVO) throws IOException {
+        // 搜索源构建对象
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        int pageNo = pageReqVO.getPageNo();
+        int pageSize = pageReqVO.getPageSize();
+        int index = (pageNo - 1) * pageSize;
+        searchSourceBuilder.from(index);
+        // 最后一页请求超过一万，pageSize设置成请求刚好一万条
+        if (index + pageSize > 10000){
+            searchSourceBuilder.size(10000 - index);
+        }else{
+            searchSourceBuilder.size(pageSize);
+        }
+        searchSourceBuilder.trackTotalHits(true);
+        searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
+        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        // 搜索请求对象
+        SearchRequest searchRequest = new SearchRequest();
+        if (pageReqVO.getTimeRange() != null && pageReqVO.getTimeRange().length != 0) {
+            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                    .from(pageReqVO.getTimeRange()[0])
+                    .to(pageReqVO.getTimeRange()[1]));
+        }
+        String[] devkeys = pageReqVO.getDevkeys();
+        if (devkeys != null){
+            String[] busIds = getBusIdsbyBusDevkeys(devkeys);
+            searchSourceBuilder.query(QueryBuilders.termsQuery("bus_id", busIds));
+        }
+
+        if ("realtime".equals(pageReqVO.getGranularity())) {
+            searchRequest.indices("bus_tem_realtime");
+        } else if ("hour".equals(pageReqVO.getGranularity())) {
+            searchRequest.indices("bus_tem_hour");
+        } else {
+            searchRequest.indices("bus_tem_day");
+        }
+        searchRequest.source(searchSourceBuilder);
+        // 执行搜索,向ES发起http请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        // 搜索结果
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        SearchHits hits = searchResponse.getHits();
+        hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
+        // 匹配到的总记录数
+        Long totalHits = hits.getTotalHits().value;
+        // 返回的结果
+        PageResult<Object> pageResult = new PageResult<>();
+        pageResult.setList(getLocationsAndNameByBusIds(mapList))
+                .setTotal(totalHits);
+
+        return pageResult;
+    }
+
+    @Override
+    public PageResult<Object> getBusEnvDataDetails(BusHistoryDataDetailsReqVO reqVO) throws IOException {
+        Integer busId = reqVO.getBusId();
+        if (busId == null){
+            String devkey = reqVO.getDevkey();
+            String[] devkeys = new String[0];
+            devkeys[0] = devkey;
+            String[] busIds = getBusIdsbyBusDevkeys(devkeys);
+            busId = Integer.valueOf(busIds[0]);
+        }
+        // 创建BoolQueryBuilder对象
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        // 搜索源构建对象
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
+        searchSourceBuilder.size(10000);
+        searchSourceBuilder.trackTotalHits(true);
+        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0){
+            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                    .from(reqVO.getTimeRange()[0])
+                    .to(reqVO.getTimeRange()[1]));
+        }
+        // 搜索请求对象
+        SearchRequest searchRequest = new SearchRequest();
+        if ("realtime".equals(reqVO.getGranularity()) ){
+            searchRequest.indices("bus_tem_realtime");
+        }else if ("hour".equals(reqVO.getGranularity()) ){
+            searchRequest.indices("bus_tem_hour");
+        }else {
+            searchRequest.indices("bus_tem_day");
+        }
+        searchSourceBuilder.query(QueryBuilders.termQuery("bus_id", busId));
+        searchRequest.source(searchSourceBuilder);
+        // 执行搜索,向ES发起http请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        // 搜索结果
+        List<Object> resultList = new ArrayList<>();
+        SearchHits hits = searchResponse.getHits();
+        hits.forEach(searchHit -> resultList.add(searchHit.getSourceAsMap()));
+        // 匹配到的总记录数
+        Long totalHits = hits.getTotalHits().value;
+        // 返回的结果
+        PageResult<Object> pageResult = new PageResult<>();
+        pageResult.setList(resultList)
+                .setTotal(totalHits);
+
+        return pageResult;
+    }
+
+    @Override
+    public Map<String, Object> getBusEnvNavNewData() throws IOException {
+        String[] name = new String[]{"hour", "day", "week"};
+        String[] indices = new String[]{"bus_tem_realtime", "bus_tem_hour", "bus_tem_day"};
+        LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1)};
+        Map<String, Object> map = getSumData(indices, name, timeAgo, "bus_id");
+        return map;
+    }
+
+    @Override
+    public PageResult<Object> getBoxEnvDataPage(BusHistoryDataPageReqVO pageReqVO) throws IOException {
+        // 搜索源构建对象
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        int pageNo = pageReqVO.getPageNo();
+        int pageSize = pageReqVO.getPageSize();
+        int index = (pageNo - 1) * pageSize;
+        searchSourceBuilder.from(index);
+        // 最后一页请求超过一万，pageSize设置成请求刚好一万条
+        if (index + pageSize > 10000){
+            searchSourceBuilder.size(10000 - index);
+        }else{
+            searchSourceBuilder.size(pageSize);
+        }
+        searchSourceBuilder.trackTotalHits(true);
+        searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
+        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        // 搜索请求对象
+        SearchRequest searchRequest = new SearchRequest();
+        if (pageReqVO.getTimeRange() != null && pageReqVO.getTimeRange().length != 0) {
+            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                    .from(pageReqVO.getTimeRange()[0])
+                    .to(pageReqVO.getTimeRange()[1]));
+        }
+        String[] devkeys = pageReqVO.getDevkeys();
+        if (devkeys != null){
+            String[] boxIds = getBoxIdsbyBoxDevkeys(devkeys);
+            searchSourceBuilder.query(QueryBuilders.termsQuery("box_id", boxIds));
+        }
+
+        if ("realtime".equals(pageReqVO.getGranularity())) {
+            searchRequest.indices("box_tem_realtime");
+        } else if ("hour".equals(pageReqVO.getGranularity())) {
+            searchRequest.indices("box_tem_hour");
+        } else {
+            searchRequest.indices("box_tem_day");
+        }
+        searchRequest.source(searchSourceBuilder);
+        // 执行搜索,向ES发起http请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        // 搜索结果
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        SearchHits hits = searchResponse.getHits();
+        hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
+        // 匹配到的总记录数
+        Long totalHits = hits.getTotalHits().value;
+        // 返回的结果
+        PageResult<Object> pageResult = new PageResult<>();
+        pageResult.setList(getLocationsAndNameByBoxIds(mapList))
+                .setTotal(totalHits);
+
+        return pageResult;
+    }
+
+    @Override
+    public PageResult<Object> getBoxEnvDataDetails(BusHistoryDataDetailsReqVO reqVO) throws IOException {
+        Integer boxId = reqVO.getBoxId();
+        if (boxId == null){
+            String devkey = reqVO.getDevkey();
+            String[] devkeys = new String[0];
+            devkeys[0] = devkey;
+            String[] boxIds = getBusIdsbyBusDevkeys(devkeys);
+            boxId = Integer.valueOf(boxIds[0]);
+        }
+        // 创建BoolQueryBuilder对象
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        // 搜索源构建对象
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
+        searchSourceBuilder.size(10000);
+        searchSourceBuilder.trackTotalHits(true);
+        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0){
+            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                    .from(reqVO.getTimeRange()[0])
+                    .to(reqVO.getTimeRange()[1]));
+        }
+        // 搜索请求对象
+        SearchRequest searchRequest = new SearchRequest();
+        if ("realtime".equals(reqVO.getGranularity()) ){
+            searchRequest.indices("box_tem_realtime");
+        }else if ("hour".equals(reqVO.getGranularity()) ){
+            searchRequest.indices("box_tem_hour");
+        }else {
+            searchRequest.indices("box_tem_day");
+        }
+        searchSourceBuilder.query(QueryBuilders.termQuery("box_id", boxId));
+        searchRequest.source(searchSourceBuilder);
+        // 执行搜索,向ES发起http请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        // 搜索结果
+        List<Object> resultList = new ArrayList<>();
+        SearchHits hits = searchResponse.getHits();
+        hits.forEach(searchHit -> resultList.add(searchHit.getSourceAsMap()));
+        // 匹配到的总记录数
+        Long totalHits = hits.getTotalHits().value;
+        // 返回的结果
+        PageResult<Object> pageResult = new PageResult<>();
+        pageResult.setList(resultList)
+                .setTotal(totalHits);
+
+        return pageResult;
+    }
+
+    @Override
+    public Map<String, Object> getBoxEnvNavNewData() throws IOException {
+        String[] name = new String[]{"hour", "day", "week"};
+        String[] indices = new String[]{"box_tem_realtime", "box_tem_hour", "box_tem_day"};
+        LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1)};
+        Map<String, Object> map = getSumData(indices, name, timeAgo, "box_id");
+        return map;
+    }
 
 }
