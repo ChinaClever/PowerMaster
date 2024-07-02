@@ -4,11 +4,14 @@ import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBus;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.enums.DisableEnums;
+import cn.iocoder.yudao.framework.common.enums.PduBoxEnums;
 import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
@@ -18,11 +21,15 @@ import cn.iocoder.yudao.module.aisle.service.AisleService;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleBarDTO;
 import cn.iocoder.yudao.module.aisle.vo.AisleBusSaveVo;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -61,6 +68,10 @@ public class AisleServiceImpl implements AisleService {
     RoomIndexMapper roomIndexMapper;
     @Resource
     CabinetIndexMapper cabinetIndexMapper;
+    @Resource
+    CabinetPduMapper cabinetPduMapper;
+    @Resource
+    CabinetBusMapper cabinetBusMapper;
     @Resource
     CabinetCfgDoMapper cfgDoMapper;
 
@@ -365,6 +376,27 @@ public class AisleServiceImpl implements AisleService {
                cfgMap = new HashMap<>();
            }
 
+           //来源pdu
+           List<CabinetPdu> pduList = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>()
+                   .in(CabinetPdu::getCabinetId, cabinetIds));
+
+           Map<Integer,CabinetPdu>  pduMap ;
+           if (!CollectionUtils.isEmpty(pduList)){
+               pduMap = pduList.stream().collect(Collectors.toMap(CabinetPdu::getCabinetId, Function.identity()));
+           } else {
+               pduMap = new HashMap<>();
+           }
+
+           //配置的母线数据
+           List<CabinetBus> cabinetBusList = cabinetBusMapper.selectList(new LambdaQueryWrapper<CabinetBus>()
+                   .in(CabinetBus::getCabinetId, cabinetIds));
+           Map<Integer,CabinetBus>  busMap ;
+           if (!CollectionUtils.isEmpty(cabinetBusList)){
+               busMap = cabinetBusList.stream().collect(Collectors.toMap(CabinetBus::getCabinetId, Function.identity()));
+           } else {
+               busMap = new HashMap<>();
+           }
+
            cabinetIndexList.forEach(cabinetIndex ->{
                AisleCabinetDTO cabinetDTO = BeanUtils.toBean(cabinetIndex,AisleCabinetDTO.class);
                CabinetCfg cfg = cfgMap.get(cabinetIndex.getId());
@@ -382,6 +414,67 @@ public class AisleServiceImpl implements AisleService {
                    if ("y".equals(aisleCfg.getDirection())){
                        //纵向
                        cabinetDTO.setIndex(cfg.getYCoordinate() - aisleCfg.getYCoordinate() + 1);
+                   }
+                   if (cabinetIndex.getPduBox() == PduBoxEnums.PDU.getValue()){
+
+                       CabinetPdu pdu = pduMap.get(cabinetIndex.getId());
+                       if (Objects.nonNull(pdu)) {
+                           cabinetDTO.setPduIpA(pdu.getPduIpA());
+                           cabinetDTO.setPduIpB(pdu.getPduIpB());
+                           cabinetDTO.setCasIdA(pdu.getCasIdA());
+                           cabinetDTO.setCasIdB(pdu.getCasIdB());
+                       }
+                   }else if (cabinetIndex.getPduBox() == PduBoxEnums.BUS.getValue()){
+
+                       CabinetBus cabinetBus = busMap.get(cabinetIndex.getId());
+
+                       //配置的数据来源信息
+                       ValueOperations ops = redisTemplate.opsForValue();
+
+                       if (Objects.nonNull(cabinetBus)){
+                           String aKey = REDIS_KEY_BOX + cabinetBus.getDevKeyA();
+                           if (StringUtils.isNotEmpty(cabinetBus.getDevKeyA())){
+                               Object aBus = ops.get(aKey.toString());
+                               if (Objects.nonNull(aBus)){
+                                   JSONObject json = JSON.parseObject(JSON.toJSONString(aBus));
+                                   String devIp = json.getString(DEV_IP);
+                                   String busName = json.getString(BUS_NAME);
+                                   String boxName = json.getString(BOX_NAME);
+                                   cabinetDTO.setBusIpA(devIp);
+                                   cabinetDTO.setBusNameA(busName);
+                                   cabinetDTO.setBoxNameA(boxName);
+                                   cabinetDTO.setBoxOutletIdA(cabinetBus.getOutletIdA());
+                               }else {
+                                   String[] keys = cabinetBus.getDevKeyA().split(SPLIT_KEY_BUS);
+                                   cabinetDTO.setBusIpA(keys[0]);
+                                   cabinetDTO.setBusNameA(keys[1]);
+                                   cabinetDTO.setBoxNameA(keys[2]);
+                                   cabinetDTO.setBoxOutletIdA(cabinetBus.getOutletIdA());
+                               }
+
+                           }
+                           String bKey = REDIS_KEY_BOX + cabinetBus.getDevKeyB();
+                           if (StringUtils.isNotEmpty(cabinetBus.getDevKeyB())){
+                               Object bBus = ops.get(bKey.toString());
+                               if (Objects.nonNull(bBus)){
+                                   JSONObject json = JSON.parseObject(JSON.toJSONString(bBus));
+                                   String devIp = json.getString(DEV_IP);
+                                   String busName = json.getString(BUS_NAME);
+                                   String boxName = json.getString(BOX_NAME);
+                                   cabinetDTO.setBusIpB(devIp);
+                                   cabinetDTO.setBusNameB(busName);
+                                   cabinetDTO.setBoxNameB(boxName);
+                                   cabinetDTO.setBoxOutletIdB(cabinetBus.getOutletIdB());
+                               }else {
+                                   String[] keys = cabinetBus.getDevKeyB().split(SPLIT_KEY_BUS);
+                                   cabinetDTO.setBusIpB(keys[0]);
+                                   cabinetDTO.setBusNameB(keys[1]);
+                                   cabinetDTO.setBoxNameB(keys[2]);
+                                   cabinetDTO.setBoxOutletIdB(cabinetBus.getOutletIdB());
+                               }
+
+                           }
+                       }
                    }
                }
                aisleCabinetDTOList.add(cabinetDTO);

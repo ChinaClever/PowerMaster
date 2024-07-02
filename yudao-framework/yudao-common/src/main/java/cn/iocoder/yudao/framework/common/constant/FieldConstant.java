@@ -72,7 +72,7 @@ public class FieldConstant {
 
 
     /**
-     *  有功功率
+     * 有功功率
      */
     public static final String ACTIVE_POW = "pow_active";
 
@@ -80,7 +80,6 @@ public class FieldConstant {
      * 视在功率
      */
     public static final String APPARENT_POW = "pow_apparent";
-
 
 
     /**
@@ -140,100 +139,100 @@ public class FieldConstant {
     public static final String ACTIVE_POW_AVG_VALUE = "pow_active_avg_value";
 
     /**
-     *  最大有功功率
+     * 最大有功功率
      */
     public static final String ACTIVE_POW_MAX_VALUE = "pow_active_max_value";
 
     /**
-     *  最小有功功率
+     * 最小有功功率
      */
     public static final String ACTIVE_POW_MIN_VALUE = "pow_active_min_value";
 
     /**
-     *  最大有功功率时间
+     * 最大有功功率时间
      */
     public static final String ACTIVE_POW_MAX_TIME = "pow_active_max_time";
 
     /**
-     *  最小有功功率时间
+     * 最小有功功率时间
      */
     public static final String ACTIVE_POW_MIN_TIME = "pow_active_min_time";
 
     /**
-     *  平均视在功率
+     * 平均视在功率
      */
     public static final String APPARENT_POW_AVG_VALUE = "pow_apparent_avg_value";
 
     /**
-     *  最大视在功率
+     * 最大视在功率
      */
     public static final String APPARENT_POW_MAX_VALUE = "pow_apparent_max_value";
 
     /**
-     *  最小视在功率
+     * 最小视在功率
      */
     public static final String APPARENT_POW_MIN_VALUE = "pow_apparent_min_value";
 
     /**
-     *  最大视在功率时间
+     * 最大视在功率时间
      */
     public static final String APPARENT_POW_MAX_TIME = "pow_apparent_max_time";
 
     /**
-     *  最小视在功率时间
+     * 最小视在功率时间
      */
     public static final String APPARENT_POW_MIN_TIME = "pow_apparent_min_time";
 
     /**
-     *   平均温度
+     * 平均温度
      */
     public static final String TEM_AVG_VALUE = "tem_avg_value";
 
     /**
-     *  最大温度
+     * 最大温度
      */
     public static final String TEM_MAX_VALUE = "tem_max_value";
     /**
-     *  最大温度时间
+     * 最大温度时间
      */
     public static final String TEM_MAX_TIME = "tem_max_time";
 
     /**
-     *  最低温度
+     * 最低温度
      */
     public static final String TEM_MIN_VALUE = "tem_min_value";
 
     /**
-     *  最低温度时间
+     * 最低温度时间
      */
     public static final String TEM_MIN_TIME = "tem_min_time";
     /**
-     *   平均湿度
+     * 平均湿度
      */
     public static final String HUM_AVG_VALUE = "hum_avg_value";
 
     /**
-     *   最高湿度
+     * 最高湿度
      */
     public static final String HUM_MAX_VALUE = "hum_max_value";
 
     /**
-     *   最高湿度时间
+     * 最高湿度时间
      */
     public static final String HUM_MAX_TIME = "hum_max_time";
 
     /**
-     *   最低湿度
+     * 最低湿度
      */
     public static final String HUM_MIN_VALUE = "hum_min_value";
 
     /**
-     *   最低湿度时间
+     * 最低湿度时间
      */
     public static final String HUM_MIN_TIME = "hum_min_time";
 
     /**
-     *   电量
+     * 电量
      */
     public static final String EQ_VALUE = "eq_value";
 
@@ -253,7 +252,7 @@ public class FieldConstant {
     public static final String BILL_PERIOD = "bill_period";
 
     /**
-     *  开始电能
+     * 开始电能
      */
     public static final String START_ELE = "start_ele";
 
@@ -303,4 +302,20 @@ public class FieldConstant {
      * es聚合长度
      */
     public static final Integer BUCKET_SIZE = 50000;
+
+    /**
+     * 设备的ip地址
+     */
+    public static final String DEV_IP = "dev_ip";
+
+    /**
+     * 始端箱名称
+     */
+    public static final String BUS_NAME = "bus_name";
+
+    /**
+     * 插接箱名称
+     */
+    public static final String BOX_NAME = "box_name";
 }
+
