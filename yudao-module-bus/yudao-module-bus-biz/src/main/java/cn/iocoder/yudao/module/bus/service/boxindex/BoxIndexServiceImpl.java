@@ -31,6 +31,7 @@ import cn.iocoder.yudao.module.bus.dal.dataobject.boxcurbalancecolor.BoxCurbalan
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 
 import cn.iocoder.yudao.module.bus.dal.dataobject.buscurbalancecolor.BusCurbalanceColorDO;
+import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxcurbalancecolor.BoxCurbalanceColorMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxindex.BoxIndexCopyMapper;
 import cn.iocoder.yudao.module.bus.util.TimeUtil;
@@ -339,7 +340,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     }
 
 
-    public static final String HOUR_FORMAT = "yyyy-MM-dd HH";
+    public static final String HOUR_FORMAT = "yyyy-MM-dd";
 
     public static final String TIME_STR = ":00:00";
 
@@ -363,7 +364,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 BoxTotalHourDo hourDo = JsonUtils.parseObject(str, BoxTotalHourDo.class);
                 BusActivePowTrendDTO dto = new BusActivePowTrendDTO();
                 dto.setActivePow(hourDo.getPowActiveAvgValue());
-                String dateTime = hourDo.getCreateTime().toString(HOUR_FORMAT) + TIME_STR;
+                String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH") + TIME_STR;
                 dto.setDateTime(dateTime);
 //                log.info("dateTime : " + dateTime );
                 yesterdayList.add(dto);
@@ -380,7 +381,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             List<String> todayData = getData(startTime, endTime, vo,  "box_hda_total_hour");
             todayData.forEach(str -> {
                 BoxTotalHourDo hourDo = JsonUtils.parseObject(str, BoxTotalHourDo.class);
-                String dateTime = hourDo.getCreateTime().toString(HOUR_FORMAT) + TIME_STR;
+                String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH") + TIME_STR;
                 BusActivePowTrendDTO dto = new BusActivePowTrendDTO();
                 if (Objects.isNull(dto)) {
                     dto = new BusActivePowTrendDTO();
@@ -453,6 +454,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         }
         return chainDTO;
     }
+
+
 
 
     @Override
@@ -857,6 +860,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         for (BoxIndex boxIndexDO : list) {
             BoxHarmonicRes boxHarmonicRes = new BoxHarmonicRes();
             boxHarmonicRes.setStatus(boxIndexDO.getRunStatus());
+            boxHarmonicRes.setBoxId(boxIndexDO.getId());
+            boxHarmonicRes.setDevKey(boxIndexDO.getDevKey());
             res.add(boxHarmonicRes);
             JSONObject jsonObject = (JSONObject) ops.get("packet:box:" + boxIndexDO.getDevKey());
             if (jsonObject == null){
@@ -877,6 +882,83 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
         }
         return new PageResult<>(res,boxIndexDOPageResult.getTotal());
+    }
+
+    @Override
+    public BusHarmonicRedisRes getHarmonicRedis(BoxIndexPageReqVO pageReqVO) {
+        Integer harmonicType = 0;
+        BusHarmonicRedisRes result = new BusHarmonicRedisRes();
+
+        harmonicType = pageReqVO.getHarmonicType() - 3;
+
+        ValueOperations ops = redisTemplate.opsForValue();
+
+        JSONObject jsonObject = (JSONObject) ops.get("packet:box:" + pageReqVO.getDevKey());
+        if (jsonObject == null){
+            return result;
+        }
+        JSONArray jsonArray = null;
+
+        jsonArray = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list").getJSONArray("cur_thd");
+
+        List<Float> harmoicList = new ArrayList<>();
+        List<Integer> times = new ArrayList<>();
+        for (int i = 1; i < 33; i++) {
+            times.add(i);
+        }
+        for (int i = harmonicType; i < jsonArray.size(); i+=3) {
+            harmoicList.add(jsonArray.getFloat(i));
+        }
+
+        result.setHarmonicList(harmoicList);
+        result.setTimes(times);
+        return result;
+    }
+
+    @Override
+    public BusHarmonicLineRes getHarmonicLine(BoxIndexPageReqVO pageReqVO) {
+        BusHarmonicLineRes result = new BusHarmonicLineRes();
+
+        result.getSeries().add(new LineSeries());
+        result.getSeries().add(new LineSeries());
+        LineSeries lineSeries = result.getSeries().get(1);
+        lineSeries.setName("电流平均谐波");
+        pageReqVO.setNewTime(pageReqVO.getOldTime().withHour(23).withMinute(59).withSecond(59));
+        try {
+            Integer lineId = 0;
+            if (pageReqVO.getHarmonicType() == 0 || pageReqVO.getHarmonicType() == 3){
+                lineId = 1;
+            } else if (pageReqVO.getHarmonicType() == 1 || pageReqVO.getHarmonicType() == 4) {
+                lineId = 2;
+            } else {
+                lineId = 3;
+            }
+            String startTime = localDateTimeToString(pageReqVO.getOldTime());
+            String endTime = localDateTimeToString(pageReqVO.getNewTime());
+            List<Integer> ids = Arrays.asList(pageReqVO.getBoxId());
+            List<Integer> lines = Arrays.asList(lineId);
+            List<String> busHdaLineHour = getBusHarmonicData(startTime, endTime, ids, lines,"box_hda_line_realtime");
+            busHdaLineHour.forEach(str ->{
+                BoxLineHourDo busLineHourDo = JsonUtils.parseObject(str, BoxLineHourDo.class);
+                result.getTime().add(busLineHourDo.getCreateTime().toString("HH:mm"));
+                lineSeries.getData().add(busLineHourDo.getCurThdAvgValue());
+            });
+            return result;
+        } catch (Exception e){
+            log.error("获取数据失败",e);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Integer getBoxIdByDevKey(String devKey) {
+        BoxIndex boxIndex = boxIndexCopyMapper.selectOne(BoxIndex::getDevKey, devKey);
+        if (boxIndex == null){
+            return null;
+        }else{
+            return boxIndex.getId();
+        }
     }
 
     @Override
@@ -1759,5 +1841,34 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             log.error("获取数据异常：", e);
         }
         return realtimeDo;
+    }
+
+    private List<String> getBusHarmonicData(String startTime, String endTime, List<Integer> ids, List<Integer> lines,String index) throws IOException {
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件，
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+
+        //获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
+                .must(QueryBuilders.termsQuery("box_id", ids))
+                .must(QueryBuilders.termsQuery("line_id", lines))));
+        builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+        // 设置搜索条件
+        searchRequest.source(builder);
+        builder.size(1000);
+
+        List<String> list = new ArrayList<>();
+        // 执行ES请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                String str = hit.getSourceAsString();
+                list.add(str);
+            }
+        }
+        return list;
+
     }
 }

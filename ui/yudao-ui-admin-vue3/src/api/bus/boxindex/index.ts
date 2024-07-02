@@ -84,6 +84,14 @@ export const IndexApi = {
     return await request.get({ url: `/box/index/boxharmonicpage`, params })
   },
 
+  getHarmonicRedis: async (data: any) => {
+    return await request.post({ url: `/box/index/harmonic/redis`, data })
+  },
+
+  getHarmonicLine: async (data: any) => {
+    return await request.post({ url: `/box/index/harmonic/line`, data })
+  },
+
   devKeyList: async () => {
     return await request.download({ url: `/box/index/devKeyList` })
   },
@@ -94,5 +102,13 @@ export const IndexApi = {
 
   getBoxLineCurLine: async (data: any) => {
     return await request.post({ url: `/box/index/line/cur`,data})
+  },
+
+  getBoxIdByDevKey: async (data: any) => {
+    return await request.post({ url: `/box/index/getid` ,  data})
+  },
+
+  getBoxMenu: async () => {
+    return await request.get({ url: `/room/box/menu` })
   },
 }

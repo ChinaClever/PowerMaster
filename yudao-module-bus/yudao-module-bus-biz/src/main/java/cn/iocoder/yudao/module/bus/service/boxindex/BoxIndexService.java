@@ -8,10 +8,7 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusActivePowDTO
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusEleChainDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusEqTrendDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusTrendDTO;
-import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusBalanceDeatilRes;
-import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusIndexPageReqVO;
-import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusLineResBase;
-import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusPowVo;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -93,4 +90,10 @@ public interface BoxIndexService {
     List<BusEqTrendDTO> eqTrend(int id, String type);
 
     BusEleChainDTO getEleChain(int id);
+
+    BusHarmonicRedisRes getHarmonicRedis(BoxIndexPageReqVO pageReqVO);
+
+    BusHarmonicLineRes getHarmonicLine(BoxIndexPageReqVO pageReqVO);
+
+    Integer getBoxIdByDevKey(String devKey);
 }

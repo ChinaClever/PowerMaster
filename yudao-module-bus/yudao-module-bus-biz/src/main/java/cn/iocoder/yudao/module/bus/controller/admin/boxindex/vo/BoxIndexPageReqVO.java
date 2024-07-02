@@ -29,6 +29,9 @@ public class BoxIndexPageReqVO extends PageParam {
     @Schema(description = "ip地址")
     private String ipAddr;
 
+    @Schema(description = "谐波类型")
+    private Integer harmonicType;
+
     @Schema(description = "母线地址")
     private String devAddr;
 

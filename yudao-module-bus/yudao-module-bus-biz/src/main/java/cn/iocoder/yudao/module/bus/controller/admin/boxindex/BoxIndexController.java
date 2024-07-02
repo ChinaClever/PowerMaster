@@ -10,10 +10,7 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusActivePowDTO
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusEleChainDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusEqTrendDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusTrendDTO;
-import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusBalanceDeatilRes;
-import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusIndexPageReqVO;
-import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusLineResBase;
-import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusPowVo;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.service.boxindex.BoxIndexService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -132,6 +129,20 @@ public class BoxIndexController {
         return success(BeanUtils.toBean(pageResult, BoxHarmonicRes.class));
     }
 
+    @Operation(summary = "始端箱谐波监测实时数据图表")
+    @PostMapping("/harmonic/redis")
+    public CommonResult<BusHarmonicRedisRes> getHarmonicRedis(@RequestBody BoxIndexPageReqVO pageReqVO) {
+        BusHarmonicRedisRes pageResult = indexService.getHarmonicRedis(pageReqVO);
+        return success(pageResult);
+    }
+
+    @Operation(summary = "始端箱谐波监测ES数据图表")
+    @PostMapping("/harmonic/line")
+    public CommonResult<BusHarmonicLineRes> getHarmonicLine(@RequestBody BoxIndexPageReqVO pageReqVO) {
+        BusHarmonicLineRes pageResult = indexService.getHarmonicLine(pageReqVO);
+        return success(pageResult);
+    }
+
     /**
      * 机柜用能页面
      *
@@ -208,7 +219,14 @@ public class BoxIndexController {
     public List<String> getDevKeyList() {
         return indexService.getDevKeyList();
     }
-    
+
+    @Operation(summary = "始端箱通过devKey获取id")
+    @PostMapping("/getid")
+    public CommonResult<Integer> getBoxIdByDevKey(@RequestBody BoxIndexPageReqVO pageReqVO) {
+        Integer result = indexService.getBoxIdByDevKey(pageReqVO.getDevKey());
+        return success(result);
+    }
+
 //    @GetMapping("/export-excel")
 //    @Operation(summary = "导出插接箱索引 Excel")
 //    @PreAuthorize("@ss.hasPermission('box:index:export')")

@@ -1036,7 +1036,7 @@ public class BusIndexServiceImpl implements BusIndexService {
     }
 
 
-    public static final String HOUR_FORMAT = "yyyy-MM-dd HH";
+    public static final String HOUR_FORMAT = "yyyy-MM-dd";
 
     public static final String TIME_STR = ":00:00";
 
@@ -1060,7 +1060,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                 BusTotalHourDo hourDo = JsonUtils.parseObject(str, BusTotalHourDo.class);
                 BusActivePowTrendDTO dto = new BusActivePowTrendDTO();
                 dto.setActivePow(hourDo.getPowActiveAvgValue());
-                String dateTime = hourDo.getCreateTime().toString(HOUR_FORMAT) + TIME_STR;
+                String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH") + TIME_STR;
                 dto.setDateTime(dateTime);
 //                log.info("dateTime : " + dateTime );
                 yesterdayList.add(dto);
@@ -1077,7 +1077,7 @@ public class BusIndexServiceImpl implements BusIndexService {
             List<String> todayData = getData(startTime, endTime, vo,  "bus_hda_total_hour");
             todayData.forEach(str -> {
                 BusTotalHourDo hourDo = JsonUtils.parseObject(str, BusTotalHourDo.class);
-                String dateTime = hourDo.getCreateTime().toString(HOUR_FORMAT) + TIME_STR;
+                String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH") + TIME_STR;
                 BusActivePowTrendDTO dto = new BusActivePowTrendDTO();
                 if (Objects.isNull(dto)) {
                     dto = new BusActivePowTrendDTO();
