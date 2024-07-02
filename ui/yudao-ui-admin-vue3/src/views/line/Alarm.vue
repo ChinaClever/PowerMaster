@@ -57,7 +57,7 @@
         </div>
         <el-form-item style="margin-left: auto">
           <el-button  type="primary" @click="handleFormOpen('phone')">手机配置</el-button>
-          <el-button  type="primary" @click="handleFormOpen('type')">邮箱配置</el-button>
+          <el-button  type="primary" @click="handleFormOpen('mail')">邮箱配置</el-button>
           <el-button  type="primary" :disabled="!targetId || preStatus.includes(3)" @click="toHandle(1)">挂起</el-button>
           <el-button  type="primary" :disabled="!targetId || preStatus.includes(3)" @click="toHandle(2)">确认</el-button>
           <el-button  type="primary" :disabled="!targetId || preStatus.includes(3)" @click="toHandle(3)">结束</el-button>
@@ -107,6 +107,7 @@
 <script lang="ts" setup>
 import { AlarmApi } from '@/api/system/notify/alarm'
 import { ElMessageBox, ElMessage } from 'element-plus'
+import AlarmForm from './AlarmForm.vue'
 
 const message = useMessage() // 消息弹窗
 

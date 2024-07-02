@@ -14,19 +14,27 @@ export const AlarmApi = {
     return await request.get({ url: `/system/alarm/record/level/count`, params })
   },
   // 获取告警配置
-  getAlarmConfig:async (params: any) => {
+  getAlarmConfig: async (params: any) => {
     return await request.get({ url: `/system/alarm/config/get`, params })
   },
   // 保存告警配置
-  saveAlarmConfig:async (data: any) => {
+  saveAlarmConfig: async (data: any) => {
     return await request.post({ url: `/system/alarm/config/save`, data })
   },
   // 获取邮件列表
-  getMailList:async (params: any) => {
+  getMailList: async (params: any) => {
     return await request.get({ url: `/system/alarm/mail/list`, params })
   },
   // 获取手机列表
-  getPhoneList:async (params: any) => {
+  getPhoneList: async (params: any) => {
     return await request.get({ url: `/system/alarm/sms/list`, params })
+  },
+  // 保存告警邮件配置
+  saveMailConfig: async (data: any) => {
+    return await request.post({ url: `/system/alarm/mail/batchSave`, data })
+  },
+  // 保存告警邮件配置
+  savePhoneConfig: async (data: any) => {
+    return await request.post({ url: `/system/alarm/sms/batchSave`, data })
   },
 }
