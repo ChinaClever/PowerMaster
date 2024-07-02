@@ -126,4 +126,11 @@ public class RackIndexController {
         return success(dto);
     }
 
+
+    @Operation(summary = "数据删除")
+    @GetMapping("/data/del")
+    public void delete(@Param("startTime") String startTime,@Param("endTime")String endTime) {
+        rackIndexService.deleteData(startTime,endTime);
+    }
+
 }

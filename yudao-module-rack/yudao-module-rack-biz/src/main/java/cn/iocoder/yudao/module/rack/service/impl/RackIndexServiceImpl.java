@@ -29,13 +29,16 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.search.TotalHits;
+import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.GetAliasesResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.cluster.metadata.AliasMetaData;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -90,44 +93,44 @@ public class RackIndexServiceImpl implements RackIndexService {
     public PageResult<JSONObject> getRackPage(RackIndexVo vo) {
         try {
             //获取列表
-            if (Objects.nonNull(vo.getRackIds()) && CollectionUtils.isEmpty(vo.getRackIds())){
+            if (Objects.nonNull(vo.getRackIds()) && CollectionUtils.isEmpty(vo.getRackIds())) {
                 List<Integer> list = new ArrayList<>();
                 list.add(-1);
                 vo.setRackIds(list);
             }
             //获取列表
-            if (Objects.nonNull(vo.getRackIds()) && CollectionUtils.isEmpty(vo.getRackIds())){
+            if (Objects.nonNull(vo.getRackIds()) && CollectionUtils.isEmpty(vo.getRackIds())) {
                 List<Integer> list = new ArrayList<>();
                 list.add(-1);
                 vo.setRackIds(list);
             }
-            Page<RackIndex> page =  new Page<>(vo.getPageNo(), vo.getPageSize());
+            Page<RackIndex> page = new Page<>(vo.getPageNo(), vo.getPageSize());
 
-            Page<RackIndex> result = rackIndexDoMapper.selectPage(page,new LambdaQueryWrapperX<RackIndex>()
-                    .eq(RackIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
-                    .like(StringUtils.isNotEmpty(vo.getRackName()),RackIndex::getRackName,vo.getRackName())
-                    .like(StringUtils.isNotEmpty(vo.getCompany()),RackIndex::getCompany,vo.getCompany())
-                    .like(StringUtils.isNotEmpty(vo.getType()),RackIndex::getType,vo.getType())
-                    .in(!CollectionUtils.isEmpty(vo.getCabinetIds()),RackIndex::getCabinetId,vo.getRackIds())
-                    .in(!CollectionUtils.isEmpty(vo.getRackIds()),RackIndex::getId,vo.getRackIds()));
+            Page<RackIndex> result = rackIndexDoMapper.selectPage(page, new LambdaQueryWrapperX<RackIndex>()
+                    .eq(RackIndex::getIsDelete, DelEnums.NO_DEL.getStatus())
+                    .like(StringUtils.isNotEmpty(vo.getRackName()), RackIndex::getRackName, vo.getRackName())
+                    .like(StringUtils.isNotEmpty(vo.getCompany()), RackIndex::getCompany, vo.getCompany())
+                    .like(StringUtils.isNotEmpty(vo.getType()), RackIndex::getType, vo.getType())
+                    .in(!CollectionUtils.isEmpty(vo.getCabinetIds()), RackIndex::getCabinetId, vo.getRackIds())
+                    .in(!CollectionUtils.isEmpty(vo.getRackIds()), RackIndex::getId, vo.getRackIds()));
 
             List<JSONObject> indexRes = new ArrayList<>();
 
             if (Objects.nonNull(result) && !CollectionUtils.isEmpty(result.getRecords())) {
                 result.getRecords().forEach(dto -> {
-                    String key = REDIS_KEY_RACK  + dto.getId();
+                    String key = REDIS_KEY_RACK + dto.getId();
                     JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(redisTemplate.opsForValue().get(key)));
                     if (Objects.nonNull(jsonObject)) {
-                        jsonObject.put("type",dto.getType());
+                        jsonObject.put("type", dto.getType());
                         indexRes.add(jsonObject);
-                    }else {
+                    } else {
                         indexRes.add(new JSONObject());
                     }
                 });
             }
             return new PageResult<>(indexRes, result.getTotal());
-        }catch (Exception e){
-            log.error("获取列表失败：",e);
+        } catch (Exception e) {
+            log.error("获取列表失败：", e);
         }
 
         return new PageResult<>(new ArrayList<>(), 0L);
@@ -155,7 +158,7 @@ public class RackIndexServiceImpl implements RackIndexService {
         try {
             RackIndex rackIndex = rackIndexDoMapper.selectById(id);
 
-            rackIndexDTO = BeanUtils.toBean(rackIndex,RackIndexDTO.class);
+            rackIndexDTO = BeanUtils.toBean(rackIndex, RackIndexDTO.class);
 
             rackIndexDTO.setRackId(id);
             JSONObject jsonObject = getRackDataDetail(id);
@@ -164,8 +167,8 @@ public class RackIndexServiceImpl implements RackIndexService {
 
             return rackIndexDTO;
 
-        }catch (Exception e){
-            log.error("获取详情失败，",e);
+        } catch (Exception e) {
+            log.error("获取详情失败，", e);
         }
         return rackIndexDTO;
 
@@ -176,7 +179,7 @@ public class RackIndexServiceImpl implements RackIndexService {
     public List<RackIndex> batchSave(RackSaveVo vo) {
         try {
             //新增
-            if (!CollectionUtils.isEmpty(vo.getRacks())){
+            if (!CollectionUtils.isEmpty(vo.getRacks())) {
                 List<RackIndex> racks = vo.getRacks();
 
                 List<RackIndex> inserts = racks.stream().filter(rackIndex -> rackIndex.getId() == 0).collect(Collectors.toList());
@@ -185,10 +188,10 @@ public class RackIndexServiceImpl implements RackIndexService {
 
                     //判断名称是否重复
                     RackIndex index = rackIndexDoMapper.selectOne(new LambdaQueryWrapper<RackIndex>()
-                            .eq(RackIndex::getRackName,rackIndex.getRackName())
-                            .eq(RackIndex::getCabinetId,vo.getCabinetId()));
-                    if (Objects.nonNull(index)){
-                        throw new ServerException(NAME_REPEAT.getCode(),NAME_REPEAT.getMsg());
+                            .eq(RackIndex::getRackName, rackIndex.getRackName())
+                            .eq(RackIndex::getCabinetId, vo.getCabinetId()));
+                    if (Objects.nonNull(index)) {
+                        throw new ServerException(NAME_REPEAT.getCode(), NAME_REPEAT.getMsg());
                     }
 
                     rackIndex.setCabinetId(vo.getCabinetId());
@@ -200,11 +203,11 @@ public class RackIndexServiceImpl implements RackIndexService {
                 updates.forEach(rackIndex ->
                 {
                     RackIndex index = rackIndexDoMapper.selectOne(new LambdaQueryWrapper<RackIndex>()
-                            .eq(RackIndex::getRackName,rackIndex.getRackName())
-                            .eq(RackIndex::getCabinetId,vo.getCabinetId())
-                            .ne(RackIndex::getId,rackIndex.getId()));
-                    if (Objects.nonNull(index)){
-                        throw new ServerException(NAME_REPEAT.getCode(),NAME_REPEAT.getMsg());
+                            .eq(RackIndex::getRackName, rackIndex.getRackName())
+                            .eq(RackIndex::getCabinetId, vo.getCabinetId())
+                            .ne(RackIndex::getId, rackIndex.getId()));
+                    if (Objects.nonNull(index)) {
+                        throw new ServerException(NAME_REPEAT.getCode(), NAME_REPEAT.getMsg());
                     }
                     rackIndex.setCabinetId(vo.getCabinetId());
                     rackIndex.setRoomId(vo.getRoomId());
@@ -213,9 +216,9 @@ public class RackIndexServiceImpl implements RackIndexService {
                 });
             }
             return rackIndexDoMapper.selectList(new LambdaQueryWrapperX<RackIndex>()
-                    .eq(RackIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
-                    .eq(RackIndex::getCabinetId,vo.getCabinetId()));
-        }finally {
+                    .eq(RackIndex::getIsDelete, DelEnums.NO_DEL.getStatus())
+                    .eq(RackIndex::getCabinetId, vo.getCabinetId()));
+        } finally {
             //刷新机柜计算服务缓存
             log.info("刷新计算服务缓存 --- " + adder);
             HttpUtil.get(adder);
@@ -226,20 +229,20 @@ public class RackIndexServiceImpl implements RackIndexService {
     @Transactional(rollbackFor = Exception.class)
     public void batchDel(List<Integer> ids) {
         //删除列表为空
-        if (CollectionUtils.isEmpty(ids)){
+        if (CollectionUtils.isEmpty(ids)) {
             return;
         }
         try {
             List<RackIndex> rackIndexList = rackIndexDoMapper.selectList(new LambdaQueryWrapperX<RackIndex>()
-                    .in(RackIndex::getId,ids));
-            if (CollectionUtils.isEmpty(rackIndexList)){
+                    .in(RackIndex::getId, ids));
+            if (CollectionUtils.isEmpty(rackIndexList)) {
                 return;
             }
             rackIndexList.forEach(rackIndex -> {
                 //已经删除则物理删除
                 if (rackIndex.getIsDelete() == DelEnums.DELETE.getStatus()) {
                     rackIndexDoMapper.deleteById(rackIndex);
-                }else {
+                } else {
                     //逻辑删除
                     rackIndexDoMapper.update(new LambdaUpdateWrapper<RackIndex>()
                             .eq(RackIndex::getId, rackIndex.getId())
@@ -253,7 +256,7 @@ public class RackIndexServiceImpl implements RackIndexService {
                 log.info("key: " + key + " flag : " + flag);
             });
 
-        }finally {
+        } finally {
             //刷新机柜计算服务缓存
             log.info("刷新计算服务缓存 --- " + adder);
             HttpUtil.get(adder);
@@ -345,7 +348,7 @@ public class RackIndexServiceImpl implements RackIndexService {
      *
      * @param startTime 开始时间
      * @param endTime   结束时间
-     * @param id     请求参数
+     * @param id        请求参数
      * @param index     索引表
      * @return
      * @throws IOException
@@ -563,7 +566,7 @@ public class RackIndexServiceImpl implements RackIndexService {
 
         String endTime = DateUtil.formatDateTime(DateTime.now());
 
-        List<String> list = getData(startTime, endTime, id,RACK_EQ_TOTAL_DAY);
+        List<String> list = getData(startTime, endTime, id, RACK_EQ_TOTAL_DAY);
 
         Map<String, RackEqTotalDayDo> monthMap = new HashMap<>();
 
@@ -616,6 +619,7 @@ public class RackIndexServiceImpl implements RackIndexService {
 
 
     }
+
     /**
      * 获取周
      *
@@ -690,46 +694,75 @@ public class RackIndexServiceImpl implements RackIndexService {
         return Date.from(startOfDay.atZone(ZoneId.systemDefault()).toInstant());
     }
 
+    @Override
+    public void deleteData(String startTime,String endTime) {
 
-    public void deleteData() throws IOException {
+        Calendar endDay = Calendar.getInstance();
+        endDay.add(Calendar.YEAR, -2);
 
-        // 构建查询请求
-        SearchRequest searchRequest = new SearchRequest("your_index_name"); // 替换为实际的索引名称
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        sourceBuilder.query(QueryBuilders.termQuery("查询条件", "查询条件对应值"));
-        sourceBuilder.size(100); // 设置每次查询的文档数量
-        searchRequest.source(sourceBuilder);
 
-        // 执行查询请求
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-        TotalHits totalHits = searchResponse.getHits().getTotalHits(); // 获取查询结果的总命中数
 
-        // 批量删除
-        int batchSize = 100; // 每批处理的文档数量
-        for (int i = 0; i < totalHits.value; i += batchSize) {
-            BulkRequest bulkRequest = new BulkRequest();
-            for (SearchHit hit : searchResponse.getHits().getHits()) {
-                String documentId = hit.getId();
-                DeleteRequest deleteRequest = new DeleteRequest("your_index_name", "your_index_name_type", documentId); // 替换为实际的索引名称和文档类型
-                bulkRequest.add(deleteRequest);
-            }
+        endTime = DateUtil.formatDateTime(endDay.getTime());
+        log.info("endTime: " + endTime);
 
-            BulkResponse bulkResponse = client.bulk(bulkRequest, RequestOptions.DEFAULT);
+        GetAliasesRequest request = new GetAliasesRequest();
+            GetAliasesResponse getAliasesResponse = null;
 
-            // 处理删除结果
-            if (bulkResponse.hasFailures()) {
-                System.out.println("Failed to delete documents");
-            } else {
-                System.out.println("Delete documents successfully");
-            }
-
-            // 获取下一批文档
-            if (i + batchSize < totalHits.value) {
-                sourceBuilder.from(i + batchSize); // 设置下一批查询的起始位置
-                searchRequest.source(sourceBuilder);
-                searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-            }
+        try {
+            getAliasesResponse = client.indices().getAlias(request, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+
+        Map<String, Set<AliasMetaData>> map = getAliasesResponse.getAliases();
+            Set<String> indices = map.keySet();
+        String finalEndTime = endTime;
+        indices.forEach(index -> {
+               while (true) {
+                   // 构建查询请求
+                   SearchRequest searchRequest = new SearchRequest(index); // 替换为实际的索引名称
+                   SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+                   sourceBuilder.query(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(finalEndTime));
+                   sourceBuilder.size(10000); // 设置每次查询的文档数量
+                   searchRequest.source(sourceBuilder);
+                   // 执行查询请求
+                   SearchResponse searchResponse = null;
+                   try {
+                       searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+                   } catch (IOException e) {
+                       throw new RuntimeException(e);
+                   }
+                   TotalHits totalHits = searchResponse.getHits().getTotalHits(); // 获取查询结果的总命中数
+                   log.info("  size  :" + totalHits.value);
+
+                   if (totalHits.value == 0){
+                       break;
+                   }
+                    BulkRequest bulkRequest = new BulkRequest();
+                    for (SearchHit hit : searchResponse.getHits().getHits()) {
+                        String documentId = hit.getId();
+                        if (StringUtils.isEmpty(documentId)){
+                            continue;
+                        }
+                        DeleteRequest deleteRequest = new DeleteRequest(index, documentId); // 替换为实际的索引名称和文档类型
+                        bulkRequest.add(deleteRequest);
+                    }
+                    BulkResponse bulkResponse = null;
+                    try {
+                        bulkResponse = client.bulk(bulkRequest, RequestOptions.DEFAULT);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    // 处理删除结果
+                    if (bulkResponse.hasFailures()) {
+                        System.out.println("Failed to delete documents");
+                    } else {
+                        System.out.println("Delete documents successfully"   + "   " + index);
+                    }
+
+                }
+            });
     }
 
 }

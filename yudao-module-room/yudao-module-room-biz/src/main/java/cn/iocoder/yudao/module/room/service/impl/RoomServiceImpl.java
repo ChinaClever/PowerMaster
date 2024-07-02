@@ -1,25 +1,17 @@
 package cn.iocoder.yudao.module.room.service.impl;
 
-import cn.iocoder.yudao.framework.common.dto.aisle.AisleBarDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleCabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleDetailDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
-import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
-import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.*;
-import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.enums.DisableEnums;
-import cn.iocoder.yudao.framework.common.enums.PduBoxEnums;
-import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.framework.common.mapper.*;
-import cn.iocoder.yudao.framework.common.pojo.CommonResult;
-import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.room.dto.RoomDetailDTO;
 import cn.iocoder.yudao.module.room.service.RoomService;
@@ -27,19 +19,15 @@ import cn.iocoder.yudao.module.room.vo.RoomSaveVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import javax.persistence.criteria.CriteriaBuilder;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY_AISLE;
 
 /**
  * @author luowei
@@ -72,7 +60,7 @@ public class RoomServiceImpl implements RoomService {
     @Resource
     CabinetIndexMapper cabinetIndexMapper;
     @Resource
-    CabinetCfgMapper cabinetCfgMapper;
+    CabinetCfgDoMapper cfgDoMapper;
 
 
     /**
@@ -260,7 +248,7 @@ public class RoomServiceImpl implements RoomService {
         List<AisleCabinetDTO> aisleCabinetDTOList = new ArrayList<>();
         if (!CollectionUtils.isEmpty(cabinetIndexList)){
             List<Integer> cabinetIds = cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList());
-            List<CabinetCfg> cabinetCfgList = cabinetCfgMapper.selectList(new LambdaQueryWrapper<CabinetCfg>()
+            List<CabinetCfg> cabinetCfgList = cfgDoMapper.selectList(new LambdaQueryWrapper<CabinetCfg>()
                     .in(CabinetCfg::getCabinetId,cabinetIds));
             Map<Integer,CabinetCfg> cfgMap;
             if (!CollectionUtils.isEmpty(cabinetCfgList)){
@@ -314,7 +302,7 @@ public class RoomServiceImpl implements RoomService {
         if (!CollectionUtils.isEmpty(cabinetIndexList)){
             List<Integer> cabinetIds = cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList());
             cabinetIndexMap.putAll(cabinetIndexList.stream().collect(Collectors.groupingBy(CabinetIndex::getAisleId)));
-            List<CabinetCfg> cabinetCfgList = cabinetCfgMapper.selectList(new LambdaQueryWrapper<CabinetCfg>()
+            List<CabinetCfg> cabinetCfgList = cfgDoMapper.selectList(new LambdaQueryWrapper<CabinetCfg>()
                     .in(CabinetCfg::getCabinetId,cabinetIds));
             if (!CollectionUtils.isEmpty(cabinetCfgList)){
                 cabinetCfgMap.putAll(cabinetCfgList.stream().collect(Collectors.toMap(CabinetCfg::getCabinetId,Function.identity())));
@@ -440,7 +428,7 @@ public class RoomServiceImpl implements RoomService {
 
                         if (!CollectionUtils.isEmpty(cabinetIndexList)){
                             List<Integer> cabinetIds = cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList());
-                            List<CabinetCfg> cabinetCfgList = cabinetCfgMapper.selectList(new LambdaQueryWrapper<CabinetCfg>()
+                            List<CabinetCfg> cabinetCfgList = cfgDoMapper.selectList(new LambdaQueryWrapper<CabinetCfg>()
                                     .in(CabinetCfg::getCabinetId,cabinetIds));
                             Map<Integer,CabinetCfg> cfgMap = cabinetCfgList.stream().collect(Collectors.toMap(CabinetCfg::getCabinetId,Function.identity()));
                             Map<Integer,Integer>  indexMap = new HashMap<>();
@@ -475,7 +463,7 @@ public class RoomServiceImpl implements RoomService {
                                 }
                                 cabinetCfg.setYCoordinate(y);
                                 cabinetCfg.setXCoordinate(x);
-                                cabinetCfgMapper.updateById(cabinetCfg);
+                                cfgDoMapper.updateById(cabinetCfg);
                             });
                         }
 
@@ -541,16 +529,16 @@ public class RoomServiceImpl implements RoomService {
         log.info("vo : " + vo);
 
         //配置表
-        CabinetCfg cfg = cabinetCfgMapper.selectOne(new LambdaQueryWrapper<CabinetCfg>()
+        CabinetCfg cfg = cfgDoMapper.selectOne(new LambdaQueryWrapper<CabinetCfg>()
                 .eq(CabinetCfg::getCabinetId, vo.getId()));
         if (Objects.nonNull(cfg)) {
             //修改
-            cabinetCfgMapper.updateById(convertCfg(vo, cfg));
+            cfgDoMapper.updateById(convertCfg(vo, cfg));
         } else {
             cfg = new CabinetCfg();
 
             //新增
-            cabinetCfgMapper.insert(convertCfg(vo, cfg));
+            cfgDoMapper.insert(convertCfg(vo, cfg));
         }
     }
     /**
