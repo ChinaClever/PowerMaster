@@ -12,6 +12,7 @@
   </el-card>
   <el-card>
     <div class="dragContainer" @click.right="handleRightClick">
+      <div class="mask" v-if="!editEnable" @click.prevent=""></div>
       <el-table class="dragTable" :data="tableData" border style="width: 100%;" :row-style="{background: 'revert'}" >
         <el-table-column fixed type="index" width="80" align="center" :resizable="false" />
         <template v-for="(formItem, index) in formParam" :key="index">
@@ -445,6 +446,14 @@ onUnmounted(() => {
 }
 .dragContainer {
   position: relative;
+  .mask {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
+  }
   .menu {
     box-sizing: border-box;
     position: absolute;
