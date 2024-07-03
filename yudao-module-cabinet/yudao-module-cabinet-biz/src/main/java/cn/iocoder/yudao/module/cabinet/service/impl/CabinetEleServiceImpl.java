@@ -1,14 +1,11 @@
 package cn.iocoder.yudao.module.cabinet.service.impl;
 
-import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.thread.ThreadUtil;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalMonthDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalWeekDo;
-import cn.iocoder.yudao.framework.common.entity.es.cabinet.pow.CabinetPowHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.line.PduHdaLineHourDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
 import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
@@ -17,18 +14,13 @@ import cn.iocoder.yudao.module.cabinet.constant.CabConstants;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetEleChainDTO;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetEqTrendDTO;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetPduCurTrendDTO;
-import cn.iocoder.yudao.module.cabinet.dto.CabinetPowDTO;
 import cn.iocoder.yudao.module.cabinet.mapper.CabPduIndexMapper;
-import cn.iocoder.yudao.module.cabinet.mapper.CabinetPduMapper;
+import cn.iocoder.yudao.framework.common.mapper.CabinetPduMapper;
 import cn.iocoder.yudao.module.cabinet.service.CabinetEleService;
 import cn.iocoder.yudao.module.cabinet.util.TimeUtil;
-import cn.iocoder.yudao.module.cabinet.vo.CabinetPowVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.mzt.logapi.service.IFunctionService;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -39,21 +31,17 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
-import org.elasticsearch.search.aggregations.bucket.terms.Terms;
-import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.Sum;
 import org.elasticsearch.search.aggregations.metrics.TopHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.text.NumberFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -61,11 +49,9 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static cn.hutool.core.date.DatePattern.NORM_DATETIME_MINUTE_PATTERN;
 import static cn.hutool.core.date.DatePattern.NORM_DATETIME_PATTERN;
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.*;
 import static cn.iocoder.yudao.module.cabinet.constant.CabConstants.*;
-import static cn.iocoder.yudao.module.cabinet.service.impl.CabinetPowServiceImpl.TIME_STR;
 
 /**
  * @author luowei
