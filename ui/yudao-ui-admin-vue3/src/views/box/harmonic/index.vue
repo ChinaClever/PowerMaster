@@ -180,8 +180,6 @@ import download from '@/utils/download'
 import { IndexApi } from '@/api/bus/boxindex'
 // import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
-import { CabinetApi } from '@/api/cabinet/info'
-// import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -234,15 +232,15 @@ const handleCheck = async (row) => {
   const ids = [] as any
   var haveCabinet = false;
   row.forEach(item => {
-    if (item.type == 3) {
-      ids.push(item.id)
+    if (item.type == 7) {
+      ids.push(item.unique)
       haveCabinet = true;
     }
   })
   if(!haveCabinet ){
-    queryParams.cabinetIds = [-1]
+    queryParams.boxDevKeyList = [-1]
   }else{
-    queryParams.cabinetIds = ids
+    queryParams.boxDevKeyList = ids
   }
 
   getList();
@@ -344,7 +342,7 @@ const getListNoLoading = async () => {
 }
 
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
+  const res = await IndexApi.getBoxMenu()
   serverRoomArr.value = res
   if (res && res.length > 0) {
     const room = res[0]

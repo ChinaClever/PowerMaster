@@ -86,7 +86,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" >
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -234,7 +234,7 @@
             <el-button
               link
               type="primary"
-              @click="toPDUDisplayScreen(scope.row)"
+              @click="toDeatil(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 5"
             >
             设备详情
@@ -297,7 +297,7 @@
             <el-tag type="danger" v-else-if="item.aactivePowStatus != 0 || item.bactivePowStatus != 0 || item.cactivePowStatus != 0" >告警</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>
-          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
       </div>
       <Pagination
@@ -519,8 +519,10 @@ const getNavList = async() => {
   }
 }
 
-const toPDUDisplayScreen = (row) =>{
-  push('/pdu/pdudisplayscreen?devKey=' + row.devKey + '&location=' + row.location + '&id=' + row.id);
+const toDeatil = (row) =>{
+  const devKey = row.devKey;
+  const busId = row.busId;
+  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId }})
 }
 
 // const openNewPage = (scope) => {

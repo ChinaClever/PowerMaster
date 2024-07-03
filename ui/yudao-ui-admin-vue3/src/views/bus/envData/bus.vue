@@ -410,7 +410,7 @@ const handleQuery = () => {
 
 /** 详情操作*/
 const toDetails = (busId: number, ip_addr: string, address: string) => {
-  push('/busbar/record/envAnalysis/bus?busId='+busId+'&ipAddr='+ip_addr+'&address='+address);
+  push('/bus/record/envAnalysis/bus?busId='+busId+'&ipAddr='+ip_addr+'&address='+address);
 }
 
 /** 导出按钮操作 */

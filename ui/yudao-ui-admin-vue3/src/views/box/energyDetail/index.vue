@@ -113,7 +113,7 @@
 <script lang="ts" setup>
 // import * as echarts from 'echarts';
 import { EChartsOption } from 'echarts'
-import { CabinetApi } from '@/api/cabinet/info'
+import { IndexApi } from '@/api/bus/boxindex'
 import { BoxEnergyApi } from '@/api/bus/boxenergy'
 import 'echarts/lib/component/dataZoom';
 
@@ -162,11 +162,10 @@ watch(() => queryParams.busId,(val) => {
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
+  const res = await IndexApi.getBoxMenu()
   if (res.length > 0) {
     roomList.value = res
     machineList.value = handleNavList(queryParams.cabinetroomId)
-    console.log('接口获取机房导航列表', res)
   }
 }
 const handleNavList = (cabinetroomId) => {

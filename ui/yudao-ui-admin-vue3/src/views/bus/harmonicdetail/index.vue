@@ -134,7 +134,7 @@ import { IndexApi } from '@/api/bus/busindex'
 import { ElTree } from 'element-plus'
 import HarmonicRealTime from './component/HarmonicRealTime.vue'
 import HarmonicLine from './component/HarmonicLine.vue'
-import router from '@/router';
+
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })

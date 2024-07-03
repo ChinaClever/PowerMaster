@@ -111,11 +111,11 @@ const isHourDisabled = ref(false)
 const isPowActiveDisabled = ref(true)
  let intervalId: number | null = null; // 定时器
 const queryParams = reactive({
-  id: 4 as number | undefined,
-  devKey : "192.168.1.163_Busbar-1" as string | undefined,
+  id: history?.state?.busId as number | undefined,
+  devKey : history?.state?.devKey as string | undefined,
 })
 const lineChartQueryParams = reactive({
-  id: 4 as number | undefined,
+  id: history?.state?.busId as number | undefined,
   granularity: 'realtime',
 })
 const runLoad = ref();

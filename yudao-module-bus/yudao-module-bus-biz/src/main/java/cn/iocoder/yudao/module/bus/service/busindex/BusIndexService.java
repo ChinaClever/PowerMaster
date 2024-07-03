@@ -92,4 +92,12 @@ public interface BusIndexService {
     List<BusTrendDTO> getBusBalanceTrend(Integer busId);
 
     BusLineResBase getBusLineCurLine(BusIndexPageReqVO pageReqVO);
+
+    PowerRedisDataRes getBusPowerRedisData(String devKey);
+
+    BusLineResBase getBusLoadRateLine(BusIndexPageReqVO pageReqVO);
+
+    BusLineResBase getBusPowActiveLine(BusIndexPageReqVO pageReqVO);
+
+    BusLineResBase getBusPowReactiveLine(BusIndexPageReqVO pageReqVO);
 }

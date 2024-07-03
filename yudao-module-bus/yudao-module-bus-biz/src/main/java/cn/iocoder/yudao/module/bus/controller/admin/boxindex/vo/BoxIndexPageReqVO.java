@@ -26,6 +26,9 @@ public class BoxIndexPageReqVO extends PageParam {
     @Schema(description = "设备识别码")
     private String devKey;
 
+    @Schema(description = "始端箱ID列表")
+    private List<String> boxDevKeyList;
+
     @Schema(description = "ip地址")
     private String ipAddr;
 

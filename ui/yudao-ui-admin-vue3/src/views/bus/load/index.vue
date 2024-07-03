@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="均衡配电">
+  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="母线负荷">
     <template #NavInfo>
       <div>
         <div class="header">
@@ -94,7 +94,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" >
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -134,8 +134,7 @@
             <el-button
               link
               type="primary"
-              @click="toPDUDisplayScreen(scope.row)"
-              v-if="scope.row.status != null && scope.row.status != 5"
+              @click="toDetail(scope.row)"
             >
             设备详情
             </el-button>
@@ -172,7 +171,7 @@
             <el-tag type="warning" v-if="item.color == 3">大电流不平衡</el-tag>
             <el-tag type="danger" v-if="item.color == 4">大电流不平衡</el-tag>
           </div>
-          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
+          <button class="detail" @click="toDetail(item)">详情</button>
         </div>
       </div> -->
 
@@ -204,7 +203,7 @@
             <el-tag type="warning" v-if="item.color == 3">负载</el-tag>
             <el-tag type="danger" v-if="item.color == 4">负载</el-tag>
           </div>
-          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <button class="detail" @click="toDetail(item)" >详情</button>
         </div>
       </div>
       <Pagination
@@ -523,9 +522,13 @@ const getNavList = async() => {
   }
 }
 
-const toPDUDisplayScreen = (row) =>{
-  push('/pdu/pdudisplayscreen?devKey=' + row.devKey + '&location=' + row.location + '&id=' + row.id);
+const toDetail = (row) =>{
+  const devKey = row.devKey;
+  const busId = row.busId
+  push({path: '/bus/busmonitor/powerLoadDetail', state: { devKey, busId }})
 }
+
+
 
 // const openNewPage = (scope) => {
 //   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';

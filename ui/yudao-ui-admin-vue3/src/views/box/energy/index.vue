@@ -125,7 +125,7 @@
 </template>
 
 <script lang="ts" setup>
-import { CabinetApi } from '@/api/cabinet/info'
+
 import { IndexApi } from '@/api/bus/boxindex'
 
 const { push } = useRouter() // 路由跳转
@@ -145,7 +145,7 @@ const queryParams = reactive({
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
+  const res = await IndexApi.getBoxMenu()
   navList.value = res
 }
 

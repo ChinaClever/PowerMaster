@@ -10,7 +10,6 @@ public class LineSeries extends SeriesBase {
 
     private String type = "line";
 
-    private String symbol = "circle";
+    private String symbol = "none";
 
-    private Integer symbolSize =  4;
 }

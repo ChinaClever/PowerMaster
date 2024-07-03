@@ -11,8 +11,8 @@ export interface PDUDeviceVO {
 // PDU设备 API
 export const PDUDeviceApi = {
   // 查询PDU设备分页
-  getPDUDevicePage: async (params: any) => {
-    return await request.get({ url: `/pdu/PDU-device/page`, params })
+  getPDUDevicePage: async (data: any) => {
+    return await request.post({ url: `/pdu/PDU-device/page`, data })
   },
 
   // 查询PDU设备详情
@@ -40,8 +40,8 @@ export const PDUDeviceApi = {
     return await request.download({ url: `/pdu/PDU-device/export-excel`, params })
   },
 
-  PDUDisplay: async (params) => {
-    return await request.download({ url: `/pdu/PDU-device/displayscreen`, params })
+  PDUDisplay: async (data) => {
+    return await request.post({ url: `/pdu/PDU-device/displayscreen`, data })
   },
 
   PDUHis: async (params) => {
@@ -52,24 +52,28 @@ export const PDUDeviceApi = {
     return await request.get({ url: `/pdu/PDU-device/chartNewData`,params})
   },
 
-  getConsumeData: async (params) => {
-    return await request.get({ url: `/pdu/PDU-device/report/ele`,params})
+  getConsumeData: async (data) => {
+    return await request.post({ url: `/pdu/PDU-device/report/ele`,data})
   },
 
-  getPowData: async (params) => {
-    return await request.get({ url: `/pdu/PDU-device/report/pow`,params})
+  getPDUPFLine : async (data) => {
+    return await request.post({ url: `/pdu/PDU-device/report/pfline`, data })
   },
 
-  getOutLetData: async (params) => {
-    return await request.get({ url: `/pdu/PDU-device/report/outlet`,params})
+  getPowData: async (data) => {
+    return await request.post({ url: `/pdu/PDU-device/report/pow`,data})
   },
 
-  getTemData: async (params) => {
-    return await request.get({ url: `/pdu/PDU-device/report/tem`,params})
+  getOutLetData: async (data) => {
+    return await request.post({ url: `/pdu/PDU-device/report/outlet`,data})
   },
 
-  getPDULinePage: async (params) => {
-    return await request.get({ url: `/pdu/PDU-device/line/page`,params})
+  getTemData: async (data) => {
+    return await request.post({ url: `/pdu/PDU-device/report/tem`,data})
+  },
+
+  getPDULinePage: async (data) => {
+    return await request.post({ url: `/pdu/PDU-device/line/page`,data})
   },
 
   devKeyList: async () => {
@@ -79,4 +83,6 @@ export const PDUDeviceApi = {
   ipList: async () => {
     return await request.download({ url: `/pdu/PDU-device/ipList` })
   },
+
+  
 }

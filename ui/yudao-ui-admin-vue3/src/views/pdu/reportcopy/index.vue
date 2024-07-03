@@ -197,6 +197,12 @@
             <p v-if="visControll.isSameDay">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
             <Bar class="Container" width="70vw" height="58vh" :list="eleList"/>
           </div>
+          <div class="pageBox"  v-if="visControll.pfVis">
+            <div class="page-conTitle">
+              功率因素曲线
+            </div>        
+            <PFLine class="Container"  width="70vw" height="58vh" :list="pfLineList"/>
+          </div>
           <div class="pageBox"  v-if="visControll.powVis">
             <div class="page-conTitle">
               平均功率曲线
@@ -237,6 +243,7 @@ import { ElTree } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
 import type Node from 'element-plus/es/components/tree/src/model/node'
 import Line from './component/Line.vue'
+import PFLine from './component/PFLine.vue'
 import Bar from './component/Bar.vue'
 import HorizontalBar from './component/HorizontalBar.vue'
 import EnvTemLine from './component/EnvTemLine.vue'
@@ -249,6 +256,7 @@ const outletList = ref() as any;
 const temList = ref() as any;
 const eleList = ref() as any;
 const totalLineList = ref() as any;
+const pfLineList = ref() as any;
 const now = ref()
 const switchValue = ref(1);
 const ipList = ref([])
@@ -260,6 +268,7 @@ const visControll = reactive({
   powVis : false,
   outletVis : false,
   temVis : false,
+  pfVis: false,
 })
 const serChartContainerWidth = ref(0)
 
@@ -559,6 +568,14 @@ const getList = async () => {
     visControll.eqVis = false;
   }
   
+  const data = await PDUDeviceApi.getPDUPFLine(queryParams);
+  pfLineList.value = data.pfLineRes;
+  console.log("pfLineList.value",pfLineList.value)
+  if(pfLineList.value?.time != null && pfLineList.value?.time?.length > 0){
+    visControll.pfVis = true;
+  }else {
+    visControll.pfVis = false;
+  }
 
   powData.value = await PDUDeviceApi.getPowData(queryParams);
   totalLineList.value = powData.value.totalLineRes;
@@ -595,10 +612,11 @@ const getList = async () => {
   }
 
   var PDU = await PDUDeviceApi.PDUDisplay(queryParams);
+  console.log("PDU",PDU)
   var temp = [] as any;
   var baseInfo = await PDUDeviceApi.getPDUDevicePage(queryParams);
   // 假设 PDU.pdu_data.output_item_list.pow_value 是一个 double 数组
-  var powValueArray = PDU.pdu_data?.output_item_list?.pow_value;
+  var powValueArray = PDU?.pdu_data?.output_item_list?.pow_value;
   // 过滤出大于 0 的元素，并将值与下标保存到对象数组中
   if(powValueArray && powValueArray.length > 0){
     var resultArray = [] as any;
@@ -638,26 +656,26 @@ const getList = async () => {
   }
   
 
-    temp.push({
-      baseInfoName : "所属位置",
-      baseInfoValue : baseInfo?.list && baseInfo?.list.length > 0 ? baseInfo?.list[0].location : "/",
-      consumeName : "消耗电量",
-      consumeValue : eqData.value.eq && eqData.value.eq.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '/',
-    })
-    temp.push({
-      baseInfoName : "网络地址",
-      baseInfoValue : queryParams.ipAddr + "-" + queryParams.cascadeAddr,
-      consumeName : "当前视在功率",
-      consumeValue : PDU?.pdu_data?.pdu_total_data ? PDU.pdu_data.pdu_total_data.pow_apparent.toFixed(3) + "kVA" : '/'
-    })
-    temp.push({
-      baseInfoName : "设备状态",
-      baseInfoValue : PDU.status != null ? PDU.status : '/',
-      pduAlarm : PDU.pdu_alarm,
-      consumeName : "当前功率因素",
-      consumeValue : PDU?.pdu_data?.pdu_total_data ? PDU.pdu_data.pdu_total_data.power_factor?.toFixed(2) : '/'
-    })
-    PDUTableData.value = temp;
+  temp.push({
+    baseInfoName : "所属位置",
+    baseInfoValue : baseInfo?.list && baseInfo?.list.length > 0 ? baseInfo?.list[0].location : "/",
+    consumeName : "消耗电量",
+    consumeValue : eqData.value.eq && eqData.value.eq.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '/',
+  })
+  temp.push({
+    baseInfoName : "网络地址",
+    baseInfoValue : queryParams.ipAddr + "-" + queryParams.cascadeAddr,
+    consumeName : "当前视在功率",
+    consumeValue : PDU?.pdu_data?.pdu_total_data ? PDU.pdu_data.pdu_total_data.pow_apparent.toFixed(3) + "kVA" : '/'
+  })
+  temp.push({
+    baseInfoName : "设备状态",
+    baseInfoValue : PDU?.status != null ? PDU.status : '/',
+    pduAlarm : PDU?.pdu_alarm,
+    consumeName : "当前功率因素",
+    consumeValue : PDU?.pdu_data?.pdu_total_data ? PDU.pdu_data.pdu_total_data.power_factor?.toFixed(2) : '/'
+  })
+  PDUTableData.value = temp;
   
   
   // initChart();

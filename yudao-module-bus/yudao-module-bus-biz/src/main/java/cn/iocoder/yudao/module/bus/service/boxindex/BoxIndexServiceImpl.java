@@ -150,6 +150,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         for (BoxIndex boxIndexDO : list) {
             BoxIndexRes boxIndexRes = new BoxIndexRes();
             boxIndexRes.setStatus(boxIndexDO.getRunStatus());
+            boxIndexRes.setBoxId(boxIndexDO.getId());
+            boxIndexDO.setDevKey(boxIndexDO.getDevKey());
             res.add(boxIndexRes);
             JSONObject jsonObject = (JSONObject) ops.get("packet:box:" + boxIndexDO.getDevKey());
             if (jsonObject == null){
@@ -479,7 +481,14 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             JSONObject loopItemList = jsonObject.getJSONObject("box_data").getJSONObject("loop_item_list");
             JSONArray volValue = loopItemList.getJSONArray("vol_value");
             JSONArray curValue = loopItemList.getJSONArray("cur_value");
-            JSONObject boxTotalData = jsonObject.getJSONObject("box_data").getJSONObject("box_total_data");
+            List<Double> curList = curValue.toList(Double.class);
+            List<Double> volList = volValue.toList(Double.class);
+            curList.sort(Comparator.naturalOrder());
+            volList.sort(Comparator.naturalOrder());
+            Double curAvg = (curList.get(0) + curList.get(1) + curList.get(2))/3;
+            Double volAvg = (volList.get(0) + volList.get(1) + volList.get(2))/3;
+            Double curUnbalance = curAvg == 0 ? 0 : (curList.get(2) - curAvg) / curAvg * 100;
+            Double volUnbalance = volAvg == 0 ? 0 : (volList.get(2) - volList.get(0)) / volAvg * 100;
             JSONArray curAlarmArr = loopItemList.getJSONArray("cur_max");
             curAlarmArr.sort(Collections.reverseOrder());
             double maxVal = curAlarmArr.getDouble(0);
@@ -503,9 +512,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             }
             if (boxCurbalanceColorDO == null) {
                 if (a >= maxVal * 0.2) {
-                    if (boxTotalData.getDouble("cur_unbalance") < 15) {
+                    if (curUnbalance < 15) {
                         color = 2;
-                    } else if (boxTotalData.getDouble("cur_unbalance") < 30) {
+                    } else if (curUnbalance < 30) {
                         color = 3;
                     } else {
                         color = 4;
@@ -515,9 +524,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 }
             } else {
                 if (a >= maxVal * 0.2) {
-                    if (boxTotalData.getDouble("cur_unbalance") < boxCurbalanceColorDO.getRangeOne()) {
+                    if (curUnbalance < boxCurbalanceColorDO.getRangeOne()) {
                         color = 2;
-                    } else if (boxTotalData.getDouble("cur_unbalance") < boxCurbalanceColorDO.getRangeFour()) {
+                    } else if (curUnbalance < boxCurbalanceColorDO.getRangeFour()) {
                         color = 3;
                     } else {
                         color = 4;
@@ -526,8 +535,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                     color = 1;
                 }
             }
-            boxBalanceDataRes.setCurUnbalance(boxTotalData.getDouble("cur_unbalance"));
-            boxBalanceDataRes.setVolUnbalance(boxTotalData.getDouble("vol_unbalance"));
+            boxBalanceDataRes.setCurUnbalance(curUnbalance);
+            boxBalanceDataRes.setVolUnbalance(volUnbalance);
             boxBalanceDataRes.setColor(color);
         }
         return new PageResult<>(res,boxIndexDOPageResult.getTotal());
@@ -542,12 +551,17 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         if (jsonObject == null){
             return result;
         }
-        JSONObject busTotalData = jsonObject.getJSONObject("box_data").getJSONObject("box_total_data");
         JSONObject loopItemList = jsonObject.getJSONObject("box_data").getJSONObject("loop_item_list");
         JSONArray curValue = loopItemList.getJSONArray("cur_value");
         JSONArray volValue = loopItemList.getJSONArray("vol_value");
-        Double curUnbalance = busTotalData.getDouble("cur_unbalance");
-        Double volUnbalance = busTotalData.getDouble("vol_unbalance");
+        List<Double> curList = curValue.toList(Double.class);
+        List<Double> volList = volValue.toList(Double.class);
+        curList.sort(Comparator.naturalOrder());
+        volList.sort(Comparator.naturalOrder());
+        Double curAvg = (curList.get(0) + curList.get(1) + curList.get(2))/3;
+        Double volAvg = (volList.get(0) + volList.get(1) + volList.get(2))/3;
+        Double curUnbalance = curAvg == 0 ? 0 : (curList.get(2) - curAvg) / curAvg * 100;
+        Double volUnbalance = volAvg == 0 ? 0 : (volList.get(2) - volList.get(0)) / volAvg * 100;
         result.setCur_value(curValue.toArray(Float.class));
         result.setVol_value(volValue.toArray(Float.class));
         result.setCurUnbalance(curUnbalance);

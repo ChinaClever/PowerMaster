@@ -222,6 +222,34 @@ public class BusIndexController {
         return success(result);
     }
 
+    @Operation(summary = "始端箱通过devKey获取id")
+    @PostMapping("/power/detail")
+    public CommonResult<PowerRedisDataRes> getBusPowerRedisData(@RequestBody BusIndexPageReqVO pageReqVO) {
+        PowerRedisDataRes result = indexService.getBusPowerRedisData(pageReqVO.getDevKey());
+        return success(result);
+    }
+
+    @Operation(summary = "始端箱通过devKey获取id")
+    @PostMapping("/power/loadrate")
+    public CommonResult<BusLineResBase> getBusLoadRateLine(@RequestBody BusIndexPageReqVO pageReqVO) {
+        BusLineResBase result = indexService.getBusLoadRateLine(pageReqVO);
+        return success(result);
+    }
+
+    @Operation(summary = "始端箱通过devKey获取id")
+    @PostMapping("/power/powactive")
+    public CommonResult<BusLineResBase> getBusPowActiveLine(@RequestBody BusIndexPageReqVO pageReqVO) {
+        BusLineResBase result = indexService.getBusPowActiveLine(pageReqVO);
+        return success(result);
+    }
+
+    @Operation(summary = "始端箱通过devKey获取id")
+    @PostMapping("/power/powreactive")
+    public CommonResult<BusLineResBase> getBusPowReactiveLine(@RequestBody BusIndexPageReqVO pageReqVO) {
+        BusLineResBase result = indexService.getBusPowReactiveLine(pageReqVO);
+        return success(result);
+    }
+
 
 //    @GetMapping("/export-excel")
 //    @Operation(summary = "导出始端箱索引 Excel")

@@ -411,7 +411,7 @@ const handleQuery = () => {
 
 /** 详情操作*/
 const toDetails = (boxId: number, ip_addr: string, address: string) => {
-  push('/busbar/record/envAnalysis/box?boxId='+boxId+'&ipAddr='+ip_addr+'&address='+address);
+  push('/bus/record/envAnalysis/box?boxId='+boxId+'&ipAddr='+ip_addr+'&address='+address);
 }
 
 /** 导出按钮操作 */

@@ -400,7 +400,7 @@ const handleExport = async () => {
 
 /** 详情操作*/
 const toDetails = (busId: number, location: string) => {
-  push('/busbar/nenghao/ecdistribution/bus?busId='+busId+'&address='+location);
+  push('/bus/nenghao/ecdistribution/bus?busId='+busId+'&address='+location);
 }
 
 /** 初始化 **/

@@ -7,12 +7,15 @@ import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalDayDo
 import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalMonthDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.line.BusLineHourDo;
+import cn.iocoder.yudao.framework.common.entity.es.bus.line.BusLineRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.tem.BusTemHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.total.BusTotalHourDo;
+import cn.iocoder.yudao.framework.common.entity.es.bus.total.BusTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.line.PduHdaLineHourDo;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.bus.constant.BusConstants;
+import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxIndexPageReqVO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusTemDetailRes;
 import cn.iocoder.yudao.module.bus.dal.dataobject.buscurbalancecolor.BusCurbalanceColorDO;
@@ -136,6 +139,8 @@ public class BusIndexServiceImpl implements BusIndexService {
         for (BusIndexDO busIndexDO : list) {
             BusIndexRes busIndexRes = new BusIndexRes();
             busIndexRes.setStatus(busIndexDO.getRunStatus());
+            busIndexRes.setBusId(busIndexDO.getId());
+            busIndexRes.setDevKey(busIndexDO.getDevKey());
             res.add(busIndexRes);
             JSONObject jsonObject = (JSONObject) ops.get("packet:bus:" + busIndexDO.getDevKey());
             if (jsonObject == null){
@@ -184,6 +189,8 @@ public class BusIndexServiceImpl implements BusIndexService {
         for (BusIndexDO busIndexDO : list) {
             BusRedisDataRes busRedisDataRes = new BusRedisDataRes();
             busRedisDataRes.setStatus(busIndexDO.getRunStatus());
+            busRedisDataRes.setBusId(busIndexDO.getId());
+            busRedisDataRes.setDevKey(busIndexDO.getDevKey());
             res.add(busRedisDataRes);
             JSONObject jsonObject = (JSONObject) ops.get("packet:bus:" + busIndexDO.getDevKey());
             if (jsonObject == null){
@@ -796,7 +803,6 @@ public class BusIndexServiceImpl implements BusIndexService {
             List<Integer> ids = Arrays.asList(pageReqVO.getBusId());
             List<String> data = getData(startTime,endTime,ids,index);
 
-
             if (pageReqVO.getLineType() == 0){
                 result.getSeries().add(new LineSeries().setName("A路电流"));
                 result.getSeries().add(new LineSeries().setName("B路电流"));
@@ -821,6 +827,193 @@ public class BusIndexServiceImpl implements BusIndexService {
                 });
             }
             return result;
+        }catch (Exception e){
+            log.error("获取数据失败",e);
+        }
+        return result;
+    }
+
+    @Override
+    public PowerRedisDataRes getBusPowerRedisData(String devKey) {
+        PowerRedisDataRes result = new PowerRedisDataRes();
+        ValueOperations ops = redisTemplate.opsForValue();
+        JSONObject jsonObject = (JSONObject) ops.get("packet:bus:" + devKey);
+        if (jsonObject == null){
+            return result;
+        }
+        JSONArray temArr = jsonObject.getJSONObject("env_item_list").getJSONArray("tem_value");
+        result.setTempA(temArr.getDouble(0));
+        result.setTempB(temArr.getDouble(1));
+        result.setTempC(temArr.getDouble(2));
+        JSONObject busTotalData = jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data");
+        result.setVub(busTotalData.getDouble("vol_unbalance"));
+        result.setCub(busTotalData.getDouble("cur_unbalance"));
+        result.setFr(busTotalData.getDouble("hz_value"));
+        result.setPf(busTotalData.getDouble("power_factor"));
+        result.setS(busTotalData.getDouble("pow_apparent"));
+        result.setP(busTotalData.getDouble("pow_value"));
+        result.setQ(busTotalData.getDouble("pow_reactive"));
+        result.setUpdateTime(jsonObject.getString("datetime"));
+        JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
+        JSONArray curValue = lineItemList.getJSONArray("cur_value");
+        result.setIa(curValue.getDouble(0));
+        result.setIb(curValue.getDouble(1));
+        result.setIc(curValue.getDouble(2));
+        JSONArray volValue = lineItemList.getJSONArray("vol_value");
+        result.setUa(volValue.getDouble(0));
+        result.setUb(volValue.getDouble(1));
+        result.setUc(volValue.getDouble(2));
+        result.setUab(result.getUa() * 1.732);
+        result.setUbc(result.getUb() * 1.732);
+        result.setUca(result.getUc() * 1.732);
+        JSONArray curMax = lineItemList.getJSONArray("cur_max");
+        JSONArray volMax = lineItemList.getJSONArray("vol_max");
+        Double fInstalledCapacity = 0D;
+        for (int i = 0; i < 3; i++) {
+            fInstalledCapacity += curMax.getDouble(i) * volMax.getDouble(i);
+        }
+        result.setFInstalledCapacity(fInstalledCapacity / 1000);
+        BusIndexPageReqVO reqVO = new BusIndexPageReqVO();
+        reqVO.setDevKey(devKey);
+        reqVO.setTimeType(0);
+        BusLineRes busLineRes = getBusLineDevicePage(reqVO).getList().get(0);
+        result.setMd(busLineRes.getL1MaxPow().doubleValue() + busLineRes.getL2MaxPow().doubleValue() + busLineRes.getL3MaxPow().doubleValue());
+        JSONArray volThd = lineItemList.getJSONArray("vol_thd");
+        JSONArray curThd = lineItemList.getJSONArray("cur_thd");
+        result.setIaTHD(curThd.getDouble(0));
+        result.setIbTHD(curThd.getDouble(1));
+        result.setIcTHD(curThd.getDouble(2));
+        result.setUaTHD(volThd.getDouble(0));
+        result.setUbTHD(volThd.getDouble(1));
+        result.setUcTHD(volThd.getDouble(2));
+        result.setLoadFactor((result.getP() / result.getFInstalledCapacity())*100);
+        return result;
+    }
+
+    @Override
+    public BusLineResBase getBusLoadRateLine(BusIndexPageReqVO pageReqVO) {
+        BusHarmonicLineRes result = new BusHarmonicLineRes();
+        try {
+            String startTime = localDateTimeToString(pageReqVO.getOldTime());
+            String endTime = localDateTimeToString(pageReqVO.getNewTime());
+            List<Integer> ids = Arrays.asList(pageReqVO.getBusId());
+            List<String> busHdaLineRealtime = getData(startTime, endTime, ids, "bus_hda_line_realtime");
+            Map<Integer, List<BusLineRealtimeDo>> lineMap = busHdaLineRealtime.stream()
+                    .map(str -> JsonUtils.parseObject(str, BusLineRealtimeDo.class))
+                    .collect(Collectors.groupingBy(BusLineRealtimeDo::getLineId));
+            boolean first = false;
+            for (int i = 1; i < 4; i++) {
+                if(lineMap.get(i) != null){
+                    List<BusLineRealtimeDo> busLineRealtimeDos = lineMap.get(i);
+                    List<Float> loadRate = busLineRealtimeDos.stream().map(BusLineRealtimeDo::getLoadRate).collect(Collectors.toList());
+                    LineSeries lineSeries = new LineSeries();
+                    if(!first){
+                        List<String> time = busLineRealtimeDos.stream().map(hour -> hour.getCreateTime().toString("HH:mm")).collect(Collectors.toList());
+                        result.setTime(time);
+                    }
+                    if(i == 1){
+                        lineSeries.setName("A相负载率");
+                    }else if (i == 2){
+                        lineSeries.setName("B相负载率");
+                    }else{
+                        lineSeries.setName("C相负载率");
+                    }
+                    lineSeries.setData(loadRate);
+                    result.getSeries().add(lineSeries);
+                }
+            }
+        }catch (Exception e){
+            log.error("获取数据失败",e);
+        }
+        return result;
+    }
+
+    @Override
+    public BusLineResBase getBusPowActiveLine(BusIndexPageReqVO pageReqVO) {
+        BusHarmonicLineRes result = new BusHarmonicLineRes();
+        try {
+            String startTime = localDateTimeToString(pageReqVO.getOldTime());
+            String endTime = localDateTimeToString(pageReqVO.getNewTime());
+            List<Integer> ids = Arrays.asList(pageReqVO.getBusId());
+            List<String> busHdaLineRealtime = getData(startTime, endTime, ids, "bus_hda_line_realtime");
+            List<String> busHdaTotalRealtime = getData(startTime, endTime, ids, "bus_hda_total_realtime");
+            LineSeries lineSeries = new LineSeries();
+            lineSeries.setName("P");
+            busHdaTotalRealtime.forEach( str ->{
+                BusTotalRealtimeDo esDo = JsonUtils.parseObject(str, BusTotalRealtimeDo.class);
+                lineSeries.getData().add(esDo.getPowActive());
+            });
+            result.getSeries().add(lineSeries);
+            Map<Integer, List<BusLineRealtimeDo>> lineMap = busHdaLineRealtime.stream()
+                    .map(str -> JsonUtils.parseObject(str, BusLineRealtimeDo.class))
+                    .collect(Collectors.groupingBy(BusLineRealtimeDo::getLineId));
+            boolean first = false;
+            for (int i = 1; i < 4; i++) {
+                if(lineMap.get(i) != null){
+                    List<BusLineRealtimeDo> busLineRealtimeDos = lineMap.get(i);
+                    List<Float> powActive = busLineRealtimeDos.stream().map(BusLineRealtimeDo::getPowActive).collect(Collectors.toList());
+                    LineSeries series = new LineSeries();
+                    if(!first){
+                        List<String> time = busLineRealtimeDos.stream().map(hour -> hour.getCreateTime().toString("HH:mm")).collect(Collectors.toList());
+                        result.setTime(time);
+                    }
+                    if(i == 1){
+                        series.setName("Pa");
+                    }else if (i == 2){
+                        series.setName("Pb");
+                    }else{
+                        series.setName("Pc");
+                    }
+                    series.setData(powActive);
+                    result.getSeries().add(series);
+                }
+            }
+        }catch (Exception e){
+            log.error("获取数据失败",e);
+        }
+        return result;
+    }
+
+    @Override
+    public BusLineResBase getBusPowReactiveLine(BusIndexPageReqVO pageReqVO) {
+        BusHarmonicLineRes result = new BusHarmonicLineRes();
+        try {
+            String startTime = localDateTimeToString(pageReqVO.getOldTime());
+            String endTime = localDateTimeToString(pageReqVO.getNewTime());
+            List<Integer> ids = Arrays.asList(pageReqVO.getBusId());
+            List<String> busHdaLineRealtime = getData(startTime, endTime, ids, "bus_hda_line_realtime");
+            List<String> busHdaTotalRealtime = getData(startTime, endTime, ids, "bus_hda_total_realtime");
+            LineSeries lineSeries = new LineSeries();
+            lineSeries.setName("Q");
+            busHdaTotalRealtime.forEach( str ->{
+                BusTotalRealtimeDo esDo = JsonUtils.parseObject(str, BusTotalRealtimeDo.class);
+                lineSeries.getData().add(esDo.getPowReactive());
+            });
+            result.getSeries().add(lineSeries);
+            Map<Integer, List<BusLineRealtimeDo>> lineMap = busHdaLineRealtime.stream()
+                    .map(str -> JsonUtils.parseObject(str, BusLineRealtimeDo.class))
+                    .collect(Collectors.groupingBy(BusLineRealtimeDo::getLineId));
+            boolean first = false;
+            for (int i = 1; i < 4; i++) {
+                if(lineMap.get(i) != null){
+                    List<BusLineRealtimeDo> busLineRealtimeDos = lineMap.get(i);
+                    List<Float> powReactive = busLineRealtimeDos.stream().map(BusLineRealtimeDo::getPowReactive).collect(Collectors.toList());
+                    LineSeries series = new LineSeries();
+                    if(!first){
+                        List<String> time = busLineRealtimeDos.stream().map(hour -> hour.getCreateTime().toString("HH:mm")).collect(Collectors.toList());
+                        result.setTime(time);
+                    }
+                    if(i == 1){
+                        series.setName("Qa");
+                    }else if (i == 2){
+                        series.setName("Qb");
+                    }else{
+                        series.setName("Qc");
+                    }
+                    series.setData(powReactive);
+                    result.getSeries().add(series);
+                }
+            }
         }catch (Exception e){
             log.error("获取数据失败",e);
         }

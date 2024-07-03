@@ -12,5 +12,7 @@ public class LineSeries {
 
     private String type = "line";
 
+    private String symbol = "none";
+
     private List<Float> data = new ArrayList<>();
 }

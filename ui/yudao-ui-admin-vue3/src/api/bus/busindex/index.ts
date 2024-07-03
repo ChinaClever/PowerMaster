@@ -116,5 +116,19 @@ export const IndexApi = {
     return await request.post({ url: `/bus/index/getid` ,  data})
   },
 
- 
+  getBusPowerRedisData: async (data: any) => {
+    return await request.post({ url: `/bus/index/power/detail` ,  data})
+  },
+
+  getBusLoadRateLine: async (data: any) => {
+    return await request.post({ url: `/bus/index/power/loadrate` ,  data})
+  },
+
+  getBusPowActiveLine: async (data: any) => {
+    return await request.post({ url: `/bus/index/power/powactive` ,  data})
+  },
+
+  getBusPowReactiveLine: async (data: any) => {
+    return await request.post({ url: `/bus/index/power/powreactive` ,  data})
+  },
 }

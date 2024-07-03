@@ -483,6 +483,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         return result;
     }
 
+
+
     @Override
     public String getDisplayDataByDevKey(String devKey) {
         if (StringUtils.isEmpty(devKey)){
@@ -711,6 +713,61 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     result.put("maxEleTime",maxEleTime);
                     result.put("barRes",barRes);
                 }
+            }
+        }catch (Exception e){
+            log.error("获取数据失败",e);
+        }
+        return result;
+    }
+
+    @Override
+    public Map getPDUPFLine(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+        Map result = new HashMap<>();
+        CabinetChartResBase totalLineRes = new CabinetChartResBase();
+        result.put("pfLineRes",totalLineRes);
+        try {
+            PduIndex pduIndex = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getDevKey, devKey));
+
+            if(pduIndex != null) {
+                String index = null;
+                Long Id = pduIndex.getId();
+
+                if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                    index = "pdu_hda_total_hour";
+                    if (oldTime.equals(newTime)) {
+                        newTime = newTime.withHour(23).withMinute(59).withSecond(59);
+                    }
+
+                } else {
+                    index = "pdu_hda_total_day";
+                    oldTime = oldTime.plusDays(1);
+                    newTime = newTime.plusDays(1);
+                }
+
+                String startTime = localDateTimeToString(oldTime);
+                String endTime = localDateTimeToString(newTime);
+                List<String> data = getData(startTime, endTime, Arrays.asList(Integer.valueOf(Id.intValue())), index);
+                List<PduHdaTotalHourDo> powList = data.stream().map(str -> JsonUtils.parseObject(str, PduHdaTotalHourDo.class)).collect(Collectors.toList());
+
+                LineSeries totalPFLine = new LineSeries();
+                totalPFLine.setName("总平均功率因素");
+
+                totalLineRes.getSeries().add(totalPFLine);
+
+                if(timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())){
+                    powList.forEach(hourdo -> {
+                        totalPFLine.getData().add(hourdo.getPowerFactorAvgValue());
+
+                        totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm"));
+
+                    });
+                }else{
+                    powList.forEach(hourdo -> {
+                        totalPFLine.getData().add(hourdo.getPowerFactorAvgValue());
+                        totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
+                    });
+                }
+                result.put("pfLineRes",totalLineRes);
             }
         }catch (Exception e){
             log.error("获取数据失败",e);
