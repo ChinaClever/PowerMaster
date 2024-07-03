@@ -3,7 +3,7 @@ package cn.iocoder.yudao.module.cabinet.controller.admin;
 import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.module.cabinet.dto.CabinetDTO;
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;

@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.cabinet.dto;
+package cn.iocoder.yudao.framework.common.dto.cabinet;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetEnvSensor;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
@@ -186,4 +186,6 @@ public class CabinetDTO {
 
     @Schema(description = "B路插接箱输出位id", example = "1")
     private Integer boxOutletIdB;
+
+    private Integer index;
 }
