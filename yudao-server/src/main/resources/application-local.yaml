@@ -312,6 +312,8 @@ bus-cal-refresh-url: 127.0.0.1:48082/bus-cal/refresh
 bus-dc-refresh-url: 127.0.0.1:48080/bus-dc/refresh
 #柜列配置刷新地址
 aisle-refresh-url: 127.0.0.1:48082/aisle/refresh
+#机房配置刷新地址
+room-refresh-url: 127.0.0.1:48082/room/refresh
 
 mybatis-plus:
   configuration:

@@ -50,7 +50,7 @@ public class RoomController {
      */
     @Operation(summary = "机房新增/编辑")
     @PostMapping("/room/save")
-    public CommonResult<Integer> saveRoom(@RequestBody RoomSaveVo vo) throws Exception {
+    public CommonResult<Integer> saveRoom(@RequestBody RoomSaveVo vo) {
         return success(roomService.roomSave(vo));
     }
 
@@ -62,7 +62,7 @@ public class RoomController {
      */
     @Operation(summary = "机房删除")
     @GetMapping("/room/delete")
-    public CommonResult<Integer> deleteRoom(@Param("id") int id) throws Exception {
+    public CommonResult<Integer> deleteRoom(@Param("id") int id) {
        roomService.deleteRoom(id);
         return success(id);
     }
