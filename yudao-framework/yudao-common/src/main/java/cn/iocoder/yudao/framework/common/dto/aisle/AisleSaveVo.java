@@ -1,8 +1,11 @@
 package cn.iocoder.yudao.framework.common.dto.aisle;
 
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * @author luowei
@@ -72,5 +75,15 @@ public class AisleSaveVo {
      */
     @Schema(description = "类型", example = "0")
     private String type;
+
+    /**
+     * 母线数据
+     */
+    @Schema(description = "母线数据", example = "[]")
+    private List<AisleBarDTO> barVos;
+
+    @Schema(description = "机柜列表", example = "[]")
+    private List<CabinetVo>  cabinetList;
+
 
 }

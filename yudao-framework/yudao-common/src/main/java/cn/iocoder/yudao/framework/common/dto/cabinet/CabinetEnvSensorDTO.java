@@ -1,15 +1,7 @@
-package cn.iocoder.yudao.module.cabinet.dto;
+package cn.iocoder.yudao.framework.common.dto.cabinet;
 
-import cn.iocoder.yudao.module.cabinet.enums.CabinetChannelEnum;
-import cn.iocoder.yudao.module.cabinet.enums.CabinetPduEnum;
-import cn.iocoder.yudao.module.cabinet.enums.CabinetPositionEnum;
-import cn.iocoder.yudao.module.cabinet.enums.SensorTypeEnum;
-import com.baomidou.mybatisplus.annotation.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-
-import java.io.Serializable;
-import java.time.LocalDateTime;
 
 /**
  * @author luowei

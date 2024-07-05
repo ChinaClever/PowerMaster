@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.framework.common.dto.aisle;
 
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -80,7 +81,7 @@ public class AisleDetailDTO {
     /**
      * 机柜数据
      */
-    private List<AisleCabinetDTO> cabinetList;
+    private List<CabinetDTO> cabinetList;
 
 
 }

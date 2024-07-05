@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.room.service.impl;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleCabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleDetailDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
@@ -12,6 +13,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.enums.DisableEnums;
 import cn.iocoder.yudao.framework.common.mapper.*;
+import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.room.dto.RoomDetailDTO;
 import cn.iocoder.yudao.module.room.service.RoomService;
@@ -19,6 +21,7 @@ import cn.iocoder.yudao.module.room.vo.RoomSaveVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +31,8 @@ import javax.annotation.Resource;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY_ROOM;
 
 /**
  * @author luowei
@@ -49,11 +54,6 @@ public class RoomServiceImpl implements RoomService {
     @Resource
     AisleCfgMapper aisleCfgMapper;
 
-    @Resource
-    AisleBarMapper aisleBarMapper;
-
-    @Resource
-    AisleBoxMapper aisleBoxMapper;
 
     @Resource
     RedisTemplate redisTemplate;
@@ -61,7 +61,8 @@ public class RoomServiceImpl implements RoomService {
     CabinetIndexMapper cabinetIndexMapper;
     @Resource
     CabinetCfgDoMapper cfgDoMapper;
-
+    @Value("${room-refresh-url}")
+    public String adder;
 
     /**
      * 机房保存
@@ -71,103 +72,118 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public Integer roomSave(RoomSaveVo roomSaveVo) {
 
-        RoomIndex index = new RoomIndex();
-        index.setName(roomSaveVo.getRoomName());
-        index.setPowerCapacity(roomSaveVo.getPowCapacity());
+        try {
+            RoomIndex index = new RoomIndex();
+            index.setName(roomSaveVo.getRoomName());
+            index.setPowerCapacity(roomSaveVo.getPowCapacity());
 
-        if (Objects.nonNull(roomSaveVo.getId())){
-            //编辑
-            RoomIndex roomIndex = roomIndexMapper.selectOne(new LambdaQueryWrapper<RoomIndex>()
-                    .eq(RoomIndex::getId,roomSaveVo.getId()));
-            if (Objects.nonNull(roomIndex)){
-                index.setId(roomSaveVo.getId());
-                roomIndexMapper.updateById(index);
+            if (Objects.nonNull(roomSaveVo.getId())){
+                //编辑
+                RoomIndex roomIndex = roomIndexMapper.selectOne(new LambdaQueryWrapper<RoomIndex>()
+                        .eq(RoomIndex::getId,roomSaveVo.getId()));
+                if (Objects.nonNull(roomIndex)){
+                    index.setId(roomSaveVo.getId());
+                    roomIndexMapper.updateById(index);
 
-                //修改配置表
-                RoomCfg roomCfg = roomCfgMapper.selectOne(new LambdaQueryWrapper<RoomCfg>()
-                        .eq(RoomCfg::getRoomId,roomIndex.getId()));
+                    //修改配置表
+                    RoomCfg roomCfg = roomCfgMapper.selectOne(new LambdaQueryWrapper<RoomCfg>()
+                            .eq(RoomCfg::getRoomId,roomIndex.getId()));
+                    RoomCfg cfg = new RoomCfg();
+                    cfg.setRoomId(roomIndex.getId());
+                    cfg.setYLength(roomSaveVo.getYLength());
+                    cfg.setXLength(roomSaveVo.getXLength());
+
+                    if (Objects.nonNull(roomCfg)){
+                        //修改
+                        cfg.setId(roomCfg.getId());
+                        roomCfgMapper.updateById(cfg);
+                    }else {
+                        roomCfgMapper.insert(cfg);
+                    }
+                }
+
+            }else {
+                //新增
+                roomIndexMapper.insert(index);
                 RoomCfg cfg = new RoomCfg();
-                cfg.setRoomId(roomIndex.getId());
+                cfg.setRoomId(index.getId());
                 cfg.setYLength(roomSaveVo.getYLength());
                 cfg.setXLength(roomSaveVo.getXLength());
-
-                if (Objects.nonNull(roomCfg)){
-                    //修改
-                    cfg.setId(roomCfg.getId());
-                    roomCfgMapper.updateById(cfg);
-                }else {
-                    roomCfgMapper.insert(cfg);
-                }
+                roomCfgMapper.insert(cfg);
             }
 
-        }else {
-            //新增
-            roomIndexMapper.insert(index);
-            RoomCfg cfg = new RoomCfg();
-            cfg.setRoomId(index.getId());
-            cfg.setYLength(roomSaveVo.getYLength());
-            cfg.setXLength(roomSaveVo.getXLength());
-            roomCfgMapper.insert(cfg);
-        }
-
-        //柜列
-        if (!CollectionUtils.isEmpty(roomSaveVo.getAisleList())){
-            //删除
-            List<Integer> ids =  roomSaveVo.getAisleList().stream().map(AisleSaveVo::getId).filter(Objects::nonNull).collect(Collectors.toList());
-            if (!CollectionUtils.isEmpty(ids)){
-                aisleIndexMapper.update(new LambdaUpdateWrapper<AisleIndex>()
-                        .eq(AisleIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
-                        .eq(AisleIndex::getRoomId,roomSaveVo.getId())
-                        .notIn(AisleIndex::getId,ids)
-                        .set(AisleIndex::getIsDelete,DelEnums.DELETE.getStatus()));
-                //删除柜列下机柜
-                cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
-                        .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
-                        .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
-                        .gt(CabinetIndex::getAisleId,0)
-                        .notIn(CabinetIndex::getAisleId,ids)
-                        .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
-            }else {
-                aisleIndexMapper.update(new LambdaUpdateWrapper<AisleIndex>()
-                        .eq(AisleIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
-                        .eq(AisleIndex::getRoomId,roomSaveVo.getId())
-                        .set(AisleIndex::getIsDelete,DelEnums.DELETE.getStatus()));
-                //删除柜列下机柜
-                cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
-                        .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
-                        .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
-                        .gt(CabinetIndex::getAisleId,0)
-                        .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
-            }
-
-            roomSaveVo.getAisleList().forEach(aisleSaveVo -> {
-                aisleSaveVo.setRoomId(index.getId());
-                aisleSave(aisleSaveVo);
-            });
-        }else {
-            aisleIndexMapper.update(new LambdaUpdateWrapper<AisleIndex>()
-                    .eq(AisleIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
-                    .eq(AisleIndex::getRoomId,roomSaveVo.getId())
-                    .set(AisleIndex::getIsDelete,DelEnums.DELETE.getStatus()));
-            //删除柜列下机柜
-            cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
-                    .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
-                    .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
+            //柜列
+            if (!CollectionUtils.isEmpty(roomSaveVo.getAisleList())){
+                //删除
+                List<Integer> ids =  roomSaveVo.getAisleList().stream().map(AisleSaveVo::getId).filter(Objects::nonNull).collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(ids)){
+                    aisleIndexMapper.update(new LambdaUpdateWrapper<AisleIndex>()
+                            .eq(AisleIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
+                            .eq(AisleIndex::getRoomId,roomSaveVo.getId())
+                            .notIn(AisleIndex::getId,ids)
+                            .set(AisleIndex::getIsDelete,DelEnums.DELETE.getStatus()));
+                    //删除柜列下机柜
+                    cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
+                            .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
+                            .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
                             .gt(CabinetIndex::getAisleId,0)
-                    .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
-        }
+                            .notIn(CabinetIndex::getAisleId,ids)
+                            .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
+                }else {
+                    aisleIndexMapper.update(new LambdaUpdateWrapper<AisleIndex>()
+                            .eq(AisleIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
+                            .eq(AisleIndex::getRoomId,roomSaveVo.getId())
+                            .set(AisleIndex::getIsDelete,DelEnums.DELETE.getStatus()));
+                    //删除柜列下机柜
+                    cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
+                            .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
+                            .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
+                            .gt(CabinetIndex::getAisleId,0)
+                            .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
+                }
 
-        //机柜
-        if (!CollectionUtils.isEmpty(roomSaveVo.getCabinetList())){
-            //删除
-            List<Integer> ids =  roomSaveVo.getCabinetList().stream().map(CabinetVo::getId).filter(id -> id >0).collect(Collectors.toList());
-            if (!CollectionUtils.isEmpty(ids)){
+                roomSaveVo.getAisleList().forEach(aisleSaveVo -> {
+                    aisleSaveVo.setRoomId(index.getId());
+                    aisleSave(aisleSaveVo);
+                });
+            }else {
+                aisleIndexMapper.update(new LambdaUpdateWrapper<AisleIndex>()
+                        .eq(AisleIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
+                        .eq(AisleIndex::getRoomId,roomSaveVo.getId())
+                        .set(AisleIndex::getIsDelete,DelEnums.DELETE.getStatus()));
+                //删除柜列下机柜
                 cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
                         .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
                         .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
-                        .eq(CabinetIndex::getAisleId,0)
-                        .notIn(CabinetIndex::getId,ids)
+                        .gt(CabinetIndex::getAisleId,0)
                         .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
+            }
+
+            //机柜
+            if (!CollectionUtils.isEmpty(roomSaveVo.getCabinetList())){
+                //删除
+                List<Integer> ids =  roomSaveVo.getCabinetList().stream().map(CabinetVo::getId).filter(id -> id >0).collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(ids)){
+                    cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
+                            .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
+                            .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
+                            .eq(CabinetIndex::getAisleId,0)
+                            .notIn(CabinetIndex::getId,ids)
+                            .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
+                }else {
+                    cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
+                            .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
+                            .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
+                            .eq(CabinetIndex::getAisleId,0)
+                            .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
+                }
+
+                //新增/保存
+                roomSaveVo.getCabinetList().forEach(cabinetVo -> {
+                    cabinetVo.setRoomId(index.getId());
+                    saveCabinet(cabinetVo);
+                });
+
             }else {
                 cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
                         .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
@@ -176,49 +192,45 @@ public class RoomServiceImpl implements RoomService {
                         .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
             }
 
-            //新增/保存
-            roomSaveVo.getCabinetList().forEach(cabinetVo -> {
-                cabinetVo.setRoomId(index.getId());
-                saveCabinet(cabinetVo);
-            });
-
-        }else {
-            cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
-                    .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
-                    .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
-                    .eq(CabinetIndex::getAisleId,0)
-                    .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
+            return index.getId();
+        }finally {
+            log.info("刷新计算服务缓存 --- " + adder);
+            HttpUtil.get(adder);
         }
 
-        return index.getId();
     }
 
     @Override
     public void deleteRoom(Integer roomId) {
+        try {
+            //删除机房
+            RoomIndex roomIndex = roomIndexMapper.selectById(roomId);
+            if (Objects.nonNull(roomIndex)){
+                //逻辑删除
+                if (roomIndex.getIsDelete() == (DelEnums.NO_DEL.getStatus())){
+                    roomIndexMapper.update(new LambdaUpdateWrapper<RoomIndex>()
+                            .eq(RoomIndex::getId, roomId)
+                            .set(RoomIndex::getIsDelete, DelEnums.DELETE.getStatus()));
 
-        //删除机房
-        RoomIndex roomIndex = roomIndexMapper.selectById(roomId);
-        if (Objects.nonNull(roomIndex)){
-            //逻辑删除
-            if (roomIndex.getIsDelete() == (DelEnums.NO_DEL.getStatus())){
-                roomIndexMapper.update(new LambdaUpdateWrapper<RoomIndex>()
-                        .eq(RoomIndex::getId, roomId)
-                        .set(RoomIndex::getIsDelete, DelEnums.DELETE.getStatus()));
-
-            }else {
-                //物理删除
-                //删除配置
-                roomCfgMapper.delete(new LambdaQueryWrapper<RoomCfg>()
-                        .eq(RoomCfg::getRoomId,roomId));
-                //删除机房
-                roomIndexMapper.deleteById(roomId);
+                }else {
+                    //物理删除
+                    //删除配置
+                    roomCfgMapper.delete(new LambdaQueryWrapper<RoomCfg>()
+                            .eq(RoomCfg::getRoomId,roomId));
+                    //删除机房
+                    roomIndexMapper.deleteById(roomId);
+                }
             }
+            //删除key
+            String key = REDIS_KEY_ROOM + roomId;
+
+            boolean flag = redisTemplate.delete(key);
+            log.info("key: " + key + " flag : " + flag);
+        }finally {
+            log.info("刷新计算服务缓存 --- " + adder);
+            HttpUtil.get(adder);
         }
-        //删除key
-//        String key = REDIS_KEY_AISLE + aisleId;
-//
-//        boolean flag = redisTemplate.delete(key);
-//        log.info("key: " + key + " flag : " + flag);
+
 
 
     }
@@ -333,13 +345,13 @@ public class RoomServiceImpl implements RoomService {
                     detailDTO.setXCoordinate(aisleCfg.getXCoordinate());
                     detailDTO.setYCoordinate(aisleCfg.getYCoordinate());
                 }
-                List<AisleCabinetDTO> aisleCabinetDTOList = new ArrayList<>();
+                List<CabinetDTO> aisleCabinetDTOList = new ArrayList<>();
 
-               Map<Integer,AisleCabinetDTO> cabMap = new HashMap<>();
+               Map<Integer,CabinetDTO> cabMap = new HashMap<>();
                 List<CabinetIndex> cabs = cabinetIndexMap.get(aisleIndex.getId());
                 if (!CollectionUtils.isEmpty(cabs)){
                     cabs.forEach(cabinetIndex ->{
-                        AisleCabinetDTO cabinetDTO = BeanUtils.toBean(cabinetIndex,AisleCabinetDTO.class);
+                        CabinetDTO cabinetDTO = BeanUtils.toBean(cabinetIndex,CabinetDTO.class);
                         CabinetCfg cfg = cabinetCfgMap.get(cabinetIndex.getId());
                         if (Objects.nonNull(cfg)){
                             cabinetDTO.setCabinetName(cfg.getCabinetName());
@@ -363,10 +375,10 @@ public class RoomServiceImpl implements RoomService {
                 }
 
                 for (int i = 0; i< aisleIndex.getLength();i ++ ){
-                    AisleCabinetDTO cabinetDTO = cabMap.get(i+1);
+                    CabinetDTO cabinetDTO = cabMap.get(i+1);
                     if (Objects.isNull(cabinetDTO)){
 
-                        cabinetDTO = new AisleCabinetDTO();
+                        cabinetDTO = new CabinetDTO();
                         cabinetDTO.setIndex(i+1);
                     }
                     aisleCabinetDTOList.add(i,cabinetDTO);
