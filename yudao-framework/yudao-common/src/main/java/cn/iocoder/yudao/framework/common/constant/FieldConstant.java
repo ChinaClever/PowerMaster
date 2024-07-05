@@ -317,5 +317,10 @@ public class FieldConstant {
      * 插接箱名称
      */
     public static final String BOX_NAME = "box_name";
+
+    /**
+     * Redis设置key
+     */
+    public static final String REDIS_KEY_ROOM = "packet:room:";
 }
 

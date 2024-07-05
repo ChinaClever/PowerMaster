@@ -64,7 +64,7 @@ public class AisleController {
      */
     @Operation(summary = "柜列新增/编辑")
     @PostMapping("/aisle/save")
-    public CommonResult<Integer> saveAisle(@RequestBody AisleSaveVo vo) throws Exception {
+    public CommonResult<Integer> saveAisle(@RequestBody AisleSaveVo vo) {
         return CommonResult.success( aisleService.aisleSave(vo));
     }
 
@@ -76,7 +76,7 @@ public class AisleController {
      */
     @Operation(summary = "柜列删除")
     @GetMapping("/aisle/delete")
-    public CommonResult<Integer> deleteAisle(@Param("id") int id) throws Exception {
+    public CommonResult<Integer> deleteAisle(@Param("id") int id) {
          aisleService.deleteAisle(id);
         return success(id);
     }
@@ -88,7 +88,7 @@ public class AisleController {
      */
     @Operation(summary = "柜列插接箱删除")
     @GetMapping("/aisle/box/delete")
-    public CommonResult<Integer> deleteAisleBox(@RequestParam("ids") List<Integer> ids) throws Exception {
+    public CommonResult<Integer> deleteAisleBox(@RequestParam("ids") List<Integer> ids) {
         aisleService.batchDeleteBox(ids);
         return success(0);
     }
@@ -100,7 +100,7 @@ public class AisleController {
      */
     @Operation(summary = "柜列始端箱删除")
     @GetMapping("/aisle/bus/delete")
-    public CommonResult<Integer> deleteAisleBus(@Param("id") int id) throws Exception {
+    public CommonResult<Integer> deleteAisleBus(@Param("id") int id) {
         aisleService.deleteBus(id);
         return success(id);
     }
