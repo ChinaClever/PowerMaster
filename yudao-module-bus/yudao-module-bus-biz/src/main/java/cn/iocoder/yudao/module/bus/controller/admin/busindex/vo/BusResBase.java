@@ -17,4 +17,10 @@ public class BusResBase {
 
     @Schema(description = "始端箱Id")
     private Integer busId;
+
+    @Schema(description = "位置")
+    private String location;
+
+    @Schema(description = "始端箱名称")
+    private String busName;
 }

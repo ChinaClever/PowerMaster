@@ -7,6 +7,7 @@ public class PowerRedisDataRes {
     private Double tempC;
     private Double tempB;
     private Double tempA;
+    private Double tempN;
     private Double ibTHD;
     private Double mdMinute;
     private Double p;

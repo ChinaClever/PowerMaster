@@ -88,41 +88,23 @@
         <el-table-column label="所在位置" align="center" prop="location" />
         <el-table-column v-if="valueMode == 0" label="A相温度" align="center" prop="atem" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.atem != null">
+            <el-text line-clamp="2" v-if="scope.row.atem != null" :type=" scope.row.atemStatus != 0 ? 'danger' : '' ">
               {{ scope.row.atem }}°C
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="A相温度状态" align="center" prop="atemStatus" width="130px" >
-          <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.atemStatus != 0" >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </template>
-        </el-table-column>
         <el-table-column v-if="valueMode == 0" label="B相温度" align="center" prop="btem" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.btem != null">
+            <el-text line-clamp="2" v-if="scope.row.btem != null" :type=" scope.row.btemStatus != 0 ? 'danger' : '' ">
               {{ scope.row.btem }}°C
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="B相温度状态" align="center" prop="btemStatus" width="130px" >
-          <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.btemStatus != 0" >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </template>
-        </el-table-column>
         <el-table-column v-if="valueMode == 0" label="C相温度" align="center" prop="ctem" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.ctem != null">
+            <el-text line-clamp="2" v-if="scope.row.ctem != null" :type=" scope.row.ctemStatus != 0 ? 'danger' : '' ">
               {{ scope.row.ctem }}°C
             </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="C相温度状态" align="center" prop="ctemStatus" width="130px" >
-          <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.ctemStatus != 0 " >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
           </template>
         </el-table-column>
         <!-- 数据库查询 -->
@@ -132,6 +114,7 @@
               link
               type="primary"
               @click="openTemDetail(scope.row)"
+              v-if=" scope.row.status != null && scope.row.status != 5"
             >
             设备详情
             </el-button>
@@ -165,7 +148,7 @@
             <el-tag type="danger" v-else-if="item.atemStatus != 0 || item.btemStatus != 0  || item.ctemStatus != 0 " >告警</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>
-          <button class="detail" @click="openTemDetail(item)" >详情</button>
+          <button class="detail" @click="openTemDetail(item)" v-if="item.status != null && item.status != 5"  >详情</button>
         </div>
       </div>
       <Pagination
@@ -181,6 +164,7 @@
 
       <el-dialog v-model="detailVis" title="温度详情"  width="70vw" height="58vh">
         <el-row>
+          <el-tag>{{ location }}</el-tag>
           <div >
             日期:
             <el-date-picker
@@ -208,13 +192,13 @@
           </el-button>
           <el-button 
             @click="switchChartOrTable = 0" 
-            :type=" 'primary'"
+            :type="switchChartOrTable == 0 ?  'primary' : ``"
           >
             图表
           </el-button>
           <el-button 
             @click="switchChartOrTable = 1" 
-            :type=" 'primary'"
+            :type="switchChartOrTable == 1 ?  'primary' : ``"
           >
             数据
           </el-button>
@@ -224,10 +208,34 @@
         <TemDetail v-show="switchChartOrTable == 0" width="68vw" height="58vh"  :list="temESList"  />
         <el-table v-show="switchChartOrTable == 1" :data="temTableList" :stripe="true" :show-overflow-tooltip="true" >
           <el-table-column label="时间" align="center" prop="temAvgTime" />
-          <el-table-column label="A相温度" align="center" prop="temAvgValueA" />
-          <el-table-column label="B相温度" align="center" prop="temAvgValueB" />
-          <el-table-column label="C相温度" align="center" prop="temAvgValueC" />
-          <el-table-column label="N相温度" align="center" prop="temAvgValueN" />
+          <el-table-column label="A相温度" align="center" prop="temAvgValueA" >
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.temAvgValueA }}°C
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="B相温度" align="center" prop="temAvgValueB" >
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.temAvgValueB }}°C
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="C相温度" align="center" prop="temAvgValueC" >
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.temAvgValueC }}°C
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="N相温度" align="center" prop="temAvgValueN" >
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.temAvgValueN }}°C
+              </el-text>
+            </template>
+          </el-table-column>
         </el-table>
       </el-dialog>
     </template>
@@ -251,6 +259,7 @@ import TemDetail from './component/TemDetail.vue'
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
+const location = ref() as any;
 const detailVis = ref(false);
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
@@ -316,6 +325,7 @@ const handleCheck = async (row) => {
 const openTemDetail = async (row) =>{
   queryParams.boxId = row.boxId;
   queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
+  location.value = row.location ? row.location : row.devKey;
   await getDetail();
   detailVis.value = true;
 }
@@ -429,10 +439,10 @@ const getDetail = async () => {
   temESList.value = data?.chart;
   temTableList.value = data?.table;
   temTableList.value?.forEach((obj) => {
-    obj.temAvgValueA = obj?.temAvgValueA?.toFixed(2);
-    obj.temAvgValueB = obj?.temAvgValueB?.toFixed(2);
-    obj.temAvgValueC = obj?.temAvgValueC?.toFixed(2);
-    obj.temAvgValueN = obj?.temAvgValueN?.toFixed(2);
+    obj.temAvgValueA = obj?.temAvgValueA?.toFixed(1);
+    obj.temAvgValueB = obj?.temAvgValueB?.toFixed(1);
+    obj.temAvgValueC = obj?.temAvgValueC?.toFixed(1);
+    obj.temAvgValueN = obj?.temAvgValueN?.toFixed(1);
   });
 }
 const getList = async () => {
@@ -448,10 +458,10 @@ const getList = async () => {
       if(obj?.atem == null){
         return;
       } 
-      obj.atem = obj.atem?.toFixed(2);
-      obj.btem = obj.btem?.toFixed(2);
-      obj.ctem = obj.ctem?.toFixed(2);
-      obj.ntem = obj.ntem?.toFixed(2);
+      obj.atem = obj.atem?.toFixed(1);
+      obj.btem = obj.btem?.toFixed(1);
+      obj.ctem = obj.ctem?.toFixed(1);
+      obj.ntem = obj.ntem?.toFixed(1);
     });
 
     total.value = data.total
@@ -471,10 +481,10 @@ const getListNoLoading = async () => {
       if(obj?.atem == null){
         return;
       } 
-      obj.atem = obj.atem?.toFixed(2);
-      obj.btem = obj.btem?.toFixed(2);
-      obj.ctem = obj.ctem?.toFixed(2);    
-      obj.ntem = obj.ntem?.toFixed(2);
+      obj.atem = obj.atem?.toFixed(1);
+      obj.btem = obj.btem?.toFixed(1);
+      obj.ctem = obj.ctem?.toFixed(1);    
+      obj.ntem = obj.ntem?.toFixed(1);
     });
 
     total.value = data.total

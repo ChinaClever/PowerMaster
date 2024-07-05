@@ -227,6 +227,34 @@ public class BoxIndexController {
         return success(result);
     }
 
+    @Operation(summary = "始端箱通过devKey获取id")
+    @PostMapping("/power/detail")
+    public CommonResult<PowerRedisDataRes> getBoxPowerRedisData(@RequestBody BoxIndexPageReqVO pageReqVO) {
+        PowerRedisDataRes result = indexService.getBoxPowerRedisData(pageReqVO.getDevKey());
+        return success(result);
+    }
+
+    @Operation(summary = "始端箱通过devKey获取id")
+    @PostMapping("/power/loadrate")
+    public CommonResult<BusLineResBase> getBoxLoadRateLine(@RequestBody BoxIndexPageReqVO pageReqVO) {
+        BusLineResBase result = indexService.getBoxLoadRateLine(pageReqVO);
+        return success(result);
+    }
+
+    @Operation(summary = "始端箱通过devKey获取id")
+    @PostMapping("/power/powactive")
+    public CommonResult<BusLineResBase> getBoxPowActiveLine(@RequestBody BoxIndexPageReqVO pageReqVO) {
+        BusLineResBase result = indexService.getBoxPowActiveLine(pageReqVO);
+        return success(result);
+    }
+
+    @Operation(summary = "始端箱通过devKey获取id")
+    @PostMapping("/power/powreactive")
+    public CommonResult<BusLineResBase> getBoxPowReactiveLine(@RequestBody BoxIndexPageReqVO pageReqVO) {
+        BusLineResBase result = indexService.getBoxPowReactiveLine(pageReqVO);
+        return success(result);
+    }
+
 //    @GetMapping("/export-excel")
 //    @Operation(summary = "导出插接箱索引 Excel")
 //    @PreAuthorize("@ss.hasPermission('box:index:export')")

@@ -108,14 +108,15 @@
           </el-button>
         </el-form-item>
         <div style="float:right">
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />电流矩阵</el-button>
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />功率阵列</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
+          <el-button @click="visMode = 0;" :type="visMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />电流</el-button>
+          <el-button @click="visMode = 1;" :type="visMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />功率</el-button>
+          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 15;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
         </div>
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 2" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" >
+      <el-table v-show="switchValue == 1 && visMode == 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
@@ -164,7 +165,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-table v-show="switchValue == 2" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" >
+      <el-table v-show="switchValue == 1 && visMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
         <el-table-column label="L1最大功率" align="center" prop="l1MaxPow" width="100px" >
@@ -212,37 +213,43 @@
           </template>
         </el-table-column>
       </el-table>
-      <div  v-show="switchValue == 1 && list.length > 0" class="arrayContainer">
+      <div  v-show="switchValue == 0 && visMode == 1 && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
             <div class="info">
-              <div >L1最大功率：{{item.l1MaxPow}}kW</div>
-              <div >L2最大功率：{{item.l2MaxPow}}kW</div>
-              <div >L3最大功率：{{ item.l3MaxPow }}kW</div>
+              <div >A相：{{item.l1MaxPow}}kW</div>
+              <div >B相：{{item.l2MaxPow}}kW</div>
+              <div >C相：{{ item.l3MaxPow }}kW</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
-          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->              
+          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->   
+          <div class="status"  >
+            <el-tag>需量功率</el-tag>
+          </div>           
           <button class="detail" @click="queryParams.lineType = 1;openDetail(item)" >详情</button>
         </div>
       </div>
 
-      <div  v-show="switchValue == 0 && list.length > 0" class="arrayContainer">
+      <div  v-show="switchValue == 0 && visMode == 0 && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
             <div class="info">
               
-              <div >L1最大电流：{{item.l1MaxCur}}A</div>
-              <div >L2最大电流：{{item.l2MaxCur}}A</div>
-              <div >L3最大电流：{{ item.l3MaxCur }}A</div>
+              <div >A相：{{item.l1MaxCur}}A</div>
+              <div >B相：{{item.l2MaxCur}}A</div>
+              <div >C相：{{ item.l3MaxCur }}A</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
-          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->                
+          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->    
+          <div class="status"  >
+            <el-tag>需量电流</el-tag>
+          </div>                
           <button class="detail" @click="queryParams.lineType = 0;openDetail(item)" >详情</button>
         </div>
       </div>
@@ -260,6 +267,7 @@
       </template>
 
       <el-dialog v-model="detailVis" :title="queryParams.lineType == 0 ? `电流详情`: `功率详情`"  width="70vw" height="58vh" >
+        <el-tag>{{ location }}</el-tag> 结果所在时间段: {{ startTime }}&nbsp;&nbsp;到&nbsp;&nbsp;{{ endTime }}
         <div>
           <RequirementLine width="68vw" height="58vh" :list="requirementLine"  />
         </div>
@@ -286,7 +294,10 @@ import { ElTree } from 'element-plus'
 defineOptions({ name: 'PDUDevice' })
 
 // const { push } = useRouter()
-
+const startTime = ref() as any;
+const endTime = ref() as any;
+const location = ref();
+const visMode = ref(0);
 const requirementLine = ref([]) as any;
 const detailVis = ref(false);
 const now = ref()
@@ -480,14 +491,14 @@ const getList = async () => {
     list.value.forEach((obj) => {
 
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      obj.l1MaxCur = obj.l1MaxCur?.toFixed(1);
-      obj.l1MaxVol = obj.l1MaxVol?.toFixed(1);
+      obj.l1MaxCur = obj.l1MaxCur?.toFixed(2);
+      obj.l1MaxVol = obj.l1MaxVol?.toFixed(2);
       obj.l1MaxPow = obj.l1MaxPow?.toFixed(3);
-      obj.l2MaxCur = obj.l2MaxCur?.toFixed(1);
-      obj.l2MaxVol = obj.l2MaxVol?.toFixed(1);
+      obj.l2MaxCur = obj.l2MaxCur?.toFixed(2);
+      obj.l2MaxVol = obj.l2MaxVol?.toFixed(2);
       obj.l2MaxPow = obj.l2MaxPow?.toFixed(3);
-      obj.l3MaxCur = obj.l3MaxCur?.toFixed(1);
-      obj.l3MaxVol = obj.l3MaxVol?.toFixed(1);
+      obj.l3MaxCur = obj.l3MaxCur?.toFixed(2);
+      obj.l3MaxVol = obj.l3MaxVol?.toFixed(2);
       obj.l3MaxPow = obj.l3MaxPow?.toFixed(3);
     });
 
@@ -518,6 +529,9 @@ const openDetail = async (row) =>{
   const lineData = await IndexApi.getBusLineCurLine(queryParams);
   requirementLine.value = lineData;
   requirementLine.value.formatter = queryParams.lineType == 0 ? '{value} A' : '{value} kW';
+  location.value = row.location != null ? row.location : row.devKey
+  startTime.value = lineData.time[0];
+  endTime.value = lineData.time[lineData.time.length - 1];
   detailVis.value = true;
 }
 

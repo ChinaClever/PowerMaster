@@ -115,7 +115,7 @@
               link
               type="primary"
               @click="openPFDetail(scope.row)"
-
+              v-if=" scope.row.status != null && scope.row.status != 5"
             >
             设备详情
             </el-button>
@@ -147,12 +147,11 @@
             </div>          
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
-          <!-- <div class="status" v-if="valueMode == 0">
-            <el-tag type="info" v-if="item.atemStatus == null " >离线</el-tag>
-            <el-tag type="danger" v-else-if="item.atemStatus != 0 || item.btemStatus != 0  || item.ctemStatus != 0 " >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </div> -->
-          <button class="detail" @click="openPFDetail(item)" >详情</button>
+          <div class="status">
+            <el-tag v-if="item.apf != null" >功率因素</el-tag>
+            <el-tag v-else type="info">离线</el-tag>
+          </div>
+          <button class="detail" @click="openPFDetail(item)" v-if="item.status != null && item.status != 5" >详情</button>
         </div>
       </div>
       <Pagination
@@ -168,6 +167,7 @@
 
       <el-dialog v-model="detailVis" title="功率因素详情"  width="70vw" height="58vh" >
         <el-row>
+          <el-tag>{{ location }}</el-tag>
           <div >
             日期:
             <el-date-picker
@@ -179,8 +179,7 @@
               class="!w-160px"
             />
           </div>
-          
-          
+
           <el-button 
             @click="subtractOneDay();handleDayPick()" 
             :type=" 'primary'"
@@ -195,13 +194,13 @@
           </el-button>
           <el-button 
             @click="switchChartOrTable = 0" 
-            :type=" 'primary'"
+            :type="switchChartOrTable == 0 ?  'primary' : ``"
           >
             图表
           </el-button>
           <el-button 
             @click="switchChartOrTable = 1" 
-            :type=" 'primary'"
+            :type=" switchChartOrTable == 1 ?  'primary' : ``"
           >
             数据
           </el-button>
@@ -237,7 +236,7 @@ import PFDetail from './component/PFDetail.vue'
 defineOptions({ name: 'PDUDevice' })
 
 // const { push } = useRouter()
-
+const location = ref() as any;
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
@@ -279,6 +278,7 @@ const createFilter = (queryString: string) => {
 const openPFDetail = async (row) =>{
   queryParams.busId = row.busId;
   queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
+  location.value = row.location ? row.location : row.devKey;
   await getDetail();
   detailVis.value = true;
 }

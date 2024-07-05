@@ -1,7 +1,7 @@
 <template>
   <el-card class="card" shadow="never"> 
     <template #header>
-      <CardTitle title="电流不平衡" />
+      <CardTitle title="电流不平衡" /><el-tag size="large">{{ location }}</el-tag>
     </template>
     <div class="ImbalanceA">
       <el-card  class="cardChilc" style="margin: 0 10px" shadow="hover">
@@ -70,6 +70,7 @@ import { IndexApi } from '@/api/bus/boxindex'
 
 const boxId = history?.state?.boxId || -1
 const devKey = history?.state?.devKey || "0"
+const location =  history?.state?.location 
 
 const colorList = [{
   name: '小电流不平衡',

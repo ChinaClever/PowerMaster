@@ -54,51 +54,52 @@
           />
         </el-form-item> -->
         <el-form-item>       
-        <el-select
-          v-model="queryParams.harmonicType"
-          placeholder="请选择"
-          style="width: 240px"
-        >
-          <el-option label="A相电流谐波" :value = 3 />
-          <el-option label="B相电流谐波" :value = 4 />
-          <el-option label="C相电流谐波" :value = 5 />
-        </el-select>
+          <el-tag size="large">{{ location }}</el-tag>  
+          <el-select
+            v-model="queryParams.harmonicType"
+            placeholder="请选择"
+            style="width: 240px"
+          >
+            <el-option label="A相电流谐波" :value = 3 />
+            <el-option label="B相电流谐波" :value = 4 />
+            <el-option label="C相电流谐波" :value = 5 />
+          </el-select>
 
-        <el-select
-          v-model="queryParams.harmonicArr"
-          multiple
-          placeholder="Select"
-          collapse-tags
-          collapse-tags-tooltip
-          style="width: 240px"
-        >
-        <el-option label='全选' value='全选' @click='selectAll' />
-          <el-option
-            v-for="item in harmonicMultiple"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
+          <el-select
+            v-model="queryParams.harmonicArr"
+            multiple
+            placeholder="Select"
+            collapse-tags
+            collapse-tags-tooltip
+            style="width: 240px"
+          >
+          <el-option label='全选' value='全选' @click='selectAll' />
+            <el-option
+              v-for="item in harmonicMultiple"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+
+          <el-button 
+            @click="subtractOneDay();handleDayPick()" 
+          >
+            &lt;
+          </el-button>
+          <el-date-picker
+            v-model="queryParams.oldTime"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            type="date"
+            :disabled-date="disabledDate"
+            @change="handleDayPick"
+            class="!w-160px"
           />
-        </el-select>
-
-        <el-button 
-          @click="subtractOneDay();handleDayPick()" 
-        >
-          &lt;
-        </el-button>
-        <el-date-picker
-          v-model="queryParams.oldTime"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          type="date"
-          :disabled-date="disabledDate"
-          @change="handleDayPick"
-          class="!w-160px"
-        />
-        <el-button 
-          @click="addtractOneDay();handleDayPick()" 
-        >
-          &gt;
-        </el-button>
+          <el-button 
+            @click="addtractOneDay();handleDayPick()" 
+          >
+            &gt;
+          </el-button>
         </el-form-item>
 
         <el-form-item>
@@ -135,6 +136,7 @@ import HarmonicLine from './component/HarmonicLine.vue'
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
+const location = ref(history?.state?.location);
 const haveSearch = ref(false);
 const switchValue = ref(1);
 const harmonicRealTime = ref();

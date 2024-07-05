@@ -3,7 +3,7 @@ package cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo;
 import lombok.Data;
 
 @Data
-public class BoxLineRes {
+public class BoxLineRes extends BoxResBase{
 
     private Integer boxId;
 

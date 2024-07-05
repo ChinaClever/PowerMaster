@@ -27,15 +27,29 @@ public class BusPowerLoadDetailController {
     private BusPowerLoadDetailService busPowerLoadDetailService;
     @PostMapping("/detail")
     @Operation(summary = "查询电力负荷详情")
-    public CommonResult<BusPowerLoadDetailRespVO> getDetailData(@Valid BusPowerLoadDetailReqVO reqVO) throws IOException {
+    public CommonResult<BusPowerLoadDetailRespVO> getBusDetailData(@Valid BusPowerLoadDetailReqVO reqVO) throws IOException {
         BusPowerLoadDetailRespVO detailRespVO = busPowerLoadDetailService.getDetailData(reqVO);
         return success(BeanUtils.toBean(detailRespVO, BusPowerLoadDetailRespVO.class));
     }
 
     @PostMapping("/chart-detail")
     @Operation(summary = "查询电力负荷详情 折线图数据")
-    public CommonResult<Map<String, Object>> getLineChartDetailData(@Valid BusPowerLoadDetailReqVO reqVO) throws IOException {
+    public CommonResult<Map<String, Object>> getBusLineChartDetailData(@Valid BusPowerLoadDetailReqVO reqVO) throws IOException {
         Map<String, Object> resultMap = busPowerLoadDetailService.getLineChartDetailData(reqVO);
+        return success(resultMap);
+    }
+
+    @PostMapping("/box/detail")
+    @Operation(summary = "查询电力负荷详情")
+    public CommonResult<BusPowerLoadDetailRespVO> getBoxDetailData(@Valid BusPowerLoadDetailReqVO reqVO) throws IOException {
+        BusPowerLoadDetailRespVO detailRespVO = busPowerLoadDetailService.getBoxDetailData(reqVO);
+        return success(BeanUtils.toBean(detailRespVO, BusPowerLoadDetailRespVO.class));
+    }
+
+    @PostMapping("/box/chart-detail")
+    @Operation(summary = "查询电力负荷详情 折线图数据")
+    public CommonResult<Map<String, Object>> getBoxLineChartDetailData(@Valid BusPowerLoadDetailReqVO reqVO) throws IOException {
+        Map<String, Object> resultMap = busPowerLoadDetailService.getBoxLineChartDetailData(reqVO);
         return success(resultMap);
     }
 }

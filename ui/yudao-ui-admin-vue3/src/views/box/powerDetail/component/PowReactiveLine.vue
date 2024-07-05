@@ -22,7 +22,6 @@ const prop = defineProps({
 const series = ref()
 const time = ref()
 const legendList = ref()
-const formatter = ref();
 
 // 设置饼图的选项
 const echartsOption = ref({
@@ -32,30 +31,31 @@ const echartsOption = ref({
     orient: 'horizontal', // 设置为 'horizontal' 或 'vertical'
     width:1000
   },
-  tooltip: { 
-    trigger: 'axis',
+  tooltip: { trigger: 'axis',
     formatter: function(params) {
       var result = params[0].name + '<br>';
       for (var i = 0; i < params.length; i++) {
-        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' ;
-        if (params[i].seriesName.includes("电流")) {
-          result += params[i].value.toFixed(2) +  ' A'; 
-        } else if (params[i].seriesName.includes("功率")) {
-          result += params[i].value.toFixed(3) + ' kW';
-        }
-        result += " &nbsp&nbsp&nbsp&nbsp发生时间:&nbsp" +  series.value[i].maxTime[params[0].dataIndex];
+        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value.toFixed(3) + ' kVar' ;
         result += '<br>';
       }
       return result;
     } 
   },
   xAxis: {type: 'category', boundaryGap: false, data : time},
-  yAxis: { 
-    type: 'value',
+  yAxis: {
+    type: "value",
+    name: "kVar",
+    axisLine: {
+        show: !1,
+        lineStyle: {
+            color: "#000"
+        }
+    },
     axisLabel: {
-      formatter: formatter
-    }},
-  toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+        show: !0
+    },
+  },
+  toolbox: {feature: {saveAsImage: {}}},
   series: series,
 })
 
@@ -66,7 +66,7 @@ watchEffect(() => {
   if(  series.value != null && series.value?.length > 0){
     legendList.value =  series.value?.map(item => item.name)
   }
-  formatter.value = prop.list.formatter;
+
   time.value = prop.list.time;
 
 });

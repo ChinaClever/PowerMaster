@@ -49,10 +49,10 @@ public class PDUDeviceController {
         return success(pDUDeviceService.getPDULineDevicePage(pageReqVO));
     }
 
-    @PostMapping("/displayscreen")
+    @GetMapping("/displayscreen")
     @Operation(summary = "获得PDU设备详细信息")
-    public CommonResult<String> getDisplay(@RequestBody PDUDevicePageReqVO pageReqVO) {
-        return success(pDUDeviceService.getDisplayDataByDevKey(pageReqVO.getDevKey()));
+    public CommonResult<String> getDisplay(String devKey) {
+        return success(pDUDeviceService.getDisplayDataByDevKey(devKey));
     }
 
     @GetMapping("/hisdata")

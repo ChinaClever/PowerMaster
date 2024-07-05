@@ -1,5 +1,5 @@
 <template>
-   <el-input v-model="input" style="width: 240px" placeholder="Please input" />&nbsp;&nbsp;
+  <el-input v-model="input" style="width: 240px" placeholder="Please input" />&nbsp;&nbsp;
   <!-- <el-button><Icon icon="ep:arrow-left" class="mr-5px" /> 上一日</el-button>
   <el-date-picker
     v-model="value1"
@@ -9,12 +9,12 @@
   />
   <el-button>下一日&nbsp;<Icon icon="ep:arrow-right" class="mr-5px" /></el-button> -->
 
- <el-button  type="primary"><Icon icon="ep:search" class="mr-5px" /> 查询</el-button>
+  <el-button  type="primary"><Icon icon="ep:search" class="mr-5px" /> 查询</el-button>
   <hr/> <br/>
 
   <el-row>
     <el-col :span="13">
-      <span>| 电力负荷   <el-tag size="large">  {{ location }}</el-tag></span>
+      <span>| 电力负荷<el-tag size="large">  {{ location }}</el-tag></span>
       <br/>    <br/>  
       <el-row :gutter="25">
         <el-col :span="7" :offset="1">
@@ -112,11 +112,11 @@ const isHourDisabled = ref(false)
 const isPowActiveDisabled = ref(true)
  let intervalId: number | null = null; // 定时器
 const queryParams = reactive({
-  id: history?.state?.busId as number | undefined,
+  id: history?.state?.boxId as number | undefined,
   devKey : history?.state?.devKey as string | undefined,
 })
 const lineChartQueryParams = reactive({
-  id: history?.state?.busId as number | undefined,
+  id: history?.state?.boxId as number | undefined,
   granularity: 'realtime',
 })
 const runLoad = ref();
@@ -313,7 +313,7 @@ const initChart2 = () => {
 
 const getDetailData =async () => {
  try {
-    const data = await BusPowerLoadDetailApi.getDetailData(queryParams);
+    const data = await BusPowerLoadDetailApi.getBoxDetailData(queryParams);
     if (data != null){
       runLoad.value = formatNumber(data.runLoad, 2);
       ratedCapacity.value = formatNumber(data.ratedCapacity, 1);
@@ -400,7 +400,7 @@ const isHaveData = ref(true)
 // 获取折线图数据
 const getLineChartData =async () => {
  try {
-    const data = await BusPowerLoadDetailApi.getLineChartData(lineChartQueryParams);
+    const data = await BusPowerLoadDetailApi.getBoxLineChartData(lineChartQueryParams);
     if (data != null){
       // 查到数据
       allLineData.value = data

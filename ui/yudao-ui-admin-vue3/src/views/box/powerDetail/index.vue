@@ -2,7 +2,7 @@
   <div class="TransformerMonitor">
     <div class="center-part">
       <div class="left-part">
-        <el-tag size="large">{{ location }}</el-tag>
+        <el-tag size="large" >{{location}}</el-tag>
         <Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData.loadFactor" />
         <p v-if="!visContro.gaugeVis" class="noData">暂无数据</p>
       </div>
@@ -73,9 +73,6 @@
               <p  class="AColor">A相电流 <span  class="vale-part AColor">{{redisData?.iaTHD}}</span>%</p>
               <p  class="BColor">B相电流 <span  class="vale-part BColor">{{redisData?.ibTHD}}</span>%</p>
               <p  class="CColor">C相电流 <span  class="vale-part CColor">{{redisData?.icTHD}}</span>%</p>
-              <p  class="AColor">A相电压 <span  class="vale-part AColor">{{redisData?.uaTHD}}</span>%</p>
-              <p  class="BColor">B相电压 <span  class="vale-part BColor">{{redisData?.ubTHD}}</span>%</p>
-              <p  class="CColor">C相电压 <span  class="vale-part CColor">{{redisData?.ucTHD}}</span>%</p>
             </div>
           </div>
         </div>
@@ -105,7 +102,7 @@ import Gauge from './component/Gauge.vue'
 import MarkLine from './component/MarkLine.vue'
 import PowReactiveLine from './component/PowReactiveLine.vue'
 import PowActiveLine from './component/PowActiveLine.vue'
-import { IndexApi } from '@/api/bus/busindex'
+import { IndexApi } from '@/api/bus/boxindex'
 
 const redisData = ref() as any;
 const loadRateList = ref() as any;
@@ -138,7 +135,7 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
   devKey: history?.state?.devKey,
-  busId : history?.state?.busId,
+  boxId : history?.state?.boxId,
   createTime: [],
   cascadeNum: undefined,
   serverRoomData:undefined,
@@ -151,7 +148,7 @@ const queryParams = reactive({
 }) as any
 
 const getRedisData = async () => {
-  const data =  await IndexApi.getBusPowerRedisData(queryParams);
+  const data =  await IndexApi.getBoxPowerRedisData(queryParams);
   let loopItem = {} as any;
   for (let key in data) {  
     if (data.hasOwnProperty(key)) {  
@@ -171,7 +168,7 @@ const getRedisData = async () => {
 }
 
 const getLoadRateList = async () =>{
-    const data = await IndexApi.getBusLoadRateLine(queryParams);
+    const data = await IndexApi.getBoxLoadRateLine(queryParams);
     loadRateList.value = data;
     if(loadRateList.value?.time != null && loadRateList.value?.time?.length > 0){
         visContro.value.loadRateVis = true;
@@ -181,7 +178,7 @@ const getLoadRateList = async () =>{
 }
 
 const getBusPowActiveList = async () =>{
-    const data = await IndexApi.getBusPowActiveLine(queryParams);
+    const data = await IndexApi.getBoxPowActiveLine(queryParams);
     powActiveList.value = data;
     if(powActiveList.value?.time != null && powActiveList.value?.time?.length > 0){
         visContro.value.powActiveVis = true;
@@ -191,7 +188,7 @@ const getBusPowActiveList = async () =>{
 }
 
 const getBusPowReactiveList = async () =>{
-    const data = await IndexApi.getBusPowReactiveLine(queryParams);
+    const data = await IndexApi.getBoxPowReactiveLine(queryParams);
     powReactiveList.value = data;
     if(powReactiveList.value?.time != null && powReactiveList.value?.time?.length > 0){
         visContro.value.powReactiveVis = true;

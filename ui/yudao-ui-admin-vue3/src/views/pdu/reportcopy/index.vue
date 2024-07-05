@@ -184,8 +184,7 @@
                 </div>
               </el-col>
               <el-col v-if="serChartContainerWidth == 10" :span="serChartContainerWidth">
-                <div class="right-div" ref="serChartContainer" id="serChartContainer" style="width: 29vw; height: 25vh;"></div>
-                <Radar width="70vw" height="58vh" :list="serverData" />
+                <Radar width="29vw" height="25vh" :list="serverData" />
               </el-col>
             </el-row>
           </div>
@@ -612,11 +611,12 @@ const getList = async () => {
   }
 
   var PDU = await PDUDeviceApi.PDUDisplay(queryParams);
-  console.log("PDU",PDU)
+  PDU = JSON.parse(PDU)
   var temp = [] as any;
   var baseInfo = await PDUDeviceApi.getPDUDevicePage(queryParams);
   // 假设 PDU.pdu_data.output_item_list.pow_value 是一个 double 数组
   var powValueArray = PDU?.pdu_data?.output_item_list?.pow_value;
+  console.log(powValueArray)
   // 过滤出大于 0 的元素，并将值与下标保存到对象数组中
   if(powValueArray && powValueArray.length > 0){
     var resultArray = [] as any;
@@ -651,6 +651,7 @@ const getList = async () => {
     serverData.value.nameAndMax = element;
     serverData.value.value = valueArr;
     serChartContainerWidth.value = 10;
+    console.log(" serChartContainerWidth.value", serChartContainerWidth.value)
   }else{
     serChartContainerWidth.value = 0;
   }

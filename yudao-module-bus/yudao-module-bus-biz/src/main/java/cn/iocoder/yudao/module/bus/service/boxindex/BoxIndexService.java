@@ -96,4 +96,12 @@ public interface BoxIndexService {
     BusHarmonicLineRes getHarmonicLine(BoxIndexPageReqVO pageReqVO);
 
     Integer getBoxIdByDevKey(String devKey);
+
+    PowerRedisDataRes getBoxPowerRedisData(String devKey);
+
+    BusLineResBase getBoxLoadRateLine(BoxIndexPageReqVO pageReqVO);
+
+    BusLineResBase getBoxPowActiveLine(BoxIndexPageReqVO pageReqVO);
+
+    BusLineResBase getBoxPowReactiveLine(BoxIndexPageReqVO pageReqVO);
 }

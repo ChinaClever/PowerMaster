@@ -29,6 +29,7 @@ import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDULineRes;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.curbalancecolor.PDUCurbalanceColorDO;
 import cn.iocoder.yudao.module.pdu.dal.mysql.curbalancecolor.PDUCurbalanceColorMapper;
+import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.metrics.Max;
@@ -91,7 +92,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
+import static cn.iocoder.yudao.framework.common.constant.FieldConstant.*;
 
 
 /**
@@ -158,74 +159,26 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         }
 
         List<PduIndex> pduIndices = pduIndexPageResult.getList();
+        List redisList = getMutiRedis(pduIndices);
 
-        Set<String> ipAddrSet = new HashSet<>();
-        Set<Integer> cascadeAddrSet = new HashSet<>();
         for (PduIndex pduIndex : pduIndices) {
-            ipAddrSet.add(pduIndex.getIpAddr());
-            cascadeAddrSet.add(pduIndex.getCascadeAddr());
-        }
-
-        // 批量查询 CabinetPdu 表
-        List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>()
-                .in(CabinetPdu::getPduIpA, ipAddrSet).in(CabinetPdu::getCasIdA, cascadeAddrSet)
-                .or().in(CabinetPdu::getPduIpB,ipAddrSet).in(CabinetPdu::getCasIdB,cascadeAddrSet));
-
-        // 将查询结果按 ipAddr 和 cascadeAddr 分组
-        Map<String, List<CabinetPdu>> cabinetPduAMap = cabinetPdus.stream()
-                .filter(cabinetPdu -> ipAddrSet.contains(cabinetPdu.getPduIpA()) && cascadeAddrSet.contains(cabinetPdu.getCasIdA()))
-                .collect(Collectors.groupingBy(cabinetPdu -> cabinetPdu.getPduIpA() + "-" + cabinetPdu.getCasIdA()));
-
-
-        Map<String, List<CabinetPdu>> cabinetPduBMap = cabinetPdus.stream()
-                .filter(cabinetPdu -> ipAddrSet.contains(cabinetPdu.getPduIpB()) && cascadeAddrSet.contains(cabinetPdu.getCasIdB()))
-                .collect(Collectors.groupingBy(cabinetPdu -> cabinetPdu.getPduIpB() + "-" + cabinetPdu.getCasIdB()));
-
-
-        List<CabinetIndex> cabinetIndices = cabinetIndexMapper.selectBatchIds(cabinetPdus.stream().map(CabinetPdu::getCabinetId).collect(Collectors.toList()));
-        Map<Integer, CabinetIndex> cabinetMap = cabinetIndices.stream().collect(Collectors.toMap(CabinetIndex::getId, Function.identity()));
-        List<RoomIndex> roomIndices = roomIndexMapper.selectBatchIds(cabinetIndices.stream().map(CabinetIndex::getRoomId).collect(Collectors.toList()));
-        Map<Integer, String> roomMap = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getName));
-        Map<Integer, String> aisleMap = aisleIndexMapper.selectBatchIds(cabinetIndices.stream().filter(dto -> dto.getAisleId() != 0).map(CabinetIndex::getAisleId).collect(Collectors.toList())).stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getName));
-
-        long i = 0;
-        ValueOperations ops = redisTemplate.opsForValue();
-        for (PduIndex pduIndex : pduIndices) {
-            i++;
-            String localtion = null;
-            String ipAddr = pduIndex.getIpAddr();
-            Integer cascadeAddr = pduIndex.getCascadeAddr();
             PDUDeviceDO pduDeviceDO = new PDUDeviceDO();
             pduDeviceDO.setStatus(pduIndex.getRunStatus());
             pduDeviceDO.setId(pduIndex.getId());
-            result.add(pduDeviceDO);
-
-            List<CabinetPdu> cabinetPduAList = cabinetPduAMap.get(ipAddr + "-" + cascadeAddr);
-            List<CabinetPdu> cabinetPduBList = cabinetPduBMap.get(ipAddr + "-" + cascadeAddr);
-
-            if (cabinetPduAList != null && !cabinetPduAList.isEmpty()) {
-                CabinetPdu cabinetPduA = cabinetPduAList.get(0); // 假设结果唯一
-                CabinetIndex cabinetIndex = cabinetMap.get(cabinetPduA.getCabinetId());
-                if (cabinetIndex.getAisleId() != 0){
-                    localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + aisleMap.get(cabinetIndex.getAisleId()) + "-" + cabinetIndex.getName() + "-" + "A路";
-                }else {
-                    localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + cabinetIndex.getName() + "-" + "A路";
-                }
-            }
-
-            if (cabinetPduBList != null && !cabinetPduBList.isEmpty()) {
-                CabinetPdu cabinetPduB = cabinetPduBList.get(0); // 假设结果唯一
-                CabinetIndex cabinetIndex = cabinetMap.get(cabinetPduB.getCabinetId());
-                if (cabinetIndex.getAisleId() != 0){
-                    localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + aisleMap.get(cabinetIndex.getAisleId()) + "-" + cabinetIndex.getName() + "-" + "B路";
-                }else {
-                    localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + cabinetIndex.getName() + "-" + "B路";
-                }
-            }
-            pduDeviceDO.setLocation(localtion);
             pduDeviceDO.setDevKey(pduIndex.getDevKey());
+            result.add(pduDeviceDO);
+        }
+        Map<String, PDUDeviceDO> resMap = result.stream().collect(Collectors.toMap(PDUDeviceDO::getDevKey, Function.identity()));
+        setLocation(pduIndices,result);
+        for (Object o : redisList) {
+            if (Objects.isNull(o)){
+                continue;
+            }
+            JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
 
-            JSONObject jsonObject = (JSONObject) ops.get("packet:pdu:" + pduIndex.getDevKey());
+            String devKey = jsonObject.getString("dev_ip") + "-" + jsonObject.getString("addr");
+            PDUDeviceDO pduDeviceDO = resMap.get(devKey);
+
             if (jsonObject == null || jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list") == null || jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list").size() <= 0){
                 continue;
             }
@@ -297,7 +250,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             pduDeviceDO.setColor(color);
 
         }
-
         return new PageResult<PDUDeviceDO>(result,pduIndexPageResult.getTotal());
     }
 
@@ -328,34 +280,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()));
             }
             List<PduIndex> pduIndices = pduIndexPageResult.getList();
-
-            Set<String> ipAddrSet = new HashSet<>();
-            Set<Integer> cascadeAddrSet = new HashSet<>();
-            for (PduIndex pduIndex : pduIndices) {
-                ipAddrSet.add(pduIndex.getIpAddr());
-                cascadeAddrSet.add(pduIndex.getCascadeAddr());
-            }
-
-            // 批量查询 CabinetPdu 表
-            List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>()
-                    .in(CabinetPdu::getPduIpA, ipAddrSet).in(CabinetPdu::getCasIdA, cascadeAddrSet)
-                    .or().in(CabinetPdu::getPduIpB,ipAddrSet).in(CabinetPdu::getCasIdB,cascadeAddrSet));
-
-            // 将查询结果按 ipAddr 和 cascadeAddr 分组
-            Map<String, List<CabinetPdu>> cabinetPduAMap = cabinetPdus.stream()
-                    .filter(cabinetPdu -> ipAddrSet.contains(cabinetPdu.getPduIpA()) && cascadeAddrSet.contains(cabinetPdu.getCasIdA()))
-                    .collect(Collectors.groupingBy(cabinetPdu -> cabinetPdu.getPduIpA() + "-" + cabinetPdu.getCasIdA()));
-
-            Map<String, List<CabinetPdu>> cabinetPduBMap = cabinetPdus.stream()
-                    .filter(cabinetPdu -> ipAddrSet.contains(cabinetPdu.getPduIpB()) && cascadeAddrSet.contains(cabinetPdu.getCasIdB()))
-                    .collect(Collectors.groupingBy(cabinetPdu -> cabinetPdu.getPduIpB() + "-" + cabinetPdu.getCasIdB()));
-
-            List<CabinetIndex> cabinetIndices = cabinetIndexMapper.selectBatchIds(cabinetPdus.stream().map(CabinetPdu::getCabinetId).collect(Collectors.toList()));
-            Map<Integer, CabinetIndex> cabinetMap = cabinetIndices.stream().collect(Collectors.toMap(CabinetIndex::getId, Function.identity()));
-            List<RoomIndex> roomIndices = roomIndexMapper.selectBatchIds(cabinetIndices.stream().map(CabinetIndex::getRoomId).collect(Collectors.toList()));
-            Map<Integer, String> roomMap = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getName));
-            Map<Integer, String> aisleMap = aisleIndexMapper.selectBatchIds(cabinetIndices.stream().filter(dto -> dto.getAisleId() != 0).map(CabinetIndex::getAisleId).collect(Collectors.toList())).stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getName));
-
 
             if(pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
                 pageReqVO.setNewTime(LocalDateTime.now());
@@ -395,37 +319,11 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
             for (PduIndex pduIndex : pduIndices) {
                 Integer id = pduIndex.getId().intValue();
-                String localtion = null;
                 if (curMap.get(id) == null){
                     continue;
                 }
                 PDULineRes pduLineRes = new PDULineRes();
                 pduLineRes.setStatus(pduIndex.getRunStatus());
-                String ipAddr = pduIndex.getIpAddr();
-                Integer cascadeAddr = pduIndex.getCascadeAddr();
-                List<CabinetPdu> cabinetPduAList = cabinetPduAMap.get(ipAddr + "-" + cascadeAddr);
-                List<CabinetPdu> cabinetPduBList = cabinetPduBMap.get(ipAddr + "-" + cascadeAddr);
-
-                if (cabinetPduAList != null && !cabinetPduAList.isEmpty()) {
-                    CabinetPdu cabinetPduA = cabinetPduAList.get(0); // 假设结果唯一
-                    CabinetIndex cabinetIndex = cabinetMap.get(cabinetPduA.getCabinetId());
-                    if (cabinetIndex.getAisleId() != 0){
-                        localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + aisleMap.get(cabinetIndex.getAisleId()) + "-" + cabinetIndex.getName() + "-" + "A路";
-                    }else {
-                        localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + cabinetIndex.getName() + "-" + "A路";
-                    }
-                }
-
-                if (cabinetPduBList != null && !cabinetPduBList.isEmpty()) {
-                    CabinetPdu cabinetPduB = cabinetPduBList.get(0); // 假设结果唯一
-                    CabinetIndex cabinetIndex = cabinetMap.get(cabinetPduB.getCabinetId());
-                    if (cabinetIndex.getAisleId() != 0){
-                        localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + aisleMap.get(cabinetIndex.getAisleId()) + "-" + cabinetIndex.getName() + "-" + "B路";
-                    }else {
-                        localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + cabinetIndex.getName() + "-" + "B路";
-                    }
-                }
-                pduLineRes.setLocation(localtion);
                 pduLineRes.setPduId(pduIndex.getId());
                 pduLineRes.setDevKey(pduIndex.getDevKey());
 
@@ -459,6 +357,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
                 result.add(pduLineRes);
             }
+
+            setLocation(pduIndices,result);
             return new PageResult<PDULineRes>(result,pduIndexPageResult.getTotal());
 
         }catch (Exception e){
@@ -1105,7 +1005,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         builder.sort(sort, SortOrder.DESC);
         // 设置搜索条件
         searchRequest.source(builder);
-        builder.size(1000);
+        builder.size(2000);
 
         List<String> list = new ArrayList<>();
         // 执行ES请求
@@ -1133,7 +1033,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
         // 设置搜索条件
         searchRequest.source(builder);
-        builder.size(1000);
+        builder.size(2000);
 
         List<String> list = new ArrayList<>();
         // 执行ES请求
@@ -1260,4 +1160,68 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         return time.format(fmt);
     }
+
+    private void setLocation(List<PduIndex> pduIndices,List<? extends PDUDeviceDO> result){
+        Set<String> ipAddrSet = new HashSet<>();
+        Set<Integer> cascadeAddrSet = new HashSet<>();
+        for (PduIndex pduIndex : pduIndices) {
+            ipAddrSet.add(pduIndex.getIpAddr());
+            cascadeAddrSet.add(pduIndex.getCascadeAddr());
+        }
+
+        // 批量查询 CabinetPdu 表
+        List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>()
+                .in(CabinetPdu::getPduIpA, ipAddrSet).in(CabinetPdu::getCasIdA, cascadeAddrSet)
+                .or().in(CabinetPdu::getPduIpB,ipAddrSet).in(CabinetPdu::getCasIdB,cascadeAddrSet));
+
+        // 将查询结果按 ipAddr 和 cascadeAddr 分组
+        Map<String, List<CabinetPdu>> cabinetPduAMap = cabinetPdus.stream()
+                .filter(cabinetPdu -> ipAddrSet.contains(cabinetPdu.getPduIpA()) && cascadeAddrSet.contains(cabinetPdu.getCasIdA()))
+                .collect(Collectors.groupingBy(cabinetPdu -> cabinetPdu.getPduIpA() + "-" + cabinetPdu.getCasIdA()));
+
+
+        Map<String, List<CabinetPdu>> cabinetPduBMap = cabinetPdus.stream()
+                .filter(cabinetPdu -> ipAddrSet.contains(cabinetPdu.getPduIpB()) && cascadeAddrSet.contains(cabinetPdu.getCasIdB()))
+                .collect(Collectors.groupingBy(cabinetPdu -> cabinetPdu.getPduIpB() + "-" + cabinetPdu.getCasIdB()));
+
+
+        List<CabinetIndex> cabinetIndices = cabinetIndexMapper.selectBatchIds(cabinetPdus.stream().map(CabinetPdu::getCabinetId).collect(Collectors.toList()));
+        Map<Integer, CabinetIndex> cabinetMap = cabinetIndices.stream().collect(Collectors.toMap(CabinetIndex::getId, Function.identity()));
+        List<RoomIndex> roomIndices = roomIndexMapper.selectBatchIds(cabinetIndices.stream().map(CabinetIndex::getRoomId).collect(Collectors.toList()));
+        Map<Integer, String> roomMap = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getName));
+        Map<Integer, String> aisleMap = aisleIndexMapper.selectBatchIds(cabinetIndices.stream().filter(dto -> dto.getAisleId() != 0).map(CabinetIndex::getAisleId).collect(Collectors.toList())).stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getName));
+
+        result.forEach( pduIndex ->{
+            String localtion = null;
+            List<CabinetPdu> cabinetPduAList = cabinetPduAMap.get(pduIndex.getDevKey());
+            List<CabinetPdu> cabinetPduBList = cabinetPduBMap.get(pduIndex.getDevKey());
+
+            if (cabinetPduAList != null && !cabinetPduAList.isEmpty()) {
+                CabinetPdu cabinetPduA = cabinetPduAList.get(0); // 假设结果唯一
+                CabinetIndex cabinetIndex = cabinetMap.get(cabinetPduA.getCabinetId());
+                if (cabinetIndex.getAisleId() != 0){
+                    localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + aisleMap.get(cabinetIndex.getAisleId()) + "-" + cabinetIndex.getName() + "-" + "A路";
+                }else {
+                    localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + cabinetIndex.getName() + "-" + "A路";
+                }
+            }
+
+            if (cabinetPduBList != null && !cabinetPduBList.isEmpty()) {
+                CabinetPdu cabinetPduB = cabinetPduBList.get(0); // 假设结果唯一
+                CabinetIndex cabinetIndex = cabinetMap.get(cabinetPduB.getCabinetId());
+                if (cabinetIndex.getAisleId() != 0){
+                    localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + aisleMap.get(cabinetIndex.getAisleId()) + "-" + cabinetIndex.getName() + "-" + "B路";
+                }else {
+                    localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + cabinetIndex.getName() + "-" + "B路";
+                }
+            }
+            pduIndex.setLocation(localtion);
+        });
+    }
+
+private List getMutiRedis(List<PduIndex> list){
+    List<String> devKeys = list.stream().map(pduIndex -> REDIS_KEY_PDU + pduIndex.getDevKey()).collect(Collectors.toList());
+    ValueOperations ops = redisTemplate.opsForValue();
+    return ops.multiGet(devKeys);
+}
 }

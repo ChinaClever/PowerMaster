@@ -3,25 +3,7 @@
   <div class="energy">
     <div class="top">
       <ContentWrap>
-        <el-form
-          class="-mb-15px topForm"
-          :model="queryParams"
-          ref="queryFormRef"
-          :inline="true"
-          label-width="68px"
-        >
-          <el-form-item label="" prop="jf">
-            <el-select v-model="queryParams.cabinetroomId" placeholder="请选择" class="!w-200px">
-              <el-option v-for="item in roomList" :key="item.id" :label="item.name" :value="item.id" />
-            </el-select>
-          </el-form-item >
-          <span class="line"></span>
-          <el-form-item label="" prop="jg">
-            <el-select v-model="queryParams.busId" placeholder="请选择" class="!w-200px">
-              <el-option v-for="item in machineList" :key="item.id" :label="item.name" :value="item.id" />
-            </el-select>
-          </el-form-item>
-        </el-form>
+        <el-tag size="large">{{ location }}</el-tag>
       </ContentWrap>
     </div>
     <div class="content">
@@ -117,6 +99,7 @@ import { CabinetApi } from '@/api/cabinet/info'
 import { BusEnergyApi } from '@/api/bus/busenergy'
 import 'echarts/lib/component/dataZoom';
 
+const location = ref(history?.state?.location )
 const roomList = ref([]) // 左侧导航栏树结构列表
 const machineList = ref([]) // 左侧导航栏树结构列表
 const radioBtn = ref('DAY')

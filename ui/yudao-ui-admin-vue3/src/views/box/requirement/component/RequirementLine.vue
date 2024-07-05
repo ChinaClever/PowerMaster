@@ -37,12 +37,13 @@ const echartsOption = ref({
     formatter: function(params) {
       var result = params[0].name + '<br>';
       for (var i = 0; i < params.length; i++) {
-        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' ;
+        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp' ;
         if (params[i].seriesName.includes("电流")) {
           result += params[i].value.toFixed(2) +  ' A'; 
         } else if (params[i].seriesName.includes("功率")) {
           result += params[i].value.toFixed(3) + ' kW';
         }
+        result += " &nbsp&nbsp&nbsp&nbsp发生时间:&nbsp" +  series.value[i].maxTime[params[0].dataIndex];
         result += '<br>';
       }
       return result;

@@ -115,6 +115,7 @@
               link
               type="primary"
               @click="toDetail(scope.row)"
+              v-if="scope.row.status != null && scope.row.status != 5"
             >
             设备详情
             </el-button>
@@ -135,7 +136,7 @@
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="icon">
-              <div>
+              <div v-if="item.acurThd != null">
                 <br/>
                 电流谐波
               </div> 
@@ -152,7 +153,7 @@
             <el-tag type="danger" v-else-if="item.atemStatus != 0 || item.btemStatus != 0  || item.ctemStatus != 0 " >告警</el-tag>
             <el-tag v-else >正常</el-tag>
           </div> -->
-          <button class="detail" @click="toDetail(item)" >详情</button>
+          <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 5" >详情</button>
         </div>
       </div>
 
@@ -361,7 +362,8 @@ const getNavList = async() => {
 const toDetail = (row) =>{
   const devKey = row.devKey;
   const boxId = row.boxId
-  push({path: '/bus/boxmonitor/boxharmonicdetail', state: { devKey, boxId }})
+  const location = row.location ? row.location : devKey;
+  push({path: '/bus/boxmonitor/boxharmonicdetail', state: { devKey, boxId ,location }})
 }
 
 // const openNewPage = (scope) => {
@@ -730,10 +732,11 @@ onActivated(() => {
         margin: 0 35px 0 13px;
       }
       .icon {
-        width: 60px;
+        width: 74px;
         height: 60px;
         margin: 0 28px;
         text-align: center;
+        font-size: large;
       }
     }
     .devKey{

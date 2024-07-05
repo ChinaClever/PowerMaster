@@ -905,7 +905,7 @@ public class IndexServiceImpl implements IndexService {
         builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
         // 设置搜索条件
         searchRequest.source(builder);
-        builder.size(1000);
+        builder.size(2000);
 
         List<String> list = new ArrayList<>();
         // 执行ES请求
@@ -933,7 +933,7 @@ public class IndexServiceImpl implements IndexService {
         builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
         // 设置搜索条件
         searchRequest.source(builder);
-        builder.size(1000);
+        builder.size(2000);
 
         List<String> list = new ArrayList<>();
         // 执行ES请求

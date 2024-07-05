@@ -111,4 +111,20 @@ export const IndexApi = {
   getBoxMenu: async () => {
     return await request.get({ url: `/room/box/menu` })
   },
+
+  getBoxPowerRedisData: async (data: any) => {
+    return await request.post({ url: `/box/index/power/detail` ,  data})
+  },
+
+  getBoxLoadRateLine: async (data: any) => {
+    return await request.post({ url: `/box/index/power/loadrate` ,  data})
+  },
+
+  getBoxPowActiveLine: async (data: any) => {
+    return await request.post({ url: `/box/index/power/powactive` ,  data})
+  },
+
+  getBoxPowReactiveLine: async (data: any) => {
+    return await request.post({ url: `/box/index/power/powreactive` ,  data})
+  },
 }

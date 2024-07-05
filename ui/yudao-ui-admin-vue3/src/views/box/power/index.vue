@@ -86,128 +86,71 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" >
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
         <el-table-column v-if="valueMode == 0" label="A相电流" align="center" prop="acur" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.acur != null">
+            <el-text line-clamp="2" v-if="scope.row.acur != null" :type=" scope.row.acurStatus != 0 ? 'danger' : '' ">
               {{ scope.row.acur }}A
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="A相电流状态" align="center" prop="acurStatus" width="130px" >
-          <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.acurStatus != 0" >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </template>
-        </el-table-column>
         <el-table-column v-if="valueMode == 0" label="B相电流" align="center" prop="bcur" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.bcur != null">
+            <el-text line-clamp="2" v-if="scope.row.bcur != null" :type=" scope.row.bcurStatus != 0 ? 'danger' : '' ">
               {{ scope.row.bcur }}A
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="B相电流状态" align="center" prop="bcurStatus" width="130px" >
-          <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.bcurStatus != 0" >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </template>
-        </el-table-column>
         <el-table-column v-if="valueMode == 0" label="C相电流" align="center" prop="ccur" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.ccur != null">
+            <el-text line-clamp="2" v-if="scope.row.ccur != null" :type=" scope.row.ccurStatus != 0 ? 'danger' : '' ">
               {{ scope.row.ccur }}A
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="C相电流状态" align="center" prop="ccurStatus" width="130px" >
-          <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.ccurStatus != 0 " >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </template>
-        </el-table-column>
         <el-table-column  v-if="valueMode == 1"  label="A相电压" align="center" prop="avol" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.avol">
+            <el-text line-clamp="2" v-if="scope.row.avol" :type=" scope.row.avolStatus != 0 ? 'danger' : '' ">
               {{ scope.row.avol }}V
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 1" label="A相电压状态" align="center" prop="avolStatus" width="130px" >
-          <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.avolStatus != 0" >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-            <el-text line-clamp="2" v-if="scope.row.avolStatus != null">
-              {{ scope.row.avolStatus }}
             </el-text>
           </template>
         </el-table-column>
         <el-table-column v-if="valueMode == 1" label="B相电压" align="center" prop="bvol" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.bvol">
+            <el-text line-clamp="2" v-if="scope.row.bvol" :type=" scope.row.bvolStatus != 0 ? 'danger' : '' ">
               {{ scope.row.bvol }}V
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 1" label="B相电压状态" align="center" prop="bvolStatus" width="130px" >
-          <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.bvolStatus != 0" >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </template>
-        </el-table-column>
         <el-table-column v-if="valueMode == 1" label="C相电压" align="center" prop="cvol" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.cvol">
+            <el-text line-clamp="2" v-if="scope.row.cvol" :type=" scope.row.cvolStatus != 0 ? 'danger' : '' ">
               {{ scope.row.cvol }}V
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 1" label="C相电压状态" align="center" prop="cvolStatus" width="130px" >
-          <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.cvolStatus != 0 " >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </template>
-        </el-table-column>
         <el-table-column v-if="valueMode == 2" label="A相有功功率" align="center" prop="aactivePow" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.aactivePow">
+            <el-text line-clamp="2" v-if="scope.row.aactivePow" :type=" scope.row.aactivePowStatus != 0 ? 'danger' : '' ">
               {{ scope.row.aactivePow }}kW
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 2" label="A相有功功率状态" align="center" prop="aactivePowStatus" width="150px" >
-          <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.aactivePowStatus != 0 " >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </template>
-        </el-table-column>
         <el-table-column v-if="valueMode == 2" label="B相有功功率" align="center" prop="bactivePow" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.bactivePow">
+            <el-text line-clamp="2" v-if="scope.row.bactivePow" :type=" scope.row.bactivePowStatus != 0 ? 'danger' : '' ">
               {{ scope.row.bactivePow }}kW
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 2" label="B相有功功率状态" align="center" prop="bactivePowStatus" width="150px" >
-          <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.bactivePowStatus != 0" >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </template>
-        </el-table-column>
         <el-table-column v-if="valueMode == 2" label="C相有功功率" align="center" prop="cactivePow" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.cactivePow">
+            <el-text line-clamp="2" v-if="scope.row.cactivePow" :type=" scope.row.cactivePowStatus != 0 ? 'danger' : '' ">
               {{ scope.row.cactivePow }}kW
             </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 2" label="C相有功功率状态" align="center" prop="cactivePowStatus" width="150px" >
-          <template #default="scope" >
-            <el-tag type="danger" v-if="scope.row.cactivePowStatus != 0" >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
           </template>
         </el-table-column>
         <el-table-column v-if="valueMode == 3" label="A相无功功率" align="center" prop="areactivePow" width="130px" >
@@ -237,7 +180,7 @@
             <el-button
               link
               type="primary"
-              @click="toPDUDisplayScreen(scope.row)"
+              @click="toDeatil(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 5"
             >
             设备详情
@@ -259,29 +202,86 @@
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="icon" >
-              <div v-if="false" >
-                不平衡度<br/>{{ item.volUnbalance }}%
-              </div>              
+              <div v-if="valueMode == 0 && item.acur != null" >
+                电流
+              </div>    
+              <div v-if="valueMode == 1 && item.avol != null" >
+                电压
+              </div>           
+              <div v-if="valueMode == 2 && item.aactivePow != null" >
+                有功功率
+              </div> 
+              <div v-if="valueMode == 3 && item.areactivePow != null" >
+                无功功率
+              </div> 
             </div>
             <div class="info" v-if="valueMode == 0" >                  
-              <div :style="{backgroundColor : item.acurColor}" v-if="item.acur != null">A相电流：{{item.acur}}A</div>
-              <div :style="{backgroundColor : item.bcurColor}" v-if="item.bcur != null">B相电流：{{item.bcur}}A</div>
-              <div :style="{backgroundColor : item.ccurColor}" v-if="item.ccur != null">C相电流：{{item.ccur}}A</div>
+              <div v-if="item.acur != null">
+                <el-text v-if="item.acur != null" :type=" item.acurStatus != 0 ? 'danger' : '' ">
+                  A相：{{item.acur}}A
+                </el-text>
+              </div>
+              <div v-if="item.bcur != null">
+                <el-text v-if="item.bcur != null" :type=" item.bcurStatus != 0 ? 'danger' : '' ">
+                  B相：{{item.bcur}}A
+                </el-text>
+              </div>
+              <div v-if="item.ccur != null">
+                <el-text v-if="item.ccur != null" :type=" item.ccurStatus != 0 ? 'danger' : '' ">
+                  C相：{{item.ccur}}A
+                </el-text>
+              </div>
             </div>
             <div class="info" v-if="valueMode == 1">                  
-              <div :style="{backgroundColor : item.avolColor}"  v-if="item.avol != null">A相电压：{{item.avol}}V</div>
-              <div :style="{backgroundColor : item.bvolColor}" v-if="item.bvol != null">B相电压：{{item.bvol}}V</div>
-              <div :style="{backgroundColor : item.cvolColor}" v-if="item.cvol != null">C相电压：{{item.cvol}}V</div>
+              <div v-if="item.avol != null">
+                <el-text v-if="item.avol != null" :type=" item.avolStatus != 0 ? 'danger' : '' ">
+                  A相：{{item.avol}}V
+                </el-text>
+              </div>
+              <div  v-if="item.bvol != null">
+                <el-text v-if="item.bvol != null" :type=" item.bvolStatus != 0 ? 'danger' : '' ">
+                  B相：{{item.bvol}}V
+                </el-text>
+              </div>
+              <div v-if="item.cvol != null">
+                <el-text v-if="item.cvol != null" :type=" item.cvolStatus != 0 ? 'danger' : '' ">
+                  C相：{{item.cvol}}V
+                </el-text>
+              </div>
             </div>
             <div class="info" v-if="valueMode == 2">                  
-              <div :style="{backgroundColor : item.aactivePowColor}" v-if="item.aactivePow != null">A相有功功率：{{item.aactivePow}}kW</div>
-              <div :style="{backgroundColor : item.bactivePowColor}" v-if="item.bactivePow != null">B相有功功率：{{item.bactivePow}}kW</div>
-              <div :style="{backgroundColor : item.cactivePowColor}" v-if="item.cactivePow != null">C相有功功率：{{item.cactivePow}}kW</div>
+              <div  v-if="item.aactivePow != null">
+                <el-text v-if="item.aactivePow != null" :type=" item.aactivePowStatus != 0 ? 'danger' : '' ">
+                  A相：{{item.aactivePow}}kW
+                </el-text>
+              </div>
+              <div  v-if="item.bactivePow != null">
+                <el-text v-if="item.bactivePow != null" :type=" item.bactivePowStatus != 0 ? 'danger' : '' ">
+                  B相：{{item.bactivePow}}kW
+                </el-text>
+              </div>
+              <div  v-if="item.cactivePow != null">
+                <el-text v-if="item.cactivePow != null" :type=" item.cactivePowStatus != 0 ? 'danger' : '' ">
+                  C相：{{item.cactivePow}}kW
+                </el-text>
+              </div>
             </div>
             <div class="info" v-if="valueMode == 3">                  
-              <div v-if="item.areactivePow != null">A相无功功率：{{item.areactivePow}}kVar</div>
-              <div v-if="item.breactivePow != null">B相无功功率：{{item.breactivePow}}kVar</div>
-              <div v-if="item.creactivePow != null">C相无功功率：{{item.creactivePow}}kVar</div>
+              <div v-if="item.areactivePow != null">
+                <el-text v-if="item.areactivePow != null">
+                  A相：{{item.areactivePow}}kVar
+                </el-text>
+              </div>
+              <div v-if="item.breactivePow != null">
+                <el-text v-if="item.breactivePow != null">
+                  B相：{{item.breactivePow}}kVar
+                </el-text>
+              </div>
+              <div v-if="item.creactivePow != null">
+                <el-text v-if="item.creactivePow != null">
+                  C相：{{item.creactivePow}}kVar
+                </el-text>
+              </div>
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
@@ -300,7 +300,10 @@
             <el-tag type="danger" v-else-if="item.aactivePowStatus != 0 || item.bactivePowStatus != 0 || item.cactivePowStatus != 0" >告警</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>
-          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <div class="status" v-if="valueMode == 3">
+            <el-tag type="info" v-if="item.status == null ||  item.status == 5" >离线</el-tag>
+          </div>
+          <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 5" >详情</button>
         </div>
       </div>
       <Pagination
@@ -521,9 +524,13 @@ const getNavList = async() => {
 
 }
 
-const toPDUDisplayScreen = (row) =>{
-  push('/pdu/pdudisplayscreen?devKey=' + row.devKey + '&location=' + row.location + '&id=' + row.id);
+const toDeatil = (row) =>{
+  const devKey = row.devKey;
+  const boxId = row.boxId;
+  const location = row.location != null ? row.location : row.devKey
+  push({path: '/bus/boxmonitor/boxpowerdetail', state: { devKey, boxId ,location}})
 }
+
 
 // const openNewPage = (scope) => {
 //   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
@@ -887,9 +894,10 @@ onActivated(() => {
       display: flex;
       align-items: center;
       .icon {
-        width: 60px;
+        width: 74px;
         height: 30px;
         margin: 0 28px;
+        font-size: large;
         text-align: center;
       }
     }

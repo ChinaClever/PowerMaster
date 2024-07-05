@@ -14,4 +14,7 @@ public interface BusPowerLoadDetailService {
 
     Map<String, Object> getLineChartDetailData(BusPowerLoadDetailReqVO reqVO) throws IOException;
 
+    BusPowerLoadDetailRespVO getBoxDetailData(BusPowerLoadDetailReqVO reqVO);
+
+    Map<String, Object> getBoxLineChartDetailData(BusPowerLoadDetailReqVO reqVO) throws IOException;
 }

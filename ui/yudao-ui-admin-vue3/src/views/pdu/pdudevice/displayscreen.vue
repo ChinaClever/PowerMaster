@@ -810,7 +810,8 @@ const flashChartData = async () =>{
 
 const getTestData = async()=>{
 
-  testData.value = await PDUDeviceApi.PDUDisplay(queryParams);
+  const data = await PDUDeviceApi.PDUDisplay(queryParams);
+  testData.value = JSON.parse(data)
   circleList.value = [];
   output.value = [];
 
