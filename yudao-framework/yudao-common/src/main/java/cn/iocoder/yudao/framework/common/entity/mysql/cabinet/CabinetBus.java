@@ -34,7 +34,7 @@ public class CabinetBus implements Serializable {
     /**
      * A路插接箱输出位
      */
-    private int outletIdA;
+    private Integer outletIdA;
     /**
      * B路插接箱
      */
@@ -42,7 +42,7 @@ public class CabinetBus implements Serializable {
     /**
      * B路插接箱输出位
      */
-    private int outletIdB;
+    private Integer outletIdB;
     /**
      * 更新时间
      */
