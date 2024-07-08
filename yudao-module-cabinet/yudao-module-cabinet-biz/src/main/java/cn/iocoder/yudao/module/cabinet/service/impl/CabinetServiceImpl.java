@@ -749,17 +749,26 @@ public class CabinetServiceImpl implements CabinetService {
     private CabinetBus convertBus(CabinetVo vo, CabinetBus bus) {
         CabinetBus cabinetBus = new CabinetBus();
         cabinetBus.setCabinetId(vo.getId());
-        cabinetBus.setDevKeyA(vo.getBusIpA()
-                .concat(SPLIT_KEY_BUS)
-                .concat(vo.getBusNameA())
-                .concat(SPLIT_KEY_BUS)
-                .concat(vo.getBoxNameA()));
+        if (StringUtils.isNotEmpty(vo.getBusIpA())){
+            cabinetBus.setDevKeyA(vo.getBusIpA()
+                    .concat(SPLIT_KEY_BUS)
+                    .concat(vo.getBusNameA())
+                    .concat(SPLIT_KEY_BUS)
+                    .concat(vo.getBoxNameA()));
+        }else {
+            cabinetBus.setDevKeyA("");
+        }
+
         cabinetBus.setOutletIdA(vo.getBoxOutletIdA());
-        cabinetBus.setDevKeyB(vo.getBusIpB()
-                .concat(SPLIT_KEY_BUS)
-                .concat(vo.getBusNameB())
-                .concat(SPLIT_KEY_BUS)
-                .concat(vo.getBoxNameB()));
+        if (StringUtils.isNotEmpty(vo.getBusIpB())){
+            cabinetBus.setDevKeyB(vo.getBusIpB()
+                    .concat(SPLIT_KEY_BUS)
+                    .concat(vo.getBusNameB())
+                    .concat(SPLIT_KEY_BUS)
+                    .concat(vo.getBoxNameB()));
+        }else {
+            cabinetBus.setDevKeyB("");
+        }
         cabinetBus.setOutletIdB(vo.getBoxOutletIdB());
         cabinetBus.setId(bus.getId());
         return cabinetBus;

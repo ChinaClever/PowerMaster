@@ -77,10 +77,13 @@ public class AisleSaveVo {
     private String type;
 
     /**
-     * 母线数据
+     * A路母线
      */
-    @Schema(description = "母线数据", example = "[]")
-    private List<AisleBarDTO> barVos;
+    private AisleBarDTO barA;
+    /**
+     * B路母线
+     */
+    private AisleBarDTO barB;
 
     @Schema(description = "机柜列表", example = "[]")
     private List<CabinetVo>  cabinetList;
