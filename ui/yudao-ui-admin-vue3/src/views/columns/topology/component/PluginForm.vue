@@ -1,5 +1,5 @@
 <template>
-  <Dialog id="col-dialog" v-model="dialogVisible" :title="dialogTitle" width="60%">
+  <Dialog id="col-dialog" v-model="dialogVisible" title="配置母线参数" width="60%">
     <div class="formContainer">
       <el-form
         ref="colForm"
@@ -24,10 +24,16 @@
               <el-form-item label="B路ip：" prop="ipB">
                 <el-input v-model="formData.ipB" placeholder="请输入" />
               </el-form-item>
-              <el-form-item label="位置：" prop="direction">
-                <el-select v-model="formData.direction" placeholder="请选择">
-                  <el-option label="同侧" :value="0" />
-                  <el-option label="异侧" :value="1" />
+              <el-form-item label="A路插接箱位置：" prop="directionA">
+                <el-select v-model="formData.directionA" placeholder="请选择">
+                  <el-option label="左侧" :value="0" />
+                  <el-option label="右侧" :value="1" />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="B路插接箱位置：" prop="directionB">
+                <el-select v-model="formData.directionB" placeholder="请选择">
+                  <el-option label="左侧" :value="0" />
+                  <el-option label="右侧" :value="1" />
                 </el-select>
               </el-form-item>
             </div>
@@ -35,7 +41,7 @@
           <el-collapse-item title="插接箱和连接器" name="2">
             <div class="collapseItem">
               <el-form-item label="插接箱数量：" prop="cjxAmount">
-                <el-input-number v-model="formData.cjxAmount" :min="0" :max="20" />
+                <el-input-number v-model="formData.cjxAmount" @change="tsead" :min="0" :max="20" />
               </el-form-item>
               <el-form-item label="连接器数量：" prop="ljqAmount">
                 <el-input-number v-model="formData.ljqAmount" :min="0" :max="20" />
@@ -58,17 +64,21 @@ import { FormRules } from 'element-plus'
 const colForm = ref()
 const activeNames = ref(['1', '2'])
 const dialogVisible = ref(false) // 弹窗的是否展示
-const dialogTitle = ref('') // 弹窗的标题
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formData = ref({
   nameA: '',
   ipA: '',
   nameB: '',
-  direction: 0,
+  directionA: 0,
+  directionB: 0,
   ipB: '',
   cjxAmount: 0,
   ljqAmount: 0,
 })
+
+const tsead = () => {
+  console.log('formData.value', formData.value)
+}
 
 const formRules = reactive<FormRules>({
   nameA: [{ required: true, message: 'A路始端箱名称不能为空', trigger: 'blur' }],
@@ -82,9 +92,8 @@ const handleChange = () => {
 }
 
 /** 打开弹窗 */
-const open = async (type: string, data) => {
+const open = async (data) => {
   dialogVisible.value = true
-  dialogTitle.value = type == 'edit' ? '编辑': '添加'
   resetForm()
   console.log('data', data)
   if (data) formData.value = data
@@ -118,7 +127,8 @@ const resetForm = () => {
     nameA: '',
     ipA: '',
     nameB: '',
-    direction: 0,
+    directionA: 0,
+    directionB: 0,
     ipB: '',
     cjxAmount: 0,
     ljqAmount: 0,
