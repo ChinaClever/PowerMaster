@@ -141,7 +141,15 @@ public class AisleServiceImpl implements AisleService {
             //母线信息
             List<AisleBar> aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
                     .eq(AisleBar::getAisleId,index.getId()));
-            if (!CollectionUtils.isEmpty(aisleSaveVo.getBarVos())){
+            List<AisleBarDTO> barVos = new ArrayList<>();
+            if (Objects.nonNull(aisleSaveVo.getBarA())){
+                barVos.add(aisleSaveVo.getBarA());
+            }
+            if (Objects.nonNull(aisleSaveVo.getBarB())){
+                barVos.add(aisleSaveVo.getBarB());
+            }
+
+            if (!CollectionUtils.isEmpty(barVos)){
                 if (!CollectionUtils.isEmpty(aisleBars)){
                     List<Integer> ids = aisleBars.stream().map(AisleBar::getId).collect(Collectors.toList());
                     ids.forEach(this::deleteBus);
@@ -149,7 +157,7 @@ public class AisleServiceImpl implements AisleService {
                 }
                 AisleBusSaveVo busSaveVo = new AisleBusSaveVo();
                 busSaveVo.setAisleId(index.getId());
-                busSaveVo.setBarVos(aisleSaveVo.getBarVos());
+                busSaveVo.setBarVos(barVos);
                 aisleBusSave(busSaveVo);
             }else {
                 //删除绑定关系
