@@ -426,23 +426,23 @@ const getDetail = async () => {
   const data = await IndexApi.getBusTemDetail(queryParams);
   temESList.value = data?.chart;
   temESList.value?.temAvgValueA?.forEach((obj) => {
-    obj = obj?.toFixed(1);
+    obj = obj?.toFixed(0);
   });
   temESList.value?.temAvgValueB?.forEach((obj) => {
-    obj = obj?.toFixed(1);
+    obj = obj?.toFixed(0);
   });
   temESList.value?.temAvgValueC?.forEach((obj) => {
-    obj = obj?.toFixed(1);
+    obj = obj?.toFixed(0);
   });
   temESList.value?.temAvgValueN?.forEach((obj) => {
-    obj = obj?.toFixed(1);
+    obj = obj?.toFixed(0);
   });
   temTableList.value = data?.table;
   temTableList.value?.forEach((obj) => {
-    obj.temAvgValueA = obj?.temAvgValueA?.toFixed(1);
-    obj.temAvgValueB = obj?.temAvgValueB?.toFixed(1);
-    obj.temAvgValueC = obj?.temAvgValueC?.toFixed(1);
-    obj.temAvgValueN = obj?.temAvgValueN?.toFixed(1);
+    obj.temAvgValueA = obj?.temAvgValueA?.toFixed(0);
+    obj.temAvgValueB = obj?.temAvgValueB?.toFixed(0);
+    obj.temAvgValueC = obj?.temAvgValueC?.toFixed(0);
+    obj.temAvgValueN = obj?.temAvgValueN?.toFixed(0);
   });
 }
 
@@ -459,10 +459,10 @@ const getList = async () => {
       if(obj?.atem == null){
         return;
       } 
-      obj.atem = obj.atem?.toFixed(1);
-      obj.btem = obj.btem?.toFixed(1);
-      obj.ctem = obj.ctem?.toFixed(1);
-      obj.ntem = obj.ntem?.toFixed(1);
+      obj.atem = obj.atem?.toFixed(0);
+      obj.btem = obj.btem?.toFixed(0);
+      obj.ctem = obj.ctem?.toFixed(0);
+      obj.ntem = obj.ntem?.toFixed(0);
     });
 
     total.value = data.total
@@ -482,10 +482,10 @@ const getListNoLoading = async () => {
       if(obj?.atem == null){
         return;
       } 
-      obj.atem = obj.atem?.toFixed(1);
-      obj.btem = obj.btem?.toFixed(1);
-      obj.ctem = obj.ctem?.toFixed(1);    
-      obj.ntem = obj.ntem?.toFixed(1);
+      obj.atem = obj.atem?.toFixed(0);
+      obj.btem = obj.btem?.toFixed(0);
+      obj.ctem = obj.ctem?.toFixed(0);    
+      obj.ntem = obj.ntem?.toFixed(0);
     });
 
     total.value = data.total

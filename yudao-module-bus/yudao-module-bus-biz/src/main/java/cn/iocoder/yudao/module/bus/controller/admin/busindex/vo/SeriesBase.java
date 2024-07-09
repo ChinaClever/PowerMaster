@@ -6,10 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class LineSeries extends  SeriesBase{
+public class SeriesBase {
 
-    private String type = "line";
+    private String name;
 
-    private String symbol = "none";
+    private List<Float> data = new ArrayList<>();
 
 }

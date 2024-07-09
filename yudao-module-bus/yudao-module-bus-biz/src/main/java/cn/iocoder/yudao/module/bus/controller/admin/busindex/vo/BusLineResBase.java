@@ -8,7 +8,7 @@ import java.util.List;
 @Data
 public class BusLineResBase {
 
-    private List<LineSeries> series = new ArrayList<>();
+    private List<SeriesBase> series = new ArrayList<>();
 
     private List<String> time = new ArrayList<>();
 }

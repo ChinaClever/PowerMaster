@@ -1,9 +1,9 @@
 <template>
-  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="false"  :lazy="true" :load="loadNode" navTitle="PDU报表">
+  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="false"  :lazy="true" :load="loadNode" navTitle="母线报表">
     <template #NavInfo>
       <div >
         <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
+          <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
         </div>
         <div class="line"></div>
         <!-- <div class="status">
@@ -54,26 +54,17 @@
           />
         </el-form-item> -->
 
-        <el-form-item label="IP地址" prop="ipAddr" >
+        <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
-            v-model="queryParams.ipAddr"
+            v-model="queryParams.devKey"
             :fetch-suggestions="querySearch"
             clearable
-            class="!w-140px"
-            placeholder="请输入IP地址"
+            class="!w-200px"
+            placeholder="请输入网络地址"
             @select="handleQuery"
           />
         </el-form-item>
 
-        <el-form-item label="级联地址" prop="cascadeAddr" label-width="70px">
-          <el-input-number
-            v-model="queryParams.cascadeAddr"
-            :min="0"
-            controls-position="right"
-            :value-on-clear="0"
-              class="!w-100px"
-          />
-        </el-form-item>
         <el-form-item label="时间段" prop="createTime" label-width="100px">
           <el-button 
             @click="queryParams.timeType = 0;now = new Date();now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 0;handleDayPick();handleQuery()" 
@@ -140,7 +131,7 @@
         <div class="page-con">
           <div class="pageBox" >
             <div class="page-conTitle">
-              PDU基本信息
+              母线基本信息
             </div>
             <el-row :gutter="24" >
               <el-col :span="24 - serChartContainerWidth">
@@ -183,9 +174,6 @@
                   </el-table>
                 </div>
               </el-col>
-              <el-col v-if="serChartContainerWidth == 10" :span="serChartContainerWidth">
-                <Radar width="29vw" height="25vh" :list="serverData" />
-              </el-col>
             </el-row>
           </div>
           <div class="pageBox" v-if="visControll.eqVis" >
@@ -210,18 +198,14 @@
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kVA， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kVA， 发生时间{{powData.activePowMinTime}}</p>
             <Line class="Container"  width="70vw" height="58vh" :list="totalLineList"/>
           </div>
-          <div class="pageBox" v-if="visControll.outletVis">
-            <div class="page-conTitle" >
-              输出位电量排名
-            </div>
-            <HorizontalBar width="70vw" height="58vh" :list="outletList" />
-          </div>
           <div class="pageBox" v-if="visControll.temVis">
             <div class="page-conTitle">
               温度曲线
             </div>
-            <p v-show="temData.temMaxValue">本周期内，最高温度{{temData.temMaxValue}}°C， 最高温度发生时间{{temData.temMaxTime}}，由温度传感器{{temData.temMaxSensorId}}采集得到</p>
-            <p v-show="temData.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{temData.temMinValue}}°C， 最低温度发生时间{{temData.temMinTime}}，由温度传感器{{temData.temMinSensorId}}采集得到</p>
+            <p v-show="temData.temAMaxValue">本周期内，A相最高温度{{temData.temAMaxValue}}°C， 最高温度发生时间{{temData.temAMaxTime}}&nbsp;&nbsp;最低温度{{temData.temAMinValue}}°C， 最低温度发生时间{{temData.temAMinTime}}</p>        
+            <p v-show="temData.temBMaxValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;B相最高温度{{temData.temBMaxValue}}°C， 最高温度发生时间{{temData.temBMaxTime}}&nbsp;&nbsp;最低温度{{temData.temBMinValue}}°C， 最低温度发生时间{{temData.temBMinTime}}</p>        
+            <p v-show="temData.temCMaxValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C相最高温度{{temData.temCMaxValue}}°C， 最高温度发生时间{{temData.temCMaxTime}}&nbsp;&nbsp;最低温度{{temData.temCMinValue}}°C， 最低温度发生时间{{temData.temCMinTime}}</p>          
+            <p v-show="temData.temNMaxValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;N相最高温度{{temData.temNMaxValue}}°C， 最高温度发生时间{{temData.temNMaxTime}}&nbsp;&nbsp;最低温度{{temData.temNMinValue}}°C， 最低温度发生时间{{temData.temNMinTime}}</p>            
             <EnvTemLine  width="70vw" height="58vh" :list="temList"  />
           </div>
         </div>
@@ -236,17 +220,15 @@
 
 <script setup lang="ts">
 // import download from '@/utils/download'
-import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 import * as echarts from 'echarts';
 import { ElTree } from 'element-plus'
-import { CabinetApi } from '@/api/cabinet/info'
+import { IndexApi } from '@/api/bus/busindex'
 import type Node from 'element-plus/es/components/tree/src/model/node'
 import Line from './component/Line.vue'
 import PFLine from './component/PFLine.vue'
 import Bar from './component/Bar.vue'
-import HorizontalBar from './component/HorizontalBar.vue'
 import EnvTemLine from './component/EnvTemLine.vue'
-import Radar from './component/Radar.vue'
+
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -258,8 +240,6 @@ const totalLineList = ref() as any;
 const pfLineList = ref() as any;
 const now = ref()
 const switchValue = ref(1);
-const ipList = ref([])
-const instance = getCurrentInstance();
 const visControll = reactive({
   visAllReport : false,
   isSameDay : false,
@@ -271,29 +251,6 @@ const visControll = reactive({
 })
 const serChartContainerWidth = ref(0)
 
-const loadAll = async () => {
-  var data = await PDUDeviceApi.ipList();
-  var objectArray = data.map((str) => {
-    return { value: str };
-  });
-  return objectArray;
-}
-
-const querySearch = (queryString: string, cb: any) => {
-  const results = queryString
-    ? ipList.value.filter(createFilter(queryString))
-    : ipList.value
-  // call callback function to return suggestions
-  cb(results)
-}
-
-const createFilter = (queryString: string) => {
-  return (ipList) => {
-    return (
-      ipList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
-    )
-  }
-}
 
 const disabledDate = (date) => {
   // 获取今天的日期
@@ -367,6 +324,15 @@ const getFullTimeByDate = (date) => {
       (second > 9 ? second : ("0" + second));
 }
 
+const devKeyList = ref([])
+const loadAll = async () => {
+  var data = await IndexApi.devKeyList();
+  var objectArray = data.map((str) => {
+    return { value: str };
+  });
+  return objectArray;
+}
+
 const areDatesEqual = (date1, date2) => {
   return (
     date1.getFullYear() === date2.getFullYear() &&
@@ -375,6 +341,22 @@ const areDatesEqual = (date1, date2) => {
   );
 }
 
+const querySearch = (queryString: string, cb: any) => {
+
+  const results = queryString
+    ? devKeyList.value.filter(createFilter(queryString))
+    : devKeyList.value
+  // call callback function to return suggestions
+  cb(results)
+}
+
+const createFilter = (queryString: string) => {
+  return (devKeyList) => {
+    return (
+      devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+    )
+  }
+}
 
 // const activeNames = ref(["1","2","3","4","5"])
 
@@ -401,22 +383,22 @@ const queryParams = reactive({
 
 const loadNode = async (node: Node, resolve: (data: Tree[]) => void) => {
   if (node.level === 0) {
-    var temp = await CabinetApi.getRoomList({});
+    var temp = await IndexApi.getBusMenu();
     return resolve(temp)
   }
-  if (node.level === 1){
-    var temp = await CabinetApi.getRoomPDUList({id : node.data.id});
-    return resolve(temp[0].children);
-  } 
-  if (node.level >= 2){
+  // if (node.level === 1){
+  //   var temp = await CabinetApi.getRoomPDUList({id : node.data.id});
+  //   return resolve(temp[0].children);
+  // } 
+  if (node.level >= 1){
     return resolve(node?.data?.children);
   } 
 }
 
+
 const handleClick = (row) => {
-  if(row.type != null  && row.type == 4){
-    queryParams.ipAddr = row.ip
-    queryParams.cascadeAddr = row?.unique?.split("-")[1];
+  if(row.type != null  && row.type == 6){
+    queryParams.devKey = row.unique
     handleQuery();
   }
 }
@@ -533,22 +515,9 @@ const itemStyle = ref({
   }  
 });
 
-const outletItemStyle = ref({
-  emphasis: {
-    barBorderRadius: 7,
-  },
-  //颜色样式部分
-  normal: {
-    barBorderRadius: 7,
-    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-      { offset: 0, color: "#3977E6" },
-      { offset: 1, color: "#37BBF8" },
-    ]),
-  },
-});
 const getList = async () => {
   loading.value = true
-  eqData.value = await PDUDeviceApi.getConsumeData(queryParams);
+  eqData.value = await IndexApi.getConsumeData(queryParams);
   if(eqData.value?.barRes?.series[0]){
     eqData.value.barRes.series[0].itemStyle = itemStyle.value;
   }
@@ -567,7 +536,7 @@ const getList = async () => {
     visControll.eqVis = false;
   }
   
-  const data = await PDUDeviceApi.getPDUPFLine(queryParams);
+  const data = await IndexApi.getBusPFLine(queryParams);
   pfLineList.value = data.pfLineRes;
   console.log("pfLineList.value",pfLineList.value)
   if(pfLineList.value?.time != null && pfLineList.value?.time?.length > 0){
@@ -576,7 +545,7 @@ const getList = async () => {
     visControll.pfVis = false;
   }
 
-  powData.value = await PDUDeviceApi.getPowData(queryParams);
+  powData.value = await IndexApi.getPowData(queryParams);
   totalLineList.value = powData.value.totalLineRes;
   if(totalLineList.value?.time != null && totalLineList.value?.time?.length > 0){
     powData.value.apparentPowMaxValue = powData.value.apparentPowMaxValue?.toFixed(3);
@@ -588,74 +557,30 @@ const getList = async () => {
     visControll.powVis = false;
   }
   
-  outletRankData.value = await PDUDeviceApi.getOutLetData(queryParams);
-  if(outletRankData.value?.barRes?.series[0]){
-    outletRankData.value.barRes.series[0].itemStyle = outletItemStyle.value;
-  }
-  outletList.value = outletRankData.value.barRes;
-  if(outletList.value?.time != null  && outletList.value?.time?.length > 0){
-    visControll.outletVis = true;
-  }else{
-    visControll.outletVis = false;
-  }
-  
-  temData.value = await PDUDeviceApi.getTemData(queryParams);
+  temData.value = await IndexApi.getTemData(queryParams);
   temList.value = temData.value.lineRes;
-  if(temList.value?.series != null && temList.value?.series?.length > 0 ){
+  if(temList.value?.time != null && temList.value?.time?.length > 0 ){
 
-    temData.value.temMinValue = temData.value.temMinValue?.toFixed(2);
-    temData.value.temMaxValue = temData.value.temMaxValue?.toFixed(2);
+    temData.value.temAMinValue = temData.value.temAMinValue?.toFixed(2);
+    temData.value.temAMaxValue = temData.value.temAMaxValue?.toFixed(2);
+
+    temData.value.temBMinValue = temData.value.temBMinValue?.toFixed(2);
+    temData.value.temBMaxValue = temData.value.temBMaxValue?.toFixed(2);
+
+    temData.value.temCMinValue = temData.value.temCMinValue?.toFixed(2);
+    temData.value.temCMaxValue = temData.value.temCMaxValue?.toFixed(2);
+
+    temData.value.temNMinValue = temData.value.temNMinValue?.toFixed(2);
+    temData.value.temNMaxValue = temData.value.temNMaxValue?.toFixed(2);
     visControll.temVis = true;
   }else{
     visControll.temVis = false;
   }
 
-  var PDU = await PDUDeviceApi.PDUDisplay(queryParams);
-  PDU = JSON.parse(PDU)
+  var Bus = await IndexApi.getBusRedisByDevKey(queryParams);
+  Bus = JSON.parse(Bus)
   var temp = [] as any;
-  var baseInfo = await PDUDeviceApi.getPDUDevicePage(queryParams);
-  // 假设 PDU.pdu_data.output_item_list.pow_value 是一个 double 数组
-  var powValueArray = PDU?.pdu_data?.output_item_list?.pow_value;
-  console.log(powValueArray)
-  // 过滤出大于 0 的元素，并将值与下标保存到对象数组中
-  if(powValueArray && powValueArray.length > 0){
-    var resultArray = [] as any;
-    for (var i = 0; i < powValueArray.length; i++) {
-      if (powValueArray[i] > 0) {
-        resultArray.push({
-          value: powValueArray[i],
-          index: i + 1
-        });
-      }
-    }
-
-    // 按值进行排序
-    resultArray.sort(function(a, b) {
-      return a.value - b.value;
-    });
-
-    // 只保留前十个元素
-    resultArray = resultArray.slice(0, 10);
-
-    // 根据 resultArray 中的元素生成 nameAndMax 数组和 value 数组
-    var element = [] as any;
-    var valueArr = [] as any;
-    for (var j = 0; j < resultArray.length; j++) {
-      var name = "输出位" + resultArray[j].index;
-      element.push({
-        name: name,
-        max: resultArray[j].value + 0.001
-      });
-      valueArr.push(resultArray[j].value?.toFixed(3))
-    }
-    serverData.value.nameAndMax = element;
-    serverData.value.value = valueArr;
-    serChartContainerWidth.value = 10;
-    console.log(" serChartContainerWidth.value", serChartContainerWidth.value)
-  }else{
-    serChartContainerWidth.value = 0;
-  }
-  
+  var baseInfo = await IndexApi.getIndexPage(queryParams);
 
   temp.push({
     baseInfoName : "所属位置",
@@ -665,43 +590,24 @@ const getList = async () => {
   })
   temp.push({
     baseInfoName : "网络地址",
-    baseInfoValue : queryParams.ipAddr + "-" + queryParams.cascadeAddr,
+    baseInfoValue : queryParams.devKey,
     consumeName : "当前视在功率",
-    consumeValue : PDU?.pdu_data?.pdu_total_data ? PDU.pdu_data.pdu_total_data.pow_apparent.toFixed(3) + "kVA" : '/'
+    consumeValue : Bus?.bus_data?.bus_total_data ? Bus.bus_data.bus_total_data.pow_apparent.toFixed(3) + "kVA" : '/'
   })
   temp.push({
     baseInfoName : "设备状态",
-    baseInfoValue : PDU?.status != null ? PDU.status : '/',
-    pduAlarm : PDU?.pdu_alarm,
+    baseInfoValue : Bus?.status != null ? Bus.status : '/',
+    pduAlarm : Bus?.pdu_alarm,
     consumeName : "当前功率因素",
-    consumeValue : PDU?.pdu_data?.pdu_total_data ? PDU.pdu_data.pdu_total_data.power_factor?.toFixed(2) : '/'
+    consumeValue : Bus?.bus_data?.bus_total_data ? Bus.bus_data.bus_total_data.power_factor?.toFixed(2) : '/'
   })
   PDUTableData.value = temp;
   
-  
+  visControll.visAllReport = true;
   // initChart();
   loading.value = false
 
 }
-
-const serChartContainer = ref<HTMLElement | null>(null);
-let serChart = null as echarts.ECharts | null; // 显式声明 serChart 的类型
-
-const initChart =  () => {
-  if (serChartContainer.value && instance && serverData.value.nameAndMax && serverData.value.nameAndMax.length > 0) {
-    serChart = echarts.init(serChartContainer.value);
-    serChart.setOption({
-      radar: { indicator: serverData.value.nameAndMax },
-      series: [
-        { name: '服务器IT总视在功率', type: 'radar', label: { show: true, position: 'top' } ,data: [ { value: serverData.value.value, name: '总视在功率' }, ] }
-      ]
-    });
-    // 将 serChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
-    instance.appContext.config.globalProperties.serChart = serChart;
-  }
-  visControll.visAllReport = true;
-};
-
 
 watch(filterText, (val) => {
   treeRef.value!.filter(val)
@@ -732,12 +638,9 @@ const arraySpanMethod = ({
 /** 搜索按钮操作 */
 const handleQuery = async () => {
 
-  if(queryParams.ipAddr){
+  if(queryParams.devKey){
     if(queryParams.oldTime && queryParams.newTime){
-      queryParams.devKey = queryParams.ipAddr +'-' +  queryParams.cascadeAddr;
       await getList();
-      initChart();
-      queryParams.devKey = null;
     }
   }
   
@@ -783,11 +686,13 @@ const formRef = ref()
 //   }
 // }
 
+
+
 /** 初始化 **/
 onMounted( async () =>  {
   // getList();
   // initChart();
-  ipList.value = await loadAll();
+  devKeyList.value = await loadAll();
 })
 </script>
 <style scoped lang="scss">

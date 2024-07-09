@@ -42,7 +42,6 @@ public class BusIndexController {
 
     @PutMapping("/update")
     @Operation(summary = "更新始端箱索引")
-
     public CommonResult<Boolean> updateIndex(@Valid @RequestBody BusIndexSaveReqVO updateReqVO) {
         indexService.updateIndex(updateReqVO);
         return success(true);
@@ -51,7 +50,6 @@ public class BusIndexController {
     @DeleteMapping("/delete")
     @Operation(summary = "删除始端箱索引")
     @Parameter(name = "id", description = "编号", required = true)
-
     public CommonResult<Boolean> deleteIndex(@RequestParam("id") Long id) {
         indexService.deleteIndex(id);
         return success(true);
@@ -65,9 +63,9 @@ public class BusIndexController {
         return success(BeanUtils.toBean(index, BusIndexRespVO.class));
     }
 
-    @GetMapping("/page")
+    @PostMapping("/page")
     @Operation(summary = "获得始端箱索引分页")
-    public CommonResult<PageResult<BusIndexRes>> getIndexPage(@Valid BusIndexPageReqVO pageReqVO) {
+    public CommonResult<PageResult<BusIndexRes>> getIndexPage(@RequestBody BusIndexPageReqVO pageReqVO) {
         PageResult<BusIndexRes> pageResult = indexService.getIndexPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BusIndexRes.class));
     }
@@ -250,6 +248,35 @@ public class BusIndexController {
         return success(result);
     }
 
+    @PostMapping("/report/ele")
+    @Operation(summary = "获得母线报表数据")
+    public CommonResult<Map> getReportConsumeDataByDevKey(@RequestBody BusIndexPageReqVO pageReqVO) {
+        return success(indexService.getReportConsumeDataByDevKey(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+    }
+
+    @PostMapping("/report/pfline")
+    @Operation(summary = "获得PDU报表数据")
+    public CommonResult<Map> getBusPFLine(@RequestBody BusIndexPageReqVO pageReqVO) {
+        return success(indexService.getBusPFLine(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+    }
+
+    @PostMapping("/report/pow")
+    @Operation(summary = "获得PDU报表数据")
+    public CommonResult<Map> getReportPowDataByDevKey(@RequestBody BusIndexPageReqVO pageReqVO) {
+        return success(indexService.getReportPowDataByDevKey(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+    }
+
+    @PostMapping("/report/tem")
+    @Operation(summary = "获得PDU报表数据")
+    public CommonResult<Map> getReportTemDataByDevKey(@RequestBody BusIndexPageReqVO pageReqVO) {
+        return success(indexService.getReportTemDataByDevKey(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+    }
+
+    @PostMapping("/redisbydevkey")
+    @Operation(summary = "获得PDU设备详细信息")
+    public CommonResult<String> getBusRedisByDevKey(@RequestBody BusIndexPageReqVO pageReqVO) {
+        return success(indexService.getBusRedisByDevKey(pageReqVO.getDevKey()));
+    }
 
 //    @GetMapping("/export-excel")
 //    @Operation(summary = "导出始端箱索引 Excel")

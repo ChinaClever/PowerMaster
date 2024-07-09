@@ -15,8 +15,8 @@ export interface IndexVO {
 // 始端箱索引 API
 export const IndexApi = {
   // 查询始端箱索引分页
-  getIndexPage: async (params: any) => {
-    return await request.get({ url: `/bus/index/page`, params })
+  getIndexPage: async (data: any) => {
+    return await request.post({ url: `/bus/index/page`, data })
   },
 
   // 查询始端箱索引详情
@@ -130,5 +130,25 @@ export const IndexApi = {
 
   getBusPowReactiveLine: async (data: any) => {
     return await request.post({ url: `/bus/index/power/powreactive` ,  data})
+  },
+
+  getConsumeData: async (data) => {
+    return await request.post({ url: `/bus/index/report/ele`,data})
+  },
+
+  getBusPFLine : async (data) => {
+    return await request.post({ url: `/bus/index/report/pfline`, data })
+  },
+
+  getPowData: async (data) => {
+    return await request.post({ url: `/bus/index/report/pow`,data})
+  },
+
+  getTemData: async (data) => {
+    return await request.post({ url: `/bus/index/report/tem`,data})
+  },
+
+  getBusRedisByDevKey: async (data) => {
+    return await request.post({ url: `/bus/index/redisbydevkey`, data })
   },
 }

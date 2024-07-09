@@ -7,6 +7,7 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -100,4 +101,14 @@ public interface BusIndexService {
     BusLineResBase getBusPowActiveLine(BusIndexPageReqVO pageReqVO);
 
     BusLineResBase getBusPowReactiveLine(BusIndexPageReqVO pageReqVO);
+
+    Map getReportConsumeDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    Map getBusPFLine(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    Map getReportPowDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    String getBusRedisByDevKey(String devKey);
 }

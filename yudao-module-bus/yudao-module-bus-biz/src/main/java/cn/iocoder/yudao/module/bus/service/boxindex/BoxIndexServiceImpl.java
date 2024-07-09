@@ -12,9 +12,6 @@ import cn.iocoder.yudao.framework.common.entity.es.box.tem.BoxTemHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.total.BoxTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.total.BoxTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalDayDo;
-import cn.iocoder.yudao.framework.common.entity.es.bus.line.BusLineRealtimeDo;
-import cn.iocoder.yudao.framework.common.entity.es.bus.total.BusTotalRealtimeDo;
-import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBus;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
@@ -28,6 +25,7 @@ import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.bus.constant.BoxConstants;
 import cn.iocoder.yudao.module.bus.constant.BusConstants;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.dto.BoxIndexDTO;
+import cn.iocoder.yudao.module.bus.controller.admin.boxindex.dto.MaxValueAndCreateTime;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.*;
 
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
@@ -51,11 +49,13 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.aggregations.AggregationBuilder;
-import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.*;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.aggregations.metrics.ParsedMax;
+import org.elasticsearch.search.aggregations.metrics.ParsedTopHits;
 import org.elasticsearch.search.aggregations.metrics.TopHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -1205,7 +1205,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
         result.getSeries().add(new LineSeries());
         result.getSeries().add(new LineSeries());
-        LineSeries lineSeries = result.getSeries().get(1);
+        SeriesBase lineSeries = result.getSeries().get(1);
         lineSeries.setName("电流平均谐波");
         pageReqVO.setNewTime(pageReqVO.getOldTime().withHour(23).withMinute(59).withSecond(59));
         try {
@@ -1265,7 +1265,6 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
             List<BoxIndex> boxIndices = boxIndexPageResult.getList();
 
-
             if(pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
                 pageReqVO.setNewTime(LocalDateTime.now());
                 pageReqVO.setOldTime(LocalDateTime.now().minusHours(24));
@@ -1273,11 +1272,10 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 pageReqVO.setNewTime(pageReqVO.getNewTime().plusDays(1));
                 pageReqVO.setOldTime(pageReqVO.getOldTime().plusDays(1));
             }
+
             List<Integer> ids = boxIndices.stream().map(BoxIndex::getId).collect(Collectors.toList());
-            List<String> esCurMaxResult = null;
-            List<String> esPowMaxResult = null;
-            Map<Integer,Map<Integer, BoxLineHourDo>> curMap = new HashMap<>();
-            Map<Integer,Map<Integer,BoxLineHourDo>> powMap = new HashMap<>();
+            Map<Integer,Map<Integer, MaxValueAndCreateTime>> curMap ;
+            Map<Integer,Map<Integer, MaxValueAndCreateTime>> powMap ;
             String index = null;
             if(pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
                 index = "box_hda_line_hour";
@@ -1286,21 +1284,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             }
             String startTime = localDateTimeToString(pageReqVO.getOldTime());
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
-            esCurMaxResult = getBoxLineData(startTime,endTime,ids,index,"cur_max_value");
-            esPowMaxResult = getBoxLineData(startTime,endTime,ids,index,"pow_active_max_value");
-            if (!CollectionUtils.isEmpty(esCurMaxResult)){
-                esCurMaxResult.forEach(str -> {
-                    BoxLineHourDo hourDo = JsonUtils.parseObject(str, BoxLineHourDo.class);
-                    curMap.computeIfAbsent(hourDo.getBoxId(), k -> new HashMap<>()).put(hourDo.getLineId(), hourDo);
-                });
-            }
-
-            if (!CollectionUtils.isEmpty(esPowMaxResult)){
-                esPowMaxResult.forEach(str -> {
-                    BoxLineHourDo hourDo = JsonUtils.parseObject(str, BoxLineHourDo.class);
-                    powMap.computeIfAbsent(hourDo.getBoxId(), k -> new HashMap<>()).put(hourDo.getLineId(), hourDo);
-                });
-            }
+            curMap = getBoxLineCurMaxData(startTime,endTime,ids,index);
+            powMap = getBoxLinePowMaxData(startTime,endTime,ids,index);
 
             for (BoxIndex boxIndex : boxIndices) {
                 Integer id = boxIndex.getId();
@@ -1314,40 +1299,44 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 boxLineRes.setDevKey(boxIndex.getDevKey());
                 boxLineRes.setBoxName(boxIndex.getBoxName());
 
-                BoxLineHourDo curl1 = curMap.get(id).get(1);
-                boxLineRes.setL1MaxCur(curl1.getCurMaxValue());
-                boxLineRes.setL1MaxCurTime(curl1.getCurMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                BoxLineHourDo curl2 = curMap.get(id).get(2);
+                MaxValueAndCreateTime curl1 = curMap.get(id).get(1);
+                boxLineRes.setL1MaxCur(curl1.getMaxValue().floatValue());
+                boxLineRes.setL1MaxCurTime(curl1.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                MaxValueAndCreateTime curl2 = curMap.get(id).get(2);
                 if(curl2 != null){
-                    boxLineRes.setL2MaxCur(curl2.getCurMaxValue());
-                    boxLineRes.setL2MaxCurTime(curl2.getCurMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    boxLineRes.setL2MaxCur(curl2.getMaxValue().floatValue());
+                    boxLineRes.setL2MaxCurTime(curl2.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 }
-                BoxLineHourDo curl3 = curMap.get(id).get(3);
+                MaxValueAndCreateTime curl3 = curMap.get(id).get(3);
                 if(curl3 != null){
-                    boxLineRes.setL3MaxCur(curl3.getCurMaxValue());
-                    boxLineRes.setL3MaxCurTime(curl3.getCurMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    boxLineRes.setL3MaxCur(curl3.getMaxValue().floatValue());
+                    boxLineRes.setL3MaxCurTime(curl3.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 }
 
-                BoxLineHourDo powl1 = powMap.get(id).get(1);
-                boxLineRes.setL1MaxPow(powl1.getPowActiveMaxValue());
-                boxLineRes.setL1MaxPowTime(powl1.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                BoxLineHourDo powl2 = powMap.get(id).get(2);
+                MaxValueAndCreateTime powl1 = powMap.get(id).get(1);
+                boxLineRes.setL1MaxPow(powl1.getMaxValue().floatValue());
+                boxLineRes.setL1MaxPowTime(powl1.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                MaxValueAndCreateTime powl2 = powMap.get(id).get(2);
                 if(powl2 != null) {
-                    boxLineRes.setL2MaxPow(powl2.getPowActiveMaxValue());
-                    boxLineRes.setL2MaxPowTime(powl2.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    boxLineRes.setL2MaxPow(powl2.getMaxValue().floatValue());
+                    boxLineRes.setL2MaxPowTime(powl2.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 }
-                BoxLineHourDo powl3 = powMap.get(id).get(3);
+                MaxValueAndCreateTime powl3 = powMap.get(id).get(3);
                 if(powl3 != null) {
-                    boxLineRes.setL3MaxPow(powl3.getPowActiveMaxValue());
-                    boxLineRes.setL3MaxPowTime(powl3.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    boxLineRes.setL3MaxPow(powl3.getMaxValue().floatValue());
+                    boxLineRes.setL3MaxPowTime(powl3.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 }
 
                 result.add(boxLineRes);
             }
-            getPosition(result);
+
+            if (!CollectionUtils.isEmpty(result)){
+                getPosition(result);
+            }
+
             return new PageResult<BoxLineRes>(result,boxIndexPageResult.getTotal());
         }catch (Exception e){
-            System.out.println(e);
+            log.error("获取数据失败",e);
         }
         return new PageResult<>(new ArrayList<>(), 0L);
     }
@@ -1511,7 +1500,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
     }
 
-    private List<String> getBoxLineData(String startTime, String endTime, List<Integer> ids, String index, String sort) throws IOException {
+    private   Map<Integer, Map<Integer, MaxValueAndCreateTime>> getBoxLineCurMaxData(String startTime, String endTime, List<Integer> ids, String index) throws IOException {
         // 创建SearchRequest对象, 设置查询索引名
         SearchRequest searchRequest = new SearchRequest(index);
         // 通过QueryBuilders构建ES查询条件，
@@ -1520,23 +1509,137 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         //获取需要处理的数据
         builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime))
                 .must(QueryBuilders.termsQuery("box_id", ids))));
-        builder.sort(sort, SortOrder.DESC);
+
+        builder.aggregation(
+            AggregationBuilders.terms("group_by_box_id")
+                    .field("box_id")
+                    .size(10000)
+                    .subAggregation(AggregationBuilders.terms("by_line_id")
+                            .field("line_id")
+                            .size(1000)
+                            .order(BucketOrder.aggregation("max_cur", false))
+                            .subAggregation(AggregationBuilders.max("max_cur").field("cur_max_value"))
+                            .subAggregation(AggregationBuilders.topHits("top_docs")
+                                    .size(1)
+                                    .fetchSource(new String[]{"cur_max_time"}, null)
+                                    .sort(SortBuilders.fieldSort("cur_max_value").order(SortOrder.DESC))))
+        );
+
+
+
         // 设置搜索条件
         searchRequest.source(builder);
-        builder.size(3000);
+        builder.size(0);
 
         List<String> list = new ArrayList<>();
         // 执行ES请求
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-        if (searchResponse != null) {
-            SearchHits hits = searchResponse.getHits();
-            for (SearchHit hit : hits) {
-                String str = hit.getSourceAsString();
-                list.add(str);
-            }
-        }
-        return list;
 
+        // 解析聚合结果 todo
+        // 初始化结果Map
+        Map<Integer, Map<Integer, MaxValueAndCreateTime>> resultMap = new HashMap<>();
+        // 获取group_by_box_id聚合结果
+        Terms groupByBoxId = searchResponse.getAggregations().get("group_by_box_id");
+        for (Terms.Bucket boxIdBucket : groupByBoxId.getBuckets()) {
+            Integer boxId = boxIdBucket.getKeyAsNumber().intValue();
+            Map<Integer, MaxValueAndCreateTime> lineIdMap = new HashMap<>();
+
+            // 获取by_line_id聚合结果
+            Terms byLineId = boxIdBucket.getAggregations().get("by_line_id");
+            for (Terms.Bucket lineIdBucket : byLineId.getBuckets()) {
+                Integer lineId = lineIdBucket.getKeyAsNumber().intValue();
+                MaxValueAndCreateTime maxValueAndCreateTime = new MaxValueAndCreateTime();
+                // 获取max_cur聚合结果
+                ParsedMax maxCur = (ParsedMax) lineIdBucket.getAggregations().get("max_cur");
+                maxValueAndCreateTime.setMaxValue(maxCur.getValue());
+
+                // 获取top_hits聚合结果
+                ParsedTopHits topHits = (ParsedTopHits) lineIdBucket.getAggregations().get("top_docs");
+                if (topHits.getHits().getHits().length != 0) {
+                    SearchHit topHit = topHits.getHits().getHits()[0]; // 取第一个top hit
+                    Map<String, Object> sourceAsMap = topHit.getSourceAsMap();
+                    maxValueAndCreateTime.setMaxTime(new DateTime(sourceAsMap.get("cur_max_time").toString(),"yyyy-MM-dd HH:mm:ss"));
+                }
+
+                // 将valueMap添加到lineIdMap中
+                lineIdMap.put(lineId, maxValueAndCreateTime);
+            }
+
+            // 将lineIdMap添加到resultMap中
+            resultMap.put(boxId, lineIdMap);
+        }
+        return resultMap;
+    }
+
+    private  Map<Integer, Map<Integer, MaxValueAndCreateTime>> getBoxLinePowMaxData(String startTime, String endTime, List<Integer> ids, String index) throws IOException {
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件，
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+
+        //获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime))
+                .must(QueryBuilders.termsQuery("box_id", ids))));
+
+        builder.aggregation(
+                AggregationBuilders.terms("group_by_box_id")
+                        .field("box_id")
+                        .size(10000)
+                        .subAggregation(AggregationBuilders.terms("by_line_id")
+                                .field("line_id")
+                                .size(1000)
+                                .order(BucketOrder.aggregation("max_pow", false))
+                                .subAggregation(AggregationBuilders.max("max_pow").field("pow_active_max_value"))
+                                .subAggregation(AggregationBuilders.topHits("top_docs")
+                                        .size(1)
+                                        .fetchSource(new String[]{"pow_active_max_time"}, null)
+                                        .sort(SortBuilders.fieldSort("pow_active_max_value").order(SortOrder.DESC))))
+        );
+
+
+
+        // 设置搜索条件
+        searchRequest.source(builder);
+        builder.size(0);
+
+        List<String> list = new ArrayList<>();
+        // 执行ES请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+
+        // 初始化结果Map
+        Map<Integer, Map<Integer, MaxValueAndCreateTime>> resultMap = new HashMap<>();
+        // 获取group_by_box_id聚合结果
+        Terms groupByBoxId = searchResponse.getAggregations().get("group_by_box_id");
+        for (Terms.Bucket boxIdBucket : groupByBoxId.getBuckets()) {
+            Integer boxId = boxIdBucket.getKeyAsNumber().intValue();
+            Map<Integer, MaxValueAndCreateTime> lineIdMap = new HashMap<>();
+
+            // 获取by_line_id聚合结果
+            Terms byLineId = boxIdBucket.getAggregations().get("by_line_id");
+            for (Terms.Bucket lineIdBucket : byLineId.getBuckets()) {
+                Integer lineId = lineIdBucket.getKeyAsNumber().intValue();
+                MaxValueAndCreateTime maxValueAndCreateTime = new MaxValueAndCreateTime();
+                // 获取max_cur聚合结果
+                ParsedMax maxPow = (ParsedMax) lineIdBucket.getAggregations().get("max_pow");
+                maxValueAndCreateTime.setMaxValue(maxPow.getValue());
+
+                // 获取top_hits聚合结果
+                ParsedTopHits topHits = (ParsedTopHits) lineIdBucket.getAggregations().get("top_docs");
+                if (topHits.getHits().getHits().length != 0) {
+                    SearchHit topHit = topHits.getHits().getHits()[0]; // 取第一个top hit
+                    Map<String, Object> sourceAsMap = topHit.getSourceAsMap();
+                    maxValueAndCreateTime.setMaxTime(new DateTime(sourceAsMap.get("pow_active_max_time").toString(),"yyyy-MM-dd HH:mm:ss"));
+                }
+
+                // 将valueMap添加到lineIdMap中
+                lineIdMap.put(lineId, maxValueAndCreateTime);
+            }
+
+            // 将lineIdMap添加到resultMap中
+            resultMap.put(boxId, lineIdMap);
+        }
+        return resultMap;
     }
 
     private String localDateTimeToString(LocalDateTime time){
@@ -2192,6 +2295,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 }
             }
         }
+
 
     }
 
