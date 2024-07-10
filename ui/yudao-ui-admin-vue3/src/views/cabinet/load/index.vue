@@ -17,7 +17,7 @@
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag"></div>&lt;=30%
+              <div class="tag"></div>&lt;30%
             </div>
             <div class="value"><span class="number">{{Loadstatus[1]}}</span>个</div>
           </div>

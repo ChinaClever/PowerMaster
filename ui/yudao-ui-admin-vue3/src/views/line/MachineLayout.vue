@@ -1,6 +1,18 @@
 <template>
+  <el-card style="margin-top: -5px;margin-bottom: 10px;">
+    <div class="toolbar">
+      <el-tag class="tag" size="large">机房1</el-tag>
+      <div>
+        <el-button v-if="!editEnable" @click="editEnable = true" type="primary">编辑</el-button>
+        <el-button v-if="editEnable" @click="editEnable = false" plain type="primary">取消</el-button>
+        <el-button v-if="editEnable" plain type="primary"><Icon :size="16" icon="ep:setting" style="margin-right: 5px" @click="openSetting" />设置</el-button>
+        <el-button v-if="editEnable" @click="handleSubmit" plain type="primary">保存</el-button>
+      </div>
+    </div>
+  </el-card>
   <el-card>
     <div class="dragContainer" @click.right="handleRightClick">
+      <div class="mask" v-if="!editEnable" @click.prevent=""></div>
       <el-table class="dragTable" :data="tableData" border style="width: 100%;" :row-style="{background: 'revert'}" >
         <el-table-column fixed type="index" width="80" align="center" :resizable="false" />
         <template v-for="(formItem, index) in formParam" :key="index">
@@ -33,12 +45,32 @@
     </div>
   </el-card>
   <layoutForm ref="machineForm" @success="handleChange" />
+  <Dialog v-model="dialogVisible" title="设置房间的行列数" width="30%">
+    <el-form>
+      <el-form-item label="行数" label-width="80">
+        <el-input-number v-model="roomInfo.row" :min="1" :max="50" @change="handleChange" controls-position="right" placeholder="请输入" />
+      </el-form-item>
+      <el-form-item label="列数" label-width="80">
+        <el-input-number v-model="roomInfo.col" :min="1" :max="50" @change="handleChange" controls-position="right" placeholder="请输入" />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="dialogVisible = false">取 消</el-button>
+      <el-button type="primary" @click="submitForm">确 定</el-button>
+    </template>
+  </Dialog>
 </template>
 
 <script lang="ts" setup>
 import draggable from "vuedraggable";
 import layoutForm from './layoutForm.vue'
 
+const roomInfo = reactive({
+  row: 10,
+  col: 10,
+})
+const dialogVisible = ref(false)
+const editEnable = ref(false)
 const machineForm = ref()
 const groupMachineFill = {
   name: 'MachineFill',
@@ -59,6 +91,11 @@ const operateMenu = ref({
   lndexY: 0,
 })
 
+
+const openSetting = () => {
+  console.log('openSetting')
+  dialogVisible.value = true
+}
 
 // 右击弹出菜单
 const handleRightClick = (e) => {
@@ -403,8 +440,20 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+}
 .dragContainer {
   position: relative;
+  .mask {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
+  }
   .menu {
     box-sizing: border-box;
     position: absolute;
@@ -440,6 +489,17 @@ onUnmounted(() => {
   }
 }
 
+:deep(.el-card__body) {
+  padding: 15px;
+}
+
+:deep(.el-card) {
+  margin-top: -5px;
+  margin-bottom: 10px;
+}
+:deep(.el-input-number) {
+  width: 100%;
+}
 :deep(.dragTable .hover-row .el-table__cell td) {
   background-color:unset!important;
 }

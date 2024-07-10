@@ -1,6 +1,11 @@
 package cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo;
 
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,11 +26,20 @@ public class BoxIndexPageReqVO extends PageParam {
     @Schema(description = "设备识别码")
     private String devKey;
 
+    @Schema(description = "始端箱ID列表")
+    private List<String> boxDevKeyList;
+
     @Schema(description = "ip地址")
     private String ipAddr;
 
+    @Schema(description = "谐波类型")
+    private Integer harmonicType;
+
     @Schema(description = "母线地址")
     private String devAddr;
+
+    @Schema(description = "boxId")
+    private Integer boxId;
 
     @Schema(description = "母线编号", example = "16770")
     private Integer barId;
@@ -38,6 +52,24 @@ public class BoxIndexPageReqVO extends PageParam {
 
     @Schema(description = "颜色")
     private List<Integer> color;
+
+    @Schema(description = "时间类型")
+    private Integer timeType;
+
+    @Schema(description = "开始时间")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime oldTime;
+
+    @Schema(description = "结束时间")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime newTime;
+
+    @Schema(description = "图表类型")
+    private Integer lineType;
 
     @Schema(description = "逻辑删除")
     private Integer isDeleted;

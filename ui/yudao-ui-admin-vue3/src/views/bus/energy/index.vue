@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="模块化机房">
+  <CommonMenu :dataList="navList" @check="handleCheck"  navTitle="模块化机房">
     <template #NavInfo>
       <div class="navInfo">
         <div class="header">
@@ -99,16 +99,34 @@
                 <div>上月用能：{{item.lastMonthEq}}kW·h</div>
               </div>
             </div>
-            <div class="room">{{item.local}}</div>
-            <button class="detail" @click.prevent="toDetail(item.roomId, item.id)" v-if="item.status != null && item.status != 5">详情</button>
+            <div class="room">{{item.location}}</div>
+            <button class="detail" @click.prevent="toDetail(item.roomId, item.id,item.location)" >详情</button>
           </div>
         </div>
         <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" >
           <el-table-column type="index" width="100" label="序号" align="center" />
           <el-table-column label="位置" min-width="110" align="center" prop="local" />
-          <el-table-column label="昨日用能" min-width="110" align="center" prop="yesterdayEq" />
-          <el-table-column label="上周用能" min-width="110" align="center" prop="lastWeekEq" />
-          <el-table-column label="上月用能" min-width="110" align="center" prop="lastMonthEq" />
+          <el-table-column label="昨日用能" min-width="110" align="center" prop="yesterdayEq" >
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.yesterdayEq }} kW·h
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="上周用能" min-width="110" align="center" prop="lastWeekEq" >
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.lastWeekEq }} kW·h
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="上月用能" min-width="110" align="center" prop="lastMonthEq" >
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.lastMonthEq }} kW·h
+              </el-text>
+            </template>
+          </el-table-column>
         </el-table>
         <Pagination
           :total="queryParams.pageTotal"
@@ -125,7 +143,6 @@
 </template>
 
 <script lang="ts" setup>
-import { CabinetApi } from '@/api/cabinet/info'
 import { IndexApi } from '@/api/bus/busindex'
 
 const { push } = useRouter() // 路由跳转
@@ -145,8 +162,19 @@ const queryParams = reactive({
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
+  const res = await IndexApi.getBusMenu()
   navList.value = res
+  if (res && res.length > 0) {
+    const room = res[0]
+    const keys = [] as string[]
+    room.children.forEach(child => {
+      if(child.children.length > 0) {
+        child.children.forEach(son => {
+          keys.push(son.id + '-' + son.type)
+        })
+      }
+    })
+  }
 }
 
 // 获取表格数据
@@ -168,7 +196,8 @@ const getTableData = async(reset = false) => {
       tableData.value = res.list.map(item => {
         return {
           id: item.id,
-          local: item.roomName + '-' + item.name,
+          location: item.location ? item.location : item.devKey ,
+          local : item.location,
           yesterdayEq: item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0',
           lastWeekEq: item.lastWeekEq ? item.lastWeekEq.toFixed(1) : '0.0',
           lastMonthEq: item.lastMonthEq ? item.lastMonthEq.toFixed(1) : '0.0',
@@ -208,9 +237,9 @@ const handleCheck = (row) => {
 }
 
 // 跳转详情
-const toDetail = (roomId, id) => {
-  console.log('跳转详情', id)
-  push({path: '/cabinet/cab/energyDetail', state: { roomId, id }})
+const toDetail = (roomId, id,location) => {
+  
+  push({path: '/bus/busmonitor/busenergydetail', state: { roomId, id,location }})
 }
 
 onBeforeMount(() => {

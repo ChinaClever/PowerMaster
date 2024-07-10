@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.bus.controller.admin.busindex.dto;
 
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusResBase;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
  */
 @Schema(description = "管理后台 - 母线用能 Response VO")
 @Data
-public class BusIndexDTO {
+public class BusIndexDTO extends BusResBase {
 
     @Schema(description = "母线id", example = "1")
     private int id;

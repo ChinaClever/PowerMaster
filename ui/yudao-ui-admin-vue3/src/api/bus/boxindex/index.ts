@@ -56,19 +56,75 @@ export const IndexApi = {
     return await request.post({ url: `/box/index/balance`, data })
   },
 
-  getBoxTemPage: async (params: any) => {
-    return await request.get({ url: `/box/index/boxtempage`, params })
+  getBoxBalanceDetail: async (data: any) => {
+    return await request.post({ url: `/box/index/balance/detail` ,  data})
   },
 
-  getBoxPFPage: async (params: any) => {
-    return await request.get({ url: `/box/index/boxpfpage`, params })
+  getBoxBalanceTrend: async (data: any) => {
+    return await request.post({ url: `/box/index/balance/trend` ,  data})
+  },
+
+  getBoxTemPage: async (data: any) => {
+    return await request.post({ url: `/box/index/boxtempage`, data })
+  },
+
+  getBoxTemDetail: async (data: any) => {
+    return await request.post({ url: `/box/index/tem/detail`, data })
+  },
+
+  getBoxPFPage: async (data: any) => {
+    return await request.post({ url: `/box/index/boxpfpage`, data })
+  },
+
+  getBoxPFDetail: async (data: any) => {
+    return await request.post({ url: `/box/index/pf/detail`, data })
   },
 
   getBoxHarmonicPage: async (params: any) => {
     return await request.get({ url: `/box/index/boxharmonicpage`, params })
   },
 
+  getHarmonicRedis: async (data: any) => {
+    return await request.post({ url: `/box/index/harmonic/redis`, data })
+  },
+
+  getHarmonicLine: async (data: any) => {
+    return await request.post({ url: `/box/index/harmonic/line`, data })
+  },
+
   devKeyList: async () => {
     return await request.download({ url: `/box/index/devKeyList` })
+  },
+
+  getBoxLinePage: async (data) => {
+    return await request.post({ url: `/box/index/line/page`,data})
+  },
+
+  getBoxLineCurLine: async (data: any) => {
+    return await request.post({ url: `/box/index/line/cur`,data})
+  },
+
+  getBoxIdByDevKey: async (data: any) => {
+    return await request.post({ url: `/box/index/getid` ,  data})
+  },
+
+  getBoxMenu: async () => {
+    return await request.get({ url: `/room/box/menu` })
+  },
+
+  getBoxPowerRedisData: async (data: any) => {
+    return await request.post({ url: `/box/index/power/detail` ,  data})
+  },
+
+  getBoxLoadRateLine: async (data: any) => {
+    return await request.post({ url: `/box/index/power/loadrate` ,  data})
+  },
+
+  getBoxPowActiveLine: async (data: any) => {
+    return await request.post({ url: `/box/index/power/powactive` ,  data})
+  },
+
+  getBoxPowReactiveLine: async (data: any) => {
+    return await request.post({ url: `/box/index/power/powreactive` ,  data})
   },
 }

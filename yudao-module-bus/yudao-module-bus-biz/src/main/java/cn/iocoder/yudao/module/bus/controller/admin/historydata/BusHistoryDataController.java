@@ -18,8 +18,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.lang.reflect.Field;
+
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 import static cn.iocoder.yudao.framework.operatelog.core.enums.OperateTypeEnum.EXPORT;
 
@@ -118,5 +117,84 @@ public class BusHistoryDataController {
                     BeanUtils.toBean(list, BusHourAndDayPageRespVO.class));
         }
     }
+
+    @GetMapping("/bus-env-page")
+    @Operation(summary = "获得始端箱环境数据分页")
+    public CommonResult<PageResult<Object>> getEnvDataPage(BusHistoryDataPageReqVO pageReqVO) throws IOException {
+        PageResult<Object> pageResult = busHistoryDataService.getBusEnvDataPage(pageReqVO);
+        return success(pageResult);
+    }
+
+    @GetMapping("/bus-env-details")
+    @Operation(summary = "获得始端箱环境历史数据详情")
+    public CommonResult<PageResult<Object>> getEnvDataDetails(BusHistoryDataDetailsReqVO reqVO) throws IOException {
+        PageResult<Object> pageResult = busHistoryDataService.getBusEnvDataDetails(reqVO);
+        return success(pageResult);
+    }
+
+    @GetMapping("/bus-env-new-data")
+    @Operation(summary = "查询始端箱环境数据导航的新增多少条记录数据")
+    public CommonResult<Map<String, Object>> getEnvNavNewData() throws IOException {
+        Map<String, Object> map = busHistoryDataService.getBusEnvNavNewData();
+        return success(map);
+    }
+
+    @GetMapping("/bus-env-export-excel")
+    @Operation(summary = "导出母线始端箱环境历史数据 Excel")
+//    @PreAuthorize("@ss.hasPermission('pdu:env-history-data:export')")
+    @OperateLog(type = EXPORT)
+    public void exportEnvHistoryDataExcel(BusHistoryDataPageReqVO pageReqVO,
+                                          HttpServletResponse response) throws IOException {
+        pageReqVO.setPageSize(10000);
+        List<Object> list = busHistoryDataService.getBusEnvDataPage(pageReqVO).getList();
+        // 导出 Excel
+        if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+            ExcelUtils.write(response, "始端箱环境历史数据.xlsx", "数据", BusEnvRealtimePageRespVO.class,
+                    BeanUtils.toBean(list, BusEnvRealtimePageRespVO.class));
+        } else {
+            ExcelUtils.write(response, "始端箱环境历史数据.xlsx", "数据", BusEnvHourAndDayPageRespVO.class,
+                    BeanUtils.toBean(list, BusEnvHourAndDayPageRespVO.class));
+        }
+    }
+
+    @GetMapping("/box-env-page")
+    @Operation(summary = "获得插接箱环境数据分页")
+    public CommonResult<PageResult<Object>> getBoxEnvDataPage(BusHistoryDataPageReqVO pageReqVO) throws IOException {
+        PageResult<Object> pageResult = busHistoryDataService.getBoxEnvDataPage(pageReqVO);
+        return success(pageResult);
+    }
+
+    @GetMapping("/box-env-details")
+    @Operation(summary = "获得插接箱环境历史数据详情")
+    public CommonResult<PageResult<Object>> getBoxEnvDataDetails(BusHistoryDataDetailsReqVO reqVO) throws IOException {
+        PageResult<Object> pageResult = busHistoryDataService.getBoxEnvDataDetails(reqVO);
+        return success(pageResult);
+    }
+
+    @GetMapping("/box-env-new-data")
+    @Operation(summary = "查询插接箱环境数据导航的新增多少条记录数据")
+    public CommonResult<Map<String, Object>> getBoxEnvNavNewData() throws IOException {
+        Map<String, Object> map = busHistoryDataService.getBoxEnvNavNewData();
+        return success(map);
+    }
+
+    @GetMapping("/box-env-export-excel")
+    @Operation(summary = "导出母线插接箱环境历史数据 Excel")
+//    @PreAuthorize("@ss.hasPermission('pdu:env-history-data:export')")
+    @OperateLog(type = EXPORT)
+    public void exportBoxEnvHistoryDataExcel(BusHistoryDataPageReqVO pageReqVO,
+                                             HttpServletResponse response) throws IOException {
+        pageReqVO.setPageSize(10000);
+        List<Object> list = busHistoryDataService.getBoxEnvDataPage(pageReqVO).getList();
+        // 导出 Excel
+        if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+            ExcelUtils.write(response, "插接箱环境历史数据.xlsx", "数据", BoxEnvRealtimePageRespVO.class,
+                    BeanUtils.toBean(list, BoxEnvRealtimePageRespVO.class));
+        } else {
+            ExcelUtils.write(response, "插接箱环境历史数据.xlsx", "数据", BoxEnvHourAndDayPageRespVO.class,
+                    BeanUtils.toBean(list, BoxEnvHourAndDayPageRespVO.class));
+        }
+    }
+
 
 }

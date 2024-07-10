@@ -15,8 +15,8 @@ export interface IndexVO {
 // 始端箱索引 API
 export const IndexApi = {
   // 查询始端箱索引分页
-  getIndexPage: async (params: any) => {
-    return await request.get({ url: `/bus/index/page`, params })
+  getIndexPage: async (data: any) => {
+    return await request.post({ url: `/bus/index/page`, data })
   },
 
   // 查询始端箱索引详情
@@ -56,19 +56,99 @@ export const IndexApi = {
     return await request.post({ url: `/bus/index/balance`, data })
   },
 
-  getBusTemPage: async (params: any) => {
-    return await request.get({ url: `/bus/index/bustempage`, params })
+  getBusBalanceDetail: async (data: any) => {
+    return await request.post({ url: `/bus/index/balance/detail` ,  data})
   },
 
-  getBusPFPage: async (params: any) => {
-    return await request.get({ url: `/bus/index/buspfpage`, params })
+  getBusBalanceTrend: async (data: any) => {
+    return await request.post({ url: `/bus/index/balance/trend` ,  data})
+  },
+
+  getBusTemPage: async (data: any) => {
+    return await request.post({ url: `/bus/index/bustempage`, data })
+  },
+
+  getBusTemDetail: async (data: any) => {
+    return await request.post({ url: `/bus/index/tem/detail`, data })
+  },
+
+  getBusPFPage: async (data: any) => {
+    return await request.post({ url: `/bus/index/buspfpage`, data })
+  },
+
+  getBusPFDetail: async (data: any) => {
+    return await request.post({ url: `/bus/index/pf/detail`, data })
   },
 
   getBusHarmonicPage: async (params: any) => {
     return await request.get({ url: `/bus/index/busharmonicpage`, params })
   },
 
+  getHarmonicRedis: async (data: any) => {
+    return await request.post({ url: `/bus/index/harmonic/redis`, data })
+  },
+
+  getHarmonicLine: async (data: any) => {
+    return await request.post({ url: `/bus/index/harmonic/line`, data })
+  },
+
   devKeyList: async () => {
     return await request.download({ url: `/bus/index/devKeyList` })
+  },
+
+  getBusLinePage: async (data: any) => {
+    return await request.post({ url: `/bus/index/line/page`,data})
+  },
+
+  getBusLineCurLine: async (data: any) => {
+    return await request.post({ url: `/bus/index/line/cur`,data})
+  },
+
+  getBusMenu: async () => {
+    return await request.get({ url: `/room/bus/menu` })
+  },
+
+  getBoxMenu: async () => {
+    return await request.get({ url: `/room/box/menu` })
+  },
+
+  getBusIdByDevKey: async (data: any) => {
+    return await request.post({ url: `/bus/index/getid` ,  data})
+  },
+
+  getBusPowerRedisData: async (data: any) => {
+    return await request.post({ url: `/bus/index/power/detail` ,  data})
+  },
+
+  getBusLoadRateLine: async (data: any) => {
+    return await request.post({ url: `/bus/index/power/loadrate` ,  data})
+  },
+
+  getBusPowActiveLine: async (data: any) => {
+    return await request.post({ url: `/bus/index/power/powactive` ,  data})
+  },
+
+  getBusPowReactiveLine: async (data: any) => {
+    return await request.post({ url: `/bus/index/power/powreactive` ,  data})
+  },
+
+  getConsumeData: async (data) => {
+    return await request.post({ url: `/bus/index/report/ele`,data})
+  },
+
+  getBusPFLine : async (data) => {
+    return await request.post({ url: `/bus/index/report/pfline`, data })
+  },
+
+  getPowData: async (data) => {
+    return await request.post({ url: `/bus/index/report/pow`,data})
+  },
+
+  getTemData: async (data) => {
+    return await request.post({ url: `/bus/index/report/tem`,data})
+  },
+
+  getBusRedisByDevKey: async (data) => {
+    return await request.post({ url: `/bus/index/redisbydevkey`, data })
   },
 }

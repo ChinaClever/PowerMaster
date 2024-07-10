@@ -17,19 +17,19 @@
             <div class="top">
               <div class="tag blue"></div>30%-60%
             </div>
-            <div class="value"><span class="number">{{statusNumber.greaterNinety}}</span>个</div>
+            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag warn"></div>60%-90%
             </div>
-            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
+            <div class="value"><span class="number">{{statusNumber.greaterSixty}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag error"></div>&gt;90%
             </div>
-            <div class="value"><span class="number">{{statusNumber.greaterSixty}}</span>个</div>
+            <div class="value"><span class="number">{{statusNumber.greaterNinety}}</span>个</div>
           </div>
         </div>
         <div class="line"></div>
@@ -94,17 +94,18 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" >
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
         <el-table-column label="运行状态" align="center" prop="color" >
           <template #default="scope" >
-            <el-tag type="info"  v-if="scope.row.color == 0">负载</el-tag>
-            <el-tag type="success"  v-if="scope.row.color == 1">负载</el-tag>
-            <el-tag type="primary"  v-if="scope.row.color == 2">负载</el-tag>
-            <el-tag type="warning" v-if="scope.row.color == 3">负载</el-tag>
-            <el-tag type="danger" v-if="scope.row.color == 4">负载</el-tag>
+            <el-tag type="info"  v-if="scope.row.status == 5">离线</el-tag>
+            <el-tag type="info"  v-if="scope.row.color == 0">空载</el-tag>
+            <el-tag type="success"  v-if="scope.row.color == 1">&lt;30%</el-tag>
+            <el-tag type="primary"  v-if="scope.row.color == 2">30%-60%</el-tag>
+            <el-tag type="warning" v-if="scope.row.color == 3">60%-90%</el-tag>
+            <el-tag type="danger" v-if="scope.row.color == 4">&gt;90%</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="A相负载率" align="center" prop="aloadRate" width="130px" >
@@ -134,7 +135,7 @@
             <el-button
               link
               type="primary"
-              @click="toPDUDisplayScreen(scope.row)"
+              @click="toDetail(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 5"
             >
             设备详情
@@ -151,60 +152,31 @@
         </el-table-column>
       </el-table>
 
-      <!-- <div v-show="switchValue == 2  && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
-          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
-          <div class="content">
-            <div class="icon" >
-              <div v-if="item.curUnbalance != null" >
-                不平衡度<br/>{{ item.curUnbalance }}%
-              </div>              
-            </div>
-            <div class="info">                  
-              <div v-if="item.acur != null">A相电流：{{item.acur}}A</div>
-              <div v-if="item.bcur != null" >B相电流：{{item.bcur}}A</div>
-              <div v-if="item.ccur != null" >C相电流：{{item.ccur}}A</div>
-            </div>
-          </div>
-          <div class="status" v-if="item.color != 0">
-            <el-tag type="info"  v-if="item.color == 1">小电流不平衡</el-tag>
-            <el-tag type="success"  v-if="item.color == 2">大电流不平衡</el-tag>
-            <el-tag type="warning" v-if="item.color == 3">大电流不平衡</el-tag>
-            <el-tag type="danger" v-if="item.color == 4">大电流不平衡</el-tag>
-          </div>
-          <button class="detail" @click="toPDUDisplayScreen(item)">详情</button>
-        </div>
-      </div> -->
-
       <div v-show="switchValue == 2  && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="icon" >
-              <div v-if="item.volUnbalance != null" >
-                <el-tag type="success"  v-if="item.color == 1">负载</el-tag>
-                <el-tag type="primary"  v-if="item.color == 2">负载</el-tag>
-                <el-tag type="warning" v-if="item.color == 3">负载</el-tag>
-                <el-tag type="danger" v-if="item.color == 4">负载</el-tag>
-              </div>              
-            </div>
+            <div class="icon" v-if="item.color != null" >
+              负载率            
+            </div>  
             <div class="info">                  
-              <div v-if="item.aloadRate != null">A相负载率：{{item.aloadRate}}%</div>
-              <div v-if="item.bloadRate != null" >B相负载率：{{item.bloadRate}}%</div>
-              <div v-if="item.cloadRate != null" >C相负载率：{{item.cloadRate}}%</div>
+              <div v-if="item.aloadRate != null">A相：{{item.aloadRate}}%</div>
+              <div v-if="item.bloadRate != null">B相：{{item.bloadRate}}%</div>
+              <div v-if="item.cloadRate != null">C相：{{item.cloadRate}}%</div>
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
-            <el-tag type="info"  v-if="item.color == 0">负载</el-tag>
-            <el-tag type="success"  v-if="item.color == 1">负载</el-tag>
-            <el-tag type="primary"  v-if="item.color == 2">负载</el-tag>
-            <el-tag type="warning" v-if="item.color == 3">负载</el-tag>
-            <el-tag type="danger" v-if="item.color == 4">负载</el-tag>
+            <el-tag type="info"  v-if="item.color == 0">空载</el-tag>
+            <el-tag type="info"  v-if="item.status == 5">离线</el-tag>
+            <el-tag type="success"  v-if="item.color == 1">&lt;30%</el-tag>
+            <el-tag type="primary"  v-if="item.color == 2">30%-60%</el-tag>
+            <el-tag type="warning" v-if="item.color == 3">60%-90%</el-tag>
+            <el-tag type="danger" v-if="item.color == 4">&gt;90%</el-tag>
           </div>
-          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5" >详情</button>
+          <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 5" >详情</button>
         </div>
       </div>
       <Pagination
@@ -231,7 +203,7 @@ import download from '@/utils/download'
 import { IndexApi } from '@/api/bus/boxindex'
 // import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
-import { CabinetApi } from '@/api/cabinet/info'
+
 
 
 /** PDU设备 列表 */
@@ -333,15 +305,15 @@ const handleCheck = async (row) => {
   const ids = [] as any
   var haveCabinet = false;
   row.forEach(item => {
-    if (item.type == 3) {
-      ids.push(item.id)
+    if (item.type == 7) {
+      ids.push(item.unique)
       haveCabinet = true;
     }
   })
   if(!haveCabinet ){
-    queryParams.cabinetIds = [-1]
+    queryParams.boxDevKeyList = [-1]
   }else{
-    queryParams.cabinetIds = ids
+    queryParams.boxDevKeyList = ids
   }
 
   getList();
@@ -475,18 +447,7 @@ const getListNoLoading = async () => {
         obj.cloadRate = obj.cloadRate * 100;
         obj.cloadRate = obj.cloadRate?.toFixed(0);
       }
-      // obj.apparentPow = obj.apparentPow.toFixed(3);
-      // obj.pow = obj.pow.toFixed(3);
-      // obj.ele = obj.ele.toFixed(1);
-      // obj.pf = obj.pf.toFixed(2);
-      // obj.acur = obj.acur?.toFixed(2);
-      // obj.bcur = obj.bcur?.toFixed(2);
-      // obj.ccur = obj.ccur?.toFixed(2);
-      // obj.curUnbalance = obj.curUnbalance?.toFixed(0);
-      // obj.avol = obj.avol?.toFixed(1);
-      // obj.bvol = obj.bvol?.toFixed(1);
-      // obj.cvol = obj.cvol?.toFixed(1);
-      // obj.volUnbalance = obj.volUnbalance?.toFixed(0);
+
       if(obj.color == 4){
         greaterNinety++;
       } else if (obj.color == 1) {
@@ -508,7 +469,7 @@ const getListNoLoading = async () => {
 }
 
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
+  const res = await IndexApi.getBoxMenu()
   serverRoomArr.value = res
   if (res && res.length > 0) {
     const room = res[0]
@@ -524,9 +485,13 @@ const getNavList = async() => {
 
 }
 
-const toPDUDisplayScreen = (row) =>{
-  push('/pdu/pdudisplayscreen?devKey=' + row.devKey + '&location=' + row.location + '&id=' + row.id);
+const toDetail = (row) =>{
+  const devKey = row.devKey;
+  const boxId = row.boxId
+  const location = row.location != null ? row.location : devKey;
+  push({path: '/bus/boxmonitor/boxpowerLoadDetail', state: { devKey, boxId ,location}})
 }
+
 
 // const openNewPage = (scope) => {
 //   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
@@ -782,8 +747,9 @@ onActivated(() => {
         justify-content: space-between;
         font-size: 13px;
         .value {
-          font-size: 15px;
+          font-size: large;
           font-weight: bold;
+          margin-right: auto;
         }
       }
     }
@@ -912,6 +878,7 @@ onActivated(() => {
         width: 60px;
         height: 30px;
         margin: 0 28px;
+        font-size: large;
         text-align: center;
       }
     }

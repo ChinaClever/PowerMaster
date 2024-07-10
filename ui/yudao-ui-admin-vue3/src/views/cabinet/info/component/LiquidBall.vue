@@ -5,7 +5,7 @@
 <script lang="ts" setup>
 import 'echarts-liquidfill'
 
-const {precent} = defineProps({
+const props = defineProps({
   precent: {
     type: Number,
     required: true
@@ -20,33 +20,33 @@ const {precent} = defineProps({
   }
 })
 const color = ref('')
-console.log('precent', precent)
+const echartsOption = reactive<any>({})
 
 const judgeColor = () => {
-  if (precent == 0) {
+  if (props.precent == 0) {
     color.value = '#aaa'
-  } else if (precent < 30) {
+  } else if (props.precent < 30) {
     color.value = '#3bbb00'
-  } else if (precent < 60) {
+  } else if (props.precent < 60) {
     color.value = '#3b8bf5'
-  } else if (precent < 90) {
+  } else if (props.precent < 90) {
     color.value = '#ffc402'
   } else {
     color.value = '#fa3333'
   }
 }
 
-judgeColor()
-
-const echartsOption = reactive({
-  series: [
+watch(() => props.precent,(val) => {
+  console.log('props.precent val', val)
+  judgeColor()
+  echartsOption.series = [
     {
       type: 'liquidFill',
-      data: [precent/100], // 设置水球图的填充比例
+      data: [props.precent/100], // 设置水球图的填充比例
       label: {
         fontSize: 12, // 设置字体大小
         fontWeight: 'bold', // 设置字体粗细
-        color: precent == 0 ? '#fff' : color.value,
+        color: props.precent == 0 ? '#fff' : color.value,
         formatter: (params) => {
           if (params.data == 0) {
             return '未开通'
@@ -62,15 +62,12 @@ const echartsOption = reactive({
       },
       color: [color.value], //3b8bf5 // 水的颜色
       backgroundStyle: { // 球的背景色
-        color: precent == 0 ? '#aaa' : '#fff'
+        color: props.precent == 0 ? '#aaa' : '#fff'
       }
     }
   ]
-})
+},{immediate:true})
 
-onUnmounted(() => {
-  console.log('onUnmounted******')
-})
 </script>
 
 <style lang="scss" scoped>

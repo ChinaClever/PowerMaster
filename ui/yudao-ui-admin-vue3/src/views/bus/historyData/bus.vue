@@ -136,7 +136,7 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { HistoryDataApi } from '@/api/bus/historydata'
-import { CabinetApi } from '@/api/cabinet/info'
+import { IndexApi } from '@/api/bus/busindex'
 const { push } = useRouter()
 /** 始端箱历史数据 列表 */
 defineOptions({ name: 'BusHistoryData' })
@@ -156,7 +156,7 @@ const queryParams = reactive({
   type: 'total', 
   granularity: 'realtime',
   timeRange: undefined,
-  busIds: [],
+  devkeys: [],
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref() // 搜索的表单
@@ -613,25 +613,20 @@ const disabledDate = (date) => {
 
 // 导航栏选择后触发
 const handleCheck = async (node) => {
-    let arr = [] as any
-    node.forEach(item => { 
-      if(item.type == 4){
-        arr.push(item.unique);
-      }
-    });
-    queryParams.busIds = arr
-    handleQuery()
+  let arr = [] as any
+  node.forEach(item => { 
+    if(item.type == 6){
+      arr.push(item.unique);
+    }
+  });
+  queryParams.devkeys = arr
+  handleQuery()
 }
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
-  let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
-  arr = arr.concat(temp);
-  }
-  navList.value = arr
+  const res = await IndexApi.getBusMenu()
+  navList.value = res
 }
 
 /** 搜索按钮操作 */

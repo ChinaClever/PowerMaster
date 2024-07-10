@@ -1,14 +1,5 @@
 import request from '@/config/axios'
 
-export interface EnvDataVO {
-  id: number 
-  pduId: number 
-  sensorId: number 
-  temValue: number
-  humValue: number 
-  createTime: string 
-}
-
 export const EnvDataApi = {
   // 查询pdu环境数据传感器id最大值
   getSensorIdMaxValue: async () => {
