@@ -739,6 +739,7 @@ public class BusIndexServiceImpl implements BusIndexService {
             PageResult<BusIndexDO> busIndexPageResult = null;
             List<BusLineRes> result = new ArrayList<>();
 
+
             busIndexPageResult = busIndexMapper.selectPage(pageReqVO);
 
             List<BusIndexDO> busIndices = busIndexPageResult.getList();

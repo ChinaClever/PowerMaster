@@ -4,17 +4,20 @@ import cn.hutool.json.JSONObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * @author luowei
  * @version 1.0
- * @description: 柜列新增修改实体
- * @date 2024/4/29 15:00
+ * @description: 柜列与插接箱绑定关系
+ * @date 2024/6/7 9:29
  */
-@Schema(description = "管理后台 - 柜列母线关系新增/编辑 Request VO")
+@Schema(description = "管理后台 - 柜列与插接箱绑定关系 Response VO")
 @Data
-public class AisleBarDTO {
+public class AisleBoxDTO implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Schema(description = "主键id", example = "1")
     private int id;
@@ -32,34 +35,28 @@ public class AisleBarDTO {
     private String barKey;
 
     /**
-     * 始端箱名称
+     * 插接箱名称
      */
-    private String busName;
+    private String boxName;
 
     /**
-     * ip地址
+     * 对应绑定母线id
      */
-    private String devIp;
+    private Integer aisleBarId;
 
     /**
-     * AB路
+     * 类型 0 插接箱 1 连接单元
      */
-    private String path;
+    private Integer type;
 
     /**
-     * 方向  左0 右1
+     * 标记位
      */
-    private Integer direction;
-
-
-    private List<AisleBoxDTO>  boxList;
-
+    private Integer boxIndex;
 
     /**
-     * 昨日电量
+     * 输出位昨日电量
      */
     @Schema(description = "昨日电量", example = "1")
-    private Double yesterdayEq;
-
-
+    private Double[] yesterdayEq;
 }

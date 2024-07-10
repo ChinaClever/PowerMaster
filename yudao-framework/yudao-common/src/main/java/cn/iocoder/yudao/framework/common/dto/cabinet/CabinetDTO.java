@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.framework.common.dto.cabinet;
 
+import cn.hutool.json.JSONObject;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetEnvSensor;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -187,5 +188,15 @@ public class CabinetDTO {
     @Schema(description = "B路插接箱输出位id", example = "1")
     private Integer boxOutletIdB;
 
+    /**
+     * 柜列中机柜位置
+     */
+    @Schema(description = "柜列中机柜位置", example = "1")
     private Integer index;
+
+    /**
+     * 昨日电量
+     */
+    @Schema(description = "昨日电量", example = "1")
+    private Double yesterdayEq;
 }

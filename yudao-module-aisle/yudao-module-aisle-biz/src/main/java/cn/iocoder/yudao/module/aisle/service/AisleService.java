@@ -1,9 +1,12 @@
 package cn.iocoder.yudao.module.aisle.service;
 
+import cn.iocoder.yudao.module.aisle.dto.AisleDataDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleDetailDTO;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.module.aisle.vo.AisleBusSaveVo;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -47,6 +50,17 @@ public interface AisleService {
      * 获取柜列详情
      * @param aisleId 柜列id
      */
-    AisleDetailDTO getAisleDetail(Integer aisleId);
+    AisleDetailDTO getAisleDetail(Integer aisleId) throws IOException;
+
+
+    /**
+     * 获取柜列列表
+     * @param roomId 机房id
+     * @return List<AisleIndex>
+     */
+    List<AisleIndex> getAisleList(int roomId);
+
+
+    AisleDataDTO getAisleDataDetail(int aisleId);
 
 }
