@@ -322,5 +322,137 @@ public class FieldConstant {
      * Redis设置key
      */
     public static final String REDIS_KEY_ROOM = "packet:room:";
+
+    /**
+     * ES补位
+     */
+    public static final String KEYWORD = ".keyword";
+
+    /**
+     * 机柜id
+     */
+    public static final String CABINET_ID = "cabinet_id";
+
+
+    /**
+     * 始端箱id
+     */
+    public static final String BUS_ID = "bus_id";
+
+    /**
+     * 插接箱id
+     */
+    public static final String BOX_ID = "box_id";
+
+
+    /**
+     * 机柜电量表（按天算）
+     */
+    public static final String CABINET_EQ_TOTAL_DAY = "cabinet_eq_total_day";
+
+
+    /**
+     * 始端箱总电能表（按天算
+     */
+    public static final String BUS_EQ_TOTAL_DAY = "bus_eq_total_day";
+
+    /**
+     * 插接箱输出位电能表（按天算）
+     */
+    public static final String BOX_EQ_OUTLET_DAY = "box_eq_outlet_day";
+
+
+    public static final String REDIS_KEY_CABINET = "packet:cabinet:";
+
+    /**
+     * 始端箱数据
+     */
+    public static final String BUS_DATA = "bus_data";
+
+    /**
+     * 环境数据
+     */
+    public static final String ENV_ITEM_LIST = "env_item_list";
+    /**
+     * 温度数据
+     */
+    public static final String TEM_VALUE = "tem_value";
+
+    /**
+     * 相数据
+     */
+    public static final String LINE_ITEM_LIST = "line_item_list";
+
+    /**
+     * 负载率
+     */
+    public static final String LOAD_RATE = "load_rate";
+    /**
+     * 电流
+     */
+    public static final String CUR_VALUE = "cur_value";
+    /**
+     * 电压
+     */
+    public static final String VOL_VALUE = "vol_value";
+
+    /**
+     * 插接箱数据
+     */
+    public static final String BOX_DATA = "box_data";
+
+    /**
+     * 输出位数据
+     */
+    public static final String OUTLET_ITEM_LIST = "outlet_item_list";
+
+    /**
+     * 有功功率
+     */
+    public static final String POW_ACTIVE = "pow_active";
+
+    /**
+     * 视在功率
+     */
+    public static final String POW_APPARENT = "pow_apparent";
+
+    /**
+     * 无功功率
+     */
+    public static final String POW_REACTIVE = "pow_reactive";
+
+    /**
+     * 功率因素
+     */
+    public static final String POWER_FACTOR = "power_factor";
+
+    /**
+     * 负载率
+     */
+    public static final String LOAD_FACTOR = "load_factor";
+
+    /**
+     * 机柜数据
+     */
+    public static final String CABINET_POWER = "cabinet_power";
+    /**
+     * 机柜环境数据
+     */
+    public static final String CABINET_ENV = "cabinet_env";
+
+    /**
+     * A路数据
+     */
+    public static final String PATH_A = "path_a";
+
+    /**
+     * B路数据
+     */
+    public static final String PATH_B = "path_b";
+
+    /**
+     * 总数据
+     */
+    public static final String TOTAL_DATA = "total_data";
 }
 

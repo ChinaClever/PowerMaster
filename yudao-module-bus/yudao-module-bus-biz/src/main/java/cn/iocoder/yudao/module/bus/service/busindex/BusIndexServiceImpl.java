@@ -522,7 +522,7 @@ public class BusIndexServiceImpl implements BusIndexService {
         builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
         // 设置搜索条件
         searchRequest.source(builder);
-        builder.size(1000);
+        builder.size(10000);
 
         List<String> list = new ArrayList<>();
         // 执行ES请求
