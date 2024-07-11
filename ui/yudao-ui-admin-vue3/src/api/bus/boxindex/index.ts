@@ -15,8 +15,8 @@ export interface IndexVO {
 // 始端箱索引 API
 export const IndexApi = {
   // 查询始端箱索引分页
-  getIndexPage: async (params: any) => {
-    return await request.get({ url: `/box/index/page`, params })
+  getIndexPage: async (data: any) => {
+    return await request.post({ url: `/box/index/page`, data })
   },
 
   // 查询始端箱索引详情
@@ -44,8 +44,8 @@ export const IndexApi = {
     return await request.download({ url: `/box/index/export-excel`, params })
   },
 
-  getBoxRedisPage: async (params: any) => {
-    return await request.get({ url: `/box/index/boxpage`, params })
+  getBoxRedisPage: async (data: any) => {
+    return await request.post({ url: `/box/index/boxpage`, data })
   },
 
   getEqPage: async (data: any) => {
@@ -80,8 +80,8 @@ export const IndexApi = {
     return await request.post({ url: `/box/index/pf/detail`, data })
   },
 
-  getBoxHarmonicPage: async (params: any) => {
-    return await request.get({ url: `/box/index/boxharmonicpage`, params })
+  getBoxHarmonicPage: async (data: any) => {
+    return await request.post({ url: `/box/index/boxharmonicpage`, data })
   },
 
   getHarmonicRedis: async (data: any) => {

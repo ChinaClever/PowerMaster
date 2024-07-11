@@ -83,9 +83,9 @@ public class BusIndexController {
         return success(pageResult);
     }
 
-    @GetMapping("/buspage")
+    @PostMapping("/buspage")
     @Operation(summary = "获得始端箱索引分页")
-    public CommonResult<PageResult<BusRedisDataRes>> getBusPage(@Valid BusIndexPageReqVO pageReqVO) {
+    public CommonResult<PageResult<BusRedisDataRes>> getBusPage(@RequestBody BusIndexPageReqVO pageReqVO) {
         PageResult<BusRedisDataRes> pageResult = indexService.getBusRedisPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BusRedisDataRes.class));
     }
@@ -115,9 +115,9 @@ public class BusIndexController {
     public CommonResult<Map> getBusPFDetail(@RequestBody BusIndexPageReqVO pageReqVO) {
         return success(indexService.getBusPFDetail(pageReqVO));
     }
-    @GetMapping("/busharmonicpage")
+    @PostMapping("/busharmonicpage")
     @Operation(summary = "获得始端箱谐波监测分页")
-    public CommonResult<PageResult<BusHarmonicRes>> getBusHarmonicPage(@Valid BusIndexPageReqVO pageReqVO) {
+    public CommonResult<PageResult<BusHarmonicRes>> getBusHarmonicPage(@RequestBody BusIndexPageReqVO pageReqVO) {
         PageResult<BusHarmonicRes> pageResult = indexService.getBusHarmonicPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BusHarmonicRes.class));
     }

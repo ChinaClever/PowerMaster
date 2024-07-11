@@ -82,16 +82,16 @@ public class BoxIndexController {
         return success(pageResult);
     }
 
-    @GetMapping("/page")
+    @PostMapping("/page")
     @Operation(summary = "获得插接箱索引分页")
-    public CommonResult<PageResult<BoxIndexRes>> getIndexPage(@Valid BoxIndexPageReqVO pageReqVO) {
+    public CommonResult<PageResult<BoxIndexRes>> getIndexPage(@RequestBody BoxIndexPageReqVO pageReqVO) {
         PageResult<BoxIndexRes> pageResult = indexService.getIndexPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BoxIndexRes.class));
     }
 
-    @GetMapping("/boxpage")
+    @PostMapping("/boxpage")
     @Operation(summary = "获得插接箱索引分页")
-    public CommonResult<PageResult<BoxRedisDataRes>> getBoxPage(@Valid BoxIndexPageReqVO pageReqVO) {
+    public CommonResult<PageResult<BoxRedisDataRes>> getBoxPage(@RequestBody BoxIndexPageReqVO pageReqVO) {
         PageResult<BoxRedisDataRes> pageResult = indexService.getBoxRedisPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BoxRedisDataRes.class));
     }
@@ -122,9 +122,9 @@ public class BoxIndexController {
         return success(indexService.getBoxPFDetail(pageReqVO));
     }
 
-    @GetMapping("/boxharmonicpage")
+    @PostMapping("/boxharmonicpage")
     @Operation(summary = "获得插接箱索引分页")
-    public CommonResult<PageResult<BoxHarmonicRes>> getBoxHarmonicPage(@Valid BoxIndexPageReqVO pageReqVO) {
+    public CommonResult<PageResult<BoxHarmonicRes>> getBoxHarmonicPage(@RequestBody BoxIndexPageReqVO pageReqVO) {
         PageResult<BoxHarmonicRes> pageResult = indexService.getBoxHarmonicPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BoxHarmonicRes.class));
     }

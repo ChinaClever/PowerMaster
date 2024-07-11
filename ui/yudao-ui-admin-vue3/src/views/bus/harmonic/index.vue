@@ -44,6 +44,11 @@
         :inline="true"
         label-width="68px"                          
       >
+        <el-form-item >
+          <el-checkbox-group  v-model="queryParams.status">
+            <el-checkbox :label="5" :value="5">在线</el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
         <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
             v-model="queryParams.devKey"
@@ -336,7 +341,7 @@ const queryParams = reactive({
   createTime: [],
   cascadeNum: undefined,
   serverRoomData:undefined,
-  status:[],
+  status:undefined,
   busDevKeyList : [],
 })as any
 const queryFormRef = ref() // 搜索的表单
@@ -345,6 +350,7 @@ const exportLoading = ref(false) // 导出的加载中
 /** 查询列表 */
 const getList = async () => {
   loading.value = true
+  console.log(queryParams)
   try {
     const data = await IndexApi.getBusHarmonicPage(queryParams)
 
@@ -371,6 +377,7 @@ const getList = async () => {
 }
 
 const getListNoLoading = async () => {
+  console.log(queryParams)
   try {
     const data = await IndexApi.getBusHarmonicPage(queryParams)
     list.value = data.list

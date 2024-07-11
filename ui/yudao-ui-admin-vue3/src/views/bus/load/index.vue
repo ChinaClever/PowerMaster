@@ -56,6 +56,11 @@
         >
           <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
         </el-button> -->
+        <el-form-item >
+          <el-checkbox-group  v-model="queryParams.status">
+            <el-checkbox :label="5" :value="5">在线</el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
         <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
             v-model="queryParams.devKey"
@@ -161,8 +166,8 @@
             </div>
             <div class="info">                  
               <div v-if="item.aloadRate != null">A相：{{item.aloadRate}}%</div>
-              <div v-if="item.bloadRate != null" >B相：{{item.bloadRate}}%</div>
-              <div v-if="item.cloadRate != null" >C相：{{item.cloadRate}}%</div>
+              <div v-if="item.bloadRate != null">B相：{{item.bloadRate}}%</div>
+              <div v-if="item.cloadRate != null">C相：{{item.cloadRate}}%</div>
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
@@ -357,7 +362,7 @@ const queryParams = reactive({
   createTime: [],
   cascadeNum: undefined,
   serverRoomData:undefined,
-  status:[],
+  status:undefined,
   cabinetIds : [],
 })as any
 const queryFormRef = ref() // 搜索的表单

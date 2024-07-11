@@ -2638,6 +2638,9 @@ public class BusIndexServiceImpl implements BusIndexService {
      * @return
      */
     private void getPosition(List< ? extends BusResBase> res){
+        if(CollectionUtils.isEmpty(res)){
+            return;
+        }
         ValueOperations ops = redisTemplate.opsForValue();
         List<String> devKeyList = res.stream().map(BusResBase::getDevKey).collect(Collectors.toList());
         Map<String, BusResBase> resMap = res.stream().collect(Collectors.toMap(BusResBase::getDevKey, Function.identity()));
@@ -2645,7 +2648,7 @@ public class BusIndexServiceImpl implements BusIndexService {
         String devPosition = "";
         //柜列
         List<AisleBar> aisleBar  = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
-                .in(AisleBar::getBarKey,devKeyList));
+                .in(!CollectionUtils.isEmpty(devKeyList),AisleBar::getBarKey,devKeyList));
         Map<Integer, String> aislePathMap = aisleBar.stream().collect(Collectors.toMap(AisleBar::getAisleId, AisleBar::getPath));
         Map<Integer, String> aisleBarKeyMap = aisleBar.stream().collect(Collectors.toMap(AisleBar::getAisleId,AisleBar::getBarKey));
         if (!CollectionUtils.isEmpty(aisleBar)){

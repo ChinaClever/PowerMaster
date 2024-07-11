@@ -1,10 +1,12 @@
 package cn.iocoder.yudao.module.bus.dal.mysql.boxindex;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxIndexPageReqVO;
+import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -27,6 +29,7 @@ public interface BoxIndexCopyMapper extends BaseMapperX<BoxIndex> {
                 .eqIfPresent(BoxIndex::getNodeIp, reqVO.getNodeIp())
                 .eqIfPresent(BoxIndex::getIsDeleted, reqVO.getIsDeleted())
                 .betweenIfPresent(BoxIndex::getCreateTime, reqVO.getCreateTime())
+                .ne(ObjectUtil.isNotEmpty(reqVO.getStatus()), BoxIndex::getRunStatus, 5)
                 .orderByAsc(BoxIndex::getId));
     }
 }

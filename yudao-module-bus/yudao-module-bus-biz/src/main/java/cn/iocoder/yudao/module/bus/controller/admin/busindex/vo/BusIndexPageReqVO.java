@@ -68,6 +68,9 @@ public class BusIndexPageReqVO extends PageParam {
     @Schema(description = "颜色")
     private List<Integer> color;
 
+    @Schema(description = "在线")
+    private List<Integer> status;
+
     @Schema(description = "逻辑删除")
     private Integer isDeleted;
 

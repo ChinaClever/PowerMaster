@@ -56,6 +56,11 @@
         >
           <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
         </el-button>
+        <el-form-item >
+          <el-checkbox-group  v-model="queryParams.status">
+            <el-checkbox :label="5" :value="5">在线</el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
         <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
             v-model="queryParams.devKey"

@@ -44,8 +44,8 @@ export const IndexApi = {
     return await request.download({ url: `/bus/index/export-excel`, params })
   },
 
-  getBusRedisPage: async (params: any) => {
-    return await request.get({ url: `/bus/index/buspage`, params })
+  getBusRedisPage: async (data: any) => {
+    return await request.post({ url: `/bus/index/buspage`, data })
   },
 
   getEqPage: async (data: any) => {
@@ -80,8 +80,8 @@ export const IndexApi = {
     return await request.post({ url: `/bus/index/pf/detail`, data })
   },
 
-  getBusHarmonicPage: async (params: any) => {
-    return await request.get({ url: `/bus/index/busharmonicpage`, params })
+  getBusHarmonicPage: async (data: any) => {
+    return await request.post({ url: `/bus/index/busharmonicpage`, data })
   },
 
   getHarmonicRedis: async (data: any) => {
