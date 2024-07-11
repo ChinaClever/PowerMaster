@@ -3,6 +3,9 @@ package cn.iocoder.yudao.module.aisle.service;
 import cn.iocoder.yudao.module.aisle.dto.AisleDataDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleDetailDTO;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
+import cn.iocoder.yudao.module.aisle.dto.AisleEqDataDTO;
+import cn.iocoder.yudao.module.aisle.dto.AisleListDTO;
+import cn.iocoder.yudao.module.aisle.dto.AisleMainDataDTO;
 import cn.iocoder.yudao.module.aisle.vo.AisleBusSaveVo;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
 
@@ -55,12 +58,30 @@ public interface AisleService {
 
     /**
      * 获取柜列列表
-     * @param roomId 机房id
      * @return List<AisleIndex>
      */
-    List<AisleIndex> getAisleList(int roomId);
+    List<AisleListDTO> getAisleList();
 
 
+    /**
+     * 柜列数据详情
+     * @param aisleId
+     * @return
+     */
     AisleDataDTO getAisleDataDetail(int aisleId);
+
+    /**
+     * 柜列主页面数据
+     * @param aisleId
+     * @return
+     */
+    AisleMainDataDTO getMainData(int aisleId);
+
+    /**
+     * 主页面用能数据
+     * @param aisleId
+     * @return
+     */
+    AisleEqDataDTO getMainEq(int aisleId);
 
 }

@@ -97,33 +97,4 @@ public class AisleDetailDTO {
     @Schema(description = "昨日电量", example = "1")
     private Double yesterdayEq;
 
-    /**
-     * 上周电量
-     */
-    @Schema(description = "上周电量", example = "1")
-    private Double lastWeekEq;
-
-    /**
-     * 上月电量
-     */
-    @Schema(description = "上月电量", example = "1")
-    private Double lastMonthEq;
-
-    /**
-     * 今日电量
-     */
-    @Schema(description = "今日电量", example = "1")
-    private Double todayEq;
-
-    /**
-     * 本周电量
-     */
-    @Schema(description = "本周电量", example = "1")
-    private Double thisWeekEq;
-
-    /**
-     * 本月电量
-     */
-    @Schema(description = "本月电量", example = "1")
-    private Double thisMonthEq;
 }

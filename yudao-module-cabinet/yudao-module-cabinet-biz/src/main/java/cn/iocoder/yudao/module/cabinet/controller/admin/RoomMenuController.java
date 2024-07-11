@@ -122,4 +122,16 @@ public class RoomMenuController {
         List<RoomMenuDTO> dto = roomService.roomBoxMenuList();
         return success(dto);
     }
+
+
+    /**
+     * 机房菜单
+     *
+     */
+    @Operation(summary = "机房-柜列菜单")
+    @GetMapping("/room/aisle/menu")
+    public CommonResult<List<RoomMenuDTO>> getRoomAislexMenu() {
+        List<RoomMenuDTO> dto = roomService.roomAisleMenuList();
+        return success(dto);
+    }
 }
