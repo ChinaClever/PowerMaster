@@ -70,4 +70,10 @@ public interface RoomMenuService {
      * @return
      */
     List<RoomMenuDTO> roomBoxMenuList();
+
+    /**
+     * 机房-柜列菜单
+     * @return
+     */
+    List<RoomMenuDTO> roomAisleMenuList();
 }

@@ -17,7 +17,7 @@ import cn.iocoder.yudao.module.cabinet.dto.CabinetPduCurTrendDTO;
 import cn.iocoder.yudao.module.cabinet.mapper.CabPduIndexMapper;
 import cn.iocoder.yudao.framework.common.mapper.CabinetPduMapper;
 import cn.iocoder.yudao.module.cabinet.service.CabinetEleService;
-import cn.iocoder.yudao.module.cabinet.util.TimeUtil;
+import cn.iocoder.yudao.framework.common.util.TimeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -51,6 +51,9 @@ import java.util.stream.Collectors;
 
 import static cn.hutool.core.date.DatePattern.NORM_DATETIME_PATTERN;
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.*;
+import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CABINET_EQ_TOTAL_DAY;
+import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CABINET_ID;
+import static cn.iocoder.yudao.framework.common.constant.FieldConstant.KEYWORD;
 import static cn.iocoder.yudao.module.cabinet.constant.CabConstants.*;
 
 /**
@@ -796,7 +799,7 @@ public class CabinetEleServiceImpl implements CabinetEleService {
         builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
         // 设置搜索条件
         searchRequest.source(builder);
-        builder.size(1000);
+        builder.size(10000);
 
         List<String> list = new ArrayList<>();
         // 执行ES请求
@@ -833,7 +836,7 @@ public class CabinetEleServiceImpl implements CabinetEleService {
         builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
         // 设置搜索条件
         searchRequest.source(builder);
-        builder.size(1000);
+        builder.size(10000);
 
         List<String> list = new ArrayList<>();
         // 执行ES请求

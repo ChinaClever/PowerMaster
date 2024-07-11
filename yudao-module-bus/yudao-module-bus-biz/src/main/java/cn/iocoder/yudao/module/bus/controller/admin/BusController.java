@@ -33,7 +33,7 @@ public class BusController {
 
 
     /**
-     * 机柜主页面
+     * 母线拓扑页面
      *
      * @param vo
      */

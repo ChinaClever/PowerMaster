@@ -10,7 +10,7 @@ import cn.iocoder.yudao.module.cabinet.dto.CabinetActivePowDTO;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetActivePowTrendDTO;
 import cn.iocoder.yudao.module.cabinet.dto.CabinetPowDTO;
 import cn.iocoder.yudao.module.cabinet.service.CabinetPowService;
-import cn.iocoder.yudao.module.cabinet.util.TimeUtil;
+import cn.iocoder.yudao.framework.common.util.TimeUtil;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetPowVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
@@ -27,9 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.time.LocalDateTime;
 import java.util.*;
 
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
@@ -214,7 +212,7 @@ public class CabinetPowServiceImpl implements CabinetPowService {
         builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
         // 设置搜索条件
         searchRequest.source(builder);
-        builder.size(1000);
+        builder.size(10000);
 
         List<String> list = new ArrayList<>();
         // 执行ES请求

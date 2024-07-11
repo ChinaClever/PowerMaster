@@ -1,7 +1,12 @@
 package cn.iocoder.yudao.module.aisle.controller.admin;
 
+import cn.iocoder.yudao.module.aisle.dto.AisleDataDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleDetailDTO;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
+import cn.iocoder.yudao.module.aisle.dto.AisleEqDataDTO;
+import cn.iocoder.yudao.module.aisle.dto.AisleListDTO;
+import cn.iocoder.yudao.module.aisle.dto.AisleMainDataDTO;
 import cn.iocoder.yudao.module.aisle.service.AisleService;
 import cn.iocoder.yudao.module.aisle.vo.AisleBusSaveVo;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
@@ -12,6 +17,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.error;
@@ -32,17 +38,17 @@ public class AisleController {
     AisleService aisleService;
 
 
+
     /**
-     * 柜列主页面
+     * 柜列列表
      *
-     * @param pageReqVO
      */
-//    @Operation(summary = "柜列列表分页")
-//    @PostMapping("/cabinet/page")
-//    public CommonResult<PageResult<JSONObject>> getCabinetPage(@RequestBody CabinetIndexVo pageReqVO) {
-//        PageResult<JSONObject> pageResult = cabinetService.getPageCabinet(pageReqVO);
-//        return success(pageResult);
-//    }
+    @Operation(summary = "柜列列表")
+    @GetMapping("/aisle/list")
+    public CommonResult<List<AisleListDTO>> getAisleList() {
+        List<AisleListDTO> list = aisleService.getAisleList();
+        return success(list);
+    }
 
     /**
      * 柜列详情
@@ -51,7 +57,7 @@ public class AisleController {
      */
     @Operation(summary = "柜列详情")
     @GetMapping("/aisle/detail")
-    public CommonResult<AisleDetailDTO> getDetail(@Param("id") int id) {
+    public CommonResult<AisleDetailDTO> getDetail(@Param("id") int id) throws IOException {
         AisleDetailDTO dto = aisleService.getAisleDetail(id);
         return success(dto);
     }
@@ -118,4 +124,35 @@ public class AisleController {
         return CommonResult.success(vo.getAisleId());
     }
 
+
+    /**
+     * 柜列数据详情
+     *
+     * @param id 柜列id
+     */
+    @Operation(summary = "柜列数据详情")
+    @GetMapping("/aisle/data/detail")
+    public CommonResult<AisleDataDTO> getDataDetail(@Param("id") int id) throws IOException {
+        AisleDataDTO dto = aisleService.getAisleDataDetail(id);
+        return success(dto);
+    }
+
+    /**
+     * 柜列主页面数据
+     *
+     * @param id 柜列id
+     */
+    @Operation(summary = "柜列主页面数据")
+    @GetMapping("/aisle/main/data")
+    public CommonResult<AisleMainDataDTO> getMainData(@Param("id") int id) {
+        AisleMainDataDTO dto = aisleService.getMainData(id);
+        return success(dto);
+    }
+
+    @Operation(summary = "柜列主页面用能数据")
+    @GetMapping("/aisle/main/eq")
+    public CommonResult<AisleEqDataDTO> getMainEq(@Param("id") int id) {
+        AisleEqDataDTO dto = aisleService.getMainEq(id);
+        return success(dto);
+    }
 }

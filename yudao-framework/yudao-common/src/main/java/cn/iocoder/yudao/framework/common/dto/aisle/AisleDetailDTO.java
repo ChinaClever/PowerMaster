@@ -1,7 +1,9 @@
 package cn.iocoder.yudao.framework.common.dto.aisle;
 
+import cn.hutool.json.JSONObject;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
@@ -83,5 +85,16 @@ public class AisleDetailDTO {
      */
     private List<CabinetDTO> cabinetList;
 
+    /**
+     * 柜列数据包
+     */
+    private JSONObject aisleData;
+
+
+    /**
+     * 昨日电量
+     */
+    @Schema(description = "昨日电量", example = "1")
+    private Double yesterdayEq;
 
 }

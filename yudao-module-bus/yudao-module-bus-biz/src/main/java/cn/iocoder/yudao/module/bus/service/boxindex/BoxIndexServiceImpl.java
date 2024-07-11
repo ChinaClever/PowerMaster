@@ -1260,6 +1260,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             PageResult<BoxIndex> boxIndexPageResult = null;
             List<BoxLineRes> result = new ArrayList<>();
 
+
             boxIndexPageResult = boxIndexCopyMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<BoxIndex>()
                     .likeIfPresent(BoxIndex::getDevKey,pageReqVO.getDevKey()));
 

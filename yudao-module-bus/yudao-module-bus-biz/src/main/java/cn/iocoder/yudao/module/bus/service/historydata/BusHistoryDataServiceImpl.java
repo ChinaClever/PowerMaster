@@ -6,7 +6,7 @@ import cn.iocoder.yudao.module.bus.controller.admin.historydata.vo.BusHistoryDat
 import cn.iocoder.yudao.module.bus.controller.admin.historydata.vo.BusHistoryDataPageReqVO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
-import cn.iocoder.yudao.module.bus.mapper.BoxIndexMapper;
+import cn.iocoder.yudao.framework.common.mapper.BoxIndexMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import org.elasticsearch.action.search.SearchRequest;
