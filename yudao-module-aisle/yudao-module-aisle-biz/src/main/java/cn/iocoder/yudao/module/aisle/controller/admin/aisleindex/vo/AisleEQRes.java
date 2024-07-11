@@ -1,46 +1,12 @@
-package cn.iocoder.yudao.module.bus.controller.admin.busindex.dto;
+package cn.iocoder.yudao.module.aisle.controller.admin.aisleindex.vo;
 
-import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusResBase;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
-/**
- * @author luowei
- * @version 1.0
- * @description: 机柜索引表扩展字段
- * @date 2024/4/28 15:27
- */
-@Schema(description = "管理后台 - 母线用能 Response VO")
 @Data
-public class BusIndexDTO extends BusResBase {
+public class AisleEQRes extends AisleIndexRespVO {
 
-    @Schema(description = "母线id", example = "1")
-    private int id;
 
-    /**
-     * 机房编号
-     */
-    @Schema(description = "机房编号", example = "1")
-    private Integer roomId;
-
-    /**
-     * 机柜名称
-     */
-    @Schema(description = "机柜名称", example = "xxx")
-    private String name;
-
-    /**
-     * 机房名称
-     */
-    @Schema(description = "机房名称", example = "xxx")
-    private String roomName;
-    /**
-     * 通道编号
-     */
-    @Schema(description = "通道编号", example = "1")
-    private Integer aisleId;
 
     /**
      * 电力容量
@@ -108,15 +74,4 @@ public class BusIndexDTO extends BusResBase {
     @Schema(description = "上月电量", example = "1")
     private Double lastMonthEq;
 
-
-    /**
-     * 更新时间
-     */
-    @Schema(description = "更新时间")
-    private LocalDateTime updateTime;
-    /**
-     * 创建时间
-     */
-    @Schema(description = "创建时间")
-    private LocalDateTime createTime;
 }

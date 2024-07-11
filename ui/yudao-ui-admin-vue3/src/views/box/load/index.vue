@@ -385,30 +385,7 @@ const getList = async () => {
     var greaterNinety = 0;
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj.aloadRate != null){
-        obj.aloadRate = obj.aloadRate * 100;
-        obj.aloadRate = obj.aloadRate?.toFixed(0);
-      }
-      if(obj.bloadRate != null){
-        obj.bloadRate = obj.bloadRate * 100;
-        obj.bloadRate = obj.bloadRate?.toFixed(0);
-      }
-      if(obj.cloadRate != null){
-        obj.cloadRate = obj.cloadRate * 100;
-        obj.cloadRate = obj.cloadRate?.toFixed(0);
-      }
-      // obj.apparentPow = obj.apparentPow.toFixed(3);
-      // obj.pow = obj.pow.toFixed(3);
-      // obj.ele = obj.ele.toFixed(1);
-      // obj.pf = obj.pf.toFixed(2);
-      // obj.acur = obj.acur?.toFixed(2);
-      // obj.bcur = obj.bcur?.toFixed(2);
-      // obj.ccur = obj.ccur?.toFixed(2);
-      // obj.curUnbalance = obj.curUnbalance?.toFixed(0);
-      // obj.avol = obj.avol?.toFixed(1);
-      // obj.bvol = obj.bvol?.toFixed(1);
-      // obj.cvol = obj.cvol?.toFixed(1);
-      // obj.volUnbalance = obj.volUnbalance?.toFixed(0);
+
       if(obj.color == 4){
         greaterNinety++;
       } else if (obj.color == 1) {
@@ -440,18 +417,7 @@ const getListNoLoading = async () => {
     var greaterNinety = 0;
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj.aloadRate != null){
-        obj.aloadRate = obj.aloadRate * 100;
-        obj.aloadRate = obj.aloadRate?.toFixed(0);
-      }
-      if(obj.bloadRate != null){
-        obj.bloadRate = obj.bloadRate * 100;
-        obj.bloadRate = obj.bloadRate?.toFixed(0);
-      }
-      if(obj.cloadRate != null){
-        obj.cloadRate = obj.cloadRate * 100;
-        obj.cloadRate = obj.cloadRate?.toFixed(0);
-      }
+
 
       if(obj.color == 4){
         greaterNinety++;

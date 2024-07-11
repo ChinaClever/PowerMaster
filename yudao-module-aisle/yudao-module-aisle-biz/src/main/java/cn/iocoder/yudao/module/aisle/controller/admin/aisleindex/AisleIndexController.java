@@ -1,7 +1,7 @@
 package cn.iocoder.yudao.module.aisle.controller.admin.aisleindex;
 
-import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.module.aisle.dal.dataobject.aisleindex.AisleIndexDO;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -10,22 +10,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Operation;
 
-import javax.validation.constraints.*;
 import javax.validation.*;
-import javax.servlet.http.*;
 import java.util.*;
-import java.io.IOException;
 
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
-
-import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
-
-import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
-import static cn.iocoder.yudao.framework.operatelog.core.enums.OperateTypeEnum.*;
 
 import cn.iocoder.yudao.module.aisle.controller.admin.aisleindex.vo.*;
 import cn.iocoder.yudao.module.aisle.service.aisleindex.AisleIndexService;
@@ -80,11 +71,83 @@ public class AisleIndexController {
     }
 
     @PostMapping("/powerpage")
-    @Operation(summary = "获得始端箱索引分页")
+    @Operation(summary = "获得通道列索引分页")
     public CommonResult<PageResult<AislePowerRes>> getPowerPage(@RequestBody AisleIndexPageReqVO pageReqVO) {
         PageResult<AislePowerRes> pageResult = indexService.getPowerPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, AislePowerRes.class));
     }
+
+    @PostMapping("/line/page")
+    @Operation(summary = "获得通道列需量分页")
+    public CommonResult<PageResult<AisleLineMaxRes>> getAisleLineMaxPage(@RequestBody AisleIndexPageReqVO pageReqVO) {
+        return success(indexService.getAisleLineMaxPage(pageReqVO));
+    }
+
+    @Operation(summary = "始端箱需量ES数据图表")
+    @PostMapping("/line/cur")
+    public CommonResult<AisleLineResBase> getAisleLineCurLine(@RequestBody AisleIndexPageReqVO pageReqVO) {
+        AisleLineResBase pageResult = indexService.getAisleLineCurLine(pageReqVO);
+        return success(pageResult);
+    }
+
+    /**
+     * 通道列用能页面
+     *
+     * @param pageReqVO
+     */
+    @Operation(summary = "通道列用能列表分页")
+    @PostMapping("/eq/page")
+    public CommonResult<PageResult<AisleEQRes>> getEqPage(@RequestBody AisleIndexPageReqVO pageReqVO) {
+        PageResult<AisleEQRes> pageResult = indexService.getEqPage(pageReqVO);
+        return success(pageResult);
+    }
+
+    /**
+     * 始端箱有功功率趋势
+     *
+     * @param id 始端箱id
+     */
+    @Operation(summary = "始端箱有功功率趋势")
+    @GetMapping("/activePowTrend")
+    public CommonResult<AisleActivePowDTO> activePowTrend(@Param("id") int id) {
+        AislePowVo vo = new AislePowVo();
+        vo.setId(id);
+        AisleActivePowDTO dto = indexService.getActivePow(vo);
+        return success(dto);
+    }
+
+    /**
+     * 始端箱用能趋势
+     *
+     * @param id 始端箱id
+     */
+    @Operation(summary = "始端箱用能趋势")
+    @GetMapping("/eleTrend")
+    public CommonResult<List<AisleEqTrendDTO>> eleTrend(@Param("id") int id, @Param("type") String type) {
+        List<AisleEqTrendDTO> dto = indexService.eqTrend(id, type);
+        return success(dto);
+    }
+
+    /**
+     * 始端箱用能环比
+     *
+     * @param id 始端箱id
+     */
+    @Operation(summary = "始端箱用能环比")
+    @GetMapping("/eleChain")
+    public CommonResult<AisleEleChainDTO> eleChain(@Param("id") int id) {
+        AisleEleChainDTO dto = indexService.getEleChain(id);
+        return success(dto);
+    }
+
+    @PostMapping("/buspfpage")
+    @Operation(summary = "获得通道列功率因素分页")
+    public CommonResult<PageResult<AislePfRes>> getAislePFPage(@RequestBody AisleIndexPageReqVO pageReqVO) {
+        PageResult<AislePfRes> pageResult = indexService.getAislePFPage(pageReqVO);
+        return success(BeanUtils.toBean(pageResult, AislePfRes.class));
+    }
+
+
 
     @GetMapping("/devKeyList")
     @Operation(summary = "获得通道列devKey列表")

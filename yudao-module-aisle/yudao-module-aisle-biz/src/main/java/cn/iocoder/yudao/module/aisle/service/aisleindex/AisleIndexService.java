@@ -55,4 +55,18 @@ public interface AisleIndexService {
     List<Integer> getDevKeyList();
 
     PageResult<AislePowerRes> getPowerPage(AisleIndexPageReqVO pageReqVO);
+
+    PageResult<AisleEQRes> getEqPage(AisleIndexPageReqVO pageReqVO);
+
+    PageResult<AislePfRes> getAislePFPage(AisleIndexPageReqVO pageReqVO);
+
+    PageResult<AisleLineMaxRes> getAisleLineMaxPage(AisleIndexPageReqVO pageReqVO);
+
+    AisleActivePowDTO getActivePow(AislePowVo vo);
+
+    List<AisleEqTrendDTO> eqTrend(int id, String type);
+
+    AisleEleChainDTO getEleChain(int id);
+
+    AisleLineResBase getAisleLineCurLine(AisleIndexPageReqVO pageReqVO);
 }

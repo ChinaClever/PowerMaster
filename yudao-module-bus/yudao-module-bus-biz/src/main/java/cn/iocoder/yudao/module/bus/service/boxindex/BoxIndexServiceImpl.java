@@ -196,7 +196,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 boxIndexRes.setALoadRate(loadRate.getDouble(0));
             }
             rateList.sort(Collections.reverseOrder());
-            Double biggest = rateList.get(0) * 100;
+            Double biggest = rateList.get(0);
             if (biggest == 0){
                 boxIndexRes.setColor(0);
             } else if (biggest < 30){
@@ -1381,7 +1381,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                         result.getTime().add(lineDo.getPowActiveMaxTime().toString("yyyy-MM-dd HH"));
                     }
                     result.getSeries().get(lineDo.getLineId() - 1).getData().add(lineDo.getPowActiveMaxValue());
-                    ((RequirementLineSeries)result.getSeries().get(lineDo.getLineId() - 1)).getMaxTime().add(lineDo.getCurMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    ((RequirementLineSeries)result.getSeries().get(lineDo.getLineId() - 1)).getMaxTime().add(lineDo.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 });
             }
             return result;
@@ -2234,29 +2234,30 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         if (CollectionUtils.isEmpty(devKeyList)){
             return;
         }
-        Map<String, BoxResBase> resMap = res.stream().collect(Collectors.toMap(BoxResBase::getDevKey, Function.identity()));
         //设备位置
         String devPosition = "";
         //柜列
         List<AisleBox> aisleBar  = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
                 .in(AisleBox::getBarKey,devKeyList));
-        Map<Integer, String> aisleBarKeyMap = aisleBar.stream().collect(Collectors.toMap(AisleBox::getAisleId,AisleBox::getBarKey));
+        Map<String, Integer> aisleBarKeyMap = aisleBar.stream().collect(Collectors.toMap(AisleBox::getBarKey,AisleBox::getAisleId));
+        Map<Integer, String> positionMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(aisleBar)){
             List<String> redisKeys = aisleBar.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toList());
             List aisles = ops.multiGet(redisKeys);
             if (!CollectionUtils.isEmpty(aisleBar)){
                 for (Object aisle : aisles) {
                     JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
-                    if(Objects.isNull(resMap.get(aisleBarKeyMap.get(json.getInteger("aisle_key"))))){
-                        continue;
-                    }
-                    devPosition = json.getString("room_name") + SPLIT_KEY
-                            +  json.getString("aisle_name")  ;
-                    BoxResBase busResBase = resMap.get(aisleBarKeyMap.get(json.getInteger("aisle_key")));
-                    busResBase.setLocation(devPosition + SPLIT_KEY + busResBase.getBoxName());
+                    positionMap.put(json.getInteger("aisle_key"), json.getString("room_name") + SPLIT_KEY
+                            +  json.getString("aisle_name") );
                 }
             }
         }
+        res.forEach(box ->{
+            if(aisleBarKeyMap.get(box.getDevKey()) != null){
+                Integer aisleId = aisleBarKeyMap.get(box.getDevKey());
+                box.setLocation(positionMap.get(aisleId));
+            }
+        });
         List<BoxResBase> resNotInAisle = res.stream().filter(busRes -> StringUtils.isEmpty(busRes.getLocation())).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(resNotInAisle)){
             return;

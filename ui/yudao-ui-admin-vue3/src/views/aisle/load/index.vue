@@ -222,7 +222,7 @@
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="icon" v-if="item.colorA != null" >
-              A相负载率            
+              A路负载率            
             </div>
             <div class="info">                  
               <div v-if="item.aloadRateA != null">A相：{{item.aloadRateA}}%</div>
@@ -250,7 +250,7 @@
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="icon" v-if="item.colorB != null" >
-              B相负载率            
+              B路负载率            
             </div>
             <div class="info">                  
               <div v-if="item.aloadRateB != null">A相：{{item.aloadRateB}}%</div>
@@ -471,31 +471,7 @@ const getList = async () => {
     var greaterNinety = 0;
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj.aloadRateA != null){
-        obj.aloadRateA = obj.aloadRateA * 100;
-        obj.aloadRateA = obj.aloadRateA?.toFixed(0);
-      }
-      if(obj.bloadRateA != null){
-        obj.bloadRateA = obj.bloadRateA * 100;
-        obj.bloadRateA = obj.bloadRateA?.toFixed(0);
-      }
-      if(obj.cloadRateA != null){
-        obj.cloadRateA = obj.cloadRateA * 100;
-        obj.cloadRateA = obj.cloadRateA?.toFixed(0);
-      }
-
-      if(obj.aloadRateB != null){
-        obj.aloadRateB = obj.aloadRateB * 100;
-        obj.aloadRateB = obj.aloadRateB?.toFixed(0);
-      }
-      if(obj.bloadRateB != null){
-        obj.bloadRateB = obj.bloadRateB * 100;
-        obj.bloadRateB = obj.bloadRateB?.toFixed(0);
-      }
-      if(obj.cloadRateB != null){
-        obj.cloadRateB = obj.cloadRateB * 100;
-        obj.cloadRateB = obj.cloadRateB?.toFixed(0);
-      }
+      
 
       if(obj.colorA == 4){
         greaterNinety++;

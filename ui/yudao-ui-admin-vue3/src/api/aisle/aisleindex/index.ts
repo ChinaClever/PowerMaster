@@ -58,4 +58,24 @@ export const IndexApi = {
   getAisleRedisPage: async (data: any) => {
     return await request.post({ url: `/aisle/index/powerpage`, data })
   },
+
+  getEqPage: async (data: any) => {
+    return await request.post({ url: `/aisle/index/eq/page`, data })
+  },
+
+  getAislePFPage: async (data: any) => {
+    return await request.post({ url: `/aisle/index/buspfpage`, data })
+  },
+
+  getBusPFDetail: async (data: any) => {
+    return await request.post({ url: `/bus/index/pf/detail`, data })
+  },
+
+  getAisleLinePage: async (data: any) => {
+    return await request.post({ url: `/aisle/index/line/page`,data})
+  },
+
+  getAisleLineCurLine: async (data: any) => {
+    return await request.post({ url: `/aisle/index/line/cur`,data})
+  },
 }

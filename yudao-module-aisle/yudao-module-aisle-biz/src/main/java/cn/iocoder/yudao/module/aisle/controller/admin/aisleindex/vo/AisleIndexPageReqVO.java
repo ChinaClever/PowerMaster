@@ -1,5 +1,10 @@
 package cn.iocoder.yudao.module.aisle.controller.admin.aisleindex.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.*;
 import java.util.*;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,6 +34,21 @@ public class AisleIndexPageReqVO extends PageParam {
 
     @Schema(description = "是否删除")
     private Integer isDelete;
+
+    @Schema(description = "时间类型")
+    private Integer timeType;
+
+    @Schema(description = "开始时间")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime oldTime;
+
+    @Schema(description = "结束时间")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime newTime;
 
     @Schema(description = "创建时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)

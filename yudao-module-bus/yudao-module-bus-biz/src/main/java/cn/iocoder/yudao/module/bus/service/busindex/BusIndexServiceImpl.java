@@ -202,7 +202,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                 busIndexRes.setALoadRate(loadRate.getDouble(0));
             }
             rateList.sort(Collections.reverseOrder());
-            Double biggest = rateList.get(0) * 100;
+            Double biggest = rateList.get(0) ;
             if (biggest == 0){
                 busIndexRes.setColor(0);
             } else if (biggest < 30){
@@ -645,7 +645,7 @@ public class BusIndexServiceImpl implements BusIndexService {
         List<BusIndexDO> list = busIndexDOPageResult.getList();
         List<BusPFRes> res = new ArrayList<>();
         List redisList = getMutiRedis(list);
-        ValueOperations ops = redisTemplate.opsForValue();
+
         for (BusIndexDO busIndexDO : list) {
             BusPFRes busPFRes = new BusPFRes();
             busPFRes.setStatus(busIndexDO.getRunStatus());
@@ -860,7 +860,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                         result.getTime().add(lineDo.getPowActiveMaxTime().toString("yyyy-MM-dd HH"));
                     }
                     result.getSeries().get(lineDo.getLineId() - 1).getData().add(lineDo.getPowActiveMaxValue());
-                    ((RequirementLineSeries)result.getSeries().get(lineDo.getLineId() - 1)).getMaxTime().add(lineDo.getCurMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    ((RequirementLineSeries)result.getSeries().get(lineDo.getLineId() - 1)).getMaxTime().add(lineDo.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 });
             }
             return result;
@@ -2644,31 +2644,33 @@ public class BusIndexServiceImpl implements BusIndexService {
         }
         ValueOperations ops = redisTemplate.opsForValue();
         List<String> devKeyList = res.stream().map(BusResBase::getDevKey).collect(Collectors.toList());
-        Map<String, BusResBase> resMap = res.stream().collect(Collectors.toMap(BusResBase::getDevKey, Function.identity()));
         //设备位置
-        String devPosition = "";
+
         //柜列
         List<AisleBar> aisleBar  = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
                 .in(!CollectionUtils.isEmpty(devKeyList),AisleBar::getBarKey,devKeyList));
-        Map<Integer, String> aislePathMap = aisleBar.stream().collect(Collectors.toMap(AisleBar::getAisleId, AisleBar::getPath));
-        Map<Integer, String> aisleBarKeyMap = aisleBar.stream().collect(Collectors.toMap(AisleBar::getAisleId,AisleBar::getBarKey));
+        Map<String, String> aislePathMap = aisleBar.stream().collect(Collectors.toMap(AisleBar::getBarKey, AisleBar::getPath));
+        Map<String, Integer> aisleBarKeyMap = aisleBar.stream().collect(Collectors.toMap(AisleBar::getBarKey,AisleBar::getAisleId));
+        Map<Integer, String> positonMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(aisleBar)){
             List<String> redisKeys = aisleBar.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toList());
             List aisles = ops.multiGet(redisKeys);
             if (!CollectionUtils.isEmpty(aisleBar)){
                 for (Object aisle : aisles) {
                     JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
-                    if(Objects.isNull(resMap.get(aisleBarKeyMap.get(json.getInteger("aisle_key"))))){
-                        continue;
-                    }
+                    String devPosition = new String();
                     devPosition = json.getString("room_name") + SPLIT_KEY
-                            +  json.getString("aisle_name") + SPLIT_KEY
-                            + aislePathMap.get(json.getInteger("aisle_key")) +"路" ;
-                    BusResBase busResBase = resMap.get(aisleBarKeyMap.get(json.getInteger("aisle_key")));
-                    busResBase.setLocation(devPosition + SPLIT_KEY + busResBase.getBusName());
+                            +  json.getString("aisle_name") + SPLIT_KEY ;
+                    positonMap.put(json.getInteger("aisle_key"),devPosition);
                 }
             }
         }
+        res.forEach( bus ->{
+            if (aisleBarKeyMap.get(bus.getDevKey()) != null){
+                Integer aisleId = aisleBarKeyMap.get(bus.getDevKey());
+                bus.setLocation(positonMap.get(aisleId) + aislePathMap.get(bus.getDevKey()) + "路");
+            }
+        });
         List<BusResBase> resNotInAisle = res.stream().filter(busRes -> StringUtils.isEmpty(busRes.getLocation())).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(resNotInAisle)){
             return;
@@ -2684,6 +2686,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                 Object cabinet = ops.get(redisKey);
                 if (Objects.nonNull(cabinet)){
                     JSONObject json = JSON.parseObject(JSON.toJSONString(cabinet));
+                    String devPosition = new String();
                     devPosition = json.getString("room_name") ;
                     busResBase.setLocation(devPosition + SPLIT_KEY + busResBase.getBusName());
                 }
@@ -2702,6 +2705,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                 Object cabinet = ops.get(redisKey);
                 if (Objects.nonNull(cabinet)){
                     JSONObject json = JSON.parseObject(JSON.toJSONString(cabinet));
+                    String devPosition = new String();
                     devPosition = json.getString("room_name");
                     busResBase.setLocation(devPosition + SPLIT_KEY + busResBase.getBusName());
                 }

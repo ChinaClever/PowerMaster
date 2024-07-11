@@ -90,7 +90,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3 && valueMode == 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" >
+      <el-table v-show="switchValue == 3 && valueMode == 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"   >
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -145,7 +145,7 @@
         </el-table-column>
       </el-table>    
 
-      <el-table v-show="switchValue == 3 && valueMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" >
+      <el-table v-show="switchValue == 3 && valueMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatilA" >
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -200,7 +200,7 @@
         </el-table-column>
       </el-table> 
 
-      <el-table v-show="switchValue == 3 && valueMode == 2" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" >
+      <el-table v-show="switchValue == 3 && valueMode == 2" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatilB" >
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -291,7 +291,7 @@
           <!-- <div class="status" >
             <el-tag type="info" v-if="item.status == null ||  item.status == 5" >离线</el-tag>
           </div> -->
-          <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 5" >详情</button>
+          <!-- <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 5" >详情</button> -->
         </div>
       </div>
 

@@ -196,7 +196,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             int color = 0;
             if(temp.size() >= 2){
                 double a = temp.get(0) - temp.get(2);
-
                 curUnbalance = pduTgData.getDoubleValue("cur_unbalance");
                 bcur = curArr.getDoubleValue(1);
                 ccur = curArr.getDoubleValue(2);

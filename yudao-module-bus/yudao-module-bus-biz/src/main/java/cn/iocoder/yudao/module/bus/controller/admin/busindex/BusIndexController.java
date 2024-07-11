@@ -72,7 +72,7 @@ public class BusIndexController {
 
     @PostMapping("/line/page")
     @Operation(summary = "获得始端箱需量分页")
-    public CommonResult<PageResult<BusLineRes>> getBusLineDevicePage(@RequestBody BusIndexPageReqVO pageReqVO) {
+    public CommonResult<PageResult<BusLineRes>> getBusLineMaxPage(@RequestBody BusIndexPageReqVO pageReqVO) {
         return success(indexService.getBusLineDevicePage(pageReqVO));
     }
 
