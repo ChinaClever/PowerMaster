@@ -41,6 +41,12 @@ public class AisleIndexRespVO {
     @ExcelProperty("长度")
     private Integer length;
 
+    @Schema(description = "A路网络地址")
+    private String devKeyA;
+
+    @Schema(description = "B路网络地址")
+    private String devKeyB;
+
     @Schema(description = "柜列类型", example = "1")
     @ExcelProperty("柜列类型")
     private String type;

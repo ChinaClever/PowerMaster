@@ -81,101 +81,99 @@
           </el-button>
         </el-form-item>
         <div style="float:right">
-          <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
-          <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压</el-button>            
-          <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />有功功率</el-button>            
-          <el-button @click="valueMode = 3;" :type="valueMode == 3 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />无功功率</el-button>                     
+          <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />统计</el-button>            
+          <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />A路</el-button>            
+          <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />B路</el-button>                             
           <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
         </div>
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" >
+      <el-table v-show="switchValue == 3 && valueMode == 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" >
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
-        <el-table-column v-if="valueMode == 0" label="A相电流" align="center" prop="acur" width="130px" >
+        <el-table-column  label="有功电能" align="center" prop="eleActiveTotal" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.acur != null" :type=" scope.row.acurStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.acur }}A
+            <el-text line-clamp="2" v-if="scope.row.eleActiveTotal" >
+              {{ scope.row.eleActiveTotal }}kWh
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="B相电流" align="center" prop="bcur" width="130px" >
+        <el-table-column  label="视在功率" align="center" prop="powApparentTotal" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.bcur != null" :type=" scope.row.bcurStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.bcur }}A
+            <el-text line-clamp="2" v-if="scope.row.powApparentTotal" >
+              {{ scope.row.powApparentTotal }}kVA
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="C相电流" align="center" prop="ccur" width="130px" >
+        <el-table-column  label="有功功率" align="center" prop="powActiveTotal" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.ccur != null" :type=" scope.row.ccurStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.ccur }}A
+            <el-text line-clamp="2" v-if="scope.row.powActiveTotal" >
+              {{ scope.row.powActiveTotal }}kW
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column  v-if="valueMode == 1"  label="A相电压" align="center" prop="avol" width="130px" >
+        <el-table-column  label="无功功率" align="center" prop="powReactiveTotal" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.avol" :type=" scope.row.avolStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.avol }}V
+            <el-text line-clamp="2" v-if="scope.row.powReactiveTotal">
+              {{ scope.row.powReactiveTotal }}kVar
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 1" label="B相电压" align="center" prop="bvol" width="130px" >
+        <!-- 数据库查询 -->
+        <el-table-column label="操作" align="center">
+          <template #default="scope">
+            <!-- <el-button
+              link
+              type="primary"
+              @click="toDeatil(scope.row)"
+              v-if="scope.row.status != null && scope.row.status != 5"
+            >
+            设备详情
+            </el-button> -->
+            <el-button
+              link
+              type="danger"
+              @click="handleDelete(scope.row.id)"
+              v-if="scope.row.status == 5"
+            >
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>    
+
+      <el-table v-show="switchValue == 3 && valueMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" >
+        <el-table-column label="编号" align="center" prop="tableId" />
+        <!-- 数据库查询 -->
+        <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column  label="有功电能" align="center" prop="eleActiveA" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.bvol" :type=" scope.row.bvolStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.bvol }}V
+            <el-text line-clamp="2" v-if="scope.row.eleActiveA" >
+              {{ scope.row.eleActiveA }}kWh
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 1" label="C相电压" align="center" prop="cvol" width="130px" >
+        <el-table-column  label="视在功率" align="center" prop="powApparentA" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.cvol" :type=" scope.row.cvolStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.cvol }}V
+            <el-text line-clamp="2" v-if="scope.row.powApparentA" >
+              {{ scope.row.powApparentA }}kVA
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 2" label="A相有功功率" align="center" prop="aactivePow" width="130px" >
+        <el-table-column  label="有功功率" align="center" prop="powActiveA" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.aactivePow" :type=" scope.row.aactivePowStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.aactivePow }}kW
+            <el-text line-clamp="2" v-if="scope.row.powActiveA" >
+              {{ scope.row.powActiveA }}kW
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 2" label="B相有功功率" align="center" prop="bactivePow" width="130px" >
+        <el-table-column  label="无功功率" align="center" prop="powReactiveA" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.bactivePow" :type=" scope.row.bactivePowStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.bactivePow }}kW
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 2" label="C相有功功率" align="center" prop="cactivePow" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.cactivePow" :type=" scope.row.cactivePowStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.cactivePow }}kW
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 3" label="A相无功功率" align="center" prop="areactivePow" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.aactivePow">
-              {{ scope.row.aactivePow }}kVar
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 3" label="B相无功功率" align="center" prop="breactivePow" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.breactivePow">
-              {{ scope.row.breactivePow }}kVar
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 3" label="C相无功功率" align="center" prop="creactivePow" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.creactivePow">
-              {{ scope.row.creactivePow }}kVar
+            <el-text line-clamp="2" v-if="scope.row.powReactiveA">
+              {{ scope.row.powReactiveA }}kVar
             </el-text>
           </template>
         </el-table-column>
@@ -185,8 +183,8 @@
             <el-button
               link
               type="primary"
-              @click="toDeatil(scope.row)"
-              v-if="scope.row.status != null && scope.row.status != 5"
+              @click="toDeatilA(scope.row)"
+              v-if="scope.row.devKeyA != null && scope.row.eleActiveA != null"
             >
             设备详情
             </el-button>
@@ -200,117 +198,183 @@
             </el-button>
           </template>
         </el-table-column>
-      </el-table>    
+      </el-table> 
 
-      <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
+      <el-table v-show="switchValue == 3 && valueMode == 2" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" >
+        <el-table-column label="编号" align="center" prop="tableId" />
+        <!-- 数据库查询 -->
+        <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column  label="有功电能" align="center" prop="eleActiveB" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.eleActiveB" >
+              {{ scope.row.eleActiveB }}kWh
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column  label="视在功率" align="center" prop="powApparentB" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powApparentB" >
+              {{ scope.row.powApparentB }}kVA
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column  label="有功功率" align="center" prop="powActiveB" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powActiveB" >
+              {{ scope.row.powActiveB }}kW
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column  label="无功功率" align="center" prop="powReactiveB" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powReactiveB">
+              {{ scope.row.powReactiveB }}kVar
+            </el-text>
+          </template>
+        </el-table-column>
+        <!-- 数据库查询 -->
+        <el-table-column label="操作" align="center">
+          <template #default="scope">
+            <el-button
+              link
+              type="primary"
+              @click="toDeatilB(scope.row)"
+              v-if="scope.row.devKeyB != null && scope.row.eleActiveB != null"
+            >
+            设备详情
+            </el-button>
+            <el-button
+              link
+              type="danger"
+              @click="handleDelete(scope.row.id)"
+              v-if="scope.row.status == 5"
+            >
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table> 
+
+      <div v-show="switchValue == 0 && valueMode == 0 && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="icon" >
-              <div v-if="valueMode == 0 && item.acur != null" >
-                电流
+              <div v-if="item.eleActiveTotal != null" >
+                统计
               </div>    
-              <div v-if="valueMode == 1 && item.avol != null" >
-                电压
-              </div>           
-              <div v-if="valueMode == 2 && item.aactivePow != null" >
-                有功功率
-              </div> 
-              <div v-if="valueMode == 3 && item.areactivePow != null" >
-                无功功率
-              </div> 
             </div>
-            <div class="info" v-if="valueMode == 0" >                  
-              <div v-if="item.acur != null">
-                <el-text v-if="item.acur != null" :type=" item.acurStatus != 0 ? 'danger' : '' ">
-                  A相：{{item.acur}}A
+            <div class="info" >                  
+              <div  v-if="item.eleActiveTotal != null">
+                <el-text v-if="item.eleActiveTotal != null" >
+                  有功电能：{{item.eleActiveTotal}}kWh
                 </el-text>
               </div>
-              <div v-if="item.bcur != null">
-                <el-text v-if="item.bcur != null" :type=" item.bcurStatus != 0 ? 'danger' : '' ">
-                  B相：{{item.bcur}}A
+              <div  v-if="item.powApparentTotal != null">
+                <el-text v-if="item.powApparentTotal != null" >
+                  视在功率：{{item.powApparentTotal}}kVA
                 </el-text>
               </div>
-              <div v-if="item.ccur != null">
-                <el-text v-if="item.ccur != null" :type=" item.ccurStatus != 0 ? 'danger' : '' ">
-                  C相：{{item.ccur}}A
+              <div  v-if="item.powActiveTotal != null">
+                <el-text v-if="item.powActiveTotal != null" >
+                  有功功率：{{item.powActiveTotal}}kW
                 </el-text>
               </div>
-            </div>
-            <div class="info" v-if="valueMode == 1">                  
-              <div v-if="item.avol != null">
-                <el-text v-if="item.avol != null" :type=" item.avolStatus != 0 ? 'danger' : '' ">
-                  A相：{{item.avol}}V
-                </el-text>
-              </div>
-              <div  v-if="item.bvol != null">
-                <el-text v-if="item.bvol != null" :type=" item.bvolStatus != 0 ? 'danger' : '' ">
-                  B相：{{item.bvol}}V
-                </el-text>
-              </div>
-              <div v-if="item.cvol != null">
-                <el-text v-if="item.cvol != null" :type=" item.cvolStatus != 0 ? 'danger' : '' ">
-                  C相：{{item.cvol}}V
-                </el-text>
-              </div>
-            </div>
-            <div class="info" v-if="valueMode == 2">                  
-              <div  v-if="item.aactivePow != null">
-                <el-text v-if="item.aactivePow != null" :type=" item.aactivePowStatus != 0 ? 'danger' : '' ">
-                  A相：{{item.aactivePow}}kW
-                </el-text>
-              </div>
-              <div  v-if="item.bactivePow != null">
-                <el-text v-if="item.bactivePow != null" :type=" item.bactivePowStatus != 0 ? 'danger' : '' ">
-                  B相：{{item.bactivePow}}kW
-                </el-text>
-              </div>
-              <div  v-if="item.cactivePow != null">
-                <el-text v-if="item.cactivePow != null" :type=" item.cactivePowStatus != 0 ? 'danger' : '' ">
-                  C相：{{item.cactivePow}}kW
-                </el-text>
-              </div>
-            </div>
-            <div class="info" v-if="valueMode == 3">                  
-              <div v-if="item.areactivePow != null">
-                <el-text v-if="item.areactivePow != null">
-                  A相：{{item.areactivePow}}kVar
-                </el-text>
-              </div>
-              <div v-if="item.breactivePow != null">
-                <el-text v-if="item.breactivePow != null">
-                  B相：{{item.breactivePow}}kVar
-                </el-text>
-              </div>
-              <div v-if="item.creactivePow != null">
-                <el-text v-if="item.creactivePow != null">
-                  C相：{{item.creactivePow}}kVar
+              <div  v-if="item.powReactiveTotal != null">
+                <el-text v-if="item.powReactiveTotal != null" >
+                  无功功率：{{item.powReactiveTotal}}kVar
                 </el-text>
               </div>
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
-          <div class="status" v-if="valueMode == 0">
-            <el-tag type="info" v-if="item.acurStatus == null " >离线</el-tag>
-            <el-tag type="danger" v-else-if="item.acurStatus != 0 || item.bcurStatus != 0  || item.ccurStatus != 0 " >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </div>
-          <div class="status" v-if="valueMode == 1">
-            <el-tag type="info" v-if="item.avolStatus == null " >离线</el-tag>
-            <el-tag type="danger" v-else-if="item.avolStatus != 0 || item.bvolStatus != 0 || item.cvolStatus != 0 " >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </div>
-          <div class="status" v-if="valueMode == 2">
-            <el-tag type="info" v-if="item.aactivePowStatus == null " >离线</el-tag>
-            <el-tag type="danger" v-else-if="item.aactivePowStatus != 0 || item.bactivePowStatus != 0 || item.cactivePowStatus != 0" >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
-          </div>
-          <div class="status" v-if="valueMode == 3">
+          <!-- <div class="status" >
             <el-tag type="info" v-if="item.status == null ||  item.status == 5" >离线</el-tag>
-          </div>
+          </div> -->
           <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 5" >详情</button>
         </div>
       </div>
+
+      <div v-show="switchValue == 0 && valueMode == 1 && list.length > 0" class="arrayContainer">
+        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
+          <div class="content">
+            <div class="icon" >
+              <div v-if="item.eleActiveA != null" >
+                A路
+              </div>    
+            </div>
+            <div class="info" >                  
+              <div  v-if="item.eleActiveA != null">
+                <el-text v-if="item.eleActiveA != null" >
+                  有功电能：{{item.eleActiveA}}kWh
+                </el-text>
+              </div>
+              <div  v-if="item.powApparentA != null">
+                <el-text v-if="item.powApparentA != null" >
+                  视在功率：{{item.powApparentA}}kVA
+                </el-text>
+              </div>
+              <div  v-if="item.powActiveA != null">
+                <el-text v-if="item.powActiveA != null" >
+                  有功功率：{{item.powActiveA}}kW
+                </el-text>
+              </div>
+              <div  v-if="item.powReactiveA != null">
+                <el-text v-if="item.powReactiveA != null" >
+                  无功功率：{{item.powReactiveA}}kVar
+                </el-text>
+              </div>
+            </div>
+          </div>
+          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
+          <!-- <div class="status" >
+            <el-tag type="info" v-if="item.status == null ||  item.status == 5" >离线</el-tag>
+          </div> -->
+          <button class="detail" @click="toDeatilA(item)" v-if="item.devKeyA != null && item.eleActiveA != null" >详情</button>
+        </div>
+      </div>
+
+      <div v-show="switchValue == 0 && valueMode == 2 && list.length > 0" class="arrayContainer">
+        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
+          <div class="content">
+            <div class="icon" >
+              <div v-if="item.eleActiveB != null" >
+                B路
+              </div>    
+            </div>
+            <div class="info" >                  
+              <div  v-if="item.eleActiveB != null">
+                <el-text v-if="item.eleActiveB != null" >
+                  有功电能：{{item.eleActiveB}}kWh
+                </el-text>
+              </div>
+              <div  v-if="item.powApparentB != null">
+                <el-text v-if="item.powApparentB != null" >
+                  视在功率：{{item.powApparentB}}kVA
+                </el-text>
+              </div>
+              <div  v-if="item.powActiveB != null">
+                <el-text v-if="item.powActiveB != null" >
+                  有功功率：{{item.powActiveB}}kW
+                </el-text>
+              </div>
+              <div  v-if="item.powReactiveB != null">
+                <el-text v-if="item.powReactiveB != null" >
+                  无功功率：{{item.powReactiveB}}kVar
+                </el-text>
+              </div>
+            </div>
+          </div>
+          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
+          <!-- <div class="status" >
+            <el-tag type="info" v-if="item.status == null ||  item.status == 5" >离线</el-tag>
+          </div> -->
+          <button class="detail" @click="toDeatilB(item)" v-if="item.devKeyB != null && item.eleActiveB != null " >详情</button>
+        </div>
+      </div>
+
       <Pagination
         :total="total"
         :page-size-arr="pageSizeArr"
@@ -332,9 +396,10 @@
 <script setup lang="ts">
 // import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
-import { IndexApi } from '@/api/bus/busindex'
+import { IndexApi } from '@/api/aisle/aisleindex'
 // import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
+import { IndexApi as BusIndexApi } from '@/api/bus/busindex'
 
 // import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
 
@@ -453,28 +518,28 @@ const exportLoading = ref(false) // 导出的加载中
 const getList = async () => {
   loading.value = true
   try {
-    const data = await IndexApi.getBusRedisPage(queryParams)
+    const data = await IndexApi.getAisleRedisPage(queryParams)
 
     list.value = data.list
     var tableIndex = 0;
 
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.acur == null){
-        return;
-      } 
-      obj.acur = obj.acur?.toFixed(2);
-      obj.bcur = obj.bcur?.toFixed(2);
-      obj.ccur = obj.ccur?.toFixed(2);
-      obj.avol = obj.avol?.toFixed(1);
-      obj.bvol = obj.bvol?.toFixed(1);
-      obj.cvol = obj.cvol?.toFixed(1);
-      obj.aactivePow = obj.aactivePow?.toFixed(3);
-      obj.bactivePow = obj.bactivePow?.toFixed(3);
-      obj.cactivePow = obj.cactivePow?.toFixed(3);
-      obj.areactivePow = obj.areactivePow?.toFixed(3);
-      obj.breactivePow = obj.breactivePow?.toFixed(3);
-      obj.creactivePow = obj.creactivePow?.toFixed(3);
+
+      obj.eleActiveTotal = obj.eleActiveTotal?.toFixed(1);
+      obj.powApparentTotal = obj.powApparentTotal?.toFixed(3);
+      obj.powActiveTotal = obj.powActiveTotal?.toFixed(3);
+      obj.powReactiveTotal = obj.powReactiveTotal?.toFixed(3);
+      
+      obj.eleActiveA = obj.eleActiveA?.toFixed(1);
+      obj.powApparentA = obj.powApparentA?.toFixed(3);
+      obj.powActiveA = obj.powActiveA?.toFixed(3);
+      obj.powReactiveA = obj.powReactiveA?.toFixed(3);
+
+      obj.eleActiveB = obj.eleActiveB?.toFixed(1);
+      obj.powApparentB = obj.powApparentB?.toFixed(3);
+      obj.powActiveB = obj.powActiveB?.toFixed(3);
+      obj.powReactiveB = obj.powReactiveB?.toFixed(3);
     });
 
     total.value = data.total
@@ -485,29 +550,28 @@ const getList = async () => {
 
 const getListNoLoading = async () => {
   try {
-    const data = await IndexApi.getBusRedisPage(queryParams)
+    const data = await IndexApi.getAisleRedisPage(queryParams)
     list.value = data.list
     var tableIndex = 0;    
 
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.acur == null){
-        return;
-      } 
-      obj.acur = obj.acur?.toFixed(2);
-      obj.bcur = obj.bcur?.toFixed(2);
-      obj.ccur = obj.ccur?.toFixed(2);
-      obj.avol = obj.avol?.toFixed(1);
-      obj.bvol = obj.bvol?.toFixed(1);
-      obj.cvol = obj.cvol?.toFixed(1);
-      obj.aactivePow = obj.aactivePow?.toFixed(3);
-      obj.bactivePow = obj.bactivePow?.toFixed(3);
-      obj.cactivePow = obj.cactivePow?.toFixed(3);
-      obj.areactivePow = obj.areactivePow?.toFixed(3);
-      obj.breactivePow = obj.breactivePow?.toFixed(3);
-      obj.creactivePow = obj.creactivePow?.toFixed(3);
-    });
+      
+      obj.eleActiveTotal = obj.eleActiveTotal?.toFixed(1);
+      obj.powApparentTotal = obj.powApparentTotal?.toFixed(3);
+      obj.powActiveTotal = obj.powActiveTotal?.toFixed(3);
+      obj.powReactiveTotal = obj.powReactiveTotal?.toFixed(3);
+      
+      obj.eleActiveA = obj.eleActiveA?.toFixed(1);
+      obj.powApparentA = obj.powApparentA?.toFixed(3);
+      obj.powActiveA = obj.powActiveA?.toFixed(3);
+      obj.powReactiveA = obj.powReactiveA?.toFixed(3);
 
+      obj.eleActiveB = obj.eleActiveB?.toFixed(1);
+      obj.powApparentB = obj.powApparentB?.toFixed(3);
+      obj.powActiveB = obj.powActiveB?.toFixed(3);
+      obj.powReactiveB = obj.powReactiveB?.toFixed(3);
+    });
 
     total.value = data.total
   } catch (error) {
@@ -516,7 +580,7 @@ const getListNoLoading = async () => {
 }
 
 const getNavList = async() => {
-  const res = await IndexApi.getBusMenu()
+  const res = await IndexApi.getAisleMenu()
   serverRoomArr.value = res
   if (res && res.length > 0) {
     const room = res[0]
@@ -531,10 +595,17 @@ const getNavList = async() => {
   }
 }
 
-const toDeatil = (row) =>{
-  const devKey = row.devKey;
-  const busId = row.busId;
-  const location = row.location != null ? row.location : row.devKey
+const toDeatilA = async(row) =>{
+  const devKey = row.devKeyA;
+  const busId = await BusIndexApi.getBusIdByDevKey({devKey : devKey})
+  const location = row.location != null ? row.location + '-A路' : devKey + '-A路';
+  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location }})
+}
+
+const toDeatilB = async(row) =>{
+  const devKey = row.devKeyB;
+  const busId = await BusIndexApi.getBusIdByDevKey({devKey : devKey})
+  const location = row.location != null ? row.location + '-B路' : devKey + '-B路';
   push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location }})
 }
 

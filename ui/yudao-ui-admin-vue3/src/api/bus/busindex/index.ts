@@ -45,7 +45,7 @@ export const IndexApi = {
   },
 
   getBusRedisPage: async (data: any) => {
-    return await request.post({ url: `/bus/index/buspage`, data })
+    return await request.post({ url: `/bus/index/powerpage`, data })
   },
 
   getEqPage: async (data: any) => {

@@ -53,4 +53,6 @@ public interface AisleIndexService {
     PageResult<AisleIndexRes> getIndexPage(AisleIndexPageReqVO pageReqVO);
 
     List<Integer> getDevKeyList();
+
+    PageResult<AislePowerRes> getPowerPage(AisleIndexPageReqVO pageReqVO);
 }

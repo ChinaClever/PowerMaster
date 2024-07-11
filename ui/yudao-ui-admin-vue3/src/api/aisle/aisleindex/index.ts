@@ -50,4 +50,12 @@ export const IndexApi = {
   getBusMenu: async () => {
     return await request.get({ url: `/room/bus/menu` })
   },
+
+  getAisleMenu: async () => {
+    return await request.get({ url: `/room/aisle/menu` })
+  },
+
+  getAisleRedisPage: async (data: any) => {
+    return await request.post({ url: `/aisle/index/powerpage`, data })
+  },
 }

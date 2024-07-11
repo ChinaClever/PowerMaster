@@ -83,7 +83,7 @@ public class BusIndexController {
         return success(pageResult);
     }
 
-    @PostMapping("/buspage")
+    @PostMapping("/powerpage")
     @Operation(summary = "获得始端箱索引分页")
     public CommonResult<PageResult<BusRedisDataRes>> getBusPage(@RequestBody BusIndexPageReqVO pageReqVO) {
         PageResult<BusRedisDataRes> pageResult = indexService.getBusRedisPage(pageReqVO);

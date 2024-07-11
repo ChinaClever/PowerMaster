@@ -102,11 +102,11 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         List<AisleIndexRes> res = new ArrayList<>();
         List redisList = getMutiBusRedis(devKey);
         for (AisleIndexDO aisleIndexDO : list) {
-            AisleIndexRes busIndexRes = new AisleIndexRes();
-            busIndexRes.setId(aisleIndexDO.getId());
-            busIndexRes.setName(aisleIndexDO.getName());
-            busIndexRes.setRoomId(aisleIndexDO.getRoomId());
-            res.add(busIndexRes);
+            AisleIndexRes aisleIndexRes = new AisleIndexRes();
+            aisleIndexRes.setId(aisleIndexDO.getId());
+            aisleIndexRes.setName(aisleIndexDO.getName());
+            aisleIndexRes.setRoomId(aisleIndexDO.getRoomId());
+            res.add(aisleIndexRes);
         }
         Map<Integer, AisleIndexRes> resMap = res.stream().collect(Collectors.toMap(AisleIndexRes::getId, Function.identity()));
         getPosition(res);
@@ -178,6 +178,55 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         return result;
     }
 
+    @Override
+    public PageResult<AislePowerRes> getPowerPage(AisleIndexPageReqVO pageReqVO) {
+        PageResult<AisleIndexDO> aisleIndexDOPageResult = aisleIndexCopyMapper.selectPage(pageReqVO);
+        List<AisleIndexDO> list = aisleIndexDOPageResult.getList();
+        List<AislePowerRes> res = new ArrayList<>();
+        List redisList = getMutiRedis(list);
+        for (AisleIndexDO aisleIndexDO : list) {
+            AislePowerRes aislePowerRes = new AislePowerRes();
+            aislePowerRes.setId(aisleIndexDO.getId());
+            aislePowerRes.setName(aisleIndexDO.getName());
+            aislePowerRes.setRoomId(aisleIndexDO.getRoomId());
+            res.add(aislePowerRes);
+        }
+        Map<Integer, AislePowerRes> resMap = res.stream().collect(Collectors.toMap(AislePowerRes::getId, Function.identity()));
+        getPosition(res);
+        getDevKey(res);
+        for (Object o : redisList) {
+            if (Objects.isNull(o)){
+                continue;
+            }
+            JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
+            Integer aisleKey = jsonObject.getInteger("aisle_key") ;
+            AislePowerRes aislePowerRes = resMap.get(aisleKey);
+            JSONObject totalData = jsonObject.getJSONObject("aisle_power").getJSONObject("total_data");
+            JSONObject pathA = jsonObject.getJSONObject("aisle_power").getJSONObject("path_a");
+            JSONObject pathB = jsonObject.getJSONObject("aisle_power").getJSONObject("path_b");
+            if (totalData != null){
+                aislePowerRes.setEleActiveTotal(totalData.getDouble("ele_active"));
+                aislePowerRes.setPowApparentTotal(totalData.getDouble("pow_apparent"));
+                aislePowerRes.setPowActiveTotal(totalData.getDouble("pow_active"));
+                aislePowerRes.setPowReactiveTotal(totalData.getDouble("pow_reactive"));
+            }
+            if (pathA != null){
+                aislePowerRes.setEleActiveA(pathA.getDouble("ele_active"));
+                aislePowerRes.setPowApparentA(pathA.getDouble("pow_apparent"));
+                aislePowerRes.setPowActiveA(pathA.getDouble("pow_active"));
+                aislePowerRes.setPowReactiveA(pathA.getDouble("pow_reactive"));
+            }
+            if (pathB != null){
+                aislePowerRes.setEleActiveB(pathB.getDouble("ele_active"));
+                aislePowerRes.setPowApparentB(pathB.getDouble("pow_apparent"));
+                aislePowerRes.setPowActiveB(pathB.getDouble("pow_active"));
+                aislePowerRes.setPowReactiveB(pathB.getDouble("pow_reactive"));
+            }
+
+        }
+        return new PageResult<>(res,aisleIndexDOPageResult.getTotal());
+    }
+
     private List getMutiRedis(List<AisleIndexDO> list){
         List<String> devKeys = list.stream().map(busIndexDo -> REDIS_KEY_AISLE + busIndexDo.getId()).collect(Collectors.toList());
         ValueOperations ops = redisTemplate.opsForValue();
@@ -198,6 +247,26 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         Map<Integer, String> roomMap = roomIndexMapper.selectBatchIds(roomIds).stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getName));
         res.forEach(aisleIndexRespVO -> {
             aisleIndexRespVO.setLocation(roomMap.get(aisleIndexRespVO.getRoomId()) + SPLIT_KEY +aisleIndexRespVO.getName());
+        });
+    }
+
+    private void getDevKey(List<? extends AisleIndexRespVO> res){
+        if (CollectionUtils.isAnyEmpty(res)){
+            return;
+        }
+        List<Integer> aisleIds = res.stream().map(AisleIndexRespVO::getId).collect(Collectors.toList());
+        List<AisleBar> aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapperX<AisleBar>().inIfPresent(AisleBar::getAisleId, aisleIds));
+        Map<Integer, Map<String, String>> aisleBarMap = aisleBars.stream()
+                .collect(Collectors.groupingBy(
+                        AisleBar::getAisleId,
+                        Collectors.toMap(AisleBar::getPath, AisleBar::getBarKey)
+                ));
+        res.forEach(aisleIndexRespVO -> {
+            if(aisleBarMap.get(aisleIndexRespVO.getId()) == null){
+                return;
+            }
+            aisleIndexRespVO.setDevKeyA(aisleBarMap.get(aisleIndexRespVO.getId()).get("A"));
+            aisleIndexRespVO.setDevKeyB(aisleBarMap.get(aisleIndexRespVO.getId()).get("B"));
         });
     }
 

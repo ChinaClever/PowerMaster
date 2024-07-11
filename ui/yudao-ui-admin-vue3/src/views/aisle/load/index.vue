@@ -56,11 +56,11 @@
         >
           <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
         </el-button> -->
-        <el-form-item >
+        <!-- <el-form-item >
           <el-checkbox-group  v-model="queryParams.status">
             <el-checkbox :label="5" :value="5">在线</el-checkbox>
           </el-checkbox-group>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="设备Id" prop="devKey">
           <el-autocomplete
             v-model="queryParams.id"
@@ -249,7 +249,7 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="icon" v-if="item.colorA != null" >
+            <div class="icon" v-if="item.colorB != null" >
               B相负载率            
             </div>
             <div class="info">                  
@@ -269,7 +269,7 @@
             <el-tag type="warning" v-if="item.colorA == 3">60%-90%</el-tag>
             <el-tag type="danger" v-if="item.colorA == 4">&gt;90%</el-tag>
           </div>
-          <button class="detail" @click="toDetailA(item)" v-if="item.colorA != null " >详情</button>
+          <button class="detail" @click="toDetailA(item)" v-if="item.colorB != null " >详情</button>
         </div>
       </div>
       <Pagination
@@ -471,30 +471,32 @@ const getList = async () => {
     var greaterNinety = 0;
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj.aloadRate != null){
-        obj.aloadRate = obj.aloadRate * 100;
-        obj.aloadRate = obj.aloadRate?.toFixed(0);
+      if(obj.aloadRateA != null){
+        obj.aloadRateA = obj.aloadRateA * 100;
+        obj.aloadRateA = obj.aloadRateA?.toFixed(0);
       }
-      if(obj.bloadRate != null){
-        obj.bloadRate = obj.bloadRate * 100;
-        obj.bloadRate = obj.bloadRate?.toFixed(0);
+      if(obj.bloadRateA != null){
+        obj.bloadRateA = obj.bloadRateA * 100;
+        obj.bloadRateA = obj.bloadRateA?.toFixed(0);
       }
-      if(obj.cloadRate != null){
-        obj.cloadRate = obj.cloadRate * 100;
-        obj.cloadRate = obj.cloadRate?.toFixed(0);
+      if(obj.cloadRateA != null){
+        obj.cloadRateA = obj.cloadRateA * 100;
+        obj.cloadRateA = obj.cloadRateA?.toFixed(0);
       }
-      // obj.apparentPow = obj.apparentPow.toFixed(3);
-      // obj.pow = obj.pow.toFixed(3);
-      // obj.ele = obj.ele.toFixed(1);
-      // obj.pf = obj.pf.toFixed(2);
-      // obj.acur = obj.acur?.toFixed(2);
-      // obj.bcur = obj.bcur?.toFixed(2);
-      // obj.ccur = obj.ccur?.toFixed(2);
-      // obj.curUnbalance = obj.curUnbalance?.toFixed(0);
-      // obj.avol = obj.avol?.toFixed(1);
-      // obj.bvol = obj.bvol?.toFixed(1);
-      // obj.cvol = obj.cvol?.toFixed(1);
-      // obj.volUnbalance = obj.volUnbalance?.toFixed(0);
+
+      if(obj.aloadRateB != null){
+        obj.aloadRateB = obj.aloadRateB * 100;
+        obj.aloadRateB = obj.aloadRateB?.toFixed(0);
+      }
+      if(obj.bloadRateB != null){
+        obj.bloadRateB = obj.bloadRateB * 100;
+        obj.bloadRateB = obj.bloadRateB?.toFixed(0);
+      }
+      if(obj.cloadRateB != null){
+        obj.cloadRateB = obj.cloadRateB * 100;
+        obj.cloadRateB = obj.cloadRateB?.toFixed(0);
+      }
+
       if(obj.colorA == 4){
         greaterNinety++;
       } else if (obj.colorA == 1) {
@@ -502,6 +504,15 @@ const getList = async () => {
       } else if (obj.colorA == 2) {
         greaterThirty++;
       } else if (obj.colorA == 3) {
+        greaterSixty++;
+      }
+      if(obj.colorB == 4){
+        greaterNinety++;
+      } else if (obj.colorB == 1) {
+        lessThirty++;
+      } else if (obj.colorB == 2) {
+        greaterThirty++;
+      } else if (obj.colorB == 3) {
         greaterSixty++;
       }
     });
@@ -526,17 +537,30 @@ const getListNoLoading = async () => {
     var greaterNinety = 0;
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj.aloadRate != null){
-        obj.aloadRate = obj.aloadRate * 100;
-        obj.aloadRate = obj.aloadRate?.toFixed(0);
+      if(obj.aloadRateA != null){
+        obj.aloadRateA = obj.aloadRateA * 100;
+        obj.aloadRateA = obj.aloadRateA?.toFixed(0);
       }
-      if(obj.bloadRate != null){
-        obj.bloadRate = obj.bloadRate * 100;
-        obj.bloadRate = obj.bloadRate?.toFixed(0);
+      if(obj.bloadRateA != null){
+        obj.bloadRateA = obj.bloadRateA * 100;
+        obj.bloadRateA = obj.bloadRateA?.toFixed(0);
       }
-      if(obj.cloadRate != null){
-        obj.cloadRate = obj.cloadRate * 100;
-        obj.cloadRate = obj.cloadRate?.toFixed(0);
+      if(obj.cloadRateA != null){
+        obj.cloadRateA = obj.cloadRateA * 100;
+        obj.cloadRateA = obj.cloadRateA?.toFixed(0);
+      }
+
+      if(obj.aloadRateB != null){
+        obj.aloadRateB = obj.aloadRateB * 100;
+        obj.aloadRateB = obj.aloadRateB?.toFixed(0);
+      }
+      if(obj.bloadRateB != null){
+        obj.bloadRateB = obj.bloadRateB * 100;
+        obj.bloadRateB = obj.bloadRateB?.toFixed(0);
+      }
+      if(obj.cloadRateB != null){
+        obj.cloadRateB = obj.cloadRateB * 100;
+        obj.cloadRateB = obj.cloadRateB?.toFixed(0);
       }
 
       if(obj.colorA == 4){
@@ -546,6 +570,15 @@ const getListNoLoading = async () => {
       } else if (obj.colorA == 2) {
         greaterThirty++;
       } else if (obj.colorA == 3) {
+        greaterSixty++;
+      }
+      if(obj.colorB == 4){
+        greaterNinety++;
+      } else if (obj.colorB == 1) {
+        lessThirty++;
+      } else if (obj.colorB == 2) {
+        greaterThirty++;
+      } else if (obj.colorB == 3) {
         greaterSixty++;
       }
     });
@@ -560,7 +593,7 @@ const getListNoLoading = async () => {
 }
 
 const getNavList = async() => {
-  const res = await IndexApi.getBusMenu()
+  const res = await IndexApi.getAisleMenu()
   serverRoomArr.value = res
   if (res && res.length > 0) {
     const room = res[0]
@@ -576,14 +609,14 @@ const getNavList = async() => {
 }
 
 const toDetailA = async (row) =>{
-  const devKey = row.devKey;
+  const devKey = row.devKeyA;
   const busId = await BusIndexApi.getBusIdByDevKey({devKey : devKey})
   const location = row.location != null ? row.location + '-A路' : devKey + '-A路';
   push({path: '/bus/busmonitor/powerLoadDetail', state: { devKey, busId ,location }})
 }
 
 const toDetailB = async (row) =>{
-  const devKey = row.devKey;
+  const devKey = row.devKeyB;
   const busId = row.busId
   const location = row.location != null ? row.location + '-B路': devKey + '-B路';
   push({path: '/bus/busmonitor/powerLoadDetail', state: { devKey, busId ,location }})

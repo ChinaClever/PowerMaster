@@ -79,6 +79,13 @@ public class AisleIndexController {
         return success(BeanUtils.toBean(pageResult, AisleIndexRes.class));
     }
 
+    @PostMapping("/powerpage")
+    @Operation(summary = "获得始端箱索引分页")
+    public CommonResult<PageResult<AislePowerRes>> getPowerPage(@RequestBody AisleIndexPageReqVO pageReqVO) {
+        PageResult<AislePowerRes> pageResult = indexService.getPowerPage(pageReqVO);
+        return success(BeanUtils.toBean(pageResult, AislePowerRes.class));
+    }
+
     @GetMapping("/devKeyList")
     @Operation(summary = "获得通道列devKey列表")
     public List<Integer> getDevKeyList() {

@@ -36,12 +36,6 @@ public class AisleIndexRes extends AisleIndexRespVO {
     @Schema(description = "B路负载率所在范围")
     private Integer colorB;
 
-    @Schema(description = "A路网络地址")
-    private String devKeyA;
-
-    @Schema(description = "B路网络地址")
-    private String devKeyB;
-
     @Schema(description = "运行状态")
     private Integer status;
 
