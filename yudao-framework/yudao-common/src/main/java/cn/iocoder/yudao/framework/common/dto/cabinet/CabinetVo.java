@@ -162,4 +162,9 @@ public class CabinetVo {
      */
     private Integer index;
 
+    /**
+     * 标记位-名字  前端用
+     */
+    private String boxIndexName;
+
 }

@@ -43,6 +43,12 @@ public class CabinetBus implements Serializable {
      * B路插接箱输出位
      */
     private Integer outletIdB;
+
+    /**
+     * 标记位-名字  前端用
+     */
+    private String boxIndexName;
+
     /**
      * 更新时间
      */
