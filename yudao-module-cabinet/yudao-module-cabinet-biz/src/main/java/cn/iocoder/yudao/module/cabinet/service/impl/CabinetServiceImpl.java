@@ -771,6 +771,7 @@ public class CabinetServiceImpl implements CabinetService {
         }
         cabinetBus.setOutletIdB(vo.getBoxOutletIdB());
         cabinetBus.setId(bus.getId());
+        cabinetBus.setBoxIndexName(vo.getBoxIndexName());
         return cabinetBus;
     }
 

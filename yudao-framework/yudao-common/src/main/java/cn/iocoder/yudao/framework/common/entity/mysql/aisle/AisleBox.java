@@ -56,6 +56,10 @@ public class AisleBox implements Serializable {
      */
     private Integer boxIndex;
 
+    /**
+     * 标记位-名字  前端用
+     */
+    private String boxIndexName;
 
     /**
      * 创建时间
