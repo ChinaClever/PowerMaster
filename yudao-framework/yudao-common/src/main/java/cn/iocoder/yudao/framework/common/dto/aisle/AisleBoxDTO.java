@@ -50,9 +50,14 @@ public class AisleBoxDTO implements Serializable {
     private Integer type;
 
     /**
-     * 标记位
+     * 标记位-前端用
      */
     private Integer boxIndex;
+
+    /**
+     * 标记位-名字  前端用
+     */
+    private String boxIndexName;
 
     /**
      * 输出位昨日电量
