@@ -76,14 +76,14 @@
           </el-button>
         </el-form-item>
         <div style="float:right">
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流谐波</el-button>
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压谐波</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />谐波含量</el-button>
+          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流谐波</el-button>
+          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压谐波</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />谐波含量</el-button>
         </div>
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" >
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -135,7 +135,7 @@
             <el-button
               link
               type="primary"
-              @click="toPDUDisplayScreen(scope.row)"
+              @click="toDetail(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 5"
             >
             设备详情
@@ -157,7 +157,7 @@
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="icon">
-              <div>
+              <div v-if="item.acurThd != null">
                 <br/>
                 电流谐波
               </div> 
@@ -174,7 +174,7 @@
             <el-tag type="danger" v-else-if="item.atemStatus != 0 || item.btemStatus != 0  || item.ctemStatus != 0 " >告警</el-tag>
             <el-tag v-else >正常</el-tag>
           </div> -->
-          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
       </div>
 
@@ -183,15 +183,15 @@
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="icon">
-              <div>
+              <div v-if="item.avolThd != null">
                 <br/>
                 电压谐波
               </div> 
             </div>
             <div class="info" >                  
-              <div  v-if="item.avolThd != null">Ia:{{item.avolThd}}</div>
-              <div  v-if="item.bvolThd != null">Ib:{{item.bvolThd}}</div>
-              <div  v-if="item.cvolThd != null">Ic:{{item.cvolThd}}</div>
+              <div  v-if="item.avolThd != null">Ua:{{item.avolThd}}</div>
+              <div  v-if="item.bvolThd != null">Ub:{{item.bvolThd}}</div>
+              <div  v-if="item.cvolThd != null">Uc:{{item.cvolThd}}</div>
             </div>          
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
@@ -200,7 +200,7 @@
             <el-tag type="danger" v-else-if="item.atemStatus != 0 || item.btemStatus != 0  || item.ctemStatus != 0 " >告警</el-tag>
             <el-tag v-else >正常</el-tag>
           </div> -->
-          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
       </div>
       <Pagination
@@ -227,7 +227,6 @@ import download from '@/utils/download'
 import { IndexApi } from '@/api/bus/busindex'
 // import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
-import { CabinetApi } from '@/api/cabinet/info'
 // import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
 
 /** PDU设备 列表 */
@@ -243,6 +242,8 @@ const switchValue = ref(0)
 const valueMode = ref(0)
 
 const devKeyList = ref([])
+
+
 const loadAll = async () => {
   var data = await IndexApi.devKeyList();
   var objectArray = data.map((str) => {
@@ -274,22 +275,22 @@ const handleClick = (row) => {
 
 const handleCheck = async (row) => {
   if(row.length == 0){
-    queryParams.cabinetIds = null;
+    queryParams.busDevKeyList = null;
     getList();
     return;
   }
   const ids = [] as any
   var haveCabinet = false;
   row.forEach(item => {
-    if (item.type == 3) {
-      ids.push(item.id)
+    if (item.type == 6) {
+      ids.push(item.unique)
       haveCabinet = true;
     }
   })
   if(!haveCabinet ){
-    queryParams.cabinetIds = [-1]
+    queryParams.busDevKeyList = [-1]
   }else{
-    queryParams.cabinetIds = ids
+    queryParams.busDevKeyList = ids
   }
 
   getList();
@@ -336,7 +337,7 @@ const queryParams = reactive({
   cascadeNum: undefined,
   serverRoomData:undefined,
   status:[],
-  cabinetIds : [],
+  busDevKeyList : [],
 })as any
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
@@ -395,7 +396,7 @@ const getListNoLoading = async () => {
 }
 
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
+  const res = await IndexApi.getBusMenu()
   serverRoomArr.value = res
   if (res && res.length > 0) {
     const room = res[0]
@@ -408,11 +409,13 @@ const getNavList = async() => {
       }
     })
   }
-
 }
 
-const toPDUDisplayScreen = (row) =>{
-  push('/pdu/pdudisplayscreen?devKey=' + row.devKey + '&location=' + row.location + '&id=' + row.id);
+const toDetail = (row) =>{
+  const devKey = row.devKey;
+  const busId = row.busId
+  const location = row.location ? row.location : devKey;
+  push({path: '/bus/busmonitor/busharmonicdetail', state: { devKey, busId , location }})
 }
 
 // const openNewPage = (scope) => {
@@ -781,10 +784,11 @@ onActivated(() => {
         margin: 0 35px 0 13px;
       }
       .icon {
-        width: 60px;
+        width: 74px;
         height: 60px;
         margin: 0 28px;
         text-align: center;
+        font-size: large;
       }
     }
     .devKey{

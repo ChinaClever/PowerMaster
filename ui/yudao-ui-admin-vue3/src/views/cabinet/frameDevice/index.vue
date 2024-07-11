@@ -103,7 +103,7 @@
               </div>
             </div>
             <div class="room">{{item.local}}</div>
-            <button class="detail" @click.prevent="toDetail(item.roomId, item.id)">详情</button>
+            <button class="detail" @click.prevent="toFramDeviceDetail(item.bh)">详情</button>
           </div>
         </div>
         <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" >
@@ -134,6 +134,7 @@
 <script lang="ts" setup>
 import { CabinetApi } from '@/api/cabinet/info'
 
+const { push } = useRouter() // 路由跳转
 const tableLoading = ref(false)
 const switchValue = ref(0)
 const tableData = ref([])
@@ -200,6 +201,12 @@ const handleSwitchModal = (value) => {
     queryParams.pageSize = 10
   }
   // getTableData(true)
+}
+
+// 跳转详情页
+const toFramDeviceDetail = (key) => {
+  console.log('toFramDeviceDetail!', key)
+  push({path: '/cabinet/cab/frameDeviceDetail', state: { id: key }})
 }
 
 const handleCheck = (row) => {

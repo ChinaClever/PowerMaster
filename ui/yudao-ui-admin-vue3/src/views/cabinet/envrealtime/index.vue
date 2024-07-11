@@ -291,7 +291,9 @@ const switchValue = ref(0)
 // })
 
 const toCabinetEnvDetail = (row) =>{
-  push('/cabinet/cab/cabinetenvdetail?id=' + row.id);
+  const id = row.id
+  push({path: '/cabinet/cab/cabinetenvdetail', state: {  id }})
+  // push('/cabinet/cab/cabinetenvdetail?id=' + row.id);
 }
 
 const statusList = reactive([

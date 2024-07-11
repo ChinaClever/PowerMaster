@@ -52,6 +52,10 @@ public class BusIndexDO {
      */
     private String nodeIp;
     /**
+     * 节点IP
+     */
+    private String busName;
+    /**
      * 逻辑删除
      */
     private Integer isDeleted;

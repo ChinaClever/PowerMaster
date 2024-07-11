@@ -313,7 +313,7 @@ const open = async (type: string, id?: number) => {
     formId.value = id;
     try {
       formData.value = await DcConfigApi.getDcConfig(id)
-      if(!formData.value.pushMqs){
+      if(!formData.value?.pushMqs){
         formData.value.pushMqs = [];
       }else{
         formData.value.pushMqs = formData.value.pushMqs?.split(",");

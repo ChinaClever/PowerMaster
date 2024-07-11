@@ -13,6 +13,8 @@ public class BusHistoryDataDetailsReqVO extends PageParam {
 
     private Integer boxId;
 
+    private String devkey;
+
     private Integer lineId;
 
     private Integer loopId;

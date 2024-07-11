@@ -8,7 +8,7 @@ import lombok.Data;
 @Schema(description = "管理后台 - 始端箱索引 Response VO")
 @Data
 @ExcelIgnoreUnannotated
-public class BusPFRes {
+public class BusPFRes  extends BusResBase {
 
     @Schema(description = "位置")
     private String location;
@@ -16,10 +16,8 @@ public class BusPFRes {
     @Schema(description = "A的功率因素")
     private Double apf;
 
-
     @Schema(description = "B的功率因素")
     private Double bpf;
-
 
     @Schema(description = "C的功率因素")
     private Double cpf;

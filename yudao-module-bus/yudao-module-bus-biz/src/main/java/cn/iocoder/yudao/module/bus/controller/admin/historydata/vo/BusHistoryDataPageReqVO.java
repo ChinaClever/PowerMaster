@@ -26,6 +26,8 @@ public class BusHistoryDataPageReqVO extends PageParam {
 
     private String[] timeRange;
 
+    private String[] devkeys;
+
     private String[] busIds;
 
     private String[] boxIds;

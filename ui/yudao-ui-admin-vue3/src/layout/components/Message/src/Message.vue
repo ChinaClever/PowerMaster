@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { formatDate } from '@/utils/formatTime'
+import { AlarmApi } from '@/api/system/notify/alarm'
 import * as NotifyMessageApi from '@/api/system/notify/message'
 
 defineOptions({ name: 'Message' })
@@ -11,16 +12,22 @@ const list = ref<any[]>([]) // 消息列表
 
 // 获得消息列表
 const getList = async () => {
-  list.value = await NotifyMessageApi.getUnreadNotifyMessageList()
+  push('/line/Alarm')
+  // list.value = await NotifyMessageApi.getUnreadNotifyMessageList()
   // 强制设置 unreadCount 为 0，避免小红点因为轮询太慢，不消除
-  unreadCount.value = 0
+  // unreadCount.value = 3
 }
 
 // 获得未读消息数
 const getUnreadCount = async () => {
-  NotifyMessageApi.getUnreadNotifyMessageCount().then((data) => {
-    unreadCount.value = data
-  })
+  const res = await AlarmApi.getUnhandleAlarm({})
+  console.log('获得未读消息数', res)
+  if (res) {
+    unreadCount.value = res[1] + res[2]
+  }
+  // NotifyMessageApi.getUnreadNotifyMessageCount().then((data) => {
+  //   unreadCount.value = data
+  // })
 }
 
 // 跳转我的站内信
@@ -45,13 +52,16 @@ onMounted(() => {
 </script>
 <template>
   <div class="message">
-    <ElPopover :width="400" placement="bottom" trigger="click">
+    <el-badge :value="unreadCount" :max="10" >
+      <Icon :size="18" class="cursor-pointer" icon="ep:bell" @click="getList" />
+    </el-badge>
+    <!-- <ElPopover :width="400" placement="bottom" trigger="click">
       <template #reference>
         <ElBadge :is-dot="unreadCount > 0" class="item">
-          <Icon :size="18" class="cursor-pointer" icon="ep:bell" @click="getList" />
+          
         </ElBadge>
-      </template>
-      <ElTabs v-model="activeName">
+      </template> -->
+      <!-- <ElTabs v-model="activeName">
         <ElTabPane label="我的站内信" name="notice">
           <el-scrollbar class="message-list">
             <template v-for="item in list" :key="item.id">
@@ -69,12 +79,12 @@ onMounted(() => {
             </template>
           </el-scrollbar>
         </ElTabPane>
-      </ElTabs>
+      </ElTabs> -->
       <!-- 更多 -->
-      <div style="margin-top: 10px; text-align: right">
+      <!-- <div style="margin-top: 10px; text-align: right">
         <XButton preIcon="ep:view" title="查看全部" type="primary" @click="goMyList" />
-      </div>
-    </ElPopover>
+      </div> -->
+    <!-- </ElPopover> -->
   </div>
 </template>
 <style lang="scss" scoped>
@@ -122,5 +132,8 @@ onMounted(() => {
       }
     }
   }
+}
+:deep(.el-badge__content) {
+  scale: 0.8;
 }
 </style>

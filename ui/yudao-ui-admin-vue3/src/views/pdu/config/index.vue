@@ -551,7 +551,7 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
   if(tab.props.label === "计算服务"){
     if(staticList.value && staticList.value?.length > 0 && staticList.value[0].id){
       openStaticForm('update', staticList.value[0].id);
-    } else {'create'
+    } else {
       openStaticForm('create');
     }
     

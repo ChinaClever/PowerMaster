@@ -1,5 +1,10 @@
 package cn.iocoder.yudao.module.bus.controller.admin.busindex.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.*;
 import java.util.*;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,6 +26,12 @@ public class BusIndexPageReqVO extends PageParam {
     @Schema(description = "ip地址")
     private String ipAddr;
 
+    @Schema(description = "谐波类型")
+    private Integer harmonicType;
+
+    @Schema(description = "busId")
+    private Integer busId;
+
     @Schema(description = "母线地址")
     private String devAddr;
 
@@ -32,6 +43,27 @@ public class BusIndexPageReqVO extends PageParam {
 
     @Schema(description = "节点IP")
     private String nodeIp;
+
+    @Schema(description = "始端箱ID列表")
+    private List<String> busDevKeyList;
+
+    @Schema(description = "时间类型")
+    private Integer timeType;
+
+    @Schema(description = "开始时间")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime oldTime;
+
+    @Schema(description = "结束时间")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime newTime;
+
+    @Schema(description = "图表类型")
+    private Integer lineType;
 
     @Schema(description = "颜色")
     private List<Integer> color;

@@ -4,7 +4,7 @@ import request from '@/config/axios'
 export const HistoryDataApi = {
 
   // 查询母线插接箱数据参数类型各id最大值
-  getTypeMaxValue: async (params: string[]) => {
+  getTypeMaxValue: async (params: any) => {
     return await request.get({ url: `/bus/history-data/type-max-value`, params})
   },
 

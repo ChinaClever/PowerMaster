@@ -173,7 +173,7 @@
           <div v-if="item.status == 2" class="status-warn">预警</div>
           <div v-if="item.status == 3" class="status-error">故障</div>
           <div v-if="item.status == 4" class="status-unbound">未绑定</div>
-          <div v-if="item.status == 6" class="status-offline">离线</div>
+          <div v-if="item.status == 5" class="status-offline">离线</div>
           <button class="detail" @click.prevent="toMachineDetail(item.cabinet_key)">详情</button>
         </div>
       </div>

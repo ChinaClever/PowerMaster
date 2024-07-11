@@ -76,14 +76,13 @@
           </el-button>
         </el-form-item>
         <div style="float:right">
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流谐波</el-button>
-          
+          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流谐波</el-button>          
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />谐波含量</el-button>
         </div>
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" >
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -115,7 +114,7 @@
             <el-button
               link
               type="primary"
-              @click="toPDUDisplayScreen(scope.row)"
+              @click="toDetail(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 5"
             >
             设备详情
@@ -137,7 +136,7 @@
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="icon">
-              <div>
+              <div v-if="item.acurThd != null">
                 <br/>
                 电流谐波
               </div> 
@@ -154,7 +153,7 @@
             <el-tag type="danger" v-else-if="item.atemStatus != 0 || item.btemStatus != 0  || item.ctemStatus != 0 " >告警</el-tag>
             <el-tag v-else >正常</el-tag>
           </div> -->
-          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 5" >详情</button>
         </div>
       </div>
 
@@ -182,8 +181,6 @@ import download from '@/utils/download'
 import { IndexApi } from '@/api/bus/boxindex'
 // import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
-import { CabinetApi } from '@/api/cabinet/info'
-// import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -236,15 +233,15 @@ const handleCheck = async (row) => {
   const ids = [] as any
   var haveCabinet = false;
   row.forEach(item => {
-    if (item.type == 3) {
-      ids.push(item.id)
+    if (item.type == 7) {
+      ids.push(item.unique)
       haveCabinet = true;
     }
   })
   if(!haveCabinet ){
-    queryParams.cabinetIds = [-1]
+    queryParams.boxDevKeyList = [-1]
   }else{
-    queryParams.cabinetIds = ids
+    queryParams.boxDevKeyList = ids
   }
 
   getList();
@@ -346,7 +343,7 @@ const getListNoLoading = async () => {
 }
 
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
+  const res = await IndexApi.getBoxMenu()
   serverRoomArr.value = res
   if (res && res.length > 0) {
     const room = res[0]
@@ -362,8 +359,11 @@ const getNavList = async() => {
 
 }
 
-const toPDUDisplayScreen = (row) =>{
-  push('/pdu/pdudisplayscreen?devKey=' + row.devKey + '&location=' + row.location + '&id=' + row.id);
+const toDetail = (row) =>{
+  const devKey = row.devKey;
+  const boxId = row.boxId
+  const location = row.location ? row.location : devKey;
+  push({path: '/bus/boxmonitor/boxharmonicdetail', state: { devKey, boxId ,location }})
 }
 
 // const openNewPage = (scope) => {
@@ -732,10 +732,11 @@ onActivated(() => {
         margin: 0 35px 0 13px;
       }
       .icon {
-        width: 60px;
+        width: 74px;
         height: 60px;
         margin: 0 28px;
         text-align: center;
+        font-size: large;
       }
     }
     .devKey{
