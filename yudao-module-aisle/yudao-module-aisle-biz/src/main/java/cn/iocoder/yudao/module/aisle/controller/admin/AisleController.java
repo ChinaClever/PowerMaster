@@ -4,6 +4,9 @@ import cn.iocoder.yudao.module.aisle.dto.AisleDataDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleDetailDTO;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
+import cn.iocoder.yudao.module.aisle.dto.AisleEqDataDTO;
+import cn.iocoder.yudao.module.aisle.dto.AisleListDTO;
+import cn.iocoder.yudao.module.aisle.dto.AisleMainDataDTO;
 import cn.iocoder.yudao.module.aisle.service.AisleService;
 import cn.iocoder.yudao.module.aisle.vo.AisleBusSaveVo;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
@@ -39,12 +42,11 @@ public class AisleController {
     /**
      * 柜列列表
      *
-     * @param roomId 机房id
      */
     @Operation(summary = "柜列列表")
     @GetMapping("/aisle/list")
-    public CommonResult<List<AisleIndex>> getAisleList(@Param("roomId") int roomId) {
-        List<AisleIndex> list = aisleService.getAisleList(roomId);
+    public CommonResult<List<AisleListDTO>> getAisleList() {
+        List<AisleListDTO> list = aisleService.getAisleList();
         return success(list);
     }
 
@@ -132,6 +134,25 @@ public class AisleController {
     @GetMapping("/aisle/data/detail")
     public CommonResult<AisleDataDTO> getDataDetail(@Param("id") int id) throws IOException {
         AisleDataDTO dto = aisleService.getAisleDataDetail(id);
+        return success(dto);
+    }
+
+    /**
+     * 柜列主页面数据
+     *
+     * @param id 柜列id
+     */
+    @Operation(summary = "柜列主页面数据")
+    @GetMapping("/aisle/main/data")
+    public CommonResult<AisleMainDataDTO> getMainData(@Param("id") int id) {
+        AisleMainDataDTO dto = aisleService.getMainData(id);
+        return success(dto);
+    }
+
+    @Operation(summary = "柜列主页面用能数据")
+    @GetMapping("/aisle/main/eq")
+    public CommonResult<AisleEqDataDTO> getMainEq(@Param("id") int id) {
+        AisleEqDataDTO dto = aisleService.getMainEq(id);
         return success(dto);
     }
 }

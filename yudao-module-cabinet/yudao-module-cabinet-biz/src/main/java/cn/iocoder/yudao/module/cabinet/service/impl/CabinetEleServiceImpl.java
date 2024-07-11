@@ -17,7 +17,7 @@ import cn.iocoder.yudao.module.cabinet.dto.CabinetPduCurTrendDTO;
 import cn.iocoder.yudao.module.cabinet.mapper.CabPduIndexMapper;
 import cn.iocoder.yudao.framework.common.mapper.CabinetPduMapper;
 import cn.iocoder.yudao.module.cabinet.service.CabinetEleService;
-import cn.iocoder.yudao.module.cabinet.util.TimeUtil;
+import cn.iocoder.yudao.framework.common.util.TimeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

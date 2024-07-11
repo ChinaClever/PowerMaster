@@ -454,5 +454,33 @@ public class FieldConstant {
      * 总数据
      */
     public static final String TOTAL_DATA = "total_data";
+
+    /**
+     * 柜列数据
+     */
+    public static final String AISLE_POWER = "aisle_power";
+    /**
+     * 柜列id
+     */
+    public static final String AISLE_ID = "aisle_id";
+
+    /**
+     * 通道总电能表(实时)
+     */
+    public static final String AISLE_ELE_TOTAL_REALTIME = "aisle_ele_total_realtime";
+
+    /**
+     * 通道电量表（按天算）
+     */
+    public static final String AISLE_EQ_TOTAL_DAY = "aisle_eq_total_day";
+    /**
+     * 通道电量表（按周算）
+     */
+    public static final String AISLE_EQ_TOTAL_WEEK = "aisle_eq_total_week";
+
+    /**
+     * 通道电量表（按月算）
+     */
+    public static final String AISLE_EQ_TOTAL_MONTH = "aisle_eq_total_month";
 }
 

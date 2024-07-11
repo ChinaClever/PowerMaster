@@ -632,6 +632,59 @@ public class RoomMenuServiceImpl implements RoomMenuService {
         return new ArrayList<>();
     }
 
+    @Override
+    public List<RoomMenuDTO> roomAisleMenuList() {
+        try {
+
+            //获取柜列
+            List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>()
+                    .eq(AisleIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
+
+            //获取机房
+            List<RoomIndex> roomIndexList = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>()
+                    .eq(RoomIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
+
+
+            List<RoomMenuDTO> menuDTOS = new ArrayList<>();
+
+            if (!CollectionUtils.isEmpty(roomIndexList)) {
+                roomIndexList.forEach(roomIndex -> {
+                    RoomMenuDTO roomMenuDTO = new RoomMenuDTO();
+                    roomMenuDTO.setChildren(new ArrayList<>());
+                    roomMenuDTO.setId(roomIndex.getId());
+                    roomMenuDTO.setType(MenuTypeEnums.ROOM.getType());
+                    roomMenuDTO.setName(roomIndex.getName());
+                    roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.ROOM.getType()) + SPLIT + roomIndex.getId());
+                    //父id设置0
+                    roomMenuDTO.setParentId(0);
+                    roomMenuDTO.setParentType(0);
+                    menuDTOS.add(roomMenuDTO);
+                });
+
+            }
+
+            if (!CollectionUtils.isEmpty(aisleIndexList)) {
+                aisleIndexList.forEach(aisleIndex -> {
+                    RoomMenuDTO roomMenuDTO = new RoomMenuDTO();
+                    roomMenuDTO.setChildren(new ArrayList<>());
+                    roomMenuDTO.setId(aisleIndex.getId());
+                    roomMenuDTO.setType(MenuTypeEnums.AISLE.getType());
+                    roomMenuDTO.setName(aisleIndex.getName());
+                    roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.AISLE.getType()) + SPLIT + aisleIndex.getId());
+                    //父id设置机房
+                    roomMenuDTO.setParentId(aisleIndex.getRoomId());
+                    roomMenuDTO.setParentType(MenuTypeEnums.ROOM.getType());
+                    menuDTOS.add(roomMenuDTO);
+                });
+            }
+
+            return buildTree(menuDTOS);
+        } catch (Exception e) {
+            log.error("获取菜单失败：", e);
+        }
+        return new ArrayList<>();
+    }
+
     /**
      * 构建树型结构
      *
