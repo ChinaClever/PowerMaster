@@ -361,7 +361,6 @@ const getMachineEleTrend = async(type) => {
     EleTrendLoading.value = false
     radioBtn.value = type
   }
-  
 }
 
 onBeforeMount(() => {

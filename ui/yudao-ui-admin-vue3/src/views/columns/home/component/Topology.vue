@@ -1,5 +1,5 @@
 <template>
-  <ContentWrap>
+  <!-- <ContentWrap>
     <div class="btn-main">
       <div class="btns">
         <template v-for="item in btns" :key="item.value">
@@ -13,9 +13,9 @@
         <el-button v-if="editEnable" @click="handleSubmit" type="primary" plain>保存</el-button>
       </div>
     </div>
-  </ContentWrap>
-  <ContentWrap>
-    <div ref="topologyContainer" class="topologyContainer" style="position: relative;z-index: 1">
+  </ContentWrap> -->
+  <ContentWrap class="topologyContentWrap">
+    <div ref="topologyContainer" class="topologyContainer" style="position: relative;z-index: 1;">
       <div class="Container" :style="{alignItems: machineColInfo.pduBar && machineColInfo.barA ? 'unset' : 'center'}">
         <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="Bus">
           <div class="startBus" :style="{opacity: machineColInfo.barA.direction ? 0 : 1}">
@@ -26,31 +26,26 @@
           </div>
         </div>
         <div class="main">
-          <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="busListContainer">
+          <div>
+            <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="busListContainer">
             <div class="bridge"></div>
             <div class="busList1">
               <template v-for="(bus, index) in machineColInfo.barA.boxList" :key="index">
                 <!-- 插接箱 -->
                 <div v-if="bus.type == 0" class="plugin-box">
-                  <div class="name">
-                    <template v-for="btn in btns" :key="btn.value">
-                      <div v-if="chosenBtn == btn.value">{{btn.name}}</div>
-                    </template>
+                  <div class="box">
+                    <div>Ia</div>
+                    <div>30</div>
                   </div>
-                  <div class="boxList">
-                    <div class="box">
-                      <div>Ia</div>
-                      <div>30</div>
-                    </div>
-                    <div class="box">
-                      <div>Ib</div>
-                      <div>8.1</div>
-                    </div>
-                    <div class="box">
-                      <div>Ic</div>
-                      <div>50</div>
-                    </div>
+                  <div class="box">
+                    <div>Ib</div>
+                    <div>8.1</div>
                   </div>
+                  <div class="box">
+                    <div>Ic</div>
+                    <div>50</div>
+                  </div>
+                  <div class="name">电流</div>
                   <div :id="bus.boxName + '_A-1'" class="pointA"></div>
                   <div :id="bus.boxName + '_A-2'" class="pointB"></div>
                   <div :id="bus.boxName + '_A-3'" class="pointC"></div>
@@ -88,25 +83,19 @@
               <template v-for="(bus, index) in machineColInfo.barA.boxList" :key="index">
                 <!-- 插接箱 -->
                 <div v-if="bus.type == 0" class="plugin-box">
-                  <div class="name">
-                    <template v-for="btn in btns" :key="btn.value">
-                      <div v-if="chosenBtn == btn.value">{{btn.name}}</div>
-                    </template>
+                  <div class="box">
+                    <div>Ia</div>
+                    <div>30</div>
                   </div>
-                  <div class="boxList">
-                    <div class="box">
-                      <div>Ia</div>
-                      <div>30</div>
-                    </div>
-                    <div class="box">
-                      <div>Ib</div>
-                      <div>8.1</div>
-                    </div>
-                    <div class="box">
-                      <div>Ic</div>
-                      <div>50</div>
-                    </div>
+                  <div class="box">
+                    <div>Ib</div>
+                    <div>8.1</div>
                   </div>
+                  <div class="box">
+                    <div>Ic</div>
+                    <div>50</div>
+                  </div>
+                  <div class="name">电流</div>
                   <div :id="bus.boxName + '_B-1'" class="pointA"></div>
                   <div :id="bus.boxName + '_B-2'" class="pointB"></div>
                   <div :id="bus.boxName + '_B-3'" class="pointC"></div>
@@ -138,7 +127,8 @@
               </template>
             </div>
           </div>
-          <div class="cabinetContainer" @click.right="handleRightClick">
+          </div>
+          <div class="cabinetContainer">
             <div class="cabinetList" v-if="cabinetList && cabinetList.length">
               <template v-for="(cabinet,index) in cabinetList" :key="index">
                 <div class="cabinetBox">
@@ -147,34 +137,11 @@
                     <div v-if="cabinet.cabinetName" :id="'cab-B-' + index" class="rightPoint"></div>
                   </div>
                   <div class="cabinet">
-                    <div v-if="cabinet.cabinetName" class="inner_fill" :id="'cabinet-' + index">
-                      <div v-if="chosenBtn == 0">负载率：{{cabinet.loadRate}}</div>
-                      <div v-if="chosenBtn == 1">A路电流：{{cabinet.lineCurA || 0}} B路电流：{{cabinet.lineCurB || 0}}</div>
-                      <div v-if="chosenBtn == 2">A路电压：{{cabinet.lineVolA || 0}} B路电压：{{cabinet.lineVolB || 0}}</div>
-                      <div v-if="chosenBtn == 3">功率因素(总)：{{cabinet.powerFactor}} 功率因素(A)：{{cabinet.powerFactorA}}功率因素(B)：{{cabinet.powerFactorB}}</div>
-                      <div v-if="chosenBtn == 4">有功功率：{{cabinet.powActive}} 有功功率A：{{cabinet.powActiveA}} 有功功率B：{{cabinet.powActiveB}}</div>
-                      <div v-if="chosenBtn == 5">无功功率：{{cabinet.powReactive}} 无功功率A：{{cabinet.powReactiveA}} 无功功率B：{{cabinet.powReactiveB}}</div>
-                      <div v-if="chosenBtn == 6">视在功率：{{cabinet.powApparent}} 视在功率A：{{cabinet.powApparentA}} 视在功率B：{{cabinet.powApparentB}}</div>
-                      <div v-if="chosenBtn == 7">供电平衡：</div>
-                      <div v-if="chosenBtn == 8">温度：{{cabinet.temData}}</div>
-                      <div v-if="chosenBtn == 9">容量：{{cabinet.cabinetHeight}} 空闲容量：{{cabinet.freeSpace}}</div>
-                      <div v-if="chosenBtn == 10">用能：{{cabinet.yesterdayEq}} </div>
-                    </div>
-                    <div v-else class="inner_empty" :id="'cabinet-' + index"></div>
+                    <div :class="cabinet.cabinetName ? 'inner_fill' : 'inner_empty'" :id="'cabinet-' + index"></div>
                   </div>
                   <div class="status">{{cabinet.cabinetName || ''}}</div>
                 </div>
               </template>
-              <div class="operateBox">
-                <div class="operateIcon" @click.prevent="addMachine">+</div>
-                <div class="operateIcon" @click.prevent="deleteMachine">-</div>
-              </div>
-            </div>
-            <div class="menu" v-if="operateMenu.show" :style="{left: `${operateMenu.left}`, top: `${operateMenu.top}`}">
-              <div class="menu_item" v-if="operateMenu.add" @click="handleOperate('add')">新增</div>
-              <div class="menu_item" v-if="!operateMenu.add" @click="handleOperate('watch')">查看</div>
-              <div class="menu_item" v-if="!operateMenu.add" @click="handleOperate('edit')">编辑</div>
-              <div class="menu_item" v-if="!operateMenu.add" @click="handleOperate('delete')">删除</div>
             </div>
           </div>
         </div>
@@ -187,11 +154,14 @@
           </div>
         </div>
       </div>
+      <div class="btns">
+        <template v-for="item in btns" :key="item.value">
+          <el-button @click="switchBtn(item.value)" type="primary" :plain="chosenBtn != item.value">{{item.name}}</el-button>
+        </template>
+      </div>
+      <div class="mask" @click.prevent="" @dblclick="handleJump"></div>
     </div>
   </ContentWrap>
-  <!-- 添加或修改用户对话框 -->
-  <PluginForm ref="columnForm" @success="handleFormPlugin" />
-  <CabForm ref="cabinetForm" @success="handleFormCabinet" :roomList="roomList" />
 </template>
 
 <script lang="ts" setup>
@@ -199,10 +169,9 @@ import { newInstance, BezierConnector, BrowserJsPlumbInstance, JsPlumbDefaults }
 import { MachineColumnApi } from '@/api/cabinet/column'
 import { CabinetApi } from '@/api/cabinet/info'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import PluginForm from './component/PluginForm.vue'
-import CabForm from './component/CabForm.vue'
 
 const message = useMessage()
+const {push} = useRouter()
 let instance: BrowserJsPlumbInstance | null = null
 
 const btns = [
@@ -254,13 +223,10 @@ const btns = [
 const topologyContainer = ref()
 const chosenBtn = ref(0)
 const editEnable = ref(false)
-const columnForm = ref()
-const cabinetForm = ref()
 const machineColInfo = reactive<any>({})
 const cabinetList = ref<any>([])
 const busListA = ref<any>([])
 const busListB = ref<any>([])
-const roomList = ref([]) // 机房列表数据
 const operateMenu = ref({  // 操作菜单
   left: '0px',
   top: '0px',
@@ -398,55 +364,6 @@ const toCreatConnect = () => {
     })
   }
 }
-// // 给某个插接箱加瞄点
-// const addPluginAnchor = (boxName) => {
-//   console.log('给某个插接箱加瞄点', boxName)
-//   const boxElementA1 = document.getElementById(boxName + '_A-1') as Element
-//   const boxElementA2 = document.getElementById(boxName + '_A-2') as Element
-//   const boxElementA3 = document.getElementById(boxName + '_A-3') as Element
-//   const boxElementB1 = document.getElementById(boxName + '_B-1') as Element
-//   const boxElementB2 = document.getElementById(boxName + '_B-2') as Element
-//   const boxElementB3 = document.getElementById(boxName + '_B-3') as Element
-//   console.log('boxElementA', boxElementA1, boxElementB1, boxName)
-//   // 删除瞄点
-//   instance?.removeAllEndpoints(boxElementA1)
-//   instance?.removeAllEndpoints(boxElementA2)
-//   instance?.removeAllEndpoints(boxElementA3)
-//   instance?.removeAllEndpoints(boxElementB1)
-//   instance?.removeAllEndpoints(boxElementB2)
-//   instance?.removeAllEndpoints(boxElementB3)
-//   // 添加瞄点
-//   instance?.addEndpoint(boxElementA1, {
-//     source: true,
-//     target: true,
-//     endpoint: 'Dot'
-//   })
-//   instance?.addEndpoint(boxElementA2, {
-//     source: true,
-//     target: true,
-//     endpoint: 'Dot'
-//   })
-//   instance?.addEndpoint(boxElementA3, {
-//     source: true,
-//     target: true,
-//     endpoint: 'Dot'
-//   })
-//   instance?.addEndpoint(boxElementB1, {
-//     source: true,
-//     target: true,
-//     endpoint: 'Dot'
-//   })
-//   instance?.addEndpoint(boxElementB2, {
-//     source: true,
-//     target: true,
-//     endpoint: 'Dot'
-//   })
-//   instance?.addEndpoint(boxElementB3, {
-//     source: true,
-//     target: true,
-//     endpoint: 'Dot'
-//   })
-// }
 // 更新插接箱瞄点
 const updatePluginAnchor = () => {
   if (cabinetList.value && cabinetList.value.length && machineColInfo.barA) {
@@ -536,288 +453,15 @@ const updateCabinetConnect = () => {
   })
   
 }
-// 处理右击事件
-const handleRightClick = (e) => {
-  e.preventDefault()
-  if (e.target.className != 'inner_empty' && e.target.className != 'inner_fill') return
-  const container = e.currentTarget
-  const currentIndex = e.target.id.split('-')[1]
-  const rect = container.getBoundingClientRect()
-  const offsetX = e.clientX - Math.ceil(rect.left) + 1
-  const offsetY = e.clientY - Math.ceil(rect.top) + 1
-  const isAdd = !cabinetList.value[currentIndex].cabinetName
-  operateMenu.value = {
-    left: offsetX + 'px',
-    top: offsetY + 'px',
-    show: true,
-    add: isAdd,
-    curIndex: currentIndex
-  }
-  console.log('operateMenu',e.target.className, operateMenu.value, cabinetList.value[currentIndex])
-}
-// 处理菜单点击事件
-const handleOperate = (type) => {
-  operateMenu.value.show = false
-  const index = operateMenu.value.curIndex
-  if (type == 'add' || type == 'edit') {
-    let info = {
-      roomId: machineColInfo.roomId,
-      barA: false
-    } as any
-    if (machineColInfo.barA) {
-      info = {
-        roomId: machineColInfo.roomId,
-        barA: true,
-        busNameA: machineColInfo.barA.busName,
-        busIpA: machineColInfo.barA.devIp,
-        busNameB: machineColInfo.barB.busName,
-        busIpB: machineColInfo.barB.devIp,
-        boxAmount: (machineColInfo.barA.boxList.filter(item => !item.type)).length
-      }
-    }
-    const data = type == 'add' ? null : cabinetList.value[index]
-    cabinetForm.value.open(type, data, info)
-  } else if (type == 'delete') {
-    ElMessageBox.confirm('确认删除吗？', '提示', {
-      confirmButtonText: '确 认',
-      cancelButtonText: '取 消',
-      type: 'warning'
-    }).then(async () => {
-      const cabItem = cabinetList.value[index]
-      if (cabItem.boxNameA && cabItem.boxOutletIdA) {
-        const connections = instance?.getConnections() as any
-        const targetConnect = connections?.find(item => item.source.id == ('cab-A-' + index))
-        instance?.deleteConnection(targetConnect)
-      }
-      if (cabItem.boxNameB && cabItem.boxOutletIdB) {
-        const connections = instance?.getConnections() as any
-        const targetConnect = connections?.find(item => item.source.id == ('cab-B-' + index))
-        instance?.deleteConnection(targetConnect)
-      }
-      cabinetList.value.splice(index, 1, {})
-    })
-  }
-  console.log('handleOperate', machineColInfo)
-}
-// 处理编辑取消事件
-const handleCancel = () => {
-  ElMessageBox.confirm('取消会使已修改的操作丢失，确认取消？', '提示', {
-    confirmButtonText: '确 认',
-    cancelButtonText: '取 消',
-    type: 'warning'
-  }).then(async () => {
-    instance?.deleteEveryConnection()
-    editEnable.value = false
-    getMachineColInfo()
-  })
-}
-// 处理配置点击事件  打开配置弹窗
-const handleConfig = () => {
-  console.log('handleConfig', machineColInfo)
-  let data = null as any | null
-  if(machineColInfo.barA) {
-    console.log('machineColInfo', machineColInfo.barA)
-    const boxList = machineColInfo.barA.boxList
-    const plugin = boxList.filter(item => !item.type)
-    const connect = boxList.filter(item => item.type)
-    data = {
-      nameA: machineColInfo.barA.busName,
-      ipA: machineColInfo.barA.devIp,
-      nameB: machineColInfo.barB.busName,
-      directionA: machineColInfo.barA.direction,
-      directionB: machineColInfo.barB.direction,
-      ipB: machineColInfo.barB.devIp,
-      cjxAmount: plugin.length,
-      ljqAmount: connect.length,
-    }
-    console.log(data)
-  }
-  console.log('???',data)
-  columnForm.value.open(data)
-}
-// 处理保存事件
-const handleSubmit = () => {
-  console.log('handleSubmit')
-  saveMachineBus()
-}
-// 插接箱弹窗确认后的处理
-const handleFormPlugin = (data) => {
-  console.log('handleFormSave', data)
-  let big = 0
-  let small = 0
-  let type = 0
-  let count = 0
-  let arr = [] as any
-  if (data.cjxAmount == data.ljqAmount) {
-    for(let i = 0; i < (data.cjxAmount + data.ljqAmount); i++) {
-      const type = i % 2
-      arr.push({
-        boxName: '',
-        type,
-      })
-    }
-  } else {
-    if (data.cjxAmount > data.ljqAmount) {
-      big = data.cjxAmount
-      small = data.ljqAmount
-    } else {
-      big = data.ljqAmount
-      small = data.cjxAmount
-      type = 1
-    }
-    const diff = Math.floor(big/(small + 1))
-    let odd = big % (small + 1)
-    for(let i = 0; i < big; i++) {
-      arr.push({
-        boxName: 'plugin-' + i,
-        type,
-      })
-    }
-    for(let i = 0; i < small; i++) {
-      if (odd > 0) {
-        count++
-        odd--
-      }
-      arr.splice((+diff) * (i+1) + count, 0, {
-        boxName: 'connect' + i,
-        type: type ? 0 : 1,
-      })
-      count++
-    }
-  }
-  arr = arr.map((item, index) => {
-    return {
-      ...item,
-      boxIndex: index
-    }
-  })
-  const boxA = {
-    busName: data.nameA,
-    devIp: data.ipA,
-    path: 'A',
-    direction: data.directionA,
-    boxList: arr
-  }
-  const boxB = {
-    busName: data.nameB,
-    devIp: data.ipB,
-    path: 'B',
-    direction: data.directionB,
-    boxList: arr
-  }
-  // const beforeCjxAmount = machineColInfo.barA ? (machineColInfo.barA.boxList.filter(item => !item.type)).length : 0
-  // console.log('beforeCjxAmount', beforeCjxAmount)
-  // if (beforeCjxAmount > 0) {
-  //   let count = beforeCjxAmount - data.cjxAmount
-  //   if (count > 0) { // 删除插接箱 需要考虑删除的插接箱是否存在连接的状态
-  //     // for(let i=)
-  //   } else if (count < 0) { // 增加插接箱
-  //     count = -count
-  //     toCreatConnect()
-  //     const boxFilter = arr.filter(item => !item.type)
-  //     nextTick(() => {
-  //       for(let i=0; i < count; i++) {
-  //         console.log('boxFilter[beforeCjxAmount + i].boxName', boxFilter[beforeCjxAmount + i].boxName, boxFilter[beforeCjxAmount + i], beforeCjxAmount, i)
-  //         addPluginAnchor(boxFilter[beforeCjxAmount + i].boxName)
-  //       }
-  //       updatePluginAnchor()
-  //     })
-  //   }
-  // } else if (beforeCjxAmount == 0) { // 如果开始的插接箱为0
-  //   const boxFilter = arr.filter(item => !item.type)
-  //   nextTick(() => {
-  //     for(let i=0; i < boxFilter.length; i++) {
-  //       addPluginAnchor(boxFilter[i].boxName)
-  //     }
-  //     updatePluginAnchor()
-  //     cabinetList.value.forEach((item, index) => {
-  //       if (!item.cabinetName) return
-  //       addCabinetAnchor(index)
-  //     })
-  //   })
-  // }
-  machineColInfo.barA = boxA
-  machineColInfo.barB = boxB
-  console.log('machineColInfo', machineColInfo)
-  toCreatConnect()
-}
-// 机柜弹窗确认后的处理
-const handleFormCabinet = (data) => {
-  console.log('handleFormCabinet', data)
-  data.index = operateMenu.value.curIndex
-  cabinetList.value.splice(operateMenu.value.curIndex, 1, data)
-  if (machineColInfo.barA) nextTick(() => {
-    addCabinetAnchor(operateMenu.value.curIndex, data)
-  })
-}
-// 接口获取机房导航列表
-const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
-  console.log('接口获取机房导航列表', res)
-  roomList.value = res
-}
-// 接口获取柜列状态数据详情
-const getDataDetail = async() => {
-  const res = await MachineColumnApi.getDataDetail({id: 6})
-  console.log('接口获取柜列状态数据详情', res)
-  handleDataDetail(res)
-}
-// 处理柜列状态数据详情
-const handleDataDetail = (res) => {
-  if (res.barA) {
-    res.barA.boxList.forEach((item, index) => {
-      machineColInfo.barA.boxList[index] = {
-        ...machineColInfo.barA.boxList[index],
-        ...item
-      }
-    })
-  }
-  if (res.barB) {
-    res.barB.boxList.forEach((item, index) => {
-      machineColInfo.barB.boxList[index] = {
-        ...machineColInfo.barB.boxList[index],
-        ...item
-      }
-    })
-  }
-  res.cabinetList && res.cabinetList.forEach(cab => {
-    cabinetList.value.forEach((item, index) => {
-      if (item.id == cab.id) {
-        cabinetList.value[index] = {
-          ...item,
-          ...cab
-        }
-        console.log('----------', cab, cab.id)
-        return
-      }
-    })
-  })
-  console.log('接口获取柜列状态数据详情end', cabinetList.value, machineColInfo)
-}
 // 接口获取柜列信息
 const getMachineColInfo = async() => {
-  const res1 = MachineColumnApi.getAisleDetail({id:6})
-  const res2 = MachineColumnApi.getDataDetail({id: 6})
-  Promise.all([res1, res2]).then((resultList) => {
-    Object.assign(machineColInfo, resultList[0])
-    handleCabinetList(resultList[0], resultList[1])
-    console.log('getMachineColInfo', resultList)
-  })
-}
-
-const saveMachineBus = async() => {
-  console.log('cabinetList', cabinetList.value)
-  const res = await MachineColumnApi.saveAisleDetail({
-    ...machineColInfo,
-    length: cabinetList.value.length,
-    cabinetList: cabinetList.value.filter(item => item.cabinetName),
-  })
-  message.success('保存成功！')
-  editEnable.value = false
-  console.log('saveMachineBus', res)
+  const res = await MachineColumnApi.getAisleDetail({id:6})
+  Object.assign(machineColInfo, res)
+  console.log('getMachineColInfo', res, res.length)
+  handleCabinetList(res)
 }
 // 处理机柜列表
-const handleCabinetList = (data, status) => {
+const handleCabinetList = (data) => {
   const arr = [] as any
   for (let i=0; i < data.length; i++) {
     arr.push({})
@@ -827,30 +471,25 @@ const handleCabinetList = (data, status) => {
   })
   console.log('arr', arr)
   cabinetList.value = arr
-  handleDataDetail(status)
   toCreatConnect()
-}
-// 增加空机柜
-const addMachine = () => {
-  console.log('addMachine')
-  cabinetList.value.push({})
-  updateCabinetConnect()
-}
-// 删除空机柜
-const deleteMachine = () => {
-  console.log('deleteMachine')
-  cabinetList.value.pop()
-  updateCabinetConnect()
 }
 //
 const switchBtn = (value) => {
   chosenBtn.value = value
   console.log('switchBtn')
 }
+const handleJump = () => {
+  push({path: '/aisle/topology', state: {id: 6}})
+}
 
 getMachineColInfo()
+
+window.addEventListener('resize', function() {
+  console.log('resize')
+  toCreatConnect()
+})
+
 onMounted(() => {
-  getNavList()
   initConnect()
   document.addEventListener('mouseup',(event) => {
     const element = event.target as HTMLElement
@@ -862,19 +501,36 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.btn-main {
-  display: flex;
-  justify-content: space-between;
+.mask {
+  width: 100%;
+  height: calc(100% - 32px);
+  position: absolute;
+  top: 0;
+  z-index: 999;
 }
-// .btns {
-//   display: flex;
-//   justify-content: flex-end;
-// }
+.btns {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
 :deep(.el-card__body) {
-  overflow-x: auto;
-  overflow-y: hidden;
+  box-sizing: border-box;
+  height: 100%;
+  // overflow-x: auto;
+  // overflow-y: hidden;
+}
+:deep(.el-card__body > div) {
+  box-sizing: border-box;
+  height: 100%;
+}
+.topologyContentWrap {
+  box-sizing: border-box;
+  height: 100%;
+  // overflow-x: auto;
+  // overflow-y: hidden;
 }
 .Container {
+  height: calc(100% - 32px);
   display: flex;
   // align-items: center;
   padding-bottom: 20px;
@@ -895,7 +551,11 @@ onMounted(() => {
     }
   }
   .main {
+    height: 100%;
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     .busListContainer {
       height: 80px;
       margin-bottom: 38px;
@@ -910,7 +570,7 @@ onMounted(() => {
         position: absolute;
         width: 100%;
         height: 100%;
-        left: -60px;
+        // left: -60px;
       }
       .busList1,.busList2 {
         padding: 0 40px;
@@ -922,27 +582,20 @@ onMounted(() => {
           height: fit-content;
           font-size: 12px;
           display: flex;
-          flex-direction: column;
           border: 1px solid;
           border-top: none;
+          padding-top: 20px;
           background-color: #fff;
-          margin: 0 39px;
           .name {
-            width: 100%;
-            padding: 3px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: absolute;
+            top: 2px;
+            left: 18px;
           }
-          .boxList {
+          .box {
             display: flex;
-            justify-content: center;
-            .box {
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              margin: 0 3px;
-            }
+            flex-direction: column;
+            align-items: center;
+            margin: 0 3px;
           }
           .line {
             width: 5px;
@@ -994,7 +647,7 @@ onMounted(() => {
           position: relative;
           width: 75px;
           font-size: 12px;
-          margin: 0 39px;
+          // margin: 0 39px;
           .connector {
             margin: -16px auto 0;
           }
@@ -1021,6 +674,8 @@ onMounted(() => {
   }
 }
 .cabinetContainer {
+  width: 100%;
+  align-self: flex-end;
   box-sizing: border-box;
   margin-top: 50px;
   position: relative;
@@ -1050,7 +705,7 @@ onMounted(() => {
     display: flex;
     justify-content: center;
     .cabinetBox {
-      
+      flex: 1;
       .point {
         height: 7px;
         display: flex;
@@ -1069,8 +724,10 @@ onMounted(() => {
         }
       }
       .cabinet {
-        width: 105px;
+        width: 100%;
         height: 350px;
+        max-width: 105px;
+        max-height: 350px;
         box-sizing: border-box;
         border: 2px solid;
       }

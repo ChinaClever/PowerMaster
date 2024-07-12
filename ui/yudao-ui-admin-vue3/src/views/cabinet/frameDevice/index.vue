@@ -206,7 +206,7 @@ const handleSwitchModal = (value) => {
 // 跳转详情页
 const toFramDeviceDetail = (key) => {
   console.log('toFramDeviceDetail!', key)
-  push({path: '/cabinet/cab/frameDeviceDetail', state: { id: key }})
+  push({path: '/u/frameDeviceDetail', state: { id: key }})
 }
 
 const handleCheck = (row) => {
