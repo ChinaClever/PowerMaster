@@ -69,7 +69,7 @@
 <script lang="ts" setup>
 import Topology from './component/Topology.vue'
 import { EChartsOption } from 'echarts'
-import { Right } from '@element-plus/icons-vue/dist/types'
+import { MachineColumnApi } from '@/api/cabinet/column'
 
 const echartsOptionA = ref<EChartsOption>({
   title: {
@@ -157,6 +157,12 @@ const echartsOptionB = ref<EChartsOption>({
     }
   ]
 })
+
+const getMainData = async() => {
+  const res =  await MachineColumnApi.getMaindata({id: 6})
+  console.log('res', res)
+}
+getMainData()
 </script>
 
 <style lang="scss" scoped>

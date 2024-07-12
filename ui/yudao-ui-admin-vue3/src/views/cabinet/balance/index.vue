@@ -227,27 +227,27 @@ const getTableData = async(reset = false) => {
             tableItem['Ia'+index] = item.toFixed(2)
           })
         }
-        if (PathA && PathA.vol_value.length > 0) { // A路电压
+        if (PathA && PathA.vol_value && PathA.vol_value.length > 0) { // A路电压
           PathA.vol_value.forEach((item, index) => {
             tableItem['Ua'+index] = item.toFixed(2)
           })
         }
-        if (PathA && PathA.pow_value.length > 0) { // A路功率
+        if (PathA && PathA.pow_value && PathA.pow_value.length > 0) { // A路功率
           PathA.pow_value.forEach((item, index) => {
             tableItem['Pa'+index] = item.toFixed(2)
           })
         }
-        if (PathB && PathB.cur_value.length > 0) { // B路电流
+        if (PathB && PathB.cur_value && PathB.cur_value.length > 0) { // B路电流
           PathB.cur_value.forEach((item, index) => {
             tableItem['Ib'+index] = item.toFixed(2)
           })
         }
-        if (PathB && PathB.vol_value.length > 0) { // B路电压
+        if (PathB && PathB.vol_value && PathB.vol_value.length > 0) { // B路电压
           PathB.vol_value.forEach((item, index) => {
             tableItem['Ub'+index] = item.toFixed(2)
           })
         }
-        if (PathB && PathB.pow_value.length > 0) { // B路功率
+        if (PathB && PathB.pow_value && PathB.pow_value.length > 0) { // B路功率
           PathB.pow_value.forEach((item, index) => {
             tableItem['Pb'+index] = item.toFixed(2)
           })

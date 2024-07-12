@@ -51,9 +51,9 @@
                       <div>50</div>
                     </div>
                   </div>
-                  <div :id="bus.boxName + '_A-1'" class="pointA"></div>
-                  <div :id="bus.boxName + '_A-2'" class="pointB"></div>
-                  <div :id="bus.boxName + '_A-3'" class="pointC"></div>
+                  <div :id="`plugin-${bus.boxIndex}_A-1`" class="pointA"></div>
+                  <div :id="`plugin-${bus.boxIndex}_A-2`" class="pointB"></div>
+                  <div :id="`plugin-${bus.boxIndex}_A-3`" class="pointC"></div>
                 </div>
                 <!-- 连接器 -->
                 <div v-else class="template-box">
@@ -107,9 +107,9 @@
                       <div>50</div>
                     </div>
                   </div>
-                  <div :id="bus.boxName + '_B-1'" class="pointA"></div>
-                  <div :id="bus.boxName + '_B-2'" class="pointB"></div>
-                  <div :id="bus.boxName + '_B-3'" class="pointC"></div>
+                  <div :id="`plugin-${bus.boxIndex}_B-1`" class="pointA"></div>
+                  <div :id="`plugin-${bus.boxIndex}_B-2`" class="pointB"></div>
+                  <div :id="`plugin-${bus.boxIndex}_B-3`" class="pointC"></div>
                 </div>
                 <!-- 连接器 -->
                 <div v-else class="template-box">
@@ -201,6 +201,7 @@ import { CabinetApi } from '@/api/cabinet/info'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import PluginForm from './component/PluginForm.vue'
 import CabForm from './component/CabForm.vue'
+import { Console } from 'console'
 
 const message = useMessage()
 let instance: BrowserJsPlumbInstance | null = null
@@ -330,10 +331,10 @@ const toCreatConnect = () => {
     nextTick(() => {
       machineColInfo.barA.boxList.forEach(item => {
         if (item.type) return
-        const boxElementA = document.getElementById(item.boxName + '_A-1') as Element
-        const boxElementB = document.getElementById(item.boxName + '_A-2') as Element
-        const boxElementC = document.getElementById(item.boxName + '_A-3') as Element
-        console.log('boxElementA', boxElementA, item.boxName)
+        const boxElementA = document.getElementById('plugin-' + item.boxIndex + '_A-1') as Element
+        const boxElementB = document.getElementById('plugin-' + item.boxIndex + '_A-2') as Element
+        const boxElementC = document.getElementById('plugin-' + item.boxIndex + '_A-3') as Element
+        console.log('boxElementA', boxElementA, item.boxIndex)
         // 删除瞄点
         instance?.removeAllEndpoints(boxElementA)
         instance?.removeAllEndpoints(boxElementB)
@@ -361,16 +362,16 @@ const toCreatConnect = () => {
       })
       machineColInfo.barB.boxList.forEach(item => {
         if (item.type) return
-        const boxElementA = document.getElementById(item.boxName + '_B-1') as Element
-        const boxElementB = document.getElementById(item.boxName + '_B-2') as Element
-        const boxElementC = document.getElementById(item.boxName + '_B-3') as Element
-        console.log('boxElementA', boxElementA, item.boxName)
+        const boxElementA = document.getElementById('plugin-' + item.boxIndex + '_B-1') as Element
+        const boxElementB = document.getElementById('plugin-' + item.boxIndex + '_B-2') as Element
+        const boxElementC = document.getElementById('plugin-' + item.boxIndex + '_B-3') as Element
+        console.log('boxElementA', boxElementA, item.boxIndex)
         instance?.removeAllEndpoints(boxElementA)
         instance?.removeAllEndpoints(boxElementB)
         instance?.removeAllEndpoints(boxElementC)
-        instance?.deleteEndpoint(item.boxName + '_B-1')
-        instance?.deleteEndpoint(item.boxName + '_B-2')
-        instance?.deleteEndpoint(item.boxName + '_B-3')
+        instance?.deleteEndpoint('plugin-' + item.boxIndex + '_B-1')
+        instance?.deleteEndpoint('plugin-' + item.boxIndex + '_B-2')
+        instance?.deleteEndpoint('plugin-' + item.boxIndex + '_B-3')
         // 添加瞄点
         instance?.addEndpoint(boxElementA, {
           source: true,
@@ -452,9 +453,9 @@ const updatePluginAnchor = () => {
   if (cabinetList.value && cabinetList.value.length && machineColInfo.barA) {
     machineColInfo.barA.boxList.forEach(item => {
       if (item.type) return
-      const boxElementA = document.getElementById(item.boxName + '_A-1') as Element
-      const boxElementB = document.getElementById(item.boxName + '_A-2') as Element
-      const boxElementC = document.getElementById(item.boxName + '_A-3') as Element
+      const boxElementA = document.getElementById('plugin-' + item.boxIndex + '_A-1') as Element
+      const boxElementB = document.getElementById('plugin-' + item.boxIndex + '_A-2') as Element
+      const boxElementC = document.getElementById('plugin-' + item.boxIndex + '_A-3') as Element
       console.log('更新插接箱瞄点boxElementA', boxElementA, item, machineColInfo.barA)
       // 更新瞄点
       instance?.revalidate(boxElementA)
@@ -462,9 +463,9 @@ const updatePluginAnchor = () => {
       instance?.revalidate(boxElementC)
     })
     machineColInfo.barB.boxList.forEach(item => {
-      const boxElementA = document.getElementById(item.boxName + '_B-1') as Element
-      const boxElementB = document.getElementById(item.boxName + '_B-2') as Element
-      const boxElementC = document.getElementById(item.boxName + '_B-3') as Element
+      const boxElementA = document.getElementById('plugin-' + item.boxIndex + '_B-1') as Element
+      const boxElementB = document.getElementById('plugin-' + item.boxIndex + '_B-2') as Element
+      const boxElementC = document.getElementById('plugin-' + item.boxIndex + '_B-3') as Element
       // 更新瞄点
       instance?.revalidate(boxElementA)
       instance?.revalidate(boxElementB)
@@ -480,19 +481,19 @@ const addCabinetAnchor = (index, data = {} as any) => {
   instance?.removeAllEndpoints(cabElementA)
   instance?.removeAllEndpoints(cabElementB)
   // 添加瞄点
-  if (!data.boxNameA || !data.boxOutletIdA) instance?.addEndpoint(cabElementA, {
+  if (!Number.isInteger(data.boxIndexA) || !data.boxOutletIdA) instance?.addEndpoint(cabElementA, {
     source: true,
     target: true,
     endpoint: 'Dot'
   })
-  if (!data.boxNameB || !data.boxOutletIdB) instance?.addEndpoint(cabElementB, {
+  if (!Number.isInteger(data.boxIndexB) || !data.boxOutletIdB) instance?.addEndpoint(cabElementB, {
     source: true,
     target: true,
     endpoint: 'Dot'
   })
-  if (data.boxNameA && data.boxOutletIdA) { // A路有连接
+  if (data.boxIndexA > -1 && data.boxOutletIdA) { // A路有连接
     const source = document.getElementById('cab-A-' + index) as Element
-    const target = document.getElementById(`plugin-${data.boxNameA-1}_A-${data.boxOutletIdA}`)  as Element
+    const target = document.getElementById(`plugin-${data.boxIndexA}_A-${data.boxOutletIdA}`)  as Element
     console.log('target', source, target)
     instance?.connect({
       source,
@@ -504,9 +505,9 @@ const addCabinetAnchor = (index, data = {} as any) => {
       }
     })
   }
-  if (data.boxNameB && data.boxOutletIdB) { // B路有连接
+  if (data.boxIndexB > -1 && data.boxOutletIdB) { // B路有连接
     const source = document.getElementById('cab-B-' + index) as Element
-    const target = document.getElementById(`plugin-${data.boxNameB-1}_B-${data.boxOutletIdB}`)  as Element
+    const target = document.getElementById(`plugin-${data.boxIndexB}_B-${data.boxOutletIdB}`)  as Element
     console.log('target---', source, target)
     instance?.connect({
       source,
@@ -584,12 +585,12 @@ const handleOperate = (type) => {
       type: 'warning'
     }).then(async () => {
       const cabItem = cabinetList.value[index]
-      if (cabItem.boxNameA && cabItem.boxOutletIdA) {
+      if (cabItem.boxIndexA && cabItem.boxOutletIdA) {
         const connections = instance?.getConnections() as any
         const targetConnect = connections?.find(item => item.source.id == ('cab-A-' + index))
         instance?.deleteConnection(targetConnect)
       }
-      if (cabItem.boxNameB && cabItem.boxOutletIdB) {
+      if (cabItem.boxIndexB && cabItem.boxOutletIdB) {
         const connections = instance?.getConnections() as any
         const targetConnect = connections?.find(item => item.source.id == ('cab-B-' + index))
         instance?.deleteConnection(targetConnect)
@@ -652,9 +653,10 @@ const handleFormPlugin = (data) => {
     for(let i = 0; i < (data.cjxAmount + data.ljqAmount); i++) {
       const type = i % 2
       arr.push({
-        boxName: '',
+        boxIndex: count,
         type,
       })
+      if (type) count++
     }
   } else {
     if (data.cjxAmount > data.ljqAmount) {
@@ -669,7 +671,7 @@ const handleFormPlugin = (data) => {
     let odd = big % (small + 1)
     for(let i = 0; i < big; i++) {
       arr.push({
-        boxName: 'plugin-' + i,
+        boxIndex: i,
         type,
       })
     }
@@ -679,18 +681,12 @@ const handleFormPlugin = (data) => {
         odd--
       }
       arr.splice((+diff) * (i+1) + count, 0, {
-        boxName: 'connect' + i,
+        boxIndex: i,
         type: type ? 0 : 1,
       })
       count++
     }
   }
-  arr = arr.map((item, index) => {
-    return {
-      ...item,
-      boxIndex: index
-    }
-  })
   const boxA = {
     busName: data.nameA,
     devIp: data.ipA,
@@ -705,6 +701,7 @@ const handleFormPlugin = (data) => {
     direction: data.directionB,
     boxList: arr
   }
+  // 处理插接箱删除的时候存在连接的情况，以及新增插接箱的瞄点创建
   // const beforeCjxAmount = machineColInfo.barA ? (machineColInfo.barA.boxList.filter(item => !item.type)).length : 0
   // console.log('beforeCjxAmount', beforeCjxAmount)
   // if (beforeCjxAmount > 0) {
@@ -794,6 +791,18 @@ const handleDataDetail = (res) => {
   })
   console.log('接口获取柜列状态数据详情end', cabinetList.value, machineColInfo)
 }
+// 处理母线插接箱的初始化处理
+// const handleBusInit = (data) => {
+//   if(data.pduBar == 1 && data.barA && data.barA.boxList) {
+//     data.barA.boxList.forEach((item,index) => {
+//       machineColInfo.barA.boxList[index].boxName = 'plugin-' + index
+//     })
+//     data.barB.boxList.forEach((item,index) => {
+//       machineColInfo.barB.boxList[index].boxName = 'plugin-' + index
+//     })
+//   }
+//   console.log('machineColInfo', machineColInfo, data)
+// }
 // 接口获取柜列信息
 const getMachineColInfo = async() => {
   const res1 = MachineColumnApi.getAisleDetail({id:6})
@@ -801,6 +810,7 @@ const getMachineColInfo = async() => {
   Promise.all([res1, res2]).then((resultList) => {
     Object.assign(machineColInfo, resultList[0])
     handleCabinetList(resultList[0], resultList[1])
+    // handleBusInit(resultList[0])
     console.log('getMachineColInfo', resultList)
   })
 }
@@ -823,6 +833,14 @@ const handleCabinetList = (data, status) => {
     arr.push({})
   }
   data.cabinetList && data.cabinetList.forEach(item => {
+    if (item.boxNameA) {
+      const target = data.barA.boxList.find(box => box.boxName == item.boxNameA)
+      item.boxIndexA = target.boxIndex
+    }
+    if (item.boxNameB) {
+      const target = data.barB.boxList.find(box => box.boxName == item.boxNameB)
+      item.boxIndexB = target.boxIndex
+    }
     arr.splice(item.index - 1, 1, item)
   })
   console.log('arr', arr)
