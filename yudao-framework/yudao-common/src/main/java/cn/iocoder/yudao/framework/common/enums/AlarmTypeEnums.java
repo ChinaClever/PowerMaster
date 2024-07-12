@@ -14,6 +14,7 @@ import lombok.Getter;
 public enum AlarmTypeEnums {
     STATUS(1, "状态告警"),
     OFF_LINE(2, "离线告警"),
+    ELE(3, "用能告警"),
     ;
 
     /**
