@@ -54,6 +54,9 @@ public class AisleIndexPageReqVO extends PageParam {
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;
 
+    @Schema(description = "通道列ID列表")
+    private List<Integer> aisleIds;
+
     @Schema(description = "长度")
     private Integer length;
 

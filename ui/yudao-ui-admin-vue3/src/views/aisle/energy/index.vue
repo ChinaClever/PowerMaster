@@ -158,7 +158,7 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
   pageTotal: 0,
-})
+}) as any
 
 // 接口获取机房导航列表
 const getNavList = async() => {
@@ -224,15 +224,26 @@ const handleSwitchModal = (value) => {
 }
 
 // 处理左侧树导航选择事件
-const handleCheck = (row) => {
-  isFirst.value = false
+const handleCheck = async (row) => {
+  if(row.length == 0){
+    queryParams.aisleIds = null;
+    getTableData(true)
+    return;
+  }
   const ids = [] as any
+  var haveCabinet = false;
   row.forEach(item => {
-    if (item.type == 3) {
+    if (item.type == 2) {
       ids.push(item.id)
+      haveCabinet = true;
     }
   })
-  cabinetIds.value = ids
+  if(!haveCabinet ){
+    queryParams.aisleIds = [-1]
+  }else{
+    queryParams.aisleIds = ids
+  }
+
   getTableData(true)
 }
 

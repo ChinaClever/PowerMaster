@@ -447,22 +447,22 @@ const handleClick = (row) => {
 
 const handleCheck = async (row) => {
   if(row.length == 0){
-    queryParams.busDevKeyList = null;
+    queryParams.aisleIds = null;
     getList();
     return;
   }
   const ids = [] as any
   var haveCabinet = false;
   row.forEach(item => {
-    if (item.type == 6) {
-      ids.push(item.unique)
+    if (item.type == 2) {
+      ids.push(item.id)
       haveCabinet = true;
     }
   })
   if(!haveCabinet ){
-    queryParams.busDevKeyList = [-1]
+    queryParams.aisleIds = [-1]
   }else{
-    queryParams.busDevKeyList = ids
+    queryParams.aisleIds = ids
   }
 
   getList();

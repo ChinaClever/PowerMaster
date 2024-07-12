@@ -18,6 +18,7 @@ public interface AisleIndexCopyMapper extends BaseMapperX<AisleIndexDO> {
     default PageResult<AisleIndexDO> selectPage(AisleIndexPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<AisleIndexDO>()
                 .eqIfPresent(AisleIndexDO::getRoomId, reqVO.getRoomId())
+                .inIfPresent(AisleIndexDO::getId,reqVO.getAisleIds())
                 .eqIfPresent(AisleIndexDO::getId,reqVO.getId())
                 .likeIfPresent(AisleIndexDO::getName, reqVO.getName())
                 .eqIfPresent(AisleIndexDO::getPduBar, reqVO.getPduBar())
