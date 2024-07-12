@@ -22,6 +22,7 @@ public interface BoxIndexCopyMapper extends BaseMapperX<BoxIndex> {
     default PageResult<BoxIndex> selectPage(BoxIndexPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<BoxIndex>()
                 .eqIfPresent(BoxIndex::getDevKey, reqVO.getDevKey())
+                .inIfPresent(BoxIndex::getDevKey,reqVO.getBoxDevKeyList())
                 .eqIfPresent(BoxIndex::getIpAddr, reqVO.getIpAddr())
                 .eqIfPresent(BoxIndex::getDevAddr, reqVO.getDevAddr())
                 .eqIfPresent(BoxIndex::getBarId, reqVO.getBarId())

@@ -380,7 +380,7 @@ const handleClick = (row) => {
 
 const handleCheck = async (row) => {
   if(row.length == 0){
-    queryParams.cabinetIds = null;
+    queryParams.boxDevKeyList = null;
     getList();
     return;
   }

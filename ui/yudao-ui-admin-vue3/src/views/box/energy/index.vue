@@ -159,7 +159,8 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
   pageTotal: 0,
-})
+  boxDevKeyList : [],
+}) as any
 
 // 接口获取机房导航列表
 const getNavList = async() => {
@@ -180,7 +181,8 @@ const getTableData = async(reset = false) => {
       // roomId: null,
       runStatus: [],
       pduBox: 0,
-      company: queryParams.company
+      company: queryParams.company,
+      boxDevKeyList : queryParams.boxDevKeyList,
     })
     if (res.list) {
       tableData.value = res.list.map(item => {
@@ -215,16 +217,27 @@ const handleSwitchModal = (value) => {
 
 // 处理左侧树导航选择事件
 const handleCheck = (row) => {
-  isFirst.value = false
+  if(row.length == 0){
+    queryParams.boxDevKeyList = null;
+    getTableData();
+    return;
+  }
   const ids = [] as any
+  var haveCabinet = false;
   row.forEach(item => {
-    if (item.type == 3) {
-      ids.push(item.id)
+    if (item.type == 6) {
+      ids.push(item.unique)
+      haveCabinet = true;
     }
   })
-  cabinetIds.value = ids
+  if(!haveCabinet ){
+    queryParams.boxDevKeyList = [-1]
+  }else{
+    queryParams.boxDevKeyList = ids
+  }
   getTableData(true)
 }
+
 
 // 跳转详情
 const toDetail = (roomId, id,location) => {
