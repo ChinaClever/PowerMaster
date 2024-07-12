@@ -284,6 +284,8 @@ public class CabinetServiceImpl implements CabinetService {
                             }
 
                         }
+                        dto.setBoxIndexA(cabinetBus.getBoxIndexA());
+                        dto.setBoxIndexB(cabinetBus.getBoxIndexB());
                     }
                 }
 
@@ -771,7 +773,8 @@ public class CabinetServiceImpl implements CabinetService {
         }
         cabinetBus.setOutletIdB(vo.getBoxOutletIdB());
         cabinetBus.setId(bus.getId());
-        cabinetBus.setBoxIndexName(vo.getBoxIndexName());
+        cabinetBus.setBoxIndexA(vo.getBoxIndexA());
+        cabinetBus.setBoxIndexB(vo.getBoxIndexB());
         return cabinetBus;
     }
 
