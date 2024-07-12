@@ -17,4 +17,8 @@ export const MachineColumnApi = {
   getDataDetail: async (params: any) => {
     return await request.get({ url: `/aisle/data/detail`, params })
   },
+  // 柜列主界面数据
+  getMaindata: async (params: any) => {
+    return await request.get({ url: `/aisle/main/data`, params })
+  },
 }

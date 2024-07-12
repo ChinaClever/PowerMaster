@@ -55,11 +55,6 @@ public class AisleBoxDTO implements Serializable {
     private Integer boxIndex;
 
     /**
-     * 标记位-名字  前端用
-     */
-    private String boxIndexName;
-
-    /**
      * 输出位昨日电量
      */
     @Schema(description = "昨日电量", example = "1")
