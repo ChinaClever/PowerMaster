@@ -13,4 +13,8 @@ export const MachineColumnApi = {
   saveAisleBus: async (data: any) => {
     return await request.post({ url: `/aisle/bus/save`, data })
   },
+  // 柜列状态数据详情
+  getDataDetail: async (params: any) => {
+    return await request.get({ url: `/aisle/data/detail`, params })
+  },
 }

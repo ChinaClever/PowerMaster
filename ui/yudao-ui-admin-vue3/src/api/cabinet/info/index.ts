@@ -49,6 +49,18 @@ export const CabinetApi = {
   getRackPage: async (data: any) => {
     return await request.post({ url: `/rack/data/page`, data })
   },
+  // 机架数据详情
+  getRackDetail: async (params: any) => {
+    return await request.get({ url: `/rack/data/detail`, params })
+  },
+  // 机架功率曲线
+  getPowTrend: async (params: any) => {
+    return await request.get({ url: `/rack/pow/trend`, params })
+  },
+  // 机架用能趋势
+  getEleTrend: async (params: any) => {
+    return await request.get({ url: `/rack/ele/trend`, params })
+  },
 }
 
 // 机柜温度颜色 VO
