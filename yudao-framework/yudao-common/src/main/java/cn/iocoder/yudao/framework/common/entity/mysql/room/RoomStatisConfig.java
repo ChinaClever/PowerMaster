@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.framework.common.entity.mysql.cabinet;
+package cn.iocoder.yudao.framework.common.entity.mysql.room;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
@@ -9,12 +9,12 @@ import java.time.LocalDateTime;
 /**
  * @author luowei
  * @version 1.0
- * @description: 机柜计算服务配置
+ * @description: 机房计算服务配置
  * @date 2024/4/17 14:05
  */
 @Data
-@TableName(value = "cabinet_statis_config")
-public class CabinetStatisConfig implements Serializable {
+@TableName(value = "room_statis_config")
+public class RoomStatisConfig implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
@@ -52,16 +52,6 @@ public class CabinetStatisConfig implements Serializable {
      */
     private String eqMonthCron;
 
-    /**
-     * 负载限制
-     */
-    private int loadLimit;
-
-
-    /**
-     * 状态告警开关
-     */
-    private int statusAlarm;
 
     /**
      * 存储任务
@@ -69,47 +59,14 @@ public class CabinetStatisConfig implements Serializable {
     private String storeCron;
 
     /**
-     * 告警任务
-     */
-    private String alarmCron;
-
-
-    /**
-     * 告警推送开关
-     */
-    private int alarmPush;
-
-    /**
-     * 告警推送任务
-     */
-    private String alarmPushCron;
-
-    /**
-     * 定时推送开关
-     */
-    private int timingPush;
-
-    /**
-     * 定时推送任务
-     */
-    private String timingPushCron;
-
-    /**
      * redis推送任务
      */
     private String redisCron;
-
 
     /**
      * 电能存储任务
      */
     private String eleStoreCron;
-
-
-    /**
-     * 推送mq配置
-     */
-    private String pushMqs;
 
 
     /**
