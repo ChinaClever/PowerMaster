@@ -199,4 +199,16 @@ public class CabinetDTO {
      */
     @Schema(description = "昨日电量", example = "1")
     private Double yesterdayEq;
+
+    /**
+     * 标记位-名字  前端用
+     */
+    private Integer boxIndexA;
+
+    /**
+     * 标记位-名字  前端用
+     */
+    private Integer boxIndexB;
+
+
 }

@@ -284,6 +284,8 @@ public class CabinetServiceImpl implements CabinetService {
                             }
 
                         }
+                        dto.setBoxIndexA(cabinetBus.getBoxIndexA());
+                        dto.setBoxIndexB(cabinetBus.getBoxIndexB());
                     }
                 }
 
