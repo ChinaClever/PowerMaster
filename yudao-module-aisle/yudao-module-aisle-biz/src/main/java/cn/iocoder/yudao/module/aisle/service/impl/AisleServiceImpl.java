@@ -28,6 +28,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.enums.DisableEnums;
+import cn.iocoder.yudao.framework.common.enums.PduBoxEnums;
 import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.util.TimeUtil;
@@ -41,6 +42,7 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
@@ -174,15 +176,36 @@ public class AisleServiceImpl implements AisleService {
                 cfg.setYCoordinate(aisleSaveVo.getYCoordinate());
                 aisleCfgMapper.insert(cfg);
             }
+
+
+            String busIpA;
+
+            String busNameA;
+
+            String busIpB;
+
+            String busNameB;
+
+
             //母线信息
             List<AisleBar> aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
                     .eq(AisleBar::getAisleId,index.getId()));
             List<AisleBarDTO> barVos = new ArrayList<>();
             if (Objects.nonNull(aisleSaveVo.getBarA())){
                 barVos.add(aisleSaveVo.getBarA());
+                busIpA = aisleSaveVo.getBarA().getDevIp();
+                busNameA = aisleSaveVo.getBarA().getBusName();
+            } else {
+                busNameA = "";
+                busIpA = "";
             }
             if (Objects.nonNull(aisleSaveVo.getBarB())){
                 barVos.add(aisleSaveVo.getBarB());
+                busIpB = aisleSaveVo.getBarB().getDevIp();
+                busNameB = aisleSaveVo.getBarB().getBusName();
+            } else {
+                busNameB = "";
+                busIpB = "";
             }
 
             if (!CollectionUtils.isEmpty(barVos)){
@@ -225,6 +248,14 @@ public class AisleServiceImpl implements AisleService {
                 aisleSaveVo.getCabinetList().forEach(cabinetVo -> {
                     cabinetVo.setRoomId(aisleSaveVo.getRoomId());
                     cabinetVo.setAisleId(index.getId());
+                    if (aisleSaveVo.getPduBar().equals(PduBoxEnums.BUS.getValue())){
+                        cabinetVo.setBusIpA(busIpA);
+                        cabinetVo.setBusNameA(busNameA);
+                        cabinetVo.setBusIpB(busIpB);
+                        cabinetVo.setBusNameB(busNameB);
+                    }
+                    cabinetVo.setPduBox(aisleSaveVo.getPduBar());
+
                     if (Objects.nonNull(cabinetVo.getIndex())
                             && StringUtils.isNotEmpty(aisleSaveVo.getDirection())
                             && "x".equals(aisleSaveVo.getDirection())){
@@ -526,6 +557,8 @@ public class AisleServiceImpl implements AisleService {
         //母线
         List<AisleBar>  aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
                 .eq(AisleBar::getAisleId,aisleId));
+
+
         if (!CollectionUtils.isEmpty(aisleBars)){
             //key
             List<String> keys = aisleBars.stream().map(AisleBar::getBarKey).collect(Collectors.toList());
