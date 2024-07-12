@@ -10,6 +10,6 @@ public interface ErrorCodeConstants {
 
     ErrorCode BOX_CURBALANCE_COLOR_NOT_EXISTS = new ErrorCode(11111248, "插接箱不平衡度颜色不存在");
 
-
+    ErrorCode STATIS_CONFIG_NOT_EXISTS = new ErrorCode(11111249, "柜列计算服务配置不存在");
 
 }

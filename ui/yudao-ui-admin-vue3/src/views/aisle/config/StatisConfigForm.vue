@@ -100,6 +100,12 @@
               </el-form-item>
               秒执行一次
             </el-form-item>
+
+            <el-form-item label="redis key过期时间（秒）" prop="redisExpire">
+              <el-input v-model="formData.redisExpire" placeholder="请输入redis key过期时间" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
             <el-form-item label="电能存储任务" prop="eleStoreCronValue">                  
               每
               <el-input prop="eleStoreCronValue"  size="small" style="width: 70px" type="number" :min="1" :max="formData.eleStoreCronType == 3 ? 24 : 60" v-model="formData.eleStoreCronValue" />
@@ -139,22 +145,6 @@
               </el-select>
               执行一次
             </el-form-item>
-            <el-form-item label="redis key过期时间（秒）" prop="redisExpire">
-              <el-input v-model="formData.redisExpire" placeholder="请输入redis key过期时间" />
-            </el-form-item>
-            <el-form-item label="负载限制（%）" prop="loadLimit">
-              <el-input v-model="formData.loadLimit" type="number" placeholder="请输入负载限制" />
-            </el-form-item>  
-            <el-form-item label="状态告警开关" prop="statusAlarm">            
-              <el-radio-group v-model="formData.statusAlarm">
-                <el-radio :label="1">开启</el-radio>
-                <el-radio :label="0">关闭</el-radio>
-              </el-radio-group>
-            </el-form-item>
-
-          </el-col>
-          <el-col :span="12">
-                      
             <el-form-item label="存储任务" prop="storeCronValue">
             
               每
@@ -174,86 +164,7 @@
                 />
               </el-select>
               执行一次
-            </el-form-item>
-            <el-form-item label="告警任务" prop="alarmCronValue">
-     
-              每
-              <el-input prop="alarmCronValue"  size="small" style="width: 70px" type="number" :min="1" :max="formData.alarmCronType == 3 ? 24 : 60" v-model="formData.alarmCronValue" />
-              <el-select  size="small" v-model="formData.alarmCronType" placeholder="时间" clearable style="width: 80px">
-                <el-option
-                    label="秒钟"
-                    :value="1"
-                />
-                <el-option
-                  label="分钟"
-                  :value="2"
-                />
-                <el-option
-                  label="小时"
-                  :value="3"
-                />
-              </el-select>
-              执行一次
-            </el-form-item>          
-
-            <el-form-item label="推送mq配置" prop="pushMqs">          
-              <el-checkbox-group :disabled="formData.timingPush == null || formData.alarmPush == null  || (formData.timingPush === 0 && formData.alarmPush === 0)" v-model="formData.pushMqs">
-                <el-checkbox label="1" value="1">kafka</el-checkbox>
-                <el-checkbox label="2" value="2">RocketMQ</el-checkbox>
-                <el-checkbox label="3" value="3">RabbitMQ</el-checkbox>
-              </el-checkbox-group>
-            </el-form-item>            
-            <el-form-item label="定时推送开关" prop="timingPush">  
-              <el-radio-group v-model="formData.timingPush" >
-                <el-radio :label="1">开启</el-radio>
-                <el-radio :label="0">关闭</el-radio>
-              </el-radio-group>
-            </el-form-item>
-            <el-form-item label="定时推送任务" prop="timingPushCronValue">     
-      
-              每
-              <el-input prop="timingPushCronValue" :disabled="formData.timingPush == null || formData.timingPush == 0" size="small" style="width: 70px" type="number" :min="1" :max="formData.timingPushCronType == 3 ? 24 : 60" v-model="formData.timingPushCronValue" />
-              <el-select :disabled="formData.timingPush == null ||  formData.timingPush == 0" size="small" v-model="formData.timingPushCronType" placeholder="时间" clearable style="width: 80px">
-                <el-option
-                    label="秒钟"
-                    :value="1"
-                />
-                <el-option
-                  label="分钟"
-                  :value="2"
-                />
-                <el-option
-                  label="小时"
-                  :value="3"
-                />
-              </el-select>
-              执行一次
-            </el-form-item>          
-            <el-form-item label="告警推送开关" prop="alarmPush">            
-              <el-radio-group v-model="formData.alarmPush" >
-                <el-radio :label="1">开启</el-radio>
-                <el-radio :label="0">关闭</el-radio>
-              </el-radio-group>
-            </el-form-item>
-            <el-form-item label="告警推送任务" prop="alarmPushCronValue">                    
-              每
-                <el-input prop="alarmPushCronValue" :disabled="formData.alarmPush == null || formData.alarmPush == 0" size="small" style="width: 70px" type="number" :min="1" :max="formData.alarmPushCronType == 3 ? 24 : 60" v-model="formData.alarmPushCronValue" />
-                <el-select :disabled=" formData.alarmPush == null || formData.alarmPush == 0" size="small" v-model="formData.alarmPushCronType" placeholder="时间" clearable style="width: 80px">
-                  <el-option
-                      label="秒钟"
-                      :value="1"
-                  />
-                  <el-option
-                    label="分钟"
-                    :value="2"
-                  />
-                  <el-option
-                    label="小时"
-                    :value="3"
-                  />
-                </el-select>
-                执行一次
-            </el-form-item>
+            </el-form-item>         
             <el-form-item label="日用电告警开关" prop="eleAlarmDay">
               <el-radio-group v-model="formData.eleAlarmDay">
                 <el-radio :label="1">开启</el-radio>
@@ -281,7 +192,7 @@
   </ContentWrap>
 </template>
 <script setup lang="ts">
-import { StatisConfigApi, StatisConfigVO } from '@/api/cabinet/statisconfig'
+import { StatisConfigApi, StatisConfigVO } from '@/api/aisle/aislestatisconfig'
 
 /** 机柜计算服务配置 表单 */
 defineOptions({ name: 'StatisConfigForm' })
@@ -302,17 +213,12 @@ const formData = ref({
   eqDayCron: undefined,
   eqWeekCron: undefined,
   eqMonthCron: undefined,
-  loadLimit: undefined,
-  statusAlarm: undefined,
   storeCron: undefined,
   alarmCron: undefined,
-  alarmPush: undefined,
   alarmPushCron: undefined,
-  pushMqs: [] as any,
   redisExpire: undefined,
   eleStoreCron: undefined,
   timingPushCron: undefined,
-  timingPush: undefined,
   redisCron: undefined,
   dayHour : null,
   dayMin : null,
@@ -333,13 +239,9 @@ const formData = ref({
   eleStoreCronType : undefined,
   eleStoreCronValue : undefined,
   timingPushCronType : undefined,
-  timingPushCronValue : undefined,
   alarmPushCronType : undefined,
-  alarmPushCronValue : undefined,
   storeCronType : undefined,
   storeCronValue : undefined,
-  alarmCronType : undefined,
-  alarmCronValue : undefined,
   redisCronType : undefined,
   redisCronValue : undefined,
   eleAlarmDay: undefined,
@@ -425,23 +327,6 @@ const checkWeek = (rule: any, value: any, callback: any) => {
 
 const formRules = reactive({
   billMode: [{ required: true, message: '计费方式不能为空', trigger: 'blur' }],
-  loadLimit: [{ required: true, message: '负载限制不能为空', trigger: 'blur' },
-  {validator: (rule: any, value: any, callback: any) => {
-                if(value){
-                  if(value > 100){
-                    return callback(new Error('不超过100'));
-                  } else if (value < 0){
-                    return callback(new Error('应大于0'));
-                  } else {
-                    return callback();
-                  }
-                }else{
-                  return callback();
-                }
-              }, trigger: 'blur'}],
-  statusAlarm: [{ required: true, message: '状态告警开关不能为空', trigger: 'blur' }],
-  alarmPush: [{ required: true, message: '告警推送开关不能为空', trigger: 'blur' }],
-  timingPush: [{ required: true, message: '定时推送开关不能为空', trigger: 'blur' }],
   dayHour:[{validator: checkHour, trigger: 'blur'}],
   dayMin : [{validator: checkMinAndSec, trigger: 'blur'}],
   daySec : [{validator: checkMinAndSec, trigger: 'blur'}],
@@ -459,10 +344,7 @@ const formRules = reactive({
   eqWeekMin : [{validator: checkMinAndSec, trigger: 'blur'}],
   eqWeekSec : [{validator: checkMinAndSec, trigger: 'blur'}],
   eleStoreCronValue:[{validator: checkCronValue, trigger: 'blur'}],
-  timingPushCronValue:[{validator: checkCronValue, trigger: 'blur'}],
-  alarmPushCronValue:[{validator: checkCronValue, trigger: 'blur'}],
   storeCronValue:[{validator: checkCronValue, trigger: 'blur'}],
-  alarmCronValue:[{validator: checkCronValue, trigger: 'blur'}],
   redisCronValue:[{validator: checkCronValue, trigger: 'blur'}],
   eleAlarmDay: [{ required: true, message: '日用电告警开关不能为空', trigger: 'blur' }],
   eleAlarmMonth: [{ required: true, message: '月用电告警开关不能为空', trigger: 'blur' }],
@@ -505,16 +387,8 @@ const open = async (type: string, id?: number) => {
     formId.value = id;
     try {
       formData.value = await StatisConfigApi.getStatisConfig(id)
-      if(!formData.value.pushMqs){
-        formData.value.pushMqs = [];
-      }else{
-        formData.value.pushMqs = formData.value.pushMqs?.split(",");
-      }
       getTypeAndValue(formData.value.eleStoreCron,formData.value,"eleStoreCronType","eleStoreCronValue");
-      getTypeAndValue(formData.value.timingPushCron,formData.value,"timingPushCronType","timingPushCronValue");
-      getTypeAndValue(formData.value.alarmPushCron,formData.value,"alarmPushCronType","alarmPushCronValue");
       getTypeAndValue(formData.value.storeCron,formData.value,"storeCronType","storeCronValue");
-      getTypeAndValue(formData.value.alarmCron,formData.value,"alarmCronType","alarmCronValue");
       getTypeAndValue(formData.value.redisCron,formData.value,"redisCronType","redisCronValue");
       if(formData.value.dayCron){
         var temp = formData.value.dayCron?.split(" ");
@@ -635,34 +509,14 @@ const submitForm = async () => {
     if(formData.value.storeCronType && formData.value.storeCronValue){
       setCronExpression(formData.value.storeCronType,formData.value.storeCronValue,formData.value,"storeCron")
     }
-    if(formData.value.alarmCronType && formData.value.alarmCronValue){
-      setCronExpression(formData.value.alarmCronType,formData.value.alarmCronValue,formData.value,"alarmCron")
-    }
     if(formData.value.redisCronType && formData.value.redisCronValue){
       setCronExpression(formData.value.redisCronType,formData.value.redisCronValue,formData.value,"redisCron")
     }
     if(formData.value.eleStoreCronType && formData.value.eleStoreCronValue){
       setCronExpression(formData.value.eleStoreCronType,formData.value.eleStoreCronValue,formData.value,"eleStoreCron")
     }
-    if(formData.value.timingPush == 1 && formData.value.timingPushCronType && formData.value.timingPushCronValue){
-      setCronExpression(formData.value.timingPushCronType,formData.value.timingPushCronValue,formData.value,"timingPushCron")
-    }
-    if(formData.value.alarmPush == 1 && formData.value.alarmPushCronType && formData.value.alarmPushCronValue){
-      setCronExpression(formData.value.alarmPushCronType,formData.value.alarmPushCronValue,formData.value,"alarmPushCron")
-    }
-    
+
     const data = formData.value as unknown as StatisConfigVO
-    var tempArr = "";
-    formData.value.pushMqs?.forEach((element,index) => {
-      if(element){
-        if(index != formData.value.pushMqs?.length - 1){
-          tempArr = tempArr + element + ",";
-        } else {
-          tempArr = tempArr + element;
-        }
-      }
-    });
-    data.pushMqs = tempArr;
     if (formType.value === 'create') {
       await StatisConfigApi.createStatisConfig(data)
       message.success(t('common.createSuccess'))
@@ -691,17 +545,12 @@ const resetForm = () => {
     eqDayCron: undefined,
     eqWeekCron: undefined,
     eqMonthCron: undefined,
-    loadLimit: undefined,
-    statusAlarm: undefined,
     storeCron: undefined,
     alarmCron: undefined,
-    alarmPush: undefined,
     alarmPushCron: undefined,
-    pushMqs: undefined,
     redisExpire: undefined,
     eleStoreCron: undefined,
     timingPushCron: undefined,
-    timingPush: undefined,
     redisCron: undefined,
   }
   formRef.value?.resetFields()
