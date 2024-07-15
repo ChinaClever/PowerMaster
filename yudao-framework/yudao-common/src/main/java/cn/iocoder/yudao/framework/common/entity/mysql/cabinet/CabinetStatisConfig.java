@@ -128,16 +128,6 @@ public class CabinetStatisConfig implements Serializable {
     private  int eleAlarmMonth;
 
     /**
-     * 日用能限制
-     */
-    private double eleLimitDay;
-
-    /**
-     * 月用能限制
-     */
-    private double eleLimitMonth;
-
-    /**
      * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)

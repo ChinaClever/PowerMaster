@@ -94,6 +94,12 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
                                 .set(StringUtils.isNotEmpty(updateReqVO.getConfirmReason()),SystemAlarmRecord::getConfirmReason,updateReqVO.getConfirmReason())
                                 .set(Objects.nonNull(updateReqVO.getStatus()),SystemAlarmRecord::getStatus,updateReqVO.getStatus()));
                     }
+                }else if (record.getAlarmType().equals(AlarmTypeEnums.ELE.getType())){
+                    //用能告警可直接结束
+                    alarmRecordMapper.update(null,new LambdaUpdateWrapper<SystemAlarmRecord>()
+                            .eq(SystemAlarmRecord::getId,updateReqVO.getId())
+                            .set(StringUtils.isNotEmpty(updateReqVO.getConfirmReason()),SystemAlarmRecord::getConfirmReason,updateReqVO.getConfirmReason())
+                            .set(Objects.nonNull(updateReqVO.getStatus()),SystemAlarmRecord::getStatus,updateReqVO.getStatus()));
                 }
             }
         }else {
