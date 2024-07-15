@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="false"  :lazy="true" :load="loadNode" navTitle="机架报表">
+  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="机房报表">
     <template #NavInfo>
       <div >
         <div class="header">
@@ -56,7 +56,7 @@
           />
         </el-form-item> -->
 
-        <el-form-item label="机架Id" prop="ipAddr" >
+        <el-form-item label="机房Id" prop="ipAddr" >
           <el-input
             v-model="queryParams.id"
             placeholder="请输入IP"
@@ -142,20 +142,51 @@
                     :header-cell-style="arraySpanMethod"
                     >
                     <el-table-column  align="center" label="基本信息" >
-                      <el-table-column  align="center" label="基本信息"  prop="baseInfoName" />
-                      <el-table-column  prop="baseInfoValue" >
+                      <el-table-column :show-header="false" prop="baseInfoName" />
+                      <el-table-column :show-header="false" prop="baseInfoValue" />
+                    </el-table-column>
+                    
+                      <!-- <template #default="scope">
+                        <span v-if="scope.$index === 2">
+                          <el-tag  v-if="scope.row.baseInfoValue == 0">正常</el-tag>
+                          <el-tag type="warning" v-if="scope.row.baseInfoValue == 1">预警</el-tag>
+                          <el-popover
+                              placement="top-start"
+                              title="告警内容"
+                              :width="500"
+                              trigger="hover"
+                              :content="scope.row.pduAlarm"
+                              v-if="scope.row.baseInfoValue == 2"
+                            >
+                              <template #reference>
+                                <el-tag type="danger">告警</el-tag>
+                              </template>
+                            </el-popover>
+                          <el-tag type="info" v-if="scope.row.baseInfoValue == 4">故障</el-tag>
+                          <el-tag type="info" v-if="scope.row.baseInfoValue == 5">离线</el-tag>
+                        </span>
+                        <span v-else>{{ scope.row.baseInfoValue }}</span>
+                      </template>
+                    </el-table-column> -->
+                    <el-table-column  align="center" label="能耗" >
+                      <el-table-column :show-header="false" prop="consumeName"  />
+                      <el-table-column :show-header="false" prop="consumeValue" />
+                    </el-table-column>
+                    <el-table-column  align="center" label="占比" >
+                      <el-table-column :show-header="false" prop="percentageName"  />
+                      <el-table-column :show-header="false" prop="percentageValue" >
                         <template #default="scope">
-                          <span v-if="scope.$index === 1">
-                            <el-tag type="warning" v-if="scope.row.baseInfoValue == 0">关机</el-tag>
-                            <el-tag  v-if="scope.row.baseInfoValue == 1">开机</el-tag>                        
+                          <span v-if="scope.$index === 0 && scope.row.percentageValue != null">
+                            <div class="progressContainer">
+                              <div class="progress">
+                                <div class="left" :style="`flex: ${scope.row.percentageValue}`">{{scope.row.percentageValue}}%</div>
+                                <div class="line"></div>
+                                <div class="right" :style="`flex: ${100 - scope.row.percentageValue}`">{{100 - scope.row.percentageValue}}%</div>
+                              </div>
+                            </div>                            
                           </span>
-                          <span v-else>{{ scope.row.baseInfoValue }}</span>
                         </template>
                       </el-table-column>
-                    </el-table-column>
-                    <el-table-column  align="center" label="能耗">
-                      <el-table-column  prop="consumeName"  />
-                      <el-table-column  prop="consumeValue" />
                     </el-table-column>
                     
                   </el-table>
@@ -223,8 +254,7 @@
 
 <script setup lang="ts">
 // import download from '@/utils/download'
-import { IndexApi } from '@/api/rack/index'
-import { CabinetApi } from '@/api/cabinet/info'
+import { IndexApi } from '@/api/room/roomindex'
 import * as echarts from 'echarts';
 import { ElTree } from 'element-plus'
 import Line from './component/Line.vue'
@@ -356,26 +386,30 @@ const queryParams = reactive({
   cascadeAddr : 0
 }) as any
 
+const serverRoomArr =  ref([]) as any
+
 //折叠功能
 
-const loadNode = async (node: any, resolve: (data: Tree[]) => void) => {
-  if (node.level === 0) {
-    var temp = await CabinetApi.getRoomList({});
-    return resolve(temp)
+
+const getNavList = async() => {
+  const res = await IndexApi.getRoomList()
+  serverRoomArr.value = res
+  if (res && res.length > 0) {
+    const room = res[0]
+    const keys = [] as string[]
+    room.children.forEach(child => {
+      if(child.children.length > 0) {
+        child.children.forEach(son => {
+          keys.push(son.id + '-' + son.type)
+        })
+      }
+    })
   }
-  if (node.level === 1){
-    var temp = await IndexApi.getRackAll({id : node.data.id});
-    return resolve(temp[0].children);
-  } 
-  if (node.level >= 2){
-    return resolve(node?.data?.children);
-  } 
 }
 
-
-
 const handleClick = (row) => {
-  if(row.type != null  && row.type == 5){
+  if(row.id != null){
+
     queryParams.id = row.id
     handleQuery();
   }
@@ -509,7 +543,7 @@ const getList = async () => {
 }
 
 const handlePFLineQuery = async () => {
-  const data = await IndexApi.getRackPFLine(queryParams);
+  const data = await IndexApi.getRoomPFLine(queryParams);
   pfLineList.value = data.pfLineRes;
   
   if(pfLineList.value?.time != null && pfLineList.value?.time?.length > 0){
@@ -581,29 +615,26 @@ const handleConsumeQuery = async () => {
 const handleDetailQuery = async () => {
   var temp = [] as any;
   
-  var rackInfo =  await IndexApi.getRackRedis(queryParams);
-
-  console.log("rackInfo",rackInfo)
-  if(rackInfo != null){
-    temp.push({
-      baseInfoName : "所属位置",
-      baseInfoValue : rackInfo?.aisle_name ? rackInfo?.room_name + '-' +  rackInfo?.aisle_name + '-'  + rackInfo?.cabinet_name + '-' +  rackInfo?.rack_name : rackInfo?.room_name + '-' + rackInfo?.cabinet_name + '-' +  rackInfo?.rack_name,
-      consumeName : "当前总视在功率",
-    consumeValue : rackInfo?.rack_power != null ? rackInfo?.rack_power?.total_data?.pow_apparent?.toFixed(3) + "kVA" : '/',
-    })
-    temp.push({
-      baseInfoName : "设备状态",
-      baseInfoValue : rackInfo?.status != null ? rackInfo.status : '/',
-      consumeName : "当前总有功功率",
-      consumeValue : rackInfo?.rack_power != null ? (rackInfo?.rack_power?.total_data?.pow_active?.toFixed(3) + "kW") : '/',
-    })
-    temp.push({
-      consumeName : "当前总无功功率",
-      consumeValue : rackInfo?.rack_power != null ? rackInfo?.rack_power?.total_data?.pow_reactive?.toFixed(3) + "kVar" : '/'
-    })
-    CabinetTableData.value = temp;
-  }
+  var data = await IndexApi.getRoomBalancePage({id : queryParams.id});
+  var RoomInfo = data.list[0];
   
+  temp.push({
+    baseInfoName : "所属位置",
+    baseInfoValue : RoomInfo?.location ,
+    consumeName : "当前总视在功率",
+    consumeValue : RoomInfo?.powApparentTotal.toFixed(3) + "kVA",
+    percentageName: "当前AB路占比",
+    percentageValue: RoomInfo.rateA != null ? RoomInfo.rateA.toFixed(0) : 50,
+  })
+  temp.push({
+    consumeName : "当前总有功功率",
+    consumeValue : RoomInfo?.powActiveTotal?.toFixed(3) + "kW"
+  })
+  temp.push({
+    consumeName : "当前总无功功率",
+    consumeValue : RoomInfo?.powReactiveTotal != null ? RoomInfo?.powReactiveTotal?.toFixed(3) + "kVar" : '/'
+  })
+  CabinetTableData.value = temp;
 }
 
 watch(filterText, (val) => {
@@ -676,6 +707,7 @@ const handleQuery = async () => {
 onMounted( async () =>  {
   // getList();
   // initChart();
+  getNavList();
 })
 </script>
 <style scoped lang="scss">

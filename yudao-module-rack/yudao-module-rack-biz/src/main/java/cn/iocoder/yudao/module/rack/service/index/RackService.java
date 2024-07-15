@@ -58,4 +58,6 @@ public interface RackService {
     Map getReportPowDataById(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
     String getRackRedisById(Integer id);
+
+    Map getRoomPFLine(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 }

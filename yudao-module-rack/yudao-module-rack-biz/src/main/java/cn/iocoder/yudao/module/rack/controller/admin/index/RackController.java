@@ -94,20 +94,26 @@ public class RackController {
 
     @GetMapping("/report/ele")
     @Operation(summary = "获得机架报表数据")
-    public CommonResult<Map> getReportConsumeDataById(String Id, Integer timeType, @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime, @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
-        return success(rackService.getReportConsumeDataById(Id,timeType,oldTime,newTime));
+    public CommonResult<Map> getReportConsumeDataById(String id, Integer timeType, @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime, @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
+        return success(rackService.getReportConsumeDataById(id,timeType,oldTime,newTime));
     }
 
     @GetMapping("/report/pow")
     @Operation(summary = "获得机架报表数据")
-    public CommonResult<Map> getReportPowDataById(String Id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
-        return success(rackService.getReportPowDataById(Id,timeType,oldTime,newTime));
+    public CommonResult<Map> getReportPowDataById(String id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
+        return success(rackService.getReportPowDataById(id,timeType,oldTime,newTime));
+    }
+
+    @GetMapping("/report/pfline")
+    @Operation(summary = "获得机架报表数据")
+    public CommonResult<Map> getRoomPFLine(String id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime)  {
+        return success(rackService.getRoomPFLine(id,timeType,oldTime,newTime));
     }
 
     @GetMapping("/redisData")
     @Operation(summary = "获得机架索引")
     @Parameter(name = "Id", description = "编号", required = true, example = "1024")
-    public String getRackRedisById(@RequestParam("Id") Integer Id) {
+    public String getRackRedisById(@RequestParam("id") Integer Id) {
         return rackService.getRackRedisById(Id);
     }
 }

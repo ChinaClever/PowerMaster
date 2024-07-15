@@ -55,6 +55,10 @@ export const IndexApi = {
     return await request.get({ url: `/rack/index/report/pow`,params})
   },
 
+  getRackPFLine : async (params) => {
+    return await request.get({ url: `/rack/index/report/pfline`, params })
+  },
+
   getRackAll: async (params: any) => {
     return await request.get({ url: `/room/rack/menu`, params })
   },

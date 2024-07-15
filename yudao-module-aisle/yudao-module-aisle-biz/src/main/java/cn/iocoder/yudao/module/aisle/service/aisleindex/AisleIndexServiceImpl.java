@@ -7,7 +7,6 @@ import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalMonthDo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.pow.AislePowHourDo;
-import cn.iocoder.yudao.framework.common.entity.es.cabinet.pow.CabinetPowHourDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
@@ -883,66 +882,66 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 }
 
                 String apparentTotalMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "apparent_total_max_value");
-                CabinetPowHourDo totalMaxApparent = JsonUtils.parseObject(apparentTotalMaxValue, CabinetPowHourDo.class);
+                AislePowHourDo totalMaxApparent = JsonUtils.parseObject(apparentTotalMaxValue, AislePowHourDo.class);
                 String apparentTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "apparent_total_min_value");
-                CabinetPowHourDo totalMinApparent = JsonUtils.parseObject(apparentTotalMinValue, CabinetPowHourDo.class);
+                AislePowHourDo totalMinApparent = JsonUtils.parseObject(apparentTotalMinValue, AislePowHourDo.class);
 
                 String activeTotalMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "active_total_max_value");
-                CabinetPowHourDo totalMaxActive = JsonUtils.parseObject(activeTotalMaxValue, CabinetPowHourDo.class);
+                AislePowHourDo totalMaxActive = JsonUtils.parseObject(activeTotalMaxValue, AislePowHourDo.class);
                 String activeTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "active_total_min_value");
-                CabinetPowHourDo totalMinActive = JsonUtils.parseObject(activeTotalMinValue, CabinetPowHourDo.class);
+                AislePowHourDo totalMinActive = JsonUtils.parseObject(activeTotalMinValue, AislePowHourDo.class);
 
 
                 String apparentAMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "apparent_a_max_value");
-                CabinetPowHourDo maxApparentA = JsonUtils.parseObject(apparentAMaxValue, CabinetPowHourDo.class);
+                AislePowHourDo maxApparentA = JsonUtils.parseObject(apparentAMaxValue, AislePowHourDo.class);
                 String apparentAMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "apparent_a_min_value");
-                CabinetPowHourDo minApparentA = JsonUtils.parseObject(apparentAMinValue, CabinetPowHourDo.class);
+                AislePowHourDo minApparentA = JsonUtils.parseObject(apparentAMinValue, AislePowHourDo.class);
 
                 String activeAMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "active_a_max_value");
-                CabinetPowHourDo maxActiveA = JsonUtils.parseObject(activeAMaxValue, CabinetPowHourDo.class);
+                AislePowHourDo maxActiveA = JsonUtils.parseObject(activeAMaxValue, AislePowHourDo.class);
                 String activeAMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "active_a_min_value");
-                CabinetPowHourDo minActiveA = JsonUtils.parseObject(activeAMinValue, CabinetPowHourDo.class);
+                AislePowHourDo minActiveA = JsonUtils.parseObject(activeAMinValue, AislePowHourDo.class);
 
                 String apparentBMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "apparent_b_max_value");
-                CabinetPowHourDo maxApparentB = JsonUtils.parseObject(apparentBMaxValue, CabinetPowHourDo.class);
+                AislePowHourDo maxApparentB = JsonUtils.parseObject(apparentBMaxValue, AislePowHourDo.class);
                 String apparentBMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "apparent_b_min_value");
-                CabinetPowHourDo minApparentB = JsonUtils.parseObject(apparentBMinValue, CabinetPowHourDo.class);
+                AislePowHourDo minApparentB = JsonUtils.parseObject(apparentBMinValue, AislePowHourDo.class);
 
                 String activeBMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "active_b_max_value");
-                CabinetPowHourDo maxActiveB = JsonUtils.parseObject(activeBMaxValue, CabinetPowHourDo.class);
+                AislePowHourDo maxActiveB = JsonUtils.parseObject(activeBMaxValue, AislePowHourDo.class);
                 String activeBMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "active_b_min_value");
-                CabinetPowHourDo minActiveB = JsonUtils.parseObject(activeBMinValue, CabinetPowHourDo.class);
+                AislePowHourDo minActiveB = JsonUtils.parseObject(activeBMinValue, AislePowHourDo.class);
 
                 result.put("totalLineRes",totalLineRes);
                 result.put("aLineRes",aLineRes);
                 result.put("bLineRes",bLineRes);
 
                 result.put("apparentPowMaxValue",totalMaxApparent.getApparentTotalMaxValue());
-                result.put("apparentPowMaxTime",totalMaxApparent.getApparentTotalMaxTime());
+                result.put("apparentPowMaxTime",totalMaxApparent.getApparentTotalMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 result.put("apparentPowMinValue",totalMinApparent.getApparentTotalMinValue());
-                result.put("apparentPowMinTime",totalMinApparent.getApparentTotalMinTime());
+                result.put("apparentPowMinTime",totalMinApparent.getApparentTotalMinTime().toString("yyyy-MM-dd HH:mm:ss"));
                 result.put("activePowMaxValue",totalMaxActive.getActiveTotalMaxValue());
-                result.put("activePowMaxTime",totalMaxActive.getActiveTotalMaxTime());
+                result.put("activePowMaxTime",totalMaxActive.getActiveTotalMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 result.put("activePowMinValue",totalMinActive.getActiveTotalMinValue());
-                result.put("activePowMinTime",totalMinActive.getActiveTotalMinTime());
+                result.put("activePowMinTime",totalMinActive.getActiveTotalMinTime().toString("yyyy-MM-dd HH:mm:ss"));
 
                 result.put("AapparentPowMaxValue",maxApparentA.getApparentAMaxValue());
-                result.put("AapparentPowMaxTime",maxApparentA.getApparentAMaxTime());
+                result.put("AapparentPowMaxTime",maxApparentA.getApparentAMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 result.put("AapparentPowMinValue",minApparentA.getApparentAMinValue());
-                result.put("AapparentPowMinTime",minApparentA.getApparentAMinTime());
+                result.put("AapparentPowMinTime",minApparentA.getApparentAMinTime().toString("yyyy-MM-dd HH:mm:ss"));
                 result.put("AactivePowMaxValue",maxActiveA.getActiveAMaxValue());
-                result.put("AactivePowMaxTime",maxActiveA.getActiveAMaxTime());
+                result.put("AactivePowMaxTime",maxActiveA.getActiveAMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 result.put("AactivePowMinValue",minActiveA.getActiveAMinValue());
-                result.put("AactivePowMinTime",minActiveA.getActiveAMinTime());
+                result.put("AactivePowMinTime",minActiveA.getActiveAMinTime().toString("yyyy-MM-dd HH:mm:ss"));
 
                 result.put("BapparentPowMaxValue",  maxApparentB.getApparentBMaxValue());
-                result.put("BapparentPowMaxTime",   maxApparentB.getApparentBMaxTime());
+                result.put("BapparentPowMaxTime",   maxApparentB.getApparentBMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 result.put("BapparentPowMinValue",  minApparentB.getApparentBMinValue());
-                result.put("BapparentPowMinTime",   minApparentB.getApparentBMinTime());
+                result.put("BapparentPowMinTime",   minApparentB.getApparentBMinTime().toString("yyyy-MM-dd HH:mm:ss"));
                 result.put("BactivePowMaxValue",    maxActiveB.getActiveBMaxValue());
-                result.put("BactivePowMaxTime",     maxActiveB.getActiveBMaxTime());
+                result.put("BactivePowMaxTime",     maxActiveB.getActiveBMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 result.put("BactivePowMinValue",    minActiveB.getActiveBMinValue());
-                result.put("BactivePowMinTime",     minActiveB.getActiveBMinTime());
+                result.put("BactivePowMinTime",     minActiveB.getActiveBMinTime().toString("yyyy-MM-dd HH:mm:ss"));
 
             }
         }catch (Exception e){

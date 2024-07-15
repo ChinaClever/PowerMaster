@@ -3,21 +3,21 @@ package cn.iocoder.yudao.module.rack.service.index;
 import cn.hutool.core.date.DateTime;
 import cn.iocoder.yudao.framework.common.entity.es.rack.ele.RackEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.rack.ele.RackEqTotalDayDo;
-import cn.iocoder.yudao.framework.common.entity.es.rack.pow.RackPowDayDo;
+
 import cn.iocoder.yudao.framework.common.entity.es.rack.pow.RackPowHourDo;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
-import com.alibaba.druid.util.StringUtils;
+
 import com.alibaba.fastjson2.JSONObject;
-import org.elasticsearch.action.search.MultiSearchRequest;
-import org.elasticsearch.action.search.MultiSearchResponse;
+import lombok.extern.slf4j.Slf4j;
+
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.metrics.Sum;
+import org.elasticsearch.search.SearchHits;
+
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,11 +37,10 @@ import cn.iocoder.yudao.module.rack.dal.mysql.index.RackMapper;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.rack.enums.ErrorCodeConstants.*;
 
@@ -52,6 +51,7 @@ import static cn.iocoder.yudao.module.rack.enums.ErrorCodeConstants.*;
  */
 @Service
 @Validated
+@Slf4j
 public class RackServiceImpl implements RackService {
 
     @Resource
@@ -106,338 +106,177 @@ public class RackServiceImpl implements RackService {
     }
 
     @Override
-    public Map getReportConsumeDataById(String Id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+    public Map getReportConsumeDataById(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
         Map result = new HashMap<>();
-        if(Id != null){
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            if(timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())){
-                if(oldTime.equals(newTime)){
-                    newTime = newTime.withHour(23).withMinute(59).withSecond(59);
-                }
-                MultiSearchRequest multiSearchRequest = new MultiSearchRequest();
-
-                // 创建时间分布搜索请求
-                SearchRequest rackRealTimeDisRequest = new SearchRequest("rack_ele_total_realtime");
-                SearchSourceBuilder rackRealTimeDisSourceBuilder = new SearchSourceBuilder();
-
-                rackRealTimeDisSourceBuilder.query(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime)).lte(formatter.format(newTime)))
-                        .must(QueryBuilders.termQuery("rack_id", Id)));
-
-                rackRealTimeDisSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
-                rackRealTimeDisSourceBuilder.size(24); // 设置返回的最大结果数
-                // 将搜索条件添加到请求中
-                rackRealTimeDisRequest.source(rackRealTimeDisSourceBuilder);
-                // 将第二个搜索请求添加到多索引搜索请求中
-                multiSearchRequest.add(rackRealTimeDisRequest);
-                double todayEle = 0;
-                List<Double> eq = new ArrayList<>();
-                List<String> time = new ArrayList<>();
-                double maxEle = -1;
-                DateTime maxEleTime = new DateTime();
-                double lastEq = 0;
-                double firstEq = 0;
-                int index = 0;
-                try {
-                    // 执行多索引搜索请求
-                    MultiSearchResponse multiSearchResponse = client.msearch(multiSearchRequest, RequestOptions.DEFAULT);
-
-                    // 解析搜索请求
-                    SearchResponse cabinetEleTotalRealDisResponse = multiSearchResponse.getResponses()[0].getResponse();
-                    if(cabinetEleTotalRealDisResponse != null){
-                        for (SearchHit hit : cabinetEleTotalRealDisResponse.getHits()) {
-                            index++;
-                            RackEleTotalRealtimeDo rackEleTotalRealtimeDo = JsonUtils.parseObject(hit.getSourceAsString(), RackEleTotalRealtimeDo.class);
-                            if(index == 1){
-                                firstEq = rackEleTotalRealtimeDo.getEleTotal();
-                            }
-                            double eleValue  = rackEleTotalRealtimeDo.getEleTotal() - lastEq;
-                            DateTime createTime = new DateTime(rackEleTotalRealtimeDo.getCreateTime());
-                            if(eleValue > maxEle){
-                                maxEle = eleValue;
-                                maxEleTime = createTime;
-                            }
-                            lastEq = rackEleTotalRealtimeDo.getEleTotal();
-                            if(index > 1){
-                                eq.add(eleValue);
-                                time.add(createTime.toString("yyyy-MM-dd HH:mm"));
-                            }
-                        }
+        LineResBase barRes = new LineResBase();
+        BarSeries barSeries = new BarSeries();
+        try {
+            if(id != null){
+                String index = null;
+                boolean isSameDay = false;
+                if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                    index = "rack_ele_total_realtime";
+                    if (oldTime.equals(newTime)) {
+                        newTime = newTime.withHour(23).withMinute(59).withSecond(59);
                     }
-                    result.put("eq",eq);
-                    result.put("time",time);
-                    result.put("totalEle",todayEle);
-                    result.put("maxEle",maxEle != -1 ? maxEle : null);
-                    result.put("maxEleTime",maxEle != -1 ? maxEleTime.toString("yyyy-MM-dd HH:mm:ss") : null);
+                    isSameDay = true;
+                } else {
+                    index = "rack_eq_total_day";
+                    oldTime = oldTime.plusDays(1);
+                    newTime = newTime.plusDays(1);
+                    isSameDay = false;
+                }
+                String startTime = localDateTimeToString(oldTime);
+                String endTime = localDateTimeToString(newTime);
+                List<String> rackData = getData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index);
+                Double firstEq = null;
+                Double lastEq = null;
+                Double totalEq = 0D;
+                Double maxEle = null;
+                String maxEleTime = null;
+                int nowTimes = 0;
+                if (isSameDay){
+                    for (String str : rackData) {
+                        nowTimes++;
+                        RackEleTotalRealtimeDo rackEleTotalRealtimeDo = JsonUtils.parseObject(str, RackEleTotalRealtimeDo.class);
+                        if (nowTimes == 1) {
+                            firstEq = rackEleTotalRealtimeDo.getEleTotal();
+                        }
+                        if (nowTimes > 1){
+                            barSeries.getData().add((float)(rackEleTotalRealtimeDo.getEleTotal() -lastEq));
+                            barRes.getTime().add(rackEleTotalRealtimeDo.getCreateTime().toString("HH:mm:ss"));
+                        }
+                        lastEq = rackEleTotalRealtimeDo.getEleTotal();
+                    }
+                    String eleMax = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "ele_total");
+                    RackEleTotalRealtimeDo eleMaxValue = JsonUtils.parseObject(eleMax, RackEleTotalRealtimeDo.class);
+                    if(eleMaxValue != null){
+                        maxEle = eleMaxValue.getEleTotal();
+                        maxEleTime = eleMaxValue.getCreateTime().toString("yyyy-MM-dd HH:mm:ss");
+                    }
+                    barRes.getSeries().add(barSeries);
+                    result.put("totalEle",totalEq);
+                    result.put("maxEle",maxEle);
+                    result.put("maxEleTime",maxEleTime);
                     result.put("firstEq",firstEq);
                     result.put("lastEq",lastEq);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }else {
-                MultiSearchRequest multiSearchRequest = new MultiSearchRequest();
-
-                // 创建聚合搜索请求
-                SearchRequest rackEqTotalDayRequest = new SearchRequest("rack_eq_total_day");
-                SearchSourceBuilder rackEqTotalDaySourceBuilder = new SearchSourceBuilder();
-                // 设置时间范围查询条件
-
-                rackEqTotalDaySourceBuilder.query(QueryBuilders.boolQuery()
-                        //今天的数据 cabinet_ele_total_realtime的时间范围查询必须使用字符串
-                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime.plusDays(1))).lte(formatter.format(newTime.plusDays(1))))
-                        .must(QueryBuilders.termQuery("rack_id", Id))); // 添加cabinet_id条件
-                // 设置聚合条件
-                rackEqTotalDaySourceBuilder.aggregation(AggregationBuilders.sum("total_eq")
-                        .field("eq_value"));
-                // 将搜索条件添加到请求中
-                rackEqTotalDayRequest.source(rackEqTotalDaySourceBuilder);
-                // 将第二个搜索请求添加到多索引搜索请求中
-                multiSearchRequest.add(rackEqTotalDayRequest);
-
-                // 创建时间分布搜索请求
-                SearchRequest rackTotalDayDisRequest = new SearchRequest("rack_eq_total_day");
-                SearchSourceBuilder rackTotalDayDisSourceBuilder = new SearchSourceBuilder();
-
-                rackTotalDayDisSourceBuilder.query(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime.plusDays(1))).lte(formatter.format(newTime.plusDays(1))))
-                        .must(QueryBuilders.termQuery("rack_id", Id)));
-
-                rackTotalDayDisSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
-                rackTotalDayDisSourceBuilder.size(31); // 设置返回的最大结果数
-                // 将搜索条件添加到请求中
-                rackTotalDayDisRequest.source(rackTotalDayDisSourceBuilder);
-                // 将第二个搜索请求添加到多索引搜索请求中
-                multiSearchRequest.add(rackTotalDayDisRequest);
-                double totalEq = 0;
-                List<Double> eq = new ArrayList<>();
-                List<String> time = new ArrayList<>();
-                double maxEq = -1;
-                DateTime maxEleTime = new DateTime();
-                try {
-                    // 执行多索引搜索请求
-                    MultiSearchResponse multiSearchResponse = client.msearch(multiSearchRequest, RequestOptions.DEFAULT);
-
-                    // 解析第一个搜索请求的聚合结果
-                    SearchResponse rackEleTotalRealResponse = multiSearchResponse.getResponses()[0].getResponse();
-                    Sum sumAggregation1 = rackEleTotalRealResponse.getAggregations().get("total_eq");
-                    totalEq = sumAggregation1.getValue();
-
-                    // 解析第二个搜索请求
-                    SearchResponse rackEqTotalDayDisResponse = multiSearchResponse.getResponses()[1].getResponse();
-                    if(rackEqTotalDayDisResponse != null){
-                        for (SearchHit hit : rackEqTotalDayDisResponse.getHits()) {
-                            RackEqTotalDayDo rackEqTotalDayDo = JsonUtils.parseObject(hit.getSourceAsString(), RackEqTotalDayDo.class);
-                            double eqValue  = rackEqTotalDayDo.getEqValue();
-                            DateTime startTime = rackEqTotalDayDo.getStartTime();
-                            if(eqValue > maxEq){
-                                maxEq = eqValue;
-                                maxEleTime = startTime;
-                            }
-                            eq.add(eqValue);
-                            time.add(startTime.toString("yyyy-MM-dd "));
-                        }
+                    result.put("barRes",barRes);
+                }else {
+                    for (String str : rackData) {
+                        nowTimes++;
+                        RackEqTotalDayDo totalDayDo = JsonUtils.parseObject(str, RackEqTotalDayDo.class);
+                        totalEq += totalDayDo.getEqValue();
+                        barSeries.getData().add((float)totalDayDo.getEqValue());
+                        barRes.getTime().add(totalDayDo.getStartTime().toString("yyyy-MM-dd"));
                     }
-                    result.put("eq",eq);
-                    result.put("time",time);
+                    String eqMax = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "eq_value");
+                    RackEqTotalDayDo eqMaxValue = JsonUtils.parseObject(eqMax, RackEqTotalDayDo.class);
+                    if(eqMaxValue != null){
+                        maxEle = eqMaxValue.getEqValue();
+                        maxEleTime = eqMaxValue.getStartTime().toString("yyyy-MM-dd HH:mm:ss");
+                    }
+                    barRes.getSeries().add(barSeries);
                     result.put("totalEle",totalEq);
-                    result.put("maxEle",maxEq != -1 ? maxEq : null);
-                    result.put("maxEleTime",maxEq != -1 ? maxEleTime.toString("yyyy-MM-dd HH:mm:ss") : null);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    result.put("maxEle",maxEle);
+                    result.put("maxEleTime",maxEleTime);
+                    result.put("barRes",barRes);
                 }
             }
-
-            return result;
-        } else{
-            return result;
+        }catch (Exception e){
+            log.error("获取数据失败",e);
         }
+        return result;
     }
 
     @Override
-    public Map getReportPowDataById(String Id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+    public Map getReportPowDataById(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
         Map result = new HashMap<>();
-        if(Id != null){
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            if(timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())){
-                if(oldTime.equals(newTime)){
-                    newTime = newTime.withHour(23).withMinute(59).withSecond(59);
+        LineResBase totalLineRes = new LineResBase();
+        
+        result.put("totalLineRes",totalLineRes);
+        
+        result.put("apparentPowMaxValue",null);
+        result.put("apparentPowMaxTime",null);
+        result.put("apparentPowMinValue",null);
+        result.put("apparentPowMinTime",null);
+        result.put("activePowMaxValue", null);
+        result.put("activePowMaxTime",  null);
+        result.put("activePowMinValue", null);
+        result.put("activePowMinTime",  null);
+
+        try {
+            if(id != null) {
+                String index = null;
+
+                if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                    index = "rack_hda_pow_hour";
+                    if (oldTime.equals(newTime)) {
+                        newTime = newTime.withHour(23).withMinute(59).withSecond(59);
+                    }
+
+                } else {
+                    index = "rack_hda_pow_day";
+                    oldTime = oldTime.plusDays(1);
+                    newTime = newTime.plusDays(1);
                 }
-                MultiSearchRequest multiSearchRequest = new MultiSearchRequest();
+                String startTime = localDateTimeToString(oldTime);
+                String endTime = localDateTimeToString(newTime);
+                List<String> cabinetData = getData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index);
+                List<RackPowHourDo> roomPowHourDos = cabinetData.stream().map(str -> JsonUtils.parseObject(str, RackPowHourDo.class)).collect(Collectors.toList());
 
-                // 创建时间分布搜索请求
-                SearchRequest rackPowTotalRealRequest = new SearchRequest("rack_hda_pow_hour");
-                SearchSourceBuilder rackPowTotalRealSourceBuilder = new SearchSourceBuilder();
 
-                rackPowTotalRealSourceBuilder.query(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime)).lte(formatter.format(newTime)))
-                        .must(QueryBuilders.termQuery("rack_id", Id)));
-
-                rackPowTotalRealSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
-                rackPowTotalRealSourceBuilder.size(24); // 设置返回的最大结果数
-                // 将搜索条件添加到请求中
-                rackPowTotalRealRequest.source(rackPowTotalRealSourceBuilder);
-                // 将第二个搜索请求添加到多索引搜索请求中
-                multiSearchRequest.add(rackPowTotalRealRequest);
-
-                List<Double> activePowAvgValue = new ArrayList<>();
-                List<Double> apparentPowAvgValue = new ArrayList<>();
+                LineSeries totalApparentPow = new LineSeries();
+                totalApparentPow.setName("总平均视在功率");
+                LineSeries totalActivePow = new LineSeries();
+                totalActivePow.setName("总平均有功功率");
+                totalLineRes.getSeries().add(totalApparentPow);
+                totalLineRes.getSeries().add(totalActivePow);
                 
 
-                List<String> time = new ArrayList<>();
+                if(timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())){
+                    roomPowHourDos.forEach(hourdo -> {
+                        totalApparentPow.getData().add(hourdo.getApparentTotalAvgValue());
+                        totalActivePow.getData().add(hourdo.getActiveTotalAvgValue());
+                        totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm:ss"));
 
-                double apparentPowMaxValue = -1;
-                DateTime apparentPowMaxTime = new DateTime();
-                double apparentPowMinValue = Double.MAX_VALUE;
-                DateTime apparentPowMinTime = new DateTime();
-                double activePowMaxValue = -1;
-                DateTime activePowMaxTime = new DateTime();
-                double activePowMinValue = Double.MAX_VALUE;
-                DateTime activePowMinTime = new DateTime();
+                    });
+                }else{
+                    roomPowHourDos.forEach(hourdo -> {
+                        totalApparentPow.getData().add(hourdo.getApparentTotalAvgValue());
+                        totalActivePow.getData().add(hourdo.getActiveTotalAvgValue());
+                        totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
+                        
+                    });
+                }
+
+                String apparentTotalMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "apparent_total_max_value");
+                RackPowHourDo totalMaxApparent = JsonUtils.parseObject(apparentTotalMaxValue, RackPowHourDo.class);
+                String apparentTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "apparent_total_min_value");
+                RackPowHourDo totalMinApparent = JsonUtils.parseObject(apparentTotalMinValue, RackPowHourDo.class);
+
+                String activeTotalMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "active_total_max_value");
+                RackPowHourDo totalMaxActive = JsonUtils.parseObject(activeTotalMaxValue, RackPowHourDo.class);
+                String activeTotalMinValue = getMinData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index, "active_total_min_value");
+                RackPowHourDo totalMinActive = JsonUtils.parseObject(activeTotalMinValue, RackPowHourDo.class);
 
                 
-                try {
-                    // 执行多索引搜索请求
-                    MultiSearchResponse multiSearchResponse = client.msearch(multiSearchRequest, RequestOptions.DEFAULT);
 
-                    // 解析搜索请求
-                    SearchResponse rackPowTotalRealDisResponse = multiSearchResponse.getResponses()[0].getResponse();
-                    if(rackPowTotalRealDisResponse != null){
-                        for (SearchHit hit : rackPowTotalRealDisResponse.getHits()) {
-                            RackPowHourDo rackHdaTotalHourDo = JsonUtils.parseObject(hit.getSourceAsString(), RackPowHourDo.class);
-                            double activePowAvg  = rackHdaTotalHourDo.getActiveTotalAvgValue();
-                            double apparentPowAvg = rackHdaTotalHourDo.getApparentTotalAvgValue();
-                            DateTime createTime = new DateTime(rackHdaTotalHourDo.getCreateTime());
+                result.put("totalLineRes",totalLineRes);
 
-                            if(rackHdaTotalHourDo.getApparentTotalMaxValue() > apparentPowMaxValue){
-                                apparentPowMaxValue = rackHdaTotalHourDo.getApparentTotalMaxValue();
-                                apparentPowMaxTime = new DateTime(rackHdaTotalHourDo.getApparentTotalMaxTime());
-                            }
-                            if(rackHdaTotalHourDo.getApparentTotalMinValue() < apparentPowMinValue ){
-                                apparentPowMinValue = rackHdaTotalHourDo.getApparentTotalMinValue();
-                                apparentPowMinTime = new DateTime(rackHdaTotalHourDo.getApparentTotalMinTime());
-                            }
-                            if(rackHdaTotalHourDo.getActiveTotalMaxValue() > activePowMaxValue){
-                                activePowMaxValue = rackHdaTotalHourDo.getActiveTotalMaxValue();
-                                activePowMaxTime = new DateTime(rackHdaTotalHourDo.getActiveTotalMaxTime());
-                            }
-                            if(rackHdaTotalHourDo.getActiveTotalMinValue() < activePowMinValue ){
-                                activePowMinValue = rackHdaTotalHourDo.getActiveTotalMinValue();
-                                activePowMinTime = new DateTime(rackHdaTotalHourDo.getActiveTotalMinTime());
-                            }
+                result.put("apparentPowMaxValue",totalMaxApparent.getApparentTotalMaxValue());
+                result.put("apparentPowMaxTime",totalMaxApparent.getApparentTotalMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("apparentPowMinValue",totalMinApparent.getApparentTotalMinValue());
+                result.put("apparentPowMinTime",totalMinApparent.getApparentTotalMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("activePowMaxValue",totalMaxActive.getActiveTotalMaxValue());
+                result.put("activePowMaxTime",totalMaxActive.getActiveTotalMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                result.put("activePowMinValue",totalMinActive.getActiveTotalMinValue());
+                result.put("activePowMinTime",totalMinActive.getActiveTotalMinTime().toString("yyyy-MM-dd HH:mm:ss"));
 
-                            activePowAvgValue.add(activePowAvg);
-                            apparentPowAvgValue.add(apparentPowAvg);
-
-                            time.add(createTime.toString("yyyy-MM-dd HH:mm"));
-                        }
-                    }
-                    result.put("activePowAvgValue",activePowAvgValue);
-                    result.put("apparentPowAvgValue",apparentPowAvgValue);
-
-                    result.put("time",time);
-
-                    result.put("apparentPowMaxValue",apparentPowMaxValue != -1 ? apparentPowMaxValue : null);
-                    result.put("apparentPowMaxTime",apparentPowMaxValue != -1 ? apparentPowMaxTime.toString("yyyy-MM-dd HH:mm:ss") : null);
-                    result.put("apparentPowMinValue",apparentPowMinValue != Double.MAX_VALUE ? apparentPowMinValue : null);
-                    result.put("apparentPowMinTime",apparentPowMinValue != Double.MAX_VALUE ? apparentPowMinTime.toString("yyyy-MM-dd HH:mm:ss") : null);
-                    result.put("activePowMaxValue",activePowMaxValue != -1 ? activePowMaxValue : null);
-                    result.put("activePowMaxTime",activePowMaxValue != -1 ? activePowMaxTime.toString("yyyy-MM-dd HH:mm:ss") : null);
-                    result.put("activePowMinValue",activePowMinValue != Double.MAX_VALUE ? activePowMinValue : null);
-                    result.put("activePowMinTime",activePowMinValue != Double.MAX_VALUE ? activePowMinTime.toString("yyyy-MM-dd HH:mm:ss") : null);
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }else {
-                MultiSearchRequest multiSearchRequest = new MultiSearchRequest();
-
-                // 创建时间分布搜索请求
-                SearchRequest rackPowTotalDayRequest = new SearchRequest("cabinet_hda_pow_day");
-                SearchSourceBuilder rackPowTotalDaySourceBuilder = new SearchSourceBuilder();
-
-                rackPowTotalDaySourceBuilder.query(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.rangeQuery("create_time.keyword").gte(formatter.format(oldTime.plusDays(1))).lte(formatter.format(newTime.plusDays(1))))
-                        .must(QueryBuilders.termQuery("rack_id", Id)));
-
-                rackPowTotalDaySourceBuilder.sort("create_time.keyword", SortOrder.ASC);
-                rackPowTotalDaySourceBuilder.size(31); // 设置返回的最大结果数
-                // 将搜索条件添加到请求中
-                rackPowTotalDayRequest.source(rackPowTotalDaySourceBuilder);
-                // 将第搜索请求添加到多索引搜索请求中
-                multiSearchRequest.add(rackPowTotalDayRequest);
-
-                List<Double> activePowAvgValue = new ArrayList<>();
-                List<Double> apparentPowAvgValue = new ArrayList<>();
-
-                List<String> time = new ArrayList<>();
-                double apparentPowMaxValue = -1;
-                DateTime apparentPowMaxTime = new DateTime();
-                double apparentPowMinValue = Double.MAX_VALUE;
-                DateTime apparentPowMinTime = new DateTime();
-                double activePowMaxValue = -1;
-                DateTime activePowMaxTime = new DateTime();
-                double activePowMinValue = Double.MAX_VALUE;
-                DateTime activePowMinTime = new DateTime();
-
-                try {
-                    // 执行多索引搜索请求
-                    MultiSearchResponse multiSearchResponse = client.msearch(multiSearchRequest, RequestOptions.DEFAULT);
-
-                    // 解析搜索请求
-                    SearchResponse rackPowTotalDayDisResponse = multiSearchResponse.getResponses()[0].getResponse();
-                    if(rackPowTotalDayDisResponse != null){
-                        for (SearchHit hit : rackPowTotalDayDisResponse.getHits()) {
-                            RackPowDayDo rackHdaTotalDayDo = JsonUtils.parseObject(hit.getSourceAsString(), RackPowDayDo.class);
-                            double activePowAvg  = rackHdaTotalDayDo.getActiveTotalAvgValue();
-                            double apparentPowAvg = rackHdaTotalDayDo.getApparentTotalAvgValue();
-
-                            DateTime createTime = new DateTime(rackHdaTotalDayDo.getCreateTime());
-                            createTime = new DateTime(createTime.toLocalDateTime().minusDays(1));
-                            if(rackHdaTotalDayDo.getApparentTotalMaxValue() > apparentPowMaxValue){
-                                apparentPowMaxValue = rackHdaTotalDayDo.getApparentTotalMaxValue();
-                                apparentPowMaxTime = new DateTime(rackHdaTotalDayDo.getApparentTotalMaxTime());
-                            }
-                            if(rackHdaTotalDayDo.getApparentTotalMinValue() < apparentPowMinValue ){
-                                apparentPowMinValue = rackHdaTotalDayDo.getApparentTotalMinValue();
-                                apparentPowMinTime = new DateTime(rackHdaTotalDayDo.getApparentTotalMinTime());
-                            }
-                            if(rackHdaTotalDayDo.getActiveTotalMaxValue() > activePowMaxValue){
-                                activePowMaxValue = rackHdaTotalDayDo.getActiveTotalMaxValue();
-                                activePowMaxTime = new DateTime(rackHdaTotalDayDo.getActiveTotalMaxTime());
-                            }
-                            if(rackHdaTotalDayDo.getActiveTotalMinValue() < activePowMinValue ){
-                                activePowMinValue = rackHdaTotalDayDo.getActiveTotalMinValue();
-                                activePowMinTime = new DateTime(rackHdaTotalDayDo.getActiveTotalMinTime());
-                            }
-
-                            activePowAvgValue.add(activePowAvg);
-                            apparentPowAvgValue.add(apparentPowAvg);
-
-                            time.add(createTime.toString("yyyy-MM-dd"));
-                        }
-                    }
-                    result.put("activePowAvgValue",activePowAvgValue);
-                    result.put("apparentPowAvgValue",apparentPowAvgValue);
-
-                    result.put("time",time);
-
-                    result.put("apparentPowMaxValue",apparentPowMaxValue != -1 ? apparentPowMaxValue : null);
-                    result.put("apparentPowMaxTime",apparentPowMaxValue != -1 ? apparentPowMaxTime.toString("yyyy-MM-dd HH:mm:ss") : null);
-                    result.put("apparentPowMinValue",apparentPowMinValue != Double.MAX_VALUE ? apparentPowMinValue : null);
-                    result.put("apparentPowMinTime",apparentPowMinValue != Double.MAX_VALUE ? apparentPowMinTime.toString("yyyy-MM-dd HH:mm:ss") : null);
-                    result.put("activePowMaxValue",activePowMaxValue != -1 ? activePowMaxValue : null);
-                    result.put("activePowMaxTime",activePowMaxValue != -1 ? activePowMaxTime.toString("yyyy-MM-dd HH:mm:ss") : null);
-                    result.put("activePowMinValue",activePowMinValue != Double.MAX_VALUE ? activePowMinValue : null);
-                    result.put("activePowMinTime",activePowMinValue != Double.MAX_VALUE ? activePowMinTime.toString("yyyy-MM-dd HH:mm:ss") : null);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
-
-            return result;
-        }else {
-            return result;
+        }catch (Exception e){
+            log.error("获取数据失败",e);
         }
+        return result;
     }
 
     @Override
@@ -449,6 +288,151 @@ public class RackServiceImpl implements RackService {
             JSONObject jsonObject = (JSONObject) ops.get("packet:rack:" + id);
             return jsonObject != null ? jsonObject.toJSONString() : null;
         }
+    }
+
+    @Override
+    public Map getRoomPFLine(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+        Map result = new HashMap<>();
+        LineResBase totalLineRes = new LineResBase();
+        result.put("pfLineRes",totalLineRes);
+        try {
+
+            String index = null;
+
+            if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                index = "rack_hda_pow_hour";
+                if (oldTime.equals(newTime)) {
+                    newTime = newTime.withHour(23).withMinute(59).withSecond(59);
+                }
+
+            } else {
+                index = "rack_hda_pow_day";
+                oldTime = oldTime.plusDays(1);
+                newTime = newTime.plusDays(1);
+            }
+
+            String startTime = localDateTimeToString(oldTime);
+            String endTime = localDateTimeToString(newTime);
+            List<String> data = getData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index);
+            List<RackPowHourDo> powList = data.stream().map(str -> JsonUtils.parseObject(str, RackPowHourDo.class)).collect(Collectors.toList());
+
+            LineSeries totalPFLine = new LineSeries();
+            totalPFLine.setName("总平均功率因素");
+
+            totalLineRes.getSeries().add(totalPFLine);
+
+            if(timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())){
+                powList.forEach(hourdo -> {
+                    totalPFLine.getData().add(hourdo.getPowerFactorAvgValue());
+                    DateTime dateTime = new DateTime(hourdo.getCreateTime());
+                    totalLineRes.getTime().add(dateTime.toString("HH:mm"));
+
+                });
+            }else{
+                powList.forEach(hourdo -> {
+                    totalPFLine.getData().add(hourdo.getPowerFactorAvgValue());
+                    DateTime dateTime = new DateTime(hourdo.getCreateTime());
+                    totalLineRes.getTime().add(dateTime.toString("yyyy-MM-dd"));
+                });
+            }
+            result.put("pfLineRes",totalLineRes);
+
+        }catch (Exception e){
+            log.error("获取数据失败",e);
+        }
+        return result;
+    }
+
+    /**
+     * 获取数据
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param ids 机柜id列表
+     * @param index 索引表
+     */
+    private List<String> getData(String startTime, String endTime, List<Integer> ids, String index) throws IOException {
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件，
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        //获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
+                .must(QueryBuilders.termsQuery("rack_id", ids))));
+        builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+        // 设置搜索条件
+        searchRequest.source(builder);
+        builder.size(2000);
+
+        List<String> list = new ArrayList<>();
+        // 执行ES请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                String str = hit.getSourceAsString();
+                list.add(str);
+            }
+        }
+        return list;
+
+    }
+
+    private String getMaxData(String startTime, String endTime, List<Integer> ids, String index,String order) throws IOException {
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件，
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+
+        //获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
+                .must(QueryBuilders.termsQuery("rack_id", ids))));
+        builder.sort(order, SortOrder.DESC);
+        // 设置搜索条件
+        searchRequest.source(builder);
+        builder.size(1);
+
+        // 执行ES请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                String str = hit.getSourceAsString();
+                return str;
+            }
+        }
+        return null;
+    }
+
+    private String getMinData(String startTime, String endTime, List<Integer> ids, String index,String order) throws IOException {
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件，
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+
+        //获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
+                .must(QueryBuilders.termsQuery("rack_id", ids))));
+        builder.sort(order, SortOrder.ASC);
+        // 设置搜索条件
+        searchRequest.source(builder);
+        builder.size(1);
+
+        // 执行ES请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                String str = hit.getSourceAsString();
+                return str;
+            }
+        }
+        return null;
+
+    }
+
+    private String localDateTimeToString(LocalDateTime time){
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return time.format(fmt);
     }
 
 }
