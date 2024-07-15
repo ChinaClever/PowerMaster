@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.aisle.dal.dataobject.aislestatisconfig;
+package cn.iocoder.yudao.module.room.dal.dataobject.roomstatisconfig;
 
 import lombok.*;
 import java.util.*;
@@ -8,18 +8,18 @@ import com.baomidou.mybatisplus.annotation.*;
 import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
 
 /**
- * 柜列计算服务配置 DO
+ * 机房计算服务配置 DO
  *
  * @author clever
  */
-@TableName("aisle_statis_config")
-@KeySequence("aisle_statis_config_seq") // 用于 Oracle、PostgreSQL、Kingbase、DB2、H2 数据库的主键自增。如果是 MySQL 等数据库，可不写。
+@TableName("room_statis_config")
+@KeySequence("room_statis_config_seq") // 用于 Oracle、PostgreSQL、Kingbase、DB2、H2 数据库的主键自增。如果是 MySQL 等数据库，可不写。
 @Data
 @ToString(callSuper = true)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AisleStatisConfigDO {
+public class RoomStatisConfigDO {
 
     /**
      * 主键id
@@ -70,13 +70,10 @@ public class AisleStatisConfigDO {
      * 日用电告警开关 0 关 1开
      */
     private Integer eleAlarmDay;
-
     /**
      * 月用电告警开关 0关 1开
      */
     private Integer eleAlarmMonth;
-
-
     /**
      * 创建时间
      */

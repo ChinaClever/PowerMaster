@@ -53,10 +53,6 @@ export const IndexApi = {
     return await request.get({ url: `/cabinet/index/report/pow`,params})
   },
 
-  // getOutLetData: async (params) => {
-  //   return await request.get({ url: `/cabinet/index/report/outlet`,params})
-  // },
-
   getTemData: async (params) => {
     return await request.get({ url: `/cabinet/index/report/tem`,params})
   },
@@ -68,5 +64,8 @@ export const IndexApi = {
   },
   getCabinetHotTemAndHumById: async (params) => {
     return await request.get({ url: `/cabinet/index/env/hot`,params})
+  },
+  getCabinetPFLine : async (params) => {
+    return await request.get({ url: `/cabinet/index/report/pfline`, params })
   },
 }

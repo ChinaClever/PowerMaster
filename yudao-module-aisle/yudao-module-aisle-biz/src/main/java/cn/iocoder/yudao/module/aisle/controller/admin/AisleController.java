@@ -37,8 +37,6 @@ public class AisleController {
     @Autowired
     AisleService aisleService;
 
-
-
     /**
      * 柜列列表
      *

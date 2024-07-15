@@ -188,7 +188,7 @@
   </ContentWrap>
 </template>
 <script setup lang="ts">
-import { StatisConfigApi, StatisConfigVO } from '@/api/aisle/aislestatisconfig'
+import { StatisConfigApi, StatisConfigVO } from '@/api/room/roomstatisconfig'
 
 /** 机柜计算服务配置 表单 */
 defineOptions({ name: 'StatisConfigForm' })

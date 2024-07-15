@@ -1,0 +1,1383 @@
+:root {
+  --Main: #222148;
+  --menuBg: #0e1841;
+  --menuBg2: #47d;
+  --menuHover: #1b2965;
+  --subMenuBg: #238;
+  --subMenuHover: #182f5c;
+  --subMenuActiveBg: #1b2965;
+  --primary-color: #4267c4;
+  --siderbar-bg: #0e1841;
+  --primary-bg: #1b2965;
+  --button-hover: #2877c3;
+  --navbar-bg: #1b2965;
+  --button-hover-border: #1f4980;
+  --tab-bg: #2e4395;
+  --tab-border: none;
+  --tab-color: #fff;
+  --table-bg: #2e4395;
+  --button-text: #fff;
+  --scroll-bg: #47d;
+  --card-text: #409eff;
+  --pro-bg: #2e4395;
+  --aside-bg: #34a;
+  --aside-border: transparent;
+  --scrollbar: #4267c4;
+  --tag-bg: #4267c4;
+  --tag-text: #fff;
+  --button-plain-borderC: #8cc5ff;
+  --primary-05: rgba(44,137,222,0.05);
+  --primary-1: rgba(44,137,222,0.1);
+  --primary-2: rgba(44,137,222,0.25);
+  --primary-3: rgba(44,137,222,0.3);
+  --primary-4: rgba(44,137,222,0.45);
+  --primary-5: rgba(44,137,222,0.55);
+  --primary-6: rgba(44,137,222,0.65);
+  --primary-7: rgba(44,137,222,0.7);
+  --primary-8: rgba(44,137,222,0.8);
+  --primary-9: rgba(44,137,222,0.9);
+  --primary-10: #4295e1;
+  --primary-20: #56a1e5;
+  --primary-30: #6cade8;
+  --primary-40: #80b8eb;
+  --primary-50: #96c4ef;
+  --primary-60: #abd0f2;
+  --primary-70: #c0dcf5;
+  --color-01: hsla(0,0%,100%,0.01);
+  --color-03: hsla(0,0%,100%,0.03);
+  --color-05: hsla(0,0%,100%,0.05);
+  --color-1: hsla(0,0%,100%,0.1);
+  --color-2: hsla(0,0%,100%,0.2);
+  --color-3: hsla(0,0%,100%,0.3);
+  --color-4: hsla(0,0%,100%,0.4);
+  --color-5: hsla(0,0%,100%,0.5);
+  --color-6: #fff;
+  --color-7: #fff;
+  --color-8: #fff;
+  --color-85: #fff;
+  --color-9: #fff;
+  --color-95: #fff;
+  --color-06: hsla(0,0%,100%,0.06);
+  --color-08: hsla(0,0%,100%,0.08);
+  --color-15: hsla(0,0%,100%,0.15);
+  --color-65: hsla(0,0%,100%,0.65);
+  --color-45: hsla(0,0%,100%,0.45);
+  --color-35: hsla(0,0%,100%,0.35);
+  --empty-image-opacity: 0.15;
+  --boxBG: #238;
+
+  --bg-white-unset: unset;
+  --tags-view-container-bottomB: 1px solid hsla(0,0%,100%,0.1);
+  --downMenu-top-bg: #1b2965;
+  --itemHover-bgC: rgba(44,137,222,0.25);
+
+
+  --alarm-baoJ1-bg: rgba(238,152,205,0.12);
+  --alarm-baoJ2-bg: rgba(223,158,86,0.4);
+  --alarm-baoJ3-bg: rgba(223,86,86,0.4);
+  --alarm-baoJ4-bg: rgba(44,219,227,0.3);
+  --alarm-baoJ5-bg: #5c57a4;
+  --alarm-wenzi-color: hsla(0,0%,100%,0.7);
+  --alarm-one-bg: hsla(0,100%,71%,0.5);
+  --alarm-two-bg: rgba(165,121,56,0.8);
+  --alarm-three-bg: rgba(31,150,234,0.5);
+  --alarm-four-bg: rgba(128,251,128,0.5);
+  --alarm-five-bg: rgba(255,111,255,0.5);
+  --alarm-five-box-button-btn-bg: rgba(33,57,71,0.82);
+  --alarm-text: #e6e9ee;
+  --alarm-status-bar-text-color-one: hsla(0,0%,100%,0.7);
+  --alarm-status-bar-text-color-two: hsla(0,0%,100%,0.7);
+  --alarm-status-bar-text-color-three: hsla(0,0%,100%,0.7);
+  --alarm-status-bar-bg-color-one: #cf5649;
+  --alarm-status-bar-bg-color-two: #e88d48;
+  --alarm-status-bar-bg-color-three: #18a3c4;
+
+  --monitor-offLine-bg: rgba(46,117,209,0.2);
+  --monitor-fj-bg: rgba(44,137,222,0.15);
+  --monitor-alarm-bg: rgba(229,131,18,0.7);
+  --monitor-yichang-bg: rgba(255,37,70,0.45);
+
+  --monitor-arrears-bg: rgba(128,0,128,0.5);
+  --monitor-ye-bg: rgba(148,148,30,0.7);
+  --monitor-open-bg: rgba(36,173,180,0.7);
+  --monitor-video-iFo: #5bf6fb;
+
+
+  --loading-bg: rgba(0,0,0,0.7);
+  --color-yellow: #e8e819;
+  --color-green: #00dd6b;
+  --elevator: #5dd3ff;
+  --elevator-table-color: #1d3666;
+  --elevator-table-font: #fff;
+  --elevator-title-color: #1d3666;
+  --elevator-title-two-color: rgba(10,185,255,0.1);
+
+
+
+  --itemN-border-color: #435d8e;
+  --itemN-bgColor: rgba(27,91,213,0.07);
+  --monitorFun-he-bg: rgba(254,47,66,0.3);
+  --monitorFun-fen-bg: rgba(30,254,48,0.3);
+  --monitorFun-fen-color: #36da83;
+
+
+  --monitorFun-je-box-borderC: #435d8e;
+  --monitorFun-je-boxB-bgC: rgba(39,78,150,0.5);
+
+  --monitorFun-one-color: #fd333c;
+  --monitorFun-three-color: #649ff7;
+  --monitorFun-copeBtn-bg: rgba(44,137,222,0.14);
+  --monitorFun-copeBtn-iC: #48a8ff;
+  --yiBiao-station-borderC: #1d396e;
+  --one-1-bg: #da5a5a;
+  --one-2-bg: #929292;
+  --one-3-bg: #b74eb7;
+  --one-1-bd: #4371a7;
+  --one-2-bd: #9ecbff;
+  --one-3-bd: #cadaf5;
+  --color-data: #5bf6fb;
+  --color-label: rgba(191,244,246,0.52);
+  --transformerRun-bk-bg1: #a9931a;
+  --transformerRun-bk-bg2: #159925;
+  --transformerRun-bk-bg3: #ac4141;
+  --transformerRun-state1-color: #ebe777;
+  --transformerRun-state2-color: #77eb84;
+  --transformerRun-state3-color: #f25050;
+
+  --transformer-running-item-bg: #182f70;
+  --transformer-running-sum-color: #c8d5f7;
+  --transformer-running-bt-color: hsla(0,0%,100%,0.5);
+  --transformer-running-boxshadow-color: rgba(0,0,0,0.3);
+  --transformer-loss-bg: rgba(21,40,90,0.23);
+  --transformer-loss-border-color: #384c84;
+  --transformer-loss-img-bg: #182f70;
+  --transformer-loss-img-border-color: #53689f;
+  --transformer-loss-item-border-color: #53689f;
+
+
+  --energy-item-border-color: #40578d;
+  --energy-bg-public: rgba(0,0,0,0.13);
+  --light-bk-bar: #fff;
+  --light-text-count: #09f091;
+  --light-border-list: #085382;
+  --light-bk-tag: #2b89a8;
+
+
+
+  --light-bk-dialog: #0c2a3d;
+  --light-bk-item: #0c3b55;
+  --light-border-item: #27709e;
+  --light-bk-map: #1b2965;
+  --light-bk-box: #238;
+  --elecMonitor-card-state0: #2c89de;
+  --elecMonitor-card-bg: rgba(47,117,210,0.2);
+  --elecMonitor-card-picture-bg: #163a72;
+  --elecMonitor-card-text: #cadaf5;
+  --elecMonitor-card-button-bg: #4267c4;
+  --elecMonitor-card-button-border: #2c5f9a;
+  --elecMonitor-card-border: #4371a7;
+  --elecMonitor-card-border-hover: #00e1fb;
+
+
+
+
+
+  --elecMonitor-card-wuxian-border: #4371a7;
+  --eleparam-checkbox-bg: #238;
+  --eleparam-checkbox-border: #4a5e85;
+  --transformer-box1-bgIMG: linear-gradient(90deg,#2dacf8,#1281f3);
+  --transformer-box2-bgIMG: linear-gradient(90deg,#ff7ea2,#ff4168);
+  --transformer-box3-bgIMG: linear-gradient(90deg,#ae7ae4,#773dcc);
+  --event-state-0: #2c89de;
+
+  --light-policy-detail-bg: #4267c4;
+  --light-policy-detail-border: #2c5f9a;
+  --switch-project-border: #1d2b46;
+  --switch-project-border-shadow: hsla(0,0%,100%,0.1);
+  --circuit-more: hsla(0,0%,100%,0.8);
+  --circuit-more-time: hsla(0,0%,100%,0.5);
+  --circuit-more-num: #6fb3f1;
+  --circuit-more-con: hsla(0,0%,100%,0.6);
+  --circuit-more-back1: #1d3666;
+  --circuit-more-back2: #173e6e;
+  --circuit-more-back3: #1c2550;
+  --breaker-chart-back: rgba(44,167,222,0.15);
+  --breaker-chart-border: #005d87;
+  --breaker-chart-text: #2ca7de;
+  --extreme-text-max: #f90;
+  --extreme-text-min: #64da3d;
+  --hk-welcome-input-color: #124c82;
+  --hk-welcome-list-item: #2b4370;
+  --hk-welcome-title: #78b0e3;
+  --hk-welcome-carbon-value: #7abfff;
+  --hk-welcome-carbon-name: hsla(0,0%,100%,0.8);
+
+  --energyUse-button-background: unset;
+  --energyUse-button-color: #4267c4;
+  --energyUse-button-nomarlColor: #000;
+  --energyUse-pic-bg: #203f7b;
+  --energyUse-pic-table: #2e4395;
+  --energyUse-bg: #1d3666;
+  --energyUse-pic-tableBorder: #4267c4;
+  --energyUse-leftText: hsla(0,0%,100%,0.8);
+  --energyUse-rightText: #fff;
+  --timeControl-table-header-background: #172b52;
+  --meter-status-background: rgba(0,0,0,0.05);
+  --meter-status-border: #4c70b5;
+  --quarter-disable-text: #99a4ba;
+  --stationMonitor-primary-color: #9bcfff;
+  --stationMonitor-box-background: rgba(47,117,210,0.2);
+  --energyStorageMonitoring-weather-color: #9bcfff;
+  --areaMonitor-weather-primary-color: #9bcfff;
+  --areaMonitor-weather-noraml-color: hsla(0,0%,100%,0.8);
+  --areaMonitor-power-noraml-color: hsla(0,0%,100%,0.7);
+  --areaMonitor-power-unit-color: hsla(0,0%,100%,0.9);
+  --areaMonitor-weather-box-background: rgba(47,117,210,0.2);
+  --areaMonitor-alarm-title-color: #679fdf;
+  --areaMonitor-border-color: #679fdf;
+  --areaMonitor-alarm-color: #fff;
+  --title-color: #172b52;
+  --electricParameterReport--border-color: #344a76;
+  --aircondition-temp: #fff;
+  --aircondition-card-box-bg: #223563;
+  --aircondition-card-box-border: #1c2550;
+  --aircondition-card-home-color: #4267c4;
+  --aircondition-middleRight-name-color: hsla(0,0%,100%,0.6);
+  --aircondition-step-color: hsla(0,0%,100%,0.3);
+  --alarmSummary-progressBar-color: linear-gradient(270deg,#58dae5,#0846aa);
+  --alarmSummary-rank-borderColor: #1b2965;
+  --alarmSummary-rank-backgroundColor: #1b2965;
+  --alarmSummary-sum-color: #fff;
+  --aircondition-detail-title-color: #fff;
+  --integratedKanban-pie-color: #fff;
+  --distributionMonitor-border: #1c2550;
+  --distributionMonitor-hover-bg: #2b4370;
+  --calendarBox: #4a5e85;
+  --batteryMonitor-card-fontColor: #fff;
+  --welcome8-box-bg: rgba(0,0,0,0.16);
+  --CarMonitor-tit-color: #97c9e9;
+  --CarMonitor-zhi-color: #00e4ff;
+  --energyFees-item-borderC: #4860a4;
+  --energyFees-labs-color: #a1acca;
+  --AIPrediction-predictionError-name-color: #fff;
+  --quotaAnalysis-search-text-color: #ddd;
+  --quotaAnalysis-calendar-yearValue-color: #ddd;
+  --quotaAnalysis-calendar-value-color: hsla(0,0%,86.7%,0.7);
+  --quotaAnalysis-calendar-primaryValue-color: #4267c4;
+  --quotaAnalysis-suggest-color: #ddd;
+  --teamGroup-border-color: #2c5f9a;
+  --teamGroup-box-color: rgba(47,117,210,0.2);
+  --teamGroup-box-border-color: #4371a7;
+  --dataCenterOperation-box-shadow-color: unset;
+  --border-title: #9bcfff;
+  --tip-bg-color: rgba(44,167,222,0.15);
+  --tip-border-color: #005d87;
+  --tip-point-color: #2295f9;
+  --tip-word-color: #69b1f2;
+  --airCabinet-card-bg: rgba(47,117,210,0.2);
+  --airCabinet-card-border: #4371a7;
+  --airCabinet-mode-color: #fff;
+  --airCabinet-mode-color2: hsla(0,0%,100%,0.5);
+  --table-border-color: #344a76;
+  --monitorSideBar-energy-bgColor: rgba(47,117,210,0.2);
+  --monitorSideBar-energy-borderColor: rgba(179,218,252,0.1);
+  --monitorSideBar-energy-cell-color: #fff;
+  --monitorSideBar-energy-cell-primary-color: #9bcfff;
+  --welcomeTB-greenBox: linear-gradient(91deg,#28adb9,#196cbf);
+  --energyWelcome-board-border-color: #1d3666;
+  --energyWelcome-titleLabel-color: #fff;
+  --energyWelcome-selectItem-color: #ddd;
+  --energyWelcome-rank-sort-color: #fff;
+  --energyWelcome-rank-icon-bgcolor: linear-gradient(90deg,#2c89de,#1d3666);
+  --energyWelcome-rank-icon0-bgcolor: linear-gradient(90deg,#fdb4a0,#1d3666);
+  --energyWelcome-rank-icon1-bgcolor: linear-gradient(90deg,#fdcda0,#1d3666);
+  --energyWelcome-rank-icon2-bgcolor: linear-gradient(90deg,#fde19b,#1d3666);
+  --energyWelcome-rank-label-color: #fffefe;
+  --energyWelcome-energyCom-color: #c1c1c1;
+  --energyWelcome-progressBarOuter-bgcolor: #c1c1c1;
+  --energyWelcome-energyType-box0-bgcolor: #1c2550;
+  --energyWelcome-energyType-box1-bgcolor: #1c2550;
+  --energyWelcome-energyType-box2-bgcolor: #1c2550;
+  --progressBar-dark-square: #407ac1;
+  --progressBar-light-square: #2f3f96;
+  --progressBar-square-BG: #222955;
+  --progressBar-text: #407ac1;
+  --progressBar-border: rgba(69,107,145,0.5);
+  --el-tabs-edit-icon-bg: #99a4ba;
+  --el-tabs-plus-icon: #fff;
+  --motorMonitor-motorList-boxSelect-border: #2c89de;
+  --motorMonitor-motorList-boxSelect: #193c92;
+  --motorMonitor-motorList-contentLabel: #fff;
+  --motorMonitor-motorList-contentValue: hsla(0,0%,100%,0.4);
+  --motorMonitor-titleIcon-color: #2c89de;
+  --motorMonitor-leftParam-bgColor: #2a4094;
+  --motorMonitor-rightParam-bgColor: #2a4094;
+  --motorMonitor-param-border: 1px solid #4267c4;
+  --areaMonitor-analysis-value-color: #fff;
+  --motorMonitor-analysis-bgColor: #2a4094;
+  --motorMonitor-suggest-bgColor: rgba(44,167,222,0.15);
+  --batteryPackNew-circle-icon: #2c89de;
+  --batteryPackNew-param-primaryColor: #9bcfff;
+  --batteryPackNew-param-type-color: #9bcfff;
+  --batteryPackNew-param-color: hsla(0,0%,100%,0.8);
+  --batteryPackNew-detail-param-color: #fff;
+  --batteryPackNew-detail-updateTime-color: #rgba(255,255,255,0.6);
+  --vxe-table-border-color: #4267c4;
+  --code-editor: #4a5e85;
+  --code-editor-hover: #99a4ba;
+  --oversea-monitor-font-color: #9bcfff;
+  --alarmDrawer-div-border: 1px solid #4267c4;
+  --alarmDrawer-time-color: #318ef5;
+  --echartsMap-tooltip-bgColor: #323232;
+  --echartsMap-tooltip-color: #fff;
+  --energyWelcome-progressBarOuter-color: #c1c1c1;
+  --hesuan-energyItemBox-bg: #2a4094;
+  --hesuan-energyItemBox-border: #4267c4;
+  --Prepayment-realtimeMonitor-roomNo: #d9d9d9;
+  --menuBg2: #236d8c;
+  --menuHover: rgba(8,139,153,0.64);
+  --subMenuBg: #069bab;
+  --subMenuHover: #236d8c;
+  --subMenuActiveBg: #01798c;
+  --siderbar-bg: #018297;
+  --menuText: #fff;
+  --navbar-bg: #f7f7f7;
+  --tab-bg: #eee;
+  --tab-border: #01ada8;
+  --tab-color: #2fbbb7;
+  --aside-bg: #fff;
+  --aside-border: #e2e2e2;
+  --scrollbar: #ccc;
+  --tag-bg: #e6f7f6;
+  --tag-text: #024a49;
+  --color-8: #000;
+  --color-85: #000;
+  --color-9: #000;
+  --color-95: #000;
+  --tags-view-container-bottomB: 1px solid #e2e2e2;
+  --monitor-yichang-bg: rgba(255,37,70,0.2);
+  --integratedKanban-pie-color: #000;
+  --energyWelcome-board-border-color: #ebedf5;
+  --energyWelcome-titleLabel-color: #01ada8;
+  --energyWelcome-selectItem-color: #181616;
+  --energyWelcome-rank-sort-color: #acacac;
+  --energyWelcome-rank-icon-bgcolor: linear-gradient(90deg,#f2f2f2,#fff);
+  --energyWelcome-rank-icon0-bgcolor: linear-gradient(90deg,#fdb4a0,#fff);
+  --energyWelcome-rank-icon1-bgcolor: linear-gradient(90deg,#fdcda0,#fff);
+  --energyWelcome-rank-icon2-bgcolor: linear-gradient(90deg,#fde19b,#fff);
+  --energyWelcome-rank-label-color: #333;
+  --energyWelcome-rank-label0-color: #fe6d46;
+  --energyWelcome-rank-label1-color: #fc9f47;
+  --energyWelcome-rank-label2-color: #fac339;
+  --energyWelcome-energyCom-color: #999;
+  --energyWelcome-progressBarOuter-bgcolor: #fff;
+  --energyWelcome-energyType-box0-bgcolor: #e8f9fe;
+  --energyWelcome-energyType-box1-bgcolor: #eafce0;
+  --energyWelcome-energyType-box2-bgcolor: #feede1;
+  --vxe-table-border-color: #e8e8e8;
+  --code-editor: #cdcdcd;
+  --code-editor-hover: #a9a9a9;
+  --oversea-monitor-font-color: #0a5c59;
+  --alarmDrawer-div-border: 1px solid #e2e2e2;
+  --alarmDrawer-time-color: #b4b4b5;
+  --echartsMap-tooltip-bgColor: #fff;
+  --echartsMap-tooltip-color: rgba(50,50,50,0.7);
+  --energyWelcome-progressBarOuter-color: #fff;
+  --hesuan-energyItemBox-bg: #f2fafa;
+  --hesuan-energyItemBox-border: #d9d9d9;
+  --Prepayment-realtimeMonitor-roomNo: #666
+}
+
+:root {
+  --Main: #b6c0ff;
+  --test: #ff9227;
+  --menuBg: #018297;
+  --subMenuActiveText: #fff;
+  --primary-color: #01ada8;
+  --primary-bg: #f6f6f6;
+  --button-hover: #34bdb9;
+  --button-hover-border: #b3e6e5;
+  --table-bg: #fff;
+  --button-text: #01ada8;
+  --scroll-bg: rgba(0,0,0,0.1);
+  --card-text: #01ada8;
+  --pro-bg: rgba(1,173,168,0.1);
+  --button-plain-borderC: #01ada8;
+  --primary-05: rgba(1,173,168,0.05);
+  --primary-1: rgba(1,173,168,0.1);
+  --primary-2: rgba(1,173,168,0.25);
+  --primary-3: rgba(1,173,168,0.3);
+  --primary-4: rgba(1,173,168,0.45);
+  --primary-5: rgba(1,173,168,0.55);
+  --primary-6: rgba(1,173,168,0.6);
+  --primary-7: rgba(1,173,168,0.7);
+  --primary-8: rgba(1,173,168,0.8);
+  --primary-9: rgba(1,173,168,0.9);
+  --primary-10: #019b97;
+  --primary-20: #018a86;
+  --primary-30: #017975;
+  --primary-40: #016865;
+  --primary-50: #005654;
+  --primary-60: #004543;
+  --primary-70: #003432;
+  --color-01: rgba(0,0,0,0.01);
+  --color-03: rgba(0,0,0,0.03);
+  --color-05: rgba(0,0,0,0.05);
+  --color-1: rgba(0,0,0,0.1);
+  --color-2: rgba(0,0,0,0.2);
+  --color-3: rgba(0,0,0,0.3);
+  --color-4: rgba(0,0,0,0.4);
+  --color-5: rgba(0,0,0,0.5);
+  --color-6: rgba(0,0,0,0.65);
+  --color-7: rgba(0,0,0,0.7);
+  --color-06: rgba(0,0,0,0.06);
+  --color-08: rgba(0,0,0,0.08);
+  --color-15: rgba(0,0,0,0.15);
+  --color-65: rgba(0,0,0,0.65);
+  --color-45: rgba(0,0,0,0.45);
+  --color-35: rgba(0,0,0,0.35);
+  --empty-image-opacity: 1;
+  --boxBG: #fff;
+  --bg-white-unset: #fff;
+  --downMenu-top-bg: #fff;
+  --itemHover-bgC: rgba(1,173,168,0.07);
+  --alarm-baoJ1-bg: rgba(187,81,146,0.8);
+  --alarm-baoJ2-bg: rgba(223,158,86,0.8);
+  --alarm-baoJ3-bg: rgba(196,57,57,0.8);
+  --alarm-baoJ4-bg: rgba(36,173,180,0.8);
+  --alarm-baoJ5-bg: #9876dc;
+  --alarm-wenzi-color: #fff;
+  --alarm-one-bg: hsla(0,100%,71%,0.2);
+  --alarm-two-bg: rgba(165,121,56,0.2);
+  --alarm-three-bg: rgba(31,150,234,0.2);
+  --alarm-four-bg: rgba(128,251,128,0.2);
+  --alarm-five-bg: rgba(255,111,255,0.2);
+  --alarm-five-box-button-btn-bg: #fff;
+  --alarm-text: #2c2c2c;
+  --alarm-status-bar-text-color-one: #cf1d0c;
+  --alarm-status-bar-text-color-two: #ae5918;
+  --alarm-status-bar-text-color-three: #167288;
+  --alarm-status-bar-bg-color-one: #f9d1cd;
+  --alarm-status-bar-bg-color-two: #f9e0cd;
+  --alarm-status-bar-bg-color-three: #c4eef8;
+  --monitor-offLine-bg: #f2f6f6;
+  --monitor-fj-bg: rgba(1,173,168,0.1);
+  --monitor-alarm-bg: rgba(229,131,18,0.45);
+  --monitor-arrears-bg: rgba(128,0,128,0.2);
+  --monitor-ye-bg: rgba(231,163,16,0.2);
+  --monitor-open-bg: rgba(36,173,180,0.1);
+  --monitor-video-iFo: rgba(32,174,184,0.8);
+  --loading-bg: hsla(0,0%,100%,0.9);
+  --color-yellow: #bf9021;
+  --color-green: #099c44;
+  --elevator: #01ada8;
+  --elevator-table-color: #fff;
+  --elevator-table-font: #7b7b7b;
+  --elevator-title-color: #e6f7f6;
+  --elevator-title-two-color: #fff;
+  --itemN-border-color: #ebebeb;
+  --itemN-bgColor: #fbfbfb;
+  --monitorFun-he-bg: #fdf0f0;
+  --monitorFun-fen-bg: #e5f1e8;
+  --monitorFun-fen-color: #29ac64;
+  --monitorFun-je-box-borderC: #edeeef;
+  --monitorFun-je-boxB-bgC: rgba(160,179,196,0.13);
+  --monitorFun-one-color: #df5a60;
+  --monitorFun-two-color: #01ada8;
+  --monitorFun-three-color: #5a8fdf;
+  --monitorFun-copeBtn-bg: rgba(4,132,128,0.07);
+  --monitorFun-copeBtn-iC: #37999c;
+  --yiBiao-station-borderC: #fbfbfb;
+  --one-1-bg: #e35c5c;
+  --one-2-bg: #acacac;
+  --one-3-bg: #df5ddf;
+  --one-4-bg: #d9bd03;
+  --one-5-bg: #01ada8;
+  --one-6-bg: #e58312;
+  --one-1-bd: rgba(0,0,0,0.06);
+  --one-2-bd: #0f5351;
+  --one-3-bd: rgba(0,0,0,0.5);
+  --color-data: #272727;
+  --color-label: #789597;
+  --transformerRun-bk-bg1: #dfc42b;
+  --transformerRun-bk-bg2: #38c949;
+  --transformerRun-bk-bg3: #e65d5d;
+  --transformerRun-state1-color: #d4ce10;
+  --transformerRun-state2-color: #16bb29;
+  --transformerRun-state3-color: #c92020;
+
+  --transformer-running-item-bg: rgba(20,39,86,0.05);
+  --transformer-running-sum-color: rgba(0,0,0,0.95);
+  --transformer-running-bt-color: rgba(0,0,0,0.7);
+  --transformer-running-boxshadow-color: rgba(0,0,0,0.15);
+  --transformer-loss-bg: unset;
+  --transformer-loss-border-color: rgba(56,76,132,0.19215686274509805);
+  --transformer-loss-img-bg: rgba(0,0,0,0.05);
+  --transformer-loss-img-border-color: rgba(83,105,159,0.23921568627450981);
+  --transformer-loss-item-border-color: #d1d1d1;
+
+
+  --energy-item-border-color: rgba(0,0,0,0.3);
+  --energy-bg-public: #fff;
+  --light-bk-bar: #01ada8;
+  --light-text-count: #12b06f;
+  --light-border-list: #d3d3d3;
+  --light-bk-tag: #e0f1f1;
+
+
+
+  --light-bk-dialog: #fff;
+  --light-bk-item: #ebebeb;
+  --light-border-item: #d3d3d3;
+  --light-bk-map: #fff;
+  --light-bk-box: hsla(0,0%,100%,0.8);
+  --elecMonitor-id-color: rgba(35,51,58,0.83);
+  --elecMonitor-card-state0: #01ada8;
+  --elecMonitor-card-state1: #e83333;
+  --elecMonitor-card-state2: #9d9d9d;
+  --elecMonitor-card-state3: #dfb111;
+  --elecMonitor-card-bg: #f2f6f6;
+  --elecMonitor-card-picture-bg: hsla(0,0%,100%,0.6);
+  --elecMonitor-card-border: #f2f6f6;
+  --elecMonitor-card-border-hover: #01ada8;
+  --elecMonitor-card-text: rgba(0,0,0,0.7);
+  --elecMonitor-card-button-bg: hsla(0,0%,100%,0.6);
+  --elecMonitor-card-button-border: #dcdcdc;
+
+
+
+
+
+  --elecMonitor-card-wuxian-border: rgba(0,0,0,0.15);
+  --eleparam-checkbox-bg: #fff;
+  --eleparam-checkbox-border: #cdcdcd;
+  --transformer-box1-bgIMG: linear-gradient(90deg,#57c4ae,#1ea3a7);
+  --transformer-box2-bgIMG: linear-gradient(90deg,#57c4ae,#1ea3a7);
+  --transformer-box3-bgIMG: linear-gradient(90deg,#57c4ae,#1ea3a7);
+  --event-state-0: #01ada8;
+  --event-state-1: #e83333;
+  --event-state-2: #dfb111;
+  --event-state-3: #acacac;
+
+  --light-policy-detail-bg: #fff;
+  --light-policy-detail-border: rgba(0,0,0,0.3);
+  --switch-project-border: #e2e2e2;
+  --switch-project-border-shadow: rgba(0,0,0,0.1);
+  --circuit-more: rgba(0,0,0,0.8);
+  --circuit-more-time: rgba(0,0,0,0.5);
+  --circuit-more-num: #095d5a;
+  --circuit-more-con: rgba(0,0,0,0.6);
+  --circuit-more-back1: #fff;
+  --circuit-more-back2: #f6f6f6;
+  --circuit-more-back3: #fff;
+  --breaker-chart-back: #eff8f6;
+  --breaker-chart-border: #c8e6e1;
+  --breaker-chart-text: #22605e;
+  --extreme-text-max: #dc670d;
+  --extreme-text-min: #0cb94e;
+  --hk-welcome-input-color: #eaf5f5;
+  --hk-welcome-list-item: hsla(0,0%,83.1%,0.14);
+  --hk-welcome-title: #265757;
+  --hk-welcome-carbon-value: #1c8d8d;
+  --hk-welcome-carbon-name: #828282;
+
+  --energyUse-button-background: dfe7ee;
+  --energyUse-button-color: #000;
+  --energyUse-button-nomarlColor: #fff;
+  --energyUse-pic-bg: #f4f9fb;
+  --energyUse-pic-table: #fbfdfe;
+  --energyUse-bg: #fff;
+  --energyUse-pic-tableBorder: #e0e3e5;
+  --energyUse-leftText: rgba(0,0,0,0.6);
+  --energyUse-rightText: rgba(0,0,0,0.8);
+  --timeControl-table-header-background: #fafafa;
+  --meter-status-background: #fbfbfb;
+  --meter-status-border: #ebebeb;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  --stationMonitor-primary-color: #01ada8;
+  --stationMonitor-box-background: hsla(0,0%,83.1%,0.14);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  --energyStorageMonitoring-weather-color: #095d5a;
+  --areaMonitor-weather-primary-color: #095d5a;
+  --areaMonitor-weather-noraml-color: rgba(0,0,0,0.6);
+  --areaMonitor-power-noraml-color: rgba(0,0,0,0.6);
+  --areaMonitor-power-unit-color: rgba(0,0,0,0.8);
+  --areaMonitor-weather-box-background: #f6f6f6;
+  --areaMonitor-alarm-title-color: #59bdbe;
+  --areaMonitor-border-color: #01ada8;
+  --areaMonitor-alarm-color: #000;
+
+  --inverterMonitoring-waiting-color: #51ade3;
+  --title-color: #f2f6f6;
+  --electricParameterReport--border-color: rgba(0,0,0,0.1);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  --aircondition-temp: #333;
+
+
+
+
+
+
+  --aircondition-card-box-bg: #eff8f6;
+  --aircondition-card-box-border: #c8e6e1;
+  --aircondition-card-home-color: #34bdb9;
+  --aircondition-middleRight-name-color: rgba(0,0,0,0.8);
+  --aircondition-step-color: #c9c9c9;
+
+
+
+
+
+  --alarmSummary-progressBar-color: linear-gradient(270deg,#6bdecf,#4cbce5);
+  --alarmSummary-rank-borderColor: #eff8f6;
+  --alarmSummary-rank-backgroundColor: #f6f6f6;
+  --alarmSummary-sum-color: rgba(0,0,0,0.8);
+  --aircondition-detail-title-bg: #eff8f6;
+  --aircondition-detail-title-color: #333;
+
+
+
+
+  --distributionMonitor-border: #e6f7f7;
+  --distributionMonitor-hover-bg: #f2fafa;
+  --calendarBox: #f2f8fe;
+
+
+
+
+
+
+
+
+
+
+
+
+  --batteryMonitor-card-fontColor: #0f5351;
+  --welcome8-box-bg: #fff;
+
+
+
+  --CarMonitor-tit-color: #666869;
+  --CarMonitor-zhi-color: #486070;
+  --energyFees-item-borderC: rgba(0,0,0,0.15);
+  --energyFees-labs-color: rgba(0,0,0,0.5);
+  --AIPrediction-predictionError-name-color: rgba(0,0,0,0.6);
+  --quotaAnalysis-search-text-color: #666;
+  --quotaAnalysis-calendar-yearValue-color: rgba(0,0,0,0.7);
+  --quotaAnalysis-calendar-value-color: #666;
+  --quotaAnalysis-calendar-primaryValue-color: #095d5a;
+  --quotaAnalysis-calendar-item-borderC: rgba(0,0,0,0.06);
+  --quotaAnalysis-suggest-color: #333;
+  --teamGroup-border-color: #dcdcdc;
+  --teamGroup-box-color: #f2f6f6;
+  --teamGroup-box-border-color: rgba(0,0,0,0.06);
+  --dataCenterOperation-box-shadow-color: #dedede;
+  --border-title: #01ada8;
+  --tip-bg-color: #eff8f6;
+  --tip-border-color: #c8e6e1;
+  --tip-point-color: #01ada8;
+  --tip-word-color: #22605e;
+  --airCabinet-card-bg: #f8f8f8;
+  --airCabinet-card-border: rgba(1,173,168,0.3);
+  --airCabinet-mode-color: #7d8180;
+  --airCabinet-mode-color2: rgba(125,129,128,0.5);
+  --table-border-color: #e8e8e8;
+  --monitorSideBar-energy-bgColor: #fff;
+  --monitorSideBar-energy-borderColor: rgba(0,0,0,0.1);
+  --monitorSideBar-energy-cell-color: #666;
+  --monitorSideBar-energy-cell-primary-color: #0a5c59;
+  --welcomeTB-greenBox: linear-gradient(90deg,#57c4ae,#1ea3a7);
+  --progressBar-dark-square: #4caaa7;
+  --progressBar-light-square: #c8e6e1;
+  --progressBar-square-BG: #f0f8f6;
+  --progressBar-text: #fff;
+  --progressBar-border: #c8e6e1;
+  --el-tabs-edit-icon-bg: #a9a9a9;
+  --el-tabs-plus-icon: #949ba2;
+  --motorMonitor-motorList-boxSelect-border: #03ada8;
+  --motorMonitor-motorList-boxSelect: #e5f7f6;
+  --motorMonitor-motorList-contentLabel: #333;
+  --motorMonitor-motorList-contentValue: #999;
+  --motorMonitor-titleIcon-color: #01ada8;
+  --motorMonitor-leftParam-bgColor: #f6f6f6;
+  --motorMonitor-rightParam-bgColor: #e5f7f6;
+  --motorMonitor-param-border: unset;
+  --areaMonitor-analysis-value-color: #095d5a;
+  --motorMonitor-analysis-bgColor: #f2f6f6;
+  --motorMonitor-suggest-bgColor: #eff8f6;
+  --batteryPackNew-circle-icon: #4da2a3;
+  --batteryPackNew-param-primaryColor: #034b49;
+  --batteryPackNew-param-type-color: #034b49;
+  --batteryPackNew-param-color: rgba(0,0,0,0.5);
+  --batteryPackNew-detail-param-color: rgba(0,0,0,0.8);
+  --batteryPackNew-detail-updateTime-color: #666
+}
+
+:root {
+  --menuBg2: rgba(44,137,222,0.5);
+  --menuHover: rgba(0,0,0,0.08);
+  --subMenuBg: rgba(0,0,0,0.25);
+  --subMenuHover: rgba(44,137,222,0.5);
+  --siderbar-bg: #184078;
+  --menuText: hsla(0,0%,100%,0.95);
+  --navbar-bg: #fff;
+  --tab-bg: none;
+  --tab-border: rgba(0,0,0,0.2);
+  --tab-color: rgba(1,173,168,0.8);
+  --color-8: rgba(0,0,0,0.8);
+  --color-85: rgba(0,0,0,0.85);
+  --color-9: rgba(0,0,0,0.9);
+  --color-95: rgba(0,0,0,0.95);
+  --tags-view-container-bottomB: 1px solid #d8dce5;
+  --integratedKanban-pie-color: #000;
+  --energyWelcome-board-border-color: #ebedf5;
+  --energyWelcome-titleLabel-color: #01ada8;
+  --energyWelcome-selectItem-color: #181616;
+  --energyWelcome-rank-sort-color: #acacac;
+  --energyWelcome-rank-icon-bgcolor: linear-gradient(90deg,#f2f2f2,#fff);
+  --energyWelcome-rank-icon0-bgcolor: linear-gradient(90deg,#fdb4a0,#fff);
+  --energyWelcome-rank-icon1-bgcolor: linear-gradient(90deg,#fdcda0,#fff);
+  --energyWelcome-rank-icon2-bgcolor: linear-gradient(90deg,#fde19b,#fff);
+  --energyWelcome-rank-label-color: #333;
+  --energyWelcome-rank-label0-color: #fe6d46;
+  --energyWelcome-rank-label1-color: #fc9f47;
+  --energyWelcome-rank-label2-color: #fac339;
+  --energyWelcome-energyCom-color: #999;
+  --energyWelcome-progressBarOuter-bgcolor: #fff;
+  --energyWelcome-energyType-box0-bgcolor: #e8f9fe;
+  --energyWelcome-energyType-box1-bgcolor: #eafce0;
+  --energyWelcome-energyType-box2-bgcolor: #feede1
+}
+
+.usaTheme :export {
+  echartsTextColor: rgba(0,0,0,.8);
+  echartsDashLine: rgba(0,0,0,.1);
+  echartsLegendColor: #01ada8
+}
+
+.myCard {
+  height: 100%;
+  padding: 10px;
+  padding-top: 0
+}
+
+.box1 {
+  background-color: var(--boxBG);
+  overflow: hidden;
+  margin-bottom: 8px;
+  width: 100%;
+  height: 52px;
+  padding-top: 14px
+}
+
+.box1 .ico {
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  vertical-align: middle;
+  width: 18px;
+  height: 18px;
+  background: var(--monitor-proj-img) 50% no-repeat;
+  margin: 0 8px 8px 10px
+}
+
+.box1 .name {
+  margin-right: 15px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-8);
+  letter-spacing: .02em
+}
+
+.box1 .bn,.box1 .name {
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  vertical-align: middle;
+  margin-bottom: 8px
+}
+
+.mr5 {
+  margin-right: 5px
+}
+
+.search {
+  font-size: 14px
+}
+
+.search .info {
+  color: #5ea4f0
+}
+
+.main {
+  height: calc(100% - 60px)
+}
+
+.main .top .box-card .el-card__header {
+  color: #fff;
+  border-bottom: 0;
+  padding: 9px 20px;
+  background-color: var(--primary-color);
+  position: relative
+}
+
+.main .top .box-card .el-card__body {
+  border: 1px solid var(--switch-project-border);
+  background-color: var(--boxBG);
+  overflow-y: auto;
+  padding: 9.5px 30px;
+  height: 100px
+}
+
+.main .top .box-card .moreBtn {
+  position: absolute;
+  right: 0;
+  top: 7px;
+  padding: 5px 10px;
+  color: #fff
+}
+
+.main .top .box-card .infoBox {
+  width: 80%;
+  max-width: calc(100% - 65px);
+  display: inline-block
+}
+
+.main .top .box-card .infoBox .item {
+  margin: 5px 0;
+  line-height: 25px
+}
+
+.main .top .box-card .infoBox .item img {
+  vertical-align: middle;
+  margin-right: 5px
+}
+
+.main .top .box-card .infoBox .item .titlespan {
+  font-size: 14px;
+  vertical-align: middle
+}
+
+.main .top .box-card .imgBox {
+  float: right
+}
+
+.main .top .box-card .imgBox img {
+  width: 65px;
+  height: 65px
+}
+
+.main .middle-bottom {
+  min-height: 600px;
+  height: calc(100% - 141.39px)
+}
+
+.main .middle {
+  margin-top: 5px;
+  height: calc(50% - 5px)
+}
+
+.main .middle .el-card__header {
+  color: #fff;
+  border-bottom: 0;
+  padding: 9px 20px;
+  background-color: var(--primary-color);
+  position: relative
+}
+
+.main .middle .el-card.is-always-shadow {
+  height: 100%;
+  width: 100%;
+}
+
+.el-button--primary {
+  color: #fff;
+  background-color: #01ada8;
+  border-color: #01ada8
+}
+
+.el-button--primary:focus,.lightTheme .el-button--primary:hover {
+  background: #34bdb9;
+  border-color: #34bdb9;
+  color: #fff
+}
+
+.lightTheme .el-button--primary.is-active,.lightTheme .el-button--primary:active {
+  background: #019c97;
+  border-color: #019c97;
+  color: #fff
+}
+
+.lightTheme .el-button--primary.is-disabled,.lightTheme .el-button--primary.is-disabled:active,.lightTheme .el-button--primary.is-disabled:focus,.lightTheme .el-button--primary.is-disabled:hover {
+  color: #fff;
+  background-color: #80d6d4;
+  border-color: #80d6d4
+}
+
+.main .middle .el-card__body {
+  border: 1px solid var(--switch-project-border);
+  background-color: var(--boxBG);
+  overflow-y: auto;
+  padding: 5px;
+  height: calc(100% - 31.39px)
+}
+
+.main .middle .left {
+  padding: 0 10px;
+  border-right: 1px solid #ccc;
+  height: 100%
+}
+
+.main .middle .left .moreBtn {
+  float: right;
+  padding: 5px 10px;
+  margin-right: 0;
+  margin-left: 5px
+}
+
+.main .middle .left .info {
+  color: #5ea4f0;
+  font-size: 14px;
+  float: right;
+  line-height: 28px
+}
+
+.main .middle .left .canvasTitle {
+  font-size: 14px;
+  font-weight: 400
+}
+
+.main .middle .left .tabChart {
+  height: calc(100% - 30px);
+  width: 100%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center
+}
+
+.main .middle .left .tabChart .chart {
+  width: 50%;
+  height: 100%
+}
+
+.main .middle .right {
+  padding: 0 10px;
+  height: 100%
+}
+
+.main .middle .right .tabChart {
+  height: calc(100% - 40px);
+  width: 100%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center
+}
+
+.main .middle .right .tabChart .chart {
+  width: 50%;
+  height: 100%
+}
+
+.main .bottom {
+  margin-top: 5px;
+  height: 50%
+}
+
+.main .bottom .el-tabs__content {
+  height: calc(100% - 41px);
+  padding: 5px 10px 5px 10px
+}
+
+.main .bottom .infrareddiv {
+  height: 100%;
+  padding: 20px 15px;
+  overflow: auto
+}
+
+.main .bottom .infrareddiv .boxdiv {
+  width: 180px;
+  height: 170px;
+  border: 1px solid #bdcfdd;
+  border-radius: 5px;
+  display: inline-block;
+  margin-right: 10px;
+  margin-bottom: 10px
+}
+
+.main .bottom .infrareddiv .boxdiv img {
+  display: block;
+  margin: 5px auto
+}
+
+.main .bottom .infrareddiv .boxdiv span {
+  display: block;
+  text-align: center;
+  margin-top: 10px
+}
+
+.main .bottom .dividerContain {
+  height: 100%
+}
+
+.main .bottom .dividerContain .dividerline {
+  padding: 0 10px;
+  border-right: 1px solid #ccc;
+  height: 100%
+}
+
+.main .bottom .dividerContain .dividerline .leftdiv img {
+  position: absolute;
+  left: 12.5%;
+  -webkit-transform: translateX(-50%);
+  transform: translateX(-50%);
+  top: 25%
+}
+
+.main .bottom .dividerContain .dividerline .leftdiv p {
+  margin-top: calc(30% + 43px);
+  text-align: center;
+  line-height: 25px
+}
+
+.main .bottom .dividerContain .dividerline .info {
+  color: #5ea4f0;
+  font-size: 14px;
+  float: right;
+  line-height: 28px
+}
+
+.main .bottom .dividerContain .dividerline .rightbtn {
+  float: right;
+  padding: 5px 10px
+}
+
+.main .bottom .dividerContain .dividerline .canvatitle {
+  font-size: 14px;
+  font-weight: 400
+}
+
+.main .bottom .dividerContain .dividerlineright {
+  padding: 0 10px;
+  height: 100%
+}
+
+.main .bottom .dividerContain .dividerlineright .spanselect {
+  font-size: 14px;
+  margin-right: 5px
+}
+
+.main .bottom .dividerContain .dividerlineright .info {
+  color: #5ea4f0;
+  font-size: 14px
+}
+
+.main .bottom .dividerContain .dividerlineright .topdiv {
+  height: calc(100% - 36px)
+}
+
+.main .bottom .dividerContain .dividerlineright .topdiv .el-col,.main .bottom .dividerContain .dividerlineright .topdiv .el-row {
+  height: 100%
+}
+
+.main .bottom .box-card {
+  height: 100%;
+  overflow: auto
+}
+
+.main .bottom .box-card .el-card__header {
+  color: #fff;
+  border-bottom: 0;
+  padding: 9px 20px;
+  background-color: var(--primary-color);
+  position: relative
+}
+
+.main .bottom .box-card .el-card.is-always-shadow {
+  height: 100%
+}
+
+.main .bottom .box-card .el-card__body {
+  border: 1px solid var(--switch-project-border);
+  background-color: var(--boxBG);
+  overflow-y: auto;
+  padding: 5px 10px 5px 10px;
+  height: 100%
+}
+
+.main .bottom .box-card .item {
+  height: 100%;
+  padding: 0 20px 5px 0
+}
+
+.main .bottom .box-card .iFo {
+  color: var(--monitor-video-iFo);
+  margin-right: 3px
+}
+
+.main .bottom .box-card .iFo1 {
+  font-size: 20px;
+  color: var(--monitor-video-iFo);
+  margin-right: 10px
+}
+
+.main .bottom .box-card .iconfont {
+  margin-left: 8px
+}
+
+.main .bottom .box-card .dataContent {
+  height: 100%;
+  min-height: 300px
+}
+
+.main .bottom .box-card .dataContent .myChart {
+  height: 100%
+}
+
+.main .bottom .box-card .dataContent .shexiangtou {
+  margin-bottom: 4px;
+  margin-top: 2px;
+  text-align: left;
+  float: left;
+  font-size: 16px
+}
+
+.main .bottom .box-card .dataContent .huifang {
+  float: right;
+  margin-right: 5px;
+  margin-bottom: 4px
+}
+
+.main .bottom .box-card .dataContent .controlbtn {
+  float: right;
+  margin-top: 30px;
+  margin-right: 30px
+}
+
+.main .bottom .box-card .dataContent .controlbtn .controlSpan {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  cursor: pointer;
+  text-align: center
+}
+
+.main .bottom .box-card .dataContent .controlbtn .controlDiv {
+  width: 100px;
+  height: 100px;
+  border-radius: 60px;
+  overflow: hidden;
+  border: none;
+  -webkit-box-shadow: #8790a2 0 0 0 1px;
+  box-shadow: 0 0 0 1px #8790a2;
+  position: absolute;
+  z-index: 999
+}
+
+.main .bottom .box-card .dataContent .controlbtn .controlDiv .controlIFo {
+  font-size: 17px;
+  color: #8790a2;
+  margin-right: 3px
+}
+
+.main .bottom .box-card .dataContent .controlbtn .controlDiv .controlIFo:hover {
+  font-size: 17px;
+  color: #5bf6fb;
+  margin-right: 3px
+}
+
+.main .bottom .box-card .dataContent .controlbtn .up {
+  left: 32px;
+  top: -3px;
+  color: #fff
+}
+
+.main .bottom .box-card .dataContent .controlbtn .down {
+  left: 33px;
+  top: 67px;
+  color: #fff
+}
+
+.main .bottom .box-card .dataContent .controlbtn .left {
+  left: -3px;
+  top: 33px;
+  color: #fff
+}
+
+.main .bottom .box-card .dataContent .controlbtn .right {
+  left: 69px;
+  top: 33px;
+  color: #fff
+}
+
+.main .bottom .box-card .dataContent .controlbtn .return {
+  left: 32px;
+  top: 30px;
+  color: #fff
+}
+
+.main .bottom .box-card .dataContent .controlbtn .videoIframe {
+  position: absolute;
+  visibility: inherit;
+  top: 0;
+  left: 0;
+  width: 120px;
+  height: 120px;
+  z-index: -3;
+  filter: alpha(opacity=0);
+  background-color: #8790a2
+}
+
+.main .bottom .box-card .detailDiv .discription {
+  display: inline-block;
+  color: #a29494;
+  margin-top: 12px;
+  margin-bottom: 5px
+}
+
+.main .bottom .box-card .detailDiv .button {
+  margin-left: 10px
+}
+
+.main .bottom .box-card .detailDiv .noReplay {
+  height: 260px;
+  margin: 60px 145px
+}
+
+.main .bottom .box-card .bg-page {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: end;
+  -ms-flex-pack: end;
+  justify-content: flex-end;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center
+}

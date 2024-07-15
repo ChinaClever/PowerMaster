@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.aisle.controller.admin.aisleindex;
 
 import cn.iocoder.yudao.module.aisle.dal.dataobject.aisleindex.AisleIndexDO;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Operation;
 
 import javax.validation.*;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
@@ -147,12 +149,35 @@ public class AisleIndexController {
         return success(BeanUtils.toBean(pageResult, AislePfRes.class));
     }
 
-
-
     @GetMapping("/devKeyList")
     @Operation(summary = "获得通道列devKey列表")
     public List<Integer> getDevKeyList() {
         return indexService.getDevKeyList();
+    }
+
+    @PostMapping("/balancepage")
+    @Operation(summary = "获得通道列平衡分页")
+    public CommonResult<PageResult<AisleBalanceRes>> getAisleBalancePage(@RequestBody AisleIndexPageReqVO pageReqVO) {
+        PageResult<AisleBalanceRes> pageResult = indexService.getAisleBalancePage(pageReqVO);
+        return success(BeanUtils.toBean(pageResult, AisleBalanceRes.class));
+    }
+
+    @PostMapping("/report/ele")
+    @Operation(summary = "获得通道列报表数据")
+    public CommonResult<Map> getReportConsumeDataById(@RequestBody AisleIndexPageReqVO pageReqVO) {
+        return success(indexService.getReportConsumeDataById(pageReqVO.getId(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+    }
+
+    @PostMapping("/report/pow")
+    @Operation(summary = "获得通道列报表数据")
+    public CommonResult<Map> getReportPowDataById(@RequestBody AisleIndexPageReqVO pageReqVO)  {
+        return success(indexService.getReportPowDataById(pageReqVO.getId(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+    }
+
+    @PostMapping("/report/pfline")
+    @Operation(summary = "获得通道列报表数据")
+    public CommonResult<Map> getAislePFLine(@RequestBody AisleIndexPageReqVO pageReqVO)  {
+        return success(indexService.getAislePFLine(pageReqVO.getId(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
     }
 
 //    @GetMapping("/export-excel")

@@ -25,6 +25,10 @@ const legendList = ref()
 
 // 设置饼图的选项
 const echartsOption = ref({
+  title: {
+    text: '湿度',
+    left: 'center'
+  },
   dataZoom:[{ type:"inside"}],
   legend: { data: legendList,
     type: 'scroll', // 设置为 'single' 或 'multiple'
@@ -43,7 +47,7 @@ const echartsOption = ref({
   },
   xAxis: {type: 'category', boundaryGap: false, data : time},
   yAxis: { type: 'value'},
-  toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+  toolbox: {feature: {saveAsImage: {},restore :{}, }},
   series: series,
 })
 

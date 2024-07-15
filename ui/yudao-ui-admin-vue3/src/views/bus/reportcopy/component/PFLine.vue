@@ -35,12 +35,7 @@ const echartsOption = ref({
     formatter: function(params) {
       var result = params[0].name + '<br>';
       for (var i = 0; i < params.length; i++) {
-        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' ;
-        if (params[i].seriesName.includes("视在功率")) {
-          result += params[i].value.toFixed(3) +  ' kVA'; 
-        } else if (params[i].seriesName.includes("有功功率")) {
-          result += params[i].value.toFixed(3) + ' kW';
-        }
+        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value.toFixed(3) ;
         result += '<br>';
       }
       return result;

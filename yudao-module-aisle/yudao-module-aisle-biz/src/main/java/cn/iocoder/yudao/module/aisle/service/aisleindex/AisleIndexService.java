@@ -5,7 +5,9 @@ import cn.iocoder.yudao.module.aisle.controller.admin.aisleindex.vo.*;
 import cn.iocoder.yudao.module.aisle.dal.dataobject.aisleindex.AisleIndexDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 通道列 Service 接口
@@ -69,4 +71,12 @@ public interface AisleIndexService {
     AisleEleChainDTO getEleChain(int id);
 
     AisleLineResBase getAisleLineCurLine(AisleIndexPageReqVO pageReqVO);
+
+    PageResult<AisleBalanceRes> getAisleBalancePage(AisleIndexPageReqVO pageReqVO);
+
+    Map getReportConsumeDataById(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    Map getReportPowDataById(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    Map getAislePFLine(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 }

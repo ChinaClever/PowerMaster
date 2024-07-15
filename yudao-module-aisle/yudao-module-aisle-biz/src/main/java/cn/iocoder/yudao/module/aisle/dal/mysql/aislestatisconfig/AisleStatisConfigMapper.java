@@ -31,9 +31,7 @@ public interface AisleStatisConfigMapper extends BaseMapperX<AisleStatisConfigDO
                 .eqIfPresent(AisleStatisConfigDO::getEleStoreCron, reqVO.getEleStoreCron())
                 .eqIfPresent(AisleStatisConfigDO::getRedisCron, reqVO.getRedisCron())
                 .eqIfPresent(AisleStatisConfigDO::getEleAlarmDay, reqVO.getEleAlarmDay())
-                .eqIfPresent(AisleStatisConfigDO::getEleLimitDay, reqVO.getEleLimitDay())
                 .eqIfPresent(AisleStatisConfigDO::getEleAlarmMonth, reqVO.getEleAlarmMonth())
-                .eqIfPresent(AisleStatisConfigDO::getEleLimitMonth, reqVO.getEleLimitMonth())
                 .orderByDesc(AisleStatisConfigDO::getId));
     }
 

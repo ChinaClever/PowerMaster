@@ -113,17 +113,11 @@ public class CabinetStatisConfigDO {
      * 日用电告警开关 0 关 1开
      */
     private Integer eleAlarmDay;
-    /**
-     * 日用能限制
-     */
-    private Double eleLimitDay;
+
     /**
      * 月用电告警开关 0关 1开
      */
     private Integer eleAlarmMonth;
-    /**
-     * 月用能限制
-     */
-    private Double eleLimitMonth;
+
 
 }

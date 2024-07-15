@@ -58,7 +58,7 @@
 
         <el-form-item label="机房Id" prop="ipAddr" >
           <el-input
-            v-model="queryParams.Id"
+            v-model="queryParams.id"
             placeholder="请输入IP"
             clearable
             class="!w-140px"
@@ -241,22 +241,7 @@
             </div>
             <div ref="outputRankChartContainer" id="outputRankChartContainer" style="width: 70vw; height: 58vh;"></div>
           </div> -->
-          <div class="pageBox" v-if="visControll.iceTemVis">
-            <div class="page-conTitle">
-              前门温度曲线
-            </div>
-            <p class="paragraph" v-show="iceTemList.temMaxValue">本周期内，最高温度{{iceTemList.temMaxValue}}°C， 最高温度发生时间{{iceTemList.temMaxTime}}，由温度传感器{{iceTemList.temMaxSensorId}}采集得到</p>
-            <p class="paragraph" v-show="iceTemList.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{iceTemList.temMinValue}}°C， 最高温度发生时间{{iceTemList.temMinTime}}，由温度传感器{{iceTemList.temMinSensorId}}采集得到</p>
-            <EnvTemLine class="Container" width="70vw" height="58vh" :list="iceTemList" />
-          </div>
-          <div class="pageBox" v-if="visControll.hotTemVis">
-            <div class="page-conTitle">
-              后门温度曲线
-            </div>
-            <p class="paragraph" v-show="hotTemList.temMaxValue">本周期内，最高温度{{hotTemList.temMaxValue}}°C， 最高温度发生时间{{hotTemList.temMaxTime}}，由温度传感器{{hotTemList.temMaxSensorId}}采集得到</p>
-            <p class="paragraph" v-show="hotTemList.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{hotTemList.temMinValue}}°C， 最高温度发生时间{{hotTemList.temMinTime}}，由温度传感器{{hotTemList.temMinSensorId}}采集得到</p>
-            <EnvTemLine class="Container" width="70vw" height="58vh" :list="hotTemList" />
-          </div>
+
         </div>
         
       </div>
@@ -269,21 +254,18 @@
 
 <script setup lang="ts">
 // import download from '@/utils/download'
-import { IndexApi } from '@/api/cabinet/index'
+import { IndexApi } from '@/api/aisle/aisleindex'
 import * as echarts from 'echarts';
-import { CabinetApi } from '@/api/cabinet/info'
 import { ElTree } from 'element-plus'
 import Line from './component/Line.vue'
 import PFLine from './component/PFLine.vue'
 import Bar from './component/Bar.vue'
-import EnvTemLine from './component/EnvTemLine.vue'
+
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
 const pfLineList = ref() as any;
-const iceTemList = ref([]) as any;
-const hotTemList = ref([]) as any;
 const eleList = ref() as any;
 const totalLineList = ref() as any;
 const aLineList = ref() as any;
@@ -410,7 +392,7 @@ const serverRoomArr =  ref([]) as any
 
 
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
+  const res = await IndexApi.getAisleMenu()
   serverRoomArr.value = res
   if (res && res.length > 0) {
     const room = res[0]
@@ -426,9 +408,9 @@ const getNavList = async() => {
 }
 
 const handleClick = (row) => {
-  if(row.type != null  && row.type == 3){
+  if(row.type != null  && row.type == 2){
 
-    queryParams.Id = row.id
+    queryParams.id = row.id
     handleQuery();
   }
 }
@@ -552,8 +534,6 @@ const getList = async () => {
   
   await handleConsumeQuery();
   await handlePowQuery();
-  await handleIceQuery();
-  await handleHotQuery();
   await handleDetailQuery();
   await handlePFLineQuery();
 
@@ -563,7 +543,7 @@ const getList = async () => {
 }
 
 const handlePFLineQuery = async () => {
-  const data = await IndexApi.getCabinetPFLine(queryParams);
+  const data = await IndexApi.getAislePFLine(queryParams);
   pfLineList.value = data.pfLineRes;
   
   if(pfLineList.value?.time != null && pfLineList.value?.time?.length > 0){
@@ -573,45 +553,6 @@ const handlePFLineQuery = async () => {
   }
 }
 
-const handleIceQuery = async () => {
-  if(queryParams.Id != null){ 
-    const data = await IndexApi.getCabinetIceTemAndHumById({id : queryParams.Id,timeType : queryParams.timeType, oldTime : queryParams.oldTime, newTime : queryParams.newTime});
-
-    if(data?.temResult?.time != null && data?.temResult?.time?.length > 0){
-      console.log(1)
-      iceTemList.value = data;
-      console.log("iceTemList.value ",iceTemList.value )
-      if(iceTemList.value?.temMinValue != null){
-        iceTemList.value.temMinValue = iceTemList.value?.temMinValue?.toFixed(2);
-      }
-      if(iceTemList.value?.temMaxValue != null){
-        iceTemList.value.temMaxValue = iceTemList.value?.temMaxValue?.toFixed(2);
-      }
-      visControll.iceTemVis = true;
-    }else{
-      visControll.iceTemVis = false;
-    }
-  }
-}
-
-const handleHotQuery = async () => {
-  if(queryParams.Id != null){
-    const data = await IndexApi.getCabinetHotTemAndHumById({id : queryParams.Id,timeType : queryParams.timeType, oldTime : queryParams.oldTime, newTime : queryParams.newTime});
-    if(data?.temResult?.time != null && data?.temResult?.time?.length > 0){
-      console.log(2)
-      hotTemList.value = data;
-      if(hotTemList.value?.temMinValue != null){
-        hotTemList.value.temMinValue = hotTemList.value?.temMinValue?.toFixed(2);
-      }
-      if(hotTemList.value?.temMaxValue != null){
-        hotTemList.value.temMaxValue = hotTemList.value?.temMaxValue?.toFixed(2);
-      }
-      visControll.hotTemVis = true;
-    }else{
-      visControll.hotTemVis = false;
-    }
-  }
-}
 
 const handlePowQuery = async () => {
   powData.value = await IndexApi.getPowData(queryParams);
@@ -674,44 +615,24 @@ const handleConsumeQuery = async () => {
 const handleDetailQuery = async () => {
   var temp = [] as any;
   
-  var CabinetInfo = await CabinetApi.getCabinetDetail({id : queryParams.Id});
-  var apow = CabinetInfo?.cabinet_power?.path_a?.pow_active;
-  var bpow = CabinetInfo?.cabinet_power?.path_b?.pow_active;
-  var percentageValue = 50 as any;
-  if(apow == null && bpow == null){
-    percentageValue = null;
-  } else if (apow != null && bpow == null){
-    percentageValue = 100;
-  } else if (apow == null && bpow != null){
-    percentageValue = 0;
-  } else if (apow != 0 && bpow == 0){
-    percentageValue = 100;
-  } else if (apow == 0 && bpow != 0){
-    percentageValue = 0;
-  } else if (apow != 0 && bpow != 0) {
-    percentageValue = apow / (apow + bpow);
-    percentageValue *= 100;
-  }
+  var data = await IndexApi.getAisleBalancePage({id : queryParams.id});
+  var AisleInfo = data.list[0];
   
   temp.push({
     baseInfoName : "所属位置",
-    baseInfoValue : CabinetInfo?.aisle_name ? CabinetInfo?.room_name + '-' +  CabinetInfo?.aisle_name + '-'  + CabinetInfo?.cabinet_name : CabinetInfo?.room_name + '-' + CabinetInfo?.cabinet_name,
+    baseInfoValue : AisleInfo?.location ,
     consumeName : "当前总视在功率",
-    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_apparent?.toFixed(3) + "kVA",
+    consumeValue : AisleInfo?.powApparentTotal.toFixed(3) + "kVA",
     percentageName: "当前AB路占比",
-    percentageValue: percentageValue?.toFixed(0),
+    percentageValue: AisleInfo.rateA != null ? AisleInfo.rateA.toFixed(0) : 50,
   })
   temp.push({
-    baseInfoName : "电力容量",
-    baseInfoValue : CabinetInfo?.pow_capacity,
     consumeName : "当前总有功功率",
-    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_active?.toFixed(3) + "kW"
+    consumeValue : AisleInfo?.powActiveTotal?.toFixed(3) + "kW"
   })
   temp.push({
-    baseInfoName : "负载率",
-    baseInfoValue : CabinetInfo?.load_factor?.toFixed(2) + "%",
     consumeName : "当前总无功功率",
-    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_reactive?.toFixed(3) + "kVar"
+    consumeValue : AisleInfo?.powReactiveTotal != null ? AisleInfo?.powReactiveTotal?.toFixed(3) + "kVar" : '/'
   })
   CabinetTableData.value = temp;
 }
@@ -733,7 +654,7 @@ const queryFormRef = ref() // 搜索的表单
 /** 搜索按钮操作 */
 const handleQuery = async () => {
 
-  if(queryParams.Id){
+  if(queryParams.id){
     if(queryParams.oldTime && queryParams.newTime){
       await getList();
       queryParams.devKey = null;

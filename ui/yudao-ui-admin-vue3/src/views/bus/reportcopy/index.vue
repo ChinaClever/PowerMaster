@@ -233,7 +233,7 @@ import EnvTemLine from './component/EnvTemLine.vue'
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
-const outletList = ref() as any;
+
 const temList = ref() as any;
 const eleList = ref() as any;
 const totalLineList = ref() as any;
@@ -473,26 +473,6 @@ const temData = ref<TemData>({
   temMinSensorId : 0,
 }) as any
 
-interface ServerData {
-  nameAndMax: object[];
-  value: number[];
-}
-const serverData = ref<ServerData>({
-  nameAndMax : [
-  ],
-  value: []
-}) as any
-
-interface OutLetRankData {
-  outLetId: string[];
-  eleValue: number[];
-}
-
-const outletRankData = ref<OutLetRankData>({
-  outLetId : [],
-  eleValue : [],
-}) as any
-
 //树型控件
 interface Tree {
   [key: string]: any
@@ -538,7 +518,7 @@ const getList = async () => {
   
   const data = await IndexApi.getBusPFLine(queryParams);
   pfLineList.value = data.pfLineRes;
-  console.log("pfLineList.value",pfLineList.value)
+  
   if(pfLineList.value?.time != null && pfLineList.value?.time?.length > 0){
     visControll.pfVis = true;
   }else {

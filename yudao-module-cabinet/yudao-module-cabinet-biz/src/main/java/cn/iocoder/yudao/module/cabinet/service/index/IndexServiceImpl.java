@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.cabinet.service.index;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
+import cn.iocoder.yudao.framework.common.entity.es.bus.total.BusTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalDayDo;
 
@@ -225,73 +226,6 @@ public class IndexServiceImpl implements IndexService {
                     result.put("maxEleTime",maxEleTime);
                     result.put("barRes",barRes);
                 }
-            }
-        }catch (Exception e){
-            log.error("获取数据失败",e);
-        }
-        return result;
-    }
-
-    @Override
-    public Map getReportTemDataById(String Id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
-        Map result = new HashMap<>();
-        CabinetChartResBase lineRes = new CabinetChartResBase();
-        try {
-            if(Id != null) {
-                String index = null;
-                boolean isSameDay = false;
-                if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
-                    index = "cabinet_env_hour";
-                    if (oldTime.equals(newTime)) {
-                        newTime = newTime.withHour(23).withMinute(59).withSecond(59);
-                    }
-                    isSameDay = true;
-                } else {
-                    index = "cabinet_env_day";
-                    oldTime = oldTime.plusDays(1);
-                    newTime = newTime.plusDays(1);
-                    isSameDay = false;
-                }
-                String startTime = localDateTimeToString(oldTime);
-                String endTime = localDateTimeToString(newTime);
-                List<String> cabinetData = getCabinetData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index);
-                Map<Integer, List<CabinetEnvHourDo>> envMap = cabinetData.stream()
-                        .map(str -> JsonUtils.parseObject(str, CabinetEnvHourDo.class))
-                        .collect(Collectors.groupingBy(CabinetEnvHourDo::getSensorId));
-                boolean isFisrt = false;
-                List<String> time = null;
-                for (int i = 1; i < 6; i++) {
-                    if(CollectionUtil.isEmpty(envMap.get(i))){
-                        continue;
-                    }
-                    LineSeries lineSeries = new LineSeries();
-                    lineSeries.setName("温度传感器" + i + "号");
-                    List<CabinetEnvHourDo> hourDoList = envMap.get(i);
-                    List<Float> temAvg = hourDoList.stream().map(CabinetEnvHourDo::getTemAvgValue).collect(Collectors.toList());
-                    lineSeries.setData(temAvg);
-                    if(!isFisrt){
-                        if(!isSameDay){
-                            time = hourDoList.stream().map(cabinetEnvHourDo -> cabinetEnvHourDo.getCreateTime().split(" ")[0]).collect(Collectors.toList());
-                        }else{
-                            time = hourDoList.stream().map(cabinetEnvHourDo -> cabinetEnvHourDo.getCreateTime().split(" ")[1]).collect(Collectors.toList());
-                        }
-                        lineRes.setTime(time);
-                        isFisrt = true;
-                    }
-                    lineRes.getSeries().add(lineSeries);
-                }
-                String temMaxValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "tem_max_value");
-                CabinetEnvHourDo temMax = JsonUtils.parseObject(temMaxValue, CabinetEnvHourDo.class);
-                String temMinValue = getMaxData(startTime, endTime, Arrays.asList(Integer.valueOf(Id)), index, "tem_min_value");
-                CabinetEnvHourDo temMin = JsonUtils.parseObject(temMinValue, CabinetEnvHourDo.class);
-                result.put("lineRes",lineRes);
-                result.put("temMaxValue",temMax.getTemMaxValue());
-                result.put("temMaxTime",temMax.getTemMaxTime());
-                result.put("temMaxSensorId",temMax.getSensorId());
-                result.put("temMinValue", temMin.getTemMinValue());
-                result.put("temMinTime",temMin.getTemMinTime());
-                result.put("temMinSensorId",temMin.getSensorId());
-                return result;
             }
         }catch (Exception e){
             log.error("获取数据失败",e);
@@ -699,9 +633,12 @@ public class IndexServiceImpl implements IndexService {
                     .eq(CabinetEnvSensor::getChannel, 1)
                     .eq(CabinetEnvSensor::getType, 1)
                     .orderByAsc(CabinetEnvSensor::getPosition));
-            List<Integer> searchIds = cabinetEnvSensors.stream().map(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu())))).collect(Collectors.toList());
+            List<Integer> searchIds = cabinetEnvSensors.stream().filter(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu()))) != null ).map(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu())))).collect(Collectors.toList());
             List<Integer> sensorIds = cabinetEnvSensors.stream().map(CabinetEnvSensor::getSensorId).collect(Collectors.toList());
             List<String> data = getData(localDateTimeToString(oldTime), localDateTimeToString(newTime), searchIds, sensorIds, whichIndex);
+            if (CollectionUtil.isEmpty(data)){
+                return result;
+            }
             Map<Integer, Map<Integer, List<PduEnvHourDo>>> pduEnvHourDoMap = data.stream()
                     .map(str -> JsonUtils.parseObject(str, PduEnvHourDo.class))
                     .collect(Collectors.groupingBy( PduEnvHourDo::getPduId, Collectors.groupingBy(PduEnvHourDo::getSensorId) ));
@@ -815,9 +752,12 @@ public class IndexServiceImpl implements IndexService {
                     .eq(CabinetEnvSensor::getChannel, 2)
                     .eq(CabinetEnvSensor::getType, 1)
                     .orderByAsc(CabinetEnvSensor::getPosition));
-            List<Integer> searchIds = cabinetEnvSensors.stream().map(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu())))).collect(Collectors.toList());
+            List<Integer> searchIds = cabinetEnvSensors.stream().filter(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu()))) != null ).map(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu())))).collect(Collectors.toList());
             List<Integer> sensorIds = cabinetEnvSensors.stream().map(CabinetEnvSensor::getSensorId).collect(Collectors.toList());
             List<String> data = getData(localDateTimeToString(oldTime), localDateTimeToString(newTime), searchIds, sensorIds, whichIndex);
+            if (CollectionUtil.isEmpty(data)){
+                return result;
+            }
             Map<Integer, Map<Integer, List<PduEnvHourDo>>> pduEnvHourDoMap = data.stream()
                     .map(str -> JsonUtils.parseObject(str, PduEnvHourDo.class))
                     .collect(Collectors.groupingBy( PduEnvHourDo::getPduId, Collectors.groupingBy(PduEnvHourDo::getSensorId) ));
@@ -880,6 +820,69 @@ public class IndexServiceImpl implements IndexService {
 
             return result;
         } catch (Exception e){
+            log.error("获取数据失败",e);
+        }
+        return result;
+    }
+
+    @Override
+    public Map getCabinetPFLine(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+        Map result = new HashMap<>();
+        CabinetChartResBase totalLineRes = new CabinetChartResBase();
+        result.put("pfLineRes",totalLineRes);
+        try {
+
+            String index = null;
+
+            if (timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())) {
+                index = "cabinet_hda_pow_hour";
+                if (oldTime.equals(newTime)) {
+                    newTime = newTime.withHour(23).withMinute(59).withSecond(59);
+                }
+
+            } else {
+                index = "cabinet_hda_pow_day";
+                oldTime = oldTime.plusDays(1);
+                newTime = newTime.plusDays(1);
+            }
+
+            String startTime = localDateTimeToString(oldTime);
+            String endTime = localDateTimeToString(newTime);
+            List<String> data = getCabinetData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index);
+            List<CabinetPowHourDo> powList = data.stream().map(str -> JsonUtils.parseObject(str, CabinetPowHourDo.class)).collect(Collectors.toList());
+
+            LineSeries totalPFLine = new LineSeries();
+            totalPFLine.setName("总平均功率因素");
+            LineSeries PFLineA = new LineSeries();
+            PFLineA.setName("A路功率因素");
+            LineSeries PFLineB = new LineSeries();
+            PFLineB.setName("B路功率因素");
+
+            totalLineRes.getSeries().add(totalPFLine);
+            totalLineRes.getSeries().add(PFLineA);
+            totalLineRes.getSeries().add(PFLineB);
+
+            if(timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())){
+                powList.forEach(hourdo -> {
+                    totalPFLine.getData().add(hourdo.getFactorTotalAvgValue());
+                    PFLineA.getData().add(hourdo.getFactorAAvgValue());
+                    PFLineB.getData().add(hourdo.getFactorBAvgValue());
+                    DateTime dateTime = new DateTime(hourdo.getCreateTime());
+                    totalLineRes.getTime().add(dateTime.toString("HH:mm"));
+
+                });
+            }else{
+                powList.forEach(hourdo -> {
+                    totalPFLine.getData().add(hourdo.getFactorTotalAvgValue());
+                    PFLineA.getData().add(hourdo.getFactorAAvgValue());
+                    PFLineB.getData().add(hourdo.getFactorBAvgValue());
+                    DateTime dateTime = new DateTime(hourdo.getCreateTime());
+                    totalLineRes.getTime().add(dateTime.toString("yyyy-MM-dd"));
+                });
+            }
+            result.put("pfLineRes",totalLineRes);
+
+        }catch (Exception e){
             log.error("获取数据失败",e);
         }
         return result;

@@ -25,10 +25,6 @@ const legendList = ref()
 
 // 设置饼图的选项
 const echartsOption = ref({
-  title: {
-    text: '温度',
-    left: 'center'
-  },
   dataZoom:[{ type:"inside"}],
   legend: { data: legendList,
     type: 'scroll', // 设置为 'single' 或 'multiple'
@@ -47,20 +43,19 @@ const echartsOption = ref({
   },
   xAxis: {type: 'category', boundaryGap: false, data : time},
   yAxis: { type: 'value'},
-  toolbox: {feature: {saveAsImage: {},restore :{}, }},
+  toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
   series: series,
 })
 
 watchEffect(() => {
   // 直接访问即可，watchEffect会自动跟踪变化
+  series.value = prop.list.temResult.series;
 
-  series.value = prop.list.series;
   if(  series.value != null && series.value?.length > 0){
     legendList.value =  series.value?.map(item => item.name)
   }
-  console.log(series);
-  time.value = prop.list.time;
-  console.log(time);
+  time.value = prop.list.temResult.time;
+  console.log("time.value",time.value)
 });
 
 

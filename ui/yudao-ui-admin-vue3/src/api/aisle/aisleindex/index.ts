@@ -78,4 +78,20 @@ export const IndexApi = {
   getAisleLineCurLine: async (data: any) => {
     return await request.post({ url: `/aisle/index/line/cur`,data})
   },
+
+  getAisleBalancePage: async (data: any) => {
+    return await request.post({ url: `/aisle/index/balancepage`,data})
+  },
+
+  getConsumeData: async (data) => {
+    return await request.post({ url: `/aisle/index/report/ele`,data})
+  },
+
+  getPowData: async (data) => {
+    return await request.post({ url: `/aisle/index/report/pow`,data})
+  },
+
+  getAislePFLine : async (data) => {
+    return await request.post({ url: `/aisle/index/report/pfline`, data })
+  },
 }

@@ -59,11 +59,11 @@ public interface IndexService {
 
 //    Map getReportOutLetDataById(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
-    Map getReportTemDataById(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
-
     PageResult<CabinetEnvAndHumRes> getCabinetEnvPage(IndexPageReqVO pageReqVO);
 
     Map getCabinetEnvIceTemAndHumData(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
     Map getCabinetEnvHotTemAndHumData(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    Map getCabinetPFLine(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 }

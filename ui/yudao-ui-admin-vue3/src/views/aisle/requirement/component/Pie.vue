@@ -4,7 +4,7 @@
 
 <script lang="ts" setup>
 import 'echarts'
-const {max} = defineProps({
+const prop = defineProps({
   max: {
     type: Object,
     required: true
@@ -18,16 +18,18 @@ const {max} = defineProps({
     default: 60
   }
 })
-console.log("max",max)
+const L1 = ref();
+const L2 = ref();
+const L3 = ref();
 // 设置饼图的选项
 const echartsOption = reactive({
   series: [
     {
       type: 'pie',
       data: [
-        { name: 'L1', value: max.L1 },
-        { name: 'L2', value: max.L2 },
-        { name: 'L3', value: max.L3 }
+        { name: 'L1', value: L1 },
+        { name: 'L2', value: L2 },
+        { name: 'L3', value: L3 }
       ],
       label: {
         show: false // 设置为false，不显示饼图上的名称
@@ -39,6 +41,12 @@ const echartsOption = reactive({
       }
     }
   ]
+})
+
+watchEffect(() =>  {
+  L1.value = prop.max.L1
+  L2.value = prop.max.L2
+  L3.value = prop.max.L3
 })
 onUnmounted(() => {
   console.log('onUnmounted******')

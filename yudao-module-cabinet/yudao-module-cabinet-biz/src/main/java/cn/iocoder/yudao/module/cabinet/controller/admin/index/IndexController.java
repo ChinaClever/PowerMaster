@@ -107,16 +107,10 @@ public class IndexController {
         return success(indexService.getReportPowDataById(Id,timeType,oldTime,newTime));
     }
 
-//    @GetMapping("/report/outlet")
-//    @Operation(summary = "获得PDU报表数据")
-//    public CommonResult<Map> getReportOutLetDataById(String Id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
-//        return success(indexService.getReportOutLetDataById(Id,timeType,oldTime,newTime));
-//    }
-
-    @GetMapping("/report/tem")
+    @GetMapping("/report/pfline")
     @Operation(summary = "获得机柜报表数据")
-    public CommonResult<Map> getReportTemDataById(String Id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
-        return success(indexService.getReportTemDataById(Id,timeType,oldTime,newTime));
+    public CommonResult<Map> getCabinetPFLine(String Id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
+        return success(indexService.getCabinetPFLine(Id,timeType,oldTime,newTime));
     }
 
     @GetMapping("/env/page")

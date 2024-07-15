@@ -95,187 +95,213 @@
       </el-form>
     </template>
     <template #Content>
-      <el-row v-show="visControll.visAllReport" :gutter="24" >
-        <el-col :span="9">
-          <el-card >
-            <template #header>
-              <div class="card-header">
-                <el-row :gutter="24">
-                  <el-col :span="12">
-                    <div style="float:left">
-                      <h2>前门</h2>
+      <div class="myCard">
+        <div class="main" >
+          <el-row class="top" :gutter="24">
+            <el-col class="el-col-8" :span="8">
+              <div  class="el-card box-card is-always-shadow">
+                <div class="el-card__header">
+                  <div  class="clearfix">
+                    <span >烟雾</span>
+                  </div>
+                </div>
+                <div class="el-card__body">
+                  <div  class="infoBox">
+                    <div  class="el-row" style="height: 100%;">
+                      <div  class="item el-col el-col-12">
+                        <img  src="../../../assets/imgs/smoke-item-612ee570180270ba8f5765f4c7dbe104.png" alt="@/assets/images/smoke-item.png"/>
+                        <span  class="titlespan"> 烟感1：无烟 </span>
+                      </div>
+                      <div  class="item el-col el-col-12">
+                        <img  src="../../../assets/imgs/smoke-item-612ee570180270ba8f5765f4c7dbe104.png" alt="@/assets/images/smoke-item.png"/>
+                        <span  class="titlespan"> 烟感2：无烟 </span>
+                      </div>
+                      <div  class="item el-col el-col-12">
+                        <img  src="../../../assets/imgs/smoke-item-612ee570180270ba8f5765f4c7dbe104.png" alt="@/assets/images/smoke-item.png"/>
+                        <span  class="titlespan"> 烟感3：无烟 </span>
+                      </div>
+                      <div  class="item el-col el-col-12">
+                        <img  src="../../../assets/imgs/smoke-item-612ee570180270ba8f5765f4c7dbe104.png" alt="@/assets/images/smoke-item.png"/>
+                        <span  class="titlespan"> 烟感4：无烟 </span>
+                      </div>
                     </div>
-                  </el-col>
-                  <el-col :span="12">
-                    <div style="float:right">
-                      <h2>后门</h2>
-                    </div>
-                  </el-col>
-                </el-row>
+                  </div>
+                  <div  class="imgBox">
+                    <img  src="../../../assets/imgs/smoke-8f922591811898febc3c790d68a51fae.png" alt="@/assets/images/smoke.png"/>
+                  </div>
+                </div>
               </div>
-            </template>
-            <el-row justify="center">
-              <h1>上层</h1>
-            </el-row>
-            <el-row :gutter="24">
-              <el-col :span="12">
-                <div style="float:left">
-                  {{  cabinetEnvData?.iceTopTem != null ? "温度:" + cabinetEnvData?.iceTopTem + "°C" : ''}}
-                  <br/>
-                  {{  cabinetEnvData?.iceTopHum != null ? "湿度:" + cabinetEnvData?.iceTopHum + "%" : ''}}
+            </el-col>
+            <el-col class="el-col-8" :span="8">              
+              <div  class="el-card box-card is-always-shadow">
+                <div class="el-card__header">
+                  <div  class="clearfix">
+                    <span >水浸</span>
+                  </div>
                 </div>
-              </el-col>
-              <el-col :span="12">
-                <div style="float:right">
-                  {{  cabinetEnvData?.hotTopTem != null ? "温度:" + cabinetEnvData?.hotTopTem + "°C" : ''}}
-                  <br/>
-                  {{  cabinetEnvData?.hotTopHum != null ? "湿度:" + cabinetEnvData?.hotTopHum + "%"  : ''}}
+                <div class="el-card__body">
+                  <div  class="infoBox">
+                    <div  class="el-row"></div>
+                  </div>
+                  <div  class="imgBox">
+                    <img  src="../../../assets/imgs/Ewater-c402c8b23e288ed6738ac928a9c79d42.png" alt="@/assets/images/smoke.png"/>
+                  </div>
                 </div>
-              </el-col>
-            </el-row>
-            <el-row justify="center">
-              <h1>中层</h1>
-            </el-row>
-            <el-row :gutter="24">
-              <el-col :span="12">
-                <div style="float:left">
-                  {{  cabinetEnvData?.iceMidTem != null ? "温度:" + cabinetEnvData?.iceMidTem + "°C" : ''}}
-                  <br/>
-                  {{  cabinetEnvData?.iceMidHum != null ? "湿度:" + cabinetEnvData?.iceMidHum + "%" : ''}}
-                </div>
-              </el-col>
-              <el-col :span="12">
-                <div style="float:right">
-                  {{  cabinetEnvData?.hotMidTem != null ? "温度:" + cabinetEnvData?.hotMidTem + "°C" : ''}}
-                  <br/>
-                  {{  cabinetEnvData?.hotMidHum != null ? "湿度:" + cabinetEnvData?.hotMidHum + "%" : ''}}
-                </div>
-              </el-col>
-            </el-row>
-            <el-row justify="center">
-              <h1 >下层</h1>
-            </el-row>
-            <el-row :gutter="24">
-              <el-col :span="12">
-                <div style="float:left">
-                  {{  cabinetEnvData?.iceBomTem != null ? "温度:" + cabinetEnvData?.iceBomTem + "°C" : ''}}
-                  <br/>
-                  {{  cabinetEnvData?.iceBomHum != null ? "湿度:" + cabinetEnvData?.iceBomHum + "%" : ''}}
-                </div>
-              </el-col>
-              <el-col :span="12">
-                <div style="float:right">
-                  {{  cabinetEnvData?.hotBomTem != null ? "温度:" + cabinetEnvData?.hotBomTem + "°C" : ''}}
-                  <br/>
-                  {{  cabinetEnvData?.hotBomHum != null ? "湿度:" + cabinetEnvData?.hotBomHum + "%" : ''}}
-                </div>
-              </el-col>
-            </el-row>
-          </el-card>
-          <el-card >
-
-            <el-row :gutter="24">
-              <el-col :span="13">
-                <div style="float:left">
-                  门禁状态：
-                </div>
-                
-              </el-col>
-              <el-col :span="11">
-                <div >
-                  门禁状态：未检测出状态
-                </div>
-                
-              </el-col>
-            </el-row>
-          </el-card>
-          <el-card >
-
-            <el-row :gutter="24">
-              <el-col :span="13">
-                <div style="float:left">
-                  水浸状态：
-                </div>
-                
-              </el-col>
-              <el-col :span="11">
-                <div >
-                  水浸状态：
-                </div>
-                
-              </el-col>
-            </el-row>
-          </el-card>
-          <el-card >
-
-            <el-row :gutter="24">
-              <el-col :span="13">
-                <div style="float:left">
-                  烟雾状态：
-                </div>
-                
-              </el-col>
-              <el-col :span="11">
-                <div >
-                  烟雾状态：
-                </div>
-                
-              </el-col>
-            </el-row>
-          </el-card>
-        </el-col>
-        <el-col :span="15">
-
-          <el-row>
-            <el-card>
-              <el-row>
-                <el-col >
-                  <h1 style="width: 100%">前门</h1>
-                </el-col>
-                <el-col>                    
-                  <el-form>
-                    <el-form-item >
-                      <el-button @click="iceTemAndHumSwitchValue = 1;" :type="iceTemAndHumSwitchValue == 1 ? 'primary' : ''">温度</el-button>
-                      <el-button @click="iceTemAndHumSwitchValue = 2;" :type="iceTemAndHumSwitchValue == 2 ? 'primary' : ''">湿度</el-button>                      
-                    </el-form-item>
-                    <el-form-item style="margin-bottom: 10px;">
-                      <el-button @click="queryParams.iceTimeType = 1;queryParams.timeArr = null;queryParams.id ? handleIceQuery() : ''" :type="queryParams.iceTimeType == 1 ? 'primary' : ''">过去24小时</el-button>
-                      <el-button @click="queryParams.iceTimeType = 2;" :type="queryParams.iceTimeType == 2 ? 'primary' : ''">自定义</el-button>                      
-                      <el-date-picker
-                        v-if="queryParams.iceTimeType == 2"
-                        v-model="queryParams.timeArr"
-                        value-format="YYYY-MM-DD HH:mm:ss"
-                        type="daterange"
-                        start-placeholder="开始日期"
-                        end-placeholder="结束日期"
-                        :disabled-date="disabledDate"
-                        @change="handleIceDayPick"
-                        class="!w-200px"
-                      />
-                    </el-form-item>
-                  </el-form>                                                  
-                </el-col> 
-              </el-row>
-              <div >
-                <EnvTemLine v-show="iceTemAndHumSwitchValue == 1"  width="43vw" height="38vh" :list="iceTemList"  />
-                <EnvHumLine v-show="iceTemAndHumSwitchValue == 2" width="43vw" height="38vh" :list="iceHumList"  />  
               </div>
-            </el-card>
+            </el-col>
+            <el-col class="el-col-8" :span="8">
+              <div  class="el-card box-card is-always-shadow">
+                <div class="el-card__header">
+                  <div  class="clearfix">
+                    <span >门禁</span>
+                  </div>
+                </div>
+                <div class="el-card__body">
+                  <div  class="infoBox">
+                    <div  class="el-row"></div>
+                  </div>
+                  <div  class="imgBox">
+                    <img  src="../../../assets/imgs/door-ab6a048bd1dc524e4a514bdabf5c1d0f.png" alt="@/assets/images/smoke.png"/>
+                  </div>
+                </div>
+              </div>              
+            </el-col>
           </el-row>
-          <el-row>
-            <el-card>
-              <el-row>
-                <el-col >
-                  <h1 style="width: 100%">后门</h1>
-                </el-col>
-                <el-col >
-                  <el-form>          
-                    <el-form-item>
-                      <el-button @click="hotTemAndHumSwitchValue = 1;" :type="hotTemAndHumSwitchValue == 1 ? 'primary' : ''">温度</el-button>
-                      <el-button @click="hotTemAndHumSwitchValue = 2;" :type="hotTemAndHumSwitchValue == 2 ? 'primary' : ''">湿度</el-button>                      
-                    </el-form-item>
-                    <div style="float:right;margin-top: 0;">
-                      <el-form-item>
+          <div class="middle-bottom">
+            <el-row class="middle">
+              <el-card class=" box-card is-always-shadow" >
+                <template #header>
+                  <div  class="clearfix">
+                    <span >前门</span>
+                  </div>
+                </template>
+
+                  <el-row :gutter="24" >
+                    <el-col class="left el-col-7" :span="8" >
+                      <div >
+                        <span  class="canvasTitle">上层</span>
+                      </div>
+                      <div class="tabChart" >
+                        <div class="chart">
+                          <Gauge :value="cabinetEnvData?.iceTopTem || 0" :title-name="'温度'" :formatter-type="'°C'" :height="'200%'" :width="'100%'" />
+                        </div>
+                        <div class="chart">
+                          <Gauge :value="cabinetEnvData?.iceTopHum || 0" :title-name="'湿度'" :formatter-type="'%'" :height="'200%'" :width="'100%'"  />
+                        </div>
+                      </div>
+                    </el-col>
+                    <el-col class="left el-col-7" :span="8" >
+                      <div >
+                        <span  class="canvasTitle">中层</span>
+                      </div>
+                      <div class="tabChart" >
+                        <div class="chart">
+                          <Gauge :value="cabinetEnvData?.iceMidTem || 0" :title-name="'温度'" :formatter-type="'°C'" :height="'200%'" :width="'100%'" />
+                        </div>
+                        <div class="chart">
+                          <Gauge :value="cabinetEnvData?.iceMidHum || 0" :title-name="'湿度'" :formatter-type="'%'" :height="'200%'" :width="'100%'"  />
+                        </div>
+                      </div>
+                    </el-col>
+                    <el-col class="left el-col-7" :span="8" >
+                      <div >
+                        <span  class="canvasTitle">下层</span>
+                      </div>
+                      <div class="tabChart" >
+                        <div class="chart">
+                          <Gauge :value="cabinetEnvData?.iceBomTem || 0" :title-name="'温度'" :formatter-type="'°C'" :height="'200%'" :width="'100%'" />
+                        </div>
+                        <div class="chart">
+                          <Gauge :value="cabinetEnvData?.iceBomHum || 0" :title-name="'湿度'" :formatter-type="'%'" :height="'200%'" :width="'100%'"  />
+                        </div>
+                      </div>
+                    </el-col>
+                  </el-row>
+
+                  <el-row >
+                    <el-form>                    
+                      <el-form-item label="历史数据" style="margin-bottom: 10px;">
+                        <el-button  @click="queryParams.iceTimeType = 1;queryParams.timeArr = null;queryParams.id ? handleIceQuery() : ''" :type="queryParams.iceTimeType == 1 ? 'primary' : ''">过去24小时</el-button>
+                        <el-button  @click="queryParams.iceTimeType = 2;" :type="queryParams.iceTimeType == 2 ? 'primary' : ''">自定义</el-button>                      
+                        <el-date-picker
+                          v-if="queryParams.iceTimeType == 2"
+                          v-model="queryParams.timeArr"
+                          value-format="YYYY-MM-DD HH:mm:ss"
+                          type="daterange"
+                          start-placeholder="开始日期"
+                          end-placeholder="结束日期"
+                          :disabled-date="disabledDate"
+                          @change="handleIceDayPick"
+                          class="!w-200px"
+                        />
+                      </el-form-item>
+                    </el-form>
+                  </el-row>
+
+                  <br/>   
+                  <el-row >
+                    <EnvTemLine  width="50%"  height="38vh" :list="iceTemList"  />
+                    <EnvHumLine  width="50%"  height="38vh" :list="iceHumList"  />
+                  </el-row> 
+              </el-card>
+
+            </el-row>
+          </div>
+          <br/>
+          <div class="middle-bottom">
+            <el-row class="middle">
+              <el-card class=" box-card is-always-shadow" >
+                <template #header>
+                  <div  class="clearfix">
+                    <span >后门</span>
+                  </div>
+                </template>
+
+                  <el-row :gutter="24" >
+                    <el-col class="left el-col-7" :span="8" >
+                      <div >
+                        <span  class="canvasTitle">上层</span>
+                      </div>
+                      <div class="tabChart" >
+                        <div class="chart">
+                          <Gauge :value="cabinetEnvData?.hotTopTem || 0" :title-name="'温度'" :formatter-type="'°C'" :height="'200%'" :width="'100%'" />
+                        </div>
+                        <div class="chart">
+                          <Gauge :value="cabinetEnvData?.hotTopHum || 0" :title-name="'湿度'" :formatter-type="'%'" :height="'200%'" :width="'100%'"  />
+                        </div>
+                      </div>
+                    </el-col>
+                    <el-col class="left el-col-7" :span="8" >
+                      <div >
+                        <span  class="canvasTitle">中层</span>
+                      </div>
+                      <div class="tabChart" >
+                        <div class="chart">
+                          <Gauge :value="cabinetEnvData?.hotMidTem || 0" :title-name="'温度'" :formatter-type="'°C'" :height="'200%'" :width="'100%'" />
+                        </div>
+                        <div class="chart">
+                          <Gauge :value="cabinetEnvData?.hotMidHum || 0" :title-name="'湿度'" :formatter-type="'%'" :height="'200%'" :width="'100%'"  />
+                        </div>
+                      </div>
+                    </el-col>
+                    <el-col class="left el-col-7" :span="8" >
+                      <div >
+                        <span  class="canvasTitle">下层</span>
+                      </div>
+                      <div class="tabChart" >
+                        <div class="chart">
+                          <Gauge :value="cabinetEnvData?.hotBomTem || 0" :title-name="'温度'" :formatter-type="'°C'" :height="'200%'" :width="'100%'" />
+                        </div>
+                        <div class="chart">
+                          <Gauge :value="cabinetEnvData?.hotBomHum || 0" :title-name="'湿度'" :formatter-type="'%'" :height="'200%'" :width="'100%'"  />
+                        </div>
+                      </div>
+                    </el-col>
+                  </el-row>
+
+                  <el-row >
+                    <el-form>          
+                      <el-form-item label="历史数据" style="margin-bottom: 10px;">
                         <el-button @click="queryParams.hotTimeType = 1;queryParams.timeArr = null;queryParams.id ? handleHotQuery() : ''" :type="queryParams.hotTimeType == 1 ? 'primary' : ''">过去24小时</el-button>
                         <el-button @click="queryParams.hotTimeType = 2;" :type="queryParams.hotTimeType == 2 ? 'primary' : ''">自定义</el-button>                      
                         <el-date-picker
@@ -290,18 +316,20 @@
                           class="!w-200px"
                         />
                       </el-form-item>
-                    </div>
-                  </el-form>                        
-                </el-col> 
-              </el-row>
-              <div >
-                <EnvTemLine v-show="hotTemAndHumSwitchValue == 1" width="43vw" height="38vh" :list="hotTemList"  />
-                <EnvHumLine v-show="hotTemAndHumSwitchValue == 2" width="43vw" height="38vh" :list="hotHumList"  />
-              </div>                
-            </el-card>
-          </el-row>
-        </el-col>
-      </el-row>
+                    </el-form>                        
+                  </el-row>
+
+                  <br/>   
+                  <el-row >
+                    <EnvTemLine  width="50%"  height="38vh" :list="hotTemList"  />
+                    <EnvHumLine  width="50%"  height="38vh" :list="hotHumList"  />
+                  </el-row> 
+              </el-card>
+
+            </el-row>
+          </div>
+        </div>
+      </div>
     </template>
   </CommonMenu>
 
@@ -316,6 +344,7 @@ import { CabinetApi } from '@/api/cabinet/info'
 import { ElTree } from 'element-plus'
 import EnvTemLine from './component/EnvTemLine.vue'
 import EnvHumLine from './component/EnvHumLine.vue'
+import Gauge from './component/Gauge.vue'
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -325,19 +354,7 @@ const iceHumList = ref([]) as any;
 const hotTemList = ref([]) as any;
 const hotHumList = ref([]) as any;
 const switchValue = ref(1);
-const iceTemAndHumSwitchValue = ref(1)
-const hotTemAndHumSwitchValue = ref(1)
-const visControll = reactive({
-  visAllReport : true,
-  isSameDay : false,
-  eqVis : false,
-  powVis : false,
-  outletVis : false,
-  temVis : false,
-  ApowVis :false,
-  BpowVis : false,
 
-})
 
 const disabledDate = (date) => {
   // 获取今天的日期
@@ -357,14 +374,15 @@ const disabledDate = (date) => {
 }
 
 const handleIceDayPick = () => {
+  console.log(1)
   if(queryParams?.oldTime && queryParams.iceTimeType == 2){
-
+    console.log(2)
     queryParams.oldTime = null;
     queryParams.newTime = null;
   }
 
  if (queryParams.timeArr && queryParams.iceTimeType == 2) {
-
+    console.log(3)
     queryParams.oldTime = queryParams.timeArr[0];
     queryParams.newTime = queryParams.timeArr[1].split(" ")[0]+ " " + "23:59:59";
     if(queryParams.id != null){
@@ -593,7 +611,9 @@ onBeforeMount(async () =>{
   await getList();
 })
 </script>
-<style scoped lang="scss">
+<style lang="scss">
+@import "./css/chunk-fc834f16.c18e9208.css";
+
 .master {
   width: 100%;
   box-sizing: border-box;
@@ -813,4 +833,6 @@ onBeforeMount(async () =>{
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }
+
+
 </style>
