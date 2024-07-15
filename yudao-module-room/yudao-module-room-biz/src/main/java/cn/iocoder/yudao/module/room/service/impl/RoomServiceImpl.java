@@ -76,7 +76,10 @@ public class RoomServiceImpl implements RoomService {
             RoomIndex index = new RoomIndex();
             index.setName(roomSaveVo.getRoomName());
             index.setPowerCapacity(roomSaveVo.getPowCapacity());
-
+            index.setEleAlarmDay(roomSaveVo.getEleAlarmDay());
+            index.setEleLimitDay(roomSaveVo.getEleLimitDay());
+            index.setEleAlarmMonth(roomSaveVo.getEleAlarmMonth());
+            index.setEleLimitMonth(roomSaveVo.getEleLimitMonth());
             if (Objects.nonNull(roomSaveVo.getId())){
                 //编辑
                 RoomIndex roomIndex = roomIndexMapper.selectOne(new LambdaQueryWrapper<RoomIndex>()
@@ -245,6 +248,11 @@ public class RoomServiceImpl implements RoomService {
         roomDetailDTO.setRoomName(roomIndex.getName());
         roomDetailDTO.setId(roomId);
         roomDetailDTO.setPowerCapacity(roomIndex.getPowerCapacity());
+        roomDetailDTO.setEleAlarmDay(roomIndex.getEleAlarmDay());
+        roomDetailDTO.setEleAlarmMonth(roomIndex.getEleAlarmMonth());
+        roomDetailDTO.setEleLimitDay(roomIndex.getEleLimitDay());
+        roomDetailDTO.setEleLimitMonth(roomIndex.getEleLimitMonth());
+
         if (Objects.nonNull(roomIndex) && Objects.nonNull(roomCfg)){
             roomDetailDTO.setXLength(roomCfg.getXLength());
             roomDetailDTO.setYLength(roomCfg.getYLength());
@@ -338,6 +346,11 @@ public class RoomServiceImpl implements RoomService {
                 detailDTO.setPduBar(aisleIndex.getPduBar());
                 detailDTO.setRoomName(roomName);
                 detailDTO.setRoomId(roomId);
+                detailDTO.setEleAlarmDay(aisleIndex.getEleAlarmDay());
+                detailDTO.setEleAlarmMonth(aisleIndex.getEleAlarmMonth());
+                detailDTO.setEleLimitDay(aisleIndex.getEleLimitDay());
+                detailDTO.setEleLimitMonth(aisleIndex.getEleLimitMonth());
+
 
                 AisleCfg aisleCfg = aisleCfgMap.get(aisleIndex.getId());
                 if (Objects.nonNull(aisleCfg)){
@@ -406,6 +419,10 @@ public class RoomServiceImpl implements RoomService {
         index.setRoomId(aisleSaveVo.getRoomId());
         index.setType(aisleSaveVo.getType());
         index.setPduBar(aisleSaveVo.getPduBar());
+        index.setEleAlarmDay(aisleSaveVo.getEleAlarmDay());
+        index.setEleAlarmMonth(aisleSaveVo.getEleAlarmMonth());
+        index.setEleLimitDay(aisleSaveVo.getEleLimitDay());
+        index.setEleLimitMonth(aisleSaveVo.getEleLimitMonth());
 
         if (Objects.nonNull(aisleSaveVo.getId())){
             //编辑
@@ -572,6 +589,10 @@ public class RoomServiceImpl implements RoomService {
         cabinetIndex.setPowCapacity(vo.getPowCapacity());
         cabinetIndex.setRoomId(vo.getRoomId());
         cabinetIndex.setId(index.getId());
+        cabinetIndex.setEleAlarmDay(vo.getEleAlarmDay());
+        cabinetIndex.setEleAlarmMonth(vo.getEleAlarmMonth());
+        cabinetIndex.setEleLimitDay(vo.getEleLimitDay());
+        cabinetIndex.setEleLimitMonth(vo.getEleLimitMonth());
         return cabinetIndex;
     }
 
