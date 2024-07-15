@@ -162,6 +162,10 @@ public class CabinetServiceImpl implements CabinetService {
                 dto.setPowCapacity(index.getPowCapacity());
                 dto.setRunStatus(index.getRunStatus());
                 dto.setPduBox(index.getPduBox());
+                dto.setEleAlarmDay(index.getEleAlarmDay());
+                dto.setEleAlarmMonth(index.getEleAlarmMonth());
+                dto.setEleLimitDay(index.getEleLimitDay());
+                dto.setEleLimitMonth(index.getEleLimitMonth());
 
                 //机房信息
                 RoomIndex roomIndex = roomIndexMapper.selectById(index.getRoomId());
@@ -721,6 +725,10 @@ public class CabinetServiceImpl implements CabinetService {
         cabinetIndex.setPowCapacity(vo.getPowCapacity());
         cabinetIndex.setRoomId(vo.getRoomId());
         cabinetIndex.setId(index.getId());
+        cabinetIndex.setEleAlarmDay(vo.getEleAlarmDay());
+        cabinetIndex.setEleAlarmMonth(vo.getEleAlarmMonth());
+        cabinetIndex.setEleLimitDay(vo.getEleLimitDay());
+        cabinetIndex.setEleLimitMonth(vo.getEleLimitMonth());
         return cabinetIndex;
     }
 

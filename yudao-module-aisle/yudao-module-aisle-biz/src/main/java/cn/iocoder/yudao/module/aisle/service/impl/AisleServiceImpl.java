@@ -139,6 +139,10 @@ public class AisleServiceImpl implements AisleService {
             index.setRoomId(aisleSaveVo.getRoomId());
             index.setType(aisleSaveVo.getType());
             index.setPduBar(aisleSaveVo.getPduBar());
+            index.setEleAlarmDay(aisleSaveVo.getEleAlarmDay());
+            index.setEleAlarmMonth(aisleSaveVo.getEleAlarmMonth());
+            index.setEleLimitDay(aisleSaveVo.getEleLimitDay());
+            index.setEleLimitMonth(aisleSaveVo.getEleLimitMonth());
 
             if (Objects.nonNull(aisleSaveVo.getId())){
                 //编辑
@@ -540,6 +544,10 @@ public class AisleServiceImpl implements AisleService {
             detailDTO.setLength(aisleIndex.getLength());
             detailDTO.setType(aisleIndex.getType());
             detailDTO.setPduBar(aisleIndex.getPduBar());
+            detailDTO.setEleAlarmDay(aisleIndex.getEleAlarmDay());
+            detailDTO.setEleAlarmMonth(aisleIndex.getEleAlarmMonth());
+            detailDTO.setEleLimitDay(aisleIndex.getEleLimitDay());
+            detailDTO.setEleLimitMonth(aisleIndex.getEleLimitMonth());
             Integer roomId = aisleIndex.getRoomId();
             RoomIndex roomIndex = roomIndexMapper.selectById(roomId);
             if (Objects.nonNull(roomIndex)){
