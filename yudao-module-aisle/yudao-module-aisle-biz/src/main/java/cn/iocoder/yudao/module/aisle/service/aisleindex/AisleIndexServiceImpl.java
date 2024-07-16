@@ -865,6 +865,9 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 List<String> cabinetData = getData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index);
                 List<AislePowHourDo> aislePowHourDos = cabinetData.stream().map(str -> JsonUtils.parseObject(str, AislePowHourDo.class)).collect(Collectors.toList());
 
+                if (org.springframework.util.CollectionUtils.isEmpty(cabinetData)){
+                    return result;
+                }
 
                 LineSeries totalApparentPow = new LineSeries();
                 totalApparentPow.setName("总平均视在功率");

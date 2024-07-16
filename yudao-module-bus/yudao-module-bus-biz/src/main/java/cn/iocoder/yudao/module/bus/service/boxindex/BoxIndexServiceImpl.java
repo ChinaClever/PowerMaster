@@ -210,7 +210,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             }
             if(pageReqVO.getColor() != null){
                 if(!pageReqVO.getColor().contains(boxIndexRes.getColor())){
-                    continue;
+                    res.removeIf(bus -> bus.getBoxId().equals(boxIndexRes.getBoxId()));
                 }
             }
         }
@@ -781,6 +781,11 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             boxBalanceDataRes.setCurUnbalance(curUnbalance);
             boxBalanceDataRes.setVolUnbalance(volUnbalance);
             boxBalanceDataRes.setColor(color);
+            if(pageReqVO.getColor() != null){
+                if(!pageReqVO.getColor().contains(boxBalanceDataRes.getColor())){
+                    res.removeIf(bus -> bus.getBoxId().equals(boxBalanceDataRes.getBoxId()));
+                }
+            }
         }
         return new PageResult<>(res,boxIndexDOPageResult.getTotal());
     }

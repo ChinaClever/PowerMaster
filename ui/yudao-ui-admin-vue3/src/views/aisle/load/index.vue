@@ -44,11 +44,7 @@
         :inline="true"
         label-width="68px"                          
       >
-        <el-form-item v-if="switchValue == 2 || switchValue == 3">
-          <template v-for="(status, index) in statusList" :key="index">
-            <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
-          </template>
-        </el-form-item>
+
         <!-- <el-button
           type="primary"
           plain

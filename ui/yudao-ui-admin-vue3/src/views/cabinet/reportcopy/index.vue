@@ -4,8 +4,8 @@
       <div >
         <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
-          <div class="name">微模块机房</div>
-          <div>机房202</div>
+          <div class="name">机柜</div>
+          <div></div>
         </div>
         <div class="line"></div>
         <!-- <div class="status">
@@ -697,21 +697,21 @@ const handleDetailQuery = async () => {
     baseInfoName : "所属位置",
     baseInfoValue : CabinetInfo?.aisle_name ? CabinetInfo?.room_name + '-' +  CabinetInfo?.aisle_name + '-'  + CabinetInfo?.cabinet_name : CabinetInfo?.room_name + '-' + CabinetInfo?.cabinet_name,
     consumeName : "当前总视在功率",
-    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_apparent?.toFixed(3) + "kVA",
+    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_apparent != null ? CabinetInfo?.cabinet_power?.total_data?.pow_apparent?.toFixed(3) + "kVA" : '/',
     percentageName: "当前AB路占比",
     percentageValue: percentageValue?.toFixed(0),
   })
   temp.push({
     baseInfoName : "电力容量",
-    baseInfoValue : CabinetInfo?.pow_capacity,
+    baseInfoValue : CabinetInfo?.pow_capacity != null ?  CabinetInfo?.pow_capacity : '/',
     consumeName : "当前总有功功率",
-    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_active?.toFixed(3) + "kW"
+    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_active != null ? CabinetInfo?.cabinet_power?.total_data?.pow_active?.toFixed(3) + "kW" : '/'
   })
   temp.push({
     baseInfoName : "负载率",
-    baseInfoValue : CabinetInfo?.load_factor?.toFixed(2) + "%",
+    baseInfoValue : CabinetInfo?.load_factor != null ? CabinetInfo?.load_factor?.toFixed(2) + "%" : '/',
     consumeName : "当前总无功功率",
-    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_reactive?.toFixed(3) + "kVar"
+    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_reactive != null ? CabinetInfo?.cabinet_power?.total_data?.pow_reactive?.toFixed(3) + "kVar" : '/'
   })
   CabinetTableData.value = temp;
 }

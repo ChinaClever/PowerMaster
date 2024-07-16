@@ -5,7 +5,7 @@
         <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
           <div class="name">微模块机房</div>
-          <div>机房202</div>
+          <div>{{ location}}</div>
         </div>
         <div class="line"></div>
         <!-- <div class="status">
@@ -265,6 +265,7 @@ import Bar from './component/Bar.vue'
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
+const location = ref() as any;
 const pfLineList = ref() as any;
 const eleList = ref() as any;
 const totalLineList = ref() as any;
@@ -617,18 +618,19 @@ const handleDetailQuery = async () => {
   
   var data = await IndexApi.getRoomBalancePage({id : queryParams.id});
   var RoomInfo = data.list[0];
-  
+
+  location.value = RoomInfo?.location;
   temp.push({
     baseInfoName : "所属位置",
     baseInfoValue : RoomInfo?.location ,
     consumeName : "当前总视在功率",
-    consumeValue : RoomInfo?.powApparentTotal.toFixed(3) + "kVA",
+    consumeValue : RoomInfo?.powApparentTotal != null ? RoomInfo?.powApparentTotal.toFixed(3) + "kVA" : '/',
     percentageName: "当前AB路占比",
     percentageValue: RoomInfo.rateA != null ? RoomInfo.rateA.toFixed(0) : 50,
   })
   temp.push({
     consumeName : "当前总有功功率",
-    consumeValue : RoomInfo?.powActiveTotal?.toFixed(3) + "kW"
+    consumeValue : RoomInfo?.powActiveTotal != null ?  RoomInfo?.powActiveTotal?.toFixed(3) + "kW" : '/'
   })
   temp.push({
     consumeName : "当前总无功功率",

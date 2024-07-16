@@ -572,14 +572,14 @@ const getList = async () => {
     baseInfoName : "网络地址",
     baseInfoValue : queryParams.devKey,
     consumeName : "当前视在功率",
-    consumeValue : Bus?.bus_data?.bus_total_data ? Bus.bus_data.bus_total_data.pow_apparent.toFixed(3) + "kVA" : '/'
+    consumeValue : Bus?.bus_data?.bus_total_data != null ? Bus.bus_data.bus_total_data.pow_apparent.toFixed(3) + "kVA" : '/'
   })
   temp.push({
     baseInfoName : "设备状态",
     baseInfoValue : Bus?.status != null ? Bus.status : '/',
     pduAlarm : Bus?.pdu_alarm,
     consumeName : "当前功率因素",
-    consumeValue : Bus?.bus_data?.bus_total_data ? Bus.bus_data.bus_total_data.power_factor?.toFixed(2) : '/'
+    consumeValue : Bus?.bus_data?.bus_total_data != null ? Bus.bus_data.bus_total_data.power_factor?.toFixed(2) : '/'
   })
   PDUTableData.value = temp;
   

@@ -1161,6 +1161,9 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     }
 
     private void setLocation(List<PduIndex> pduIndices,List<? extends PDUDeviceDO> result){
+        if (CollectionUtils.isEmpty(result)){
+            return;
+        }
         Set<String> ipAddrSet = new HashSet<>();
         Set<Integer> cascadeAddrSet = new HashSet<>();
         for (PduIndex pduIndex : pduIndices) {

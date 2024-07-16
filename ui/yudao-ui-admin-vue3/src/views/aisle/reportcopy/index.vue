@@ -623,13 +623,13 @@ const handleDetailQuery = async () => {
     baseInfoName : "所属位置",
     baseInfoValue : AisleInfo?.location ,
     consumeName : "当前总视在功率",
-    consumeValue : AisleInfo?.powApparentTotal.toFixed(3) + "kVA",
+    consumeValue : AisleInfo?.powApparentTotal != null ? AisleInfo?.powApparentTotal?.toFixed(3) + "kVA" : '/',
     percentageName: "当前AB路占比",
     percentageValue: AisleInfo.rateA != null ? AisleInfo.rateA.toFixed(0) : 50,
   })
   temp.push({
     consumeName : "当前总有功功率",
-    consumeValue : AisleInfo?.powActiveTotal?.toFixed(3) + "kW"
+    consumeValue : AisleInfo?.powActiveTotal != null ? AisleInfo?.powActiveTotal?.toFixed(3) + "kW" : '/',
   })
   temp.push({
     consumeName : "当前总无功功率",

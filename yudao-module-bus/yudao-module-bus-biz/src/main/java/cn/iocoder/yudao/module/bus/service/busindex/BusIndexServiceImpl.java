@@ -173,7 +173,7 @@ public class BusIndexServiceImpl implements BusIndexService {
         List<BusIndexDO> list = busIndexDOPageResult.getList();
         List<BusIndexRes> res = new ArrayList<>();
         List redisList = getMutiRedis(list);
-        ValueOperations ops = redisTemplate.opsForValue();
+
         for (BusIndexDO busIndexDO : list) {
             BusIndexRes busIndexRes = new BusIndexRes();
             busIndexRes.setStatus(busIndexDO.getRunStatus());
@@ -216,7 +216,7 @@ public class BusIndexServiceImpl implements BusIndexService {
             }
             if(pageReqVO.getColor() != null){
                 if(!pageReqVO.getColor().contains(busIndexRes.getColor())){
-                    continue;
+                    res.removeIf(bus -> bus.getBusId().equals(busIndexRes.getBusId()));
                 }
             }
         }
@@ -463,6 +463,11 @@ public class BusIndexServiceImpl implements BusIndexService {
             busBalanceDataRes.setCurUnbalance(busTotalData.getDouble("cur_unbalance"));
             busBalanceDataRes.setVolUnbalance(busTotalData.getDouble("vol_unbalance"));
             busBalanceDataRes.setColor(color);
+            if(pageReqVO.getColor() != null){
+                if(!pageReqVO.getColor().contains(busBalanceDataRes.getColor())){
+                    res.removeIf(bus -> bus.getBusId().equals(busBalanceDataRes.getBusId()));
+                }
+            }
         }
         return new PageResult<>(res,busIndexDOPageResult.getTotal());
     }

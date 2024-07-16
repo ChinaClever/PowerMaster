@@ -18,6 +18,7 @@ public interface RoomIndexCopyMapper extends BaseMapperX<RoomIndexDO> {
     default PageResult<RoomIndexDO> selectPage(RoomIndexPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<RoomIndexDO>()
                 .likeIfPresent(RoomIndexDO::getName, reqVO.getName())
+                .eqIfPresent(RoomIndexDO::getId,reqVO.getId())
                 .eqIfPresent(RoomIndexDO::getIsDelete, reqVO.getIsDelete())
                 .eqIfPresent(RoomIndexDO::getPowerCapacity, reqVO.getPowerCapacity())
                 .betweenIfPresent(RoomIndexDO::getCreateTime, reqVO.getCreateTime())
@@ -25,7 +26,7 @@ public interface RoomIndexCopyMapper extends BaseMapperX<RoomIndexDO> {
                 .eqIfPresent(RoomIndexDO::getEleLimitDay, reqVO.getEleLimitDay())
                 .eqIfPresent(RoomIndexDO::getEleAlarmMonth, reqVO.getEleAlarmMonth())
                 .eqIfPresent(RoomIndexDO::getEleLimitMonth, reqVO.getEleLimitMonth())
-                .orderByDesc(RoomIndexDO::getId));
+                .orderByAsc(RoomIndexDO::getId));
     }
 
 }
