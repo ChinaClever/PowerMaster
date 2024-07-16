@@ -1,9 +1,13 @@
 package cn.iocoder.yudao.module.room.service.roomindex;
 import cn.hutool.core.date.DateTime;
 
+import cn.hutool.core.date.DateUtil;
 import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalDayDo;
+import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalMonthDo;
+import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.pow.RoomPowHourDo;
+import cn.iocoder.yudao.framework.common.util.TimeUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
@@ -15,6 +19,10 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.metrics.TopHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +40,12 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.room.dal.mysql.roomindex.RoomIndexCopyMapper;
 
 import java.io.IOException;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
@@ -41,6 +54,8 @@ import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.*;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static cn.iocoder.yudao.module.room.constant.RoomConstants.*;
+import static cn.iocoder.yudao.module.room.constant.RoomConstants.KEYWORD;
 import static cn.iocoder.yudao.module.room.enums.ErrorCodeConstants.*;
 
 /**
@@ -62,6 +77,8 @@ public class RoomIndexServiceImpl implements RoomIndexService {
     @Autowired
     private RestHighLevelClient client;
 
+    public static final String DAY_FORMAT = "dd";
+    
     @Override
     public Integer createIndex(RoomIndexSaveReqVO createReqVO) {
         // 插入
@@ -127,7 +144,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 }
                 String startTime = localDateTimeToString(oldTime);
                 String endTime = localDateTimeToString(newTime);
-                List<String> cabinetData = getData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index);
+                List<String> roomData = getData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index);
                 Double firstEq = null;
                 Double lastEq = null;
                 Double totalEq = 0D;
@@ -135,7 +152,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 String maxEleTime = null;
                 int nowTimes = 0;
                 if (isSameDay){
-                    for (String str : cabinetData) {
+                    for (String str : roomData) {
                         nowTimes++;
                         RoomEleTotalRealtimeDo roomEleTotalRealtimeDo = JsonUtils.parseObject(str, RoomEleTotalRealtimeDo.class);
                         if (nowTimes == 1) {
@@ -161,7 +178,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                     result.put("lastEq",lastEq);
                     result.put("barRes",barRes);
                 }else {
-                    for (String str : cabinetData) {
+                    for (String str : roomData) {
                         nowTimes++;
                         RoomEqTotalDayDo totalDayDo = JsonUtils.parseObject(str, RoomEqTotalDayDo.class);
                         totalEq += totalDayDo.getEqValue();
@@ -241,8 +258,8 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 }
                 String startTime = localDateTimeToString(oldTime);
                 String endTime = localDateTimeToString(newTime);
-                List<String> cabinetData = getData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index);
-                List<RoomPowHourDo> roomPowHourDos = cabinetData.stream().map(str -> JsonUtils.parseObject(str, RoomPowHourDo.class)).collect(Collectors.toList());
+                List<String> roomData = getData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index);
+                List<RoomPowHourDo> roomPowHourDos = roomData.stream().map(str -> JsonUtils.parseObject(str, RoomPowHourDo.class)).collect(Collectors.toList());
 
 
                 LineSeries totalApparentPow = new LineSeries();
@@ -436,12 +453,12 @@ public class RoomIndexServiceImpl implements RoomIndexService {
         List<RoomBalanceRes> result = new ArrayList<>();
         List<RoomIndexDO> roomIndexDOList = roomIndexDOPageResult.getList();
         List mutiRedis = getMutiRedis(roomIndexDOList);
-        roomIndexDOList.forEach(aisleIndexDO -> {
-            RoomBalanceRes aisleBalanceRes = new RoomBalanceRes();
-            aisleBalanceRes.setId(aisleIndexDO.getId());
-            aisleBalanceRes.setName(aisleIndexDO.getName());
-            aisleBalanceRes.setLocation(aisleIndexDO.getName());
-            result.add(aisleBalanceRes);
+        roomIndexDOList.forEach(roomIndexDO -> {
+            RoomBalanceRes roomBalanceRes = new RoomBalanceRes();
+            roomBalanceRes.setId(roomIndexDO.getId());
+            roomBalanceRes.setName(roomIndexDO.getName());
+            roomBalanceRes.setLocation(roomIndexDO.getName());
+            result.add(roomBalanceRes);
         });
         Map<Integer, RoomBalanceRes> resMap = result.stream().collect(Collectors.toMap(RoomBalanceRes::getId, Function.identity()));
         for (Object o : mutiRedis) {
@@ -449,37 +466,714 @@ public class RoomIndexServiceImpl implements RoomIndexService {
                 continue;
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-            Integer aisleKey = jsonObject.getInteger("room_key") ;
-            RoomBalanceRes aisleBalanceRes = resMap.get(aisleKey);
+            Integer roomKey = jsonObject.getInteger("room_key") ;
+            RoomBalanceRes roomBalanceRes = resMap.get(roomKey);
             JSONObject roomPower = jsonObject.getJSONObject("room_power");
             JSONObject totalData = roomPower.getJSONObject("total_data");
             if (Objects.nonNull(totalData)){
-                aisleBalanceRes.setPowApparentTotal(totalData.getDouble("pow_apparent"));
-                aisleBalanceRes.setPowActiveTotal(totalData.getDouble("pow_active"));
-                aisleBalanceRes.setPowReactiveTotal(totalData.getDouble("pow_reactive"));
+                roomBalanceRes.setPowApparentTotal(totalData.getDouble("pow_apparent"));
+                roomBalanceRes.setPowActiveTotal(totalData.getDouble("pow_active"));
+                roomBalanceRes.setPowReactiveTotal(totalData.getDouble("pow_reactive"));
             }
 
             JSONObject pathA = roomPower.getJSONObject("path_a");
             if (Objects.nonNull(pathA)){
-                aisleBalanceRes.setPowApparentA(pathA.getDouble("pow_apparent"));
-                aisleBalanceRes.setPowActiveA(pathA.getDouble("pow_active"));
-                aisleBalanceRes.setPowReactiveA(pathA.getDouble("pow_reactive"));
+                roomBalanceRes.setPowApparentA(pathA.getDouble("pow_apparent"));
+                roomBalanceRes.setPowActiveA(pathA.getDouble("pow_active"));
+                roomBalanceRes.setPowReactiveA(pathA.getDouble("pow_reactive"));
             }
 
             JSONObject pathB = roomPower.getJSONObject("path_b");
             if (Objects.nonNull(pathB)){
-                aisleBalanceRes.setPowApparentB(pathB.getDouble("pow_apparent"));
-                aisleBalanceRes.setPowActiveB(pathB.getDouble("pow_active"));
-                aisleBalanceRes.setPowReactiveB(pathB.getDouble("pow_reactive"));
+                roomBalanceRes.setPowApparentB(pathB.getDouble("pow_apparent"));
+                roomBalanceRes.setPowActiveB(pathB.getDouble("pow_active"));
+                roomBalanceRes.setPowReactiveB(pathB.getDouble("pow_reactive"));
             }
 
-            if(aisleBalanceRes.getPowApparentA() != null && aisleBalanceRes.getPowApparentA() != 0 && aisleBalanceRes.getPowApparentTotal() != null && aisleBalanceRes.getPowApparentTotal() != 0){
-                aisleBalanceRes.setRateA((aisleBalanceRes.getPowApparentA() / aisleBalanceRes.getPowApparentTotal())*100);
+            if(roomBalanceRes.getPowApparentA() != null && roomBalanceRes.getPowApparentA() != 0 && roomBalanceRes.getPowApparentTotal() != null && roomBalanceRes.getPowApparentTotal() != 0){
+                roomBalanceRes.setRateA((roomBalanceRes.getPowApparentA() / roomBalanceRes.getPowApparentTotal())*100);
             }
         }
         return new PageResult<>(result,roomIndexDOPageResult.getTotal());
     }
 
+    @Override
+    public PageResult<RoomEQRes> getEqPage(RoomIndexPageReqVO pageReqVO) {
+        try {
+            PageResult<RoomIndexDO> roomIndexDOPageResult = roomIndexCopyMapper.selectPage(pageReqVO);
+            List<RoomIndexDO> roomIndexDOList = roomIndexDOPageResult.getList();
+            List<RoomEQRes> result = new ArrayList<>();
+            List<Integer> ids = roomIndexDOList.stream().map(RoomIndexDO::getId).collect(Collectors.toList());
+            if (org.springframework.util.CollectionUtils.isEmpty(ids)){
+                return new PageResult<>(result, roomIndexDOPageResult.getTotal());
+            }
+            //昨日
+            roomIndexDOList.forEach(roomIndexDO -> {
+                RoomEQRes res = new RoomEQRes();
+                res.setId(roomIndexDO.getId());
+                res.setName(roomIndexDO.getName());
+                res.setLocation(roomIndexDO.getName());
+                result.add(res);
+            });
+            String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+            String endTime =DateUtil.formatDateTime(DateTime.now());
+            List<String>  yesterdayList = getData(startTime,endTime, ids,"room_eq_total_day");
+            Map<Integer,Double> yesterdayMap = new HashMap<>();
+            if (!org.springframework.util.CollectionUtils.isEmpty(yesterdayList)){
+                yesterdayList.forEach(str -> {
+                    RoomEqTotalDayDo dayDo = JsonUtils.parseObject(str, RoomEqTotalDayDo.class);
+                    yesterdayMap.put(dayDo.getRoomId(),dayDo.getEqValue());
+                });
+            }
+
+            //上周
+            startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
+            endTime =DateUtil.formatDateTime(DateTime.now());
+            List<String>  weekList = getData(startTime,endTime, ids,"room_eq_total_week");
+            Map<Integer,Double> weekMap = new HashMap<>();
+            if (!org.springframework.util.CollectionUtils.isEmpty(weekList)){
+                weekList.forEach(str -> {
+                    RoomEqTotalWeekDo weekDo = JsonUtils.parseObject(str, RoomEqTotalWeekDo.class);
+                    weekMap.put(weekDo.getRoomId(),weekDo.getEqValue());
+                });
+            }
+
+            //上月
+            startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
+            endTime =DateUtil.formatDateTime(DateTime.now());
+            List<String>  monthList = getData(startTime,endTime, ids,"room_eq_total_month");
+            Map<Integer,Double> monthMap = new HashMap<>();
+            if (!org.springframework.util.CollectionUtils.isEmpty(monthList)){
+                monthList.forEach(str -> {
+                    RoomEqTotalMonthDo monthDo = JsonUtils.parseObject(str, RoomEqTotalMonthDo.class);
+                    monthMap.put(monthDo.getRoomId(),monthDo.getEqValue());
+                });
+            }
+
+            result.forEach(dto -> {
+                dto.setYesterdayEq(yesterdayMap.get(dto.getId()));
+                dto.setLastWeekEq(weekMap.get(dto.getId()));
+                dto.setLastMonthEq(monthMap.get(dto.getId()));
+            });
+            return new PageResult<>(result, roomIndexDOPageResult.getTotal());
+        }catch (Exception e) {
+            log.error("获取数据失败：", e);
+        }
+        return new PageResult<>(new ArrayList<>(), 0L);
+    }
+
+    public static final String HOUR_FORMAT = "yyyy-MM-dd";
+
+    public static final String TIME_STR = ":00:00";
+    
+    @Override
+    public RoomActivePowDTO getActivePow(RoomPowVo vo) {
+        RoomActivePowDTO powDTO = new RoomActivePowDTO();
+        try {
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR_OF_DAY, -24);
+            String startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(calendar.getTime()));
+            String endTime = DateUtil.formatDateTime(TimeUtil.getEndOfDay(calendar.getTime()));
+
+            log.info("startTime : " + startTime + "endTime：" + endTime);
+            //获取昨日数据
+            List<String> yesterdayData = getData(startTime, endTime, vo, "room_hda_pow_hour");
+
+
+            List<RoomActivePowTrendDTO> yesterdayList = new ArrayList<>();
+            yesterdayData.forEach(str -> {
+                RoomPowHourDo hourDo = JsonUtils.parseObject(str, RoomPowHourDo.class);
+                RoomActivePowTrendDTO dto = new RoomActivePowTrendDTO();
+                dto.setActivePow(hourDo.getActiveTotalAvgValue());
+                String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH") + TIME_STR;
+                dto.setDateTime(dateTime);
+//                log.info("dateTime : " + dateTime );
+                yesterdayList.add(dto);
+            });
+
+
+            startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+            endTime = DateUtil.formatDateTime(DateTime.now());
+
+            log.info("startTime : " + startTime + "endTime：" + endTime);
+            //获取今日数据
+            List<RoomActivePowTrendDTO> todayList = new ArrayList<>();
+
+            List<String> todayData = getData(startTime, endTime, vo,  "room_hda_pow_hour");
+            todayData.forEach(str -> {
+                RoomPowHourDo hourDo = JsonUtils.parseObject(str, RoomPowHourDo.class);
+                String dateTime = hourDo.getCreateTime().toString("yyyy-MM-dd HH") + TIME_STR;
+                RoomActivePowTrendDTO dto = new RoomActivePowTrendDTO();
+                if (Objects.isNull(dto)) {
+                    dto = new RoomActivePowTrendDTO();
+                }
+                dto.setActivePow(hourDo.getActiveTotalAvgValue());
+                dto.setDateTime(dateTime);
+//                log.info("dateTime : " + dateTime );
+                todayList.add(dto);
+            });
+
+            powDTO.setYesterdayList(yesterdayList);
+            powDTO.setTodayList(todayList);
+            //获取峰值
+            RoomActivePowTrendDTO yesterdayMax = yesterdayList.stream().max(Comparator.comparing(RoomActivePowTrendDTO::getActivePow)).orElse(new RoomActivePowTrendDTO());
+            RoomActivePowTrendDTO todayMax = todayList.stream().max(Comparator.comparing(RoomActivePowTrendDTO::getActivePow)).orElse(new RoomActivePowTrendDTO());
+            powDTO.setTodayMax(todayMax.getActivePow());
+            powDTO.setTodayMaxTime(todayMax.getDateTime());
+            powDTO.setYesterdayMaxTime(yesterdayMax.getDateTime());
+            powDTO.setYesterdayMax(yesterdayMax.getActivePow());
+
+            return powDTO;
+        } catch (Exception e) {
+            log.error("获取数据失败： ", e);
+        }
+        return powDTO;
+    }
+
+    @Override
+    public List<RoomEqTrendDTO> eqTrend(int id, String type) {
+        List<RoomEqTrendDTO> list = new ArrayList<>();
+        try {
+            //当日
+            if (type.equals(DAY)) {
+                list.addAll(dayTrend(id));
+            }
+
+            //当周
+            if (type.equals(WEEK)) {
+                list.addAll(weekTrend(id));
+            }
+            //当月
+            if (type.equals(MONTH)) {
+                list.addAll(monthTrend(id));
+            }
+
+        } catch (Exception e) {
+            log.error("获取数据失败：", e);
+        }
+
+        return list;
+    }
+
+    @Override
+    public RoomEleChainDTO getEleChain(int id) {
+        RoomEleChainDTO chainDTO = new RoomEleChainDTO();
+        try {
+
+
+            getDayChain(id, chainDTO);
+
+
+            getWeekChain(id, chainDTO);
+
+
+            getMonthChain(id, chainDTO);
+
+
+        } catch (Exception e) {
+            log.error("获取数据异常：", e);
+        }
+        return chainDTO;
+    }
+
+
+    /**
+     * 日趋势
+     *
+     * @param id
+     * @return
+     */
+    private List<RoomEqTrendDTO> dayTrend(int id) throws IOException {
+        List<RoomEqTrendDTO> trendDTOList = new ArrayList<>();
+
+        //今日
+        String startTime = "";
+        String endTime = DateUtil.formatDateTime(DateTime.now());
+
+        //昨日
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.HOUR_OF_DAY, -24);
+        startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(calendar.getTime()));
+
+        List<String> list = getData(startTime, endTime, id, ROOM_ELE_TOTAL_REALTIME);
+
+        List<RoomEleTotalRealtimeDo> yesterdayList = new ArrayList<>();
+        List<RoomEleTotalRealtimeDo> todayList = new ArrayList<>();
+        String finalStartTime = startTime;
+        list.forEach(str -> {
+            RoomEleTotalRealtimeDo realtimeDo = JsonUtils.parseObject(str, RoomEleTotalRealtimeDo.class);
+            String dateTime = DateUtil.formatDate(realtimeDo.getCreateTime());
+            //昨天
+            if (finalStartTime.contains(dateTime)) {
+                yesterdayList.add(realtimeDo);
+            }
+            //今日
+            if (endTime.contains(dateTime)) {
+                todayList.add(realtimeDo);
+            }
+
+        });
+        Map<String, RoomEqTrendDTO> map = new HashMap<>();
+        //昨日数据处理
+        for (int i = 0; i < yesterdayList.size() - 1; i++) {
+
+            //前一个时间点
+            RoomEleTotalRealtimeDo reDo = yesterdayList.get(i);
+            //当前时间点
+            RoomEleTotalRealtimeDo thisDo = yesterdayList.get(i + 1);
+
+            String dateTime = thisDo.getCreateTime().toString("HH") + ":00";
+            log.info("reDo : " + reDo.getEleTotal() + "thisDo : " + thisDo.getEleTotal());
+            //避免负数
+            double eq = (thisDo.getEleTotal() - reDo.getEleTotal()) < 0 ? 0 : thisDo.getEleTotal() - reDo.getEleTotal();
+
+            RoomEqTrendDTO roomEqTrendDTO = new RoomEqTrendDTO();
+            roomEqTrendDTO.setLastEq(eq);
+            roomEqTrendDTO.setDateTime(dateTime);
+            map.put(dateTime, roomEqTrendDTO);
+
+        }
+        //今日数据处理
+        for (int i = 0; i < todayList.size() - 1; i++) {
+
+            //前一个时间点
+            RoomEleTotalRealtimeDo reDo = todayList.get(i);
+            //当前时间点
+            RoomEleTotalRealtimeDo thisDo = todayList.get(i + 1);
+
+            String dateTime = thisDo.getCreateTime().toString("HH") + ":00";
+            log.info("reDo : " + reDo.getEleTotal() + "thisDo : " + thisDo.getEleTotal());
+
+            //避免负数
+            double eq = (thisDo.getEleTotal() - reDo.getEleTotal()) < 0 ? 0 : thisDo.getEleTotal() - reDo.getEleTotal();
+
+            RoomEqTrendDTO roomEqTrendDTO = map.get(dateTime);
+            if (Objects.isNull(roomEqTrendDTO)) {
+                roomEqTrendDTO = new RoomEqTrendDTO();
+            }
+            roomEqTrendDTO.setEq(eq);
+            roomEqTrendDTO.setDateTime(dateTime);
+            map.put(dateTime, roomEqTrendDTO);
+        }
+
+        map.keySet().forEach(key -> trendDTOList.add(map.get(key)));
+
+        return trendDTOList.stream().sorted(Comparator.comparing(RoomEqTrendDTO::getDateTime)).collect(Collectors.toList());
+
+
+    }
+
+    /**
+     * 周趋势
+     *
+     * @param id
+     * @return
+     */
+    private List<RoomEqTrendDTO> weekTrend(int id) throws IOException {
+        List<RoomEqTrendDTO> trendDTOList = new ArrayList<>();
+
+        //本周
+        String startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
+
+        Map<Integer, String> thisWeek = getWeek(startTime);
+
+
+        //上周
+        LocalDate today = LocalDate.now();
+        //上周第一天
+        DayOfWeek todayOfWeek = today.getDayOfWeek();
+        int sub = todayOfWeek.getValue() + 6;
+        LocalDate lastWeekFirst = today.minusDays(sub);
+        startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(Date.from(lastWeekFirst.atStartOfDay(ZoneId.systemDefault()).toInstant())));
+
+        String endTime = DateUtil.formatDateTime(DateTime.now());
+
+        List<String> list = getData(startTime, endTime, id, ROOM_EQ_TOTAL_DAY);
+
+        Map<String, RoomEqTotalDayDo> weekMap = new HashMap<>();
+
+        list.forEach(str -> {
+            RoomEqTotalDayDo realtimeDo = JsonUtils.parseObject(str, RoomEqTotalDayDo.class);
+            String dateTime = DateUtil.formatDate(realtimeDo.getCreateTime());
+            weekMap.put(dateTime, realtimeDo);
+
+        });
+        Map<Integer, RoomEqTrendDTO> data = new HashMap<>();
+        //本周数据
+        thisWeek.keySet().forEach(key -> {
+
+            String date = thisWeek.get(key);
+
+            RoomEqTotalDayDo realtimeDo = weekMap.get(date);
+
+            RoomEqTrendDTO trendDTO = new RoomEqTrendDTO();
+            trendDTO.setEq(Objects.nonNull(realtimeDo) ? realtimeDo.getEqValue() : 0);
+            trendDTO.setDateTime(String.valueOf(key));
+            data.put(key, trendDTO);
+
+
+        });
+
+        Map<Integer, String> lastWeek = getWeek(startTime);
+        //上周数据
+        lastWeek.keySet().forEach(key -> {
+
+            String date = lastWeek.get(key);
+
+            RoomEqTotalDayDo realtimeDo = weekMap.get(date);
+
+            RoomEqTrendDTO trendDTO = data.get(key);
+            if (Objects.isNull(trendDTO)) {
+                trendDTO = new RoomEqTrendDTO();
+            }
+            trendDTO.setLastEq(Objects.nonNull(realtimeDo) ? realtimeDo.getEqValue() : 0);
+            trendDTO.setDateTime(String.valueOf(key));
+            data.put(key, trendDTO);
+
+
+        });
+
+        data.keySet().forEach(key -> trendDTOList.add(data.get(key)));
+
+        return trendDTOList.stream().sorted(Comparator.comparing(RoomEqTrendDTO::getDateTime)).collect(Collectors.toList());
+
+
+    }
+
+
+    /**
+     * 月趋势
+     *
+     * @param id
+     * @return
+     */
+    private List<RoomEqTrendDTO> monthTrend(int id) throws IOException {
+        List<RoomEqTrendDTO> trendDTOList = new ArrayList<>();
+
+        //本月
+        String startTime = "";
+
+
+        //上月第一天
+        Calendar lastMonthFirstDateCal = Calendar.getInstance();
+        lastMonthFirstDateCal.add(Calendar.MONTH, -1);
+        lastMonthFirstDateCal.set(Calendar.DAY_OF_MONTH, 1);
+
+        startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(lastMonthFirstDateCal.getTime()));
+
+        String endTime = DateUtil.formatDateTime(DateTime.now());
+
+        List<String> list = getData(startTime, endTime, id, ROOM_EQ_TOTAL_DAY);
+
+        Map<String, RoomEqTotalDayDo> monthMap = new HashMap<>();
+
+        list.forEach(str -> {
+            RoomEqTotalDayDo realtimeDo = JsonUtils.parseObject(str, RoomEqTotalDayDo.class);
+            String dateTime = DateUtil.formatDate(realtimeDo.getCreateTime());
+            monthMap.put(dateTime, realtimeDo);
+
+        });
+        Map<String, RoomEqTrendDTO> data = new HashMap<>();
+
+        Map<String, String> thisMonth = getThisMonth();
+        //本月数据
+        thisMonth.keySet().forEach(key -> {
+
+            String date = thisMonth.get(key);
+
+            RoomEqTotalDayDo realtimeDo = monthMap.get(date);
+
+            RoomEqTrendDTO trendDTO = new RoomEqTrendDTO();
+            trendDTO.setEq(Objects.nonNull(realtimeDo) ? realtimeDo.getEqValue() : 0);
+            trendDTO.setDateTime(String.valueOf(key));
+            data.put(key, trendDTO);
+
+
+        });
+
+        Map<String, String> lastMonth = getLastMonth();
+        //上月数据
+        lastMonth.keySet().forEach(key -> {
+
+            String date = lastMonth.get(key);
+
+            RoomEqTotalDayDo realtimeDo = monthMap.get(date);
+
+            RoomEqTrendDTO trendDTO = data.get(key);
+            if (Objects.isNull(trendDTO)) {
+                trendDTO = new RoomEqTrendDTO();
+            }
+            trendDTO.setLastEq(Objects.nonNull(realtimeDo) ? realtimeDo.getEqValue() : 0);
+            trendDTO.setDateTime(String.valueOf(key));
+            data.put(key, trendDTO);
+
+
+        });
+
+        data.keySet().forEach(key -> trendDTOList.add(data.get(key)));
+
+        return trendDTOList.stream().sorted(Comparator.comparing(RoomEqTrendDTO::getDateTime)).collect(Collectors.toList());
+
+
+    }
+
+    /**
+     * 获取周
+     *
+     * @return
+     */
+    private Map<Integer, String> getWeek(String startTime) {
+        Map<Integer, String> week = new HashMap<>();
+        Date start = DateUtil.parse(startTime, HOUR_FORMAT);
+        Calendar calendar = Calendar.getInstance();
+        for (int i = 1; i <= 7; i++) {
+            calendar.setTime(start);
+            calendar.add(Calendar.DAY_OF_MONTH, i);
+            String date = DateUtil.format(calendar.getTime(), HOUR_FORMAT);
+            week.put(i, date);
+
+        }
+        return week;
+    }
+
+    /**
+     * 获取当前月
+     *
+     * @return
+     */
+    private Map<String, String> getThisMonth() {
+        Map<String, String> month = new HashMap<>();
+
+        SimpleDateFormat sdf = new SimpleDateFormat(HOUR_FORMAT);
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MONTH, 0);
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        int max = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+        for (int i = 0; i < max; i++) {
+            calendar.set(Calendar.DAY_OF_MONTH, i + 1);
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+
+            String day = sdf.format(calendar.getTime());
+            String date = DateUtil.format(calendar.getTime(), DAY_FORMAT);
+            month.put(date, day);
+        }
+        return month;
+    }
+
+    /**
+     * 获取上月
+     *
+     * @return
+     */
+    private Map<String, String> getLastMonth() {
+        Map<String, String> month = new HashMap<>();
+
+        SimpleDateFormat sdf = new SimpleDateFormat(HOUR_FORMAT);
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MONTH, -1);
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        int max = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+        for (int i = 0; i < max; i++) {
+            calendar.set(Calendar.DAY_OF_MONTH, i + 1);
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+
+            String day = sdf.format(calendar.getTime());
+            String date = DateUtil.format(calendar.getTime(), DAY_FORMAT);
+            month.put(date, day);
+        }
+        return month;
+    }
+
+    /**
+     * 获取日环比
+     *
+     * @param id
+     * @param chainDTO
+     * @return
+     */
+    private void getDayChain(int id, RoomEleChainDTO chainDTO) throws IOException {
+        String startTime = "";
+        String endTime = "";
+        //日环比
+        //今日
+        startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+        endTime = DateUtil.formatDateTime(DateTime.now());
+
+        double todayEq = getDayEq(startTime, endTime, id);
+        chainDTO.setTodayEq(todayEq);
+        //昨日
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.HOUR_OF_DAY, -24);
+        startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(calendar.getTime()));
+        endTime = DateUtil.formatDateTime(DateTime.now());
+
+        List<String> list = getData(startTime, endTime, id, ROOM_EQ_TOTAL_DAY);
+        Map<String, Double> eqMap = new HashMap<>();
+
+        list.forEach(str -> {
+            RoomEqTotalDayDo dayDo = JsonUtils.parseObject(str, RoomEqTotalDayDo.class);
+            String dateTime = dayDo.getCreateTime().toString(HOUR_FORMAT);
+            eqMap.put(dateTime, dayDo.getEqValue());
+
+        });
+        //前日
+        String lastTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
+        double eveEq = eqMap.containsKey(lastTime) ? eqMap.get(lastTime) : 0;
+
+        //昨天
+        String thisTime = DateUtil.formatDate(DateUtil.beginOfDay(DateTime.now()));
+        double lastEq = eqMap.containsKey(thisTime) ? eqMap.get(thisTime) : 0;
+
+        chainDTO.setYesterdayEq(lastEq);
+
+        NumberFormat percentInstance = NumberFormat.getPercentInstance();
+        // 设置保留几位小数，这里设置的是保留两位小数
+        percentInstance.setMinimumFractionDigits(2);
+        //环比
+        String dayRate = eveEq == 0 ? percentInstance.format(0) : percentInstance.format(lastEq / eveEq);
+        chainDTO.setDayRate(dayRate);
+
+    }
+
+    /**
+     * 获取周环比
+     *
+     * @param id
+     * @param chainDTO
+     */
+    private void getWeekChain(int id, RoomEleChainDTO chainDTO) throws IOException {
+        String startTime = "";
+        String endTime = "";
+        //周环比
+        //本周
+        startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
+        endTime = DateUtil.formatDateTime(DateTime.now());
+
+        double thisWeekEq = getDayEq(startTime, endTime, id);
+        chainDTO.setThisWeekEq(thisWeekEq);
+        //上周
+        LocalDate today = LocalDate.now();
+        //上周第一天
+        DayOfWeek todayOfWeek = today.getDayOfWeek();
+        int sub = todayOfWeek.getValue() + 6;
+        LocalDate lastWeekFirst = today.minusDays(sub);
+
+
+        startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(Date.from(lastWeekFirst.atStartOfDay(ZoneId.systemDefault()).toInstant())));
+
+        List<String> list = getData(startTime, endTime, id, ROOM_EQ_TOTAL_WEEK);
+
+        Map<String, Double> eqMap = new HashMap<>();
+
+        list.forEach(str -> {
+            RoomEqTotalWeekDo weekDo = JsonUtils.parseObject(str, RoomEqTotalWeekDo.class);
+            String dateTime = weekDo.getCreateTime().toString(HOUR_FORMAT);
+            eqMap.put(dateTime, weekDo.getEqValue());
+
+        });
+        //上上周
+        String lastTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
+        double eveEq = eqMap.containsKey(lastTime) ? eqMap.get(lastTime) : 0;
+
+        //上周
+        String thisTime = DateUtil.formatDate(DateUtil.beginOfWeek(DateTime.now()));
+        double lastEq = eqMap.containsKey(thisTime) ? eqMap.get(thisTime) : 0;
+
+        chainDTO.setLastWeekEq(lastEq);
+
+        NumberFormat percentInstance = NumberFormat.getPercentInstance();
+        // 设置保留几位小数，这里设置的是保留两位小数
+        percentInstance.setMinimumFractionDigits(2);
+        //环比
+        String weekRate = eveEq == 0 ? percentInstance.format(0) : percentInstance.format(lastEq / eveEq);
+        chainDTO.setWeekRate(weekRate);
+    }
+
+    /**
+     * 获取月环比
+     *
+     * @param id
+     * @param chainDTO
+     */
+    private void getMonthChain(int id, RoomEleChainDTO chainDTO) throws IOException {
+        String startTime = "";
+        String endTime = "";
+        //月环比
+        //本月
+        startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
+        endTime = DateUtil.formatDateTime(DateTime.now());
+
+        double thisMonthEq = getDayEq(startTime, endTime, id);
+        chainDTO.setThisMonthEq(thisMonthEq);
+        //上月
+        //上月第一天
+        Calendar lastMonthFirstDateCal = Calendar.getInstance();
+        lastMonthFirstDateCal.add(Calendar.MONTH, -1);
+        lastMonthFirstDateCal.set(Calendar.DAY_OF_MONTH, 1);
+
+        startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(lastMonthFirstDateCal.getTime()));
+
+
+        List<String> list = getData(startTime, endTime, id, ROOM_EQ_TOTAL_MONTH);
+
+        Map<String, Double> eqMap = new HashMap<>();
+
+        list.forEach(str -> {
+            RoomEqTotalMonthDo monthDo = JsonUtils.parseObject(str, RoomEqTotalMonthDo.class);
+            String dateTime = monthDo.getCreateTime().toString(HOUR_FORMAT);
+            eqMap.put(dateTime, monthDo.getEqValue());
+
+        });
+        //上上月
+        String lastMonthTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
+        double eveEq = eqMap.containsKey(lastMonthTime) ? eqMap.get(lastMonthTime) : 0;
+        //上月
+        String thisMonthTime = DateUtil.formatDate(DateUtil.beginOfMonth(DateTime.now()));
+        double lastMonthEq = eqMap.containsKey(thisMonthTime) ? eqMap.get(thisMonthTime) : 0;
+        chainDTO.setLastMonthEq(lastMonthEq);
+
+        NumberFormat percentInstance = NumberFormat.getPercentInstance();
+        // 设置保留几位小数，这里设置的是保留两位小数
+        percentInstance.setMinimumFractionDigits(2);
+        //环比
+        String monthRate = eveEq == 0 ? percentInstance.format(0) : percentInstance.format(lastMonthEq / eveEq);
+        chainDTO.setMonthRate(monthRate);
+    }
+
+    /**
+     * 获取日用电量
+     *
+     * @param startTime
+     * @param endTime
+     * @param id
+     * @return
+     */
+    private double getDayEq(String startTime, String endTime, int id) {
+        log.info("startTime : " + startTime + "endTime：" + endTime);
+        //获取时间段内第一条和最后一条数据
+        RoomEleTotalRealtimeDo endRealtimeDo = getEleData(startTime, endTime,
+                SortOrder.DESC,
+                ROOM_ELE_TOTAL_REALTIME, id);
+        RoomEleTotalRealtimeDo startRealtimeDo = getEleData(startTime, endTime,
+                SortOrder.ASC,
+                ROOM_ELE_TOTAL_REALTIME, id);
+        //结束时间电量
+        double endEle = endRealtimeDo.getEleTotal();
+
+        //开始时间电量
+        double startEle = startRealtimeDo.getEleTotal();
+
+        //判断使用电量  开始电量大于结束电量，记为0
+        double eq;
+        if (startEle > endEle) {
+            eq = 0;
+        } else {
+            eq = endEle - startEle;
+        }
+        return eq;
+    }
+    
     /**
      * 获取数据
      * @param startTime 开始时间
@@ -512,6 +1206,132 @@ public class RoomIndexServiceImpl implements RoomIndexService {
         }
         return list;
 
+    }
+
+    /**
+     * 获取es数据
+     *
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @param powVo     请求参数
+     * @param index     索引表
+     * @return
+     * @throws IOException
+     */
+    private List<String> getData(String startTime, String endTime, RoomPowVo powVo, String index) throws IOException {
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件，
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+
+        //获取需要处理的数据
+        builder.query(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime))
+                .must(QueryBuilders.termQuery("room_id", powVo.getId())));
+        builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+        // 设置搜索条件
+        searchRequest.source(builder);
+        builder.size(2000);
+
+        List<String> list = new ArrayList<>();
+        // 执行ES请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                String str = hit.getSourceAsString();
+                list.add(str);
+            }
+        }
+        return list;
+
+    }
+
+    /**
+     * 获取es数据
+     *
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @param index     索引表
+     * @return
+     * @throws IOException
+     */
+    private List<String> getData(String startTime, String endTime, int id, String index) throws IOException {
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件，
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+
+        //获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
+                .must(QueryBuilders.termQuery(ROOM_ID, id))));
+        builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
+        // 设置搜索条件
+        searchRequest.source(builder);
+        builder.size(2000);
+
+        List<String> list = new ArrayList<>();
+        // 执行ES请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                String str = hit.getSourceAsString();
+                list.add(str);
+            }
+        }
+        return list;
+
+    }
+
+    /**
+     * @param startTime
+     * @param endTime
+     * @param sortOrder
+     * @param index
+     * @param id
+     * @return
+     */
+    private RoomEleTotalRealtimeDo getEleData(String startTime, String endTime, SortOrder sortOrder, String index, int id) {
+        RoomEleTotalRealtimeDo realtimeDo = new RoomEleTotalRealtimeDo();
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD)
+                            .gte(startTime)
+                            .lt(endTime))
+                    .must(QueryBuilders.termQuery(ROOM_ID, id))));
+
+            // 嵌套聚合
+            // 设置聚合查询
+            String top = "top";
+            AggregationBuilder topAgg = AggregationBuilders.topHits(top)
+                    .size(1).sort(CREATE_TIME + KEYWORD, sortOrder);
+
+            builder.aggregation(topAgg);
+
+            // 设置搜索条件
+            searchRequest.source(builder);
+
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+            // 处理聚合查询结果
+            Aggregations aggregations = searchResponse.getAggregations();
+
+            TopHits tophits = aggregations.get(top);
+            SearchHits sophistsHits = tophits.getHits();
+            if (null != sophistsHits.getHits() && sophistsHits.getHits().length>0){
+                SearchHit hit = sophistsHits.getHits()[0];
+                realtimeDo = JsonUtils.parseObject(hit.getSourceAsString(), RoomEleTotalRealtimeDo.class);
+            }
+            return realtimeDo;
+        } catch (Exception e) {
+            log.error("获取数据异常：", e);
+        }
+        return realtimeDo;
     }
 
     private String getMaxData(String startTime, String endTime, List<Integer> ids, String index,String order) throws IOException {
@@ -568,7 +1388,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
     }
 
     private List getMutiRedis(List<RoomIndexDO> list){
-        List<String> devKeys = list.stream().map(busIndexDo -> REDIS_KEY_ROOM + busIndexDo.getId()).collect(Collectors.toList());
+        List<String> devKeys = list.stream().map(roomIndexDO -> REDIS_KEY_ROOM + roomIndexDO.getId()).collect(Collectors.toList());
         ValueOperations ops = redisTemplate.opsForValue();
         return ops.multiGet(devKeys);
     }

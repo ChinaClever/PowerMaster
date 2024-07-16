@@ -60,4 +60,12 @@ public interface RoomIndexService {
     Map getRoomPFLine(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
     PageResult<RoomBalanceRes> getRoomBalancePage(RoomIndexPageReqVO pageReqVO);
+
+    PageResult<RoomEQRes> getEqPage(RoomIndexPageReqVO pageReqVO);
+
+    RoomActivePowDTO getActivePow(RoomPowVo vo);
+
+    List<RoomEqTrendDTO> eqTrend(int id, String type);
+
+    RoomEleChainDTO getEleChain(int id);
 }

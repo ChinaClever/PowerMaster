@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.room.controller.admin.roomindex;
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -75,6 +76,56 @@ public class RoomIndexController {
     public CommonResult<PageResult<RoomBalanceRes>> getRoomBalancePage(@RequestBody RoomIndexPageReqVO pageReqVO) {
         PageResult<RoomBalanceRes> pageResult = indexService.getRoomBalancePage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, RoomBalanceRes.class));
+    }
+
+    /**
+     * 通道列用能页面
+     *
+     * @param pageReqVO
+     */
+    @Operation(summary = "通道列用能列表分页")
+    @PostMapping("/eq/page")
+    public CommonResult<PageResult<RoomEQRes>> getEqPage(@RequestBody RoomIndexPageReqVO pageReqVO) {
+        PageResult<RoomEQRes> pageResult = indexService.getEqPage(pageReqVO);
+        return success(pageResult);
+    }
+
+    /**
+     * 始端箱有功功率趋势
+     *
+     * @param id 始端箱id
+     */
+    @Operation(summary = "始端箱有功功率趋势")
+    @GetMapping("/activePowTrend")
+    public CommonResult<RoomActivePowDTO> activePowTrend(@Param("id") int id) {
+        RoomPowVo vo = new RoomPowVo();
+        vo.setId(id);
+        RoomActivePowDTO dto = indexService.getActivePow(vo);
+        return success(dto);
+    }
+
+    /**
+     * 始端箱用能趋势
+     *
+     * @param id 始端箱id
+     */
+    @Operation(summary = "始端箱用能趋势")
+    @GetMapping("/eleTrend")
+    public CommonResult<List<RoomEqTrendDTO>> eleTrend(@Param("id") int id, @Param("type") String type) {
+        List<RoomEqTrendDTO> dto = indexService.eqTrend(id, type);
+        return success(dto);
+    }
+
+    /**
+     * 始端箱用能环比
+     *
+     * @param id 始端箱id
+     */
+    @Operation(summary = "始端箱用能环比")
+    @GetMapping("/eleChain")
+    public CommonResult<RoomEleChainDTO> eleChain(@Param("id") int id) {
+        RoomEleChainDTO dto = indexService.getEleChain(id);
+        return success(dto);
     }
 
 //    @GetMapping("/export-excel")

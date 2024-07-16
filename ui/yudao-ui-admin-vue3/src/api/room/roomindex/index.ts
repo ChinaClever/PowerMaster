@@ -63,4 +63,8 @@ export const IndexApi = {
   getRoomList: async () => {
     return await request.get({ url: `/room/list` })
   },
+
+  getEqPage: async (data: any) => {
+    return await request.post({ url: `/room/index/eq/page`, data })
+  },
 }

@@ -1,11 +1,11 @@
-package cn.iocoder.yudao.module.aisle.controller.admin.aisleindex.vo;
+package cn.iocoder.yudao.module.room.controller.admin.roomindex.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-public class AisleEQRes extends AisleIndexRespVO {
-
+public class RoomEQRes extends RoomIndexRespVO {
+    
     /**
      * 电力容量
      */
