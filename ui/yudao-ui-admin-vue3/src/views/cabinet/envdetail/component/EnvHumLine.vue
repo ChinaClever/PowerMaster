@@ -27,7 +27,7 @@ const legendList = ref()
 const echartsOption = ref({
   title: {
     text: '湿度',
-    left: 'center'
+    left: '7%'
   },
   dataZoom:[{ type:"inside"}],
   legend: { data: legendList,
