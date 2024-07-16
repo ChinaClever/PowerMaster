@@ -255,6 +255,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
             Integer aisleKey = jsonObject.getInteger("aisle_key") ;
             AislePowerRes aislePowerRes = resMap.get(aisleKey);
+            aislePowerRes.setStatus(jsonObject.getInteger("status"));
             JSONObject totalData = jsonObject.getJSONObject("aisle_power").getJSONObject("total_data");
             JSONObject pathA = jsonObject.getJSONObject("aisle_power").getJSONObject("path_a");
             JSONObject pathB = jsonObject.getJSONObject("aisle_power").getJSONObject("path_b");
@@ -369,6 +370,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
             Integer aisleKey = jsonObject.getInteger("aisle_key") ;
             AislePfRes aislePfRes = resMap.get(aisleKey);
+            aislePfRes.setStatus(jsonObject.getInteger("status"));
             JSONObject totalData = jsonObject.getJSONObject("aisle_power").getJSONObject("total_data");
             JSONObject pathA = jsonObject.getJSONObject("aisle_power").getJSONObject("path_a");
             JSONObject pathB = jsonObject.getJSONObject("aisle_power").getJSONObject("path_b");

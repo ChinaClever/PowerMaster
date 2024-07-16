@@ -1,9 +1,9 @@
 <template>
-  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="母线负荷">
+  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="柜列负荷">
     <template #NavInfo>
       <div>
         <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
+          <div class="header_img"><img alt="" src="@/assets/imgs/aisle.png" /></div>
         </div>
         <div class="line"></div>
         <div class="status">

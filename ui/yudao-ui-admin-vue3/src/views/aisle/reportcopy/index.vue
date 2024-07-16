@@ -1,11 +1,11 @@
 <template>
-  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="机柜报表">
+  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="柜列报表">
     <template #NavInfo>
       <div >
         <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
-          <div class="name">微模块机房</div>
-          <div>机房202</div>
+          <div class="header_img"><img alt="" src="@/assets/imgs/aisle.png" /></div>
+          <div class="name">柜列</div>
+          <div>{{ location }}</div>
         </div>
         <div class="line"></div>
         <!-- <div class="status">
@@ -56,7 +56,7 @@
           />
         </el-form-item> -->
 
-        <el-form-item label="机房Id" prop="ipAddr" >
+        <el-form-item label="柜列Id" prop="ipAddr" >
           <el-input
             v-model="queryParams.id"
             placeholder="请输入IP"
@@ -131,7 +131,7 @@
         <div class="page-con">
           <div class="pageBox" >
             <div class="page-conTitle">
-              机柜基本信息
+              柜列基本信息
             </div>
             <br/>
             <el-row :gutter="24" >
@@ -272,6 +272,7 @@ const aLineList = ref() as any;
 const bLineList = ref() as any;
 const now = ref()
 const switchValue = ref(1);
+const location = ref("");
 
 const visControll = reactive({
   visAllReport : false,
@@ -617,7 +618,7 @@ const handleDetailQuery = async () => {
   
   var data = await IndexApi.getAisleBalancePage({id : queryParams.id});
   var AisleInfo = data.list[0];
-  
+  location.value = AisleInfo?.location;
   temp.push({
     baseInfoName : "所属位置",
     baseInfoValue : AisleInfo?.location ,

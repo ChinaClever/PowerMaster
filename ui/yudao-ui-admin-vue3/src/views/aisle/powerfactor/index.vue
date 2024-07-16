@@ -1,9 +1,9 @@
 <template>
-  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="均衡配电">
+  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="功率因素">
     <template #NavInfo>
       <div>
         <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
+          <div class="header_img"><img alt="" src="@/assets/imgs/aisle.png" /></div>
         </div>
         <div class="line"></div>
         <!-- <div class="status">
@@ -153,6 +153,7 @@
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status">
             <el-tag v-if="item.pfTotal != null" >功率因素</el-tag>
+            <el-tag v-else-if="item.pfTotal == null && item.status != 5" type="info">无数据</el-tag>
             <el-tag v-else type="info">离线</el-tag>
           </div>
           <button class="detail" @click="openPFDetail(item)" v-if="item.pfTotal != null" >详情</button>

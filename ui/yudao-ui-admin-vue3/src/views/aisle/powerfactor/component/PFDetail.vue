@@ -19,9 +19,9 @@ const prop = defineProps({
   }
 })
 
+const powerFactorTotal = ref()
 const powerFactorA = ref()
 const powerFactorB = ref()
-const powerFactorC = ref()
 const time = ref()
 const legendList = ref() ;
 
@@ -43,18 +43,18 @@ const echartsOption = ref({
   yAxis: { type: 'value'},
   toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
   series: [
-    {name: '总功率因素', type: 'line', symbol: 'circle', symbolSize: 4, data: powerFactorA},
-    {name: 'A路功率因素', type: 'line', symbol: 'circle', symbolSize: 4, data: powerFactorB},
-    {name: 'B路功率因素', type: 'line', symbol: 'circle', symbolSize: 4, data: powerFactorC},
+    {name: '总功率因素', type: 'line', symbol: 'circle', symbolSize: 4, data: powerFactorTotal},
+    {name: 'A路功率因素', type: 'line', symbol: 'circle', symbolSize: 4, data: powerFactorA},
+    {name: 'B路功率因素', type: 'line', symbol: 'circle', symbolSize: 4, data: powerFactorB},
   ]
 })
 
 watchEffect(() => {
   // 直接访问即可，watchEffect会自动跟踪变化
 
-  powerFactorA.value = prop.list.factorTotalAvgValue;
-  powerFactorB.value = prop.list.factorAAvgValue;
-  powerFactorC.value = prop.list.factorBAvgValue;
+  powerFactorTotal.value = prop.list.factorTotalAvgValue;
+  powerFactorA.value = prop.list.factorAAvgValue;
+  powerFactorB.value = prop.list.factorBAvgValue;
   time.value = prop.list.time;
   if(prop.list.factorTotalAvgValue?.length > 0){
     legendList.value =  ["总功率因素","A路功率因素","B路功率因素"]

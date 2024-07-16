@@ -14,4 +14,5 @@ public class AislePfRes extends AisleIndexRespVO{
     @Schema(description = "总功率因素")
     private Double pfTotal;
 
+
 }
