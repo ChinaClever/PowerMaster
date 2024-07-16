@@ -79,4 +79,6 @@ public interface AisleIndexService {
     Map getReportPowDataById(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
     Map getAislePFLine(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    Map getAislePFDetail(AisleIndexPageReqVO pageReqVO);
 }

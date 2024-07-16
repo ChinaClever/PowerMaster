@@ -7,6 +7,7 @@ import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalMonthDo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.pow.AislePowHourDo;
+import cn.iocoder.yudao.framework.common.entity.es.bus.line.BusLineHourDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
@@ -350,16 +351,8 @@ public class AisleIndexServiceImpl implements AisleIndexService {
     public PageResult<AislePfRes> getAislePFPage(AisleIndexPageReqVO pageReqVO) {
         PageResult<AisleIndexDO> aisleIndexDOPageResult = aisleIndexCopyMapper.selectPage(pageReqVO);
         List<AisleIndexDO> list = aisleIndexDOPageResult.getList();
-        List<Integer> aisleIds = list.stream().map(AisleIndexDO::getId).collect(Collectors.toList());
-        List<AisleBar> aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapperX<AisleBar>().inIfPresent(AisleBar::getAisleId, aisleIds));
-        List<String> devKey = aisleBars.stream().map(AisleBar::getBarKey).collect(Collectors.toList());
-        Map<String, Map<Integer, String>> aisleBarMap = aisleBars.stream()
-                .collect(Collectors.groupingBy(
-                        AisleBar::getBarKey,
-                        Collectors.toMap(AisleBar::getAisleId, AisleBar::getPath)
-                ));
         List<AislePfRes> res = new ArrayList<>();
-        List redisList = getMutiBusRedis(devKey);
+        List redisList = getMutiRedis(list);
         for (AisleIndexDO aisleIndexDO : list) {
             AislePfRes aislePfRes = new AislePfRes();
             aislePfRes.setId(aisleIndexDO.getId());
@@ -374,35 +367,78 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 continue;
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-            String busDevKey = jsonObject.getString("dev_ip") + SPLIT_KEY_BUS + jsonObject.getString("bus_name");
-            JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
-            JSONArray pfValue = lineItemList.getJSONArray("power_factor");
-
-            for (Integer i : aisleBarMap.get(busDevKey).keySet()) {
-                AislePfRes aislePfRes = resMap.get(i);
-                String path = aisleBarMap.get(busDevKey).get(i);
-                List<Double> pfList = new ArrayList<>();
-                for (int j = 0; j < 3; j++) {
-                    double pf = pfValue.getDoubleValue(i);
-                    pfList.add(pf);
-                }
-                if (path.equals("A")){
-                    aislePfRes.setApfA(pfList.get(0));
-                    aislePfRes.setBpfA(pfList.get(1));
-                    aislePfRes.setCpfA(pfList.get(2));
-                    aislePfRes.setTotalPfA(jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getDoubleValue("power_factor"));
-                    aislePfRes.setDevKeyA(busDevKey);
-                }else{
-                    aislePfRes.setApfB(pfList.get(0));
-                    aislePfRes.setBpfB(pfList.get(1));
-                    aislePfRes.setCpfB(pfList.get(2));
-                    aislePfRes.setTotalPfB(jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getDoubleValue("power_factor"));
-                    aislePfRes.setDevKeyB(busDevKey);
-                }
+            Integer aisleKey = jsonObject.getInteger("aisle_key") ;
+            AislePfRes aislePfRes = resMap.get(aisleKey);
+            JSONObject totalData = jsonObject.getJSONObject("aisle_power").getJSONObject("total_data");
+            JSONObject pathA = jsonObject.getJSONObject("aisle_power").getJSONObject("path_a");
+            JSONObject pathB = jsonObject.getJSONObject("aisle_power").getJSONObject("path_b");
+            if (pathA != null && !pathA.isEmpty()){
+                aislePfRes.setPfA(pathA.getDouble("power_factor"));
             }
+            if (pathB != null && !pathB.isEmpty()){
+                aislePfRes.setPfB(pathB.getDouble("power_factor"));
+            }
+            if (totalData!= null && !totalData.isEmpty()){
+                aislePfRes.setPfTotal(totalData.getDouble("power_factor"));
+            }
+
         }
 
         return new PageResult<>(res,aisleIndexDOPageResult.getTotal());
+    }
+
+    @Override
+    public Map getAislePFDetail(AisleIndexPageReqVO pageReqVO) {
+        try {
+            pageReqVO.setNewTime(pageReqVO.getOldTime().withHour(23).withMinute(59).withSecond(59));
+            ArrayList<Integer> ids = new ArrayList<>();
+            ids.add(pageReqVO.getId());
+            String startTime = localDateTimeToString(pageReqVO.getOldTime());
+            String endTime = localDateTimeToString(pageReqVO.getNewTime());
+            List<String> aisleHdaPowHour = getData(startTime,endTime, ids, "aisle_hda_pow_hour");
+            List<AislePowHourDo> strList = aisleHdaPowHour.stream()
+                    .map(str -> JsonUtils.parseObject(str, AislePowHourDo.class))
+                    .collect(Collectors.toList());
+
+            HashMap<String, Object> resultMap = new HashMap<>();
+
+            List<AislePFTableRes> tableList = new ArrayList<>();
+            AislePFDetailRes result = new AislePFDetailRes();
+            result.setTime(new ArrayList<>());
+            result.setFactorTotalAvgValue(new ArrayList<>());
+            result.setFactorAAvgValue(new ArrayList<>());
+            result.setFactorBAvgValue(new ArrayList<>());
+
+            resultMap.put("chart", result);
+            resultMap.put("table", tableList);
+
+            if (strList == null || strList.size() == 0){
+                return resultMap;
+            }
+            strList.forEach(hourdo -> {
+                AislePFTableRes pfTableRes = new AislePFTableRes();
+                float factorTotalAvgValue = hourdo.getFactorTotalAvgValue();
+                float factorAAvgValue = hourdo.getFactorAAvgValue();
+                float factorBAvgValue = hourdo.getFactorBAvgValue();
+                String pfTime = hourdo.getCreateTime().toString("HH:mm");
+                pfTableRes.setFactorTotalAvgValue(factorTotalAvgValue);
+                pfTableRes.setFactorAAvgValue(factorAAvgValue);
+                pfTableRes.setFactorBAvgValue(factorBAvgValue);
+                pfTableRes.setTime(pfTime);
+                tableList.add(pfTableRes);
+
+                result.getFactorTotalAvgValue().add(factorTotalAvgValue);
+                result.getFactorAAvgValue().add(factorAAvgValue);
+                result.getFactorBAvgValue().add(factorBAvgValue);
+                result.getTime().add(pfTime);
+            });
+
+
+            return resultMap;
+        }catch (Exception e){
+            log.error("获取数据失败：", e);
+        }
+        return null;
     }
 
     @Override
@@ -1012,6 +1048,8 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         }
         return result;
     }
+
+
 
     private List getMutiRedis(List<AisleIndexDO> list){
         List<String> devKeys = list.stream().map(busIndexDo -> REDIS_KEY_AISLE + busIndexDo.getId()).collect(Collectors.toList());

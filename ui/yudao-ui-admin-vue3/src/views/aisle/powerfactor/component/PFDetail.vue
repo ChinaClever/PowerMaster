@@ -43,24 +43,22 @@ const echartsOption = ref({
   yAxis: { type: 'value'},
   toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
   series: [
-    {name: 'A相功率因素', type: 'line', symbol: 'circle', symbolSize: 4, data: powerFactorA},
-    {name: 'B相功率因素', type: 'line', symbol: 'circle', symbolSize: 4, data: powerFactorB},
-    {name: 'C相功率因素', type: 'line', symbol: 'circle', symbolSize: 4, data: powerFactorC},
+    {name: '总功率因素', type: 'line', symbol: 'circle', symbolSize: 4, data: powerFactorA},
+    {name: 'A路功率因素', type: 'line', symbol: 'circle', symbolSize: 4, data: powerFactorB},
+    {name: 'B路功率因素', type: 'line', symbol: 'circle', symbolSize: 4, data: powerFactorC},
   ]
 })
 
 watchEffect(() => {
   // 直接访问即可，watchEffect会自动跟踪变化
 
-  powerFactorA.value = prop.list.powerFactorAvgValueA;
-  powerFactorB.value = prop.list.powerFactorAvgValueB;
-  powerFactorC.value = prop.list.powerFactorAvgValueC;
+  powerFactorA.value = prop.list.factorTotalAvgValue;
+  powerFactorB.value = prop.list.factorAAvgValue;
+  powerFactorC.value = prop.list.factorBAvgValue;
   time.value = prop.list.time;
-  if(prop.list.powerFactorAvgValueA?.length > 0){
-
-    legendList.value =  ["A相功率因素","B相功率因素","C相功率因素"]
+  if(prop.list.factorTotalAvgValue?.length > 0){
+    legendList.value =  ["总功率因素","A路功率因素","B路功率因素"]
   }else {
-
     legendList.value = []
   }
 });
