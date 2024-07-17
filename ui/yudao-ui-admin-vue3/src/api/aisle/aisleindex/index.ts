@@ -67,8 +67,8 @@ export const IndexApi = {
     return await request.post({ url: `/aisle/index/buspfpage`, data })
   },
 
-  getBusPFDetail: async (data: any) => {
-    return await request.post({ url: `/bus/index/pf/detail`, data })
+  getAislePFDetail: async (data: any) => {
+    return await request.post({ url: `/aisle/index/pf/detail`, data })
   },
 
   getAisleLinePage: async (data: any) => {

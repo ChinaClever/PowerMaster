@@ -54,4 +54,6 @@ public class AisleIndexRespVO {
     @Schema(description = "位置")
     private String location;
 
+    @Schema(description = "状态")
+    private Integer status;
 }

@@ -1,11 +1,10 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck"  navTitle="模块化机房">
+  <CommonMenu :dataList="navList" @check="handleCheck"  navTitle="柜列用能">
     <template #NavInfo>
       <div class="navInfo">
         <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
-          <div class="name">微模块机房</div>
-          <div>机房202</div>
+          <div class="header_img"><img alt="" src="@/assets/imgs/aisle.png" /></div>
+          <div class="name">柜列</div>
         </div>
         <!-- <div class="line"></div>
         <div class="status">
@@ -179,7 +178,6 @@ const getNavList = async() => {
 
 // 获取表格数据
 const getTableData = async(reset = false) => {
-  console.log('getTableData', queryParams)
   tableLoading.value = true
   if (reset) queryParams.pageNo = 1
   try {
@@ -188,6 +186,7 @@ const getTableData = async(reset = false) => {
       pageSize: queryParams.pageSize,
       cabinetIds: isFirst.value ? null : cabinetIds.value,
       // roomId: null,
+      aisleIds : queryParams.aisleIds,
       runStatus: [],
       pduBox: 0,
       company: queryParams.company

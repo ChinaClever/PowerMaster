@@ -3,7 +3,7 @@
     <template #NavInfo>
       <div >
         <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
+          <div class="header_img"><img alt="" src="@/assets/imgs/aisle.png" /></div>
   
         </div>
         <div class="line"></div>

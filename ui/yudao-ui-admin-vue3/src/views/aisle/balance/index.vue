@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="模块化机房" >
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="柜列平衡" >
     <template #NavInfo>
       <div class="navInfo">
         <div class="line"></div>
@@ -180,17 +180,15 @@ import { IndexApi } from '@/api/aisle/aisleindex'
 const { push } = useRouter() // 路由跳转
 const router = useRouter() // 路由跳转
 const tableLoading = ref(false) // 
-const isFirst = ref(true) // 是否第一次调用getTableData函数
 const navList = ref([]) // 左侧导航栏树结构列表
 const tableData = ref([]) as any
 const switchValue = ref(0) // 表格(1) 矩阵(0)切换
-const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
 const queryParams = reactive({
   company: undefined,
   pageNo: 1,
   pageSize: 24,
   pageTotal: 0,
-})
+}) as any
 
 // 接口获取机房导航列表
 const getNavList = async() => {
@@ -248,15 +246,26 @@ const handleSwitchModal = (value) => {
 }
 
 // 处理左侧树导航选择事件
-const handleCheck = (row) => {
-  isFirst.value = false
+const handleCheck = async (row) => {
+  if(row.length == 0){
+    queryParams.aisleIds = null;
+    getTableData(true)
+    return;
+  }
   const ids = [] as any
+  var haveCabinet = false;
   row.forEach(item => {
-    if (item.type == 3) {
+    if (item.type == 2) {
       ids.push(item.id)
+      haveCabinet = true;
     }
   })
-  cabinetIds.value = ids
+  if(!haveCabinet ){
+    queryParams.aisleIds = [-1]
+  }else{
+    queryParams.aisleIds = ids
+  }
+
   getTableData(true)
 }
 

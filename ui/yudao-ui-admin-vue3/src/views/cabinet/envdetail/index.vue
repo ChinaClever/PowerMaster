@@ -225,7 +225,7 @@
                         <el-button  @click="queryParams.iceTimeType = 2;" :type="queryParams.iceTimeType == 2 ? 'primary' : ''">自定义</el-button>                      
                         <el-date-picker
                           v-if="queryParams.iceTimeType == 2"
-                          v-model="queryParams.timeArr"
+                          v-model="queryParams.timeArrIce"
                           value-format="YYYY-MM-DD HH:mm:ss"
                           type="daterange"
                           start-placeholder="开始日期"
@@ -306,7 +306,7 @@
                         <el-button @click="queryParams.hotTimeType = 2;" :type="queryParams.hotTimeType == 2 ? 'primary' : ''">自定义</el-button>                      
                         <el-date-picker
                           v-if="queryParams.hotTimeType == 2"
-                          v-model="queryParams.timeArr"
+                          v-model="queryParams.timeArrHot"
                           value-format="YYYY-MM-DD HH:mm:ss"
                           type="daterange"
                           start-placeholder="开始日期"
@@ -374,19 +374,15 @@ const disabledDate = (date) => {
 }
 
 const handleIceDayPick = () => {
-  console.log(1)
   if(queryParams?.oldTime && queryParams.iceTimeType == 2){
-    console.log(2)
     queryParams.oldTime = null;
     queryParams.newTime = null;
   }
 
- if (queryParams.timeArr && queryParams.iceTimeType == 2) {
-    console.log(3)
-    queryParams.oldTime = queryParams.timeArr[0];
-    queryParams.newTime = queryParams.timeArr[1].split(" ")[0]+ " " + "23:59:59";
+ if (queryParams.timeArrIce && queryParams.iceTimeType == 2) {
+    queryParams.oldTime = queryParams.timeArrIce[0];
+    queryParams.newTime = queryParams.timeArrIce[1].split(" ")[0]+ " " + "23:59:59";
     if(queryParams.id != null){
-
       handleIceQuery();
     }
   }
@@ -399,10 +395,10 @@ const handleHotDayPick = () => {
     queryParams.newTime = null;
   }
 
- if (queryParams.timeArr && queryParams.hotTimeType == 2) {
+ if (queryParams.timeArrHot && queryParams.hotTimeType == 2) {
 
-    queryParams.oldTime = queryParams.timeArr[0];
-    queryParams.newTime = queryParams.timeArr[1].split(" ")[0]+ " " + "23:59:59";
+    queryParams.oldTime = queryParams.timeArrHot[0];
+    queryParams.newTime = queryParams.timeArrHot[1].split(" ")[0]+ " " + "23:59:59";
     if(queryParams.id != null){
       handleHotQuery();
     }
@@ -421,7 +417,8 @@ const queryParams = reactive({
   outputNumber : 10,
   ipAddr: undefined,
   createTime: undefined,
-  timeArr:[],
+  timeArrIce:[],
+  timeArrHot:[],
   oldTime : null,
   newTime : null,
   cascadeAddr : 0,
@@ -506,7 +503,7 @@ const getList = async () => {
     obj.hotBomHum = obj.hotBomHum?.toFixed(1);
   });
   cabinetEnvData.value = list.value[0];
-
+  console.log("cabinetEnvData.value",cabinetEnvData.value);
 
   loading.value = false
 
@@ -611,8 +608,16 @@ onBeforeMount(async () =>{
   await getList();
 })
 </script>
-<style lang="scss">
+<style scoped lang="scss">
 @import "./css/chunk-fc834f16.c18e9208.css";
+
+:deep(.el-card__header) {
+  color: #fff;
+  border-bottom: 0;
+  padding: 9px 20px;
+  background-color: #01ada8;
+  position: relative
+}
 
 .master {
   width: 100%;
@@ -822,9 +827,7 @@ onBeforeMount(async () =>{
   }
 }
 
-:deep(.master-left .el-card__body) {
-  padding: 0;
-}
+
 :deep(.el-form) {
   display: flex;
   justify-content: space-between;

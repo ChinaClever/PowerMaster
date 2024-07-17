@@ -1,11 +1,11 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="模块化机房">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="插接箱用能">
     <template #NavInfo>
       <div class="navInfo">
         <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div>
-          <div class="name">微模块机房</div>
-          <div>机房202</div>
+          <div class="name"></div>
+          <div></div>
         </div>
         <!-- <div class="line"></div>
         <div class="status">

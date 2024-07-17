@@ -6,7 +6,7 @@
 import 'echarts'
 const prop = defineProps({
   value: {
-    type: Number,
+    type: [Number,String],
     required: true
   },
   height: {
@@ -25,6 +25,10 @@ const prop = defineProps({
     default: '°C'
   }
 })
+
+const formatter = ref() as any;
+const lastValue = ref();
+const name = ref();
 
 // 设置饼图的选项
 const echartsOption = reactive({
@@ -77,12 +81,19 @@ const echartsOption = reactive({
           fontWeight: 400
       },
       data: [{
-          value: prop.value,
-          name: prop.titleName
+          value: lastValue,
+          name: name
       }]
   }]
 })
 
+watchEffect(()=>{
+
+  formatter.value = prop.formatterType;
+  lastValue.value = prop.value;
+  name.value = prop.titleName;
+
+})
 
 onUnmounted(() => {
   console.log('onUnmounted******')

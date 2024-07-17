@@ -3,7 +3,7 @@
     <template #NavInfo>
       <div>
         <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
+          <div class="header_img"><img alt="" src="@/assets/imgs/aisle.png" /></div>
         </div>
         <div class="line"></div>
         <!-- <div class="status">
@@ -291,6 +291,11 @@
           <!-- <div class="status" >
             <el-tag type="info" v-if="item.status == null ||  item.status == 5" >离线</el-tag>
           </div> -->
+          <div class="status" >
+            <el-tag v-if="item.eleActiveTotal != null" >在线</el-tag>
+            <el-tag v-else-if="item.eleActiveTotal == null && item.status != 5" type="info">无数据</el-tag>
+            <el-tag v-else type="info">离线</el-tag>            
+          </div>
           <!-- <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 5" >详情</button> -->
         </div>
       </div>
@@ -331,6 +336,11 @@
           <!-- <div class="status" >
             <el-tag type="info" v-if="item.status == null ||  item.status == 5" >离线</el-tag>
           </div> -->
+          <div class="status" >
+            <el-tag v-if="item.eleActiveA != null" >在线</el-tag>
+            <el-tag v-else-if="item.eleActiveA == null && item.status != 5" type="info">无数据</el-tag>
+            <el-tag v-else type="info">离线</el-tag>            
+          </div>
           <button class="detail" @click="toDeatilA(item)" v-if="item.devKeyA != null && item.eleActiveA != null" >详情</button>
         </div>
       </div>
@@ -368,9 +378,11 @@
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
-          <!-- <div class="status" >
-            <el-tag type="info" v-if="item.status == null ||  item.status == 5" >离线</el-tag>
-          </div> -->
+          <div class="status" >
+            <el-tag v-if="item.eleActiveB != null" >在线</el-tag>
+            <el-tag v-else-if="item.eleActiveB == null && item.status != 5" type="info">无数据</el-tag>
+            <el-tag v-else type="info">离线</el-tag>            
+          </div>
           <button class="detail" @click="toDeatilB(item)" v-if="item.devKeyB != null && item.eleActiveB != null " >详情</button>
         </div>
       </div>

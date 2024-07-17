@@ -1,9 +1,9 @@
 <template>
-  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="均衡配电">
+  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="功率因素">
     <template #NavInfo>
       <div>
         <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
+          <div class="header_img"><img alt="" src="@/assets/imgs/aisle.png" /></div>
         </div>
         <div class="line"></div>
         <!-- <div class="status">
@@ -81,33 +81,32 @@
           </el-button>
         </el-form-item>
         <div style="float:right">
-          <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />A路</el-button>                      
-          <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />B路</el-button>  
+
           <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
         </div>
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3 && valueMode == 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetailA" >
+      <el-table v-show="switchValue == 3 " v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" >
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
-        <el-table-column v-if="valueMode == 0" label="A相功率因素" align="center" prop="apfA" width="130px" >
+        <el-table-column label="总功率因素" align="center" prop="pfTotal" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.apfA != null">
               {{ scope.row.apfA }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="B相功率因素" align="center" prop="bpfA" width="130px" >
+        <el-table-column label="A路功率因素" align="center" prop="pfA" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.bpfA != null">
               {{ scope.row.bpfA }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="C相功率因素" align="center" prop="cpfA" width="130px" >
+        <el-table-column label="B路功率因素" align="center" prop="pfB" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.cpfA != null">
               {{ scope.row.cpfA }}
@@ -121,8 +120,8 @@
             <el-button
               link
               type="primary"
-              @click="openPFDetailA(scope.row)"
-              v-if=" scope.row.devKeyA != null && scope.row.apfA != null"
+              @click="openPFDetail(scope.row)"
+              v-if=" scope.row.pfTotal != null"
             >
             设备详情
             </el-button>
@@ -138,100 +137,26 @@
         </el-table-column>
       </el-table>    
 
-      <el-table v-show="switchValue == 3 && valueMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetailB" >
-        <el-table-column label="编号" align="center" prop="tableId" />
-        <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" />
-        <el-table-column v-if="valueMode == 1" label="A相功率因素" align="center" prop="apfB" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.apfB != null">
-              {{ scope.row.apfB }}
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 1" label="B相功率因素" align="center" prop="bpfB" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.bpfB != null">
-              {{ scope.row.bpfB }}
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 1" label="C相功率因素" align="center" prop="cpfB" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.cpfB != null">
-              {{ scope.row.cpfB }}
-            </el-text>
-          </template>
-        </el-table-column>
-        
-        <!-- 数据库查询 -->
-        <el-table-column label="操作" align="center">
-          <template #default="scope">
-            <el-button
-              link
-              type="primary"
-              @click="openPFDetailB(scope.row)"
-              v-if=" scope.row.devKeyB != null && scope.row.apfB != null"
-            >
-            设备详情
-            </el-button>
-            <el-button
-              link
-              type="danger"
-              @click="handleDelete(scope.row.id)"
-              v-if="scope.row.status == 5"
-            >
-              删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>   
-
       <div v-show="switchValue == 0  && valueMode == 0 && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="icon">
-              <div v-if=" item.totalPf != null ">
-                <span style="font-size: 20px;">{{ item.totalPfA }}</span><br/>A路总功率因素
-              </div>                    
+            <div class="icon" v-if=" item.pfTotal != null ">
+              功率因素                
             </div>
             <div class="info" >                  
-              <div  v-if="item.apfA != null">A:{{item.apfA}}</div>
-              <div  v-if="item.bpfA != null">B:{{item.bpfA}}</div>
-              <div  v-if="item.cpfA != null">C:{{item.cpfA}}</div>
+              <div  v-if="item.pfTotal != null">总 :{{item.pfTotal}}</div>
+              <div  v-if="item.pfA != null">A路:{{item.pfA}}</div>
+              <div  v-if="item.pfB != null">B路:{{item.pfB}}</div>
             </div>          
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status">
-            <el-tag v-if="item.apfA != null" >功率因素</el-tag>
+            <el-tag v-if="item.pfTotal != null" >功率因素</el-tag>
+            <el-tag v-else-if="item.pfTotal == null && item.status != 5" type="info">无数据</el-tag>
             <el-tag v-else type="info">离线</el-tag>
           </div>
-          <button class="detail" @click="openPFDetailA(item)" v-if="item.devKeyA != null && item.apfA != null" >详情</button>
-        </div>
-      </div>
-
-      <div v-show="switchValue == 0  && valueMode == 1 && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
-          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
-          <div class="content">
-            <div class="icon">
-              <div v-if=" item.totalPf != null ">
-                <span style="font-size: 20px;">{{ item.totalPfB }}</span><br/>B路总功率因素
-              </div>                    
-            </div>
-            <div class="info" >                  
-              <div  v-if="item.apfB != null">A:{{item.apfB}}</div>
-              <div  v-if="item.bpfB != null">B:{{item.bpfB}}</div>
-              <div  v-if="item.cpfB != null">C:{{item.cpfB}}</div>
-            </div>          
-          </div>
-          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
-          <div class="status">
-            <el-tag v-if="item.apfB != null" >功率因素</el-tag>
-            <el-tag v-else type="info">离线</el-tag>
-          </div>
-          <button class="detail" @click="openPFDetailB(item)" v-if="item.devKeyB != null && item.apfB != null" >详情</button>
+          <button class="detail" @click="openPFDetail(item)" v-if="item.pfTotal != null" >详情</button>
         </div>
       </div>
 
@@ -252,7 +177,7 @@
           <div >
             日期:
             <el-date-picker
-              v-model="queryParams.oldTime"
+              v-model="detailQueryParams.oldTime"
               value-format="YYYY-MM-DD HH:mm:ss"
               type="date"
               :disabled-date="disabledDate"
@@ -291,9 +216,9 @@
         <PFDetail v-show="switchChartOrTable == 0"  width="68vw" height="58vh"  :list="pfESList"   />
         <el-table v-show="switchChartOrTable == 1" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" >
           <el-table-column label="时间" align="center" prop="time" />
-          <el-table-column label="A相功率因素" align="center" prop="powerFactorAvgValueA" />
-          <el-table-column label="B相功率因素" align="center" prop="powerFactorAvgValueB" />
-          <el-table-column label="C相功率因素" align="center" prop="powerFactorAvgValueC" />
+          <el-table-column label="总功率因素" align="center" prop="factorTotalAvgValue" />
+          <el-table-column label="A路功率因素" align="center" prop="factorAAvgValue" />
+          <el-table-column label="B路功率因素" align="center" prop="factorBAvgValue" />
         </el-table>
       </el-dialog>
     </template>
@@ -308,7 +233,6 @@
 // import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { IndexApi } from '@/api/aisle/aisleindex'
-import { IndexApi as BusIndexApi } from '@/api/bus/busindex'
 // import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
 import PFDetail from './component/PFDetail.vue'
@@ -357,21 +281,14 @@ const createFilter = (queryString: string) => {
   }
 }
 
-const openPFDetailA = async (row) =>{
-  queryParams.busId = await BusIndexApi.getBusIdByDevKey(row.devKeyA);
-  queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
-  location.value = row.location ? row.location + '-A路' : row.devKey + '-A路';
+const openPFDetail = async (row) =>{
+  detailQueryParams.id = row.id;
+  detailQueryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
+  location.value = row.location ? row.location  : row.devKey ;
   await getDetail();
   detailVis.value = true;
 }
 
-const openPFDetailB = async (row) =>{
-  queryParams.busId = await BusIndexApi.getBusIdByDevKey(row.devKeyB);
-  queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
-  location.value = row.location ? row.location + '-B路' : row.devKey + '-B路';
-  await getDetail();
-  detailVis.value = true;
-}
 
 const disabledDate = (date) => {
   // 获取今天的日期
@@ -392,26 +309,26 @@ const disabledDate = (date) => {
 
 const handleDayPick = async () => {
 
-  if(queryParams?.oldTime ){
+  if(detailQueryParams?.oldTime ){
     await getDetail();
     
   } 
 }
 
 const subtractOneDay = () => {
-  var date = new Date(queryParams.oldTime + "Z"); // 添加 "Z" 表示 UTC 时间
+  var date = new Date(detailQueryParams.oldTime + "Z"); // 添加 "Z" 表示 UTC 时间
 
   date.setDate(date.getDate() - 1); // 减去一天
 
-  queryParams.oldTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
+  detailQueryParams.oldTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
 };
 
 const addtractOneDay = () => {
-  var date = new Date(queryParams.oldTime + "Z"); // 添加 "Z" 表示 UTC 时间
+  var date = new Date(detailQueryParams.oldTime + "Z"); // 添加 "Z" 表示 UTC 时间
 
   date.setDate(date.getDate() + 1); // 减去一天
 
-  queryParams.oldTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
+  detailQueryParams.oldTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
 };
 
 
@@ -467,7 +384,7 @@ const list = ref([
     location:null,
     dataUpdateTime : "",
     pduAlarm:"",
-    pf:null,
+    pf : null,
     apf : null,
     bpf : null,
     cpf : null,
@@ -484,29 +401,40 @@ const queryParams = reactive({
   serverRoomData:undefined,
   status:[],
   cabinetIds : [],
+  timeType : 0,
+})as any
+
+const detailQueryParams = reactive({
+  devKey: undefined,
+  createTime: [],
+  cascadeNum: undefined,
+  serverRoomData:undefined,
+  status:[],
+  cabinetIds : [],
+  timeType : 0,
 })as any
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
 /** 查询列表 */
 const getDetail = async () => {
-  const data = await IndexApi.getBusPFDetail(queryParams);
+  const data = await IndexApi.getAislePFDetail(detailQueryParams);
   pfESList.value = data?.chart;
-  pfESList.value?.powerFactorAvgValueA?.forEach((obj) => {
+  pfESList.value?.factorTotalAvgValue?.forEach((obj) => {
     obj = obj?.toFixed(2);
   });
-  pfESList.value?.powerFactorAvgValueB?.forEach((obj) => {
+  pfESList.value?.factorAAvgValue?.forEach((obj) => {
     obj = obj?.toFixed(2);
   });
-  pfESList.value?.powerFactorAvgValueC?.forEach((obj) => {
+  pfESList.value?.factorBAvgValue?.forEach((obj) => {
     obj = obj?.toFixed(2);
   });
 
   pfTableList.value = data?.table;
   pfTableList.value?.forEach((obj) => {
-    obj.powerFactorAvgValueA = obj?.powerFactorAvgValueA?.toFixed(2);
-    obj.powerFactorAvgValueB = obj?.powerFactorAvgValueB?.toFixed(2);
-    obj.powerFactorAvgValueC = obj?.powerFactorAvgValueC?.toFixed(2);
+    obj.factorTotalAvgValue = obj?.factorTotalAvgValue?.toFixed(2);
+    obj.factorAAvgValue = obj?.factorAAvgValue?.toFixed(2);
+    obj.factorBAvgValue = obj?.factorBAvgValue?.toFixed(2);
   });
 }
 
@@ -520,19 +448,14 @@ const getList = async () => {
 
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.apfA == null && obj?.apfB == null){
+      if(obj?.pfTotal == null ){
         return;
       } 
 
-      obj.apfA = obj.apfA?.toFixed(2);
-      obj.bpfA = obj.bpfA?.toFixed(2);
-      obj.cpfA = obj.cpfA?.toFixed(2);
-      obj.totalPfA = obj.totalPfA?.toFixed(2);
+      obj.pfTotal = obj.pfTotal?.toFixed(2);
+      obj.pfA = obj.pfA?.toFixed(2);
+      obj.pfB = obj.pfB?.toFixed(2);
 
-      obj.apfB = obj.apfB?.toFixed(2);
-      obj.bpfB = obj.bpfB?.toFixed(2);
-      obj.cpfB = obj.cpfB?.toFixed(2);
-      obj.totalPfB = obj.totalPfB?.toFixed(2);
     });
 
     total.value = data.total
@@ -549,19 +472,14 @@ const getListNoLoading = async () => {
 
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.apfA == null && obj?.apfB == null){
+      if(obj?.pfTotal == null ){
         return;
       } 
 
-      obj.apfA = obj.apfA?.toFixed(2);
-      obj.bpfA = obj.bpfA?.toFixed(2);
-      obj.cpfA = obj.cpfA?.toFixed(2);
-      obj.totalPfA = obj.totalPfA?.toFixed(2);
-
-      obj.apfB = obj.apfB?.toFixed(2);
-      obj.bpfB = obj.bpfB?.toFixed(2);
-      obj.cpfB = obj.cpfB?.toFixed(2);
-      obj.totalPfB = obj.totalPfB?.toFixed(2);
+      obj.pfTotal = obj.pfTotal?.toFixed(2);
+      obj.pfA = obj.pfA?.toFixed(2);
+      obj.pfB = obj.pfB?.toFixed(2);
+      
     });
 
     total.value = data.total
@@ -960,6 +878,7 @@ onActivated(() => {
     padding-top: 40px;
     position: relative;
     .content {
+      height : 60%;
       padding-left: 20px;
       display: flex;
       align-items: center;
@@ -967,9 +886,10 @@ onActivated(() => {
         margin: 0 35px 0 13px;
       }
       .icon {
-        width: 90px;
-        height: 60px;
+        width: 74px;
+        height: 30px;
         margin: 0 28px;
+        font-size: large;
         text-align: center;
       }
     }

@@ -417,7 +417,7 @@ public class IndexServiceImpl implements IndexService {
     public PageResult<CabinetEnvAndHumRes> getCabinetEnvPage(IndexPageReqVO pageReqVO) {
 
         PageResult<IndexDO> indexDOPageResult = cabIndexMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<IndexDO>()
-                .inIfPresent(IndexDO::getId, pageReqVO.getCabinetIds()).ne(IndexDO::getPduBox,1));
+                .inIfPresent(IndexDO::getId, pageReqVO.getCabinetIds()).ne(IndexDO::getPduBox,0));
         List<IndexDO> list = indexDOPageResult.getList();
         List<CabinetEnvAndHumRes> result = new ArrayList<>();
         if (CollectionUtil.isEmpty(list)){
@@ -603,6 +603,9 @@ public class IndexServiceImpl implements IndexService {
         result.put("temMinSensorId",null);
         try {
             CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, id),false);
+            if (cabinetPdu == null){
+                return result;
+            }
             List<String> devKeyList = new ArrayList<>();
             Map<String,String> pduMap = new HashMap<>();
             pduMap.put("A",cabinetPdu.getPduIpA() + '-' + cabinetPdu.getCasIdA());
@@ -722,6 +725,9 @@ public class IndexServiceImpl implements IndexService {
         result.put("temMinSensorId",null);
         try {
             CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>().eq(CabinetPdu::getCabinetId, id),false);
+            if (cabinetPdu == null){
+                return result;
+            }
             List<String> devKeyList = new ArrayList<>();
             Map<String,String> pduMap = new HashMap<>();
             pduMap.put("A",cabinetPdu.getPduIpA() + '-' + cabinetPdu.getCasIdA());

@@ -149,6 +149,12 @@ public class AisleIndexController {
         return success(BeanUtils.toBean(pageResult, AislePfRes.class));
     }
 
+    @Operation(summary = "始端箱功率因素详情分页")
+    @PostMapping("/pf/detail")
+    public CommonResult<Map> getAislePFDetail(@RequestBody AisleIndexPageReqVO pageReqVO) {
+        return success(indexService.getAislePFDetail(pageReqVO));
+    }
+
     @GetMapping("/devKeyList")
     @Operation(summary = "获得通道列devKey列表")
     public List<Integer> getDevKeyList() {
