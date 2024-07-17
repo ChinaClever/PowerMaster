@@ -242,7 +242,7 @@ watch(() => queryParams.granularity, (newValues) => {
       tableColumns.value =([
         { label: '母线名称', align: 'center', prop: 'bus_name', width: '100px', istrue:true},
         { label: '插接箱名称', align: 'center', prop: 'box_name', width: '100px', istrue:true},
-        { label: '位置', align: 'center', prop: 'address' , istrue:true, width: '140px'},
+        { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '140px'},
         { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '140px'},
         { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
         { label: 'A路温度(℃)', align: 'center', prop: 'tem_a', istrue:true, formatter: formatData},
@@ -297,7 +297,7 @@ watch(() => queryParams.granularity, (newValues) => {
       tableColumns.value = [
         { label: '母线名称', align: 'center', prop: 'bus_name', width: '100px', istrue:true},
         { label: '插接箱名称', align: 'center', prop: 'box_name', width: '100px', istrue:true},
-        { label: '位置', align: 'center', prop: 'address' , istrue:true, width: '140px'},
+        { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '140px'},
         { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '140px'},
         { label: '记录时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true},
 
@@ -336,7 +336,7 @@ watch(() => queryParams.granularity, (newValues) => {
 const tableColumns = ref([
   { label: '母线名称', align: 'center', prop: 'bus_name', width: '100px', istrue:true},
   { label: '插接箱名称', align: 'center', prop: 'box_name', width: '100px', istrue:true},
-  { label: '位置', align: 'center', prop: 'address' , istrue:true, width: '140px'},
+  { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '140px'},
   { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '140px'},
   { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
   { label: 'A路温度(℃)', align: 'center', prop: 'tem_a', istrue:true, formatter: formatData},
