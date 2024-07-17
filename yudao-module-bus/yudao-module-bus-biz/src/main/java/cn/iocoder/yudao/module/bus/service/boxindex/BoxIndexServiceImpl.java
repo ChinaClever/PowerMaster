@@ -2227,7 +2227,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
      * 获取设备位置
      * @return
      */
-    private void getPosition(List< ? extends BoxResBase> res){
+    public void getPosition(List<? extends BoxResBase> res){
         ValueOperations ops = redisTemplate.opsForValue();
         List<String> devKeyList = res.stream().map(BoxResBase::getDevKey).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(devKeyList)){

@@ -1,8 +1,15 @@
 package cn.iocoder.yudao.module.bus.service.busenergyconsumption;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
+import cn.iocoder.yudao.framework.common.mapper.BoxIndexMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.EnergyConsumptionPageReqVO;
+import cn.iocoder.yudao.module.bus.dal.dataobject.boxindex.BoxIndexDO;
+import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
+import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 import cn.iocoder.yudao.module.bus.service.historydata.BusHistoryDataService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -20,6 +27,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionService {
@@ -29,6 +37,44 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
 
     @Autowired
     private BusHistoryDataService busHistoryDataService;
+
+    @Autowired
+    private BusIndexMapper busIndexMapper;
+
+    @Autowired
+    private BoxIndexMapper boxIndexMapper;
+
+    private Integer[] getBusIdsByDevkeys(String[] devkeys){
+        // 创建 QueryWrapper
+        QueryWrapper<BusIndexDO> queryWrapper = new QueryWrapper<>();
+        // 设置条件：dev_key 在数组 devkeys 中
+        queryWrapper.in("dev_key", Arrays.asList(devkeys));
+        // 查询指定字段 name
+//        queryWrapper.select("id");
+        // 执行查询
+        List<BusIndexDO> entities = busIndexMapper.selectList(queryWrapper);
+        // 提取 id 字段为 List<String>
+        return entities.stream()
+                .map(BusIndexDO::getId)
+                .collect(Collectors.toList()).toArray(new Integer[0]);
+
+    }
+
+    private Integer[] getBoxIdsByDevkeys(String[] devkeys){
+        // 创建 QueryWrapper
+        QueryWrapper<BoxIndex> queryWrapper = new QueryWrapper<>();
+        // 设置条件：dev_key 在数组 devkeys 中
+        queryWrapper.in("dev_key", Arrays.asList(devkeys));
+        // 查询指定字段 name
+//        queryWrapper.select("id");
+        // 执行查询
+        List<BoxIndex> entities = boxIndexMapper.selectList(queryWrapper);
+        // 提取 id 字段为 List<String>
+        return entities.stream()
+                .map(BoxIndex::getId)
+                .collect(Collectors.toList()).toArray(new Integer[0]);
+
+    }
 
     @Override
     public PageResult<Object> getEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
@@ -54,8 +100,9 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
         }
-        String[] busIds = pageReqVO.getBusIds();
-        if (busIds != null){
+        String[] devkeys = pageReqVO.getDevkeys();
+        if (devkeys != null){
+            Integer[] busIds = getBusIdsByDevkeys(devkeys);
             searchSourceBuilder.query(QueryBuilders.termsQuery("bus_id", busIds));
         }
         // 搜索请求对象
@@ -108,8 +155,9 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
         }
-        String[] busIds = pageReqVO.getBusIds();
-        if (busIds != null){
+        String[] devkeys = pageReqVO.getDevkeys();
+        if (devkeys != null){
+            Integer[] busIds = getBusIdsByDevkeys(devkeys);
             searchSourceBuilder.query(QueryBuilders.termsQuery("bus_id", busIds));
         }
         // 搜索请求对象
@@ -163,7 +211,10 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
         }else {
             searchRequest.indices("bus_eq_total_month");
         }
-        searchSourceBuilder.query(QueryBuilders.termQuery("bus_id", busId));
+        // 根据导航栏传来的devkey 获取busIds 一定只有一个
+        String[] devkeys = new String[]{reqVO.getDevkey()};
+        Integer[] busIds = getBusIdsByDevkeys(devkeys);
+        searchSourceBuilder.query(QueryBuilders.termQuery("bus_id", busIds[0]));
         searchRequest.source(searchSourceBuilder);
         // 执行搜索,向ES发起http请求
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -203,8 +254,9 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
         }
-        String[] busIds = pageReqVO.getBusIds();
-        if (busIds != null){
+        String[] devkeys = pageReqVO.getDevkeys();
+        if (devkeys != null){
+            Integer[] busIds = getBusIdsByDevkeys(devkeys);
             searchSourceBuilder.query(QueryBuilders.termsQuery("bus_id", busIds));
         }
         searchRequest.indices("bus_ele_total_realtime");
@@ -295,8 +347,10 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
         }
-        String[] boxIds = pageReqVO.getBoxIds();
-        if (boxIds != null){
+        String[] devkeys = pageReqVO.getDevkeys();
+        if (devkeys != null){
+            Integer[] boxIds = getBoxIdsByDevkeys(devkeys);
+            System.out.println();
             searchSourceBuilder.query(QueryBuilders.termsQuery("box_id", boxIds));
         }
         // 搜索请求对象
@@ -349,8 +403,9 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
         }
-        String[] boxIds = pageReqVO.getBoxIds();
-        if (boxIds != null){
+        String[] devkeys = pageReqVO.getDevkeys();
+        if (devkeys != null){
+            Integer[] boxIds = getBoxIdsByDevkeys(devkeys);
             searchSourceBuilder.query(QueryBuilders.termsQuery("box_id", boxIds));
         }
         // 搜索请求对象
@@ -404,7 +459,11 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
         }else {
             searchRequest.indices("box_eq_total_month");
         }
-        searchSourceBuilder.query(QueryBuilders.termQuery("box_id", boxId));
+        // 根据导航栏传来的devkey 获取busIds 一定只有一个
+        String[] devkeys = new String[]{reqVO.getDevkey()};
+        Integer[] boxIds = getBoxIdsByDevkeys(devkeys);
+        searchSourceBuilder.query(QueryBuilders.termQuery("box_id", boxIds[0]));
+
         searchRequest.source(searchSourceBuilder);
         // 执行搜索,向ES发起http请求
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -444,8 +503,9 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                     .from(pageReqVO.getTimeRange()[0])
                     .to(pageReqVO.getTimeRange()[1]));
         }
-        String[] boxIds = pageReqVO.getBoxIds();
-        if (boxIds != null){
+        String[] devkeys = pageReqVO.getDevkeys();
+        if (devkeys != null){
+            Integer[] boxIds = getBoxIdsByDevkeys(devkeys);
             searchSourceBuilder.query(QueryBuilders.termsQuery("box_id", boxIds));
         }
         searchRequest.indices("box_ele_total_realtime");

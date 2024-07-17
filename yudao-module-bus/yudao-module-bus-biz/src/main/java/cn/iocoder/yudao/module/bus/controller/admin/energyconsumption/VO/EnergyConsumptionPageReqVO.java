@@ -17,8 +17,8 @@ public class EnergyConsumptionPageReqVO extends PageParam {
 
     private String[] timeRange;
 
-    private String[] busIds;
+    private String[] devkeys;
 
-    private String[] boxIds;
+    private String devkey;
 
 }

@@ -2638,7 +2638,7 @@ public class BusIndexServiceImpl implements BusIndexService {
      * 获取设备位置
      * @return
      */
-    private void getPosition(List< ? extends BusResBase> res){
+    public void getPosition(List< ? extends BusResBase> res){
         if(CollectionUtils.isEmpty(res)){
             return;
         }

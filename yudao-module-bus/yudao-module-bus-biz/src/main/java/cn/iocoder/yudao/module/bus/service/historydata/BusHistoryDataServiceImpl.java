@@ -2,11 +2,16 @@ package cn.iocoder.yudao.module.bus.service.historydata;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxResBase;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusResBase;
 import cn.iocoder.yudao.module.bus.controller.admin.historydata.vo.BusHistoryDataDetailsReqVO;
 import cn.iocoder.yudao.module.bus.controller.admin.historydata.vo.BusHistoryDataPageReqVO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 import cn.iocoder.yudao.framework.common.mapper.BoxIndexMapper;
+import cn.iocoder.yudao.module.bus.service.boxindex.BoxIndexServiceImpl;
+import cn.iocoder.yudao.module.bus.service.busindex.BusIndexService;
+import cn.iocoder.yudao.module.bus.service.busindex.BusIndexServiceImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import org.elasticsearch.action.search.SearchRequest;
@@ -46,15 +51,23 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
     @Autowired
     private RestHighLevelClient client;
 
+    @Autowired
+    private BusIndexServiceImpl busIndexService;
+
+    @Autowired
+    private BoxIndexServiceImpl boxIndexService;
+
+
 
     @Override
     public String[] getBusIdsbyBusDevkeys(String[] devkeys) {
         LambdaQueryWrapper<BusIndexDO> queryWrapper = Wrappers.lambdaQuery();
         queryWrapper.in(BusIndexDO::getDevKey, devkeys);
         List<BusIndexDO> list = busIndexMapper.selectList(queryWrapper);
-        String[] busIds = new String[0];
-        for(int i=0; i<=list.size(); i++){
+        String[] busIds = new String[list.size()]; // 使用 list 的大小来初始化数组
+        for(int i = 0; i < list.size(); i++){
             busIds[i] = String.valueOf(list.get(i).getId());
+            System.out.println(busIds[i]);
         }
         return busIds;
     }
@@ -64,9 +77,10 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
         LambdaQueryWrapper<BoxIndex> queryWrapper = Wrappers.lambdaQuery();
         queryWrapper.in(BoxIndex::getDevKey, devkeys);
         List<BoxIndex> list = boxIndexMapper.selectList(queryWrapper);
-        String[] boxIds = new String[0];
-        for(int i=0; i<=list.size(); i++){
+        String[] boxIds = new String[list.size()];
+        for(int i=0; i < list.size(); i++){
             boxIds[i] = String.valueOf(list.get(i).getId());
+            System.out.println(boxIds[i]);
         }
         return boxIds;
     }
@@ -84,13 +98,29 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
                     String[] parts = dev_key.split("_");
                     map.put("bus_name", parts[1]);
                     map.put("ip_addr", parts[0]);
+                    // 创建一个列表来存放要传递的对象 用于获取位置信息
+                    List<BusResBase> busResBaseList = new ArrayList<>();
+                    BusResBase busResBase = new BusResBase();// 创建 BusResBase 对象
+                    busResBase.setBusId((Integer) busId);
+                    busResBase.setBusName(busIndex.getBusName());
+                    busResBase.setDevKey(busIndex.getDevKey());
+                    busResBaseList.add(busResBase);// 将对象添加到列表中
+                    try {
+                        busIndexService.getPosition(busResBaseList);
+                        map.put("location", busResBaseList.get(0).getLocation());
+                    }catch (Exception e){
+                        map.put("location", null);
+                    }
+
                 }else{
                     map.put("bus_name", null);
                     map.put("ip_addr", null);
+                    map.put("location", null);
                 }
             }else{
                 map.put("bus_name", null);
                 map.put("ip_addr", null);
+                map.put("location", null);
             }
             resultList.add(map);
         }
@@ -109,15 +139,31 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
                     map.put("box_name", boxIndex.getBoxName());
                     map.put("bus_name", boxIndex.getBusName());
                     map.put("ip_addr", boxIndex.getIpAddr());
+                    // 创建一个列表来存放要传递的对象 用于获取位置信息
+                    List<BoxResBase> boxResBaseList = new ArrayList<>();
+                    BoxResBase boxResBase = new BoxResBase();// 创建 BoxResBase 对象
+                    boxResBase.setBoxId((Integer) boxId);
+                    boxResBase.setBoxName(boxIndex.getBusName());
+                    boxResBase.setDevKey(boxIndex.getDevKey());
+                    boxResBaseList.add(boxResBase);// 将对象添加到列表中
+                    try{
+                        boxIndexService.getPosition(boxResBaseList);
+                        map.put("location", boxResBaseList.get(0).getLocation());
+                    } catch (Exception e) {
+                        map.put("location", null);
+                    }
+
                 }else{
                     map.put("box_name", null);
                     map.put("bus_name", null);
                     map.put("ip_addr", null);
+                    map.put("location", null);
                 }
             }else{
                 map.put("box_name", null);
                 map.put("bus_name", null);
                 map.put("ip_addr", null);
+                map.put("location", null);
             }
             resultList.add(map);
         }
