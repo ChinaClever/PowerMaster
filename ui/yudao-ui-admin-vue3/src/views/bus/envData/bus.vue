@@ -243,7 +243,7 @@ watch(() => queryParams.granularity, (newValues) => {
       // 配置表格列
       tableColumns.value =([
         { label: '母线名称', align: 'center', prop: 'bus_name', width: '120px', istrue:true},
-        { label: '位置', align: 'center', prop: 'address' , istrue:true, width: '180px'},
+        { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
         { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '180px'},
         { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
         { label: 'A路温度(℃)', align: 'center', prop: 'tem_a', istrue:true, formatter: formatData},
@@ -297,7 +297,7 @@ watch(() => queryParams.granularity, (newValues) => {
       // 配置表格列
       tableColumns.value = [
         { label: '母线名称', align: 'center', prop: 'bus_name', width: '120px', istrue:true},
-        { label: '位置', align: 'center', prop: 'address', istrue:true, width: '180px'}, 
+        { label: '位置', align: 'center', prop: 'location', istrue:true, width: '180px'}, 
         { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
         { label: '记录时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true},
 
@@ -335,7 +335,7 @@ watch(() => queryParams.granularity, (newValues) => {
 
 const tableColumns = ref([
   { label: '母线名称', align: 'center', prop: 'bus_name', width: '120px', istrue:true},
-  { label: '位置', align: 'center', prop: 'address' , istrue:true, width: '180px'},
+  { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
   { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '180px'},
   { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
   { label: 'A路温度(℃)', align: 'center', prop: 'tem_a', istrue:true, formatter: formatData},
