@@ -126,7 +126,7 @@ public class CabinetVo {
     private List<CabinetEnvSensor>  sensorList;
 
     @Schema(description = "u位绑定", example = "[]")
-    private List<RackIndex>  rackList;
+    private List<RackIndex>  rackIndexList;
 
     @Schema(description = "A路母线ip地址", example = "1")
     private String busIpA;

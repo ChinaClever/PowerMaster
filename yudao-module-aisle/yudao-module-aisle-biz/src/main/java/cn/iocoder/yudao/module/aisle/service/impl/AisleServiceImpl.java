@@ -788,6 +788,22 @@ public class AisleServiceImpl implements AisleService {
                         if (lineData.containsKey(VOL_VALUE)){
                             busDTO.setLineVol(lineData.getObject(VOL_VALUE,float[].class));
                         }
+                        //有功功率
+                        if (lineData.containsKey(POW_ACTIVE)){
+                            busDTO.setPowActive(lineData.getObject(POW_ACTIVE,float[].class));
+                        }
+                        //视在功率
+                        if (lineData.containsKey(POW_APPARENT)){
+                            busDTO.setPowApparent(lineData.getObject(POW_APPARENT,float[].class));
+                        }
+                        //无功功率
+                        if (lineData.containsKey(POW_REACTIVE)){
+                            busDTO.setPowReactive(lineData.getObject(POW_REACTIVE,float[].class));
+                        }
+                        //功率因素
+                        if (lineData.containsKey(POWER_FACTOR)){
+                            busDTO.setPowerFactor(lineData.getObject(POWER_FACTOR,float[].class));
+                        }
 
                     }
 
