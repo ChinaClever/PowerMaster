@@ -21,4 +21,8 @@ export const MachineColumnApi = {
   getMaindata: async (params: any) => {
     return await request.get({ url: `/aisle/main/data`, params })
   },
+  // 机柜主界面用能
+  getMainEq: async (params: any) => {
+    return await request.get({ url: `aisle/main/eq`, params })
+  },
 }

@@ -147,27 +147,39 @@
                     <div v-if="cabinet.cabinetName" :id="'cab-B-' + index" class="rightPoint"></div>
                   </div>
                   <div class="cabinet">
-                    <div v-if="cabinet.cabinetName" class="inner_fill" :id="'cabinet-' + index">
-                      <div v-if="chosenBtn == 0">负载率：{{cabinet.loadRate}}</div>
-                      <div v-if="chosenBtn == 1">A路电流：{{cabinet.lineCurA || 0}} B路电流：{{cabinet.lineCurB || 0}}</div>
-                      <div v-if="chosenBtn == 2">A路电压：{{cabinet.lineVolA || 0}} B路电压：{{cabinet.lineVolB || 0}}</div>
-                      <div v-if="chosenBtn == 3">功率因素(总)：{{cabinet.powerFactor}} 功率因素(A)：{{cabinet.powerFactorA}}功率因素(B)：{{cabinet.powerFactorB}}</div>
-                      <div v-if="chosenBtn == 4">有功功率：{{cabinet.powActive}} 有功功率A：{{cabinet.powActiveA}} 有功功率B：{{cabinet.powActiveB}}</div>
+                    <template v-if="cabinet.cabinetName">
+                      <div class="inner_fill" :id="'cabinet-' + index"></div>
+                      <div v-if="chosenBtn == 0" class="fill_box">
+                        <Echart :options="cabinet.echartsOptionLoad" height="100%" />
+                      </div>
+                      <div v-if="chosenBtn == 1" class="fill_box">A路电流：{{cabinet.lineCurA || 0}} B路电流：{{cabinet.lineCurB || 0}}</div>
+                      <div v-if="chosenBtn == 2" class="fill_box">A路电压：{{cabinet.lineVolA || 0}} B路电压：{{cabinet.lineVolB || 0}}</div>
+                      <div v-if="chosenBtn == 3" class="fill_box">
+                        <Echart :options="cabinet.echartsOptionFactor" height="100%" />
+                      </div>
+                      <div v-if="chosenBtn == 4" class="fill_box">
+                        <Echart :options="cabinet.echartsOptionApparent" height="100%" />
+                      </div>
                       <div v-if="chosenBtn == 5">无功功率：{{cabinet.powReactive}} 无功功率A：{{cabinet.powReactiveA}} 无功功率B：{{cabinet.powReactiveB}}</div>
                       <div v-if="chosenBtn == 6">视在功率：{{cabinet.powApparent}} 视在功率A：{{cabinet.powApparentA}} 视在功率B：{{cabinet.powApparentB}}</div>
-                      <div v-if="chosenBtn == 7">供电平衡：</div>
-                      <div v-if="chosenBtn == 8">温度：{{cabinet.temData}}</div>
-                      <div v-if="chosenBtn == 9">容量：{{cabinet.cabinetHeight}} 空闲容量：{{cabinet.freeSpace}}</div>
-                      <div v-if="chosenBtn == 10">用能：{{cabinet.yesterdayEq}} </div>
-                    </div>
+                      <div v-if="chosenBtn == 7" class="fill_box">
+                        <Echart :options="cabinet.echartsOptionBalance" height="100%" />
+                      </div>
+                      <div v-if="chosenBtn == 8" class="fill_box">温度：{{cabinet.temData}}</div>
+                      <div v-if="chosenBtn == 9" class="fill_box">
+                        <Echart :options="cabinet.echartsOptionCapacity" height="100%" />
+                      </div>
+                      <div v-if="chosenBtn == 10" class="fill_box">用能：{{cabinet.yesterdayEq}} </div>
+                    </template>
+                    
                     <div v-else class="inner_empty" :id="'cabinet-' + index"></div>
                   </div>
                   <div class="status">{{cabinet.cabinetName || ''}}</div>
                 </div>
               </template>
               <div class="operateBox">
-                <div class="operateIcon" @click.prevent="addMachine">+</div>
-                <div class="operateIcon" @click.prevent="deleteMachine">-</div>
+                <div v-show="editEnable" class="operateIcon" @click.prevent="addMachine">+</div>
+                <div v-show="editEnable" class="operateIcon" @click.prevent="deleteMachine">-</div>
               </div>
             </div>
             <div class="menu" v-if="operateMenu.show" :style="{left: `${operateMenu.left}`, top: `${operateMenu.top}`}">
@@ -187,11 +199,12 @@
           </div>
         </div>
       </div>
+      <div v-if="!editEnable" class="mask" @click.right.prevent="console.log('---')"></div>
     </div>
   </ContentWrap>
   <!-- 添加或修改用户对话框 -->
   <PluginForm ref="columnForm" @success="handleFormPlugin" />
-  <CabForm ref="cabinetForm" @success="handleFormCabinet" :roomList="roomList" />
+  <CabForm ref="cabinetForm" @success="handleFormCabinet" />
 </template>
 
 <script lang="ts" setup>
@@ -201,7 +214,7 @@ import { CabinetApi } from '@/api/cabinet/info'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import PluginForm from './component/PluginForm.vue'
 import CabForm from './component/CabForm.vue'
-import { Console } from 'console'
+import { EChartsOption } from 'echarts'
 
 const message = useMessage()
 let instance: BrowserJsPlumbInstance | null = null
@@ -252,6 +265,8 @@ const btns = [
     name: '用能'
   },
 ]
+const echartsOption = ref<EChartsOption>({})
+let intervalTimer = null as any
 const topologyContainer = ref()
 const chosenBtn = ref(0)
 const editEnable = ref(false)
@@ -261,7 +276,6 @@ const machineColInfo = reactive<any>({})
 const cabinetList = ref<any>([])
 const busListA = ref<any>([])
 const busListB = ref<any>([])
-const roomList = ref([]) // 机房列表数据
 const operateMenu = ref({  // 操作菜单
   left: '0px',
   top: '0px',
@@ -269,6 +283,7 @@ const operateMenu = ref({  // 操作菜单
   add: false,
   curIndex: 0,
 })
+
 // 连接初始化准备
 const initConnect = () => {
   // 创建实例
@@ -291,7 +306,7 @@ const initConnect = () => {
       return false
     }
     cabinetList.value[cabIndex][`boxOutletId${cabRoad}`] = +pluginOutLet
-    cabinetList.value[cabIndex][`boxName${cabRoad}`] = 1 + Number(pluginName.split('-')[1])
+    cabinetList.value[cabIndex][`boxIndex${cabRoad}`] = Number(pluginName.split('-')[1])
     console.log('监听连接', connection, cabId, pluginId, cabinetList.value,)
     // 处理手动连接的样式
     if (cabRoad == 'A') {
@@ -317,7 +332,7 @@ const initConnect = () => {
       const cabRoad = targetId.split('-')[1]
       const index = targetId.split('-')[2]
       cabinetList.value[index][`boxOutletId${cabRoad}`] = ''
-      cabinetList.value[index][`boxName${cabRoad}`] = ''
+      cabinetList.value[index][`boxIndex${cabRoad}`] = ''
     }
     // 如果返回 false，则连接断开操作会被取消
     return true
@@ -450,6 +465,7 @@ const toCreatConnect = () => {
 // }
 // 更新插接箱瞄点
 const updatePluginAnchor = () => {
+  console.log('updatePluginAnchorupdatePluginAnchor')
   if (cabinetList.value && cabinetList.value.length && machineColInfo.barA) {
     machineColInfo.barA.boxList.forEach(item => {
       if (item.type) return
@@ -491,7 +507,7 @@ const addCabinetAnchor = (index, data = {} as any) => {
     target: true,
     endpoint: 'Dot'
   })
-  if (data.boxIndexA > -1 && data.boxOutletIdA) { // A路有连接
+  if (Number.isInteger(data.boxIndexA) && data.boxOutletIdA) { // A路有连接
     const source = document.getElementById('cab-A-' + index) as Element
     const target = document.getElementById(`plugin-${data.boxIndexA}_A-${data.boxOutletIdA}`)  as Element
     console.log('target', source, target)
@@ -505,7 +521,7 @@ const addCabinetAnchor = (index, data = {} as any) => {
       }
     })
   }
-  if (data.boxIndexB > -1 && data.boxOutletIdB) { // B路有连接
+  if (Number.isInteger(data.boxIndexB) && data.boxOutletIdB) { // B路有连接
     const source = document.getElementById('cab-B-' + index) as Element
     const target = document.getElementById(`plugin-${data.boxIndexB}_B-${data.boxOutletIdB}`)  as Element
     console.log('target---', source, target)
@@ -524,21 +540,21 @@ const addCabinetAnchor = (index, data = {} as any) => {
 }
 // 更新机柜和插接箱的连接 
 const updateCabinetConnect = () => {
-  cabinetList.value.forEach((item, index) => {
-    if (!item.cabinetName || !machineColInfo.barA) return
-    nextTick(() => {
+  nextTick(() => {
+    cabinetList.value.forEach((item, index) => {
+      if (!item.cabinetName || !machineColInfo.barA) return
       console.log('更新机柜的连接')
       const cabElementA = document.getElementById('cab-A-' + index) as Element
       const cabElementB = document.getElementById('cab-B-' + index) as Element
       instance?.revalidate(cabElementA)
       instance?.revalidate(cabElementB)
-      updatePluginAnchor()
     })
+    updatePluginAnchor()
   })
-  
 }
 // 处理右击事件
 const handleRightClick = (e) => {
+  console.log('处理右击事件', e.target.parentNode)
   e.preventDefault()
   if (e.target.className != 'inner_empty' && e.target.className != 'inner_fill') return
   const container = e.currentTarget
@@ -736,22 +752,16 @@ const handleFormPlugin = (data) => {
   machineColInfo.barA = boxA
   machineColInfo.barB = boxB
   console.log('machineColInfo', machineColInfo)
-  toCreatConnect()
+  toCreatConnect() // 因为添加插接箱需要添加瞄点 所以要创建
 }
 // 机柜弹窗确认后的处理
 const handleFormCabinet = (data) => {
-  console.log('handleFormCabinet', data)
-  data.index = operateMenu.value.curIndex
+  console.log('handleFormCabinet', data, operateMenu.value)
+  data.index = +operateMenu.value.curIndex + 1
   cabinetList.value.splice(operateMenu.value.curIndex, 1, data)
   if (machineColInfo.barA) nextTick(() => {
     addCabinetAnchor(operateMenu.value.curIndex, data)
   })
-}
-// 接口获取机房导航列表
-const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
-  console.log('接口获取机房导航列表', res)
-  roomList.value = res
 }
 // 接口获取柜列状态数据详情
 const getDataDetail = async() => {
@@ -782,13 +792,265 @@ const handleDataDetail = (res) => {
       if (item.id == cab.id) {
         cabinetList.value[index] = {
           ...item,
-          ...cab
+          ...cab,
+          echartsOptionLoad: { // 负载
+            xAxis: {
+              type: 'category',
+              data: ['负载'],
+              axisTick: {
+                show: false
+              }
+            },
+            grid: {
+              left: '-10',
+              right: '16',
+              bottom: '3%',
+              top: '8%',
+              containLabel: true
+            },
+            yAxis: {
+              type: 'value',
+              max: 1, 
+              show: false,
+            },
+            series: [
+              {
+                name: 'load',
+                data: [cab.loadRate],
+                type: 'bar',
+                barWidth: '100%',
+                showBackground: true,
+                backgroundStyle: {
+                  color: 'rgba(180, 180, 180, 0.2)'
+                },
+                label: {
+                  show: true,
+                  position: 'top', // 顶部显示
+                  formatter: '{c}', // 显示数据值
+                },
+              }
+            ]
+          },
+          echartsOptionFactor: { // 功率因素
+            xAxis: {
+              type: 'category',
+              data: ['功率因素'],
+              axisTick: {
+                show: false
+              }
+            },
+            grid: {
+              left: '-10',
+              right: '16',
+              bottom: '3%',
+              top: '8%',
+              containLabel: true
+            },
+            yAxis: {
+              type: 'value',
+              max: 1, 
+              show: false,
+            },
+            series: [
+              {
+                name: 'load',
+                data: [cab.powerFactor],
+                type: 'bar',
+                barWidth: '100%',
+                showBackground: true,
+                backgroundStyle: {
+                  color: 'rgba(180, 180, 180, 0.2)'
+                },
+                label: {
+                  show: true,
+                  position: 'top', // 顶部显示
+                  formatter: '{c}', // 显示数据值
+                },
+              }
+            ]
+          },
+          echartsOptionApparent: { // 视在功率
+            tooltip: {
+              trigger: 'axis',
+              axisPointer: {
+                type: 'shadow'
+              }
+            },
+            xAxis: {
+              type: 'category',
+              data: ['A路', 'B路'],
+              axisTick: {
+                show: false
+              }
+            },
+            grid: {
+              left: '-20',
+              right: '0',
+              bottom: '3%',
+              top: '8%',
+              containLabel: true
+            },
+            legend: {},
+            yAxis: {
+              type: 'value',
+              show: false,
+            },
+            series: [
+              {
+                name: '有功功率',
+                data: [3, 5],
+                type: 'bar',
+                stack: 'Ad',
+                emphasis: {
+                  focus: 'series'
+                },
+                label: {
+                  show: true,
+                  formatter: '{c}', // 显示数据值
+                },
+              },
+              {
+                name: '无功功率',
+                data: [2, 6],
+                type: 'bar',
+                stack: 'Ad',
+                emphasis: {
+                  focus: 'series'
+                },
+                label: {
+                  show: true,
+                  formatter: '{c}', // 显示数据值
+                },
+              },
+              {
+                name: '视在功率',
+                data: [5, 10],
+                type: 'bar',
+                stack: 'Ad',
+                emphasis: {
+                  focus: 'series'
+                },
+                label: {
+                  show: true,
+                  formatter: '{c}', // 显示数据值
+                },
+              }
+            ]
+          },
+          echartsOptionBalance: { // 供电平衡
+            xAxis: {
+              type: 'category',
+              data: ['A路', 'B路'],
+              axisTick: {
+                show: false
+              }
+            },
+            grid: {
+              left: '-15',
+              right: '0',
+              bottom: '3%',
+              top: '8%',
+              containLabel: true
+            },
+            yAxis: {
+              type: 'value',
+              show: false,
+            },
+            series: [
+              {
+                name: '视在功率',
+                data: [cab.powApparentA, cab.powApparentB],
+                type: 'bar',
+                label: {
+                  show: true,
+                  formatter: '{c}', // 显示数据值
+                },
+              },
+            ]
+          },
+          echartsOptionCapacity: { // 容量
+            xAxis: {
+              type: 'category',
+              data: ['容量'],
+              axisTick: {
+                show: false
+              }
+            },
+            grid: {
+              left: '0',
+              right: '16',
+              bottom: '3%',
+              top: '8%',
+              containLabel: true
+            },
+            yAxis: {
+              type: 'value',
+              max: item.cabinetHeight, 
+              show: false,
+            },
+            series: [
+              {
+                data: [item.freeSpace],
+                type: 'bar',
+                barWidth: '100%',
+                showBackground: true,
+                backgroundStyle: {
+                  color: 'rgba(180, 180, 180, 0.2)'
+                },
+                label: {
+                  show: true,
+                  formatter: '空闲容量:\n{c}', // 显示数据值
+                },
+              }
+            ]
+          },
         }
         console.log('----------', cab, cab.id)
         return
       }
     })
   })
+  echartsOption.value = 
+  // 容量
+  {
+    xAxis: {
+      type: 'category',
+      data: ['容量'],
+      axisTick: {
+        show: false
+      }
+    },
+    grid: {
+      left: '-10',
+      right: '16',
+      bottom: '3%',
+      top: '8%',
+      containLabel: true
+    },
+    yAxis: {
+      type: 'value',
+      max: 42, 
+      show: false,
+    },
+    series: [
+      {
+        name: 'load',
+        data: [38],
+        type: 'bar',
+        barWidth: '100%',
+        showBackground: true,
+        backgroundStyle: {
+          color: 'rgba(180, 180, 180, 0.2)'
+        },
+        label: {
+          show: true,
+          formatter: '空闲容量: \n{c}', // 显示数据值
+        },
+      }
+    ]
+  }
+  
+  
   console.log('接口获取柜列状态数据详情end', cabinetList.value, machineColInfo)
 }
 // 处理母线插接箱的初始化处理
@@ -816,11 +1078,23 @@ const getMachineColInfo = async() => {
 }
 
 const saveMachineBus = async() => {
-  console.log('cabinetList', cabinetList.value)
+  const filterCabinet = cabinetList.value.filter(item => item.cabinetName)
+  console.log('machineColInfo', machineColInfo)
+  filterCabinet.forEach((cab, index) => {
+    if (Number.isInteger(cab.boxIndexA)) {
+      const target = machineColInfo.barA.boxList.find(box => box.boxIndex == cab.boxIndexA)
+      if (target) cab.boxNameA = target.boxName
+    }
+    if (Number.isInteger(cab.boxIndexB)) {
+      const target = machineColInfo.barB.boxList.find(box => box.boxIndex == cab.boxIndexB)
+      if (target) cab.boxNameB = target.boxName
+    }
+  })
+  console.log('cabinetList', filterCabinet)
   const res = await MachineColumnApi.saveAisleDetail({
     ...machineColInfo,
     length: cabinetList.value.length,
-    cabinetList: cabinetList.value.filter(item => item.cabinetName),
+    cabinetList: filterCabinet,
   })
   message.success('保存成功！')
   editEnable.value = false
@@ -832,6 +1106,7 @@ const handleCabinetList = (data, status) => {
   for (let i=0; i < data.length; i++) {
     arr.push({})
   }
+  // 给机柜要连接的插接箱 找到对应的下标
   data.cabinetList && data.cabinetList.forEach(item => {
     if (item.boxNameA) {
       const target = data.barA.boxList.find(box => box.boxName == item.boxNameA)
@@ -863,13 +1138,21 @@ const deleteMachine = () => {
 //
 const switchBtn = (value) => {
   chosenBtn.value = value
-  console.log('switchBtn')
+  console.log('switchBtn', value, cabinetList.value)
 }
 
-getMachineColInfo()
+window.addEventListener('resize', function() {
+  console.log('resize----')
+  updateCabinetConnect()
+})
+
 onMounted(() => {
-  getNavList()
+  // getNavList()
+  getMachineColInfo()
   initConnect()
+  // intervalTimer = setInterval(() => {
+  //   getDataDetail()
+  // }, 10000)
   document.addEventListener('mouseup',(event) => {
     const element = event.target as HTMLElement
     if (event.button == 0 && operateMenu.value.show && element.className != 'menu_item') {
@@ -877,9 +1160,20 @@ onMounted(() => {
     }
   })
 })
+
+onBeforeUnmount(() => {
+  intervalTimer = null
+})
 </script>
 
 <style lang="scss" scoped>
+.mask {
+  width: 100%;
+  height: calc(100% - 32px);
+  position: absolute;
+  top: 0;
+  z-index: 999;
+}
 .btn-main {
   display: flex;
   justify-content: space-between;
@@ -1068,7 +1362,6 @@ onMounted(() => {
     display: flex;
     justify-content: center;
     .cabinetBox {
-      
       .point {
         height: 7px;
         display: flex;
@@ -1087,8 +1380,9 @@ onMounted(() => {
         }
       }
       .cabinet {
-        width: 105px;
-        height: 350px;
+        position: relative;
+        width: 100px;
+        height: 339px;
         box-sizing: border-box;
         border: 2px solid;
       }
@@ -1100,11 +1394,23 @@ onMounted(() => {
         background-color: #f9f9f9;
       }
       .inner_fill {
+        position: absolute;
         width: 100%;
         height: 100%;
         box-sizing: border-box;
         border: 5px solid #888;
-        background-color: #83f8b8;
+        // background-color: #d9ffea;
+        background-color: rgb(155, 166, 190, 0);
+        z-index: 10;
+      }
+      .fill_box {
+        position: absolute;
+        z-index: 1;
+        width: 100%;
+        height: 100%;
+        padding: 5px;
+        box-sizing: border-box;
+        background-color: #f2fff8;
       }
       .status {
         font-size: 12px;
@@ -1114,7 +1420,6 @@ onMounted(() => {
         margin-top: 10px;
       }
     }
-    
   }
   .operateBox {
     width: 20px;
