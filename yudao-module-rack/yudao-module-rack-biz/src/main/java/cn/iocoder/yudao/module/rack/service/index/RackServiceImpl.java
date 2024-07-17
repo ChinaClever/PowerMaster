@@ -5,6 +5,7 @@ import cn.iocoder.yudao.framework.common.entity.es.rack.ele.RackEleTotalRealtime
 import cn.iocoder.yudao.framework.common.entity.es.rack.ele.RackEqTotalDayDo;
 
 import cn.iocoder.yudao.framework.common.entity.es.rack.pow.RackPowHourDo;
+import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 
 import com.alibaba.fastjson2.JSONObject;
@@ -341,6 +342,12 @@ public class RackServiceImpl implements RackService {
             log.error("获取数据失败",e);
         }
         return result;
+    }
+
+    @Override
+    public List<Integer> idList() {
+        return rackMapper.selectList().stream().limit(10).collect(Collectors.toList())
+                .stream().map(RackDO::getId).collect(Collectors.toList());
     }
 
     /**

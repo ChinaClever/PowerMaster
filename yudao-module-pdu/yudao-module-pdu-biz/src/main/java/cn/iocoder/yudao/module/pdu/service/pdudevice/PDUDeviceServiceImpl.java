@@ -2,7 +2,7 @@ package cn.iocoder.yudao.module.pdu.service.pdudevice;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
-import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalWeekDo;
+
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.env.CabinetEnvHourDo;
@@ -26,14 +26,18 @@ import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.CabinetChartRes
 import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.LineSeries;
 import cn.iocoder.yudao.framework.common.mapper.CabinetPduMapper;
 import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
+import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.MaxValueAndCreateTime;
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDULineRes;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.curbalancecolor.PDUCurbalanceColorDO;
 import cn.iocoder.yudao.module.pdu.dal.mysql.curbalancecolor.PDUCurbalanceColorMapper;
 import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.util.EntityUtils;
+import org.elasticsearch.client.Request;
+import org.elasticsearch.client.Response;
+import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.search.aggregations.Aggregation;
-import org.elasticsearch.search.aggregations.metrics.Max;
-import org.elasticsearch.search.aggregations.metrics.Min;
+import org.elasticsearch.search.aggregations.metrics.*;
 
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
@@ -65,11 +69,11 @@ import org.elasticsearch.search.aggregations.PipelineAggregatorBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.ParsedLongTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 
-import org.elasticsearch.search.aggregations.metrics.Sum;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.metrics.TopHits;
 import org.elasticsearch.search.aggregations.pipeline.ParsedSimpleValue;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.collapse.CollapseBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -255,7 +259,32 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     @Override
     public PageResult<PDULineRes> getPDULineDevicePage(PDUDevicePageReqVO pageReqVO) {
         try {
-            PageResult<PduIndex> pduIndexPageResult = null;
+
+            if(pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
+                pageReqVO.setNewTime(LocalDateTime.now());
+                pageReqVO.setOldTime(LocalDateTime.now().minusHours(24));
+            } else {
+                pageReqVO.setNewTime(pageReqVO.getNewTime().plusDays(1));
+                pageReqVO.setOldTime(pageReqVO.getOldTime().plusDays(1));
+            }
+            Map<Integer,Map<Integer, MaxValueAndCreateTime>> curMap ;
+            Map<Integer,Map<Integer, MaxValueAndCreateTime>> powMap ;
+            String index = null;
+            if(pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
+                index = "pdu_hda_line_hour";
+            } else {
+                index = "pdu_hda_line_day";
+            }
+            String startTime = localDateTimeToString(pageReqVO.getOldTime());
+            String endTime = localDateTimeToString(pageReqVO.getNewTime());
+            Map esTotalPduId = getESTotalPduId(index, startTime, endTime,pageReqVO.getPageSize(), pageReqVO.getPageNo() - 1);
+            Long total = (Long)esTotalPduId.get("total");
+            if(total == 0){
+                return new PageResult<>(new ArrayList<>(), 0L);
+            }
+            List<Integer> pduIds = (List<Integer>) esTotalPduId.get("ids");
+
+            List<PduIndex> pduIndices = null;
             List<PDULineRes> result = new ArrayList<>();
             if(pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
                 List<String> ipAddrList = new ArrayList<>();
@@ -272,49 +301,15 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 }else{
                     return new PageResult<>(result, 0L);
                 }
-                pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
-                        .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()).inIfPresent(PduIndex::getIpAddr,ipAddrList));
+                pduIndices = pDUDeviceMapper.selectList(new LambdaQueryWrapperX<PduIndex>()
+                        .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()).inIfPresent(PduIndex::getIpAddr,ipAddrList).inIfPresent(PduIndex::getId,pduIds));
             }else{
-                pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
-                        .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()));
-            }
-            List<PduIndex> pduIndices = pduIndexPageResult.getList();
-
-            if(pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
-                pageReqVO.setNewTime(LocalDateTime.now());
-                pageReqVO.setOldTime(LocalDateTime.now().minusHours(24));
-            } else {
-                pageReqVO.setNewTime(pageReqVO.getNewTime().plusDays(1));
-                pageReqVO.setOldTime(pageReqVO.getOldTime().plusDays(1));
-            }
-            List<Long> ids = pduIndices.stream().map(PduIndex::getId).collect(Collectors.toList());
-            List<String> esCurMaxResult = null;
-            List<String> esPowMaxResult = null;
-            Map<Integer,Map<Integer,PduHdaLineHourDo>> curMap = new HashMap<>();
-            Map<Integer,Map<Integer,PduHdaLineHourDo>> powMap = new HashMap<>();
-            String index = null;
-            if(pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
-                index = "pdu_hda_line_hour";
-            } else {
-                index = "pdu_hda_line_day";
-            }
-            String startTime = localDateTimeToString(pageReqVO.getOldTime());
-            String endTime = localDateTimeToString(pageReqVO.getNewTime());
-            esCurMaxResult = getPDULineData(startTime,endTime,ids,index,"cur_max_value");
-            esPowMaxResult = getPDULineData(startTime,endTime,ids,index,"pow_active_max_value");
-            if (!CollectionUtils.isEmpty(esCurMaxResult)){
-                esCurMaxResult.forEach(str -> {
-                    PduHdaLineHourDo hourDo = JsonUtils.parseObject(str, PduHdaLineHourDo.class);
-                    curMap.computeIfAbsent(hourDo.getPduId(), k -> new HashMap<>()).put(hourDo.getLineId(), hourDo);
-                });
+                pduIndices = pDUDeviceMapper.selectList(new LambdaQueryWrapperX<PduIndex>()
+                        .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()).inIfPresent(PduIndex::getId,pduIds));
             }
 
-            if (!CollectionUtils.isEmpty(esPowMaxResult)){
-                esPowMaxResult.forEach(str -> {
-                    PduHdaLineHourDo hourDo = JsonUtils.parseObject(str, PduHdaLineHourDo.class);
-                    powMap.computeIfAbsent(hourDo.getPduId(), k -> new HashMap<>()).put(hourDo.getLineId(), hourDo);
-                });
-            }
+            curMap = getPDULineCurMaxData(startTime,endTime,pduIds,index);
+            powMap = getPDULinePowMaxData(startTime,endTime,pduIds,index);
 
             for (PduIndex pduIndex : pduIndices) {
                 Integer id = pduIndex.getId().intValue();
@@ -326,42 +321,42 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 pduLineRes.setPduId(pduIndex.getId());
                 pduLineRes.setDevKey(pduIndex.getDevKey());
 
-                PduHdaLineHourDo curl1 = curMap.get(id).get(1);
-                pduLineRes.setL1MaxCur(curl1.getCurMaxValue());
-                pduLineRes.setL1MaxCurTime(curl1.getCurMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                PduHdaLineHourDo curl2 = curMap.get(id).get(2);
+                MaxValueAndCreateTime curl1 = curMap.get(id).get(1);
+                pduLineRes.setL1MaxCur(curl1.getMaxValue().floatValue());
+                pduLineRes.setL1MaxCurTime(curl1.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                MaxValueAndCreateTime curl2 = curMap.get(id).get(2);
                 if(curl2 != null){
-                    pduLineRes.setL2MaxCur(curl2.getCurMaxValue());
-                    pduLineRes.setL2MaxCurTime(curl2.getCurMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    pduLineRes.setL2MaxCur(curl2.getMaxValue().floatValue());
+                    pduLineRes.setL2MaxCurTime(curl2.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 }
-                PduHdaLineHourDo curl3 = curMap.get(id).get(3);
+                MaxValueAndCreateTime curl3 = curMap.get(id).get(3);
                 if(curl3 != null){
-                    pduLineRes.setL3MaxCur(curl3.getCurMaxValue());
-                    pduLineRes.setL3MaxCurTime(curl3.getCurMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    pduLineRes.setL3MaxCur(curl3.getMaxValue().floatValue());
+                    pduLineRes.setL3MaxCurTime(curl3.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 }
 
-                PduHdaLineHourDo powl1 = powMap.get(id).get(1);
-                pduLineRes.setL1MaxPow(powl1.getActivePowMaxValue());
-                pduLineRes.setL1MaxPowTime(powl1.getActivePowMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                PduHdaLineHourDo powl2 = powMap.get(id).get(2);
+                MaxValueAndCreateTime powl1 = powMap.get(id).get(1);
+                pduLineRes.setL1MaxPow(powl1.getMaxValue().floatValue());
+                pduLineRes.setL1MaxPowTime(powl1.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                MaxValueAndCreateTime powl2 = powMap.get(id).get(2);
                 if(powl2 != null) {
-                    pduLineRes.setL2MaxPow(powl2.getActivePowMaxValue());
-                    pduLineRes.setL2MaxPowTime(powl2.getActivePowMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    pduLineRes.setL2MaxPow(powl2.getMaxValue().floatValue());
+                    pduLineRes.setL2MaxPowTime(powl2.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 }
-                PduHdaLineHourDo powl3 = powMap.get(id).get(3);
+                MaxValueAndCreateTime powl3 = powMap.get(id).get(3);
                 if(powl3 != null) {
-                    pduLineRes.setL3MaxPow(powl3.getActivePowMaxValue());
-                    pduLineRes.setL3MaxPowTime(powl3.getActivePowMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    pduLineRes.setL3MaxPow(powl3.getMaxValue().floatValue());
+                    pduLineRes.setL3MaxPowTime(powl3.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 }
 
                 result.add(pduLineRes);
             }
 
             setLocation(pduIndices,result);
-            return new PageResult<PDULineRes>(result,pduIndexPageResult.getTotal());
+            return new PageResult<PDULineRes>(result,total);
 
         }catch (Exception e){
-            System.out.println(e);
+            log.error("获取数据失败",e);
         }
 
 
@@ -992,7 +987,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     }
 
 
-    private List<String> getPDULineData(String startTime, String endTime, List<Long> ids, String index,String sort) throws IOException {
+    private List<String> getPDULineData(String startTime, String endTime, List<Integer> ids, String index,String sort) throws IOException {
         // 创建SearchRequest对象, 设置查询索引名
         SearchRequest searchRequest = new SearchRequest(index);
         // 通过QueryBuilders构建ES查询条件，
@@ -1004,7 +999,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         builder.sort(sort, SortOrder.DESC);
         // 设置搜索条件
         searchRequest.source(builder);
-        builder.size(2000);
+
 
         List<String> list = new ArrayList<>();
         // 执行ES请求
@@ -1018,6 +1013,147 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         }
         return list;
 
+    }
+
+    private   Map<Integer, Map<Integer, MaxValueAndCreateTime>> getPDULineCurMaxData(String startTime, String endTime, List<Integer> ids, String index) throws IOException {
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件，
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+
+        //获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime))
+                .must(QueryBuilders.termsQuery("pdu_id", ids))));
+
+        builder.aggregation(
+                AggregationBuilders.terms("group_by_pdu_id")
+                        .field("pdu_id")
+                        .size(10000)
+                        .subAggregation(AggregationBuilders.terms("by_line_id")
+                                .field("line_id")
+                                .size(1000)
+                                .order(BucketOrder.aggregation("max_cur", false))
+                                .subAggregation(AggregationBuilders.max("max_cur").field("cur_max_value"))
+                                .subAggregation(AggregationBuilders.topHits("top_docs")
+                                        .size(1)
+                                        .fetchSource(new String[]{"cur_max_time"}, null)
+                                        .sort(SortBuilders.fieldSort("cur_max_value").order(SortOrder.DESC))))
+        );
+
+
+
+        // 设置搜索条件
+        searchRequest.source(builder);
+        builder.size(0);
+
+        List<String> list = new ArrayList<>();
+        // 执行ES请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        // 初始化结果Map
+        Map<Integer, Map<Integer, MaxValueAndCreateTime>> resultMap = new HashMap<>();
+        // 获取group_by_box_id聚合结果
+        Terms groupByBoxId = searchResponse.getAggregations().get("group_by_pdu_id");
+        for (Terms.Bucket boxIdBucket : groupByBoxId.getBuckets()) {
+            Integer boxId = boxIdBucket.getKeyAsNumber().intValue();
+            Map<Integer, MaxValueAndCreateTime> lineIdMap = new HashMap<>();
+
+            // 获取by_line_id聚合结果
+            Terms byLineId = boxIdBucket.getAggregations().get("by_line_id");
+            for (Terms.Bucket lineIdBucket : byLineId.getBuckets()) {
+                Integer lineId = lineIdBucket.getKeyAsNumber().intValue();
+                MaxValueAndCreateTime maxValueAndCreateTime = new MaxValueAndCreateTime();
+                // 获取max_cur聚合结果
+                ParsedMax maxCur = (ParsedMax) lineIdBucket.getAggregations().get("max_cur");
+                maxValueAndCreateTime.setMaxValue(maxCur.getValue());
+
+                // 获取top_hits聚合结果
+                ParsedTopHits topHits = (ParsedTopHits) lineIdBucket.getAggregations().get("top_docs");
+                if (topHits.getHits().getHits().length != 0) {
+                    SearchHit topHit = topHits.getHits().getHits()[0]; // 取第一个top hit
+                    Map<String, Object> sourceAsMap = topHit.getSourceAsMap();
+                    maxValueAndCreateTime.setMaxTime(new DateTime(sourceAsMap.get("cur_max_time").toString(),"yyyy-MM-dd HH:mm:ss"));
+                }
+
+                // 将valueMap添加到lineIdMap中
+                lineIdMap.put(lineId, maxValueAndCreateTime);
+            }
+
+            // 将lineIdMap添加到resultMap中
+            resultMap.put(boxId, lineIdMap);
+        }
+        return resultMap;
+    }
+
+    private  Map<Integer, Map<Integer, MaxValueAndCreateTime>> getPDULinePowMaxData(String startTime, String endTime, List<Integer> ids, String index) throws IOException {
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件，
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+
+        //获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime))
+                .must(QueryBuilders.termsQuery("pdu_id", ids))));
+
+        builder.aggregation(
+                AggregationBuilders.terms("group_by_pdu_id")
+                        .field("pdu_id")
+                        .size(10000)
+                        .subAggregation(AggregationBuilders.terms("by_line_id")
+                                .field("line_id")
+                                .size(1000)
+                                .order(BucketOrder.aggregation("max_pow", false))
+                                .subAggregation(AggregationBuilders.max("max_pow").field("pow_active_max_value"))
+                                .subAggregation(AggregationBuilders.topHits("top_docs")
+                                        .size(1)
+                                        .fetchSource(new String[]{"pow_active_max_time"}, null)
+                                        .sort(SortBuilders.fieldSort("pow_active_max_value").order(SortOrder.DESC))))
+        );
+
+
+
+        // 设置搜索条件
+        searchRequest.source(builder);
+        builder.size(0);
+
+        List<String> list = new ArrayList<>();
+        // 执行ES请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+
+        // 初始化结果Map
+        Map<Integer, Map<Integer, MaxValueAndCreateTime>> resultMap = new HashMap<>();
+        // 获取group_by_box_id聚合结果
+        Terms groupByBoxId = searchResponse.getAggregations().get("group_by_pdu_id");
+        for (Terms.Bucket boxIdBucket : groupByBoxId.getBuckets()) {
+            Integer boxId = boxIdBucket.getKeyAsNumber().intValue();
+            Map<Integer, MaxValueAndCreateTime> lineIdMap = new HashMap<>();
+
+            // 获取by_line_id聚合结果
+            Terms byLineId = boxIdBucket.getAggregations().get("by_line_id");
+            for (Terms.Bucket lineIdBucket : byLineId.getBuckets()) {
+                Integer lineId = lineIdBucket.getKeyAsNumber().intValue();
+                MaxValueAndCreateTime maxValueAndCreateTime = new MaxValueAndCreateTime();
+                // 获取max_cur聚合结果
+                ParsedMax maxPow = (ParsedMax) lineIdBucket.getAggregations().get("max_pow");
+                maxValueAndCreateTime.setMaxValue(maxPow.getValue());
+
+                // 获取top_hits聚合结果
+                ParsedTopHits topHits = (ParsedTopHits) lineIdBucket.getAggregations().get("top_docs");
+                if (topHits.getHits().getHits().length != 0) {
+                    SearchHit topHit = topHits.getHits().getHits()[0]; // 取第一个top hit
+                    Map<String, Object> sourceAsMap = topHit.getSourceAsMap();
+                    maxValueAndCreateTime.setMaxTime(new DateTime(sourceAsMap.get("pow_active_max_time").toString(),"yyyy-MM-dd HH:mm:ss"));
+                }
+
+                // 将valueMap添加到lineIdMap中
+                lineIdMap.put(lineId, maxValueAndCreateTime);
+            }
+
+            // 将lineIdMap添加到resultMap中
+            resultMap.put(boxId, lineIdMap);
+        }
+        return resultMap;
     }
 
     private List<String> getData(String startTime, String endTime, List<Integer> ids, String index) throws IOException {
@@ -1221,9 +1357,43 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         });
     }
 
-private List getMutiRedis(List<PduIndex> list){
-    List<String> devKeys = list.stream().map(pduIndex -> REDIS_KEY_PDU + pduIndex.getDevKey()).collect(Collectors.toList());
-    ValueOperations ops = redisTemplate.opsForValue();
-    return ops.multiGet(devKeys);
-}
+    private List getMutiRedis(List<PduIndex> list){
+        List<String> devKeys = list.stream().map(pduIndex -> REDIS_KEY_PDU + pduIndex.getDevKey()).collect(Collectors.toList());
+        ValueOperations ops = redisTemplate.opsForValue();
+        return ops.multiGet(devKeys);
+    }
+
+    private Map getESTotalPduId(String index,String startTime,String endTime,Integer pageSize,Integer pageNo) throws IOException {
+        HashMap<String, Object> result = new HashMap<>();
+        SearchRequest searchRequest = new SearchRequest(index);
+
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder
+                .from(pageNo * pageSize)
+                .size(pageSize)
+                .query(QueryBuilders.rangeQuery("create_time.keyword").gte(startTime).lte(endTime))
+                .sort("pdu_id", SortOrder.ASC)
+                .collapse(new CollapseBuilder("pdu_id"))
+                .aggregation(AggregationBuilders.cardinality("total_size").field("pdu_id").precisionThreshold(10000));
+        searchRequest.source(builder);
+        List<Integer> sortValues = new ArrayList<>();
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                String str = hit.getSourceAsString();
+                PduHdaLineHourDo hourDo = JsonUtils.parseObject(str, PduHdaLineHourDo.class);
+                sortValues.add(hourDo.getPduId());
+            }
+        }
+        Long totalRes = 0L;
+        Cardinality totalSizeAggregation = searchResponse.getAggregations().get("total_size");
+        if (totalSizeAggregation != null){
+            totalRes = totalSizeAggregation.getValue();
+        }
+
+        result.put("total",totalRes);
+        result.put("ids",sortValues);
+        return result;
+    }
 }

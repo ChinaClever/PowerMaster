@@ -6,6 +6,7 @@ import cn.iocoder.yudao.module.rack.dal.dataobject.index.RackDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -60,4 +61,6 @@ public interface RackService {
     String getRackRedisById(Integer id);
 
     Map getRoomPFLine(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    List<Integer> idList();
 }

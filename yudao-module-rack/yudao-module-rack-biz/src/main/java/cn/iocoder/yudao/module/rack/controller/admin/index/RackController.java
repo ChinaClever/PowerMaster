@@ -116,4 +116,10 @@ public class RackController {
     public String getRackRedisById(@RequestParam("id") Integer Id) {
         return rackService.getRackRedisById(Id);
     }
+
+    @GetMapping("/idList")
+    @Operation(summary = "获得机架id列表")
+    public List<Integer> idList() {
+        return rackService.idList();
+    }
 }

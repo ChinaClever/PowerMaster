@@ -130,4 +130,10 @@ public class IndexController {
     public CommonResult<Map> getCabinetEnvHotTemAndHumData(String id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
         return success(indexService.getCabinetEnvHotTemAndHumData(id,timeType,oldTime,newTime));
     }
+
+    @GetMapping("/idList")
+    @Operation(summary = "获得机柜id列表")
+    public List<Integer> idList() {
+        return indexService.idList();
+    }
 }

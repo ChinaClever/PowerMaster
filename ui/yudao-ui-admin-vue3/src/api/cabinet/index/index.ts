@@ -68,4 +68,8 @@ export const IndexApi = {
   getCabinetPFLine : async (params) => {
     return await request.get({ url: `/cabinet/index/report/pfline`, params })
   },
+
+  idList: async () => {
+    return await request.download({ url: `/cabinet/index/idList`})
+  },
 }

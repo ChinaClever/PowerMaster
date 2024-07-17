@@ -57,11 +57,13 @@
         </el-form-item> -->
 
         <el-form-item label="机架Id" prop="ipAddr" >
-          <el-input
+          <el-autocomplete
             v-model="queryParams.id"
-            placeholder="请输入IP"
+            :fetch-suggestions="querySearch"
             clearable
             class="!w-140px"
+            placeholder="请输入IP地址"
+            @select="handleQuery"
           />
         </el-form-item>
 
@@ -240,6 +242,7 @@ const eleList = ref() as any;
 const totalLineList = ref() as any;
 const aLineList = ref() as any;
 const bLineList = ref() as any;
+const idList = ref() as any;
 const now = ref()
 const switchValue = ref(1);
 
@@ -256,6 +259,32 @@ const visControll = reactive({
   pfVis: false,
 })
 const serChartContainerWidth = ref(0)
+
+const loadAll = async () => {
+  var data = await IndexApi.idList();
+  var objectArray = data.map((str) => {
+    return { value: str };
+  });
+
+  return objectArray;
+}
+
+const querySearch = (queryString: string, cb: any) => {
+  const results = queryString
+    ? idList.value.filter(createFilter(queryString))
+    : idList.value
+  // call callback function to return suggestions
+  cb(results)
+}
+
+const createFilter = (queryString: string) => {
+  return (idList) => {
+    return (
+      idList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+    )
+  }
+}
+
 
 const disabledDate = (date) => {
   // 获取今天的日期
@@ -676,6 +705,8 @@ const handleQuery = async () => {
 onMounted( async () =>  {
   // getList();
   // initChart();
+
+  idList.value = await loadAll();
 })
 </script>
 <style scoped lang="scss">

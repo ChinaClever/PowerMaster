@@ -77,6 +77,9 @@ public class BoxIndexPageReqVO extends PageParam {
     @Schema(description = "在线")
     private List<Integer> status;
 
+    @Schema(description = "插接箱ID列表")
+    private List<Integer> boxIds;
+
     @Schema(description = "创建时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;

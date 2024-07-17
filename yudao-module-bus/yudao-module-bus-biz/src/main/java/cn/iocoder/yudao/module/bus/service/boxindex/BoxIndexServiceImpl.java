@@ -12,9 +12,12 @@ import cn.iocoder.yudao.framework.common.entity.es.box.tem.BoxTemHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.total.BoxTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.total.BoxTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalDayDo;
+import cn.iocoder.yudao.framework.common.entity.es.bus.line.BusLineHourDo;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBus;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
+import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
 import cn.iocoder.yudao.framework.common.mapper.AisleBoxMapper;
 import cn.iocoder.yudao.framework.common.mapper.CabinetBusMapper;
 import cn.iocoder.yudao.framework.common.mapper.CabinetIndexMapper;
@@ -51,10 +54,12 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.*;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.aggregations.metrics.Cardinality;
 import org.elasticsearch.search.aggregations.metrics.ParsedMax;
 import org.elasticsearch.search.aggregations.metrics.ParsedTopHits;
 import org.elasticsearch.search.aggregations.metrics.TopHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.collapse.CollapseBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,6 +125,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
     @Autowired
     private CabinetIndexMapper cabinetIndexMapper;
+
+    @Autowired
+    private AisleBarMapper aisleBarMapper;
 
     public static final String DAY_FORMAT = "dd";
     @Override
@@ -1262,13 +1270,6 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     @Override
     public PageResult<BoxLineRes> getBoxLineDevicePage(BoxIndexPageReqVO pageReqVO) {
         try {
-            PageResult<BoxIndex> boxIndexPageResult = null;
-            List<BoxLineRes> result = new ArrayList<>();
-
-
-            boxIndexPageResult = boxIndexCopyMapper.selectPage(pageReqVO);
-
-            List<BoxIndex> boxIndices = boxIndexPageResult.getList();
 
             if(pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
                 pageReqVO.setNewTime(LocalDateTime.now());
@@ -1278,7 +1279,6 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 pageReqVO.setOldTime(pageReqVO.getOldTime().plusDays(1));
             }
 
-            List<Integer> ids = boxIndices.stream().map(BoxIndex::getId).collect(Collectors.toList());
             Map<Integer,Map<Integer, MaxValueAndCreateTime>> curMap ;
             Map<Integer,Map<Integer, MaxValueAndCreateTime>> powMap ;
             String index = null;
@@ -1289,8 +1289,21 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             }
             String startTime = localDateTimeToString(pageReqVO.getOldTime());
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
+            Map esTotalAndIds = getESTotalAndIds(index, startTime, endTime,pageReqVO.getPageSize(), pageReqVO.getPageNo() - 1);
+            Long total = (Long)esTotalAndIds.get("total");
+            if(total == 0){
+                return new PageResult<>(new ArrayList<>(), 0L);
+            }
+            List<Integer> ids = (List<Integer>) esTotalAndIds.get("ids");
+
             curMap = getBoxLineCurMaxData(startTime,endTime,ids,index);
             powMap = getBoxLinePowMaxData(startTime,endTime,ids,index);
+
+            List<BoxLineRes> result = new ArrayList<>();
+
+            List<BoxIndex> boxIndices = boxIndexCopyMapper.selectList(new LambdaQueryWrapperX<BoxIndex>()
+                    .inIfPresent(BoxIndex::getDevKey,pageReqVO.getBoxDevKeyList())
+                    .inIfPresent(BoxIndex::getId,ids));
 
             for (BoxIndex boxIndex : boxIndices) {
                 Integer id = boxIndex.getId();
@@ -1339,7 +1352,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 getPosition(result);
             }
 
-            return new PageResult<BoxLineRes>(result,boxIndexPageResult.getTotal());
+            return new PageResult<BoxLineRes>(result,total);
         }catch (Exception e){
             log.error("获取数据失败",e);
         }
@@ -2241,27 +2254,34 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         //设备位置
         String devPosition = "";
         //柜列
-        List<AisleBox> aisleBar  = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
+        List<AisleBox> aisleBoxList  = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
                 .in(AisleBox::getBarKey,devKeyList));
-        Map<String, Integer> aisleBarKeyMap = aisleBar.stream().collect(Collectors.toMap(AisleBox::getBarKey,AisleBox::getAisleId));
-        Map<Integer, String> positionMap = new HashMap<>();
-        if (!CollectionUtils.isEmpty(aisleBar)){
-            List<String> redisKeys = aisleBar.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toList());
-            List aisles = ops.multiGet(redisKeys);
-            if (!CollectionUtils.isEmpty(aisleBar)){
-                for (Object aisle : aisles) {
-                    JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
-                    positionMap.put(json.getInteger("aisle_key"), json.getString("room_name") + SPLIT_KEY
-                            +  json.getString("aisle_name") );
+        if (!CollectionUtils.isEmpty(aisleBoxList)){
+            List<Integer> aisleBarIds = aisleBoxList.stream().map(AisleBox::getAisleBarId).collect(Collectors.toList());
+            List<AisleBar> aisleBars = aisleBarMapper.selectBatchIds(aisleBarIds);
+            Map<Integer, String> pathMap = aisleBars.stream().collect(Collectors.toMap(AisleBar::getId, AisleBar::getPath));
+            Map<String, AisleBox> aisleBoxKeyMap = aisleBoxList.stream().collect(Collectors.toMap(AisleBox::getBarKey,Function.identity()));
+            Map<Integer, String> positionMap = new HashMap<>();
+            if (!CollectionUtils.isEmpty(aisleBoxList)){
+                List<String> redisKeys = aisleBoxList.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toList());
+                List aisles = ops.multiGet(redisKeys);
+                if (!CollectionUtils.isEmpty(aisleBoxList)){
+                    for (Object aisle : aisles) {
+                        JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
+                        positionMap.put(json.getInteger("aisle_key"), json.getString("room_name") + SPLIT_KEY
+                                +  json.getString("aisle_name") );
+                    }
                 }
             }
+            res.forEach(box ->{
+                if(aisleBoxKeyMap.get(box.getDevKey()) != null){
+                    AisleBox aisleBox = aisleBoxKeyMap.get(box.getDevKey());
+                    Integer aisleId = aisleBox.getAisleId();
+                    box.setLocation(positionMap.get(aisleId) +  SPLIT_KEY + pathMap.get(aisleBox.getAisleBarId()) + "路" + SPLIT_KEY + box.getBoxName());
+                }
+            });
         }
-        res.forEach(box ->{
-            if(aisleBarKeyMap.get(box.getDevKey()) != null){
-                Integer aisleId = aisleBarKeyMap.get(box.getDevKey());
-                box.setLocation(positionMap.get(aisleId));
-            }
-        });
+
         List<BoxResBase> resNotInAisle = res.stream().filter(busRes -> StringUtils.isEmpty(busRes.getLocation())).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(resNotInAisle)){
             return;
@@ -2283,26 +2303,64 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         if (!CollectionUtils.isEmpty(cabinets)){
             for (Object cabinet : cabinets) {
                 JSONObject json = JSON.parseObject(JSON.toJSONString(cabinet));
-                devPosition = json.getString("room_name");
+                devPosition = json.getString("room_name") + SPLIT_KEY + json.getString("cabinet_name");
+                if(!StringUtils.isEmpty(json.getString("aisle_name"))){
+                    devPosition += SPLIT_KEY + json.getString("aisle_name");
+                }
                 Integer cabinetId = Integer.valueOf(json.getString("cabinet_key").split("-")[1]);
                 String devKeyA = cabinetBusMapA.get(cabinetId);
                 if (!StringUtils.isEmpty(devKeyA)){
                     BoxResBase box = resNotInAisleMap.get(devKeyA);
                     if(Objects.nonNull(box) && box.getLocation() == null){
-                        box.setLocation(devPosition + SPLIT_KEY + box.getBoxName());
+                        box.setLocation(devPosition + SPLIT_KEY + "A路" + SPLIT_KEY + box.getBoxName());
                     }
                 }
                 String devKeyB = cabinetBusMapB.get(cabinetId);
                 if (!StringUtils.isEmpty(devKeyB)){
                     BoxResBase box = resNotInAisleMap.get(devKeyB);
                     if(Objects.nonNull(box) && box.getLocation() == null){
-                        box.setLocation(devPosition + SPLIT_KEY + box.getBoxName());
+                        box.setLocation(devPosition + SPLIT_KEY + "B路" + SPLIT_KEY + box.getBoxName());
                     }
                 }
             }
         }
 
 
+    }
+
+    private Map getESTotalAndIds(String index,String startTime,String endTime,Integer pageSize,Integer pageNo) throws IOException {
+        HashMap<String, Object> result = new HashMap<>();
+        SearchRequest searchRequest = new SearchRequest(index);
+
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder
+                .from(pageNo * pageSize)
+                .size(pageSize)
+                .query(QueryBuilders.rangeQuery("create_time.keyword").gte(startTime).lte(endTime))
+                .sort("box_id", SortOrder.ASC)
+                .collapse(new CollapseBuilder("box_id"))
+                .aggregation(AggregationBuilders.cardinality("total_size").field("box_id").precisionThreshold(10000));
+
+        searchRequest.source(builder);
+        List<Integer> sortValues = new ArrayList<>();
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                String str = hit.getSourceAsString();
+                BoxLineHourDo hourDo = JsonUtils.parseObject(str, BoxLineHourDo.class);
+                sortValues.add(hourDo.getBoxId());
+            }
+        }
+        Long totalRes = 0L;
+        Cardinality totalSizeAggregation = searchResponse.getAggregations().get("total_size");
+        if (totalSizeAggregation != null){
+            totalRes = totalSizeAggregation.getValue();
+        }
+
+        result.put("total",totalRes);
+        result.put("ids",sortValues);
+        return result;
     }
 
     private List getMutiRedis(List<BoxIndex> list){

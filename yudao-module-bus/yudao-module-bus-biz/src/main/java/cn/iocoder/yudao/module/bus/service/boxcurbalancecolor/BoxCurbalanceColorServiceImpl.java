@@ -66,9 +66,9 @@ public class BoxCurbalanceColorServiceImpl implements BoxCurbalanceColorService 
             boxCurbalanceColorDO = new BoxCurbalanceColorDO();
             boxCurbalanceColorDO.setId(1L);
             boxCurbalanceColorDO.setRangeOne(15);
-            boxCurbalanceColorDO.setRangeTwo(15);
+            boxCurbalanceColorDO.setRangeTwo(16);
             boxCurbalanceColorDO.setRangeThree(30);
-            boxCurbalanceColorDO.setRangeFour(30);
+            boxCurbalanceColorDO.setRangeFour(31);
             boxCurbalanceColorMapper.insert(boxCurbalanceColorDO);
         }
         return boxCurbalanceColorDO;

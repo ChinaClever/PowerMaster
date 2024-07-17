@@ -16,6 +16,7 @@ import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetEnvSensor;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.mapper.AisleIndexMapper;
@@ -892,6 +893,12 @@ public class IndexServiceImpl implements IndexService {
             log.error("获取数据失败",e);
         }
         return result;
+    }
+
+    @Override
+    public List<Integer> idList() {
+        return cabIndexMapper.selectList().stream().limit(10).collect(Collectors.toList())
+                .stream().map(IndexDO::getId).collect(Collectors.toList());
     }
 
     /**
