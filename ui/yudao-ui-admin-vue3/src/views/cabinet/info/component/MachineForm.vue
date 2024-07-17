@@ -40,6 +40,22 @@
             <el-form-item label="所属公司：" prop="company">
               <el-input v-model="machineFormData.company" placeholder="请输入" />
             </el-form-item>
+            <div class="double-formitem">
+              <el-form-item label="日用能告警">
+                <el-switch v-model="machineFormData.eleAlarmDay" :active-value="1" :inactive-value="0" />
+              </el-form-item>
+              <el-form-item label="日用能限制">
+                <el-input-number v-model="machineFormData.eleLimitDay" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+              </el-form-item>
+            </div>
+            <div class="double-formitem">
+              <el-form-item label="月用能告警">
+                <el-switch v-model="machineFormData.eleAlarmMonth" :active-value="1" :inactive-value="0" />
+              </el-form-item>
+              <el-form-item label="月用能限制">
+                <el-input-number v-model="machineFormData.eleLimitMonth" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+              </el-form-item>
+            </div>
           </div>
         </el-collapse-item>
         <el-collapse-item title="PDU/母线绑定" name="2">
@@ -335,6 +351,10 @@ const machineFormData = ref({
   boxNameB: '',
   boxOutletIdB: '',
   pduBox: 0, // 0 pdu 1母线
+  eleAlarmDay: 0, // 日用能告警
+  eleLimitDay: 1000, // 日用能限制
+  eleAlarmMonth: 0, // 月用能告警
+  eleLimitMonth: 1000, // 月用能限制
 })
 const PDUFormData = ref({
   ipdzA: '',
@@ -473,6 +493,10 @@ const open = async (type: string, data, roomList) => {
     boxNameB: '',
     boxOutletIdB: '',
     pduBox: 0, // 0 pdu 1母线
+    eleAlarmDay: 0, // 日用能告警
+    eleLimitDay: 1000, // 日用能限制
+    eleAlarmMonth: 0, // 月用能告警
+    eleLimitMonth: 1000, // 月用能限制
   }
   // 修改时，设置数据
   // if (id) {
@@ -545,6 +569,10 @@ const resetForm = () => {
     boxNameB: '',
     boxOutletIdB: '',
     pduBox: 0, // 0 pdu 1母线
+    eleAlarmDay: 0, // 日用能告警
+    eleLimitDay: 1000, // 日用能限制
+    eleAlarmMonth: 0, // 月用能告警
+    eleLimitMonth: 1000, // 月用能限制
   }
   machineForm.value?.resetFields()
 }
@@ -613,6 +641,12 @@ const resetForm = () => {
 }
 .pduBus {
   padding: 30px 50px 10px 0;
+}
+.double-formitem {
+  display: flex;
+  & > div {
+    flex: 1;
+  }
 }
 .Bus {
   display: flex;

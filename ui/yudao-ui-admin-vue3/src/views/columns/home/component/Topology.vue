@@ -137,7 +137,20 @@
                     <div v-if="cabinet.cabinetName" :id="'cab-B-' + index" class="rightPoint"></div>
                   </div>
                   <div class="cabinet">
-                    <div :class="cabinet.cabinetName ? 'inner_fill' : 'inner_empty'" :id="'cabinet-' + index"></div>
+                    <div v-if="cabinet.cabinetName" class="inner_fill" :id="'cabinet-' + index">
+                      <div v-if="chosenBtn == 0">负载率：{{cabinet.loadRate}}</div>
+                      <div v-if="chosenBtn == 1">A路电流：{{cabinet.lineCurA || 0}} B路电流：{{cabinet.lineCurB || 0}}</div>
+                      <div v-if="chosenBtn == 2">A路电压：{{cabinet.lineVolA || 0}} B路电压：{{cabinet.lineVolB || 0}}</div>
+                      <div v-if="chosenBtn == 3">功率因素(总)：{{cabinet.powerFactor}} 功率因素(A)：{{cabinet.powerFactorA}}功率因素(B)：{{cabinet.powerFactorB}}</div>
+                      <div v-if="chosenBtn == 4">有功功率：{{cabinet.powActive}} 有功功率A：{{cabinet.powActiveA}} 有功功率B：{{cabinet.powActiveB}}</div>
+                      <div v-if="chosenBtn == 5">无功功率：{{cabinet.powReactive}} 无功功率A：{{cabinet.powReactiveA}} 无功功率B：{{cabinet.powReactiveB}}</div>
+                      <div v-if="chosenBtn == 6">视在功率：{{cabinet.powApparent}} 视在功率A：{{cabinet.powApparentA}} 视在功率B：{{cabinet.powApparentB}}</div>
+                      <div v-if="chosenBtn == 7">供电平衡：</div>
+                      <div v-if="chosenBtn == 8">温度：{{cabinet.temData}}</div>
+                      <div v-if="chosenBtn == 9">容量：{{cabinet.cabinetHeight}} 空闲容量：{{cabinet.freeSpace}}</div>
+                      <div v-if="chosenBtn == 10">用能：{{cabinet.yesterdayEq}} </div>
+                    </div>
+                    <div v-else class="inner_empty" :id="'cabinet-' + index"></div>
                   </div>
                   <div class="status">{{cabinet.cabinetName || ''}}</div>
                 </div>
@@ -168,12 +181,17 @@
 import { newInstance, BezierConnector, BrowserJsPlumbInstance, JsPlumbDefaults } from '@jsplumb/browser-ui'
 import { MachineColumnApi } from '@/api/cabinet/column'
 import { CabinetApi } from '@/api/cabinet/info'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { string } from 'vue-types'
 
 const message = useMessage()
 const {push} = useRouter()
-let instance: BrowserJsPlumbInstance | null = null
 
+let instance: BrowserJsPlumbInstance | null = null
+const {cabinetColumnId} = defineProps({
+  cabinetColumnId: {
+    type: String,
+  }
+})
 const btns = [
   {
     value: 0,
@@ -220,6 +238,7 @@ const btns = [
     name: '用能'
   },
 ]
+let intervalTimer = null as any
 const topologyContainer = ref()
 const chosenBtn = ref(0)
 const editEnable = ref(false)
@@ -409,7 +428,7 @@ const addCabinetAnchor = (index, data = {} as any) => {
   })
   if (data.boxNameA && data.boxOutletIdA) { // A路有连接
     const source = document.getElementById('cab-A-' + index) as Element
-    const target = document.getElementById(`plugin-${data.boxNameA-1}_A-${data.boxOutletIdA}`)  as Element
+    const target = document.getElementById(`${data.boxNameA}_A-${data.boxOutletIdA}`)  as Element
     console.log('target', source, target)
     instance?.connect({
       source,
@@ -423,7 +442,7 @@ const addCabinetAnchor = (index, data = {} as any) => {
   }
   if (data.boxNameB && data.boxOutletIdB) { // B路有连接
     const source = document.getElementById('cab-B-' + index) as Element
-    const target = document.getElementById(`plugin-${data.boxNameB-1}_B-${data.boxOutletIdB}`)  as Element
+    const target = document.getElementById(`${data.boxNameB}_B-${data.boxOutletIdB}`)  as Element
     console.log('target---', source, target)
     instance?.connect({
       source,
@@ -455,13 +474,17 @@ const updateCabinetConnect = () => {
 }
 // 接口获取柜列信息
 const getMachineColInfo = async() => {
-  const res = await MachineColumnApi.getAisleDetail({id:6})
-  Object.assign(machineColInfo, res)
-  console.log('getMachineColInfo', res, res.length)
-  handleCabinetList(res)
+  const res1 = MachineColumnApi.getAisleDetail({id:6})
+  const res2 = MachineColumnApi.getDataDetail({id: 6})
+  Promise.all([res1, res2]).then((resultList) => {
+    Object.assign(machineColInfo, resultList[0])
+    handleCabinetList(resultList[0], resultList[1])
+    // handleBusInit(resultList[0])
+    console.log('getMachineColInfo', resultList)
+  })
 }
 // 处理机柜列表
-const handleCabinetList = (data) => {
+const handleCabinetList = (data, status) => {
   const arr = [] as any
   for (let i=0; i < data.length; i++) {
     arr.push({})
@@ -471,12 +494,50 @@ const handleCabinetList = (data) => {
   })
   console.log('arr', arr)
   cabinetList.value = arr
+  handleDataDetail(status)
   toCreatConnect()
+}
+// 接口获取柜列状态数据详情
+const getDataDetail = async() => {
+  const res = await MachineColumnApi.getDataDetail({id: 6})
+  console.log('接口获取柜列状态数据详情', res)
+  handleDataDetail(res)
+}
+// 处理柜列状态数据详情
+const handleDataDetail = (res) => {
+  if (res.barA) {
+    res.barA.boxList.forEach((item, index) => {
+      machineColInfo.barA.boxList[index] = {
+        ...machineColInfo.barA.boxList[index],
+        ...item
+      }
+    })
+  }
+  if (res.barB) {
+    res.barB.boxList.forEach((item, index) => {
+      machineColInfo.barB.boxList[index] = {
+        ...machineColInfo.barB.boxList[index],
+        ...item
+      }
+    })
+  }
+  res.cabinetList && res.cabinetList.forEach(cab => {
+    cabinetList.value.forEach((item, index) => {
+      if (item.id == cab.id) {
+        cabinetList.value[index] = {
+          ...item,
+          ...cab
+        }
+        console.log('----------', cab, cab.id)
+        return
+      }
+    })
+  })
+  console.log('接口获取柜列状态数据详情end', cabinetList.value, machineColInfo)
 }
 //
 const switchBtn = (value) => {
   chosenBtn.value = value
-  console.log('switchBtn')
 }
 const handleJump = () => {
   push({path: '/aisle/topology', state: {id: 6}})
@@ -485,12 +546,19 @@ const handleJump = () => {
 getMachineColInfo()
 
 window.addEventListener('resize', function() {
-  console.log('resize')
-  toCreatConnect()
+  console.log('resize----')
+  updateCabinetConnect()
+})
+
+watch(() => cabinetColumnId, (val) => {
+  console.log('son cabinetColumnId', val)
 })
 
 onMounted(() => {
   initConnect()
+  intervalTimer = setInterval(() => {
+    getDataDetail()
+  }, 10000)
   document.addEventListener('mouseup',(event) => {
     const element = event.target as HTMLElement
     if (event.button == 0 && operateMenu.value.show && element.className != 'menu_item') {
@@ -510,8 +578,10 @@ onMounted(() => {
 }
 .btns {
   width: 100%;
+  box-sizing: border-box;
   display: flex;
-  justify-content: center;
+  justify-content: safe center;
+  overflow: auto;
 }
 :deep(.el-card__body) {
   box-sizing: border-box;

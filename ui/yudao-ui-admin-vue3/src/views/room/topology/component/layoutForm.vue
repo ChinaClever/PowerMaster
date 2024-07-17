@@ -26,6 +26,30 @@
       <el-form-item v-if="formData.type == 1" label="数量" prop="amount">
          <el-input-number v-model="formData.amount" :min="minAmount" :max="formData.direction == 1 ? operateInfo.maxlndexX : operateInfo.maxlndexY" />
       </el-form-item>
+      <div style="display: flex;">
+        <div style="flex: 1;">
+          <el-form-item label="日用能告警" label-width="100">
+            <el-switch v-model="formData.eleAlarmDay" :active-value="1" :inactive-value="0" />
+          </el-form-item>
+        </div>
+        <div style="flex: 1;">
+          <el-form-item label="日用能限制" label-width="100">
+            <el-input-number v-model="formData.eleLimitDay" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+          </el-form-item>
+        </div>
+      </div>
+      <div style="display: flex;justify-content: space-evenly;">
+        <div style="flex: 1;">
+          <el-form-item label="月用能告警" label-width="100">
+            <el-switch v-model="formData.eleAlarmMonth" :active-value="1" :inactive-value="0" />
+          </el-form-item>
+        </div>
+        <div style="flex: 1;">
+          <el-form-item label="月用能限制" label-width="100">
+            <el-input-number v-model="formData.eleLimitMonth" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+          </el-form-item>
+        </div>
+      </div>
     </el-form>
     <template #footer>
       <el-button @click="dialogVisible = false">取 消</el-button>
@@ -47,6 +71,10 @@ const operateInfo = ref<any>({}) // 机柜列中机柜最大数量  默认26
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
 const formData = ref({
+  eleAlarmDay: 0, // 日用能告警
+  eleLimitDay: 1000, // 日用能限制
+  eleAlarmMonth: 0, // 月用能告警
+  eleLimitMonth: 1000, // 月用能限制
   type: 1,
   name: '',
   direction: 1,
@@ -123,6 +151,10 @@ const submitForm = async () => {
 /** 重置表单 */
 const resetForm = () => {
   formData.value = {
+    eleAlarmDay: 0, // 日用能告警
+    eleLimitDay: 1000, // 日用能限制
+    eleAlarmMonth: 0, // 月用能告警
+    eleLimitMonth: 1000, // 月用能限制
     type: 1,
     name: '',
     direction: 1,
