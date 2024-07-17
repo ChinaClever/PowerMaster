@@ -870,22 +870,22 @@ public class CabinetServiceImpl implements CabinetService {
      */
     private void saveRack(int cabinetId,CabinetVo vo) throws Exception{
         //数据为空，清空数据
-        if (CollectionUtils.isEmpty(vo.getRackList())){
+        if (CollectionUtils.isEmpty(vo.getRackIndexList())){
            //取消绑定
             List<RackIndex> rackIndexList = rackIndexMapper.selectList(new LambdaQueryWrapper<RackIndex>()
                     .eq(RackIndex::getCabinetId,cabinetId)
                     .eq(RackIndex::getIsDelete,DelEnums.NO_DEL.getStatus()));
             if (!CollectionUtils.isEmpty(rackIndexList)){
                 rackIndexMapper.update(new LambdaUpdateWrapper<RackIndex>()
-                        .in(RackIndex::getId,rackIndexList)
+                        .in(RackIndex::getId,rackIndexList.stream().map(RackIndex::getId).collect(Collectors.toList()))
                         .set(RackIndex::getCabinetId,0));
             }
 
         }
 
-        if (!CollectionUtils.isEmpty(vo.getRackList())){
+        if (!CollectionUtils.isEmpty(vo.getRackIndexList())){
             //修改
-            vo.getRackList().forEach(rackIndex -> rackIndexMapper.updateById(rackIndex));
+            vo.getRackIndexList().forEach(rackIndex -> rackIndexMapper.updateById(rackIndex));
 
 
         }

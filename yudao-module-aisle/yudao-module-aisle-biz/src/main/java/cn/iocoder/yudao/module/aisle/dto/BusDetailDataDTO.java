@@ -40,6 +40,27 @@ public class BusDetailDataDTO {
     private float[] temData;
 
     /**
+     * 相功率因素
+     */
+    private float[] powerFactor;
+
+    /**
+     *  相有功功率
+     */
+    private  float[] powActive;
+
+
+    /**
+     *  相无功功率
+     */
+    private  float[] powReactive;
+
+    /**
+     *  相视在功率
+     */
+    private  float[] powApparent;
+
+    /**
      * 插接箱数据
      */
     private List<BoxDetailDataDTO>  boxList;
