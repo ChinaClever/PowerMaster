@@ -40,6 +40,22 @@
             <el-form-item label="所属公司：" prop="company">
               <el-input v-model="machineFormData.company" placeholder="请输入" />
             </el-form-item>
+            <div class="double-formitem">
+              <el-form-item label="日用能告警">
+                <el-switch v-model="machineFormData.eleAlarmDay" :active-value="1" :inactive-value="0" />
+              </el-form-item>
+              <el-form-item label="日用能限制">
+                <el-input-number v-model="machineFormData.eleLimitDay" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+              </el-form-item>
+            </div>
+            <div class="double-formitem">
+              <el-form-item label="月用能告警">
+                <el-switch v-model="machineFormData.eleAlarmMonth" :active-value="1" :inactive-value="0" />
+              </el-form-item>
+              <el-form-item label="月用能限制">
+                <el-input-number v-model="machineFormData.eleLimitMonth" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+              </el-form-item>
+            </div>
           </div>
         </el-collapse-item>
         <el-collapse-item title="PDU/母线绑定" name="2">
@@ -87,14 +103,14 @@
                     <el-input v-model="machineFormData.busIpA" :disabled="isBusBind" placeholder="请输入" />
                   </el-form-item>
                   <el-form-item label="插接箱名称：">
-                    <el-select v-if="isBusBind" v-model="machineFormData.boxNameA" placeholder="请选择">
-                      <el-option v-for="i in boxAmount" :key="i" :label="'插接箱' + i" :value="i" />
+                    <el-select v-if="isBusBind" v-model="machineFormData.boxIndexA" placeholder="请选择">
+                      <el-option v-for="i in boxAmount" :key="i" :label="'插接箱' + i" :value="i-1" />
                     </el-select>
-                    <el-input v-else v-model="machineFormData.boxNameA" placeholder="请输入" />
+                    <el-input v-else v-model="machineFormData.boxIndexA" placeholder="请输入" />
                   </el-form-item>
                   <el-form-item label="插接箱输出位：">
                     <el-select v-if="isBusBind" v-model="machineFormData.boxOutletIdA" placeholder="请选择">
-                      <el-option v-for="i in 3" :key="i" :label="'输出位' + i" :value="i" />
+                      <el-option v-for="i in 3" :key="i" :label="'输出位' + i" :value="i-1" />
                     </el-select>
                     <el-input v-else v-model="machineFormData.boxOutletIdA" placeholder="请输入" />
                   </el-form-item>
@@ -108,14 +124,14 @@
                     <el-input v-model="machineFormData.busIpB" :disabled="isBusBind" placeholder="请输入" />
                   </el-form-item>
                   <el-form-item label="插接箱名称：">
-                    <el-select v-if="isBusBind" v-model="machineFormData.boxNameB" placeholder="请选择">
-                      <el-option v-for="i in boxAmount" :key="i" :label="'插接箱' + i" :value="i" />
+                    <el-select v-if="isBusBind" v-model="machineFormData.boxIndexB" placeholder="请选择">
+                      <el-option v-for="i in boxAmount" :key="i" :label="'插接箱' + i" :value="i-1" />
                     </el-select>
                     <el-input v-else v-model="machineFormData.boxOutletIdA" placeholder="请输入" />
                   </el-form-item>
                   <el-form-item label="插接箱输出位：">
                     <el-select v-if="isBusBind" v-model="machineFormData.boxOutletIdB" placeholder="请选择">
-                      <el-option v-for="i in 3" :key="i" :label="'输出位' + i" :value="i" />
+                      <el-option v-for="i in 3" :key="i" :label="'输出位' + i" :value="i-1" />
                     </el-select>
                     <el-input v-else v-model="machineFormData.boxOutletIdB" placeholder="请输入" />
                   </el-form-item>
@@ -214,14 +230,15 @@ import { FormRules } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
 import TopologyEdit from './TopologyEdit.vue'
 
-const {roomList} = defineProps({
-  roomList: {
-    type: Array
-  },
-})
+// const {roomList} = defineProps({
+//   roomList: {
+//     type: Array
+//   },
+// })
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
 
+const roomList = ref([])
 const isBusBind = ref(false) // 柜列中是否已经绑定母线了  绑定了则有些数据不能修改
 const boxAmount = ref(0) // 插接箱数量, 柜列中如果绑定母线，则回显对应的插接箱数量
 const dialogVisible = ref(false) // 弹窗的是否展示
@@ -342,13 +359,17 @@ const machineFormData = ref({
   sensorList: [] as any,
   busIpA: '',
   busNameA: '',
-  boxNameA: '',
+  boxIndexA: '',
   boxOutletIdA: '',
   busIpB: '',
   busNameB: '',
-  boxNameB: '',
+  boxIndexB: '',
   boxOutletIdB: '',
   pduBox: 0, // 0 pdu 1母线
+  eleAlarmDay: 0, // 日用能告警
+  eleLimitDay: 1000, // 日用能限制
+  eleAlarmMonth: 0, // 月用能告警
+  eleLimitMonth: 1000, // 月用能限制
 })
 const PDUFormData = ref({
   ipdzA: '',
@@ -482,13 +503,17 @@ const open = async (type: string, data, machineColInfo) => {
     sensorList: [],
     busIpA: '',
     busNameA: '',
-    boxNameA: '',
+    boxIndexA: '',
     boxOutletIdA: '',
     busIpB: '',
     busNameB: '',
-    boxNameB: '',
+    boxIndexB: '',
     boxOutletIdB: '',
     pduBox: 0, // 0 pdu 1母线
+    eleAlarmDay: 0, // 日用能告警
+    eleLimitDay: 1000, // 日用能限制
+    eleAlarmMonth: 0, // 月用能告警
+    eleLimitMonth: 1000, // 月用能限制
   }
   machineFormData.value.roomId = machineColInfo.roomId
   console.log('machineColInfo', machineColInfo)
@@ -553,16 +578,28 @@ const resetForm = () => {
     sensorList: [],
     busIpA: '',
     busNameA: '',
-    boxNameA: '',
+    boxIndexA: '',
     boxOutletIdA: '',
     busIpB: '',
     busNameB: '',
-    boxNameB: '',
+    boxIndexB: '',
     boxOutletIdB: '',
     pduBox: 0, // 0 pdu 1母线
+    eleAlarmDay: 0, // 日用能告警
+    eleLimitDay: 1000, // 日用能限制
+    eleAlarmMonth: 0, // 月用能告警
+    eleLimitMonth: 1000, // 月用能限制
   }
   machineForm.value?.resetFields()
 }
+
+// 接口获取机房导航列表
+const getNavList = async() => {
+  const res = await CabinetApi.getRoomMenuAll({})
+  console.log('接口获取机房导航列表', res)
+  roomList.value = res
+}
+getNavList()
 </script>
 <style lang="scss" scoped>
 .sensorContainer {
@@ -628,6 +665,12 @@ const resetForm = () => {
 }
 .pduBus {
   padding: 30px 50px 10px 0;
+}
+.double-formitem {
+  display: flex;
+  & > div {
+    flex: 1;
+  }
 }
 .Bus {
   display: flex;

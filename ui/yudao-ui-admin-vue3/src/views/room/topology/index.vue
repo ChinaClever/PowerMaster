@@ -55,14 +55,30 @@
     </div>
   </el-card>
   <layoutForm ref="machineForm" @success="handleChange" />
-  <Dialog v-model="dialogVisible" title="设置房间的行列数" width="30%">
+  <Dialog v-model="dialogVisible" title="机房配置" width="30%">
     <el-form>
-      <el-form-item label="行数" label-width="80">
+      <el-form-item label="行数" label-width="90">
         <el-input-number v-model="rowColInfo.row" :min="1" :max="100" controls-position="right" placeholder="请输入" />
       </el-form-item>
-      <el-form-item label="列数" label-width="80">
+      <el-form-item label="列数" label-width="90">
         <el-input-number v-model="rowColInfo.col" :min="1" :max="70" controls-position="right" placeholder="请输入" />
       </el-form-item>
+      <div class="double-formitem">
+        <el-form-item label="日用能告警" label-width="90">
+          <el-switch v-model="rowColInfo.eleAlarmDay" :active-value="1" :inactive-value="0" />
+        </el-form-item>
+        <el-form-item label="日用能限制" label-width="90">
+          <el-input-number v-model="rowColInfo.eleLimitDay" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+        </el-form-item>
+      </div>
+      <div class="double-formitem">
+        <el-form-item label="月用能告警" label-width="90">
+          <el-switch v-model="rowColInfo.eleAlarmMonth" :active-value="1" :inactive-value="0" />
+        </el-form-item>
+        <el-form-item label="月用能限制" label-width="90">
+          <el-input-number v-model="rowColInfo.eleLimitMonth" :min="0" :max="9999" controls-position="right" placeholder="请输入" />
+        </el-form-item>
+      </div>
     </el-form>
     <template #footer>
       <el-button @click="dialogVisible = false">取 消</el-button>
@@ -85,6 +101,10 @@ const movingInfo = ref<any>({})
 const rowColInfo = reactive({
   row: 14, // 行
   col: 18, // 列
+  eleAlarmDay: 0, // 日用能告警
+  eleLimitDay: 1000, // 日用能限制
+  eleAlarmMonth: 0, // 月用能告警
+  eleLimitMonth: 1000, // 月用能限制
 })
 const tableData = ref<any>([])
 // ([
@@ -417,8 +437,14 @@ const getRoomInfo = async() => {
     console.log('res', res)
     const data = [] as any
     const Obj = {}
-    rowColInfo.col = res.xLength
-    rowColInfo.row = res.yLength
+    Object.assign(rowColInfo, {
+      row: res.xLength,
+      col: res.yLength,
+      eleAlarmDay: res.eleAlarmDay,
+      eleLimitDay: res.eleLimitDay,
+      eleAlarmMonth: res.eleAlarmMonth,
+      eleLimitMonth: res.eleLimitMonth,
+    })
     for(let i=0; i < res.xLength; i++) {
       Obj[getTableColCharCode(i)] = []
     }
@@ -438,6 +464,10 @@ const getRoomInfo = async() => {
           first: false,
           originAmount: item.cabinetList.length,
           originDirection: item.direction == 'x' ? 1 : 2,
+          eleAlarmDay: item.eleAlarmDay,
+          eleLimitDay: item.eleLimitDay,
+          eleAlarmMonth: item.eleAlarmMonth,
+          eleLimitMonth: item.eleLimitMonth,
         }
         if (i == 0) dataItem.first = true
         // {type: '1', name: '啊大苏打', direction: '1', amount: 1, status: 1,first: true, id: '', originAmount: 1, originDirection: '1'}
@@ -688,13 +718,18 @@ const handleSubmit = () => {
     for(let j = 0; j < rowColInfo.col; j++) {
       const target = tableData.value[i][getTableColCharCode(j)][0]
       if (target && target.type == 1 && target.first) {
+        console.log('target.......', target)
         aisleList.push({
           id: target.id,
           aisleName: target.name,
           xCoordinate: j + 1,
           yCoordinate: i + 1,
           direction: target.direction == 1 ? 'x' : 'y',
-          length: target.amount
+          length: target.amount,
+          eleAlarmDay: target.eleAlarmDay,
+          eleLimitDay: target.eleLimitDay,
+          eleAlarmMonth: target.eleAlarmMonth,
+          eleLimitMonth: target.eleLimitMonth,
         })
       } else if (target && target.type == 2) {
         cabinetList.push({
@@ -702,6 +737,10 @@ const handleSubmit = () => {
           cabinetName: target.name,
           xCoordinate: j + 1,
           yCoordinate: i + 1,
+          eleAlarmDay: target.eleAlarmDay,
+          eleLimitDay: target.eleLimitDay,
+          eleAlarmMonth: target.eleAlarmMonth,
+          eleLimitMonth: target.eleLimitMonth,
         })
       }
     }
@@ -713,6 +752,10 @@ const handleSubmit = () => {
       roomName: 'CES-JF',
       xLength: rowColInfo.col,
       yLength: rowColInfo.row,
+      eleAlarmDay: rowColInfo.eleAlarmDay,
+      eleAlarmMonth: rowColInfo.eleAlarmMonth,
+      eleLimitDay: rowColInfo.eleLimitDay,
+      eleLimitMonth: rowColInfo.eleLimitMonth,
       aisleList,
       cabinetList
     })
@@ -858,6 +901,12 @@ onUnmounted(() => {
     background-color: rgb(12, 255, 44);
     box-sizing: border-box;
     border-right: 1px solid #ebeef5;
+  }
+}
+.double-formitem {
+  display: flex;
+  & > div {
+    flex: 1;
   }
 }
 
