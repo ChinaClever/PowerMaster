@@ -113,9 +113,8 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnvDataApi } from '@/api/bus/envData'
-import { ElMessage } from 'element-plus'
 import { IndexApi } from '@/api/bus/busindex'
-import PDUImage from '@/assets/imgs/PDU.jpg';
+// import PDUImage from '@/assets/imgs/PDU.jpg';
 const { push } = useRouter()
 /** bus历史数据 列表 */
 defineOptions({ name: 'BusEnvHistoryData' })
