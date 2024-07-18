@@ -129,14 +129,14 @@ public class BoxIndexController {
         return success(BeanUtils.toBean(pageResult, BoxHarmonicRes.class));
     }
 
-    @Operation(summary = "始端箱谐波监测实时数据图表")
+    @Operation(summary = "插接箱谐波监测实时数据图表")
     @PostMapping("/harmonic/redis")
     public CommonResult<BusHarmonicRedisRes> getHarmonicRedis(@RequestBody BoxIndexPageReqVO pageReqVO) {
         BusHarmonicRedisRes pageResult = indexService.getHarmonicRedis(pageReqVO);
         return success(pageResult);
     }
 
-    @Operation(summary = "始端箱谐波监测ES数据图表")
+    @Operation(summary = "插接箱谐波监测ES数据图表")
     @PostMapping("/harmonic/line")
     public CommonResult<BusHarmonicLineRes> getHarmonicLine(@RequestBody BoxIndexPageReqVO pageReqVO) {
         BusHarmonicLineRes pageResult = indexService.getHarmonicLine(pageReqVO);
@@ -156,11 +156,11 @@ public class BoxIndexController {
     }
 
     /**
-     * 始端箱有功功率趋势
+     * 插接箱有功功率趋势
      *
-     * @param id 始端箱id
+     * @param id 插接箱id
      */
-    @Operation(summary = "始端箱有功功率趋势")
+    @Operation(summary = "插接箱有功功率趋势")
     @GetMapping("/activePowTrend")
     public CommonResult<BusActivePowDTO> activePowTrend(@Param("id") int id) {
         BusPowVo vo = new BusPowVo();
@@ -170,11 +170,11 @@ public class BoxIndexController {
     }
 
     /**
-     * 始端箱用能趋势
+     * 插接箱用能趋势
      *
-     * @param id 始端箱id
+     * @param id 插接箱id
      */
-    @Operation(summary = "始端箱用能趋势")
+    @Operation(summary = "插接箱用能趋势")
     @GetMapping("/eleTrend")
     public CommonResult<List<BusEqTrendDTO>> eleTrend(@Param("id") int id, @Param("type") String type) {
         List<BusEqTrendDTO> dto = indexService.eqTrend(id, type);
@@ -182,11 +182,11 @@ public class BoxIndexController {
     }
 
     /**
-     * 始端箱用能环比
+     * 插接箱用能环比
      *
-     * @param id 始端箱id
+     * @param id 插接箱id
      */
-    @Operation(summary = "始端箱用能环比")
+    @Operation(summary = "插接箱用能环比")
     @GetMapping("/eleChain")
     public CommonResult<BusEleChainDTO> eleChain(@Param("id") int id) {
         BusEleChainDTO dto = indexService.getEleChain(id);
@@ -220,39 +220,69 @@ public class BoxIndexController {
         return indexService.getDevKeyList();
     }
 
-    @Operation(summary = "始端箱通过devKey获取id")
+    @Operation(summary = "插接箱通过devKey获取id")
     @PostMapping("/getid")
     public CommonResult<Integer> getBoxIdByDevKey(@RequestBody BoxIndexPageReqVO pageReqVO) {
         Integer result = indexService.getBoxIdByDevKey(pageReqVO.getDevKey());
         return success(result);
     }
 
-    @Operation(summary = "始端箱通过devKey获取id")
+    @Operation(summary = "插接箱通过devKey获取id")
     @PostMapping("/power/detail")
     public CommonResult<PowerRedisDataRes> getBoxPowerRedisData(@RequestBody BoxIndexPageReqVO pageReqVO) {
         PowerRedisDataRes result = indexService.getBoxPowerRedisData(pageReqVO.getDevKey());
         return success(result);
     }
 
-    @Operation(summary = "始端箱通过devKey获取id")
+    @Operation(summary = "插接箱通过devKey获取id")
     @PostMapping("/power/loadrate")
     public CommonResult<BusLineResBase> getBoxLoadRateLine(@RequestBody BoxIndexPageReqVO pageReqVO) {
         BusLineResBase result = indexService.getBoxLoadRateLine(pageReqVO);
         return success(result);
     }
 
-    @Operation(summary = "始端箱通过devKey获取id")
+    @Operation(summary = "插接箱通过devKey获取id")
     @PostMapping("/power/powactive")
     public CommonResult<BusLineResBase> getBoxPowActiveLine(@RequestBody BoxIndexPageReqVO pageReqVO) {
         BusLineResBase result = indexService.getBoxPowActiveLine(pageReqVO);
         return success(result);
     }
 
-    @Operation(summary = "始端箱通过devKey获取id")
+    @Operation(summary = "插接箱通过devKey获取id")
     @PostMapping("/power/powreactive")
     public CommonResult<BusLineResBase> getBoxPowReactiveLine(@RequestBody BoxIndexPageReqVO pageReqVO) {
         BusLineResBase result = indexService.getBoxPowReactiveLine(pageReqVO);
         return success(result);
+    }
+
+    @PostMapping("/report/ele")
+    @Operation(summary = "获得插接箱报表数据")
+    public CommonResult<Map> getReportConsumeDataByDevKey(@RequestBody BoxIndexPageReqVO pageReqVO) {
+        return success(indexService.getReportConsumeDataByDevKey(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+    }
+
+    @PostMapping("/report/pfline")
+    @Operation(summary = "获得插接箱报表数据")
+    public CommonResult<Map> getBoxPFLine(@RequestBody BoxIndexPageReqVO pageReqVO) {
+        return success(indexService.getBoxPFLine(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+    }
+
+    @PostMapping("/report/pow")
+    @Operation(summary = "获得插接箱报表数据")
+    public CommonResult<Map> getReportPowDataByDevKey(@RequestBody BoxIndexPageReqVO pageReqVO) {
+        return success(indexService.getReportPowDataByDevKey(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+    }
+
+    @PostMapping("/report/tem")
+    @Operation(summary = "获得插接箱报表数据")
+    public CommonResult<Map> getReportTemDataByDevKey(@RequestBody BoxIndexPageReqVO pageReqVO) {
+        return success(indexService.getReportTemDataByDevKey(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+    }
+
+    @PostMapping("/redisbydevkey")
+    @Operation(summary = "获得始端箱设备详细信息")
+    public CommonResult<String> getBoxRedisByDevKey(@RequestBody BoxIndexPageReqVO pageReqVO) {
+        return success(indexService.getBoxRedisByDevKey(pageReqVO.getDevKey()));
     }
 
 //    @GetMapping("/export-excel")
