@@ -106,8 +106,8 @@ public class RackController {
 
     @GetMapping("/report/pfline")
     @Operation(summary = "获得机架报表数据")
-    public CommonResult<Map> getRoomPFLine(String id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime)  {
-        return success(rackService.getRoomPFLine(id,timeType,oldTime,newTime));
+    public CommonResult<Map> getRackPFLine(String id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime)  {
+        return success(rackService.getRackPFLine(id,timeType,oldTime,newTime));
     }
 
     @GetMapping("/redisData")
