@@ -158,5 +158,11 @@ public class RoomIndexController {
     public CommonResult<Map> getRoomPFLine(@RequestBody RoomIndexPageReqVO pageReqVO)  {
         return success(indexService.getRoomPFLine(pageReqVO.getId(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
     }
+    @GetMapping("/idList")
+    @Operation(summary = "获得机房id列表")
+    public List<Integer> idList() {
+        return indexService.idList();
+    }
+
 
 }

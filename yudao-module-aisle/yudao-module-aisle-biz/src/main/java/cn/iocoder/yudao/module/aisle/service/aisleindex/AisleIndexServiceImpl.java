@@ -447,6 +447,12 @@ public class AisleIndexServiceImpl implements AisleIndexService {
     }
 
     @Override
+    public List<Integer> idList() {
+        return aisleIndexCopyMapper.selectList().stream().limit(10).collect(Collectors.toList())
+                .stream().map(AisleIndexDO::getId).collect(Collectors.toList());
+    }
+
+    @Override
     public PageResult<AisleLineMaxRes> getAisleLineMaxPage(AisleIndexPageReqVO pageReqVO) {
         try {
             if(pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {

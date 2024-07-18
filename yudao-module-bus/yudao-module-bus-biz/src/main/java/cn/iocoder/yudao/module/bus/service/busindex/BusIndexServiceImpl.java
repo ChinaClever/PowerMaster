@@ -2663,10 +2663,13 @@ public class BusIndexServiceImpl implements BusIndexService {
         Map<String, Integer> aisleBarKeyMap = aisleBar.stream().collect(Collectors.toMap(AisleBar::getBarKey,AisleBar::getAisleId));
         Map<Integer, String> positonMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(aisleBar)){
-            List<String> redisKeys = aisleBar.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toList());
+            Set<String> redisKeys = aisleBar.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toSet());
             List aisles = ops.multiGet(redisKeys);
             if (!CollectionUtils.isEmpty(aisleBar)){
                 for (Object aisle : aisles) {
+                    if (aisle == null) {
+                        continue;
+                    }
                     JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
                     String devPosition = new String();
                     devPosition = json.getString("room_name") + SPLIT_KEY
