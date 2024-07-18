@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="false"  :lazy="true" :load="loadNode" navTitle="母线报表">
+  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="false"  :lazy="true" :load="loadNode" navTitle="插接箱报表">
     <template #NavInfo>
       <div >
         <div class="header">
@@ -131,7 +131,7 @@
         <div class="page-con">
           <div class="pageBox" >
             <div class="page-conTitle">
-              母线基本信息
+              插接箱基本信息
             </div>
             <el-row :gutter="24" >
               <el-col :span="24 - serChartContainerWidth">
