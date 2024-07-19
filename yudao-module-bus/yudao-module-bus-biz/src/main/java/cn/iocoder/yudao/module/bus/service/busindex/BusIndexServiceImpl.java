@@ -2531,7 +2531,6 @@ public class BusIndexServiceImpl implements BusIndexService {
         );
 
 
-
         // 设置搜索条件
         searchRequest.source(builder);
         builder.size(0);
@@ -2539,7 +2538,6 @@ public class BusIndexServiceImpl implements BusIndexService {
         List<String> list = new ArrayList<>();
         // 执行ES请求
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-
 
         // 初始化结果Map
         Map<Integer, Map<Integer, MaxValueAndCreateTime>> resultMap = new HashMap<>();

@@ -114,7 +114,7 @@ public class IndexController {
     }
 
     @GetMapping("/env/page")
-    @Operation(summary = "获得机柜索引分页")
+    @Operation(summary = "获得机柜环境分页")
     public CommonResult<PageResult<CabinetEnvAndHumRes>> getCabinetEnvPage(@Valid IndexPageReqVO pageReqVO) {
         return success(indexService.getCabinetEnvPage(pageReqVO));
     }

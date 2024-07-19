@@ -83,14 +83,14 @@ public class BoxIndexController {
     }
 
     @PostMapping("/page")
-    @Operation(summary = "获得插接箱索引分页")
+    @Operation(summary = "获得插接箱负荷分页")
     public CommonResult<PageResult<BoxIndexRes>> getIndexPage(@RequestBody BoxIndexPageReqVO pageReqVO) {
         PageResult<BoxIndexRes> pageResult = indexService.getIndexPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BoxIndexRes.class));
     }
 
     @PostMapping("/boxpage")
-    @Operation(summary = "获得插接箱索引分页")
+    @Operation(summary = "获得插接箱电力分页")
     public CommonResult<PageResult<BoxRedisDataRes>> getBoxPage(@RequestBody BoxIndexPageReqVO pageReqVO) {
         PageResult<BoxRedisDataRes> pageResult = indexService.getBoxRedisPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BoxRedisDataRes.class));
@@ -103,27 +103,27 @@ public class BoxIndexController {
         return success(BeanUtils.toBean(pageResult, BoxTemRes.class));
     }
 
-    @Operation(summary = "插接箱温度详情分页")
+    @Operation(summary = "插接箱温度详情")
     @PostMapping("/tem/detail")
     public CommonResult<Map> getBoxTemDetail(@RequestBody BoxIndexPageReqVO pageReqVO) {
         return success(indexService.getBoxTemDetail(pageReqVO));
     }
 
     @PostMapping("/boxpfpage")
-    @Operation(summary = "获得插接箱索引分页")
+    @Operation(summary = "获得插接箱功率因素分页")
     public CommonResult<PageResult<BoxPFRes>> getBoxPFPage(@RequestBody BoxIndexPageReqVO pageReqVO) {
         PageResult<BoxPFRes> pageResult = indexService.getBoxPFPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BoxPFRes.class));
     }
 
-    @Operation(summary = "插接箱功率因素详情分页")
+    @Operation(summary = "插接箱功率因素详情")
     @PostMapping("/pf/detail")
     public CommonResult<Map> getBoxPFDetail(@RequestBody BoxIndexPageReqVO pageReqVO) {
         return success(indexService.getBoxPFDetail(pageReqVO));
     }
 
     @PostMapping("/boxharmonicpage")
-    @Operation(summary = "获得插接箱索引分页")
+    @Operation(summary = "获得插接箱谐波监测分页")
     public CommonResult<PageResult<BoxHarmonicRes>> getBoxHarmonicPage(@RequestBody BoxIndexPageReqVO pageReqVO) {
         PageResult<BoxHarmonicRes> pageResult = indexService.getBoxHarmonicPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BoxHarmonicRes.class));
@@ -194,21 +194,21 @@ public class BoxIndexController {
     }
 
     @PostMapping("/balance")
-    @Operation(summary = "获得插接箱索引分页")
+    @Operation(summary = "获得插接箱平衡分页")
     public CommonResult<PageResult<BoxBalanceDataRes>> getBoxBalancePage(@RequestBody BoxIndexPageReqVO pageReqVO) {
         PageResult<BoxBalanceDataRes> pageResult = indexService.getBoxBalancePage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BoxBalanceDataRes.class));
     }
 
     @PostMapping("/balance/detail")
-    @Operation(summary = "获得插接箱不平衡度分页")
+    @Operation(summary = "获得插接箱不平衡度详情")
     public CommonResult<BusBalanceDeatilRes> getBoxBalanceDetail(@RequestBody BoxIndexPageReqVO pageReqVO) {
         BusBalanceDeatilRes result = indexService.getBoxBalanceDetail(pageReqVO.getDevKey());
         return success(result);
     }
 
     @PostMapping("/balance/trend")
-    @Operation(summary = "获得插接箱不平衡度分页")
+    @Operation(summary = "获得插接箱不平衡度详情图表")
     public CommonResult<List<BusTrendDTO>> getBoxBalanceTrend(@RequestBody BoxIndexPageReqVO pageReqVO) {
         List<BusTrendDTO> result = indexService.getBoxBalanceTrend(pageReqVO.getBoxId());
         return success(result);
@@ -227,28 +227,28 @@ public class BoxIndexController {
         return success(result);
     }
 
-    @Operation(summary = "插接箱通过devKey获取id")
+    @Operation(summary = "插接箱通过devKey获取redis数据")
     @PostMapping("/power/detail")
     public CommonResult<PowerRedisDataRes> getBoxPowerRedisData(@RequestBody BoxIndexPageReqVO pageReqVO) {
         PowerRedisDataRes result = indexService.getBoxPowerRedisData(pageReqVO.getDevKey());
         return success(result);
     }
 
-    @Operation(summary = "插接箱通过devKey获取id")
+    @Operation(summary = "插接箱电力详情负载率图表")
     @PostMapping("/power/loadrate")
     public CommonResult<BusLineResBase> getBoxLoadRateLine(@RequestBody BoxIndexPageReqVO pageReqVO) {
         BusLineResBase result = indexService.getBoxLoadRateLine(pageReqVO);
         return success(result);
     }
 
-    @Operation(summary = "插接箱通过devKey获取id")
+    @Operation(summary = "插接箱电力详情有功功率曲线图表")
     @PostMapping("/power/powactive")
     public CommonResult<BusLineResBase> getBoxPowActiveLine(@RequestBody BoxIndexPageReqVO pageReqVO) {
         BusLineResBase result = indexService.getBoxPowActiveLine(pageReqVO);
         return success(result);
     }
 
-    @Operation(summary = "插接箱通过devKey获取id")
+    @Operation(summary = "插接箱电力详情无功功率曲线图表")
     @PostMapping("/power/powreactive")
     public CommonResult<BusLineResBase> getBoxPowReactiveLine(@RequestBody BoxIndexPageReqVO pageReqVO) {
         BusLineResBase result = indexService.getBoxPowReactiveLine(pageReqVO);
@@ -280,7 +280,7 @@ public class BoxIndexController {
     }
 
     @PostMapping("/redisbydevkey")
-    @Operation(summary = "获得始端箱设备详细信息")
+    @Operation(summary = "获得插接箱设备详细信息")
     public CommonResult<String> getBoxRedisByDevKey(@RequestBody BoxIndexPageReqVO pageReqVO) {
         return success(indexService.getBoxRedisByDevKey(pageReqVO.getDevKey()));
     }
