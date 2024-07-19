@@ -418,11 +418,11 @@ public class IndexServiceImpl implements IndexService {
     public PageResult<CabinetEnvAndHumRes> getCabinetEnvPage(IndexPageReqVO pageReqVO) {
 
         PageResult<IndexDO> indexDOPageResult = cabIndexMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<IndexDO>()
-                .inIfPresent(IndexDO::getId, pageReqVO.getCabinetIds()).ne(IndexDO::getPduBox,0));
+                .inIfPresent(IndexDO::getId, pageReqVO.getCabinetIds()).eq(IndexDO::getPduBox,0));
         List<IndexDO> list = indexDOPageResult.getList();
         List<CabinetEnvAndHumRes> result = new ArrayList<>();
         if (CollectionUtil.isEmpty(list)){
-            return new PageResult<CabinetEnvAndHumRes>(result,indexDOPageResult.getTotal());
+            return new PageResult<CabinetEnvAndHumRes>(result,0L);
         }
         List<TemColorDO> temColorList = temColorService.getTemColorAll();
 

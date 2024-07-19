@@ -743,6 +743,10 @@ public class BusIndexServiceImpl implements BusIndexService {
     @Override
     public PageResult<BusLineRes> getBusLineDevicePage(BusIndexPageReqVO pageReqVO) {
         try {
+            List<BusIndexDO> searchList = busIndexMapper.selectList(new LambdaQueryWrapperX<BusIndexDO>().inIfPresent(BusIndexDO::getDevKey, pageReqVO.getBusDevKeyList()));
+            if(CollectionUtils.isEmpty(searchList)){
+                return new PageResult<>(new ArrayList<>(), 0L);
+            }
             if(pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
                 pageReqVO.setNewTime(LocalDateTime.now());
                 pageReqVO.setOldTime(LocalDateTime.now().minusHours(24));
@@ -761,7 +765,8 @@ public class BusIndexServiceImpl implements BusIndexService {
             }
             String startTime = localDateTimeToString(pageReqVO.getOldTime());
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
-            Map esTotalAndIds = getESTotalAndIds(index, startTime, endTime,pageReqVO.getPageSize(), pageReqVO.getPageNo() - 1);
+            Map esTotalAndIds = getESTotalAndIds(index, startTime, endTime,pageReqVO.getPageSize(), pageReqVO.getPageNo() - 1,searchList.stream().map(BusIndexDO::getId).collect(Collectors.toList()));
+
             Long total = (Long)esTotalAndIds.get("total");
             if(total == 0){
                 return new PageResult<>(new ArrayList<>(), 0L);
@@ -773,7 +778,6 @@ public class BusIndexServiceImpl implements BusIndexService {
             List<BusLineRes> result = new ArrayList<>();
 
             List<BusIndexDO> busIndices = busIndexMapper.selectList(new LambdaQueryWrapperX<BusIndexDO>()
-                    .inIfPresent(BusIndexDO::getDevKey,pageReqVO.getBusDevKeyList())
                     .inIfPresent(BusIndexDO::getId,ids));
 
             for (BusIndexDO busIndex : busIndices) {
@@ -2735,6 +2739,41 @@ public class BusIndexServiceImpl implements BusIndexService {
                 .from(pageNo * pageSize)
                 .size(pageSize)
                 .query(QueryBuilders.rangeQuery("create_time.keyword").gte(startTime).lte(endTime))
+                .sort("bus_id", SortOrder.ASC)
+                .collapse(new CollapseBuilder("bus_id"))
+                .aggregation(AggregationBuilders.cardinality("total_size").field("bus_id").precisionThreshold(10000));
+        searchRequest.source(builder);
+        List<Integer> sortValues = new ArrayList<>();
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                String str = hit.getSourceAsString();
+                BusLineHourDo hourDo = JsonUtils.parseObject(str, BusLineHourDo.class);
+                sortValues.add(hourDo.getBusId());
+            }
+        }
+        Long totalRes = 0L;
+        Cardinality totalSizeAggregation = searchResponse.getAggregations().get("total_size");
+        if (totalSizeAggregation != null){
+            totalRes = totalSizeAggregation.getValue();
+        }
+
+        result.put("total",totalRes);
+        result.put("ids",sortValues);
+        return result;
+    }
+
+    private Map getESTotalAndIds(String index,String startTime,String endTime,Integer pageSize,Integer pageNo,List<Integer> ids) throws IOException {
+        HashMap<String, Object> result = new HashMap<>();
+        SearchRequest searchRequest = new SearchRequest(index);
+
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder
+                .from(pageNo * pageSize)
+                .size(pageSize)
+                .query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
+                        .must(QueryBuilders.termsQuery("bus_id", ids))))
                 .sort("bus_id", SortOrder.ASC)
                 .collapse(new CollapseBuilder("bus_id"))
                 .aggregation(AggregationBuilders.cardinality("total_size").field("bus_id").precisionThreshold(10000));

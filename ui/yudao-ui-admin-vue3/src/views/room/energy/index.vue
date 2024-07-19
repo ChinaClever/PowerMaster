@@ -232,10 +232,8 @@ const handleCheck = async (row) => {
   const ids = [] as any
   var haveCabinet = false;
   row.forEach(item => {
-    if (item.type == 1) {
-      ids.push(item.id)
-      haveCabinet = true;
-    }
+    ids.push(item.id)
+    haveCabinet = true;
   })
   if(!haveCabinet ){
     queryParams.roomIds = [-1]

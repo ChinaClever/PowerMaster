@@ -12,6 +12,7 @@ import cn.iocoder.yudao.framework.common.entity.es.box.tem.BoxTemHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.total.BoxTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.total.BoxTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalDayDo;
+import cn.iocoder.yudao.framework.common.entity.es.bus.line.BusLineHourDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBus;
@@ -35,6 +36,7 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.dal.dataobject.boxcurbalancecolor.BoxCurbalanceColorDO;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 
+import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxcurbalancecolor.BoxCurbalanceColorMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxindex.BoxIndexCopyMapper;
 import cn.iocoder.yudao.module.bus.util.TimeUtil;
@@ -1272,7 +1274,10 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     @Override
     public PageResult<BoxLineRes> getBoxLineDevicePage(BoxIndexPageReqVO pageReqVO) {
         try {
-
+            List<BoxIndex> searchList = boxIndexCopyMapper.selectList(new LambdaQueryWrapperX<BoxIndex>().inIfPresent(BoxIndex::getDevKey, pageReqVO.getBoxDevKeyList()));
+            if(CollectionUtils.isEmpty(searchList)){
+                return new PageResult<>(new ArrayList<>(), 0L);
+            }
             if(pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
                 pageReqVO.setNewTime(LocalDateTime.now());
                 pageReqVO.setOldTime(LocalDateTime.now().minusHours(24));
@@ -1291,7 +1296,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             }
             String startTime = localDateTimeToString(pageReqVO.getOldTime());
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
-            Map esTotalAndIds = getESTotalAndIds(index, startTime, endTime,pageReqVO.getPageSize(), pageReqVO.getPageNo() - 1);
+
+            Map esTotalAndIds = getESTotalAndIds(index, startTime, endTime,pageReqVO.getPageSize(), pageReqVO.getPageNo() - 1,searchList.stream().map(BoxIndex::getId).collect(Collectors.toList()));
+
             Long total = (Long)esTotalAndIds.get("total");
             if(total == 0){
                 return new PageResult<>(new ArrayList<>(), 0L);
@@ -1304,7 +1311,6 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             List<BoxLineRes> result = new ArrayList<>();
 
             List<BoxIndex> boxIndices = boxIndexCopyMapper.selectList(new LambdaQueryWrapperX<BoxIndex>()
-                    .inIfPresent(BoxIndex::getDevKey,pageReqVO.getBoxDevKeyList())
                     .inIfPresent(BoxIndex::getId,ids));
 
             for (BoxIndex boxIndex : boxIndices) {
@@ -2757,6 +2763,41 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 .collapse(new CollapseBuilder("box_id"))
                 .aggregation(AggregationBuilders.cardinality("total_size").field("box_id").precisionThreshold(10000));
 
+        searchRequest.source(builder);
+        List<Integer> sortValues = new ArrayList<>();
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                String str = hit.getSourceAsString();
+                BoxLineHourDo hourDo = JsonUtils.parseObject(str, BoxLineHourDo.class);
+                sortValues.add(hourDo.getBoxId());
+            }
+        }
+        Long totalRes = 0L;
+        Cardinality totalSizeAggregation = searchResponse.getAggregations().get("total_size");
+        if (totalSizeAggregation != null){
+            totalRes = totalSizeAggregation.getValue();
+        }
+
+        result.put("total",totalRes);
+        result.put("ids",sortValues);
+        return result;
+    }
+
+    private Map getESTotalAndIds(String index,String startTime,String endTime,Integer pageSize,Integer pageNo,List<Integer> ids) throws IOException {
+        HashMap<String, Object> result = new HashMap<>();
+        SearchRequest searchRequest = new SearchRequest(index);
+
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder
+                .from(pageNo * pageSize)
+                .size(pageSize)
+                .query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
+                        .must(QueryBuilders.termsQuery("box_id", ids))))
+                .sort("box_id", SortOrder.ASC)
+                .collapse(new CollapseBuilder("box_id"))
+                .aggregation(AggregationBuilders.cardinality("total_size").field("box_id").precisionThreshold(10000));
         searchRequest.source(builder);
         List<Integer> sortValues = new ArrayList<>();
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);

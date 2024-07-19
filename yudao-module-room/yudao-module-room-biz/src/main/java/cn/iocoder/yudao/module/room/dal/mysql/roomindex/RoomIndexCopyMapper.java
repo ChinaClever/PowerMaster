@@ -19,6 +19,7 @@ public interface RoomIndexCopyMapper extends BaseMapperX<RoomIndexDO> {
         return selectPage(reqVO, new LambdaQueryWrapperX<RoomIndexDO>()
                 .likeIfPresent(RoomIndexDO::getName, reqVO.getName())
                 .eqIfPresent(RoomIndexDO::getId,reqVO.getId())
+                .inIfPresent(RoomIndexDO::getId,reqVO.getRoomIds())
                 .eqIfPresent(RoomIndexDO::getIsDelete, reqVO.getIsDelete())
                 .eqIfPresent(RoomIndexDO::getPowerCapacity, reqVO.getPowerCapacity())
                 .betweenIfPresent(RoomIndexDO::getCreateTime, reqVO.getCreateTime())
