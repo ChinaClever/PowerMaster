@@ -1319,11 +1319,11 @@ onMounted( async () => {
   getNavList()
   // 获取路由参数中的 pdu_id
   const queryBusId = useRoute().query.busId as string  | undefined;
-  const queryAddress = useRoute().query.address as string;
+  const queryLocation = useRoute().query.location as string;
   queryParams.busId = queryBusId ? parseInt(queryBusId, 10) : undefined;
   if (queryParams.busId != undefined){
     await getList(); 
-    nowAddress.value = queryAddress
+    nowAddress.value = queryLocation
     initChart();
   }
 })

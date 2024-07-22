@@ -1580,12 +1580,12 @@ onMounted( async () => {
   getNavList()
   // 获取路由参数中的 pdu_id
   const queryBoxId = useRoute().query.boxId as string  | undefined;
-  const queryAddress = useRoute().query.address as string;
+  const queryLocation = useRoute().query.location as string;
   queryParams.boxId = queryBoxId ? parseInt(queryBoxId, 10) : undefined;
   if (queryParams.boxId != undefined){
     getTypeMaxValue();
     await getList(); 
-    nowAddress.value = queryAddress
+    nowAddress.value = queryLocation
     initChart();
   }
 })

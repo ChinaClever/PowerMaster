@@ -79,7 +79,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.bus_id, row.address)">详情</el-button>
+            <el-button link type="primary" @click="toDetails(row.bus_id, row.location)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -99,7 +99,7 @@
               v-if="child.istrue"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.bus_id, row.address)">详情</el-button>
+                <el-button link type="primary" @click="toDetails(row.bus_id, row.location)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -242,10 +242,9 @@ watch(() => queryParams.granularity, () => {
 });
 
 const tableColumns = ref([
-  { label: '母线名称', align: 'center', prop: 'bus_name', width: '120px', istrue:true},
-  { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
-  { label: '网络地址', align: 'center', prop: 'ip_addr', istrue:true, width: '120px'},
-  { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px' , istrue:true},
+  { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
+  { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true, width: '220px'},
+  { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '160px' , istrue:true},
   { label: '开始', align: 'center', istrue: true, children: [
       { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime1, width: '150px' , istrue:true},
       { label: '电能(kWh)', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
@@ -400,7 +399,7 @@ const handleExport = async () => {
 
 /** 详情操作*/
 const toDetails = (busId: number, location: string) => {
-  push('/bus/nenghao/ecdistribution/bus?busId='+busId+'&address='+location);
+  push('/bus/nenghao/ecdistribution/bus?busId='+busId+'&location='+location);
 }
 
 /** 初始化 **/

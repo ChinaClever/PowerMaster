@@ -800,17 +800,17 @@ onMounted( async () => {
   getNavList()
   // 获取路由参数中的 pdu_id
   let queryBoxId = useRoute().query.boxId as string | undefined;
-  let queryIpAddr = useRoute().query.ipAddr as string;
-  let queryAddress = useRoute().query.address as string;
+  let queryDevKey = useRoute().query.devKey as string;
+  let queryLocation = useRoute().query.location as string;
   queryParams.boxId = queryBoxId ? parseInt(queryBoxId, 10) : undefined;
   if (queryParams.boxId != undefined){
     await getList();
-    if (queryAddress == null) {
+    if (queryLocation == null) {
       nowAddress.value = '';
     } else {
-      nowAddress.value = queryAddress;
+      nowAddress.value = queryLocation;
     }
-    nowIpAddr.value = queryIpAddr
+    nowIpAddr.value = queryDevKey
     initChart();
   }
 })

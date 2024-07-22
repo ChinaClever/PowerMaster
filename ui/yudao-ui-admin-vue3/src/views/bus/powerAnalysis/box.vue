@@ -79,7 +79,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.box_id, row.address)">详情</el-button>
+            <el-button link type="primary" @click="toDetails(row.box_id, row.location)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -99,7 +99,7 @@
               v-if="child.istrue"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.box_id, row.address)">详情</el-button>
+                <el-button link type="primary" @click="toDetails(row.box_id, row.location)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -242,10 +242,8 @@ watch(() => queryParams.granularity, () => {
 });
 
 const tableColumns = ref([
-  { label: '母线名称', align: 'center', prop: 'bus_name', width: '100px', istrue:true},
-  { label: '插接箱名称', align: 'center', prop: 'box_name', width: '100px', istrue:true},
-  { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
-  { label: '网络地址', align: 'center', prop: 'ip_addr', istrue:true, width: '120px'},
+  { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
+  { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true, width: '250px'},
   { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '140px' , istrue:true},
   { label: '开始', align: 'center', istrue: true, children: [
       { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime1, width: '100px' , istrue:true},
@@ -292,7 +290,7 @@ const getList = async () => {
 function customTooltipFormatter(params: any[]) {
   var tooltipContent = ''; 
   var item = params[0]; // 获取第一个数据点的信息
-  tooltipContent += '位置：'+list.value[item.dataIndex].location + '  '
+  tooltipContent += '所在位置：'+list.value[item.dataIndex].location + '  '
   tooltipContent += '<br/>'+ item.marker + item.seriesName + ': ' + item.value + 'kWh 记录日期：'+formatTime(null, null, list.value[item.dataIndex].create_time) + '<br/>'                 
                     +item.marker + '结束电能：'+list.value[item.dataIndex].end_ele + 'kWh 结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) + '<br/>' 
                     +item.marker +'开始电能：'+formatEle(null, null, list.value[item.dataIndex].start_ele) + 'kWh 开始日期：'+formatTime(null, null, list.value[item.dataIndex].start_time) + '<br/>'
@@ -401,7 +399,7 @@ const handleExport = async () => {
 
 /** 详情操作*/
 const toDetails = (boxId: number, location: string) => {
-  push('/bus/nenghao/ecdistribution/box?boxId='+boxId+'&address='+location);
+  push('/bus/nenghao/ecdistribution/box?boxId='+boxId+'&location='+location);
 }
 
 /** 初始化 **/

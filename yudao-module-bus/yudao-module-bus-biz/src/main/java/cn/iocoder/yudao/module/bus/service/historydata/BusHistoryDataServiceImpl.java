@@ -95,9 +95,9 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
                 BusIndexDO busIndex = busIndexMapper.selectById( (int)busId );
                 if (busIndex != null){
                     String dev_key = busIndex.getDevKey();
-                    String[] parts = dev_key.split("_");
-                    map.put("bus_name", parts[1]);
-                    map.put("ip_addr", parts[0]);
+//                    String[] parts = dev_key.split("_");
+                    map.put("dev_key", dev_key);
+//                    map.put("ip_addr", parts[0]);
                     // 创建一个列表来存放要传递的对象 用于获取位置信息
                     List<BusResBase> busResBaseList = new ArrayList<>();
                     BusResBase busResBase = new BusResBase();// 创建 BusResBase 对象
@@ -113,13 +113,11 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
                     }
 
                 }else{
-                    map.put("bus_name", null);
-                    map.put("ip_addr", null);
+                    map.put("dev_key", null);
                     map.put("location", null);
                 }
             }else{
-                map.put("bus_name", null);
-                map.put("ip_addr", null);
+                map.put("dev_key", null);
                 map.put("location", null);
             }
             resultList.add(map);
@@ -136,9 +134,9 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
                 // 查询位置
                 BoxIndex boxIndex = boxIndexMapper.selectById( (int)boxId );
                 if (boxIndex != null){
-                    map.put("box_name", boxIndex.getBoxName());
-                    map.put("bus_name", boxIndex.getBusName());
-                    map.put("ip_addr", boxIndex.getIpAddr());
+                    map.put("dev_key", boxIndex.getDevKey());
+//                    map.put("bus_name", boxIndex.getBusName());
+//                    map.put("ip_addr", boxIndex.getIpAddr());
                     // 创建一个列表来存放要传递的对象 用于获取位置信息
                     List<BoxResBase> boxResBaseList = new ArrayList<>();
                     BoxResBase boxResBase = new BoxResBase();// 创建 BoxResBase 对象
@@ -154,15 +152,11 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
                     }
 
                 }else{
-                    map.put("box_name", null);
-                    map.put("bus_name", null);
-                    map.put("ip_addr", null);
+                    map.put("dev_key", null);
                     map.put("location", null);
                 }
             }else{
-                map.put("box_name", null);
-                map.put("bus_name", null);
-                map.put("ip_addr", null);
+                map.put("dev_key", null);
                 map.put("location", null);
             }
             resultList.add(map);
