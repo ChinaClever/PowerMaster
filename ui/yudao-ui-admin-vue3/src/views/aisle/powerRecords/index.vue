@@ -210,7 +210,7 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
 const handleCheck = async (node) => {
   let arr = [] as any
   node.forEach(item => { 
-    if(item.type == 3){
+    if(item.type == 2){
       arr.push(item.id);
     }
   });

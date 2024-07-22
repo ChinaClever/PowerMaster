@@ -398,7 +398,7 @@ const handleExport = async () => {
 
 /** 详情操作*/
 const toDetails = (aisleId: number, location: string) => {
-  push('/aisle/nenghao/ecdistribution?aisleId='+aisleId+'&location='+location);
+  push('/aisle/aisleenergyconsumption/ecdistribution?aisleId='+aisleId+'&location='+location);
 }
 
 /** 初始化 **/

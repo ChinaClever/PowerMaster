@@ -418,7 +418,7 @@ watch(() => queryParams.granularity, (newValues) => {
 
 const tableColumns = ref([
   { label: '位置', align: 'center', prop: 'location', width: '250px' ,  istrue:true},
-  { label: '时间', align: 'center', prop: 'create_time', formatter: dateFormatter, width: '180px' , istrue:true},
+  { label: '时间', align: 'center', prop: 'create_time', formatter: dateFormatter, width: '200px' , istrue:true},
   { label: '总有功功率(kW)', align: 'center', prop: 'active_total' , istrue:true, formatter: formatPower},
   { label: '总视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, formatter: formatPower},
   { label: 'A路有功功率(kW)', align: 'center', prop: 'active_a' , istrue:false, formatter: formatPower},

@@ -63,7 +63,6 @@ public class BoxIndexController {
     @GetMapping("/get")
     @Operation(summary = "获得插接箱索引")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
-
     public CommonResult<BoxIndexRespVO> getIndex(@RequestParam("id") Long id) {
         BoxIndex index = indexService.getIndex(id);
         return success(BeanUtils.toBean(index, BoxIndexRespVO.class));

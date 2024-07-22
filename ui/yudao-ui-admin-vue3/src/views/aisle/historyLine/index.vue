@@ -13,7 +13,7 @@
         <div class="nav_header">
           <span v-if="nowAddress">{{nowAddress}}</span>
           <br/>
-          <template v-if="queryParams.granularity == 'realtime' && paramType == 'total'">
+          <template v-if="nowAddress">
             <span>{{queryParams.timeRange[0]}}</span>
             <span>至</span>
             <span>{{queryParams.timeRange[1]}}</span>
@@ -139,14 +139,6 @@
                   <el-table-column :prop="item.name" label="数值"/>   
                   <el-table-column prop="aApparentPowMinTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === 'A路最大无功功率'" label="A路无功功率最大值">
-                  <el-table-column :prop="item.name" label="数值"/>   
-                  <el-table-column prop="AReactivePowMaxTimeData" label="发生时间"/>
-                </el-table-column>
-                 <el-table-column v-else-if="item.name === 'A路最小无功功率'" label="A路无功功率最小值">
-                  <el-table-column :prop="item.name" label="数值"/>   
-                  <el-table-column prop="AReactivePowMinTimeData" label="发生时间"/>
-                </el-table-column>
 
                 <el-table-column v-else-if="item.name === 'B路最大有功功率'" label="B路有功功率最大值">
                   <el-table-column :prop="item.name" label="数值"/>   
@@ -163,14 +155,6 @@
                  <el-table-column v-else-if="item.name === 'B路最小视在功率'" label="B路视在功率最小值">
                   <el-table-column :prop="item.name" label="数值"/>   
                   <el-table-column prop="bApparentPowMinTimeData" label="发生时间"/>
-                </el-table-column>
-                <el-table-column v-else-if="item.name === 'B路最大无功功率'" label="B路无功功率最大值">
-                  <el-table-column :prop="item.name" label="数值"/>   
-                  <el-table-column prop="BReactivePowMaxTimeData" label="发生时间"/>
-                </el-table-column>
-                 <el-table-column v-else-if="item.name === 'B路最小无功功率'" label="B路无功功率最小值">
-                  <el-table-column :prop="item.name" label="数值"/>   
-                  <el-table-column prop="BReactivePowMinTimeData" label="发生时间"/>
                 </el-table-column>
                 <el-table-column v-else :prop="item.name" :label="item.name"/>   
               </template>
@@ -374,16 +358,7 @@ const totalReactivePowMinValueData = ref<number[]>([]);
 const totalReactivePowMinTimeData = ref<string[]>([]);
 
 const aReactivePowAvgValueData = ref<number[]>([]);
-const aReactivePowMaxValueData = ref<number[]>([]);
-const aReactivePowMaxTimeData = ref<string[]>([]);
-const aReactivePowMinValueData = ref<number[]>([]);
-const aReactivePowMinTimeData = ref<string[]>([]);
-
 const bReactivePowAvgValueData = ref<number[]>([]);
-const bReactivePowMaxValueData = ref<number[]>([]);
-const bReactivePowMaxTimeData = ref<string[]>([]);
-const bReactivePowMinValueData = ref<number[]>([]);
-const bReactivePowMinTimeData = ref<string[]>([]);
 
 const factorTotalAvgValueData = ref<number[]>([]);
 const factorAAvgValueData = ref<number[]>([]);
@@ -447,16 +422,7 @@ loading.value = true
       totalReactivePowMinTimeData.value = data.list.map((item) => formatDate(item.reactive_total_min_time));
 
       aReactivePowAvgValueData.value = data.list.map((item) => formatNumber(item.reactive_a_avg_value, 3));
-      aReactivePowMaxValueData.value = data.list.map((item) => formatNumber(item.reactive_a_max_value, 3));
-      aReactivePowMaxTimeData.value = data.list.map((item) => formatDate(item.reactive_a_max_time));
-      aReactivePowMinValueData.value = data.list.map((item) => formatNumber(item.reactive_a_min_value, 3));
-      aReactivePowMinTimeData.value = data.list.map((item) => formatDate(item.reactive_a_min_time));
-      
       bReactivePowAvgValueData.value = data.list.map((item) => formatNumber(item.reactive_b_avg_value, 3));
-      bReactivePowMaxValueData.value = data.list.map((item) => formatNumber(item.reactive_b_max_value, 3));
-      bReactivePowMaxTimeData.value = data.list.map((item) => formatDate(item.reactive_b_max_time));
-      bReactivePowMinValueData.value = data.list.map((item) => formatNumber(item.reactive_b_min_value, 3));
-      bReactivePowMinTimeData.value = data.list.map((item) => formatDate(item.reactive_b_min_time));
 
       totalApparentPowAvgValueData.value = data.list.map((item) => formatNumber(item.apparent_total_avg_value, 3));
       totalApparentPowMaxValueData.value = data.list.map((item) => formatNumber(item.apparent_total_max_value, 3));
@@ -550,6 +516,7 @@ window.addEventListener('resize', function() {
 
 // 监听切换原始数据、极值数据tab
 watch( ()=>activeName.value, async(newActiveName)=>{
+
   if ( newActiveName == 'realtimeTabPane'){
     queryParams.granularity = 'realtime'
     queryParams.timeRange = defaultHourTimeRange(1)
@@ -558,7 +525,7 @@ watch( ()=>activeName.value, async(newActiveName)=>{
     queryParams.timeRange = defaultHourTimeRange(24)
   }else{
     queryParams.granularity = 'day'
-    queryParams.timeRange = defaultHourTimeRange(24*30)
+    queryParams.timeRange = defaultMonthTimeRange(1)
   }
   needFlush.value ++;
 });
@@ -604,7 +571,7 @@ watch(() => paramType.value , (newValues) => {
         legend: { data: ['总平均有功功率', '总最大有功功率', '总最小有功功率','总平均视在功率', '总最大视在功率', '总最小视在功率'
                           , '总平均无功功率','总最大无功功率', '总最小无功功率', '总平均功率因素'],
               selected: { 总平均有功功率: true, 总最大有功功率: false, 总最小有功功率: false, 总平均视在功率: true, 总最大视在功率: false, 总最小视在功率: false
-                          , 总平均无功功率: true, 总最大无功功率: false, 总最小无功功率: false, 总平均功率因素: false}},
+                          , 总平均无功功率: true, 总最大无功功率: false, 总最小无功功率: false, 总平均功率因素: true}},
         series: [
           { name: '总平均有功功率', type: 'line',data: totalActivePowAvgValueData.value},
           { name: '总最大有功功率', type: 'line',data: totalActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
@@ -622,9 +589,9 @@ watch(() => paramType.value , (newValues) => {
     }else if( newParamType == 'a' ){
       realtimeChart?.setOption({
         legend: { data: ['A路平均有功功率', 'A路最大有功功率', 'A路最小有功功率','A路平均视在功率', 'A路最大视在功率', 'A路最小视在功率'
-                , 'A路平均无功功率','A路最大无功功率', 'A路最小无功功率', 'A路平均功率因素'],
+                , 'A路平均无功功率', 'A路平均功率因素'],
               selected: { A路平均有功功率: true, A路最大有功功率: false, A路最小有功功率: false, A路平均视在功率: true, A路最大视在功率: false, A路最小视在功率: false
-                    , A路平均无功功率: true, A路最大无功功率: false, A路最小无功功率: false, A路平均功率因素: false}},
+                    , A路平均无功功率: true, A路平均功率因素: true}},
         series: [
           { name: 'A路平均有功功率', type: 'line', data: aActivePowAvgValueData.value},
           { name: 'A路最大有功功率', type: 'line', data: aActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
@@ -634,17 +601,15 @@ watch(() => paramType.value , (newValues) => {
           { name: 'A路最小视在功率', type: 'line', data: aApparentPowMinValueData.value, lineStyle: {type: 'dashed'}},
 
           { name: 'A路平均无功功率',type: 'line',data:  aReactivePowAvgValueData.value},
-          { name: 'A路最大无功功率', type: 'line', data: aReactivePowMaxValueData.value, lineStyle: {type: 'dashed'}},
-          { name: 'A路最小无功功率',type: 'line',data:  aReactivePowMinValueData.value, lineStyle: {type: 'dashed'}},
           { name: 'A路平均功率因素',type: 'line',data:  factorAAvgValueData.value},
         ],
       })
     }else{
       realtimeChart?.setOption({
        legend: { data: ['B路平均有功功率', 'B路最大有功功率', 'B路最小有功功率','B路平均视在功率', 'B路最大视在功率', 'B路最小视在功率'
-                    , 'B路平均无功功率','B路最大无功功率', 'B路最小无功功率', 'B路平均功率因素'],
+                    , 'B路平均无功功率', 'B路平均功率因素'],
               selected: { B路平均有功功率: true, B路最大有功功率: false, B路最小有功功率: false, B路平均视在功率: true, B路最大视在功率: false, B路最小视在功率: false
-              , B路平均无功功率: true, B路最大无功功率: false, B路最小无功功率: false, B路平均功率因素: false}},
+              , B路平均无功功率: true, B路平均功率因素: true}},
         series: [
           { name: 'B路平均有功功率', type: 'line', data: aActivePowAvgValueData.value},
           { name: 'B路最大有功功率', type: 'line', data: aActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
@@ -654,8 +619,6 @@ watch(() => paramType.value , (newValues) => {
           { name: 'B路最小视在功率', type: 'line', data: aApparentPowMinValueData.value, lineStyle: {type: 'dashed'}},
 
           { name: 'B路平均无功功率',type: 'line',data:  bReactivePowAvgValueData.value},
-          { name: 'B路最大无功功率', type: 'line', data: bReactivePowMaxValueData.value, lineStyle: {type: 'dashed'}},
-          { name: 'B路最小无功功率',type: 'line',data:  bReactivePowMinValueData.value, lineStyle: {type: 'dashed'}},
           { name: 'B路平均功率因素',type: 'line',data:  factorBAvgValueData.value},
         ],
       })
@@ -663,6 +626,10 @@ watch(() => paramType.value , (newValues) => {
   }
   // 每次切换图就要动态生成数据表头
   headerData.value = realtimeChart?.getOption().series as any[];
+  // 如果不是总数据 要去掉最后两条数据 不然会多总最小无功功率和总平均功率因素这两条 因为赋值只改变了前八条（原先总数据有十条在里面了）
+  if ( newParamType != 'total' )(
+    headerData.value = headerData.value.slice(0, 8)
+  )
   updateTableData();
     
 })
@@ -771,10 +738,6 @@ const updateTableData = () => {
 
     rowData['totalReactivePowMaxTimeData'] = totalActivePowMaxTimeData.value[i];
     rowData['totalReactivePowMinTimeData'] = totalActivePowMinTimeData.value[i];
-    rowData['aReactivePowMaxTimeData'] = aActivePowMaxTimeData.value[i];
-    rowData['aReactivePowMinTimeData'] = aActivePowMinTimeData.value[i];
-    rowData['bReactivePowMaxTimeData'] = bActivePowMaxTimeData.value[i];
-    rowData['bReactivePowMinTimeData'] = bActivePowMinTimeData.value[i];
     for (const item of headerData.value) {
       rowData[item.name] = item.data[i];
     }
@@ -827,18 +790,6 @@ function customTooltipFormatter(params: any[]) {
       case '总最小无功功率':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +totalReactivePowMinTimeData.value[item.dataIndex] + '<br/>';
         break;
-      case 'A路最大无功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +aReactivePowMaxTimeData.value[item.dataIndex] + '<br/>';
-        break;
-      case 'A路最小无功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +aReactivePowMinTimeData.value[item.dataIndex] + '<br/>';
-        break;
-      case 'B路最大无功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +bReactivePowMaxTimeData.value[item.dataIndex] + '<br/>';
-        break;
-      case 'B路最小无功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +bReactivePowMinTimeData.value[item.dataIndex] + '<br/>';
-        break;
       case '总视在功率':
       case 'A路视在功率':
       case 'B路视在功率':
@@ -887,7 +838,26 @@ function defaultHourTimeRange(hour: number){
   var end = new Date(new Date().getTime() - timezoneOffset);
   var start = new Date(end.getTime() - 60 * 60 * 1000 * hour);
   // 格式化时间并返回
-  return [start.toISOString().slice(0, 19).replace('T', ' '), end.toISOString().slice(0, 19).replace('T', ' ')]
+  return [
+    start.toISOString().slice(0, 19).replace('T', ' '), 
+    end.toISOString().slice(0, 19).replace('T', ' ')
+  ]
+}
+
+// 默认查询的时间范围，单位：月
+function defaultMonthTimeRange(month) {
+  // 获取当前日期
+  var endDate = new Date();
+
+  // 计算指定月数前的日期
+  var startDate = new Date();
+  startDate.setMonth(startDate.getMonth() - month);
+
+  // 格式化日期并返回
+  return [
+    startDate.toISOString().slice(0, 19).replace('T', ' '), 
+    endDate.toISOString().slice(0, 19).replace('T', ' ') 
+  ];
 }
 
 // 禁选未来的日期
@@ -923,7 +893,6 @@ const handleClick = async (row) => {
     queryParams.aisleId = row.id
     findFullName(navList.value, row.unique, fullName => {
       nowAddressTemp.value = fullName
-      console.log(fullName)
     });
     handleQuery();
   }
@@ -957,8 +926,8 @@ onMounted( async () => {
   queryParams.aisleId = queryAisleId ? parseInt(queryAisleId, 10) : undefined;
   if (queryParams.aisleId != undefined){
     await handleQuery();
-    console.log(queryLocation)
     nowAddress.value = queryLocation
+    nowAddressTemp.value =queryLocation
   }
 })
 

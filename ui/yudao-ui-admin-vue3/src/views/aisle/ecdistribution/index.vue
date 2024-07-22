@@ -129,7 +129,7 @@ const activeName1 = ref('lineChart')
 const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
 const instance = getCurrentInstance();
-const selectTimeRange = ref(defaultDayTimeRange(14))
+const selectTimeRange = ref(defaultDayTimeRange(7))
 const loading = ref(false) 
 const queryParams = reactive({
   aisleId: undefined as number | undefined,
@@ -225,10 +225,10 @@ const shortcuts = [
 watch( ()=>activeName.value, async(newActiveName)=>{
   if ( newActiveName == 'dayTabPane'){
     queryParams.granularity = 'day'
-    selectTimeRange.value = defaultDayTimeRange(14)
+    selectTimeRange.value = defaultDayTimeRange(7)
   }else if (newActiveName == 'weekTabPane'){
     queryParams.granularity = 'week'
-    selectTimeRange.value = defaultMonthTimeRange(3)
+    selectTimeRange.value = defaultMonthTimeRange(1)
   }else{
     queryParams.granularity = 'month'
     selectTimeRange.value = defaultMonthTimeRange(12)
@@ -446,12 +446,12 @@ onMounted(async () => {
   getNavList()
   // 获取路由参数中的 pdu_id
   const queryAisleId = useRoute().query.aisleId as string | undefined;
-  const queryAddress = useRoute().query.address as string;
+  const queryLocation = useRoute().query.location as string;
   queryParams.aisleId = queryAisleId ? parseInt(queryAisleId, 10) : undefined;
   if (queryParams.aisleId != undefined){
     await getLineChartData();
-    nowAddress.value = queryAddress;
-    nowAddressTemp.value = queryAddress;
+    nowAddress.value = queryLocation;
+    nowAddressTemp.value = queryLocation;
     initLineChart();
   }
 })

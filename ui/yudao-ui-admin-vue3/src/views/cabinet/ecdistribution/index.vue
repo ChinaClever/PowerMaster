@@ -446,12 +446,12 @@ onMounted(async () => {
   getNavList()
   // 获取路由参数中的 pdu_id
   const queryCabinetId = useRoute().query.cabinetId as string | undefined;
-  const queryAddress = useRoute().query.address as string;
+  const queryLocation = useRoute().query.location as string;
   queryParams.cabinetId = queryCabinetId ? parseInt(queryCabinetId, 10) : undefined;
   if (queryParams.cabinetId != undefined){
     await getLineChartData();
-    nowAddress.value = queryAddress;
-    nowAddressTemp.value = queryAddress;
+    nowAddress.value = queryLocation;
+    nowAddressTemp.value = queryLocation;
     initLineChart();
   }
 })
