@@ -46,6 +46,25 @@ public class HourAndDayPageRespVO {
     @ExcelProperty("总最小视在功率(kVA)")
     private String apparent_total_min_value;
 
+    @ExcelProperty("总平均无功功率(kW)")
+    private Double reactive_total_avg_value;
+
+    @ExcelProperty("总最大无功功率时间")
+    private Double reactive_total_max_time;
+
+    @ExcelProperty("总最大无功功率(kW)")
+    private Double reactive_total_max_value;
+
+    @ExcelProperty("总最小无功功率时间")
+    private Double reactive_total_min_time;
+
+    @ExcelProperty("总最小无功功率(kW)")
+    private Double reactive_total_min_value;
+
+    @ExcelProperty("总平均功率因素")
+    private Double factor_total_avg_value;
+
+
     @ExcelProperty("A路平均有功功率(kW)")
     private Double active_a_avg_value;
 
@@ -76,6 +95,13 @@ public class HourAndDayPageRespVO {
     @ExcelProperty("A路最小视在功率(kVA)")
     private Double apparent_a_min_value;
 
+    @ExcelProperty("A路平均无功功率(kW)")
+    private Double reactive_a_avg_value;
+
+    @ExcelProperty("A路平均功率因素")
+    private Double factor_a_avg_value;
+
+
     @ExcelProperty("B路平均有功功率(kW)")
     private Double active_b_avg_value;
 
@@ -105,6 +131,12 @@ public class HourAndDayPageRespVO {
 
     @ExcelProperty("B路最小视在功率(kVA)")
     private Double apparent_b_min_value;
+
+    @ExcelProperty("B路平均无功功率(kW)")
+    private Double reactive_b_avg_value;
+
+    @ExcelProperty("B路平均功率因素")
+    private Double factor_b_avg_value;
 
 
 }
