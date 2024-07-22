@@ -127,4 +127,24 @@ export const IndexApi = {
   getBoxPowReactiveLine: async (data: any) => {
     return await request.post({ url: `/box/index/power/powreactive` ,  data})
   },
+
+  getConsumeData: async (data) => {
+    return await request.post({ url: `/box/index/report/ele`,data})
+  },
+
+  getBoxPFLine : async (data) => {
+    return await request.post({ url: `/box/index/report/pfline`, data })
+  },
+
+  getPowData: async (data) => {
+    return await request.post({ url: `/box/index/report/pow`,data})
+  },
+
+  getTemData: async (data) => {
+    return await request.post({ url: `/box/index/report/tem`,data})
+  },
+
+  getBoxRedisByDevKey: async (data) => {
+    return await request.post({ url: `/box/index/redisbydevkey`, data })
+  },
 }

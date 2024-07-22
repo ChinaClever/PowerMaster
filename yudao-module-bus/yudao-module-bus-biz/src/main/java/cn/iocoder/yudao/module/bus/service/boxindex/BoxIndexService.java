@@ -11,6 +11,7 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusTrendDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -104,4 +105,14 @@ public interface BoxIndexService {
     BusLineResBase getBoxPowActiveLine(BoxIndexPageReqVO pageReqVO);
 
     BusLineResBase getBoxPowReactiveLine(BoxIndexPageReqVO pageReqVO);
+
+    Map getReportConsumeDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    Map getBoxPFLine(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    Map getReportPowDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    String getBoxRedisByDevKey(String devKey);
 }

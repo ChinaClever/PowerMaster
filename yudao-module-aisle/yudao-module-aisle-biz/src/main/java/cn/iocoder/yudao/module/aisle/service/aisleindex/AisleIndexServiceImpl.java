@@ -447,8 +447,19 @@ public class AisleIndexServiceImpl implements AisleIndexService {
     }
 
     @Override
+    public List<Integer> idList() {
+        return aisleIndexCopyMapper.selectList().stream().limit(10).collect(Collectors.toList())
+                .stream().map(AisleIndexDO::getId).collect(Collectors.toList());
+    }
+
+    @Override
     public PageResult<AisleLineMaxRes> getAisleLineMaxPage(AisleIndexPageReqVO pageReqVO) {
         try {
+            List<AisleIndexDO> searchList = aisleIndexCopyMapper.selectList(new LambdaQueryWrapperX<AisleIndexDO>()
+                    .inIfPresent(AisleIndexDO::getId, pageReqVO.getAisleIds()));
+            if(org.springframework.util.CollectionUtils.isEmpty(searchList)){
+                return new PageResult<>(new ArrayList<>(), 0L);
+            }
             if(pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
                 pageReqVO.setNewTime(LocalDateTime.now());
                 pageReqVO.setOldTime(LocalDateTime.now().minusHours(24));
@@ -469,7 +480,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             String startTime = localDateTimeToString(pageReqVO.getOldTime());
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
 
-            Map esTotalAndIds = getESTotalAndIds(index, startTime, endTime,pageReqVO.getPageSize(), pageReqVO.getPageNo() - 1);
+            Map esTotalAndIds = getESTotalAndIds(index, startTime, endTime,pageReqVO.getPageSize(), pageReqVO.getPageNo() - 1,searchList.stream().map(AisleIndexDO::getId).collect(Collectors.toList()));
             Long total = (Long)esTotalAndIds.get("total");
             if(total == 0){
                 return new PageResult<>(new ArrayList<>(), 0L);
@@ -1876,6 +1887,42 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 .from(pageNo * pageSize)
                 .size(pageSize)
                 .query(QueryBuilders.rangeQuery("create_time.keyword").gte(startTime).lte(endTime))
+                .sort("aisle_id", SortOrder.ASC)
+                .collapse(new CollapseBuilder("aisle_id"))
+                .aggregation(AggregationBuilders.cardinality("total_size").field("aisle_id").precisionThreshold(10000));
+
+        searchRequest.source(builder);
+        List<Integer> sortValues = new ArrayList<>();
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                String str = hit.getSourceAsString();
+                AislePowHourDo hourDo = JsonUtils.parseObject(str, AislePowHourDo.class);
+                sortValues.add(hourDo.getAisleId());
+            }
+        }
+        Long totalRes = 0L;
+        Cardinality totalSizeAggregation = searchResponse.getAggregations().get("total_size");
+        if (totalSizeAggregation != null){
+            totalRes = totalSizeAggregation.getValue();
+        }
+
+        result.put("total",totalRes);
+        result.put("ids",sortValues);
+        return result;
+    }
+
+    private Map getESTotalAndIds(String index,String startTime,String endTime,Integer pageSize,Integer pageNo,List<Integer> ids) throws IOException {
+        HashMap<String, Object> result = new HashMap<>();
+        SearchRequest searchRequest = new SearchRequest(index);
+
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder
+                .from(pageNo * pageSize)
+                .size(pageSize)
+                .query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
+                        .must(QueryBuilders.termsQuery("aisle_id", ids))))
                 .sort("aisle_id", SortOrder.ASC)
                 .collapse(new CollapseBuilder("aisle_id"))
                 .aggregation(AggregationBuilders.cardinality("total_size").field("aisle_id").precisionThreshold(10000));

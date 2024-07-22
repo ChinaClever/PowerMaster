@@ -94,4 +94,8 @@ export const IndexApi = {
   getAislePFLine : async (data) => {
     return await request.post({ url: `/aisle/index/report/pfline`, data })
   },
+
+  idList: async () => {
+    return await request.download({ url: `/aisle/index/idList`})
+  },
 }

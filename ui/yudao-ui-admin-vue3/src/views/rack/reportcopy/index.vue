@@ -5,7 +5,7 @@
         <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
           <div class="name">微模块机房</div>
-          <div>机房202</div>
+          <div>{{ location }}</div>
         </div>
         <div class="line"></div>
         <!-- <div class="status">
@@ -62,7 +62,7 @@
             :fetch-suggestions="querySearch"
             clearable
             class="!w-140px"
-            placeholder="请输入IP地址"
+            placeholder="请输入id"
             @select="handleQuery"
           />
         </el-form-item>
@@ -245,6 +245,7 @@ const bLineList = ref() as any;
 const idList = ref() as any;
 const now = ref()
 const switchValue = ref(1);
+const location = ref() as any;
 
 const visControll = reactive({
   visAllReport : false,
@@ -277,13 +278,17 @@ const querySearch = (queryString: string, cb: any) => {
   cb(results)
 }
 
-const createFilter = (queryString: string) => {
-  return (idList) => {
-    return (
-      idList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
-    )
-  }
-}
+const createFilter = (query: string | number) => {
+  const queryStr = typeof query === 'string' ? query.toLowerCase() : query.toString();
+  return (item: { value: string | number }) => {
+    const itemValueStr = typeof item.value === 'string' ? item.value.toLowerCase() : item.value.toString();
+    if (typeof query === 'string') {
+      return itemValueStr.startsWith(queryStr);
+    } else {
+      return itemValueStr === queryStr;
+    }
+  };
+};
 
 
 const disabledDate = (date) => {
@@ -613,6 +618,7 @@ const handleDetailQuery = async () => {
   var rackInfo =  await IndexApi.getRackRedis(queryParams);
 
   console.log("rackInfo",rackInfo)
+  
   if(rackInfo != null){
     temp.push({
       baseInfoName : "所属位置",
@@ -630,6 +636,7 @@ const handleDetailQuery = async () => {
       consumeName : "当前总无功功率",
       consumeValue : rackInfo?.rack_power != null ? rackInfo?.rack_power?.total_data?.pow_reactive?.toFixed(3) + "kVar" : '/'
     })
+    location.value = temp[0].baseInfoValue;
     CabinetTableData.value = temp;
   }
   

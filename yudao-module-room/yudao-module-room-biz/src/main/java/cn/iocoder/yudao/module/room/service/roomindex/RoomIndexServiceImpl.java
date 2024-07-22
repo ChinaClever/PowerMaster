@@ -677,6 +677,12 @@ public class RoomIndexServiceImpl implements RoomIndexService {
         return chainDTO;
     }
 
+    @Override
+    public List<Integer> idList() {
+        return roomIndexCopyMapper.selectList().stream().limit(10).collect(Collectors.toList())
+                .stream().map(RoomIndexDO::getId).collect(Collectors.toList());
+    }
+
 
     /**
      * 日趋势

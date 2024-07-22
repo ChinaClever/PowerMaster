@@ -64,7 +64,7 @@ public class BusIndexController {
     }
 
     @PostMapping("/page")
-    @Operation(summary = "获得始端箱索引分页")
+    @Operation(summary = "获得始端箱负荷分页")
     public CommonResult<PageResult<BusIndexRes>> getIndexPage(@RequestBody BusIndexPageReqVO pageReqVO) {
         PageResult<BusIndexRes> pageResult = indexService.getIndexPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BusIndexRes.class));
@@ -84,7 +84,7 @@ public class BusIndexController {
     }
 
     @PostMapping("/powerpage")
-    @Operation(summary = "获得始端箱索引分页")
+    @Operation(summary = "获得始端箱电力分页")
     public CommonResult<PageResult<BusRedisDataRes>> getBusPage(@RequestBody BusIndexPageReqVO pageReqVO) {
         PageResult<BusRedisDataRes> pageResult = indexService.getBusRedisPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BusRedisDataRes.class));
@@ -97,7 +97,7 @@ public class BusIndexController {
         return success(BeanUtils.toBean(pageResult, BusTemRes.class));
     }
 
-    @Operation(summary = "始端箱温度详情分页")
+    @Operation(summary = "始端箱温度详情")
     @PostMapping("/tem/detail")
     public CommonResult<Map> getBusTemDetail(@RequestBody BusIndexPageReqVO pageReqVO) {
         return success(indexService.getBusTemDetail(pageReqVO));
@@ -110,7 +110,7 @@ public class BusIndexController {
         return success(BeanUtils.toBean(pageResult, BusPFRes.class));
     }
 
-    @Operation(summary = "始端箱功率因素详情分页")
+    @Operation(summary = "始端箱功率因素详情")
     @PostMapping("/pf/detail")
     public CommonResult<Map> getBusPFDetail(@RequestBody BusIndexPageReqVO pageReqVO) {
         return success(indexService.getBusPFDetail(pageReqVO));
@@ -194,14 +194,14 @@ public class BusIndexController {
     }
 
     @PostMapping("/balance/detail")
-    @Operation(summary = "获得始端箱不平衡度分页")
+    @Operation(summary = "获得始端箱不平衡度详情")
     public CommonResult<BusBalanceDeatilRes> getBusBalanceDetail(@RequestBody BusIndexPageReqVO pageReqVO) {
         BusBalanceDeatilRes result = indexService.getBusBalanceDetail(pageReqVO.getDevKey());
         return success(result);
     }
 
     @PostMapping("/balance/trend")
-    @Operation(summary = "获得始端箱不平衡度分页")
+    @Operation(summary = "获得始端箱不平衡度详情图表")
     public CommonResult<List<BusTrendDTO>> getBusBalanceTrend(@RequestBody BusIndexPageReqVO pageReqVO) {
         List<BusTrendDTO> result = indexService.getBusBalanceTrend(pageReqVO.getBusId());
         return success(result);
@@ -220,28 +220,28 @@ public class BusIndexController {
         return success(result);
     }
 
-    @Operation(summary = "始端箱通过devKey获取id")
+    @Operation(summary = "始端箱通过devKey获取redis数据")
     @PostMapping("/power/detail")
     public CommonResult<PowerRedisDataRes> getBusPowerRedisData(@RequestBody BusIndexPageReqVO pageReqVO) {
         PowerRedisDataRes result = indexService.getBusPowerRedisData(pageReqVO.getDevKey());
         return success(result);
     }
 
-    @Operation(summary = "始端箱通过devKey获取id")
+    @Operation(summary = "始端箱电力详情负载率图表")
     @PostMapping("/power/loadrate")
     public CommonResult<BusLineResBase> getBusLoadRateLine(@RequestBody BusIndexPageReqVO pageReqVO) {
         BusLineResBase result = indexService.getBusLoadRateLine(pageReqVO);
         return success(result);
     }
 
-    @Operation(summary = "始端箱通过devKey获取id")
+    @Operation(summary = "始端箱电力详情有功功率曲线图表")
     @PostMapping("/power/powactive")
     public CommonResult<BusLineResBase> getBusPowActiveLine(@RequestBody BusIndexPageReqVO pageReqVO) {
         BusLineResBase result = indexService.getBusPowActiveLine(pageReqVO);
         return success(result);
     }
 
-    @Operation(summary = "始端箱通过devKey获取id")
+    @Operation(summary = "始端箱电力详情无功功率曲线图表")
     @PostMapping("/power/powreactive")
     public CommonResult<BusLineResBase> getBusPowReactiveLine(@RequestBody BusIndexPageReqVO pageReqVO) {
         BusLineResBase result = indexService.getBusPowReactiveLine(pageReqVO);
@@ -249,31 +249,31 @@ public class BusIndexController {
     }
 
     @PostMapping("/report/ele")
-    @Operation(summary = "获得母线报表数据")
+    @Operation(summary = "获得始端箱报表数据")
     public CommonResult<Map> getReportConsumeDataByDevKey(@RequestBody BusIndexPageReqVO pageReqVO) {
         return success(indexService.getReportConsumeDataByDevKey(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
     }
 
     @PostMapping("/report/pfline")
-    @Operation(summary = "获得PDU报表数据")
+    @Operation(summary = "获得始端箱报表数据")
     public CommonResult<Map> getBusPFLine(@RequestBody BusIndexPageReqVO pageReqVO) {
         return success(indexService.getBusPFLine(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
     }
 
     @PostMapping("/report/pow")
-    @Operation(summary = "获得PDU报表数据")
+    @Operation(summary = "获得始端箱报表数据")
     public CommonResult<Map> getReportPowDataByDevKey(@RequestBody BusIndexPageReqVO pageReqVO) {
         return success(indexService.getReportPowDataByDevKey(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
     }
 
     @PostMapping("/report/tem")
-    @Operation(summary = "获得PDU报表数据")
+    @Operation(summary = "获得始端箱报表数据")
     public CommonResult<Map> getReportTemDataByDevKey(@RequestBody BusIndexPageReqVO pageReqVO) {
         return success(indexService.getReportTemDataByDevKey(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
     }
 
     @PostMapping("/redisbydevkey")
-    @Operation(summary = "获得PDU设备详细信息")
+    @Operation(summary = "获得始端箱设备详细信息")
     public CommonResult<String> getBusRedisByDevKey(@RequestBody BusIndexPageReqVO pageReqVO) {
         return success(indexService.getBusRedisByDevKey(pageReqVO.getDevKey()));
     }

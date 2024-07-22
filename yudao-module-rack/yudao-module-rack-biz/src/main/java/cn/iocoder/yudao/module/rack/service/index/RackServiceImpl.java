@@ -223,7 +223,7 @@ public class RackServiceImpl implements RackService {
                 String startTime = localDateTimeToString(oldTime);
                 String endTime = localDateTimeToString(newTime);
                 List<String> cabinetData = getData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index);
-                List<RackPowHourDo> roomPowHourDos = cabinetData.stream().map(str -> JsonUtils.parseObject(str, RackPowHourDo.class)).collect(Collectors.toList());
+                List<RackPowHourDo> rackPowHourDos = cabinetData.stream().map(str -> JsonUtils.parseObject(str, RackPowHourDo.class)).collect(Collectors.toList());
 
 
                 LineSeries totalApparentPow = new LineSeries();
@@ -235,14 +235,14 @@ public class RackServiceImpl implements RackService {
                 
 
                 if(timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())){
-                    roomPowHourDos.forEach(hourdo -> {
+                    rackPowHourDos.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getApparentTotalAvgValue());
                         totalActivePow.getData().add(hourdo.getActiveTotalAvgValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm:ss"));
 
                     });
                 }else{
-                    roomPowHourDos.forEach(hourdo -> {
+                    rackPowHourDos.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getApparentTotalAvgValue());
                         totalActivePow.getData().add(hourdo.getActiveTotalAvgValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
@@ -292,7 +292,7 @@ public class RackServiceImpl implements RackService {
     }
 
     @Override
-    public Map getRoomPFLine(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+    public Map getRackPFLine(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
         Map result = new HashMap<>();
         LineResBase totalLineRes = new LineResBase();
         result.put("pfLineRes",totalLineRes);

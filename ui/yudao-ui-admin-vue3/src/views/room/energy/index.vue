@@ -3,8 +3,8 @@
     <template #NavInfo>
       <div class="navInfo">
         <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/aisle.png" /></div>
-          <div class="name">柜列</div>
+          <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
+          <div class="name">微模块机房</div>
         </div>
         <!-- <div class="line"></div>
         <div class="status">
@@ -232,10 +232,8 @@ const handleCheck = async (row) => {
   const ids = [] as any
   var haveCabinet = false;
   row.forEach(item => {
-    if (item.type == 1) {
-      ids.push(item.id)
-      haveCabinet = true;
-    }
+    ids.push(item.id)
+    haveCabinet = true;
   })
   if(!haveCabinet ){
     queryParams.roomIds = [-1]

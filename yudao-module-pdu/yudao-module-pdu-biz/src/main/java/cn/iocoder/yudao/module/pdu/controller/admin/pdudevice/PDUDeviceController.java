@@ -37,14 +37,14 @@ public class PDUDeviceController {
     private PDUDeviceService pDUDeviceService;
 
     @PostMapping("/page")
-    @Operation(summary = "获得PDU设备分页")
+    @Operation(summary = "获得PDU配电分页")
     public CommonResult<PageResult<PDUDeviceDO>> getPDUDevicePage(@RequestBody PDUDevicePageReqVO pageReqVO) {
         PageResult<PDUDeviceDO> pageResult = pDUDeviceService.getPDUDevicePage(pageReqVO);
         return success(pageResult);
     }
 
     @PostMapping("/line/page")
-    @Operation(summary = "获得PDU设备分页")
+    @Operation(summary = "获得PDU需量分页")
     public CommonResult<PageResult<PDULineRes>> getPDULineDevicePage(@RequestBody PDUDevicePageReqVO pageReqVO) {
         return success(pDUDeviceService.getPDULineDevicePage(pageReqVO));
     }

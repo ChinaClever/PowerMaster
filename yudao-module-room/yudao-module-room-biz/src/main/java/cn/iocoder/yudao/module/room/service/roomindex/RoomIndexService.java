@@ -68,4 +68,6 @@ public interface RoomIndexService {
     List<RoomEqTrendDTO> eqTrend(int id, String type);
 
     RoomEleChainDTO getEleChain(int id);
+
+    List<Integer> idList();
 }

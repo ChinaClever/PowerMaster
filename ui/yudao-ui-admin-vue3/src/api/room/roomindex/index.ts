@@ -67,4 +67,9 @@ export const IndexApi = {
   getEqPage: async (data: any) => {
     return await request.post({ url: `/room/index/eq/page`, data })
   },
+
+  
+  idList: async () => {
+    return await request.download({ url: `/room/index/idList`})
+  },
 }

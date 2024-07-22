@@ -3,16 +3,15 @@ package cn.iocoder.yudao.module.pdu.service.pdudevice;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
 
-import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEleTotalRealtimeDo;
-import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalDayDo;
+
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.env.CabinetEnvHourDo;
-import cn.iocoder.yudao.framework.common.entity.es.cabinet.pow.CabinetPowHourDo;
+
 import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEqTotalDayDo;
-import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvDayDo;
+
 import cn.iocoder.yudao.framework.common.entity.es.pdu.env.PduEnvHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.line.PduHdaLineHourDo;
-import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalDayDo;
+
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.total.PduHdaTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
@@ -32,11 +31,7 @@ import cn.iocoder.yudao.module.pdu.dal.dataobject.curbalancecolor.PDUCurbalanceC
 import cn.iocoder.yudao.module.pdu.dal.mysql.curbalancecolor.PDUCurbalanceColorMapper;
 import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.util.EntityUtils;
-import org.elasticsearch.client.Request;
-import org.elasticsearch.client.Response;
-import org.elasticsearch.common.bytes.BytesReference;
-import org.elasticsearch.search.aggregations.Aggregation;
+
 import org.elasticsearch.search.aggregations.metrics.*;
 
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
@@ -259,7 +254,26 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     @Override
     public PageResult<PDULineRes> getPDULineDevicePage(PDUDevicePageReqVO pageReqVO) {
         try {
-
+            List<PduIndex> pduIndices = null;
+            List<PDULineRes> result = new ArrayList<>();
+            if(pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
+                List<String> devKeyList = new ArrayList<>();
+                List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().inIfPresent(CabinetPdu::getCabinetId, pageReqVO.getCabinetIds()));
+                if(cabinetPduList != null && !cabinetPduList.isEmpty()){
+                    for (CabinetPdu cabinetPdu : cabinetPduList) {
+                        if (!StringUtils.isEmpty(cabinetPdu.getPduIpA())){
+                            devKeyList.add(cabinetPdu.getPduIpA() + "-" + cabinetPdu.getCasIdA());
+                        }
+                        if (!StringUtils.isEmpty(cabinetPdu.getPduIpB())){
+                            devKeyList.add(cabinetPdu.getPduIpB() + "-" + cabinetPdu.getCasIdB());
+                        }
+                    }
+                }else{
+                    return new PageResult<>(result, 0L);
+                }
+                pduIndices = pDUDeviceMapper.selectList(new LambdaQueryWrapperX<PduIndex>()
+                        .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()).inIfPresent(PduIndex::getDevKey,devKeyList));
+            }
             if(pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
                 pageReqVO.setNewTime(LocalDateTime.now());
                 pageReqVO.setOldTime(LocalDateTime.now().minusHours(24));
@@ -277,41 +291,23 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             }
             String startTime = localDateTimeToString(pageReqVO.getOldTime());
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
-            Map esTotalPduId = getESTotalPduId(index, startTime, endTime,pageReqVO.getPageSize(), pageReqVO.getPageNo() - 1);
+            Map esTotalPduId = null;
+            if(pduIndices != null){
+                esTotalPduId = getESTotalPduId(index, startTime, endTime,pageReqVO.getPageSize(), pageReqVO.getPageNo() - 1,pduIndices.stream().map(PduIndex::getId).collect(Collectors.toList()));
+            } else {
+                esTotalPduId = getESTotalPduId(index, startTime, endTime,pageReqVO.getPageSize(), pageReqVO.getPageNo() - 1);
+            }
             Long total = (Long)esTotalPduId.get("total");
             if(total == 0){
                 return new PageResult<>(new ArrayList<>(), 0L);
             }
             List<Integer> pduIds = (List<Integer>) esTotalPduId.get("ids");
 
-            List<PduIndex> pduIndices = null;
-            List<PDULineRes> result = new ArrayList<>();
-            if(pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
-                List<String> ipAddrList = new ArrayList<>();
-                List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().inIfPresent(CabinetPdu::getCabinetId, pageReqVO.getCabinetIds()));
-                if(cabinetPduList != null && !cabinetPduList.isEmpty()){
-                    for (CabinetPdu cabinetPdu : cabinetPduList) {
-                        if (!StringUtils.isEmpty(cabinetPdu.getPduIpA())){
-                            ipAddrList.add(cabinetPdu.getPduIpA());
-                        }
-                        if (!StringUtils.isEmpty(cabinetPdu.getPduIpB())){
-                            ipAddrList.add(cabinetPdu.getPduIpB());
-                        }
-                    }
-                }else{
-                    return new PageResult<>(result, 0L);
-                }
-                pduIndices = pDUDeviceMapper.selectList(new LambdaQueryWrapperX<PduIndex>()
-                        .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()).inIfPresent(PduIndex::getIpAddr,ipAddrList).inIfPresent(PduIndex::getId,pduIds));
-            }else{
-                pduIndices = pDUDeviceMapper.selectList(new LambdaQueryWrapperX<PduIndex>()
-                        .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()).inIfPresent(PduIndex::getId,pduIds));
-            }
-
+            List<PduIndex> pdus = pDUDeviceMapper.selectBatchIds(pduIds);
             curMap = getPDULineCurMaxData(startTime,endTime,pduIds,index);
             powMap = getPDULinePowMaxData(startTime,endTime,pduIds,index);
 
-            for (PduIndex pduIndex : pduIndices) {
+            for (PduIndex pduIndex : pdus) {
                 Integer id = pduIndex.getId().intValue();
                 if (curMap.get(id) == null){
                     continue;
@@ -352,7 +348,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 result.add(pduLineRes);
             }
 
-            setLocation(pduIndices,result);
+            setLocation(pdus,result);
             return new PageResult<PDULineRes>(result,total);
 
         }catch (Exception e){
@@ -1372,6 +1368,41 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 .from(pageNo * pageSize)
                 .size(pageSize)
                 .query(QueryBuilders.rangeQuery("create_time.keyword").gte(startTime).lte(endTime))
+                .sort("pdu_id", SortOrder.ASC)
+                .collapse(new CollapseBuilder("pdu_id"))
+                .aggregation(AggregationBuilders.cardinality("total_size").field("pdu_id").precisionThreshold(10000));
+        searchRequest.source(builder);
+        List<Integer> sortValues = new ArrayList<>();
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                String str = hit.getSourceAsString();
+                PduHdaLineHourDo hourDo = JsonUtils.parseObject(str, PduHdaLineHourDo.class);
+                sortValues.add(hourDo.getPduId());
+            }
+        }
+        Long totalRes = 0L;
+        Cardinality totalSizeAggregation = searchResponse.getAggregations().get("total_size");
+        if (totalSizeAggregation != null){
+            totalRes = totalSizeAggregation.getValue();
+        }
+
+        result.put("total",totalRes);
+        result.put("ids",sortValues);
+        return result;
+    }
+
+    private Map getESTotalPduId(String index,String startTime,String endTime,Integer pageSize,Integer pageNo,List<Long> ids) throws IOException {
+        HashMap<String, Object> result = new HashMap<>();
+        SearchRequest searchRequest = new SearchRequest(index);
+
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder
+                .from(pageNo * pageSize)
+                .size(pageSize)
+                .query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
+                                .must(QueryBuilders.termsQuery("pdu_id", ids))))
                 .sort("pdu_id", SortOrder.ASC)
                 .collapse(new CollapseBuilder("pdu_id"))
                 .aggregation(AggregationBuilders.cardinality("total_size").field("pdu_id").precisionThreshold(10000));

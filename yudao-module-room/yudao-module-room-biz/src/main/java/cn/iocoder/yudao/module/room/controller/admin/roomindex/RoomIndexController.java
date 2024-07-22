@@ -79,11 +79,11 @@ public class RoomIndexController {
     }
 
     /**
-     * 通道列用能页面
+     * 机房用能页面
      *
      * @param pageReqVO
      */
-    @Operation(summary = "通道列用能列表分页")
+    @Operation(summary = "机房用能列表分页")
     @PostMapping("/eq/page")
     public CommonResult<PageResult<RoomEQRes>> getEqPage(@RequestBody RoomIndexPageReqVO pageReqVO) {
         PageResult<RoomEQRes> pageResult = indexService.getEqPage(pageReqVO);
@@ -91,11 +91,11 @@ public class RoomIndexController {
     }
 
     /**
-     * 始端箱有功功率趋势
+     * 机房有功功率趋势
      *
-     * @param id 始端箱id
+     * @param id 机房id
      */
-    @Operation(summary = "始端箱有功功率趋势")
+    @Operation(summary = "机房有功功率趋势")
     @GetMapping("/activePowTrend")
     public CommonResult<RoomActivePowDTO> activePowTrend(@Param("id") int id) {
         RoomPowVo vo = new RoomPowVo();
@@ -105,11 +105,11 @@ public class RoomIndexController {
     }
 
     /**
-     * 始端箱用能趋势
+     * 机房用能趋势
      *
-     * @param id 始端箱id
+     * @param id 机房id
      */
-    @Operation(summary = "始端箱用能趋势")
+    @Operation(summary = "机房用能趋势")
     @GetMapping("/eleTrend")
     public CommonResult<List<RoomEqTrendDTO>> eleTrend(@Param("id") int id, @Param("type") String type) {
         List<RoomEqTrendDTO> dto = indexService.eqTrend(id, type);
@@ -117,11 +117,11 @@ public class RoomIndexController {
     }
 
     /**
-     * 始端箱用能环比
+     * 机房用能环比
      *
-     * @param id 始端箱id
+     * @param id 机房id
      */
-    @Operation(summary = "始端箱用能环比")
+    @Operation(summary = "机房用能环比")
     @GetMapping("/eleChain")
     public CommonResult<RoomEleChainDTO> eleChain(@Param("id") int id) {
         RoomEleChainDTO dto = indexService.getEleChain(id);
@@ -158,5 +158,11 @@ public class RoomIndexController {
     public CommonResult<Map> getRoomPFLine(@RequestBody RoomIndexPageReqVO pageReqVO)  {
         return success(indexService.getRoomPFLine(pageReqVO.getId(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
     }
+    @GetMapping("/idList")
+    @Operation(summary = "获得机房id列表")
+    public List<Integer> idList() {
+        return indexService.idList();
+    }
+
 
 }

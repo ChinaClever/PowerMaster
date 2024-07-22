@@ -1,11 +1,9 @@
 <template>
-  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="机柜报表">
+  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="false"  :lazy="true" :load="loadNode" navTitle="插接箱报表">
     <template #NavInfo>
       <div >
         <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
-          <div class="name">机柜</div>
-          <div></div>
+          <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div>
         </div>
         <div class="line"></div>
         <!-- <div class="status">
@@ -45,7 +43,7 @@
         ref="queryFormRef"
         :inline="true"
         label-width="120px"
-      >
+      >      
         <!-- <el-form-item label="网络地址" prop="devKey">
           <el-input
             v-model="queryParams.devKey"
@@ -56,13 +54,13 @@
           />
         </el-form-item> -->
 
-        <el-form-item label="机柜Id" prop="ipAddr" >
+        <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
-            v-model="queryParams.Id"
+            v-model="queryParams.devKey"
             :fetch-suggestions="querySearch"
             clearable
-            class="!w-140px"
-            placeholder="请输入id"
+            class="!w-200px"
+            placeholder="请输入网络地址"
             @select="handleQuery"
           />
         </el-form-item>
@@ -133,78 +131,57 @@
         <div class="page-con">
           <div class="pageBox" >
             <div class="page-conTitle">
-              机柜基本信息
+              插接箱基本信息
             </div>
-            <br/>
             <el-row :gutter="24" >
               <el-col :span="24 - serChartContainerWidth">
                 <div class="centered-div">
                   <el-table 
-                    :data="CabinetTableData" 
+                    :data="PDUTableData" 
                     :header-cell-style="arraySpanMethod"
                     >
                     <el-table-column  align="center" label="基本信息" >
-                      <el-table-column :show-header="false" prop="baseInfoName" />
-                      <el-table-column :show-header="false" prop="baseInfoValue" />
-                    </el-table-column>
-                    
-                      <!-- <template #default="scope">
-                        <span v-if="scope.$index === 2">
-                          <el-tag  v-if="scope.row.baseInfoValue == 0">正常</el-tag>
-                          <el-tag type="warning" v-if="scope.row.baseInfoValue == 1">预警</el-tag>
-                          <el-popover
-                              placement="top-start"
-                              title="告警内容"
-                              :width="500"
-                              trigger="hover"
-                              :content="scope.row.pduAlarm"
-                              v-if="scope.row.baseInfoValue == 2"
-                            >
-                              <template #reference>
-                                <el-tag type="danger">告警</el-tag>
-                              </template>
-                            </el-popover>
-                          <el-tag type="info" v-if="scope.row.baseInfoValue == 4">故障</el-tag>
-                          <el-tag type="info" v-if="scope.row.baseInfoValue == 5">离线</el-tag>
-                        </span>
-                        <span v-else>{{ scope.row.baseInfoValue }}</span>
-                      </template>
-                    </el-table-column> -->
-                    <el-table-column  align="center" label="能耗" >
-                      <el-table-column :show-header="false" prop="consumeName"  />
-                      <el-table-column :show-header="false" prop="consumeValue" />
-                    </el-table-column>
-                    <el-table-column  align="center" label="占比" >
-                      <el-table-column :show-header="false" prop="percentageName"  />
-                      <el-table-column :show-header="false" prop="percentageValue" >
+                      <el-table-column  align="center" label="基本信息"  prop="baseInfoName" />
+                      <el-table-column  prop="baseInfoValue" >
                         <template #default="scope">
-                          <span v-if="scope.$index === 0 && scope.row.percentageValue != null">
-                            <div class="progressContainer">
-                              <div class="progress">
-                                <div class="left" :style="`flex: ${scope.row.percentageValue}`">{{scope.row.percentageValue}}%</div>
-                                <div class="line"></div>
-                                <div class="right" :style="`flex: ${100 - scope.row.percentageValue}`">{{100 - scope.row.percentageValue}}%</div>
-                              </div>
-                            </div>                            
+                          <span v-if="scope.$index === 2">
+                            <el-tag  v-if="scope.row.baseInfoValue == 0">正常</el-tag>
+                            <el-tag type="warning" v-if="scope.row.baseInfoValue == 1">预警</el-tag>
+                            <el-popover
+                                placement="top-start"
+                                title="告警内容"
+                                :width="500"
+                                trigger="hover"
+                                :content="scope.row.pduAlarm"
+                                v-if="scope.row.baseInfoValue == 2"
+                              >
+                                <template #reference>
+                                  <el-tag type="danger">告警</el-tag>
+                                </template>
+                              </el-popover>
+                            <el-tag type="info" v-if="scope.row.baseInfoValue == 4">故障</el-tag>
+                            <el-tag type="info" v-if="scope.row.baseInfoValue == 5">离线</el-tag>
                           </span>
+                          <span v-else>{{ scope.row.baseInfoValue }}</span>
                         </template>
                       </el-table-column>
+                    </el-table-column>
+                    <el-table-column  align="center" label="能耗">
+                      <el-table-column  prop="consumeName"  />
+                      <el-table-column  prop="consumeValue" />
                     </el-table-column>
                     
                   </el-table>
                 </div>
               </el-col>
-              <!-- <el-col :span="serChartContainerWidth">
-                <div class="right-div" ref="serChartContainer" id="serChartContainer" style="width: 29vw; height: 25vh;"></div>
-              </el-col> -->
             </el-row>
           </div>
           <div class="pageBox" v-if="visControll.eqVis" >
             <div class="page-conTitle" >
               电量分布
             </div>
-            <p class="paragraph" v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大用电量{{eqData.maxEle}}kWh， 最大负荷发生时间{{eqData.maxEleTime}}</p>
-            <p class="paragraph" v-if="visControll.isSameDay && eqData.firstEq">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
+            <p v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大用电量{{eqData.maxEle}}kWh， 最大负荷发生时间{{eqData.maxEleTime}}</p>
+            <p v-if="visControll.isSameDay">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
             <Bar class="Container" width="70vw" height="58vh" :list="eleList"/>
           </div>
           <div class="pageBox"  v-if="visControll.pfVis">
@@ -215,127 +192,65 @@
           </div>
           <div class="pageBox"  v-if="visControll.powVis">
             <div class="page-conTitle">
-              总平均功率曲线
+              平均功率曲线
             </div>
-            <p class="paragraph">本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
-            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kVA， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kVA， 发生时间{{powData.activePowMinTime}}</p>
+            <p>本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kVA， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kVA， 发生时间{{powData.activePowMinTime}}</p>
             <Line class="Container"  width="70vw" height="58vh" :list="totalLineList"/>
           </div>
-          <div class="pageBox"  v-if="visControll.ApowVis">
+          <div class="pageBox" v-if="visControll.temVis">
             <div class="page-conTitle">
-              A路平均功率曲线
+              温度曲线
             </div>
-            <p class="paragraph" >本周期内，最大视在功率{{powData.AapparentPowMaxValue}}kVA， 发生时间{{powData.AapparentPowMaxTime}}。最小视在功率{{powData.AapparentPowMinValue}}kVA， 发生时间{{powData.AapparentPowMinTime}}</p>
-            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.AactivePowMaxValue}}kVA， 发生时间{{powData.AactivePowMaxTime}}。最小有功功率{{powData.AactivePowMinValue}}kVA， 发生时间{{powData.AactivePowMinTime}}</p>
-            <Line class="Container" width="70vw" height="58vh" :list="aLineList"/>
-          </div>
-          <div class="pageBox"  v-if="visControll.BpowVis">
-            <div class="page-conTitle">
-              B路平均功率曲线
-            </div>
-            <p class="paragraph" >本周期内，最大视在功率{{powData.BapparentPowMaxValue}}kVA， 发生时间{{powData.BapparentPowMaxTime}}。最小视在功率{{powData.BapparentPowMinValue}}kVA， 发生时间{{powData.BapparentPowMinTime}}</p>
-            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.BactivePowMaxValue}}kVA， 发生时间{{powData.BactivePowMaxTime}}。最小有功功率{{powData.BactivePowMinValue}}kVA， 发生时间{{powData.BactivePowMinTime}}</p>
-            <Line class="Container" width="70vw" height="58vh" :list="bLineList"/>
-          </div>
-          <!-- <div class="pageBox" v-if="visControll.outletVis">
-            <div class="page-conTitle" >
-              输出位电量排名
-            </div>
-            <div ref="outputRankChartContainer" id="outputRankChartContainer" style="width: 70vw; height: 58vh;"></div>
-          </div> -->
-          <div class="pageBox" v-if="visControll.iceTemVis">
-            <div class="page-conTitle">
-              前门温度曲线
-            </div>
-            <p class="paragraph" v-show="iceTemList.temMaxValue">本周期内，最高温度{{iceTemList.temMaxValue}}°C， 最高温度发生时间{{iceTemList.temMaxTime}}，由温度传感器{{iceTemList.temMaxSensorId}}采集得到</p>
-            <p class="paragraph" v-show="iceTemList.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{iceTemList.temMinValue}}°C， 最高温度发生时间{{iceTemList.temMinTime}}，由温度传感器{{iceTemList.temMinSensorId}}采集得到</p>
-            <EnvTemLine class="Container" width="70vw" height="58vh" :list="iceTemList" />
-          </div>
-          <div class="pageBox" v-if="visControll.hotTemVis">
-            <div class="page-conTitle">
-              后门温度曲线
-            </div>
-            <p class="paragraph" v-show="hotTemList.temMaxValue">本周期内，最高温度{{hotTemList.temMaxValue}}°C， 最高温度发生时间{{hotTemList.temMaxTime}}，由温度传感器{{hotTemList.temMaxSensorId}}采集得到</p>
-            <p class="paragraph" v-show="hotTemList.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{hotTemList.temMinValue}}°C， 最高温度发生时间{{hotTemList.temMinTime}}，由温度传感器{{hotTemList.temMinSensorId}}采集得到</p>
-            <EnvTemLine class="Container" width="70vw" height="58vh" :list="hotTemList" />
+            <p v-show="temData.temAMaxValue">本周期内，A相最高温度{{temData.temAMaxValue}}°C， 最高温度发生时间{{temData.temAMaxTime}}&nbsp;&nbsp;最低温度{{temData.temAMinValue}}°C， 最低温度发生时间{{temData.temAMinTime}}</p>        
+            <p v-show="temData.temBMaxValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;B相最高温度{{temData.temBMaxValue}}°C， 最高温度发生时间{{temData.temBMaxTime}}&nbsp;&nbsp;最低温度{{temData.temBMinValue}}°C， 最低温度发生时间{{temData.temBMinTime}}</p>        
+            <p v-show="temData.temCMaxValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C相最高温度{{temData.temCMaxValue}}°C， 最高温度发生时间{{temData.temCMaxTime}}&nbsp;&nbsp;最低温度{{temData.temCMinValue}}°C， 最低温度发生时间{{temData.temCMinTime}}</p>          
+            <p v-show="temData.temNMaxValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;N相最高温度{{temData.temNMaxValue}}°C， 最高温度发生时间{{temData.temNMaxTime}}&nbsp;&nbsp;最低温度{{temData.temNMinValue}}°C， 最低温度发生时间{{temData.temNMinTime}}</p>            
+            <EnvTemLine  width="70vw" height="58vh" :list="temList"  />
           </div>
         </div>
-        
+
       </div>
     </template>
   </CommonMenu>
 
   <!-- 表单弹窗：添加/修改 -->
-  <!-- <PDUDeviceForm ref="formRef" @success="getList" /> -->
+  <PDUDeviceForm ref="formRef" @success="getList" />
 </template>
 
 <script setup lang="ts">
 // import download from '@/utils/download'
-import { IndexApi } from '@/api/cabinet/index'
 import * as echarts from 'echarts';
-import { CabinetApi } from '@/api/cabinet/info'
 import { ElTree } from 'element-plus'
+import { IndexApi } from '@/api/bus/boxindex'
+import type Node from 'element-plus/es/components/tree/src/model/node'
 import Line from './component/Line.vue'
 import PFLine from './component/PFLine.vue'
 import Bar from './component/Bar.vue'
 import EnvTemLine from './component/EnvTemLine.vue'
 
+
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
-const pfLineList = ref() as any;
-const iceTemList = ref([]) as any;
-const hotTemList = ref([]) as any;
+
+const temList = ref() as any;
 const eleList = ref() as any;
 const totalLineList = ref() as any;
-const aLineList = ref() as any;
-const bLineList = ref() as any;
-const idList = ref() as any;
+const pfLineList = ref() as any;
 const now = ref()
 const switchValue = ref(1);
-
 const visControll = reactive({
   visAllReport : false,
   isSameDay : false,
   eqVis : false,
   powVis : false,
   outletVis : false,
-  iceTemVis : false,
-  hotTemVis : false,
-  ApowVis :false,
-  BpowVis : false,
+  temVis : false,
   pfVis: false,
 })
 const serChartContainerWidth = ref(0)
 
-const loadAll = async () => {
-  var data = await IndexApi.idList();
-  var objectArray = data.map((str) => {
-    return { value: str };
-  });
-
-  return objectArray;
-}
-
-const querySearch = (queryString: string, cb: any) => {
-  const results = queryString
-    ? idList.value.filter(createFilter(queryString))
-    : idList.value
-  // call callback function to return suggestions
-  cb(results)
-}
-
-const createFilter = (query: string | number) => {
-  const queryStr = typeof query === 'string' ? query.toLowerCase() : query.toString();
-  return (item: { value: string | number }) => {
-    const itemValueStr = typeof item.value === 'string' ? item.value.toLowerCase() : item.value.toString();
-    if (typeof query === 'string') {
-      return itemValueStr.startsWith(queryStr);
-    } else {
-      return itemValueStr === queryStr;
-    }
-  };
-};
 
 const disabledDate = (date) => {
   // 获取今天的日期
@@ -356,13 +271,17 @@ const disabledDate = (date) => {
 
 const handleDayPick = () => {
   if(queryParams?.oldTime && switchValue.value == 2){
+
     queryParams.oldTime = null;
     queryParams.newTime = null;
   }
   if(queryParams?.oldTime && switchValue.value == 0){
+    
     queryParams.newTime = queryParams.oldTime.split(" ")[0] + " " + "23:59:59";
     visControll.isSameDay = true;
+
   } else if (queryParams.timeArr && switchValue.value == 2) {
+
     if(areDatesEqual(new Date(queryParams.timeArr[0]),new Date(queryParams.timeArr[1]))){
       visControll.isSameDay = true;
     }else{
@@ -370,6 +289,7 @@ const handleDayPick = () => {
     }
     queryParams.oldTime = queryParams.timeArr[0];
     queryParams.newTime = queryParams.timeArr[1].split(" ")[0]+ " " + "23:59:59";
+    
   }
   
 }
@@ -404,6 +324,15 @@ const getFullTimeByDate = (date) => {
       (second > 9 ? second : ("0" + second));
 }
 
+const devKeyList = ref([])
+const loadAll = async () => {
+  var data = await IndexApi.devKeyList();
+  var objectArray = data.map((str) => {
+    return { value: str };
+  });
+  return objectArray;
+}
+
 const areDatesEqual = (date1, date2) => {
   return (
     date1.getFullYear() === date2.getFullYear() &&
@@ -412,10 +341,26 @@ const areDatesEqual = (date1, date2) => {
   );
 }
 
+const querySearch = (queryString: string, cb: any) => {
+
+  const results = queryString
+    ? devKeyList.value.filter(createFilter(queryString))
+    : devKeyList.value
+  // call callback function to return suggestions
+  cb(results)
+}
+
+const createFilter = (queryString: string) => {
+  return (devKeyList) => {
+    return (
+      devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+    )
+  }
+}
 
 // const activeNames = ref(["1","2","3","4","5"])
 
-const CabinetTableData = ref([]) as any
+const PDUTableData = ref([]) as any
 
 const queryParams = reactive({
   pageNo: 1,
@@ -436,41 +381,25 @@ const queryParams = reactive({
   cascadeAddr : 0
 }) as any
 
-const serverRoomArr =  ref([]) as any
-
-//折叠功能
-
-
-const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
-  serverRoomArr.value = res
-  if (res && res.length > 0) {
-    const room = res[0]
-    const keys = [] as string[]
-    room.children.forEach(child => {
-      if(child.children.length > 0) {
-        child.children.forEach(son => {
-          keys.push(son.id + '-' + son.type)
-        })
-      }
-    })
+const loadNode = async (node: Node, resolve: (data: Tree[]) => void) => {
+  if (node.level === 0) {
+    var temp = await IndexApi.getBoxMenu();
+    return resolve(temp)
   }
+  // if (node.level === 1){
+  //   var temp = await CabinetApi.getRoomPDUList({id : node.data.id});
+  //   return resolve(temp[0].children);
+  // } 
+  if (node.level >= 1){
+    return resolve(node?.data?.children);
+  } 
 }
+
 
 const handleClick = (row) => {
-  if(row.type != null  && row.type == 3){
-
-    queryParams.Id = row.id
+  if(row.type != null  && row.type == 7){
+    queryParams.devKey = row.unique
     handleQuery();
-  }
-}
-
-const arraySpanMethod = ({
-  rowIndex,
-}) => {
-  if (rowIndex === 1) {
-  //这里为了是将第二列的表头隐藏，就形成了合并表头的效果
-      return {display: 'none'}
   }
 }
 
@@ -492,15 +421,11 @@ const eqData = ref<EqData>({
   maxEleTime : "",
   firstEq : 0,
   lastEq : 0,
-})as any
+}) as any
 
 interface PowData {
   apparentPowAvgValue: number[];
   activePowAvgValue: number[];
-  AapparentPowAvgValue: number[];
-  AactivePowAvgValue: number[];
-  BapparentPowAvgValue: number[];
-  BactivePowAvgValue: number[];
   time: string[];
   total_pow_apparent : number;
   apparentPowMaxValue : number;
@@ -511,30 +436,10 @@ interface PowData {
   activePowMaxTime : string;
   activePowMinValue : number;
   activePowMinTime : string;
-  AapparentPowMaxValue : number;
-  AapparentPowMaxTime : string;
-  AapparentPowMinValue : number;
-  AapparentPowMinTime : string;
-  AactivePowMaxValue : number;
-  AactivePowMaxTime : string;
-  AactivePowMinValue : number;
-  AactivePowMinTime : string;
-  BapparentPowMaxValue : number;
-  BapparentPowMaxTime : string;
-  BapparentPowMinValue : number;
-  BapparentPowMinTime : string;
-  BactivePowMaxValue : number;
-  BactivePowMaxTime : string;
-  BactivePowMinValue : number;
-  BactivePowMinTime : string;
 }
 const powData = ref<PowData>({
   apparentPowAvgValue : [],
   activePowAvgValue: [],
-  AapparentPowAvgValue : [],
-  AactivePowAvgValue: [],
-  BapparentPowAvgValue : [],
-  BactivePowAvgValue: [],
   time:[],
   total_pow_apparent : 0,
   apparentPowMaxValue : 0,
@@ -544,24 +449,34 @@ const powData = ref<PowData>({
   activePowMaxValue : 0,
   activePowMaxTime : "",
   activePowMinValue : 0,
-  activePowMinTime : "",
-  AapparentPowMaxValue : 0,
-  AapparentPowMaxTime : "",
-  AapparentPowMinValue : 0,
-  AapparentPowMinTime : "",
-  AactivePowMaxValue : 0,
-  AactivePowMaxTime : "",
-  AactivePowMinValue : 0,
-  AactivePowMinTime : "",
-  BapparentPowMaxValue : 0,
-  BapparentPowMaxTime : "",
-  BapparentPowMinValue : 0,
-  BapparentPowMinTime : "",
-  BactivePowMaxValue : 0,
-  BactivePowMaxTime : "",
-  BactivePowMinValue : 0,
-  BactivePowMinTime : "",
-})as any
+  activePowMinTime : ""
+}) as any
+
+interface TemData {
+  temAvgValue: any;
+  time: string[];
+  temMaxValue : number;
+  temMaxTime : string;
+  temMaxSensorId : number;
+  temMinValue : number;
+  temMinTime : string;
+  temMinSensorId : number;
+}
+const temData = ref<TemData>({
+  temAvgValue : [],
+  time : [],
+  temMaxValue : 0,
+  temMaxTime : "",
+  temMaxSensorId : 0,
+  temMinValue : 0,
+  temMinTime : "",
+  temMinSensorId : 0,
+}) as any
+
+//树型控件
+interface Tree {
+  [key: string]: any
+}
 
 const filterText = ref('')
 const treeRef = ref<InstanceType<typeof ElTree>>()
@@ -578,111 +493,10 @@ const itemStyle = ref({
       ]  
     )  
   }  
-}); 
+});
+
 const getList = async () => {
   loading.value = true
-  
-  await handleConsumeQuery();
-  await handlePowQuery();
-  await handleIceQuery();
-  await handleHotQuery();
-  await handleDetailQuery();
-  await handlePFLineQuery();
-
-  visControll.visAllReport = true;
-  loading.value = false
-
-}
-
-const handlePFLineQuery = async () => {
-  const data = await IndexApi.getCabinetPFLine(queryParams);
-  pfLineList.value = data.pfLineRes;
-  
-  if(pfLineList.value?.time != null && pfLineList.value?.time?.length > 0){
-    visControll.pfVis = true;
-  }else {
-    visControll.pfVis = false;
-  }
-}
-
-const handleIceQuery = async () => {
-  if(queryParams.Id != null){ 
-    const data = await IndexApi.getCabinetIceTemAndHumById({id : queryParams.Id,timeType : queryParams.timeType, oldTime : queryParams.oldTime, newTime : queryParams.newTime});
-
-    if(data?.temResult?.time != null && data?.temResult?.time?.length > 0){
-      console.log(1)
-      iceTemList.value = data;
-      console.log("iceTemList.value ",iceTemList.value )
-      if(iceTemList.value?.temMinValue != null){
-        iceTemList.value.temMinValue = iceTemList.value?.temMinValue?.toFixed(2);
-      }
-      if(iceTemList.value?.temMaxValue != null){
-        iceTemList.value.temMaxValue = iceTemList.value?.temMaxValue?.toFixed(2);
-      }
-      visControll.iceTemVis = true;
-    }else{
-      visControll.iceTemVis = false;
-    }
-  }
-}
-
-const handleHotQuery = async () => {
-  if(queryParams.Id != null){
-    const data = await IndexApi.getCabinetHotTemAndHumById({id : queryParams.Id,timeType : queryParams.timeType, oldTime : queryParams.oldTime, newTime : queryParams.newTime});
-    if(data?.temResult?.time != null && data?.temResult?.time?.length > 0){
-      console.log(2)
-      hotTemList.value = data;
-      if(hotTemList.value?.temMinValue != null){
-        hotTemList.value.temMinValue = hotTemList.value?.temMinValue?.toFixed(2);
-      }
-      if(hotTemList.value?.temMaxValue != null){
-        hotTemList.value.temMaxValue = hotTemList.value?.temMaxValue?.toFixed(2);
-      }
-      visControll.hotTemVis = true;
-    }else{
-      visControll.hotTemVis = false;
-    }
-  }
-}
-
-const handlePowQuery = async () => {
-  powData.value = await IndexApi.getPowData(queryParams);
-  totalLineList.value = powData.value.totalLineRes;
-  aLineList.value = powData.value.aLineRes;
-  bLineList.value = powData.value.bLineRes;
-
-  if(totalLineList.value?.time != null && totalLineList.value?.time?.length > 0){
-    powData.value.apparentPowMaxValue = powData.value.apparentPowMaxValue?.toFixed(3);
-    powData.value.apparentPowMinValue =  powData.value.apparentPowMinValue?.toFixed(3);
-    powData.value.activePowMaxValue = powData.value.activePowMaxValue?.toFixed(3);
-    powData.value.activePowMinValue = powData.value.activePowMinValue?.toFixed(3);
-    visControll.powVis = true;
-  }else{
-    visControll.powVis = false;
-  }
-  
-  if(aLineList.value?.time != null && aLineList.value?.time?.length > 0){
-    powData.value.AapparentPowMaxValue = powData.value.AapparentPowMaxValue?.toFixed(3);
-    powData.value.AapparentPowMinValue =  powData.value.AapparentPowMinValue?.toFixed(3);
-    powData.value.AactivePowMaxValue = powData.value.AactivePowMaxValue?.toFixed(3);
-    powData.value.AactivePowMinValue = powData.value.AactivePowMinValue?.toFixed(3);
-    visControll.ApowVis = true;
-  }else{
-    visControll.ApowVis = false;
-  }
-
-  if(bLineList.value?.time != null && bLineList.value?.time?.length > 0){
-    powData.value.BapparentPowMaxValue = powData.value.BapparentPowMaxValue?.toFixed(3);
-    powData.value.BapparentPowMinValue =  powData.value.BapparentPowMinValue?.toFixed(3);
-    powData.value.BactivePowMaxValue = powData.value.BactivePowMaxValue?.toFixed(3);
-    powData.value.BactivePowMinValue = powData.value.BactivePowMinValue?.toFixed(3);
-    visControll.BpowVis = true;
-  }else{
-    visControll.BpowVis = false;
-  }
-}
-
-const handleConsumeQuery = async () => {
   eqData.value = await IndexApi.getConsumeData(queryParams);
   if(eqData.value?.barRes?.series[0]){
     eqData.value.barRes.series[0].itemStyle = itemStyle.value;
@@ -701,60 +515,90 @@ const handleConsumeQuery = async () => {
   } else{
     visControll.eqVis = false;
   }
-}
-
-const handleDetailQuery = async () => {
-  var temp = [] as any;
   
-  var CabinetInfo = await CabinetApi.getCabinetDetail({id : queryParams.Id});
-  var apow = CabinetInfo?.cabinet_power?.path_a?.pow_active;
-  var bpow = CabinetInfo?.cabinet_power?.path_b?.pow_active;
-  var percentageValue = 50 as any;
-  if(apow == null && bpow == null){
-    percentageValue = null;
-  } else if (apow != null && bpow == null){
-    percentageValue = 100;
-  } else if (apow == null && bpow != null){
-    percentageValue = 0;
-  } else if (apow != 0 && bpow == 0){
-    percentageValue = 100;
-  } else if (apow == 0 && bpow != 0){
-    percentageValue = 0;
-  } else if (apow != 0 && bpow != 0) {
-    percentageValue = apow / (apow + bpow);
-    percentageValue *= 100;
+  const data = await IndexApi.getBoxPFLine(queryParams);
+  pfLineList.value = data.pfLineRes;
+  
+  if(pfLineList.value?.time != null && pfLineList.value?.time?.length > 0){
+    visControll.pfVis = true;
+  }else {
+    visControll.pfVis = false;
+  }
+
+  powData.value = await IndexApi.getPowData(queryParams);
+  totalLineList.value = powData.value.totalLineRes;
+  if(totalLineList.value?.time != null && totalLineList.value?.time?.length > 0){
+    powData.value.apparentPowMaxValue = powData.value.apparentPowMaxValue?.toFixed(3);
+    powData.value.apparentPowMinValue =  powData.value.apparentPowMinValue?.toFixed(3);
+    powData.value.activePowMaxValue = powData.value.activePowMaxValue?.toFixed(3);
+    powData.value.activePowMinValue = powData.value.activePowMinValue?.toFixed(3);
+    visControll.powVis = true;
+  }else{
+    visControll.powVis = false;
   }
   
+  temData.value = await IndexApi.getTemData(queryParams);
+  temList.value = temData.value.lineRes;
+  if(temList.value?.time != null && temList.value?.time?.length > 0 ){
+
+    temData.value.temAMinValue = temData.value.temAMinValue?.toFixed(2);
+    temData.value.temAMaxValue = temData.value.temAMaxValue?.toFixed(2);
+
+    temData.value.temBMinValue = temData.value.temBMinValue?.toFixed(2);
+    temData.value.temBMaxValue = temData.value.temBMaxValue?.toFixed(2);
+
+    temData.value.temCMinValue = temData.value.temCMinValue?.toFixed(2);
+    temData.value.temCMaxValue = temData.value.temCMaxValue?.toFixed(2);
+
+    temData.value.temNMinValue = temData.value.temNMinValue?.toFixed(2);
+    temData.value.temNMaxValue = temData.value.temNMaxValue?.toFixed(2);
+    visControll.temVis = true;
+  }else{
+    visControll.temVis = false;
+  }
+
+  var Box = await IndexApi.getBoxRedisByDevKey(queryParams);
+  Box = JSON.parse(Box)
+  var temp = [] as any;
+  var baseInfo = await IndexApi.getIndexPage(queryParams);
+
   temp.push({
     baseInfoName : "所属位置",
-    baseInfoValue : CabinetInfo?.aisle_name ? CabinetInfo?.room_name + '-' +  CabinetInfo?.aisle_name + '-'  + CabinetInfo?.cabinet_name : CabinetInfo?.room_name + '-' + CabinetInfo?.cabinet_name,
-    consumeName : "当前总视在功率",
-    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_apparent != null ? CabinetInfo?.cabinet_power?.total_data?.pow_apparent?.toFixed(3) + "kVA" : '/',
-    percentageName: "当前AB路占比",
-    percentageValue: percentageValue?.toFixed(0),
+    baseInfoValue : baseInfo?.list && baseInfo?.list.length > 0 ? baseInfo?.list[0].location : "/",
+    consumeName : "消耗电量",
+    consumeValue : eqData.value?.barRes?.series && eqData.value?.barRes?.series.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '/',
   })
   temp.push({
-    baseInfoName : "电力容量",
-    baseInfoValue : CabinetInfo?.pow_capacity != null ?  CabinetInfo?.pow_capacity : '/',
-    consumeName : "当前总有功功率",
-    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_active != null ? CabinetInfo?.cabinet_power?.total_data?.pow_active?.toFixed(3) + "kW" : '/'
+    baseInfoName : "网络地址",
+    baseInfoValue : queryParams.devKey,
+    consumeName : "当前视在功率",
+    consumeValue : Box?.bus_data?.bus_total_data != null ? Box.bus_data.bus_total_data.pow_apparent.toFixed(3) + "kVA" : '/'
   })
   temp.push({
-    baseInfoName : "负载率",
-    baseInfoValue : CabinetInfo?.load_factor != null ? CabinetInfo?.load_factor?.toFixed(2) + "%" : '/',
-    consumeName : "当前总无功功率",
-    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_reactive != null ? CabinetInfo?.cabinet_power?.total_data?.pow_reactive?.toFixed(3) + "kVar" : '/'
+    baseInfoName : "设备状态",
+    baseInfoValue : Box?.status != null ? Box.status : '/',
+    pduAlarm : Box?.pdu_alarm,
+    consumeName : "当前功率因素",
+    consumeValue : Box?.bus_data?.bus_total_data != null ? Box.bus_data.bus_total_data.power_factor?.toFixed(2) : '/'
   })
-  CabinetTableData.value = temp;
+  PDUTableData.value = temp;
+  
+  visControll.visAllReport = true;
+  // initChart();
+  loading.value = false
+
 }
 
 watch(filterText, (val) => {
   treeRef.value!.filter(val)
 })
 
+// 下拉框选项数组
+// const deviceStatus = ref([])
 
 // const message = useMessage() // 消息弹窗
 // const { t } = useI18n() // 国际化
+
 
 const loading = ref(false) // 列表的加载中
 
@@ -762,13 +606,21 @@ const loading = ref(false) // 列表的加载中
 const queryFormRef = ref() // 搜索的表单
 // const exportLoading = ref(false) // 导出的加载中
 
+const arraySpanMethod = ({
+  rowIndex,
+}) => {
+  if (rowIndex === 1) {
+  //这里为了是将第二列的表头隐藏，就形成了合并表头的效果
+      return {display: 'none'}
+  }
+}
+
 /** 搜索按钮操作 */
 const handleQuery = async () => {
 
-  if(queryParams.Id){
+  if(queryParams.devKey){
     if(queryParams.oldTime && queryParams.newTime){
       await getList();
-      queryParams.devKey = null;
     }
   }
   
@@ -781,7 +633,7 @@ const handleQuery = async () => {
 // }
 
 /** 添加/修改操作 */
-// const formRef = ref()
+const formRef = ref()
 // const openForm = (type: string, id?: number) => {
 //   formRef.value.open(type, id)
 // }
@@ -814,15 +666,17 @@ const handleQuery = async () => {
 //   }
 // }
 
+
+
 /** 初始化 **/
 onMounted( async () =>  {
   // getList();
   // initChart();
-  getNavList();
-  idList.value = await loadAll();
+  devKeyList.value = await loadAll();
 })
 </script>
 <style scoped lang="scss">
+
 .master {
   width: 100%;
   box-sizing: border-box;
@@ -998,38 +852,36 @@ onMounted( async () =>  {
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
 }
-
 .progressContainer {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-left: 30px;
   .progress {
-    width: 400px;
-    display: flex;
-    align-items: center;
-    font-size: 14px;
-    color: #eee;
+    width: 100px;
+    height: 18px;
+    line-height: 18px;
+    font-size: 12px;
     box-sizing: border-box;
+    border-radius: 150px;
+    overflow: hidden;
     position: relative;
+    vertical-align: middle;
+    background-color: #bfa;
     display: flex;
     justify-content: center;
-    .line {
-      width: 3px;
-      height: 36px;
-      background-color: #000;
-    }
     .left {
-      text-align: center;
+      overflow: hidden;
       box-sizing: border-box;
-      background-color: #3b8bf5;
+      background-color: var(--el-color-primary);
+
     }
     .right {
-      text-align: center;
-      background-color:  #f86f13;
+      overflow: hidden;
+      background-color:  #f56c6c;
     }
   }
 }
+
 
 .page-conTitle {
     font-size: 18px;
@@ -1078,6 +930,7 @@ onMounted( async () =>  {
     background: #01ada8 !important;
     color: #fff;
 }
+
 :deep(.master-left .el-card__body) {
   padding: 0;
 }

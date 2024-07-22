@@ -60,7 +60,7 @@ public interface RackService {
 
     String getRackRedisById(Integer id);
 
-    Map getRoomPFLine(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+    Map getRackPFLine(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
     List<Integer> idList();
 }
