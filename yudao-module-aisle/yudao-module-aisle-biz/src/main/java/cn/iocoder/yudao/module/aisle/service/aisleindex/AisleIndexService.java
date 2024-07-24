@@ -81,4 +81,6 @@ public interface AisleIndexService {
     Map getAislePFLine(Integer id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
     Map getAislePFDetail(AisleIndexPageReqVO pageReqVO);
+
+    List<Integer> idList();
 }

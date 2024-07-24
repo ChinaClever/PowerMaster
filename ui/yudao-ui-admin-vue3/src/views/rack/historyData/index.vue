@@ -242,8 +242,8 @@ watch(() => queryParams.granularity, (newValues) => {
       originalArray.value = ["active_total", "apparent_total"]        
  
       tableColumns.value =[
-        { label: '机架名', align: 'center', prop: 'rack_name', istrue:true},
         { label: '位置', align: 'center', prop: 'location', istrue:true},
+        { label: '机架名', align: 'center', prop: 'rack_name', istrue:true},
         { label: '有功功率(kW)', align: 'center', prop: 'active_total' , istrue:true, formatter: formatPower},
         { label: '视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, formatter: formatPower},
         { label: '时间', align: 'center', prop: 'create_time', formatter: dateFormatter, istrue:true},
@@ -274,8 +274,8 @@ watch(() => queryParams.granularity, (newValues) => {
       originalArray.value = ["active_total_avg_value", "active_total_max", "active_total_min", "apparent_total_avg_value", "apparent_total_max", "apparent_total_min"]    
 
       tableColumns.value = [
-        { label: '机架名', align: 'center', prop: 'rack_name', width: '160px', istrue:true},
         { label: '位置', align: 'center', prop: 'location' , width: '160px' , istrue:true},
+        { label: '机架名', align: 'center', prop: 'rack_name', width: '160px', istrue:true},
         { label: '平均有功功率(kW)', align: 'center', prop: 'active_total_avg_value', istrue:true, width: '180px', formatter: formatPower},
         { label: '最大有功功率(kW)', align: 'center', prop: 'active_total_max_value', istrue:true, width: '180px', formatter: formatPower},
         { label: '最大有功功率时间', align: 'center', prop: 'active_total_max_time', formatter: dateFormatter, width: '200px', istrue:true},
@@ -297,8 +297,8 @@ watch(() => queryParams.granularity, (newValues) => {
 });
 
 const tableColumns = ref([
-  { label: '机架名', align: 'center', prop: 'rack_name', istrue:true},
   { label: '位置', align: 'center', prop: 'location', istrue:true},
+  { label: '机架名', align: 'center', prop: 'rack_name', istrue:true},
   { label: '有功功率(kW)', align: 'center', prop: 'active_total' , istrue:true, formatter: formatPower},
   { label: '视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, formatter: formatPower},
   { label: '时间', align: 'center', prop: 'create_time', formatter: dateFormatter, istrue:true},

@@ -4,8 +4,8 @@
       <div >
         <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
-          <div class="name">微模块机房</div>
-          <div>机房202</div>
+          <div class="name">机柜</div>
+          <div></div>
         </div>
         <div class="line"></div>
         <!-- <div class="status">
@@ -56,12 +56,14 @@
           />
         </el-form-item> -->
 
-        <el-form-item label="机房Id" prop="ipAddr" >
-          <el-input
+        <el-form-item label="机柜Id" prop="ipAddr" >
+          <el-autocomplete
             v-model="queryParams.Id"
-            placeholder="请输入IP"
+            :fetch-suggestions="querySearch"
             clearable
             class="!w-140px"
+            placeholder="请输入id"
+            @select="handleQuery"
           />
         </el-form-item>
 
@@ -288,6 +290,7 @@ const eleList = ref() as any;
 const totalLineList = ref() as any;
 const aLineList = ref() as any;
 const bLineList = ref() as any;
+const idList = ref() as any;
 const now = ref()
 const switchValue = ref(1);
 
@@ -304,6 +307,35 @@ const visControll = reactive({
   pfVis: false,
 })
 const serChartContainerWidth = ref(0)
+
+const loadAll = async () => {
+  var data = await IndexApi.idList();
+  var objectArray = data.map((str) => {
+    return { value: str };
+  });
+
+  return objectArray;
+}
+
+const querySearch = (queryString: string, cb: any) => {
+  const results = queryString
+    ? idList.value.filter(createFilter(queryString))
+    : idList.value
+  // call callback function to return suggestions
+  cb(results)
+}
+
+const createFilter = (query: string | number) => {
+  const queryStr = typeof query === 'string' ? query.toLowerCase() : query.toString();
+  return (item: { value: string | number }) => {
+    const itemValueStr = typeof item.value === 'string' ? item.value.toLowerCase() : item.value.toString();
+    if (typeof query === 'string') {
+      return itemValueStr.startsWith(queryStr);
+    } else {
+      return itemValueStr === queryStr;
+    }
+  };
+};
 
 const disabledDate = (date) => {
   // 获取今天的日期
@@ -697,21 +729,21 @@ const handleDetailQuery = async () => {
     baseInfoName : "所属位置",
     baseInfoValue : CabinetInfo?.aisle_name ? CabinetInfo?.room_name + '-' +  CabinetInfo?.aisle_name + '-'  + CabinetInfo?.cabinet_name : CabinetInfo?.room_name + '-' + CabinetInfo?.cabinet_name,
     consumeName : "当前总视在功率",
-    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_apparent?.toFixed(3) + "kVA",
+    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_apparent != null ? CabinetInfo?.cabinet_power?.total_data?.pow_apparent?.toFixed(3) + "kVA" : '/',
     percentageName: "当前AB路占比",
     percentageValue: percentageValue?.toFixed(0),
   })
   temp.push({
     baseInfoName : "电力容量",
-    baseInfoValue : CabinetInfo?.pow_capacity,
+    baseInfoValue : CabinetInfo?.pow_capacity != null ?  CabinetInfo?.pow_capacity : '/',
     consumeName : "当前总有功功率",
-    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_active?.toFixed(3) + "kW"
+    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_active != null ? CabinetInfo?.cabinet_power?.total_data?.pow_active?.toFixed(3) + "kW" : '/'
   })
   temp.push({
     baseInfoName : "负载率",
-    baseInfoValue : CabinetInfo?.load_factor?.toFixed(2) + "%",
+    baseInfoValue : CabinetInfo?.load_factor != null ? CabinetInfo?.load_factor?.toFixed(2) + "%" : '/',
     consumeName : "当前总无功功率",
-    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_reactive?.toFixed(3) + "kVar"
+    consumeValue : CabinetInfo?.cabinet_power?.total_data?.pow_reactive != null ? CabinetInfo?.cabinet_power?.total_data?.pow_reactive?.toFixed(3) + "kVar" : '/'
   })
   CabinetTableData.value = temp;
 }
@@ -787,6 +819,7 @@ onMounted( async () =>  {
   // getList();
   // initChart();
   getNavList();
+  idList.value = await loadAll();
 })
 </script>
 <style scoped lang="scss">

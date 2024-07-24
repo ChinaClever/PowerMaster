@@ -105,7 +105,7 @@
         <template v-for="column in tableColumns">
           <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
             <template #default="{ row }" v-if="column.slot === 'actions'">
-              <el-button link type="primary" @click="toDetails(row.box_id)">详情</el-button>
+              <el-button link type="primary" @click="toDetails(row.box_id, row.location)">详情</el-button>
             </template>
           </el-table-column>
         </template>
@@ -305,10 +305,8 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         originalArray.value = ["pow_active", "pow_reactive", "pow_apparent", "power_factor"];
         // 配置表格列
         tableColumns.value =([
-          { label: '母线名称', align: 'center', prop: 'bus_name', width: '160px', istrue:true},
-          { label: '插接箱名称', align: 'center', prop: 'box_name', width: '160px', istrue:true},
-          { label: '位置', align: 'center', prop: 'location' , istrue:true},
-          { label: '网络地址', align: 'center', prop: 'ip_addr', width: '160px', istrue:true},
+          { label: '所在位置', align: 'center', prop: 'location' , width: '250px', istrue:true},
+          { label: '设备地址', align: 'center', prop: 'dev_key', width: '250px', istrue:true},
           { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, width: '160px', formatter: formatPower},
           { label: '总无功功率(kW)', align: 'center', prop: 'pow_reactive', istrue:true, width: '160px', formatter: formatPower},
           { label: '总视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, width: '160px', formatter: formatPower},
@@ -349,10 +347,8 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
                         ],
         // 配置表格列
         tableColumns.value = [
-          { label: '母线名称', align: 'center', prop: 'bus_name' , istrue:true, width: '160px'},
-          { label: '插接箱名称', align: 'center', prop: 'box_name', width: '160px', istrue:true},
-          { label: '位置', align: 'center', prop: 'location', istrue:true, width: '160px'},
-          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
+          { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '250px'},
+          { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
           { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '160px', formatter: formatPower},
           { label: '最大有功功率(kW)', align: 'center', prop: 'pow_active_max_value', istrue:true, width: '160px', formatter: formatPower},
           { label: '最大有功功率时间', align: 'center', prop: 'pow_active_max_time', formatter: formatTime, width: '200px', istrue:true},
@@ -397,10 +393,8 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         originalArray.value =["vol_value", "cur_value", "pow_active", "pow_reactive", "pow_apparent", "power_factor", "load_rate", "cur_thd"];
         // 配置表格列
         tableColumns.value = [
-          { label: '母线名称', align: 'center', prop: 'bus_name' , istrue:true, width: '140px'},
-          { label: '插接箱名称', align: 'center', prop: 'box_name', width: '140px', istrue:true},
-          { label: '位置', align: 'center', prop: 'location', istrue:true, width: '180px'},
-          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
+          { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '250px'},
+          { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
           { label: '相', align: 'center', prop: 'line_id', istrue:true, formatter: formatLineId, width: '140px'},
           { label: '有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower, width: '140px'},
           { label: '无功功率(kW)', align: 'center', prop: 'pow_reactive', istrue:true, formatter: formatPower, width: '140px'},
@@ -467,10 +461,8 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
                             "cur_thd_avg", "cur_thd_max", "cur_thd_min"],
         // 配置表格列
         tableColumns.value = [
-          { label: '母线名称', align: 'center', prop: 'bus_name' , istrue:true, width: '140px'},
-          { label: '插接箱名称', align: 'center', prop: 'box_name', width: '140px', istrue:true},
-          { label: '位置', align: 'center', prop: 'location', istrue:true, width: '140px'},
-          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
+          { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '250px'},
+          { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
           { label: '相', align: 'center', prop: 'line_id', istrue:true, width: '100px', formatter: formatLineId},
 
           { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '180px', formatter: formatPower},
@@ -532,10 +524,8 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         originalArray.value =["vol_value", "cur_value", "pow_active", "pow_reactive", "pow_apparent", "power_factor"];
         // 配置表格列
         tableColumns.value = [
-          { label: '母线名称', align: 'center', prop: 'bus_name' , istrue:true, width: '140px'},
-          { label: '插接箱名称', align: 'center', prop: 'box_name', width: '140px', istrue:true},
-          { label: '位置', align: 'center', prop: 'location', istrue:true, width: '180px'},
-          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
+          { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '250px'},
+          { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
           { label: '回路', align: 'center', prop: 'loop_id', istrue:true, formatter: formatLoopId, width: '140px'},
           { label: '有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower, width: '140px'},
           { label: '无功功率(kW)', align: 'center', prop: 'pow_reactive', istrue:true, formatter: formatPower, width: '140px'},
@@ -594,10 +584,8 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
                            ],
         // 配置表格列
         tableColumns.value = [
-          { label: '母线名称', align: 'center', prop: 'bus_name' , istrue:true, width: '140px'},
-          { label: '插接箱名称', align: 'center', prop: 'box_name', width: '140px', istrue:true},
-          { label: '位置', align: 'center', prop: 'location', istrue:true, width: '140px'},
-          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
+          { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '250px'},
+          { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
           { label: '回路', align: 'center', prop: 'loop_id', istrue:true, width: '100px', formatter: formatLoopId},
 
           { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '180px', formatter: formatPower},
@@ -651,10 +639,8 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         originalArray.value =[ "pow_active", "pow_reactive", "pow_apparent", "power_factor"];
         // 配置表格列
         tableColumns.value = [
-          { label: '母线名称', align: 'center', prop: 'bus_name' , istrue:true, width: '140px'},
-          { label: '插接箱名称', align: 'center', prop: 'box_name', width: '140px', istrue:true},
-          { label: '位置', align: 'center', prop: 'location', istrue:true, width: '180px'},
-          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
+          { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '250px'},
+          { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
           { label: '输出位', align: 'center', prop: 'outlet_id', istrue:true, width: '140px'},
           { label: '有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower, width: '140px'},
           { label: '无功功率(kW)', align: 'center', prop: 'pow_reactive', istrue:true, formatter: formatPower, width: '140px'},
@@ -697,10 +683,8 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
                            ],
         // 配置表格列
         tableColumns.value = [
-          { label: '母线名称', align: 'center', prop: 'bus_name' , istrue:true, width: '140px'},
-          { label: '插接箱名称', align: 'center', prop: 'box_name', width: '140px', istrue:true},
-          { label: '位置', align: 'center', prop: 'location', istrue:true, width: '140px'},
-          { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
+          { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '250px'},
+          { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
           { label: '输出位', align: 'center', prop: 'outlet_id', istrue:true, width: '100px'},
 
           { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '180px', formatter: formatPower},
@@ -731,10 +715,8 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
   });
 
 const tableColumns = ref([
-  { label: '母线名称', align: 'center', prop: 'bus_name', width: '120px', istrue:true},
-  { label: '插接箱名称', align: 'center', prop: 'box_name', width: '120px', istrue:true},
-  { label: '位置', align: 'center', prop: 'location' , istrue:true},
-  { label: '网络地址', align: 'center', prop: 'ip_addr', width: '160px', istrue:true},
+  { label: '所在位置', align: 'center', prop: 'location' , width: '250px', istrue:true},
+  { label: '设备地址', align: 'center', prop: 'dev_key', width: '250px', istrue:true},
   { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, width: '160px', formatter: formatPower},
   { label: '总无功功率(kW)', align: 'center', prop: 'pow_reactive', istrue:true, width: '160px', formatter: formatPower},
   { label: '总视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, width: '160px', formatter: formatPower},
@@ -835,8 +817,8 @@ const handleQuery = () => {
 }
 
 //详情操作 跳转电力分析
-const toDetails = (boxId: number, location?: string, address?: string) => {
-  push('/bus/record/historyLine/box?boxId='+boxId+'&location='+location+'&address='+address);
+const toDetails = (boxId: number, location?: string) => {
+  push('/bus/record/historyLine/box?boxId='+boxId+'&location='+location);
 }
 
 /** 导出按钮操作 */

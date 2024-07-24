@@ -400,9 +400,7 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
         });
       }
     }
-    // 每次切换图就要动态生成数据表头
-    headerData.value = realtimeChart?.getOption().series as any[];
-    updateTableData();
+
   }else{
     await getList();
     // 销毁原有的图表实例
@@ -433,31 +431,33 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
         });
       }
     }
-    // 每次切换图就要动态生成数据表头
-    headerData.value = realtimeChart?.getOption().series as any[];
-    updateTableData();
   }
- 
+  // 每次切换图就要动态生成数据表头
+  headerData.value = realtimeChart?.getOption().series as any[];
+  updateTableData();
 });
 
 // 表格映射图数据
 const updateTableData = () => {
-  const data: any[] = [];
-  const length = headerData.value[0]?.data?.length || 0;
-  for (let i = 0; i < length; i++) {
-    const rowData: { [key: string]: any } = {};
-    rowData['create_time'] = createTimeData.value[i];
-    rowData['totalActivePowMaxTimeData'] = totalActivePowMaxTimeData.value[i];
-    rowData['totalActivePowMinTimeData'] = totalActivePowMinTimeData.value[i];
-    rowData['totalApparentPowMaxTimeData'] = totalApparentPowMaxTimeData.value[i];
-    rowData['totalApparentPowMinTimeData'] = totalApparentPowMinTimeData.value[i];
+  if ( isHaveData.value == true ){
+    const data: any[] = [];
+    const length = headerData.value[0]?.data?.length || 0;
+    for (let i = 0; i < length; i++) {
+      const rowData: { [key: string]: any } = {};
+      rowData['create_time'] = createTimeData.value[i];
+      rowData['totalActivePowMaxTimeData'] = totalActivePowMaxTimeData.value[i];
+      rowData['totalActivePowMinTimeData'] = totalActivePowMinTimeData.value[i];
+      rowData['totalApparentPowMaxTimeData'] = totalApparentPowMaxTimeData.value[i];
+      rowData['totalApparentPowMinTimeData'] = totalApparentPowMinTimeData.value[i];
 
-    for (const item of headerData.value) {
-      rowData[item.name] = item.data[i];
+      for (const item of headerData.value) {
+        rowData[item.name] = item.data[i];
+      }
+      data.push(rowData);
     }
-    data.push(rowData);
+    tableData.value = data;
   }
-  tableData.value = data;
+
 };
 
 // 给折线图提示框的数据加单位
@@ -574,6 +574,8 @@ onMounted( async () => {
   if (queryParams.rackId != undefined){
     await handleQuery();
     nowAddress.value = queryLocation
+    console.log(queryLocation)
+    nowAddressTemp.value = queryLocation
   }
 })
 

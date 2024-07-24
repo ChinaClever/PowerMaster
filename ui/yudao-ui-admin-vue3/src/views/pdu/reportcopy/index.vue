@@ -169,7 +169,7 @@
                                 </template>
                               </el-popover>
                             <el-tag type="info" v-if="scope.row.baseInfoValue == 4">故障</el-tag>
-                            <el-tag type="info" v-if="scope.row.baseInfoValue == 5">离线</el-tag>
+                            <el-tag type="info" v-if="scope.row.baseInfoValue == '/' || scope.row.baseInfoValue == 5">离线</el-tag>
                           </span>
                           <span v-else>{{ scope.row.baseInfoValue }}</span>
                         </template>
@@ -667,14 +667,14 @@ const getList = async () => {
     baseInfoName : "网络地址",
     baseInfoValue : queryParams.ipAddr + "-" + queryParams.cascadeAddr,
     consumeName : "当前视在功率",
-    consumeValue : PDU?.pdu_data?.pdu_total_data ? PDU.pdu_data.pdu_total_data.pow_apparent.toFixed(3) + "kVA" : '/'
+    consumeValue : PDU?.pdu_data?.pdu_total_data != null ? PDU.pdu_data.pdu_total_data.pow_apparent.toFixed(3) + "kVA" : '/'
   })
   temp.push({
     baseInfoName : "设备状态",
     baseInfoValue : PDU?.status != null ? PDU.status : '/',
     pduAlarm : PDU?.pdu_alarm,
     consumeName : "当前功率因素",
-    consumeValue : PDU?.pdu_data?.pdu_total_data ? PDU.pdu_data.pdu_total_data.power_factor?.toFixed(2) : '/'
+    consumeValue : PDU?.pdu_data?.pdu_total_data != null ? PDU.pdu_data.pdu_total_data.power_factor?.toFixed(2) : '/'
   })
   PDUTableData.value = temp;
   

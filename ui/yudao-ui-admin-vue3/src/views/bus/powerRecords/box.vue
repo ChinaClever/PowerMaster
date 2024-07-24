@@ -151,10 +151,8 @@ const shortcuts = [
 ]
 
 const tableColumns = ref([
-  { label: '母线名称', align: 'center', prop: 'bus_name', istrue:true},
-  { label: '插接箱名称', align: 'center', prop: 'box_name', istrue:true},
-  { label: '位置', align: 'center', prop: 'location' , istrue:true},
-  { label: '网络地址', align: 'center', prop: 'ip_addr', istrue:true},
+  { label: '所在位置', align: 'center', prop: 'location' , istrue:true},
+  { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true},
   { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
   { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
 ]);

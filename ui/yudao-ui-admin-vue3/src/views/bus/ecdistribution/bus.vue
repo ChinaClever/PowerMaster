@@ -448,12 +448,12 @@ onMounted(async () => {
   getNavList()
   // 获取路由参数中的 bus_id
   const queryBusId = useRoute().query.busId as string | undefined;
-  const queryAddress = useRoute().query.address as string;
+  const queryLocation = useRoute().query.location as string;
   queryParams.busId = queryBusId ? parseInt(queryBusId, 10) : undefined;
   if (queryParams.busId != undefined){
     await getLineChartData();
-    nowAddress.value = queryAddress;
-    nowAddressTemp.value = queryAddress;
+    nowAddress.value = queryLocation;
+    nowAddressTemp.value = queryLocation;
     initLineChart();
   }
 })

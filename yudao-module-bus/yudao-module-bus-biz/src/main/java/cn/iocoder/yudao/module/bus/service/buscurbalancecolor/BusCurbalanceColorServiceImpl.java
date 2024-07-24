@@ -69,9 +69,9 @@ public class BusCurbalanceColorServiceImpl implements BusCurbalanceColorService 
             busCurbalanceColorDO = new BusCurbalanceColorDO();
             busCurbalanceColorDO.setId(1L);
             busCurbalanceColorDO.setRangeOne(15);
-            busCurbalanceColorDO.setRangeTwo(15);
+            busCurbalanceColorDO.setRangeTwo(16);
             busCurbalanceColorDO.setRangeThree(30);
-            busCurbalanceColorDO.setRangeFour(30);
+            busCurbalanceColorDO.setRangeFour(31);
             curbalanceColorMapper.insert(busCurbalanceColorDO);
         }
         return busCurbalanceColorDO;

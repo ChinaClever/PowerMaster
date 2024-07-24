@@ -55,10 +55,12 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.BucketOrder;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.aggregations.metrics.Cardinality;
 import org.elasticsearch.search.aggregations.metrics.ParsedMax;
 import org.elasticsearch.search.aggregations.metrics.ParsedTopHits;
 import org.elasticsearch.search.aggregations.metrics.TopHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.collapse.CollapseBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -173,7 +175,7 @@ public class BusIndexServiceImpl implements BusIndexService {
         List<BusIndexDO> list = busIndexDOPageResult.getList();
         List<BusIndexRes> res = new ArrayList<>();
         List redisList = getMutiRedis(list);
-        ValueOperations ops = redisTemplate.opsForValue();
+
         for (BusIndexDO busIndexDO : list) {
             BusIndexRes busIndexRes = new BusIndexRes();
             busIndexRes.setStatus(busIndexDO.getRunStatus());
@@ -216,7 +218,7 @@ public class BusIndexServiceImpl implements BusIndexService {
             }
             if(pageReqVO.getColor() != null){
                 if(!pageReqVO.getColor().contains(busIndexRes.getColor())){
-                    continue;
+                    res.removeIf(bus -> bus.getBusId().equals(busIndexRes.getBusId()));
                 }
             }
         }
@@ -463,6 +465,11 @@ public class BusIndexServiceImpl implements BusIndexService {
             busBalanceDataRes.setCurUnbalance(busTotalData.getDouble("cur_unbalance"));
             busBalanceDataRes.setVolUnbalance(busTotalData.getDouble("vol_unbalance"));
             busBalanceDataRes.setColor(color);
+            if(pageReqVO.getColor() != null){
+                if(!pageReqVO.getColor().contains(busBalanceDataRes.getColor())){
+                    res.removeIf(bus -> bus.getBusId().equals(busBalanceDataRes.getBusId()));
+                }
+            }
         }
         return new PageResult<>(res,busIndexDOPageResult.getTotal());
     }
@@ -736,14 +743,10 @@ public class BusIndexServiceImpl implements BusIndexService {
     @Override
     public PageResult<BusLineRes> getBusLineDevicePage(BusIndexPageReqVO pageReqVO) {
         try {
-            PageResult<BusIndexDO> busIndexPageResult = null;
-            List<BusLineRes> result = new ArrayList<>();
-
-
-            busIndexPageResult = busIndexMapper.selectPage(pageReqVO);
-
-            List<BusIndexDO> busIndices = busIndexPageResult.getList();
-
+            List<BusIndexDO> searchList = busIndexMapper.selectList(new LambdaQueryWrapperX<BusIndexDO>().inIfPresent(BusIndexDO::getDevKey, pageReqVO.getBusDevKeyList()));
+            if(CollectionUtils.isEmpty(searchList)){
+                return new PageResult<>(new ArrayList<>(), 0L);
+            }
             if(pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
                 pageReqVO.setNewTime(LocalDateTime.now());
                 pageReqVO.setOldTime(LocalDateTime.now().minusHours(24));
@@ -751,7 +754,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                 pageReqVO.setNewTime(pageReqVO.getNewTime().plusDays(1));
                 pageReqVO.setOldTime(pageReqVO.getOldTime().plusDays(1));
             }
-            List<Integer> ids = busIndices.stream().map(BusIndexDO::getId).collect(Collectors.toList());
+
             Map<Integer,Map<Integer, MaxValueAndCreateTime>> curMap ;
             Map<Integer,Map<Integer, MaxValueAndCreateTime>> powMap ;
             String index = null;
@@ -762,9 +765,20 @@ public class BusIndexServiceImpl implements BusIndexService {
             }
             String startTime = localDateTimeToString(pageReqVO.getOldTime());
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
+            Map esTotalAndIds = getESTotalAndIds(index, startTime, endTime,pageReqVO.getPageSize(), pageReqVO.getPageNo() - 1,searchList.stream().map(BusIndexDO::getId).collect(Collectors.toList()));
+
+            Long total = (Long)esTotalAndIds.get("total");
+            if(total == 0){
+                return new PageResult<>(new ArrayList<>(), 0L);
+            }
+            List<Integer> ids = (List<Integer>) esTotalAndIds.get("ids");
             curMap = getBusLineCurMaxData(startTime,endTime,ids,index);
             powMap = getBusLinePowMaxData(startTime,endTime,ids,index);
 
+            List<BusLineRes> result = new ArrayList<>();
+
+            List<BusIndexDO> busIndices = busIndexMapper.selectList(new LambdaQueryWrapperX<BusIndexDO>()
+                    .inIfPresent(BusIndexDO::getId,ids));
 
             for (BusIndexDO busIndex : busIndices) {
                 Integer id = busIndex.getId().intValue();
@@ -812,7 +826,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                 getPosition(result);
             }
 
-            return new PageResult<BusLineRes>(result,busIndexPageResult.getTotal());
+            return new PageResult<BusLineRes>(result,total);
         }catch (Exception e){
             log.error("获取数据失败：", e);
         }
@@ -2517,7 +2531,6 @@ public class BusIndexServiceImpl implements BusIndexService {
         );
 
 
-
         // 设置搜索条件
         searchRequest.source(builder);
         builder.size(0);
@@ -2525,7 +2538,6 @@ public class BusIndexServiceImpl implements BusIndexService {
         List<String> list = new ArrayList<>();
         // 执行ES请求
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-
 
         // 初始化结果Map
         Map<Integer, Map<Integer, MaxValueAndCreateTime>> resultMap = new HashMap<>();
@@ -2653,10 +2665,13 @@ public class BusIndexServiceImpl implements BusIndexService {
         Map<String, Integer> aisleBarKeyMap = aisleBar.stream().collect(Collectors.toMap(AisleBar::getBarKey,AisleBar::getAisleId));
         Map<Integer, String> positonMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(aisleBar)){
-            List<String> redisKeys = aisleBar.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toList());
+            Set<String> redisKeys = aisleBar.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toSet());
             List aisles = ops.multiGet(redisKeys);
             if (!CollectionUtils.isEmpty(aisleBar)){
                 for (Object aisle : aisles) {
+                    if (aisle == null) {
+                        continue;
+                    }
                     JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
                     String devPosition = new String();
                     devPosition = json.getString("room_name") + SPLIT_KEY
@@ -2711,6 +2726,75 @@ public class BusIndexServiceImpl implements BusIndexService {
                 }
             }
         }
+    }
+
+    private Map getESTotalAndIds(String index,String startTime,String endTime,Integer pageSize,Integer pageNo) throws IOException {
+        HashMap<String, Object> result = new HashMap<>();
+        SearchRequest searchRequest = new SearchRequest(index);
+
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder
+                .from(pageNo * pageSize)
+                .size(pageSize)
+                .query(QueryBuilders.rangeQuery("create_time.keyword").gte(startTime).lte(endTime))
+                .sort("bus_id", SortOrder.ASC)
+                .collapse(new CollapseBuilder("bus_id"))
+                .aggregation(AggregationBuilders.cardinality("total_size").field("bus_id").precisionThreshold(10000));
+        searchRequest.source(builder);
+        List<Integer> sortValues = new ArrayList<>();
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                String str = hit.getSourceAsString();
+                BusLineHourDo hourDo = JsonUtils.parseObject(str, BusLineHourDo.class);
+                sortValues.add(hourDo.getBusId());
+            }
+        }
+        Long totalRes = 0L;
+        Cardinality totalSizeAggregation = searchResponse.getAggregations().get("total_size");
+        if (totalSizeAggregation != null){
+            totalRes = totalSizeAggregation.getValue();
+        }
+
+        result.put("total",totalRes);
+        result.put("ids",sortValues);
+        return result;
+    }
+
+    private Map getESTotalAndIds(String index,String startTime,String endTime,Integer pageSize,Integer pageNo,List<Integer> ids) throws IOException {
+        HashMap<String, Object> result = new HashMap<>();
+        SearchRequest searchRequest = new SearchRequest(index);
+
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder
+                .from(pageNo * pageSize)
+                .size(pageSize)
+                .query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
+                        .must(QueryBuilders.termsQuery("bus_id", ids))))
+                .sort("bus_id", SortOrder.ASC)
+                .collapse(new CollapseBuilder("bus_id"))
+                .aggregation(AggregationBuilders.cardinality("total_size").field("bus_id").precisionThreshold(10000));
+        searchRequest.source(builder);
+        List<Integer> sortValues = new ArrayList<>();
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                String str = hit.getSourceAsString();
+                BusLineHourDo hourDo = JsonUtils.parseObject(str, BusLineHourDo.class);
+                sortValues.add(hourDo.getBusId());
+            }
+        }
+        Long totalRes = 0L;
+        Cardinality totalSizeAggregation = searchResponse.getAggregations().get("total_size");
+        if (totalSizeAggregation != null){
+            totalRes = totalSizeAggregation.getValue();
+        }
+
+        result.put("total",totalRes);
+        result.put("ids",sortValues);
+        return result;
     }
 
     private List getMutiRedis(List<BusIndexDO> list){

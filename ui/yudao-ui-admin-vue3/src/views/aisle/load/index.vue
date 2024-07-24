@@ -44,11 +44,11 @@
         :inline="true"
         label-width="68px"                          
       >
-        <el-form-item v-if="switchValue == 2 || switchValue == 3">
+        <!-- <el-form-item v-if="switchValue == 2 || switchValue == 3">
           <template v-for="(status, index) in statusList" :key="index">
             <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
           </template>
-        </el-form-item>
+        </el-form-item> -->
         <!-- <el-button
           type="primary"
           plain
@@ -314,48 +314,48 @@ const statusNumber = reactive({
   greaterNinety : 0
 })
 
-const statusList = reactive([
-  {
-    name: '空载',
-    selected: true,
-    value: 0,
-    cssClass: 'btn_empty',
-    activeClass: 'btn_empty empty',
-    color: '#aaa'
-  },
-  {
-    name: '负载量<30%',
-    selected: true,
-    value: 1,
-    cssClass: 'btn_normal',
-    activeClass: 'btn_normal normal',
-    color: '#3bbb00'
-  },
-  {
-    name: '30%≤负载量<60%',
-    selected: true,
-    value: 2,
-    cssClass: 'btn_warn',
-    activeClass: 'btn_warn warn',
-    color: '#ffc402'
-  },
-  {
-    name: '60%≤负载量<90%',
-    selected: true,
-    value: 3,
-    cssClass: 'btn_error',
-    activeClass: 'btn_error error',
-    color: '#fa3333'
-  },
-  {
-    name: '负载量>90%',
-    selected: true,
-    value: 4,
-    cssClass: 'btn_unbound',
-    activeClass: 'btn_unbound unbound',
-    color: '#05ebfc'
-  },
-])
+// const statusList = reactive([
+//   {
+//     name: '空载',
+//     selected: true,
+//     value: 0,
+//     cssClass: 'btn_empty',
+//     activeClass: 'btn_empty empty',
+//     color: '#aaa'
+//   },
+//   {
+//     name: '负载量<30%',
+//     selected: true,
+//     value: 1,
+//     cssClass: 'btn_normal',
+//     activeClass: 'btn_normal normal',
+//     color: '#3bbb00'
+//   },
+//   {
+//     name: '30%≤负载量<60%',
+//     selected: true,
+//     value: 2,
+//     cssClass: 'btn_warn',
+//     activeClass: 'btn_warn warn',
+//     color: '#ffc402'
+//   },
+//   {
+//     name: '60%≤负载量<90%',
+//     selected: true,
+//     value: 3,
+//     cssClass: 'btn_error',
+//     activeClass: 'btn_error error',
+//     color: '#fa3333'
+//   },
+//   {
+//     name: '负载量>90%',
+//     selected: true,
+//     value: 4,
+//     cssClass: 'btn_unbound',
+//     activeClass: 'btn_unbound unbound',
+//     color: '#05ebfc'
+//   },
+// ])
 
 const devKeyList = ref([])
 const loadAll = async () => {
@@ -605,13 +605,13 @@ const toDetailB = async (row) =>{
 //   window.open(url, '_blank');
 // }
 
-const handleSelectStatus = (index) => {
-  statusList[index].selected = !statusList[index].selected
-  const status =  statusList.filter(item => item.selected)
-  const statusArr = status.map(item => item.value)
-  queryParams.color = statusArr;
-  handleQuery();
-}
+// const handleSelectStatus = (index) => {
+//   statusList[index].selected = !statusList[index].selected
+//   const status =  statusList.filter(item => item.selected)
+//   const statusArr = status.map(item => item.value)
+//   queryParams.color = statusArr;
+//   handleQuery();
+// }
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
@@ -622,7 +622,7 @@ const handleQuery = () => {
 /** 重置按钮操作 */
 const resetQuery = () => {
   queryFormRef.value.resetFields()
-  statusList.forEach((item) => item.selected = true)
+  // statusList.forEach((item) => item.selected = true)
   handleQuery()
 }
 

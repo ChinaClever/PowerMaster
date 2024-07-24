@@ -147,8 +147,8 @@ const shortcuts = [
 ]
 
 const tableColumns = ref([
-  { label: '机架名', align: 'center', prop: 'rack_name' , istrue:true},
   { label: '位置', align: 'center', prop: 'location' , istrue:true},
+  { label: '机架名', align: 'center', prop: 'rack_name' , istrue:true},
   { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
   { label: '电能(kWh)', align: 'center', prop: 'ele_total' , istrue:true, formatter: formatEle},
 ]);

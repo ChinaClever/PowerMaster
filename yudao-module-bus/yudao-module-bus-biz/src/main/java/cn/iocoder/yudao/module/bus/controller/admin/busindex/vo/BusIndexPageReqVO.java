@@ -71,6 +71,9 @@ public class BusIndexPageReqVO extends PageParam {
     @Schema(description = "在线")
     private List<Integer> status;
 
+    @Schema(description = "始端箱id列表")
+    private List<Integer> busIds;
+
     @Schema(description = "逻辑删除")
     private Integer isDeleted;
 

@@ -162,12 +162,12 @@ const queryParams = reactive({
   // 进入页面原始数据默认显示最近一小时
   timeRange: defaultHourTimeRange(1)
 })
-const carouselItems = ref([
-      { imgUrl: PDUImage},
-      { imgUrl: PDUImage},
-      { imgUrl: PDUImage},
-      { imgUrl: PDUImage},
-    ]);//侧边栏轮播图图片路径
+// const carouselItems = ref([
+//       { imgUrl: PDUImage},
+//       { imgUrl: PDUImage},
+//       { imgUrl: PDUImage},
+//       { imgUrl: PDUImage},
+//     ]);//侧边栏轮播图图片路径
 
 // 时间段快捷选项
 const shortcuts = [
@@ -800,17 +800,17 @@ onMounted( async () => {
   getNavList()
   // 获取路由参数中的 pdu_id
   let queryBoxId = useRoute().query.boxId as string | undefined;
-  let queryIpAddr = useRoute().query.ipAddr as string;
-  let queryAddress = useRoute().query.address as string;
+  let queryDevKey = useRoute().query.devKey as string;
+  let queryLocation = useRoute().query.location as string;
   queryParams.boxId = queryBoxId ? parseInt(queryBoxId, 10) : undefined;
   if (queryParams.boxId != undefined){
     await getList();
-    if (queryAddress == null) {
+    if (queryLocation == null) {
       nowAddress.value = '';
     } else {
-      nowAddress.value = queryAddress;
+      nowAddress.value = queryLocation;
     }
-    nowIpAddr.value = queryIpAddr
+    nowIpAddr.value = queryDevKey
     initChart();
   }
 })
@@ -887,7 +887,7 @@ onMounted( async () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 16px;
+    font-size: 15px;
   }
 
 .nav_data{

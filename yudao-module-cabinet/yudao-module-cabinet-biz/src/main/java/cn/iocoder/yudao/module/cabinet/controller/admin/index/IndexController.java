@@ -114,7 +114,7 @@ public class IndexController {
     }
 
     @GetMapping("/env/page")
-    @Operation(summary = "获得机柜索引分页")
+    @Operation(summary = "获得机柜环境分页")
     public CommonResult<PageResult<CabinetEnvAndHumRes>> getCabinetEnvPage(@Valid IndexPageReqVO pageReqVO) {
         return success(indexService.getCabinetEnvPage(pageReqVO));
     }
@@ -129,5 +129,11 @@ public class IndexController {
     @Operation(summary = "获得机柜热通道温度和湿度")
     public CommonResult<Map> getCabinetEnvHotTemAndHumData(String id,Integer timeType,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime oldTime,@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime newTime) {
         return success(indexService.getCabinetEnvHotTemAndHumData(id,timeType,oldTime,newTime));
+    }
+
+    @GetMapping("/idList")
+    @Operation(summary = "获得机柜id列表")
+    public List<Integer> idList() {
+        return indexService.idList();
     }
 }

@@ -159,16 +159,16 @@ const shortcuts = [
 watch(() => queryParams.granularity, () => {
     if (queryParams.granularity == 'day'){
       tableColumns.value = [
-        { label: '机架名', align: 'center', prop: 'rack_name' , istrue:true},
         { label: '位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '机架名', align: 'center', prop: 'rack_name' , istrue:true},
         { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
         { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
       ]
     }else{
       tableColumns.value = [
-        { label: '机架名', align: 'center', prop: 'rack_name' , istrue:true},
         { label: '位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '机架名', align: 'center', prop: 'rack_name' , istrue:true},
         { label: '开始日期', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
         { label: '结束日期', align: 'center', prop: 'end_time', formatter: formatTime, istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
@@ -180,8 +180,8 @@ watch(() => queryParams.granularity, () => {
 });
 
 const tableColumns = ref([
-  { label: '机架名', align: 'center', prop: 'rack_name' , istrue:true},
   { label: '位置', align: 'center', prop: 'location' , istrue:true},
+  { label: '机架名', align: 'center', prop: 'rack_name' , istrue:true},
   { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
   { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
   { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},

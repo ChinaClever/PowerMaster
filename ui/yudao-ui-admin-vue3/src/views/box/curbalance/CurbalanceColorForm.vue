@@ -26,7 +26,7 @@
   </Dialog>
 </template>
 <script setup lang="ts">
-import { CurbalanceColorApi, CurbalanceColorVO } from '@/api/bus/buscurbalancecolor'
+import { BoxCurbalanceColorApi, BoxCurbalanceColorVO } from '@/api/bus/boxcurbalancecolor'
 
 /** PDU不平衡度颜色 表单 */
 defineOptions({ name: 'CurbalanceColorForm' })
@@ -45,11 +45,31 @@ const formData = ref({
   rangeThree: undefined,
   rangeFour: undefined,
 })
+
+const validateRangeOrder = (rule, value, callback) => {
+  // 检查范围是否为空
+  if (!formData.value.rangeOne || !formData.value.rangeTwo || !formData.value.rangeThree || !formData.value.rangeFour) {
+    callback(new Error('请填写所有范围'));
+  } else {
+    const ranges = [parseFloat(formData.value.rangeOne), parseFloat(formData.value.rangeTwo), parseFloat(formData.value.rangeThree), parseFloat(formData.value.rangeFour)];
+    const rangeNames = ['第一空', '第二空', '第三空', '第四空'];
+    // 检查范围顺序
+    for (let i = 0; i < ranges.length - 1; i++) {
+      if (ranges[i] >= ranges[i + 1]) {
+        return callback(new Error(`${rangeNames[i]} 必须小于 ${rangeNames[i + 1]}`));
+      }
+    }
+
+    // 如果所有条件都满足，则回调无错误
+    callback();
+  }
+}
+
 const formRules = reactive({
-  rangeOne: [{ required: true, message: '第一个小于的范围不能为空', trigger: 'blur' }],
-  rangeTwo: [{ required: true, message: '第二个范围的最小值不能为空', trigger: 'blur' }],
-  rangeThree: [{ required: true, message: '第二个范围的最大值不能为空', trigger: 'blur' }],
-  rangeFour: [{ required: true, message: '第三个大于的范围不能为空', trigger: 'blur' }],
+  rangeOne: [{ validator: validateRangeOrder,required: true,  trigger: 'blur' }],
+  rangeTwo: [{ validator: validateRangeOrder,required: true,  trigger: 'blur' }],
+  rangeThree: [{ validator: validateRangeOrder,required: true,  trigger: 'blur' }],
+  rangeFour: [{ validator: validateRangeOrder,required: true,  trigger: 'blur' }],
 })
 const formRef = ref() // 表单 Ref
 
@@ -63,7 +83,7 @@ const open = async (type: string) => {
 
   formLoading.value = true
   try {
-    var data = await CurbalanceColorApi.getCurbalanceColor()
+    var data = await BoxCurbalanceColorApi.getBoxCurbalanceColor()
     console.log(data)
     if(data != null){
       formData.value = data;
@@ -85,12 +105,12 @@ const submitForm = async () => {
   // 提交请求
   formLoading.value = true
   try {
-    const data = formData.value as unknown as CurbalanceColorVO
+    const data = formData.value as unknown as BoxCurbalanceColorVO
     if (formType.value === 'create') {
-      await CurbalanceColorApi.createCurbalanceColor(data)
+      await BoxCurbalanceColorApi.createBoxCurbalanceColor(data)
       message.success(t('common.createSuccess'))
     } else {
-      await CurbalanceColorApi.updateCurbalanceColor(data)
+      await BoxCurbalanceColorApi.updateBoxCurbalanceColor(data)
       message.success(t('common.updateSuccess'))
     }
     dialogVisible.value = false

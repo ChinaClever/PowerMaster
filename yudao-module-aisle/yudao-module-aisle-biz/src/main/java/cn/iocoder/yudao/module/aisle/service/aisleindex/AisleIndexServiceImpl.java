@@ -7,6 +7,7 @@ import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalMonthDo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.pow.AislePowHourDo;
+import cn.iocoder.yudao.framework.common.entity.es.box.line.BoxLineHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.line.BusLineHourDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
@@ -34,10 +35,12 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.BucketOrder;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.aggregations.metrics.Cardinality;
 import org.elasticsearch.search.aggregations.metrics.ParsedMax;
 import org.elasticsearch.search.aggregations.metrics.ParsedTopHits;
 import org.elasticsearch.search.aggregations.metrics.TopHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.collapse.CollapseBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -444,15 +447,19 @@ public class AisleIndexServiceImpl implements AisleIndexService {
     }
 
     @Override
+    public List<Integer> idList() {
+        return aisleIndexCopyMapper.selectList().stream().limit(10).collect(Collectors.toList())
+                .stream().map(AisleIndexDO::getId).collect(Collectors.toList());
+    }
+
+    @Override
     public PageResult<AisleLineMaxRes> getAisleLineMaxPage(AisleIndexPageReqVO pageReqVO) {
         try {
-            PageResult<AisleIndexDO> aisleIndexDOPageResult = null;
-            List<AisleLineMaxRes> result = new ArrayList<>();
-            
-            aisleIndexDOPageResult = aisleIndexCopyMapper.selectPage(pageReqVO);
-
-            List<AisleIndexDO> aisleIndexDOList = aisleIndexDOPageResult.getList();
-
+            List<AisleIndexDO> searchList = aisleIndexCopyMapper.selectList(new LambdaQueryWrapperX<AisleIndexDO>()
+                    .inIfPresent(AisleIndexDO::getId, pageReqVO.getAisleIds()));
+            if(org.springframework.util.CollectionUtils.isEmpty(searchList)){
+                return new PageResult<>(new ArrayList<>(), 0L);
+            }
             if(pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
                 pageReqVO.setNewTime(LocalDateTime.now());
                 pageReqVO.setOldTime(LocalDateTime.now().minusHours(24));
@@ -460,7 +467,6 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 pageReqVO.setNewTime(pageReqVO.getNewTime().plusDays(1));
                 pageReqVO.setOldTime(pageReqVO.getOldTime().plusDays(1));
             }
-            List<Integer> ids = aisleIndexDOList.stream().map(AisleIndexDO::getId).collect(Collectors.toList());
 
             Map<Integer,MaxValueAndCreateTime> powTotalMap ;
             Map<Integer,MaxValueAndCreateTime> powAMap ;
@@ -474,10 +480,21 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             String startTime = localDateTimeToString(pageReqVO.getOldTime());
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
 
+            Map esTotalAndIds = getESTotalAndIds(index, startTime, endTime,pageReqVO.getPageSize(), pageReqVO.getPageNo() - 1,searchList.stream().map(AisleIndexDO::getId).collect(Collectors.toList()));
+            Long total = (Long)esTotalAndIds.get("total");
+            if(total == 0){
+                return new PageResult<>(new ArrayList<>(), 0L);
+            }
+            List<Integer> ids = (List<Integer>) esTotalAndIds.get("ids");
+
             powTotalMap = getAisleLinePowMaxData(startTime,endTime,ids,index,"active_total_max_value","active_total_max_time");
             powAMap = getAisleLinePowMaxData(startTime,endTime,ids,index,"active_a_max_value","active_a_max_time");
             powBMap = getAisleLinePowMaxData(startTime,endTime,ids,index,"active_b_max_value","active_b_max_time");
 
+            List<AisleLineMaxRes> result = new ArrayList<>();
+            List<AisleIndexDO> aisleIndexDOList = aisleIndexCopyMapper.selectList(new LambdaQueryWrapperX<AisleIndexDO>()
+                    .inIfPresent(AisleIndexDO::getId,pageReqVO.getAisleIds())
+                    .inIfPresent(AisleIndexDO::getId,ids));
             for (AisleIndexDO aisleIndexDO : aisleIndexDOList) {
                 Integer id = aisleIndexDO.getId().intValue();
                 if (powTotalMap.get(id) == null){
@@ -510,7 +527,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 getPosition(result);
             }
 
-            return new PageResult<AisleLineMaxRes>(result,aisleIndexDOPageResult.getTotal());
+            return new PageResult<AisleLineMaxRes>(result,total);
         }catch (Exception e){
             log.error("获取数据失败：", e);
         }
@@ -865,6 +882,9 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 List<String> cabinetData = getData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index);
                 List<AislePowHourDo> aislePowHourDos = cabinetData.stream().map(str -> JsonUtils.parseObject(str, AislePowHourDo.class)).collect(Collectors.toList());
 
+                if (org.springframework.util.CollectionUtils.isEmpty(cabinetData)){
+                    return result;
+                }
 
                 LineSeries totalApparentPow = new LineSeries();
                 totalApparentPow.setName("总平均视在功率");
@@ -1818,7 +1838,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
 
         // 初始化结果Map
         Map<Integer, MaxValueAndCreateTime> resultMap = new HashMap<>();
-        // 获取group_by_box_id聚合结果
+        // 获取group_by_aisle_id聚合结果
         Terms groupByBoxId = searchResponse.getAggregations().get("group_by_aisle_id");
         for (Terms.Bucket boxIdBucket : groupByBoxId.getBuckets()) {
             Integer boxId = boxIdBucket.getKeyAsNumber().intValue();
@@ -1858,6 +1878,77 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         });
     }
 
+    private Map getESTotalAndIds(String index,String startTime,String endTime,Integer pageSize,Integer pageNo) throws IOException {
+        HashMap<String, Object> result = new HashMap<>();
+        SearchRequest searchRequest = new SearchRequest(index);
+
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder
+                .from(pageNo * pageSize)
+                .size(pageSize)
+                .query(QueryBuilders.rangeQuery("create_time.keyword").gte(startTime).lte(endTime))
+                .sort("aisle_id", SortOrder.ASC)
+                .collapse(new CollapseBuilder("aisle_id"))
+                .aggregation(AggregationBuilders.cardinality("total_size").field("aisle_id").precisionThreshold(10000));
+
+        searchRequest.source(builder);
+        List<Integer> sortValues = new ArrayList<>();
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                String str = hit.getSourceAsString();
+                AislePowHourDo hourDo = JsonUtils.parseObject(str, AislePowHourDo.class);
+                sortValues.add(hourDo.getAisleId());
+            }
+        }
+        Long totalRes = 0L;
+        Cardinality totalSizeAggregation = searchResponse.getAggregations().get("total_size");
+        if (totalSizeAggregation != null){
+            totalRes = totalSizeAggregation.getValue();
+        }
+
+        result.put("total",totalRes);
+        result.put("ids",sortValues);
+        return result;
+    }
+
+    private Map getESTotalAndIds(String index,String startTime,String endTime,Integer pageSize,Integer pageNo,List<Integer> ids) throws IOException {
+        HashMap<String, Object> result = new HashMap<>();
+        SearchRequest searchRequest = new SearchRequest(index);
+
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder
+                .from(pageNo * pageSize)
+                .size(pageSize)
+                .query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
+                        .must(QueryBuilders.termsQuery("aisle_id", ids))))
+                .sort("aisle_id", SortOrder.ASC)
+                .collapse(new CollapseBuilder("aisle_id"))
+                .aggregation(AggregationBuilders.cardinality("total_size").field("aisle_id").precisionThreshold(10000));
+
+        searchRequest.source(builder);
+        List<Integer> sortValues = new ArrayList<>();
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                String str = hit.getSourceAsString();
+                AislePowHourDo hourDo = JsonUtils.parseObject(str, AislePowHourDo.class);
+                sortValues.add(hourDo.getAisleId());
+            }
+        }
+        Long totalRes = 0L;
+        Cardinality totalSizeAggregation = searchResponse.getAggregations().get("total_size");
+        if (totalSizeAggregation != null){
+            totalRes = totalSizeAggregation.getValue();
+        }
+
+        result.put("total",totalRes);
+        result.put("ids",sortValues);
+        return result;
+    }
+    
     private String localDateTimeToString(LocalDateTime time){
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         return time.format(fmt);

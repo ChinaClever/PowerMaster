@@ -473,7 +473,13 @@ const handleSelectStatus = (index) => {
   statusList[index].selected = !statusList[index].selected
   const status =  statusList.filter(item => item.selected)
   const statusArr = status.map(item => item.value)
-  queryParams.color = statusArr;
+  if(statusArr.length != statusList.length){
+    queryParams.color = statusArr;
+    queryParams.status = [5];
+  }else{
+    queryParams.color = [];
+    queryParams.status = [];
+  }
   handleQuery();
 }
 

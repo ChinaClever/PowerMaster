@@ -5,6 +5,7 @@ import cn.iocoder.yudao.framework.common.entity.es.rack.ele.RackEleTotalRealtime
 import cn.iocoder.yudao.framework.common.entity.es.rack.ele.RackEqTotalDayDo;
 
 import cn.iocoder.yudao.framework.common.entity.es.rack.pow.RackPowHourDo;
+import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 
 import com.alibaba.fastjson2.JSONObject;
@@ -222,7 +223,7 @@ public class RackServiceImpl implements RackService {
                 String startTime = localDateTimeToString(oldTime);
                 String endTime = localDateTimeToString(newTime);
                 List<String> cabinetData = getData(startTime, endTime, Arrays.asList(Integer.valueOf(id)), index);
-                List<RackPowHourDo> roomPowHourDos = cabinetData.stream().map(str -> JsonUtils.parseObject(str, RackPowHourDo.class)).collect(Collectors.toList());
+                List<RackPowHourDo> rackPowHourDos = cabinetData.stream().map(str -> JsonUtils.parseObject(str, RackPowHourDo.class)).collect(Collectors.toList());
 
 
                 LineSeries totalApparentPow = new LineSeries();
@@ -234,14 +235,14 @@ public class RackServiceImpl implements RackService {
                 
 
                 if(timeType.equals(0) || oldTime.toLocalDate().equals(newTime.toLocalDate())){
-                    roomPowHourDos.forEach(hourdo -> {
+                    rackPowHourDos.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getApparentTotalAvgValue());
                         totalActivePow.getData().add(hourdo.getActiveTotalAvgValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("HH:mm:ss"));
 
                     });
                 }else{
-                    roomPowHourDos.forEach(hourdo -> {
+                    rackPowHourDos.forEach(hourdo -> {
                         totalApparentPow.getData().add(hourdo.getApparentTotalAvgValue());
                         totalActivePow.getData().add(hourdo.getActiveTotalAvgValue());
                         totalLineRes.getTime().add(hourdo.getCreateTime().toString("yyyy-MM-dd"));
@@ -291,7 +292,7 @@ public class RackServiceImpl implements RackService {
     }
 
     @Override
-    public Map getRoomPFLine(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
+    public Map getRackPFLine(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime) {
         Map result = new HashMap<>();
         LineResBase totalLineRes = new LineResBase();
         result.put("pfLineRes",totalLineRes);
@@ -341,6 +342,12 @@ public class RackServiceImpl implements RackService {
             log.error("获取数据失败",e);
         }
         return result;
+    }
+
+    @Override
+    public List<Integer> idList() {
+        return rackMapper.selectList().stream().limit(10).collect(Collectors.toList())
+                .stream().map(RackDO::getId).collect(Collectors.toList());
     }
 
     /**

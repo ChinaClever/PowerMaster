@@ -310,6 +310,10 @@ const getList = async () => {
       const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
+    // 时间段清空后值会变成null 此时搜索不能带上时间段
+    if(selectTimeRange.value == null){
+      queryParams.timeRange = undefined
+    }
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
     eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
     list.value = data.list

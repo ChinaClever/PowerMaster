@@ -163,20 +163,16 @@ const shortcuts = [
 watch(() => queryParams.granularity, () => {
     if (queryParams.granularity == 'day'){
       tableColumns.value = [
-        { label: '母线名称', align: 'center', prop: 'bus_name', istrue:true},
-        { label: '插接箱名称', align: 'center', prop: 'box_name', istrue:true},
-        { label: '位置', align: 'center', prop: 'location' , istrue:true},
-        { label: '网络地址', align: 'center', prop: 'ip_addr', istrue:true},
+        { label: '所在位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true},
         { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
         { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
       ]
     }else{
       tableColumns.value = [
-        { label: '母线名称', align: 'center', prop: 'bus_name', istrue:true},
-        { label: '插接箱名称', align: 'center', prop: 'box_name', istrue:true},
-        { label: '位置', align: 'center', prop: 'location' , istrue:true},
-        { label: '网络地址', align: 'center', prop: 'ip_addr', istrue:true},
+        { label: '所在位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true},
         { label: '开始日期', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
         { label: '结束日期', align: 'center', prop: 'end_time', formatter: formatTime, istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
@@ -188,10 +184,8 @@ watch(() => queryParams.granularity, () => {
 });
 
 const tableColumns = ref([
-  { label: '母线名称', align: 'center', prop: 'bus_name', istrue:true},
-  { label: '插接箱名称', align: 'center', prop: 'box_name', istrue:true},
-  { label: '位置', align: 'center', prop: 'location' , istrue:true},
-  { label: '网络地址', align: 'center', prop: 'ip_addr', istrue:true},
+  { label: '所在位置', align: 'center', prop: 'location' , istrue:true},
+  { label: '网络地址', align: 'center', prop: 'dev_key', istrue:true},
   { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
   { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
   { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
@@ -245,7 +239,7 @@ function formatEle(_row: any, _column: any, cellValue: number): string {
 
 // 格式化电费列数据
 function formatBill(_row: any, _column: any, cellValue: number): string {
-  return cellValue.toFixed(3);
+  return cellValue.toFixed(1);
 }
 
 // 禁选未来的日期

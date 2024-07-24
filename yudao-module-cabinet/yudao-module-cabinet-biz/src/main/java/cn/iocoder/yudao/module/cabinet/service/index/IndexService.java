@@ -66,4 +66,6 @@ public interface IndexService {
     Map getCabinetEnvHotTemAndHumData(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
     Map getCabinetPFLine(String id, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    List<Integer> idList();
 }

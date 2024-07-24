@@ -6,8 +6,6 @@ import lombok.Data;
 @Data
 public class AisleEQRes extends AisleIndexRespVO {
 
-
-
     /**
      * 电力容量
      */

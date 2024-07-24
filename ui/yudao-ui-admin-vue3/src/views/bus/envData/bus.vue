@@ -81,7 +81,7 @@
           <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
             <template #default="{ row }">
               <div v-if="column.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.bus_id, row.ip_addr, row.address)">详情</el-button>
+                <el-button link type="primary" @click="toDetails(row.bus_id, row.dev_key, row.location)">详情</el-button>
               </div>
             </template>
           </el-table-column>
@@ -113,9 +113,8 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnvDataApi } from '@/api/bus/envData'
-import { ElMessage } from 'element-plus'
 import { IndexApi } from '@/api/bus/busindex'
-import PDUImage from '@/assets/imgs/PDU.jpg';
+// import PDUImage from '@/assets/imgs/PDU.jpg';
 const { push } = useRouter()
 /** bus历史数据 列表 */
 defineOptions({ name: 'BusEnvHistoryData' })
@@ -191,15 +190,15 @@ const shortcuts = [
 
 //筛选选项
 const props = { multiple: true}
-const defaultOptionsCol = ref( [["tem_a"], ["tem_b"], ["tem_c"], ["tem_n"], ["ip_addr"]])
+const defaultOptionsCol = ref( [["tem_a"], ["tem_b"], ["tem_c"], ["tem_n"], ["dev_key"]])
 const optionsCol = ref([
     { value: "tem_a", label: 'A路温度'},
     { value: "tem_b", label: 'B路温度'},
     { value: "tem_c", label: 'C路温度'},
     { value: "tem_n", label: '中线温度'},
-    { value: "ip_addr", label: '网络地址'},
+    { value: "dev_key", label: '设备地址'},
 ])
-const originalArray = ref(["tem_a", "tem_b", "tem_c", "tem_n", "ip_addr"])
+const originalArray = ref(["tem_a", "tem_b", "tem_c", "tem_n", "dev_key"])
 
 // 处理筛选列变化
 const cascaderChange = (selectedCol) => {
@@ -231,20 +230,19 @@ watch(() => queryParams.granularity, (newValues) => {
     const  newGranularity = newValues;
     if ( newGranularity == 'realtime'){
       // 配置筛选列
-      defaultOptionsCol.value = [["tem_a"], ["tem_b"], ["tem_c"], ["tem_n"], ["ip_addr"]];
+      defaultOptionsCol.value = [["tem_a"], ["tem_b"], ["tem_c"], ["tem_n"], ["dev_key"]];
       optionsCol.value = [
         { value: "tem_a", label: 'A路温度'},
         { value: "tem_b", label: 'B路温度'},
         { value: "tem_c", label: 'C路温度'},
         { value: "tem_n", label: '中线温度'},
-        { value: "ip_addr", label: '网络地址'},
+        { value: "dev_key", label: '设备地址'},
       ];
-      originalArray.value =["tem_a", "tem_b", "tem_c", "tem_n", "ip_addr"];
+      originalArray.value =["tem_a", "tem_b", "tem_c", "tem_n", "dev_key"];
       // 配置表格列
       tableColumns.value =([
-        { label: '母线名称', align: 'center', prop: 'bus_name', width: '120px', istrue:true},
-        { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
-        { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '180px'},
+        { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
+        { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
         { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
         { label: 'A路温度(℃)', align: 'center', prop: 'tem_a', istrue:true, formatter: formatData},
         { label: 'B路温度(℃)', align: 'center', prop: 'tem_b', istrue:true, formatter: formatData},
@@ -289,16 +287,15 @@ watch(() => queryParams.granularity, (newValues) => {
           ]
         },
         {
-          value: "ip_addr", label: '网络地址'
+          value: "dev_key", label: '设备地址'
         }
       ] as any;
       originalArray.value =["tem_a_avg_value", "tem_a_max", "tem_a_min", "tem_b_avg_value", "tem_b_max", "tem_b_min", 
-                          "tem_c_avg_value", "tem_c_max", "tem_c_min", "tem_n_avg_value", "tem_n_max", "tem_n_min", "ip_addr",],
+                          "tem_c_avg_value", "tem_c_max", "tem_c_min", "tem_n_avg_value", "tem_n_max", "tem_n_min", "dev_key",],
       // 配置表格列
       tableColumns.value = [
-        { label: '母线名称', align: 'center', prop: 'bus_name', width: '120px', istrue:true},
-        { label: '位置', align: 'center', prop: 'location', istrue:true, width: '180px'}, 
-        { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '160px'},
+        { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '180px'}, 
+        { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
         { label: '记录时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true},
 
         { label: 'A路平均温度(℃)', align: 'center', prop: 'tem_a_avg_value', istrue:true, width: '180px', formatter: formatData },
@@ -334,9 +331,8 @@ watch(() => queryParams.granularity, (newValues) => {
   });
 
 const tableColumns = ref([
-  { label: '母线名称', align: 'center', prop: 'bus_name', width: '120px', istrue:true},
-  { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
-  { label: '网络地址', align: 'center', prop: 'ip_addr' , istrue:true, width: '180px'},
+  { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
+  { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
   { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
   { label: 'A路温度(℃)', align: 'center', prop: 'tem_a', istrue:true, formatter: formatData},
   { label: 'B路温度(℃)', align: 'center', prop: 'tem_b', istrue:true, formatter: formatData},
@@ -409,8 +405,8 @@ const handleQuery = () => {
 }
 
 /** 详情操作*/
-const toDetails = (busId: number, ip_addr: string, address: string) => {
-  push('/bus/record/envAnalysis/bus?busId='+busId+'&ipAddr='+ip_addr+'&address='+address);
+const toDetails = (busId: number, dev_key: string, location: string) => {
+  push('/bus/record/envAnalysis/bus?busId='+busId+'&devKey='+dev_key+'&location='+location);
 }
 
 /** 导出按钮操作 */

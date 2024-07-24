@@ -204,8 +204,7 @@ const shortcuts = [
 
 //筛选选项
 const props = { multiple: true}
-const defaultOptionsCol = ref([["total", "active_total"], ["total", "apparent_total"], ["A", "active_a"], 
-                ["A", "apparent_a"], ["B", "active_b"], ["B", "apparent_b"]])
+const defaultOptionsCol = ref([["total", "active_total"], ["total", "apparent_total"]])
 const optionsCol = ref([
   {
     value: "total",
@@ -263,8 +262,7 @@ watch(() => queryParams.granularity, (newValues) => {
     const newGranularity = newValues;
     if ( newGranularity == 'realtime'){
       defaultOptionsCol.value = [
-        ["total", "active_total"], ["total", "apparent_total"], ["A", "active_a"], 
-        ["A", "apparent_a"], ["B", "active_b"], ["B", "apparent_b"]
+        ["total", "active_total"], ["total", "apparent_total"]
       ]
       optionsCol.value = [
         {
@@ -295,14 +293,14 @@ watch(() => queryParams.granularity, (newValues) => {
       originalArray.value = ["active_total", "apparent_total", "active_a", "apparent_a", "active_b", "apparent_b"]        
  
       tableColumns.value =[
-        { label: '位置', align: 'center', prop: 'location' , width: '160px' , istrue:true},
+        { label: '位置', align: 'center', prop: 'location' , width: '250px', istrue:true},
         { label: '时间', align: 'center', prop: 'create_time', formatter: dateFormatter, width: '200px' , istrue:true},
         { label: '总有功功率(kW)', align: 'center', prop: 'active_total' , istrue:true, formatter: formatPower},
         { label: '总视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, formatter: formatPower},
-        { label: 'A路有功功率(kW)', align: 'center', prop: 'active_a' , istrue:true, formatter: formatPower},
-        { label: 'A路视在功率(kVA)', align: 'center', prop: 'apparent_a' , istrue:true, formatter: formatPower},
-        { label: 'B路有功功率(kW)', align: 'center', prop: 'active_b' , istrue:true, formatter: formatPower},
-        { label: 'B路视在功率(kVA)', align: 'center', prop: 'apparent_b' , istrue:true, formatter: formatPower},
+        { label: 'A路有功功率(kW)', align: 'center', prop: 'active_a' , istrue:false, formatter: formatPower},
+        { label: 'A路视在功率(kVA)', align: 'center', prop: 'apparent_a' , istrue:false, formatter: formatPower},
+        { label: 'B路有功功率(kW)', align: 'center', prop: 'active_b' , istrue:false, formatter: formatPower},
+        { label: 'B路视在功率(kVA)', align: 'center', prop: 'apparent_b' , istrue:false, formatter: formatPower},
         { label: '操作', align: 'center', slot: 'actions' , istrue:true},
       ]
       queryParams.pageNo = 1;
@@ -310,8 +308,8 @@ watch(() => queryParams.granularity, (newValues) => {
       getList();
     }else{
       defaultOptionsCol.value = [
-        ["total", "active_pow", "active_total_avg_value"],["total", "apparent_pow", "apparent_total_avg_value"],["A", "active_pow", "active_a_avg_value"],
-        ["A", "apparent_pow", "apparent_a_avg_value"],["B", "active_pow", "active_b_avg_value"],["B", "apparent_pow", "apparent_b_avg_value"],
+        ["total", "active_pow", "active_total_avg_value"], ["total", "active_pow", "active_total_max"], ["total", "active_pow", "active_total_min"],
+        ["total", "apparent_pow", "apparent_total_avg_value"], ["total", "apparent_pow", "apparent_total_max"], ["total", "apparent_pow", "apparent_total_min"]
       ]
       optionsCol.value = [
         {
@@ -375,36 +373,36 @@ watch(() => queryParams.granularity, (newValues) => {
                           ]    
 
       tableColumns.value = [
-        { label: '位置', align: 'center', prop: 'location' , width: '160px' , istrue:true},
+        { label: '位置', align: 'center', prop: 'location' , width: '250px', istrue:true},
         { label: '记录时间', align: 'center', prop: 'create_time' , width: '200px', istrue:true},
         { label: '总平均有功功率(kW)', align: 'center', prop: 'active_total_avg_value', istrue:true, width: '180px', formatter: formatPower},
-        { label: '总最大有功功率(kW)', align: 'center', prop: 'active_total_max_value', istrue:false, width: '180px', formatter: formatPower},
-        { label: '总最大有功功率时间', align: 'center', prop: 'active_total_max_time', formatter: dateFormatter, width: '200px', istrue:false},
-        { label: '总最小有功功率(kW)', align: 'center', prop: 'active_total_min_value', istrue:false, width: '180px', formatter: formatPower},
-        { label: '总最小有功功率时间', align: 'center', prop: 'active_total_min_time', formatter: dateFormatter, width: '200px', istrue:false},
+        { label: '总最大有功功率(kW)', align: 'center', prop: 'active_total_max_value', istrue:true, width: '180px', formatter: formatPower},
+        { label: '总最大有功功率时间', align: 'center', prop: 'active_total_max_time', formatter: dateFormatter, width: '200px', istrue:true},
+        { label: '总最小有功功率(kW)', align: 'center', prop: 'active_total_min_value', istrue:true, width: '180px', formatter: formatPower},
+        { label: '总最小有功功率时间', align: 'center', prop: 'active_total_min_time', formatter: dateFormatter, width: '200px', istrue:true},
         { label: '总平均视在功率(kVA)', align: 'center', prop: 'apparent_total_avg_value', istrue:true, width: '180px', formatter: formatPower},
-        { label: '总最大视在功率(kVA)', align: 'center', prop: 'apparent_total_max_value', istrue:false, width: '180px', formatter: formatPower},
-        { label: '总最大视在功率时间', align: 'center', prop: 'apparent_total_max_time', formatter: dateFormatter, width: '200px', istrue:false},
-        { label: '总最小视在功率(kVA)', align: 'center', prop: 'apparent_total_min_value', istrue:false, width: '180px', formatter: formatPower},
-        { label: '总最小视在功率时间', align: 'center', prop: 'apparent_total_min_time', formatter: dateFormatter, width: '200px', istrue:false},
+        { label: '总最大视在功率(kVA)', align: 'center', prop: 'apparent_total_max_value', istrue:true, width: '180px', formatter: formatPower},
+        { label: '总最大视在功率时间', align: 'center', prop: 'apparent_total_max_time', formatter: dateFormatter, width: '200px', istrue:true},
+        { label: '总最小视在功率(kVA)', align: 'center', prop: 'apparent_total_min_value', istrue:true, width: '180px', formatter: formatPower},
+        { label: '总最小视在功率时间', align: 'center', prop: 'apparent_total_min_time', formatter: dateFormatter, width: '200px', istrue:true},
 
-        { label: 'A路平均有功功率(kW)', align: 'center', prop: 'active_a_avg_value', istrue:true, width: '180px', formatter: formatPower},
+        { label: 'A路平均有功功率(kW)', align: 'center', prop: 'active_a_avg_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'A路最大有功功率(kW)', align: 'center', prop: 'active_a_max_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'A路最大有功功率时间', align: 'center', prop: 'active_a_max_time', formatter: dateFormatter, width: '200px', istrue:false},
         { label: 'A路最小有功功率(kW)', align: 'center', prop: 'active_a_min_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'A路最小有功功率时间', align: 'center', prop: 'active_a_min_time', formatter: dateFormatter, width: '200px', istrue:false},
-        { label: 'A路平均视在功率(kVA)', align: 'center', prop: 'apparent_a_avg_value', istrue:true, width: '180px', formatter: formatPower},
+        { label: 'A路平均视在功率(kVA)', align: 'center', prop: 'apparent_a_avg_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'A路最大视在功率(kVA)', align: 'center', prop: 'apparent_a_max_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'A路最大视在功率时间', align: 'center', prop: 'apparent_a_max_time', formatter: dateFormatter, width: '200px', istrue:false},
         { label: 'A路最小视在功率(kVA)', align: 'center', prop: 'apparent_a_min_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'A路最小视在功率时间', align: 'center', prop: 'apparent_a_min_time', formatter: dateFormatter, width: '200px', istrue:false},
 
-        { label: 'B路平均有功功率(kW)', align: 'center', prop: 'active_b_avg_value', istrue:true, width: '180px', formatter: formatPower},
+        { label: 'B路平均有功功率(kW)', align: 'center', prop: 'active_b_avg_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'B路最大有功功率(kW)', align: 'center', prop: 'active_b_max_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'B路最大有功功率时间', align: 'center', prop: 'active_b_max_time', formatter: dateFormatter, width: '200px', istrue:false},
         { label: 'B路最小有功功率(kW)', align: 'center', prop: 'active_b_min_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'B路最小有功功率时间', align: 'center', prop: 'active_b_min_time', formatter: dateFormatter, width: '200px', istrue:false},
-        { label: 'B路平均视在功率(kVA)', align: 'center', prop: 'apparent_b_avg_value', istrue:true, width: '180px', formatter: formatPower},
+        { label: 'B路平均视在功率(kVA)', align: 'center', prop: 'apparent_b_avg_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'B路最大视在功率(kVA)', align: 'center', prop: 'apparent_b_max_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'B路最大视在功率时间', align: 'center', prop: 'apparent_b_max_time', formatter: dateFormatter, width: '200px', istrue:false},
         { label: 'B路最小视在功率(kVA)', align: 'center', prop: 'apparent_b_min_value', istrue:false, width: '180px', formatter: formatPower},
@@ -419,14 +417,14 @@ watch(() => queryParams.granularity, (newValues) => {
 });
 
 const tableColumns = ref([
-  { label: '位置', align: 'center', prop: 'location' , width: '160px' , istrue:true},
-  { label: '时间', align: 'center', prop: 'create_time', formatter: dateFormatter, width: '180px' , istrue:true},
+  { label: '位置', align: 'center', prop: 'location', width: '250px' ,  istrue:true},
+  { label: '时间', align: 'center', prop: 'create_time', formatter: dateFormatter, width: '200px' , istrue:true},
   { label: '总有功功率(kW)', align: 'center', prop: 'active_total' , istrue:true, formatter: formatPower},
   { label: '总视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, formatter: formatPower},
-  { label: 'A路有功功率(kW)', align: 'center', prop: 'active_a' , istrue:true, formatter: formatPower},
-  { label: 'A路视在功率(kVA)', align: 'center', prop: 'apparent_a' , istrue:true, formatter: formatPower},
-  { label: 'B路有功功率(kW)', align: 'center', prop: 'active_b' , istrue:true, formatter: formatPower},
-  { label: 'B路视在功率(kVA)', align: 'center', prop: 'apparent_b' , istrue:true, formatter: formatPower},
+  { label: 'A路有功功率(kW)', align: 'center', prop: 'active_a' , istrue:false, formatter: formatPower},
+  { label: 'A路视在功率(kVA)', align: 'center', prop: 'apparent_a' , istrue:false, formatter: formatPower},
+  { label: 'B路有功功率(kW)', align: 'center', prop: 'active_b' , istrue:false, formatter: formatPower},
+  { label: 'B路视在功率(kVA)', align: 'center', prop: 'apparent_b' , istrue:false, formatter: formatPower},
   { label: '操作', align: 'center', slot: 'actions' , istrue:true},
 ]);
 

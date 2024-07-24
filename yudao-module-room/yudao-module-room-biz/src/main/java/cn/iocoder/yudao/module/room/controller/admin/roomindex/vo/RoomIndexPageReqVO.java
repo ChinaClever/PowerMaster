@@ -23,6 +23,9 @@ public class RoomIndexPageReqVO extends PageParam {
     @Schema(description = "id", example = "757")
     private Integer id;
 
+    @Schema(description = "id", example = "757")
+    private List<Integer> roomIds;
+
     @Schema(description = "机房名", example = "芋艿")
     private String name;
 

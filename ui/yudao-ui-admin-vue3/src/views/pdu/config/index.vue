@@ -118,6 +118,7 @@
             <el-form-item label="电费单价" prop="bill" label-width="70px">
               <el-input
                 v-model="billQueryParams.bill"
+                
                 placeholder="请输入电费单价"
                 clearable
                 @keyup.enter="handleBillQuery"

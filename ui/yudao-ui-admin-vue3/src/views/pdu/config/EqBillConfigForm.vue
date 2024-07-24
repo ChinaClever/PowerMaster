@@ -8,7 +8,7 @@
       v-loading="formLoading"
     >
       <el-form-item label="电费单价" prop="bill">
-        <el-input v-model="formData.bill" placeholder="请输入电费单价" />
+        <el-input type="number" v-model="formData.bill" placeholder="请输入电费单价" />
       </el-form-item>
       <el-form-item label="计费方式" prop="billMode" >
         <el-radio-group v-model="formData.billMode">
@@ -17,15 +17,8 @@
         </el-radio-group>
       </el-form-item>
       <el-form-item label="计费时间段" prop="timePicker" >
-        <el-time-picker
-          v-model="formData.timePicker"
-          is-range
-          arrow-control
-          value-format="HH:mm:ss"
-          range-separator="到"
-          start-placeholder="开始时间"
-          end-placeholder="结束时间"
-        />
+        <el-time-picker value-format="HH:mm:ss" v-model="formData.timePickerA" placeholder="开始时间" />到
+        <el-time-picker value-format="HH:mm:ss" v-model="formData.timePickerB" placeholder="结束时间" />
       </el-form-item>
     </el-form>
     <template #footer>
@@ -52,8 +45,9 @@ const formData = ref({
   bill: undefined,
   billMode: undefined,
   billPeriod: undefined,
-  timePicker:[],
-})
+  timePickerA : undefined,
+  timePickerB : undefined,
+}) as any
 const formRules = reactive({
   bill: [{ required: true, message: '电费单价不能为空', trigger: 'blur' }],
   billMode: [{ required: true, message: '计费方式 1固定计费 2 分段计费不能为空', trigger: 'blur' }],
@@ -73,7 +67,8 @@ const open = async (type: string, id?: number) => {
     try {
       formData.value = await EqBillConfigApi.getEqBillConfig(id)
       if(formData.value.billPeriod){
-        formData.value.timePicker = formData.value.billPeriod.split("-")
+        formData.value.timePickerA = formData.value.billPeriod?.split("-")[0]
+        formData.value.timePickerB = formData.value.billPeriod?.split("-")[1]
       }
     } finally {
       formLoading.value = false
@@ -91,7 +86,7 @@ const submitForm = async () => {
   formLoading.value = true
   try {
     const data = formData.value as unknown as EqBillConfigVO
-    data.billPeriod = formData.value.timePicker[0] + "-" + formData.value.timePicker[1];
+    data.billPeriod = formData.value.timePickerA + "-" +  formData.value.timePickerB;
     console.log(data.billPeriod)
     if (formType.value === 'create') {
       await EqBillConfigApi.createEqBillConfig(data)

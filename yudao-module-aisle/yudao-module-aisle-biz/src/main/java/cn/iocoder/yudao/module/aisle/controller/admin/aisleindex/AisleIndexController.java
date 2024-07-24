@@ -186,6 +186,11 @@ public class AisleIndexController {
         return success(indexService.getAislePFLine(pageReqVO.getId(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
     }
 
+    @GetMapping("/idList")
+    @Operation(summary = "获得通道列id列表")
+    public List<Integer> idList() {
+        return indexService.idList();
+    }
 //    @GetMapping("/export-excel")
 //    @Operation(summary = "导出通道列 Excel")
 //    @PreAuthorize("@ss.hasPermission('aisle:index:export')")

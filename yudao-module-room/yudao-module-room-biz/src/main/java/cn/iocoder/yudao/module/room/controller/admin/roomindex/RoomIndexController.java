@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.room.controller.admin.roomindex;
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -77,6 +78,56 @@ public class RoomIndexController {
         return success(BeanUtils.toBean(pageResult, RoomBalanceRes.class));
     }
 
+    /**
+     * 机房用能页面
+     *
+     * @param pageReqVO
+     */
+    @Operation(summary = "机房用能列表分页")
+    @PostMapping("/eq/page")
+    public CommonResult<PageResult<RoomEQRes>> getEqPage(@RequestBody RoomIndexPageReqVO pageReqVO) {
+        PageResult<RoomEQRes> pageResult = indexService.getEqPage(pageReqVO);
+        return success(pageResult);
+    }
+
+    /**
+     * 机房有功功率趋势
+     *
+     * @param id 机房id
+     */
+    @Operation(summary = "机房有功功率趋势")
+    @GetMapping("/activePowTrend")
+    public CommonResult<RoomActivePowDTO> activePowTrend(@Param("id") int id) {
+        RoomPowVo vo = new RoomPowVo();
+        vo.setId(id);
+        RoomActivePowDTO dto = indexService.getActivePow(vo);
+        return success(dto);
+    }
+
+    /**
+     * 机房用能趋势
+     *
+     * @param id 机房id
+     */
+    @Operation(summary = "机房用能趋势")
+    @GetMapping("/eleTrend")
+    public CommonResult<List<RoomEqTrendDTO>> eleTrend(@Param("id") int id, @Param("type") String type) {
+        List<RoomEqTrendDTO> dto = indexService.eqTrend(id, type);
+        return success(dto);
+    }
+
+    /**
+     * 机房用能环比
+     *
+     * @param id 机房id
+     */
+    @Operation(summary = "机房用能环比")
+    @GetMapping("/eleChain")
+    public CommonResult<RoomEleChainDTO> eleChain(@Param("id") int id) {
+        RoomEleChainDTO dto = indexService.getEleChain(id);
+        return success(dto);
+    }
+
 //    @GetMapping("/export-excel")
 //    @Operation(summary = "导出机房索引 Excel")
 //    @PreAuthorize("@ss.hasPermission('room:index:export')")
@@ -107,5 +158,11 @@ public class RoomIndexController {
     public CommonResult<Map> getRoomPFLine(@RequestBody RoomIndexPageReqVO pageReqVO)  {
         return success(indexService.getRoomPFLine(pageReqVO.getId(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
     }
+    @GetMapping("/idList")
+    @Operation(summary = "获得机房id列表")
+    public List<Integer> idList() {
+        return indexService.idList();
+    }
+
 
 }

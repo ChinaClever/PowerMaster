@@ -350,7 +350,7 @@ watch(() => queryParams.granularity, (newValues) => {
   });
 
 const tableColumns = ref([
-  { label: '位置', align: 'center', prop: 'address.address' , istrue:true, width: '180px'},
+  { label: '位置', align: 'center', prop: 'address.address' , istrue:true, width: '230px'},
   { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '180px'},
   { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
   { label: '监测点', align: 'center', slot: 'detect' , istrue: true},
