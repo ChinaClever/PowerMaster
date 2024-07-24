@@ -141,7 +141,7 @@ import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { EnvDataApi } from '@/api/bus/envData'
 import { formatDate } from '@/utils/formatTime'
-import PDUImage from '@/assets/imgs/PDU.jpg'
+// import PDUImage from '@/assets/imgs/PDU.jpg'
 import { ElMessage } from 'element-plus'
 defineOptions({ name: 'BoxEnvLine' })
 
@@ -160,7 +160,7 @@ const queryParams = reactive({
   granularity: 'realtime',
   devkey: undefined as string | undefined,
   // 进入页面原始数据默认显示最近一小时
-  timeRange: defaultHourTimeRange(1)
+  timeRange: defaultHourTimeRange(1) as any
 })
 // const carouselItems = ref([
 //       { imgUrl: PDUImage},

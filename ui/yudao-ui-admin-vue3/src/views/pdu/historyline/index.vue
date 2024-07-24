@@ -180,7 +180,7 @@ const queryParams = reactive({
   ipAddr: undefined as string | undefined,
   cascadeAddr: '0' as string | undefined,
   // 进入页面原始数据默认显示最近一小时
-  timeRange: defaultHourTimeRange(1)
+  timeRange: defaultHourTimeRange(1) as any
 })
 const carouselItems = ref([
       { imgUrl: PDUImage},

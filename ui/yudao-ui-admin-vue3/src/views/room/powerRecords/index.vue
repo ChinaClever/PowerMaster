@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机架电能记录">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机房电能记录">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
@@ -11,7 +11,7 @@
           </el-carousel> -->
         </div>
         <div class="nav_content">
-          <el-descriptions title="全部机架最近一天新增记录" direction="vertical" :column="1" border >
+          <el-descriptions title="全部机房最近一天新增记录" direction="vertical" :column="1" width="80px" border >
             <el-descriptions-item label="电能"><span>{{ navTotalData }} 条</span></el-descriptions-item>
           </el-descriptions>
         </div>
@@ -20,12 +20,12 @@
     <template #ActionBar>
       <el-form
         class="-mb-15px"
-        :model="queryParams"
+        :model="queryParams" 
         ref="queryFormRef"
         :inline="true"
         label-width="auto"
       >
-      <el-form-item label="时间段" prop="timeRange"> 
+      <el-form-item label="时间段" prop="timeRange">
         <el-date-picker
         value-format="YYYY-MM-DD HH:mm:ss"
         v-model="queryParams.timeRange"
@@ -83,10 +83,9 @@
 <script setup lang="ts">
 import dayjs from 'dayjs'
 import download from '@/utils/download'
-import { EnergyConsumptionApi } from '@/api/rack/energyConsumption'
-import { CabinetApi } from '@/api/cabinet/info'
-import { IndexApi } from '@/api/rack/index'
-
+import { EnergyConsumptionApi } from '@/api/room/energyConsumption'
+import { IndexApi } from '@/api/room/roomindex'
+// import PDUImage from '@/assets/imgs/PDU.jpg';
 defineOptions({ name: 'PowerRecords' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
@@ -100,12 +99,17 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
   timeRange: undefined as any,
-  rackIds: [],
+  roomIds: [],
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
 const exportLoading = ref(false)
-
+// const carouselItems = ref([
+//       { imgUrl: PDUImage},
+//       { imgUrl: PDUImage},
+//       { imgUrl: PDUImage},
+//       { imgUrl: PDUImage},
+//     ]);//侧边栏轮播图图片路径
 // 时间段快捷选项
 const shortcuts = [
   {
@@ -148,8 +152,9 @@ const shortcuts = [
 
 const tableColumns = ref([
   { label: '位置', align: 'center', prop: 'location' , istrue:true},
-  { label: '机架名', align: 'center', prop: 'rack_name' , istrue:true},
   { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+  { label: 'A路电能(kWh)', align: 'center', prop: 'ele_a' , istrue:true, formatter: formatEle},
+  { label: 'B路电能(kWh)', align: 'center', prop: 'ele_b' , istrue:true, formatter: formatEle},
   { label: '电能(kWh)', align: 'center', prop: 'ele_total' , istrue:true, formatter: formatEle},
 ]);
 
@@ -204,37 +209,11 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
 // 导航栏选择后触发
 const handleCheck = async (node) => {
   let arr = [] as any
-  node.forEach(item => { 
-    if(item.type == 5){
-      arr.push(item.id);
-    }
-  });
-  queryParams.rackIds = arr
+  node.forEach(item => arr.push(item.id));
+  queryParams.roomIds = arr
   handleQuery()
 }
 
-// 接口获取机房导航列表
-const getNavList = async() => {
-  const res = await CabinetApi.getRoomList({})
-  let arr = [] as any
-  for (let i=0; i<res.length;i++){
-  var temp = await IndexApi.getRackAll({id : res[i].id})
-  arr = arr.concat(temp);
-  }
-  navList.value = arr
-}
-
-// 获取导航的数据显示
-const getNavOneDayData = async() => {
-  const res = await EnergyConsumptionApi.getNavOneDayData({})
-  navTotalData.value = res.total
-}
-
-/** 搜索按钮操作 */
-const handleQuery = () => {
-  queryParams.pageNo = 1
-  getList()
-}
 
 /** 导出按钮操作 */
 const handleExport = async () => {
@@ -248,13 +227,31 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnergyConsumptionApi.exportRealtimeEQPageData(queryParams, axiosConfig)
-    await download.excel(data, '机架电能记录.xlsx')
+    await download.excel(data, 'PDU电能记录.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
   } finally {
     exportLoading.value = false
   }
+}
+
+// 接口获取机房导航列表
+const getNavList = async() => {
+  const res = await IndexApi.getRoomList()
+  navList.value = res
+}
+
+// 获取导航的数据显示
+const getNavOneDayData = async() => {
+  const res = await EnergyConsumptionApi.getNavOneDayData({})
+  navTotalData.value = res.total
+}
+
+/** 搜索按钮操作 */
+const handleQuery = () => {
+  queryParams.pageNo = 1
+  getList()
 }
 
 /** 初始化 **/

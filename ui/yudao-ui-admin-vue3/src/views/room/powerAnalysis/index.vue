@@ -398,7 +398,7 @@ const handleExport = async () => {
 
 /** 详情操作*/
 const toDetails = (roomId: number, location: string) => {
-  push('/room/roomenergyconsumption/ecdistribution?roomId='+roomId+'&location='+location);
+  push('/room/energyConsumption/ecdistribution?roomId='+roomId+'&location='+location);
 }
 
 /** 初始化 **/

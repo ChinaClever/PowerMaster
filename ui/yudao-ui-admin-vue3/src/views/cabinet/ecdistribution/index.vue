@@ -129,7 +129,7 @@ const activeName1 = ref('lineChart')
 const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
 const instance = getCurrentInstance();
-const selectTimeRange = ref(defaultDayTimeRange(14))
+const selectTimeRange = ref(defaultDayTimeRange(14)) as any
 const loading = ref(false) 
 const queryParams = reactive({
   cabinetId: undefined as number | undefined,

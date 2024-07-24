@@ -99,7 +99,7 @@ import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/aisle/energyConsumption'
 import { formatDate, endOfDay, convertDate, addTime} from '@/utils/formatTime'
 import { IndexApi } from '@/api/aisle/aisleindex'
-import PDUImage from '@/assets/imgs/PDU.jpg';
+// import PDUImage from '@/assets/imgs/PDU.jpg';
 defineOptions({ name: 'BillStatistics' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
