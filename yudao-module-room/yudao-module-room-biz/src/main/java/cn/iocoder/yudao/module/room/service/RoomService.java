@@ -1,7 +1,9 @@
 package cn.iocoder.yudao.module.room.service;
 
-import cn.iocoder.yudao.module.room.dto.RoomDetailDTO;
+import cn.iocoder.yudao.module.room.dto.*;
 import cn.iocoder.yudao.module.room.vo.RoomSaveVo;
+
+import java.io.IOException;
 
 /**
  * @author luowei
@@ -31,4 +33,45 @@ public interface RoomService {
      */
     RoomDetailDTO getDetail(Integer roomId);
 
+    /**
+     * 获取机柜数据
+     * @param id
+     * @return
+     */
+    RoomDataDTO getDataDetail(int id);
+
+    /**
+     * 主页面用能数据
+     * @param id
+     * @return
+     */
+    RoomEqDataDTO getMainEq(int id);
+
+    /**
+     * 主页面数据
+     * @param id
+     * @return
+     */
+    RoomDevDataDTO getMainDevData(int id);
+
+    /**
+     * 主页面数据
+     * @param id
+     * @return
+     */
+    RoomPowDataDTO getMainPowData(int id);
+
+    /**
+     * 主页面数据
+     * @param id
+     * @return
+     */
+    RoomCurveDataDTO getMainCurveData(int id);
+
+    /**
+     * 主页面数据
+     * @param id
+     * @return
+     */
+    RoomEnvDataDTO getMainEnvData(int id) throws IOException;
 }

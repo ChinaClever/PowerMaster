@@ -3,14 +3,9 @@ package cn.iocoder.yudao.module.system.controller.admin.alarm;
 
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.module.system.controller.admin.alarm.vo.mail.MailConfigPageReqVO;
-import cn.iocoder.yudao.module.system.controller.admin.alarm.vo.mail.MailConfigSaveReqVO;
 import cn.iocoder.yudao.module.system.controller.admin.alarm.vo.sms.SmsConfigPageReqVO;
 import cn.iocoder.yudao.module.system.controller.admin.alarm.vo.sms.SmsConfigSaveReqVO;
-import cn.iocoder.yudao.module.system.dal.dataobject.alarm.SystemAlarmRecord;
-import cn.iocoder.yudao.module.system.dal.dataobject.alarm.SystemMailAlarmConfig;
 import cn.iocoder.yudao.module.system.dal.dataobject.alarm.SystemSmsAlarmConfig;
-import cn.iocoder.yudao.module.system.service.alarm.MailConfigService;
 import cn.iocoder.yudao.module.system.service.alarm.SmsConfigService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,7 +15,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import javax.annotation.security.PermitAll;
 import javax.validation.Valid;
 import java.util.List;
 

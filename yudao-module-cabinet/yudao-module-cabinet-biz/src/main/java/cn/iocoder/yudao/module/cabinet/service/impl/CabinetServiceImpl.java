@@ -5,7 +5,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalMonthDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalWeekDo;
-import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleCfg;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.*;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
@@ -84,9 +84,9 @@ public class CabinetServiceImpl implements CabinetService {
     RackIndexMapper rackIndexMapper;
     @Autowired
     CabinetBusMapper cabinetBusMapper;
+    @Autowired
+    AisleIndexMapper aisleIndexMapper;
 
-    @Resource
-    AisleCfgMapper aisleCfgMapper;
     @Autowired
     RedisTemplate redisTemplate;
 
@@ -375,18 +375,18 @@ public class CabinetServiceImpl implements CabinetService {
             }
             //计算机柜位置
             if (Objects.nonNull(vo.getIndex())){
-                AisleCfg aisleCfg = aisleCfgMapper.selectOne(new LambdaQueryWrapper<AisleCfg>()
-                        .eq(AisleCfg::getAisleId,vo.getAisleId()));
+                AisleIndex aisleIndex = aisleIndexMapper.selectOne(new LambdaQueryWrapper<AisleIndex>()
+                        .eq(AisleIndex::getId,vo.getAisleId()));
 
-                if (Objects.nonNull(aisleCfg) && "x".equals(aisleCfg.getDirection())){
+                if (Objects.nonNull(aisleIndex) && "x".equals(aisleIndex.getDirection())){
                     //横向
-                    vo.setXCoordinate(aisleCfg.getXCoordinate() + vo.getIndex() - 1);
-                    vo.setYCoordinate(aisleCfg.getYCoordinate());
+                    vo.setXCoordinate(aisleIndex.getXCoordinate() + vo.getIndex() - 1);
+                    vo.setYCoordinate(aisleIndex.getYCoordinate());
                 }
-                if (Objects.nonNull(aisleCfg) && "y".equals(aisleCfg.getDirection())){
+                if (Objects.nonNull(aisleIndex) && "y".equals(aisleIndex.getDirection())){
                     //纵向
-                    vo.setYCoordinate(aisleCfg.getYCoordinate() + vo.getIndex() - 1);
-                    vo.setXCoordinate(aisleCfg.getXCoordinate());
+                    vo.setYCoordinate(aisleIndex.getYCoordinate() + vo.getIndex() - 1);
+                    vo.setXCoordinate(aisleIndex.getXCoordinate());
                 }
             }
 
