@@ -139,7 +139,7 @@ import { formatDate, endOfDay, convertDate, addTime } from '@/utils/formatTime'
 import { IndexApi } from '@/api/aisle/aisleindex'
 import * as echarts from 'echarts';
 const message = useMessage() // 消息弹窗
-import PDUImage from '@/assets/imgs/PDU.jpg'
+// import PDUImage from '@/assets/imgs/PDU.jpg'
 const { push } = useRouter()
 defineOptions({ name: 'PowerAnalysis' })
 
@@ -269,6 +269,10 @@ const getList = async () => {
       const oneDay = 24 * 60 * 60 * 1000;
       const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
+    }
+    // 时间段清空后值会变成null 此时搜索不能带上时间段
+    if(selectTimeRange.value == null){
+      queryParams.timeRange = undefined
     }
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
     eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));

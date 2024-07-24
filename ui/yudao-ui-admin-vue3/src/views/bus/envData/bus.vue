@@ -81,7 +81,7 @@
           <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
             <template #default="{ row }">
               <div v-if="column.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.bus_id, row.dev_key, row.address)">详情</el-button>
+                <el-button link type="primary" @click="toDetails(row.bus_id, row.dev_key, row.location)">详情</el-button>
               </div>
             </template>
           </el-table-column>

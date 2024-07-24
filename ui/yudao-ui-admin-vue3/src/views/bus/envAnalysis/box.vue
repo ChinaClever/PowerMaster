@@ -162,12 +162,12 @@ const queryParams = reactive({
   // 进入页面原始数据默认显示最近一小时
   timeRange: defaultHourTimeRange(1)
 })
-const carouselItems = ref([
-      { imgUrl: PDUImage},
-      { imgUrl: PDUImage},
-      { imgUrl: PDUImage},
-      { imgUrl: PDUImage},
-    ]);//侧边栏轮播图图片路径
+// const carouselItems = ref([
+//       { imgUrl: PDUImage},
+//       { imgUrl: PDUImage},
+//       { imgUrl: PDUImage},
+//       { imgUrl: PDUImage},
+//     ]);//侧边栏轮播图图片路径
 
 // 时间段快捷选项
 const shortcuts = [
@@ -887,7 +887,7 @@ onMounted( async () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 16px;
+    font-size: 15px;
   }
 
 .nav_data{

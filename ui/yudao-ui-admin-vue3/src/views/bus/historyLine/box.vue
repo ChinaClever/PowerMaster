@@ -1586,6 +1586,7 @@ onMounted( async () => {
     getTypeMaxValue();
     await getList(); 
     nowAddress.value = queryLocation
+    nowAddressTemp.value = queryLocation
     initChart();
   }
 })

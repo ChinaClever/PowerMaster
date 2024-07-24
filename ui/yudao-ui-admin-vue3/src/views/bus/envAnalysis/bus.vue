@@ -887,7 +887,7 @@ onMounted( async () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 16px;
+    font-size: 15px;
   }
 
 .nav_data{

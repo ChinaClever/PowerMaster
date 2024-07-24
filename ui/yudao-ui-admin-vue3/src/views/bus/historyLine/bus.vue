@@ -1324,6 +1324,7 @@ onMounted( async () => {
   if (queryParams.busId != undefined){
     await getList(); 
     nowAddress.value = queryLocation
+    nowAddressTemp.value = queryLocation
     initChart();
   }
 })

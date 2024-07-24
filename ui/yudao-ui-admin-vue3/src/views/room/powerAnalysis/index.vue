@@ -1,14 +1,14 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="母线始端箱能耗趋势">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机房能耗趋势">
     <template #NavInfo>
     <br/>    <br/> 
         <div class="nav_data">
           <div class="carousel-container">
-            <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
+            <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
               <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
                 <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
               </el-carousel-item>
-            </el-carousel>
+            </el-carousel> -->
           </div>
           <div class="nav_content">
           <el-descriptions title="" direction="vertical" :column="1" border >
@@ -79,7 +79,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.bus_id, row.location)">详情</el-button>
+            <el-button link type="primary" @click="toDetails(row.room_id, row.location)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -99,7 +99,7 @@
               v-if="child.istrue"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.bus_id, row.location)">详情</el-button>
+                <el-button link type="primary" @click="toDetails(row.room_id, row.location)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -134,12 +134,12 @@
 <script setup lang="ts">
 import dayjs from 'dayjs'
 import download from '@/utils/download'
-import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption'
+import { EnergyConsumptionApi } from '@/api/room/energyConsumption'
 import { formatDate, endOfDay, convertDate, addTime } from '@/utils/formatTime'
-import { IndexApi } from '@/api/bus/busindex'
+import { IndexApi } from '@/api/room/roomindex'
 import * as echarts from 'echarts';
 const message = useMessage() // 消息弹窗
-import PDUImage from '@/assets/imgs/PDU.jpg'
+// import PDUImage from '@/assets/imgs/PDU.jpg'
 const { push } = useRouter()
 defineOptions({ name: 'PowerAnalysis' })
 
@@ -158,17 +158,17 @@ const queryParams = reactive({
   pageSize: 15,
   granularity: 'day',
   timeRange: undefined as string[] | undefined,
-  devkeys: [],
+  roomIds:[]
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
 const exportLoading = ref(false)
-const carouselItems = ref([
-      { imgUrl: PDUImage},
-      { imgUrl: PDUImage},
-      { imgUrl: PDUImage},
-      { imgUrl: PDUImage},
-    ]);//侧边栏轮播图图片路径
+// const carouselItems = ref([
+//       { imgUrl: PDUImage},
+//       { imgUrl: PDUImage},
+//       { imgUrl: PDUImage},
+//       { imgUrl: PDUImage}, 
+//     ]);//侧边栏轮播图图片路径
 // 时间段快捷选项
 const shortcuts = [
   {
@@ -219,7 +219,7 @@ const initChart = () => {
   if (rankChartContainer.value && instance) {
     rankChart = echarts.init(rankChartContainer.value);
     rankChart.setOption({
-      title: { text: '各始端箱耗电量'},
+      title: { text: '各机房耗电量'},
       tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
       legend: { data: []},
       toolbox: {feature: {saveAsImage:{}}},
@@ -242,9 +242,8 @@ watch(() => queryParams.granularity, () => {
 });
 
 const tableColumns = ref([
-  { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
-  { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true, width: '220px'},
-  { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '160px' , istrue:true},
+  { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
+  { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px' , istrue:true},
   { label: '开始', align: 'center', istrue: true, children: [
       { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime1, width: '150px' , istrue:true},
       { label: '电能(kWh)', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
@@ -356,18 +355,14 @@ const handleQuery = () => {
 // 导航栏选择后触发
 const handleCheck = async (node) => {
   let arr = [] as any
-  node.forEach(item => { 
-    if(item.type == 6){
-      arr.push(item.unique);
-    }
-  });
-  queryParams.devkeys = arr
+  node.forEach(item => arr.push(item.id));
+  queryParams.roomIds = arr
   handleQuery()
 }
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await IndexApi.getBusMenu()
+  const res = await IndexApi.getRoomList()
   navList.value = res
 }
 
@@ -391,7 +386,7 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnergyConsumptionApi.exportEQPageData(queryParams, axiosConfig)
-    await download.excel(data, '始端箱能耗趋势.xlsx')
+    await download.excel(data, '机房能耗趋势.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -402,8 +397,8 @@ const handleExport = async () => {
 
 
 /** 详情操作*/
-const toDetails = (busId: number, location: string) => {
-  push('/bus/nenghao/ecdistribution/bus?busId='+busId+'&location='+location);
+const toDetails = (roomId: number, location: string) => {
+  push('/room/roomenergyconsumption/ecdistribution?roomId='+roomId+'&location='+location);
 }
 
 /** 初始化 **/

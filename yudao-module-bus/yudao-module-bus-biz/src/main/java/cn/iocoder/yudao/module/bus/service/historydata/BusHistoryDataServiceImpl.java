@@ -408,9 +408,12 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
         Integer busId = reqVO.getBusId();
         if (busId == null){
             String devkey = reqVO.getDevkey();
-            String[] devkeys = new String[0];
+            String[] devkeys = new String[1];
             devkeys[0] = devkey;
             String[] busIds = getBusIdsbyBusDevkeys(devkeys);
+            if (busIds.length == 0){
+                return null;
+            }
             busId = Integer.valueOf(busIds[0]);
         }
         // 创建BoolQueryBuilder对象
@@ -484,9 +487,12 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
         Integer boxId = reqVO.getBoxId();
         if (boxId == null){
             String devkey = reqVO.getDevkey();
-            String[] devkeys = new String[0];
+            String[] devkeys = new String[1];
             devkeys[0] = devkey;
             String[] boxIds = getBusIdsbyBusDevkeys(devkeys);
+            if (boxIds.length == 0){
+                return null;
+            }
             boxId = Integer.valueOf(boxIds[0]);
         }
         // 创建BoolQueryBuilder对象
@@ -730,13 +736,14 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
         Integer busId = reqVO.getBusId();
         if (busId == null){
             String devkey = reqVO.getDevkey();
-            String[] devkeys = new String[0];
+            String[] devkeys = new String[1];
             devkeys[0] = devkey;
             String[] busIds = getBusIdsbyBusDevkeys(devkeys);
+            if (busIds.length == 0){
+                return null;
+            }
             busId = Integer.valueOf(busIds[0]);
         }
-        // 创建BoolQueryBuilder对象
-        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
@@ -842,13 +849,14 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
         Integer boxId = reqVO.getBoxId();
         if (boxId == null){
             String devkey = reqVO.getDevkey();
-            String[] devkeys = new String[0];
+            String[] devkeys = new String[1];
             devkeys[0] = devkey;
             String[] boxIds = getBusIdsbyBusDevkeys(devkeys);
+            if (boxIds.length == 0){
+                return null;
+            }
             boxId = Integer.valueOf(boxIds[0]);
         }
-        // 创建BoolQueryBuilder对象
-        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
