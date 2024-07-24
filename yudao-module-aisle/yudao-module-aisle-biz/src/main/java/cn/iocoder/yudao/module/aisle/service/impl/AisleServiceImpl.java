@@ -8,18 +8,15 @@ import cn.iocoder.yudao.framework.common.dto.aisle.AisleDetailDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
+import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalMonthDo;
 import cn.iocoder.yudao.framework.common.entity.es.aisle.ele.AisleEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.oulet.BoxEqOutletDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalDayDo;
-import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalDayDo;
-import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalMonthDo;
-import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
-import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
@@ -31,7 +28,6 @@ import cn.iocoder.yudao.framework.common.enums.DisableEnums;
 import cn.iocoder.yudao.framework.common.enums.PduBoxEnums;
 import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
-import cn.iocoder.yudao.framework.common.util.TimeUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.aisle.dto.*;
@@ -42,7 +38,6 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
@@ -68,10 +63,6 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.text.NumberFormat;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -90,8 +81,6 @@ public class AisleServiceImpl implements AisleService {
 
     @Resource
     AisleIndexMapper aisleIndexMapper;
-    @Resource
-    AisleCfgMapper aisleCfgMapper;
 
     @Resource
     AisleBarMapper aisleBarMapper;
@@ -143,6 +132,9 @@ public class AisleServiceImpl implements AisleService {
             index.setEleAlarmMonth(aisleSaveVo.getEleAlarmMonth());
             index.setEleLimitDay(aisleSaveVo.getEleLimitDay());
             index.setEleLimitMonth(aisleSaveVo.getEleLimitMonth());
+            index.setDirection(aisleSaveVo.getDirection());
+            index.setXCoordinate(aisleSaveVo.getXCoordinate());
+            index.setYCoordinate(aisleSaveVo.getYCoordinate());
 
             if (Objects.nonNull(aisleSaveVo.getId())){
                 //编辑
@@ -151,34 +143,11 @@ public class AisleServiceImpl implements AisleService {
                 if (Objects.nonNull(aisleIndex)){
                     index.setId(aisleSaveVo.getId());
                     aisleIndexMapper.updateById(index);
-
-                    //修改配置表
-                    AisleCfg aisleCfg = aisleCfgMapper.selectOne(new LambdaQueryWrapper<AisleCfg>()
-                            .eq(AisleCfg::getAisleId,aisleIndex.getId()));
-                    AisleCfg cfg = new AisleCfg();
-                    cfg.setAisleId(aisleIndex.getId());
-                    cfg.setDirection(aisleSaveVo.getDirection());
-                    cfg.setXCoordinate(aisleSaveVo.getXCoordinate());
-                    cfg.setYCoordinate(aisleSaveVo.getYCoordinate());
-
-                    if (Objects.nonNull(aisleCfg)){
-                        //修改
-                        cfg.setId(aisleCfg.getId());
-                        aisleCfgMapper.updateById(cfg);
-                    }else {
-                        aisleCfgMapper.insert(cfg);
-                    }
                 }
 
             }else {
                 //新增
                 aisleIndexMapper.insert(index);
-                AisleCfg cfg = new AisleCfg();
-                cfg.setAisleId(index.getId());
-                cfg.setDirection(aisleSaveVo.getDirection());
-                cfg.setXCoordinate(aisleSaveVo.getXCoordinate());
-                cfg.setYCoordinate(aisleSaveVo.getYCoordinate());
-                aisleCfgMapper.insert(cfg);
             }
 
 
@@ -297,116 +266,6 @@ public class AisleServiceImpl implements AisleService {
 
     }
 
-
-
-    private Integer aisleSave2(AisleSaveVo aisleSaveVo) {
-
-        try {
-            AisleIndex index = new AisleIndex();
-            index.setName(aisleSaveVo.getAisleName());
-            index.setLength(aisleSaveVo.getLength());
-            index.setRoomId(aisleSaveVo.getRoomId());
-            index.setType(aisleSaveVo.getType());
-            index.setPduBar(aisleSaveVo.getPduBar());
-
-            if (Objects.nonNull(aisleSaveVo.getId())){
-                //编辑
-                AisleIndex aisleIndex = aisleIndexMapper.selectOne(new LambdaQueryWrapper<AisleIndex>()
-                        .eq(AisleIndex::getId,aisleSaveVo.getId()));
-                if (Objects.nonNull(aisleIndex)){
-                    index.setId(aisleSaveVo.getId());
-                    aisleIndexMapper.updateById(index);
-
-                    //修改配置表
-                    AisleCfg aisleCfg = aisleCfgMapper.selectOne(new LambdaQueryWrapper<AisleCfg>()
-                            .eq(AisleCfg::getAisleId,aisleIndex.getId()));
-                    AisleCfg cfg = new AisleCfg();
-                    cfg.setAisleId(aisleIndex.getId());
-                    cfg.setDirection(aisleSaveVo.getDirection());
-                    cfg.setXCoordinate(aisleSaveVo.getXCoordinate());
-                    cfg.setYCoordinate(aisleSaveVo.getYCoordinate());
-
-                    if (Objects.nonNull(aisleCfg)){
-                        //修改
-                        cfg.setId(aisleCfg.getId());
-                        aisleCfgMapper.updateById(cfg);
-                        //柜列位置变动修改
-                        if (aisleSaveVo.getXCoordinate() != aisleCfg.getXCoordinate()
-                                || aisleSaveVo.getYCoordinate() != aisleCfg.getYCoordinate()
-                                || !aisleSaveVo.getDirection().equals(aisleCfg.getDirection()) ){
-                            //修改柜列下机柜
-                            List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
-                                    .eq(CabinetIndex::getAisleId,aisleIndex.getId())
-                                    .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
-                                    .eq(CabinetIndex::getIsDisabled,DisableEnums.ENABLE.getStatus()));
-
-                            if (!CollectionUtils.isEmpty(cabinetIndexList)){
-                                List<Integer> cabinetIds = cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList());
-                                List<CabinetCfg> cabinetCfgList = cfgDoMapper.selectList(new LambdaQueryWrapper<CabinetCfg>()
-                                        .in(CabinetCfg::getCabinetId,cabinetIds));
-                                Map<Integer,CabinetCfg> cfgMap = cabinetCfgList.stream().collect(Collectors.toMap(CabinetCfg::getCabinetId,Function.identity()));
-                                Map<Integer,Integer>  indexMap = new HashMap<>();
-                                if ("x".equals(aisleCfg.getDirection())){
-                                    //横向  计算机柜位置
-                                    cabinetIds.forEach(id -> {
-                                        Integer i = cfgMap.get(id).getXCoordinate()-aisleCfg.getXCoordinate();
-                                        indexMap.put(id,i);
-                                    });
-                                }
-                                if ("y".equals(aisleCfg.getDirection())){
-                                    //纵向  计算机柜位置
-                                    cabinetIds.forEach(id -> {
-                                        Integer i = cfgMap.get(id).getYCoordinate()-aisleCfg.getYCoordinate();
-                                        indexMap.put(id,i);
-                                    });
-                                }
-
-                                //修改
-                                cabinetCfgList.forEach(cabinetCfg ->{
-                                    int x = 0;
-                                    int y = 0;
-                                    if ("x".equals(aisleSaveVo.getDirection())){
-                                        //横向  计算机柜位置
-                                        x = aisleSaveVo.getXCoordinate() + indexMap.get(cabinetCfg.getCabinetId());
-                                        y = aisleSaveVo.getYCoordinate();
-                                    }
-                                    if ("y".equals(aisleSaveVo.getDirection())){
-                                        //纵向  计算机柜位置
-                                        y = aisleSaveVo.getYCoordinate() + indexMap.get(cabinetCfg.getCabinetId());
-                                        x = aisleSaveVo.getXCoordinate();
-                                    }
-                                    cabinetCfg.setYCoordinate(y);
-                                    cabinetCfg.setXCoordinate(x);
-                                    cfgDoMapper.updateById(cabinetCfg);
-                                });
-                            }
-
-                        }
-
-                    }else {
-                        aisleCfgMapper.insert(cfg);
-                    }
-                }
-
-            }else {
-                //新增
-                aisleIndexMapper.insert(index);
-                AisleCfg cfg = new AisleCfg();
-                cfg.setAisleId(index.getId());
-                cfg.setDirection(aisleSaveVo.getDirection());
-                cfg.setXCoordinate(aisleSaveVo.getXCoordinate());
-                cfg.setYCoordinate(aisleSaveVo.getYCoordinate());
-                aisleCfgMapper.insert(cfg);
-            }
-            return index.getId();
-        }finally {
-            //刷新柜列计算服务缓存
-            log.info("刷新计算服务缓存 --- " + adder);
-            HttpUtil.get(adder);
-        }
-
-    }
-
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void aisleBusSave(AisleBusSaveVo busSaveVo) {
@@ -510,10 +369,7 @@ public class AisleServiceImpl implements AisleService {
                             .eq(AisleBox::getAisleId,aisleId));
                     aisleBarMapper.delete(new LambdaQueryWrapper<AisleBar>()
                             .eq(AisleBar::getAisleId,aisleId));
-                    //2.删除配置
-                    aisleCfgMapper.delete(new LambdaQueryWrapper<AisleCfg>()
-                            .eq(AisleCfg::getAisleId,aisleId));
-                    //3.删除柜列
+                    //2.删除柜列
                     aisleIndexMapper.deleteById(aisleId);
                 }
             }
@@ -535,9 +391,6 @@ public class AisleServiceImpl implements AisleService {
 
         AisleIndex aisleIndex = aisleIndexMapper.selectById(aisleId);
 
-        AisleCfg aisleCfg = aisleCfgMapper.selectOne(new LambdaQueryWrapper<AisleCfg>()
-                .eq(AisleCfg::getAisleId,aisleId));
-
         if (Objects.nonNull(aisleIndex)){
             detailDTO.setAisleName(aisleIndex.getName());
             detailDTO.setId(aisleId);
@@ -548,6 +401,10 @@ public class AisleServiceImpl implements AisleService {
             detailDTO.setEleAlarmMonth(aisleIndex.getEleAlarmMonth());
             detailDTO.setEleLimitDay(aisleIndex.getEleLimitDay());
             detailDTO.setEleLimitMonth(aisleIndex.getEleLimitMonth());
+            detailDTO.setDirection(aisleIndex.getDirection());
+            detailDTO.setXCoordinate(aisleIndex.getXCoordinate());
+            detailDTO.setYCoordinate(aisleIndex.getYCoordinate());
+
             Integer roomId = aisleIndex.getRoomId();
             RoomIndex roomIndex = roomIndexMapper.selectById(roomId);
             if (Objects.nonNull(roomIndex)){
@@ -555,11 +412,6 @@ public class AisleServiceImpl implements AisleService {
                 detailDTO.setRoomId(roomId);
             }
 
-        }
-        if (Objects.nonNull(aisleCfg)){
-            detailDTO.setDirection(aisleCfg.getDirection());
-            detailDTO.setXCoordinate(aisleCfg.getXCoordinate());
-            detailDTO.setYCoordinate(aisleCfg.getYCoordinate());
         }
 
         //母线
@@ -702,13 +554,13 @@ public class AisleServiceImpl implements AisleService {
            }
            cabinetIndexList.forEach(cabinetIndex ->{
                CabinetDTO cabinetDTO = cabinetApi.getDetail(cabinetIndex.getId());
-               if ("x".equals(aisleCfg.getDirection())){
+               if ("x".equals(aisleIndex.getDirection())){
                    //横向
-                   cabinetDTO.setIndex(cabinetDTO.getXCoordinate() - aisleCfg.getXCoordinate() + 1);
+                   cabinetDTO.setIndex(cabinetDTO.getXCoordinate() - aisleIndex.getXCoordinate() + 1);
                }
-               if ("y".equals(aisleCfg.getDirection())){
+               if ("y".equals(aisleIndex.getDirection())){
                    //纵向
-                   cabinetDTO.setIndex(cabinetDTO.getYCoordinate() - aisleCfg.getYCoordinate() + 1);
+                   cabinetDTO.setIndex(cabinetDTO.getYCoordinate() - aisleIndex.getYCoordinate() + 1);
                }
                cabinetDTO.setYesterdayEq(yesterdayMap.getOrDefault(cabinetIndex.getId(), 0.0));
                aisleCabinetDTOList.add(cabinetDTO);
@@ -1320,10 +1172,10 @@ public class AisleServiceImpl implements AisleService {
     private double getDayEq(String startTime, String endTime, int id) {
         log.info("startTime : " + startTime + "endTime：" + endTime);
         //获取时间段内第一条和最后一条数据
-        CabinetEleTotalRealtimeDo endRealtimeDo = getEleData(startTime, endTime,
+        AisleEleTotalRealtimeDo endRealtimeDo = getEleData(startTime, endTime,
                 SortOrder.DESC,
                 AISLE_ELE_TOTAL_REALTIME, id);
-        CabinetEleTotalRealtimeDo startRealtimeDo = getEleData(startTime, endTime,
+        AisleEleTotalRealtimeDo startRealtimeDo = getEleData(startTime, endTime,
                 SortOrder.ASC,
                 AISLE_ELE_TOTAL_REALTIME, id);
         //结束时间电量
@@ -1349,8 +1201,8 @@ public class AisleServiceImpl implements AisleService {
      * @param id
      * @return
      */
-    private CabinetEleTotalRealtimeDo getEleData(String startTime, String endTime, SortOrder sortOrder, String index, int id) {
-        CabinetEleTotalRealtimeDo realtimeDo = new CabinetEleTotalRealtimeDo();
+    private AisleEleTotalRealtimeDo getEleData(String startTime, String endTime, SortOrder sortOrder, String index, int id) {
+        AisleEleTotalRealtimeDo realtimeDo = new AisleEleTotalRealtimeDo();
         try {
             // 创建SearchRequest对象, 设置查询索引名
             SearchRequest searchRequest = new SearchRequest(index);
@@ -1383,7 +1235,7 @@ public class AisleServiceImpl implements AisleService {
             SearchHits sophistsHits = tophits.getHits();
             if (null != sophistsHits.getHits() && sophistsHits.getHits().length>0){
                 SearchHit hit = sophistsHits.getHits()[0];
-                realtimeDo = JsonUtils.parseObject(hit.getSourceAsString(), CabinetEleTotalRealtimeDo.class);
+                realtimeDo = JsonUtils.parseObject(hit.getSourceAsString(), AisleEleTotalRealtimeDo.class);
             }
             return realtimeDo;
         } catch (Exception e) {

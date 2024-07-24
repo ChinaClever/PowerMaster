@@ -17,7 +17,7 @@ import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.rack.dto.RackEqTrendDTO;
 import cn.iocoder.yudao.module.rack.dto.RackIndexDTO;
 import cn.iocoder.yudao.module.rack.dto.RackPowDTO;
-import cn.iocoder.yudao.module.rack.mapper.RackIndexDoMapper;
+import cn.iocoder.yudao.framework.common.mapper.RackIndexDoMapper;
 import cn.iocoder.yudao.module.rack.service.RackIndexService;
 import cn.iocoder.yudao.module.rack.vo.RackIndexVo;
 import cn.iocoder.yudao.module.rack.vo.RackSaveVo;

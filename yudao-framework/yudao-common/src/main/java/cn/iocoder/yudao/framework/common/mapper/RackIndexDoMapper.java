@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.rack.mapper;
+package cn.iocoder.yudao.framework.common.mapper;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;

@@ -3,11 +3,8 @@ package cn.iocoder.yudao.module.system.service.alarm;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.system.controller.admin.alarm.vo.mail.MailConfigPageReqVO;
 import cn.iocoder.yudao.module.system.controller.admin.alarm.vo.mail.MailConfigSaveReqVO;
-import cn.iocoder.yudao.module.system.controller.admin.mail.vo.account.MailAccountPageReqVO;
-import cn.iocoder.yudao.module.system.dal.dataobject.alarm.SystemAlarmConfig;
 import cn.iocoder.yudao.module.system.dal.dataobject.alarm.SystemAlarmRecord;
 import cn.iocoder.yudao.module.system.dal.dataobject.alarm.SystemMailAlarmConfig;
-import cn.iocoder.yudao.module.system.dal.dataobject.mail.MailAccountDO;
 
 import javax.validation.Valid;
 import java.util.List;

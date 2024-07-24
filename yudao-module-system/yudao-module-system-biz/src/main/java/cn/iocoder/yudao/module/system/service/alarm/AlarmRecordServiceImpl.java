@@ -1,6 +1,5 @@
 package cn.iocoder.yudao.module.system.service.alarm;
 
-import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.enums.AlarmLevelEnums;
 import cn.iocoder.yudao.framework.common.enums.AlarmStatusEnums;
 import cn.iocoder.yudao.framework.common.enums.AlarmTypeEnums;
@@ -11,12 +10,8 @@ import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.system.controller.admin.alarm.vo.record.AlarmRecordPageReqVO;
 import cn.iocoder.yudao.module.system.controller.admin.alarm.vo.record.AlarmRecordRespVO;
 import cn.iocoder.yudao.module.system.controller.admin.alarm.vo.record.AlarmRecordSaveReqVO;
-import cn.iocoder.yudao.module.system.dal.dataobject.alarm.SystemAlarmConfig;
 import cn.iocoder.yudao.module.system.dal.dataobject.alarm.SystemAlarmRecord;
-import cn.iocoder.yudao.module.system.dal.dataobject.alarm.SystemMailAlarmConfig;
 import cn.iocoder.yudao.module.system.dal.mysql.alarm.SysAlarmRecordMapper;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +24,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
-import javax.persistence.criteria.CriteriaBuilder;
 import java.util.*;
 import java.util.stream.Collectors;
 

@@ -1,6 +1,7 @@
-package cn.iocoder.yudao.framework.common.dto.aisle;
+package cn.iocoder.yudao.module.room.dto;
 
 import cn.hutool.json.JSONObject;
+import cn.iocoder.yudao.framework.common.dto.aisle.AisleBarDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -15,7 +16,7 @@ import java.util.List;
  * @date 2024/6/21 15:49
  */
 @Data
-public class AisleDetailDTO {
+public class AisleDataDTO {
 
     //柜列
     /**
@@ -69,71 +70,12 @@ public class AisleDetailDTO {
      */
     private String direction;
 
-    //母线
-    /**
-     * A路母线
-     */
-    private AisleBarDTO barA;
-    /**
-     * B路母线
-     */
-    private AisleBarDTO barB;
 
     //机柜
     /**
      * 机柜数据
      */
-    private List<CabinetDTO> cabinetList;
+    private List<RoomCabinetDTO> cabinetList;
 
-    /**
-     * 柜列数据包
-     */
-    private JSONObject aisleData;
-
-
-    /**
-     * 昨日电量
-     */
-    @Schema(description = "昨日电量", example = "1")
-    private Double yesterdayEq;
-
-    /**
-     * 日用能告警开关
-     */
-    private  int eleAlarmDay;
-
-    /**
-     * 月用能告警开关
-     */
-    private  int eleAlarmMonth;
-
-    /**
-     * 日用能限制
-     */
-    private double eleLimitDay;
-
-    /**
-     * 月用能限制
-     */
-    private double eleLimitMonth;
-
-
-    /**
-     * 总空间
-     */
-    private Integer totalSpace;
-
-
-    /**
-     * 已用空间
-     */
-    @Schema(description = "已用空间", example = "1")
-    private int usedSpace;
-
-    /**
-     * 剩余空间
-     */
-    @Schema(description = "剩余空间", example = "1")
-    private int freeSpace;
 
 }

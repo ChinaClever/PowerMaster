@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.room.dto;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleCabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleDetailDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
@@ -75,5 +76,32 @@ public class RoomDetailDTO {
      */
     private double eleLimitMonth;
 
+    /**
+     * 总空间
+     */
+    private Integer totalSpace;
+
+
+    /**
+     * 已用空间
+     */
+    @Schema(description = "已用空间", example = "1")
+    private int usedSpace;
+
+    /**
+     * 剩余空间
+     */
+    @Schema(description = "剩余空间", example = "1")
+    private int freeSpace;
+
+    /**
+     * 机柜数
+     */
+    private int cabNum;
+
+    /**
+     * 设备数（pdu 母线）
+     */
+    private int deviceNum;
 
 }

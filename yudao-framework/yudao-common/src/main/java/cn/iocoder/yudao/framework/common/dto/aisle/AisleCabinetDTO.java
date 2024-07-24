@@ -147,4 +147,22 @@ public class AisleCabinetDTO {
      * 月用能限制
      */
     private double eleLimitMonth;
+
+    /**
+     * 运行状态
+     */
+    @Schema(description = "运行状态 0：空载 1：正常 2：预警 3：告警 4:未绑定 5：离线", example = "2")
+    private int runStatus;
+
+    /**
+     * 已用空间
+     */
+    @Schema(description = "已用空间", example = "1")
+    private int usedSpace;
+
+    /**
+     * 剩余空间
+     */
+    @Schema(description = "剩余空间", example = "1")
+    private int freeSpace;
 }

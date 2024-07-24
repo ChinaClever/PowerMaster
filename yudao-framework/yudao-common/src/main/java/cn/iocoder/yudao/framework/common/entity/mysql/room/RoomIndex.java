@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.framework.common.entity.mysql.room;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -64,6 +65,17 @@ public class RoomIndex implements Serializable {
     private double eleLimitMonth;
 
 
+    /**
+     * 机房x长度(单位机柜)
+     */
+    @JsonProperty(value="xLength")
+    private int xLength;
+
+    /**
+     * 机房Y长度(单位机柜)
+     */
+    @JsonProperty(value="yLength")
+    private int yLength;
     /**
      * 更新时间
      */

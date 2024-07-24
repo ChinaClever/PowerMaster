@@ -1,7 +1,7 @@
 package cn.iocoder.yudao.module.system.dal.mysql.alarm;
 
-import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import cn.iocoder.yudao.module.system.dal.dataobject.alarm.SystemAlarmRecord;
+import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
