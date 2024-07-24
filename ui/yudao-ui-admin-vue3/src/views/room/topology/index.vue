@@ -13,8 +13,8 @@
   <el-card>
     <div class="dragContainer" v-loading="loading" @click.right="handleRightClick" style="height: calc(100vh - 220px)">
       <!-- <div class="mask" v-if="!editEnable" @click.prevent=""></div> -->
-      <el-table class="dragTable" v-if="tableData.length > 0"  :data="tableData" border style="width: 100%;height: 100%" :row-style="{background: 'revert'}" :span-method="arraySpanMethod" >
-        <el-table-column fixed type="index" width="60" align="center" :resizable="false" />
+      <el-table class="dragTable" v-if="tableData.length > 0" :show-header="!isFromHome"  :data="tableData" border style="width: 100%;height: 100%" :row-style="{background: 'revert'}" :span-method="arraySpanMethod" >
+        <el-table-column v-if="!isFromHome" fixed type="index" width="60" align="center" :resizable="false" />
         <template v-for="(formItem, index) in formParam" :key="index">
           <el-table-column :label="formItem" min-width="60" align="center" :resizable="false">
             <template #default="scope">
@@ -96,6 +96,18 @@ import { MachineRoomApi } from '@/api/cabinet/room'
 const { push } = useRouter() // 路由跳转
 const message = useMessage() // 消息弹窗
 
+const {containerInfoWidth, isFromHome} = defineProps({
+  containerInfoWidth: {
+    type: Number,
+    default: 0
+  },
+  isFromHome: {
+    type: Boolean,
+    default: false,
+  }
+})
+const scaleValue = ref(1)
+const ContainerHeight = ref(100)
 const loading = ref(false)
 const movingInfo = ref<any>({})
 const rowColInfo = reactive({
@@ -488,6 +500,18 @@ const getRoomInfo = async() => {
   }
 }
 
+// 计算出要缩放的比例
+const handleCssScale = () => {
+   isFromHome && nextTick(()=>{
+    const targetMain = document.querySelector('.topologyContainer > .Container > .main') as Element
+    const childWidth = targetMain.getBoundingClientRect().width + 132 // Container元素的宽
+    const childHeight = targetMain.getBoundingClientRect().height + 30 // Container元素的高
+    ContainerHeight.value = childHeight
+    scaleValue.value = +(((containerInfoWidth - 30)/childWidth).toFixed(2))
+    console.log('containerInfo', childWidth, containerInfoWidth, scaleValue.value, childHeight, childHeight*scaleValue.value)
+  })
+}
+
 const openSetting = () => {
   dialogVisible.value = true
 }
@@ -497,7 +521,8 @@ const arraySpanMethod = ({
   columnIndex,
 }) => {
   if (columnIndex > 0) {
-    const td = row[getTableColCharCode(columnIndex - 1)]
+    const num = isFromHome ? 0 : 1
+    const td = row[getTableColCharCode(columnIndex - num)]
     const tdData = td[0]
     if (tdData && tdData.type && tdData.type == 1) { // 如果是柜列
       console.log('===========', td)
@@ -843,7 +868,6 @@ onUnmounted(() => {
       border: 1px solid #000;
       // align-items: center;
       .dragSon {
-        height: 100%;
         min-height: 40px;
         flex: 1;
         box-sizing: border-box;
@@ -943,14 +967,14 @@ onUnmounted(() => {
   }
 }
 :deep(.dragTable .el-table__header .el-table__cell) {
-  background-color: #ddd;
-  box-shadow: 0 1px 0px #ddd;
+  // background-color: #ddd;
+  // box-shadow: 0 1px 0px #ddd;
 }
 :deep(.dragTable .el-table__body) {
   height: 100%;
 }
 :deep(.dragTable .el-table__body .el-table__row .el-table__cell:nth-of-type(1)) {
-  background-color: #ddd;
-  box-shadow: 0 1px 0px #ddd;
+  // background-color: #ddd;
+  // box-shadow: 0 1px 0px #ddd;
 }
 </style>

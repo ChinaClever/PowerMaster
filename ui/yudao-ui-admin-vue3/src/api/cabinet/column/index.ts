@@ -5,6 +5,10 @@ export const MachineColumnApi = {
   getAisleDetail: async (params: any) => {
     return await request.get({ url: `/aisle/detail`, params })
   },
+  // 获取机房下柜列列表
+  getAisleList: async (params: any) => {
+    return await request.get({ url: `/aisle/list`, params })
+  },
   // 柜列详情保存
   saveAisleDetail: async (data: any) => {
     return await request.post({ url: `/aisle/save`, data })
