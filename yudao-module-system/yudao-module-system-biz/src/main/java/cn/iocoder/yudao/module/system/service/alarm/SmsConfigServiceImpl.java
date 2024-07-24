@@ -7,7 +7,6 @@ import cn.iocoder.yudao.module.system.controller.admin.alarm.vo.sms.SmsConfigPag
 import cn.iocoder.yudao.module.system.controller.admin.alarm.vo.sms.SmsConfigSaveReqVO;
 import cn.iocoder.yudao.module.system.dal.dataobject.alarm.SystemSmsAlarmConfig;
 import cn.iocoder.yudao.module.system.dal.mysql.alarm.SysAlarmSmsConfigMapper;
-import cn.iocoder.yudao.module.system.service.sms.SmsSendService;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

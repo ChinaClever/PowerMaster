@@ -440,6 +440,7 @@ public class FieldConstant {
      */
     public static final String CABINET_ENV = "cabinet_env";
 
+    public static final String CABINET_KEY = "cabinet_key";
     /**
      * A路数据
      */
@@ -482,5 +483,35 @@ public class FieldConstant {
      * 通道电量表（按月算）
      */
     public static final String AISLE_EQ_TOTAL_MONTH = "aisle_eq_total_month";
+
+    /**
+     * 机房总电能表(实时)
+     */
+    public static final String ROOM_ELE_TOTAL_REALTIME = "room_ele_total_realtime";
+
+    /**
+     * 机房电量表（按天算）
+     */
+    public static final String ROOM_EQ_TOTAL_DAY = "room_eq_total_day";
+    /**
+     * 机房电量表（按周算）
+     */
+    public static final String ROOM_EQ_TOTAL_WEEK = "room_eq_total_week";
+
+    /**
+     * 机房电量表（按月算）
+     */
+    public static final String ROOM_EQ_TOTAL_MONTH = "room_eq_total_month";
+
+    /**
+     * 机房id
+     */
+    public static final String ROOM_ID = "room_id";
+
+    public static final String ROOM_POWER = "room_power";
+
+    public static final String ROOM_HDA_POW_REALTIME = "room_hda_pow_realtime";
+
+    public static final String ROOM_HDA_POW_HOUR = "room_hda_pow_hour";
 }
 

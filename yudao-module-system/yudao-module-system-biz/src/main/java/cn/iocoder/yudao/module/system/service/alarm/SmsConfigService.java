@@ -3,7 +3,6 @@ package cn.iocoder.yudao.module.system.service.alarm;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.system.controller.admin.alarm.vo.sms.SmsConfigPageReqVO;
 import cn.iocoder.yudao.module.system.controller.admin.alarm.vo.sms.SmsConfigSaveReqVO;
-import cn.iocoder.yudao.module.system.dal.dataobject.alarm.SystemAlarmRecord;
 import cn.iocoder.yudao.module.system.dal.dataobject.alarm.SystemSmsAlarmConfig;
 
 import javax.validation.Valid;
