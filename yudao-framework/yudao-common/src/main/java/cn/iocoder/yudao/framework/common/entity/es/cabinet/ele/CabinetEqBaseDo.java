@@ -61,4 +61,10 @@ public class CabinetEqBaseDo extends CabinetBaseDo {
      */
     @JsonProperty("bill_period")
     private String billPeriod;
+
+    /**
+     * 计费方式(实际计费方式)
+     */
+    @JsonProperty("bill_mode_real")
+    private Integer billModeReal;
 }
