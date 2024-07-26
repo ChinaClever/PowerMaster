@@ -1,19 +1,30 @@
 <template>
-  <el-card style="margin-top: -5px;margin-bottom: 10px;">
+<div>
+  <el-card shadow="never">
     <div class="toolbar">
-      <el-tag class="tag" size="large">机房1</el-tag>
+      <div style="display: flex;align-items:center">
+        机房：
+        <el-select v-model="roomId" placeholder="请选择" class="!w-100px" @change="handleChangeRoom">
+          <el-option v-for="item in roomList" :key="item.id" :label="item.name" :value="item.id" />
+        </el-select>
+        <div class="btns">
+          <template v-for="item in btns" :key="item.value">
+            <el-button @click="switchBtn(item.value)" type="primary" :size="isFromHome ? 'small' : ''" :plain="chosenBtn != item.value">{{item.name}}</el-button>
+          </template>
+        </div>
+      </div>
       <div>
-        <el-button v-if="!editEnable" @click="editEnable = true" type="primary">编辑</el-button>
-        <el-button v-if="editEnable" @click="handleEdit" plain type="primary">取消</el-button>
+        <el-button v-if="!editEnable" @click="handleEdit" type="primary">编辑</el-button>
+        <el-button v-if="editEnable" @click="handleCancel" plain type="primary">取消</el-button>
         <el-button v-if="editEnable" @click="openSetting" plain type="primary"><Icon :size="16" icon="ep:setting" style="margin-right: 5px" />配置</el-button>
         <el-button v-if="editEnable" @click="handleSubmit" plain type="primary">保存</el-button>
       </div>
     </div>
   </el-card>
-  <el-card>
-    <div class="dragContainer" v-loading="loading" @click.right="handleRightClick" style="height: calc(100vh - 220px)">
+  <el-card shadow="never">
+    <div class="dragContainer" v-loading="loading" @click.right="handleRightClick" :style="isFromHome ? `width: fit-content;transform-origin: 0 0;transform: scale(${scaleValue}, ${scaleValue * 0.6});height: ${ContainerHeight}px` : 'height: calc(100vh - 220px)'">
       <!-- <div class="mask" v-if="!editEnable" @click.prevent=""></div> -->
-      <el-table class="dragTable" v-if="tableData.length > 0" :show-header="!isFromHome"  :data="tableData" border style="width: 100%;height: 100%" :row-style="{background: 'revert'}" :span-method="arraySpanMethod" >
+      <el-table ref="dragTable" class="dragTable" v-if="tableData.length > 0" :show-header="!isFromHome" :style="isFromHome ? '' : {width: '100%',height: '100%'}" :data="tableData" border :row-style="{background: 'revert'}" :span-method="arraySpanMethod" row-class-name="dragRow" >
         <el-table-column v-if="!isFromHome" fixed type="index" width="60" align="center" :resizable="false" />
         <template v-for="(formItem, index) in formParam" :key="index">
           <el-table-column :label="formItem" min-width="60" align="center" :resizable="false">
@@ -30,10 +41,58 @@
                 @end.prevent="onEnd"
               >
                 <template #item="{ element }">
-                  <div class="normalDrag"  v-if="element && element.type == 2">{{element.name}}</div>
+                  <div class="normalDrag"  v-if="element && element.type == 2">
+                    <template v-if="element.name">
+                      <el-tooltip effect="light">
+                        <template #content>
+                          名称：{{element.cabinetName}} <br/>
+                          负载率：{{element.loadRate}}%<br/>
+                          昨日用能：{{element.yesterdayEq || 0}}kW·h<br/>
+                          总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
+                          总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                          总无功功率：{{element.powReactive ? element.powReactive.toFixed(3) : '0.000'}}kVar<br/>
+                          总功率因素：{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.00'}}<br/>
+                          A路供电占比：{{element.outletA}} <br/>
+                          B路供电占比：{{element.outletB}} <br/>
+                          最高温度：{{element.tem}}°C<br/>
+                          已用空间：{{element.usedSpace}}U<br/>
+                          未用空间：{{element.freeSpace}}U<br/>
+                        </template>
+                        <div v-if="chosenBtn == 0">{{element.loadRate}}%</div>
+                        <div v-if="chosenBtn == 1">{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW</div>
+                        <div v-if="chosenBtn == 2">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.000'}}</div>
+                        <div v-if="chosenBtn == 3">{{element.tem}}°C</div>
+                        <div v-if="chosenBtn == 4">{{element.cabinetHeight}}U</div>
+                      </el-tooltip>
+                    </template>
+                  </div>
                   <div v-else-if="element.type == 1" :class="element.direction == '1' ? 'dragChild' : 'dragChildCol'">
                     <template v-if="element.cabinetList.length > 0">
-                      <div :class="item.cabinetName ? 'dragSon fill' : 'dragSon'" v-for="(item, i) in element.cabinetList" :key="i">{{item.cabinetName}}</div>
+                      <div :class="item.cabinetName ? 'dragSon fill' : 'dragSon'" v-for="(item, i) in element.cabinetList" :key="i">
+                        <template v-if="item.id > 0">
+                          <el-tooltip effect="light">
+                            <template #content>
+                              名称：{{item.cabinetName}} <br/>
+                              负载率：{{item.loadRate}}%<br/>
+                              昨日用能：{{item.yesterdayEq || 0}}kW·h<br/>
+                              总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
+                              总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                              总无功功率：{{item.powReactive ? item.powReactive.toFixed(3) : '0.000'}}kVar<br/>
+                              总功率因素：{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.00'}}<br/>
+                              A路供电占比：{{item.outletA}} <br/>
+                              B路供电占比：{{item.outletB}} <br/>
+                              最高温度：{{item.tem}}°C<br/>
+                              已用空间：{{item.usedSpace}}U<br/>
+                              未用空间：{{item.freeSpace}}U<br/>
+                            </template>
+                            <div v-if="chosenBtn == 0">{{item.loadRate}}%</div>
+                            <div v-if="chosenBtn == 1">{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW</div>
+                            <div v-if="chosenBtn == 2">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.000'}}</div>
+                            <div v-if="chosenBtn == 3">{{item.tem}}°C</div>
+                            <div v-if="chosenBtn == 4">{{item.cabinetHeight}}U</div>
+                          </el-tooltip>
+                        </template>
+                      </div>
                     </template>
                     <template v-else>
                       <div class="dragSon" v-for="item in element.amount" :key="item">{{item}}</div>
@@ -85,6 +144,7 @@
       <el-button type="primary" @click="submitSetting">确 定</el-button>
     </template>
   </Dialog>
+</div>
 </template>
 
 <script lang="ts" setup>
@@ -96,17 +156,21 @@ import { MachineRoomApi } from '@/api/cabinet/room'
 const { push } = useRouter() // 路由跳转
 const message = useMessage() // 消息弹窗
 
-const {containerInfoWidth, isFromHome} = defineProps({
-  containerInfoWidth: {
-    type: Number,
-    default: 0
+const {containerInfo, isFromHome} = defineProps({
+  containerInfo: {
+    type: Object,
   },
   isFromHome: {
     type: Boolean,
     default: false,
   }
 })
-const scaleValue = ref(1)
+let timer = null as any // 定时器
+const roomId = ref(4) // 房间id
+const roomList = ref<any[]>([]) // 左侧导航栏树结构列表
+const dragTable = ref() // 可移动编辑表格
+const scaleValue = ref(1) // 缩放比例
+const chosenBtn = ref(0)
 const ContainerHeight = ref(100)
 const loading = ref(false)
 const movingInfo = ref<any>({})
@@ -118,7 +182,30 @@ const rowColInfo = reactive({
   eleAlarmMonth: 0, // 月用能告警
   eleLimitMonth: 1000, // 月用能限制
 })
+const emit = defineEmits(['backData']) // 定义 backData 事件，用于操作成功后的回调
 const tableData = ref<any>([])
+const btns = [
+  {
+    value: 0,
+    name: '负荷',
+  },
+  {
+    value: 1,
+    name: '功率',
+  },
+  {
+    value: 2,
+    name: '功率因素',
+  },
+  {
+    value: 3,
+    name: '温度',
+  },
+  {
+    value: 4,
+    name: '容量',
+  },
+]
 // ([
 //   {
 //     A: [{ name: 'a1', id: 1, status: 1, type: '2'}],
@@ -442,10 +529,23 @@ const operateMenu = ref({
   maxlndexY: 0,
 })
 
+// 接口获取机房导航列表
+const getRoomList = async() => {
+  const res = await MachineRoomApi.getRoomList({})
+  console.log('接口获取机房导航列表*****', res)
+  if (res && res.length) {
+    roomList.value = res
+  }
+}
+
 const getRoomInfo = async() => {
+  tableData.value = []
   loading.value = true
   try {
-    const res = await MachineRoomApi.getRoomDetail({id: 4})
+    const result1 = MachineRoomApi.getRoomDetail({id: roomId.value})
+    const result2 = MachineRoomApi.getRoomDataDetail({id: roomId.value})
+    const results = await Promise.all([result1, result2])
+    const res = results[0]
     console.log('res', res)
     const data = [] as any
     const Obj = {}
@@ -456,6 +556,12 @@ const getRoomInfo = async() => {
       eleLimitDay: res.eleLimitDay,
       eleAlarmMonth: res.eleAlarmMonth,
       eleLimitMonth: res.eleLimitMonth,
+    })
+    emit('backData', {
+      totalSpace: res.totalSpace,
+      usedSpace: res.usedSpace,
+      freeSpace: res.freeSpace,
+      deviceNum: res.deviceNum,
     })
     for(let i=0; i < res.xLength; i++) {
       Obj[getTableColCharCode(i)] = []
@@ -495,25 +601,67 @@ const getRoomInfo = async() => {
     })
     console.log('data', data)
     tableData.value = data
+    getRoomStatus(results[1])
+    handleCssScale()
   } finally {
     loading.value = false
   }
 }
 
+const getRoomStatus = async(res) => {
+  if (!res) res = await MachineRoomApi.getRoomDataDetail({id: roomId.value})
+  console.log('getRoomStatus', res)
+  if (res.cabinetList && res.cabinetList.length) {
+    res.cabinetList.forEach(cab => {
+      tableData.value[cab.yCoordinate - 1][formParam.value[cab.xCoordinate - 1]][0] = {
+        ...cab,
+        ...tableData.value[cab.yCoordinate - 1][formParam.value[cab.xCoordinate - 1]][0],
+      }
+    })
+  }
+  if (res.aisleList && res.aisleList.length) {
+    res.aisleList.forEach(aisle => {
+      aisle.cabinetList.forEach((cab, index) => {
+        console.log('tableData.value[aisle.yCoordinate][formParam.value[aisle.xCoordinate - 1]]', tableData.value[aisle.yCoordinate - 1][formParam.value[aisle.xCoordinate - 1]], aisle.yCoordinate, formParam.value[aisle.xCoordinate - 1])
+        const targetIndex = tableData.value[aisle.yCoordinate - 1][formParam.value[aisle.xCoordinate - 1]][0].cabinetList.findIndex(item => item.id == cab.id)
+        tableData.value[aisle.yCoordinate - 1][formParam.value[aisle.xCoordinate - 1]][0].cabinetList[targetIndex] = {
+          ...cab,
+          ...tableData.value[aisle.yCoordinate - 1][formParam.value[aisle.xCoordinate - 1]][0].cabinetList[targetIndex]
+        }
+      })
+    })
+  }
+  console.log('//////////', tableData.value)
+}
+
 // 计算出要缩放的比例
 const handleCssScale = () => {
-   isFromHome && nextTick(()=>{
-    const targetMain = document.querySelector('.topologyContainer > .Container > .main') as Element
-    const childWidth = targetMain.getBoundingClientRect().width + 132 // Container元素的宽
-    const childHeight = targetMain.getBoundingClientRect().height + 30 // Container元素的高
-    ContainerHeight.value = childHeight
-    scaleValue.value = +(((containerInfoWidth - 30)/childWidth).toFixed(2))
-    console.log('containerInfo', childWidth, containerInfoWidth, scaleValue.value, childHeight, childHeight*scaleValue.value)
+  isFromHome && nextTick(() => {
+    const timer = setTimeout(() => {
+      const targetBody = dragTable.value.$el.querySelector('.el-table__body ') as HTMLElement
+      // const targetContainer = document.querySelector('.dragContainer ') as HTMLElement
+      const tableWidth = +targetBody.getBoundingClientRect().width.toFixed() + 30 // Container元素的宽
+      const tableHeight = +targetBody.getBoundingClientRect().height.toFixed() // Container元素的高
+      scaleValue.value = +((containerInfo?.width/tableWidth).toFixed(2))
+      ContainerHeight.value = scaleValue.value * tableHeight
+      clearTimeout(timer)
+      console.log('containerInfotargetBody',scaleValue.value, containerInfo?.width, targetBody, targetBody.getBoundingClientRect(), tableWidth, tableHeight)
+    }, 10)
   })
+}
+
+// 处理修改机房的事件
+const handleChangeRoom = (val) => {
+  roomId.value = val
+  getRoomInfo()
 }
 
 const openSetting = () => {
   dialogVisible.value = true
+}
+
+const switchBtn = (value) => {
+  chosenBtn.value = value
 }
 
 const arraySpanMethod = ({
@@ -792,9 +940,17 @@ const handleSubmit = () => {
   }
 }
 
-const handleEdit = () => {
+const handleCancel = () => {
   editEnable.value = false
   getRoomInfo()
+}
+
+const handleEdit = () => {
+  if (isFromHome) {
+    push('/room/topology')
+    return
+  }
+  editEnable.value = true
 }
 
 // const formParam = Object.keys(tableData[0])
@@ -802,8 +958,8 @@ const formParam = computed(() => {
   return Object.keys(tableData.value[0])
 })
 
+getRoomList()
 getRoomInfo()
-
 onMounted(() => {
   document.addEventListener('mousedown', (event) => {
     const element = event.target as HTMLElement
@@ -811,20 +967,29 @@ onMounted(() => {
       operateMenu.value.show = false
     }
   })
+  // timer = setInterval(() => {
+  //   getRoomStatus(false)
+  // }, 5000)
 })
 
 onUnmounted(() => {
   document.removeEventListener('mousedown',() => {})
   window.onresize = null
+  clearInterval(timer)
+  timer = null
 })
 </script>
 
 <style lang="scss" scoped>
+.btns {
+  margin-left: 25px;
+}
 .toolbar {
   display: flex;
   justify-content: space-between;
 }
 .dragContainer {
+  // transform-origin: left right;
   position: relative;
   .mask {
     position: absolute;
@@ -871,11 +1036,14 @@ onUnmounted(() => {
         min-height: 40px;
         flex: 1;
         box-sizing: border-box;
-        display: flex;
-        align-items: center;
-        justify-content: center;
         background-color: #effaff;
         border-right: 1px solid #bed1ff;
+        &>div {
+          min-height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
       }
       .fill {
         background-color: #0cff2c;
@@ -918,13 +1086,18 @@ onUnmounted(() => {
     min-height: 40px;
     height: 100%;
     width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     // height: 40px;
     background-color: rgb(12, 255, 44);
     box-sizing: border-box;
     border-right: 1px solid #ebeef5;
+    &>div {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      min-height: 40px;
+    }
   }
 }
 .double-formitem {
@@ -972,6 +1145,7 @@ onUnmounted(() => {
 }
 :deep(.dragTable .el-table__body) {
   height: 100%;
+  transform-origin: let top;
 }
 :deep(.dragTable .el-table__body .el-table__row .el-table__cell:nth-of-type(1)) {
   // background-color: #ddd;
