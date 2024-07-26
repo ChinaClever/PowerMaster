@@ -41,7 +41,7 @@
       </ContentWrap>
     </div>
     <div class="center" id="center">
-      <Topology ref="cabCol" :containerInfo="containerInfo" :isFromHome="true" @success="handleCabEchart" >
+      <Topology :containerInfo="containerInfo" :isFromHome="true" @success="handleCabEchart" >
         <template #define>
           <el-form
             class="-mb-15px topForm"
@@ -124,7 +124,6 @@ const containerInfo = reactive({
 const scaleVal = ref(1)
 const echartsOptionCab = ref<EChartsOption>({})
 const pduBar = ref(1) // 0:pdu 1:母线
-const cabCol = ref()
 const roomList = ref([]) // 左侧导航栏树结构列表
 const machineList = ref<any>([]) // 左侧导航栏树结构列表
 const queryParams = reactive({
