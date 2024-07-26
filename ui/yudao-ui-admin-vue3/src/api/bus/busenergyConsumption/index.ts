@@ -47,6 +47,11 @@ export const EnergyConsumptionApi = {
     return await request.download({ url: `/bus/eq-data/bus/realtime-export-excel`, params, ...axiosConfig })
   },
 
+  // 获取分段电能电费
+  getBusSubBillDetails: async (params: any) => {
+    return await request.get({ url: `/bus/eq-data/bus/bill-details`, params})
+  },
+
 
 
 
@@ -96,5 +101,9 @@ export const EnergyConsumptionApi = {
     return await request.download({ url: `/bus/eq-data/box/realtime-export-excel`, params, ...axiosConfig })
   },
   
+  // 获取分段电能电费
+  getBoxSubBillDetails: async (params: any) => {
+    return await request.get({ url: `/bus/eq-data/box/bill-details`, params})
+  },
 
 }

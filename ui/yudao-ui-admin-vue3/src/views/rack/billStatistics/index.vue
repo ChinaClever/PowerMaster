@@ -69,7 +69,12 @@
         </el-table-column>
         <!-- 遍历其他列 -->  
         <template v-for="column in tableColumns">
-          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue"/>
+          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue">
+            <template #default="{ row }" v-if="column.slot === 'actions' && queryParams.granularity == 'day'">
+              <el-button link type="primary" v-if="row.bill_mode_real && row.bill_mode_real == 2" @click="showDetails(row.rack_id, row.start_time, row.location, row.end_time)">分段计费</el-button>
+              <div v-else>固定计费</div>
+            </template>
+          </el-table-column>
         </template>
         <!-- 超过一万条数据提示信息 -->
           <template v-if="shouldShowDataExceedMessage" #append>
@@ -107,6 +112,10 @@ const navList = ref([]) as any // 左侧导航栏树结构列表
 const lastDayTotalData = ref(0)
 const lastWeekTotalData = ref(0)
 const lastMonthTotalData = ref(0)
+const dialogVisible = ref(false)
+const dialogTableData = ref<Array<{ }>>([]) as any; 
+const dialogTitle = ref('')
+const dialogTimeRange = ref('')
 const loading = ref(true)
 const message = useMessage() // 消息弹窗
 const list = ref<Array<{ }>>([]) as any; 
@@ -164,6 +173,7 @@ watch(() => queryParams.granularity, () => {
         { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
         { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
+        { label: '计费方式', align: 'center', slot: 'actions' , istrue:true},
       ]
     }else{
       tableColumns.value = [
@@ -185,6 +195,7 @@ const tableColumns = ref([
   { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
   { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
   { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
+  { label: '计费方式', align: 'center', slot: 'actions' , istrue:true},
 ]) as any;
 
 /** 查询列表 */
@@ -284,6 +295,23 @@ const getNavNewData = async() => {
   lastDayTotalData.value = res.day
   lastWeekTotalData.value = res.week
   lastMonthTotalData.value = res.month
+}
+
+/** 详情操作*/
+const showDetails = async (rackId: number, startTime:string, location:string, endTime: string) => {
+  dialogTableData.value = []
+  dialogTitle.value = ''
+  dialogTimeRange.value = ''
+  let params = {
+    rackId: rackId,
+    startTime: startTime
+  }
+  const data = await EnergyConsumptionApi.getSubBillDetails(params)
+  dialogTableData.value = data.list
+  dialogTitle.value = location
+  dialogTimeRange.value = startTime + ' - ' + endTime
+  dialogVisible.value = true
+
 }
 
 /** 导出按钮操作 */

@@ -58,5 +58,8 @@ export const EnergyConsumptionApi = {
     return await request.get({ url: `/pdu/eq-data/one-day`, params })
   },
   
-
+  // 获取分段电能电费
+  getSubBillDetails: async (params: any) => {
+    return await request.get({ url: `/pdu/eq-data/bill-details`, params})
+  },
 }

@@ -116,6 +116,11 @@ public class RoomEnergyConsumptionController {
         return success(map);
     }
 
-
+    @GetMapping("/bill-details")
+    @Operation(summary = "获取分段电能电费")
+    public CommonResult<PageResult<Object>> getSubBillDetails(RoomEnergyConsumptionPageReqVO reqVO) throws IOException {
+        PageResult<Object> pageResult = roomEnergyConsumptionService.getSubBillDetails(reqVO);
+        return success(pageResult);
+    }
 
 }

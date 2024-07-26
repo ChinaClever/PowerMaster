@@ -114,4 +114,12 @@ public class RackEnergyConsumptionController {
         Map<String, Object> map = rackEnergyConsumptionService.getOneDaySumData();
         return success(map);
     }
+
+    @GetMapping("/bill-details")
+    @Operation(summary = "获取分段电能电费")
+    public CommonResult<PageResult<Object>> getSubBillDetails(RackEnergyConsumptionPageReqVO reqVO) throws IOException {
+        PageResult<Object> pageResult = rackEnergyConsumptionService.getSubBillDetails(reqVO);
+        return success(pageResult);
+    }
+
 }

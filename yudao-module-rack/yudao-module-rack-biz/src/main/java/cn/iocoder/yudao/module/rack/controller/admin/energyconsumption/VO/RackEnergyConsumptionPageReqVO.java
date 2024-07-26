@@ -13,6 +13,8 @@ public class RackEnergyConsumptionPageReqVO extends PageParam {
 
     private String granularity;
 
+    private String startTime;
+
     private String[] timeRange;
 
     private String[] rackIds;

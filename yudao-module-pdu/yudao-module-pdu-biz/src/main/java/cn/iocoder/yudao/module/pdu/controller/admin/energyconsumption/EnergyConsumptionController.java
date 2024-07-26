@@ -125,4 +125,11 @@ public class EnergyConsumptionController {
         Map<String, Object> map = energyConsumptionService.getOneDaySumData();
         return success(map);
     }
+
+    @GetMapping("/bill-details")
+    @Operation(summary = "获取分段电能电费")
+    public CommonResult<PageResult<Object>> getSubBillDetails(EnergyConsumptionPageReqVO reqVO) throws IOException {
+        PageResult<Object> pageResult = energyConsumptionService.getSubBillDetails(reqVO);
+        return success(pageResult);
+    }
 }

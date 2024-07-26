@@ -116,6 +116,13 @@ public class BusEnergyConsumptionController {
         return success(map);
     }
 
+    @GetMapping("/bus/bill-details")
+    @Operation(summary = "获取始端箱分段电能电费")
+    public CommonResult<PageResult<Object>> getBusSubBillDetails(EnergyConsumptionPageReqVO reqVO) throws IOException {
+        PageResult<Object> pageResult = busEnergyConsumptionService.getBusSubBillDetails(reqVO);
+        return success(pageResult);
+    }
+
 
     // 插接箱
     @GetMapping("/box/page")
@@ -198,6 +205,13 @@ public class BusEnergyConsumptionController {
     public CommonResult<Map<String, Object>> getBoxOneDaySumData() throws IOException {
         Map<String, Object> map = busEnergyConsumptionService.getBoxOneDaySumData();
         return success(map);
+    }
+
+    @GetMapping("/box/bill-details")
+    @Operation(summary = "获取插接箱分段电能电费")
+    public CommonResult<PageResult<Object>> getBoxSubBillDetails(EnergyConsumptionPageReqVO reqVO) throws IOException {
+        PageResult<Object> pageResult = busEnergyConsumptionService.getBoxSubBillDetails(reqVO);
+        return success(pageResult);
     }
 
 
