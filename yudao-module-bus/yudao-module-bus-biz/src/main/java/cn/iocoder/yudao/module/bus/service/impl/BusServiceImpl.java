@@ -1,11 +1,14 @@
 package cn.iocoder.yudao.module.bus.service.impl;
 
+import cn.iocoder.yudao.framework.common.dto.aisle.AisleBoxDTO;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
+import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.module.bus.dto.BusDataDTO;
-import cn.iocoder.yudao.framework.common.mapper.BoxIndexMapper;
-import cn.iocoder.yudao.framework.common.mapper.BusIndexDoMapper;
 import cn.iocoder.yudao.module.bus.service.BusService;
 import cn.iocoder.yudao.module.bus.vo.BusIndexVo;
 import com.alibaba.fastjson2.JSON;
@@ -18,9 +21,12 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.module.bus.BusConstant.REDIS_KEY_BOX;
 import static cn.iocoder.yudao.module.bus.BusConstant.REDIS_KEY_BUS;
@@ -35,10 +41,11 @@ import static cn.iocoder.yudao.module.bus.BusConstant.REDIS_KEY_BUS;
 @Service
 public class BusServiceImpl implements BusService {
 
-    @Autowired
-    BusIndexDoMapper busIndexDoMapper;
-    @Autowired
-    BoxIndexMapper boxIndexMapper;
+    @Resource
+    AisleBarMapper aisleBarMapper;
+
+    @Resource
+    AisleBoxMapper aisleBoxMapper;
     @Autowired
     RedisTemplate redisTemplate;
 
@@ -48,51 +55,49 @@ public class BusServiceImpl implements BusService {
 
         try{
 
-            //获取id列表
-            if (Objects.nonNull(vo.getIds()) && CollectionUtils.isEmpty(vo.getIds())){
-                List<Integer> list = new ArrayList<>();
-                list.add(-1);
-                vo.setIds(list);
-            }
+            //母线
+            List<AisleBar>  aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
+                    .eq(AisleBar::getAisleId,vo.getId()));
+
 
             //始端箱数据
-            List<BusIndex> busIndexList = busIndexDoMapper.selectList(new LambdaQueryWrapper<BusIndex>()
-                    .in(!CollectionUtils.isEmpty(vo.getIds()),BusIndex::getId,vo.getIds())
-                    .eq(BusIndex::getIsDeleted, DelEnums.NO_DEL.getStatus())
-                    .orderByAsc(BusIndex::getBarId)
-                    .last("limit 2"));
-            if (!CollectionUtils.isEmpty(busIndexList)){
+            if (!CollectionUtils.isEmpty(aisleBars)){
                 ValueOperations ops = redisTemplate.opsForValue();
 
                 //插接箱数据
-                busIndexList.forEach(busIndex -> {
-                    String devIp = busIndex.getIpAddr();
-                    Integer barId = busIndex.getBarId();
+                aisleBars.forEach(busIndex -> {
                     BusDataDTO busDataDTO = new BusDataDTO();
-                    busDataDTO.setBusId(busIndex.getId());
                     busDataDTO.setBusName(busIndex.getBusName());
-                    busDataDTO.setDevIp(busIndex.getIpAddr());
+                    busDataDTO.setDevIp(busIndex.getDevIp());
+                    busDataDTO.setBarKey(busIndex.getBarKey());
+                    busDataDTO.setPath(busIndex.getPath());
+                    busDataDTO.setDirection(busIndex.getDirection());
 
                     //始端箱数据
-                    String busKey = REDIS_KEY_BUS + busIndex.getDevKey();
-                    JSONObject busData = JSON.parseObject(JSON.toJSONString(ops.get(busKey)));
-                    busDataDTO.setBusData(busData);
+                    Object object = ops.get(busIndex.getBarKey());
+                    if (Objects.nonNull(object)){
+                        JSONObject busData = JSON.parseObject(JSON.toJSONString(object));
+                        busDataDTO.setBusData(busData);
+                    }
 
                     //插接箱数据
                     List<JSONObject> boxDataList = new ArrayList<>();
 
-                    List<BoxIndex> boxIndexList = boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>()
-                            .eq(BoxIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
-                            .eq(BoxIndex::getIpAddr,devIp)
-                            .eq(BoxIndex::getBarId,barId));
-                    if (!CollectionUtils.isEmpty(boxIndexList)){
-                        boxIndexList.forEach(boxIndex -> {
-                            //插接箱基础数据
-                            String boxKey = REDIS_KEY_BOX + boxIndex.getDevKey();
-                            JSONObject boxData = JSON.parseObject(JSON.toJSONString(ops.get(boxKey)));
+                    List<AisleBox> aisleBoxList = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
+                            .eq(AisleBox::getAisleBarId,busIndex.getId()));
 
-                            boxDataList.add(boxData);
-                        });
+                    if (!CollectionUtils.isEmpty(aisleBoxList)){
+                        List<AisleBox> boxList = aisleBoxList.stream().sorted(Comparator.comparing(AisleBox::getBoxIndex)).collect(Collectors.toList());
+                        for (int i = 0; i < boxList.size(); i++) {
+                            //插接箱基础数据
+                            Object box = ops.get(boxList.get(i).getBarKey());
+                            JSONObject boxData = JSON.parseObject(JSON.toJSONString(boxList.get(i)));
+
+                            if (Objects.nonNull(box)){
+                                boxData.put("data",JSON.parseObject(JSON.toJSONString(box)));
+                            }
+                            boxDataList.add(i,boxData);
+                        }
                     }
 
                     busDataDTO.setBoxDataList(boxDataList);

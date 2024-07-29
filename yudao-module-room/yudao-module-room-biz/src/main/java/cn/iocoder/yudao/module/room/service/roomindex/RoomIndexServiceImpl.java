@@ -53,6 +53,11 @@ import java.util.stream.Collectors;
 
 
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.*;
+import static cn.iocoder.yudao.framework.common.constant.FieldConstant.ROOM_ELE_TOTAL_REALTIME;
+import static cn.iocoder.yudao.framework.common.constant.FieldConstant.ROOM_EQ_TOTAL_DAY;
+import static cn.iocoder.yudao.framework.common.constant.FieldConstant.ROOM_EQ_TOTAL_MONTH;
+import static cn.iocoder.yudao.framework.common.constant.FieldConstant.ROOM_EQ_TOTAL_WEEK;
+import static cn.iocoder.yudao.framework.common.constant.FieldConstant.ROOM_ID;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.room.constant.RoomConstants.*;
 import static cn.iocoder.yudao.module.room.constant.RoomConstants.KEYWORD;

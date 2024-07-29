@@ -150,8 +150,8 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
     }
 
     @Override
-    public Map<Integer, Integer> levelCount() {
-        Map<Integer,Integer> map = new HashMap<>();
+    public Map<Object, Object> levelCount() {
+        Map<Object,Object> map = new HashMap<>();
         for (int i = 0; i < AlarmLevelEnums.values().length; i++) {
             map.put(AlarmLevelEnums.values()[i].getStatus(),0);
         }
@@ -163,6 +163,28 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
         if (!CollectionUtils.isEmpty(list)){
             Map<Integer,Integer>  statusMap = list.stream().collect(Collectors.toMap(SystemAlarmRecord::getAlarmLevel,SystemAlarmRecord::getCount));
             statusMap.keySet().forEach(key -> map.put(key,statusMap.get(key)));
+        }
+        //获取总数
+        List<SystemAlarmRecord> records = alarmRecordMapper.selectList(new LambdaQueryWrapper<SystemAlarmRecord>()
+              .ne(SystemAlarmRecord::getStatus,AlarmStatusEnums.FINISH.getStatus()));
+        if (!CollectionUtils.isEmpty(records)){
+            //总报警数
+            map.put("total",records.size());
+            //未处理
+            long untreated = records.stream()
+                    .filter(t -> t.getStatus().equals(AlarmStatusEnums.UNTREATED.getStatus())).distinct().count();
+            long hung = records.stream()
+                    .filter(t -> t.getStatus().equals(AlarmStatusEnums.HUNG.getStatus())).distinct().count();
+            long confirm = records.stream()
+                    .filter(t -> t.getStatus().equals(AlarmStatusEnums.CONFIRM.getStatus())).distinct().count();
+            map.put("untreated",untreated);
+            map.put("hung",hung);
+            map.put("confirm",confirm);
+
+        }else {
+            map.put("total",0);
+            map.put("hung",0);
+            map.put("confirm",0);
         }
         return map;
     }

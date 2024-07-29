@@ -45,6 +45,6 @@ public interface AlarmRecordService {
      * 告警等级统计
      * @return
      */
-    Map<Integer,Integer> levelCount();
+    Map<Object,Object> levelCount();
 
 }

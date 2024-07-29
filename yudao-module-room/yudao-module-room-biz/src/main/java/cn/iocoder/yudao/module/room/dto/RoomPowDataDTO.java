@@ -19,6 +19,12 @@ public class RoomPowDataDTO {
      */
     private Integer id;
 
+
+    /**
+     * 机房名
+     */
+    private String name;
+
     /**
      * 总功率因素
      */
