@@ -513,5 +513,12 @@ public class FieldConstant {
     public static final String ROOM_HDA_POW_REALTIME = "room_hda_pow_realtime";
 
     public static final String ROOM_HDA_POW_HOUR = "room_hda_pow_hour";
+
+    public static final String ROOM_KEY = "room_key";
+
+    /**
+     * 聚合名称
+     */
+    public static final String BY_ROOM = "by_room";
 }
 

@@ -15,8 +15,8 @@ import java.util.List;
 @Data
 public class BusIndexVo {
 
-    @Schema(description = "母线id列表", example = "[]")
-    private List<Integer> ids;
+    @Schema(description = "柜列id", example = "1")
+    private Integer id;
 
 
 }

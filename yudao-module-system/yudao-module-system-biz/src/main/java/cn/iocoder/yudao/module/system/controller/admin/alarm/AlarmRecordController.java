@@ -56,8 +56,8 @@ public class AlarmRecordController {
 
     @Operation(summary = "告警等级统计")
     @GetMapping("/level/count")
-    public CommonResult<Map<Integer,Integer>> levelCount() {
-        Map<Integer,Integer> result = alarmRecordService.levelCount();
+    public CommonResult<Map<Object,Object>> levelCount() {
+        Map<Object,Object> result = alarmRecordService.levelCount();
         return success(result);
     }
 

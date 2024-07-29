@@ -16,14 +16,26 @@ import java.util.List;
 @Data
 public class BusDataDTO {
 
-    @Schema(description = "始端箱id", example = "1")
-    private Integer busId;
 
     @Schema(description = "始端箱名称", example = "bus-1")
     private String busName;
 
     @Schema(description = "母线ip", example = "")
     private String devIp;
+
+    /**
+     * AB路
+     */
+    private String path;
+
+    /**
+     * 方向  左0 右1
+     */
+    private Integer direction;
+
+
+    @Schema(description = "母线key", example = "")
+    private String barKey;
 
     @Schema(description = "始端箱数据", example = "{}")
     private JSONObject busData;
