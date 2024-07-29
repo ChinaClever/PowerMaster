@@ -27,6 +27,7 @@
         <el-button v-if="editEnable" @click="handleConfig" type="primary" plain>配置</el-button>
         <el-button v-if="editEnable" @click="handleSubmit" type="primary" plain>保存</el-button>
       </div>
+      <el-button v-else @click="push('/aisle/topology')" type="primary" plain><Icon icon="ep:edit" class="mr-5px" />编辑</el-button>
     </div>
   </ContentWrap>
   <ContentWrap>
@@ -206,6 +207,7 @@ import PluginBox from './component/PluginBox.vue'
 import { EChartsOption } from 'echarts'
 
 const message = useMessage()
+const {push} = useRouter()
 let instance: BrowserJsPlumbInstance | null = null
 
 const btns = [

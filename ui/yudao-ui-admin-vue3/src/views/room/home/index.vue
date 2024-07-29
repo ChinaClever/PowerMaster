@@ -23,9 +23,9 @@
         <template #header>
           <div>空间管理</div>
         </template>
-        <div>未用空间：{{spaceInfo.freeSpace}}U</div>
-        <div>已用空间：{{spaceInfo.usedSpace}}U</div>
-        <div>总空间：{{spaceInfo.totalSpace}}U</div>
+        <div>未用空间：{{spaceInfo.freeSpace}}u</div>
+        <div>已用空间：{{spaceInfo.usedSpace}}u</div>
+        <div>总空间：{{spaceInfo.totalSpace}}u</div>
         <div>机柜数：{{spaceInfo.deviceNum}}</div>
       </el-card>
       <el-card shadow="never">

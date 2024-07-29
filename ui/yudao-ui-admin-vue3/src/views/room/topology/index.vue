@@ -4,7 +4,7 @@
     <div class="toolbar">
       <div style="display: flex;align-items:center">
         机房：
-        <el-select v-model="roomId" placeholder="请选择" class="!w-100px" @change="handleChangeRoom">
+        <el-select :size="isFromHome ? 'small' : ''" v-model="roomId" placeholder="请选择" class="!w-100px" @change="handleChangeRoom">
           <el-option v-for="item in roomList" :key="item.id" :label="item.name" :value="item.id" />
         </el-select>
         <div class="btns">
