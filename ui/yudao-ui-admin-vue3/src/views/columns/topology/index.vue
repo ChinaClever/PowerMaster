@@ -528,7 +528,6 @@ const updatePluginAnchor = () => {
 }
 // 给某个机柜加瞄点 并进行连接
 const addCabinetAnchor = (index, data = {} as any) => {
-  debugger
   const cabElementA = document.getElementById('cab-A-' + index) as Element
   const cabElementB = document.getElementById('cab-B-' + index) as Element
   console.log('cabElementB', cabElementB, cabElementA, data)
