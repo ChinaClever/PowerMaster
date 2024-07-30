@@ -678,7 +678,8 @@ public class RoomServiceImpl implements RoomService {
         int offLineNum = alarmRecordApi.getAlarmRecordNum(roomIndex.getName(),Arrays.asList(AlarmTypeEnums.OFF_LINE.getType()));
         roomMainDataDTO.setAlarmNum(alarmNum);
         roomMainDataDTO.setOffLineNum(offLineNum);
-        roomMainDataDTO.setNormalNum(deviceNum.get() - alarmNum -offLineNum);
+        int normal = deviceNum.get() - alarmNum -offLineNum;
+        roomMainDataDTO.setNormalNum(Math.max(normal, 0));
         roomMainDataDTO.setDeviceNum(deviceNum.get());
 
         return roomMainDataDTO;
