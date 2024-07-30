@@ -45,10 +45,10 @@
         <el-button v-if="editEnable" @click="handleConfig" type="primary" plain>配置</el-button>
         <el-button v-if="editEnable" @click="handleSubmit" type="primary" plain>保存</el-button>
       </div>
-      <el-button v-else @click="push('/aisle/topology')" type="primary" plain><Icon icon="ep:edit" class="mr-5px" />编辑</el-button>
+      <slot name="btn"></slot>
     </div>
   </ContentWrap>
-  <ContentWrap>
+  <ContentWrap style="height: calc(100vh - 250px);">
     <div ref="topologyContainer" class="topologyContainer" :style="`position: relative;z-index: 1;transform: scale(${scaleValue}, ${scaleValue});height: ${isFromHome ? (ContainerHeight * scaleValue + 'px') : 'auto'}`">
       <div class="Container" :style="{alignItems: machineColInfo.pduBar && machineColInfo.barA ? 'unset' : 'center'}">
         <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="Bus">
@@ -226,15 +226,13 @@ import PluginBox from './component/PluginBox.vue'
 import { EChartsOption } from 'echarts'
 
 const message = useMessage()
-const {push} = useRouter()
 let instance: BrowserJsPlumbInstance | null = null
 const roomList = ref([]) // 机房列表
 const machineList = ref<any>([]) // 机柜列表
 const queryParams = reactive({
-  cabinetColumnId: history?.state?.id || 6,
-  cabinetroomId: history?.state?.roomId || 4
+  cabinetColumnId: history?.state?.id || 1,
+  cabinetroomId: history?.state?.roomId || 1
 })
-
 const btns = [
   {
     value: 0,
@@ -319,7 +317,7 @@ const {containerInfo, isFromHome} = defineProps({
     default: false,
   },
 })
-const emit = defineEmits(['backData']) // 定义 success 事件，用于操作成功后的回调
+const emit = defineEmits(['backData', 'idChange', 'getpdubar']) // 定义 success 事件，用于操作成功后的回调
 
 // 连接初始化准备
 const initConnect = () => {
@@ -376,7 +374,7 @@ const initConnect = () => {
   })
 }
 // 创建瞄点并连接
-const toCreatConnect = () => {
+const toCreatConnect = (onlyDelete = false) => {
   if (cabinetList.value && cabinetList.value.length && machineColInfo.barA) {
     console.log('toCreatConnect', cabinetList.value, machineColInfo)
     nextTick(() => {
@@ -390,6 +388,7 @@ const toCreatConnect = () => {
         instance?.removeAllEndpoints(boxElementA)
         instance?.removeAllEndpoints(boxElementB)
         instance?.removeAllEndpoints(boxElementC)
+        if (onlyDelete) return
         // 添加瞄点
         instance?.addEndpoint(boxElementA, {
           source: true,
@@ -423,6 +422,7 @@ const toCreatConnect = () => {
         instance?.deleteEndpoint('plugin-' + item.boxIndex + '_B-1')
         instance?.deleteEndpoint('plugin-' + item.boxIndex + '_B-2')
         instance?.deleteEndpoint('plugin-' + item.boxIndex + '_B-3')
+        if (onlyDelete) return
         // 添加瞄点
         instance?.addEndpoint(boxElementA, {
           source: true,
@@ -445,7 +445,7 @@ const toCreatConnect = () => {
       })
       cabinetList.value.forEach((item, index) => {
         if (!item.cabinetName) return
-        addCabinetAnchor(index, item)
+        addCabinetAnchor(index, item, onlyDelete)
       })
     })
   }
@@ -527,12 +527,13 @@ const updatePluginAnchor = () => {
   }
 }
 // 给某个机柜加瞄点 并进行连接
-const addCabinetAnchor = (index, data = {} as any) => {
+const addCabinetAnchor = (index, data = {} as any, onlyDelete = false) => {
   const cabElementA = document.getElementById('cab-A-' + index) as Element
   const cabElementB = document.getElementById('cab-B-' + index) as Element
   console.log('cabElementB', cabElementB, cabElementA, data)
   instance?.removeAllEndpoints(cabElementA)
   instance?.removeAllEndpoints(cabElementB)
+  if (onlyDelete) return
   // 添加瞄点
   if (!Number.isInteger(data.boxIndexA) || !data.boxOutletIdA) instance?.addEndpoint(cabElementA, {
     source: true,
@@ -1466,10 +1467,14 @@ window.addEventListener('resize', function() {
 
 // 计算出要缩放的比例
 const handleCssScale = () => {
-   isFromHome && nextTick(()=>{
+  scaleValue.value = 1
+  // if (scaleValue.value != 1) scaleValue.value = 1/scaleValue.value
+  isFromHome && nextTick(()=>{
+    debugger
     const targetMain = document.querySelector('.topologyContainer > .Container > .main') as Element
-    const childWidth = targetMain.getBoundingClientRect().width + 132 // Container元素的宽
-    const childHeight = targetMain.getBoundingClientRect().height + 30 // Container元素的高
+    const startBusWidth = machineColInfo.pduBar ? 132 : 0 // 两边始端箱宽度总和 
+    const childWidth = targetMain.getBoundingClientRect().width + startBusWidth // Container元素的宽
+    const childHeight = targetMain.getBoundingClientRect().height + 30 // Container元素的高 30是padding的长
     ContainerHeight.value = childHeight
     scaleValue.value = +(((containerInfo?.width - 30)/childWidth).toFixed(2))
     console.log('containerInfo', childWidth, containerInfo?.width, scaleValue.value, childHeight, childHeight*scaleValue.value)
@@ -1489,7 +1494,9 @@ const getNavList = async() => {
 const handleNavList = (cabinetroomId) => {
   const data = roomList.value as any
   const findRoom = data.find(item => item.roomId == cabinetroomId)
+  if (!findRoom.aisleList || findRoom.aisleList.length == 0) return []
   const findMachine = findRoom.aisleList.find(item => item.id == queryParams.cabinetColumnId)
+  if (findMachine) emit('getpdubar', findMachine.pduBar)
   // pduBar.value = findMachine.pduBar
   console.log('roomIndex', findMachine, findRoom)
   return findRoom.aisleList
@@ -1507,8 +1514,18 @@ watch(() => queryParams.cabinetroomId, (val) => {
 
 watch(() => queryParams.cabinetColumnId,(val) => {
   console.log('wwwwwwwwwww', val, machineList.value)
+  emit('idChange', val)
+  toCreatConnect(true)
+  instance?.deleteEveryConnection()
   getMachineColInfo()
 })
+
+watch(() => containerInfo, (val) => {
+  if (val) {
+    queryParams.cabinetColumnId = containerInfo?.cabinetColumnId
+    queryParams.cabinetroomId = containerInfo?.cabinetroomId
+  }
+},{immediate: true})
 
 onMounted(() => {
   getNavList()
@@ -1591,7 +1608,7 @@ onBeforeUnmount(() => {
   display: flex;
   // align-items: center;
   // padding-bottom: 20px;
-  min-height: calc(100vh - 270px);
+  // min-height: calc(100vh - 270px);
   .Bus {
     width: 66px;
     .startBus {

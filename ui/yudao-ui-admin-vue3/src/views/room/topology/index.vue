@@ -561,7 +561,7 @@ const getRoomInfo = async() => {
       totalSpace: res.totalSpace,
       usedSpace: res.usedSpace,
       freeSpace: res.freeSpace,
-      deviceNum: res.deviceNum,
+      cabNum: res.cabNum,
     })
     for(let i=0; i < res.xLength; i++) {
       Obj[getTableColCharCode(i)] = []
@@ -921,7 +921,7 @@ const handleSubmit = () => {
   try {
     loading.value = true
     const res = MachineRoomApi.saveRoomDetail({
-      id: 4,
+      id: roomId.value,
       roomName: 'CES-JF',
       xLength: rowColInfo.col,
       yLength: rowColInfo.row,

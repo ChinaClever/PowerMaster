@@ -26,7 +26,7 @@
         <div>未用空间：{{spaceInfo.freeSpace}}u</div>
         <div>已用空间：{{spaceInfo.usedSpace}}u</div>
         <div>总空间：{{spaceInfo.totalSpace}}u</div>
-        <div>机柜数：{{spaceInfo.deviceNum}}</div>
+        <div>机柜数：{{spaceInfo.cabNum}}</div>
       </el-card>
       <el-card shadow="never">
         <template #header>
