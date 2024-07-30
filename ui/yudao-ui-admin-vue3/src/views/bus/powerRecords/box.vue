@@ -4,11 +4,11 @@
       <br/>    <br/> 
       <div class="nav_data">
         <div class="carousel-container">
-          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
+          <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
             <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
               <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
             </el-carousel-item>
-          </el-carousel>
+          </el-carousel> -->
         </div>
         <div class="nav_content">
           <el-descriptions title="全部插接箱最近一天新增记录" direction="vertical" :column="1" width="80px" border >
@@ -56,7 +56,7 @@
         </el-table-column>
         <!-- 遍历其他列 -->  
         <template v-for="column in tableColumns">
-          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue"/>
+          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" v-if="column.istrue"/>
         </template>
         <!-- 超过一万条数据提示信息 -->
           <template v-if="shouldShowDataExceedMessage" #append>
@@ -85,7 +85,7 @@ import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption'
 import { IndexApi } from '@/api/bus/busindex'
-import PDUImage from '@/assets/imgs/PDU.jpg';
+// import PDUImage from '@/assets/imgs/PDU.jpg';
 defineOptions({ name: 'PowerRecords' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
@@ -98,18 +98,18 @@ const realTotel = ref(0) // 数据的真实总条数
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
-  timeRange: undefined as string[] | undefined,
+  timeRange: undefined as string[] | undefined as any,
   devkeys: [],
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
 const exportLoading = ref(false)
-const carouselItems = ref([
-      { imgUrl: PDUImage},
-      { imgUrl: PDUImage},
-      { imgUrl: PDUImage},
-      { imgUrl: PDUImage},
-    ]);//侧边栏轮播图图片路径
+// const carouselItems = ref([
+//       { imgUrl: PDUImage},
+//       { imgUrl: PDUImage},
+//       { imgUrl: PDUImage},
+//       { imgUrl: PDUImage},
+//     ]);//侧边栏轮播图图片路径
 // 时间段快捷选项
 const shortcuts = [
   {

@@ -13,6 +13,9 @@ public class EnergyConsumptionPageReqVO extends PageParam {
 
     private Integer boxId;
 
+    // 分段收费传来的参数
+    private String startTime;
+
     private String granularity;
 
     private String[] timeRange;

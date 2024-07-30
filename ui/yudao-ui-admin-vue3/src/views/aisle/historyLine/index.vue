@@ -192,7 +192,7 @@ const paramType = ref('total')
 const queryParams = reactive({
   aisleId: undefined as number | undefined,
   granularity: 'realtime',
-  timeRange: defaultHourTimeRange(1),
+  timeRange: defaultHourTimeRange(1) as any,
 })
 const loading = ref(false) // 列表的加载中
 // const carouselItems = ref([

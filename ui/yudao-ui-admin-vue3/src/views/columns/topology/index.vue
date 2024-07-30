@@ -1,28 +1,45 @@
 <template>
-  <ContentWrap>
+  <!-- <div style="height:100%;min-height: calc(100vh - 120px);display: flex; flex-direction: column;"> -->
+    <ContentWrap>
     <div class="btn-main">
+      <slot name="define"></slot>
       <div class="btns">
         <template v-for="item in btns" :key="item.value">
-          <el-button @click="switchBtn(item.value)" type="primary" :plain="chosenBtn != item.value">{{item.name}}</el-button>
+          <el-tooltip v-if="item.value == 4 || item.value == 7" placement="bottom">
+            <template #content>
+              <div class="tip">
+                <div class="color1"></div>
+                <div>无功功率</div>
+              </div>
+              <div class="tip">
+                <div class="color2"></div>
+                <div>有功功率</div>
+              </div>
+            </template>
+            <el-button @click="switchBtn(item.value)" type="primary" :size="isFromHome ? 'small' : ''" :plain="chosenBtn != item.value">{{item.name}}</el-button>
+          </el-tooltip>
+          <el-button v-else @click="switchBtn(item.value)" :size="isFromHome ? 'small' : ''" type="primary" :plain="chosenBtn != item.value">{{item.name}}</el-button>
         </template>
       </div>
-      <div>
+      <div v-if="!isFromHome">
         <el-button v-if="!editEnable" @click="editEnable = true" type="primary" plain><Icon icon="ep:edit" class="mr-5px" />编辑</el-button>
         <el-button v-if="editEnable" @click="handleCancel" type="primary" plain>取消</el-button>
         <el-button v-if="editEnable" @click="handleConfig" type="primary" plain>配置</el-button>
         <el-button v-if="editEnable" @click="handleSubmit" type="primary" plain>保存</el-button>
       </div>
+      <el-button v-else @click="push('/aisle/topology')" type="primary" plain><Icon icon="ep:edit" class="mr-5px" />编辑</el-button>
     </div>
   </ContentWrap>
   <ContentWrap>
-    <div ref="topologyContainer" class="topologyContainer" style="position: relative;z-index: 1">
+    <div ref="topologyContainer" class="topologyContainer" :style="`position: relative;z-index: 1;transform: scale(${scaleValue}, ${scaleValue});height: ${isFromHome ? (ContainerHeight * scaleValue + 'px') : 'auto'}`">
       <div class="Container" :style="{alignItems: machineColInfo.pduBar && machineColInfo.barA ? 'unset' : 'center'}">
         <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="Bus">
           <div class="startBus" :style="{opacity: machineColInfo.barA.direction ? 0 : 1}">
-            始端箱
+            <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barA" :btns="btns" />
+            <!-- <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barA" /> -->
           </div>
           <div class="startBus" v-if="!machineColInfo.barB.direction">
-            始端箱
+            <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barB" :btns="btns" />
           </div>
         </div>
         <div class="main">
@@ -32,35 +49,17 @@
               <template v-for="(bus, index) in machineColInfo.barA.boxList" :key="index">
                 <!-- 插接箱 -->
                 <div v-if="bus.type == 0" class="plugin-box">
-                  <div class="name">
-                    <template v-for="btn in btns" :key="btn.value">
-                      <div v-if="chosenBtn == btn.value">{{btn.name}}</div>
-                    </template>
+                  <PluginBox :chosenBtn="chosenBtn" :pluginData="bus" :btns="btns" />
+                  <div class="pointContainer">
+                    <div v-for="pointIndex in 3" :key="pointIndex" class="point" :id="`plugin-${bus.boxIndex}_A-${pointIndex}`"></div>
                   </div>
-                  <div class="boxList">
-                    <div class="box">
-                      <div>Ia</div>
-                      <div>30</div>
-                    </div>
-                    <div class="box">
-                      <div>Ib</div>
-                      <div>8.1</div>
-                    </div>
-                    <div class="box">
-                      <div>Ic</div>
-                      <div>50</div>
-                    </div>
-                  </div>
-                  <div :id="`plugin-${bus.boxIndex}_A-1`" class="pointA"></div>
-                  <div :id="`plugin-${bus.boxIndex}_A-2`" class="pointB"></div>
-                  <div :id="`plugin-${bus.boxIndex}_A-3`" class="pointC"></div>
                 </div>
                 <!-- 连接器 -->
                 <div v-else class="template-box">
                   <div class="connector">
                     <span class="text">连接器</span>
                   </div>
-                  <div class="Tbox">
+                  <div v-if="chosenBtn == 8" class="Tbox">
                     <div class="T">
                       <div>T(L1)</div>
                       <div>30°C</div>
@@ -88,35 +87,17 @@
               <template v-for="(bus, index) in machineColInfo.barA.boxList" :key="index">
                 <!-- 插接箱 -->
                 <div v-if="bus.type == 0" class="plugin-box">
-                  <div class="name">
-                    <template v-for="btn in btns" :key="btn.value">
-                      <div v-if="chosenBtn == btn.value">{{btn.name}}</div>
-                    </template>
+                  <PluginBox :chosenBtn="chosenBtn" :pluginData="bus" :btns="btns" />
+                  <div class="pointContainer">
+                    <div v-for="pointIndex in 3" :key="pointIndex" class="point" :id="`plugin-${bus.boxIndex}_B-${pointIndex}`"></div>
                   </div>
-                  <div class="boxList">
-                    <div class="box">
-                      <div>Ia</div>
-                      <div>30</div>
-                    </div>
-                    <div class="box">
-                      <div>Ib</div>
-                      <div>8.1</div>
-                    </div>
-                    <div class="box">
-                      <div>Ic</div>
-                      <div>50</div>
-                    </div>
-                  </div>
-                  <div :id="`plugin-${bus.boxIndex}_B-1`" class="pointA"></div>
-                  <div :id="`plugin-${bus.boxIndex}_B-2`" class="pointB"></div>
-                  <div :id="`plugin-${bus.boxIndex}_B-3`" class="pointC"></div>
                 </div>
                 <!-- 连接器 -->
                 <div v-else class="template-box">
                   <div class="connector">
                     <span class="text">连接器</span>
                   </div>
-                  <div class="Tbox">
+                  <div v-if="chosenBtn == 8" class="Tbox">
                     <div class="T">
                       <div>T(L1)</div>
                       <div>30°C</div>
@@ -152,24 +133,30 @@
                       <div v-if="chosenBtn == 0" class="fill_box">
                         <Echart :options="cabinet.echartsOptionLoad" height="100%" />
                       </div>
-                      <div v-if="chosenBtn == 1" class="fill_box">A路电流：{{cabinet.lineCurA || 0}} B路电流：{{cabinet.lineCurB || 0}}</div>
-                      <div v-if="chosenBtn == 2" class="fill_box">A路电压：{{cabinet.lineVolA || 0}} B路电压：{{cabinet.lineVolB || 0}}</div>
+                      <div v-if="chosenBtn == 1" class="fill_box">
+                        <Echart :options="cabinet.echartsOptionA" height="100%" />
+                      </div>
+                      <div v-if="chosenBtn == 2" class="fill_box">
+                        <Echart :options="cabinet.echartsOptionV" height="100%" />
+                      </div>
                       <div v-if="chosenBtn == 3" class="fill_box">
                         <Echart :options="cabinet.echartsOptionFactor" height="100%" />
                       </div>
                       <div v-if="chosenBtn == 4" class="fill_box">
                         <Echart :options="cabinet.echartsOptionApparent" height="100%" />
                       </div>
-                      <div v-if="chosenBtn == 5">无功功率：{{cabinet.powReactive}} 无功功率A：{{cabinet.powReactiveA}} 无功功率B：{{cabinet.powReactiveB}}</div>
-                      <div v-if="chosenBtn == 6">视在功率：{{cabinet.powApparent}} 视在功率A：{{cabinet.powApparentA}} 视在功率B：{{cabinet.powApparentB}}</div>
                       <div v-if="chosenBtn == 7" class="fill_box">
                         <Echart :options="cabinet.echartsOptionBalance" height="100%" />
                       </div>
-                      <div v-if="chosenBtn == 8" class="fill_box">温度：{{cabinet.temData}}</div>
+                      <div v-if="chosenBtn == 8" class="fill_box">
+                        <Echart :options="cabinet.echartsOptionTemp" height="100%" />
+                      </div>
                       <div v-if="chosenBtn == 9" class="fill_box">
                         <Echart :options="cabinet.echartsOptionCapacity" height="100%" />
                       </div>
-                      <div v-if="chosenBtn == 10" class="fill_box">用能：{{cabinet.yesterdayEq}} </div>
+                      <div v-if="chosenBtn == 10" class="fill_box">
+                        <Echart :options="cabinet.echartsOptionEq" height="100%" />
+                      </div>
                     </template>
                     
                     <div v-else class="inner_empty" :id="'cabinet-' + index"></div>
@@ -192,16 +179,17 @@
         </div>
         <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="Bus">
           <div class="startBus" :style="{opacity: machineColInfo.barA.direction}">
-            始端箱
+            <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barA" :btns="btns" />
           </div>
           <div class="startBus" v-if="machineColInfo.barB.direction">
-            始端箱
+            <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barB" :btns="btns" />
           </div>
         </div>
       </div>
-      <div v-if="!editEnable" class="mask" @click.right.prevent="console.log('---')"></div>
+      <div v-if="isFromHome || !editEnable" class="mask" @click.right.prevent="console.log('---')"></div>
     </div>
   </ContentWrap>
+  <!-- </div> -->
   <!-- 添加或修改用户对话框 -->
   <PluginForm ref="columnForm" @success="handleFormPlugin" />
   <CabForm ref="cabinetForm" @success="handleFormCabinet" />
@@ -214,61 +202,75 @@ import { CabinetApi } from '@/api/cabinet/info'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import PluginForm from './component/PluginForm.vue'
 import CabForm from './component/CabForm.vue'
+import InitialBox from './component/InitialBox.vue'
+import PluginBox from './component/PluginBox.vue'
 import { EChartsOption } from 'echarts'
 
 const message = useMessage()
+const {push} = useRouter()
 let instance: BrowserJsPlumbInstance | null = null
 
 const btns = [
   {
     value: 0,
-    name: '负荷'
+    name: '负载率',
+    unitName: '负载率',
   },
   {
     value: 1,
-    name: '电流'
+    name: '电流',
+    unitName: '电流',
   },
   {
     value: 2,
-    name: '电压'
+    name: '电压',
+    unitName: '电压',
   },
   {
     value: 3,
-    name: '功率因素'
+    name: '功率因素',
+    unitName: '功率因素',
   },
   {
     value: 4,
-    name: '有功功率'
+    name: '功率',
+    unitName: '功率(kW)',
   },
-  {
-    value: 5,
-    name: '无功功率'
-  },
-  {
-    value: 6,
-    name: '视在功率'
-  },
+  // {
+  //   value: 5,
+  //   name: '无功功率'
+  // },
+  // {
+  //   value: 6,
+  //   name: '视在功率'
+  // },
   {
     value: 7,
-    name: '供电平衡'
+    name: '供电平衡',
+    unitName: '视在功率(KVA)',
   },
   {
     value: 8,
-    name: '温度'
+    name: '温度',
+    unitName: '温度(°C)',
   },
   {
     value: 9,
-    name: '容量'
+    name: '容量',
+    unitName: '插接箱',
   },
   {
     value: 10,
-    name: '用能'
+    name: '用能',
+    unitName: '昨日用能(kW·h)',
   },
 ]
-const echartsOption = ref<EChartsOption>({})
+const echartsOptionCab = ref<EChartsOption>({})
 let intervalTimer = null as any
 const topologyContainer = ref()
 const chosenBtn = ref(0)
+const scaleValue = ref(1)
+const ContainerHeight = ref(100)
 const editEnable = ref(false)
 const columnForm = ref()
 const cabinetForm = ref()
@@ -283,6 +285,16 @@ const operateMenu = ref({  // 操作菜单
   add: false,
   curIndex: 0,
 })
+const {containerInfo, isFromHome} = defineProps({
+  containerInfo: {
+    type: Object,
+  },
+  isFromHome: {
+    type: Boolean,
+    default: false,
+  },
+})
+const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 
 // 连接初始化准备
 const initConnect = () => {
@@ -339,7 +351,7 @@ const initConnect = () => {
   })
   
 }
-
+// 创建瞄点并连接
 const toCreatConnect = () => {
   if (cabinetList.value && cabinetList.value.length && machineColInfo.barA) {
     console.log('toCreatConnect', cabinetList.value, machineColInfo)
@@ -479,6 +491,7 @@ const updatePluginAnchor = () => {
       instance?.revalidate(boxElementC)
     })
     machineColInfo.barB.boxList.forEach(item => {
+      if (item.type) return
       const boxElementA = document.getElementById('plugin-' + item.boxIndex + '_B-1') as Element
       const boxElementB = document.getElementById('plugin-' + item.boxIndex + '_B-2') as Element
       const boxElementC = document.getElementById('plugin-' + item.boxIndex + '_B-3') as Element
@@ -772,6 +785,11 @@ const getDataDetail = async() => {
 // 处理柜列状态数据详情
 const handleDataDetail = (res) => {
   if (res.barA) {
+    machineColInfo.barA = {
+      ...res.barA,
+      ...machineColInfo.barA,
+    }
+    // chineColInfo.barA.powerFactor ? Number(machineColInfo
     res.barA.boxList.forEach((item, index) => {
       machineColInfo.barA.boxList[index] = {
         ...machineColInfo.barA.boxList[index],
@@ -780,6 +798,10 @@ const handleDataDetail = (res) => {
     })
   }
   if (res.barB) {
+    machineColInfo.barB = {
+      ...res.barB,
+      ...machineColInfo.barB,
+    }
     res.barB.boxList.forEach((item, index) => {
       machineColInfo.barB.boxList[index] = {
         ...machineColInfo.barB.boxList[index],
@@ -796,7 +818,7 @@ const handleDataDetail = (res) => {
           echartsOptionLoad: { // 负载
             xAxis: {
               type: 'category',
-              data: ['负载'],
+              data: ['负载率'],
               axisTick: {
                 show: false
               }
@@ -829,6 +851,140 @@ const handleDataDetail = (res) => {
                   formatter: '{c}', // 显示数据值
                 },
               }
+            ]
+          },
+          echartsOptionA: { // 电流
+            tooltip: {
+              trigger: 'axis',
+              axisPointer: {
+                type: 'shadow'
+              }
+            },
+            xAxis: {
+              type: 'category',
+              data: ['A路', 'B路'],
+              axisTick: {
+                show: false
+              }
+            },
+            grid: {
+              left: '-20',
+              right: '0',
+              bottom: '3%',
+              top: '8%',
+              containLabel: true
+            },
+            yAxis: {
+              type: 'value',
+              show: false,
+            },
+            series: [
+              {
+                name: 'L1',
+                data: [3, 5],
+                type: 'bar',
+                stack: 'Ad',
+                emphasis: {
+                  focus: 'series'
+                },
+                label: {
+                  show: true,
+                  formatter: '{c}', // 显示数据值
+                },
+              },
+              {
+                name: 'L2',
+                data: [2, 6],
+                type: 'bar',
+                stack: 'Ad',
+                emphasis: {
+                  focus: 'series'
+                },
+                label: {
+                  show: true,
+                  formatter: '{c}', // 显示数据值
+                },
+              },
+              {
+                name: 'L3',
+                data: [1, 3],
+                type: 'bar',
+                stack: 'Ad',
+                emphasis: {
+                  focus: 'series'
+                },
+                label: {
+                  show: true,
+                  formatter: '{c}', // 显示数据值
+                },
+              },
+            ]
+          },
+          echartsOptionV: { // 电压
+            tooltip: {
+              trigger: 'axis',
+              axisPointer: {
+                type: 'shadow'
+              }
+            },
+            xAxis: {
+              type: 'category',
+              data: ['A路', 'B路'],
+              axisTick: {
+                show: false
+              }
+            },
+            grid: {
+              left: '-20',
+              right: '0',
+              bottom: '3%',
+              top: '8%',
+              containLabel: true
+            },
+            yAxis: {
+              type: 'value',
+              show: false,
+            },
+            series: [
+              {
+                name: 'L1',
+                data: [3, 5],
+                type: 'bar',
+                stack: 'Ad',
+                emphasis: {
+                  focus: 'series'
+                },
+                label: {
+                  show: true,
+                  formatter: '{c}', // 显示数据值
+                },
+              },
+              {
+                name: 'L2',
+                data: [2, 6],
+                type: 'bar',
+                stack: 'Ad',
+                emphasis: {
+                  focus: 'series'
+                },
+                label: {
+                  show: true,
+                  formatter: '{c}', // 显示数据值
+                },
+              },
+              {
+                name: 'L3',
+                data: [1, 3],
+                type: 'bar',
+                stack: 'Ad',
+                emphasis: {
+                  focus: 'series'
+                },
+                label: {
+                  show: true,
+                  formatter: '{c}', // 显示数据值
+                },
+              },
             ]
           },
           echartsOptionFactor: { // 功率因素
@@ -869,7 +1025,67 @@ const handleDataDetail = (res) => {
               }
             ]
           },
-          echartsOptionApparent: { // 视在功率
+          echartsOptionApparent: { // 功率
+            tooltip: {
+              trigger: 'axis',
+              axisPointer: {
+                type: 'shadow'
+              }
+            },
+            xAxis: {
+              type: 'category',
+              data: ['功率'],
+              axisTick: {
+                show: false
+              }
+            },
+            grid: {
+              left: '-20',
+              right: '0',
+              bottom: '3%',
+              top: '8%',
+              containLabel: true
+            },
+            yAxis: {
+              type: 'value',
+              show: false,
+            },
+            series: [
+              {
+                name: '有功功率',
+                data: [3],
+                type: 'bar',
+                stack: 'Ad',
+                emphasis: {
+                  focus: 'series'
+                },
+                label: {
+                  show: true,
+                  formatter: '{c}', // 显示数据值
+                },
+                itemStyle: {
+                  color: '#95d475'
+                }
+              },
+              {
+                name: '无功功率',
+                data: [2],
+                type: 'bar',
+                stack: 'Ad',
+                emphasis: {
+                  focus: 'series'
+                },
+                label: {
+                  show: true,
+                  formatter: '{c}', // 显示数据值
+                },
+                itemStyle: {
+                  color: '#eebe77'
+                }
+              },
+            ]
+          },
+          echartsOptionBalance: { // 供电平衡
             tooltip: {
               trigger: 'axis',
               axisPointer: {
@@ -890,7 +1106,7 @@ const handleDataDetail = (res) => {
               top: '8%',
               containLabel: true
             },
-            legend: {},
+            // legend: {},
             yAxis: {
               type: 'value',
               show: false,
@@ -908,6 +1124,9 @@ const handleDataDetail = (res) => {
                   show: true,
                   formatter: '{c}', // 显示数据值
                 },
+                itemStyle: {
+                  color: '#95d475'
+                }
               },
               {
                 name: '无功功率',
@@ -921,57 +1140,82 @@ const handleDataDetail = (res) => {
                   show: true,
                   formatter: '{c}', // 显示数据值
                 },
+                itemStyle: {
+                  color: '#eebe77'
+                }
               },
-              {
-                name: '视在功率',
-                data: [5, 10],
-                type: 'bar',
-                stack: 'Ad',
-                emphasis: {
-                  focus: 'series'
-                },
-                label: {
-                  show: true,
-                  formatter: '{c}', // 显示数据值
-                },
-              }
             ]
+            // xAxis: {
+            //   type: 'category',
+            //   data: ['A路', 'B路'],
+            //   axisTick: {
+            //     show: false
+            //   }
+            // },
+            // grid: {
+            //   left: '-15',
+            //   right: '0',
+            //   bottom: '3%',
+            //   top: '8%',
+            //   containLabel: true
+            // },
+            // yAxis: {
+            //   type: 'value',
+            //   show: false,
+            // },
+            // series: [
+            //   {
+            //     name: '视在功率',
+            //     data: [cab.powApparentA, cab.powApparentB],
+            //     type: 'bar',
+            //     label: {
+            //       show: true,
+            //       formatter: '{c}', // 显示数据值
+            //     },
+            //   },
+            // ]
           },
-          echartsOptionBalance: { // 供电平衡
+          echartsOptionTemp: { // 温度
             xAxis: {
               type: 'category',
-              data: ['A路', 'B路'],
+              data: [`温度`],
               axisTick: {
                 show: false
               }
             },
             grid: {
-              left: '-15',
-              right: '0',
+              left: '0',
+              right: '16',
               bottom: '3%',
               top: '8%',
               containLabel: true
             },
             yAxis: {
               type: 'value',
+              max: 45, 
               show: false,
             },
             series: [
               {
-                name: '视在功率',
-                data: [cab.powApparentA, cab.powApparentB],
+                data: [23],
                 type: 'bar',
+                barWidth: '100%',
+                showBackground: true,
+                backgroundStyle: {
+                  color: 'rgba(180, 180, 180, 0.2)'
+                },
                 label: {
                   show: true,
-                  formatter: '{c}', // 显示数据值
+                  position: 'top', // 顶部显示
+                  formatter: '{c}°C', // 显示数据值
                 },
-              },
+              }
             ]
           },
           echartsOptionCapacity: { // 容量
             xAxis: {
               type: 'category',
-              data: ['容量'],
+              data: [`总容量:${item.cabinetHeight}`],
               axisTick: {
                 show: false
               }
@@ -990,7 +1234,7 @@ const handleDataDetail = (res) => {
             },
             series: [
               {
-                data: [item.freeSpace],
+                data: [item.usedSpace],
                 type: 'bar',
                 barWidth: '100%',
                 showBackground: true,
@@ -999,58 +1243,106 @@ const handleDataDetail = (res) => {
                 },
                 label: {
                   show: true,
-                  formatter: '空闲容量:\n{c}', // 显示数据值
+                  position: 'top', // 顶部显示
+                  formatter: '已用容量:\n{c}', // 显示数据值
                 },
               }
             ]
           },
+          echartsOptionEq: { // 用能
+            xAxis: {
+              type: 'category',
+              data: ['昨日用能'],
+              axisTick: {
+                show: false
+              }
+            },
+            grid: {
+              left: '-10',
+              right: '16',
+              bottom: '3%',
+              top: '8%',
+              containLabel: true
+            },
+            yAxis: {
+              type: 'value',
+              max: item.eleLimitDay, 
+              show: false,
+            },
+            series: [
+              {
+                name: 'load',
+                data: [item.yesterdayEq],
+                type: 'bar',
+                barWidth: '100%',
+                showBackground: true,
+                backgroundStyle: {
+                  color: 'rgba(180, 180, 180, 0.2)'
+                },
+                label: {
+                  show: true,
+                  position: 'top', // 顶部显示
+                  formatter: '{c}', // 显示数据值
+                },
+              }
+            ]
+          }
         }
-        console.log('----------', cab, cab.id)
+        console.log('ssssssss----------', cab, cab.id)
         return
       }
     })
   })
-  echartsOption.value = 
-  // 容量
-  {
-    xAxis: {
-      type: 'category',
-      data: ['容量'],
-      axisTick: {
-        show: false
-      }
+  emit('success', [...cabinetList.value], scaleValue.value)
+  echartsOptionCab.value = {
+    title: {
+      text: '机柜列实时统计'
     },
     grid: {
-      left: '-10',
-      right: '16',
-      bottom: '3%',
-      top: '8%',
+      left: '45',
+      right: '80',
+      bottom: '0',
+      top: '50',
       containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: cabinetList.value.map(item => item.cabinetName || '')
+    },
+    legend:{
+      top: '0',
+      right: '80',
+      selectedMode: 'single'
     },
     yAxis: {
       type: 'value',
-      max: 42, 
-      show: false,
+      // show: false
     },
     series: [
       {
-        name: 'load',
-        data: [38],
+        name:'有功功率',
+        data: cabinetList.value.map(item => item.powActive == undefined ? null : item.powActive),
         type: 'bar',
-        barWidth: '100%',
-        showBackground: true,
-        backgroundStyle: {
-          color: 'rgba(180, 180, 180, 0.2)'
-        },
+        barWidth: '92%',
         label: {
           show: true,
-          formatter: '空闲容量: \n{c}', // 显示数据值
+          position: 'top', // 顶部显示
+          formatter: '{c}', // 显示数据值
         },
-      }
+      },
+      {
+        name:'昨日用能',
+        data: cabinetList.value.map(item => item.yesterdayEq == undefined ? null : item.yesterdayEq),
+        type: 'bar',
+        barWidth: '92%',
+        label: {
+          show: true,
+          position: 'top', // 顶部显示
+          formatter: '{c}', // 显示数据值
+        },
+      },
     ]
   }
-  
-  
   console.log('接口获取柜列状态数据详情end', cabinetList.value, machineColInfo)
 }
 // 处理母线插接箱的初始化处理
@@ -1121,6 +1413,7 @@ const handleCabinetList = (data, status) => {
   console.log('arr', arr)
   cabinetList.value = arr
   handleDataDetail(status)
+  handleCssScale()
   toCreatConnect()
 }
 // 增加空机柜
@@ -1138,13 +1431,30 @@ const deleteMachine = () => {
 //
 const switchBtn = (value) => {
   chosenBtn.value = value
-  console.log('switchBtn', value, cabinetList.value)
+  nextTick(()=>{updatePluginAnchor()})
+  console.log('switchBtn', value, cabinetList.value,)
 }
 
 window.addEventListener('resize', function() {
   console.log('resize----')
   updateCabinetConnect()
 })
+
+// 计算出要缩放的比例
+const handleCssScale = () => {
+   isFromHome && nextTick(()=>{
+    const targetMain = document.querySelector('.topologyContainer > .Container > .main') as Element
+    const childWidth = targetMain.getBoundingClientRect().width + 132 // Container元素的宽
+    const childHeight = targetMain.getBoundingClientRect().height + 30 // Container元素的高
+    ContainerHeight.value = childHeight
+    scaleValue.value = +(((containerInfo?.width - 30)/childWidth).toFixed(2))
+    console.log('containerInfo', childWidth, containerInfo?.width, scaleValue.value, childHeight, childHeight*scaleValue.value)
+  })
+}
+
+// watch(() => test, (val) => {
+//   console.log('dddddddddddddddddd-------------------asdasdcontainerWidth', val)
+// }, {immediate: true})
 
 onMounted(() => {
   // getNavList()
@@ -1167,16 +1477,44 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss" scoped>
+.topologyContainer {
+  transform-origin: left top;
+  transform: scale(1, 1);
+}
+.CabEchart {
+  width: 100%;
+  height: 500px;
+  margin-top: 50px;
+}
 .mask {
   width: 100%;
   height: calc(100% - 32px);
   position: absolute;
   top: 0;
-  z-index: 999;
+  z-index: 99;
 }
 .btn-main {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+}
+.tip {
+  display: flex;
+  align-items: center;
+  .color1 {
+    width: 13px;
+    height: 10px;
+    border-radius: 3px;
+    background-color: #95d475;
+    margin-right: 5px;
+  }
+  .color2 {
+    width: 13px;
+    height: 10px;
+    border-radius: 3px;
+    background-color: #eebe77;
+    margin-right: 5px;
+  }
 }
 // .btns {
 //   display: flex;
@@ -1189,16 +1527,19 @@ onBeforeUnmount(() => {
 .Container {
   display: flex;
   // align-items: center;
-  padding-bottom: 20px;
+  // padding-bottom: 20px;
   min-height: calc(100vh - 270px);
   .Bus {
     width: 66px;
     .startBus {
+      font-size: 12px;
+      color: #fcfcfce1;
       width: 66px;
       height: 66px;
       box-sizing: border-box;
       border: 1px solid #999;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       background-color: silver;
@@ -1207,7 +1548,10 @@ onBeforeUnmount(() => {
     }
   }
   .main {
+    // height: 100%;
     flex: 1;
+    display: flex;
+    flex-direction: column;
     .busListContainer {
       height: 80px;
       margin-bottom: 38px;
@@ -1239,54 +1583,24 @@ onBeforeUnmount(() => {
           border-top: none;
           background-color: #fff;
           margin: 0 39px;
-          .name {
-            width: 100%;
-            padding: 3px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          }
-          .boxList {
-            display: flex;
-            justify-content: center;
-            .box {
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              margin: 0 3px;
-            }
-          }
           .line {
             width: 5px;
             height: 100px;
             background-color: #000;
           }
-          .pointA {
-            position: absolute;
-            bottom: -8px;
-            left: 5px;
-            border: 1px solid;
-            width: 5px;
+          .pointContainer {
+            width: 100%;
             height: 5px;
-            border-radius: 50%;
-          }
-          .pointB {
+            display: flex;
+            justify-content: space-around;
             position: absolute;
-            bottom: -8px;
-            left: 28px;
-            border: 1px solid;
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-          }
-          .pointC {
-            position: absolute;
-            bottom: -8px;
-            right: 5px;
-            border: 1px solid;
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
+            bottom: -5px;
+            .point {
+              border: 1px solid;
+              width: 5px;
+              height: 5px;
+              border-radius: 50%;
+            }
           }
         }
         .connector {
@@ -1334,8 +1648,8 @@ onBeforeUnmount(() => {
 }
 .cabinetContainer {
   box-sizing: border-box;
-  margin-top: 50px;
   position: relative;
+  margin-top: 80px;
   .menu {
     box-sizing: border-box;
     position: absolute;

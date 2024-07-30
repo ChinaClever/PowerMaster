@@ -46,6 +46,10 @@ export const EnergyConsumptionApi = {
   exportRealtimeEQPageData: async (params, axiosConfig) => {
     return await request.download({ url: `/room/eq-data/realtime-export-excel`, params, ...axiosConfig })
   },
-  
+
+  // 获取分段电能电费
+  getSubBillDetails: async (params: any) => {
+    return await request.get({ url: `/room/eq-data/bill-details`, params})
+  },
 
 }

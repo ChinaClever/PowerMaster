@@ -46,4 +46,12 @@ public interface RackEnergyConsumptionService {
 
     Map<String, Object> getOneDaySumData() throws IOException;
 
+    /**
+     * 获取分段电能电费
+     *
+     * @param reqVO 分页查询
+     * @return 分段电能电费详情
+     */
+    PageResult<Object> getSubBillDetails(RackEnergyConsumptionPageReqVO reqVO) throws IOException;
+
 }

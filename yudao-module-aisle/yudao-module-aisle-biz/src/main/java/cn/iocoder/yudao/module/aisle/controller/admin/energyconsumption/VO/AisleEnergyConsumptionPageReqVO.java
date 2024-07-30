@@ -13,6 +13,9 @@ public class AisleEnergyConsumptionPageReqVO extends PageParam {
 
     private String granularity;
 
+    // 查电费分段收费用到的时间参数
+    private String startTime;
+
     private String[] timeRange;
 
     private String[] aisleIds;

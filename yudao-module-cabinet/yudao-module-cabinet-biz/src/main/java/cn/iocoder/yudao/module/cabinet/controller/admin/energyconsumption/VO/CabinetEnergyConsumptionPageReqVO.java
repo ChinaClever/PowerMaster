@@ -11,6 +11,8 @@ import lombok.ToString;
 public class CabinetEnergyConsumptionPageReqVO extends PageParam {
     private Integer cabinetId;
 
+    private String startTime;
+
     private String granularity;
 
     private String[] timeRange;

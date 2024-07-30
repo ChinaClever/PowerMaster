@@ -90,7 +90,7 @@ public class RackEnergyConsumptionServiceImpl implements RackEnergyConsumptionSe
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         // 设置要排除的字段
-        searchSourceBuilder.fetchSource(new String[]{"rack_id", "cabinet_id", "start_time", "end_time", "eq_value",  "bill_value", }, null);
+        // searchSourceBuilder.fetchSource(new String[]{"rack_id", "cabinet_id", "start_time", "end_time", "eq_value",  "bill_value", }, null);
         int pageNo = pageReqVO.getPageNo();
         int pageSize = pageReqVO.getPageSize();
         int index = (pageNo - 1) * pageSize;
@@ -269,6 +269,51 @@ public class RackEnergyConsumptionServiceImpl implements RackEnergyConsumptionSe
         LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1)};
         Map<String, Object> map = getSumData(indices, name, timeAgo);
         return map;
+    }
+
+    @Override
+    public PageResult<Object> getSubBillDetails(RackEnergyConsumptionPageReqVO reqVO) throws IOException {
+        Integer rackId = reqVO.getRackId();
+        if (Objects.equals(rackId, null)){
+            return null;
+        }
+        // 把传来的开始时间(例如"2024-07-25 10:00:00") 的年月日加一天变成 '2024-07-26 00:00:00'和'2024-07-27 00:00:00'
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        // 解析原始时间字符串为LocalDateTime对象
+        LocalDateTime originalTime = LocalDateTime.parse(reqVO.getStartTime(), formatter);
+        // 获取当天的开始时间
+        LocalDateTime startTime = originalTime.withHour(0).withMinute(0).withSecond(0).withNano(0).plusDays(1);
+        // 获取下一天的开始时间（即当天的结束时间的下一天）
+        LocalDateTime endTime = startTime.plusDays(1);
+        // 将LocalDateTime对象转换回字符串
+        String startTimeString = startTime.format(formatter);
+        String endTimeString = endTime.format(formatter);
+        // 搜索源构建对象
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.sort("start_time.keyword", SortOrder.ASC);
+        searchSourceBuilder.size(10000);
+        searchSourceBuilder.trackTotalHits(true);
+        searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                .from(startTimeString)
+                .to(endTimeString));
+        // 搜索请求对象
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.indices("rack_eq_sub_total_day");
+        searchSourceBuilder.query(QueryBuilders.termQuery("rack_id", rackId));
+        searchRequest.source(searchSourceBuilder);
+        // 执行搜索,向ES发起http请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        // 搜索结果
+        List<Object> resultList = new ArrayList<>();
+        SearchHits hits = searchResponse.getHits();
+        hits.forEach(searchHit -> resultList.add(searchHit.getSourceAsMap()));
+        // 匹配到的总记录数
+        Long totalHits = hits.getTotalHits().value;
+        // 返回的结果
+        PageResult<Object> pageResult = new PageResult<>();
+        pageResult.setList(resultList)
+                .setTotal(totalHits);
+        return pageResult;
     }
 
 }

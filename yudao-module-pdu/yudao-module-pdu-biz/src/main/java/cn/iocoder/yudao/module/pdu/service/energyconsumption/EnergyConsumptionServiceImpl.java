@@ -118,13 +118,10 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
 
     @Override
     public PageResult<Object> getBillDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
-        PageResult<Object> pageResult = null;
         // 创建BoolQueryBuilder对象
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        // 设置要排除的字段
-        searchSourceBuilder.fetchSource(new String[]{"pdu_id", "start_time", "end_time", "eq_value",  "bill_value", "outlet_id"}, null);
         int pageNo = pageReqVO.getPageNo();
         int pageSize = pageReqVO.getPageSize();
         int index = (pageNo - 1) * pageSize;
@@ -193,7 +190,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
         // 匹配到的总记录数
         Long totalHits = hits.getTotalHits().value;
         // 返回的结果
-        pageResult = new PageResult<>();
+        PageResult<Object> pageResult = new PageResult<>();
         pageResult.setList(historyDataService.getLocationsByPduIds(mapList))
                 .setTotal(totalHits);
 
@@ -464,6 +461,62 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
         LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1)};
         Map<String, Object> map = getSumData(indices, name, timeAgo);
         return map;
+    }
+
+    @Override
+    public PageResult<Object> getSubBillDetails(EnergyConsumptionPageReqVO reqVO) throws IOException {
+        Integer pduId = reqVO.getPduId();
+        if (Objects.equals(pduId, null)){
+            return null;
+        }
+        // 把传来的开始时间(例如"2024-07-25 10:00:00") 的年月日加一天变成 '2024-07-26 00:00:00'和'2024-07-27 00:00:00'
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        // 解析原始时间字符串为LocalDateTime对象
+        LocalDateTime originalTime = LocalDateTime.parse(reqVO.getStartTime(), formatter);
+        // 获取当天的开始时间
+        LocalDateTime startTime = originalTime.withHour(0).withMinute(0).withSecond(0).withNano(0).plusDays(1);
+        // 获取下一天的开始时间（即当天的结束时间的下一天）
+        LocalDateTime endTime = startTime.plusDays(1);
+        // 将LocalDateTime对象转换回字符串
+        String startTimeString = startTime.format(formatter);
+        String endTimeString = endTime.format(formatter);
+        // 搜索源构建对象
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.sort("start_time.keyword", SortOrder.ASC);
+        searchSourceBuilder.size(10000);
+        searchSourceBuilder.trackTotalHits(true);
+        searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                .from(startTimeString)
+                .to(endTimeString));
+        // 搜索请求对象
+        SearchRequest searchRequest = new SearchRequest();
+        if ("total".equals(reqVO.getGranularity())){
+            searchRequest.indices("pdu_eq_sub_total_day");
+            searchSourceBuilder.query(QueryBuilders.termQuery("pdu_id", pduId));
+        }else{
+            searchRequest.indices("pdu_eq_sub_outlet_day");
+            searchSourceBuilder.query(QueryBuilders.termQuery("pdu_id", pduId));
+            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+            Integer outletId = reqVO.getOutletId();
+            QueryBuilder termQuery = QueryBuilders.termQuery("outlet_id", outletId);
+            boolQuery.must(termQuery);
+            // 将布尔查询设置到SearchSourceBuilder中
+            searchSourceBuilder.query(boolQuery);
+        }
+        searchRequest.source(searchSourceBuilder);
+        // 执行搜索,向ES发起http请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        // 搜索结果
+        List<Object> resultList = new ArrayList<>();
+        SearchHits hits = searchResponse.getHits();
+        hits.forEach(searchHit -> resultList.add(searchHit.getSourceAsMap()));
+        // 匹配到的总记录数
+        Long totalHits = hits.getTotalHits().value;
+        // 返回的结果
+        PageResult<Object> pageResult = new PageResult<>();
+        pageResult.setList(resultList)
+                .setTotal(totalHits);
+        return pageResult;
     }
 
 }

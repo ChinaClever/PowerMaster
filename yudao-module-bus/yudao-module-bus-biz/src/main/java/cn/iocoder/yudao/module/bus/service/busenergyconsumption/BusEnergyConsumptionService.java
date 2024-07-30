@@ -64,6 +64,14 @@ public interface BusEnergyConsumptionService {
      */
     Map<String, Object> getOneDaySumData() throws IOException;
 
+    /**
+     * 获取始端箱分段电能电费
+     *
+     * @param reqVO 分页查询
+     * @return 始端箱分段电能电费详情
+     */
+    PageResult<Object> getBusSubBillDetails(EnergyConsumptionPageReqVO reqVO) throws IOException;
+
 
 //------------------------------------------------------------------------
     /**
@@ -111,5 +119,13 @@ public interface BusEnergyConsumptionService {
      * @return 插接箱实时数据最近一天各新增的数据条数
      */
     Map<String, Object> getBoxOneDaySumData() throws IOException;
+
+    /**
+     * 获取插接箱分段电能电费
+     *
+     * @param reqVO 分页查询
+     * @return 始端箱分段电能电费详情
+     */
+    PageResult<Object> getBoxSubBillDetails(EnergyConsumptionPageReqVO reqVO) throws IOException;
 
 }

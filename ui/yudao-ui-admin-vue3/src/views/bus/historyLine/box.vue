@@ -205,7 +205,7 @@ const queryParams = reactive({
   type: 'total',
   granularity: 'realtime',
   // 进入页面原始数据默认显示最近一小时
-  timeRange: defaultHourTimeRange(1),
+  timeRange: defaultHourTimeRange(1) as any,
   devkey: undefined as string | undefined,
 })
 

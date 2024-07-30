@@ -71,7 +71,7 @@
         </el-table-column>
         <!-- 遍历其他列 -->  
         <template v-for="column in tableColumns">
-          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue"/>
+          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" v-if="column.istrue"/>
         </template>
         <!-- 超过一万条数据提示信息 -->
           <template v-if="shouldShowDataExceedMessage" #append>
@@ -121,7 +121,7 @@ const queryParams = reactive({
   loopId: undefined,
   outletId: undefined,
   type: 'total',
-  timeRange: undefined as string[] | undefined,
+  timeRange: undefined as any,
   ipArray: [],
 })
 const pageSizeArr = ref([15,30,50,100])

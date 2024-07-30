@@ -192,7 +192,7 @@ const paramType = ref('total')
 const queryParams = reactive({
   roomId: undefined as number | undefined,
   granularity: 'realtime',
-  timeRange: defaultHourTimeRange(1),
+  timeRange: defaultHourTimeRange(1) as any,
 })
 const loading = ref(false) // 列表的加载中
 // const carouselItems = ref([
@@ -904,7 +904,6 @@ const getNavList = async() => {
 /** 初始化 **/
 onMounted( async () => {
   getNavList()
-  // 获取路由参数中的 pdu_id
   const queryRoomId = useRoute().query.roomId as string | undefined;
   const queryLocation = useRoute().query.location as string;
   queryParams.roomId = queryRoomId ? parseInt(queryRoomId, 10) : undefined;

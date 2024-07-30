@@ -1,17 +1,17 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜电费统计">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机房电费统计">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
         <div class="carousel-container">
-          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
+          <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
             <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
               <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
             </el-carousel-item>
-          </el-carousel>
+          </el-carousel> -->
         </div>
         <div class="nav_content">
-          <el-descriptions title="全部机柜新增电费记录" direction="vertical" :column="1" width="60px" border >
+          <el-descriptions title="全部机房新增电费记录" direction="vertical" :column="1" width="60px" border >
             <el-descriptions-item label="最近一天"><span >{{ lastDayTotalData }} 条</span></el-descriptions-item>
             <el-descriptions-item label="最近一周"><span >{{ lastWeekTotalData }} 条</span></el-descriptions-item>
             <el-descriptions-item label="最近一月" ><span >{{ lastMonthTotalData }} 条</span></el-descriptions-item>
@@ -71,7 +71,7 @@
         <template v-for="column in tableColumns">
           <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue">
             <template #default="{ row }" v-if="column.slot === 'actions' && queryParams.granularity == 'day'">
-              <el-button link type="primary" v-if="row.bill_mode_real && row.bill_mode_real == 2" @click="showDetails(row.cabinet_id, row.start_time, row.location, row.end_time)">分段计费</el-button>
+              <el-button link type="primary" v-if="row.bill_mode_real && row.bill_mode_real == 2" @click="showDetails(row.aisle_id, row.start_time, row.location, row.end_time)">分段计费</el-button>
               <div v-else>固定计费</div>
             </template>
           </el-table-column>
@@ -94,6 +94,16 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"/>
       <div class="realTotal">共 {{ realTotel }} 条</div>
+
+      <!-- 分段收费详情弹窗 -->
+      <el-dialog v-model="dialogVisible" :title=dialogTitle width="600" draggable>
+        <span style="font-size: 13px;">{{dialogTimeRange}}</span>
+        <el-table :data="dialogTableData" border show-summary style="width: 100%">
+          <el-table-column prop="bill_period" label="时间段" />
+          <el-table-column prop="eq_value" label="耗电量(kWh)" />
+          <el-table-column prop="bill_value" label="电费(元)" />
+        </el-table>
+      </el-dialog>
     </template>
   </CommonMenu>
 </template>
@@ -101,10 +111,10 @@
 <script setup lang="ts">
 import dayjs from 'dayjs'
 import download from '@/utils/download'
-import { EnergyConsumptionApi } from '@/api/cabinet/energyConsumption'
+import { EnergyConsumptionApi } from '@/api/room/energyConsumption'
 import { formatDate, endOfDay, convertDate, addTime} from '@/utils/formatTime'
-import { CabinetApi } from '@/api/cabinet/info'
-import PDUImage from '@/assets/imgs/PDU.jpg';
+import { IndexApi } from '@/api/room/roomindex'
+// import PDUImage from '@/assets/imgs/PDU.jpg';
 defineOptions({ name: 'BillStatistics' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
@@ -126,17 +136,17 @@ const queryParams = reactive({
   pageSize: 15,
   granularity: 'day',
   timeRange: undefined as string[] | undefined,
-  cabinetIds:[]
+  roomIds:[]
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
 const exportLoading = ref(false)
-const carouselItems = ref([
-      { imgUrl: PDUImage},
-      { imgUrl: PDUImage},
-      { imgUrl: PDUImage},
-      { imgUrl: PDUImage},
-    ]);//侧边栏轮播图图片路径
+// const carouselItems = ref([
+//       { imgUrl: PDUImage},
+//       { imgUrl: PDUImage},
+//       { imgUrl: PDUImage},
+//       { imgUrl: PDUImage},
+//     ]);//侧边栏轮播图图片路径
 // 时间段快捷选项
 const shortcuts = [
   {
@@ -198,6 +208,22 @@ const tableColumns = ref([
   { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
   { label: '计费方式', align: 'center', slot: 'actions' , istrue:true},
 ]) as any;
+
+/** 详情操作*/
+const showDetails = async (roomId: number, startTime:string, location:string, endTime: string) => {
+  dialogTableData.value = []
+  dialogTitle.value = ''
+  dialogTimeRange.value = ''
+  let params = {
+    roomId: roomId,
+    startTime: startTime
+  }
+  const data = await EnergyConsumptionApi.getSubBillDetails(params)
+  dialogTableData.value = data.list
+  dialogTitle.value = location
+  dialogTimeRange.value = startTime + ' - ' + endTime
+  dialogVisible.value = true
+}
 
 /** 查询列表 */
 const getList = async () => {
@@ -278,7 +304,7 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnergyConsumptionApi.exportBillPageData(queryParams, axiosConfig)
-    await download.excel(data, '机柜电费统计.xlsx')
+    await download.excel(data, '机房电费统计.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -290,36 +316,15 @@ const handleExport = async () => {
 // 导航栏选择后触发
 const handleCheck = async (node) => {
   let arr = [] as any
-  node.forEach(item => { 
-    if(item.type == 3){
-      arr.push(item.id);
-    }
-  });
-  queryParams.cabinetIds = arr
+  node.forEach(item => arr.push(item.id));
+  queryParams.roomIds = arr
   handleQuery()
 }
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
+  const res = await IndexApi.getRoomList()
   navList.value = res
-}
-
-/** 详情操作*/
-const showDetails = async (cabinetId: number, startTime:string, location:string, endTime: string) => {
-  dialogTableData.value = []
-  dialogTitle.value = ''
-  dialogTimeRange.value = ''
-  let params = {
-    cabinetId: cabinetId,
-    startTime: startTime
-  }
-  const data = await EnergyConsumptionApi.getSubBillDetails(params)
-  dialogTableData.value = data.list
-  dialogTitle.value = location
-  dialogTimeRange.value = startTime + ' - ' + endTime
-  dialogVisible.value = true
-
 }
 
 // 获取导航的数据显示

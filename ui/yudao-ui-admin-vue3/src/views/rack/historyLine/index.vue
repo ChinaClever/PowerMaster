@@ -140,7 +140,7 @@ const needFlush = ref(0) // 是否需要刷新图表
 const queryParams = reactive({
   rackId: undefined as number | undefined,
   granularity: 'realtime',
-  timeRange: defaultHourTimeRange(1),
+  timeRange: defaultHourTimeRange(1) as any,
 })
 const loading = ref(false) // 列表的加载中
 

@@ -118,7 +118,7 @@ import { onMounted } from 'vue'
 import { IndexApi } from '@/api/aisle/aisleindex'
 import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
 import { EnergyConsumptionApi } from '@/api/aisle/energyConsumption'
-import PDUImage from '@/assets/imgs/PDU.jpg';
+// import PDUImage from '@/assets/imgs/PDU.jpg';
 defineOptions({ name: 'ECDistribution' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
@@ -129,7 +129,7 @@ const activeName1 = ref('lineChart')
 const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
 const instance = getCurrentInstance();
-const selectTimeRange = ref(defaultDayTimeRange(7))
+const selectTimeRange = ref(defaultDayTimeRange(7)) as any
 const loading = ref(false) 
 const queryParams = reactive({
   aisleId: undefined as number | undefined,
