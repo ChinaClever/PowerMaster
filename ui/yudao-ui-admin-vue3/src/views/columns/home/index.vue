@@ -36,12 +36,16 @@
           </el-progress>
         </div>
       </ContentWrap>
-      <ContentWrap>
+      <ContentWrap v-if="mainInfo.cabinetList && mainInfo.cabinetList.length">
         <Echart :options="echartsOptionA" :height="300" />
       </ContentWrap>
     </div>
     <div class="center" id="center">
-      <Topology :containerInfo="containerInfo" :isFromHome="true" @back-data="handleCabEchart" />
+      <Topology :containerInfo="containerInfo" :isFromHome="true" @back-data="handleCabEchart" @id-change="handleIdChange" @getpdubar="handlePduBar">
+        <template #btn>
+          <el-button @click="handleJump" type="primary" plain><Icon icon="ep:edit" class="mr-5px" />编辑</el-button>
+        </template>
+      </Topology>
       <ContentWrap class="CabEchart">
         <Echart :options="echartsOptionCab" height="100%" width="100%" />
       </ContentWrap>
@@ -83,7 +87,7 @@
           </el-progress>
         </div>
       </ContentWrap>
-      <ContentWrap>
+      <ContentWrap v-if="mainInfo.cabinetList && mainInfo.cabinetList.length">
         <Echart :options="echartsOptionB" :height="300" />
       </ContentWrap>
     </div>
@@ -96,16 +100,16 @@ import { EChartsOption } from 'echarts'
 import { MachineColumnApi } from '@/api/cabinet/column'
 import { object } from 'vue-types'
 
+const {push} = useRouter()
 const containerInfo = reactive({
-  width: 0
-})
-const scaleVal = ref(1)
-const echartsOptionCab = ref<EChartsOption>({})
-const pduBar = ref(1) // 0:pdu 1:母线
-const queryParams = reactive({
+  width: 0,
   cabinetColumnId: history?.state?.id || 6,
   cabinetroomId: history?.state?.roomId || 4
 })
+console.log('containerInfo', containerInfo)
+const scaleVal = ref(1)
+const echartsOptionCab = ref<EChartsOption>({})
+const pduBar = ref(1) // 0:pdu 1:母线
 
 const echartsOptionA = reactive<EChartsOption>({})
 const echartsOptionB = reactive<EChartsOption>({})
@@ -114,9 +118,10 @@ const mainInfo = reactive({})
 const EqInfo = reactive({})
 
 const getMainData = async() => {
-  const res =  await MachineColumnApi.getMaindata({id: queryParams.cabinetColumnId})
+  const res =  await MachineColumnApi.getMaindata({id: containerInfo.cabinetColumnId})
   Object.assign(mainInfo, res)
   console.log('res', res)
+  if (!res.cabinetList) return
   Object.assign(echartsOptionA, {
     title: {
       text: 'A路功率'
@@ -201,9 +206,23 @@ const getMainData = async() => {
   })
 }
 const getMainEq = async() => {
-  const res =  await MachineColumnApi.getMainEq({id: queryParams.cabinetColumnId})
+  const res =  await MachineColumnApi.getMainEq({id: containerInfo.cabinetColumnId})
   console.log('getMainEq res', res)
   Object.assign(EqInfo, res)
+}
+// 处理跳转
+const handleJump = () => {
+  push({path: '/aisle/topology', state: { id: containerInfo.cabinetColumnId, roomId: containerInfo.cabinetroomId }})
+}
+// 处理时pdu还是母线的事件
+const handlePduBar = (type) => {
+  pduBar.value = type
+}
+// 处理柜列id/机柜id切换事件
+const handleIdChange = (id) => {
+  containerInfo.cabinetColumnId = id
+  getMainData()
+  getMainEq()
 }
 // 处理柜列实时统计图表
 const handleCabEchart = (result, scale) => {
@@ -266,12 +285,6 @@ const handleCabEchart = (result, scale) => {
 getMainData()
 getMainEq()
 
-watch(() => queryParams.cabinetColumnId,(val) => {
-  console.log('wwwwwwwwwww', val, machineList.value)
-  getMainData()
-  getMainEq()
-})
-
 onMounted(() => {
   const centerEle = document.getElementById('center')
   containerInfo.width = centerEle?.offsetWidth as number
@@ -317,18 +330,12 @@ onMounted(() => {
     box-sizing: border-box;
     overflow: hidden;
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
   }
   .right {
     width: 300px;
     box-sizing: border-box;
     overflow: hidden;
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
   }
 }
 .progress {
