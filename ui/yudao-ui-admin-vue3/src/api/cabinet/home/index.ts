@@ -1,6 +1,6 @@
 import request from '@/config/axios'
 
-export const CabinetApi = {
+export const MachineHomeApi = {
   // 获取主页面设备数据
   getHomeDevData: async (params: any) => {
     return await request.get({ url: `/main/dev/data`, params })
@@ -13,7 +13,7 @@ export const CabinetApi = {
   getHomeEqData: async (params: any) => {
     return await request.get({ url: `/main/eq/data`, params })
   },
-  // 获取机架设备详情
+  // 获取未处理告警数量
   getHomeAlarmData: async (params: any) => {
     return await request.get({ url: `/system/alarm/record/level/count`, params })
   }, 
