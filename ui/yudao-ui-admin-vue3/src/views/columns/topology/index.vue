@@ -2,7 +2,25 @@
   <!-- <div style="height:100%;min-height: calc(100vh - 120px);display: flex; flex-direction: column;"> -->
     <ContentWrap>
     <div class="btn-main">
-      <slot name="define"></slot>
+      <el-form
+        class="-mb-15px topForm"
+        :model="queryParams"
+        ref="queryFormRef"
+        :inline="true"
+        label-width="68px"
+      >
+        <el-form-item label="" prop="jf" >
+          机房：<el-select :size="isFromHome ? 'small' : ''" v-model="queryParams.cabinetroomId" placeholder="请选择" class="!w-100px">
+            <el-option v-for="item in roomList" :key="item.roomId" :label="item.roomName" :value="item.roomId" />
+          </el-select>
+        </el-form-item >
+        <span class="line"></span>
+        <el-form-item label="" prop="jg">
+          柜列：<el-select :size="isFromHome ? 'small' : ''" v-model="queryParams.cabinetColumnId" placeholder="请选择" class="!w-100px">
+            <el-option v-for="item in machineList" :key="item.id" :label="item.name" :value="item.id" />
+          </el-select>
+        </el-form-item>
+      </el-form>
       <div class="btns">
         <template v-for="item in btns" :key="item.value">
           <el-tooltip v-if="item.value == 4 || item.value == 7" placement="bottom">
@@ -129,36 +147,37 @@
                   </div>
                   <div class="cabinet">
                     <template v-if="cabinet.cabinetName">
-                      <div class="inner_fill" :id="'cabinet-' + index"></div>
-                      <div v-if="chosenBtn == 0" class="fill_box">
-                        <Echart :options="cabinet.echartsOptionLoad" height="100%" />
-                      </div>
-                      <div v-if="chosenBtn == 1" class="fill_box">
-                        <Echart :options="cabinet.echartsOptionA" height="100%" />
-                      </div>
-                      <div v-if="chosenBtn == 2" class="fill_box">
-                        <Echart :options="cabinet.echartsOptionV" height="100%" />
-                      </div>
-                      <div v-if="chosenBtn == 3" class="fill_box">
-                        <Echart :options="cabinet.echartsOptionFactor" height="100%" />
-                      </div>
-                      <div v-if="chosenBtn == 4" class="fill_box">
-                        <Echart :options="cabinet.echartsOptionApparent" height="100%" />
-                      </div>
-                      <div v-if="chosenBtn == 7" class="fill_box">
-                        <Echart :options="cabinet.echartsOptionBalance" height="100%" />
-                      </div>
-                      <div v-if="chosenBtn == 8" class="fill_box">
-                        <Echart :options="cabinet.echartsOptionTemp" height="100%" />
-                      </div>
-                      <div v-if="chosenBtn == 9" class="fill_box">
-                        <Echart :options="cabinet.echartsOptionCapacity" height="100%" />
-                      </div>
-                      <div v-if="chosenBtn == 10" class="fill_box">
-                        <Echart :options="cabinet.echartsOptionEq" height="100%" />
-                      </div>
+                      <div class="inner_fill" :id="'cabinet-' + index" :style="{backgroundColor: cabinet.id ? 'rgba(180, 180, 180, 0.2)' : 'rgba(230, 240, 234)'}"></div>
+                      <template v-if="cabinet.id">
+                        <div v-if="chosenBtn == 0" class="fill_box">
+                          <Echart :options="cabinet.echartsOptionLoad" height="100%" />
+                        </div>
+                        <div v-if="chosenBtn == 1" class="fill_box">
+                          <Echart :options="cabinet.echartsOptionA" height="100%" />
+                        </div>
+                        <div v-if="chosenBtn == 2" class="fill_box">
+                          <Echart :options="cabinet.echartsOptionV" height="100%" />
+                        </div>
+                        <div v-if="chosenBtn == 3" class="fill_box">
+                          <Echart :options="cabinet.echartsOptionFactor" height="100%" />
+                        </div>
+                        <div v-if="chosenBtn == 4" class="fill_box">
+                          <Echart :options="cabinet.echartsOptionApparent" height="100%" />
+                        </div>
+                        <div v-if="chosenBtn == 7" class="fill_box">
+                          <Echart :options="cabinet.echartsOptionBalance" height="100%" />
+                        </div>
+                        <div v-if="chosenBtn == 8" class="fill_box">
+                          <Echart :options="cabinet.echartsOptionTemp" height="100%" />
+                        </div>
+                        <div v-if="chosenBtn == 9" class="fill_box">
+                          <Echart :options="cabinet.echartsOptionCapacity" height="100%" />
+                        </div>
+                        <div v-if="chosenBtn == 10" class="fill_box">
+                          <Echart :options="cabinet.echartsOptionEq" height="100%" />
+                        </div>
+                      </template>
                     </template>
-                    
                     <div v-else class="inner_empty" :id="'cabinet-' + index"></div>
                   </div>
                   <div class="status">{{cabinet.cabinetName || ''}}</div>
@@ -209,6 +228,12 @@ import { EChartsOption } from 'echarts'
 const message = useMessage()
 const {push} = useRouter()
 let instance: BrowserJsPlumbInstance | null = null
+const roomList = ref([]) // 机房列表
+const machineList = ref<any>([]) // 机柜列表
+const queryParams = reactive({
+  cabinetColumnId: history?.state?.id || 6,
+  cabinetroomId: history?.state?.roomId || 4
+})
 
 const btns = [
   {
@@ -294,7 +319,7 @@ const {containerInfo, isFromHome} = defineProps({
     default: false,
   },
 })
-const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
+const emit = defineEmits(['backData']) // 定义 success 事件，用于操作成功后的回调
 
 // 连接初始化准备
 const initConnect = () => {
@@ -349,7 +374,6 @@ const initConnect = () => {
     // 如果返回 false，则连接断开操作会被取消
     return true
   })
-  
 }
 // 创建瞄点并连接
 const toCreatConnect = () => {
@@ -504,6 +528,7 @@ const updatePluginAnchor = () => {
 }
 // 给某个机柜加瞄点 并进行连接
 const addCabinetAnchor = (index, data = {} as any) => {
+  debugger
   const cabElementA = document.getElementById('cab-A-' + index) as Element
   const cabElementB = document.getElementById('cab-B-' + index) as Element
   console.log('cabElementB', cabElementB, cabElementA, data)
@@ -778,7 +803,7 @@ const handleFormCabinet = (data) => {
 }
 // 接口获取柜列状态数据详情
 const getDataDetail = async() => {
-  const res = await MachineColumnApi.getDataDetail({id: 6})
+  const res = await MachineColumnApi.getDataDetail({id: queryParams.cabinetColumnId})
   console.log('接口获取柜列状态数据详情', res)
   handleDataDetail(res)
 }
@@ -832,7 +857,7 @@ const handleDataDetail = (res) => {
             },
             yAxis: {
               type: 'value',
-              max: 1, 
+              max: 1,
               show: false,
             },
             series: [
@@ -1293,7 +1318,7 @@ const handleDataDetail = (res) => {
       }
     })
   })
-  emit('success', [...cabinetList.value], scaleValue.value)
+  emit('backData', [...cabinetList.value], scaleValue.value)
   echartsOptionCab.value = {
     title: {
       text: '机柜列实时统计'
@@ -1359,8 +1384,8 @@ const handleDataDetail = (res) => {
 // }
 // 接口获取柜列信息
 const getMachineColInfo = async() => {
-  const res1 = MachineColumnApi.getAisleDetail({id:6})
-  const res2 = MachineColumnApi.getDataDetail({id: 6})
+  const res1 = MachineColumnApi.getAisleDetail({id: queryParams.cabinetColumnId})
+  const res2 = MachineColumnApi.getDataDetail({id: queryParams.cabinetColumnId})
   Promise.all([res1, res2]).then((resultList) => {
     Object.assign(machineColInfo, resultList[0])
     handleCabinetList(resultList[0], resultList[1])
@@ -1452,12 +1477,42 @@ const handleCssScale = () => {
   })
 }
 
-// watch(() => test, (val) => {
-//   console.log('dddddddddddddddddd-------------------asdasdcontainerWidth', val)
-// }, {immediate: true})
+// 接口获取机房导航列表
+const getNavList = async() => {
+  const res = await MachineColumnApi.getAisleList({})
+  console.log('接口获取机房导航列表*****', res)
+  if (res && res.length) {
+    roomList.value = res
+    machineList.value = handleNavList(queryParams.cabinetroomId)
+  }
+}
+
+const handleNavList = (cabinetroomId) => {
+  const data = roomList.value as any
+  const findRoom = data.find(item => item.roomId == cabinetroomId)
+  const findMachine = findRoom.aisleList.find(item => item.id == queryParams.cabinetColumnId)
+  // pduBar.value = findMachine.pduBar
+  console.log('roomIndex', findMachine, findRoom)
+  return findRoom.aisleList
+}
+
+watch(() => queryParams.cabinetroomId, (val) => {
+  machineList.value = handleNavList(val)
+  if (machineList.value.length == 0) {
+    queryParams.cabinetColumnId = null
+    return
+  }
+  const defaultValue = machineList.value[0] as any
+  queryParams.cabinetColumnId = defaultValue.id
+})
+
+watch(() => queryParams.cabinetColumnId,(val) => {
+  console.log('wwwwwwwwwww', val, machineList.value)
+  getMachineColInfo()
+})
 
 onMounted(() => {
-  // getNavList()
+  getNavList()
   getMachineColInfo()
   initConnect()
   // intervalTimer = setInterval(() => {
@@ -1520,6 +1575,15 @@ onBeforeUnmount(() => {
 //   display: flex;
 //   justify-content: flex-end;
 // }
+.topForm .line {
+  display: inline-block;
+  width: 8px;
+  border-bottom: 1px solid #000;
+  margin: 0px 8px 13px 8px;
+}
+:deep(.topForm .el-form-item) {
+  margin-right: 0px
+}
 :deep(.el-card__body) {
   overflow-x: auto;
   overflow-y: hidden;
@@ -1713,8 +1777,6 @@ onBeforeUnmount(() => {
         height: 100%;
         box-sizing: border-box;
         border: 5px solid #888;
-        // background-color: #d9ffea;
-        background-color: rgb(155, 166, 190, 0);
         z-index: 10;
       }
       .fill_box {

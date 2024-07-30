@@ -41,29 +41,7 @@
       </ContentWrap>
     </div>
     <div class="center" id="center">
-      <Topology :containerInfo="containerInfo" :isFromHome="true" @success="handleCabEchart" >
-        <template #define>
-          <el-form
-            class="-mb-15px topForm"
-            :model="queryParams"
-            ref="queryFormRef"
-            :inline="true"
-            label-width="68px"
-          >
-            <el-form-item label="" prop="jf" >
-              <el-select size="small" v-model="queryParams.cabinetroomId" placeholder="请选择" class="!w-100px">
-                <el-option v-for="item in roomList" :key="item.roomId" :label="item.roomName" :value="item.roomId" />
-              </el-select>
-            </el-form-item >
-            <span class="line"></span>
-            <el-form-item label="" prop="jg">
-              <el-select size="small" v-model="queryParams.cabinetColumnId" placeholder="请选择" class="!w-100px">
-                <el-option v-for="item in machineList" :key="item.id" :label="item.name" :value="item.id" />
-              </el-select>
-            </el-form-item>
-          </el-form>
-        </template>
-      </Topology>
+      <Topology :containerInfo="containerInfo" :isFromHome="true" @back-data="handleCabEchart" />
       <ContentWrap class="CabEchart">
         <Echart :options="echartsOptionCab" height="100%" width="100%" />
       </ContentWrap>
@@ -124,8 +102,6 @@ const containerInfo = reactive({
 const scaleVal = ref(1)
 const echartsOptionCab = ref<EChartsOption>({})
 const pduBar = ref(1) // 0:pdu 1:母线
-const roomList = ref([]) // 左侧导航栏树结构列表
-const machineList = ref<any>([]) // 左侧导航栏树结构列表
 const queryParams = reactive({
   cabinetColumnId: history?.state?.id || 6,
   cabinetroomId: history?.state?.roomId || 4
@@ -229,26 +205,7 @@ const getMainEq = async() => {
   console.log('getMainEq res', res)
   Object.assign(EqInfo, res)
 }
-
-// 接口获取机房导航列表
-const getNavList = async() => {
-  const res = await MachineColumnApi.getAisleList({})
-  console.log('接口获取机房导航列表*****', res)
-  if (res && res.length) {
-    roomList.value = res
-    machineList.value = handleNavList(queryParams.cabinetroomId)
-  }
-}
-
-const handleNavList = (cabinetroomId) => {
-  const data = roomList.value as any
-  const findRoom = data.find(item => item.roomId == cabinetroomId)
-  const findMachine = findRoom.aisleList.find(item => item.id == queryParams.cabinetColumnId)
-  pduBar.value = findMachine.pduBar
-  console.log('roomIndex', findMachine, findRoom)
-  return findRoom.aisleList
-}
-
+// 处理柜列实时统计图表
 const handleCabEchart = (result, scale) => {
   console.log('handleCabEchart', result, typeof result)
   scaleVal.value = scale
@@ -308,17 +265,6 @@ const handleCabEchart = (result, scale) => {
 
 getMainData()
 getMainEq()
-getNavList()
-
-watch(() => queryParams.cabinetroomId, (val) => {
-  machineList.value = handleNavList(val)
-  if (machineList.value.length == 0) {
-    queryParams.cabinetColumnId = null
-    return
-  }
-  const defaultValue = machineList.value[0] as any
-  queryParams.cabinetColumnId = defaultValue.id
-})
 
 watch(() => queryParams.cabinetColumnId,(val) => {
   console.log('wwwwwwwwwww', val, machineList.value)
@@ -400,12 +346,7 @@ onMounted(() => {
     font-size: 12px;
   }
 }
-.topForm .line {
-  display: inline-block;
-  width: 8px;
-  border-bottom: 1px solid #000;
-  margin: 0px 8px 13px 8px;
-}
+
 :deep(.el-card__header) {
   padding: 15px;
 }
@@ -422,7 +363,5 @@ onMounted(() => {
     width: 100%;
   }
 }
-:deep(.topForm .el-form-item) {
-  margin-right: 0px
-}
+
 </style>

@@ -110,7 +110,7 @@
                   </el-form-item>
                   <el-form-item label="插接箱输出位：">
                     <el-select v-if="isBusBind" v-model="machineFormData.boxOutletIdA" placeholder="请选择">
-                      <el-option v-for="i in 3" :key="i" :label="'输出位' + i" :value="i-1" />
+                      <el-option v-for="i in 3" :key="i" :label="'输出位' + i" :value="i" />
                     </el-select>
                     <el-input v-else v-model="machineFormData.boxOutletIdA" placeholder="请输入" />
                   </el-form-item>
@@ -131,7 +131,7 @@
                   </el-form-item>
                   <el-form-item label="插接箱输出位：">
                     <el-select v-if="isBusBind" v-model="machineFormData.boxOutletIdB" placeholder="请选择">
-                      <el-option v-for="i in 3" :key="i" :label="'输出位' + i" :value="i-1" />
+                      <el-option v-for="i in 3" :key="i" :label="'输出位' + i" :value="i" />
                     </el-select>
                     <el-input v-else v-model="machineFormData.boxOutletIdB" placeholder="请输入" />
                   </el-form-item>
