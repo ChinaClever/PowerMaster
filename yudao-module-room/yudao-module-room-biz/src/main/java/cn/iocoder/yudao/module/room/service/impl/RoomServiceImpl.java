@@ -148,6 +148,8 @@ public class RoomServiceImpl implements RoomService {
                 roomIndexMapper.insert(index);
             }
 
+            roomSaveVo.setId(index.getId());
+
             //柜列
             if (!CollectionUtils.isEmpty(roomSaveVo.getAisleList())){
                 //删除
