@@ -586,11 +586,13 @@ public class AisleServiceImpl implements AisleService {
         }
         if (!CollectionUtils.isEmpty(roomIndexList)){
             roomIndexList.forEach(roomIndex -> {
-                AisleListDTO aisleListDTO = new AisleListDTO();
-                aisleListDTO.setRoomId(roomIndex.getId());
-                aisleListDTO.setRoomName(roomIndex.getName());
-                aisleListDTO.setAisleList(map.get(roomIndex.getId()));
-                aisleListDTOList.add(aisleListDTO);
+                if (Objects.nonNull(map.get(roomIndex.getId()))){
+                    AisleListDTO aisleListDTO = new AisleListDTO();
+                    aisleListDTO.setRoomId(roomIndex.getId());
+                    aisleListDTO.setRoomName(roomIndex.getName());
+                    aisleListDTO.setAisleList(map.get(roomIndex.getId()));
+                    aisleListDTOList.add(aisleListDTO);
+                }
             });
 
         }
