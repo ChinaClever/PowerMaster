@@ -63,9 +63,9 @@
                 :xs="24"
               >
                 <el-card shadow="hover">
-                  <div class="flex items-center">
+                  <div class="flex items-center h-21px">
                     <!-- <Icon :icon="item.icon" :size="25" class="mr-8px" /> -->
-                    <span class="text-16px">{{ item.name }}</span>
+                    <span class="text-16px">{{ item.name || '' }}</span>
                   </div>
                   <div class="mt-14px text-14px text-gray-400">实时总功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW</div>
                   <div class="mt-14px flex justify-between text-12px text-gray-400">
@@ -401,7 +401,7 @@ const getHomeEqData = async() => {
     },
     xAxis: {
       type: 'category',
-      data: res.roomEqList.map(item => item.name)
+      data: res.roomEqList ? res.roomEqList.map(item => item.name) : []
     },
     yAxis: {
       type: 'value',
@@ -414,7 +414,7 @@ const getHomeEqData = async() => {
     series: [
       {
         name: '当天',
-        data: res.roomEqList.map(item => item.yesterdayEq),
+        data: res.roomEqList ? res.roomEqList.map(item => item.yesterdayEq) : [],
         type: 'bar',
         label: {
           show: true,
@@ -437,7 +437,7 @@ const switchPowBtn = (index) => {
   prePowBtn.value = index
   eqOptionsData.series = [{
     name: powBtns[index].name,
-    data: eqInfo.roomEqList.map(item => item[powBtns[index].param]),
+    data: eqInfo.roomEqList ? eqInfo.roomEqList.map(item => item[powBtns[index].param]) : [],
     type: 'bar',
     label: {
       show: true,

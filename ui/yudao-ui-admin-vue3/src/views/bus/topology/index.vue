@@ -1,9 +1,30 @@
 <template>
   <ContentWrap>
-    <div class="btns">
-      <template v-for="item in btns" :key="item.value">
-        <el-button @click="switchBtn(item.value)" type="primary" :plain="chosenBtn != item.value">{{item.name}}</el-button>
-      </template>
+    <div class="flex justify-between">
+      <el-form
+        class="-mb-15px topForm"
+        :model="queryParams"
+        ref="queryFormRef"
+        :inline="true"
+        label-width="68px"
+      >
+        <el-form-item label="" prop="jf" >
+          机房：<el-select v-model="queryParams.cabinetroomId" placeholder="请选择" class="!w-100px">
+            <el-option v-for="item in roomList" :key="item.roomId" :label="item.roomName" :value="item.roomId" />
+          </el-select>
+        </el-form-item >
+        <span class="line"></span>
+        <el-form-item label="" prop="jg">
+          柜列：<el-select v-model="queryParams.cabinetColumnId" placeholder="请选择" class="!w-100px">
+            <el-option v-for="item in machineList" :key="item.id" :label="item.name" :value="item.id" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div class="btns">
+        <template v-for="item in btns" :key="item.value">
+          <el-button @click="switchBtn(item.value)" type="primary" :plain="chosenBtn != item.value">{{item.name}}</el-button>
+        </template>
+      </div>
     </div>
   </ContentWrap>
   <ContentWrap>
@@ -23,10 +44,12 @@
             <div class="stage"></div>
             <div class="box">
               <div class="title">A{{(index + 1)}}#插接箱</div>
-              <div class="info" v-for="(item, i) in box.box_data.line_item_list[btns[chosenBtn].paramBox]" :key="i">
-                <div>{{btns[chosenBtn].unitName}}{{letters[i]}}</div>
-                <div>{{item.toFixed(btns[chosenBtn].fixNum)}}{{btns[chosenBtn].unit}}</div>
-              </div>
+              <template v-if="box.data">
+                <div class="info" v-for="(item, i) in box.data.box_data.line_item_list[btns[chosenBtn].paramBox]" :key="i">
+                  <div>{{btns[chosenBtn].unitName}}{{letters[i]}}</div>
+                  <div>{{item.toFixed(btns[chosenBtn].fixNum)}}{{btns[chosenBtn].unit}}</div>
+                </div>
+              </template>
             </div>
           </div>
           <div class="tip">A路</div>
@@ -34,29 +57,23 @@
       </div>
       <div class="loadB">
         <div class="box boxB" v-if="startingBoxB">
-          <div class="title">B路始端箱{{startingBoxB}}</div>
+          <div class="title">B路始端箱</div>
           <div class="info" v-for="(item,index) in startingBoxB[btns[chosenBtn].paramBus]" :key="index">
             <div>{{btns[chosenBtn].unitName}}{{letters[index]}}</div>
             <div>{{item.toFixed(btns[chosenBtn].fixNum)}}{{btns[chosenBtn].unit}}</div>
           </div>
         </div>
-        <div class="line"></div>
+        <div class="line"  v-if="startingBoxB"></div>
         <div class="boxList">
-          <div class="boxItem" v-for="(item, index) in boxs" :key="index">
+          <div class="boxItem" v-for="(box, index) in pluginBoxB" :key="index">
             <div class="box">
-              <div class="title">{{item.t2+(index + 1)}}#插接箱</div>
-              <div class="info">
-                <div>Ua</div>
-                <div>0.1V</div>
-              </div>
-              <div class="info">
-                <div>Ua</div>
-                <div>0.1V</div>
-              </div>
-              <div class="info">
-                <div>Ua</div>
-                <div>0.1V</div>
-              </div>
+              <div class="title">B{{(index + 1)}}#插接箱</div>
+              <template v-if="box && box.data">
+                <div class="info" v-for="(item, i) in box.data.box_data.line_item_list[btns[chosenBtn].paramBox]" :key="i">
+                  <div>{{btns[chosenBtn].unitName}}{{letters[i]}}</div>
+                  <div>{{item.toFixed(btns[chosenBtn].fixNum)}}{{btns[chosenBtn].unit}}</div>
+                </div>
+              </template>
             </div>
             <div class="stage"></div>
             <div class="layer"></div>
@@ -70,7 +87,14 @@
 
 <script lang="ts" setup>
 import { BusTopologyApi } from '@/api/bus/topology'
+import { MachineColumnApi } from '@/api/cabinet/column'
 
+const queryParams = reactive({
+  cabinetColumnId: history?.state?.id,
+  cabinetroomId: history?.state?.roomId
+})
+const roomList = ref<any>([]) // 机房列表
+const machineList = ref<any>([]) // 机柜列列表
 const boxs = [
   {
     t1: 'A',
@@ -199,9 +223,7 @@ const btns = [
     fixNum: 2,
   },
 ]
-
 const letters = ['a', 'b', 'c', 'd']
-
 const chosenBtn = ref(0)
 const pluginBoxA = ref([])
 const pluginBoxB = ref([])
@@ -210,11 +232,31 @@ const startingBoxB = ref({})
 
 const switchBtn = (value) => {
   chosenBtn.value = value
-  console.log('switchBtn', )
 }
-
+// 接口获取机房导航列表
+const getNavList = async() => {
+  const res = await MachineColumnApi.getAisleList({})
+  console.log('接口获取机房导航列表*****', res)
+  if (res && res.length) {
+    roomList.value = res
+    handleNavList()
+  }
+}
+const handleNavList = () => {
+  let targetRoom = null as any
+  if (!queryParams.cabinetroomId) {
+    queryParams.cabinetroomId = roomList.value[0].roomId
+    targetRoom = roomList.value[0]
+  } else {
+    targetRoom = roomList.value.find(item => item.roomId == queryParams.cabinetroomId)
+  }
+  machineList.value = targetRoom.aisleList || []
+  if (!queryParams.cabinetColumnId && machineList.value) {
+    queryParams.cabinetColumnId = machineList.value[0].id
+  }
+}
 const getBusData = async() => {
-  const res = await BusTopologyApi.getBusTopology({ids: null})
+  const res = await BusTopologyApi.getBusTopology({id: queryParams.cabinetColumnId})
   console.log('res', res)
   if (res.length > 0) {
     startingBoxA.value = res[0].busData ? res[0].busData.bus_data.line_item_list : null
@@ -222,9 +264,28 @@ const getBusData = async() => {
     pluginBoxA.value = res[0].boxDataList
     pluginBoxB.value = res[1].boxDataList
     console.log('startingBoxA.value', startingBoxA.value, startingBoxA.value[(btns[chosenBtn.value].paramBox)], pluginBoxA.value[0])
+  } else {
+    startingBoxA.value = []
+    startingBoxB.value = []
+    pluginBoxA.value = []
+    pluginBoxB.value = []
   }
 }
-getBusData()
+watch(() => queryParams.cabinetroomId, (val) => {
+  if (val) {
+    const targetRoom = roomList.value.find(item => item.roomId == val)
+    machineList.value = targetRoom.aisleList || []
+    if (!machineList.value.find(item => item.id == queryParams.cabinetColumnId)) {
+      queryParams.cabinetColumnId = machineList.value[0].id
+    }
+  }
+})
+
+watch(() => queryParams.cabinetColumnId,(val) => {
+  console.log('wwwwwwwwwww', val, machineList.value)
+  getBusData()
+})
+getNavList()
 </script>
 
 <style scoped lang="scss">
@@ -247,7 +308,8 @@ getBusData()
     display: flex;
     .box {
       width: 100px;
-      height: fit-content;
+      height: 127px;
+      // height: fit-content;
       border: 1px solid #ddd;
       background-color: #fff;
       flex-shrink: 0;
@@ -336,5 +398,14 @@ getBusData()
       }
     }
   }
+}
+.topForm .line {
+  display: inline-block;
+  width: 8px;
+  border-bottom: 1px solid #000;
+  margin: 0px 8px 13px 8px;
+}
+:deep(.topForm .el-form-item) {
+  margin-right: 0px
 }
 </style>

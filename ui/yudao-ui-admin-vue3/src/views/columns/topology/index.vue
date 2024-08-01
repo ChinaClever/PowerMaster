@@ -48,9 +48,9 @@
       <slot name="btn"></slot>
     </div>
   </ContentWrap>
-  <ContentWrap style="height: calc(100vh - 250px);">
+  <ContentWrap>
     <div ref="topologyContainer" class="topologyContainer" :style="`position: relative;z-index: 1;transform: scale(${scaleValue}, ${scaleValue});height: ${isFromHome ? (ContainerHeight * scaleValue + 'px') : 'auto'}`">
-      <div class="Container" :style="{alignItems: machineColInfo.pduBar && machineColInfo.barA ? 'unset' : 'center'}">
+      <div class="Container" :style="{alignItems: machineColInfo.pduBar && machineColInfo.barA ? 'unset' : 'center', minHeight: isFromHome ? 'unset' : '600px'}">
         <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="Bus">
           <div class="startBus" :style="{opacity: machineColInfo.barA.direction ? 0 : 1}">
             <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barA" :btns="btns" />
@@ -99,7 +99,7 @@
               </template>
             </div>
           </div>
-          <div v-if="machineColInfo.pduBar && machineColInfo.barB" class="busListContainer">
+          <div v-if="machineColInfo.pduBar && machineColInfo.barB" class="busListContainer" style="margin-bottom: 80px">
             <div class="bridge"></div>
             <div class="busList2">
               <template v-for="(bus, index) in machineColInfo.barA.boxList" :key="index">
@@ -147,7 +147,7 @@
                   </div>
                   <div class="cabinet">
                     <template v-if="cabinet.cabinetName">
-                      <div class="inner_fill" :id="'cabinet-' + index" :style="{backgroundColor: cabinet.id ? 'rgba(180, 180, 180, 0.2)' : 'rgba(230, 240, 234)'}"></div>
+                      <div class="inner_fill" @dblclick="handleJump(cabinet)" :id="'cabinet-' + index" :style="{backgroundColor: cabinet.id ? 'rgba(180, 180, 180, 0.2)' : 'rgba(230, 240, 234)'}"></div>
                       <template v-if="cabinet.id">
                         <div v-if="chosenBtn == 0" class="fill_box">
                           <Echart :options="cabinet.echartsOptionLoad" height="100%" />
@@ -190,7 +190,7 @@
             </div>
             <div class="menu" v-if="operateMenu.show" :style="{left: `${operateMenu.left}`, top: `${operateMenu.top}`}">
               <div class="menu_item" v-if="operateMenu.add" @click="handleOperate('add')">新增</div>
-              <div class="menu_item" v-if="!operateMenu.add" @click="handleOperate('watch')">查看</div>
+              <div class="menu_item" v-if="!operateMenu.add" @click="handleJump(false)">查看</div>
               <div class="menu_item" v-if="!operateMenu.add" @click="handleOperate('edit')">编辑</div>
               <div class="menu_item" v-if="!operateMenu.add" @click="handleOperate('delete')">删除</div>
             </div>
@@ -205,7 +205,7 @@
           </div>
         </div>
       </div>
-      <div v-if="isFromHome || !editEnable" class="mask" @click.right.prevent="console.log('---')"></div>
+      <div v-if="!editEnable && machineColInfo.barA" class="mask" @click.right.prevent="console.log('---')"></div>
     </div>
   </ContentWrap>
   <!-- </div> -->
@@ -226,12 +226,13 @@ import PluginBox from './component/PluginBox.vue'
 import { EChartsOption } from 'echarts'
 
 const message = useMessage()
+const { push } = useRouter()
 let instance: BrowserJsPlumbInstance | null = null
-const roomList = ref([]) // 机房列表
-const machineList = ref<any>([]) // 机柜列表
+const roomList = ref<any>([]) // 机房列表
+const machineList = ref<any>([]) // 机柜列列表
 const queryParams = reactive({
-  cabinetColumnId: history?.state?.id || 1,
-  cabinetroomId: history?.state?.roomId || 1
+  cabinetColumnId: history?.state?.id,
+  cabinetroomId: history?.state?.roomId
 })
 const btns = [
   {
@@ -609,6 +610,21 @@ const handleRightClick = (e) => {
     curIndex: currentIndex
   }
   console.log('operateMenu',e.target.className, operateMenu.value, cabinetList.value[currentIndex])
+}
+// 跳转机柜
+const handleJump = (data) => {
+ let target = {} as any
+  if (data) {
+    target = data
+  } else {
+    target = cabinetList.value[operateMenu.value.curIndex]
+  }
+  console.log('target', target)
+  if (!target.id) {
+    message.error(`该机柜暂未保存绑定，无法跳转`)
+    return
+  }
+  push({path: '/cabinet/cab/detail', state: {id: target.id}})
 }
 // 处理菜单点击事件
 const handleOperate = (type) => {
@@ -1470,7 +1486,6 @@ const handleCssScale = () => {
   scaleValue.value = 1
   // if (scaleValue.value != 1) scaleValue.value = 1/scaleValue.value
   isFromHome && nextTick(()=>{
-    debugger
     const targetMain = document.querySelector('.topologyContainer > .Container > .main') as Element
     const startBusWidth = machineColInfo.pduBar ? 132 : 0 // 两边始端箱宽度总和 
     const childWidth = targetMain.getBoundingClientRect().width + startBusWidth // Container元素的宽
@@ -1492,24 +1507,27 @@ const getNavList = async() => {
 }
 
 const handleNavList = (cabinetroomId) => {
-  const data = roomList.value as any
-  const findRoom = data.find(item => item.roomId == cabinetroomId)
-  if (!findRoom.aisleList || findRoom.aisleList.length == 0) return []
-  const findMachine = findRoom.aisleList.find(item => item.id == queryParams.cabinetColumnId)
-  if (findMachine) emit('getpdubar', findMachine.pduBar)
-  // pduBar.value = findMachine.pduBar
-  console.log('roomIndex', findMachine, findRoom)
-  return findRoom.aisleList
+  let targetRoom = null as any
+  if (!queryParams.cabinetroomId) {
+    queryParams.cabinetroomId = roomList.value[0].roomId
+    targetRoom = roomList.value[0]
+  } else {
+    targetRoom = roomList.value.find(item => item.roomId == queryParams.cabinetroomId)
+  }
+  machineList.value = targetRoom.aisleList || []
+  if (!queryParams.cabinetColumnId && machineList.value) {
+    queryParams.cabinetColumnId = machineList.value[0].id
+  }
 }
 
 watch(() => queryParams.cabinetroomId, (val) => {
-  machineList.value = handleNavList(val)
-  if (machineList.value.length == 0) {
-    queryParams.cabinetColumnId = null
-    return
+  if (val) {
+    const targetRoom = roomList.value.find(item => item.roomId == val)
+    machineList.value = targetRoom.aisleList || []
+    if (!machineList.value.find(item => item.id == queryParams.cabinetColumnId)) {
+      queryParams.cabinetColumnId = machineList.value[0].id
+    }
   }
-  const defaultValue = machineList.value[0] as any
-  queryParams.cabinetColumnId = defaultValue.id
 })
 
 watch(() => queryParams.cabinetColumnId,(val) => {
@@ -1559,7 +1577,7 @@ onBeforeUnmount(() => {
 }
 .mask {
   width: 100%;
-  height: calc(100% - 32px);
+  height: 170px;
   position: absolute;
   top: 0;
   z-index: 99;
@@ -1729,7 +1747,7 @@ onBeforeUnmount(() => {
 .cabinetContainer {
   box-sizing: border-box;
   position: relative;
-  margin-top: 80px;
+  // margin-top: 80px;
   .menu {
     box-sizing: border-box;
     position: absolute;
