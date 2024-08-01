@@ -98,13 +98,12 @@
 import Topology from '../topology/index.vue'
 import { EChartsOption } from 'echarts'
 import { MachineColumnApi } from '@/api/cabinet/column'
-import { object } from 'vue-types'
 
 const {push} = useRouter()
 const containerInfo = reactive({
   width: 0,
-  cabinetColumnId: history?.state?.id || 6,
-  cabinetroomId: history?.state?.roomId || 4
+  cabinetColumnId: history?.state?.id,
+  cabinetroomId: history?.state?.roomId
 })
 console.log('containerInfo', containerInfo)
 const scaleVal = ref(1)
@@ -299,7 +298,7 @@ onMounted(() => {
   width: 100%;
   // height: calc(100vh - 120px);
   min-height: 550px;
-  max-height: calc(100vh - 120px);
+  height: calc(100vh - 120px);
   box-sizing: border-box;
   // background-color: #999;
   display: flex;

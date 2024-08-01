@@ -33,6 +33,10 @@ export const MachineRoomApi = {
   getRoomEqData: async (params: any) => {
     return await request.get({ url: `/room/main/eq`, params })
   },
+  // 机房删除
+  deleteRoom: async (params: any) => {
+    return await request.get({ url: `/room/delete`, params })
+  },
   // 修改机房详情
   saveRoomDetail: async (data: any) => {
     return await request.post({ url: `/room/save`, data })

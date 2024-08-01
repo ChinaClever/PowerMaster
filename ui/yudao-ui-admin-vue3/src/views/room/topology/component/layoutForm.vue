@@ -17,6 +17,9 @@
       <el-form-item label="名称" prop="name">
         <el-input v-model="formData.name" placeholder="请输入" />
       </el-form-item>
+      <el-form-item v-if="formData.type == 2" label="高度" prop="cabinetHeight">
+         <el-input v-model.number="formData.cabinetHeight" :suffixIcon="() => 'U'" />
+      </el-form-item>
       <el-form-item v-if="formData.type == 1" label="方向" prop="direction">
         <el-select v-model="formData.direction" placeholder="请选择活动区域">
           <el-option label="横向" :value="1" />
@@ -77,8 +80,9 @@ const formData = ref({
   eleLimitMonth: 1000, // 月用能限制
   type: 1,
   name: '',
+  cabinetHeight: 42,
   direction: 1,
-  amount: 1,
+  amount: 12,
   id: '',
   cabinetList: [] as any
 })
@@ -157,8 +161,9 @@ const resetForm = () => {
     eleLimitMonth: 1000, // 月用能限制
     type: 1,
     name: '',
+    cabinetHeight: 42,
     direction: 1,
-    amount: 1,
+    amount: 12,
     id: '',
     cabinetList: []
   }
