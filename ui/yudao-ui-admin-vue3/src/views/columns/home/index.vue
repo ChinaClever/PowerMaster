@@ -281,8 +281,8 @@ const handleCabEchart = (result, scale) => {
   }
 }
 
-getMainData()
-getMainEq()
+// getMainData()
+// getMainEq()
 
 onMounted(() => {
   const centerEle = document.getElementById('center')

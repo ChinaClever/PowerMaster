@@ -1502,7 +1502,7 @@ const getNavList = async() => {
   console.log('接口获取机房导航列表*****', res)
   if (res && res.length) {
     roomList.value = res
-    machineList.value = handleNavList(queryParams.cabinetroomId)
+    handleNavList(queryParams.cabinetroomId)
   }
 }
 
@@ -1518,6 +1518,7 @@ const handleNavList = (cabinetroomId) => {
   if (!queryParams.cabinetColumnId && machineList.value) {
     queryParams.cabinetColumnId = machineList.value[0].id
   }
+  getMachineColInfo()
 }
 
 watch(() => queryParams.cabinetroomId, (val) => {
@@ -1547,7 +1548,6 @@ watch(() => containerInfo, (val) => {
 
 onMounted(() => {
   getNavList()
-  getMachineColInfo()
   initConnect()
   // intervalTimer = setInterval(() => {
   //   getDataDetail()
