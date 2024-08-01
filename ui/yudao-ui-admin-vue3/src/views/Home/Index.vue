@@ -111,7 +111,7 @@
                 <el-skeleton :loading="loading" animated>
                   <div class="w-full h-210px flex" style="flex-direction: column; align-items: center;justify-content: center;">
                     <div>总用电量</div>
-                    <div>{{eqInfo[powBtns[prePowBtn].totalParam]}}kW·h</div>
+                    <div>{{eqInfo[powBtns[prePowBtn].totalParam] ? eqInfo[powBtns[prePowBtn].totalParam].toFixed(2) : '0.00'}}kW·h</div>
                   </div>
                 </el-skeleton>
               </el-card>
@@ -414,7 +414,7 @@ const getHomeEqData = async() => {
     series: [
       {
         name: '当天',
-        data: res.roomEqList ? res.roomEqList.map(item => item.yesterdayEq) : [],
+        data: res.roomEqList ? res.roomEqList.map(item => item.todayEq ? item.todayEq.toFixed(2) : '0.00') : [],
         type: 'bar',
         label: {
           show: true,
@@ -437,7 +437,7 @@ const switchPowBtn = (index) => {
   prePowBtn.value = index
   eqOptionsData.series = [{
     name: powBtns[index].name,
-    data: eqInfo.roomEqList ? eqInfo.roomEqList.map(item => item[powBtns[index].param]) : [],
+    data: eqInfo.roomEqList ? eqInfo.roomEqList.map(item => item[powBtns[index].param] ? item[powBtns[index].param].toFixed(2) : '0.00') : [],
     type: 'bar',
     label: {
       show: true,

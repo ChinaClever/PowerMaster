@@ -179,21 +179,21 @@ const switchTrend = (type, first = false) => {
       series: [
         {
           name: '有功功率',
-          data: echartInfo.powList.map(item => item.activePow),
+          data: echartInfo.powList.map(item => item.activePow ? item.activePow.toFixed(3) : '0.000'),
           type: 'line',
           smooth: true,
           symbol: 'none',
         },
         {
           name: '无功功率',
-          data: echartInfo.powList.map(item => item.reactivePow),
+          data: echartInfo.powList.map(item => item.reactivePow ? item.reactivePow.toFixed(3) : '0.000'),
           type: 'line',
           smooth: true,
           symbol: 'none',
         },
         {
           name: '视在功率',
-          data: echartInfo.powList.map(item => item.apparentPow),
+          data: echartInfo.powList.map(item => item.apparentPow ? item.apparentPow.toFixed(3) : '0.000'),
           type: 'line',
           smooth: true,
           symbol: 'none',
