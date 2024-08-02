@@ -289,6 +289,11 @@ spring:
 #      uris: 192.168.1.44:9200
       connection-timeout: 5s
       read-timeout: 30s
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 200MB
+      max-request-size: 500MB
 
 #定时任务配置
 cron:
