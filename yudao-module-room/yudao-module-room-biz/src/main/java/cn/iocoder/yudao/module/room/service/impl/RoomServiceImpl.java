@@ -116,6 +116,11 @@ public class RoomServiceImpl implements RoomService {
     @Resource
     PduIndexDoMapper pduIndexDoMapper;
 
+    @Autowired
+    CabinetCfgMapper cabinetCfgMapper;
+
+    @Autowired
+    CabinetEnvSensorMapper envSensorMapper;
     /**
      * 机房保存
      * @param roomSaveVo 保存参数
@@ -239,6 +244,7 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteRoom(Integer roomId) {
         try {
             //删除机房
@@ -249,11 +255,62 @@ public class RoomServiceImpl implements RoomService {
                     roomIndexMapper.update(new LambdaUpdateWrapper<RoomIndex>()
                             .eq(RoomIndex::getId, roomId)
                             .set(RoomIndex::getIsDelete, DelEnums.DELETE.getStatus()));
+                    //删除柜列
+                    List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>()
+                            .eq(AisleIndex::getRoomId,roomId));
 
+                    aisleIndexMapper.update(new LambdaUpdateWrapper<AisleIndex>()
+                            .eq(AisleIndex::getRoomId, roomId)
+                            .set(AisleIndex::getIsDelete, DelEnums.DELETE.getStatus()));
+
+                    if (!CollectionUtils.isEmpty(aisleIndexList)){
+                        aisleIndexList.forEach(aisleIndex -> {
+                            //删除key
+                            String key = REDIS_KEY_AISLE + aisleIndex.getId();
+                            redisTemplate.delete(key);
+                        });
+                    }
+
+                    //删除机柜
+                    cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
+                            .eq(CabinetIndex::getRoomId, roomId)
+                            .set(CabinetIndex::getIsDeleted, DelEnums.DELETE.getStatus()));
                 }else {
                     //物理删除
                     //删除机房
                     roomIndexMapper.deleteById(roomId);
+
+                    //物理删除
+                    //1.删除绑定关系
+                    List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>()
+                            .eq(AisleIndex::getRoomId,roomId));
+                    aisleBoxMapper.delete(new LambdaQueryWrapper<AisleBox>()
+                            .in(!CollectionUtils.isEmpty(aisleIndexList),
+                                    AisleBox::getAisleId,
+                                    aisleIndexList.stream().map(AisleIndex::getId).collect(Collectors.toList())));
+                    aisleBarMapper.delete(new LambdaQueryWrapper<AisleBar>()
+                            .in(!CollectionUtils.isEmpty(aisleIndexList),
+                                    AisleBar::getAisleId,
+                                    aisleIndexList.stream().map(AisleIndex::getId).collect(Collectors.toList())));
+                    //2.删除柜列
+                    aisleIndexMapper.delete(new LambdaQueryWrapper<AisleIndex>()
+                            .eq(AisleIndex::getRoomId,roomId));
+                    if (!CollectionUtils.isEmpty(aisleIndexList)){
+                        aisleIndexList.forEach(aisleIndex -> {
+                            //删除key
+                            String key = REDIS_KEY_AISLE + aisleIndex.getId();
+                            redisTemplate.delete(key);
+                        });
+                    }
+
+                }
+                //删除机柜
+                List<CabinetIndex> indices = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
+                        .eq(CabinetIndex::getRoomId,roomId));
+                if (!CollectionUtils.isEmpty(indices)){
+                    indices.forEach(cabinetIndex -> {
+                        delCabinet(cabinetIndex.getId());
+                    });
                 }
             }
             //删除key
@@ -268,6 +325,50 @@ public class RoomServiceImpl implements RoomService {
 
 
 
+    }
+
+    /**
+     * 删除机柜
+     * @param id
+     * @return
+     */
+    private int delCabinet(int id) {
+        try {
+            CabinetIndex index = cabinetIndexMapper.selectById(id);
+            if (Objects.isNull(index)) {
+                return -1;
+            }
+            if (index.getIsDeleted() == DelEnums.DELETE.getStatus()) {
+                //已经删除则物理删除
+                cabinetIndexMapper.deleteById(id);
+                //删除pdu关联关系
+                cabinetPduMapper.delete(new LambdaQueryWrapper<CabinetPdu>()
+                        .eq(CabinetPdu::getCabinetId, id));
+                //删除配置信息
+                cabinetCfgMapper.delete(new LambdaQueryWrapper<CabinetCfg>()
+                        .eq(CabinetCfg::getCabinetId, id));
+                //删除环境信息
+                envSensorMapper.delete(new LambdaQueryWrapper<CabinetEnvSensor>()
+                        .eq(CabinetEnvSensor::getCabinetId,id));
+            } else {
+                //逻辑删除
+                cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
+                        .eq(CabinetIndex::getId, id)
+                        .set(CabinetIndex::getIsDeleted, DelEnums.DELETE.getStatus()));
+            }
+
+            //删除key
+            String key = REDIS_KEY_CABINET + index.getRoomId() + SPLIT_KEY + index.getId();
+
+            boolean flag = redisTemplate.delete(key);
+            log.info("key: " + key + " flag : " + flag);
+
+            return id;
+        } finally {
+            log.info("刷新计算服务缓存 --- " + adder);
+            //刷新机柜计算服务缓存
+            HttpUtil.get(adder);
+        }
     }
 
     @Override

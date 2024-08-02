@@ -352,11 +352,13 @@ public class MainServiceImpl implements MainService {
                 SortOrder.ASC,
                 ROOM_ELE_TOTAL_REALTIME, ids);
         ids.forEach(id ->{
+            RoomEleTotalRealtimeDo realtimeDo = endRealtimeDo.get(id);
+
             //结束时间电量
-            double endEle = endRealtimeDo.get(id).getEleTotal();
+            double endEle = Objects.nonNull(realtimeDo)?realtimeDo.getEleTotal():0;
 
             //开始时间电量
-            double startEle = startRealtimeDo.get(id).getEleTotal();
+            double startEle = Objects.nonNull(realtimeDo)?realtimeDo.getEleTotal():0;
 
             //判断使用电量  开始电量大于结束电量，记为0
             double eq;
