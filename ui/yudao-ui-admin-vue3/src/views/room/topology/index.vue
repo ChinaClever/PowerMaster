@@ -177,7 +177,7 @@ const {containerInfo, isFromHome} = defineProps({
 })
 let timer = null as any // 定时器
 const isAddRoom = ref(false) // 是否为添加机房模式 
-const roomId = ref(4) // 房间id
+const roomId = ref(0) // 房间id
 const roomList = ref<any[]>([]) // 左侧导航栏树结构列表
 const dragTable = ref() // 可移动编辑表格
 const scaleValue = ref(1) // 缩放比例
@@ -194,7 +194,7 @@ const rowColInfo = reactive({
   eleAlarmMonth: 0, // 月用能告警
   eleLimitMonth: 1000, // 月用能限制
 })
-const emit = defineEmits(['backData']) // 定义 backData 事件，用于操作成功后的回调
+const emit = defineEmits(['backData', 'getroomid']) // 定义 backData 事件，用于操作成功后的回调
 const tableData = ref<any>([])
 const statusInfo = ref([
   {
@@ -583,6 +583,7 @@ const getRoomList = async() => {
     if (!find) {
       roomId.value = res[0].id
     }
+    emit('getroomid', roomId.value)
     getRoomInfo()
   }
 }

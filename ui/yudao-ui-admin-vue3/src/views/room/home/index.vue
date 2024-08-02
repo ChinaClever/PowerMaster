@@ -39,7 +39,7 @@
       </el-card>
     </div>
     <div class="center" id="center">
-      <CabTopology :containerInfo="containerInfo" :isFromHome="true" @back-data="handleBackData" />
+      <CabTopology :containerInfo="containerInfo" :isFromHome="true" @back-data="handleBackData" @getroomid="handleGetRoomId" />
       <ContentWrap class="CabEchart">
         <Echart :options="echartOptionsPower" height="100%" width="100%" />
         <div class="btns">
@@ -95,7 +95,7 @@ import { MachineRoomApi } from '@/api/cabinet/room'
 import { EChartsOption } from 'echarts'
 
 const echartOptionsPower = ref<EChartsOption>({})
-const roomId = ref<number>(4)
+const roomId = ref<number>(0)
 const radioBtn = ref('pow')
 const containerInfo = reactive({
   width: 1000,
@@ -107,6 +107,17 @@ const spaceInfo = reactive({}) // 空间信息
 const envInfo = reactive({}) // 空间信息
 const echartInfo = reactive<any>({})
 
+//
+const handleGetRoomId = (data) => {
+  roomId.value = data
+  getRoomDataDetail()
+  getRoomDevData()
+  getRoomPowData()
+  getRoomEchartData()
+  getRoomEnvData()
+  getRoomEqData()
+  console.log('handleGetRoomId', data)
+}
 // 获取机房数据详情
 const getRoomDataDetail = async() => {
   const res = await MachineRoomApi.getRoomDataDetail({id: roomId.value})
@@ -233,13 +244,6 @@ const switchTrend = (type, first = false) => {
     }
   }
 }
-
-getRoomDataDetail()
-getRoomDevData()
-getRoomPowData()
-getRoomEchartData()
-getRoomEnvData()
-getRoomEqData()
 
 onMounted(() => {
   const centerEle = document.getElementById('center')

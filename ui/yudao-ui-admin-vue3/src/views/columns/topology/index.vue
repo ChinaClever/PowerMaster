@@ -1492,7 +1492,8 @@ const handleCssScale = () => {
     const childHeight = targetMain.getBoundingClientRect().height + 30 // Container元素的高 30是padding的长
     ContainerHeight.value = childHeight
     scaleValue.value = +(((containerInfo?.width - 30)/childWidth).toFixed(2))
-    console.log('containerInfo', childWidth, containerInfo?.width, scaleValue.value, childHeight, childHeight*scaleValue.value)
+    if (childHeight > 400) scaleValue.value = +(400/childHeight).toFixed(2)
+    console.log('containerInfo', childWidth, containerInfo?.width, scaleValue.value, childHeight, childHeight*scaleValue.value,machineColInfo)
   })
 }
 
@@ -1567,7 +1568,7 @@ onBeforeUnmount(() => {
 
 <style lang="scss" scoped>
 .topologyContainer {
-  transform-origin: left top;
+  transform-origin: center top;
   transform: scale(1, 1);
 }
 .CabEchart {
@@ -1621,6 +1622,10 @@ onBeforeUnmount(() => {
 :deep(.el-card__body) {
   overflow-x: auto;
   overflow-y: hidden;
+  & > div {
+    display: flex;
+    justify-content: center;
+  }
 }
 .Container {
   display: flex;
