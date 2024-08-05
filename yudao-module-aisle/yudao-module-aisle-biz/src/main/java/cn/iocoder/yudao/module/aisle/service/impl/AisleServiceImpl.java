@@ -136,6 +136,25 @@ public class AisleServiceImpl implements AisleService {
             index.setXCoordinate(aisleSaveVo.getXCoordinate());
             index.setYCoordinate(aisleSaveVo.getYCoordinate());
 
+            Integer roomId = aisleSaveVo.getRoomId();
+            RoomIndex roomIndex = roomIndexMapper.selectById(roomId);
+            if (Objects.nonNull(roomIndex)){
+                if (StringUtils.isNotEmpty(aisleSaveVo.getDirection())
+                        && "x".equals(aisleSaveVo.getDirection())){
+                    //横向
+                    if (aisleSaveVo.getXCoordinate() + aisleSaveVo.getLength()>roomIndex.getXLength()){
+                        throw new RuntimeException("柜列长度超出");
+                    }
+                }
+                if ( StringUtils.isNotEmpty(aisleSaveVo.getDirection())
+                        && "y".equals(aisleSaveVo.getDirection())){
+                    //纵向
+                    if (aisleSaveVo.getYCoordinate() + aisleSaveVo.getLength()>roomIndex.getYLength()){
+                        throw new RuntimeException("柜列长度超出");
+                    }
+                }
+            }
+
             if (Objects.nonNull(aisleSaveVo.getId())){
                 //编辑
                 AisleIndex aisleIndex = aisleIndexMapper.selectOne(new LambdaQueryWrapper<AisleIndex>()
@@ -590,6 +609,9 @@ public class AisleServiceImpl implements AisleService {
                     AisleListDTO aisleListDTO = new AisleListDTO();
                     aisleListDTO.setRoomId(roomIndex.getId());
                     aisleListDTO.setRoomName(roomIndex.getName());
+                    aisleListDTO.setYLength(roomIndex.getYLength());
+                    aisleListDTO.setXLength(roomIndex.getXLength());
+                    aisleListDTO.setPowerCapacity(roomIndex.getPowerCapacity());
                     aisleListDTO.setAisleList(map.get(roomIndex.getId()));
                     aisleListDTOList.add(aisleListDTO);
                 }
