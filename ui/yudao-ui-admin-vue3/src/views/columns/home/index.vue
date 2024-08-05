@@ -36,32 +36,14 @@
           </el-progress>
         </div>
       </ContentWrap>
-      <ContentWrap>
+      <ContentWrap v-if="mainInfo.cabinetList && mainInfo.cabinetList.length">
         <Echart :options="echartsOptionA" :height="300" />
       </ContentWrap>
     </div>
     <div class="center" id="center">
-      <Topology :containerInfo="containerInfo" :isFromHome="true" @success="handleCabEchart" >
-        <template #define>
-          <el-form
-            class="-mb-15px topForm"
-            :model="queryParams"
-            ref="queryFormRef"
-            :inline="true"
-            label-width="68px"
-          >
-            <el-form-item label="" prop="jf" >
-              <el-select size="small" v-model="queryParams.cabinetroomId" placeholder="请选择" class="!w-100px">
-                <el-option v-for="item in roomList" :key="item.roomId" :label="item.roomName" :value="item.roomId" />
-              </el-select>
-            </el-form-item >
-            <span class="line"></span>
-            <el-form-item label="" prop="jg">
-              <el-select size="small" v-model="queryParams.cabinetColumnId" placeholder="请选择" class="!w-100px">
-                <el-option v-for="item in machineList" :key="item.id" :label="item.name" :value="item.id" />
-              </el-select>
-            </el-form-item>
-          </el-form>
+      <Topology :containerInfo="containerInfo" :isFromHome="true" @back-data="handleCabEchart" @id-change="handleIdChange" @getpdubar="handlePduBar">
+        <template #btn>
+          <el-button @click="handleJump" type="primary" plain><Icon icon="ep:edit" class="mr-5px" />编辑</el-button>
         </template>
       </Topology>
       <ContentWrap class="CabEchart">
@@ -105,7 +87,7 @@
           </el-progress>
         </div>
       </ContentWrap>
-      <ContentWrap>
+      <ContentWrap v-if="mainInfo.cabinetList && mainInfo.cabinetList.length">
         <Echart :options="echartsOptionB" :height="300" />
       </ContentWrap>
     </div>
@@ -116,20 +98,17 @@
 import Topology from '../topology/index.vue'
 import { EChartsOption } from 'echarts'
 import { MachineColumnApi } from '@/api/cabinet/column'
-import { object } from 'vue-types'
 
+const {push} = useRouter()
 const containerInfo = reactive({
-  width: 0
+  width: 0,
+  cabinetColumnId: history?.state?.id,
+  cabinetroomId: history?.state?.roomId
 })
+console.log('containerInfo', containerInfo)
 const scaleVal = ref(1)
 const echartsOptionCab = ref<EChartsOption>({})
 const pduBar = ref(1) // 0:pdu 1:母线
-const roomList = ref([]) // 左侧导航栏树结构列表
-const machineList = ref<any>([]) // 左侧导航栏树结构列表
-const queryParams = reactive({
-  cabinetColumnId: history?.state?.id || 6,
-  cabinetroomId: history?.state?.roomId || 4
-})
 
 const echartsOptionA = reactive<EChartsOption>({})
 const echartsOptionB = reactive<EChartsOption>({})
@@ -138,9 +117,10 @@ const mainInfo = reactive({})
 const EqInfo = reactive({})
 
 const getMainData = async() => {
-  const res =  await MachineColumnApi.getMaindata({id: queryParams.cabinetColumnId})
+  const res =  await MachineColumnApi.getMaindata({id: containerInfo.cabinetColumnId})
   Object.assign(mainInfo, res)
   console.log('res', res)
+  if (!res.cabinetList) return
   Object.assign(echartsOptionA, {
     title: {
       text: 'A路功率'
@@ -225,30 +205,25 @@ const getMainData = async() => {
   })
 }
 const getMainEq = async() => {
-  const res =  await MachineColumnApi.getMainEq({id: queryParams.cabinetColumnId})
+  const res =  await MachineColumnApi.getMainEq({id: containerInfo.cabinetColumnId})
   console.log('getMainEq res', res)
   Object.assign(EqInfo, res)
 }
-
-// 接口获取机房导航列表
-const getNavList = async() => {
-  const res = await MachineColumnApi.getAisleList({})
-  console.log('接口获取机房导航列表*****', res)
-  if (res && res.length) {
-    roomList.value = res
-    machineList.value = handleNavList(queryParams.cabinetroomId)
-  }
+// 处理跳转
+const handleJump = () => {
+  push({path: '/aisle/topology', state: { id: containerInfo.cabinetColumnId, roomId: containerInfo.cabinetroomId }})
 }
-
-const handleNavList = (cabinetroomId) => {
-  const data = roomList.value as any
-  const findRoom = data.find(item => item.roomId == cabinetroomId)
-  const findMachine = findRoom.aisleList.find(item => item.id == queryParams.cabinetColumnId)
-  pduBar.value = findMachine.pduBar
-  console.log('roomIndex', findMachine, findRoom)
-  return findRoom.aisleList
+// 处理时pdu还是母线的事件
+const handlePduBar = (type) => {
+  pduBar.value = type
 }
-
+// 处理柜列id/机柜id切换事件
+const handleIdChange = (id) => {
+  containerInfo.cabinetColumnId = id
+  getMainData()
+  getMainEq()
+}
+// 处理柜列实时统计图表
 const handleCabEchart = (result, scale) => {
   console.log('handleCabEchart', result, typeof result)
   scaleVal.value = scale
@@ -306,25 +281,8 @@ const handleCabEchart = (result, scale) => {
   }
 }
 
-getMainData()
-getMainEq()
-getNavList()
-
-watch(() => queryParams.cabinetroomId, (val) => {
-  machineList.value = handleNavList(val)
-  if (machineList.value.length == 0) {
-    queryParams.cabinetColumnId = null
-    return
-  }
-  const defaultValue = machineList.value[0] as any
-  queryParams.cabinetColumnId = defaultValue.id
-})
-
-watch(() => queryParams.cabinetColumnId,(val) => {
-  console.log('wwwwwwwwwww', val, machineList.value)
-  getMainData()
-  getMainEq()
-})
+// getMainData()
+// getMainEq()
 
 onMounted(() => {
   const centerEle = document.getElementById('center')
@@ -340,7 +298,7 @@ onMounted(() => {
   width: 100%;
   // height: calc(100vh - 120px);
   min-height: 550px;
-  max-height: calc(100vh - 120px);
+  height: calc(100vh - 120px);
   box-sizing: border-box;
   // background-color: #999;
   display: flex;
@@ -371,18 +329,12 @@ onMounted(() => {
     box-sizing: border-box;
     overflow: hidden;
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
   }
   .right {
     width: 300px;
     box-sizing: border-box;
     overflow: hidden;
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
   }
 }
 .progress {
@@ -400,12 +352,7 @@ onMounted(() => {
     font-size: 12px;
   }
 }
-.topForm .line {
-  display: inline-block;
-  width: 8px;
-  border-bottom: 1px solid #000;
-  margin: 0px 8px 13px 8px;
-}
+
 :deep(.el-card__header) {
   padding: 15px;
 }
@@ -422,7 +369,5 @@ onMounted(() => {
     width: 100%;
   }
 }
-:deep(.topForm .el-form-item) {
-  margin-right: 0px
-}
+
 </style>

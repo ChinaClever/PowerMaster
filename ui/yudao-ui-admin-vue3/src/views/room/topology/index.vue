@@ -7,6 +7,11 @@
         <el-select :size="isFromHome ? 'small' : ''" v-model="roomId" placeholder="请选择" class="!w-100px" @change="handleChangeRoom">
           <el-option v-for="item in roomList" :key="item.id" :label="item.name" :value="item.id" />
         </el-select>
+        <div class="status">
+          <template v-for="item in statusInfo" :key="item.value">
+            <div class="box" :style="{backgroundColor: item.color}"></div>{{item.name}}
+          </template>
+        </div>
         <div class="btns">
           <template v-for="item in btns" :key="item.value">
             <el-button @click="switchBtn(item.value)" type="primary" :size="isFromHome ? 'small' : ''" :plain="chosenBtn != item.value">{{item.name}}</el-button>
@@ -14,10 +19,12 @@
         </div>
       </div>
       <div>
+        <el-button @click="handleAdd" type="primary">新建机房</el-button>
         <el-button v-if="!editEnable" @click="handleEdit" type="primary">编辑</el-button>
         <el-button v-if="editEnable" @click="handleCancel" plain type="primary">取消</el-button>
         <el-button v-if="editEnable" @click="openSetting" plain type="primary"><Icon :size="16" icon="ep:setting" style="margin-right: 5px" />配置</el-button>
         <el-button v-if="editEnable" @click="handleSubmit" plain type="primary">保存</el-button>
+        <el-button v-if="editEnable" @click="handleDelete" type="primary">删除机房</el-button>
       </div>
     </div>
   </el-card>
@@ -41,7 +48,7 @@
                 @end.prevent="onEnd"
               >
                 <template #item="{ element }">
-                  <div class="normalDrag"  v-if="element && element.type == 2">
+                  <div v-if="element && element.type == 2" class="normalDrag" @dblclick="handleJump(element)" >
                     <template v-if="element.name">
                       <el-tooltip effect="light">
                         <template #content>
@@ -66,9 +73,9 @@
                       </el-tooltip>
                     </template>
                   </div>
-                  <div v-else-if="element.type == 1" :class="element.direction == '1' ? 'dragChild' : 'dragChildCol'">
+                  <div v-else-if="element.type == 1" :class="element.direction == '1' ? 'dragChild' : 'dragChildCol'"  @dblclick="handleJump(element)">
                     <template v-if="element.cabinetList.length > 0">
-                      <div :class="item.cabinetName ? 'dragSon fill' : 'dragSon'" v-for="(item, i) in element.cabinetList" :key="i">
+                      <div :class="item.cabinetName ? 'dragSon fill' : 'dragSon'" :style="{backgroundColor: statusInfo[item.runStatus].color}" v-for="(item, i) in element.cabinetList" :key="i">
                         <template v-if="item.id > 0">
                           <el-tooltip effect="light">
                             <template #content>
@@ -108,7 +115,7 @@
       <div class="menu" v-if="operateMenu.show" :style="{left: `${operateMenu.left}`, top: `${operateMenu.top}`}">
         <div class="menu_item" v-if="showMenuAdd" @click="addMachine">新增</div>
         <div class="menu_item" v-if="!showMenuAdd" @click="editMachine">编辑</div>
-        <div class="menu_item" v-if="!showMenuAdd" @click="toDetail">查看</div>
+        <div class="menu_item" v-if="!showMenuAdd" @click="handleJump(false)">查看</div>
         <div class="menu_item" v-if="!showMenuAdd" @click="deleteMachine">删除</div>
       </div>
     </div>
@@ -116,6 +123,9 @@
   <layoutForm ref="machineForm" @success="handleChange" />
   <Dialog v-model="dialogVisible" title="机房配置" width="30%">
     <el-form>
+      <el-form-item label="机房名" label-width="90">
+        <el-input v-model="rowColInfo.roomName" placeholder="请输入" />
+      </el-form-item>
       <el-form-item label="行数" label-width="90">
         <el-input-number v-model="rowColInfo.row" :min="1" :max="100" controls-position="right" placeholder="请输入" />
       </el-form-item>
@@ -140,7 +150,7 @@
       </div>
     </el-form>
     <template #footer>
-      <el-button @click="dialogVisible = false">取 消</el-button>
+      <el-button @click="handleDialogCancel">取 消</el-button>
       <el-button type="primary" @click="submitSetting">确 定</el-button>
     </template>
   </Dialog>
@@ -166,7 +176,8 @@ const {containerInfo, isFromHome} = defineProps({
   }
 })
 let timer = null as any // 定时器
-const roomId = ref(4) // 房间id
+const isAddRoom = ref(false) // 是否为添加机房模式 
+const roomId = ref(0) // 房间id
 const roomList = ref<any[]>([]) // 左侧导航栏树结构列表
 const dragTable = ref() // 可移动编辑表格
 const scaleValue = ref(1) // 缩放比例
@@ -175,6 +186,7 @@ const ContainerHeight = ref(100)
 const loading = ref(false)
 const movingInfo = ref<any>({})
 const rowColInfo = reactive({
+  roomName: '', // 机房名
   row: 14, // 行
   col: 18, // 列
   eleAlarmDay: 0, // 日用能告警
@@ -182,8 +194,40 @@ const rowColInfo = reactive({
   eleAlarmMonth: 0, // 月用能告警
   eleLimitMonth: 1000, // 月用能限制
 })
-const emit = defineEmits(['backData']) // 定义 backData 事件，用于操作成功后的回调
+const emit = defineEmits(['backData', 'getroomid']) // 定义 backData 事件，用于操作成功后的回调
 const tableData = ref<any>([])
+const statusInfo = ref([
+  {
+    name: '空机柜',
+    color: '#effaff',
+    value: 0,
+  },
+  {
+    name: '正常',
+    color: '#3bbb00',
+    value: 1,
+  },
+  {
+    name: '预警',
+    color: '#ffc402',
+    value: 2,
+  },
+  {
+    name: '告警',
+    color: '#fa3333',
+    value: 3,
+  },
+  {
+    name: '未绑定',
+    color: '#05ebfc',
+    value: 4,
+  },
+  {
+    name: '离线',
+    color: '#7700ff',
+    value: 5,
+  },
+])
 const btns = [
   {
     value: 0,
@@ -532,13 +576,20 @@ const operateMenu = ref({
 // 接口获取机房导航列表
 const getRoomList = async() => {
   const res = await MachineRoomApi.getRoomList({})
-  console.log('接口获取机房导航列表*****', res)
+  console.log('接口获取机房导航列表*****', res, roomId.value)
   if (res && res.length) {
     roomList.value = res
+    const find = res.find(item => item.id == roomId.value)
+    if (!find) {
+      roomId.value = res[0].id
+    }
+    emit('getroomid', roomId.value)
+    getRoomInfo()
   }
 }
 
 const getRoomInfo = async() => {
+  resetForm()
   tableData.value = []
   loading.value = true
   try {
@@ -550,8 +601,9 @@ const getRoomInfo = async() => {
     const data = [] as any
     const Obj = {}
     Object.assign(rowColInfo, {
-      row: res.xLength,
-      col: res.yLength,
+      roomName: res.roomName,
+      row: res.yLength,
+      col: res.xLength,
       eleAlarmDay: res.eleAlarmDay,
       eleLimitDay: res.eleLimitDay,
       eleAlarmMonth: res.eleAlarmMonth,
@@ -561,7 +613,7 @@ const getRoomInfo = async() => {
       totalSpace: res.totalSpace,
       usedSpace: res.usedSpace,
       freeSpace: res.freeSpace,
-      deviceNum: res.deviceNum,
+      cabNum: res.cabNum,
     })
     for(let i=0; i < res.xLength; i++) {
       Obj[getTableColCharCode(i)] = []
@@ -654,6 +706,57 @@ const handleCssScale = () => {
 const handleChangeRoom = (val) => {
   roomId.value = val
   getRoomInfo()
+}
+
+const handleCancel = () => {
+  editEnable.value = false
+  getRoomInfo()
+}
+// 处理弹窗取消事件
+const handleDialogCancel = () => {
+  dialogVisible.value = false
+  isAddRoom.value = false
+}
+// 处理点击添加机房事件
+const handleAdd = () => {
+  isAddRoom.value = true
+  dialogVisible.value = true
+  resetForm()
+  console.log('handleAdd')
+}
+// 重置表单
+const resetForm = () => {
+  Object.assign(rowColInfo, {
+    roomName: '', // 机房名
+    row: 14, // 行
+    col: 18, // 列
+    eleAlarmDay: 0, // 日用能告警
+    eleLimitDay: 1000, // 日用能限制
+    eleAlarmMonth: 0, // 月用能告警
+    eleLimitMonth: 1000, // 月用能限制
+  })
+}
+// 处理点击删除机房事件
+const handleDelete = () => {
+  ElMessageBox.confirm('确认删除机房吗？', '提示', {
+    confirmButtonText: '确 认',
+    cancelButtonText: '取 消',
+    type: 'warning'
+  }).then(async () => {
+    const res = await MachineRoomApi.deleteRoom({id: roomId.value})
+    console.log('handleDelete', res)
+    editEnable.value = false
+    message.success('删除成功')
+    getRoomList()
+  })
+}
+// 处理点击编辑事件
+const handleEdit = () => {
+  if (isFromHome) {
+    push('/room/topology')
+    return
+  }
+  editEnable.value = true
 }
 
 const openSetting = () => {
@@ -760,15 +863,25 @@ const editMachine = () => {
   machineForm.value.open('edit', {...tableData.value[Y][X][0]}, operateMenu.value)
   operateMenu.value.show = false
 }
-// 查看机柜/柜列
-const toDetail = () => {
-  const Y = operateMenu.value.lndexY
-  const X = formParam.value[operateMenu.value.lndexX]
-  const target = tableData.value[Y][X][0]
-  if (target.type == 1) {
-    push('/arrayCabinet/topology')
+// 跳转机柜/柜列
+const handleJump = (data) => {
+  let target = {} as any
+  if (data) {
+    target = data
   } else {
-    push('/cabinet/cab/detail')
+    const Y = operateMenu.value.lndexY
+    const X = formParam.value[operateMenu.value.lndexX]
+    target = tableData.value[Y][X][0]
+  }
+  console.log('target', target)
+  if (!target.id) {
+    message.error(`该${target.type == 1 ? '柜列' : '机柜'}暂未保存绑定，无法跳转`)
+    return
+  }
+  if (target.type == 1) {
+    push({path: '/aisle/topology', state: { id: target.id, roomId: roomId.value }})
+  } else {
+    push({path: '/cabinet/cab/detail', state: {id: target.id}})
   }
 }
 // 删除机柜
@@ -827,6 +940,10 @@ const handleChange = (data) => {
 }
 // 处理设置提交
 const submitSetting = () => {
+  if (isAddRoom.value) { // 如果是添加机房 直接保存
+    handleSubmit()
+    return
+  }
   const rowNum = rowColInfo.row // 设置的行数
   const colNum = rowColInfo.col // 设置的列数
   const data = [] as any
@@ -884,11 +1001,13 @@ const getTableColCharCode = (num):string => {
   }
 }
 // 处理提交保存事件
-const handleSubmit = () => {
+const handleSubmit = async() => {
   const aisleList = [] as any
   const cabinetList = [] as any
+  if (!isAddRoom.value)
   for(let i = 0; i < rowColInfo.row; i++) {
     for(let j = 0; j < rowColInfo.col; j++) {
+      console.log('处理提交保存事件', tableData.value, i, getTableColCharCode(j))
       const target = tableData.value[i][getTableColCharCode(j)][0]
       if (target && target.type == 1 && target.first) {
         console.log('target.......', target)
@@ -908,6 +1027,7 @@ const handleSubmit = () => {
         cabinetList.push({
           id: target.id,
           cabinetName: target.name,
+          cabinetHeight: target.cabinetHeight,
           xCoordinate: j + 1,
           yCoordinate: i + 1,
           eleAlarmDay: target.eleAlarmDay,
@@ -920,9 +1040,9 @@ const handleSubmit = () => {
   }
   try {
     loading.value = true
-    const res = MachineRoomApi.saveRoomDetail({
-      id: 4,
-      roomName: 'CES-JF',
+    const res = await MachineRoomApi.saveRoomDetail({
+      id: isAddRoom.value ? '' : roomId.value,
+      roomName: rowColInfo.roomName,
       xLength: rowColInfo.col,
       yLength: rowColInfo.row,
       eleAlarmDay: rowColInfo.eleAlarmDay,
@@ -933,24 +1053,20 @@ const handleSubmit = () => {
       cabinetList
     })
     console.log('aisleList...', res)
+    if (isAddRoom.value) {
+      roomId.value = res
+      getRoomList()
+      message.success('新建成功！')
+      dialogVisible.value = false
+      editEnable.value = false
+      isAddRoom.value = false
+      return
+    }
     editEnable.value = false
     message.success('保存成功！')
   } finally {
     loading.value = false
   }
-}
-
-const handleCancel = () => {
-  editEnable.value = false
-  getRoomInfo()
-}
-
-const handleEdit = () => {
-  if (isFromHome) {
-    push('/room/topology')
-    return
-  }
-  editEnable.value = true
 }
 
 // const formParam = Object.keys(tableData[0])
@@ -959,7 +1075,6 @@ const formParam = computed(() => {
 })
 
 getRoomList()
-getRoomInfo()
 onMounted(() => {
   document.addEventListener('mousedown', (event) => {
     const element = event.target as HTMLElement
@@ -983,6 +1098,18 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 .btns {
   margin-left: 25px;
+}
+.status {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  .box {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    margin-left: 10px;
+    margin-right: 5px;
+  }
 }
 .toolbar {
   display: flex;
@@ -1035,6 +1162,9 @@ onUnmounted(() => {
       .dragSon {
         min-height: 40px;
         flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         box-sizing: border-box;
         background-color: #effaff;
         border-right: 1px solid #bed1ff;
@@ -1087,7 +1217,7 @@ onUnmounted(() => {
     height: 100%;
     width: 100%;
     // height: 40px;
-    background-color: rgb(12, 255, 44);
+    background-color: #effaff;
     box-sizing: border-box;
     border-right: 1px solid #ebeef5;
     &>div {

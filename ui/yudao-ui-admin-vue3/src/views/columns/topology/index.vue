@@ -2,7 +2,25 @@
   <!-- <div style="height:100%;min-height: calc(100vh - 120px);display: flex; flex-direction: column;"> -->
     <ContentWrap>
     <div class="btn-main">
-      <slot name="define"></slot>
+      <el-form
+        class="-mb-15px topForm"
+        :model="queryParams"
+        ref="queryFormRef"
+        :inline="true"
+        label-width="68px"
+      >
+        <el-form-item label="" prop="jf" >
+          机房：<el-select :size="isFromHome ? 'small' : ''" v-model="queryParams.cabinetroomId" placeholder="请选择" class="!w-100px">
+            <el-option v-for="item in roomList" :key="item.roomId" :label="item.roomName" :value="item.roomId" />
+          </el-select>
+        </el-form-item >
+        <span class="line"></span>
+        <el-form-item label="" prop="jg">
+          柜列：<el-select :size="isFromHome ? 'small' : ''" v-model="queryParams.cabinetColumnId" placeholder="请选择" class="!w-100px">
+            <el-option v-for="item in machineList" :key="item.id" :label="item.name" :value="item.id" />
+          </el-select>
+        </el-form-item>
+      </el-form>
       <div class="btns">
         <template v-for="item in btns" :key="item.value">
           <el-tooltip v-if="item.value == 4 || item.value == 7" placement="bottom">
@@ -27,12 +45,12 @@
         <el-button v-if="editEnable" @click="handleConfig" type="primary" plain>配置</el-button>
         <el-button v-if="editEnable" @click="handleSubmit" type="primary" plain>保存</el-button>
       </div>
-      <el-button v-else @click="push('/aisle/topology')" type="primary" plain><Icon icon="ep:edit" class="mr-5px" />编辑</el-button>
+      <slot name="btn"></slot>
     </div>
   </ContentWrap>
   <ContentWrap>
     <div ref="topologyContainer" class="topologyContainer" :style="`position: relative;z-index: 1;transform: scale(${scaleValue}, ${scaleValue});height: ${isFromHome ? (ContainerHeight * scaleValue + 'px') : 'auto'}`">
-      <div class="Container" :style="{alignItems: machineColInfo.pduBar && machineColInfo.barA ? 'unset' : 'center'}">
+      <div class="Container" :style="{alignItems: machineColInfo.pduBar && machineColInfo.barA ? 'unset' : 'center', minHeight: isFromHome ? 'unset' : '600px'}">
         <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="Bus">
           <div class="startBus" :style="{opacity: machineColInfo.barA.direction ? 0 : 1}">
             <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barA" :btns="btns" />
@@ -81,7 +99,7 @@
               </template>
             </div>
           </div>
-          <div v-if="machineColInfo.pduBar && machineColInfo.barB" class="busListContainer">
+          <div v-if="machineColInfo.pduBar && machineColInfo.barB" class="busListContainer" style="margin-bottom: 80px">
             <div class="bridge"></div>
             <div class="busList2">
               <template v-for="(bus, index) in machineColInfo.barA.boxList" :key="index">
@@ -129,36 +147,37 @@
                   </div>
                   <div class="cabinet">
                     <template v-if="cabinet.cabinetName">
-                      <div class="inner_fill" :id="'cabinet-' + index"></div>
-                      <div v-if="chosenBtn == 0" class="fill_box">
-                        <Echart :options="cabinet.echartsOptionLoad" height="100%" />
-                      </div>
-                      <div v-if="chosenBtn == 1" class="fill_box">
-                        <Echart :options="cabinet.echartsOptionA" height="100%" />
-                      </div>
-                      <div v-if="chosenBtn == 2" class="fill_box">
-                        <Echart :options="cabinet.echartsOptionV" height="100%" />
-                      </div>
-                      <div v-if="chosenBtn == 3" class="fill_box">
-                        <Echart :options="cabinet.echartsOptionFactor" height="100%" />
-                      </div>
-                      <div v-if="chosenBtn == 4" class="fill_box">
-                        <Echart :options="cabinet.echartsOptionApparent" height="100%" />
-                      </div>
-                      <div v-if="chosenBtn == 7" class="fill_box">
-                        <Echart :options="cabinet.echartsOptionBalance" height="100%" />
-                      </div>
-                      <div v-if="chosenBtn == 8" class="fill_box">
-                        <Echart :options="cabinet.echartsOptionTemp" height="100%" />
-                      </div>
-                      <div v-if="chosenBtn == 9" class="fill_box">
-                        <Echart :options="cabinet.echartsOptionCapacity" height="100%" />
-                      </div>
-                      <div v-if="chosenBtn == 10" class="fill_box">
-                        <Echart :options="cabinet.echartsOptionEq" height="100%" />
-                      </div>
+                      <div class="inner_fill" @dblclick="handleJump(cabinet)" :id="'cabinet-' + index" :style="{backgroundColor: cabinet.id ? 'rgba(180, 180, 180, 0.2)' : 'rgba(230, 240, 234)'}"></div>
+                      <template v-if="cabinet.id">
+                        <div v-if="chosenBtn == 0" class="fill_box">
+                          <Echart :options="cabinet.echartsOptionLoad" height="100%" />
+                        </div>
+                        <div v-if="chosenBtn == 1" class="fill_box">
+                          <Echart :options="cabinet.echartsOptionA" height="100%" />
+                        </div>
+                        <div v-if="chosenBtn == 2" class="fill_box">
+                          <Echart :options="cabinet.echartsOptionV" height="100%" />
+                        </div>
+                        <div v-if="chosenBtn == 3" class="fill_box">
+                          <Echart :options="cabinet.echartsOptionFactor" height="100%" />
+                        </div>
+                        <div v-if="chosenBtn == 4" class="fill_box">
+                          <Echart :options="cabinet.echartsOptionApparent" height="100%" />
+                        </div>
+                        <div v-if="chosenBtn == 7" class="fill_box">
+                          <Echart :options="cabinet.echartsOptionBalance" height="100%" />
+                        </div>
+                        <div v-if="chosenBtn == 8" class="fill_box">
+                          <Echart :options="cabinet.echartsOptionTemp" height="100%" />
+                        </div>
+                        <div v-if="chosenBtn == 9" class="fill_box">
+                          <Echart :options="cabinet.echartsOptionCapacity" height="100%" />
+                        </div>
+                        <div v-if="chosenBtn == 10" class="fill_box">
+                          <Echart :options="cabinet.echartsOptionEq" height="100%" />
+                        </div>
+                      </template>
                     </template>
-                    
                     <div v-else class="inner_empty" :id="'cabinet-' + index"></div>
                   </div>
                   <div class="status">{{cabinet.cabinetName || ''}}</div>
@@ -171,7 +190,7 @@
             </div>
             <div class="menu" v-if="operateMenu.show" :style="{left: `${operateMenu.left}`, top: `${operateMenu.top}`}">
               <div class="menu_item" v-if="operateMenu.add" @click="handleOperate('add')">新增</div>
-              <div class="menu_item" v-if="!operateMenu.add" @click="handleOperate('watch')">查看</div>
+              <div class="menu_item" v-if="!operateMenu.add" @click="handleJump(false)">查看</div>
               <div class="menu_item" v-if="!operateMenu.add" @click="handleOperate('edit')">编辑</div>
               <div class="menu_item" v-if="!operateMenu.add" @click="handleOperate('delete')">删除</div>
             </div>
@@ -186,7 +205,7 @@
           </div>
         </div>
       </div>
-      <div v-if="isFromHome || !editEnable" class="mask" @click.right.prevent="console.log('---')"></div>
+      <div v-if="!editEnable && machineColInfo.barA" class="mask" @click.right.prevent="console.log('---')"></div>
     </div>
   </ContentWrap>
   <!-- </div> -->
@@ -207,9 +226,14 @@ import PluginBox from './component/PluginBox.vue'
 import { EChartsOption } from 'echarts'
 
 const message = useMessage()
-const {push} = useRouter()
+const { push } = useRouter()
 let instance: BrowserJsPlumbInstance | null = null
-
+const roomList = ref<any>([]) // 机房列表
+const machineList = ref<any>([]) // 机柜列列表
+const queryParams = reactive({
+  cabinetColumnId: history?.state?.id,
+  cabinetroomId: history?.state?.roomId
+})
 const btns = [
   {
     value: 0,
@@ -294,7 +318,7 @@ const {containerInfo, isFromHome} = defineProps({
     default: false,
   },
 })
-const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
+const emit = defineEmits(['backData', 'idChange', 'getpdubar']) // 定义 success 事件，用于操作成功后的回调
 
 // 连接初始化准备
 const initConnect = () => {
@@ -349,10 +373,9 @@ const initConnect = () => {
     // 如果返回 false，则连接断开操作会被取消
     return true
   })
-  
 }
 // 创建瞄点并连接
-const toCreatConnect = () => {
+const toCreatConnect = (onlyDelete = false) => {
   if (cabinetList.value && cabinetList.value.length && machineColInfo.barA) {
     console.log('toCreatConnect', cabinetList.value, machineColInfo)
     nextTick(() => {
@@ -366,6 +389,7 @@ const toCreatConnect = () => {
         instance?.removeAllEndpoints(boxElementA)
         instance?.removeAllEndpoints(boxElementB)
         instance?.removeAllEndpoints(boxElementC)
+        if (onlyDelete) return
         // 添加瞄点
         instance?.addEndpoint(boxElementA, {
           source: true,
@@ -399,6 +423,7 @@ const toCreatConnect = () => {
         instance?.deleteEndpoint('plugin-' + item.boxIndex + '_B-1')
         instance?.deleteEndpoint('plugin-' + item.boxIndex + '_B-2')
         instance?.deleteEndpoint('plugin-' + item.boxIndex + '_B-3')
+        if (onlyDelete) return
         // 添加瞄点
         instance?.addEndpoint(boxElementA, {
           source: true,
@@ -421,7 +446,7 @@ const toCreatConnect = () => {
       })
       cabinetList.value.forEach((item, index) => {
         if (!item.cabinetName) return
-        addCabinetAnchor(index, item)
+        addCabinetAnchor(index, item, onlyDelete)
       })
     })
   }
@@ -503,12 +528,13 @@ const updatePluginAnchor = () => {
   }
 }
 // 给某个机柜加瞄点 并进行连接
-const addCabinetAnchor = (index, data = {} as any) => {
+const addCabinetAnchor = (index, data = {} as any, onlyDelete = false) => {
   const cabElementA = document.getElementById('cab-A-' + index) as Element
   const cabElementB = document.getElementById('cab-B-' + index) as Element
   console.log('cabElementB', cabElementB, cabElementA, data)
   instance?.removeAllEndpoints(cabElementA)
   instance?.removeAllEndpoints(cabElementB)
+  if (onlyDelete) return
   // 添加瞄点
   if (!Number.isInteger(data.boxIndexA) || !data.boxOutletIdA) instance?.addEndpoint(cabElementA, {
     source: true,
@@ -584,6 +610,21 @@ const handleRightClick = (e) => {
     curIndex: currentIndex
   }
   console.log('operateMenu',e.target.className, operateMenu.value, cabinetList.value[currentIndex])
+}
+// 跳转机柜
+const handleJump = (data) => {
+ let target = {} as any
+  if (data) {
+    target = data
+  } else {
+    target = cabinetList.value[operateMenu.value.curIndex]
+  }
+  console.log('target', target)
+  if (!target.id) {
+    message.error(`该机柜暂未保存绑定，无法跳转`)
+    return
+  }
+  push({path: '/cabinet/cab/detail', state: {id: target.id}})
 }
 // 处理菜单点击事件
 const handleOperate = (type) => {
@@ -778,7 +819,7 @@ const handleFormCabinet = (data) => {
 }
 // 接口获取柜列状态数据详情
 const getDataDetail = async() => {
-  const res = await MachineColumnApi.getDataDetail({id: 6})
+  const res = await MachineColumnApi.getDataDetail({id: queryParams.cabinetColumnId})
   console.log('接口获取柜列状态数据详情', res)
   handleDataDetail(res)
 }
@@ -832,7 +873,7 @@ const handleDataDetail = (res) => {
             },
             yAxis: {
               type: 'value',
-              max: 1, 
+              max: 1,
               show: false,
             },
             series: [
@@ -1293,7 +1334,7 @@ const handleDataDetail = (res) => {
       }
     })
   })
-  emit('success', [...cabinetList.value], scaleValue.value)
+  emit('backData', [...cabinetList.value], scaleValue.value)
   echartsOptionCab.value = {
     title: {
       text: '机柜列实时统计'
@@ -1359,8 +1400,8 @@ const handleDataDetail = (res) => {
 // }
 // 接口获取柜列信息
 const getMachineColInfo = async() => {
-  const res1 = MachineColumnApi.getAisleDetail({id:6})
-  const res2 = MachineColumnApi.getDataDetail({id: 6})
+  const res1 = MachineColumnApi.getAisleDetail({id: queryParams.cabinetColumnId})
+  const res2 = MachineColumnApi.getDataDetail({id: queryParams.cabinetColumnId})
   Promise.all([res1, res2]).then((resultList) => {
     Object.assign(machineColInfo, resultList[0])
     handleCabinetList(resultList[0], resultList[1])
@@ -1442,23 +1483,72 @@ window.addEventListener('resize', function() {
 
 // 计算出要缩放的比例
 const handleCssScale = () => {
-   isFromHome && nextTick(()=>{
+  scaleValue.value = 1
+  // if (scaleValue.value != 1) scaleValue.value = 1/scaleValue.value
+  isFromHome && nextTick(()=>{
     const targetMain = document.querySelector('.topologyContainer > .Container > .main') as Element
-    const childWidth = targetMain.getBoundingClientRect().width + 132 // Container元素的宽
-    const childHeight = targetMain.getBoundingClientRect().height + 30 // Container元素的高
+    const startBusWidth = machineColInfo.pduBar ? 132 : 0 // 两边始端箱宽度总和 
+    const childWidth = targetMain.getBoundingClientRect().width + startBusWidth // Container元素的宽
+    const childHeight = targetMain.getBoundingClientRect().height + 30 // Container元素的高 30是padding的长
     ContainerHeight.value = childHeight
     scaleValue.value = +(((containerInfo?.width - 30)/childWidth).toFixed(2))
-    console.log('containerInfo', childWidth, containerInfo?.width, scaleValue.value, childHeight, childHeight*scaleValue.value)
+    if (childHeight > 400) scaleValue.value = +(400/childHeight).toFixed(2)
+    console.log('containerInfo', childWidth, containerInfo?.width, scaleValue.value, childHeight, childHeight*scaleValue.value,machineColInfo)
   })
 }
 
-// watch(() => test, (val) => {
-//   console.log('dddddddddddddddddd-------------------asdasdcontainerWidth', val)
-// }, {immediate: true})
+// 接口获取机房导航列表
+const getNavList = async() => {
+  const res = await MachineColumnApi.getAisleList({})
+  console.log('接口获取机房导航列表*****', res)
+  if (res && res.length) {
+    roomList.value = res
+    handleNavList(queryParams.cabinetroomId)
+  }
+}
+
+const handleNavList = (cabinetroomId) => {
+  let targetRoom = null as any
+  if (!queryParams.cabinetroomId) {
+    queryParams.cabinetroomId = roomList.value[0].roomId
+    targetRoom = roomList.value[0]
+  } else {
+    targetRoom = roomList.value.find(item => item.roomId == queryParams.cabinetroomId)
+  }
+  machineList.value = targetRoom.aisleList || []
+  if (!queryParams.cabinetColumnId && machineList.value) {
+    queryParams.cabinetColumnId = machineList.value[0].id
+  }
+  getMachineColInfo()
+}
+
+watch(() => queryParams.cabinetroomId, (val) => {
+  if (val) {
+    const targetRoom = roomList.value.find(item => item.roomId == val)
+    machineList.value = targetRoom.aisleList || []
+    if (!machineList.value.find(item => item.id == queryParams.cabinetColumnId)) {
+      queryParams.cabinetColumnId = machineList.value[0].id
+    }
+  }
+})
+
+watch(() => queryParams.cabinetColumnId,(val) => {
+  console.log('wwwwwwwwwww', val, machineList.value)
+  emit('idChange', val)
+  toCreatConnect(true)
+  instance?.deleteEveryConnection()
+  getMachineColInfo()
+})
+
+watch(() => containerInfo, (val) => {
+  if (val) {
+    queryParams.cabinetColumnId = containerInfo?.cabinetColumnId
+    queryParams.cabinetroomId = containerInfo?.cabinetroomId
+  }
+},{immediate: true})
 
 onMounted(() => {
-  // getNavList()
-  getMachineColInfo()
+  getNavList()
   initConnect()
   // intervalTimer = setInterval(() => {
   //   getDataDetail()
@@ -1478,7 +1568,7 @@ onBeforeUnmount(() => {
 
 <style lang="scss" scoped>
 .topologyContainer {
-  transform-origin: left top;
+  transform-origin: center top;
   transform: scale(1, 1);
 }
 .CabEchart {
@@ -1488,7 +1578,7 @@ onBeforeUnmount(() => {
 }
 .mask {
   width: 100%;
-  height: calc(100% - 32px);
+  height: 170px;
   position: absolute;
   top: 0;
   z-index: 99;
@@ -1520,15 +1610,28 @@ onBeforeUnmount(() => {
 //   display: flex;
 //   justify-content: flex-end;
 // }
+.topForm .line {
+  display: inline-block;
+  width: 8px;
+  border-bottom: 1px solid #000;
+  margin: 0px 8px 13px 8px;
+}
+:deep(.topForm .el-form-item) {
+  margin-right: 0px
+}
 :deep(.el-card__body) {
   overflow-x: auto;
   overflow-y: hidden;
+  & > div {
+    display: flex;
+    justify-content: center;
+  }
 }
 .Container {
   display: flex;
   // align-items: center;
   // padding-bottom: 20px;
-  min-height: calc(100vh - 270px);
+  // min-height: calc(100vh - 270px);
   .Bus {
     width: 66px;
     .startBus {
@@ -1649,7 +1752,7 @@ onBeforeUnmount(() => {
 .cabinetContainer {
   box-sizing: border-box;
   position: relative;
-  margin-top: 80px;
+  // margin-top: 80px;
   .menu {
     box-sizing: border-box;
     position: absolute;
@@ -1713,8 +1816,6 @@ onBeforeUnmount(() => {
         height: 100%;
         box-sizing: border-box;
         border: 5px solid #888;
-        // background-color: #d9ffea;
-        background-color: rgb(155, 166, 190, 0);
         z-index: 10;
       }
       .fill_box {
