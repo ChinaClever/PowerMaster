@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.annotation.security.PermitAll;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import java.util.List;
@@ -38,8 +41,31 @@ public class UploadFileController {
     @PreAuthorize("@ss.hasPermission('system:upgrade:file:upload')")
     public CommonResult<Integer> uploadFile( @RequestParam("upgradeDev")  int upgradeDev,
                                              @RequestParam(value = "roomIds",required = false) List<Integer> roomIds,
-                                             @RequestParam(value = "ipList",required = false) List<Integer> ipList,
+                                             @RequestParam(value = "ipList",required = false) List<String> ipList,
                                              @RequestPart("files") List<MultipartFile> files) {
         return success(uploadFileService.uploadFile(upgradeDev,roomIds,ipList,files));
+    }
+
+    @GetMapping("/download")
+    @Operation(summary = "文件下载")
+    @PermitAll
+    public void downloadFile(HttpServletRequest request, HttpServletResponse response) {
+        uploadFileService.downloadFile(request, response);
+    }
+
+    @GetMapping("/notice")
+    @Operation(summary = "升级结果通知")
+    @PermitAll
+    public void notice(@RequestParam String devIp,
+                       @RequestParam String code,@RequestParam String message) {
+        uploadFileService.notice(devIp, code,message);
+    }
+
+
+    @GetMapping("/notice")
+    @Operation(summary = "重发")
+    @PermitAll
+    public CommonResult<Integer> reNotice(@RequestParam Long id) {
+        return success(uploadFileService.reNotice(id));
     }
 }
