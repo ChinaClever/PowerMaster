@@ -505,6 +505,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
     @Override
     public PageResult<RoomEQRes> getEqPage(RoomIndexPageReqVO pageReqVO) {
         try {
+            pageReqVO.setIsDelete(0);
             PageResult<RoomIndexDO> roomIndexDOPageResult = roomIndexCopyMapper.selectPage(pageReqVO);
             List<RoomIndexDO> roomIndexDOList = roomIndexDOPageResult.getList();
             List<RoomEQRes> result = new ArrayList<>();

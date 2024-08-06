@@ -38,6 +38,19 @@
       />
       </el-form-item>
 
+      <el-form-item label="筛选列">
+        <el-cascader
+          v-model="defaultOptionsCol"
+          :options="optionsCol"
+          :props="props"
+          collapse-tags
+          collapse-tags-tooltip
+          :show-all-levels="false"
+          @change="cascaderChange"
+          class="!w-180px"
+        />
+        </el-form-item>
+
         <el-form-item >
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <el-button type="success" plain :loading="exportLoading" @click="handleExport">
@@ -150,12 +163,42 @@ const shortcuts = [
   },
 ]
 
+//筛选选项
+const props = { multiple: true}
+const defaultOptionsCol = ref([])
+const optionsCol = ref([
+  { value: "ele_a", label: 'A路电能'},
+  { value: "ele_b", label: 'B路电能'},
+])
+const originalArray = ref([ "ele_a", "ele_b"])
+
+// 处理筛选列变化
+const cascaderChange = (selectedCol) => {
+  let selectedCol1 = selectedCol.map((arr) => arr[arr.length - 1]);
+  let notSelectedCol = originalArray.value.filter(item => !selectedCol1.includes(item));
+  tableColumns.value.forEach(column => {
+    for (const col of selectedCol1) {
+      if (column.prop?.startsWith(col)){
+        column.istrue = true;
+        break;
+      }
+    };     
+    for (const col of notSelectedCol) {
+      if (column.prop?.startsWith(col)){
+        column.istrue = false;
+        break;
+      }
+    }
+  });
+}
+
+
 const tableColumns = ref([
   { label: '位置', align: 'center', prop: 'location' , istrue:true},
   { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
-  { label: 'A路电能(kWh)', align: 'center', prop: 'ele_a' , istrue:true, formatter: formatEle},
-  { label: 'B路电能(kWh)', align: 'center', prop: 'ele_b' , istrue:true, formatter: formatEle},
-  { label: '电能(kWh)', align: 'center', prop: 'ele_total' , istrue:true, formatter: formatEle},
+  { label: 'A路电能(kWh)', align: 'center', prop: 'ele_a' , istrue:false, formatter: formatEle},
+  { label: 'B路电能(kWh)', align: 'center', prop: 'ele_b' , istrue:false, formatter: formatEle},
+  { label: '总电能(kWh)', align: 'center', prop: 'ele_total' , istrue:true, formatter: formatEle},
 ]);
 
 /** 初始化数据 */

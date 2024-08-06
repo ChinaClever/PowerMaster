@@ -188,10 +188,19 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
 
     @Override
     public PageResult<Object> getEQDataDetails(EnergyConsumptionPageReqVO reqVO) throws IOException {
-        Integer busId = reqVO.getBusId();
-        if (Objects.equals(busId, null)){
-            return null;
+        // 根据导航栏传来的devkey 获取busIds 一定只有一个，如果是跳转到能耗排名界面的就不会传devkey，会直接传一个busId
+        Integer busId;
+        if (reqVO.getDevkey() != null){
+            String[] devkeys = new String[]{reqVO.getDevkey()};
+            Integer[] busIds = getBusIdsByDevkeys(devkeys);
+            if (busIds.length == 0){
+                return null;
+            }
+            busId = busIds[0];
+        }else {
+            busId = reqVO.getBusId();
         }
+
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
@@ -211,10 +220,8 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
         }else {
             searchRequest.indices("bus_eq_total_month");
         }
-        // 根据导航栏传来的devkey 获取busIds 一定只有一个
-        String[] devkeys = new String[]{reqVO.getDevkey()};
-        Integer[] busIds = getBusIdsByDevkeys(devkeys);
-        searchSourceBuilder.query(QueryBuilders.termQuery("bus_id", busIds[0]));
+
+        searchSourceBuilder.query(QueryBuilders.termQuery("bus_id", busId));
         searchRequest.source(searchSourceBuilder);
         // 执行搜索,向ES发起http请求
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -482,9 +489,17 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
 
     @Override
     public PageResult<Object> getBoxEQDataDetails(EnergyConsumptionPageReqVO reqVO) throws IOException {
-        Integer boxId = reqVO.getBoxId();
-        if (Objects.equals(boxId, null)){
-            return null;
+        // 根据导航栏传来的devkey 获取boxIds 一定只有一个，如果是跳转到能耗排名界面的就不会传devkey，会直接传一个boxId
+        Integer boxId;
+        if (reqVO.getDevkey() != null){
+            String[] devkeys = new String[]{reqVO.getDevkey()};
+            Integer[] boxIds = getBoxIdsByDevkeys(devkeys);
+            if (boxIds.length == 0){
+                return null;
+            }
+            boxId = boxIds[0];
+        }else {
+            boxId = reqVO.getBoxId();
         }
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
@@ -505,10 +520,8 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
         }else {
             searchRequest.indices("box_eq_total_month");
         }
-        // 根据导航栏传来的devkey 获取busIds 一定只有一个
-        String[] devkeys = new String[]{reqVO.getDevkey()};
-        Integer[] boxIds = getBoxIdsByDevkeys(devkeys);
-        searchSourceBuilder.query(QueryBuilders.termQuery("box_id", boxIds[0]));
+
+        searchSourceBuilder.query(QueryBuilders.termQuery("box_id", boxId));
 
         searchRequest.source(searchSourceBuilder);
         // 执行搜索,向ES发起http请求
