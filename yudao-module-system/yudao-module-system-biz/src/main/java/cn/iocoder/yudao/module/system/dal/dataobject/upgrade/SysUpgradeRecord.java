@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.Date;
@@ -17,6 +18,7 @@ import java.util.List;
  * @Description: 设备升级记录
  */
 @Data
+@Builder
 @TableName(value = "sys_upgrade_record")
 public class SysUpgradeRecord extends BaseDO {
 

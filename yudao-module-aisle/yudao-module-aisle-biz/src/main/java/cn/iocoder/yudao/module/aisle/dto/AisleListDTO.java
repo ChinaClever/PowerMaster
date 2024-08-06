@@ -1,6 +1,8 @@
 package cn.iocoder.yudao.module.aisle.dto;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.List;
@@ -23,6 +25,24 @@ public class AisleListDTO {
      * 机房名
      */
     private String roomName;
+    /**
+     * 电力容量
+     */
+    @Schema(description = "电力容量", example = "0")
+    private float powerCapacity;
+
+
+    /**
+     * 机房x长度(单位机柜)
+     */
+    @JsonProperty(value="xLength")
+    private int xLength;
+
+    /**
+     * 机房Y长度(单位机柜)
+     */
+    @JsonProperty(value="yLength")
+    private int yLength;
     /**
      * 柜列数据
      */
