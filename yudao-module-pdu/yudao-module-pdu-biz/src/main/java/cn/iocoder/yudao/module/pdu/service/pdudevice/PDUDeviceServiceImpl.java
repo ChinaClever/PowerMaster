@@ -1323,7 +1323,19 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         Map<Integer, CabinetIndex> cabinetMap = cabinetIndices.stream().collect(Collectors.toMap(CabinetIndex::getId, Function.identity()));
         List<RoomIndex> roomIndices = roomIndexMapper.selectBatchIds(cabinetIndices.stream().map(CabinetIndex::getRoomId).collect(Collectors.toList()));
         Map<Integer, String> roomMap = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getName));
-        Map<Integer, String> aisleMap = aisleIndexMapper.selectBatchIds(cabinetIndices.stream().filter(dto -> dto.getAisleId() != 0).map(CabinetIndex::getAisleId).collect(Collectors.toList())).stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getName));
+        List<Integer> cabIds = cabinetIndices.stream().filter(dto -> dto.getAisleId() != 0).map(CabinetIndex::getAisleId).collect(Collectors.toList());
+        Map<Integer, String> aisleMap;
+        if (!CollectionUtils.isEmpty(cabIds)){
+            List<AisleIndex>  aisleIndexList = aisleIndexMapper.selectBatchIds(cabIds);
+            if (!CollectionUtils.isEmpty(aisleIndexList)){
+                aisleMap = aisleIndexList.stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getName));
+            } else {
+                aisleMap = new HashMap<>();
+            }
+        } else {
+            aisleMap = new HashMap<>();
+        }
+
 
         result.forEach( pduIndex ->{
             String localtion = null;

@@ -62,7 +62,7 @@ public class UploadFileController {
     }
 
 
-    @GetMapping("/notice")
+    @GetMapping("/reNotice")
     @Operation(summary = "重发")
     @PermitAll
     public CommonResult<Integer> reNotice(@RequestParam Long id) {
