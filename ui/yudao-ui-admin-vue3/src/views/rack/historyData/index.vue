@@ -349,7 +349,7 @@ const handleCheck = async (node) => {
     }
   });
   //没筛选到 不显示任何数据 参数传0 后端返回空
-  if(arr.length == 0){
+  if(arr.length == 0 && node.length != 0){
     arr.push(0)
     ElMessage({
       message: '暂无数据',
