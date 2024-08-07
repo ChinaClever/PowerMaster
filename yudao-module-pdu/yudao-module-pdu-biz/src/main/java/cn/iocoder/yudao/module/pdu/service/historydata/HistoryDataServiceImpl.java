@@ -184,8 +184,13 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                     .eq(CabinetEnvSensor::getCabinetId, cabinetId)
                     .eq(CabinetEnvSensor::getPathPdu, 'A')
                     .eq(CabinetEnvSensor::getSensorId, sensorId));
-            map.put("channel", cabinetEnvSensor.getChannel());
-            map.put("position", cabinetEnvSensor.getPosition());
+            if (cabinetEnvSensor != null){
+                map.put("channel", cabinetEnvSensor.getChannel());
+                map.put("position", cabinetEnvSensor.getPosition());
+            }else{
+                map.put("channel", null);
+                map.put("position", null);
+            }
         }
         if(cabinetPduB != null){
             int cabinetId = cabinetPduB.getCabinetId();
@@ -206,8 +211,14 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                     .eq(CabinetEnvSensor::getCabinetId, cabinetId)
                     .eq(CabinetEnvSensor::getPathPdu, 'B')
                     .eq(CabinetEnvSensor::getSensorId, sensorId));
-            map.put("channel", cabinetEnvSensor.getChannel());
-            map.put("position", cabinetEnvSensor.getPosition());
+            if (cabinetEnvSensor != null){
+                map.put("channel", cabinetEnvSensor.getChannel());
+                map.put("position", cabinetEnvSensor.getPosition());
+            }else{
+                map.put("channel", null);
+                map.put("position", null);
+            }
+
         }
         map.put("address", address);
         return map;
@@ -749,6 +760,9 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 pduId = getPduIdByAddr(cabinetPdu.getPduIpB(), String.valueOf(cabinetPdu.getCasIdB()));
                 ipAddr = cabinetPdu.getPduIpB()+'-'+ cabinetPdu.getCasIdB();
             }
+        }
+        if (pduId == null){
+            return null;
         }
 
         // 创建匹配查询

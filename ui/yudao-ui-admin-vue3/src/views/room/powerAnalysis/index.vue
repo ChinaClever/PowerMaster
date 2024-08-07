@@ -324,17 +324,18 @@ function formatTime1(_row: any, _column: any, cellValue: number): string {
 
 // 格式化电能列数据，保留1位小数
 function formatEle(_row: any, _column: any, cellValue: number): string {
-  return cellValue.toFixed(1);
+  return Number(cellValue).toFixed(1);
 }
 
 // 格式化耗电量列数据，保留1位小数
-function formatEQ(value, decimalPlaces){
+const formatEQ = (value: number, decimalPlaces: number)=>{
   if (!isNaN(value)) {
-    return value.toFixed(decimalPlaces);
+    return Number(value).toFixed(decimalPlaces);
   } else {
       return null; // 或者其他默认值
   }
 }
+
 
 // 禁选未来的日期
 const disabledDate = (date) => {

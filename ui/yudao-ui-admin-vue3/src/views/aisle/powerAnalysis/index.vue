@@ -201,7 +201,7 @@ const shortcuts = [
 ]
 
 // 返回当前页的序号数组
-const getPageNumbers = (pageNumber) => {
+const getPageNumbers = (pageNumber: number) => {
   const start = (pageNumber - 1) * queryParams.pageSize + 1;
   const end = pageNumber * queryParams.pageSize;
   const pageNumbers: string[] = [];
@@ -275,8 +275,9 @@ const getList = async () => {
       queryParams.timeRange = undefined
     }
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
-    eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
+    eqData.value = data.list.map((item: { eq_value: any }) => formatEQ(item.eq_value, 1));
     list.value = data.list
+    console.log(list.value)
     realTotel.value = data.total
     if (data.total > 10000){
       total.value = 10000
@@ -324,13 +325,13 @@ function formatTime1(_row: any, _column: any, cellValue: number): string {
 
 // 格式化电能列数据，保留1位小数
 function formatEle(_row: any, _column: any, cellValue: number): string {
-  return cellValue.toFixed(1);
+  return Number(cellValue).toFixed(1);
 }
 
 // 格式化耗电量列数据，保留1位小数
-function formatEQ(value, decimalPlaces){
+const formatEQ = (value: number, decimalPlaces: number)=>{
   if (!isNaN(value)) {
-    return value.toFixed(decimalPlaces);
+    return Number(value).toFixed(decimalPlaces);
   } else {
       return null; // 或者其他默认值
   }
@@ -353,9 +354,9 @@ const handleQuery = () => {
 }
 
 // 导航栏选择后触发
-const handleCheck = async (node) => {
+const handleCheck = async (node: any[]) => {
   let arr = [] as any
-  node.forEach(item => { 
+  node.forEach((item: { type: number; id: any }) => { 
     if(item.type == 2){
       arr.push(item.id);
     }
