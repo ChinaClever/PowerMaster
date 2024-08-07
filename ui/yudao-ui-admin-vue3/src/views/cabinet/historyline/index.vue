@@ -742,7 +742,7 @@ const disabledDate = (date) => {
 // 处理数据后有几位小数点
 function formatNumber(value, decimalPlaces) {
     if (!isNaN(value)) {
-        return value.toFixed(decimalPlaces);
+        return Number(value).toFixed(decimalPlaces);
     } else {
         return null; // 或者其他默认值
     }

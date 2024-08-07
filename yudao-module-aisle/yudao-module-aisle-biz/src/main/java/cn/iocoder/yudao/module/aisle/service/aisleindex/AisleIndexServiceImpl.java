@@ -288,6 +288,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
     @Override
     public PageResult<AisleEQRes> getEqPage(AisleIndexPageReqVO pageReqVO) {
         try {
+            pageReqVO.setIsDelete(0);
             PageResult<AisleIndexDO> aisleIndexDOPageResult = aisleIndexCopyMapper.selectPage(pageReqVO);
             List<AisleIndexDO> aisleIndexDOList = aisleIndexDOPageResult.getList();
             List<AisleEQRes> result = new ArrayList<>();

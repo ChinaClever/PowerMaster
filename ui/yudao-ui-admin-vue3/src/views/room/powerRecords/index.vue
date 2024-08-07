@@ -227,7 +227,7 @@ const shouldShowDataExceedMessage = computed(() => {
 
 // 格式化电能列数据，保留1位小数
 function formatEle(_row: any, _column: any, cellValue: number): string {
-  return cellValue.toFixed(1);
+  return Number(cellValue).toFixed(1);
 }
 
 // 禁选未来的日期

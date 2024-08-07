@@ -509,12 +509,12 @@ const getList = async () => {
 
 // 格式化功率列数据，保留三位小数
 function formatPower(_row: any, _column: any, cellValue: number): string {
-  return cellValue.toFixed(3);
+  return Number(cellValue).toFixed(3);
 }
 
 // 格式化功率因素列数据，保留两位小数
 function formatPowerFactor(_row: any, _column: any, cellValue: number): string {
-  return cellValue.toFixed(2);
+  return Number(cellValue).toFixed(2);
 }
 
 // 最后一页显示数据量过大的提示

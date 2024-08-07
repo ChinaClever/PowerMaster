@@ -370,7 +370,7 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
 
 // 格式化温湿度列数据，保留一位小数
 function formatData(_row: any, _column: any, cellValue: number): string {
-  return cellValue.toFixed(1);
+  return Number(cellValue).toFixed(1);
 }
 
 // 导航栏选择后触发
@@ -381,6 +381,14 @@ const handleCheck = async (node) => {
       arr.push(item.unique);
     }
   });
+  //没筛选到 不显示任何数据 参数传0 后端返回空
+  if(arr.length == 0){
+  arr.push(0)
+  ElMessage({
+    message: '暂无数据',
+    type: 'warning',
+  });
+}
   queryParams.devkeys = arr
   handleQuery()
 }

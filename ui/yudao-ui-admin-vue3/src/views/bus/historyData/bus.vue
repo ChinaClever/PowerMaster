@@ -569,22 +569,22 @@ const getList = async () => {
 
 // 格式化电压(V)列数据，保留一位小数
 function formatVoltage(_row: any, _column: any, cellValue: number): string {
-  return cellValue.toFixed(1);
+  return Number(cellValue).toFixed(1);
 }
 
 // 格式化电流(A)列数据，保留两位小数
 function formatCurrent(_row: any, _column: any, cellValue: number): string {
-  return cellValue.toFixed(2);
+  return Number(cellValue).toFixed(2);
 }
 
 // 格式化功率列数据，保留三位小数
 function formatPower(_row: any, _column: any, cellValue: number): string {
-  return cellValue.toFixed(3);
+  return Number(cellValue).toFixed(3);
 }
 
 // 格式化功率因素列数据，保留两位小数
 function formatPowerFactor(_row: any, _column: any, cellValue: number): string {
-  return cellValue.toFixed(2);
+  return Number(cellValue).toFixed(2);
 }
 
 // 格式化相id
@@ -614,8 +614,16 @@ const handleCheck = async (node) => {
       arr.push(item.unique);
     }
   });
-  queryParams.devkeys = arr
-  handleQuery()
+  //没筛选到 不显示任何数据 参数传0 后端返回空
+  if(arr.length == 0){
+    arr.push(0)
+    ElMessage({
+      message: '暂无数据',
+      type: 'warning',
+    });
+  }
+    queryParams.devkeys = arr
+    handleQuery()
 }
 
 // 接口获取机房导航列表

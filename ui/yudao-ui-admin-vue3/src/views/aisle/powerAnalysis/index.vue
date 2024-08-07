@@ -361,6 +361,15 @@ const handleCheck = async (node: any[]) => {
       arr.push(item.id);
     }
   });
+  //没筛选到 不显示任何数据 参数传0 后端返回空
+  if(arr.length == 0){
+    arr.push(0)
+    rankChart?.clear()
+    ElMessage({
+      message: '暂无数据',
+      type: 'warning',
+    });
+  }
   queryParams.aisleIds = arr
   handleQuery()
 }
