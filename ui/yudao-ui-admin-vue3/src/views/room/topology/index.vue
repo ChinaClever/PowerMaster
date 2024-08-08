@@ -642,8 +642,10 @@ const getRoomInfo = async() => {
         if (i == 0) dataItem.first = true
         // {type: '1', name: '啊大苏打', direction: '1', amount: 1, status: 1,first: true, id: '', originAmount: 1, originDirection: '1'}
         if (dataItem.direction == 1) {
+          console.log('----dataItem1', dataItem, getTableColCharCode(item.xCoordinate - 1 + i), )
           data[item.yCoordinate - 1][getTableColCharCode(item.xCoordinate - 1 + i)].splice(0, 1, dataItem)
         } else {
+          console.log('----dataItem1', dataItem,item.yCoordinate - 1 + i, getTableColCharCode(item.xCoordinate - 1), )
           data[item.yCoordinate - 1 + i][getTableColCharCode(item.xCoordinate - 1)].splice(0, 1, dataItem)
         }
       }

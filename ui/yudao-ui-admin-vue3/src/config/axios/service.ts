@@ -63,7 +63,7 @@ service.interceptors.request.use(
       config.data = qs.stringify(data)
     }
     // get参数编码
-    if (config.method?.toUpperCase() === 'GET' && params) {
+    if ((config.method?.toUpperCase() === 'GET' || config.method?.toUpperCase() === 'POST') && params) {
       config.params = {}
       const paramsStr = qs.stringify(params, { allowDots: true })
       if (paramsStr) {
