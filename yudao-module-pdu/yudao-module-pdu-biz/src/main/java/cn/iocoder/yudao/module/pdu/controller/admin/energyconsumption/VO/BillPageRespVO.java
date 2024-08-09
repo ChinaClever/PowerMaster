@@ -19,8 +19,11 @@ public class BillPageRespVO {
     @ExcelProperty("网络地址")
     private String location;
 
-    @ExcelProperty("日期")
-    private String create_time;
+    @ExcelProperty("开始日期")
+    private String start_time;
+
+    @ExcelProperty("结束日期")
+    private String end_time;
 
     @ExcelProperty("耗电量(kWh)")
     private Double eq_value;

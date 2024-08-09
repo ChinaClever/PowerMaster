@@ -47,4 +47,6 @@ public interface PDUDeviceService {
     List<String> getIpList();
 
     Map getPDUPFLine(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    int deletePDU(String devKey) throws Exception;
 }

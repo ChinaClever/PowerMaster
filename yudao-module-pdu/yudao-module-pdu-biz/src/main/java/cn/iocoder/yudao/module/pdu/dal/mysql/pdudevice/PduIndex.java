@@ -13,5 +13,7 @@ public class PduIndex {
 
     private Integer cascadeAddr;
 
+    private Integer isDeleted;
+
     private Integer runStatus;
 }
