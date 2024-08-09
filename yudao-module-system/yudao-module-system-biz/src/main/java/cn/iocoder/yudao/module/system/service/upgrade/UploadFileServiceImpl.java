@@ -8,24 +8,33 @@ import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
 import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
-import cn.iocoder.yudao.framework.common.enums.DelEnums;
+import cn.iocoder.yudao.framework.common.enums.*;
 import cn.iocoder.yudao.framework.common.mapper.*;
+import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
+import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.system.controller.admin.upgrade.enums.UpgradeDevEnum;
 import cn.iocoder.yudao.module.system.controller.admin.upgrade.enums.UpgradeResultEnum;
 import cn.iocoder.yudao.module.system.controller.admin.upgrade.enums.UpgradeStatusEnum;
+import cn.iocoder.yudao.module.system.controller.admin.upgrade.vo.FileRecordPageReqVO;
+import cn.iocoder.yudao.module.system.controller.admin.upgrade.vo.UpgradeFileRespVO;
+import cn.iocoder.yudao.module.system.controller.admin.upgrade.vo.UpgradeRecordPageReqVO;
+import cn.iocoder.yudao.module.system.controller.admin.upgrade.vo.UpgradeRecordRespVO;
 import cn.iocoder.yudao.module.system.dal.dataobject.upgrade.SysUpgradeRecord;
 import cn.iocoder.yudao.module.system.dal.dataobject.upgrade.SysUploadFileRecord;
 import cn.iocoder.yudao.module.system.dal.mysql.upgrade.SysUpgradeRecordMapper;
 import cn.iocoder.yudao.module.system.dal.mysql.upgrade.SysUploadFileRecordMapper;
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,6 +50,8 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+
+import static cn.iocoder.yudao.framework.common.constant.FieldConstant.*;
 
 /**
  * @Author: chenwany
@@ -69,6 +80,8 @@ public class UploadFileServiceImpl implements UploadFileService{
     AisleIndexMapper aisleIndexMapper;
     @Autowired
     CabinetIndexMapper cabinetIndexMapper;
+    @Autowired
+    RedisTemplate redisTemplate;
 
 
     private BufferedOutputStream bufferedOutputStream = null;
@@ -79,7 +92,7 @@ public class UploadFileServiceImpl implements UploadFileService{
         //项目路径
         String appPath = System.getProperty("user.dir");
         //文件保存路径
-        String  path = appPath + "\\upgrade";
+        String  path = appPath + "\\upgrade\\";
         try {
             if (!CollectionUtils.isEmpty(files)){
                 files.forEach(file -> {
@@ -93,6 +106,8 @@ public class UploadFileServiceImpl implements UploadFileService{
                     .uploadResult(uploadResult.get())
                     .fileNames(fileNames)
                     .filePath(path)
+                    .ipList(ipList)
+                    .roomIds(roomIds)
                     .upgradeDev( upgradeDev).build();
             return recordMapper.insert(record);
 
@@ -101,7 +116,8 @@ public class UploadFileServiceImpl implements UploadFileService{
             if (!uploadResult.get().contains("失败")){
                 //没有上传失败文件
                 //发送通知
-                downloadNotice(upgradeDev,roomIds,ipList,fileNames);
+                new Thread(()-> downloadNotice(upgradeDev,roomIds,ipList,fileNames)).start();
+
             }
         }
     }
@@ -231,6 +247,66 @@ public class UploadFileServiceImpl implements UploadFileService{
 
     }
 
+    @Override
+    public PageResult<UpgradeFileRespVO> getFileRecordPage(FileRecordPageReqVO pageReqVO) {
+        PageResult<SysUploadFileRecord> recordPageResult = recordMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<SysUploadFileRecord>()
+                .eqIfPresent(SysUploadFileRecord::getUpgradeDev , pageReqVO.getUpgradeDev())
+                .orderByDesc(SysUploadFileRecord::getCreateTime));
+        List<UpgradeFileRespVO> recordRespVOS = new ArrayList<>();
+        if (Objects.nonNull(recordPageResult)){
+            List<SysUploadFileRecord> list = recordPageResult.getList();
+            if (!CollectionUtils.isEmpty(list)){
+                list.forEach(record ->{
+                    UpgradeFileRespVO recordRespVO = BeanUtils.toBean(record, UpgradeFileRespVO.class);
+                    recordRespVO.setUpgradeDevMsg(UpgradeDevEnum.getDescByType(record.getUpgradeDev()));
+                    if (!CollectionUtils.isEmpty(record.getRoomIds())){
+                        List<String> names = roomIndexMapper.selectBatchIds(record.getRoomIds()).stream().map(RoomIndex::getName).collect(Collectors.toList());
+                        recordRespVO.setRoomNames(names);
+                    }
+                    recordRespVOS.add(recordRespVO);
+                });
+            }
+        }
+        PageResult<UpgradeFileRespVO> result = new PageResult<UpgradeFileRespVO>().setList(recordRespVOS).setTotal(recordPageResult.getTotal());
+        return  result;
+    }
+
+    @Override
+    public Boolean deleteFileRecord(List<Integer> ids) {
+        if (!CollectionUtils.isEmpty(ids)){
+            recordMapper.deleteBatchIds(ids);
+        }
+        return true;
+    }
+
+    @Override
+    public PageResult<UpgradeRecordRespVO> getRecordPage(UpgradeRecordPageReqVO pageReqVO) {
+        PageResult<SysUpgradeRecord> recordPageResult = upgradeRecordMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<SysUpgradeRecord>()
+                .likeIfPresent(SysUpgradeRecord::getDevIp , pageReqVO.getDevIp())
+                .orderByDesc(SysUpgradeRecord::getCreateTime));
+        List<UpgradeRecordRespVO> recordRespVOS = new ArrayList<>();
+        if (Objects.nonNull(recordPageResult)){
+            List<SysUpgradeRecord> list = recordPageResult.getList();
+            if (!CollectionUtils.isEmpty(list)){
+                list.forEach(record ->{
+                    UpgradeRecordRespVO recordRespVO = BeanUtils.toBean(record, UpgradeRecordRespVO.class);
+
+                    recordRespVOS.add(recordRespVO);
+                });
+            }
+        }
+        PageResult<UpgradeRecordRespVO> result = new PageResult<UpgradeRecordRespVO>().setList(recordRespVOS).setTotal(recordPageResult.getTotal());
+        return  result;
+    }
+
+    @Override
+    public Boolean deleteRecord(List<Integer> ids) {
+        if (!CollectionUtils.isEmpty(ids)){
+            upgradeRecordMapper.deleteBatchIds(ids);
+        }
+        return true;
+    }
+
     /**
      * 下载通知
      * @param upgradeDev
@@ -239,14 +315,15 @@ public class UploadFileServiceImpl implements UploadFileService{
      */
     private void downloadNotice(int upgradeDev,List<Integer> roomIds,List<String> ipList,List<String> files) {
         //通知设备
-        List<String>  devIps = getDevIps(upgradeDev,roomIds,ipList);
+        Map<String,String>  devIps = getDevIps(upgradeDev,roomIds,ipList);
 
-        for (String ip : devIps){
+        for (String ip : devIps.keySet()){
             SysUpgradeRecord record = SysUpgradeRecord.builder()
                     .devIp(ip)
                     .fileNames(files)
                     .startTime(DateTime.now())
                     .status(UpgradeStatusEnum.START.getType())
+                    .devPosition(devIps.get(ip))
                     .build();
             upgradeRecordMapper.insert(record);
         }
@@ -259,7 +336,7 @@ public class UploadFileServiceImpl implements UploadFileService{
                     String ip = record.getDevIp();
                     String port = "";
                     String path = "";
-                    String url = "http://" + ip + ":" + port + path;
+                    String url =  ip + ":" + port + path;
                     Map<String,String>  params = new HashMap<>();
                     params.put("files", record.getFileNames().toString());
                     params.put("downloadUrl","");
@@ -317,36 +394,45 @@ public class UploadFileServiceImpl implements UploadFileService{
      * @param ipList
      * @return
      */
-    private List<String>  getDevIps(int upgradeDev,List<Integer> roomIds,List<String> ipList){
+    private Map<String,String>  getDevIps(int upgradeDev,List<Integer> roomIds,List<String> ipList){
 
         List<String> devIps = new ArrayList<>();
+        Map<String,String> map = new HashMap<>();
         if (upgradeDev == UpgradeDevEnum.ALL.getType()){
             //全部设备
             //pdu 主ip设备
             List<PduIndexDo> pduIndexDos = pduIndexDoMapper.selectList(new LambdaQueryWrapper<PduIndexDo>()
                     .eq(PduIndexDo::getIsDeleted, DelEnums.NO_DEL.getStatus())
-                    .eq(PduIndexDo::getCascadeAddr,"0"));
+                    .eq(PduIndexDo::getCascadeAddr,"0")
+                    //非离线状态
+                    .ne(PduIndexDo::getRunStatus,5));
             if (!CollectionUtils.isEmpty(pduIndexDos)){
                 List<String> ips = pduIndexDos.stream().map(PduIndexDo::getIpAddr).distinct().collect(Collectors.toList());
                 devIps.addAll(ips);
+                ips.forEach(ip -> map.put(ip,getPduPosition(ip)));
             }
+
 
             //母线
             List<BusIndex> busIndices = busIndexDoMapper.selectList(new LambdaQueryWrapper<BusIndex>()
-                    .eq(BusIndex::getIsDeleted,DelEnums.NO_DEL.getStatus()));
+                    .eq(BusIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
+                    //非离线状态
+                    .ne(BusIndex::getRunStatus,5));
             if (!CollectionUtils.isEmpty(busIndices)){
                 List<String> ips = busIndices.stream().map(BusIndex::getIpAddr).distinct().collect(Collectors.toList());
                 devIps.addAll(ips);
+                ips.forEach(ip -> map.put(ip,getBusPosition(ip)));
             }
         }else if (upgradeDev == UpgradeDevEnum.ROOM.getType()){
             if (CollectionUtils.isEmpty(roomIds)){
-                return devIps;
+                return map;
             }
             //获取机房列表
             List<RoomIndex>  roomList = roomIndexMapper.selectList(new LambdaQueryWrapper<RoomIndex>()
                     .eq(RoomIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
                     .in(RoomIndex::getId,roomIds));
             if (!CollectionUtils.isEmpty(roomList)){
+
                 //柜列
                 List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>()
                         .eq(AisleIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
@@ -357,8 +443,18 @@ public class UploadFileServiceImpl implements UploadFileService{
                     List<AisleBar> barList = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
                             .in(AisleBar::getAisleId,aisleIds));
                     if (!CollectionUtils.isEmpty(barList)){
-                        List<String> ips = barList.stream().map(AisleBar::getDevIp).distinct().collect(Collectors.toList());
-                        devIps.addAll(ips);
+                        List<String> keys = barList.stream().map(AisleBar::getBarKey).collect(Collectors.toList());
+                        List<BusIndex> busIndices = busIndexDoMapper.selectList(new LambdaQueryWrapper<BusIndex>()
+                                .eq(BusIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
+                                //非离线状态
+                                .ne(BusIndex::getRunStatus,5)
+                                .in(BusIndex::getDevKey,keys));
+                        if (!CollectionUtils.isEmpty(busIndices)){
+                            List<String> ips = busIndices.stream().map(BusIndex::getIpAddr).distinct().collect(Collectors.toList());
+                            devIps.addAll(ips);
+                            ips.forEach(ip -> map.put(ip,getBusPosition(ip)));
+                        }
+
                     }
                 }
 
@@ -372,20 +468,46 @@ public class UploadFileServiceImpl implements UploadFileService{
                             .in(CabinetPdu::getCabinetId,cabIds));
                     //获取pdu
                     if (!CollectionUtils.isEmpty(cabinetPdus)){
-                        List<String> ipsA = cabinetPdus.stream().filter(t -> t.getCasIdA() ==0).map(CabinetPdu::getPduIpA).filter(StringUtils::isNotEmpty).distinct().collect(Collectors.toList());
-                        List<String> ipsB = cabinetPdus.stream().filter(t -> t.getCasIdB() ==0).map(CabinetPdu::getPduIpB).filter(StringUtils::isNotEmpty).distinct().collect(Collectors.toList());
-                        devIps.addAll(ipsA);
-                        devIps.addAll(ipsB);
+                        List<String> keys = new ArrayList<>();
+                        cabinetPdus.forEach(pdu ->{
+                            keys.add(pdu.getPduIpA()+SPLIT_KEY + 0);
+                            keys.add(pdu.getPduIpB()+SPLIT_KEY + 0);
+                        });
+
+                        List<PduIndexDo> pduIndexDos = pduIndexDoMapper.selectList(new LambdaQueryWrapper<PduIndexDo>()
+                                .eq(PduIndexDo::getIsDeleted,DelEnums.NO_DEL.getStatus())
+                                //非离线状态
+                                .ne(PduIndexDo::getRunStatus,5)
+                                .in(PduIndexDo::getDevKey,keys));
+                        if (!CollectionUtils.isEmpty(pduIndexDos)){
+                            List<String> ips = pduIndexDos.stream().filter(t -> t.getCascadeAddr().equals("0"))
+                                    .map(PduIndexDo::getIpAddr).distinct().collect(Collectors.toList());
+                            ips.forEach(ip -> map.put(ip,getPduPosition(ip)));
+
+                        }
+
                     }
                 }
 
             }
 
         }else if (upgradeDev == UpgradeDevEnum.DEV_IP.getType()){
-            devIps.addAll(ipList);
+            if (!CollectionUtils.isEmpty(ipList)){
+
+                ipList.forEach(ip ->{
+                    String position = getPduPosition(ip);
+
+                    if (StringUtils.isEmpty(position)){
+                        position = getBusPosition(ip);
+                    }
+                    map.put(ip,position);
+                });
+
+            }
+
         }
 
-        return devIps;
+        return map;
     }
 
 
@@ -399,13 +521,17 @@ public class UploadFileServiceImpl implements UploadFileService{
 
         if (!file.isEmpty()) {
             try {
+                File fileDir = new File(path);
+                if (!fileDir.exists()) { //如果不存在 则创建
+                    fileDir.mkdirs();
+                }
                 byte[] bytes = file.getBytes();
                 bufferedOutputStream = new BufferedOutputStream(Files.newOutputStream(new File(path + file.getOriginalFilename()).toPath()));
                 bufferedOutputStream.write(bytes);
                 bufferedOutputStream.close();
                 return file.getOriginalFilename() + "上传成功";
             } catch (Exception e) {
-                return file.getOriginalFilename() + "上传失败，错误信息为：" + e;
+                return file.getOriginalFilename() + "上传失败，错误信息为：" + e.getMessage();
             }
         } else {
             return "上传文件为空";
@@ -473,4 +599,73 @@ public class UploadFileServiceImpl implements UploadFileService{
                 e.printStackTrace();
             }
         }
+
+    /**
+     * 获取设备位置
+     * @return
+     */
+    private String getPduPosition(String ip){
+        ValueOperations ops = redisTemplate.opsForValue();
+        //设备位置
+        String devPosition = "";
+        CabinetPdu aPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>()
+                .eq(CabinetPdu::getPduIpA,ip)
+                .eq(CabinetPdu::getCasIdA,0));
+
+        CabinetPdu bPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>()
+                .eq(CabinetPdu::getPduIpB,ip)
+                .eq(CabinetPdu::getCasIdB,0));
+
+        if (Objects.nonNull(aPdu)){
+            CabinetIndex index = cabinetIndexMapper.selectById(aPdu.getCabinetId());
+            String cabKey = index.getRoomId() + SPLIT_KEY + index.getId();
+            String redisKey = REDIS_KEY_CABINET + cabKey;
+            Object cabinet = ops.get(redisKey);
+            if (Objects.nonNull(cabinet)){
+                JSONObject json = JSON.parseObject(JSON.toJSONString(cabinet));
+                devPosition = json.getString("room_name") + SPLIT_KEY +  json.getString("cabinet_name") + "A路";
+            }
+        }
+        if (Objects.nonNull(bPdu)){
+            CabinetIndex index = cabinetIndexMapper.selectById(bPdu.getCabinetId());
+            String cabKey = index.getRoomId() + SPLIT_KEY + index.getId();
+            String redisKey = REDIS_KEY_CABINET + cabKey;
+            Object cabinet = ops.get(redisKey);
+            if (Objects.nonNull(cabinet)){
+                JSONObject json = JSON.parseObject(JSON.toJSONString(cabinet));
+                devPosition = json.getString("room_name") + SPLIT_KEY +  json.getString("cabinet_name") + "B路";
+            }
+        }
+        return devPosition;
+    }
+
+    /**
+     * 获取设备位置
+     * @return
+     */
+    private String getBusPosition(String ip ){
+        ValueOperations ops = redisTemplate.opsForValue();
+
+        //设备位置
+        AtomicReference<String> devPosition = new AtomicReference<>("");
+        //柜列
+        List<AisleBar> aisleBarList  = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
+                .eq(AisleBar::getDevIp,ip));
+        if (!CollectionUtils.isEmpty(aisleBarList)){
+            List<Integer>  ids = aisleBarList.stream().map(AisleBar::getAisleId).distinct().collect(Collectors.toList());
+
+            ids.forEach(id ->{
+                String redisKey = REDIS_KEY_AISLE + id;
+
+                Object aisle = ops.get(redisKey);
+                if (Objects.nonNull(aisle)){
+                    JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
+                    devPosition.set(json.getString("room_name") + SPLIT_KEY
+                            + json.getString("aisle_name")  + ";");
+                }
+            });
+
+        }
+        return devPosition.get();
+    }
 }

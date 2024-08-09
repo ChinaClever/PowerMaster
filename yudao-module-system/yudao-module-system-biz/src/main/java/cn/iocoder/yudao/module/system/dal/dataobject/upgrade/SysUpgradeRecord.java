@@ -1,14 +1,14 @@
 package cn.iocoder.yudao.module.system.dal.dataobject.upgrade;
 
 import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -19,8 +19,10 @@ import java.util.List;
  */
 @Data
 @Builder
-@TableName(value = "sys_upgrade_record")
-public class SysUpgradeRecord extends BaseDO {
+@NoArgsConstructor
+@AllArgsConstructor
+@TableName(value = "sys_upgrade_record",autoResultMap=true)
+public class SysUpgradeRecord {
 
     /**
      * 序号
@@ -74,4 +76,14 @@ public class SysUpgradeRecord extends BaseDO {
      */
     private Date  endTime;
 
+    /**
+     * 创建时间
+     */
+    @TableField(fill = FieldFill.INSERT)
+    private LocalDateTime createTime;
+    /**
+     * 最后更新时间
+     */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updateTime;
 }
