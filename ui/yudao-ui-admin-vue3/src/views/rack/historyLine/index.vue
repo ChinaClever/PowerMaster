@@ -325,20 +325,43 @@ const initChart = () => {
     if (chartContainer.value && instance) {
       realtimeChart = echarts.init(chartContainer.value);
       if (realtimeChart) {
-        realtimeChart.setOption({
-          title: { text: ''},
-          tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-          legend: { data: ['有功功率','视在功率']},
-          grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-          toolbox: {feature: { restore:{}, saveAsImage: {}}},
-          xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
-          yAxis: { type: 'value'},
-          series: [
-            {name: '有功功率', type: 'line', symbol: 'none', data: totalActivePowData.value},
-            {name: '视在功率', type: 'line', symbol: 'none', data: totalApparentPowData.value},
-          ],
-          dataZoom:[{type: "inside"}],
-        });
+        if (activeName.value == 'realtimeTabPane'){
+          realtimeChart.setOption({
+            title: { text: ''},
+            tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+            legend: { data: ['有功功率','视在功率']},
+            grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+            toolbox: {feature: { restore:{}, saveAsImage: {}}},
+            xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
+            yAxis: { type: 'value'},
+            series: [
+              {name: '有功功率', type: 'line', symbol: 'none', data: totalActivePowData.value},
+              {name: '视在功率', type: 'line', symbol: 'none', data: totalApparentPowData.value},
+            ],
+            dataZoom:[{type: "inside"}],
+          });
+        }else{
+          realtimeChart.setOption( {
+            title: {text: ''},
+            tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+            legend: { data: ['平均有功功率', '最大有功功率', '最小有功功率','平均视在功率', '最大视在功率', '最小视在功率'],
+                  selected: { 平均有功功率: true, 最大有功功率: false, 最小有功功率: false, 平均视在功率: true, 最大视在功率: false, 最小视在功率: false}},
+            grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
+            toolbox: {feature: { restore:{}, saveAsImage: {}}},
+            xAxis: {type: 'category', boundaryGap: false, data: createTimeData.value},
+            yAxis: { type: 'value'},
+            series: [
+              { name: '平均有功功率', type: 'line',data: totalActivePowAvgValueData.value},
+              { name: '最大有功功率', type: 'line',data: totalActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
+              { name: '最小有功功率',type: 'line',data: totalActivePowMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '平均视在功率',type: 'line',data:  totalApparentPowAvgValueData.value},
+              { name: '最大视在功率', type: 'line', data: totalApparentPowMaxValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '最小视在功率',type: 'line',data:  totalApparentPowMinValueData.value, lineStyle: {type: 'dashed'}},
+            ],
+            dataZoom:[{type: "inside"}],
+          });
+        }
+
       }
       // 将 realtimeChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
       instance.appContext.config.globalProperties.realtimeChart = realtimeChart;

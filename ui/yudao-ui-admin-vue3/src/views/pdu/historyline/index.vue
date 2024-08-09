@@ -1313,6 +1313,7 @@ onMounted( async () => {
   if (queryParams.pduId != undefined){
     await getList(); 
     nowAddress.value = queryAddress
+    nowAddressTemp.value = queryAddress
     initChart();
   }
 })

@@ -480,22 +480,52 @@ const initChart = () => {
     if (chartContainer.value && instance) {
       realtimeChart = echarts.init(chartContainer.value);
       if (realtimeChart) {
-        realtimeChart.setOption({
-          title: { text: ''},
-          tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-          legend: { data: ['总有功功率','总视在功率','总无功功率','总功率因素']},
-          grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-          toolbox: {feature: { restore:{}, saveAsImage: {}}},
-          xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
-          yAxis: { type: 'value'},
-          series: [
-            {name: '总有功功率', type: 'line', symbol: 'none', data: totalActivePowData.value},
-            {name: '总视在功率', type: 'line', symbol: 'none', data: totalApparentPowData.value},
-            {name: '总无功功率', type: 'line', symbol: 'none', data: totalReactivePowData.value},
-            {name: '总功率因素', type: 'line', symbol: 'none', data: factorTotalData.value},
-          ],
-          dataZoom:[{type: "inside"}],
-        });
+        if (activeName.value == 'realtimeTabPane'){
+           realtimeChart.setOption({
+              title: { text: ''},
+              tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+              legend: { data: ['总有功功率','总视在功率','总无功功率','总功率因素']},
+              grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+              toolbox: {feature: { restore:{}, saveAsImage: {}}},
+              xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
+              yAxis: { type: 'value'},
+              series: [
+                {name: '总有功功率', type: 'line', symbol: 'none', data: totalActivePowData.value},
+                {name: '总视在功率', type: 'line', symbol: 'none', data: totalApparentPowData.value},
+                {name: '总无功功率', type: 'line', symbol: 'none', data: totalReactivePowData.value},
+                {name: '总功率因素', type: 'line', symbol: 'none', data: factorTotalData.value},
+              ],
+              dataZoom:[{type: "inside"}],
+            });
+        }else{
+          realtimeChart.setOption( {
+              title: {text: ''},
+              tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
+              legend: { data: ['总平均有功功率', '总最大有功功率', '总最小有功功率','总平均视在功率', '总最大视在功率', '总最小视在功率'
+                              , '总平均无功功率','总最大无功功率', '总最小无功功率', '总平均功率因素'],
+                    selected:  { 总平均有功功率: true, 总最大有功功率: false, 总最小有功功率: false, 总平均视在功率: true, 总最大视在功率: false, 总最小视在功率: false
+                              , 总平均无功功率: true, 总最大无功功率: false, 总最小无功功率: false, 总平均功率因素: false}},
+              grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
+              toolbox: {feature: { restore:{}, saveAsImage: {}}},
+              xAxis: {type: 'category', boundaryGap: false, data: createTimeData.value},
+              yAxis: { type: 'value'},
+              series: [
+                { name: '总平均有功功率', type: 'line',data: totalActivePowAvgValueData.value},
+                { name: '总最大有功功率', type: 'line',data: totalActivePowMaxValueData.value, lineStyle: {type: 'dashed'} },
+                { name: '总最小有功功率',type: 'line',data: totalActivePowMinValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '总平均视在功率',type: 'line',data:  totalApparentPowAvgValueData.value},
+                { name: '总最大视在功率', type: 'line', data: totalApparentPowMaxValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '总最小视在功率',type: 'line',data:  totalApparentPowMinValueData.value, lineStyle: {type: 'dashed'}},
+
+                { name: '总平均无功功率',type: 'line',data:  totalReactivePowAvgValueData.value},
+                { name: '总最大无功功率', type: 'line', data: totalReactivePowMaxValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '总最小无功功率',type: 'line',data:  totalReactivePowMinValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '总平均功率因素',type: 'line',data:  factorTotalAvgValueData.value},
+              ],
+              dataZoom:[{type: "inside"}],
+            });
+        }
+       
       }
       // 将 realtimeChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
       instance.appContext.config.globalProperties.realtimeChart = realtimeChart;
@@ -925,9 +955,10 @@ onMounted( async () => {
   const queryLocation = useRoute().query.location as string;
   queryParams.aisleId = queryAisleId ? parseInt(queryAisleId, 10) : undefined;
   if (queryParams.aisleId != undefined){
-    await handleQuery();
     nowAddress.value = queryLocation
     nowAddressTemp.value =queryLocation
+    handleQuery();
+
   }
 })
 
