@@ -48,7 +48,7 @@
       <slot name="btn"></slot>
     </div>
   </ContentWrap>
-  <ContentWrap>
+  <ContentWrap :class="isFromHome? 'topologyMain' : ''">
     <div ref="topologyContainer" class="topologyContainer" :style="`position: relative;z-index: 1;transform: scale(${scaleValue}, ${scaleValue});height: ${isFromHome ? (ContainerHeight * scaleValue + 'px') : 'auto'}`">
       <div class="Container" :style="{alignItems: machineColInfo.pduBar && machineColInfo.barA ? 'unset' : 'center', minHeight: isFromHome ? 'unset' : '600px'}">
         <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="Bus">
@@ -1493,6 +1493,7 @@ const handleCssScale = () => {
     ContainerHeight.value = childHeight
     scaleValue.value = +(((containerInfo?.width - 30)/childWidth).toFixed(2))
     if (childHeight > 400) scaleValue.value = +(400/childHeight).toFixed(2)
+    if (scaleValue.value > 1) scaleValue.value = 1
     console.log('containerInfo', childWidth, containerInfo?.width, scaleValue.value, childHeight, childHeight*scaleValue.value,machineColInfo)
   })
 }
@@ -1622,6 +1623,8 @@ onBeforeUnmount(() => {
 :deep(.el-card__body) {
   overflow-x: auto;
   overflow-y: hidden;
+}
+.topologyMain :deep(.el-card__body) {
   & > div {
     display: flex;
     justify-content: center;

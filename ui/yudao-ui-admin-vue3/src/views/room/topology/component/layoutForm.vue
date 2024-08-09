@@ -132,7 +132,8 @@ const submitForm = async () => {
       for (let i = 0; i < diff; i++) {
         formData.value.cabinetList.push({
           id: 0,
-          name: '',
+          cabinetName: '',
+          runStatus: 0
         })
       }
     } else if(diff < 0) { // 减少

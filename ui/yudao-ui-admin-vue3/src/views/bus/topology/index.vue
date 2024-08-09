@@ -30,13 +30,14 @@
   <ContentWrap>
   <div class="topologyContainer">
       <div class="loadA">
-        <div class="box">
+        <div class="box" v-if="startingBoxA">
           <div class="title">A路始端箱</div>
           <div class="info" v-for="(item, index) in startingBoxA[btns[chosenBtn].paramBus]" :key="index">
             <div>{{btns[chosenBtn].unitName}}{{letters[index]}}</div>
             <div>{{item.toFixed(btns[chosenBtn].fixNum)}}{{btns[chosenBtn].unit}}</div>
           </div>
         </div>
+        <div class="box-empty" v-else></div>
         <div class="line"></div>
         <div class="boxList">
           <div class="boxItem" v-for="(box, index) in pluginBoxA" :key="index">
@@ -63,7 +64,8 @@
             <div>{{item.toFixed(btns[chosenBtn].fixNum)}}{{btns[chosenBtn].unit}}</div>
           </div>
         </div>
-        <div class="line"  v-if="startingBoxB"></div>
+        <div class="box-empty boxB" v-else></div>
+        <div class="line"></div>
         <div class="boxList">
           <div class="boxItem" v-for="(box, index) in pluginBoxB" :key="index">
             <div class="box">
@@ -263,7 +265,8 @@ const getBusData = async() => {
     startingBoxB.value = res[1].busData ? res[1].busData.bus_data.line_item_list : null
     pluginBoxA.value = res[0].boxDataList
     pluginBoxB.value = res[1].boxDataList
-    console.log('startingBoxA.value', startingBoxA.value, startingBoxA.value[(btns[chosenBtn.value].paramBox)], pluginBoxA.value[0])
+    // console.log('btns[chosenBtn.value]', btns[chosenBtn.value], startingBoxA.value)
+    // console.log('startingBoxA.value', startingBoxA.value, startingBoxA.value[(btns[chosenBtn.value].paramBox)], pluginBoxA.value[0])
   } else {
     startingBoxA.value = []
     startingBoxB.value = []
@@ -326,6 +329,9 @@ getNavList()
         padding: 0 10px;
         font-size: 12px;
       }
+    }
+    .box-empty {
+      height: 127px;
     }
     .line {
       flex-shrink: 0;
