@@ -1,14 +1,16 @@
 package cn.iocoder.yudao.module.system.dal.dataobject.upgrade;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import cn.iocoder.yudao.framework.mybatis.core.dataobject.BaseDO;
+import com.baomidou.mybatisplus.annotation.*;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jdk.nashorn.internal.objects.annotations.Constructor;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -18,8 +20,10 @@ import java.util.List;
  */
 @Data
 @Builder
-@TableName(value = "sys_upload_file_record")
-public class SysUploadFileRecord {
+@NoArgsConstructor
+@AllArgsConstructor
+@TableName(value = "sys_upload_file_record",autoResultMap=true)
+public class SysUploadFileRecord  {
 
     /**
      * 序号
@@ -61,5 +65,15 @@ public class SysUploadFileRecord {
      */
     private String uploadResult;
 
+    /**
+     * 创建时间
+     */
+    @TableField(fill = FieldFill.INSERT)
+    private LocalDateTime createTime;
+    /**
+     * 最后更新时间
+     */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updateTime;
 
 }
