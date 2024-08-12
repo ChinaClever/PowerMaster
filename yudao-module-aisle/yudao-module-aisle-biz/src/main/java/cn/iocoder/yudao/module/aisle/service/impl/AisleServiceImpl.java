@@ -587,9 +587,9 @@ public class AisleServiceImpl implements AisleService {
                cabinetDTO.setYesterdayEq(yesterdayMap.getOrDefault(cabinetIndex.getId(), 0.0));
                aisleCabinetDTOList.add(cabinetDTO);
            });
+           detailDTO.setCabinetList(aisleCabinetDTOList.stream().sorted(Comparator.comparing(CabinetDTO::getIndex)).collect(Collectors.toList()));
        }
 
-       detailDTO.setCabinetList(aisleCabinetDTOList.stream().sorted(Comparator.comparing(CabinetDTO::getIndex)).collect(Collectors.toList()));
        return detailDTO;
     }
 
