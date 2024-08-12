@@ -312,6 +312,9 @@ public class AisleServiceImpl implements AisleService {
                             AisleBox box = BeanUtils.toBean(boxDTO,AisleBox.class);
                             box.setAisleId(aisleId);
                             box.setAisleBarId(bar.getId());
+                            if (StringUtils.isEmpty(box.getBoxName())){
+                                box.setBoxName("BOX-" + (boxDTO.getBoxIndex() + 1));
+                            }
                             box.setBarKey(bar.getBarKey() + SPLIT_KEY_BUS + box.getBoxName());
                             AisleBox aisleBox = aisleBoxMapper.selectById(box.getId());
                             if (Objects.nonNull(aisleBox)){
