@@ -244,6 +244,37 @@ public class AisleServiceImpl implements AisleService {
                         cabinetVo.setBusNameA(busNameA);
                         cabinetVo.setBusIpB(busIpB);
                         cabinetVo.setBusNameB(busNameB);
+
+                        if (Objects.nonNull(cabinetVo.getBoxIndexA())){
+                            AisleBar bar = aisleBarMapper.selectOne(new LambdaQueryWrapper<AisleBar>()
+                                    .eq(AisleBar::getAisleId,index.getId())
+                                    .eq(AisleBar::getBusName,busNameA)
+                                    .eq(AisleBar::getDevIp,busIpA));
+                            if (Objects.nonNull(bar)){
+                                AisleBox box = aisleBoxMapper.selectOne(new LambdaQueryWrapper<AisleBox>()
+                                        .eq(AisleBox::getAisleBarId,bar.getId())
+                                        .eq(AisleBox::getType,0)
+                                        .eq(AisleBox::getBoxIndex,cabinetVo.getBoxIndexA()));
+                                cabinetVo.setBoxNameA(Objects.nonNull(box)?box.getBoxName():"");
+
+                            }
+
+                        }
+                        if (Objects.nonNull(cabinetVo.getBoxIndexB())){
+                            AisleBar bar = aisleBarMapper.selectOne(new LambdaQueryWrapper<AisleBar>()
+                                    .eq(AisleBar::getAisleId,index.getId())
+                                    .eq(AisleBar::getBusName,busNameB)
+                                    .eq(AisleBar::getDevIp,busIpB));
+                            if (Objects.nonNull(bar)){
+                                AisleBox box = aisleBoxMapper.selectOne(new LambdaQueryWrapper<AisleBox>()
+                                        .eq(AisleBox::getAisleBarId,bar.getId())
+                                        .eq(AisleBox::getType,0)
+                                        .eq(AisleBox::getBoxIndex,cabinetVo.getBoxIndexB()));
+                                cabinetVo.setBoxNameB(Objects.nonNull(box)?box.getBoxName():"");
+
+                            }
+
+                        }
                     }
                     cabinetVo.setPduBox(aisleSaveVo.getPduBar());
 
@@ -313,7 +344,7 @@ public class AisleServiceImpl implements AisleService {
                             box.setAisleId(aisleId);
                             box.setAisleBarId(bar.getId());
                             if (StringUtils.isEmpty(box.getBoxName())){
-                                box.setBoxName("BOX-" + (i.get()));
+                                box.setBoxName("iBOX-" + (i.get()));
                             }
                             box.setBarKey(bar.getBarKey() + SPLIT_KEY_BUS + box.getBoxName());
                             AisleBox aisleBox = aisleBoxMapper.selectById(box.getId());
