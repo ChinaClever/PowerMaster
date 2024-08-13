@@ -805,6 +805,7 @@ const handleFormPlugin = (data) => {
   // }
   machineColInfo.barA = boxA
   machineColInfo.barB = boxB
+  machineColInfo.pduBar = 1
   console.log('machineColInfo', machineColInfo)
   toCreatConnect() // 因为添加插接箱需要添加瞄点 所以要创建
 }

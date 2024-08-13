@@ -197,7 +197,6 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue';
-import { object } from 'vue-types';
 import MachineForm from './component/MachineForm.vue'
 import LiquidBall from './component/LiquidBall.vue'
 import { CabinetApi } from '@/api/cabinet/info'
@@ -489,6 +488,7 @@ const handleDelete = async (key: string) => {
     message.success('删除成功')
     // 刷新列表
     await getNavList()
+    getTableData(true)
   } catch (error) {
     console.log(error)
   }
