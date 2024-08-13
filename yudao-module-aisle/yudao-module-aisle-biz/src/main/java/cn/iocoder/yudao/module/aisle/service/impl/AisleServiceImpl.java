@@ -20,7 +20,6 @@ import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
-import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
@@ -64,7 +63,7 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Function;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.*;
@@ -308,12 +307,13 @@ public class AisleServiceImpl implements AisleService {
 
                     List<AisleBoxDTO> boxList = barVo.getBoxList();
                     if (!CollectionUtils.isEmpty(boxList)){
+                        AtomicInteger i = new AtomicInteger(1);
                         boxList.forEach(boxDTO ->{
                             AisleBox box = BeanUtils.toBean(boxDTO,AisleBox.class);
                             box.setAisleId(aisleId);
                             box.setAisleBarId(bar.getId());
                             if (StringUtils.isEmpty(box.getBoxName())){
-                                box.setBoxName("BOX-" + (boxDTO.getBoxIndex() + 1));
+                                box.setBoxName("BOX-" + (i.get()));
                             }
                             box.setBarKey(bar.getBarKey() + SPLIT_KEY_BUS + box.getBoxName());
                             AisleBox aisleBox = aisleBoxMapper.selectById(box.getId());
@@ -323,6 +323,7 @@ public class AisleServiceImpl implements AisleService {
                             }else {
                                 aisleBoxMapper.insert(box);
                             }
+                            i.getAndIncrement();
                         });
                     }
 
