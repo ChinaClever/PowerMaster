@@ -487,6 +487,7 @@ const handleDelete = async (key: string) => {
     message.success('删除成功')
     // 刷新列表
     await getNavList()
+    getTableData(true)
   } catch (error) {
     console.log(error)
   }
