@@ -142,7 +142,7 @@ export default {
   }
 }
 </script>
-<style>
+<style lang="scss" scoped>
 .verifybox {
   position: relative;
   top: 50%;

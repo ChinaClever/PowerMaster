@@ -651,6 +651,7 @@ const getRoomInfo = async() => {
       }
     })
     res.cabinetList.forEach(item => {
+      if (item.xCoordinate > 0 && item.yCoordinate > 0)
       data[item.yCoordinate - 1][getTableColCharCode(item.xCoordinate - 1)].splice(0, 1, {...item, name: item.cabinetName, type: 2})
     })
     console.log('data', data)
@@ -667,6 +668,7 @@ const getRoomStatus = async(res) => {
   console.log('getRoomStatus', res)
   if (res.cabinetList && res.cabinetList.length) {
     res.cabinetList.forEach(cab => {
+      if (cab.yCoordinate > 0 && cab.xCoordinate > 0)
       tableData.value[cab.yCoordinate - 1][formParam.value[cab.xCoordinate - 1]][0] = {
         ...cab,
         ...tableData.value[cab.yCoordinate - 1][formParam.value[cab.xCoordinate - 1]][0],
