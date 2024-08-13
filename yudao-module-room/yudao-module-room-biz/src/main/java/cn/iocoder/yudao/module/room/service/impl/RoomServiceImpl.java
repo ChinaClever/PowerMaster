@@ -940,12 +940,12 @@ public class RoomServiceImpl implements RoomService {
                     // 设置聚合查询
                     AggregationBuilder agg = aggregationBuilder
                             .subAggregation(AggregationBuilders.avg(TEM_AVG_VALUE).field(TEM))
-                            .subAggregation(AggregationBuilders.avg(TEM_MAX_VALUE).field(TEM))
-                            .subAggregation(AggregationBuilders.avg(TEM_MIN_VALUE).field(TEM))
+                            .subAggregation(AggregationBuilders.max(TEM_MAX_VALUE).field(TEM))
+                            .subAggregation(AggregationBuilders.min(TEM_MIN_VALUE).field(TEM))
                             //统计平均湿度
                             .subAggregation(AggregationBuilders.avg(HUM_AVG_VALUE).field(HUM))
-                            .subAggregation(AggregationBuilders.avg(HUM_MAX_VALUE).field(HUM))
-                            .subAggregation(AggregationBuilders.avg(HUM_MIN_VALUE).field(HUM));
+                            .subAggregation(AggregationBuilders.max(HUM_MAX_VALUE).field(HUM))
+                            .subAggregation(AggregationBuilders.min(HUM_MIN_VALUE).field(HUM));
 
                     builder.aggregation(agg);
 

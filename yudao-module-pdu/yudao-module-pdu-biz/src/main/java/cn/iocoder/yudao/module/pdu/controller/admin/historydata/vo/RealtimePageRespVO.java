@@ -10,10 +10,10 @@ import lombok.Data;
 @ExcelIgnoreUnannotated
 public class RealtimePageRespVO {
 
-    @ExcelProperty("位置")
+    @ExcelProperty("网络地址")
     private String location;
 
-    @ExcelProperty("网络地址")
+    @ExcelProperty("位置")
     private String address;
 
     @ExcelProperty("相")

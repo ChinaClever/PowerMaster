@@ -10,16 +10,16 @@ import lombok.Data;
 @ExcelIgnoreUnannotated
 public class BillPageRespVO {
 
-    @ExcelProperty("母线名称")
-    private String bus_name;
-
-    @ExcelProperty("位置")
+    @ExcelProperty("所在位置")
     private String location;
 
-    @ExcelProperty("网络地址")
-    private String ip_addr;
+    @ExcelProperty("设备地址")
+    private String dev_key;
 
-    @ExcelProperty("日期")
+    @ExcelProperty("开始日期")
+    private String start_time;
+
+    @ExcelProperty("结束日期")
     private String end_time;
 
     @ExcelProperty("耗电量(kWh)")

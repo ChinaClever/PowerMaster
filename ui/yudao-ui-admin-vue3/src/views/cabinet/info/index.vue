@@ -197,11 +197,9 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue';
-import { object } from 'vue-types';
 import MachineForm from './component/MachineForm.vue'
 import LiquidBall from './component/LiquidBall.vue'
 import { CabinetApi } from '@/api/cabinet/info'
-import { fa } from 'node_modules/element-plus/es/locale';
 // import MyButton from '@/components/MyButton/MyButton.vue';
 
 const { push } = useRouter() // 路由跳转
@@ -209,7 +207,7 @@ const message = useMessage() // 消息弹窗
 const machineForm = ref() // 机柜表单组件
 const colNode = ref() // 展示列组件
 const loading = ref(false)
-const isCloseNav = ref(false) // 左侧导航是否收起
+// const isCloseNav = ref(false) // 左侧导航是否收起
 const isFirst = ref(true) // 是否第一次调用getTableData函数
 const switchValue = ref(0) // 0:阵列 1：表格
 const listPage = ref<any>([]) // 表格数据
@@ -489,13 +487,14 @@ const handleDelete = async (key: string) => {
     message.success('删除成功')
     // 刷新列表
     await getNavList()
+    getTableData(true)
   } catch (error) {
     console.log(error)
   }
 }
 
 // 展示列选择处理事件
-const cascaderChange = (row) => {
+const cascaderChange = (_row) => {
   const checkedNodes = colNode.value.getCheckedNodes(true)
   queryParams.showCol = checkedNodes.map(item => item.value)
 }

@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.system.dal.mysql.upgrade;
 
+import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import cn.iocoder.yudao.module.system.dal.dataobject.upgrade.SysUpgradeRecord;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
@@ -11,5 +12,5 @@ import org.apache.ibatis.annotations.Mapper;
  * @date 2024/6/12 10:57
  */
 @Mapper
-public interface SysUpgradeRecordMapper extends BaseMapper<SysUpgradeRecord> {
+public interface SysUpgradeRecordMapper extends BaseMapperX<SysUpgradeRecord> {
 }

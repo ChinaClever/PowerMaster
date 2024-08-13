@@ -453,7 +453,7 @@ const open = async (type: string, data, roomList) => {
     item.pathPdu = ''
   })
   console.log('data', data)
-  if (data && data.sensorList.length > 0) {
+  if (data && data.sensorList && data.sensorList.length) {
     data.sensorList.forEach(item => {
       if (item.channel == 1) {
         const index = sensorListLeft.findIndex(sensor => item.position ? (item.position == sensor.position) : (sensor.type == item.sensorType))

@@ -10,14 +10,11 @@ import lombok.Data;
 @ExcelIgnoreUnannotated
 public class RealtimeEQPageRespVO {
 
-    @ExcelProperty("母线名称")
-    private String bus_name;
-
-    @ExcelProperty("位置")
+    @ExcelProperty("所在位置")
     private String location;
 
-    @ExcelProperty("网络地址")
-    private String ip_addr;
+    @ExcelProperty("设备地址")
+    private String dev_key;
 
     @ExcelProperty("记录日期")
     private String create_time;

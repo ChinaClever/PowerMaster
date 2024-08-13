@@ -18,6 +18,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
+import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.mapper.AisleIndexMapper;
 import cn.iocoder.yudao.framework.common.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.BarSeries;
@@ -30,6 +31,7 @@ import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDULineRes;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.curbalancecolor.PDUCurbalanceColorDO;
 import cn.iocoder.yudao.module.pdu.dal.mysql.curbalancecolor.PDUCurbalanceColorMapper;
 import com.alibaba.fastjson2.JSON;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
 
 import org.elasticsearch.search.aggregations.metrics.*;
@@ -151,10 +153,15 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 return new PageResult<PDUDeviceDO>(result,0L);
             }
             pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
-                    .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()).inIfPresent(PduIndex::getDevKey,devKeyList).inIfPresent(PduIndex::getRunStatus,pageReqVO.getStatus()));
+                    .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey())
+                    .inIfPresent(PduIndex::getDevKey,devKeyList)
+                    .inIfPresent(PduIndex::getRunStatus,pageReqVO.getStatus())
+                    .eq(PduIndex::getIsDeleted, DelEnums.NO_DEL.getStatus()));
         }else{
             pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
-                    .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey()).inIfPresent(PduIndex::getRunStatus,pageReqVO.getStatus()));
+                    .likeIfPresent(PduIndex::getDevKey,pageReqVO.getDevKey())
+                    .inIfPresent(PduIndex::getRunStatus,pageReqVO.getStatus())
+                    .eq(PduIndex::getIsDeleted, DelEnums.NO_DEL.getStatus()));
         }
 
         List<PduIndex> pduIndices = pduIndexPageResult.getList();
@@ -663,6 +670,20 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             log.error("获取数据失败",e);
         }
         return result;
+    }
+
+    @Override
+    public int deletePDU(String devKey) throws Exception {
+        PduIndex index = pDUDeviceMapper.selectOne("dev_key", devKey);
+        if (Objects.isNull(index)) {
+            return -1;
+        }
+        //逻辑删除
+        pDUDeviceMapper.update(new LambdaUpdateWrapper<PduIndex>()
+                .eq(PduIndex::getDevKey, devKey)
+                .set(PduIndex::getIsDeleted, DelEnums.DELETE.getStatus() )
+        );
+        return Math.toIntExact(index.getId());
     }
 
     @Override

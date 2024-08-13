@@ -51,21 +51,22 @@ public class RackHistoryDataServiceImpl implements RackHistoryDataService {
     public List<Object> getRackNameAndLocationsByCabinetIds(List<Map<String, Object>> mapList) {
         List<Object> resultList = new ArrayList<>();
             for (Map<String, Object> map : mapList){
+
                 try{
                     Object cabinetId = map.get("cabinet_id");
                     if (cabinetId instanceof Integer) {
-                        String localtion;
+                        String location;
                         IndexDO indexDO = cabIndexMapper.selectById((Serializable) cabinetId);
                         String roomName = roomIndexMapper.selectById(indexDO.getRoomId()).getName();
                         if(indexDO.getAisleId() != 0){
                             String aisleName = aisleIndexMapper.selectById(indexDO.getAisleId()).getName();
-                            localtion = roomName + "-" + aisleName + "-" + indexDO.getName();
+                            location = roomName + "-" + aisleName + "-" + indexDO.getName();
                         }else {
-                            localtion = roomName + "-"  + indexDO.getName() ;
+                            location = roomName + "-"  + indexDO.getName() ;
                         }
                         Object rackId = map.get("rack_id");
                         String rackName = rackIndexMapper.selectById((Serializable) rackId).getRackName();
-                        map.put("location", localtion);
+                        map.put("location", location);
                         map.put("rack_name", rackName);
                     }else{
                         map.put("location", null);
@@ -124,6 +125,7 @@ public class RackHistoryDataServiceImpl implements RackHistoryDataService {
         List<Map<String, Object>> mapList = new ArrayList<>();
         SearchHits hits = searchResponse.getHits();
         hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
+        System.out.println(mapList);
         // 匹配到的总记录数
         Long totalHits = hits.getTotalHits().value;
         // 返回的结果

@@ -550,7 +550,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
 
     @Override
     public PageResult<Object> getEnvDataPage(EnvDataPageReqVo pageReqVO) throws IOException {
-        PageResult<Object> pageResult = null;
+        PageResult<Object> pageResult;
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         int pageNo = pageReqVO.getPageNo();
@@ -616,8 +616,12 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             for (CabinetPdu cabinetPdu1 : cabinetPduList){
                 Integer ipA = getPduIdByAddr(cabinetPdu1.getPduIpA(), String.valueOf(cabinetPdu1.getCasIdA()));
                 Integer ipB = getPduIdByAddr(cabinetPdu1.getPduIpB(), String.valueOf(cabinetPdu1.getCasIdB()));
-                if (ipA != null) pduIds.add(String.valueOf(ipA));
-                if (ipB != null) pduIds.add(String.valueOf(ipB));
+                if (ipA != null) {
+                    pduIds.add(String.valueOf(ipA));
+                }
+                if (ipB != null) {
+                    pduIds.add(String.valueOf(ipB));
+                }
             }
             if (!pduIds.isEmpty()) {
                 searchSourceBuilder.query(QueryBuilders.termsQuery("pdu_id", pduIds));

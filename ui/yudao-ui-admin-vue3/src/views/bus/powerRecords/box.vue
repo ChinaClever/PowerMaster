@@ -183,7 +183,7 @@ const shouldShowDataExceedMessage = computed(() => {
 
 // 格式化电能列数据，保留1位小数
 function formatEle(_row: any, _column: any, cellValue: number): string {
-  return cellValue?.toFixed(1);
+  return Number(cellValue)?.toFixed(1);
 }
 
 // 禁选未来的日期
@@ -213,8 +213,16 @@ const handleCheck = async (node) => {
       arr.push(item.unique);
     }
   });
-  queryParams.devkeys = arr
-  handleQuery()
+  //没筛选到 不显示任何数据 参数传0 后端返回空
+  if(arr.length == 0 && node.length != 0){
+    arr.push(0)
+    ElMessage({
+      message: '暂无数据',
+      type: 'warning',
+    });
+  }
+    queryParams.devkeys = arr
+    handleQuery()
 }
 
 

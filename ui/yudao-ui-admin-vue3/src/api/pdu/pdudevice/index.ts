@@ -31,8 +31,8 @@ export const PDUDeviceApi = {
   },
 
   // 删除PDU设备
-  deletePDUDevice: async (id: number) => {
-    return await request.delete({ url: `/pdu/PDU-device/delete?id=` + id })
+  deletePDUDevice: async (params: any) => {
+    return await request.get({ url: `/pdu/PDU-device/delete`, params })
   },
 
   // 导出PDU设备 Excel

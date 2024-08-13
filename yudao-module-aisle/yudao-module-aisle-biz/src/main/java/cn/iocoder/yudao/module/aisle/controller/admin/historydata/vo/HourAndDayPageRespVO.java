@@ -20,43 +20,43 @@ public class HourAndDayPageRespVO {
     private Double active_total_avg_value;
 
     @ExcelProperty("总最大有功功率时间")
-    private Double active_total_max_time;
+    private String active_total_max_time;
 
     @ExcelProperty("总最大有功功率(kW)")
     private Double active_total_max_value;
 
     @ExcelProperty("总最小有功功率时间")
-    private Double active_total_min_time;
+    private String active_total_min_time;
 
     @ExcelProperty("总最小有功功率(kW)")
     private Double active_total_min_value;
 
     @ExcelProperty("总平均视在功率(kVA)")
-    private String apparent_total_avg_value;
+    private Double apparent_total_avg_value;
 
     @ExcelProperty("总最大视在功率时间")
     private String apparent_total_max_time;
 
     @ExcelProperty("总最大视在功率(kVA)")
-    private String apparent_total_max_value;
+    private Double apparent_total_max_value;
 
     @ExcelProperty("总最小视在功率时间")
     private String apparent_total_min_time;
 
     @ExcelProperty("总最小视在功率(kVA)")
-    private String apparent_total_min_value;
+    private Double apparent_total_min_value;
 
     @ExcelProperty("总平均无功功率(kW)")
     private Double reactive_total_avg_value;
 
     @ExcelProperty("总最大无功功率时间")
-    private Double reactive_total_max_time;
+    private String reactive_total_max_time;
 
     @ExcelProperty("总最大无功功率(kW)")
     private Double reactive_total_max_value;
 
     @ExcelProperty("总最小无功功率时间")
-    private Double reactive_total_min_time;
+    private String reactive_total_min_time;
 
     @ExcelProperty("总最小无功功率(kW)")
     private Double reactive_total_min_value;
@@ -69,13 +69,13 @@ public class HourAndDayPageRespVO {
     private Double active_a_avg_value;
 
     @ExcelProperty("A路最大有功功率时间")
-    private Double active_a_max_time;
+    private String active_a_max_time;
 
     @ExcelProperty("A路最大有功功率(kW)")
     private Double active_a_max_value;
 
     @ExcelProperty("A路最小有功功率时间")
-    private Double active_a_min_time;
+    private String active_a_min_time;
 
     @ExcelProperty("A路最小有功功率(kW)")
     private Double active_a_min_value;
@@ -84,13 +84,13 @@ public class HourAndDayPageRespVO {
     private Double apparent_a_avg_value;
 
     @ExcelProperty("A路最大视在功率时间")
-    private Double apparent_a_max_time;
+    private String apparent_a_max_time;
 
     @ExcelProperty("A路最大视在功率(kVA)")
     private Double apparent_a_max_value;
 
     @ExcelProperty("A路最小视在功率时间")
-    private Double apparent_a_min_time;
+    private String apparent_a_min_time;
 
     @ExcelProperty("A路最小视在功率(kVA)")
     private Double apparent_a_min_value;
@@ -106,13 +106,13 @@ public class HourAndDayPageRespVO {
     private Double active_b_avg_value;
 
     @ExcelProperty("B路最大有功功率时间")
-    private Double active_b_max_time;
+    private String active_b_max_time;
 
     @ExcelProperty("B路最大有功功率(kW)")
     private Double active_b_max_value;
 
     @ExcelProperty("B路最小有功功率时间")
-    private Double active_b_min_time;
+    private String active_b_min_time;
 
     @ExcelProperty("B路最小有功功率(kW)")
     private Double active_b_min_value;
@@ -121,13 +121,13 @@ public class HourAndDayPageRespVO {
     private Double apparent_b_avg_value;
 
     @ExcelProperty("B路最大视在功率时间")
-    private Double apparent_b_max_time;
+    private String apparent_b_max_time;
 
     @ExcelProperty("B路最大视在功率(kVA)")
     private Double apparent_b_max_value;
 
     @ExcelProperty("B路最小视在功率时间")
-    private Double apparent_b_min_time;
+    private String apparent_b_min_time;
 
     @ExcelProperty("B路最小视在功率(kVA)")
     private Double apparent_b_min_value;

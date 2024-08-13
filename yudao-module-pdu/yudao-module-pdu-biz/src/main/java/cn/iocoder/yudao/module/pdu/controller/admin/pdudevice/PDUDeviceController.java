@@ -1,9 +1,11 @@
 package cn.iocoder.yudao.module.pdu.controller.admin.pdudevice;
 
+import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDevicePageReqVO;
 
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDULineRes;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.pdudevice.PDUDeviceDO;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -21,6 +23,7 @@ import java.util.*;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 
+import static cn.iocoder.yudao.framework.common.pojo.CommonResult.error;
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -107,6 +110,16 @@ public class PDUDeviceController {
     @Operation(summary = "获得PDU设备Ip列表")
     public List<String> getIpList() {
         return pDUDeviceService.getIpList();
+    }
+
+    @GetMapping("/delete")
+    @Operation(summary = "删除PDU设备")
+    public CommonResult<Integer> deletePDU(@Param("devKey") String devKey) throws Exception  {
+        int pduId = pDUDeviceService.deletePDU(devKey);
+        if (pduId == -1) {
+            return error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "删除失败");
+        }
+        return success(pduId);
     }
 
 

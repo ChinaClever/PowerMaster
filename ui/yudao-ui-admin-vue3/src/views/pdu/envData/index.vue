@@ -129,7 +129,7 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
-      <div class="realTotal" v-if="list.length != 0">共 {{ realTotel }} 条</div>
+      <div class="realTotal" v-if="list?.length != 0">共 {{ realTotel }} 条</div>
     </template>
   </CommonMenu>
 </template>
@@ -409,7 +409,7 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
 
 // 格式化温湿度列数据，保留一位小数
 function formatData(_row: any, _column: any, cellValue: number): string {
-  return cellValue.toFixed(1);
+  return Number(cellValue).toFixed(1);
 }
 
 // 导航栏选择后触发
@@ -420,8 +420,17 @@ const handleCheck = async (node) => {
       arr.push(item.id);
     }
   });
-  queryParams.cabinetIds = arr
-  handleQuery()
+   //没筛选到 不显示任何数据 参数传0 后端返回空
+   if(arr.length == 0 && node.length != 0){
+      arr.push(0)
+      ElMessage({
+        message: '暂无数据',
+        type: 'warning',
+      });
+    }
+    queryParams.cabinetIds = arr
+    handleQuery()
+
 }
 
 // 接口获取机房导航列表

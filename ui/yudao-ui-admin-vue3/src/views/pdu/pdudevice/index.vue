@@ -153,7 +153,7 @@
             <el-button
               link
               type="danger"
-              @click="handleDelete(scope.row.id)"
+              @click="handleDelete(scope.row.devKey)"
               v-if="scope.row.status == 5"
             >
               删除
@@ -528,12 +528,14 @@ const openForm = (type: string, id?: number) => {
 }
 
 /** 删除按钮操作 */
-const handleDelete = async (id: number) => {
+const handleDelete = async (devKey: string) => {
   try {
     // 删除的二次确认
     await message.delConfirm()
     // 发起删除
-    await PDUDeviceApi.deletePDUDevice(id)
+    await PDUDeviceApi.deletePDUDevice({
+      devKey: devKey
+    })
     message.success(t('common.delSuccess'))
     // 刷新列表
     // await getList()
