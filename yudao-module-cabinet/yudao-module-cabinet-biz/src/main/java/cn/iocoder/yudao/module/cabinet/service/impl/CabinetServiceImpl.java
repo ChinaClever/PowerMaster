@@ -438,9 +438,18 @@ public class CabinetServiceImpl implements CabinetService {
             }
 
             if (vo.getPduBox() == PduBoxEnums.PDU.getValue()){
+
+                if (StringUtils.isEmpty(vo.getPduIpA()) && StringUtils.isEmpty(vo.getPduIpB())){
+
+                    //删除
+                    cabinetPduMapper.delete(new LambdaQueryWrapper<CabinetPdu>()
+                            .eq(CabinetPdu::getCabinetId, vo.getId()));
+                }
+
                 //pdu关联表
                 CabinetPdu pdu = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>()
                         .eq(CabinetPdu::getCabinetId, vo.getId()));
+
 
                 if (Objects.nonNull(pdu)) {
                     //修改
@@ -454,9 +463,19 @@ public class CabinetServiceImpl implements CabinetService {
                     }
                 }
             }else if (vo.getPduBox() == PduBoxEnums.BUS.getValue()){
+
+                if (StringUtils.isEmpty(vo.getBusIpA()) && StringUtils.isEmpty(vo.getBusIpB())){
+                    //删除
+                    cabinetBusMapper.delete(new LambdaQueryWrapper<CabinetBus>()
+                            .eq(CabinetBus::getCabinetId, vo.getId()));
+                }
+
                 //母线关联表
                 CabinetBus bus = cabinetBusMapper.selectOne(new LambdaQueryWrapper<CabinetBus>()
                         .eq(CabinetBus::getCabinetId, vo.getId()));
+
+
+
                 if (Objects.nonNull(bus)){
                     //修改
                     cabinetBusMapper.updateById(convertBus(vo,bus));
