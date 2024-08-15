@@ -757,7 +757,7 @@ public class CabinetServiceImpl implements CabinetService {
     private CabinetBus convertBus(CabinetVo vo, CabinetBus bus) {
         CabinetBus cabinetBus = new CabinetBus();
         cabinetBus.setCabinetId(vo.getId());
-        if (StringUtils.isNotEmpty(vo.getBusIpA())){
+        if (StringUtils.isNotEmpty(vo.getBusIpA()) &&  StringUtils.isNotEmpty(vo.getBusNameA()) && StringUtils.isNotEmpty(vo.getBoxNameA())){
             cabinetBus.setDevKeyA(vo.getBusIpA()
                     .concat(SPLIT_KEY_BUS)
                     .concat(vo.getBusNameA())
@@ -768,7 +768,7 @@ public class CabinetServiceImpl implements CabinetService {
         }
 
         cabinetBus.setOutletIdA(vo.getBoxOutletIdA());
-        if (StringUtils.isNotEmpty(vo.getBusIpB())){
+        if (StringUtils.isNotEmpty(vo.getBusIpB()) && StringUtils.isNotEmpty(vo.getBusNameB()) && StringUtils.isNotEmpty(vo.getBoxNameB())){
             cabinetBus.setDevKeyB(vo.getBusIpB()
                     .concat(SPLIT_KEY_BUS)
                     .concat(vo.getBusNameB())

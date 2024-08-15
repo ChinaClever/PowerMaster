@@ -97,68 +97,6 @@ const queryParams = reactive({
 })
 const roomList = ref<any>([]) // 机房列表
 const machineList = ref<any>([]) // 机柜列列表
-const boxs = [
-  {
-    t1: 'A',
-    t2: 'B',
-  },
-  {
-    t1: 'A',
-    t2: 'B',
-  },
-  // {
-  //   t1: 'A',
-  //   t2: 'B',
-  // },
-  // {
-  //   t1: 'A',
-  //   t2: 'B',
-  // },
-  // {
-  //   t1: 'A',
-  //   t2: 'B',
-  // },
-  // {
-  //   t1: 'A',
-  //   t2: 'B',
-  // },
-  // {
-  //   t1: 'A',
-  //   t2: 'B',
-  // },
-  // {
-  //   t1: 'A',
-  //   t2: 'B',
-  // },
-  // {
-  //   t1: 'A',
-  //   t2: 'B',
-  // },
-  {
-    t1: 'A',
-    t2: 'B',
-  },
-  {
-    t1: 'A',
-    t2: 'B',
-  },
-  {
-    t1: 'A',
-    t2: 'B',
-  },
-  {
-    t1: 'A',
-    t2: 'B',
-  },
-  {
-    t1: 'A',
-    t2: 'B',
-  },
-  {
-    t1: 'A',
-    t2: 'B',
-  },
-]
 
 const btns = [
   {
@@ -263,8 +201,8 @@ const getBusData = async() => {
   if (res.length > 0) {
     startingBoxA.value = res[0].busData ? res[0].busData.bus_data.line_item_list : null
     startingBoxB.value = res[1].busData ? res[1].busData.bus_data.line_item_list : null
-    pluginBoxA.value = res[0].boxDataList
-    pluginBoxB.value = res[1].boxDataList
+    pluginBoxA.value = res[0].boxDataList.filter(item=>item.type==0)
+    pluginBoxB.value = res[1].boxDataList.filter(item=>item.type==0)
     // console.log('btns[chosenBtn.value]', btns[chosenBtn.value], startingBoxA.value)
     // console.log('startingBoxA.value', startingBoxA.value, startingBoxA.value[(btns[chosenBtn.value].paramBox)], pluginBoxA.value[0])
   } else {

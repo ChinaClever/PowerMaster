@@ -413,9 +413,10 @@ public class IndexServiceImpl implements IndexService {
         PageResult<IndexDO> indexDOPageResult = cabIndexMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<IndexDO>()
                 .inIfPresent(IndexDO::getId, pageReqVO.getCabinetIds()).eq(IndexDO::getPduBox,0));
         List<IndexDO> list = indexDOPageResult.getList();
+        System.out.println(list);
         List<CabinetEnvAndHumRes> result = new ArrayList<>();
         if (CollectionUtil.isEmpty(list)){
-            return new PageResult<CabinetEnvAndHumRes>(result,0L);
+            return new PageResult<>(result, 0L);
         }
         List<TemColorDO> temColorList = temColorService.getTemColorAll();
 
@@ -423,8 +424,9 @@ public class IndexServiceImpl implements IndexService {
 
         List<RoomIndex> roomIndices = roomIndexMapper.selectBatchIds(list.stream().map(IndexDO::getRoomId).collect(Collectors.toList()));
         Map<Integer, String> roomMap = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getName));
-        Map<Integer, String> aisleMap = aisleIndexMapper.selectBatchIds(list.stream().filter(dto -> dto.getAisleId() != 0)
-                .map(IndexDO::getAisleId).collect(Collectors.toList())).stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getName));
+        Map<Integer, String>  aisleMap = aisleIndexMapper.selectBatchIds(list.stream()
+//                .filter(dto -> dto.getAisleId() != 0)
+                    .map(IndexDO::getAisleId).collect(Collectors.toList())).stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getName));
 
         List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().in(CabinetPdu::getCabinetId, ids));
 

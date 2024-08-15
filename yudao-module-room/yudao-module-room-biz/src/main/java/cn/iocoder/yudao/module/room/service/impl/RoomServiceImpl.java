@@ -1140,14 +1140,14 @@ public class RoomServiceImpl implements RoomService {
             if (StringUtils.isNotEmpty(aisleSaveVo.getDirection())
                     && "x".equals(aisleSaveVo.getDirection())){
                 //横向
-                if (aisleSaveVo.getXCoordinate() + aisleSaveVo.getLength()>roomIndex.getXLength()){
+                if (aisleSaveVo.getXCoordinate() + aisleSaveVo.getLength()>roomIndex.getXLength() + 1){
                     throw new RuntimeException("柜列长度超出");
                 }
             }
             if ( StringUtils.isNotEmpty(aisleSaveVo.getDirection())
                     && "y".equals(aisleSaveVo.getDirection())){
                 //纵向
-                if (aisleSaveVo.getYCoordinate() + aisleSaveVo.getLength()>roomIndex.getYLength()){
+                if (aisleSaveVo.getYCoordinate() + aisleSaveVo.getLength()>roomIndex.getYLength() + 1){
                     throw new RuntimeException("柜列长度超出");
                 }
             }
