@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="PDU报表">
+  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="谐波监测详情">
     <template #NavInfo>
       <div >
         <div class="header">
