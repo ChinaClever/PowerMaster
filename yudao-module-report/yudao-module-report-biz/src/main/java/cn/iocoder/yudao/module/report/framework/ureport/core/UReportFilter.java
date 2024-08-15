@@ -4,7 +4,6 @@ import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.iocoder.yudao.framework.common.util.servlet.ServletUtils;
 import cn.iocoder.yudao.framework.security.core.LoginUser;
 import cn.iocoder.yudao.framework.security.core.util.SecurityFrameworkUtils;
-import cn.iocoder.yudao.framework.tenant.core.context.TenantContextHolder;
 import cn.iocoder.yudao.framework.web.core.util.WebFrameworkUtils;
 import cn.iocoder.yudao.module.system.api.oauth2.OAuth2TokenApi;
 import cn.iocoder.yudao.module.system.api.oauth2.dto.OAuth2AccessTokenCheckRespDTO;
@@ -50,7 +49,6 @@ public class UReportFilter extends OncePerRequestFilter {
 
             response.addHeader(TOKEN,token);
 
-            TenantContextHolder.setIgnore(true); // 忽略租户，保证可查询到 token 信息
             LoginUser user = null;
             try {
                 OAuth2AccessTokenCheckRespDTO accessToken = oauth2TokenApi.checkAccessToken(token);
@@ -62,8 +60,6 @@ public class UReportFilter extends OncePerRequestFilter {
 
                         // ② 参考 TenantContextWebFilter 实现（Tenant 的上下文清理，交给 TenantContextWebFilter 完成）
                         // 目的：基于 LoginUser 获得到的租户编号，设置到 Tenant 上下文，避免查询数据库时的报错
-                        TenantContextHolder.setIgnore(false);
-                        TenantContextHolder.setTenantId(user.getTenantId());
                     }
                 }
             } catch (ServiceException ignored) {

@@ -1339,10 +1339,30 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 .filter(cabinetPdu -> ipAddrSet.contains(cabinetPdu.getPduIpB()) && cascadeAddrSet.contains(cabinetPdu.getCasIdB()))
                 .collect(Collectors.groupingBy(cabinetPdu -> cabinetPdu.getPduIpB() + "-" + cabinetPdu.getCasIdB()));
 
+        List<Integer> cabinetIds = cabinetPdus.stream()
+                .map(CabinetPdu::getCabinetId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
-        List<CabinetIndex> cabinetIndices = cabinetIndexMapper.selectBatchIds(cabinetPdus.stream().map(CabinetPdu::getCabinetId).collect(Collectors.toList()));
+        if (cabinetIds.isEmpty()) {
+            // 如果列表为空，添加一个默认值（这里用 0，但请确保 0 不是数据库中的有效 ID）
+            cabinetIds.add(0);
+        }
+        List<CabinetIndex> cabinetIndices = cabinetIndexMapper.selectBatchIds(cabinetIds);
+//        List<CabinetIndex> cabinetIndices = cabinetIndexMapper.selectBatchIds(cabinetPdus.stream().map(CabinetPdu::getCabinetId).collect(Collectors.toList()));
+
+        List<Integer> roomIds = cabinetIndices.stream()
+                    .map(CabinetIndex::getRoomId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+        if (roomIds.isEmpty()) {
+            roomIds.add(0);
+        }
+
         Map<Integer, CabinetIndex> cabinetMap = cabinetIndices.stream().collect(Collectors.toMap(CabinetIndex::getId, Function.identity()));
-        List<RoomIndex> roomIndices = roomIndexMapper.selectBatchIds(cabinetIndices.stream().map(CabinetIndex::getRoomId).collect(Collectors.toList()));
+        List<RoomIndex> roomIndices = roomIndexMapper.selectBatchIds(roomIds);
+
         Map<Integer, String> roomMap = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getName));
         List<Integer> cabIds = cabinetIndices.stream().filter(dto -> dto.getAisleId() != 0).map(CabinetIndex::getAisleId).collect(Collectors.toList());
         Map<Integer, String> aisleMap;
