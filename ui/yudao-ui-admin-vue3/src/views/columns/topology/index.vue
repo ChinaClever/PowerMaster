@@ -1584,7 +1584,7 @@ onBeforeUnmount(() => {
 }
 .mask {
   width: 100%;
-  height: 170px;
+  height: 290px;
   position: absolute;
   top: 0;
   z-index: 99;
