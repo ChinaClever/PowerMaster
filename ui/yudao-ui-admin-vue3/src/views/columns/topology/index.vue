@@ -189,7 +189,7 @@
               </div>
             </div>
             <div class="menu" v-if="operateMenu.show" :style="{left: `${operateMenu.left}`, top: `${operateMenu.top}`}">
-              <div class="menu_item" v-if="operateMenu.add" @click="handleOperate('add')">新增</div>
+              <div class="menu_item" v-if="operateMenu.add && editEnable" @click="handleOperate('add')">新增</div>
               <div class="menu_item" v-if="!operateMenu.add" @click="handleJump(false)">查看</div>
               <div class="menu_item" v-if="!operateMenu.add" @click="handleOperate('edit')">编辑</div>
               <div class="menu_item" v-if="!operateMenu.add" @click="handleOperate('delete')">删除</div>
@@ -723,7 +723,7 @@ const handleFormPlugin = (data) => {
     for(let i = 0; i < (data.cjxAmount + data.ljqAmount); i++) {
       const type = i % 2
       arr.push({
-        boxIndex: count,
+        // boxIndex: count,
         type,
       })
       if (type) count++
@@ -741,7 +741,7 @@ const handleFormPlugin = (data) => {
     let odd = big % (small + 1)
     for(let i = 0; i < big; i++) {
       arr.push({
-        boxIndex: i,
+        // boxIndex: i,
         type,
       })
     }
@@ -751,12 +751,15 @@ const handleFormPlugin = (data) => {
         odd--
       }
       arr.splice((+diff) * (i+1) + count, 0, {
-        boxIndex: i,
+        // boxIndex: i,
         type: type ? 0 : 1,
       })
       count++
     }
   }
+  arr.forEach((item, index) => {
+    arr[index].boxIndex = index 
+  })
   const boxA = {
     busName: data.nameA,
     devIp: data.ipA,
@@ -1432,6 +1435,7 @@ const saveMachineBus = async() => {
   })
   message.success('保存成功！')
   editEnable.value = false
+  getMachineColInfo()
   console.log('saveMachineBus', res)
 }
 // 处理机柜列表
