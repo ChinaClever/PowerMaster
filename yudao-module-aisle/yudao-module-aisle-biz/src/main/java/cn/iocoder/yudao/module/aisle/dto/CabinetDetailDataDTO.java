@@ -106,5 +106,5 @@ public class CabinetDetailDataDTO {
     /**
      * 温度
      */
-    private JSONObject temData;
+    private Double temData;
 }

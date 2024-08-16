@@ -517,6 +517,8 @@ public class CabinetServiceImpl implements CabinetService {
                 //删除pdu关联关系
                 cabinetPduMapper.delete(new LambdaQueryWrapper<CabinetPdu>()
                         .eq(CabinetPdu::getCabinetId, id));
+                cabinetBusMapper.delete(new LambdaQueryWrapper<CabinetBus>()
+                        .eq(CabinetBus::getCabinetId, id));
                 //删除配置信息
                 cabinetCfgMapper.delete(new LambdaQueryWrapper<CabinetCfg>()
                         .eq(CabinetCfg::getCabinetId, id));
@@ -528,6 +530,11 @@ public class CabinetServiceImpl implements CabinetService {
                 cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
                         .eq(CabinetIndex::getId, id)
                         .set(CabinetIndex::getIsDeleted, DelEnums.DELETE.getStatus()));
+                //删除pdu关联关系
+                cabinetPduMapper.delete(new LambdaQueryWrapper<CabinetPdu>()
+                        .eq(CabinetPdu::getCabinetId, id));
+                cabinetBusMapper.delete(new LambdaQueryWrapper<CabinetBus>()
+                        .eq(CabinetBus::getCabinetId, id));
             }
 
             //删除key
