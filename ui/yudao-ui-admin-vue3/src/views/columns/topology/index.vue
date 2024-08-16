@@ -90,7 +90,7 @@
           <div v-if="machineColInfo.pduBar && machineColInfo.barB" class="busListContainer" style="margin-bottom: 80px">
             <div class="bridge"></div>
             <div class="busList2">
-              <template v-for="(bus, index) in machineColInfo.barA.boxList" :key="index">
+              <template v-for="(bus, index) in machineColInfo.barB.boxList" :key="index">
                 <!-- 插接箱 -->
                 <div v-if="bus.type == 0" class="plugin-box">
                   <PluginBox :chosenBtn="chosenBtn" :pluginData="bus" :btns="btns" />
