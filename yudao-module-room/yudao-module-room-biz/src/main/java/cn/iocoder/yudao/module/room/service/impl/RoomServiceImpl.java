@@ -108,6 +108,8 @@ public class RoomServiceImpl implements RoomService {
     @Autowired
     private CabinetPduMapper cabinetPduMapper;
     @Autowired
+    private CabinetBusMapper cabinetBusMapper;
+    @Autowired
     private AisleBarMapper aisleBarMapper;
     @Autowired
     private AisleBoxMapper aisleBoxMapper;
@@ -250,6 +252,20 @@ public class RoomServiceImpl implements RoomService {
             //删除机房
             RoomIndex roomIndex = roomIndexMapper.selectById(roomId);
             if (Objects.nonNull(roomIndex)){
+                List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
+                        .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
+                        .eq(CabinetIndex::getRoomId,roomIndex.getId()));
+                if (!CollectionUtils.isEmpty(cabinetIndexList)){
+                    throw new RuntimeException("存在未删除机柜，不可删除");
+                }
+
+                List<AisleIndex> aisleIndices = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>()
+                        .eq(AisleIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
+                        .eq(AisleIndex::getRoomId,roomIndex.getId()));
+                if (!CollectionUtils.isEmpty(aisleIndices)){
+                    throw new RuntimeException("存在未删除柜列，不可删除");
+                }
+
                 //逻辑删除
                 if (roomIndex.getIsDelete() == (DelEnums.NO_DEL.getStatus())){
                     roomIndexMapper.update(new LambdaUpdateWrapper<RoomIndex>()
@@ -581,7 +597,7 @@ public class RoomServiceImpl implements RoomService {
                             double[] black = temData.getObject("black",double[].class);
                             double maxF = Arrays.stream(front).max().getAsDouble();
                             double maxB = Arrays.stream(black).max().getAsDouble();
-                            cabinetDTO.setTem(maxB > maxF ? maxB : maxF);
+                            cabinetDTO.setTem(Math.max(maxB, maxF));
                         }
                         cabinetDTOList.add(cabinetDTO);
                     }
@@ -680,7 +696,7 @@ public class RoomServiceImpl implements RoomService {
                                         double[] black = temData.getObject("black", double[].class);
                                         double maxF = Arrays.stream(front).max().getAsDouble();
                                         double maxB = Arrays.stream(black).max().getAsDouble();
-                                        cabinetDTO.setTem(maxB > maxF ? maxB : maxF);
+                                        cabinetDTO.setTem(Math.max(maxB, maxF));
                                     }
                                     cabinetDTOList.add(cabinetDTO);
                                 }

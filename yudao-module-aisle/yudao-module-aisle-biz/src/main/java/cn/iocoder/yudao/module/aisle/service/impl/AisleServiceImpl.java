@@ -410,6 +410,12 @@ public class AisleServiceImpl implements AisleService {
             //删除柜列
             AisleIndex aisleIndex = aisleIndexMapper.selectById(aisleId);
             if (Objects.nonNull(aisleIndex)){
+                List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
+                        .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
+                        .eq(CabinetIndex::getAisleId,aisleIndex.getId()));
+                if (!CollectionUtils.isEmpty(cabinetIndexList)){
+                    throw new RuntimeException("存在未删除机柜，不可删除");
+                }
                 //逻辑删除
                 if (aisleIndex.getIsDelete().equals(DelEnums.NO_DEL.getStatus())){
                     aisleIndexMapper.update(new LambdaUpdateWrapper<AisleIndex>()
@@ -898,7 +904,13 @@ public class AisleServiceImpl implements AisleService {
 
                     //温度
                     if (envData.containsKey(TEM_VALUE)){
-                        cabDto.setTemData(envData.getJSONObject(TEM_VALUE));
+                        JSONObject temData = envData.getJSONObject(TEM_VALUE);
+
+                        double[] front = temData.getObject("front",double[].class);
+                        double[] black = temData.getObject("black",double[].class);
+                        double maxF = Arrays.stream(front).max().getAsDouble();
+                        double maxB = Arrays.stream(black).max().getAsDouble();
+                        cabDto.setTemData(Math.max(maxB, maxF));
                     }
                 }
                cabList.add(cabDto);
