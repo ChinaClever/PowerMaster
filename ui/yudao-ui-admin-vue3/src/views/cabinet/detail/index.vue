@@ -20,28 +20,28 @@
             <el-table-column prop="name" label="" min-width="100" align="center" />
             <el-table-column prop="pow_apparent" label="视在功率(kVA)" min-width="100" align="center">
               <template #default="scope">
-                <div>{{scope.row.pow_apparent ? Number(scope.row.pow_apparent).toFixed(3) : ''}}</div>
+                <div>{{scope.row.pow_apparent ? Number(scope.row.pow_apparent).toFixed(3) : '0.000'}}</div>
               </template>
             </el-table-column>
             <el-table-column prop="pow_active" label="有功功率(kW)" min-width="100" align="center">
               <template #default="scope">
-                <div>{{scope.row.pow_active ? Number(scope.row.pow_active).toFixed(3) : ''}}</div>
+                <div>{{scope.row.pow_active ? Number(scope.row.pow_active).toFixed(3) : '0.000'}}</div>
               </template>
             </el-table-column>
             <el-table-column prop="pow_reactive" label="无功功率(kVar)" min-width="100" align="center">
               <template #default="scope">
-                <div>{{scope.row.pow_reactive ? Number(scope.row.pow_reactive).toFixed(3) : ''}}</div>
+                <div>{{scope.row.pow_reactive ? Number(scope.row.pow_reactive).toFixed(3) : '0.000'}}</div>
               </template>
             </el-table-column>
             <el-table-column prop="power_factor" label="功率因素" min-width="100" align="center">
               <template #default="scope">
-                <div>{{scope.row.power_factor ? Number(scope.row.power_factor).toFixed(2) : ''}}</div>
+                <div>{{scope.row.power_factor ? Number(scope.row.power_factor).toFixed(2) : '0.00'}}</div>
               </template>
             </el-table-column>
             <el-table-column prop="zb" label="负载率(%)" min-width="100" align="center">
               <template #default="scope">
                 <div v-if="scope.row.zb == '-'">-</div>
-                <div v-else>{{scope.row.zb ? Number(scope.row.zb).toFixed(2) : ''}}</div>
+                <div v-else>{{scope.row.zb ? Number(scope.row.zb).toFixed(2) : '0.00'}}</div>
               </template>
             </el-table-column>
           </el-table>
@@ -191,7 +191,7 @@ const getMachineDetail = async() => {
 const getPowTrend = async(type) => {
   if (type == radioBtn.value) return
   radioBtn.value = type
-  const res = await CabinetApi.getPowTrend({id:1, type})
+  const res = await CabinetApi.getPowTrend({id:cabinetId, type})
   echartsOption.value = {
     title: {
       text: '机柜列实时功率走势'

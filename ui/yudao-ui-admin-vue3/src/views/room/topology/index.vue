@@ -53,7 +53,7 @@
                       <el-tooltip effect="light">
                         <template #content>
                           名称：{{element.cabinetName}} <br/>
-                          负载率：{{element.loadRate}}%<br/>
+                          负载率：{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%<br/>
                           昨日用能：{{element.yesterdayEq || 0}}kW·h<br/>
                           总有功功率：{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW<br/>
                           总视在功率：{{element.powApparent ? element.powApparent.toFixed(3) : '0.000'}}kVA<br/>
@@ -65,7 +65,7 @@
                           已用空间：{{element.usedSpace}}U<br/>
                           未用空间：{{element.freeSpace}}U<br/>
                         </template>
-                        <div v-if="chosenBtn == 0">{{element.loadRate}}%</div>
+                        <div v-if="chosenBtn == 0">{{element.loadRate ? element.loadRate.toFixed(1) : '0.0'}}%</div>
                         <div v-if="chosenBtn == 1">{{element.powActive ? element.powActive.toFixed(3) : '0.000'}}kW</div>
                         <div v-if="chosenBtn == 2">{{element.powerFactor ? element.powerFactor.toFixed(2) : '0.000'}}</div>
                         <div v-if="chosenBtn == 3">{{element.tem}}°C</div>
@@ -80,7 +80,7 @@
                           <el-tooltip effect="light">
                             <template #content>
                               名称：{{item.cabinetName}} <br/>
-                              负载率：{{item.loadRate}}%<br/>
+                              负载率：{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%<br/>
                               昨日用能：{{item.yesterdayEq || 0}}kW·h<br/>
                               总有功功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW<br/>
                               总视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA<br/>
@@ -92,7 +92,7 @@
                               已用空间：{{item.usedSpace}}U<br/>
                               未用空间：{{item.freeSpace}}U<br/>
                             </template>
-                            <div v-if="chosenBtn == 0">{{item.loadRate}}%</div>
+                            <div v-if="chosenBtn == 0">{{item.loadRate ? item.loadRate.toFixed(1) : '0.0'}}%</div>
                             <div v-if="chosenBtn == 1">{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW</div>
                             <div v-if="chosenBtn == 2">{{item.powerFactor ? item.powerFactor.toFixed(2) : '0.000'}}</div>
                             <div v-if="chosenBtn == 3">{{item.tem}}°C</div>

@@ -77,22 +77,10 @@
                   <div class="connector">
                     <span class="text">连接器</span>
                   </div>
-                  <div v-if="chosenBtn == 8" class="Tbox">
-                    <div class="T">
-                      <div>T(L1)</div>
-                      <div>30°C</div>
-                    </div>
-                    <div class="T">
-                      <div>T(L2)</div>
-                      <div>30°C</div>
-                    </div>
-                    <div class="T">
-                      <div>T(L3)</div>
-                      <div>30°C</div>
-                    </div>
-                    <div class="T">
-                      <div>T(N)</div>
-                      <div>30°C</div>
+                  <div v-if="chosenBtn == 8 && bus.temData" class="Tbox">
+                    <div v-for="(tmp, count) in bus.temData" :key="count" class="T">
+                      <div>T(L{{count}})</div>
+                      <div>{{tmp}}°C</div>
                     </div>
                   </div>
                 </div>
@@ -115,22 +103,10 @@
                   <div class="connector">
                     <span class="text">连接器</span>
                   </div>
-                  <div v-if="chosenBtn == 8" class="Tbox">
-                    <div class="T">
-                      <div>T(L1)</div>
-                      <div>30°C</div>
-                    </div>
-                    <div class="T">
-                      <div>T(L2)</div>
-                      <div>30°C</div>
-                    </div>
-                    <div class="T">
-                      <div>T(L3)</div>
-                      <div>30°C</div>
-                    </div>
-                    <div class="T">
-                      <div>T(N)</div>
-                      <div>30°C</div>
+                  <div v-if="chosenBtn == 8 && bus.temData" class="Tbox">
+                    <div v-for="(tmp, count) in bus.temData" :key="count" class="T">
+                      <div>T(L{{count}})</div>
+                      <div>{{tmp}}°C</div>
                     </div>
                   </div>
                 </div>
@@ -147,7 +123,23 @@
                   </div>
                   <div class="cabinet">
                     <template v-if="cabinet.cabinetName">
-                      <div class="inner_fill" @dblclick="handleJump(cabinet)" :id="'cabinet-' + index" :style="{backgroundColor: cabinet.id ? 'rgba(180, 180, 180, 0.2)' : 'rgba(230, 240, 234)'}"></div>
+                      <el-tooltip effect="light">
+                        <template #content>
+                          名称：{{cabinet.cabinetName}} <br/>
+                          负载率：{{cabinet.loadRate ? cabinet.loadRate.toFixed(1) : '0.0'}}%<br/>
+                          昨日用能：{{cabinet.yesterdayEq || 0}}kW·h<br/>
+                          总有功功率：{{cabinet.powActive ? cabinet.powActive.toFixed(3) : '0.000'}}kW<br/>
+                          总视在功率：{{cabinet.powApparent ? cabinet.powApparent.toFixed(3) : '0.000'}}kVA<br/>
+                          总无功功率：{{cabinet.powReactive ? cabinet.powReactive.toFixed(3) : '0.000'}}kVar<br/>
+                          总功率因素：{{cabinet.powerFactor ? cabinet.powerFactor.toFixed(2) : '0.00'}}<br/>
+                          A路供电占比：{{cabinet.outletA}} <br/>
+                          B路供电占比：{{cabinet.outletB}} <br/>
+                          <!-- 最高温度：{{cabinet.tem}}°C<br/> -->
+                          已用空间：{{cabinet.usedSpace}}U<br/>
+                          未用空间：{{cabinet.freeSpace}}U<br/>
+                        </template>
+                        <div class="inner_fill" @dblclick="handleJump(cabinet)" :id="'cabinet-' + index" :style="{backgroundColor: cabinet.id ? 'rgba(180, 180, 180, 0.2)' : 'rgba(230, 240, 234)'}"></div>
+                      </el-tooltip>
                       <template v-if="cabinet.id">
                         <div v-if="chosenBtn == 0" class="fill_box">
                           <Echart :options="cabinet.echartsOptionLoad" height="100%" />
@@ -188,8 +180,8 @@
                 <div v-show="editEnable" class="operateIcon" @click.prevent="deleteMachine">-</div>
               </div>
             </div>
-            <div class="menu" v-if="operateMenu.show" :style="{left: `${operateMenu.left}`, top: `${operateMenu.top}`}">
-              <div class="menu_item" v-if="operateMenu.add && editEnable" @click="handleOperate('add')">新增</div>
+            <div class="menu" v-if="operateMenu.show && editEnable" :style="{left: `${operateMenu.left}`, top: `${operateMenu.top}`}">
+              <div class="menu_item" v-if="operateMenu.add" @click="handleOperate('add')">新增</div>
               <div class="menu_item" v-if="!operateMenu.add" @click="handleJump(false)">查看</div>
               <div class="menu_item" v-if="!operateMenu.add" @click="handleOperate('edit')">编辑</div>
               <div class="menu_item" v-if="!operateMenu.add" @click="handleOperate('delete')">删除</div>
@@ -593,9 +585,9 @@ const updateCabinetConnect = () => {
 }
 // 处理右击事件
 const handleRightClick = (e) => {
-  console.log('处理右击事件', e.target.parentNode)
+  console.log('处理右击事件', e.target.className)
   e.preventDefault()
-  if (e.target.className != 'inner_empty' && e.target.className != 'inner_fill') return
+  if (!editEnable.value || (!e.target.className.includes('inner_empty') && !e.target.className.includes('inner_fill'))) return
   const container = e.currentTarget
   const currentIndex = e.target.id.split('-')[1]
   const rect = container.getBoundingClientRect()
@@ -857,6 +849,53 @@ const handleDataDetail = (res) => {
   res.cabinetList && res.cabinetList.forEach(cab => {
     cabinetList.value.forEach((item, index) => {
       if (item.id == cab.id) {
+        const common = {
+          type: 'bar',
+          stack: 'Ad',
+          emphasis: {
+            focus: 'series'
+          },
+          label: {
+            show: true,
+            formatter: '{c}', // 显示数据值
+          },
+        }
+        let seriesA = [
+          {
+            name: 'L1',
+            data: [(cab.lineCurA ? cab.lineCurA[0] : 0), (cab.lineCurB ? cab.lineCurB[0] : 0)],
+            ...common
+          }
+        ] as any
+        if (cab.lineCurA && cab.lineCurB && cab.lineCurA.length == 3 && cab.lineCurB.length == 3) {
+          seriesA = [...seriesA, {
+            name: 'L2',
+            data: [(cab.lineCurA ? cab.lineCurA[1] : 0), (cab.lineCurB ? cab.lineCurB[1] : 0)],
+            ...common
+          }, {
+            name: 'L3',
+            data: [(cab.lineCurA ? cab.lineCurA[2] : 0), (cab.lineCurB ? cab.lineCurB[2] : 0)],
+            ...common
+          }]
+        }
+        let seriesU =[
+          {
+            name: 'L1',
+            data: [(cab.lineVolA ? cab.lineVolA[0] : 0), (cab.lineVolB ? cab.lineVolB[0] : 0)],
+            ...common
+          }
+        ]
+        if (cab.lineVolA && cab.lineVolB && cab.lineVolA.length == 3 && cab.lineVolB.length == 3) {
+          seriesU = [...seriesU, {
+            name: 'L2',
+            data: [(cab.lineVolA ? cab.lineVolA[1] : 0), (cab.lineVolB ? cab.lineVolB[1] : 0)],
+            ...common
+          }, {
+            name: 'L3',
+            data: [(cab.lineVolA ? cab.lineVolA[2] : 0), (cab.lineVolB ? cab.lineVolB[2] : 0)],
+            ...common
+          }]
+        }
         cabinetList.value[index] = {
           ...item,
           ...cab,
@@ -877,13 +916,13 @@ const handleDataDetail = (res) => {
             },
             yAxis: {
               type: 'value',
-              max: 1,
+              max: 100,
               show: false,
             },
             series: [
               {
                 name: 'load',
-                data: [cab.loadRate],
+                data: [cab.loadRate ? cab.loadRate.toFixed(1) : 0],
                 type: 'bar',
                 barWidth: '100%',
                 showBackground: true,
@@ -923,47 +962,7 @@ const handleDataDetail = (res) => {
               type: 'value',
               show: false,
             },
-            series: [
-              {
-                name: 'L1',
-                data: [3, 5],
-                type: 'bar',
-                stack: 'Ad',
-                emphasis: {
-                  focus: 'series'
-                },
-                label: {
-                  show: true,
-                  formatter: '{c}', // 显示数据值
-                },
-              },
-              {
-                name: 'L2',
-                data: [2, 6],
-                type: 'bar',
-                stack: 'Ad',
-                emphasis: {
-                  focus: 'series'
-                },
-                label: {
-                  show: true,
-                  formatter: '{c}', // 显示数据值
-                },
-              },
-              {
-                name: 'L3',
-                data: [1, 3],
-                type: 'bar',
-                stack: 'Ad',
-                emphasis: {
-                  focus: 'series'
-                },
-                label: {
-                  show: true,
-                  formatter: '{c}', // 显示数据值
-                },
-              },
-            ]
+            series: seriesA
           },
           echartsOptionV: { // 电压
             tooltip: {
@@ -990,47 +989,7 @@ const handleDataDetail = (res) => {
               type: 'value',
               show: false,
             },
-            series: [
-              {
-                name: 'L1',
-                data: [3, 5],
-                type: 'bar',
-                stack: 'Ad',
-                emphasis: {
-                  focus: 'series'
-                },
-                label: {
-                  show: true,
-                  formatter: '{c}', // 显示数据值
-                },
-              },
-              {
-                name: 'L2',
-                data: [2, 6],
-                type: 'bar',
-                stack: 'Ad',
-                emphasis: {
-                  focus: 'series'
-                },
-                label: {
-                  show: true,
-                  formatter: '{c}', // 显示数据值
-                },
-              },
-              {
-                name: 'L3',
-                data: [1, 3],
-                type: 'bar',
-                stack: 'Ad',
-                emphasis: {
-                  focus: 'series'
-                },
-                label: {
-                  show: true,
-                  formatter: '{c}', // 显示数据值
-                },
-              },
-            ]
+            series: seriesU
           },
           echartsOptionFactor: { // 功率因素
             xAxis: {
@@ -1098,7 +1057,7 @@ const handleDataDetail = (res) => {
             series: [
               {
                 name: '有功功率',
-                data: [3],
+                data: [cab.powActive],
                 type: 'bar',
                 stack: 'Ad',
                 emphasis: {
@@ -1114,7 +1073,7 @@ const handleDataDetail = (res) => {
               },
               {
                 name: '无功功率',
-                data: [2],
+                data: [cab.powReactive],
                 type: 'bar',
                 stack: 'Ad',
                 emphasis: {
@@ -1159,7 +1118,7 @@ const handleDataDetail = (res) => {
             series: [
               {
                 name: '有功功率',
-                data: [3, 5],
+                data: [cab.powActiveA, cab.powActiveB],
                 type: 'bar',
                 stack: 'Ad',
                 emphasis: {
@@ -1175,7 +1134,7 @@ const handleDataDetail = (res) => {
               },
               {
                 name: '无功功率',
-                data: [2, 6],
+                data: [cab.powReactiveA, cab.powReactiveB],
                 type: 'bar',
                 stack: 'Ad',
                 emphasis: {
@@ -1190,40 +1149,11 @@ const handleDataDetail = (res) => {
                 }
               },
             ]
-            // xAxis: {
-            //   type: 'category',
-            //   data: ['A路', 'B路'],
-            //   axisTick: {
-            //     show: false
-            //   }
-            // },
-            // grid: {
-            //   left: '-15',
-            //   right: '0',
-            //   bottom: '3%',
-            //   top: '8%',
-            //   containLabel: true
-            // },
-            // yAxis: {
-            //   type: 'value',
-            //   show: false,
-            // },
-            // series: [
-            //   {
-            //     name: '视在功率',
-            //     data: [cab.powApparentA, cab.powApparentB],
-            //     type: 'bar',
-            //     label: {
-            //       show: true,
-            //       formatter: '{c}', // 显示数据值
-            //     },
-            //   },
-            // ]
           },
           echartsOptionTemp: { // 温度
             xAxis: {
               type: 'category',
-              data: [`温度`],
+              data: ['温度'],
               axisTick: {
                 show: false
               }
@@ -1242,7 +1172,7 @@ const handleDataDetail = (res) => {
             },
             series: [
               {
-                data: [23],
+                data: [cab.temData],
                 type: 'bar',
                 barWidth: '100%',
                 showBackground: true,

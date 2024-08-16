@@ -163,15 +163,15 @@
             <el-col :span="10" class="flex justify-center">
               <el-progress type="circle" :percentage="100">
                 <template #default>
-                  <div class="percentage-value text-28px mt-12px">{{powInfo.totalPowActive}}kW</div>
+                  <div class="percentage-value text-28px mt-12px">{{powInfo.totalPowActive ? powInfo.totalPowActive.toFixed(3) : '0.000'}}kW</div>
                   <div class="percentage-label text-12px mt-12px">总功率</div>
                 </template>
               </el-progress>
             </el-col>
             <el-col :span="12" class="flex flex-col justify-evenly">
-              <div>总有功功率：{{powInfo.totalPowActive}}kW</div>
-              <div>总无功功率：{{powInfo.totalPowReactive}}kVar</div>
-              <div>总视在功率：{{powInfo.totalPowApparent}}kVA</div>
+              <div>总有功功率：{{powInfo.totalPowActive ? powInfo.totalPowActive.toFixed(3) : '0.000'}}kW</div>
+              <div>总无功功率：{{powInfo.totalPowReactive ? powInfo.totalPowReactive.toFixed(3) : '0.000'}}kVar</div>
+              <div>总视在功率：{{powInfo.totalPowApparent ? powInfo.totalPowApparent.toFixed(3) : '0.000'}}kVA</div>
             </el-col>
           </el-row>
         </el-skeleton>
