@@ -90,7 +90,7 @@
           <div v-if="machineColInfo.pduBar && machineColInfo.barB" class="busListContainer" style="margin-bottom: 80px">
             <div class="bridge"></div>
             <div class="busList2">
-              <template v-for="(bus, index) in machineColInfo.barA.boxList" :key="index">
+              <template v-for="(bus, index) in machineColInfo.barB.boxList" :key="index">
                 <!-- 插接箱 -->
                 <div v-if="bus.type == 0" class="plugin-box">
                   <PluginBox :chosenBtn="chosenBtn" :pluginData="bus" :btns="btns" />
@@ -715,7 +715,7 @@ const handleFormPlugin = (data) => {
     for(let i = 0; i < (data.cjxAmount + data.ljqAmount); i++) {
       const type = i % 2
       arr.push({
-        // boxIndex: count,
+        boxIndex: count,
         type,
       })
       if (type) count++
@@ -733,7 +733,7 @@ const handleFormPlugin = (data) => {
     let odd = big % (small + 1)
     for(let i = 0; i < big; i++) {
       arr.push({
-        // boxIndex: i,
+        boxIndex: i,
         type,
       })
     }
@@ -743,15 +743,12 @@ const handleFormPlugin = (data) => {
         odd--
       }
       arr.splice((+diff) * (i+1) + count, 0, {
-        // boxIndex: i,
+        boxIndex: i,
         type: type ? 0 : 1,
       })
       count++
     }
   }
-  arr.forEach((item, index) => {
-    arr[index].boxIndex = index 
-  })
   const boxA = {
     busName: data.nameA,
     devIp: data.ipA,
@@ -1370,6 +1367,7 @@ const saveMachineBus = async() => {
 }
 // 处理机柜列表
 const handleCabinetList = (data, status) => {
+  console.log('处理机柜列表', data, status)
   const arr = [] as any
   for (let i=0; i < data.length; i++) {
     arr.push({})

@@ -344,7 +344,7 @@ public class AisleServiceImpl implements AisleService {
                             box.setAisleId(aisleId);
                             box.setAisleBarId(bar.getId());
                             if (StringUtils.isEmpty(box.getBoxName())){
-                                box.setBoxName("iBOX-" + (i.get()));
+                                box.setBoxName("iBox-" + (i.get()));
                             }
                             box.setBarKey(bar.getBarKey() + SPLIT_KEY_BUS + box.getBoxName());
                             AisleBox aisleBox = aisleBoxMapper.selectById(box.getId());
