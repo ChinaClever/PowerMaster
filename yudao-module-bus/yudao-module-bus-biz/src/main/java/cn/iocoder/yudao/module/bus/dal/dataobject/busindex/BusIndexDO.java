@@ -38,7 +38,7 @@ public class BusIndexDO {
     /**
      * 母线地址
      */
-    private String devAddr;
+    private String casAddr;
     /**
      * 母线编号
      */

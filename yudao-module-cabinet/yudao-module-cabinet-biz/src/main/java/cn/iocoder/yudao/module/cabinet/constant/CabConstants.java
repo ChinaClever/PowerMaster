@@ -204,15 +204,22 @@ public class CabConstants {
      */
     public static final String BOX_NAME = "box_name";
 
-    /**
-     * 分隔符
-     */
-    public static final String SPLIT_KEY_BUS = "_";
 
     /**
      * Redis设置key
      */
     public static final String REDIS_KEY_BOX = "packet:box:";
+
+    /**
+     * 设备级联地址
+     */
+    public static final String ADDR = "addr";
+
+
+    /**
+     * 母线id
+     */
+    public static final String BAR_ID = "bar_id";
 
 
 }

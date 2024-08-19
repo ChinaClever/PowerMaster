@@ -40,6 +40,11 @@ public class AisleBoxDTO implements Serializable {
     private String boxName;
 
     /**
+     * 级联地址
+     */
+    private Integer casAddr;
+
+    /**
      * 对应绑定母线id
      */
     private Integer aisleBarId;
@@ -53,6 +58,11 @@ public class AisleBoxDTO implements Serializable {
      * 标记位-前端用
      */
     private Integer boxIndex;
+
+    /**
+     * 输出位数量
+     */
+    private Integer outletNum;
 
     /**
      * 输出位昨日电量

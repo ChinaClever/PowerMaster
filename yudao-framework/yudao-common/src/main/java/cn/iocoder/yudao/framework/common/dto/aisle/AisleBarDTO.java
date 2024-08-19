@@ -42,6 +42,17 @@ public class AisleBarDTO {
     private String devIp;
 
     /**
+     * 母线id
+     */
+    private Integer barId;
+
+    /**
+     * 级联地址
+     */
+    private Integer casAddr;
+
+
+    /**
      * AB路
      */
     private String path;

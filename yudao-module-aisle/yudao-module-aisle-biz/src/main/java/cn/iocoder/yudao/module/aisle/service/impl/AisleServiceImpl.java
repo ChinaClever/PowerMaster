@@ -21,6 +21,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.enums.DisableEnums;
@@ -100,6 +101,9 @@ public class AisleServiceImpl implements AisleService {
     @Resource
     CabinetCfgDoMapper cfgDoMapper;
 
+    @Autowired
+    RackIndexDoMapper rackIndexDoMapper;
+
     @Value("${aisle-refresh-url}")
     public String adder;
 
@@ -141,14 +145,14 @@ public class AisleServiceImpl implements AisleService {
                 if (StringUtils.isNotEmpty(aisleSaveVo.getDirection())
                         && "x".equals(aisleSaveVo.getDirection())){
                     //横向
-                    if (aisleSaveVo.getXCoordinate() + aisleSaveVo.getLength()>roomIndex.getXLength()){
+                    if (aisleSaveVo.getXCoordinate() + aisleSaveVo.getLength()> roomIndex.getXLength() +1){
                         throw new RuntimeException("柜列长度超出");
                     }
                 }
                 if ( StringUtils.isNotEmpty(aisleSaveVo.getDirection())
                         && "y".equals(aisleSaveVo.getDirection())){
                     //纵向
-                    if (aisleSaveVo.getYCoordinate() + aisleSaveVo.getLength()>roomIndex.getYLength()){
+                    if (aisleSaveVo.getYCoordinate() + aisleSaveVo.getLength()>roomIndex.getYLength() + 1){
                         throw new RuntimeException("柜列长度超出");
                     }
                 }
@@ -177,6 +181,10 @@ public class AisleServiceImpl implements AisleService {
 
             String busNameB;
 
+            Integer barIdA;
+            Integer barIdB;
+
+
 
             //母线信息
             List<AisleBar> aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
@@ -186,17 +194,21 @@ public class AisleServiceImpl implements AisleService {
                 barVos.add(aisleSaveVo.getBarA());
                 busIpA = aisleSaveVo.getBarA().getDevIp();
                 busNameA = aisleSaveVo.getBarA().getBusName();
+                barIdA = aisleSaveVo.getBarA().getBarId();
             } else {
                 busNameA = "";
                 busIpA = "";
+                barIdA = null;
             }
             if (Objects.nonNull(aisleSaveVo.getBarB())){
                 barVos.add(aisleSaveVo.getBarB());
                 busIpB = aisleSaveVo.getBarB().getDevIp();
                 busNameB = aisleSaveVo.getBarB().getBusName();
+                barIdB = aisleSaveVo.getBarB().getBarId();
             } else {
                 busNameB = "";
                 busIpB = "";
+                barIdB = null;
             }
 
             if (!CollectionUtils.isEmpty(barVos)){
@@ -216,23 +228,45 @@ public class AisleServiceImpl implements AisleService {
                     ids.forEach(this::deleteBus);
                 }
             }
+
+            //已有机柜
+            List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
+                    .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
+                    .eq(CabinetIndex::getRoomId,aisleSaveVo.getRoomId())
+                    .eq(CabinetIndex::getAisleId,index.getId()));
             //机柜信息
             if (!CollectionUtils.isEmpty(aisleSaveVo.getCabinetList())){
-                //删除
+                //更改后的机柜列表
                 List<Integer> ids =  aisleSaveVo.getCabinetList().stream().map(CabinetVo::getId).filter(id -> id >0).collect(Collectors.toList());
+
+
                 if (!CollectionUtils.isEmpty(ids)){
+                    //需要删除的机柜
                     cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
                             .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
                             .eq(CabinetIndex::getRoomId,aisleSaveVo.getRoomId())
                             .eq(CabinetIndex::getAisleId,index.getId())
                             .notIn(CabinetIndex::getId,ids)
                             .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
+                    //删除不在更改后机柜中的机架
+                    if (!CollectionUtils.isEmpty(cabinetIndexList)){
+                        rackIndexDoMapper.delete(new LambdaQueryWrapper<RackIndex>()
+                                .in(RackIndex::getCabinetId,cabinetIndexList.stream().map(CabinetIndex::getId).filter(id -> !ids.contains(id)).collect(Collectors.toList())));
+                    }
+
                 }else {
+
+                    //清空该柜列机柜及机架
                     cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
                             .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
                             .eq(CabinetIndex::getRoomId,aisleSaveVo.getRoomId())
                             .eq(CabinetIndex::getAisleId,index.getId())
                             .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
+                    if (!CollectionUtils.isEmpty(cabinetIndexList)){
+                        rackIndexDoMapper.delete(new LambdaQueryWrapper<RackIndex>()
+                                .in(RackIndex::getCabinetId,cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList())));
+                    }
+
                 }
 
                 //新增/保存
@@ -241,36 +275,36 @@ public class AisleServiceImpl implements AisleService {
                     cabinetVo.setAisleId(index.getId());
                     if (aisleSaveVo.getPduBar().equals(PduBoxEnums.BUS.getValue())){
                         cabinetVo.setBusIpA(busIpA);
-                        cabinetVo.setBusNameA(busNameA);
+                        cabinetVo.setBarIdA(barIdA);
                         cabinetVo.setBusIpB(busIpB);
-                        cabinetVo.setBusNameB(busNameB);
+                        cabinetVo.setBarIdB(barIdB);
 
-                        if (Objects.nonNull(cabinetVo.getBoxIndexA())){
+                        if (Objects.isNull(cabinetVo.getAddrA()) && Objects.nonNull(cabinetVo.getBoxIndexA())){
                             AisleBar bar = aisleBarMapper.selectOne(new LambdaQueryWrapper<AisleBar>()
                                     .eq(AisleBar::getAisleId,index.getId())
-                                    .eq(AisleBar::getBusName,busNameA)
+                                    .eq(AisleBar::getBarId,barIdA)
                                     .eq(AisleBar::getDevIp,busIpA));
                             if (Objects.nonNull(bar)){
                                 AisleBox box = aisleBoxMapper.selectOne(new LambdaQueryWrapper<AisleBox>()
                                         .eq(AisleBox::getAisleBarId,bar.getId())
                                         .eq(AisleBox::getType,0)
                                         .eq(AisleBox::getBoxIndex,cabinetVo.getBoxIndexA()));
-                                cabinetVo.setBoxNameA(Objects.nonNull(box)?box.getBoxName():"");
+                                cabinetVo.setAddrA(Objects.nonNull(box)?box.getCasAddr():null);
 
                             }
 
                         }
-                        if (Objects.nonNull(cabinetVo.getBoxIndexB())){
+                        if (Objects.isNull(cabinetVo.getAddrB()) && Objects.nonNull(cabinetVo.getBoxIndexB())){
                             AisleBar bar = aisleBarMapper.selectOne(new LambdaQueryWrapper<AisleBar>()
                                     .eq(AisleBar::getAisleId,index.getId())
-                                    .eq(AisleBar::getBusName,busNameB)
+                                    .eq(AisleBar::getBarId,barIdB)
                                     .eq(AisleBar::getDevIp,busIpB));
                             if (Objects.nonNull(bar)){
                                 AisleBox box = aisleBoxMapper.selectOne(new LambdaQueryWrapper<AisleBox>()
                                         .eq(AisleBox::getAisleBarId,bar.getId())
                                         .eq(AisleBox::getType,0)
                                         .eq(AisleBox::getBoxIndex,cabinetVo.getBoxIndexB()));
-                                cabinetVo.setBoxNameB(Objects.nonNull(box)?box.getBoxName():"");
+                                cabinetVo.setAddrB(Objects.nonNull(box)?box.getCasAddr():null);
 
                             }
 
@@ -299,11 +333,16 @@ public class AisleServiceImpl implements AisleService {
                     }
                 });
             }else {
+                //清空该柜列机柜及机架
                 cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
                         .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
                         .eq(CabinetIndex::getRoomId,aisleSaveVo.getRoomId())
                         .eq(CabinetIndex::getAisleId,index.getId())
                         .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
+                if (!CollectionUtils.isEmpty(cabinetIndexList)){
+                    rackIndexDoMapper.delete(new LambdaQueryWrapper<RackIndex>()
+                            .in(RackIndex::getCabinetId,cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList())));
+                }
             }
 
             return index.getId();
@@ -328,7 +367,7 @@ public class AisleServiceImpl implements AisleService {
                 barVos.forEach(barVo -> {
                     AisleBar  bar = BeanUtils.toBean(barVo,AisleBar.class);
                     bar.setAisleId(aisleId);
-                    bar.setBarKey(barVo.getDevIp() + SPLIT_KEY_BUS + barVo.getBusName());
+                    bar.setBarKey(barVo.getDevIp() + SPLIT_KEY + barVo.getBarId()+ SPLIT_KEY + barVo.getCasAddr());
                     AisleBar aisleBar = aisleBarMapper.selectById(bar.getId());
                     if (Objects.nonNull(aisleBar)){
                         aisleBarMapper.updateById(bar);
@@ -338,15 +377,12 @@ public class AisleServiceImpl implements AisleService {
 
                     List<AisleBoxDTO> boxList = barVo.getBoxList();
                     if (!CollectionUtils.isEmpty(boxList)){
-                        AtomicInteger i = new AtomicInteger(1);
                         boxList.forEach(boxDTO ->{
                             AisleBox box = BeanUtils.toBean(boxDTO,AisleBox.class);
                             box.setAisleId(aisleId);
                             box.setAisleBarId(bar.getId());
-                            if (StringUtils.isEmpty(box.getBoxName())){
-                                box.setBoxName("iBox-" + (i.get()));
-                            }
-                            box.setBarKey(bar.getBarKey() + SPLIT_KEY_BUS + box.getBoxName());
+                            box.setBarId(barVo.getBarId());
+                            box.setBarKey(barVo.getDevIp() + SPLIT_KEY + barVo.getBarId()+ SPLIT_KEY + boxDTO.getCasAddr());
                             AisleBox aisleBox = aisleBoxMapper.selectById(box.getId());
                             if (Objects.nonNull(aisleBox)){
                                 aisleBoxMapper.updateById(box);
@@ -354,7 +390,6 @@ public class AisleServiceImpl implements AisleService {
                             }else {
                                 aisleBoxMapper.insert(box);
                             }
-                            i.getAndIncrement();
                         });
                     }
 
@@ -421,6 +456,12 @@ public class AisleServiceImpl implements AisleService {
                     aisleIndexMapper.update(new LambdaUpdateWrapper<AisleIndex>()
                             .eq(AisleIndex::getId, aisleId)
                             .set(AisleIndex::getIsDelete, DelEnums.DELETE.getStatus()));
+
+                    //1.删除绑定关系
+                    aisleBoxMapper.delete(new LambdaQueryWrapper<AisleBox>()
+                            .eq(AisleBox::getAisleId,aisleId));
+                    aisleBarMapper.delete(new LambdaQueryWrapper<AisleBar>()
+                            .eq(AisleBar::getAisleId,aisleId));
 
                 }else {
                     //物理删除

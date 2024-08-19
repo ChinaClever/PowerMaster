@@ -52,9 +52,24 @@ public class AisleBox implements Serializable {
     private Integer type;
 
     /**
+     * 级联地址
+     */
+    private Integer casAddr;
+
+    /**
+     * 母线编号
+     */
+    private Integer barId;
+
+    /**
      * 标记位
      */
     private Integer boxIndex;
+
+    /**
+     * 输出位数量
+     */
+    private Integer outletNum;
 
     /**
      * 创建时间
