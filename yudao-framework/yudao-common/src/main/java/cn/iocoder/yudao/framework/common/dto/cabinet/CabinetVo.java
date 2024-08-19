@@ -131,12 +131,12 @@ public class CabinetVo {
     @Schema(description = "A路母线ip地址", example = "1")
     private String busIpA;
 
-    @Schema(description = "A路母线名称", example = "1")
-    private String busNameA;
+    @Schema(description = "A路母线id", example = "1")
+    private Integer barIdA;
 
 
-    @Schema(description = "A路插接箱名称", example = "1")
-    private String boxNameA;
+    @Schema(description = "A路级联地址", example = "1")
+    private Integer addrA;
 
 
     @Schema(description = "A路插接箱输出位id", example = "1")
@@ -146,12 +146,12 @@ public class CabinetVo {
     @Schema(description = "B路母线ip地址", example = "1")
     private String busIpB;
 
-    @Schema(description = "B路母线名称", example = "1")
-    private String busNameB;
+    @Schema(description = "B路母线id", example = "1")
+    private Integer barIdB;
 
 
-    @Schema(description = "B路插接箱名称", example = "1")
-    private String boxNameB;
+    @Schema(description = "B路级联地址", example = "1")
+    private Integer addrB;
 
 
     @Schema(description = "B路插接箱输出位id", example = "1")

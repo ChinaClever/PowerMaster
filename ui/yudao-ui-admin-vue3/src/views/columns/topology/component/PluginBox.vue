@@ -1,9 +1,7 @@
 <template>
-  <div class="name">
-    <template v-for="btn in btns" :key="btn.value">
-      <div v-if="chosenBtn == btn.value">{{btn.unitName}}</div>
-    </template>
-  </div>
+  <template v-for="btn in btns" :key="btn.value">
+    <div class="name" v-if="chosenBtn == btn.value">{{btn.unitName}}</div>
+  </template>
   <div class="boxList">
     <template v-if="chosenBtn == 0 && pluginData.lineLoadRate">
       <div class="box" v-for="(line, boxIndex) in pluginData.lineLoadRate" :key="boxIndex">

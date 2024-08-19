@@ -193,7 +193,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             if (jsonObject.getJSONObject("box_data").getJSONObject("box_cfg").getInteger("box_type") == 1){
                 continue;
             }
-            String devKey = jsonObject.getString("dev_ip") + SPLIT_KEY_BUS + jsonObject.getString("bus_name") + SPLIT_KEY_BUS + jsonObject.getString("box_name");
+            String devKey = jsonObject.getString("dev_ip") + "-" + jsonObject.getString("bar_id") + "-" + jsonObject.getString("addr");
             BoxIndexRes boxIndexRes = resMap.get(devKey);
             JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");
             JSONArray loadRate = lineItemList.getJSONArray("load_rate");
@@ -251,7 +251,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             if (jsonObject.getJSONObject("box_data").getJSONObject("box_cfg").getInteger("box_type") == 1){
                 continue;
             }
-            String devKey = jsonObject.getString("dev_ip") + SPLIT_KEY_BUS + jsonObject.getString("bus_name") + SPLIT_KEY_BUS + jsonObject.getString("box_name");
+            String devKey = jsonObject.getString("dev_ip") + "-" + jsonObject.getString("bar_id") + "-" + jsonObject.getString("addr");
             BoxRedisDataRes boxRedisDataRes = resMap.get(devKey);
             JSONObject loopItemList = jsonObject.getJSONObject("box_data").getJSONObject("loop_item_list");
             JSONArray volValue = loopItemList.getJSONArray("vol_value");
@@ -378,8 +378,15 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         BoxIndexPageReqVO reqVO = new BoxIndexPageReqVO();
         reqVO.setDevKey(devKey);
         reqVO.setTimeType(0);
-        BoxLineRes boxLineRes = getBoxLineDevicePage(reqVO).getList().get(0);
-        result.setMd(boxLineRes.getL1MaxPow().doubleValue() + boxLineRes.getL2MaxPow().doubleValue() + boxLineRes.getL3MaxPow().doubleValue());
+
+        List<BoxLineRes> list = getBoxLineDevicePage(reqVO).getList();
+        if (!list.isEmpty()) {
+            BoxLineRes boxLineRes = list.get(0);
+            result.setMd(boxLineRes.getL1MaxPow().doubleValue() + boxLineRes.getL2MaxPow().doubleValue() + boxLineRes.getL3MaxPow().doubleValue());
+        }else {
+            result.setMd(0.0);
+        }
+
         JSONArray curThd = lineItemList.getJSONArray("cur_thd");
         result.setIaTHD(curThd.getDouble(0));
         result.setIbTHD(curThd.getDouble(1));
@@ -730,7 +737,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             if (jsonObject.getJSONObject("box_data").getJSONObject("box_cfg").getInteger("box_type") == 1){
                 continue;
             }
-            String devKey = jsonObject.getString("dev_ip") + SPLIT_KEY_BUS + jsonObject.getString("bus_name") + SPLIT_KEY_BUS + jsonObject.getString("box_name");
+            String devKey = jsonObject.getString("dev_ip") + "-" + jsonObject.getString("bar_id") + "-" + jsonObject.getString("addr");
             BoxBalanceDataRes boxBalanceDataRes = resMap.get(devKey);
             JSONObject loopItemList = jsonObject.getJSONObject("box_data").getJSONObject("loop_item_list");
             JSONArray volValue = loopItemList.getJSONArray("vol_value");
@@ -941,7 +948,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 continue;
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-            String devKey = jsonObject.getString("dev_ip") + SPLIT_KEY_BUS + jsonObject.getString("bus_name") + SPLIT_KEY_BUS + jsonObject.getString("box_name");
+            String devKey = jsonObject.getString("dev_ip") + "-" + jsonObject.getString("bar_id") + "-" + jsonObject.getString("addr");
             BoxTemRes boxTemRes = resMap.get(devKey);
             JSONObject envItemList = jsonObject.getJSONObject("env_item_list");
             JSONArray temValue = envItemList.getJSONArray("tem_value");
@@ -1052,7 +1059,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             if (jsonObject.getJSONObject("box_data").getJSONObject("box_cfg").getInteger("box_type") == 1){
                 continue;
             }
-            String devKey = jsonObject.getString("dev_ip") + SPLIT_KEY_BUS + jsonObject.getString("bus_name") + SPLIT_KEY_BUS + jsonObject.getString("box_name");
+            String devKey = jsonObject.getString("dev_ip") + "-" + jsonObject.getString("bar_id") + "-" + jsonObject.getString("addr");
             BoxPFRes boxPFRes = resMap.get(devKey);
             JSONObject loopItemList = jsonObject.getJSONObject("box_data").getJSONObject("loop_item_list");
             JSONArray pfValue = loopItemList.getJSONArray("power_factor");
@@ -1167,7 +1174,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             if (jsonObject.getJSONObject("box_data").getJSONObject("box_cfg").getInteger("box_type") == 1){
                 continue;
             }
-            String devKey = jsonObject.getString("dev_ip") + SPLIT_KEY_BUS + jsonObject.getString("bus_name") + SPLIT_KEY_BUS + jsonObject.getString("box_name");
+            String devKey = jsonObject.getString("dev_ip") + "-" + jsonObject.getString("bar_id") + "-" + jsonObject.getString("addr");
             BoxHarmonicRes boxHarmonicRes = resMap.get(devKey);
             JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");
             JSONArray curThd = lineItemList.getJSONArray("cur_thd");

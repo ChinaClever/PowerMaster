@@ -25,7 +25,7 @@ public interface BusIndexMapper extends BaseMapperX<BusIndexDO> {
                 .inIfPresent(BusIndexDO::getDevKey,reqVO.getBusDevKeyList())
                 .inIfPresent(BusIndexDO::getId,reqVO.getBusIds())
                 .eqIfPresent(BusIndexDO::getIpAddr, reqVO.getIpAddr())
-                .eqIfPresent(BusIndexDO::getDevAddr, reqVO.getDevAddr())
+                .eqIfPresent(BusIndexDO::getCasAddr, reqVO.getDevAddr())
                 .eqIfPresent(BusIndexDO::getBarId, reqVO.getBarId())
                 .eqIfPresent(BusIndexDO::getNodeIp, reqVO.getNodeIp())
                 .eqIfPresent(BusIndexDO::getIsDeleted, reqVO.getIsDeleted())

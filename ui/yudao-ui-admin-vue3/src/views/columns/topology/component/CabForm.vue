@@ -556,7 +556,7 @@ const submitForm = async () => {
     resetForm()
   } catch(error:any) {
     console.log('error', error)
-    message.error(String(error.cabinetName[0].message))
+    message.error(String(error.cabinetName ? error.cabinetName[0].message : error.type[0].message))
   } finally {
     formLoading.value = false
   }
