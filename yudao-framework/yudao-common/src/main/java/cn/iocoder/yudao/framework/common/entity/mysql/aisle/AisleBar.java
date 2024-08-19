@@ -47,6 +47,16 @@ public class AisleBar implements Serializable {
     private String devIp;
 
     /**
+     * 级联地址
+     */
+    private Integer casAddr;
+
+    /**
+     * 母线编号
+     */
+    private Integer barId;
+
+    /**
      * AB路
      */
     private String path;

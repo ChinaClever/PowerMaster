@@ -33,9 +33,9 @@ public class BoxIndex implements Serializable {
     private String ipAddr;
 
     /**
-     * 始端箱地址
+     * 级联
      */
-    private String devAddr;
+    private Integer casAddr;
 
     /**
      * 母线编号
