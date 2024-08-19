@@ -28,4 +28,9 @@ public class CabinetApiImpl implements CabinetApi{
     public CabinetDTO getDetail(int id) {
         return cabinetService.getCabinetDetailV2(id);
     }
+
+    @Override
+    public void delCabinet(int id) throws Exception {
+        cabinetService.delCabinet(id);
+    }
 }

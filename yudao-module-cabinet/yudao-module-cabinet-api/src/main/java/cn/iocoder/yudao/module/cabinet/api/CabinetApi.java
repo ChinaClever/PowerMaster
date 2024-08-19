@@ -20,4 +20,9 @@ public interface CabinetApi {
 
     CabinetDTO getDetail(int id);
 
+    /**
+     * 机柜删除
+     */
+    void delCabinet(int id) throws Exception;
+
 }
