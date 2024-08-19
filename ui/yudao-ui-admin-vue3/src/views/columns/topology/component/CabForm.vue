@@ -96,8 +96,8 @@
               <div class="Bus">
                 <div>
                   <div class="title">A路</div>
-                  <el-form-item label="母线名称：">
-                    <el-input v-model="machineFormData.busNameA" :disabled="isBusBind" placeholder="请输入" />
+                  <el-form-item label="母线编号：">
+                    <el-input v-model="machineFormData.barIdA" :disabled="isBusBind" placeholder="请输入" />
                   </el-form-item>
                   <el-form-item label="母线地址：">
                     <el-input v-model="machineFormData.busIpA" :disabled="isBusBind" placeholder="请输入" />
@@ -117,8 +117,8 @@
                 </div>
                 <div>
                   <div class="title">B路</div>
-                  <el-form-item label="母线名称：">
-                    <el-input v-model="machineFormData.busNameB" :disabled="isBusBind" placeholder="请输入" />
+                  <el-form-item label="母线编号：">
+                    <el-input v-model="machineFormData.barIdB" :disabled="isBusBind" placeholder="请输入" />
                   </el-form-item>
                   <el-form-item label="母线地址：">
                     <el-input v-model="machineFormData.busIpB" :disabled="isBusBind" placeholder="请输入" />
@@ -358,11 +358,11 @@ const machineFormData = ref({
   casIdB: '',
   sensorList: [] as any,
   busIpA: '',
-  busNameA: '',
+  barIdA: '',
   boxIndexA: '',
   boxOutletIdA: '',
   busIpB: '',
-  busNameB: '',
+  barIdB: '',
   boxIndexB: '',
   boxOutletIdB: '',
   pduBox: 0, // 0 pdu 1母线
@@ -502,11 +502,11 @@ const open = async (type: string, data, machineColInfo) => {
     casIdB: '',
     sensorList: [],
     busIpA: '',
-    busNameA: '',
+    barIdA: '',
     boxIndexA: '',
     boxOutletIdA: '',
     busIpB: '',
-    busNameB: '',
+    barIdB: '',
     boxIndexB: '',
     boxOutletIdB: '',
     pduBox: 0, // 0 pdu 1母线
@@ -522,9 +522,9 @@ const open = async (type: string, data, machineColInfo) => {
     boxAmount.value = machineColInfo.boxAmount
     machineFormData.value = {
       ...machineFormData.value,
-      busNameA: machineColInfo.busNameA,
+      barIdA: machineColInfo.barIdA,
       busIpA: machineColInfo.busIpA,
-      busNameB: machineColInfo.busNameB,
+      barIdB: machineColInfo.barIdB,
       busIpB: machineColInfo.busIpB,
     }
   }
@@ -577,11 +577,11 @@ const resetForm = () => {
     casIdB: '',
     sensorList: [],
     busIpA: '',
-    busNameA: '',
+    barIdA: '',
     boxIndexA: '',
     boxOutletIdA: '',
     busIpB: '',
-    busNameB: '',
+    barIdB: '',
     boxIndexB: '',
     boxOutletIdB: '',
     pduBox: 0, // 0 pdu 1母线

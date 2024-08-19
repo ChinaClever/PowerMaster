@@ -591,9 +591,9 @@ const handleOperate = (type) => {
       info = {
         roomId: machineColInfo.roomId,
         barA: true,
-        busNameA: machineColInfo.barA.busName,
+        barIdA: machineColInfo.barA.barId,
         busIpA: machineColInfo.barA.devIp,
-        busNameB: machineColInfo.barB.busName,
+        barIdB: machineColInfo.barB.barId,
         busIpB: machineColInfo.barB.devIp,
         boxAmount: machineColInfo.barA.boxList.length
       }
@@ -641,8 +641,6 @@ const handleConfig = () => {
   if(machineColInfo.barA) {
     console.log('machineColInfo', machineColInfo.barA)
     const boxList = machineColInfo.barA.boxList
-    const plugin = boxList.filter(item => !item.type)
-    const connect = boxList.filter(item => item.type)
     data = {
       barIdA: machineColInfo.barA.barId,
       ipA: machineColInfo.barA.devIp,
@@ -652,8 +650,7 @@ const handleConfig = () => {
       casAddrA: machineColInfo.barA.casAddr,
       casAddrB: machineColInfo.barB.casAddr,
       ipB: machineColInfo.barB.devIp,
-      cjxAmount: plugin.length,
-      ljqAmount: connect.length,
+      cjxAmount: boxList.length,
     }
     console.log(data)
   }
@@ -668,13 +665,22 @@ const handleSubmit = () => {
 // 插接箱弹窗确认后的处理
 const handleFormPlugin = (data) => {
   console.log('handleFormSave', data)
-  let arr = [] as any
+  let arrA = [] as any
+  let arrB = [] as any
   const machineColInfoLength = (machineColInfo.barA && machineColInfo.barA.boxList) ? machineColInfo.barA.boxList.length : 0
   for(let i=0; i < data.cjxAmount; i++) {
     if(i < machineColInfoLength) {
-      arr.push(machineColInfo.barA.boxList[i])
+      arrA.push(machineColInfo.barA.boxList[i])
+      arrB.push(machineColInfo.barB.boxList[i])
     } else {
-      arr.push({
+      arrA.push({
+        casAddr: i+2,
+        outletNum: 3,
+        type: 0,
+        boxName: 'box-' + i,
+        boxIndex: i,
+      })
+      arrB.push({
         casAddr: i+2,
         outletNum: 3,
         type: 0,
@@ -689,7 +695,7 @@ const handleFormPlugin = (data) => {
     devIp: data.ipA,
     path: 'A',
     direction: data.directionA,
-    boxList: [...arr]
+    boxList: arrA
   }
   const boxB = {
     barId: data.barIdB,
@@ -697,7 +703,7 @@ const handleFormPlugin = (data) => {
     devIp: data.ipB,
     path: 'B',
     direction: data.directionB,
-    boxList: [...arr]
+    boxList: arrB
   }
   machineColInfo.barA = boxA
   machineColInfo.barB = boxB
@@ -728,7 +734,7 @@ const handleFormBox = (data) => {
       arr.push(i)
     }
   }
-  console.log('machineColInfo.barB.boxList', arr, machineColInfo)
+  console.log('machineColInfo.barB.boxList', arr, machineColInfo, bar)
   // debugger
   nextTick(() => {
     for (let i=1; i <= length; i++) {
