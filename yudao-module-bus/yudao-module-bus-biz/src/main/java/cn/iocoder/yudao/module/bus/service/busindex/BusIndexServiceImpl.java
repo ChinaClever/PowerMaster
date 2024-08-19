@@ -191,11 +191,13 @@ public class BusIndexServiceImpl implements BusIndexService {
                 continue;
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-            String devKey = jsonObject.getString("dev_ip") + SPLIT_KEY_BUS + jsonObject.getString("bus_name");
+
+            String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id") + '-' + jsonObject.getString("addr");
             BusIndexRes busIndexRes = resMap.get(devKey);
             JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
             JSONArray loadRate = lineItemList.getJSONArray("load_rate");
             List<Double> rateList = loadRate.toList(Double.class);
+
             if(rateList.size() > 1) {
                 busIndexRes.setALoadRate(loadRate.getDouble(0));
                 busIndexRes.setBLoadRate(loadRate.getDouble(1));
@@ -247,7 +249,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                 continue;
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-            String devKey = jsonObject.getString("dev_ip") + SPLIT_KEY_BUS + jsonObject.getString("bus_name");
+            String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id") + '-' + jsonObject.getString("addr");
             BusRedisDataRes busRedisDataRes = resMap.get(devKey);
             JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
             JSONArray volValue = lineItemList.getJSONArray("vol_value");
@@ -409,7 +411,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                 continue;
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-            String devKey = jsonObject.getString("dev_ip") + SPLIT_KEY_BUS + jsonObject.getString("bus_name");
+            String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id") + '-' + jsonObject.getString("addr");
             BusBalanceDataRes busBalanceDataRes = resMap.get(devKey);
             JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
             JSONArray volValue = lineItemList.getJSONArray("vol_value");
@@ -608,7 +610,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                 continue;
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-            String devKey = jsonObject.getString("dev_ip") + SPLIT_KEY_BUS + jsonObject.getString("bus_name");
+            String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id") + '-' + jsonObject.getString("addr");
             BusTemRes busTemRes = resMap.get(devKey);
             JSONObject envItemList = jsonObject.getJSONObject("env_item_list");
             JSONArray temValue = envItemList.getJSONArray("tem_value");
@@ -668,7 +670,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                 continue;
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-            String devKey = jsonObject.getString("dev_ip") + SPLIT_KEY_BUS + jsonObject.getString("bus_name");
+            String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id") + '-' + jsonObject.getString("addr");
             BusPFRes busPFRes = resMap.get(devKey);
             JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
             JSONArray pfValue = lineItemList.getJSONArray("power_factor");
@@ -709,7 +711,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                 continue;
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-            String devKey = jsonObject.getString("dev_ip") + SPLIT_KEY_BUS + jsonObject.getString("bus_name");
+            String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id") + '-' + jsonObject.getString("addr");
             BusHarmonicRes busHarmonicRes = resMap.get(devKey);
             JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
             JSONArray curThd = lineItemList.getJSONArray("cur_thd");
@@ -744,6 +746,7 @@ public class BusIndexServiceImpl implements BusIndexService {
     public PageResult<BusLineRes> getBusLineDevicePage(BusIndexPageReqVO pageReqVO) {
         try {
             List<BusIndexDO> searchList = busIndexMapper.selectList(new LambdaQueryWrapperX<BusIndexDO>().inIfPresent(BusIndexDO::getDevKey, pageReqVO.getBusDevKeyList()));
+
             if(CollectionUtils.isEmpty(searchList)){
                 return new PageResult<>(new ArrayList<>(), 0L);
             }
@@ -819,14 +822,13 @@ public class BusIndexServiceImpl implements BusIndexService {
                     busLineRes.setL3MaxPow(powl3.getMaxValue().floatValue());
                     busLineRes.setL3MaxPowTime(powl3.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
                 }
-
                 result.add(busLineRes);
             }
             if(!CollectionUtils.isEmpty(result)){
                 getPosition(result);
             }
 
-            return new PageResult<BusLineRes>(result,total);
+            return new PageResult<>(result, total);
         }catch (Exception e){
             log.error("获取数据失败：", e);
         }
@@ -928,8 +930,14 @@ public class BusIndexServiceImpl implements BusIndexService {
         BusIndexPageReqVO reqVO = new BusIndexPageReqVO();
         reqVO.setDevKey(devKey);
         reqVO.setTimeType(0);
-        BusLineRes busLineRes = getBusLineDevicePage(reqVO).getList().get(0);
-        result.setMd(busLineRes.getL1MaxPow().doubleValue() + busLineRes.getL2MaxPow().doubleValue() + busLineRes.getL3MaxPow().doubleValue());
+        List<BusLineRes> list = getBusLineDevicePage(reqVO).getList();
+
+        if (!list.isEmpty()) {
+            BusLineRes busLineRes = list.get(0);
+            result.setMd(busLineRes.getL1MaxPow().doubleValue() + busLineRes.getL2MaxPow().doubleValue() + busLineRes.getL3MaxPow().doubleValue());
+        }else {
+            result.setMd(0.0);
+        }
         JSONArray volThd = lineItemList.getJSONArray("vol_thd");
         JSONArray curThd = lineItemList.getJSONArray("cur_thd");
         result.setIaTHD(curThd.getDouble(0));
