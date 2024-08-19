@@ -10,41 +10,62 @@
         center
       >
         <el-collapse v-model="activeNames" @change="handleChange">
-          <el-collapse-item title="始端箱" name="1">
+          <el-collapse-item title="A路始端箱" name="1">
             <div class="collapseItem">
-              <el-form-item label="A路名称：" prop="nameA">
-                <el-input v-model="formData.nameA" placeholder="请输入" />
-              </el-form-item>
-              <el-form-item label="B路名称：" prop="nameB">
-                <el-input v-model="formData.nameB" placeholder="请输入" />
-              </el-form-item>
-              <el-form-item label="A路ip：" prop="ipA">
-                <el-input v-model="formData.ipA" placeholder="请输入" />
-              </el-form-item>
-              <el-form-item label="B路ip：" prop="ipB">
-                <el-input v-model="formData.ipB" placeholder="请输入" />
-              </el-form-item>
-              <el-form-item label="A路插接箱位置：" prop="directionA">
-                <el-select v-model="formData.directionA" placeholder="请选择">
-                  <el-option label="左侧" :value="0" />
-                  <el-option label="右侧" :value="1" />
-                </el-select>
-              </el-form-item>
-              <el-form-item label="B路插接箱位置：" prop="directionB">
-                <el-select v-model="formData.directionB" placeholder="请选择">
-                  <el-option label="左侧" :value="0" />
-                  <el-option label="右侧" :value="1" />
-                </el-select>
-              </el-form-item>
+              <div class="flex">
+                <el-form-item label="母线编号：" prop="barIdA">
+                  <el-input v-model="formData.barIdA" placeholder="请输入" />
+                </el-form-item>
+                <el-form-item label="ip：" prop="ipA">
+                  <el-input v-model="formData.ipA" placeholder="请输入" />
+                </el-form-item>
+              </div>
+              <div class="flex">
+                <el-form-item label="极联地址：" prop="casAddrA">
+                  <el-select v-model="formData.casAddrA" placeholder="请选择">
+                    <el-option label="0" :value="0" />
+                    <el-option label="1" :value="1" />
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="插接箱位置：" prop="directionA">
+                  <el-select v-model="formData.directionA" placeholder="请选择">
+                    <el-option label="左侧" :value="0" />
+                    <el-option label="右侧" :value="1" />
+                  </el-select>
+                </el-form-item>
+              </div>
             </div>
           </el-collapse-item>
-          <el-collapse-item title="插接箱和连接器" name="2">
+          <el-collapse-item title="B路始端箱" name="2">
+            <div class="collapseItem">
+              <div class="flex">
+                <el-form-item label="母线编号：" prop="barIdB">
+                  <el-input v-model="formData.barIdB" placeholder="请输入" />
+                </el-form-item>
+                <el-form-item label="ip：" prop="ipB">
+                  <el-input v-model="formData.ipB" placeholder="请输入" />
+                </el-form-item>
+              </div>
+              <div class="flex">
+                <el-form-item label="极联地址：" prop="casAddrB">
+                  <el-select v-model="formData.casAddrB" placeholder="请选择">
+                    <el-option label="0" :value="0" />
+                    <el-option label="1" :value="1" />
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="插接箱位置：" prop="directionB">
+                  <el-select v-model="formData.directionB" placeholder="请选择">
+                    <el-option label="左侧" :value="0" />
+                    <el-option label="右侧" :value="1" />
+                  </el-select>
+                </el-form-item>
+              </div>
+            </div>
+          </el-collapse-item>
+          <el-collapse-item title="插接箱和连接器" name="3">
             <div class="collapseItem">
               <el-form-item label="插接箱数量：" prop="cjxAmount">
                 <el-input-number v-model="formData.cjxAmount" @change="tsead" :min="0" :max="20" />
-              </el-form-item>
-              <el-form-item label="连接器数量：" prop="ljqAmount">
-                <el-input-number v-model="formData.ljqAmount" :min="0" :max="20" />
               </el-form-item>
             </div>
           </el-collapse-item>
@@ -62,18 +83,19 @@
 import { FormRules } from 'element-plus'
 
 const colForm = ref()
-const activeNames = ref(['1', '2'])
+const activeNames = ref(['1', '2', '3'])
 const dialogVisible = ref(false) // 弹窗的是否展示
 const formLoading = ref(false) // 表单的加载中：1）修改时的数据加载；2）提交的按钮禁用
 const formData = ref({
-  nameA: '',
+  barIdA: '',
   ipA: '',
-  nameB: '',
+  barIdB: '',
   directionA: 0,
   directionB: 0,
+  casAddrA: 1,
+  casAddrB: 1,
   ipB: '',
   cjxAmount: 0,
-  ljqAmount: 0,
 })
 
 const tsead = () => {
@@ -81,9 +103,9 @@ const tsead = () => {
 }
 
 const formRules = reactive<FormRules>({
-  nameA: [{ required: true, message: 'A路始端箱名称不能为空', trigger: 'blur' }],
+  barIdA: [{ required: true, message: 'A路母线编号不能为空', trigger: 'blur' }],
   ipA: [{ required: true, message: 'A路ip不能为空', trigger: 'blur' }],
-  nameB: [{ required: true, message: 'B路始端箱名称不能为空', trigger: 'blur' }],
+  barIdB: [{ required: true, message: 'B路母线编号不能为空', trigger: 'blur' }],
   ipB: [{ required: true, message: 'B路ip不能为空', trigger: 'blur' }],
 })
 
@@ -124,14 +146,15 @@ const submitForm = async () => {
 /** 重置表单 */
 const resetForm = () => {
   formData.value = {
-    nameA: '',
+    barIdA: '',
     ipA: '',
-    nameB: '',
+    barIdB: '',
     directionA: 0,
     directionB: 0,
+    casAddrA: 1,
+    casAddrB: 1,
     ipB: '',
     cjxAmount: 0,
-    ljqAmount: 0,
   }
   colForm.value?.resetFields()
 }
@@ -144,6 +167,10 @@ const resetForm = () => {
 }
 :deep(.el-collapse-item__content) {
   padding: 0 20px 20px;
+}
+:deep(.el-form-item) {
+  width: 50%;
+  margin-right: 30px;
 }
 .formContainer {
   padding: 20px;
