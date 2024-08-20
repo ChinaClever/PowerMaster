@@ -1,6 +1,8 @@
 package cn.iocoder.yudao.module.aisle.dto;
 
 import com.alibaba.fastjson2.JSONObject;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import netscape.javascript.JSObject;
 
@@ -107,4 +109,13 @@ public class CabinetDetailDataDTO {
      * 温度
      */
     private Double temData;
+
+    @JsonProperty(value="xCoordinate")
+    private int xCoordinate;
+
+    /**
+     * 类名
+     */
+    @JsonProperty(value="yCoordinate")
+    private int yCoordinate;
 }
