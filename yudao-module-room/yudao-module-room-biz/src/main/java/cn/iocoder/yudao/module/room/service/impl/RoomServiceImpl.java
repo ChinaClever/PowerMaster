@@ -25,6 +25,8 @@ import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.module.aisle.api.AisleApi;
+import cn.iocoder.yudao.module.cabinet.api.CabinetApi;
 import cn.iocoder.yudao.module.room.dto.*;
 import cn.iocoder.yudao.module.room.service.RoomService;
 import cn.iocoder.yudao.module.room.vo.RoomSaveVo;
@@ -123,6 +125,11 @@ public class RoomServiceImpl implements RoomService {
 
     @Autowired
     CabinetEnvSensorMapper envSensorMapper;
+
+    @Autowired
+    CabinetApi cabinetApi;
+    @Autowired
+    AisleApi aisleApi;
     /**
      * 机房保存
      * @param roomSaveVo 保存参数
@@ -162,36 +169,40 @@ public class RoomServiceImpl implements RoomService {
                 //更改后的柜列
                 List<Integer> ids =  roomSaveVo.getAisleList().stream().map(AisleSaveVo::getId).filter(Objects::nonNull).collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(ids)){
-                    aisleIndexMapper.update(new LambdaUpdateWrapper<AisleIndex>()
-                            .eq(AisleIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
-                            .eq(AisleIndex::getRoomId,roomSaveVo.getId())
-                            .notIn(AisleIndex::getId,ids)
-                            .set(AisleIndex::getIsDelete,DelEnums.DELETE.getStatus()));
-
                     //需要删除的机柜
                     List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaUpdateWrapper<CabinetIndex>()
                                     .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
                                     .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
                                     .gt(CabinetIndex::getAisleId,0)
                                     .notIn(CabinetIndex::getAisleId,ids));
-                    //删除柜列下机柜
-                    cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
-                            .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
-                            .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
-                            .gt(CabinetIndex::getAisleId,0)
-                            .notIn(CabinetIndex::getAisleId,ids)
-                            .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
-
                     //需要删除的机架
                     if (!CollectionUtils.isEmpty(cabinetIndexList)){
                         rackIndexDoMapper.delete(new LambdaQueryWrapper<RackIndex>()
                                 .in(RackIndex::getCabinetId,cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList())));
                     }
-                }else {
-                    aisleIndexMapper.update(new LambdaUpdateWrapper<AisleIndex>()
+
+                    //删除柜列下机柜
+                    if (!CollectionUtils.isEmpty(cabinetIndexList)){
+                       cabinetIndexList.forEach(cabinetIndex -> {
+                           try {
+                               cabinetApi.delCabinet(cabinetIndex.getId());
+                           } catch (Exception e) {
+                               throw new RuntimeException(e);
+                           }
+                       });
+                    }
+                    //删除柜列
+                    List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>()
                             .eq(AisleIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
                             .eq(AisleIndex::getRoomId,roomSaveVo.getId())
-                            .set(AisleIndex::getIsDelete,DelEnums.DELETE.getStatus()));
+                            .notIn(AisleIndex::getId,ids));
+                    if (!CollectionUtils.isEmpty(aisleIndexList)){
+                        aisleIndexList.forEach(aisleIndex -> aisleApi.deleteAisle(aisleIndex.getId()));
+                    }
+
+
+                }else {
+
 
                     //需要删除的机柜
                     List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaUpdateWrapper<CabinetIndex>()
@@ -199,19 +210,29 @@ public class RoomServiceImpl implements RoomService {
                             .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
                             .gt(CabinetIndex::getAisleId,0));
 
-
-                    //删除柜列下机柜
-                    cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
-                            .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
-                            .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
-                            .gt(CabinetIndex::getAisleId,0)
-                            .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
-
                     //需要删除的机架
                     if (!CollectionUtils.isEmpty(cabinetIndexList)){
                         rackIndexDoMapper.delete(new LambdaQueryWrapper<RackIndex>()
                                 .in(RackIndex::getCabinetId,cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList())));
                     }
+                    //删除柜列下机柜
+                    if (!CollectionUtils.isEmpty(cabinetIndexList)){
+                        cabinetIndexList.forEach(cabinetIndex -> {
+                            try {
+                                cabinetApi.delCabinet(cabinetIndex.getId());
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+                    }
+                    //删除柜列
+                    List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>()
+                            .eq(AisleIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
+                            .eq(AisleIndex::getRoomId,roomSaveVo.getId()));
+                    if (!CollectionUtils.isEmpty(aisleIndexList)){
+                        aisleIndexList.forEach(aisleIndex -> aisleApi.deleteAisle(aisleIndex.getId()));
+                    }
+
                 }
 
                 roomSaveVo.getAisleList().forEach(aisleSaveVo -> {
@@ -219,28 +240,36 @@ public class RoomServiceImpl implements RoomService {
                     aisleSave(aisleSaveVo);
                 });
             }else {
-                aisleIndexMapper.update(new LambdaUpdateWrapper<AisleIndex>()
-                        .eq(AisleIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
-                        .eq(AisleIndex::getRoomId,roomSaveVo.getId())
-                        .set(AisleIndex::getIsDelete,DelEnums.DELETE.getStatus()));
+
                 //需要删除的机柜
                 List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaUpdateWrapper<CabinetIndex>()
                         .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
                         .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
                         .gt(CabinetIndex::getAisleId,0));
-
-                //删除柜列下机柜
-                cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
-                        .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
-                        .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
-                        .gt(CabinetIndex::getAisleId,0)
-                        .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
-
                 //需要删除的机架
                 if (!CollectionUtils.isEmpty(cabinetIndexList)){
                     rackIndexDoMapper.delete(new LambdaQueryWrapper<RackIndex>()
                             .in(RackIndex::getCabinetId,cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList())));
                 }
+
+                //删除柜列下机柜
+                if (!CollectionUtils.isEmpty(cabinetIndexList)){
+                    cabinetIndexList.forEach(cabinetIndex -> {
+                        try {
+                            cabinetApi.delCabinet(cabinetIndex.getId());
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                }
+
+                //删除柜列
+                List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>()
+                        .eq(AisleIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
+                        .eq(AisleIndex::getRoomId,roomSaveVo.getId()));
+              if (!CollectionUtils.isEmpty(aisleIndexList)){
+                  aisleIndexList.forEach(aisleIndex -> aisleApi.deleteAisle(aisleIndex.getId()));
+              }
             }
 
             //机柜
@@ -260,31 +289,37 @@ public class RoomServiceImpl implements RoomService {
                                 .in(RackIndex::getCabinetId,cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList())));
                     }
 
-                    cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
-                            .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
-                            .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
-                            .eq(CabinetIndex::getAisleId,0)
-                            .notIn(CabinetIndex::getId,ids)
-                            .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
+                    if (!CollectionUtils.isEmpty(cabinetIndexList)){
+                        cabinetIndexList.forEach(cabinetIndex -> {
+                            try {
+                                cabinetApi.delCabinet(cabinetIndex.getId());
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+                    }
 
 
                 }else {
                     //需要删除的机柜
                     List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaUpdateWrapper<CabinetIndex>()
                             .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
-                            .eq(CabinetIndex::getAisleId,0)
-                            .notIn(CabinetIndex::getId,ids));
+                            .eq(CabinetIndex::getAisleId,0));
                     //需要删除的机架
                     if (!CollectionUtils.isEmpty(cabinetIndexList)){
                         rackIndexDoMapper.delete(new LambdaQueryWrapper<RackIndex>()
                                 .in(RackIndex::getCabinetId,cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList())));
                     }
 
-                    cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
-                            .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
-                            .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
-                            .eq(CabinetIndex::getAisleId,0)
-                            .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
+                    if (!CollectionUtils.isEmpty(cabinetIndexList)){
+                        cabinetIndexList.forEach(cabinetIndex -> {
+                            try {
+                                cabinetApi.delCabinet(cabinetIndex.getId());
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+                    }
                 }
 
                 //新增/保存
@@ -306,11 +341,15 @@ public class RoomServiceImpl implements RoomService {
                             .in(RackIndex::getCabinetId,cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList())));
                 }
 
-                cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
-                        .eq(CabinetIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
-                        .eq(CabinetIndex::getRoomId,roomSaveVo.getId())
-                        .eq(CabinetIndex::getAisleId,0)
-                        .set(CabinetIndex::getIsDeleted,DelEnums.DELETE.getStatus()));
+                if (!CollectionUtils.isEmpty(cabinetIndexList)){
+                    cabinetIndexList.forEach(cabinetIndex -> {
+                        try {
+                            cabinetApi.delCabinet(cabinetIndex.getId());
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                }
             }
 
             return index.getId();

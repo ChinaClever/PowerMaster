@@ -59,6 +59,8 @@
           <div class="startBus" v-if="!machineColInfo.barB.direction">
             <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barB" :btns="btns" />
           </div>
+          <div class="maskPoint1"></div>
+          <div class="maskPoint2"></div>
         </div>
         <div class="main">
           <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="busListContainer" @click.right="handlePluginRightClick($event, 'A')">
@@ -460,17 +462,17 @@ const addCabinetAnchor = (index, data = {} as any, onlyDelete = false) => {
   instance?.removeAllEndpoints(cabElementB)
   if (onlyDelete) return
   // 添加瞄点
-  if (!Number.isInteger(data.boxIndexA) || !data.boxOutletIdA) instance?.addEndpoint(cabElementA, {
+  if (data.boxIndexA === '' || !data.boxOutletIdA) instance?.addEndpoint(cabElementA, {
     source: true,
     target: true,
     endpoint: 'Dot'
   })
-  if (!Number.isInteger(data.boxIndexB) || !data.boxOutletIdB) instance?.addEndpoint(cabElementB, {
+  if (data.boxIndexA === '' || !data.boxOutletIdB) instance?.addEndpoint(cabElementB, {
     source: true,
     target: true,
     endpoint: 'Dot'
   })
-  if (Number.isInteger(data.boxIndexA) && data.boxOutletIdA) { // A路有连接
+  if ((data.boxIndexA !== '' && data.boxIndexA > -1) && data.boxOutletIdA) { // A路有连接
     const source = document.getElementById('cab-A-' + index) as Element
     const target = document.getElementById(`plugin-${data.boxIndexA}_A-${data.boxOutletIdA}`)  as Element
     console.log('target', source, target, data.boxIndexA, data.boxOutletIdA, machineColInfo)
@@ -484,7 +486,7 @@ const addCabinetAnchor = (index, data = {} as any, onlyDelete = false) => {
       }
     })
   }
-  if (Number.isInteger(data.boxIndexB) && data.boxOutletIdB) { // B路有连接
+  if ((data.boxIndexA !== '' && data.boxIndexA > -1) && data.boxOutletIdB) { // B路有连接
     const source = document.getElementById('cab-B-' + index) as Element
     const target = document.getElementById(`plugin-${data.boxIndexB}_B-${data.boxOutletIdB}`)  as Element
     console.log('target---', source, target)
@@ -590,10 +592,11 @@ const handleOperate = (type) => {
     if (machineColInfo.barA) {
       info = {
         roomId: machineColInfo.roomId,
-        barA: true,
-        busNameA: machineColInfo.barA.busName,
+        barA: machineColInfo.barA.boxList,
+        barB: machineColInfo.barB.boxList,
+        barIdA: machineColInfo.barA.barId,
         busIpA: machineColInfo.barA.devIp,
-        busNameB: machineColInfo.barB.busName,
+        barIdB: machineColInfo.barB.barId,
         busIpB: machineColInfo.barB.devIp,
         boxAmount: machineColInfo.barA.boxList.length
       }
@@ -641,8 +644,6 @@ const handleConfig = () => {
   if(machineColInfo.barA) {
     console.log('machineColInfo', machineColInfo.barA)
     const boxList = machineColInfo.barA.boxList
-    const plugin = boxList.filter(item => !item.type)
-    const connect = boxList.filter(item => item.type)
     data = {
       barIdA: machineColInfo.barA.barId,
       ipA: machineColInfo.barA.devIp,
@@ -652,8 +653,7 @@ const handleConfig = () => {
       casAddrA: machineColInfo.barA.casAddr,
       casAddrB: machineColInfo.barB.casAddr,
       ipB: machineColInfo.barB.devIp,
-      cjxAmount: plugin.length,
-      ljqAmount: connect.length,
+      cjxAmount: boxList.length,
     }
     console.log(data)
   }
@@ -668,13 +668,22 @@ const handleSubmit = () => {
 // 插接箱弹窗确认后的处理
 const handleFormPlugin = (data) => {
   console.log('handleFormSave', data)
-  let arr = [] as any
+  let arrA = [] as any
+  let arrB = [] as any
   const machineColInfoLength = (machineColInfo.barA && machineColInfo.barA.boxList) ? machineColInfo.barA.boxList.length : 0
   for(let i=0; i < data.cjxAmount; i++) {
     if(i < machineColInfoLength) {
-      arr.push(machineColInfo.barA.boxList[i])
+      arrA.push(machineColInfo.barA.boxList[i])
+      arrB.push(machineColInfo.barB.boxList[i])
     } else {
-      arr.push({
+      arrA.push({
+        casAddr: i+2,
+        outletNum: 3,
+        type: 0,
+        boxName: 'box-' + i,
+        boxIndex: i,
+      })
+      arrB.push({
         casAddr: i+2,
         outletNum: 3,
         type: 0,
@@ -689,7 +698,7 @@ const handleFormPlugin = (data) => {
     devIp: data.ipA,
     path: 'A',
     direction: data.directionA,
-    boxList: [...arr]
+    boxList: arrA
   }
   const boxB = {
     barId: data.barIdB,
@@ -697,7 +706,7 @@ const handleFormPlugin = (data) => {
     devIp: data.ipB,
     path: 'B',
     direction: data.directionB,
-    boxList: [...arr]
+    boxList: arrB
   }
   machineColInfo.barA = boxA
   machineColInfo.barB = boxB
@@ -720,6 +729,7 @@ const handleFormBox = (data) => {
   const bar = `bar${operateMenuBox.value.type}`
   const index = operateMenuBox.value.curIndex
   const length = data.outletNum
+  debugger
   machineColInfo[bar].boxList.splice(index, 1, data)
   for (let i=1; i <= length; i++) {
     const boxElement = document.getElementById('plugin-' + index + '_' + operateMenuBox.value.type + '-' + i) as Element
@@ -728,8 +738,7 @@ const handleFormBox = (data) => {
       arr.push(i)
     }
   }
-  console.log('machineColInfo.barB.boxList', arr, machineColInfo)
-  // debugger
+  console.log('machineColInfo.barB.boxList', arr, machineColInfo, bar)
   nextTick(() => {
     for (let i=1; i <= length; i++) {
       const boxElement = document.getElementById('plugin-' + index + '_' + operateMenuBox.value.type + '-' + i) as Element
@@ -1504,6 +1513,8 @@ onBeforeUnmount(() => {
   // padding-bottom: 20px;
   // min-height: calc(100vh - 270px);
   .Bus {
+    position: relative;
+    z-index: 1;
     width: 66px;
     .startBus {
       font-size: 12px;
@@ -1517,8 +1528,24 @@ onBeforeUnmount(() => {
       align-items: center;
       justify-content: center;
       background-color: silver;
-      box-shadow: 0 0 10px silver;
+      // box-shadow: 0 0 10px silver;
       margin-bottom: 50px;
+    }
+    .maskPoint1 {
+      width: 10px;
+      height: 6px;
+      position: absolute;
+      left: -5px;
+      top: -6px;
+      background-color: #fff;
+    }
+    .maskPoint2{
+      width: 6px;
+      height: 6px;
+      position: absolute;
+      left: -6px;
+      top: 0;
+      background-color: #fff;
     }
   }
   .main {
