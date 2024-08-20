@@ -69,7 +69,7 @@ const open = async (data) => {
   dialogVisible.value = true
   resetForm()
   console.log('data', data)
-  if (data) formData.value = data
+  if (data) formData.value = {...data}
 }
 defineExpose({ open }) // 提供 open 方法，用于打开弹窗
 
