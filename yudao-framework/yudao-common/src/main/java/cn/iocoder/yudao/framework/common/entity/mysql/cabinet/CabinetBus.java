@@ -47,12 +47,12 @@ public class CabinetBus implements Serializable {
     /**
      * 标记位-名字  前端用
      */
-    private Integer boxIndexA;
+    private String boxIndexA;
 
     /**
      * 标记位-名字  前端用
      */
-    private Integer boxIndexB;
+    private String boxIndexB;
 
     /**
      * 更新时间
