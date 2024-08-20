@@ -20,6 +20,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
@@ -65,6 +66,7 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.*;
@@ -94,6 +96,8 @@ public class AisleServiceImpl implements AisleService {
     RoomIndexMapper roomIndexMapper;
     @Resource
     CabinetIndexMapper cabinetIndexMapper;
+    @Resource
+    CabinetCfgDoMapper  cabinetCfgDoMapper;
     @Resource
     BusIndexDoMapper busIndexDoMapper;
     @Resource
@@ -871,9 +875,19 @@ public class AisleServiceImpl implements AisleService {
 
         List<CabinetDetailDataDTO> cabList = new ArrayList<>();
         if (!CollectionUtils.isEmpty(cabinetIndexList)){
+
+            List<CabinetCfg> cabinetCfgs = cabinetCfgDoMapper.selectList(new LambdaQueryWrapper<CabinetCfg>()
+                    .in(CabinetCfg::getCabinetId,cabinetIndexList.stream().map(CabinetIndex::getId).collect(Collectors.toList())));
+            Map<Integer,CabinetCfg> cfgMap = new HashMap<>();
+            if (!CollectionUtils.isEmpty(cabinetCfgs)){
+                cfgMap.putAll(cabinetCfgs.stream().collect(Collectors.toMap(CabinetCfg::getCabinetId, Function.identity())));
+            }
+
             cabinetIndexList.forEach(cabinetIndex ->{
                 CabinetDetailDataDTO cabDto = new CabinetDetailDataDTO();
                 cabDto.setId(cabinetIndex.getId());
+                cabDto.setXCoordinate(cfgMap.get(cabinetIndex.getId()).getXCoordinate());
+                cabDto.setYCoordinate(cfgMap.get(cabinetIndex.getId()).getYCoordinate());
                 String cabKey =  REDIS_KEY_CABINET + cabinetIndex.getRoomId() + SPLIT_KEY + cabinetIndex.getId();
                 Object cabObject = ops.get(cabKey);
                 if (Objects.nonNull(cabObject)) {
@@ -975,7 +989,10 @@ public class AisleServiceImpl implements AisleService {
                 }
                cabList.add(cabDto);
             });
-            detailDTO.setCabinetList(cabList);
+            detailDTO.setCabinetList(cabList.stream()
+                    .sorted(Comparator.comparing(CabinetDetailDataDTO::getXCoordinate))
+                    .sorted(Comparator.comparing(CabinetDetailDataDTO::getYCoordinate))
+                    .collect(Collectors.toList()));
         }
 
 
