@@ -121,7 +121,7 @@
     </div>
   </el-card>
   <layoutForm ref="machineForm" @success="handleChange" />
-  <Dialog v-model="dialogVisible" title="机房配置" width="30%">
+  <el-dialog v-model="dialogVisible" title="机房配置" width="30%" :before-close="handleDialogCancel">
     <el-form>
       <el-form-item label="机房名" label-width="90">
         <el-input v-model="rowColInfo.roomName" placeholder="请输入" />
@@ -153,7 +153,7 @@
       <el-button @click="handleDialogCancel">取 消</el-button>
       <el-button type="primary" @click="submitSetting">确 定</el-button>
     </template>
-  </Dialog>
+  </el-dialog>
 </div>
 </template>
 
