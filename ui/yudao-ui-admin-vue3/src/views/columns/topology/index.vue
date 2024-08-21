@@ -381,6 +381,7 @@ const initConnect = () => {
       const index = targetId.split('-')[2]
       cabinetList.value[index][`boxOutletId${cabRoad}`] = ''
       cabinetList.value[index][`boxIndex${cabRoad}`] = ''
+      cabinetList.value[index][`addr${cabRoad}`] = null
     }
     // 如果返回 false，则连接断开操作会被取消
     return true
