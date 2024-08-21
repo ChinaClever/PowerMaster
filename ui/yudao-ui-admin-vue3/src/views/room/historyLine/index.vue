@@ -13,7 +13,7 @@
         <div class="nav_header">
           <span v-if="nowAddress">{{nowAddress}}</span>
           <br/>
-          <template v-if="nowAddress">
+          <template v-if="nowAddress && queryParams.timeRange != null">
             <span>{{queryParams.timeRange[0]}}</span>
             <span>至</span>
             <span>{{queryParams.timeRange[1]}}</span>
