@@ -40,7 +40,7 @@
         </template>
       </div>
       <div v-if="!isFromHome">
-        <el-button v-if="!editEnable" @click="editEnable = true" type="primary" plain><Icon icon="ep:edit" class="mr-5px" />编辑</el-button>
+        <el-button v-if="!editEnable" @click="handleEditClick" type="primary" plain><Icon icon="ep:edit" class="mr-5px" />编辑</el-button>
         <el-button v-if="editEnable" @click="handleCancel" type="primary" plain>取消</el-button>
         <el-button v-if="editEnable" @click="handleConfig" type="primary" plain>配置</el-button>
         <el-button v-if="editEnable" @click="handleSubmit" type="primary" plain>保存</el-button>
@@ -68,7 +68,7 @@
             <div class="busList1">
               <template v-for="(bus, index) in machineColInfo.barA.boxList" :key="index">
                 <!-- 插接箱 -->
-                <div v-if="bus.type == 0" class="plugin-box" :id="`box-${index}`">
+                <div v-if="bus.type == 0" class="plugin-box" :id="`box-${index}`" @dblclick="handlePluginDblick($event, 'A')">
                   <PluginBox :chosenBtn="chosenBtn" :pluginData="bus" :btns="btns" />
                   <div class="pointContainer">
                     <div v-for="pointIndex in bus.outletNum" :key="pointIndex" class="point" :id="`plugin-${bus.boxIndex}_A-${pointIndex}`"></div>
@@ -98,7 +98,7 @@
             <div class="busList2">
               <template v-for="(bus, index) in machineColInfo.barB.boxList" :key="index">
                 <!-- 插接箱 -->
-                <div v-if="bus.type == 0" class="plugin-box" :id="`box-${index}`">
+                <div v-if="bus.type == 0" class="plugin-box" :id="`box-${index}`" @dblclick="handlePluginDblick($event, 'B')">
                   <PluginBox :chosenBtn="chosenBtn" :pluginData="bus" :btns="btns" />
                   <div class="pointContainer">
                     <div v-for="pointIndex in bus.outletNum" :key="pointIndex" class="point" :id="`plugin-${bus.boxIndex}_B-${pointIndex}`"></div>
@@ -427,11 +427,24 @@ const toCreatConnect = (onlyDelete = false) => {
         }
       })
       cabinetList.value.forEach((item, index) => {
-        if (!item.cabinetName) return
+        if (!item.cabinetName && machineColInfo.pduBar) return
         addCabinetAnchor(index, item, onlyDelete)
       })
+      return Promise.resolve()
     })
   }
+}
+// 创建瞄点并连接
+const controlEndpointShow = (show) => {
+  setTimeout((() => {
+    const points = document.querySelectorAll('.jtk-endpoint')
+    console.log('points', points)
+    points.forEach(element  => {
+      console.log('element', element)
+      const a = element as any
+      a.style.opacity = show ? 1 : 0.1
+    })
+  }), 100)
 }
 // 更新插接箱瞄点
 const updatePluginAnchor = () => {
@@ -541,6 +554,7 @@ const handleCabRightClick = (e) => {
 // 处理插接箱/母线右击事件
 const handlePluginRightClick = (e, type) => {
   e.preventDefault()
+  if (!editEnable.value) return
   const targetId = e.target.id || e.target.parentNode.id
   console.log('处理插接箱母线右击事件',type, e.target.className, e.target.parentNode, targetId, e.currentTarget)
   if (!targetId || !targetId.includes('box')) return
@@ -556,6 +570,12 @@ const handlePluginRightClick = (e, type) => {
     curIndex: currentIndex,
     type
   }
+}
+const handlePluginDblick = (e, road) => {
+  const targetId = e.target.id || e.target.parentNode.id
+  const index = targetId.split('-')[1]
+  console.log('targetId', targetId, machineColInfo, index)
+  push({path: '/bus/busmonitor/powerLoadDetail', state: { devKey: machineColInfo[`bar${road}`].boxList[index].barKey}})
 }
 // 处理插接箱/连接器菜单点击事件
 const handleBoxOperate = (type, road) => {
@@ -625,6 +645,11 @@ const handleOperate = (type) => {
     })
   }
   console.log('handleOperate', machineColInfo)
+}
+// 处理编辑事件
+const handleEditClick = () => {
+  editEnable.value = true
+  controlEndpointShow(true)
 }
 // 处理编辑取消事件
 const handleCancel = () => {
@@ -720,7 +745,7 @@ const handleFormCabinet = (data) => {
   console.log('handleFormCabinet', data, operateMenu.value)
   data.index = +operateMenu.value.curIndex + 1
   cabinetList.value.splice(operateMenu.value.curIndex, 1, data)
-  if (machineColInfo.barA) nextTick(() => {
+  if (machineColInfo.barA && machineColInfo.pduBar) nextTick(() => {
     addCabinetAnchor(operateMenu.value.curIndex, data)
   })
 }
@@ -1316,7 +1341,7 @@ const saveMachineBus = async() => {
   console.log('saveMachineBus', res)
 }
 // 处理机柜列表
-const handleCabinetList = (data, status) => {
+const handleCabinetList = async(data, status) => {
   console.log('处理机柜列表', data, status)
   const arr = [] as any
   for (let i=0; i < data.length; i++) {
@@ -1330,7 +1355,8 @@ const handleCabinetList = (data, status) => {
   cabinetList.value = arr
   handleDataDetail(status)
   handleCssScale()
-  toCreatConnect()
+  await toCreatConnect()
+  controlEndpointShow(false)
 }
 // 增加空机柜
 const addMachine = () => {
@@ -1411,6 +1437,7 @@ watch(() => queryParams.cabinetroomId, (val) => {
 watch(() => queryParams.cabinetColumnId,(val) => {
   console.log('wwwwwwwwwww', val, machineList.value)
   emit('idChange', val)
+  editEnable.value = false
   toCreatConnect(true)
   instance?.deleteEveryConnection()
   getMachineColInfo()
@@ -1585,6 +1612,7 @@ onBeforeUnmount(() => {
           border-top: none;
           background-color: #fff;
           margin: 0 39px;
+          z-index: 999;
           .line {
             width: 5px;
             height: 100px;
@@ -1596,12 +1624,13 @@ onBeforeUnmount(() => {
             display: flex;
             justify-content: space-around;
             position: absolute;
-            bottom: -5px;
+            bottom: 0px;
             .point {
               border: 1px solid;
               width: 5px;
               height: 5px;
               border-radius: 50%;
+              opacity: 0;
             }
           }
         }
@@ -1658,9 +1687,10 @@ onBeforeUnmount(() => {
     justify-content: center;
     .cabinetBox {
       .point {
-        height: 7px;
+        height: 5px;
         display: flex;
         justify-content: space-around;
+        opacity: 0;
         .leftPoint {
           width: 5px;
           height: 5px;
