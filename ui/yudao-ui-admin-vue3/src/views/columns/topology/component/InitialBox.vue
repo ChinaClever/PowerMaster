@@ -58,9 +58,9 @@
       </div>
     </template>
     <template v-else-if="chosenBtn == 10 && pluginData.yesterdayEq">
-      <div class="box" v-for="(line, boxIndex) in pluginData.yesterdayEq" :key="boxIndex">
-        <div>E{{boxIndex + 1}}</div>
-        <div>{{line}}</div>
+      <div class="box" >
+        <div>E</div>
+        <div>{{pluginData.yesterdayEq.toFixed(2)}}</div>
       </div>
     </template>
     <template v-else>
