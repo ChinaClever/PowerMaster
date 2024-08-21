@@ -14,7 +14,7 @@
           <span v-if="nowAddress">{{nowAddress}}</span>
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
           <br/>
-          <template v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total'">
+          <template v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total' && queryParams.timeRange != null">
             <span>{{queryParams.timeRange[0]}}</span>
             <span>至</span>
             <span>{{queryParams.timeRange[1]}}</span>
