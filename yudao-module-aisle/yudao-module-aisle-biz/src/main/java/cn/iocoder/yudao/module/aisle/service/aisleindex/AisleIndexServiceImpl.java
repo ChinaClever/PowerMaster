@@ -146,6 +146,9 @@ public class AisleIndexServiceImpl implements AisleIndexService {
 
     @Override
     public PageResult<AisleIndexRes> getIndexPage(AisleIndexPageReqVO pageReqVO) {
+        if (pageReqVO.getAisleIds() != null && pageReqVO.getAisleIds().get(0) == -1){
+            return new PageResult<>(new ArrayList<>(), 0L);
+        }
         PageResult<AisleIndexDO> aisleIndexDOPageResult = aisleIndexCopyMapper.selectPage(pageReqVO);
         List<AisleIndexDO> list = aisleIndexDOPageResult.getList();
         List<Integer> aisleIds = list.stream().map(AisleIndexDO::getId).collect(Collectors.toList());
@@ -172,7 +175,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 continue;
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-            String busDevKey = jsonObject.getString("dev_ip") + SPLIT_KEY_BUS + jsonObject.getString("bus_name");
+            String busDevKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id") + '-' + jsonObject.getString("addr");
             JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
             JSONArray loadRate = lineItemList.getJSONArray("load_rate");
             List<Double> rateList = loadRate.toList(Double.class);
