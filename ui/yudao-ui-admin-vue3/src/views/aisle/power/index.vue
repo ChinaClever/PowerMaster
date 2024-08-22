@@ -46,7 +46,7 @@
       >
         <el-form-item  prop="status">
           <el-checkbox-group  v-model="queryParams.status">
-              <el-checkbox  value="5">在线</el-checkbox>
+              <el-checkbox  label="5">在线</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
         <el-form-item label="网络地址" prop="devKey">

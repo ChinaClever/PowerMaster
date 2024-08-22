@@ -406,6 +406,11 @@ const handleCheck = async (row) => {
   }else{
     queryParams.aisleIds = ids
   }
+  queryParams.id = ""
+  // if(haveCabinet ){
+  //   queryParams.aisleIds = ids
+  //   getList();
+  // }
 
   getList();
 }
