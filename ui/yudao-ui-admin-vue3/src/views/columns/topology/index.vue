@@ -1216,7 +1216,7 @@ const handleDataDetail = (res) => {
             series: [
               {
                 name: 'load',
-                data: [item.yesterdayEq],
+                data: [item.yesterdayEq ? item.yesterdayEq.toFixed(2) : 0],
                 type: 'bar',
                 barWidth: '100%',
                 showBackground: true,
