@@ -40,7 +40,7 @@
         </template>
       </div>
       <div v-if="!isFromHome">
-        <el-button v-if="!editEnable" @click="editEnable = true" type="primary" plain><Icon icon="ep:edit" class="mr-5px" />编辑</el-button>
+        <el-button v-if="!editEnable" @click="handleEditClick" type="primary" plain><Icon icon="ep:edit" class="mr-5px" />编辑</el-button>
         <el-button v-if="editEnable" @click="handleCancel" type="primary" plain>取消</el-button>
         <el-button v-if="editEnable" @click="handleConfig" type="primary" plain>配置</el-button>
         <el-button v-if="editEnable" @click="handleSubmit" type="primary" plain>保存</el-button>
@@ -59,6 +59,8 @@
           <div class="startBus" v-if="!machineColInfo.barB.direction">
             <InitialBox :chosenBtn="chosenBtn" :pluginData="machineColInfo.barB" :btns="btns" />
           </div>
+          <div class="maskPoint1"></div>
+          <div class="maskPoint2"></div>
         </div>
         <div class="main">
           <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="busListContainer" @click.right="handlePluginRightClick($event, 'A')">
@@ -66,7 +68,7 @@
             <div class="busList1">
               <template v-for="(bus, index) in machineColInfo.barA.boxList" :key="index">
                 <!-- 插接箱 -->
-                <div v-if="bus.type == 0" class="plugin-box" :id="`box-${index}`">
+                <div v-if="bus.type == 0" class="plugin-box" :id="`box-${index}`" @dblclick="handlePluginDblick($event, 'A')">
                   <PluginBox :chosenBtn="chosenBtn" :pluginData="bus" :btns="btns" />
                   <div class="pointContainer">
                     <div v-for="pointIndex in bus.outletNum" :key="pointIndex" class="point" :id="`plugin-${bus.boxIndex}_A-${pointIndex}`"></div>
@@ -96,7 +98,7 @@
             <div class="busList2">
               <template v-for="(bus, index) in machineColInfo.barB.boxList" :key="index">
                 <!-- 插接箱 -->
-                <div v-if="bus.type == 0" class="plugin-box" :id="`box-${index}`">
+                <div v-if="bus.type == 0" class="plugin-box" :id="`box-${index}`" @dblclick="handlePluginDblick($event, 'B')">
                   <PluginBox :chosenBtn="chosenBtn" :pluginData="bus" :btns="btns" />
                   <div class="pointContainer">
                     <div v-for="pointIndex in bus.outletNum" :key="pointIndex" class="point" :id="`plugin-${bus.boxIndex}_B-${pointIndex}`"></div>
@@ -379,6 +381,13 @@ const initConnect = () => {
       const index = targetId.split('-')[2]
       cabinetList.value[index][`boxOutletId${cabRoad}`] = ''
       cabinetList.value[index][`boxIndex${cabRoad}`] = ''
+      cabinetList.value[index][`addr${cabRoad}`] = null
+      const cabElement = document.getElementById('cab-' + cabRoad + '-' + index) as Element
+      instance?.addEndpoint(cabElement, {
+        source: true,
+        target: true,
+        endpoint: 'Dot'
+      })
     }
     // 如果返回 false，则连接断开操作会被取消
     return true
@@ -424,11 +433,24 @@ const toCreatConnect = (onlyDelete = false) => {
         }
       })
       cabinetList.value.forEach((item, index) => {
-        if (!item.cabinetName) return
+        if (!item.cabinetName && machineColInfo.pduBar) return
         addCabinetAnchor(index, item, onlyDelete)
       })
+      return Promise.resolve()
     })
   }
+}
+// 创建瞄点并连接
+const controlEndpointShow = (show) => {
+  setTimeout((() => {
+    const points = document.querySelectorAll('.jtk-endpoint')
+    console.log('points', points)
+    points.forEach(element  => {
+      console.log('element', element)
+      const a = element as any
+      a.style.opacity = show ? 1 : 0.1
+    })
+  }), 100)
 }
 // 更新插接箱瞄点
 const updatePluginAnchor = () => {
@@ -460,17 +482,17 @@ const addCabinetAnchor = (index, data = {} as any, onlyDelete = false) => {
   instance?.removeAllEndpoints(cabElementB)
   if (onlyDelete) return
   // 添加瞄点
-  if (!Number.isInteger(data.boxIndexA) || !data.boxOutletIdA) instance?.addEndpoint(cabElementA, {
+  if (data.boxIndexA === '' || !data.boxOutletIdA) instance?.addEndpoint(cabElementA, {
     source: true,
     target: true,
     endpoint: 'Dot'
   })
-  if (!Number.isInteger(data.boxIndexB) || !data.boxOutletIdB) instance?.addEndpoint(cabElementB, {
+  if (data.boxIndexA === '' || !data.boxOutletIdB) instance?.addEndpoint(cabElementB, {
     source: true,
     target: true,
     endpoint: 'Dot'
   })
-  if (Number.isInteger(data.boxIndexA) && data.boxOutletIdA) { // A路有连接
+  if ((data.boxIndexA !== '' && data.boxIndexA > -1) && data.boxOutletIdA) { // A路有连接
     const source = document.getElementById('cab-A-' + index) as Element
     const target = document.getElementById(`plugin-${data.boxIndexA}_A-${data.boxOutletIdA}`)  as Element
     console.log('target', source, target, data.boxIndexA, data.boxOutletIdA, machineColInfo)
@@ -484,7 +506,7 @@ const addCabinetAnchor = (index, data = {} as any, onlyDelete = false) => {
       }
     })
   }
-  if (Number.isInteger(data.boxIndexB) && data.boxOutletIdB) { // B路有连接
+  if ((data.boxIndexA !== '' && data.boxIndexA > -1) && data.boxOutletIdB) { // B路有连接
     const source = document.getElementById('cab-B-' + index) as Element
     const target = document.getElementById(`plugin-${data.boxIndexB}_B-${data.boxOutletIdB}`)  as Element
     console.log('target---', source, target)
@@ -538,6 +560,7 @@ const handleCabRightClick = (e) => {
 // 处理插接箱/母线右击事件
 const handlePluginRightClick = (e, type) => {
   e.preventDefault()
+  if (!editEnable.value) return
   const targetId = e.target.id || e.target.parentNode.id
   console.log('处理插接箱母线右击事件',type, e.target.className, e.target.parentNode, targetId, e.currentTarget)
   if (!targetId || !targetId.includes('box')) return
@@ -553,6 +576,12 @@ const handlePluginRightClick = (e, type) => {
     curIndex: currentIndex,
     type
   }
+}
+const handlePluginDblick = (e, road) => {
+  const targetId = e.target.id || e.target.parentNode.id
+  const index = targetId.split('-')[1]
+  console.log('targetId', targetId, machineColInfo, index)
+  push({path: '/bus/busmonitor/powerLoadDetail', state: { devKey: machineColInfo[`bar${road}`].boxList[index].barKey}})
 }
 // 处理插接箱/连接器菜单点击事件
 const handleBoxOperate = (type, road) => {
@@ -590,7 +619,8 @@ const handleOperate = (type) => {
     if (machineColInfo.barA) {
       info = {
         roomId: machineColInfo.roomId,
-        barA: true,
+        barA: machineColInfo.barA.boxList,
+        barB: machineColInfo.barB.boxList,
         barIdA: machineColInfo.barA.barId,
         busIpA: machineColInfo.barA.devIp,
         barIdB: machineColInfo.barB.barId,
@@ -621,6 +651,11 @@ const handleOperate = (type) => {
     })
   }
   console.log('handleOperate', machineColInfo)
+}
+// 处理编辑事件
+const handleEditClick = () => {
+  editEnable.value = true
+  controlEndpointShow(true)
 }
 // 处理编辑取消事件
 const handleCancel = () => {
@@ -716,7 +751,7 @@ const handleFormCabinet = (data) => {
   console.log('handleFormCabinet', data, operateMenu.value)
   data.index = +operateMenu.value.curIndex + 1
   cabinetList.value.splice(operateMenu.value.curIndex, 1, data)
-  if (machineColInfo.barA) nextTick(() => {
+  if (machineColInfo.barA && machineColInfo.pduBar) nextTick(() => {
     addCabinetAnchor(operateMenu.value.curIndex, data)
   })
 }
@@ -729,23 +764,20 @@ const handleFormBox = (data) => {
   machineColInfo[bar].boxList.splice(index, 1, data)
   for (let i=1; i <= length; i++) {
     const boxElement = document.getElementById('plugin-' + index + '_' + operateMenuBox.value.type + '-' + i) as Element
-    console.log('boxElement', boxElement)
     if (!boxElement) {
       arr.push(i)
     }
   }
-  console.log('machineColInfo.barB.boxList', arr, machineColInfo, bar)
-  // debugger
   nextTick(() => {
     for (let i=1; i <= length; i++) {
       const boxElement = document.getElementById('plugin-' + index + '_' + operateMenuBox.value.type + '-' + i) as Element
-      console.log()
       if (arr.includes(i)) {
+        console.log('------i', i, boxElement)
         instance?.addEndpoint(boxElement, {
-            source: true,
-            target: true,
-            endpoint: 'Dot'
-          })
+          source: true,
+          target: true,
+          endpoint: 'Dot'
+        })
       }
       // 更新瞄点
       instance?.revalidate(boxElement)
@@ -822,19 +854,17 @@ const handleDataDetail = (res) => {
             name: 'L1',
             data: [(cab.lineVolA ? cab.lineVolA[0] : 0), (cab.lineVolB ? cab.lineVolB[0] : 0)],
             ...common
-          }
-        ]
-        if (cab.lineVolA && cab.lineVolB && cab.lineVolA.length == 3 && cab.lineVolB.length == 3) {
-          seriesU = [...seriesU, {
+          },
+          {
             name: 'L2',
-            data: [(cab.lineVolA ? cab.lineVolA[1] : 0), (cab.lineVolB ? cab.lineVolB[1] : 0)],
+            data: [(cab.lineVolA && cab.lineVolA[1] ? cab.lineVolA[1] : 0), (cab.lineVolB && cab.lineVolB[1] ? cab.lineVolB[1] : 0)],
             ...common
           }, {
             name: 'L3',
-            data: [(cab.lineVolA ? cab.lineVolA[2] : 0), (cab.lineVolB ? cab.lineVolB[2] : 0)],
+            data: [(cab.lineVolA && cab.lineVolA[2] ? cab.lineVolA[2] : 0), (cab.lineVolB && cab.lineVolB[2] ? cab.lineVolB[2] : 0)],
             ...common
-          }]
-        }
+          }
+        ]
         cabinetList.value[index] = {
           ...item,
           ...cab,
@@ -1186,7 +1216,7 @@ const handleDataDetail = (res) => {
             series: [
               {
                 name: 'load',
-                data: [item.yesterdayEq],
+                data: [item.yesterdayEq ? item.yesterdayEq.toFixed(2) : 0],
                 type: 'bar',
                 barWidth: '100%',
                 showBackground: true,
@@ -1312,7 +1342,7 @@ const saveMachineBus = async() => {
   console.log('saveMachineBus', res)
 }
 // 处理机柜列表
-const handleCabinetList = (data, status) => {
+const handleCabinetList = async(data, status) => {
   console.log('处理机柜列表', data, status)
   const arr = [] as any
   for (let i=0; i < data.length; i++) {
@@ -1326,7 +1356,8 @@ const handleCabinetList = (data, status) => {
   cabinetList.value = arr
   handleDataDetail(status)
   handleCssScale()
-  toCreatConnect()
+  await toCreatConnect()
+  controlEndpointShow(false)
 }
 // 增加空机柜
 const addMachine = () => {
@@ -1407,6 +1438,7 @@ watch(() => queryParams.cabinetroomId, (val) => {
 watch(() => queryParams.cabinetColumnId,(val) => {
   console.log('wwwwwwwwwww', val, machineList.value)
   emit('idChange', val)
+  editEnable.value = false
   toCreatConnect(true)
   instance?.deleteEveryConnection()
   getMachineColInfo()
@@ -1510,6 +1542,8 @@ onBeforeUnmount(() => {
   // padding-bottom: 20px;
   // min-height: calc(100vh - 270px);
   .Bus {
+    position: relative;
+    z-index: 1;
     width: 66px;
     .startBus {
       font-size: 12px;
@@ -1523,8 +1557,24 @@ onBeforeUnmount(() => {
       align-items: center;
       justify-content: center;
       background-color: silver;
-      box-shadow: 0 0 10px silver;
+      // box-shadow: 0 0 10px silver;
       margin-bottom: 50px;
+    }
+    .maskPoint1 {
+      width: 10px;
+      height: 6px;
+      position: absolute;
+      left: -5px;
+      top: -6px;
+      background-color: #fff;
+    }
+    .maskPoint2{
+      width: 6px;
+      height: 6px;
+      position: absolute;
+      left: -6px;
+      top: 0;
+      background-color: #fff;
     }
   }
   .main {
@@ -1563,6 +1613,7 @@ onBeforeUnmount(() => {
           border-top: none;
           background-color: #fff;
           margin: 0 39px;
+          z-index: 999;
           .line {
             width: 5px;
             height: 100px;
@@ -1574,12 +1625,13 @@ onBeforeUnmount(() => {
             display: flex;
             justify-content: space-around;
             position: absolute;
-            bottom: -5px;
+            bottom: 0px;
             .point {
               border: 1px solid;
               width: 5px;
               height: 5px;
               border-radius: 50%;
+              opacity: 0;
             }
           }
         }
@@ -1636,9 +1688,10 @@ onBeforeUnmount(() => {
     justify-content: center;
     .cabinetBox {
       .point {
-        height: 7px;
+        height: 5px;
         display: flex;
         justify-content: space-around;
+        opacity: 0;
         .leftPoint {
           width: 5px;
           height: 5px;

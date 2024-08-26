@@ -104,7 +104,7 @@
                   </el-form-item>
                   <el-form-item label="插接箱名称：">
                     <el-select v-if="isBusBind" v-model="machineFormData.boxIndexA" placeholder="请选择">
-                      <el-option v-for="i in boxAmount" :key="i" :label="'插接箱' + i" :value="i-1" />
+                      <el-option v-for="(box, index) in boxListA" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="index+''" />
                     </el-select>
                     <el-input v-else v-model="machineFormData.boxIndexA" placeholder="请输入" />
                   </el-form-item>
@@ -125,7 +125,7 @@
                   </el-form-item>
                   <el-form-item label="插接箱名称：">
                     <el-select v-if="isBusBind" v-model="machineFormData.boxIndexB" placeholder="请选择">
-                      <el-option v-for="i in boxAmount" :key="i" :label="'插接箱' + i" :value="i-1" />
+                      <el-option v-for="(box, index) in boxListB" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="index+''" />
                     </el-select>
                     <el-input v-else v-model="machineFormData.boxIndexB" placeholder="请输入" />
                   </el-form-item>
@@ -241,6 +241,8 @@ const message = useMessage() // 消息弹窗
 const roomList = ref([])
 const isBusBind = ref(false) // 柜列中是否已经绑定母线了  绑定了则有些数据不能修改
 const boxAmount = ref(0) // 插接箱数量, 柜列中如果绑定母线，则回显对应的插接箱数量
+const boxListA = ref([])
+const boxListB = ref([])
 const dialogVisible = ref(false) // 弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
 const isFullscreen = ref(false)
@@ -519,7 +521,8 @@ const open = async (type: string, data, machineColInfo) => {
   console.log('machineColInfo', machineColInfo)
   if (machineColInfo.barA) {
     isBusBind.value = true
-    boxAmount.value = machineColInfo.boxAmount
+    boxListA.value = machineColInfo.barA
+    boxListB.value = machineColInfo.barB
     machineFormData.value = {
       ...machineFormData.value,
       barIdA: machineColInfo.barIdA,
@@ -552,7 +555,7 @@ const submitForm = async () => {
     console.log('res', {...machineFormData.value}, machineFormData.value)
     dialogVisible.value = false
     // 发送操作成功的事件
-    emit('success', {...machineFormData.value})
+    emit('success', {...machineFormData.value, addrA:null, addrB: null})
     resetForm()
   } catch(error:any) {
     console.log('error', error)
