@@ -85,6 +85,7 @@ const handleClick = (data) => {
 const handleCheck = (data) => {
   emits('check', data)
 }
+
 </script>
 
 <style lang="scss" scoped >
@@ -106,7 +107,8 @@ const handleCheck = (data) => {
       position: absolute;
       right: 10px;
       top: 12px;
-      font-size: 15px;
+      // font-size: 15px;
+      font-size: 14px; /*czj新增*/
       display: flex;
       align-items: center;
     }
@@ -116,9 +118,9 @@ const handleCheck = (data) => {
       position: absolute;
       right: 10px;
       top: 52px;
-      color: #777777;
+      // color: #777777;  /*czj新增*/
       cursor: pointer;
-      font-size: 13px;
+      font-size: 14px;    /*czj新增 13->14*/
     }
     .expand {
       width: 30px;
@@ -142,7 +144,7 @@ const handleCheck = (data) => {
   height: 46px;
   line-height: 46px;
   padding-left: 10px;
-  background-color: #d5ffc1;
+  background-color: #30b02f;
   font-size: 14px;
 }
 .nav-left {
