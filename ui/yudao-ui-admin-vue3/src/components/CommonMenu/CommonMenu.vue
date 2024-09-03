@@ -15,6 +15,7 @@
         </div>
         <div v-if="!isCloseNav" class="openNavtree" @click.prevent="isCloseNav = true">
           <Icon icon="ep:arrow-left" />收起
+
         </div>
         <div v-if="!isCloseNav" class="reduce" @click.prevent="handleSwitchNav">
           <Icon icon="ep:arrow-up" v-if="!switchNav" style="" />
@@ -109,6 +110,7 @@ const handleCheck = (data) => {
       font-size: 15px;
       display: flex;
       align-items: center;
+      font-family: '"Microsoft YaHei"', "Arial Narrow", sans-serif;
     }
     .reduce {
       display: flex;
@@ -119,6 +121,7 @@ const handleCheck = (data) => {
       color: #777777;
       cursor: pointer;
       font-size: 13px;
+      font-family: "Microsoft YaHei", "Arial Narrow", sans-serif;
     }
     .expand {
       width: 30px;
@@ -142,7 +145,7 @@ const handleCheck = (data) => {
   height: 46px;
   line-height: 46px;
   padding-left: 10px;
-  background-color: #d5ffc1;
+  background-color: #30b02f;
   font-size: 14px;
 }
 .nav-left {
