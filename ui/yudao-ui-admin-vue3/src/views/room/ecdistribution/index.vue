@@ -19,7 +19,7 @@
         <br/>
       </div>
       <div class="nav_content">
-        <el-descriptions title="" direction="vertical" :column="1" border >
+        <el-descriptions title="全部机房耗电量极值记录" direction="vertical" :column="1" border >
           <el-descriptions-item label="总耗电量">
             <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
           </el-descriptions-item>
@@ -201,7 +201,7 @@ const shortcuts = [
       return [start, end]
     },
   },
-  {
+  { 
     text: '最近六个月',
     value: () => {
       const end = new Date()
@@ -445,15 +445,15 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 16px;
-    padding-top: 28px;
+    font-size: 14px;/*czj 16px->14px*/
+    /* padding-top: 28px; */ /*czj删除*/
   }
 .nav_data{
   padding-left: 5px;
   width: 195px;
 }
 .nav_content span{
-  font-size: 18px;
+ font-size: 14px;/*czj 18px->14px*/
 }
 .carousel-container {
   width: 100%;

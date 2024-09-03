@@ -2,7 +2,7 @@
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机房能耗趋势">
     <template #NavInfo>
     <br/>    <br/> 
-        <div class="nav_data">
+        <div class="nav_data">  
           <div class="carousel-container">
             <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
               <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
@@ -11,7 +11,7 @@
             </el-carousel> -->
           </div>
           <div class="nav_content">
-          <el-descriptions title="" direction="vertical" :column="1" border >
+          <el-descriptions title="全部机房新增能耗记录" direction="vertical" :column="1" border >
               <el-descriptions-item label="最近一天"><span>{{ lastDayTotalData }} 条</span></el-descriptions-item>
               <el-descriptions-item label="最近一周"><span>{{ lastWeekTotalData }} 条</span></el-descriptions-item>
               <el-descriptions-item label="最近一月" ><span>{{ lastMonthTotalData }} 条</span></el-descriptions-item>
@@ -427,7 +427,7 @@ onMounted(() => {
   width: 170px;
 }
 .nav_content span{
-  font-size: 18px;
+  font-size: 14px;
 }
 .carousel-container {
   width: 100%;
@@ -439,4 +439,5 @@ onMounted(() => {
   height: 100%;
   object-fit: cover; 
 }
+
 </style>

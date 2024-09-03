@@ -86,6 +86,7 @@ const handleClick = (data) => {
 const handleCheck = (data) => {
   emits('check', data)
 }
+
 </script>
 
 <style lang="scss" scoped >
@@ -107,7 +108,8 @@ const handleCheck = (data) => {
       position: absolute;
       right: 10px;
       top: 12px;
-      font-size: 15px;
+      // font-size: 15px;
+      font-size: 14px; /*czj新增*/
       display: flex;
       align-items: center;
       font-family: '"Microsoft YaHei"', "Arial Narrow", sans-serif;
@@ -118,7 +120,7 @@ const handleCheck = (data) => {
       position: absolute;
       right: 10px;
       top: 52px;
-      color: #777777;
+      // color: #777777;  /*czj新增*/
       cursor: pointer;
       font-size: 13px;
       font-family: "Microsoft YaHei", "Arial Narrow", sans-serif;
