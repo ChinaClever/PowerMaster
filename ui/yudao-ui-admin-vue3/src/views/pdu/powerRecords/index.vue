@@ -1,23 +1,49 @@
 <template>
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU电能记录" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
+      <!-- <div class="line"></div> -->
       <br/>    <br/> 
+    
       <div class="nav_data">
-        <div class="carousel-container">
+        <!-- <div class="carousel-container">
           <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
             <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
               <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
             </el-carousel-item>
           </el-carousel>
-        </div>
-        <div class="nav_content">
-          <el-descriptions title="全部PDU最近一天新增记录" direction="vertical" :column="1" border >
+        </div> -->
+        <!-- <div class="nav_content">
+          <el-descriptions title="" direction="vertical" :column="1" border >
+            <el-descriptions-item label="总电能"><span>{{ navTotalData }} 条</span></el-descriptions-item>
             <el-descriptions-item label="总电能"><span>{{ navTotalData }} 条</span></el-descriptions-item>
             <el-descriptions-item label="相电能"><span>{{ navLineData }} 条</span></el-descriptions-item>
             <el-descriptions-item label="回路电能" ><span>{{ navLoopData }} 条</span></el-descriptions-item>
             <el-descriptions-item label="输出位电能" ><span>{{ navOutletData }} 条</span></el-descriptions-item>
           </el-descriptions>
-        </div>
+        </div> -->
+
+  <div class="descriptions-container" style="font-size: 14px;">
+ 
+        <div style="text-align: center"><span>全部PDU最近一天新增记录</span></div>
+        <br/>
+    <div class="description-item">
+      <span class="label">总电能 :</span>
+      <span class="value">{{ navTotalData }}条</span>
+    </div>
+    <div class="description-item">
+      <span class="label">相电能 :</span>
+      <span class="value">{{ navLineData }}条</span>
+    </div>
+<div v-if="navLoopData" class="description-item">
+      <span class="label">回路电能 :</span>
+      <span class="value">{{ navLoopData }}条</span>
+    </div>
+    <div v-if="navOutletData" class="description-item">
+      <span class="label">输出位电能 :</span>
+      <span class="value">{{ navOutletData }}条</span>
+    </div>
+  </div>
+      <div class="line"></div>
       </div>
     </template>
     <template #ActionBar>
@@ -451,4 +477,25 @@ onMounted(() => {
   height: 100%;
   object-fit: cover; 
 }
+
+.description-item {
+  display: flex;
+  align-items: center;
+}
+
+.label {
+  width:100px; /* 控制冒号前的宽度 */
+  text-align: right; /* 文本右对齐 */
+  margin-right: 20px; /* 控制冒号后的间距 */
+}
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+}
+  .line {
+    height: 1px;
+    margin-top: 28px;
+
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
 </style>

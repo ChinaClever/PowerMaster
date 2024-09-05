@@ -9,7 +9,7 @@
           <!-- 信息展示模式 -->
           <slot v-if="!switchNav" name="NavInfo"></slot>
             <!-- 筛选模式 -->
-          <div v-if="showNavTree" style="margin-top: 10px">
+          <div v-if="showNavTree" >
             <NavTree ref="navTree" @node-click="handleClick" @check="handleCheck" :showCheckbox="showCheckbox" :showSearch="true" :dataList="dataList" :load="load" :lazy="lazy" />
           </div>
         </div>
