@@ -116,9 +116,9 @@ const handleCheck = (data) => {
       position: absolute;
       right: 10px;
       top: 52px;
-      color: #777777;
+      // color: #777777;
       cursor: pointer;
-      font-size: 13px;
+      font-size: 14px;
     }
     .expand {
       width: 30px;
@@ -142,7 +142,7 @@ const handleCheck = (data) => {
   height: 46px;
   line-height: 46px;
   padding-left: 10px;
-  background-color: #d5ffc1;
+  background-color: #30b02f;
   font-size: 14px;
 }
 .nav-left {

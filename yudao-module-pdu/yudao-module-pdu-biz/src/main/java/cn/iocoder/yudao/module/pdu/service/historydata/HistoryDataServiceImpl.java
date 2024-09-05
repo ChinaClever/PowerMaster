@@ -38,7 +38,7 @@ import java.util.*;
  */
 @Service
 public class HistoryDataServiceImpl implements HistoryDataService {
-
+    private static final int BATCH_SIZE = 200; // 每批处理的数据量
     @Autowired
     private RedisTemplate redisTemplate;
 
@@ -66,9 +66,10 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     @Autowired
     private CabinetEnvSensorMapper cabinetEnvSensorMapper;
 
+
     @Override
     public List<Object> getLocationsByPduIds(List<Map<String, Object>> mapList) {
-        List<Object> resultList = new ArrayList<>();
+        List<Object> resultList = new ArrayList<>(mapList.size());
         for (Map<String, Object> map : mapList){
             Object pduId = map.get("pdu_id");
             if (pduId instanceof Integer) {
@@ -87,6 +88,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             }
             resultList.add(map);
         }
+
         return resultList;
     }
 
@@ -117,40 +119,95 @@ public class HistoryDataServiceImpl implements HistoryDataService {
 
     @Override
     public String getAddressByIpAddr(String location) {
+//        String[] ipParts = location.split("-");
+//        String address = null;
+//        CabinetPdu cabinetPduA = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
+//                .eq(CabinetPdu::getPduIpA, ipParts[0])
+//                .eq(CabinetPdu::getCasIdA, ipParts[1]));
+//        CabinetPdu cabinetPduB = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
+//                .eq(CabinetPdu::getPduIpB, ipParts[0])
+//                .eq(CabinetPdu::getCasIdB, ipParts[1]));
+//        if(cabinetPduA != null){
+//            int cabinetId = cabinetPduA.getCabinetId();
+//            CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
+//            String cabinetName = cabinet.getName();
+//            RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
+//            String roomName = roomIndex.getName();
+//            if(cabinet.getAisleId() != 0){
+//                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+//                address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
+//            }else {
+//                address = roomName + "-"  + cabinetName +  "-" + "A路";
+//            }
+//        }
+//        if(cabinetPduB != null){
+//            int cabinetId = cabinetPduB.getCabinetId();
+//            CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
+//            String cabinetName = cabinet.getName();
+//            RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
+//            String roomName = roomIndex.getName();
+//            if(cabinet.getAisleId() != 0){
+//                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+//                address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";
+//            }else {
+//                address = roomName + "-"  + cabinetName +  "-" + "B路";
+//            }
+//        }
+//        return address;
+//    }
+        // 分割字符串并检查长度
         String[] ipParts = location.split("-");
+        if (ipParts.length < 2) {
+//            // 如果分割后的数组长度小于 2，则返回 null 或抛出异常
+             ipParts = location.split(":");
+        }
+
         String address = null;
-        CabinetPdu cabinetPduA = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
-                .eq(CabinetPdu::getPduIpA, ipParts[0])
-                .eq(CabinetPdu::getCasIdA, ipParts[1]));
-        CabinetPdu cabinetPduB = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
-                .eq(CabinetPdu::getPduIpB, ipParts[0])
-                .eq(CabinetPdu::getCasIdB, ipParts[1]));
-        if(cabinetPduA != null){
+
+        // A 路
+        CabinetPdu cabinetPduA = cabinetPduMapper.selectOne(
+                new LambdaQueryWrapperX<CabinetPdu>()
+                        .eq(CabinetPdu::getPduIpA, ipParts[0])
+                        .eq(CabinetPdu::getCasIdA, ipParts[1])
+        );
+
+        if (cabinetPduA != null) {
             int cabinetId = cabinetPduA.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
             String cabinetName = cabinet.getName();
             RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
             String roomName = roomIndex.getName();
-            if(cabinet.getAisleId() != 0){
+
+            if (cabinet.getAisleId() != 0) {
                 String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
                 address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
-            }else {
-                address = roomName + "-"  + cabinetName +  "-" + "A路";
+            } else {
+                address = roomName + "-" + cabinetName + "-" + "A路";
             }
         }
-        if(cabinetPduB != null){
+
+        // B 路
+        CabinetPdu cabinetPduB = cabinetPduMapper.selectOne(
+                new LambdaQueryWrapperX<CabinetPdu>()
+                        .eq(CabinetPdu::getPduIpB, ipParts[0])
+                        .eq(CabinetPdu::getCasIdB, ipParts[1])
+        );
+
+        if (cabinetPduB != null) {
             int cabinetId = cabinetPduB.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
             String cabinetName = cabinet.getName();
             RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
             String roomName = roomIndex.getName();
-            if(cabinet.getAisleId() != 0){
+
+            if (cabinet.getAisleId() != 0) {
                 String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
                 address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";
-            }else {
-                address = roomName + "-"  + cabinetName +  "-" + "B路";
+            } else {
+                address = roomName + "-" + cabinetName + "-" + "B路";
             }
         }
+
         return address;
     }
 

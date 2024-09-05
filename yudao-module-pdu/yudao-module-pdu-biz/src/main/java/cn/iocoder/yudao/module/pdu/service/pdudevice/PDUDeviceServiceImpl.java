@@ -237,7 +237,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 }
             }
             pduDeviceDO.setPf(pduTgData.getDoubleValue("power_factor"));
-
             pduDeviceDO.setEle(pduTgData.getDoubleValue("ele_active"));
             pduDeviceDO.setPow(pduTgData.getDoubleValue("pow_active"));
             pduDeviceDO.setApparentPow(pduTgData.getDoubleValue("pow_apparent"));

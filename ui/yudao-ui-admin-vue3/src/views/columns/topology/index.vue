@@ -382,6 +382,12 @@ const initConnect = () => {
       cabinetList.value[index][`boxOutletId${cabRoad}`] = ''
       cabinetList.value[index][`boxIndex${cabRoad}`] = ''
       cabinetList.value[index][`addr${cabRoad}`] = null
+      const cabElement = document.getElementById('cab-' + cabRoad + '-' + index) as Element
+      instance?.addEndpoint(cabElement, {
+        source: true,
+        target: true,
+        endpoint: 'Dot'
+      })
     }
     // 如果返回 false，则连接断开操作会被取消
     return true
@@ -755,26 +761,23 @@ const handleFormBox = (data) => {
   const bar = `bar${operateMenuBox.value.type}`
   const index = operateMenuBox.value.curIndex
   const length = data.outletNum
-  debugger
   machineColInfo[bar].boxList.splice(index, 1, data)
   for (let i=1; i <= length; i++) {
     const boxElement = document.getElementById('plugin-' + index + '_' + operateMenuBox.value.type + '-' + i) as Element
-    console.log('boxElement', boxElement)
     if (!boxElement) {
       arr.push(i)
     }
   }
-  console.log('machineColInfo.barB.boxList', arr, machineColInfo, bar)
   nextTick(() => {
     for (let i=1; i <= length; i++) {
       const boxElement = document.getElementById('plugin-' + index + '_' + operateMenuBox.value.type + '-' + i) as Element
-      console.log()
       if (arr.includes(i)) {
+        console.log('------i', i, boxElement)
         instance?.addEndpoint(boxElement, {
-            source: true,
-            target: true,
-            endpoint: 'Dot'
-          })
+          source: true,
+          target: true,
+          endpoint: 'Dot'
+        })
       }
       // 更新瞄点
       instance?.revalidate(boxElement)
@@ -851,19 +854,17 @@ const handleDataDetail = (res) => {
             name: 'L1',
             data: [(cab.lineVolA ? cab.lineVolA[0] : 0), (cab.lineVolB ? cab.lineVolB[0] : 0)],
             ...common
-          }
-        ]
-        if (cab.lineVolA && cab.lineVolB && cab.lineVolA.length == 3 && cab.lineVolB.length == 3) {
-          seriesU = [...seriesU, {
+          },
+          {
             name: 'L2',
-            data: [(cab.lineVolA ? cab.lineVolA[1] : 0), (cab.lineVolB ? cab.lineVolB[1] : 0)],
+            data: [(cab.lineVolA && cab.lineVolA[1] ? cab.lineVolA[1] : 0), (cab.lineVolB && cab.lineVolB[1] ? cab.lineVolB[1] : 0)],
             ...common
           }, {
             name: 'L3',
-            data: [(cab.lineVolA ? cab.lineVolA[2] : 0), (cab.lineVolB ? cab.lineVolB[2] : 0)],
+            data: [(cab.lineVolA && cab.lineVolA[2] ? cab.lineVolA[2] : 0), (cab.lineVolB && cab.lineVolB[2] ? cab.lineVolB[2] : 0)],
             ...common
-          }]
-        }
+          }
+        ]
         cabinetList.value[index] = {
           ...item,
           ...cab,
@@ -1215,7 +1216,7 @@ const handleDataDetail = (res) => {
             series: [
               {
                 name: 'load',
-                data: [item.yesterdayEq],
+                data: [item.yesterdayEq ? item.yesterdayEq.toFixed(2) : 0],
                 type: 'bar',
                 barWidth: '100%',
                 showBackground: true,
