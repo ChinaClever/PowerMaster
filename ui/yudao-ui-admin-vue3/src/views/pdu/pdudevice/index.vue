@@ -6,7 +6,6 @@
           <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
 
         </div>
-        
         <div class="line"></div>
         <div class="status">
           <div class="box">
@@ -167,14 +166,10 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <!-- <div class="icon">
+            <div class="icon">
               <div v-if=" item.pow != null ">
                 {{item.pow}}<br/>kW
-              </div> -->
-              <div class="icon">
-              <div v-if=" item.pow != null ">有功功率:
-                {{item.pow}}kW
-              </div> 
+              </div>                    
             </div>
             <div class="info">
               
@@ -202,6 +197,7 @@
                 <el-tag type="danger">告警</el-tag>
               </template>
             </el-popover>
+
             <el-tag type="info" v-if="item.status == 4">故障</el-tag>
             <el-tag type="info" v-if="item.status == 5">离线</el-tag>
           </div>
@@ -279,7 +275,6 @@ const createFilter = (queryString: string) => {
 const ip = ref("ip");
 
 const statusList = reactive([
-  //上方框的状态
   {
     name: '正常',
     selected: true,
@@ -756,7 +751,6 @@ onActivated(() => {
     display: flex;
     flex-wrap: wrap;
     .box {
-      //左边导航的CSS
       height: 70px;
       width: 50%;
       box-sizing: border-box;
@@ -802,22 +796,18 @@ onActivated(() => {
     flex-direction: column;
     align-items: center;
     font-size: 13px;
-    //padding-top: 28px;
+    padding-top: 28px;
     .header_img {
-      // width: 110px;
-      // height: 110px;
-      // border-radius: 50%;
-      width: 100%;
-      height: 100%;
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
       display: flex;
       justify-content: center;
       align-items: center;
-      //border: 1px solid #555;
+      border: 1px solid #555;
       img {
-        // width: 75px;
-        // height: 75px;
-      width: 90%;
-      height: 100%;
+        width: 75px;
+        height: 75px;
       }
     }
     .name {
@@ -831,7 +821,6 @@ onActivated(() => {
     margin-bottom: 20px;
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
-  
 }
 .progressContainer {
   display: flex;
@@ -871,24 +860,16 @@ onActivated(() => {
     height: 140px;
     font-size: 13px;
     box-sizing: border-box;
-    // background-color: #eef4fc;
-    // border: 5px solid #fff;
-    //padding-top: 40px;
-    padding-top: 55px;
-    border: 2px solid #f4f4f4;
-    border-radius: 10px;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 40px;
     position: relative;
     .content {
       display: flex;
-      //align-items: center;
-      align-items: top;
-      //changed
-      height: 100%;
+      align-items: center;
       .icon {
-        // width: 60px;
-        // height: 30px;
-        width: 70px;
-        height: 33px;
+        width: 60px;
+        height: 30px;
         margin: 0 28px;
         text-align: center;
       }
@@ -908,13 +889,12 @@ onActivated(() => {
       height: 20px;
       font-size: 12px;
       display: flex;
-      align-items: center ;
+      align-items: center;
       justify-content: center;
 
       color: #fff;
       position: absolute;
       right: 38px;
-      right: 8px;
       top: 8px;
     }
     .detail {
@@ -935,7 +915,7 @@ onActivated(() => {
 }
 
 :deep(.master-left .el-card__body) {
-  padding: 0;               
+  padding: 0;
 }
 :deep(.el-form) {
   display: flex;

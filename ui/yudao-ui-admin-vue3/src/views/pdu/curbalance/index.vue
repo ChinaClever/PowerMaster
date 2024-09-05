@@ -643,7 +643,7 @@ onBeforeUnmount(()=>{
 
 onBeforeRouteLeave(()=>{
   if(flashListTimer.value){
-    clearInterval(flashListTimer.vlaue)
+    clearInterval(flashListTimer.value)
     flashListTimer.value = null;
     firstTimerCreate.value = false;
   }
@@ -864,22 +864,18 @@ onActivated(() => {
     flex-direction: column;
     align-items: center;
     font-size: 13px;
-    //padding-top: 28px;
+    padding-top: 28px;
     .header_img {
-      // width: 110px;
-      // height: 110px;
-      // border-radius: 50%;
-      width: 100%;
-      height: 100%;
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
       display: flex;
       justify-content: center;
       align-items: center;
-      //border: 1px solid #555;
+      border: 1px solid #555;
       img {
-        // width: 75px;
-        // height: 75px;
-      width: 90%;
-      height: 100%;
+        width: 75px;
+        height: 75px;
       }
     }
     .name {
