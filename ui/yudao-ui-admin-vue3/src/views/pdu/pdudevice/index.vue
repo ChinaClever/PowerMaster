@@ -197,6 +197,7 @@
                 <el-tag type="danger">告警</el-tag>
               </template>
             </el-popover>
+
             <el-tag type="info" v-if="item.status == 4">故障</el-tag>
             <el-tag type="info" v-if="item.status == 5">离线</el-tag>
           </div>

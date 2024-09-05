@@ -74,7 +74,7 @@
     <template #Content>
       <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
         <!-- 添加行号列 -->
-        <el-table-column label="序号" align="center" width="80px">
+        <el-table-column label="序号" align="center" width="80px" >
           <template #default="{ $index }">
             {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
           </template>
@@ -462,7 +462,7 @@ onMounted(() => {
 }
  
 .nav_content span{
-  font-size: 18px;
+  font-size: 14px;
 }
 .carousel-container {
   width: 100%;
