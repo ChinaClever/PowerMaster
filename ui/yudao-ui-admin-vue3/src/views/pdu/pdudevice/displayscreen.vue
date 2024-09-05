@@ -507,7 +507,7 @@ const C = ref({
 // }
 
 const openNewPage = (devKey) => {
-  const url = 'http://' + devKey.split('-')[0] + '/index.html';
+  const url = 'https://' + devKey.split('-')[0] + '/index.html';
   window.open(url, '_blank');
 }
 
@@ -1130,7 +1130,7 @@ onMounted(() => {
 })
 
 onBeforeMount(async () =>{
-
+  //获得数据，初始化图表
   await getTestData();
   initChart();
   flashListTimer.value.tableDataTimer = setInterval((getTestData), 5000);
@@ -1138,6 +1138,7 @@ onBeforeMount(async () =>{
 })
 
 onBeforeUnmount(()=>{
+  //清除定时器
   if(flashListTimer.value.tableDataTimer && flashListTimer.value.chartTimer){
     clearInterval(flashListTimer.value.tableDataTimer)
     clearInterval(flashListTimer.value.chartTimer)

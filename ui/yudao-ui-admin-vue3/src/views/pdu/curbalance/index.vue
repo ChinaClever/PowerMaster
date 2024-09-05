@@ -96,10 +96,11 @@
     </template>
     <template #Content>
       <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
-        <el-table-column label="编号" align="center" prop="tableId" width="80px" />
+        <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" width="180px" />
-        <el-table-column label="运行状态" align="center" prop="color" >
+        <el-table-column label="所在位置" align="center" prop="location" width="170px" />
+        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="125px"/>
+        <el-table-column label="运行状态" align="center" prop="color" width="120px">
           <template #default="scope" >
               <el-tag type="info"  v-if="scope.row.color == 1">小电流不平衡</el-tag>
               <el-tag type="success"  v-if="scope.row.color == 2">大电流不平衡</el-tag>
@@ -108,28 +109,28 @@
           </template>
         </el-table-column>
         <el-table-column label="电流" align="center">
-          <el-table-column label="A相" align="center" prop="acur" width="100px" >
+          <el-table-column label="A相" align="center" prop="acur" width="95px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.acur != null">
                 {{ scope.row.acur }}A
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="B相" align="center" prop="bcur" width="100px" >
+          <el-table-column label="B相" align="center" prop="bcur" width="95px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.bcur != null">
                 {{ scope.row.bcur }}A
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="C相" align="center" prop="ccur" width="100px" >
+          <el-table-column label="C相" align="center" prop="ccur" width="95px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.ccur != null">
                 {{ scope.row.ccur }}A
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="不平衡度" align="center" prop="curUnbalance" width="100px">
+          <el-table-column label="不平衡度" align="center" prop="curUnbalance" width="95px">
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.curUnbalance != null" >
                 {{ scope.row.curUnbalance }}%
@@ -138,28 +139,28 @@
           </el-table-column>
         </el-table-column>
         <el-table-column label="电压" align="center">
-          <el-table-column label="A相" align="center" prop="avol" width="100px" >
+          <el-table-column label="A相" align="center" prop="avol" width="95px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.avol">
                 {{ scope.row.avol }}V
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="B相" align="center" prop="bvol" width="100px" >
+          <el-table-column label="B相" align="center" prop="bvol" width="95px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.bvol">
                 {{ scope.row.bvol }}V
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="C相" align="center" prop="cvol" width="100px" >
+          <el-table-column label="C相" align="center" prop="cvol" width="95px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.cvol">
                 {{ scope.row.cvol }}V
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="不平衡度" align="center" prop="volUnbalance" width="100px">
+          <el-table-column label="不平衡度" align="center" prop="volUnbalance" width="95px">
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.volUnbalance != null" >
                 {{ scope.row.volUnbalance }}%
@@ -169,7 +170,7 @@
         </el-table-column>
         
         <!-- 数据库查询 -->
-        <el-table-column label="操作" align="center" width="100px">
+        <el-table-column label="操作" align="center" width="95px">
           <template #default="scope">
             <el-button
               link
