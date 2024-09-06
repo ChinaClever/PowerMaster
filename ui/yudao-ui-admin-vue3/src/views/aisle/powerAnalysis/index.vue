@@ -11,7 +11,7 @@
             </el-carousel> -->
           </div>
           <div class="nav_content">
-          <el-descriptions title="全部柜列新增能耗记录" direction="vertical" :column="1" border >
+          <el-descriptions title="" direction="vertical" :column="1" border >
               <el-descriptions-item label="最近一天"><span>{{ lastDayTotalData }} 条</span></el-descriptions-item>
               <el-descriptions-item label="最近一周"><span>{{ lastWeekTotalData }} 条</span></el-descriptions-item>
               <el-descriptions-item label="最近一月" ><span>{{ lastMonthTotalData }} 条</span></el-descriptions-item>
@@ -440,8 +440,7 @@ onMounted(() => {
   width: 170px;
 }
 .nav_content span{
-  font-size: 14px;
-    /* font-size: 18px; */
+  font-size: 18px;
 }
 .carousel-container {
   width: 100%;

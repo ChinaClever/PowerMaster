@@ -470,8 +470,7 @@ onMounted( () => {
   width: 190px;
 }
 .nav_content span{
-    font-size: 14px;
-  /* font-size: 18px; */
+  font-size: 18px;
 }
 
 .carousel-image {

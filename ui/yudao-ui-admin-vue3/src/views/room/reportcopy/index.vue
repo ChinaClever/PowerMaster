@@ -911,9 +911,7 @@ onMounted( async () =>  {
       }
     }
     .name {
-      font-size: 14px; 
-      // font-size: 15px;
-
+      font-size: 15px;
       margin: 15px 0;
     }
   }

@@ -21,7 +21,7 @@
           <br/>
         </div>
         <div class="nav_content" v-if="queryParams.granularity == 'realtime' ">
-        <el-descriptions title="全部机架有功功率极值记录" direction="vertical" :column="1" border >
+        <el-descriptions title="" direction="vertical" :column="1" border >
           <el-descriptions-item label="有功功率最大值 | 发生时间">
             <span>{{ formatNumber(maxActivePowDataTemp, 3) }} kWh</span> <br/>
             <span v-if="maxActivePowDataTimeTemp">{{ maxActivePowDataTimeTemp }}</span>
@@ -684,8 +684,7 @@ onMounted( async () => {
   width: 195px;
 }
 .nav_content span{
-  /* font-size: 18px; */
-    font-size: 14px;
+  font-size: 18px;
 }
 .carousel-container {
   width: 100%;

@@ -22,7 +22,7 @@
         <br/>
       </div>
       <div class="nav_content" v-if="queryParams.granularity == 'realtime'">
-        <el-descriptions title="全部机柜温度极值记录" direction="vertical" :column="1" border >
+        <el-descriptions title="" direction="vertical" :column="1" border >
           <el-descriptions-item label="最高温度 | 发生时间">
             <span>{{ formatNumber(maxTemDataTemp, 1) }} kWh</span><br/>
             <span v-if="maxTemDataTimeTemp">{{ maxTemDataTimeTemp }}</span>
@@ -837,8 +837,7 @@ onMounted( async () => {
   width: 195px;
 }
 .nav_content span{
-  /* font-size: 18px; */
-  font-size: 14px;
+  font-size: 18px;
 }
 .carousel-container {
   width: 100%;

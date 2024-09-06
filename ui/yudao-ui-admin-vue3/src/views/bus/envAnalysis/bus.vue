@@ -22,7 +22,7 @@
         <br/>
       </div>
       <div class="nav_content" v-if="queryParams.granularity == 'realtime'">
-        <el-descriptions title="母线始端箱AB路温度记录" direction="vertical" :column="1" border >
+        <el-descriptions title="" direction="vertical" :column="1" border >
           <el-descriptions-item label="A路最高温度 | 发生时间">
             <span>{{ formatNumber(maxTemDataTemp, 1) }} kWh</span><br/>
             <span v-if="maxTemDataTimeTemp">{{ maxTemDataTimeTemp }}</span>
