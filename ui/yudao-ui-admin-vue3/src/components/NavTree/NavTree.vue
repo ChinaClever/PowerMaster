@@ -107,6 +107,7 @@ defineExpose({ initCheck })
 .container {
   width: 100%;
   padding: 20px;
+  padding-left: 10px;  /* czj新增*/
   box-sizing: border-box;
 }
 </style>

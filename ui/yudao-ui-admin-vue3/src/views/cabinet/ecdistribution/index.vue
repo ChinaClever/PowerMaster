@@ -471,7 +471,8 @@ onMounted(async () => {
   width: 195px;
 }
 .nav_content span{
-  font-size: 18px;
+  /* font-size: 18px; */
+    font-size: 14px;
 }
 .carousel-container {
   width: 100%;

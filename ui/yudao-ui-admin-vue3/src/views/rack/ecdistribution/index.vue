@@ -19,7 +19,7 @@
         <br/>
       </div>
       <div class="nav_content">
-        <el-descriptions title="" direction="vertical" :column="1" border >
+        <el-descriptions title="全部机架耗电量极值记录" direction="vertical" :column="1" border >
           <el-descriptions-item label="总耗电量">
             <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
           </el-descriptions-item>
@@ -470,7 +470,8 @@ onMounted(async () => {
   width: 195px;
 }
 .nav_content span{
-  font-size: 18px;
+  /* font-size: 18px; */
+    font-size: 14px;
 }
 .carousel-container {
   width: 100%;
