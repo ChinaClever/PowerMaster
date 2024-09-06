@@ -236,7 +236,7 @@ const { push } = useRouter()
 
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
-const pageSizeArr = ref([24,36,48])
+const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(0)
 const statusNumber = reactive({
   normal : 0,

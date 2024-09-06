@@ -204,7 +204,6 @@
         <div style="display: flex; justify-content: center; align-items: center;">
           <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
         </div>
-        
       </el-card>
       <el-collapse-item name="1" v-if="controlVis.haveCircle">
         <template #title>
@@ -542,6 +541,7 @@ const initChart = async () => {
                                     var result = params[0].name + '<br>';
                                     for (var i = 0; i < params.length; i++) {
                                       result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
+                                      //判断是否给鼠标悬停上显示符号
                                       if (params[i].seriesName === '视在功率') {
                                         result += ' kVA'; 
                                       } else if (params[i].seriesName === '有功功率') {
@@ -551,6 +551,7 @@ const initChart = async () => {
                                     }
                                     return result;
                                   }},
+      //显示线的按钮
       legend: { data: ['视在功率','有功功率']},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
@@ -567,6 +568,7 @@ const initChart = async () => {
           },boundaryGap: false, data:chartData.value.dateTimes},
       yAxis: { type: 'value'},
       series: [
+        //鼠标悬停的显示
         {name: '视在功率', type: 'line', data: chartData.value.apparentList , symbol: 'circle', symbolSize: 4},
         {name: '有功功率', type: 'line', data: chartData.value.activeList , symbol: 'circle', symbolSize: 4},
       ],
