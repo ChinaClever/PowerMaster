@@ -3,7 +3,7 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <div class="carousel-container">
+        <!-- <div class="carousel-container">
           <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
             <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
               <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
@@ -24,6 +24,32 @@
             <el-descriptions-item label="输出位数据" ><span >{{ navOutletData }} 条</span></el-descriptions-item>
           </el-descriptions>
         </div>
+      </div> -->
+      <div class="descriptions-container" style="font-size: 14px;">
+ 
+        <div v-if="queryParams.granularity == 'realtime' " style="text-align: center"><span>全部PDU最近一分钟新增记录</span></div>
+        <div v-if="queryParams.granularity == 'hour' " style="text-align: center"><span>全部PDU最近一小时新增记录</span></div>
+        <div v-if="queryParams.granularity == 'day' " style="text-align: center"><span>全部PDU最近一天新增记录</span></div>
+
+        <br/>
+    <div class="description-item">
+      <span class="label">总电能 :</span>
+      <span class="value">{{ navTotalData }}条</span>
+    </div>
+    <div class="description-item">
+      <span class="label">相电能 :</span>
+      <span class="value">{{ navLineData }}条</span>
+    </div>
+    <div class="description-item">
+      <span class="label">回路电能 :</span>
+      <span class="value">{{ navLoopData }}条</span>
+    </div>
+    <div class="description-item">
+      <span class="label">输出位电能 :</span>
+      <span class="value">{{ navOutletData }}条</span>
+    </div>
+  </div>
+      <div class="line"></div>
       </div>
     </template>
     <template #ActionBar>
@@ -916,5 +942,24 @@ onMounted( () => {
   height: 100%;
   object-fit: cover; 
 }
+.description-item {
+  display: flex;
+  align-items: center;
+}
 
+.label {
+  width:100px; /* 控制冒号前的宽度 */
+  text-align: right; /* 文本右对齐 */
+  margin-right: 20px; /* 控制冒号后的间距 */
+}
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+}
+  .line {
+    height: 1px;
+    margin-top: 28px;
+
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
 </style>

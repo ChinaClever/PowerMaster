@@ -68,7 +68,7 @@
 
       <el-form-item label="时间段" prop="timeRange">
         <el-date-picker
-        value-format="YYYY-MM-DD HH:mm:ss"
+        value-format="YYYY-MM-DD HH:mm"
         v-model="queryParams.timeRange"
         type="datetimerange"
         :shortcuts="shortcuts"
@@ -309,7 +309,7 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
   if (!cellValue) {
     return ''
   }
-  return dayjs(cellValue).format('YYYY-MM-DD HH:mm:ss')
+  return dayjs(cellValue).format('YYYY-MM-DD HH:mm')
 }
 
 // 获取参数类型最大值 例如lineId=6 表示下拉框为L1~L6

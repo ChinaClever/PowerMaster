@@ -28,7 +28,7 @@ public class BillPageRespVO {
     @NumberFormat("0.0")
     @ExcelProperty("耗电量(kWh)")
     private Double eq_value;
-    @NumberFormat("0.000")
+    @NumberFormat("0.0")
     @ExcelProperty("电费(元)")
     private Double bill_value;
 

@@ -3,7 +3,7 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <div class="carousel-container">
+        <!-- <div class="carousel-container">
           <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
             <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
               <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
@@ -34,7 +34,46 @@
           </el-descriptions-item>
         </el-descriptions>
       </div>
+      </div> -->
+        <div class="nav_header">
+        <span v-if="nowAddress">{{nowAddress}}</span>
+        <span v-if="nowLocation">( {{nowLocation}} ) </span>
+        <br/>
+        <span>{{selectTimeRange[0]}} </span>
+        <span>至</span> 
+        <span>{{selectTimeRange[1]}}</span>
+        <br/>
       </div>
+        <div class="descriptions-container" style="font-size: 14px;">
+ 
+        <div style="text-align: center"><span>全部PDU新增耗电量记录</span></div>
+        <br/>
+    <div class="description-item">
+      <span class="label">总耗电量 :</span>
+      <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
+    </div>
+    <div class="description-item">
+      <span class="label">最大耗电量 :</span>
+      <span >{{ formatNumber(maxEqDataTemp, 1) }} kWh</span>
+    </div>
+    <div v-if="maxEqDataTimeTemp" class="description-item">
+      <span class="label">发生时间 :</span>
+      <span class="value">{{ maxEqDataTimeTemp }}</span>
+    </div>
+
+   <div class="description-item">
+      <span class="label">最小耗电量 :</span>
+      <span >{{ formatNumber(minEqDataTemp, 1) }} kWh</span>
+    </div>
+    <div v-if="minEqDataTimeTemp" class="description-item">
+      <span class="label">发生时间 :</span>
+      <span class="value">{{ minEqDataTimeTemp }}</span>
+    </div>
+
+  </div>
+      <div class="line"></div>
+      </div>
+      
     </template>
     <template #ActionBar>
       <el-tabs v-model="activeName">
@@ -300,7 +339,7 @@ const eqData = ref<number[]>([]);// 耗电量数组
 const createTimeData = ref<string[]>([]);
 const totalEqData = ref(0);
 const maxEqDataTemp = ref(0);// 最大耗电量 
-const maxEqDataTimeTemp = ref();// 最大耗电量的发生日期 
+const maxEqDataTimeTemp = ref(0);// 最大耗电量的发生日期 
 const minEqDataTemp = ref(0);// 最小耗电量 
 const minEqDataTimeTemp = ref();// 最小耗电量的发生日期 
 // 获取折线图数据
@@ -668,7 +707,7 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 16px;
+    font-size: 14px;
   }
 
 
@@ -689,5 +728,24 @@ onMounted(async () => {
   height: 100%;
   object-fit: cover; 
 }
+.description-item {
+  display: flex;
+  align-items: center;
+}
 
+.label {
+  width:100px; /* 控制冒号前的宽度 */
+  text-align: right; /* 文本右对齐 */
+  margin-right: 20px; /* 控制冒号后的间距 */
+}
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+}
+  .line {
+    height: 1px;
+    margin-top: 28px;
+
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
 </style>

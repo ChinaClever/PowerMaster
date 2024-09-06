@@ -3,7 +3,7 @@
     <template #NavInfo>
         <br/>    <br/> 
         <div class="nav_data">
-          <div class="carousel-container">
+          <!-- <div class="carousel-container">
             <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
               <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
                 <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
@@ -17,7 +17,27 @@
               <el-descriptions-item label="最近一月" ><span >{{ lastMonthTotalData }} 条</span></el-descriptions-item>
             </el-descriptions>
           </div>
-        </div>
+        </div> -->
+          <div class="descriptions-container" style="font-size: 14px;">
+ 
+        <div style="text-align: center"><span>全部PDU新增能耗记录</span></div>
+        <br/>
+    <div class="description-item">
+      <span class="label">最近一天 :</span>
+      <span class="value">{{ lastDayTotalData }}条</span>
+    </div>
+    <div class="description-item">
+      <span class="label">最近一周 :</span>
+      <span class="value">{{ lastWeekTotalData }}条</span>
+    </div>
+    <div class="description-item">
+      <span class="label">最近一月 :</span>
+      <span class="value">{{ lastMonthTotalData }}条</span>
+    </div>
+
+  </div>
+      <div class="line"></div>
+      </div>
     </template>
     <template #ActionBar>
       <el-form
@@ -528,4 +548,24 @@ onMounted(() => {
   height: 100%;
   object-fit: cover; 
 }
+.description-item {
+  display: flex;
+  align-items: center;
+}
+
+.label {
+  width:100px; /* 控制冒号前的宽度 */
+  text-align: right; /* 文本右对齐 */
+  margin-right: 20px; /* 控制冒号后的间距 */
+}
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+}
+  .line {
+    height: 1px;
+    margin-top: 28px;
+
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
 </style>
