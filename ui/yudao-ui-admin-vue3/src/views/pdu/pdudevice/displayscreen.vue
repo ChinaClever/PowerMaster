@@ -219,24 +219,24 @@
                 <el-tag type="danger" v-if="scope.row.breaker == 0">关闭</el-tag>
               </template>
             </el-table-column>                        
-            <el-table-column label="当前电流" align="center" prop="cur_value" v-if="controlVis.circleTableCol.cur_value" >
+            <el-table-column label="当前电流(A)" align="center" prop="cur_value" v-if="controlVis.circleTableCol.cur_value" >
               <template #default="scope" >
                 <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.curColor }">
-                  {{ scope.row.cur_value }}A
+                  {{ scope.row.cur_value }}
                 </el-text>
               </template>
             </el-table-column>
-            <el-table-column label="当前电压" align="center" prop="vol_value" v-if="controlVis.circleTableCol.vol_value" >
+            <el-table-column label="当前电压(V)" align="center" prop="vol_value" v-if="controlVis.circleTableCol.vol_value" >
               <template #default="scope">
                 <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.volColor }">
-                  {{ scope.row.vol_value }}V
+                  {{ scope.row.vol_value }}
                 </el-text>
               </template>
             </el-table-column>
-            <el-table-column label="有功功率" align="center" prop="pow_value" v-if="controlVis.circleTableCol.pow_value" >
+            <el-table-column label="有功功率(kW)" align="center" prop="pow_value" v-if="controlVis.circleTableCol.pow_value" >
               <template #default="scope">
                 <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.powColor }">
-                  {{ scope.row.pow_value }}kW
+                  {{ scope.row.pow_value }}
                 </el-text>
               </template>
             </el-table-column>
@@ -247,9 +247,9 @@
                 </el-text>
               </template>
             </el-table-column>
-            <el-table-column label="电能消耗" align="center" prop="ele_active" v-if="controlVis.circleTableCol.ele_active">
+            <el-table-column label="电能消耗(kWh)" align="center" prop="ele_active" v-if="controlVis.circleTableCol.ele_active">
               <template #default="scope">
-              {{ scope.row.ele_active }}kWh
+              {{ scope.row.ele_active }}
               </template>
             </el-table-column>
           </el-table>
@@ -272,14 +272,14 @@
             <el-table-column label="输出电流(A)" align="center" prop="cur_value"  v-if="controlVis.outPutTableCol.cur_value">
               <template #default="scope">
                 <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.curColor }">
-                  {{ scope.row.cur_value }}A
+                  {{ scope.row.cur_value }}
                 </el-text>
               </template>
             </el-table-column>
             <el-table-column label="有功功率(kW)" align="center" prop="pow_value"  v-if="controlVis.outPutTableCol.pow_value">
               <template #default="scope">
                 <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.powColor }">
-                  {{ scope.row.pow_value }}kW
+                  {{ scope.row.pow_value }}
                 </el-text>
               </template>
             </el-table-column>
@@ -292,7 +292,7 @@
             </el-table-column>
             <el-table-column label="电能消耗(kWh)" align="center" prop="ele_active"  v-if="controlVis.outPutTableCol.ele_active">
               <template #default="scope">
-              {{ scope.row.ele_active }}kWh
+              {{ scope.row.ele_active }}
               </template>
             </el-table-column>
           </el-table>
@@ -507,7 +507,7 @@ const C = ref({
 // }
 
 const openNewPage = (devKey) => {
-  const url = 'http://' + devKey.split('-')[0] + '/index.html';
+  const url = 'https://' + devKey.split('-')[0] + '/index.html';
   window.open(url, '_blank');
 }
 
@@ -542,6 +542,7 @@ const initChart = async () => {
                                     var result = params[0].name + '<br>';
                                     for (var i = 0; i < params.length; i++) {
                                       result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value;
+                                      //判断是否给鼠标悬停上显示符号
                                       if (params[i].seriesName === '视在功率') {
                                         result += ' kVA'; 
                                       } else if (params[i].seriesName === '有功功率') {
@@ -551,6 +552,7 @@ const initChart = async () => {
                                     }
                                     return result;
                                   }},
+      //显示线的按钮
       legend: { data: ['视在功率','有功功率']},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
@@ -566,6 +568,7 @@ const initChart = async () => {
             }
           },boundaryGap: false, data:chartData.value.dateTimes},
       yAxis: { type: 'value'},
+      //鼠标悬停的显示
       series: [
         {name: '视在功率', type: 'line', data: chartData.value.apparentList , symbol: 'circle', symbolSize: 4},
         {name: '有功功率', type: 'line', data: chartData.value.activeList , symbol: 'circle', symbolSize: 4},

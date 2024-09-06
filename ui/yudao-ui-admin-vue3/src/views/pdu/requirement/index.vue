@@ -110,7 +110,7 @@
         <div style="float:right">
           <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />电流</el-button>
           <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />功率</el-button>          
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
         </div>
       </el-form>
@@ -120,6 +120,7 @@
         <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
+        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="125px"/>
         <el-table-column label="L1最大电流" align="center" prop="l1MaxCur" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
@@ -283,7 +284,7 @@ const { push } = useRouter()
 
 const valueMode = ref(0);
 const now = ref()
-const pageSizeArr = ref([24,36,48])
+const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(1)
 // const statusNumber = reactive({
 //   normal : 0,
