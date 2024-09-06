@@ -410,6 +410,9 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             } else if("twentyfourHour".equals(type)){
                 pastTime = now.minusHours(25);
                 searchRequest = new SearchRequest("pdu_hda_total_hour");
+            }else if("seventytwoHour".equals(type)){
+                pastTime = now.minusHours(73);
+                searchRequest = new SearchRequest("pdu_hda_total_hour");
             }
 
             // 构建查询请求
@@ -426,6 +429,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             List<Double> apparentList = new ArrayList<>();
             List<Double> activeList = new ArrayList<>();
             List<String> dateTimes = new ArrayList<>();
+            List<Double> factorList = new ArrayList<>();
             // 执行查询请求
             try {
                 SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -437,11 +441,19 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                             PduHdaTotalRealtimeDo pduHdaTotalRealtimeDo = JsonUtils.parseObject(str, PduHdaTotalRealtimeDo.class);
                             apparentList.add(Double.valueOf(pduHdaTotalRealtimeDo.getApparentPow()));
                             activeList.add(Double.valueOf(pduHdaTotalRealtimeDo.getActivePow()));
+                            factorList.add(Double.valueOf(pduHdaTotalRealtimeDo.getPowerFactor()));
                             dateTimes.add(pduHdaTotalRealtimeDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
                         } else if("twentyfourHour".equals(type)){
                             PduHdaTotalHourDo pduHdaTotalHourDo = JsonUtils.parseObject(str, PduHdaTotalHourDo.class);
                             apparentList.add(Double.valueOf(pduHdaTotalHourDo.getApparentPowAvgValue()));
                             activeList.add(Double.valueOf(pduHdaTotalHourDo.getActivePowAvgValue()));
+                            factorList.add(Double.valueOf(pduHdaTotalHourDo.getPowerFactorAvgValue()));
+                            dateTimes.add(pduHdaTotalHourDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+                        }else if ("seventytwoHour".equals(type)){
+                            PduHdaTotalHourDo pduHdaTotalHourDo = JsonUtils.parseObject(str, PduHdaTotalHourDo.class);
+                            apparentList.add(Double.valueOf(pduHdaTotalHourDo.getApparentPowMaxValue()));
+                            activeList.add(Double.valueOf(pduHdaTotalHourDo.getActivePowMaxValue()));
+                            factorList.add(Double.valueOf(pduHdaTotalHourDo.getPowerFactorAvgValue()));
                             dateTimes.add(pduHdaTotalHourDo.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
                         }
                     }
@@ -452,6 +464,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
             result.put("apparentList",apparentList);
             result.put("activeList",activeList);
+            result.put("factorList",factorList);
             result.put("dateTimes",dateTimes);
 
             return result;

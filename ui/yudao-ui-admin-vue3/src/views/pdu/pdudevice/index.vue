@@ -51,6 +51,7 @@
             <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
           </template>
         </el-form-item>
+      <el-form-item>
         <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
             v-model="queryParams.devKey"
@@ -62,8 +63,7 @@
           />
         </el-form-item>
       
-
-        <el-form-item>
+      <el-form-item :style="{ marginLeft: '20px'}">
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           <el-button
@@ -84,8 +84,9 @@
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
         </el-form-item>
+       </el-form-item> 
         <div style="float:right">
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 0;" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
         </div>
       </el-form>
@@ -167,13 +168,14 @@
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="icon">
-              <div v-if=" item.pow != null ">
-                {{item.pow}}<br/>kW
+              <div v-if="item.pf != null">
+                {{item.pf}}<br/>
+                <span class="text-pf">PF</span>
               </div>                    
             </div>
             <div class="info">
               
-              <div v-if="item.pf != null">功率因素：{{item.pf}}</div>
+              <div v-if=" item.pow != null ">有功功率：{{item.pow}}kW</div>    
               <div v-if="item.apparentPow != null">视在功率：{{item.apparentPow}}kVA</div>
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
@@ -236,7 +238,7 @@ const { push } = useRouter()
 
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
-const pageSizeArr = ref([24,36,48])
+const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(0)
 const statusNumber = reactive({
   normal : 0,
@@ -418,6 +420,7 @@ const getList = async () => {
         alarm++;
       } 
     });
+    //设置左边数量
     statusNumber.normal = normal;
     statusNumber.offline = offline;
     statusNumber.alarm = alarm;
@@ -460,6 +463,7 @@ const getListNoLoading = async () => {
         alarm++;
       }
     });
+    //设置左边数量
     statusNumber.normal = normal;
     statusNumber.offline = offline;
     statusNumber.alarm = alarm;
@@ -867,11 +871,20 @@ onActivated(() => {
     .content {
       display: flex;
       align-items: center;
+      height: 100%;
       .icon {
+        font-size: 20px;
         width: 60px;
         height: 30px;
-        margin: 0 28px;
+        margin: 0 25px 39px;
         text-align: center;
+          .text-pf{
+          font-size: 16px;
+        }
+      }
+      .info{
+        font-size: 16px;
+        margin-bottom: 20px;
       }
     }
     .devKey{
