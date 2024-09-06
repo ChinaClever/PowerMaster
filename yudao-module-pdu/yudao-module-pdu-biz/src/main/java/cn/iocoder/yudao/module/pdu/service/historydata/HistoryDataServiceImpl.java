@@ -884,5 +884,32 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         Map<String, Object> map = energyConsumptionService.getSumData(indices, name, timeAgo);
         return map;
     }
+    @Override
+    public List<Object> getEnExcelList(List<Object> list){
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        for (Object obj : list) {
+            if (obj instanceof Map && ((Map<?, ?>) obj).keySet().stream().allMatch(key -> key instanceof String)) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) obj;
+                mapList.add(map);
+            }
+        }
+//        for (Map<String, Object> map : mapList) {
+//           Map mp=(Map) map.get("address");
+////            System.out.println(mp);
+//
+//        }
+        for(int i=0;i<mapList.size();i++){
+            Map mp=(Map)mapList.get(i).get("address");
+            mapList.get(i).put("address",mp.get("address"));
+//            mapList.set(i,mp.get("address"));
+//            System.out.println(mapList);
+        }
+//        List<Object> list1 = new ArrayList<>();
+//        for (Map<String, Object> map : mapList) {
+//            list1.add(map);
+//        }
+        return list;
+    }
 
 }
