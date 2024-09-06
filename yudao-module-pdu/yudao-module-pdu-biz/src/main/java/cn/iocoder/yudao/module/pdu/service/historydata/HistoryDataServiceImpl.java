@@ -894,21 +894,11 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 mapList.add(map);
             }
         }
-//        for (Map<String, Object> map : mapList) {
-//           Map mp=(Map) map.get("address");
-////            System.out.println(mp);
-//
-//        }
         for(int i=0;i<mapList.size();i++){
             Map mp=(Map)mapList.get(i).get("address");
             mapList.get(i).put("address",mp.get("address"));
-//            mapList.set(i,mp.get("address"));
-//            System.out.println(mapList);
+            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,16));
         }
-//        List<Object> list1 = new ArrayList<>();
-//        for (Map<String, Object> map : mapList) {
-//            list1.add(map);
-//        }
         return list;
     }
 

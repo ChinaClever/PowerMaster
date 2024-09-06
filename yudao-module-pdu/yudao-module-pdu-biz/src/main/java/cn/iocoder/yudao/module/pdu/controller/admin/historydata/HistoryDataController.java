@@ -119,7 +119,6 @@ public class HistoryDataController {
         List<Object> list = historyDataService.getEnvDataPage(pageReqVO).getList();
         //对list进行处理
         historyDataService.getEnExcelList(list);
-
         // 导出 Excel
         if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
             ExcelUtils.write(response, "pdu环境历史数据.xlsx", "数据", EnvRealtimePageRespVO.class,

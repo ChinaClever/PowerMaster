@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO;
 
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.format.NumberFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -24,10 +25,10 @@ public class BillPageRespVO {
 
     @ExcelProperty("结束日期")
     private String end_time;
-
+    @NumberFormat("0.0")
     @ExcelProperty("耗电量(kWh)")
     private Double eq_value;
-
+    @NumberFormat("0.000")
     @ExcelProperty("电费(元)")
     private Double bill_value;
 

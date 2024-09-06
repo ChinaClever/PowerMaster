@@ -29,6 +29,7 @@ public class RealtimeEQPageRespVO {
     private String create_time;
 
     @ExcelProperty("电能 (kWh)")
-    private Double eq_value;
+    private Double ele_active;
+//    private Double eq_value;
 
 }
