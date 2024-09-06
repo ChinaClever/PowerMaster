@@ -157,4 +157,5 @@ const handleCheck = (data) => {
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
+}
 </style>
