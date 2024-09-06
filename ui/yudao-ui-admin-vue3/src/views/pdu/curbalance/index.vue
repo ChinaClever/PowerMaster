@@ -49,13 +49,15 @@
             <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
           </template>
         </el-form-item>
-        <el-button
+        <el-button 
+          v-show="switchValue == 2 || switchValue == 3"
           type="primary"
           plain
           @click="openForm('create')"
         >
           <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
         </el-button>
+      <el-form-item>
         <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
             v-model="queryParams.devKey"
@@ -66,7 +68,7 @@
             @select="handleQuery"
           />
         </el-form-item>
-        <el-form-item>
+      <el-form-item :style="{ marginLeft: '20px'}">
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           <el-button
@@ -87,6 +89,7 @@
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
         </el-form-item>
+      </el-form-item>
         <div style="float:right">
           <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流阵列</el-button>            
           <el-button @click="statusList.forEach((item) => item.selected = true);pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压阵列</el-button>

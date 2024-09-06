@@ -1,4 +1,5 @@
 <template>
+ <div style="background-color: #E7E7E7;">
   <el-row :gutter="18" >
     <el-col>
       <el-card>
@@ -24,7 +25,7 @@
               <el-form-item label="IP地址" prop="ipAddr" >
               <el-input
                 v-model="queryParams.ipAddr"
-                placeholder="请输入IP地址"
+                placeholder="请输入IP地址"  
                 clearable
                 class="!w-140px"
               />
@@ -51,9 +52,9 @@
       </el-card>
     </el-col>
   </el-row>
-  <div v-show="controlVis.display">
-    <el-row :gutter="24" >
-      <el-col :span="6" class="card-box">
+  <div v-show="controlVis.display" >
+    <el-row :gutter="20" style="margin: 0px; margin-top : 10px;margin-top : 10px" >
+      <el-col :span="6" class="card-box" >
         <el-card>
           <template #header>
             <el-row class="text-container"> 
@@ -121,7 +122,7 @@
             </el-row>
         </el-card>
       </el-col>
-      <el-col :span="6" class="card-box" v-if="controlVis.haveB">
+      <el-col :span="6" class="card-box" v-if="controlVis.haveB" >
         <el-card>
           <template #header>
               <div>
@@ -187,7 +188,7 @@
       </el-col>
     </el-row>
     <el-collapse v-model="activeNames" >
-      <el-card>
+      <el-card style="margin: 10px;">
         <el-row>
           <el-col >
             <span style="width: 100%">趋势图</span>
@@ -195,18 +196,19 @@
           <el-col >
             <div style="float:right;margin-top: 0;">
               <el-form-item  prop="type">
-                <el-button @click="queryParams.powGranularity = `oneHour`;switchValue = 0;" :type="!switchValue ? 'primary' : ''">最近一小时</el-button>
-                <el-button @click="queryParams.powGranularity = `twentyfourHour`;switchValue = 1;" :type="switchValue ? 'primary' : ''">过去24小时</el-button>
+                <el-button @click="queryParams.powGranularity = `oneHour`;switchValue = 0;" :type="switchValue === 0 ? 'primary' : ''">最近一小时</el-button>
+                <el-button @click="queryParams.powGranularity = `twentyfourHour`;switchValue = 1;" :type="switchValue === 1 ? 'primary' : ''">过去24小时</el-button>
+                <el-button @click="queryParams.powGranularity = `seventytwoHour`;switchValue = 2;" :type="switchValue === 2 ? 'primary' : ''">过去三天</el-button>
               </el-form-item>
             </div>
           </el-col> 
         </el-row>
         <div style="display: flex; justify-content: center; align-items: center;">
-          <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
+          <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 42vh;"></div>
         </div>
         
       </el-card>
-      <el-collapse-item name="1" v-if="controlVis.haveCircle">
+      <el-collapse-item name="1" v-if="controlVis.haveCircle" style="margin: 15px 10px 15px 10px; ">
         <template #title>
           <div style="width: 5%;font-size: 16px;">回路</div>
         </template>
@@ -255,7 +257,7 @@
           </el-table>
         </ContentWrap>
       </el-collapse-item>
-      <el-collapse-item  name="3" v-if="controlVis.haveOutPut">
+      <el-collapse-item  name="3" v-if="controlVis.haveOutPut" style="margin: 15px 10px 15px 10px; ">
         <template #title>
           <div style="width: 5%;font-size: 16px;">输出位</div>
         </template>
@@ -326,7 +328,7 @@
     </el-collapse>
   </div>
   
-
+ </div>
 </template>
 
 <script setup lang="ts">
@@ -401,6 +403,7 @@ const sensorList = ref([
 const chartData = ref({
   apparentList : [] as number[],
   activeList : [] as number[],
+  factorList : [] as number[],
   dateTimes : [] as string[]
 }) as any
 
@@ -532,6 +535,9 @@ const initChart = async () => {
   chartData.value.activeList.forEach((obj,index) => {
     chartData.value.activeList[index] = obj?.toFixed(3);
   });
+  chartData.value.factorList.forEach((obj,index) => {
+    chartData.value.factorList[index] = obj?.toFixed(2);
+  });
 
   if (chartContainer.value && instance) {
     chart = echarts.init(chartContainer.value);
@@ -553,7 +559,7 @@ const initChart = async () => {
                                     return result;
                                   }},
       //显示线的按钮
-      legend: { data: ['视在功率','有功功率']},
+      legend: { data: ['有功功率','视在功率','功率因素']},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
       xAxis: {type: 'category', axisLabel: { formatter: 
@@ -561,17 +567,18 @@ const initChart = async () => {
               if(queryParams.powGranularity == "oneHour"){
                 // 截取字符串的前n位，即yyyy-MM-dd HH:mm:ss
                 return value.substring(11, 19);
-              } else if(queryParams.powGranularity == "twentyfourHour"){
+              } else if(queryParams.powGranularity == "twentyfourHour" || queryParams.powGranularity == "seventytwoHour"){
                 // 截取字符串的n位，即yyyy-MM-dd HH:mm:ss
                 return value.substring(5, 19);
-              }
+              } 
             }
           },boundaryGap: false, data:chartData.value.dateTimes},
       yAxis: { type: 'value'},
       //鼠标悬停的显示
       series: [
-        {name: '视在功率', type: 'line', data: chartData.value.apparentList , symbol: 'circle', symbolSize: 4},
-        {name: '有功功率', type: 'line', data: chartData.value.activeList , symbol: 'circle', symbolSize: 4},
+          {name: '有功功率', type: 'line', data: chartData.value.activeList , symbol: 'circle', symbolSize: 4},
+          {name: '视在功率', type: 'line', data: chartData.value.apparentList , symbol: 'circle', symbolSize: 4},
+          {name: '功率因素', type: 'line', data: chartData.value.factorList , symbol: 'circle', symbolSize: 4},
       ],
     });
     // 将 chart 绑定到组件实例，以便在销毁组件时能够正确释放资源
@@ -707,6 +714,9 @@ const flashChartData = async () =>{
   chartData.value.activeList.forEach((obj,index) => {
     chartData.value.activeList[index] = obj?.toFixed(3);
   });
+  chartData.value.factorList.forEach((obj,index) => {
+    chartData.value.factorList[index] = obj?.toFixed(2);
+  });
 
   // 创建新的图表实例
   chart = echarts.init(document.getElementById('chartContainer'));
@@ -728,7 +738,7 @@ const flashChartData = async () =>{
                                     }
                                     return result;
                                   }},
-      legend: { data: ['视在功率','有功功率']},
+      legend: { data: ['有功功率','视在功率','功率因素']},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
       xAxis: {type: 'category', axisLabel: { formatter: 
@@ -736,7 +746,7 @@ const flashChartData = async () =>{
               if(queryParams.powGranularity == "oneHour"){
                 // 截取字符串的前n位，即yyyy-MM-dd HH:mm:ss
                 return value.substring(11, 19);
-              } else if(queryParams.powGranularity == "twentyfourHour"){
+              } else if(queryParams.powGranularity == "twentyfourHour" || queryParams.powGranularity == "seventytwoHour"){
                 // 截取字符串的n位，即yyyy-MM-dd HH:mm:ss
                 return value.substring(5, 19);
               }
@@ -744,12 +754,13 @@ const flashChartData = async () =>{
           },boundaryGap: false, data:chartData.value.dateTimes},
       yAxis: { type: 'value'},
       series: [
-        {name: '视在功率', type: 'line', data: chartData.value.apparentList , symbol: 'circle', symbolSize: 4},
-        {name: '有功功率', type: 'line', data: chartData.value.activeList , symbol: 'circle', symbolSize: 4},
+          {name: '有功功率', type: 'line', data: chartData.value.activeList , symbol: 'circle', symbolSize: 4},
+          {name: '视在功率', type: 'line', data: chartData.value.apparentList , symbol: 'circle', symbolSize: 4},
+          {name: '功率因素', type: 'line', data: chartData.value.factorList , symbol: 'circle', symbolSize: 4},
       ],
     });
   }
-
+//总数据的饼图
   totalChart?.setOption({
     series: [
         { 
@@ -1055,6 +1066,9 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
     chartData.value.activeList.forEach((obj,index) => {
       chartData.value.activeList[index] = obj?.toFixed(3);
     });
+    chartData.value.factorList.forEach((obj,index) => {
+      chartData.value.factorList[index] = obj?.toFixed(2);
+    });
     // 创建新的图表实例
     chart = echarts.init(document.getElementById('chartContainer'));
     // 设置新的配置对象
@@ -1075,7 +1089,7 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
                                       }
                                       return result;
                                     }},
-        legend: { data: ['视在功率','有功功率']},
+        legend: { data: ['有功功率','视在功率','功率因素']},
         grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
         toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
         xAxis: {type: 'category', axisLabel: { formatter: 
@@ -1083,7 +1097,7 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
                 if(queryParams.powGranularity == "oneHour"){
                   // 截取字符串的前n位，即yyyy-MM-dd HH:mm:ss
                   return value.substring(11, 19);
-                } else if(queryParams.powGranularity == "twentyfourHour"){
+                } else if(queryParams.powGranularity == "twentyfourHour" || queryParams.powGranularity == "seventytwoHour"){
                   // 截取字符串的n位，即yyyy-MM-dd HH:mm:ss
                   return value.substring(5, 19);
                 }
@@ -1091,8 +1105,10 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
             },boundaryGap: false, data:chartData.value.dateTimes},
         yAxis: { type: 'value'},
         series: [
-          {name: '视在功率', type: 'line', data: chartData.value.apparentList , symbol: 'circle', symbolSize: 4},
           {name: '有功功率', type: 'line', data: chartData.value.activeList , symbol: 'circle', symbolSize: 4},
+          {name: '视在功率', type: 'line', data: chartData.value.apparentList , symbol: 'circle', symbolSize: 4},
+          {name: '功率因素', type: 'line', data: chartData.value.factorList , symbol: 'circle', symbolSize: 4},
+
         ],
       });
     }
@@ -1102,6 +1118,9 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
         time = 60000;
         // time = 3000;
       } else if(queryParams.powGranularity == "twentyfourHour"){
+        time = 3600000;
+        // time = 3000;
+      } else if(queryParams.powGranularity == "seventytwoHour"){
         time = 3600000;
         // time = 3000;
       }
@@ -1159,6 +1178,9 @@ onActivated( async () => {
       time = 60000;
       // time = 3000;
     } else if(queryParams.powGranularity == "twentyfourHour"){
+      time = 3600000;
+      // time = 3000;
+    }else if(queryParams.powGranularity == "seventytwoHour"){
       time = 3600000;
       // time = 3000;
     }

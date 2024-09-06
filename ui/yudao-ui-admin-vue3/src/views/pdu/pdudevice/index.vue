@@ -420,6 +420,7 @@ const getList = async () => {
         alarm++;
       } 
     });
+    //设置左边数量
     statusNumber.normal = normal;
     statusNumber.offline = offline;
     statusNumber.alarm = alarm;
@@ -462,6 +463,7 @@ const getListNoLoading = async () => {
         alarm++;
       }
     });
+    //设置左边数量
     statusNumber.normal = normal;
     statusNumber.offline = offline;
     statusNumber.alarm = alarm;

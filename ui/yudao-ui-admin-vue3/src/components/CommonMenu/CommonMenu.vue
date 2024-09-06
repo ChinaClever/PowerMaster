@@ -142,7 +142,7 @@ const handleCheck = (data) => {
   height: 46px;
   line-height: 46px;
   padding-left: 10px;
-  background-color: #49e249;
+  background-color: #eef4fc;
   font-size: 14px;
 }
 .nav-left {
