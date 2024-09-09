@@ -9,11 +9,11 @@
               <el-text class="mx-1" size="large">所在位置：{{ location }}</el-text>
             </el-text>
           </el-col>
-          <el-col :span="5">
+          <!-- <el-col :span="5">
             <el-text line-clamp="2">
               <el-text class="mx-1" size="large">网络地址：{{ queryParams.devKey }}</el-text>
             </el-text>
-          </el-col>
+          </el-col> -->
           <el-col :span="10">
             <el-form
               class="-mb-15px"
@@ -22,16 +22,18 @@
               :inline="true"
               label-width="120px"
             >
-              <el-form-item label="IP地址" prop="ipAddr" >
-              <el-input
-                v-model="queryParams.ipAddr"
-                placeholder="请输入IP地址"  
+              <el-form-item label="网络地址" prop="devKey" >
+              <el-autocomplete
+                v-model="queryParams.devKey"
+                :fetch-suggestions="querySearch"
+                placeholder="请输入网络地址"  
                 clearable
                 class="!w-140px"
+                @select="handleQuery"
               />
               </el-form-item>
 
-              <el-form-item label="级联地址" prop="cascadeAddr" label-width="70px">
+              <!-- <el-form-item label="级联地址" prop="cascadeAddr" label-width="70px">
                 <el-input-number
                   v-model="queryParams.cascadeAddr"
                   :min="0"
@@ -39,7 +41,7 @@
                   :value-on-clear="0"
                     class="!w-100px"
                 />
-              </el-form-item>
+              </el-form-item> -->
               <el-form-item>
                 <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
               </el-form-item>
@@ -463,6 +465,32 @@ const C = ref({
   pf : null
 }) as any
 
+const devKeyList = ref([])
+const loadAll = async () => {
+  var data = await PDUDeviceApi.devKeyList();
+  var objectArray = data.map((str) => {
+    return { value: str };
+  });
+  console.log(objectArray)
+  return objectArray;
+}
+
+const querySearch = (queryString: string, cb: any) => {
+
+  const results = queryString
+    ? devKeyList.value.filter(createFilter(queryString))
+    : devKeyList.value
+  // call callback function to return suggestions
+  cb(results)
+}
+
+const createFilter = (queryString: string) => {
+  return (devKeyList) => {
+    return (
+      devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+    )
+  }
+}
 // const redColor = ref("red")
 
 
@@ -1143,12 +1171,9 @@ const handleQuery = async () => {
 
 
 /** 初始化 **/
-onMounted(() => {
+onMounted(async () => {
+  devKeyList.value = await loadAll();
 
-  // getList()
-  
-  // addDataPoint();
-  // initChart();
 })
 
 onBeforeMount(async () =>{
