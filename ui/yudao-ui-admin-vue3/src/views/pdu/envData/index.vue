@@ -3,7 +3,7 @@
     <template #NavInfo>
       <br/>    <br/> 
         <div class="nav_data">
-          <div class="carousel-container">
+          <!-- <div class="carousel-container">
             <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
               <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
                 <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
@@ -17,7 +17,28 @@
               <el-descriptions-item label="最近一周" ><span >{{ lastWeekTotalData }} 条</span></el-descriptions-item>
             </el-descriptions>
           </div>
-        </div>
+        </div> -->
+
+        <div class="descriptions-container" style="font-size: 14px;">
+ 
+ <div style="text-align: center"><span>全部传感器新增环境记录</span></div>
+ <br/>
+<div class="description-item">
+<span class="label">最近一小时 :</span>
+<span class="value">{{ lastHourTotalData }}条</span>
+</div>
+<div class="description-item">
+<span class="label">最近一天 :</span>
+<span class="value">{{ lastDayTotalData }}条</span>
+</div>
+<div class="description-item">
+<span class="label">最近一周 :</span>
+<span class="value">{{ lastWeekTotalData }}条</span>
+</div>
+
+</div>
+<div class="line"></div>
+</div>
     </template>
     <template #ActionBar>
       <el-form
@@ -68,7 +89,7 @@
 
         <el-form-item label="时间段" prop="timeRange">
           <el-date-picker
-          value-format="YYYY-MM-DD HH:mm:ss"
+          value-format="YYYY-MM-DD HH:mm"
           v-model="queryParams.timeRange"
           type="datetimerange"
           :shortcuts="shortcuts"
@@ -331,15 +352,15 @@ watch(() => queryParams.granularity, (newValues) => {
         { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:false, width: '160px'},
         { label: '平均温度(℃)', align: 'center', prop: 'tem_avg_value', istrue:true, width: '180px', formatter: formatData },
         { label: '最高温度(℃)', align: 'center', prop: 'tem_max_value', istrue:true, width: '180px', formatter: formatData },
-        { label: '最高温度时间', align: 'center', prop: 'tem_max_time' , width: '230px', istrue:true},
+        { label: '最高温度时间', align: 'center', prop: 'tem_max_time' , width: '230px', istrue:true,formatter: formatTime},
         { label: '最低温度(℃)', align: 'center', prop: 'tem_min_value', istrue:true, width: '180px', formatter: formatData },
-        { label: '最低温度时间', align: 'center', prop: 'tem_min_time' , width: '230px', istrue:true},
+        { label: '最低温度时间', align: 'center', prop: 'tem_min_time' , width: '230px', istrue:true,formatter: formatTime},
         { label: '平均湿度(%RH)', align: 'center', prop: 'hum_avg_value', istrue:false, width: '180px', formatter: formatData},
         { label: '最大湿度(%RH)', align: 'center', prop: 'hum_max_value', istrue:false, width: '180px', formatter: formatData },
-        { label: '最大湿度时间', align: 'center', prop: 'hum_max_time' , width: '230px', istrue:false},
+        { label: '最大湿度时间', align: 'center', prop: 'hum_max_time' , width: '230px', istrue:false,formatter: formatTime},
         { label: '最小湿度(%RH)', align: 'center', prop: 'hum_min_value', istrue:false, width: '180px', formatter: formatData },
-        { label: '最小湿度时间', align: 'center', prop: 'hum_min_time' , width: '230px', istrue:false},
-        { label: '记录时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true},
+        { label: '最小湿度时间', align: 'center', prop: 'hum_min_time' , width: '230px', istrue:false,formatter: formatTime},
+        { label: '记录时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true,formatter: formatTime},
         { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
         { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
       ] as any;
@@ -540,5 +561,26 @@ onMounted( () => {
   height: 100%;
   object-fit: cover; 
 }
+
+.description-item {
+  display: flex;
+  align-items: center;
+}
+
+.label {
+  width:100px; /* 控制冒号前的宽度 */
+  text-align: right; /* 文本右对齐 */
+  margin-right: 20px; /* 控制冒号后的间距 */
+}
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+}
+  .line {
+    height: 1px;
+    margin-top: 28px;
+
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
 
 </style>

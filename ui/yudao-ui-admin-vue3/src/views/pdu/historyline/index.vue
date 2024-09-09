@@ -3,7 +3,7 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <!-- <div class="carousel-container">
+        <div class="carousel-container">
           <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
             <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
               <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
@@ -33,9 +33,9 @@
           </el-descriptions-item>
         </el-descriptions>
         </div>
-      </div> -->
+      </div>
 
-       <div class="nav_header">
+       <!-- <div class="nav_header">
         <span v-if="nowAddress">{{nowAddress}}</span>
         <span v-if="nowLocation">( {{nowLocation}} ) </span>
         <br/>
@@ -65,7 +65,7 @@
 
   </div>
       <div class="line"></div>
-      </div>
+      </div> -->
 
     </template>
     <template #ActionBar>

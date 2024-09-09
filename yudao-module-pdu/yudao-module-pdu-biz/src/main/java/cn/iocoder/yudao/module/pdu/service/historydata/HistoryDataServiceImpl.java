@@ -898,6 +898,10 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             Map mp=(Map)mapList.get(i).get("address");
             mapList.get(i).put("address",mp.get("address"));
             mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,16));
+            if(mapList.get(i).containsKey("tem_max_time")&&mapList.get(i).containsKey("tem_min_time")){
+                mapList.get(i).put("tem_max_time",mapList.get(i).get("tem_max_time").toString().substring(0,16));
+                mapList.get(i).put("tem_min_time",mapList.get(i).get("tem_min_time").toString().substring(0,16));
+            }
         }
         return list;
     }
