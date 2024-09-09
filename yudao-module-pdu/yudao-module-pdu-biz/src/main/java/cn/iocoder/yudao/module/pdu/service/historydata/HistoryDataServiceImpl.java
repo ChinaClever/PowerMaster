@@ -906,4 +906,32 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         return list;
     }
 
+    @Override
+    public List<Object> getNewHistoryDataDetails(List<Object> list,String ob) {
+        List<Map<String, Object>> mapList = new ArrayList<>();
+
+        for (Object obj : list) {
+            if (obj instanceof Map && ((Map<?, ?>) obj).keySet().stream().allMatch(key -> key instanceof String)) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) obj;
+                mapList.add(map);
+            }
+        }
+        if(ob.equals("realtime")){
+            for (int i = 0; i < mapList.size(); i++) {
+                mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
+            }
+        }
+        else if(ob.equals("not_realtime")){
+            for (int i = 0; i < mapList.size(); i++) {
+                mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
+                mapList.get(i).put("pow_apparent_max_time", mapList.get(i).get("pow_apparent_max_time").toString().substring(0, 16));
+                mapList.get(i).put("pow_apparent_min_time", mapList.get(i).get("pow_apparent_min_time").toString().substring(0, 16));
+            }
+        }
+
+        return list;
+    }
+
+
 }

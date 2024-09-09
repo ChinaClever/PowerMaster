@@ -8,7 +8,7 @@ import lombok.Data;
 @Schema(description = "管理后台 - pdu（天周月） 导出数据")
 @Data
 @ExcelIgnoreUnannotated
-public class RealtimeEQPageRespVO {
+public class RealtimeEQOutletIdPageRespVO {
 
     @ExcelProperty("位置")
     private String address;
@@ -22,12 +22,12 @@ public class RealtimeEQPageRespVO {
 
 //    @ExcelProperty("相")
 //    private Integer line_id;
-
+//
 //    @ExcelProperty("回路")
 //    private Integer loop_id;
-//
-//    @ExcelProperty("输出位")
-//    private Integer outlet_id;
+
+    @ExcelProperty("输出位")
+    private Integer outlet_id;
 
     @ExcelProperty("电能 (kWh)")
     private Double ele_active;

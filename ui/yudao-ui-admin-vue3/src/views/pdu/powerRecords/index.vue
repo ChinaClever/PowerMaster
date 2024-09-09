@@ -68,7 +68,7 @@
 
       <el-form-item label="时间段" prop="timeRange">
         <el-date-picker
-        value-format="YYYY-MM-DD HH:mm"
+        value-format="YYYY-MM-DD HH:mm:ss"
         v-model="queryParams.timeRange"
         type="datetimerange"
         :shortcuts="shortcuts"
@@ -209,9 +209,9 @@ const typeCascaderChange = (selected) => {
     case 'line':
       tableColumns.value = [
         { label: '位置', align: 'center', prop: 'address' , istrue:true},
-        { label: '相', align: 'center', prop: 'line_id' , istrue:true, formatter: formatLineId}, 
         { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
         { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '相', align: 'center', prop: 'line_id' , istrue:true, formatter: formatLineId}, 
         { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
       ]
       queryParams.lineId = selected[1];
@@ -221,9 +221,9 @@ const typeCascaderChange = (selected) => {
     case 'loop':
       tableColumns.value = [
         { label: '位置', align: 'center', prop: 'address' , istrue:true},
-        { label: '回路', align: 'center', prop: 'loop_id' , istrue:true, formatter: formatLoopId},
         { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
         { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '回路', align: 'center', prop: 'loop_id' , istrue:true, formatter: formatLoopId},
         { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
       ]
       queryParams.loopId = selected[1];
@@ -233,9 +233,9 @@ const typeCascaderChange = (selected) => {
     case 'outlet':
       tableColumns.value = [
         { label: '位置', align: 'center', prop: 'address' , istrue:true},
-        { label: '输出位', align: 'center', prop: 'outlet_id' , istrue:true},
         { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
         { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '输出位', align: 'center', prop: 'outlet_id' , istrue:true},
         { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
       ]
       queryParams.outletId = selected[1];

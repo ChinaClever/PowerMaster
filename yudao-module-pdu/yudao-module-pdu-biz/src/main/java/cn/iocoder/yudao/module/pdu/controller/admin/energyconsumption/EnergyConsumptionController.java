@@ -5,10 +5,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
-import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.BillPageRespVO;
-import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.EQPageRespVO;
-import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.EnergyConsumptionPageReqVO;
-import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.RealtimeEQPageRespVO;
+import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.*;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataPageReqVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HourAndDayPageRespVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.RealtimePageRespVO;
@@ -112,8 +109,25 @@ public class EnergyConsumptionController {
         List<Object> list1 = energyConsumptionService.getRealtimeEQDataPage(pageReqVO).getList();
         List<Object>list=energyConsumptionService.getNewEQList(list1);
         // 导出 Excel
-        ExcelUtils.write(response, "pdu电能记录数据.xlsx", "数据", RealtimeEQPageRespVO.class,
-                BeanUtils.toBean(list, RealtimeEQPageRespVO.class));
+        if(list.stream()
+                .anyMatch(item -> item instanceof Map && ((Map<?, ?>) item).containsKey("line_id"))){
+            ExcelUtils.write(response, "pdu电能记录数据.xlsx", "数据", RealtimeEQLineIdPageRespVO.class,
+                    BeanUtils.toBean(list, RealtimeEQLineIdPageRespVO.class));
+        }
+        else if(list.stream()
+                .anyMatch(item -> item instanceof Map && ((Map<?, ?>) item).containsKey("loop_id"))){
+            ExcelUtils.write(response, "pdu电能记录数据.xlsx", "数据", RealtimeEQLoopIdPageRespVO.class,
+                    BeanUtils.toBean(list, RealtimeEQLoopIdPageRespVO.class));
+        }
+        else if(list.stream()
+                .anyMatch(item -> item instanceof Map && ((Map<?, ?>) item).containsKey("outlet_id"))){
+            ExcelUtils.write(response, "pdu电能记录数据.xlsx", "数据", RealtimeEQOutletIdPageRespVO.class,
+                    BeanUtils.toBean(list, RealtimeEQOutletIdPageRespVO.class));
+        }
+        else{
+            ExcelUtils.write(response, "pdu电能记录数据.xlsx", "数据", RealtimeEQPageRespVO.class,
+                    BeanUtils.toBean(list, RealtimeEQPageRespVO.class));
+        }
     }
 
     @GetMapping("/new-data")
