@@ -9,7 +9,7 @@
               <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
             </el-carousel-item>
           </el-carousel>
-        </div>  -->
+        </div>   -->
         <!-- <div class="nav_header">
           <span v-if="nowAddress">{{nowAddress}}</span>
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
@@ -35,7 +35,8 @@
         </div>
       </div> -->
 
-       <div class="nav_header" style="font-size: 14px;">
+
+      <div class="nav_header">
           <span v-if="nowAddress">{{nowAddress}}</span>
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
           <br/>
@@ -46,27 +47,6 @@
           </template>
           <br/>
         </div>
-        <div v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total'" class="descriptions-container" style="font-size: 14px;">
-        <div class="description-item">
-            <span class="label">功率最大值 :</span>
-            <span >{{ formatNumber(maxActivePowDataTemp, 3) }} kWh</span>
-          </div>
-          <div v-if="maxActivePowDataTimeTemp" class="description-item">
-            <span class="label">发生时间 :</span>
-            <span class="value">{{ maxActivePowDataTimeTemp }}</span>
-          </div>
-
-          <div class="description-item">
-            <span class="label">功率最小值 :</span>
-            <span >{{ formatNumber(minActivePowDataTemp, 3) }} kWh</span>
-          </div>
-          <div v-if="minActivePowDataTimeTemp" class="description-item">
-            <span class="label">发生时间 :</span>
-            <span class="value">{{ minActivePowDataTimeTemp }}</span>
-          </div>
-  </div>
-</div>
-       <!-- 
         <div v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total'" class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
             <span class="label">有功功率最大值 :</span>
@@ -88,7 +68,7 @@
 
   </div>
       <div class="line"></div>
-      </div> -->
+      </div> 
 
     </template>
     <template #ActionBar>
