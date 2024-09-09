@@ -9,8 +9,8 @@
               <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
             </el-carousel-item>
           </el-carousel>
-        </div> 
-        <div class="nav_header">
+        </div>   -->
+        <!-- <div class="nav_header">
           <span v-if="nowAddress">{{nowAddress}}</span>
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
           <br/>
@@ -35,15 +35,18 @@
         </div>
       </div> -->
 
-       <div class="nav_header">
-        <span v-if="nowAddress">{{nowAddress}}</span>
-        <span v-if="nowLocation">( {{nowLocation}} ) </span>
-        <br/>
-        <span>{{selectTimeRange[0]}} </span>
-        <span>至</span> 
-        <span>{{selectTimeRange[1]}}</span>
-        <br/>
-      </div>
+
+      <div class="nav_header">
+          <span v-if="nowAddress">{{nowAddress}}</span>
+          <span v-if="nowLocation">( {{nowLocation}} ) </span>
+          <br/>
+          <template v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total' && queryParams.timeRange != null">
+            <span>{{queryParams.timeRange[0]}}</span>
+            <span>至</span>
+            <span>{{queryParams.timeRange[1]}}</span>
+          </template>
+          <br/>
+        </div>
         <div v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total'" class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
             <span class="label">有功功率最大值 :</span>
@@ -65,7 +68,7 @@
 
   </div>
       <div class="line"></div>
-      </div>
+      </div> 
 
     </template>
     <template #ActionBar>
@@ -1454,7 +1457,7 @@ onMounted( async () => {
 .label {
   width:100px; /* 控制冒号前的宽度 */
   text-align: right; /* 文本右对齐 */
-  margin-right: 20px; /* 控制冒号后的间距 */
+  margin-right: 10px; /* 控制冒号后的间距 */
 }
 
 .value {
