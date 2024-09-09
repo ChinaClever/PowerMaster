@@ -519,4 +519,61 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
         return pageResult;
     }
 
+    @Override
+    public List<Object> getNewList(List<Object> list) {
+        List<Map<String, Object>> mapList = new ArrayList<>();
+
+        for (Object obj : list) {
+            if (obj instanceof Map && ((Map<?, ?>) obj).keySet().stream().allMatch(key -> key instanceof String)) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) obj;
+                mapList.add(map);
+            }
+        }
+
+        for(int i=0;i<mapList.size();i++){
+            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,16));
+            mapList.get(i).put("start_time",mapList.get(i).get("start_time").toString().substring(0,16));
+            mapList.get(i).put("end_time",mapList.get(i).get("end_time").toString().substring(0,16));
+        }
+        return list;
+    }
+
+    @Override
+    public List<Object> getNewBillList(List<Object> list) {
+        List<Map<String, Object>> mapList = new ArrayList<>();
+
+        for (Object obj : list) {
+            if (obj instanceof Map && ((Map<?, ?>) obj).keySet().stream().allMatch(key -> key instanceof String)) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) obj;
+                mapList.add(map);
+            }
+        }
+
+        for(int i=0;i<mapList.size();i++){
+            mapList.get(i).put("start_time",mapList.get(i).get("start_time").toString().substring(0,16));
+            mapList.get(i).put("end_time",mapList.get(i).get("end_time").toString().substring(0,16));
+        }
+        return list;
+    }
+
+    @Override
+    public List<Object> getNewEQList(List<Object> list) {
+        List<Map<String, Object>> mapList = new ArrayList<>();
+
+        for (Object obj : list) {
+            if (obj instanceof Map && ((Map<?, ?>) obj).keySet().stream().allMatch(key -> key instanceof String)) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) obj;
+                mapList.add(map);
+            }
+        }
+
+        for(int i=0;i<mapList.size();i++){
+            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,16));
+        }
+        return list;
+    }
+
 }

@@ -52,7 +52,9 @@ public class EnergyConsumptionController {
     public void exportEQDataExcel(EnergyConsumptionPageReqVO pageReqVO,
                                        HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
-        List<Object> list = energyConsumptionService.getEQDataPage(pageReqVO).getList();
+        List<Object> list1 = energyConsumptionService.getEQDataPage(pageReqVO).getList();
+        //处理list
+        List<Object>list=energyConsumptionService.getNewList(list1);
         // 导出 Excel
         ExcelUtils.write(response, "pdu能耗趋势数据.xlsx", "数据", EQPageRespVO.class,
                 BeanUtils.toBean(list, EQPageRespVO.class));
@@ -72,7 +74,8 @@ public class EnergyConsumptionController {
     public void exportBillDataExcel(EnergyConsumptionPageReqVO pageReqVO,
                                   HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
-        List<Object> list = energyConsumptionService.getBillDataPage(pageReqVO).getList();
+        List<Object> list1 = energyConsumptionService.getBillDataPage(pageReqVO).getList();
+        List<Object> list=energyConsumptionService.getNewBillList(list1);
         // 导出 Excel
         ExcelUtils.write(response, "pdu电费统计数据.xlsx", "数据", BillPageRespVO.class,
                 BeanUtils.toBean(list, BillPageRespVO.class));
@@ -106,7 +109,8 @@ public class EnergyConsumptionController {
     public void exportRealtimeEQDataExcel(EnergyConsumptionPageReqVO pageReqVO,
                                     HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
-        List<Object> list = energyConsumptionService.getRealtimeEQDataPage(pageReqVO).getList();
+        List<Object> list1 = energyConsumptionService.getRealtimeEQDataPage(pageReqVO).getList();
+        List<Object>list=energyConsumptionService.getNewEQList(list1);
         // 导出 Excel
         ExcelUtils.write(response, "pdu电能记录数据.xlsx", "数据", RealtimeEQPageRespVO.class,
                 BeanUtils.toBean(list, RealtimeEQPageRespVO.class));

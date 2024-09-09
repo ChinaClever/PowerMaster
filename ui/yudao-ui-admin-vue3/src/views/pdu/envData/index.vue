@@ -356,7 +356,7 @@ const tableColumns = ref([
   { label: '监测点', align: 'center', slot: 'detect' , istrue: true},
   { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:false, width: '120px'},
   { label: '温度(℃)', align: 'center', prop: 'tem_value', istrue:true, formatter: formatData},
-  { label: '湿度(%RH)', align: 'center', prop: 'hum_value' , istrue:true, formatter: formatData},
+  { label: '湿度(%RH)', align: 'center', prop: 'hum_value' , istrue:true, formatter: formatData1},
   { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '120px'},
 ]) as any;
 
@@ -404,12 +404,15 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
     return ''
   }
 
-  return dayjs(cellValue).format('YYYY-MM-DD HH:mm:ss.SSS')
+  return dayjs(cellValue).format('YYYY-MM-DD HH:mm')
 }
 
 // 格式化温湿度列数据，保留一位小数
 function formatData(_row: any, _column: any, cellValue: number): string {
   return Number(cellValue).toFixed(1);
+}
+function formatData1(_row: any, _column: any, cellValue: number): string {
+  return Number(cellValue).toFixed(0);
 }
 
 // 导航栏选择后触发

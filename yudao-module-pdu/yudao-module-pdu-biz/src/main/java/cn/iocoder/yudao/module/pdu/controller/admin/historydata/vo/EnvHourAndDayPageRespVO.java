@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo;
 
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.format.NumberFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -23,6 +24,7 @@ public class EnvHourAndDayPageRespVO {
     private String create_time;
 
     @ExcelProperty("平均湿度(%RH)")
+    @NumberFormat("0.0")
     private Double hum_avg_value;
 
     @ExcelProperty("最大湿度时间")
@@ -37,8 +39,9 @@ public class EnvHourAndDayPageRespVO {
     @ExcelProperty("最小湿度(%RH)")
     private Double hum_min_value;
 
+    @NumberFormat("0.0")
     @ExcelProperty("平均温度(℃)")
-    private String tem_avg_value;
+    private Double tem_avg_value;
 
     @ExcelProperty("最高温度时间")
     private String tem_max_time;

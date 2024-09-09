@@ -14,9 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
@@ -119,6 +117,8 @@ public class HistoryDataController {
                                        HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = historyDataService.getEnvDataPage(pageReqVO).getList();
+        //对list进行处理
+        historyDataService.getEnExcelList(list);
         // 导出 Excel
         if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
             ExcelUtils.write(response, "pdu环境历史数据.xlsx", "数据", EnvRealtimePageRespVO.class,

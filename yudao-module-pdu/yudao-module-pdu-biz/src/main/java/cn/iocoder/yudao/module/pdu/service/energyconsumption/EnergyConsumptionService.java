@@ -64,4 +64,9 @@ public interface EnergyConsumptionService {
      */
     PageResult<Object> getSubBillDetails(EnergyConsumptionPageReqVO reqVO) throws IOException;
 
+    List<Object> getNewList(List<Object> list1);
+
+    List<Object> getNewBillList(List<Object> list1);
+
+    List<Object> getNewEQList(List<Object> list1);
 }

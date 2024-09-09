@@ -9,7 +9,7 @@
           <!-- 信息展示模式 -->
           <slot v-if="!switchNav" name="NavInfo"></slot>
             <!-- 筛选模式 -->
-          <div v-if="showNavTree" style="margin-top: 10px">
+          <div v-if="showNavTree" >
             <NavTree ref="navTree" @node-click="handleClick" @check="handleCheck" :showCheckbox="showCheckbox" :showSearch="true" :dataList="dataList" :load="load" :lazy="lazy" />
           </div>
         </div>
@@ -142,7 +142,7 @@ const handleCheck = (data) => {
   height: 46px;
   line-height: 46px;
   padding-left: 10px;
-  background-color: #30b02f;
+  background-color: #eef4fc;
   font-size: 14px;
 }
 .nav-left {
@@ -152,4 +152,5 @@ const handleCheck = (data) => {
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
+
 </style>
