@@ -589,7 +589,7 @@ const initChart = async () => {
                                     return result;
                                   }},
       //显示线的按钮
-      legend: { data: ['有功功率','视在功率','功率因素']},
+      legend: { data: ['有功功率','视在功率','功率因素'], selectedMode: 'single'},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
       xAxis: {type: 'category', axisLabel: { formatter: 
@@ -768,7 +768,7 @@ const flashChartData = async () =>{
                                     }
                                     return result;
                                   }},
-      legend: { data: ['有功功率','视在功率','功率因素']},
+      legend: { data: ['有功功率','视在功率','功率因素'], selectedMode: 'single'},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
       xAxis: {type: 'category', axisLabel: { formatter: 
@@ -1119,7 +1119,7 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
                                       }
                                       return result;
                                     }},
-        legend: { data: ['有功功率','视在功率','功率因素']},
+        legend: { data: ['有功功率','视在功率','功率因素'], selectedMode: 'single'},
         grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
         toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
         xAxis: {type: 'category', axisLabel: { formatter: 
@@ -1163,11 +1163,13 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
 /** 搜索按钮操作 */
 const handleQuery = async () => {
   controlVis.value.display = false;
-  if(queryParams.ipAddr){
-    queryParams.devKey = queryParams.ipAddr +'-' +  queryParams.cascadeAddr;
+  // if(queryParams.ipAddr){
+  //   queryParams.devKey = queryParams.ipAddr +'-' +  queryParams.cascadeAddr;
+  //   await getTestData();
+  //   flashChartData();
+  // }
     await getTestData();
     flashChartData();
-  }
 }
 
 
