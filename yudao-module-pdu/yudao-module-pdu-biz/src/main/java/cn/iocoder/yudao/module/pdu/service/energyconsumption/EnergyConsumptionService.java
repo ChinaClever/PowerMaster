@@ -69,4 +69,6 @@ public interface EnergyConsumptionService {
     List<Object> getNewBillList(List<Object> list1);
 
     List<Object> getNewEQList(List<Object> list1);
+
+    List<Object> getNewOutLetsList(List<Object> list1);
 }

@@ -79,7 +79,7 @@
             @click="queryParams.timeType = 0;now = new Date();now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 0;handleDayPick();handleQuery()" 
             :type="switchValue == 0 ? 'primary' : ''"
           >
-            日报
+            日报 
           </el-button>
           <el-button 
             @click="queryParams.timeType = 1;now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 1;handleMonthPick();handleQuery()" 
@@ -742,6 +742,7 @@ const handleQuery = async () => {
   }
   
 }
+
 
 /** 重置按钮操作 */
 // const resetQuery = () => {

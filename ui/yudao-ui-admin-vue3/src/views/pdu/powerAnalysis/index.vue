@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU能耗趋势" placeholder="如:192.168.1.96-0">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU能耗统计" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
         <br/>    <br/> 
         <div class="nav_data">
@@ -20,8 +20,8 @@
         </div> -->
           <div class="descriptions-container" style="font-size: 14px;">
  
-        <div style="text-align: center"><span>全部PDU新增能耗记录</span></div>
-        <br/>
+
+    
     <div class="description-item">
       <span class="label">最近一天 :</span>
       <span class="value">{{ lastDayTotalData }}条</span>
@@ -33,10 +33,13 @@
     <div class="description-item">
       <span class="label">最近一月 :</span>
       <span class="value">{{ lastMonthTotalData }}条</span>
-    </div>
-
+    </div>    <br/>
+    <div style="text-align: center"><span>全部PDU新增能耗记录</span>
+        <div class="line" style="margin-top: 10px;"></div>
+      </div>
   </div>
-      <div class="line"></div>
+
+
       </div>
     </template>
     <template #ActionBar>
