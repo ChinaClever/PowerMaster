@@ -73,4 +73,6 @@ public interface HistoryDataService {
     Map<String, Object> getEnvNavNewData() throws IOException;
 
     List<Object> getEnExcelList(List<Object> list);
+
+    List<Object> getNewHistoryDataDetails(List<Object> list,String ob);
 }

@@ -172,6 +172,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             pduDeviceDO.setStatus(pduIndex.getRunStatus());
             pduDeviceDO.setId(pduIndex.getId());
             pduDeviceDO.setDevKey(pduIndex.getDevKey());
+            pduDeviceDO.setDeleted(pduIndex.getIsDeleted().equals(1));
             result.add(pduDeviceDO);
         }
         Map<String, PDUDeviceDO> resMap = result.stream().collect(Collectors.toMap(PDUDeviceDO::getDevKey, Function.identity()));
@@ -236,6 +237,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                     continue;
                 }
             }
+            //开始写进result
             pduDeviceDO.setPf(pduTgData.getDoubleValue("power_factor"));
             pduDeviceDO.setEle(pduTgData.getDoubleValue("ele_active"));
             pduDeviceDO.setPow(pduTgData.getDoubleValue("pow_active"));

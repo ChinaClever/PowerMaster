@@ -99,11 +99,14 @@ public class HistoryDataController {
               HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = historyDataService.getHistoryDataPage(pageReqVO).getList();
+
         // 导出 Excel
         if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+            historyDataService.getNewHistoryDataDetails(list,"realtime");
             ExcelUtils.write(response, "pdu电力历史数据.xlsx", "数据", RealtimePageRespVO.class,
                     BeanUtils.toBean(list, RealtimePageRespVO.class));
         } else {
+            historyDataService.getNewHistoryDataDetails(list,"not_realtime");
             ExcelUtils.write(response, "pdu电力历史数据.xlsx", "数据", HourAndDayPageRespVO.class,
                     BeanUtils.toBean(list, HourAndDayPageRespVO.class));
         }
