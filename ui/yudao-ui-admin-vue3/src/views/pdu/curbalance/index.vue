@@ -99,9 +99,9 @@
     </template>
     <template #Content>
       <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
-        <el-table-column label="编号" align="center" prop="tableId"/>
+        <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" width="170px" />
+        <el-table-column label="所在位置" align="center" prop="location" />
          <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="125px"/>
         <el-table-column label="运行状态" align="center" prop="color" width="120px">
           <template #default="scope" >

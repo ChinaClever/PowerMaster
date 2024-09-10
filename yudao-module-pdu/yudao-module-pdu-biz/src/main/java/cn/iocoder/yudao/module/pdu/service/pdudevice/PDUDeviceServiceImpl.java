@@ -327,30 +327,30 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
                 MaxValueAndCreateTime curl1 = curMap.get(id).get(1);
                 pduLineRes.setL1MaxCur(curl1.getMaxValue().floatValue());
-                pduLineRes.setL1MaxCurTime(curl1.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                pduLineRes.setL1MaxCurTime(curl1.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                 MaxValueAndCreateTime curl2 = curMap.get(id).get(2);
                 if(curl2 != null){
                     pduLineRes.setL2MaxCur(curl2.getMaxValue().floatValue());
-                    pduLineRes.setL2MaxCurTime(curl2.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    pduLineRes.setL2MaxCurTime(curl2.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                 }
                 MaxValueAndCreateTime curl3 = curMap.get(id).get(3);
                 if(curl3 != null){
                     pduLineRes.setL3MaxCur(curl3.getMaxValue().floatValue());
-                    pduLineRes.setL3MaxCurTime(curl3.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    pduLineRes.setL3MaxCurTime(curl3.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                 }
 
                 MaxValueAndCreateTime powl1 = powMap.get(id).get(1);
                 pduLineRes.setL1MaxPow(powl1.getMaxValue().floatValue());
-                pduLineRes.setL1MaxPowTime(powl1.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                pduLineRes.setL1MaxPowTime(powl1.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                 MaxValueAndCreateTime powl2 = powMap.get(id).get(2);
                 if(powl2 != null) {
                     pduLineRes.setL2MaxPow(powl2.getMaxValue().floatValue());
-                    pduLineRes.setL2MaxPowTime(powl2.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    pduLineRes.setL2MaxPowTime(powl2.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                 }
                 MaxValueAndCreateTime powl3 = powMap.get(id).get(3);
                 if(powl3 != null) {
                     pduLineRes.setL3MaxPow(powl3.getMaxValue().floatValue());
-                    pduLineRes.setL3MaxPowTime(powl3.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    pduLineRes.setL3MaxPowTime(powl3.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                 }
 
                 result.add(pduLineRes);
