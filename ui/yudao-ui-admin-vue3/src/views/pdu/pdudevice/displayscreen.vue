@@ -28,7 +28,7 @@
                 :fetch-suggestions="querySearch"
                 placeholder="请输入网络地址"  
                 clearable
-                class="!w-140px"
+                class="!w-160px"
                 @select="handleQuery"
               />
               </el-form-item>
@@ -54,12 +54,13 @@
       </el-card>
     </el-col>
   </el-row>
-  <div v-show="controlVis.display" >
+
+  <div>
     <el-row :gutter="20" style="margin: 0px; margin-top : 10px;margin-top : 10px" >
       <el-col :span="6" class="card-box" >
-        <el-card>
+        <el-card >
           <template #header>
-            <el-row class="text-container"> 
+            <el-row  class="text-container"> 
               <el-col :span="12">
                 <el-text line-clamp="2">
                   总数据
@@ -189,6 +190,7 @@
         </el-card>
       </el-col>
     </el-row>
+
     <el-collapse v-model="activeNames" >
       <el-card style="margin: 10px;">
         <el-row>
