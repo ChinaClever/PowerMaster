@@ -372,10 +372,34 @@ const list = ref([
     pf:null
   }
 ]) as any// 列表的数据
+const allList = ref([
+  { 
+    id:null,
+    status:null,
+    apparentPow:null,
+    pow:null,
+    ele:null,
+    devKey:null,
+    location:null,
+    dataUpdateTime : "",
+    pduAlarm:"",
+    pf:null
+  }
+]) as any//总列表的数据
 const total = ref(0) // 列表的总页数
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
+  devKey: undefined,
+  createTime: [],
+  cascadeNum: undefined,
+  serverRoomData:undefined,
+  status:[],
+  cabinetIds:[],
+}) as any
+const queryParamsAll = reactive({
+  pageNo: 1,
+  pageSize: -1,
   devKey: undefined,
   createTime: [],
   cascadeNum: undefined,
@@ -401,7 +425,7 @@ const getList = async () => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       if(obj?.dataUpdateTime == null && obj?.pow == null){
         obj.status = 5;
-        offline++;
+        //offline++;
         return;
       }
       const splitArray = obj.dataUpdateTime.split(' ');
@@ -412,14 +436,30 @@ const getList = async () => {
       obj.ele = obj.ele.toFixed(1);
       obj.pf = obj.pf.toFixed(2);
       
-      if(obj.status == 0){
-        normal++;
-      } else if (obj.status == 1){
-        warn++;
-      } else if (obj.status == 2){
-        alarm++;
-      } 
+      // if(obj.status == 0){
+      //   normal++;
+      // } else if (obj.status == 1){
+      //   warn++;
+      // } else if (obj.status == 2){
+      //   alarm++;
+      // } 
     });
+    const allData = await PDUDeviceApi.getPDUDevicePage(queryParamsAll);
+    allList.value = allData.list
+    allList.value.forEach((objAll) => {
+      if(objAll?.dataUpdateTime == null && objAll?.pow == null){
+        objAll.status = 5;
+        offline++;
+        return;
+      }  
+      if(objAll?.status == 0){
+        normal++;
+      } else if (objAll?.status == 1){
+        warn++;
+      } else if (objAll?.status == 2){
+        alarm++;
+      }          
+    });    
     //设置左边数量
     statusNumber.normal = normal;
     statusNumber.offline = offline;
@@ -444,7 +484,7 @@ const getListNoLoading = async () => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       if(obj?.dataUpdateTime == null && obj?.pow == null){
         obj.status = 5;
-        offline++;
+        //offline++;
         return;
       }
       const splitArray = obj?.dataUpdateTime?.split(' ');
@@ -455,13 +495,29 @@ const getListNoLoading = async () => {
       obj.ele = obj?.ele?.toFixed(1);
       obj.pf = obj?.pf?.toFixed(2);
 
-      if(obj?.status == 0){
+      // if(obj?.status == 0){
+      //   normal++;
+      // } else if (obj?.status == 1){
+      //   warn++;
+      // } else if (obj?.status == 2){
+      //   alarm++;
+      // }
+    });
+    const allData = await PDUDeviceApi.getPDUDevicePage(queryParamsAll);
+    allList.value = allData.list
+    allList.value.forEach((objAll) => {
+      if(objAll?.dataUpdateTime == null && objAll?.pow == null){
+        objAll.status = 5;
+        offline++;
+        return;
+      }  
+      if(objAll?.status == 0){
         normal++;
-      } else if (obj?.status == 1){
+      } else if (objAll?.status == 1){
         warn++;
-      } else if (obj?.status == 2){
+      } else if (objAll?.status == 2){
         alarm++;
-      }
+      }          
     });
     //设置左边数量
     statusNumber.normal = normal;
