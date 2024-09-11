@@ -36,18 +36,21 @@
       </div>
       </div> -->
         <div class="nav_header">
+
         <span v-if="nowAddress">{{nowAddress}}</span>
         <span v-if="nowLocation">( {{nowLocation}} ) </span>
-        <br/>
-        <span>{{selectTimeRange[0]}} </span>
-        <span>至</span> 
-        <span>{{selectTimeRange[1]}}</span>
-        <br/>
       </div>
-        <div class="descriptions-container" style="font-size: 14px;">
+      <br/> 
+    <div class="descriptions-container" style="font-size: 14px;">
  
-
-      
+    <div class="description-item" >
+      <span class="label">开始日期 :</span>
+      <span >{{selectTimeRange[0]}}</span>
+    </div>
+    <div class="description-item" >
+      <span class="label">结束日期 :</span>
+      <span >{{selectTimeRange[1]}}</span>
+    </div>
     <div class="description-item">
       <span class="label">总耗电量 :</span>
       <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
@@ -70,10 +73,8 @@
       <span class="value">{{ minEqDataTimeTemp }}</span>
     </div>
     <br/>
-    <div style="text-align: center"><span>全部PDU新增耗电量记录</span></div>
-
+    <div class="line" style="margin-top: 10px;"></div>
   </div>
-      <div class="line"></div>
       </div>
       
     </template>
@@ -350,7 +351,7 @@ const eqData = ref<number[]>([]);// 耗电量数组
 const createTimeData = ref<string[]>([]);
 const totalEqData = ref(0);
 const maxEqDataTemp = ref(0);// 最大耗电量 
-const maxEqDataTimeTemp = ref(0);// 最大耗电量的发生日期 
+const maxEqDataTimeTemp = ref();// 最大耗电量的发生日期 
 const minEqDataTemp = ref(0);// 最小耗电量 
 const minEqDataTimeTemp = ref();// 最小耗电量的发生日期 
 // 获取折线图数据
@@ -375,9 +376,10 @@ loading.value = true
      
       maxEqDataTemp.value = Math.max(...eqData.value);
       minEqDataTemp.value = Math.min(...eqData.value);
+      debugger
       eqData.value.forEach(function(num, index) {
         if (num == maxEqDataTemp.value){
-          maxEqDataTimeTemp.value = +startTimeData.value[index]
+          maxEqDataTimeTemp.value = startTimeData.value[index]
         }
         if (num == minEqDataTemp.value){
           minEqDataTimeTemp.value = startTimeData.value[index]

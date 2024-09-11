@@ -2,10 +2,11 @@
   <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="false"  :lazy="true" :load="loadNode" navTitle="PDU报表">
     <template #NavInfo>
       <div >
-        <div class="header">
+        <br/>
+        <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
         </div>
-        <div class="line"></div>
+        <div class="line"></div> -->
         <!-- <div class="status">
           <div class="box">
             <div class="top">
@@ -32,7 +33,7 @@
             <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
           </div>
         </div> -->
-        <div class="line"></div>
+        <!-- <div class="line"></div> -->
 
       </div>
     </template>

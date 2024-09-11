@@ -40,14 +40,18 @@
           <span v-if="nowAddress">{{nowAddress}}</span>
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
           <br/>
-          <template v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total' && queryParams.timeRange != null">
-            <span>{{queryParams.timeRange[0]}}</span>
-            <span>至</span>
-            <span>{{queryParams.timeRange[1]}}</span>
-          </template>
-          <br/>
-        </div>
+      </div>
+      
         <div v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total'" class="descriptions-container" style="font-size: 14px;">
+            <div v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total' && queryParams.timeRange != null" class="description-item">
+            <span class="label">开始时间 :</span>
+            <span class="value">{{  queryParams.timeRange[0] }}</span>
+          </div>
+
+          <div v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total' && queryParams.timeRange != null" class="description-item">
+            <span class="label">结束时间 :</span>
+            <span class="value">{{  queryParams.timeRange[0] }}</span>
+          </div>
           <div class="description-item">
             <span class="label">功率最大值 :</span>
             <span >{{ formatNumber(maxActivePowDataTemp, 3) }} kWh</span>
@@ -65,9 +69,11 @@
             <span class="label">发生时间 :</span>
             <span class="value">{{ minActivePowDataTimeTemp }}</span>
           </div>
-
+          <div style="text-align: center">
+              <div class="line" style="margin-top: 10px;"></div>
+            </div>
   </div>
-      <div class="line"></div>
+  
       </div> 
 
     </template>

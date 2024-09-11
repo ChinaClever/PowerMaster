@@ -34,39 +34,44 @@
         </el-descriptions>
       </div>
     </div> -->
-    <div class="nav_header">
-        <span v-if="nowAddress">{{nowAddress}}</span>
-        <span v-if="nowLocation">( {{nowLocation}} ) </span>
-        <br/>
-        <template v-if="queryParams.granularity == 'realtime' && queryParams.timeRange != null">
-          <span>{{queryParams.timeRange[0]}}</span>
-          <span>至</span>
-          <span>{{queryParams.timeRange[1]}}</span>
-        </template>
-        <br/>
+
+    <div class="nav_header" style="font-size: 14px;">
+          <span v-if="nowAddress">{{nowAddress}}</span>
+          <span v-if="nowLocation">( {{nowLocation}} ) </span>
+          <br/>
       </div>
-        <div class="descriptions-container" style="font-size: 14px;">
-    <div class="description-item">
-      <span class="label">最高温度 :</span>
-      <span >{{ formatNumber(maxTemDataTemp, 1)}} kWh</span>
-    </div>
-    <div v-if="maxTemDataTimeTemp" class="description-item">
-      <span class="label">发生时间 :</span>
-      <span class="value">{{ maxTemDataTimeTemp }}</span>
-    </div>
 
-   <div class="description-item">
-      <span class="label">最小耗电量 :</span>
-      <span >{{ formatNumber(minTemDataTemp, 1)}} kWh</span>
-    </div>
-    <div v-if="minTemDataTimeTemp" class="description-item">
-      <span class="label">发生时间 :</span>
-      <span class="value">{{ minTemDataTimeTemp }}</span>
-    </div>
+    <div class="descriptions-container" style="font-size: 14px;">
+      <div v-if="queryParams.granularity == 'realtime'  && queryParams.timeRange != null" class="description-item">
+            <span class="label">开始时间 :</span>
+            <span class="value">{{  queryParams.timeRange[0] }}</span>
+          </div>
+          
+          <div v-if="queryParams.granularity == 'realtime'  && queryParams.timeRange != null" class="description-item">
+            <span class="label">结束时间 :</span>
+            <span class="value">{{  queryParams.timeRange[0] }}</span>
+          </div>
+          <div  class="description-item">
+            <span class="label">最高温度 :</span>
+            <span >{{ formatNumber(maxTemDataTemp, 1)}} </span>
+          </div>
+          <div v-if="maxTemDataTimeTemp" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ maxTemDataTimeTemp }}</span>
+          </div>
 
+          <div class="description-item">
+              <span class="label">最小耗电量 :</span>
+              <span >{{ formatNumber(minTemDataTemp, 1)}} kWh</span>
+            </div>
+          <div v-if="minTemDataTimeTemp" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ minTemDataTimeTemp }}</span>
+          </div>
+          <div class="line"></div>
   </div>
-      <div class="line"></div>
-      </div>
+    </div>
+
     </template>
     <template #ActionBar>
       <el-tabs v-model="activeName">
@@ -889,7 +894,7 @@ onMounted( async () => {
 .label {
   width:100px; /* 控制冒号前的宽度 */
   text-align: right; /* 文本右对齐 */
-  margin-right: 20px; /* 控制冒号后的间距 */
+  margin-right: 10px; /* 控制冒号后的间距 */
 }
 
 .value {

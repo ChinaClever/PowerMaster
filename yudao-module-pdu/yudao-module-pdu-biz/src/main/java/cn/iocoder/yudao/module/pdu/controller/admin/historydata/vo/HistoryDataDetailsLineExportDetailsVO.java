@@ -3,19 +3,45 @@ package cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo;
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.NumberFormat;
+import com.alibaba.excel.annotation.write.style.ColumnWidth;
 import com.alibaba.excel.annotation.write.style.HeadRowHeight;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-
-import javax.persistence.Column;
 
 @Schema(description = "管理后台 - pdu历史数据详情 导出原始数据")
 @Data
 @ExcelIgnoreUnannotated
 @HeadRowHeight(20)
-public class HistoryDataDetailsExportDetailsVO {
+@ColumnWidth(20)
+public class HistoryDataDetailsLineExportDetailsVO {
     @ExcelProperty("记录时间")
     private String create_time;
+    @ExcelProperty("平均电流(A)")
+    @NumberFormat("0.00")
+    private Double cur_avg_value;
+    @ExcelProperty({"电流最大值(A)", "数值"})
+    @NumberFormat("0.00")
+    private Double cur_max_value;
+    @ExcelProperty({"电流最大值(A)", "发生时间"})
+    private String cur_max_time;
+    @NumberFormat("0.00")
+    @ExcelProperty({"电流最小值(A)", "数值"})
+    private Double cur_min_value;
+    @ExcelProperty({"电流最小值(A)", "发生时间"})
+    private String cur_min_time;
+    @ExcelProperty("平均电压(V)")
+    @NumberFormat("0.000")
+    private Double vol_avg_value;
+    @ExcelProperty({"电压最大值(V)", "数值"})
+    @NumberFormat("0.000")
+    private Double vol_max_value;
+    @ExcelProperty({"电压最大值(V)", "发生时间"})
+    private String vol_max_time;
+    @ExcelProperty({"电压最小值(V)", "数值"})
+    @NumberFormat("0.000")
+    private Double vol_min_value;
+    @ExcelProperty({"电压最小值(V)", "发生时间"})
+    private String vol_min_time;
     @NumberFormat("0.000")
     @ExcelProperty("平均有功功率(kW)")
     private Double pow_active_avg_value;

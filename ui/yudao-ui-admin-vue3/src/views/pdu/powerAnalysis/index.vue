@@ -18,28 +18,26 @@
             </el-descriptions>
           </div>
         </div> -->
-          <div class="descriptions-container" style="font-size: 14px;">
- 
+        <div class="descriptions-container" style="font-size: 14px;">
+      
 
-    
-    <div class="description-item">
-      <span class="label">最近一天 :</span>
-      <span class="value">{{ lastDayTotalData }}条</span>
-    </div>
-    <div class="description-item">
-      <span class="label">最近一周 :</span>
-      <span class="value">{{ lastWeekTotalData }}条</span>
-    </div>
-    <div class="description-item">
-      <span class="label">最近一月 :</span>
-      <span class="value">{{ lastMonthTotalData }}条</span>
-    </div>    <br/>
-    <div style="text-align: center"><span>全部PDU新增能耗记录</span>
-        <div class="line" style="margin-top: 10px;"></div>
-      </div>
-  </div>
-
-
+          
+          <div class="description-item">
+            <span class="label">最近一天 :</span>
+            <span class="value">{{ lastDayTotalData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">最近一周 :</span>
+            <span class="value">{{ lastWeekTotalData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">最近一月 :</span>
+            <span class="value">{{ lastMonthTotalData }}条</span>
+          </div>    <br/>
+          <div style="text-align: center"><span>全部PDU新增能耗记录</span>
+              <div class="line" style="margin-top: 10px;"></div>
+            </div>
+        </div>
       </div>
     </template>
     <template #ActionBar>
@@ -559,7 +557,7 @@ onMounted(() => {
 .label {
   width:100px; /* 控制冒号前的宽度 */
   text-align: right; /* 文本右对齐 */
-  margin-right: 20px; /* 控制冒号后的间距 */
+  margin-right: 10px; /* 控制冒号后的间距 */
 }
 
 .value {
