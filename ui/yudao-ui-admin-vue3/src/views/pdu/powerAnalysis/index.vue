@@ -557,7 +557,7 @@ onMounted(() => {
 .label {
   width:100px; /* 控制冒号前的宽度 */
   text-align: right; /* 文本右对齐 */
-  margin-right: 10px; /* 控制冒号后的间距 */
+  margin-right: 20px; /* 控制冒号后的间距 */
 }
 
 .value {

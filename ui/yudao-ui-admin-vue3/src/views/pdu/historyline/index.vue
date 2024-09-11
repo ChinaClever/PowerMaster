@@ -54,7 +54,7 @@
           </div>
           <div class="description-item">
             <span class="label">功率最大值 :</span>
-            <span >{{ formatNumber(maxActivePowDataTemp, 3) }} kWh</span>
+            <span >{{ formatNumber(maxActivePowDataTemp, 3) }} kW</span>
           </div>
           <div v-if="maxActivePowDataTimeTemp" class="description-item">
             <span class="label">发生时间 :</span>
@@ -63,7 +63,7 @@
 
           <div class="description-item">
             <span class="label">功率最小值 :</span>
-            <span >{{ formatNumber(minActivePowDataTemp, 3) }} kWh</span>
+            <span >{{ formatNumber(minActivePowDataTemp, 3) }} kW</span>
           </div>
           <div v-if="minActivePowDataTimeTemp" class="description-item">
             <span class="label">发生时间 :</span>
