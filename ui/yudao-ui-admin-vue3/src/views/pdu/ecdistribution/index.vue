@@ -36,7 +36,7 @@
       </div>
       </div> -->
         <div class="nav_header">
-
+          
         <span v-if="nowAddress">{{nowAddress}}</span>
         <span v-if="nowLocation">( {{nowLocation}} ) </span>
       </div>
@@ -72,13 +72,15 @@
       <span class="label">发生时间 :</span>
       <span class="value">{{ minEqDataTimeTemp }}</span>
     </div>
-    <br/>
     <div class="line" style="margin-top: 10px;"></div>
   </div>
+  
       </div>
       
     </template>
+    
     <template #ActionBar>
+      
       <el-tabs v-model="activeName">
         <el-tab-pane label="日数据" name="dayTabPane"/>
         <el-tab-pane label="周数据" name="weekTabPane"/>
@@ -126,13 +128,14 @@
            </el-button>
         </el-form-item>
       </el-form>
+      
       <!-- 列表 -->
       <el-tabs v-model="activeName1">
-        <el-tab-pane label="图表" name="lineChart">
-          <div v-loading="loading" ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
+        <el-tab-pane v-if="loading2" label="图表" name="lineChart">
+          <div  v-loading="loading" ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
         </el-tab-pane>
-        <el-tab-pane label="数据" name="lineChartData">
-          <div style="height: 58vh;">
+        <el-tab-pane  v-if="loading2"  v-loading="loading" label="数据" name="lineChartData">
+          <div   style="height: 58vh;">
             <el-table  
               border
               :data="tableData"
@@ -143,7 +146,7 @@
               :row-style="{ color: '#fff', fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
               <!-- 动态生成表头 -->
-              <template v-for="item in headerData" :key="item.name">
+              <template  v-for="item in headerData" :key="item.name">
                 <el-table-column  label="开始电能">
                   <el-table-column prop="startEleData" label="电能(kWh)"/>   
                   <el-table-column prop="startTimeData" label="开始日期"/>
@@ -163,7 +166,7 @@
       </el-tabs>
     </template>
     <template #Content>
-      <div style="overflow: visible;">
+      <div  v-if="loading2" style="overflow: visible;">
         <div v-loading="loading1" ref="rankContainer" id="rankContainer" style="width: 70vw; height: 90vh;"></div>
       </div>
     </template>
@@ -291,11 +294,12 @@ const shortcuts = [
       start.setFullYear(start.getFullYear() - 1)
       return [start, end]
     },
-  },
+  }
 ]
 
 const loading = ref(false) 
 const loading1 = ref(false) 
+const loading2 = ref(false)
 // 总/输出位筛选
 const typeDefaultSelected = ref(['total'])
 const typeSelection = ref([]) as any;
@@ -353,10 +357,13 @@ const totalEqData = ref(0);
 const maxEqDataTemp = ref(0);// 最大耗电量 
 const maxEqDataTimeTemp = ref();// 最大耗电量的发生日期 
 const minEqDataTemp = ref(0);// 最小耗电量 
-const minEqDataTimeTemp = ref();// 最小耗电量的发生日期 
+const minEqDataTimeTemp = ref();// 最小耗电量的发生日期
+
+
 // 获取折线图数据
 const getLineChartData =async () => {
 loading.value = true
+
  try {
     // 格式化日期范围 加上23:59:59的时分秒 
     queryParams.timeRange[0] = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
@@ -365,7 +372,9 @@ loading.value = true
     queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
 
     const data = await EnergyConsumptionApi.getEQDataDetails(queryParams);
+    // debugger
     if (data != null && data.total != 0){
+      loading2.value=true
       totalEqData.value = 0;
       startEleData.value = data.list.map((item) => formatNumber(item.start_ele, 1));
       startTimeData.value = data.list.map((item) => formatDate(item.start_time, 'YYYY-MM-DD'));
@@ -376,7 +385,7 @@ loading.value = true
      
       maxEqDataTemp.value = Math.max(...eqData.value);
       minEqDataTemp.value = Math.min(...eqData.value);
-      debugger
+ 
       eqData.value.forEach(function(num, index) {
         if (num == maxEqDataTemp.value){
           maxEqDataTimeTemp.value = startTimeData.value[index]
@@ -391,10 +400,12 @@ loading.value = true
       nowAddress.value = nowAddressTemp.value
       nowLocation.value = nowLocationTemp.value
     }else{
+      loading2.value=false
       ElMessage({
         message: '暂无数据',
-        type: 'warning',
+        type: 'warning', 
       });
+          
     }
  } finally {
    loading.value = false
@@ -414,6 +425,7 @@ loading1.value = true
     queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
 
     const data = await EnergyConsumptionApi.getOutletsEQData(queryParams);
+    // debugger
     if (data != null && data.total != 0){
       outletIdData.value = data.map((item) => {
         if (item.outlet_id < 10) {
@@ -428,6 +440,8 @@ loading1.value = true
         message: '暂无数据',
         type: 'warning',
       });
+
+      
     }
  } finally {
    loading1.value = false
@@ -695,6 +709,9 @@ const handleQuery = async() => {
   initRankChart();
 }
 
+
+
+
 /** 初始化 **/
 onMounted(async () => {
   getNavList()
@@ -712,6 +729,7 @@ onMounted(async () => {
     initRankChart();
   }
 })
+
 //导出Excel
 const handleExport1 = async () => {
   try {
