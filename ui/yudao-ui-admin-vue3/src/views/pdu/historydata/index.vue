@@ -26,12 +26,6 @@
         </div>
       </div> -->
       <div class="descriptions-container" style="font-size: 14px;">
- 
-        <div v-if="queryParams.granularity == 'realtime' " style="text-align: center"><span>全部PDU最近一分钟新增记录</span></div>
-        <div v-if="queryParams.granularity == 'hour' " style="text-align: center"><span>全部PDU最近一小时新增记录</span></div>
-        <div v-if="queryParams.granularity == 'day' " style="text-align: center"><span>全部PDU最近一天新增记录</span></div>
-
-        <br/>
     <div class="description-item">
       <span class="label">总电能 :</span>
       <span class="value">{{ navTotalData }}条</span>
@@ -48,8 +42,14 @@
       <span class="label">输出位电能 :</span>
       <span class="value">{{ navOutletData }}条</span>
     </div>
+    <div style="text-align: center">
+      <div v-if="queryParams.granularity == 'realtime' " style="text-align: center"><span>全部PDU最近一分钟新增记录</span></div>
+        <div v-if="queryParams.granularity == 'hour' " style="text-align: center"><span>全部PDU最近一小时新增记录</span></div>
+        <div v-if="queryParams.granularity == 'day' " style="text-align: center"><span>全部PDU最近一天新增记录</span></div>
+          <div class="line" style="margin-top: 10px;"></div>
+      </div>
   </div>
-      <div class="line"></div>
+
       </div>
     </template>
     <template #ActionBar>

@@ -91,6 +91,18 @@ public class EnergyConsumptionController {
         List<Object> list = energyConsumptionService.getOutletsEQData(reqVO);
         return success(list);
     }
+    @GetMapping("/outlets-details-excel")
+    @Operation(summary = "导出pdu电量数据详情")
+    @OperateLog(type = EXPORT)
+    public void exportOutletsDataExcel(EnergyConsumptionPageReqVO reqVO,
+                                    HttpServletResponse response) throws IOException {
+        reqVO.setPageSize(10000);
+        List<Object> list1 = energyConsumptionService.getEQDataDetails(reqVO).getList();
+        List<Object> list = energyConsumptionService.getNewOutLetsList(list1);
+        // 导出 Excel
+        ExcelUtils.write(response, "PDU能耗趋势.xlsx", "数据", OutLetsPageRespVO.class,
+                BeanUtils.toBean(list, OutLetsPageRespVO.class));
+    }
 
     @GetMapping("/realtime-page")
     @Operation(summary = "获得pdu电量实时数据分页")
