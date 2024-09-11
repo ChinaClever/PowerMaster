@@ -45,7 +45,12 @@ public class PDUDeviceController {
         PageResult<PDUDeviceDO> pageResult = pDUDeviceService.getPDUDevicePage(pageReqVO);
         return success(pageResult);
     }
-
+    @PostMapping("/getDeletedPage")
+    @Operation(summary = "获得已删除PDU分页")
+    public CommonResult<PageResult<PDUDeviceDO>> getDeletedPDUDevicePage(@RequestBody PDUDevicePageReqVO pageReqVO) {
+        PageResult<PDUDeviceDO> pageResult = pDUDeviceService.getDeletedPDUDevicePage(pageReqVO);
+        return success(pageResult);
+    }
     @PostMapping("/line/page")
     @Operation(summary = "获得PDU需量分页")
     public CommonResult<PageResult<PDULineRes>> getPDULineDevicePage(@RequestBody PDUDevicePageReqVO pageReqVO) {
@@ -118,6 +123,16 @@ public class PDUDeviceController {
         int pduId = pDUDeviceService.deletePDU(devKey);
         if (pduId == -1) {
             return error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "删除失败");
+        }
+        return success(pduId);
+    }
+
+    @GetMapping("/restore")
+    @Operation(summary = "恢复设备")
+    public CommonResult<Integer> restorePDU(@Param("devKey") String devKey) throws Exception  {
+        int pduId = pDUDeviceService.restorePDU(devKey);
+        if (pduId == -1) {
+            return error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "恢复失败");
         }
         return success(pduId);
     }

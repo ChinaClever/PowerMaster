@@ -2,6 +2,8 @@ package cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice;
 
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 public class PduIndex {
 
@@ -16,4 +18,6 @@ public class PduIndex {
     private Integer isDeleted;
 
     private Integer runStatus;
+
+    private LocalDateTime updateTime;
 }
