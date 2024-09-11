@@ -46,7 +46,7 @@
         :inline="true"
         label-width="68px"                          
       >
-        <el-form-item>
+        <el-form-item v-show="showCollaspe">
           <template v-for="(status, index) in statusList" :key="index">
             <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
           </template>
@@ -86,13 +86,15 @@
         </el-form-item>
        </el-form-item> 
         <div style="float:right">
-          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 0;" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 0;showCollaspe = true;showPagination = 0;" :type="!switchValue === 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;showCollaspe = true;showPagination = 0;" :type="switchValue === 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 2;showCollaspe = false;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />已删除PDU设备</el-button>
         </div>
       </el-form>
     </template>
     <template #Content>
-      <el-table  v-show="switchValue" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+     <div>
+      <el-table  v-show="switchValue == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -160,10 +162,43 @@
               删除
             </el-button>
           </template>
+        </el-table-column>   
+      </el-table> 
+     </div> 
+      <!-- 查看已删除PDU设备 -->
+      <el-table  v-show="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true">
+        <el-table-column label="编号" align="center" prop="tableId" width="180px" />
+        <!-- 数据库查询 -->
+        <el-table-column label="所在位置" align="center" prop="location" width="180px"/>
+        <el-table-column label="运行状态" align="center" prop="status" >
+          <template #default="scope">
+            <el-tag type="info" v-if="scope.row.deleted">已删除</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" /> 
+        <el-table-column label="操作" align="center">
+          <template #default="scope">
+            <el-button
+              link
+              type="danger"
+              @click="handleRestore(scope.row.devKey)"
+              v-if="scope.row.status == 5"
+            >
+              恢复设备
+            </el-button>
+          </template>
         </el-table-column>
       </el-table>
-      <!-- 分页 -->
-      <div class="arrayContainer" v-show="!switchValue && list.length > 0">
+        <Pagination
+        v-if="showPagination == 1"
+        :total="deletedTotal"
+        :page-size-arr="pageSizeArr"
+        v-model:page="queryDeletedPageParams.pageNo"
+        v-model:limit="queryDeletedPageParams.pageSize"
+        @pagination="getDeletedList"
+        />               
+      <!-- 阵列模式分页 --> 
+      <div class="arrayContainer" v-show="!switchValue && list.length > 0"> 
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
@@ -204,19 +239,21 @@
             <el-tag type="info" v-if="item.status == 5">离线</el-tag>
           </div>
           <button v-if="item.status != null && item.status != 5" class="detail" @click="toPDUDisplayScreen(item)">详情</button>
-        </div>
+        </div>      
       </div>
-      <Pagination
+        <Pagination
+        v-if="showPagination == 0"
         :total="total"
         :page-size-arr="pageSizeArr"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
-      />
+        />      
       <template v-if="list.length == 0 && !switchValue">
         <el-empty description="暂无数据" :image-size="300" />
       </template>
     </template>
+
   </CommonMenu>
   <!-- 表单弹窗：添加/修改 -->
   <!-- <PDUDeviceForm ref="formRef" @success="getList" /> -->
@@ -240,6 +277,8 @@ const flashListTimer = ref();
 const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(0)
+const showPagination = ref(0)
+const showCollaspe = ref(true)
 const statusNumber = reactive({
   normal : 0,
   warn : 0,
@@ -386,7 +425,17 @@ const allList = ref([
     pf:null
   }
 ]) as any//总列表的数据
+const deletedList = ref([
+  { 
+    id:null,
+    status:null,
+    devKey:null,
+    location:null,
+    dataUpdateTime : "",
+  }
+]) as any//已经删除的PDU设备
 const total = ref(0) // 列表的总页数
+const deletedTotal = ref(0) // 已删除PDU设备列表的总页数
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
@@ -400,6 +449,16 @@ const queryParams = reactive({
 const queryParamsAll = reactive({
   pageNo: 1,
   pageSize: -1,
+  devKey: undefined,
+  createTime: [],
+  cascadeNum: undefined,
+  serverRoomData:undefined,
+  status:[],
+  cabinetIds:[],
+}) as any
+const queryDeletedPageParams = reactive({
+  pageNo: 1,
+  pageSize: 24,
   devKey: undefined,
   createTime: [],
   cascadeNum: undefined,
@@ -468,6 +527,22 @@ const getList = async () => {
     total.value = data.total
   } finally {
     loading.value = false
+  }
+}
+
+const getDeletedList = async () => {
+  try {
+    const data = await PDUDeviceApi.getDeletedPDUDevice(queryDeletedPageParams);
+    deletedList.value = data.list
+    var tableIndex = 0;
+    deletedList.value.forEach((obj) => {
+      obj.tableId = (queryDeletedPageParams.pageNo - 1) * queryDeletedPageParams.pageSize + ++tableIndex;
+      const splitArray = obj.dataUpdateTime.split(' ');
+      obj.dataUpdateTime = splitArray[1];
+    });  
+    deletedTotal.value = data.total
+  } catch (error) {
+    
   }
 }
 
@@ -572,6 +647,7 @@ const handleSelectStatus = (index) => {
 const handleQuery = () => {
   queryParams.pageNo = 1
   getList()
+  getDeletedList()
 }
 
 /** 重置按钮操作 */
@@ -580,6 +656,7 @@ const resetQuery = () => {
   statusList.forEach((item) => item.selected = true)
   queryParams.status = [];
   handleQuery()
+  getDeletedList()
 }
 
 /** 添加/修改操作 */
@@ -598,6 +675,21 @@ const handleDelete = async (devKey: string) => {
       devKey: devKey
     })
     message.success(t('common.delSuccess'))
+    // 刷新列表
+    // await getList()
+  } catch {}
+}
+
+/** 恢复按钮操作 */
+const handleRestore = async (devKey: string) => {
+  try {
+     // 恢复的二次确认
+    await message.restoreConfirm()
+    // 发起恢复请求
+    await PDUDeviceApi.restorePDUDevice({
+      devKey: devKey
+    })
+    message.success(t('common.restoreSuccess'))
     // 刷新列表
     // await getList()
   } catch {}
@@ -623,7 +715,9 @@ onMounted(async () => {
   devKeyList.value = await loadAll();
   getList()
   getNavList();
+  getDeletedList();
   flashListTimer.value = setInterval((getListNoLoading), 5000);
+  flashListTimer.value = setInterval((getDeletedList), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -644,8 +738,10 @@ onBeforeRouteLeave(()=>{
 onActivated(() => {
   getList();
   getNavList();
+  getDeletedList();
   if(!firstTimerCreate.value){
     flashListTimer.value = setInterval((getListNoLoading), 5000);
+    flashListTimer.value = setInterval((getDeletedList), 5000);
   }
 })
 </script>

@@ -14,7 +14,12 @@ export const PDUDeviceApi = {
   getPDUDevicePage: async (data: any) => {
     return await request.post({ url: `/pdu/PDU-device/page`, data })
   },
-
+    
+  // 获取已删除的PDU设备
+  getDeletedPDUDevice: async (data: any) => {
+    return await request.post({ url: `/pdu/PDU-device/getDeletedPage`,data})
+  },
+  
   // 查询PDU设备详情
   getPDUDevice: async (id: number) => {
     return await request.get({ url: `/pdu/PDU-device/get?id=` + id })
@@ -33,6 +38,11 @@ export const PDUDeviceApi = {
   // 删除PDU设备
   deletePDUDevice: async (params: any) => {
     return await request.get({ url: `/pdu/PDU-device/delete`, params })
+  },
+
+  //恢复PDU设备
+  restorePDUDevice: async (params: any) => {
+    return await request.get({ url: `/pdu/PDU-device/restore`, params })
   },
 
   // 导出PDU设备 Excel
@@ -83,6 +93,4 @@ export const PDUDeviceApi = {
   ipList: async () => {
     return await request.download({ url: `/pdu/PDU-device/ipList` })
   },
-
-  
 }
