@@ -496,6 +496,7 @@ const itemStyle = ref({
 });
 
 const getList = async () => {
+  debugger
   loading.value = true
   eqData.value = await IndexApi.getConsumeData(queryParams);
   if(eqData.value?.barRes?.series[0]){
@@ -617,7 +618,7 @@ const arraySpanMethod = ({
 
 /** 搜索按钮操作 */
 const handleQuery = async () => {
-
+  debugger
   if(queryParams.devKey){
     if(queryParams.oldTime && queryParams.newTime){
       await getList();

@@ -34,7 +34,6 @@
           </div>
         </div> -->
         <!-- <div class="line"></div> -->
-
       </div>
     </template>
     <template #ActionBar>
@@ -65,6 +64,17 @@
             @select="handleQuery"
           />
         </el-form-item>
+<!-- 
+        <el-form-item label="IP地址" prop="ipAddr">
+    <el-input
+      v-model="queryParams.ipAddr"
+      clearable
+      class="!w-140px"
+      placeholder="请输入IP地址"
+      @select="handleQuery"
+    />
+  </el-form-item> -->
+        
 
         <el-form-item label="级联地址" prop="cascadeAddr" label-width="70px">
           <el-input-number
@@ -184,8 +194,8 @@
                   </el-table>
                 </div>
               </el-col>
-              <el-col v-if="serChartContainerWidth == 10" :span="serChartContainerWidth">
-                <Radar width="29vw" height="25vh" :list="serverData" />
+              <el-col v-if="serChartContainerWidth == 10" :span="serChartContainerWidth">              
+                <!-- <Radar width="29vw" height="25vh" :list="serverData" /> -->
               </el-col>
             </el-row>
           </div>
@@ -247,7 +257,12 @@ import PFLine from './component/PFLine.vue'
 import Bar from './component/Bar.vue'
 import HorizontalBar from './component/HorizontalBar.vue'
 import EnvTemLine from './component/EnvTemLine.vue'
-import Radar from './component/Radar.vue'
+// import Radar from './component/Radar.vue'
+
+// import Line from './component/Line.vue'
+// import PFLine from './component/PFLine.vue'
+// import Bar from './component/Bar.vue'
+// import EnvTemLine from './component/EnvTemLine.vue'
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -259,7 +274,7 @@ const totalLineList = ref() as any;
 const pfLineList = ref() as any;
 const now = ref()
 const switchValue = ref(1);
-const ipList = ref([])
+const ipList = ref([])// 初始化 ipList 为一个空数组
 const instance = getCurrentInstance();
 const visControll = reactive({
   visAllReport : false,
@@ -281,6 +296,7 @@ const loadAll = async () => {
 }
 
 const querySearch = (queryString: string, cb: any) => {
+  
   const results = queryString
     ? ipList.value.filter(createFilter(queryString))
     : ipList.value
@@ -384,7 +400,7 @@ const PDUTableData = ref([]) as any
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  devKey : undefined,
+  devKey : "",
   id: undefined,
   type: 'total',
   eqGranularity:"day",
@@ -492,13 +508,13 @@ const temData = ref<TemData>({
   temMinSensorId : 0,
 }) as any
 
+
 interface ServerData {
   nameAndMax: object[];
   value: number[];
 }
 const serverData = ref<ServerData>({
-  nameAndMax : [
-  ],
+  nameAndMax : [],
   value: []
 }) as any
 
@@ -548,6 +564,7 @@ const outletItemStyle = ref({
   },
 });
 const getList = async () => {
+  
   loading.value = true
   eqData.value = await PDUDeviceApi.getConsumeData(queryParams);
   if(eqData.value?.barRes?.series[0]){
@@ -621,6 +638,7 @@ const getList = async () => {
   // 过滤出大于 0 的元素，并将值与下标保存到对象数组中
   if(powValueArray && powValueArray.length > 0){
     var resultArray = [] as any;
+    
     for (var i = 0; i < powValueArray.length; i++) {
       if (powValueArray[i] > 0) {
         resultArray.push({
@@ -638,6 +656,7 @@ const getList = async () => {
     // 只保留前十个元素
     resultArray = resultArray.slice(0, 10);
 
+    
     // 根据 resultArray 中的元素生成 nameAndMax 数组和 value 数组
     var element = [] as any;
     var valueArr = [] as any;
@@ -689,6 +708,7 @@ const serChartContainer = ref<HTMLElement | null>(null);
 let serChart = null as echarts.ECharts | null; // 显式声明 serChart 的类型
 
 const initChart =  () => {
+  
   if (serChartContainer.value && instance && serverData.value.nameAndMax && serverData.value.nameAndMax.length > 0) {
     serChart = echarts.init(serChartContainer.value);
     serChart.setOption({
@@ -732,7 +752,7 @@ const arraySpanMethod = ({
 
 /** 搜索按钮操作 */
 const handleQuery = async () => {
-
+  
   if(queryParams.ipAddr){
     if(queryParams.oldTime && queryParams.newTime){
       queryParams.devKey = queryParams.ipAddr +'-' +  queryParams.cascadeAddr;

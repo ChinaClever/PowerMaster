@@ -9,8 +9,8 @@
               <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
             </el-carousel-item>
           </el-carousel>
-        </div>   -->
-        <!-- <div class="nav_header">
+        </div>  
+        <div class="nav_header">
           <span v-if="nowAddress">{{nowAddress}}</span>
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
           <br/>
@@ -42,27 +42,18 @@
           <br/>
       </div>
       
-        <div v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total'" class="descriptions-container" style="font-size: 14px;">
-            <div v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total' && queryParams.timeRange != null" class="description-item">
-            <span class="label">开始时间 :</span>
-            <span class="value">{{  queryParams.timeRange[0] }}</span>
-          </div>
-
-          <div v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total' && queryParams.timeRange != null" class="description-item">
-            <span class="label">结束时间 :</span>
-            <span class="value">{{  queryParams.timeRange[0] }}</span>
-          </div>
+        <div  class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
-            <span class="label">功率最大值 :</span>
+            <span class="label">最大值 :</span>
             <span >{{ formatNumber(maxActivePowDataTemp, 3) }} kW</span>
           </div>
           <div v-if="maxActivePowDataTimeTemp" class="description-item">
             <span class="label">发生时间 :</span>
             <span class="value">{{ maxActivePowDataTimeTemp }}</span>
           </div>
-
+          <br/>
           <div class="description-item">
-            <span class="label">功率最小值 :</span>
+            <span class="label">最小值 :</span>
             <span >{{ formatNumber(minActivePowDataTemp, 3) }} kW</span>
           </div>
           <div v-if="minActivePowDataTimeTemp" class="description-item">
@@ -130,10 +121,10 @@
     <template #Content>
       <div v-loading="loading">
         <el-tabs v-model="activeName1">
-          <el-tab-pane label="图表" name="myChart">
+          <el-tab-pane v-if="loading2" label="图表" name="myChart">
             <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 65vh;"></div>
           </el-tab-pane>
-          <el-tab-pane label="数据" name="myData">
+          <el-tab-pane v-if="loading2" label="数据" name="myData">
             <div style="height: 67vh;">
             <el-table  
               border
@@ -416,11 +407,14 @@ const minActivePowDataTimeTemp = ref();// 最小有功功率的发生时间
 
 /** 查询列表 */
 const isHaveData = ref(false);
+const loading2=ref(false);
 const getList = async () => {
   loading.value = true;
   try {
     const data = await HistoryDataApi.getHistoryDataDetails(queryParams);
+    
     if (data != null && data.total != 0){
+      loading2.value=true;
       isHaveData.value = true
       volData.value = data.list.map((item) => formatNumber(item.vol_value, 1));
       curData.value = data.list.map((item) => formatNumber(item.cur_value, 2));
@@ -456,7 +450,9 @@ const getList = async () => {
       apparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.pow_apparent_max_time));
       apparentPowMinValueData.value = data.list.map((item) => formatNumber(item.pow_apparent_min_value, 3));
       apparentPowMinTimeData.value = data.list.map((item) => formatDate(item.pow_apparent_min_time));
+      
 
+      if( activeName.value === 'realtimeTabPane' ){
       maxActivePowDataTemp.value = Math.max(...activePowData.value);
       minActivePowDataTemp.value = Math.min(...activePowData.value);
       activePowData.value.forEach(function(num, index) {
@@ -467,12 +463,32 @@ const getList = async () => {
           minActivePowDataTimeTemp.value = createTimeData.value[index]
         }
       });
+      }
+      else{
+      maxActivePowDataTemp.value = Math.max(...activePowMaxValueData.value);
+      minActivePowDataTemp.value = Math.min(...activePowMinValueData.value);
+
+
+      activePowMaxValueData.value.forEach(function(num, index) {
+        if (num == maxActivePowDataTemp.value){
+          maxActivePowDataTimeTemp.value = createTimeData.value[index]
+        }
+      });
+      activePowMinValueData.value.forEach(function(num, index) {
+        if (num == maxActivePowDataTemp.value){
+          maxActivePowDataTimeTemp.value = createTimeData.value[index]
+        }
+      });
+      
+    }
+  
 
       // 图表显示的位置变化
       nowAddress.value = nowAddressTemp.value
       nowLocation.value = nowLocationTemp.value
 
     }else{
+      loading2.value=false;
       isHaveData.value = false;
       ElMessage({
         message: '暂无数据',

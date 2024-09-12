@@ -59,6 +59,7 @@
          </el-form-item>
       </el-form>
     </template>
+    
     <template #Content>
       <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
         <!-- 添加行号列 -->
