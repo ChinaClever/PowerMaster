@@ -53,4 +53,6 @@ public interface PDUDeviceService {
     int deletePDU(String devKey) throws Exception;
 
     int restorePDU(String devKey) throws Exception;
+
+    Integer getPDUMaxLineId(PDUDevicePageReqVO pageReqVO);
 }

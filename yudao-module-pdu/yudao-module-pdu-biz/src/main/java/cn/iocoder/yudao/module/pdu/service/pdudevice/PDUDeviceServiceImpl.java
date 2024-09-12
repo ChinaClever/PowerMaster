@@ -414,6 +414,37 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     }
 
     @Override
+    public Integer getPDUMaxLineId(PDUDevicePageReqVO pageReqVO) {
+        try {
+        String index = null;
+        if(pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
+            index = "pdu_hda_line_hour";
+        } else {
+            index = "pdu_hda_line_day";
+        }
+        // 创建搜索请求对象
+        SearchRequest searchRequest = new SearchRequest(index);
+
+        // 创建搜索源构建器并定义聚合
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+        sourceBuilder.aggregation(AggregationBuilders.max("max_line_id").field("line_id"));
+
+        // 设置查询源
+        searchRequest.source(sourceBuilder);
+
+        // 执行搜索请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        // 获取最大值
+        Max maxId = searchResponse.getAggregations().get("max_line_id");
+        return (int) maxId.getValue();
+    }catch (Exception e){
+        log.error("获取数据失败",e);
+    }
+        return 0;
+    }
+
+    @Override
     public List<String> getDevKeyList() {
         List<String> result = pDUDeviceMapper.selectList().stream().limit(10).collect(Collectors.toList())
                 .stream().map(PduIndex::getDevKey).collect(Collectors.toList());
