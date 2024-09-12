@@ -86,6 +86,10 @@ export const PDUDeviceApi = {
     return await request.post({ url: `/pdu/PDU-device/line/page`,data})
   },
 
+  getPDUMaxLineId: async (data) => {
+    return await request.post({ url: `/pdu/PDU-device/line/getMaxLineId`,data})
+  },  
+
   devKeyList: async () => {
     return await request.download({ url: `/pdu/PDU-device/devKeyList` })
   },
@@ -93,4 +97,5 @@ export const PDUDeviceApi = {
   ipList: async () => {
     return await request.download({ url: `/pdu/PDU-device/ipList` })
   },
+  
 }

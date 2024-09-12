@@ -7,15 +7,18 @@
       label-width="100px"
       v-loading="formLoading"
     >
-      <el-form-item label="绿色的范围" prop="rangeOne">
+      <el-form-item prop="rangeOne" >
+        <div style="background-color: #3bbb00; margin-right:20px">绿色的范围</div>
         小于<el-input style="width: 11.3%;" type="number" v-model="formData.rangeOne" placeholder="请输入第一个小于的范围" />%
       </el-form-item>
-      <el-form-item label="黄色的范围" prop="rangeTwo">
+      <el-form-item  prop="rangeTwo" >
+        <div style="background-color: #ffc402;margin-right:20px;">黄色的范围</div>
         <el-input style="width: 11.3%;" type="number" v-model="formData.rangeTwo" placeholder="请输入第二个范围的最小值" />%-
         <el-input style="width: 11.3%;" type="number" v-model="formData.rangeThree" placeholder="请输入第二个范围的最大值" />%
       </el-form-item>
 
-      <el-form-item label="红色的范围" prop="rangeFour">
+      <el-form-item  prop="rangeFour" >
+        <div style="background-color: #fa3333;margin-right:20px;">红色的范围</div>
         大于<el-input style="width: 11.3%;" type="number" v-model="formData.rangeFour" placeholder="请输入第三个大于的范围" />%
       </el-form-item>
     </el-form>
@@ -76,7 +79,11 @@ const formRef = ref() // 表单 Ref
 /** 打开弹窗 */
 const open = async (type: string) => {
   dialogVisible.value = true
-  dialogTitle.value = t('action.' + type)
+  if (type === 'create') {
+    dialogTitle.value = t('电流不平衡度范围设定')
+  } else {
+    dialogTitle.value = t('action.' + type)
+  }
   formType.value = type
   resetForm()
   // 修改时，设置数据

@@ -219,6 +219,12 @@
             <el-tag type="warning" v-if="item.color == 3">大电流不平衡</el-tag>
             <el-tag type="danger" v-if="item.color == 4">大电流不平衡</el-tag>
           </div>
+          <div class="status" v-if="item.ccur == null && item.status != 5">
+            <el-tag type="danger">单相设备</el-tag>              
+          </div>
+          <div class="status" v-if="item.status == 5">
+            <el-tag type="info">离线</el-tag>              
+          </div>                                       
           <button v-if="item.status != null && item.status != 5" class="detail" @click="toPDUDisplayScreen(item)">详情</button>
         </div>
       </div>

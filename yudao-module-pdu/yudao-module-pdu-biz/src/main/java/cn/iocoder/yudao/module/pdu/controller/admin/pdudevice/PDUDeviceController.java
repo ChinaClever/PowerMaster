@@ -56,7 +56,11 @@ public class PDUDeviceController {
     public CommonResult<PageResult<PDULineRes>> getPDULineDevicePage(@RequestBody PDUDevicePageReqVO pageReqVO) {
         return success(pDUDeviceService.getPDULineDevicePage(pageReqVO));
     }
-
+    @PostMapping("/line/getMaxLineId")
+    @Operation(summary = "获得PDU相id的最大值")
+    public CommonResult<Integer> getPDUMaxLineId(@RequestBody PDUDevicePageReqVO pageReqVO) {
+        return success(pDUDeviceService.getPDUMaxLineId(pageReqVO));
+    }
     @GetMapping("/displayscreen")
     @Operation(summary = "获得PDU设备详细信息")
     public CommonResult<String> getDisplay(String devKey) {

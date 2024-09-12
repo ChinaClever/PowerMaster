@@ -132,8 +132,9 @@ const handleCheck = (data) => {
     }
   }
   .master-right {
-    flex: 1;
+    //flex: 1;
     overflow: hidden;
+    width: 100%;
   }
 }
 .navBar {

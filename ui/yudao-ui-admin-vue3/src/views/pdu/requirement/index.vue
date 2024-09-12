@@ -44,27 +44,27 @@
         :inline="true"
         label-width="68px"                          
       >
-        <el-form-item label="时间段" prop="createTime" label-width="100px">
+        <el-form-item label="时间段" prop="createTime" label-width="60px">
           <el-button 
-            @click="queryParams.timeType = 0;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;handleQuery()" 
+            @click="queryParams.timeType = 0;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;handleQuery();showCollaspe = false" 
             :type="queryParams.timeType == 0 ? 'primary' : ''"
           >
             最近24小时
           </el-button>
           <el-button 
-            @click="queryParams.timeType = 1;now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;handleMonthPick();handleQuery()" 
+            @click="queryParams.timeType = 1;now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;handleMonthPick();showCollaspe = false;" 
             :type="queryParams.timeType == 1 ? 'primary' : ''"
           >
             月份
           </el-button>
           <el-button 
-            @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;" 
+            @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;showCollaspe = true;" 
             :type="queryParams.timeType == 2 ? 'primary' : ''"
           >
             自定义
           </el-button>                            
         </el-form-item>
-        <el-form-item>
+        <el-form-item >
           <el-date-picker
             v-if="queryParams.timeType == 1"
             v-model="queryParams.oldTime"
@@ -79,14 +79,14 @@
             v-model="queryParams.timeArr"
             value-format="YYYY-MM-DD HH:mm:ss"
             type="daterange"
+            :shortcuts="shortcuts"
             start-placeholder="开始日期"
             end-placeholder="结束日期"
             :disabled-date="disabledDate"
             @change="handleDayPick"
-            class="!w-200px"
+            class="!w-190px"
           />
-        </el-form-item>
-        <el-form-item>
+        <el-form-item v-show="showCollaspe" style="margin-left: 5px">
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           <el-button
@@ -106,17 +106,22 @@
           >
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
+        </el-form-item>         
         </el-form-item>
-        <div style="float:right">
-          <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />电流</el-button>
-          <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />功率</el-button>          
+
+        <div style="float:right ">
+          <el-button @click="togglePhase = false;" :type="!togglePhase ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 2px" />单相</el-button>
+          <el-button @click="togglePhase = true;" :type="togglePhase ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 2px" />三相</el-button>
+          <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 2px" />电流</el-button>
+          <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 2px" />功率</el-button>          
           <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
         </div>
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 2 && valueMode == 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+    <!-- 三相数据显示 -->
+      <el-table v-show="switchValue == 2 && valueMode == 0 && MaxLineId > 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
@@ -128,18 +133,18 @@
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="发生时间" align="center" prop="l1MaxCurTime" />
+        <el-table-column label="发生时间" align="center" prop="l1MaxCurTime"/>
         <el-table-column label="L2最大电流" align="center" prop="l2MaxCur" width="100px" >
           <template #default="scope" >
-            <el-text line-clamp="2" >
+            <el-text line-clamp="2" v-show="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
               {{ scope.row.l2MaxCur }}A
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="发生时间" align="center" prop="l2MaxCurTime" />
+        <el-table-column label="发生时间" align="center" prop="l2MaxCurTime"  />
         <el-table-column label="L3最大电流" align="center" prop="l3MaxCur" width="100px" >
           <template #default="scope" >
-            <el-text line-clamp="2" >
+            <el-text line-clamp="2" v-show="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
               {{ scope.row.l3MaxCur }}A
             </el-text>
           </template>
@@ -166,8 +171,45 @@
             </el-button>
           </template>
         </el-table-column>
-      </el-table>
-      <el-table v-show="switchValue == 2 && valueMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+      </el-table>  
+    <!-- 单相数据显示 -->
+      <el-table v-show="switchValue == 2 && valueMode == 0 && !(MaxLineId > 1)" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+        <el-table-column label="编号" align="center" prop="tableId"/>
+        <!-- 数据库查询 -->
+        <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" />
+        <el-table-column label="最大电流" align="center" prop="l1MaxCur"  >
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.l1MaxCur }}kA
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="发生时间" align="center" prop="l1MaxCurTime"/>
+
+        <el-table-column label="操作" align="center" width="130px">
+          <template #default="scope">
+            <el-button
+              link
+              type="primary"
+              @click="toPDUDisplayScreen(scope.row)"
+              v-if="scope.row.status != null && scope.row.status != 5"
+            >
+            设备详情
+            </el-button>
+            <el-button
+              link
+              type="danger"
+              @click="handleDelete(scope.row.id)"
+              v-if="scope.row.status == 5"
+            >
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table> 
+    <!-- 三相有数据显示 -->      
+      <el-table v-show="switchValue == 2 && valueMode == 1 && MaxLineId > 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
         <el-table-column label="L1最大功率" align="center" prop="l1MaxPow" width="100px" >
@@ -180,7 +222,7 @@
         <el-table-column label="发生时间" align="center" prop="l1MaxPowTime" />
         <el-table-column label="L2最大功率" align="center" prop="l2MaxPow" width="100px" >
           <template #default="scope" >
-            <el-text line-clamp="2" >
+            <el-text line-clamp="2" v-show="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
               {{ scope.row.l2MaxPow }}kW
             </el-text>
           </template>
@@ -188,7 +230,7 @@
         <el-table-column label="发生时间" align="center" prop="l2MaxPowTime" />
         <el-table-column label="L3最大功率" align="center" prop="l3MaxPow" width="100px" >
           <template #default="scope" >
-            <el-text line-clamp="2" >
+            <el-text line-clamp="2" v-show="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
               {{ scope.row.l3MaxPow }}kW
             </el-text>
           </template>
@@ -215,18 +257,59 @@
           </template>
         </el-table-column>
       </el-table>
+    <!-- 单相数据显示 -->      
+      <el-table v-show="switchValue == 2 && valueMode == 1 && !(MaxLineId > 1)" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+        <el-table-column label="编号" align="center" prop="tableId"/>
+        <el-table-column label="所在位置" align="center" prop="location"  />
+        <el-table-column label="L1最大功率" align="center" prop="l1MaxPow"  >
+          <template #default="scope" >
+            <el-text line-clamp="2" >
+              {{ scope.row.l1MaxPow }}kW
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="发生时间" align="center" prop="l1MaxPowTime" />
+        <el-table-column label="操作" align="center" width="130px">
+          <template #default="scope">
+            <el-button
+              link
+              type="primary"
+              @click="toPDUDisplayScreen(scope.row)"
+              v-if="scope.row.status != null && scope.row.status != 5"
+            >
+            设备详情
+            </el-button>
+            <el-button
+              link
+              type="danger"
+              @click="handleDelete(scope.row.id)"
+              v-if="scope.row.status == 5"
+            >
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>     
       <div  v-show="switchValue == 1 && list.length > 0  && valueMode == 1" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
-          <div class="content">
+          <div class="content" v-show="item.l3MaxPow !== undefined && item.l3MaxPow !== null">
             <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
             <div class="info">
               <div >L1最大功率：{{item.l1MaxPow}}kW</div>
-              <div >L2最大功率：{{item.l2MaxPow}}kW</div>
-              <div >L3最大功率：{{ item.l3MaxPow }}kW</div>
+              <div v-show="togglePhase">L2最大功率：{{item.l2MaxPow}}kW</div>
+              <div v-show="togglePhase">L3最大功率：{{ item.l3MaxPow }}kW</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
+          <div class="content" v-show="item.l3MaxPow == undefined || item.l3MaxPow == null">
+            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
+            <div class="info">
+              <div >最大功率：{{item.l1MaxPow}}kW</div>
+              <div >发生时间：{{item.l1MaxPowTime}}</div>
+              <!-- <div>AB路占比：{{item.fzb}}</div> -->
+            </div>
+          </div>          
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->              
           <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
@@ -235,16 +318,26 @@
       <div  v-show="switchValue == 1 && list.length > 0 && valueMode == 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
-          <div class="content">
+          <div class="content" v-show="item.l3MaxCur !== undefined && item.l3MaxCur !== null">
             <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
             <div class="info">
               
               <div >L1最大电流：{{item.l1MaxCur}}A</div>
-              <div >L2最大电流：{{item.l2MaxCur}}A</div>
-              <div >L3最大电流：{{ item.l3MaxCur }}A</div>
+              <div v-show="togglePhase">L2最大电流：{{item.l2MaxCur}}A</div>
+              <div v-show="togglePhase">L3最大电流：{{ item.l3MaxCur }}A</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
+          <div class="content" v-show="item.l3MaxCur == undefined || item.l3MaxCur == null">
+            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
+            <div class="info">
+              
+              <div >最大电流：{{item.l1MaxCur}}A</div>
+              <div >发生时间：{{item.l1MaxCurTime}}</div>
+
+              <!-- <div>AB路占比：{{item.fzb}}</div> -->
+            </div>
+          </div>          
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->                
           <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
@@ -281,18 +374,49 @@ import { CabinetApi } from '@/api/cabinet/info'
 defineOptions({ name: 'PDUDevice' })
 
 const { push } = useRouter()
-
+const MaxLineId = ref(0);
 const valueMode = ref(0);
 const now = ref()
+const showCollaspe = ref(false)
 const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(1)
+const togglePhase = ref(true)
 // const statusNumber = reactive({
 //   normal : 0,
 //   warn : 0,
 //   alarm : 0,
 //   offline : 0
 // })
-
+// 时间段快捷选项
+const shortcuts = [
+  {
+    text: '最近一周',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setDate(start.getDate() - 7)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近一个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setMonth(start.getMonth() - 1)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近六个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setMonth(start.getMonth() - 6)
+      return [start, end]
+    },
+  },
+]
 const statusList = reactive([
   {
     name: '正常',
@@ -426,7 +550,7 @@ const handleMonthPick = () => {
   }else {
     queryParams.newTime = null;
   }
-
+  handleQuery()
 } 
 
 const loading = ref(false) // 列表的加载中
@@ -562,9 +686,14 @@ const handleExport = async () => {
     exportLoading.value = false
   }
 }
-
+/** 获得es历史数据PDU相id的最大值 */
+const giveValue = async () => {
+  MaxLineId.value = await PDUDeviceApi.getPDUMaxLineId(queryParams)
+  // console.log(MaxLineId.value)
+}
 /** 初始化 **/
 onMounted(() => {
+  giveValue()
   getList()
   getNavList();
 
