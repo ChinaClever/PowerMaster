@@ -1003,4 +1003,9 @@ onActivated(() => {
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }
+::v-deep .el-table .el-table__header th{
+  background-color: #f5f7fa;
+  color: #909399;
+
+}
 </style>

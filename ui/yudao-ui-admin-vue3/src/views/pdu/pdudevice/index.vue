@@ -44,9 +44,10 @@
         :model="queryParams"
         ref="queryFormRef"
         :inline="true"
-        label-width="68px"                          
+        label-width="68px"
+        v-show="switchValue !== 2"                          
       >
-        <el-form-item v-show="showCollaspe">
+        <el-form-item>
           <template v-for="(status, index) in statusList" :key="index">
             <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
           </template>
@@ -59,10 +60,10 @@
             clearable
             class="!w-200px"
             placeholder="请输入网络地址"
-            @select="handleQuery"
+            @select="handleQuery"                       
           />
         </el-form-item>
-      
+     
       <el-form-item :style="{ marginLeft: '20px'}">
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
@@ -91,10 +92,58 @@
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 2;showCollaspe = false;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
         </div>
       </el-form>
+      <el-form
+        class="-mb-15px"
+        :model="queryDeletedPageParams"
+        ref="queryFormRef"
+        :inline="true"
+        label-width="68px"    
+        v-show="switchValue == 2"                 
+      >
+      <el-form-item>
+        <el-form-item label="网络地址" prop="devKey" >
+          <el-autocomplete
+            v-model="queryDeletedPageParams.devKey"
+            :fetch-suggestions="querySearch"
+            clearable
+            class="!w-200px"
+            placeholder="请输入网络地址"
+            @select="handleQuery"                       
+          />
+        </el-form-item>        
+      
+      <el-form-item :style="{ marginLeft: '20px'}">
+          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+          <el-button
+            type="primary"
+            plain
+            @click="openForm('create')"
+            v-hasPermi="['pdu:PDU-device:create']"
+          >
+            <Icon icon="ep:plus" class="mr-5px" /> 新增
+          </el-button>
+          <el-button
+            type="success"
+            plain
+            @click="handleExport"
+            :loading="exportLoading"
+            v-hasPermi="['pdu:PDU-device:export']"
+          >
+            <Icon icon="ep:download" class="mr-5px" /> 导出
+          </el-button>
+        </el-form-item>
+       </el-form-item> 
+        <div style="float:right">
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 0;showCollaspe = true;showPagination = 0;" :type="switchValue === 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;showCollaspe = true;showPagination = 0;" :type="switchValue === 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 2;showCollaspe = false;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
+        </div>
+      </el-form>      
     </template>
     <template #Content>
      <div>
-      <el-table  v-show="switchValue == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+      <el-table  v-show="switchValue == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -166,7 +215,7 @@
       </el-table> 
      </div> 
       <!-- 查看已删除PDU设备 -->
-      <el-table  v-show="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true">
+      <el-table  v-show="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="180px" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="180px"/>
@@ -646,6 +695,7 @@ const handleSelectStatus = (index) => {
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
+  queryDeletedPageParams.pageNo = 1
   getList()
   getDeletedList()
 }
@@ -656,7 +706,6 @@ const resetQuery = () => {
   statusList.forEach((item) => item.selected = true)
   queryParams.status = [];
   handleQuery()
-  getDeletedList()
 }
 
 /** 添加/修改操作 */
@@ -676,7 +725,7 @@ const handleDelete = async (devKey: string) => {
     })
     message.success(t('common.delSuccess'))
     // 刷新列表
-    // await getList()
+    await getList()
   } catch {}
 }
 
@@ -691,7 +740,7 @@ const handleRestore = async (devKey: string) => {
     })
     message.success(t('common.restoreSuccess'))
     // 刷新列表
-    // await getList()
+    await getDeletedList();
   } catch {}
 }
 
@@ -717,7 +766,6 @@ onMounted(async () => {
   getNavList();
   getDeletedList();
   flashListTimer.value = setInterval((getListNoLoading), 5000);
-  flashListTimer.value = setInterval((getDeletedList), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -741,7 +789,6 @@ onActivated(() => {
   getDeletedList();
   if(!firstTimerCreate.value){
     flashListTimer.value = setInterval((getListNoLoading), 5000);
-    flashListTimer.value = setInterval((getDeletedList), 5000);
   }
 })
 </script>
@@ -908,7 +955,7 @@ onActivated(() => {
     flex-wrap: wrap;
     .box {
       height: 70px;
-      width: 50%;
+      width: 45%;
       box-sizing: border-box;
       display: flex;
       justify-content: center;
@@ -1089,5 +1136,10 @@ onActivated(() => {
 }
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+::v-deep .el-table .el-table__header th{
+  background-color: #f5f7fa;
+  color: #909399;
+
 }
 </style>
