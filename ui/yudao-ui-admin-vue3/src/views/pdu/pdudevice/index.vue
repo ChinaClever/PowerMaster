@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="PDU配电">
+  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="navList" navTitle="PDU配电">
     <template #NavInfo>
       <div >
         <div class="header">
@@ -95,7 +95,7 @@
       <el-form
         class="-mb-15px"
         :model="queryDeletedPageParams"
-        ref="queryFormRef"
+        ref="queryFormRef2"
         :inline="true"
         label-width="68px"    
         v-show="switchValue == 2"                 
@@ -321,7 +321,7 @@ import { CabinetApi } from '@/api/cabinet/info'
 defineOptions({ name: 'PDUDevice' })
 
 const { push } = useRouter()
-
+const navList = ref([]) as any // 左侧导航栏树结构列表
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48,96])
@@ -433,7 +433,6 @@ const handleCheck = async (row) => {
 }
 
 
-const serverRoomArr =  ref([])
 
 const filterText = ref('')
 const treeRef = ref<InstanceType<typeof ElTree>>()
@@ -516,6 +515,7 @@ const queryDeletedPageParams = reactive({
   cabinetIds:[],
 }) as any
 const queryFormRef = ref() // 搜索的表单
+const queryFormRef2 = ref()
 const exportLoading = ref(false) // 导出的加载中
 
 /** 查询列表 */
@@ -655,20 +655,15 @@ const getListNoLoading = async () => {
   }
 }
 
+// 接口获取导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
-  serverRoomArr.value = res
-  if (res && res.length > 0) {
-    const room = res[0]
-    const keys = [] as string[]
-    room.children.forEach(child => {
-      if(child.children.length > 0) {
-        child.children.forEach(son => {
-          keys.push(son.id + '-' + son.type)
-        })
-      }
-    })
+  const res = await CabinetApi.getRoomList({})
+  let arr = [] as any
+  for (let i=0; i<res.length;i++){
+  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  arr = arr.concat(temp);
   }
+  navList.value = arr
 }
 
 const toPDUDisplayScreen = (row) =>{
@@ -703,6 +698,7 @@ const handleQuery = () => {
 /** 重置按钮操作 */
 const resetQuery = () => {
   queryFormRef.value.resetFields()
+  queryFormRef2.value.resetFields()
   statusList.forEach((item) => item.selected = true)
   queryParams.status = [];
   handleQuery()

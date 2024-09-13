@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="均衡配电">
+  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="navList" navTitle="均衡配电">
     <template #NavInfo>
       <div>
         <div class="header">
@@ -285,7 +285,7 @@ import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
 defineOptions({ name: 'PDUDevice' })
 
 const { push } = useRouter()
-
+const navList = ref([]) as any // 左侧导航栏树结构列表
 const devKeyList = ref([])
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
@@ -384,7 +384,6 @@ const handleCheck = async (row) => {
 }
 
 
-const serverRoomArr =  ref([])
 
 const filterText = ref('')
 const treeRef = ref<InstanceType<typeof ElTree>>()
@@ -544,21 +543,15 @@ const getListNoLoading = async () => {
   }
 }
 
+// 接口获取导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
-  serverRoomArr.value = res
-  if (res && res.length > 0) {
-    const room = res[0]
-    const keys = [] as string[]
-    room.children.forEach(child => {
-      if(child.children.length > 0) {
-        child.children.forEach(son => {
-          keys.push(son.id + '-' + son.type)
-        })
-      }
-    })
+  const res = await CabinetApi.getRoomList({})
+  let arr = [] as any
+  for (let i=0; i<res.length;i++){
+  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  arr = arr.concat(temp);
   }
-
+  navList.value = arr
 }
 
 const toPDUDisplayScreen = (row) =>{

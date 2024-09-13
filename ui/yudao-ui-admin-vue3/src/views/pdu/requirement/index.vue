@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="需量监测">
+  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="navList" navTitle="需量监测">
     <template #NavInfo>
       <div >
         <div class="header">
@@ -393,7 +393,7 @@ import { CabinetApi } from '@/api/cabinet/info'
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
-
+const navList = ref([]) as any // 左侧导航栏树结构列表
 const { push } = useRouter()
 const MaxLineId = ref(0);
 const valueMode = ref(0);
@@ -501,7 +501,6 @@ const handleCheck = async (row) => {
   getList();
 }
 
-const serverRoomArr =  ref([])
 
 const filterText = ref('')
 const treeRef = ref<InstanceType<typeof ElTree>>()
@@ -636,20 +635,15 @@ const getList = async () => {
   }
 }
 
+// 接口获取导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
-  serverRoomArr.value = res
-  if (res && res.length > 0) {
-    const room = res[0]
-    const keys = [] as string[]
-    room.children.forEach(child => {
-      if(child.children.length > 0) {
-        child.children.forEach(son => {
-          keys.push(son.id + '-' + son.type)
-        })
-      }
-    })
+  const res = await CabinetApi.getRoomList({})
+  let arr = [] as any
+  for (let i=0; i<res.length;i++){
+  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  arr = arr.concat(temp);
   }
+  navList.value = arr
 }
 
 // const toPDUDisplayScreen = (row) =>{
