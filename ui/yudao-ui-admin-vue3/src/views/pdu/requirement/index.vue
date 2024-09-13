@@ -6,7 +6,7 @@
           <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
   
         </div>
-        <div class="line"></div>
+        <div class="line"></div>      
         <!-- <div class="status">
           <div class="box">
             <div class="top">
@@ -33,8 +33,29 @@
             <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
           </div>
         </div> -->
-        <div class="line"></div>
-      </div>
+      <!-- <div class="nav_data">
+        <div class="nav_header" style="font-size: 14px;">
+            <span v-if="nowAddress">{{list.devKey}}</span>
+            <span v-if="nowLocation">{{list.location}}</span>
+            <br/>
+        </div>
+        <div  class="descriptions-container" style="font-size: 14px;">
+          <div class="description-item">
+            <span class="label">最大值 :</span>
+            <span > kW</span>
+          </div>
+          <div v-if="maxActivePowDataTimeTemp" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value"></span>
+          </div>
+          <br/>
+          <div style="text-align: center">
+              <div class="line" style="margin-top: 10px;"></div>
+            </div>
+        </div>
+      </div>  -->
+        <div class="line"></div>    
+    </div>
     </template>
     <template #ActionBar>
       <el-form
@@ -631,10 +652,16 @@ const getNavList = async() => {
   }
 }
 
+// const toPDUDisplayScreen = (row) =>{
+//   push('/pdu/pdudisplayscreen?devKey=' + row.devKey + '&location=' + row.location + '&id=' + row.id);
+// }
 const toPDUDisplayScreen = (row) =>{
-  push('/pdu/pdudisplayscreen?devKey=' + row.devKey + '&location=' + row.location + '&id=' + row.id);
+  const devKey = row.devKey;
+  const location = row.location;
+  const id = row.id;
+  console.log(devKey,location,id)
+ push({path: '/pdu/pdudisplayscreen', state: { devKey, id, location }})
 }
-
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
@@ -1037,4 +1064,24 @@ onMounted(() => {
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }
+.description-item {
+  display: flex;
+  align-items: center;
+}
+
+.label {
+  width:100px; /* 控制冒号前的宽度 */
+  text-align: right; /* 文本右对齐 */
+  margin-right: 20px; /* 控制冒号后的间距 */
+}
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+}
+  .line {
+    height: 1px;
+    margin-top: 28px;
+
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
 </style>

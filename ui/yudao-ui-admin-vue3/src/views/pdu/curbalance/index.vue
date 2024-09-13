@@ -565,9 +565,9 @@ const toPDUDisplayScreen = (row) =>{
   const devKey = row.devKey;
   const location = row.location;
   const id = row.id;
-  push({path: '/pdu/pdudisplayscreen', state: { devKey, id, location }})
+  console.log(devKey,location,id)
+ push({path: '/pdu/pdudisplayscreen', state: { devKey, id, location }})
 }
-
 // const openNewPage = (scope) => {
 //   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
 //   window.open(url, '_blank');
@@ -830,7 +830,7 @@ onActivated(() => {
     flex-wrap: wrap;
     .box {
       height: 70px;
-      width: 50%;
+      width: 45%;
       box-sizing: border-box;
       display: flex;
       justify-content: center;

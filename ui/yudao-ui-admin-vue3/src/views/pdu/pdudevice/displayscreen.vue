@@ -966,7 +966,9 @@ const getTestData = async()=>{
     message.error("设备离线或者输入的地址不正确");
     return;
   }
-  
+
+  //开始无判断
+  if(testData.value.pdu_data?.pdu_total_data){
   totalData.value.pow =  testData.value.pdu_data.pdu_total_data.pow_active?.toFixed(3);
 
   totalData.value.ele = testData.value.pdu_data.pdu_total_data.ele_active?.toFixed(1);
@@ -974,65 +976,76 @@ const getTestData = async()=>{
   totalData.value.pf = testData.value.pdu_data.pdu_total_data.power_factor?.toFixed(2);
   totalData.value.frequency = testData.value.dev_hz;
   totalData.value.powApparent = testData.value.pdu_data.pdu_total_data.pow_apparent?.toFixed(3);
-  
+  }
+  if (testData.value.pdu_data?.line_item_list){
   A.value.cur_value = testData.value.pdu_data.line_item_list.cur_value[0]?.toFixed(2);
   A.value.curPercemtage = (testData.value.pdu_data.line_item_list.cur_value[0] / testData.value.pdu_data.line_item_list.cur_alarm_max[0]) * 100;
   A.value.cur_alarm_max = testData.value.pdu_data.line_item_list.cur_alarm_max[0];
-  let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[0];
-  if(curalarm == 1 || curalarm == 8 ){
-    A.value.curColor = "red";
-  } else if(curalarm == 2 || curalarm == 4 ){
-    A.value.curColor = "yellow";
-  } else{
-    A.value.curColor = "";
+  if(testData.value.pdu_data.line_item_list.cur_alarm_status){
+    let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[0];
+    if(curalarm == 1 || curalarm == 8 ){
+      A.value.curColor = "red";
+    } else if(curalarm == 2 || curalarm == 4 ){
+      A.value.curColor = "yellow";
+    } else{
+      A.value.curColor = "";
+    }
   }
 
   A.value.vol_value = testData.value.pdu_data.line_item_list.vol_value[0]?.toFixed(1);
-  let u1alarm = testData.value.pdu_data.line_item_list.vol_alarm_status[0];
-  if(u1alarm == 1 || u1alarm == 8 ){
-    A.value.volColor = "red";
-  } else if(u1alarm == 2 || u1alarm == 4 ){
-    A.value.volColor = "yellow";
-  } else{
-    A.value.volColor = "";
-  }
-  
-  A.value.pow_value =testData.value.pdu_data.line_item_list.pow_value[0]?.toFixed(3);
-  let powalarm = testData.value.pdu_data.line_item_list.pow_alarm_status[0];
-  if(powalarm == 1 || powalarm == 8 ){
-    A.value.powColor = "red";
-  } else if(powalarm == 2 || powalarm == 4 ){
-    A.value.powColor = "yellow";
-  } else {
-    A.value.powColor = "";
+  if(testData.value.pdu_data.line_item_list.vol_alarm_status){
+    let u1alarm = testData.value.pdu_data.line_item_list.vol_alarm_status[0];
+    if(u1alarm == 1 || u1alarm == 8 ){
+      A.value.volColor = "red";
+    } else if(u1alarm == 2 || u1alarm == 4 ){
+      A.value.volColor = "yellow";
+    } else{
+      A.value.volColor = "";
+    }    
   }
 
+  A.value.pow_value =testData.value.pdu_data.line_item_list.pow_value[0]?.toFixed(3);
+  if(testData.value.pdu_data.line_item_list.pow_alarm_status){
+    let powalarm = testData.value.pdu_data.line_item_list.pow_alarm_status[0];
+    if(powalarm == 1 || powalarm == 8 ){
+      A.value.powColor = "red";
+    } else if(powalarm == 2 || powalarm == 4 ){
+      A.value.powColor = "yellow";
+    } else {
+      A.value.powColor = "";
+    }    
+  }
   A.value.pf = testData.value.pdu_data.line_item_list.power_factor[0]?.toFixed(2);
 
   if(testData.value.pdu_data.line_item_list.ele_active.length > 1){
     B.value.cur_value = testData.value.pdu_data.line_item_list.cur_value[1]?.toFixed(2);
     B.value.curPercemtage = (testData.value.pdu_data.line_item_list.cur_value[1] / testData.value.pdu_data.line_item_list.cur_alarm_max[1]) * 100;
     B.value.cur_alarm_max = testData.value.pdu_data.line_item_list.cur_alarm_max[1];
-    let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[1];
-    if(curalarm == 1 || curalarm == 8 ){
-      B.value.curColor = "red";
-    } else if(curalarm == 2 || curalarm == 4 ){
-      B.value.curColor = "yellow";
-    } else{
-      B.value.curColor = "";
+    if(testData.value.pdu_data.line_item_list.cur_alarm_status){
+      let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[1];
+      if(curalarm == 1 || curalarm == 8 ){
+        B.value.curColor = "red";
+      } else if(curalarm == 2 || curalarm == 4 ){
+        B.value.curColor = "yellow";
+      } else{
+        B.value.curColor = "";
+      }      
     }
 
     B.value.vol_value = testData.value.pdu_data.line_item_list.vol_value[1]?.toFixed(1);
-    let u2alarm = testData.value.pdu_data.line_item_list.vol_alarm_status[1];
-    if(u2alarm == 1 || u2alarm == 8 ){
-      B.value.volColor = "red";
-    } else if(u2alarm == 2 || u2alarm == 4 ){
-      B.value.volColor = "yellow";
-    } else {
-      B.value.volColor = "";
+    if(testData.value.pdu_data.line_item_list.vol_alarm_status){
+      let u2alarm = testData.value.pdu_data.line_item_list.vol_alarm_status[1];
+      if(u2alarm == 1 || u2alarm == 8 ){
+        B.value.volColor = "red";
+      } else if(u2alarm == 2 || u2alarm == 4 ){
+        B.value.volColor = "yellow";
+      } else {
+        B.value.volColor = "";
+      }      
     }
     
     B.value.pow_value =testData.value.pdu_data.line_item_list.pow_value[1]?.toFixed(3);
+  if(testData.value.pdu_data.line_item_list.pow_alarm_status){    
     let powalarm = testData.value.pdu_data.line_item_list.pow_alarm_status[1];
     if(powalarm == 1 || powalarm == 8 ){
       B.value.powColor = "red";
@@ -1041,7 +1054,7 @@ const getTestData = async()=>{
     } else {
       B.value.powColor = "";
     }
-    
+  }    
     B.value.pf = testData.value.pdu_data.line_item_list.power_factor[1]?.toFixed(2);
     controlVis.value.haveB = true;
   }
@@ -1049,37 +1062,45 @@ const getTestData = async()=>{
     C.value.cur_value = testData.value.pdu_data.line_item_list.cur_value[2]?.toFixed(2);
     C.value.curPercemtage = (testData.value.pdu_data.line_item_list.cur_value[2] / testData.value.pdu_data.line_item_list.cur_alarm_max[2]) * 100;
     C.value.cur_alarm_max = testData.value.pdu_data.line_item_list.cur_alarm_max[2];
-    let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[2];
-    if(curalarm == 1 || curalarm == 8 ){
-      C.value.curColor = "red";
-    } else if(curalarm == 2 || curalarm == 4 ){
-      C.value.curColor = "yellow";
-    } else{
-      C.value.curColor = "";
+    if(testData.value.pdu_data.line_item_list.cur_alarm_status){
+      let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[2];
+      if(curalarm == 1 || curalarm == 8 ){
+        C.value.curColor = "red";
+      } else if(curalarm == 2 || curalarm == 4 ){
+        C.value.curColor = "yellow";
+      } else{
+        C.value.curColor = "";
+      }
     }
 
     C.value.vol_value = testData.value.pdu_data.line_item_list.vol_value[2]?.toFixed(1);
-    let u2alarm = testData.value.pdu_data.line_item_list.vol_alarm_status[2];
-    if(u2alarm == 1 || u2alarm == 8 ){
-      C.value.volColor = "red";
-    } else if(u2alarm == 2 || u2alarm == 4 ){
-      C.value.volColor = "yellow";
-    } else{
-      C.value.volColor = "";
+    if(testData.value.pdu_data.line_item_list.vol_alarm_status){
+      let u2alarm = testData.value.pdu_data.line_item_list.vol_alarm_status[2];
+      if(u2alarm == 1 || u2alarm == 8 ){
+        C.value.volColor = "red";
+      } else if(u2alarm == 2 || u2alarm == 4 ){
+        C.value.volColor = "yellow";
+      } else{
+        C.value.volColor = "";
+      }
     }
-    
+ 
     C.value.pow_value =testData.value.pdu_data.line_item_list.pow_value[2]?.toFixed(3);
-    let powalarm = testData.value.pdu_data.line_item_list.pow_alarm_status[2];
-    if(powalarm == 1 || powalarm == 8 ){
-      C.value.powColor = "red";
-    } else if(powalarm == 2 || powalarm == 4 ){
-      C.value.powColor = "yellow";
-    } else {
-      C.value.powColor = "";
+  if(testData.value.pdu_data.line_item_list.pow_alarm_status){
+    if(testData.value.pdu_data.line_item_list.pow_alarm_status){
+      let powalarm = testData.value.pdu_data.line_item_list.pow_alarm_status[2];
+      if(powalarm == 1 || powalarm == 8 ){
+        C.value.powColor = "red";
+      } else if(powalarm == 2 || powalarm == 4 ){
+        C.value.powColor = "yellow";
+      } else {
+        C.value.powColor = "";
+      }
     }
-
+  }
     C.value.pf = testData.value.pdu_data.line_item_list.power_factor[2]?.toFixed(2);
     controlVis.value.haveC = true;
+  }
   }
   controlVis.value.display = true;
 }
@@ -1176,12 +1197,12 @@ const handleQuery = async () => {
 
 /** 初始化 **/
 onMounted(async () => {
+  //1
   devKeyList.value = await loadAll();
-
+  
 })
 
 onBeforeMount(async () =>{
-
   await getTestData();
   initChart();
   flashListTimer.value.tableDataTimer = setInterval((getTestData), 5000);
@@ -1225,12 +1246,7 @@ onBeforeRouteLeave(()=>{
     flashListTimer.value.chartTimer = null;
     firstTimerCreate.value = false;
   }
-  
 })
-
-
-
-
 
 </script>
 
