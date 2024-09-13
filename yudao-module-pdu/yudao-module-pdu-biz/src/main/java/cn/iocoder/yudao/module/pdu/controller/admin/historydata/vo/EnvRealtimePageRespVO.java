@@ -15,20 +15,21 @@ public class EnvRealtimePageRespVO {
     @ExcelProperty("位置")
     private String address;
 
-    @ExcelProperty("网络地址")
+    @ExcelProperty("地址")
     private String location;
+
+    @ExcelProperty("监测点")
+    private Integer a;
 
     @ExcelProperty("传感器")
     private Integer sensor_id;
 
-    @ExcelProperty("记录时间")
+    @ExcelProperty("时间")
     private String create_time;
-
-    @ExcelProperty("湿度(%RH)")
-    private Double hum_value;
-
     @ExcelProperty("温度(℃)")
     @NumberFormat("0.0")
     private Double tem_value;
 
+    @ExcelProperty("湿度(%RH)")
+    private Double hum_value;
 }

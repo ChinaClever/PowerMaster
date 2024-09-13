@@ -17,6 +17,9 @@ public class EnvHourAndDayPageRespVO {
     @ExcelProperty("网络地址")
     private String location;
 
+    @ExcelProperty("监测点")
+    private Integer a;
+
     @ExcelProperty("传感器")
     private Integer sensor_id;
 
@@ -28,13 +31,13 @@ public class EnvHourAndDayPageRespVO {
     private Double hum_avg_value;
 
     @ExcelProperty("最大湿度时间")
-    private Double hum_max_time;
+    private String hum_max_time;
 
     @ExcelProperty("最大湿度(%RH)")
     private Double hum_max_value;
 
     @ExcelProperty("最小湿度时间")
-    private Double hum_min_time;
+    private String hum_min_time;
 
     @ExcelProperty("最小湿度(%RH)")
     private Double hum_min_value;
