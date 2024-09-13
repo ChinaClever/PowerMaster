@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU电费统计" placeholder="如:192.168.1.96-0">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU电费查询" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
@@ -94,24 +94,36 @@
         </el-form-item>
       </el-form>
     </template>
+
     <template #Content>
-      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true">
         <!-- 添加行号列 -->
-        <el-table-column label="序号" align="center" width="80px" >
+        <el-table-column label="序号" align="center" width="80px"  >
           <template #default="{ $index }">
             {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
           </template>
         </el-table-column>
         <!-- 遍历其他列 -->  
-        <template v-for="column in tableColumns">
-          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue">
+    
+        <template v-for="column in tableColumns" :key="column.label" >
+          <el-table-column
+          v-if="column.istrue&&!column.children"
+          :key="column.prop" 
+          :label="column.label" 
+          :align="column.align" 
+          :prop="column.prop" 
+          :formatter="column.formatter" 
+          :width="column.width" 
+          >
             <template #default="{ row }" v-if="column.slot === 'actions' && queryParams.granularity == 'day'">
+
               <el-button link type="primary" v-if="row.bill_mode_real && row.bill_mode_real == 2 && queryParams.type == 'total'" @click="showDetails(row.pdu_id, row.start_time, row.location, row.end_time)">分段计费</el-button>
               <el-button link type="primary" v-else-if="row.bill_mode_real && row.bill_mode_real == 2 && queryParams.type == 'outlet'" @click="showDetails(row.pdu_id, row.outlet_id, row.start_time, row.location, row.end_time)">分段计费</el-button>
               <div v-else>固定计费</div>
-            </template>
+            </template>  
           </el-table-column>
         </template>
+  
         <!-- 超过一万条数据提示信息 -->
           <template v-if="shouldShowDataExceedMessage" #append>
             <tr>
@@ -143,6 +155,7 @@ import { formatDate, endOfDay, convertDate, addTime} from '@/utils/formatTime'
 import { CabinetApi } from '@/api/cabinet/info'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 import { ElMessage } from 'element-plus'
+import { tryOnBeforeMount } from '@vueuse/core'
 defineOptions({ name: 'BillStatistics' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
@@ -497,6 +510,7 @@ onMounted(() => {
   height: 100%;
   object-fit: cover; 
 }
+
 .description-item {
   display: flex;
   align-items: center;
@@ -517,5 +531,10 @@ onMounted(() => {
 
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
+
+  ::v-deep .el-table .el-table__header th {
+    background-color: #F5F7FA;
+    color: #909399;
+}
 
 </style>
