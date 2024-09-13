@@ -142,7 +142,7 @@
     </template>
     <template #Content>
     <!-- 三相数据显示 -->
-      <el-table v-show="switchValue == 2 && valueMode == 0 && MaxLineId > 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-show="switchValue == 2 && valueMode == 0 && MaxLineId > 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true"  @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
@@ -194,7 +194,7 @@
         </el-table-column>
       </el-table>  
     <!-- 单相数据显示 -->
-      <el-table v-show="switchValue == 2 && valueMode == 0 && !(MaxLineId > 1)" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-show="switchValue == 2 && valueMode == 0 && !(MaxLineId > 1)" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -230,7 +230,7 @@
         </el-table-column>
       </el-table> 
     <!-- 三相有数据显示 -->      
-      <el-table v-show="switchValue == 2 && valueMode == 1 && MaxLineId > 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-show="switchValue == 2 && valueMode == 1 && MaxLineId > 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
         <el-table-column label="L1最大功率" align="center" prop="l1MaxPow" width="100px" >
@@ -279,7 +279,7 @@
         </el-table-column>
       </el-table>
     <!-- 单相数据显示 -->      
-      <el-table v-show="switchValue == 2 && valueMode == 1 && !(MaxLineId > 1)" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-show="switchValue == 2 && valueMode == 1 && !(MaxLineId > 1)" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId"/>
         <el-table-column label="所在位置" align="center" prop="location"  />
         <el-table-column label="L1最大功率" align="center" prop="l1MaxPow"  >
@@ -1084,4 +1084,9 @@ onMounted(() => {
 
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
+::v-deep .el-table .el-table__header th{
+  background-color: #f5f7fa;
+  color: #909399;
+
+}  
 </style>
