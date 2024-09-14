@@ -673,13 +673,16 @@ const getNavList = async() => {
 // const toPDUDisplayScreen = (row) =>{
 //   push('/pdu/pdudisplayscreen?devKey=' + row.devKey + '&location=' + row.location + '&id=' + row.id);
 // }
-const toPDUDisplayScreen = (row) =>{
-  const devKey = row.devKey;
-  const location = row.location;
-  const id = row.id;
-  console.log(devKey,location,id)
- push({path: '/pdu/pdudisplayscreen', state: { devKey, id, location }})
-}
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+const toPDUDisplayScreen = (row: { devKey: string; location: string; id: number }) => {
+  const { devKey, location } = row;
+  router.push({
+    path: '/pdu/pdudisplayscreen',
+    query: { devKey,  location }
+  });
+};
 
 /** 搜索按钮操作 */
 const handleQuery = () => {

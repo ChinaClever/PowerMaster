@@ -554,13 +554,17 @@ const getNavList = async() => {
   navList.value = arr
 }
 
-const toPDUDisplayScreen = (row) =>{
-  const devKey = row.devKey;
-  const location = row.location;
-  const id = row.id;
-  console.log(devKey,location,id)
- push({path: '/pdu/pdudisplayscreen', state: { devKey, id, location }})
-}
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+const toPDUDisplayScreen = (row: { devKey: string; location: string; id: number }) => {
+  const { devKey, location, id } = row;
+  router.push({
+    path: '/pdu/pdudisplayscreen',
+    query: { devKey, id: id.toString(), location }
+  });
+};
 // const openNewPage = (scope) => {
 //   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
 //   window.open(url, '_blank');

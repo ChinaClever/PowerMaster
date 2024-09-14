@@ -388,7 +388,7 @@ const controlVis = ref({
   display: false,
 })
 
-const location = ref(history?.state?.location || "/");
+//const location = ref(history?.state?.location || "/");
 // const message = useMessage() // 消息弹窗
 // const { t } = useI18n() // 国际化
 
@@ -415,12 +415,12 @@ const chartData = ref({
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  devKey: history?.state?.devKey,
+  devKey: "",
   ipAddr: null,
   cascadeAddr:0,
   createTime: [],
   cascadeNum: undefined,
-  id : history?.state?.id,
+  id : 0,
   powGranularity: "oneHour",
 })
 
@@ -1248,5 +1248,18 @@ onBeforeRouteLeave(()=>{
   }
 })
 
+import { useRoute } from 'vue-router';
+
+
+const route = useRoute();
+const query = route.query;
+
+// 将查询参数转换为适当的类型
+const devKey = query.devKey as string;
+const id = parseInt(query.id as string, 10);
+const location = query.location as string;
+
+queryParams.devKey = devKey;
+queryParams.id = id;
 </script>
 
