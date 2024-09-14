@@ -194,8 +194,10 @@
                   </el-table>
                 </div>
               </el-col>
-              <el-col v-if="serChartContainerWidth == 10" :span="serChartContainerWidth">              
-                <!-- <Radar width="29vw" height="25vh" :list="serverData" /> -->
+              <el-col v-if="serChartContainerWidth == 10" :span="serChartContainerWidth">  
+                
+                <Radar width="29vw" height="25vh" :list="serverData" />
+
               </el-col>
             </el-row>
           </div>
@@ -257,7 +259,7 @@ import PFLine from './component/PFLine.vue'
 import Bar from './component/Bar.vue'
 import HorizontalBar from './component/HorizontalBar.vue'
 import EnvTemLine from './component/EnvTemLine.vue'
-// import Radar from './component/Radar.vue'
+import Radar from './component/Radar.vue'
 
 // import Line from './component/Line.vue'
 // import PFLine from './component/PFLine.vue'
@@ -635,6 +637,7 @@ const getList = async () => {
   // 假设 PDU.pdu_data.output_item_list.pow_value 是一个 double 数组
   var powValueArray = PDU?.pdu_data?.output_item_list?.pow_value;
   console.log(powValueArray)
+  
   // 过滤出大于 0 的元素，并将值与下标保存到对象数组中
   if(powValueArray && powValueArray.length > 0){
     var resultArray = [] as any;
@@ -668,10 +671,14 @@ const getList = async () => {
       });
       valueArr.push(resultArray[j].value?.toFixed(3))
     }
+    
     serverData.value.nameAndMax = element;
     serverData.value.value = valueArr;
     serChartContainerWidth.value = 10;
     console.log(" serChartContainerWidth.value", serChartContainerWidth.value)
+    if(resultArray.length==0){
+      serChartContainerWidth.value = 0;
+    }
   }else{
     serChartContainerWidth.value = 0;
   }
