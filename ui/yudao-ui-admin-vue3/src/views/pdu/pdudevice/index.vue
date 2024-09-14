@@ -262,6 +262,7 @@
 <script setup lang="ts">
 // import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
+import { useRouter } from 'vue-router';
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 // import PDUDeviceForm from './PDUDeviceForm.vue'
 import { ElTree } from 'element-plus'
@@ -623,12 +624,18 @@ const getNavList = async() => {
 }
 
 const toPDUDisplayScreen = (row) =>{
-  const devKey = row.devKey;
-  const location = row.location;
-  const id = row.id;
-  console.log(devKey,location,id)
-  push({path: '/pdu/pdudisplayscreen', state: { devKey, id, location }})
-}
+  console.log(row.devKey)
+  push('/pdu/pd+-udisplayscreen?pduId='+row.devKey);
+};
+
+// const toPDUDisplayScreen = (row) =>{
+//   const devKey = row.devKey;
+//   const location = row.location;
+//   const id = row.id;
+//   console.log(devKey,location,id)
+//   push({path: '/pdu/pdudisplayscreen', state: { devKey, id, location }})
+// }
+
 
 // const openNewPage = (scope) => {
 //   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';

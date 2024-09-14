@@ -194,6 +194,7 @@ import { ElMessage } from 'element-plus'
 import PDUImage from '@/assets/imgs/PDU.jpg'
 import download from '@/utils/download'
 import { size } from 'min-dash';
+import { number } from 'vue-types';
 defineOptions({ name: 'PDUHistoryLine' })
 
 const activeName = ref('realtimeTabPane') // tab默认显示
@@ -211,11 +212,12 @@ const needFlush = ref(0) // 是否需要刷新图表
 const loading = ref(false) // 加载中
 const message = useMessage() // 消息弹窗
 const exportLoading = ref(false)
+
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
   pduId: undefined as number | undefined,
-  lineId: undefined,
+  lineId: undefined ,
   loopId: undefined,
   outletId: undefined,
   type: 'total',
@@ -225,6 +227,7 @@ const queryParams = reactive({
   // 进入页面原始数据默认显示最近一小时
   timeRange: defaultHourTimeRange(1) as any
 })
+
 const carouselItems = ref([
       { imgUrl: PDUImage},
       { imgUrl: PDUImage},
@@ -411,6 +414,7 @@ const minActivePowDataTimeTemp = ref();// 最小有功功率的发生时间
 const isHaveData = ref(false);
 const loading2=ref(false);
 const getList = async () => {
+
   loading.value = true;
   try {
     const data = await HistoryDataApi.getHistoryDataDetails(queryParams);
@@ -1363,7 +1367,7 @@ const handleQuery = () => {
 }
 
 /** 初始化 **/
-onMounted( async () => { 
+onMounted( async () => {
   getTypeMaxValue()
   getNavList()
   // 获取路由参数中的 pdu_id

@@ -339,7 +339,8 @@
 
 // import download from '@/utils/download'
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
-import * as echarts from 'echarts';
+import * as echarts from 'echarts'
+import { onMounted } from 'vue'
 // import { object } from 'vue-types';
 
 /** PDU设备 列表 */
@@ -415,7 +416,7 @@ const chartData = ref({
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  devKey: history?.state?.devKey,
+  devKey: "",
   ipAddr: null,
   cascadeAddr:0,
   createTime: [],
@@ -469,6 +470,7 @@ const C = ref({
 
 const devKeyList = ref([])
 const loadAll = async () => {
+  //debugger
   var data = await PDUDeviceApi.devKeyList();
   var objectArray = data.map((str) => {
     return { value: str };
@@ -1197,9 +1199,13 @@ const handleQuery = async () => {
 
 /** 初始化 **/
 onMounted(async () => {
+  //debugger
   //1
   devKeyList.value = await loadAll();
-  
+  // console.log(devKeyList.value)
+  const route = useRoute();
+  const queryDevKey=route.query.devKey as string ;
+  queryParams.devKey=queryDevKey?queryDevKey:"";
 })
 
 onBeforeMount(async () =>{

@@ -372,7 +372,7 @@ loading.value = true
     queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
 
     const data = await EnergyConsumptionApi.getEQDataDetails(queryParams);
-    // debugger
+    // //debugger
     if (data != null && data.total != 0){
       loading2.value=true
       totalEqData.value = 0;
@@ -425,7 +425,7 @@ loading1.value = true
     queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
 
     const data = await EnergyConsumptionApi.getOutletsEQData(queryParams);
-    // debugger
+    // //debugger
     if (data != null && data.total != 0){
       outletIdData.value = data.map((item) => {
         if (item.outlet_id < 10) {

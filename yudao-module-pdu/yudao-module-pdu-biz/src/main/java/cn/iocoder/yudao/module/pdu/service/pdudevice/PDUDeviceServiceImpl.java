@@ -462,6 +462,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
     @Override
     public String getDisplayDataByDevKey(String devKey) {
+
         if (StringUtils.isEmpty(devKey)){
             return null;
         }else {

@@ -82,6 +82,7 @@ const resizeHandler = debounce(() => {
   }
 }, 100)
 
+
 const contentResizeHandler = async (e: TransitionEvent) => {
   if (e.propertyName === 'width') {
     resizeHandler()
