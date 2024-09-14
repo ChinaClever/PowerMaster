@@ -19,6 +19,10 @@ export const PDUDeviceApi = {
   getDeletedPDUDevice: async (data: any) => {
     return await request.post({ url: `/pdu/PDU-device/getDeletedPage`,data})
   },
+
+  getPDUDeviceMaxCur: async (data: any) => {
+    return await request.post({ url: `/pdu/PDU-device/line/getMaxCur`,data})
+  },
   
   // 查询PDU设备详情
   getPDUDevice: async (id: number) => {

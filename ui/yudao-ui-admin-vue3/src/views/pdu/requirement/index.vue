@@ -4,7 +4,6 @@
       <div >
         <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
-  
         </div>
         <div class="line"></div>      
         <!-- <div class="status">
@@ -34,26 +33,33 @@
           </div>
         </div> -->
       <!-- <div class="nav_data">
-        <div class="nav_header" style="font-size: 14px;">
-            <span v-if="nowAddress">{{list.devKey}}</span>
-            <span v-if="nowLocation">{{list.location}}</span>
-            <br/>
-        </div>
-        <div  class="descriptions-container" style="font-size: 14px;">
-          <div class="description-item">
-            <span class="label">最大值 :</span>
-            <span > kW</span>
-          </div>
-          <div v-if="maxActivePowDataTimeTemp" class="description-item">
-            <span class="label">发生时间 :</span>
-            <span class="value"></span>
-          </div>
-          <br/>
-          <div style="text-align: center">
-              <div class="line" style="margin-top: 10px;"></div>
-            </div>
-        </div>
+
       </div>  -->
+      <div class="nav_data">
+      <br/> 
+    <div class="descriptions-container" style="font-size: 14px;">
+
+    <div v-show="item.location !== null" v-for="item in maxCurAll" :key="item.devKey" style="  margin-top: 15px;margin-left: 10px;">
+      <div>所在位置 :</div>
+      <div>{{ item.location}}</div>
+    </div>      
+    <div v-for="item in maxCurAll" :key="item.devKey" class="description-item">
+      <span>网络地址 :</span>
+      <span>{{ item.devKey}}</span>
+    </div>    
+    <div v-for="item in maxCurAll" :key="item.devKey" class="description-item">
+      <span>最大电流 :</span>
+      <span>{{ item.l1MaxCur}}A</span>
+    </div>
+    <div  v-for="item in maxCurAll" :key="item.devKey" class="description-item">
+      <span >发生时间 :</span>
+      <span class="value">{{ item.l1MaxCurTime }}</span>
+    </div>
+
+  </div>
+     </div>
+
+
         <div class="line"></div>    
     </div>
     </template>
@@ -588,6 +594,20 @@ const list = ref([
     pf:null
   }
 ]) as any// 列表的数据
+const maxCurAll = ref([
+  { 
+    id:null,
+    status:null,
+    apparentPow:null,
+    pow:null,
+    ele:null,
+    devKey:null,
+    location:null,
+    dataUpdateTime : "",
+    pduAlarm:"",
+    pf:null
+  }
+]) as any// 列表的数据
 const total = ref(0) // 列表的总页数
 const queryParams = reactive({
   pageNo: 1,
@@ -628,7 +648,11 @@ const getList = async () => {
       obj.l3MaxVol = obj.l3MaxVol?.toFixed(1);
       obj.l3MaxPow = obj.l3MaxPow?.toFixed(3);
     });
-
+    const allData = await PDUDeviceApi.getPDUDeviceMaxCur(queryParams)
+    maxCurAll.value = allData.list
+    maxCurAll.value.forEach((obj) => {
+      obj.l1MaxCur = obj.l1MaxCur?.toFixed(1);
+    })
     total.value = data.total
   } finally {
     loading.value = false
@@ -1060,17 +1084,21 @@ onMounted(() => {
 }
 .description-item {
   display: flex;
-  align-items: center;
+  align-items: left;
+  margin-top: 15px;
+  margin-left: 10px;
+  
 }
 
 .label {
   width:100px; /* 控制冒号前的宽度 */
-  text-align: right; /* 文本右对齐 */
-  margin-right: 20px; /* 控制冒号后的间距 */
+  //text-align: right; /* 文本右对齐 */
+  //margin-right: 10px; /* 控制冒号后的间距 */
 }
 
 .value {
   flex: 1; /* 自动扩展以对齐数据 */
+  
 }
   .line {
     height: 1px;

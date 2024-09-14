@@ -26,6 +26,7 @@ import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.CabinetChartRes
 import cn.iocoder.yudao.module.cabinet.controller.admin.index.vo.LineSeries;
 import cn.iocoder.yudao.framework.common.mapper.CabinetPduMapper;
 import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
+import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.MaxCurAndOtherData;
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.MaxValueAndCreateTime;
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDULineRes;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.curbalancecolor.PDUCurbalanceColorDO;
@@ -34,6 +35,7 @@ import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
 
+import lombok.var;
 import org.elasticsearch.search.aggregations.metrics.*;
 
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
@@ -70,6 +72,7 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.pipeline.ParsedSimpleValue;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.collapse.CollapseBuilder;
+import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -410,6 +413,46 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         }
 
 
+        return new PageResult<>(new ArrayList<>(), 0L);
+    }
+
+
+    @Override
+    public PageResult<PDULineRes> getPDUMaxCurData(PDUDevicePageReqVO pageReqVO){
+        try {
+            List<PDULineRes> resultList = new ArrayList<>();
+            PDULineRes result = new PDULineRes();
+
+            if(pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
+                pageReqVO.setNewTime(LocalDateTime.now());
+                pageReqVO.setOldTime(LocalDateTime.now().minusHours(24));
+            } else {
+                pageReqVO.setNewTime(pageReqVO.getNewTime().plusDays(1));
+                pageReqVO.setOldTime(pageReqVO.getOldTime().plusDays(1));
+            }
+            String index = null;
+            if(pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
+                index = "pdu_hda_line_hour";
+            } else {
+                index = "pdu_hda_line_day";
+            }
+            String startTime = localDateTimeToString(pageReqVO.getOldTime());
+            String endTime = localDateTimeToString(pageReqVO.getNewTime());
+            MaxCurAndOtherData maxCurAndOtherData = getMaxCurMaxValue(startTime,endTime,index);
+            PduIndex pdu = pDUDeviceMapper.selectById(maxCurAndOtherData.getPdu_id());
+            result.setPduId(maxCurAndOtherData.getPdu_id().longValue());
+            result.setL1MaxCur(maxCurAndOtherData.getMaxValue().floatValue());
+            result.setL1MaxCurTime(maxCurAndOtherData.getMaxTime().toString("yyyy-MM-dd HH:mm"));
+            result.setDevKey(pdu.getDevKey());
+            resultList.add(result);
+            List<Integer> pduIds = new ArrayList<>();
+            pduIds.add(maxCurAndOtherData.getPdu_id());
+            List<PduIndex> pdus = pDUDeviceMapper.selectBatchIds(pduIds);
+            setLocation(pdus,resultList);
+        return  new PageResult<>(resultList,1L);
+        }catch (Exception e){
+            log.error("获取数据失败",e);
+        }
         return new PageResult<>(new ArrayList<>(), 0L);
     }
 
@@ -1278,6 +1321,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         return resultMap;
     }
 
+
     private List<String> getData(String startTime, String endTime, List<Integer> ids, String index) throws IOException {
         // 创建SearchRequest对象, 设置查询索引名
         SearchRequest searchRequest = new SearchRequest(index);
@@ -1304,6 +1348,50 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         }
         return list;
 
+    }
+
+    public MaxCurAndOtherData getMaxCurMaxValue(String startTime, String endTime, String index) throws IOException {
+        // 创建搜索请求
+        SearchRequest searchRequest = new SearchRequest(index);
+
+        // 构建搜索源
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(
+                QueryBuilders.boolQuery()
+                        .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").from(startTime).to(endTime))
+        );
+
+        // 排序字段
+        searchSourceBuilder.sort("cur_max_value", SortOrder.DESC);
+
+        // 限制字段，只取需要的字段
+        String[] includeFields = {"cur_max_value", "cur_max_time", "line_id", "pdu_id"};
+        FetchSourceContext fetchSourceContext = new FetchSourceContext(true, includeFields, null);
+        searchSourceBuilder.fetchSource(fetchSourceContext);
+
+        // 设置请求的源
+        searchRequest.source(searchSourceBuilder);
+
+        // 执行搜索
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        // 解析响应
+        SearchHits hits = searchResponse.getHits();
+        if (hits.getHits().length > 0) {
+            var hit = hits.getAt(0); // 由于已按 cur_max_value 降序排序，取第一个即为最大值
+            var sourceAsMap = hit.getSourceAsMap();
+
+            // 构建结果对象
+            MaxCurAndOtherData result = new MaxCurAndOtherData();
+            result.setMaxValue((Double) sourceAsMap.get("cur_max_value"));
+            result.setMaxTime(new DateTime(sourceAsMap.get("cur_max_time").toString(), "yyyy-MM-dd HH:mm:ss"));
+            result.setLine_id((Integer) sourceAsMap.get("line_id"));
+            result.setPdu_id((Integer) sourceAsMap.get("pdu_id"));
+
+            return result;
+        } else {
+            throw new RuntimeException("No data found for the specified time range.");
+        }
     }
 
     private String getMaxData(String startTime, String endTime, List<Integer> ids, String index,String order) throws IOException {
@@ -1515,6 +1603,38 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         List<String> devKeys = list.stream().map(pduIndex -> REDIS_KEY_PDU + pduIndex.getDevKey()).collect(Collectors.toList());
         ValueOperations ops = redisTemplate.opsForValue();
         return ops.multiGet(devKeys);
+    }
+
+    private Map getESTotalPduId(String index,String startTime,String endTime) throws IOException {
+        HashMap<String, Object> result = new HashMap<>();
+        SearchRequest searchRequest = new SearchRequest(index);
+
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder
+                .query(QueryBuilders.rangeQuery("create_time.keyword").gte(startTime).lte(endTime))
+                .sort("pdu_id", SortOrder.ASC)
+                .collapse(new CollapseBuilder("pdu_id"))
+                .aggregation(AggregationBuilders.cardinality("total_size").field("pdu_id").precisionThreshold(10000));
+        searchRequest.source(builder);
+        List<Integer> sortValues = new ArrayList<>();
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                String str = hit.getSourceAsString();
+                PduHdaLineHourDo hourDo = JsonUtils.parseObject(str, PduHdaLineHourDo.class);
+                sortValues.add(hourDo.getPduId());
+            }
+        }
+        Long totalRes = 0L;
+        Cardinality totalSizeAggregation = searchResponse.getAggregations().get("total_size");
+        if (totalSizeAggregation != null){
+            totalRes = totalSizeAggregation.getValue();
+        }
+
+        result.put("total",totalRes);
+        result.put("ids",sortValues);
+        return result;
     }
 
     private Map getESTotalPduId(String index,String startTime,String endTime,Integer pageSize,Integer pageNo) throws IOException {

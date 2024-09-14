@@ -55,4 +55,6 @@ public interface PDUDeviceService {
     int restorePDU(String devKey) throws Exception;
 
     Integer getPDUMaxLineId(PDUDevicePageReqVO pageReqVO);
+
+    PageResult<PDULineRes> getPDUMaxCurData(PDUDevicePageReqVO pageReqVO);
 }

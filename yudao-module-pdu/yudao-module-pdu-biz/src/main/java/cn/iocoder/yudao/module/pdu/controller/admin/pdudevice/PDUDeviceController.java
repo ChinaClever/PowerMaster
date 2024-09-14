@@ -61,6 +61,13 @@ public class PDUDeviceController {
     public CommonResult<Integer> getPDUMaxLineId(@RequestBody PDUDevicePageReqVO pageReqVO) {
         return success(pDUDeviceService.getPDUMaxLineId(pageReqVO));
     }
+
+    @PostMapping("/line/getMaxCur")
+    @Operation(summary = "获得PDU电流最大值的相数据")
+    public CommonResult<PageResult<PDULineRes>> getPDUMaxCurData(@RequestBody PDUDevicePageReqVO pageReqVO) {
+        return success(pDUDeviceService.getPDUMaxCurData(pageReqVO));
+    }
+
     @GetMapping("/displayscreen")
     @Operation(summary = "获得PDU设备详细信息")
     public CommonResult<String> getDisplay(String devKey) {
