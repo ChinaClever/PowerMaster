@@ -2,9 +2,9 @@
   <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="navList" navTitle="均衡配电">
     <template #NavInfo>
       <div>
-        <div class="header">
+        <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
-        </div>
+        </div> -->
         <div class="line"></div>
         <div class="status">
           <div class="box">

@@ -2,9 +2,9 @@
   <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="navList" navTitle="需量监测">
     <template #NavInfo>
       <div >
-        <div class="header">
+        <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
-        </div>
+        </div> -->
         <div class="line"></div>      
         <!-- <div class="status">
           <div class="box">
@@ -40,21 +40,20 @@
     <div class="descriptions-container" style="font-size: 14px;">
 
     <div v-show="item.location !== null" v-for="item in maxCurAll" :key="item.devKey" style="  margin-top: 15px;margin-left: 10px;">
-      <div>所在位置 :</div>
       <div>{{ item.location}}</div>
     </div>      
     <div v-for="item in maxCurAll" :key="item.devKey" class="description-item">
       <span>网络地址 :</span>
       <span>{{ item.devKey}}</span>
     </div>    
-    <div v-for="item in maxCurAll" :key="item.devKey" class="description-item">
-      <span>最大电流 :</span>
-      <span>{{ item.l1MaxCur}}A</span>
-    </div>
     <div  v-for="item in maxCurAll" :key="item.devKey" class="description-item">
       <span >发生时间 :</span>
       <span class="value">{{ item.l1MaxCurTime }}</span>
     </div>
+    <div v-for="item in maxCurAll" :key="item.devKey" class="description-item">
+      <span>最大电流 :</span>
+      <span>{{ item.l1MaxCur}}A</span>
+    </div>    
 
   </div>
      </div>
@@ -137,8 +136,6 @@
         </el-form-item>
 
         <div style="float:right ">
-          <el-button @click="togglePhase = false;" :type="!togglePhase ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 2px" />单相</el-button>
-          <el-button @click="togglePhase = true;" :type="togglePhase ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 2px" />三相</el-button>
           <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 2px" />电流</el-button>
           <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 2px" />功率</el-button>          
           <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
@@ -324,8 +321,8 @@
             <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
             <div class="info">
               <div >L1最大功率：{{item.l1MaxPow}}kW</div>
-              <div v-show="togglePhase">L2最大功率：{{item.l2MaxPow}}kW</div>
-              <div v-show="togglePhase">L3最大功率：{{ item.l3MaxPow }}kW</div>
+              <div >L2最大功率：{{item.l2MaxPow}}kW</div>
+              <div >L3最大功率：{{ item.l3MaxPow }}kW</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
@@ -350,8 +347,8 @@
             <div class="info">
               
               <div >L1最大电流：{{item.l1MaxCur}}A</div>
-              <div v-show="togglePhase">L2最大电流：{{item.l2MaxCur}}A</div>
-              <div v-show="togglePhase">L3最大电流：{{ item.l3MaxCur }}A</div>
+              <div >L2最大电流：{{item.l2MaxCur}}A</div>
+              <div >L3最大电流：{{ item.l3MaxCur }}A</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
@@ -407,7 +404,6 @@ const now = ref()
 const showCollaspe = ref(false)
 const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(1)
-const togglePhase = ref(true)
 // const statusNumber = reactive({
 //   normal : 0,
 //   warn : 0,
@@ -1106,7 +1102,7 @@ onMounted(() => {
   .line {
     height: 1px;
     margin-top: 28px;
-
+    margin-bottom: 20px;
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
 ::v-deep .el-table .el-table__header th{
