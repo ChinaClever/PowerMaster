@@ -150,26 +150,26 @@
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="125px"/>
-        <el-table-column label="L1最大电流" align="center" prop="l1MaxCur" width="100px" >
+        <el-table-column label="L1最大电流(kA)" align="center" prop="l1MaxCur" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ scope.row.l1MaxCur }}kA
+              {{ scope.row.l1MaxCur }}
             </el-text>
           </template>
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l1MaxCurTime"/>
-        <el-table-column label="L2最大电流" align="center" prop="l2MaxCur" width="100px" >
+        <el-table-column label="L2最大电流(A)" align="center" prop="l2MaxCur" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-show="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
-              {{ scope.row.l2MaxCur }}A
+              {{ scope.row.l2MaxCur }}
             </el-text>
           </template>
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l2MaxCurTime"  />
-        <el-table-column label="L3最大电流" align="center" prop="l3MaxCur" width="100px" >
+        <el-table-column label="L3最大电流(A)" align="center" prop="l3MaxCur" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-show="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
-              {{ scope.row.l3MaxCur }}A
+              {{ scope.row.l3MaxCur }}
             </el-text>
           </template>
         </el-table-column>
@@ -198,14 +198,14 @@
       </el-table>  
     <!-- 单相数据显示 -->
       <el-table v-show="switchValue == 2 && valueMode == 0 && !(MaxLineId > 1)" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
-        <el-table-column label="编号" align="center" prop="tableId"/>
+        <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" />
-        <el-table-column label="最大电流" align="center" prop="l1MaxCur"  >
+        <el-table-column label="最大电流(kA)" align="center" prop="l1MaxCur"  >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ scope.row.l1MaxCur }}kA
+              {{ scope.row.l1MaxCur }}
             </el-text>
           </template>
         </el-table-column>
@@ -236,26 +236,26 @@
       <el-table v-show="switchValue == 2 && valueMode == 1 && MaxLineId > 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
-        <el-table-column label="L1最大功率" align="center" prop="l1MaxPow" width="100px" >
+        <el-table-column label="L1最大功率(kW)" align="center" prop="l1MaxPow" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ scope.row.l1MaxPow }}kW
+              {{ scope.row.l1MaxPow }}
             </el-text>
           </template>
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l1MaxPowTime" />
-        <el-table-column label="L2最大功率" align="center" prop="l2MaxPow" width="100px" >
+        <el-table-column label="L2最大功率(kW)" align="center" prop="l2MaxPow" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-show="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
-              {{ scope.row.l2MaxPow }}kW
+              {{ scope.row.l2MaxPow }}
             </el-text>
           </template>
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l2MaxPowTime" />
-        <el-table-column label="L3最大功率" align="center" prop="l3MaxPow" width="100px" >
+        <el-table-column label="L3最大功率(kW)" align="center" prop="l3MaxPow" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-show="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
-              {{ scope.row.l3MaxPow }}kW
+              {{ scope.row.l3MaxPow }}
             </el-text>
           </template>
         </el-table-column>
@@ -283,12 +283,12 @@
       </el-table>
     <!-- 单相数据显示 -->      
       <el-table v-show="switchValue == 2 && valueMode == 1 && !(MaxLineId > 1)" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
-        <el-table-column label="编号" align="center" prop="tableId"/>
+        <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <el-table-column label="所在位置" align="center" prop="location"  />
-        <el-table-column label="L1最大功率" align="center" prop="l1MaxPow"  >
+        <el-table-column label="最大功率(kW)" align="center" prop="l1MaxPow"  >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ scope.row.l1MaxPow }}kW
+              {{ scope.row.l1MaxPow }}
             </el-text>
           </template>
         </el-table-column>
@@ -1108,6 +1108,7 @@ onMounted(() => {
 ::v-deep .el-table .el-table__header th{
   background-color: #f5f7fa;
   color: #909399;
+  height: 80px;
 
 }  
 </style>

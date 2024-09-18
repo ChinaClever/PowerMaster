@@ -2,9 +2,9 @@
   <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="母线负荷">
     <template #NavInfo>
       <div>
-        <div class="header">
+        <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
-        </div>
+        </div> -->
         <div class="line"></div>
         <div class="status">
           <div class="box">
@@ -57,7 +57,7 @@
           <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
         </el-button> -->
         <el-form-item >
-          <el-checkbox-group  v-model="queryParams.status">
+          <el-checkbox-group  v-model="queryParams.status" >
             <el-checkbox :label="5" :value="5">在线</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
@@ -99,8 +99,8 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" >
-        <el-table-column label="编号" align="center" prop="tableId" />
+      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border=true>
+        <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
         <el-table-column label="运行状态" align="center" prop="color" >
@@ -113,24 +113,24 @@
             <el-tag type="danger" v-if="scope.row.color == 4">&gt;90%</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="A相负载率" align="center" prop="aloadRate" width="130px" >
+        <el-table-column label="A相负载率(%)" align="center" prop="aloadRate" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.aloadRate != null">
-              {{ scope.row.aloadRate }}%
+              {{ scope.row.aloadRate }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="B相负载率" align="center" prop="bloadRate" width="130px" >
+        <el-table-column label="B相负载率(%)" align="center" prop="bloadRate" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.bloadRate != null">
-              {{ scope.row.bloadRate }}%
+              {{ scope.row.bloadRate }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="C相负载率" align="center" prop="cloadRate" width="130px" >
+        <el-table-column label="C相负载率(%)" align="center" prop="cloadRate" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.cloadRate != null">
-              {{ scope.row.cloadRate }}%
+              {{ scope.row.cloadRate }}
             </el-text>
           </template>
         </el-table-column>
@@ -907,5 +907,11 @@ onActivated(() => {
 }
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+::v-deep .el-table .el-table__header th{
+  background-color: #f5f7fa;
+  color: #909399;
+  height: 80px;
+
 }
 </style>

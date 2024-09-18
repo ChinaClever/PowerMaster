@@ -2,11 +2,12 @@
   <CommonMenu :dataList="navList" @check="handleCheck"  navTitle="母线用能">
     <template #NavInfo>
       <div class="navInfo">
-        <div class="header">
+        <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
           <div class="name"></div>
           <div></div>
-        </div>
+        </div> -->
+        <div class="line"></div>
         <!-- <div class="line"></div>
         <div class="status">
           <div class="box">
@@ -58,6 +59,7 @@
             </div>
           </div>
         </div> -->
+        <div class="line"></div>        
       </div>
     </template>
     <template #ActionBar>
@@ -103,27 +105,27 @@
             <button class="detail" @click.prevent="toDetail(item.roomId, item.id,item.location)" >详情</button>
           </div>
         </div>
-        <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" >
-          <el-table-column type="index" width="100" label="序号" align="center" />
+        <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" :border="true">
+          <el-table-column type="index" width="80px" label="序号" align="center" />
           <el-table-column label="位置" min-width="110" align="center" prop="local" />
-          <el-table-column label="昨日用能" min-width="110" align="center" prop="yesterdayEq" >
+          <el-table-column label="昨日用能(kW·h)" min-width="110" align="center" prop="yesterdayEq" >
             <template #default="scope" >
               <el-text line-clamp="2" >
-                {{ scope.row.yesterdayEq }} kW·h
+                {{ scope.row.yesterdayEq }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="上周用能" min-width="110" align="center" prop="lastWeekEq" >
+          <el-table-column label="上周用能(kW·h)" min-width="110" align="center" prop="lastWeekEq" >
             <template #default="scope" >
               <el-text line-clamp="2" >
-                {{ scope.row.lastWeekEq }} kW·h
+                {{ scope.row.lastWeekEq }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="上月用能" min-width="110" align="center" prop="lastMonthEq" >
+          <el-table-column label="上月用能(kW·h)" min-width="110" align="center" prop="lastMonthEq" >
             <template #default="scope" >
               <el-text line-clamp="2" >
-                {{ scope.row.lastMonthEq }} kW·h
+                {{ scope.row.lastMonthEq }}
               </el-text>
             </template>
           </el-table-column>
@@ -422,5 +424,11 @@ onBeforeMount(() => {
       top: 4px;
     }
   }
+}
+::v-deep .el-table .el-table__header th{
+  background-color: #f5f7fa;
+  color: #909399;
+  height: 80px;
+
 }
 </style>

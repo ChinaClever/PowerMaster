@@ -2,9 +2,9 @@
   <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="母线电力">
     <template #NavInfo>
       <div>
-        <div class="header">
+        <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
-        </div>
+        </div> -->
         <div class="line"></div>
         <!-- <div class="status">
           <div class="box">
@@ -91,91 +91,91 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" >
-        <el-table-column label="编号" align="center" prop="tableId" />
+      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
+        <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
-        <el-table-column v-if="valueMode == 0" label="A相电流" align="center" prop="acur" width="130px" >
+        <el-table-column v-if="valueMode == 0" label="A相电流(A)" align="center" prop="acur" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.acur != null" :type=" scope.row.acurStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.acur }}A
+              {{ scope.row.acur }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="B相电流" align="center" prop="bcur" width="130px" >
+        <el-table-column v-if="valueMode == 0" label="B相电流(A)" align="center" prop="bcur" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.bcur != null" :type=" scope.row.bcurStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.bcur }}A
+              {{ scope.row.bcur }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="C相电流" align="center" prop="ccur" width="130px" >
+        <el-table-column v-if="valueMode == 0" label="C相电流(A)" align="center" prop="ccur" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.ccur != null" :type=" scope.row.ccurStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.ccur }}A
+              {{ scope.row.ccur }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column  v-if="valueMode == 1"  label="A相电压" align="center" prop="avol" width="130px" >
+        <el-table-column  v-if="valueMode == 1"  label="A相电压(V)" align="center" prop="avol" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.avol" :type=" scope.row.avolStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.avol }}V
+              {{ scope.row.avol }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 1" label="B相电压" align="center" prop="bvol" width="130px" >
+        <el-table-column v-if="valueMode == 1" label="B相电压(V)" align="center" prop="bvol" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.bvol" :type=" scope.row.bvolStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.bvol }}V
+              {{ scope.row.bvol }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 1" label="C相电压" align="center" prop="cvol" width="130px" >
+        <el-table-column v-if="valueMode == 1" label="C相电压(V)" align="center" prop="cvol" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.cvol" :type=" scope.row.cvolStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.cvol }}V
+              {{ scope.row.cvol }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 2" label="A相有功功率" align="center" prop="aactivePow" width="130px" >
+        <el-table-column v-if="valueMode == 2" label="A相有功功率(kW)" align="center" prop="aactivePow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.aactivePow" :type=" scope.row.aactivePowStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.aactivePow }}kW
+              {{ scope.row.aactivePow }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 2" label="B相有功功率" align="center" prop="bactivePow" width="130px" >
+        <el-table-column v-if="valueMode == 2" label="B相有功功率(kW)" align="center" prop="bactivePow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.bactivePow" :type=" scope.row.bactivePowStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.bactivePow }}kW
+              {{ scope.row.bactivePow }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 2" label="C相有功功率" align="center" prop="cactivePow" width="130px" >
+        <el-table-column v-if="valueMode == 2" label="C相有功功率(kW)" align="center" prop="cactivePow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.cactivePow" :type=" scope.row.cactivePowStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.cactivePow }}kW
+              {{ scope.row.cactivePow }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 3" label="A相无功功率" align="center" prop="areactivePow" width="130px" >
+        <el-table-column v-if="valueMode == 3" label="A相无功功率(kVar)" align="center" prop="areactivePow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.aactivePow">
-              {{ scope.row.aactivePow }}kVar
+              {{ scope.row.aactivePow }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 3" label="B相无功功率" align="center" prop="breactivePow" width="130px" >
+        <el-table-column v-if="valueMode == 3" label="B相无功功率(kVar)" align="center" prop="breactivePow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.breactivePow">
-              {{ scope.row.breactivePow }}kVar
+              {{ scope.row.breactivePow }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 3" label="C相无功功率" align="center" prop="creactivePow" width="130px" >
+        <el-table-column v-if="valueMode == 3" label="C相无功功率(kVar)" align="center" prop="creactivePow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.creactivePow">
-              {{ scope.row.creactivePow }}kVar
+              {{ scope.row.creactivePow }}
             </el-text>
           </template>
         </el-table-column>
@@ -957,5 +957,11 @@ onActivated(() => {
 }
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+::v-deep .el-table .el-table__header th{
+  background-color: #f5f7fa;
+  color: #909399;
+  height: 80px;
+
 }
 </style>

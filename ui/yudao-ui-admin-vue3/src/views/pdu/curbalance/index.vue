@@ -111,62 +111,62 @@
               <el-tag type="danger" v-if="scope.row.color == 4">大电流不平衡</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="电流" align="center">
+        <el-table-column label="电流(A)" align="center">
           <el-table-column label="A相" align="center" prop="acur" width="95px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.acur != null">
-                {{ scope.row.acur }}A
+                {{ scope.row.acur }}
               </el-text>
             </template>
           </el-table-column>
           <el-table-column label="B相" align="center" prop="bcur" width="95px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.bcur != null">
-                {{ scope.row.bcur }}A
+                {{ scope.row.bcur }}
               </el-text>
             </template>
           </el-table-column>
           <el-table-column label="C相" align="center" prop="ccur" width="95px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.ccur != null">
-                {{ scope.row.ccur }}A
+                {{ scope.row.ccur }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="不平衡度" align="center" prop="curUnbalance" width="95px">
+          <el-table-column label="不平衡度(%)" align="center" prop="curUnbalance" width="95px">
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.curUnbalance != null" >
-                {{ scope.row.curUnbalance }}%
+                {{ scope.row.curUnbalance }}
               </el-text>
             </template>
           </el-table-column>
         </el-table-column>
-        <el-table-column label="电压" align="center">
+        <el-table-column label="电压(V)" align="center">
           <el-table-column label="A相" align="center" prop="avol" width="95px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.avol">
-                {{ scope.row.avol }}V
+                {{ scope.row.avol }}
               </el-text>
             </template>
           </el-table-column>
           <el-table-column label="B相" align="center" prop="bvol" width="95px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.bvol">
-                {{ scope.row.bvol }}V
+                {{ scope.row.bvol }}
               </el-text>
             </template>
           </el-table-column>
           <el-table-column label="C相" align="center" prop="cvol" width="95px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.cvol">
-                {{ scope.row.cvol }}V
+                {{ scope.row.cvol }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="不平衡度" align="center" prop="volUnbalance" width="95px">
+          <el-table-column label="不平衡度(%)" align="center" prop="volUnbalance" width="95px">
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.volUnbalance != null" >
-                {{ scope.row.volUnbalance }}%
+                {{ scope.row.volUnbalance }}
               </el-text>
             </template>
           </el-table-column>
@@ -220,7 +220,7 @@
             <el-tag type="danger" v-if="item.color == 4">大电流不平衡</el-tag>
           </div>
           <div class="status" v-if="item.ccur == null && item.status != 5">
-            <el-tag type="danger">单相设备</el-tag>              
+            <el-tag type="info">单相设备</el-tag>              
           </div>
           <div class="status" v-if="item.status == 5">
             <el-tag type="info">离线</el-tag>              

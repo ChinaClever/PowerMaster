@@ -2,10 +2,10 @@
   <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="需量监测">
     <template #NavInfo>
       <div >
-        <div class="header">
+        <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
   
-        </div>
+        </div> -->
         <div class="line"></div>
         <!-- <div class="status">
           <div class="box">
@@ -110,36 +110,36 @@
         <div style="float:right">
           <el-button @click="visMode = 0;" :type="visMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />电流</el-button>
           <el-button @click="visMode = 1;" :type="visMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />功率</el-button>
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 15;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 15;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
         </div>
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 1 && visMode == 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" >
+      <el-table v-show="switchValue == 1 && visMode == 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
-        <el-table-column label="L1最大电流" align="center" prop="l1MaxCur" width="100px" >
+        <el-table-column label="L1最大电流(A)" align="center" prop="l1MaxCur" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ scope.row.l1MaxCur }}kA
+              {{ scope.row.l1MaxCur }}
             </el-text>
           </template>
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l1MaxCurTime" />
-        <el-table-column label="L2最大电流" align="center" prop="l2MaxCur" width="100px" >
+        <el-table-column label="L2最大电流(A)" align="center" prop="l2MaxCur" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ scope.row.l2MaxCur }}A
+              {{ scope.row.l2MaxCur }}
             </el-text>
           </template>
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l2MaxCurTime" />
-        <el-table-column label="L3最大电流" align="center" prop="l3MaxCur" width="100px" >
+        <el-table-column label="L3最大电流(A)" align="center" prop="l3MaxCur" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ scope.row.l3MaxCur }}A
+              {{ scope.row.l3MaxCur }}
             </el-text>
           </template>
         </el-table-column>
@@ -165,29 +165,29 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-table v-show="switchValue == 1 && visMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" >
+      <el-table v-show="switchValue == 1 && visMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
-        <el-table-column label="L1最大功率" align="center" prop="l1MaxPow" width="100px" >
+        <el-table-column label="L1最大功率(kW)" align="center" prop="l1MaxPow" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ scope.row.l1MaxPow }}kW
+              {{ scope.row.l1MaxPow }}
             </el-text>
           </template>
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l1MaxPowTime" />
-        <el-table-column label="L2最大功率" align="center" prop="l2MaxPow" width="100px" >
+        <el-table-column label="L2最大功率(kW)" align="center" prop="l2MaxPow" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ scope.row.l2MaxPow }}kW
+              {{ scope.row.l2MaxPow }}
             </el-text>
           </template>
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l2MaxPowTime" />
-        <el-table-column label="L3最大功率" align="center" prop="l3MaxPow" width="100px" >
+        <el-table-column label="L3最大功率(kW)" align="center" prop="l3MaxPow" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
-              {{ scope.row.l3MaxPow }}kW
+              {{ scope.row.l3MaxPow }}
             </el-text>
           </template>
         </el-table-column>
@@ -931,5 +931,11 @@ onMounted(() => {
 }
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+::v-deep .el-table .el-table__header th{
+  background-color: #f5f7fa;
+  color: #909399;
+  height: 80px;
+
 }
 </style>

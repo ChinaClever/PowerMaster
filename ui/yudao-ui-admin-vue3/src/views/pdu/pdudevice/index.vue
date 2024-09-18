@@ -144,7 +144,7 @@
     <template #Content>
      <div>
       <el-table  v-show="switchValue == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
-        <el-table-column label="编号" align="center" prop="tableId" />
+        <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
         <el-table-column label="运行状态" align="center" prop="status" >
@@ -168,26 +168,26 @@
             <el-tag type="info" v-if="scope.row.status == 5">离线</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="总视在功率" align="center" prop="apparentPow" width="130px" >
+        <el-table-column label="总视在功率(kVA)" align="center" prop="apparentPow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if=" scope.row.apparentPow != null" >
-              {{ scope.row.apparentPow }}kVA
+              {{ scope.row.apparentPow }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="总有功功率" align="center" prop="pow" width="130px">
+        <el-table-column label="总有功功率(kW)" align="center" prop="pow" width="130px">
           <template #default="scope" >
             <el-text line-clamp="2" v-if=" scope.row.pow != null" >
-              {{ scope.row.pow }}kW
+              {{ scope.row.pow }}
             </el-text>
           </template>
         </el-table-column>
         <el-table-column label="功率因素" align="center" prop="pf" width="180px" />
         <!-- 数据库查询 -->
-        <el-table-column label="总电能" align="center" prop="ele" >
+        <el-table-column label="总电能(kWh)" align="center" prop="ele" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if=" scope.row.ele != null" >
-              {{ scope.row.ele }}kWh
+              {{ scope.row.ele }}
             </el-text>
           </template>
         </el-table-column>
@@ -216,9 +216,9 @@
      </div> 
       <!-- 查看已删除PDU设备 -->
       <el-table  v-show="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true" :border="true">
-        <el-table-column label="编号" align="center" prop="tableId" width="180px" />
+        <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" width="180px"/>
+        <el-table-column label="所在位置" align="center" prop="location" />
         <el-table-column label="运行状态" align="center" prop="status" >
           <template #default="scope">
             <el-tag type="info" v-if="scope.row.deleted">已删除</el-tag>
@@ -1182,6 +1182,7 @@ onActivated(() => {
 ::v-deep .el-table .el-table__header th{
   background-color: #f5f7fa;
   color: #909399;
+  height: 80px;
 
 }
 </style>

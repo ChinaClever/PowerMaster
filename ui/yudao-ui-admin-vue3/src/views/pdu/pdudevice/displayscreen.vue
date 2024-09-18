@@ -1,20 +1,51 @@
 <template>
  <div style="background-color: #E7E7E7;">
-  <el-row :gutter="18" >
+  <div class="header_app">
+    <div class="header_app_text">所在位置：{{ location }}</div>
+    <div class="header_app_text_other1">
+          <el-col :span="10">
+            <el-form
+              class="-mb-15px"
+              :model="queryParams"
+              ref="queryFormRef"
+              :inline="true"
+              label-width="120px"
+            >
+              <el-form-item label="网络地址" prop="devKey" >
+              <el-autocomplete
+                v-model="queryParams.devKey"
+                :fetch-suggestions="querySearch"
+                placeholder="请输入网络地址"  
+                clearable
+                class="!w-160px"
+                @select="handleQuery" 
+              />
+              </el-form-item>
+            </el-form>
+          </el-col>      
+    </div>
+    <div class="header_app_text_other">
+      <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+    </div>
+    <div class="header_app_text_other">
+          <el-col :span="2">
+            <el-button type="primary" @click="openNewPage(queryParams.devKey)" >进入管理界面</el-button>
+          </el-col>
+    </div>
+
+  </div>
+
+  <!-- <el-row :gutter="18">
     <el-col>
-      <el-card>
-        <el-row :gutter="18" >
+      <el-card >
+        <el-row  :gutter="18">
           <el-col :span="5">
-            <el-text line-clamp="2">
+            <el-text line-clamp="2">                  
               <el-text class="mx-1" size="large">所在位置：{{ location }}</el-text>
             </el-text>
           </el-col>
-          <!-- <el-col :span="5">
-            <el-text line-clamp="2">
-              <el-text class="mx-1" size="large">网络地址：{{ queryParams.devKey }}</el-text>
-            </el-text>
-          </el-col> -->
-          <el-col :span="10">
+
+          <el-col :span="5">
             <el-form
               class="-mb-15px"
               :model="queryParams"
@@ -31,19 +62,7 @@
                 class="!w-160px"
                 @select="handleQuery"
               />
-              </el-form-item>
-
-              <!-- <el-form-item label="级联地址" prop="cascadeAddr" label-width="70px">
-                <el-input-number
-                  v-model="queryParams.cascadeAddr"
-                  :min="0"
-                  controls-position="right"
-                  :value-on-clear="0"
-                    class="!w-100px"
-                />
-              </el-form-item> -->
-              <el-form-item>
-                <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+               <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
               </el-form-item>
             </el-form>
           </el-col>
@@ -53,8 +72,23 @@
         </el-row>
       </el-card>
     </el-col>
-  </el-row>
+  </el-row> -->
 
+<!-- <el-col :span="5">
+  <el-text line-clamp="2">
+    <el-text class="mx-1" size="large">网络地址：{{ queryParams.devKey }}</el-text>
+  </el-text>
+</el-col> -->
+
+    <!-- <el-form-item label="级联地址" prop="cascadeAddr" label-width="70px">
+      <el-input-number
+        v-model="queryParams.cascadeAddr"
+        :min="0"
+        controls-position="right"
+        :value-on-clear="0"
+          class="!w-100px"
+      />
+    </el-form-item> -->
   <div>
     <el-row :gutter="20" style="margin: 0px; margin-top : 10px;margin-top : 10px" >
       <el-col :span="6" class="card-box" >
@@ -1269,3 +1303,32 @@ queryParams.devKey = devKey;
 queryParams.id = id;
 </script>
 
+<style scoped lang="scss">
+//   ::v-deep .el-card__body {
+//     padding:12px;
+
+// }
+.header_app{
+  background-color: white;
+  display: flex;
+  height: 50px;
+  padding-left: 10px;
+  box-shadow: 20px;
+}
+.header_app_text{                     
+  background-color: white;
+  width: 100%;
+  align-content: center;
+  color:#606266;
+}                                                       
+.header_app_text_other{
+  align-content: center;
+  background-color: white;
+  margin-right: 5px;
+}
+.header_app_text_other1{
+  align-content: center;
+  background-color: white;
+
+}
+</style>
