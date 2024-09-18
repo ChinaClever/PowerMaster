@@ -105,7 +105,7 @@ defineExpose({ initCheck })
 <style scoped>
 /* 自定义按钮组件的样式 */
 .container {
-  width: 90%;
+  width: 100%;
   padding: 20px;
   box-sizing: border-box;
 }

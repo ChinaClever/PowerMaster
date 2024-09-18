@@ -147,7 +147,7 @@ const handleCheck = (data) => {
   font-size: 14px;
 }
 .nav-left {
-  width: 230px;
+  width: 200px;
   height: 100%;
 }
 :deep(.master-left .el-card__body) {

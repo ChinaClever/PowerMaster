@@ -997,7 +997,7 @@ onActivated(() => {
     flex-wrap: wrap;
     .box {
       height: 70px;
-      width: 45%;
+      width: 50%;
       box-sizing: border-box;
       display: flex;
       justify-content: center;
