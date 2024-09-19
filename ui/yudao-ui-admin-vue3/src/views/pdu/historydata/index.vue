@@ -122,14 +122,24 @@
         <!-- </div> -->
       </el-form>
     </template>
+
     <template #Content>
-      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true">
+      <el-table v-loading="loading" 
+                :data="list" 
+                :stripe="true" 
+                :show-overflow-tooltip="true" 
+                :border="true"
+                >
           <!-- 添加行号列 -->
-        <el-table-column label="序号" align="center" width="100px">
+        <el-table-column  label="序号" 
+                          align="center" 
+                          width="100px"
+                          >
           <template #default="{ $index }">
             {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
           </template>
         </el-table-column>
+        
         <!-- 遍历其他列 -->
         <template v-for="column in tableColumns">
           <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
@@ -138,6 +148,7 @@
             </template>
           </el-table-column>
         </template>
+        
         <!-- 超过一万条数据提示信息 -->
         <template v-if="shouldShowDataExceedMessage" #append>
           <tr>
