@@ -54,14 +54,16 @@
           />
         </el-form-item> -->
 
-        <el-form-item label="IP地址" prop="ipAddr" >
+        <el-form-item  label="IP地址" prop="ipAddr" >
           <el-autocomplete
             v-model="queryParams.ipAddr"
             :fetch-suggestions="querySearch"
             clearable
             class="!w-140px"
             placeholder="请输入IP地址"
+            @keyup.enter="handleQuery"
             @select="handleQuery"
+
           />
         </el-form-item>
 <!-- 

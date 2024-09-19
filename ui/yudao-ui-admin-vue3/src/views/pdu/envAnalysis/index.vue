@@ -40,34 +40,65 @@
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
           <br/>
       </div>
-
+          <!-- 处理原始数据和小时极值数据的菜单栏 -->
     <div class="descriptions-container" style="font-size: 14px;">
-      <div v-if="queryParams.granularity == 'realtime'&& queryParams.timeRange != null" class="description-item">
+      <div v-if="queryParams.granularity != 'day'&& queryParams.timeRange != null" class="description-item" > 
             <span class="label">开始时间 :</span>
-            <span class="value">{{  queryParams.timeRange[0] }}</span>
+            <span class="value">{{   formatTime(parseInt(queryParams.timeRange[0]))  }}</span>
           </div>
           
-          <div v-if="queryParams.granularity == 'realtime'  && queryParams.timeRange != null" class="description-item">
+          <div  v-if="queryParams.granularity != 'day'  && queryParams.timeRange != null" class="description-item">
             <span class="label">结束时间 :</span>
-            <span class="value">{{  queryParams.timeRange[0] }}</span>
-          </div>
-          <div  class="description-item">
-            <span class="label">最高温度 :</span>
-            <span >{{ formatNumber(maxTemDataTemp, 1)}} </span>
-          </div>
-          <div v-if="maxTemDataTimeTemp" class="description-item">
-            <span class="label">发生时间 :</span>
-            <span class="value">{{ maxTemDataTimeTemp }}</span>
+            <span class="value">{{ formatTime(parseInt(queryParams.timeRange[1]))}}</span>
           </div>
 
-          <div class="description-item">
-              <span class="label">最小耗电量 :</span>
-              <span >{{ formatNumber(minTemDataTemp, 1)}} kWh</span>
-            </div>
-          <div v-if="minTemDataTimeTemp" class="description-item">
-            <span class="label">发生时间 :</span>
-            <span class="value">{{ minTemDataTimeTemp }}</span>
+
+          <div  class="description-item" v-if="queryParams.granularity != 'day'" >
+            <span class="label">最高温度 :</span>
+            <span >{{ formatNumber(maxTemDataTemp, 1)}} ℃</span>
           </div>
+          <div v-if="maxTemDataTimeTemp &&queryParams.granularity != 'day'" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatTime(maxTemDataTimeTemp) }}</span>
+          </div>
+
+          <div class="description-item" v-if="queryParams.granularity != 'day'">
+              <span class="label">最低温度 :</span>
+              <span >{{ formatNumber(minTemDataTemp, 1)}}℃ </span>
+            </div>
+          <div v-if="minTemDataTimeTemp &&queryParams.granularity != 'day'" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatTime(minTemDataTimeTemp) }}</span>
+          </div>
+
+          <!-- 处理天极值数据的菜单栏 -->
+          <div v-if="queryParams.granularity == 'day'&& queryParams.timeRange != null" class="description-item" > 
+            <span class="label">开始时间 :</span>
+            <span class="value">{{   formatDayTime(parseInt(queryParams.timeRange[0]))  }}</span>
+          </div>
+          
+          <div  v-if="queryParams.granularity == 'day'  && queryParams.timeRange != null" class="description-item">
+            <span class="label">结束时间 :</span>
+            <span class="value">{{ formatDayTime(parseInt(queryParams.timeRange[1]))}}</span>
+          </div>
+          <div  class="description-item" v-if="queryParams.granularity == 'day'" >
+            <span class="label">最高温度 :</span>
+            <span >{{ formatNumber(maxTemDataTemp, 1)}} ℃</span>
+          </div>
+          <div v-if="maxTemDataTimeTemp &&queryParams.granularity == 'day'" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatDayTime(maxTemDataTimeTemp) }}</span>
+          </div>
+
+          <div class="description-item" v-if="queryParams.granularity == 'day'">
+              <span class="label">最低温度 :</span>
+              <span >{{ formatNumber(minTemDataTemp, 1)}}℃ </span>
+            </div>
+          <div v-if="minTemDataTimeTemp &&queryParams.granularity == 'day'" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatDayTime(minTemDataTimeTemp) }}</span>
+          </div>
+          
           <div class="line"></div>
   </div>
     </div>
@@ -122,24 +153,27 @@
         </el-form-item>
       </el-form>
     </template>
+    
     <template #Content>
       <div v-loading="loading">
         <el-tabs v-model="activeName1">
           <el-tab-pane label="图表" name="myChart">
             <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 65vh;"></div>
           </el-tab-pane>
+          
           <el-tab-pane label="数据" name="myData">
             <div style="height: 67vh;">
             <el-table  
+            :stripe="true" 
               :border="true"
               :data="tableData"
-              style="height: 67vh; width: 99.97%;"
-              :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', borderBottom: '1px #EDEEF2 solid', fontFamily: 'Microsoft YaHei',fontWeight: 'bold'}"
+              style=" width: 99.97%;"
+              :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', fontSize: '14px',borderBottom: '1px #EDEEF2 solid',fontWeight: 'bold' }"
               :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
               :row-style="{ fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
-              <el-table-column prop="create_time" label="记录时间" />
-              <!-- 动态生成表头 -->
+              <el-table-column  prop="create_time" label="记录时间" />
+              动态生成表头
               <template v-for="item in headerData" :key="item.name">
                 <el-table-column v-if="item.name === '最高温度'" label="温度最高值">
                   <el-table-column :prop="item.name" label="数值"/>   
@@ -176,6 +210,8 @@ import { onMounted } from 'vue'
 import { EnvDataApi } from '@/api/pdu/envData'
 import { formatDate } from '@/utils/formatTime'
 import PDUImage from '@/assets/imgs/PDU.jpg'
+import dayjs from 'dayjs'
+
 
 /** pdu曲线 */
 defineOptions({ name: 'PDUEnvLine' })
@@ -338,17 +374,21 @@ const maxTemDataTemp = ref(0);// 最高温度
 const maxTemDataTimeTemp = ref();// 最高温度的发生时间 
 const minTemDataTemp = ref(0);// 最低温度 
 const minTemDataTimeTemp = ref();// 最低温度的发生时间 
+const a=ref(0)
+const b=ref(0)
+
 
 /** 查询列表 */
 const isHaveData = ref(false);
-const getList = async () => {
+const getList = async () => { 
   loading.value = true;
   try {
+    // debugger
     const data = await EnvDataApi.getEnvDataDetails(queryParams);
     if (data != null && data.total != 0){
       isHaveData.value = true
-      humValueData.value = data.list.map((item) => formatNumber(item.hum_value, 1));
       temValueData.value = data.list.map((item) => formatNumber(item.tem_value, 1));
+      humValueData.value = data.list.map((item) => formatNumber(item.hum_value, 1));
       if (activeName.value === 'dayExtremumTabPane'){
         createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
       }else{
@@ -365,17 +405,41 @@ const getList = async () => {
       temMaxTimeData.value = data.list.map((item) => formatDate(item.tem_max_time));
       temMinValueData.value = data.list.map((item) => formatNumber(item.tem_min_value, 1));
       temMinTimeData.value = data.list.map((item) => formatDate(item.tem_min_time));
-
+      
+      if(activeName.value == "realtimeTabPane"){
       maxTemDataTemp.value = Math.max(...temValueData.value);
       minTemDataTemp.value = Math.min(...temValueData.value);
       temValueData.value.forEach(function(num, index) {
-        if (num == maxTemDataTemp.value){
+        if (num == maxTemDataTemp.value&&a.value==0){
           maxTemDataTimeTemp.value = createTimeData.value[index]
+          a.value=1;
         }
-        if (num == minTemDataTemp.value){
+          if (num == minTemDataTemp.value&&b.value==0){
           minTemDataTimeTemp.value = createTimeData.value[index]
-        }
-      });
+          b.value=1;
+        }});
+      }
+      else if(activeName.value != "realtimeTabPane"){
+      maxTemDataTemp.value = Math.max(...temMaxValueData.value);
+      minTemDataTemp.value = Math.min(...temMinValueData.value);
+      temMaxValueData.value.forEach(function(num, index) {
+        if (num == maxTemDataTemp.value&&a.value==0){
+          
+          maxTemDataTimeTemp.value = createTimeData.value[index]
+          a.value=1;
+
+        }});
+      temMinValueData.value.forEach(function(num, index) {
+          if (num == minTemDataTemp.value&&b.value==0){
+          
+          minTemDataTimeTemp.value = createTimeData.value[index]
+          b.value=1;     
+        }});
+      }
+
+        
+
+      
 
       // 图表显示的ip变化
       nowLocation.value = data.ipAddr
@@ -389,6 +453,8 @@ const getList = async () => {
     }
   } finally {
     loading.value = false;
+    a.value=0;
+    b.value=0;
   }
 }
 
@@ -644,11 +710,28 @@ function setupLegendListener1(realtimeChart) {
 
 // 处理数据后有几位小数点
 function formatNumber(value, decimalPlaces) {
+
     if (!isNaN(value)) {
         return Number(value).toFixed(decimalPlaces);
     } else {
         return null; // 或者其他默认值
     }
+}
+
+// 格式化日期
+function formatTime( cellValue: number): string {
+  if (!cellValue) {
+    return ''
+  }
+
+  return dayjs(cellValue).format('YYYY-MM-DD HH:mm')
+}
+function formatDayTime( cellValue: number): string {
+  if (!cellValue) {
+    return ''
+  }
+
+  return dayjs(cellValue).format('YYYY-MM-DD')
 }
 
 // 原始数据默认查询的时间范围
@@ -802,15 +885,15 @@ onMounted( async () => {
 /*  
 // 表格部分样式
 // 最外层透明 */
-:deep( .el-table),
+/* :deep( .el-table),
 :deep( .el-table__expanded-cell) {
   background-color: transparent;
   color: #93dcfe;
   font-size: 24px;
-}
+} */
  
 /* 表格内背景颜色  */
-:deep( .el-table th),
+/* :deep( .el-table th),
 :deep( .el-table tr),
 :deep( .el-table td) {
   background-color: transparent;
@@ -820,7 +903,7 @@ onMounted( async () => {
   height: 5px;
   font-family: Source Han Sans CN Normal, Source Han Sans CN Normal-Normal;
   font-weight: Normal;
-}
+} */
  
 /* // 去掉最下面的那一条线  */
 .el-table::before {
@@ -891,13 +974,15 @@ onMounted( async () => {
 }
 
 .label {
-  width:100px; /* 控制冒号前的宽度 */
   text-align: right; /* 文本右对齐 */
   margin-right: 10px; /* 控制冒号后的间距 */
+  text-align: left;
 }
 
 .value {
   flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
+
 }
   .line {
     height: 1px;
