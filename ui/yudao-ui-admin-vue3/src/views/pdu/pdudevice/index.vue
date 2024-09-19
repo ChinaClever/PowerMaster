@@ -6,7 +6,7 @@
           <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
 
         </div> -->
-        <div class="line"></div>
+        <!-- <div class="line"></div> -->
         <div class="status">
           <div class="box">
             <div class="top">
@@ -64,7 +64,7 @@
           />
         </el-form-item>
      
-      <el-form-item :style="{ marginLeft: '20px'}">
+      <el-form-item :style="{ marginLeft: '10px'}">
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           <el-button
@@ -995,6 +995,7 @@ onActivated(() => {
   .status {
     display: flex;
     flex-wrap: wrap;
+    margin-top: 20px;
     .box {
       height: 70px;
       width: 50%;

@@ -57,7 +57,7 @@
           <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
         </el-button>
         <el-form-item >
-          <el-checkbox-group  v-model="queryParams.status">
+          <el-checkbox-group  v-model="queryParams.status" @change="handleQuery">
             <el-checkbox :label="5" :value="5">在线</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
@@ -70,8 +70,7 @@
             placeholder="请输入网络地址"
             @select="handleQuery"
           />
-        </el-form-item>
-        <el-form-item>
+        <el-form-item style="margin-left: 10px">
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           <el-button
@@ -91,6 +90,7 @@
           >
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
+        </el-form-item>          
         </el-form-item>
         <div style="float:right">
           <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
@@ -104,7 +104,8 @@
       <el-table v-show="visMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="所在位置" align="center" prop="location" width="218px"/>    
+        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>      
         <el-table-column label="运行状态" align="center" prop="color" v-if="switchValue == 0">
           <template #default="scope" >
               <el-tag type="info"  v-if="scope.row.color == 1">小电流不平衡</el-tag>
@@ -555,10 +556,10 @@ const handleSelectStatus = (index) => {
   const statusArr = status.map(item => item.value)
   if(statusArr.length != statusList.length){
     queryParams.color = statusArr;
-    queryParams.status = [5];
+    //queryParams.status = [5];
   }else{
-    queryParams.color = [];
-    queryParams.status = [];
+    queryParams.color = null;
+    //queryParams.status = [];
   }
   
   handleQuery();

@@ -45,7 +45,7 @@
         label-width="68px"                          
       >
         <el-form-item  prop="status">
-          <el-checkbox-group  v-model="queryParams.status">
+          <el-checkbox-group  v-model="queryParams.status" @change="handleQuery">
               <el-checkbox  value="5">在线</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
@@ -58,8 +58,7 @@
             placeholder="请输入网络地址"
             @select="handleQuery"
           />
-        </el-form-item>
-        <el-form-item>
+        <el-form-item style="margin-left: 10px;">
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           <el-button
@@ -79,6 +78,7 @@
           >
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
+        </el-form-item>         
         </el-form-item>
         <div style="float:right">
           <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
@@ -95,6 +95,7 @@
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column v-if="valueMode == 0" label="A相电流(A)" align="center" prop="acur" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.acur != null" :type=" scope.row.acurStatus != 0 ? 'danger' : '' ">
