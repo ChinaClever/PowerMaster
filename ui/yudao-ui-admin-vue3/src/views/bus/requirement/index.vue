@@ -46,19 +46,19 @@
       >
         <el-form-item label="时间段" prop="createTime" label-width="100px">
           <el-button 
-            @click="queryParams.timeType = 0;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;handleQuery()" 
+            @click="queryParams.timeType = 0;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;handleQuery();showSearchBtn = false" 
             :type="queryParams.timeType == 0 ? 'primary' : ''"
           >
             最近24小时
           </el-button>
           <el-button 
-            @click="queryParams.timeType = 1;now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;handleMonthPick();handleQuery()" 
+            @click="queryParams.timeType = 1;now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;handleMonthPick();showSearchBtn = false" 
             :type="queryParams.timeType == 1 ? 'primary' : ''"
           >
             月份
           </el-button>
           <el-button 
-            @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;" 
+            @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;showSearchBtn = true" 
             :type="queryParams.timeType == 2 ? 'primary' : ''"
           >
             自定义
@@ -79,14 +79,14 @@
             v-model="queryParams.timeArr"
             value-format="YYYY-MM-DD HH:mm:ss"
             type="daterange"
+            :shortcuts="shortcuts"
             start-placeholder="开始日期"
             end-placeholder="结束日期"
             :disabled-date="disabledDate"
             @change="handleDayPick"
             class="!w-200px"
           />
-        </el-form-item>
-        <el-form-item>
+        <el-form-item style="margin-left: 10px;" v-show="showSearchBtn">
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           <el-button
@@ -106,6 +106,7 @@
           >
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
+        </el-form-item>          
         </el-form-item>
         <div style="float:right">
           <el-button @click="visMode = 0;" :type="visMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />电流</el-button>
@@ -119,7 +120,8 @@
       <el-table v-show="switchValue == 1 && visMode == 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" width="180px" />
+        <el-table-column label="所在位置" align="center" prop="location" width="218px" />
+        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column label="L1最大电流(A)" align="center" prop="l1MaxCur" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
@@ -145,7 +147,7 @@
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l3MaxCurTime" />
 
-        <el-table-column label="操作" align="center" width="135px">
+        <el-table-column label="操作" align="center" width="100px">
           <template #default="scope">
             <el-button
               link
@@ -167,7 +169,8 @@
       </el-table>
       <el-table v-show="switchValue == 1 && visMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
-        <el-table-column label="所在位置" align="center" prop="location" width="180px" />
+        <el-table-column label="所在位置" align="center" prop="location" width="218px" />
+        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column label="L1最大功率(kW)" align="center" prop="l1MaxPow" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
@@ -192,7 +195,7 @@
           </template>
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l3MaxPowTime" />
-        <el-table-column label="操作" align="center" width="135px">
+        <el-table-column label="操作" align="center" width="100px">
           <template #default="scope">
             <el-button
               link
@@ -303,13 +306,43 @@ const detailVis = ref(false);
 const now = ref()
 const pageSizeArr = ref([24,36,48])
 const switchValue = ref(0)
+const showSearchBtn = ref(false)
 // const statusNumber = reactive({
 //   normal : 0,
 //   warn : 0,
 //   alarm : 0,
 //   offline : 0
 // })
-
+// 时间段快捷选项
+const shortcuts = [
+  {
+    text: '最近一周',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setDate(start.getDate() - 7)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近一个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setMonth(start.getMonth() - 1)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近六个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setMonth(start.getMonth() - 6)
+      return [start, end]
+    },
+  },
+]
 const statusList = reactive([
   {
     name: '正常',
@@ -443,7 +476,7 @@ const handleMonthPick = () => {
   }else {
     queryParams.newTime = null;
   }
-
+  handleQuery()
 } 
 
 const loading = ref(false) // 列表的加载中

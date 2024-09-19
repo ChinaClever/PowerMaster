@@ -45,7 +45,7 @@
         label-width="68px"                          
       >
         <el-form-item >
-          <el-checkbox-group  v-model="queryParams.status">
+          <el-checkbox-group  v-model="queryParams.status" @change="handleQuery">
             <el-checkbox :label="5" :value="5">在线</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
@@ -58,8 +58,7 @@
             placeholder="请输入网络地址"
             @select="handleQuery"
           />
-        </el-form-item>
-        <el-form-item>
+        <el-form-item style="margin-left: 10px">
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           <el-button
@@ -79,6 +78,7 @@
           >
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
+        </el-form-item>          
         </el-form-item>
         <div style="float:right">
           <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流谐波</el-button>
@@ -91,7 +91,8 @@
       <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="所在位置" align="center" prop="location" width="218px"/>
+        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>     
         <el-table-column v-if="valueMode == 0" label="Ia" align="center" prop="acurThd" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.acurThd != null">
@@ -135,7 +136,7 @@
           </template>
         </el-table-column>
         <!-- 数据库查询 -->
-        <el-table-column label="操作" align="center">
+        <el-table-column label="操作" align="center" width="100px">
           <template #default="scope">
             <el-button
               link
@@ -179,6 +180,10 @@
             <el-tag type="danger" v-else-if="item.atemStatus != 0 || item.btemStatus != 0  || item.ctemStatus != 0 " >告警</el-tag>
             <el-tag v-else >正常</el-tag>
           </div> -->
+          <div class="status" v-if="valueMode == 0">
+            <el-tag type="info" v-if="item.status == 5 " >离线</el-tag>
+            <el-tag v-else >正常</el-tag>
+          </div>          
           <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
       </div>
@@ -205,6 +210,10 @@
             <el-tag type="danger" v-else-if="item.atemStatus != 0 || item.btemStatus != 0  || item.ctemStatus != 0 " >告警</el-tag>
             <el-tag v-else >正常</el-tag>
           </div> -->
+          <div class="status" v-if="valueMode == 0">
+            <el-tag type="info" v-if="item.status == 5 " >离线</el-tag>
+            <el-tag v-else >正常</el-tag>
+          </div>          
           <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
       </div>

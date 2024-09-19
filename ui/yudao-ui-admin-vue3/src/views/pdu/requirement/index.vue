@@ -5,7 +5,7 @@
         <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
         </div> -->
-        <div class="line"></div>      
+        <!-- <div class="line"></div>       -->
         <!-- <div class="status">
           <div class="box">
             <div class="top">
@@ -72,19 +72,19 @@
       >
         <el-form-item label="时间段" prop="createTime" label-width="60px">
           <el-button 
-            @click="queryParams.timeType = 0;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;handleQuery();showCollaspe = false" 
+            @click="queryParams.timeType = 0;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;handleQuery();showSearchBtn = false" 
             :type="queryParams.timeType == 0 ? 'primary' : ''"
           >
             最近24小时
           </el-button>
           <el-button 
-            @click="queryParams.timeType = 1;now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;handleMonthPick();showCollaspe = false;" 
+            @click="queryParams.timeType = 1;now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;handleMonthPick();showSearchBtn = false;" 
             :type="queryParams.timeType == 1 ? 'primary' : ''"
           >
             月份
           </el-button>
           <el-button 
-            @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;showCollaspe = true;" 
+            @click="queryParams.timeType = 2;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;showSearchBtn = true;" 
             :type="queryParams.timeType == 2 ? 'primary' : ''"
           >
             自定义
@@ -112,7 +112,7 @@
             @change="handleDayPick"
             class="!w-190px"
           />
-        <el-form-item v-show="showCollaspe" style="margin-left: 5px">
+        <el-form-item v-show="showSearchBtn" style="margin-left: 10px">
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           <el-button
@@ -236,6 +236,7 @@
       <el-table v-show="switchValue == 2 && valueMode == 1 && MaxLineId > 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
+        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="125px"/>
         <el-table-column label="L1最大功率(kW)" align="center" prop="l1MaxPow" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
@@ -285,6 +286,7 @@
       <el-table v-show="switchValue == 2 && valueMode == 1 && !(MaxLineId > 1)" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <el-table-column label="所在位置" align="center" prop="location"  />
+        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="125px"/>
         <el-table-column label="最大功率(kW)" align="center" prop="l1MaxPow"  >
           <template #default="scope" >
             <el-text line-clamp="2" >
@@ -401,7 +403,7 @@ const { push } = useRouter()
 const MaxLineId = ref(0);
 const valueMode = ref(0);
 const now = ref()
-const showCollaspe = ref(false)
+const showSearchBtn = ref(false)
 const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(1)
 // const statusNumber = reactive({

@@ -108,6 +108,7 @@
         <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" :border="true">
           <el-table-column type="index" width="80px" label="序号" align="center" />
           <el-table-column label="位置" min-width="110" align="center" prop="local" />
+          <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
           <el-table-column label="昨日用能(kW·h)" min-width="110" align="center" prop="yesterdayEq" >
             <template #default="scope" >
               <el-text line-clamp="2" >
@@ -200,6 +201,7 @@ const getTableData = async(reset = false) => {
       tableData.value = res.list.map(item => {
         return {
           id: item.id,
+          devKey: item.devKey,
           location: item.location ? item.location : item.devKey ,
           local : item.location,
           yesterdayEq: item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0',
