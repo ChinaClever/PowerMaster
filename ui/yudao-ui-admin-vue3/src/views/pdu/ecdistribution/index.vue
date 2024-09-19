@@ -166,7 +166,7 @@
       </el-tabs>
     </template>
     <template #Content>
-      <div  v-if="loading2" style="overflow: visible;">
+      <div  v-if="loading3" style="overflow: visible;">
         <div v-loading="loading1" ref="rankContainer" id="rankContainer" style="width: 70vw; height: 90vh;"></div>
       </div>
     </template>
@@ -199,6 +199,7 @@ const headerData = ref<any[]>([]);
 const instance = getCurrentInstance();
 const message = useMessage() // 消息弹窗
 const exportLoading = ref(false)
+const loading3 =ref(false)
 const selectTimeRange = ref(defaultDayTimeRange(14)) as any
 const carouselItems = ref([
       { imgUrl: PDUImage},
@@ -372,7 +373,7 @@ loading.value = true
     queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
 
     const data = await EnergyConsumptionApi.getEQDataDetails(queryParams);
-    // //debugger
+    
     if (data != null && data.total != 0){
       loading2.value=true
       totalEqData.value = 0;
@@ -416,6 +417,7 @@ loading.value = true
 const outletIdData = ref<string[]>([]);
 const sumEqData = ref<number[]>([]);
 const getRankChartData =async () => {
+  // 
 loading1.value = true
  try {
     // 格式化日期范围 加上23:59:59的时分秒 
@@ -425,8 +427,15 @@ loading1.value = true
     queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
 
     const data = await EnergyConsumptionApi.getOutletsEQData(queryParams);
-    // //debugger
+    // console.log(data.length)
+    
     if (data != null && data.total != 0){
+      if(data.length==0){
+        loading3.value=false
+      }
+      else{
+        loading3.value=true
+      }
       outletIdData.value = data.map((item) => {
         if (item.outlet_id < 10) {
           return '输出位 0' + item.outlet_id;
@@ -482,6 +491,7 @@ const initRankChart = () => {
   if (rankChart) {
     rankChart.dispose(); // 销毁之前的实例
   }
+  
   if (rankContainer.value && instance) {
     rankChart = echarts.init(rankContainer.value);
     rankChart.setOption({
