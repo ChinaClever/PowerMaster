@@ -41,7 +41,7 @@
         <span v-if="nowLocation">( {{nowLocation}} ) </span>
       </div>
       <br/> 
-    <div class="descriptions-container" style="font-size: 14px;">
+    <div class="descriptions-container"  v-if="maxEqDataTimeTemp" style="font-size: 14px;">
  
     <div class="description-item" >
       <span class="label">开始日期 :</span>
@@ -436,6 +436,7 @@ loading1.value = true
       else{
         loading3.value=true
       }
+      
       outletIdData.value = data.map((item) => {
         if (item.outlet_id < 10) {
           return '输出位 0' + item.outlet_id;
@@ -488,6 +489,7 @@ const initLineChart = () => {
 const rankContainer = ref<HTMLElement | null>(null);
 let rankChart = null as echarts.ECharts | null; 
 const initRankChart = () => {
+  
   if (rankChart) {
     rankChart.dispose(); // 销毁之前的实例
   }

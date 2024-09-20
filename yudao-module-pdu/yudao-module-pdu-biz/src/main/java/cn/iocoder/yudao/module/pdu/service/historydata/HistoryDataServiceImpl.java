@@ -995,5 +995,27 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         return list;
     }
 
+    @Override
+    public void getEnvExcelList(List<Object> list) {
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        for (Object obj : list) {
+            if (obj instanceof Map && ((Map<?, ?>) obj).keySet().stream().allMatch(key -> key instanceof String)) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) obj;
+                mapList.add(map);
+            }
+        }
+
+        for(int i=0;i<mapList.size();i++){
+            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,16));
+            if(mapList.get(i).containsKey("tem_max_time")&&mapList.get(i).containsKey("tem_min_time")){
+                mapList.get(i).put("tem_max_time",mapList.get(i).get("tem_max_time").toString().substring(0,16));
+                mapList.get(i).put("tem_min_time",mapList.get(i).get("tem_min_time").toString().substring(0,16));
+                mapList.get(i).put("hum_max_time",mapList.get(i).get("hum_max_time").toString().substring(0,16));
+                mapList.get(i).put("hum_min_time",mapList.get(i).get("hum_min_time").toString().substring(0,16));
+
+            }
+            }
+        }
 
 }

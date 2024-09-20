@@ -604,7 +604,8 @@ const initChart = async () => {
   chartData.value.factorList.forEach((obj,index) => {
     chartData.value.factorList[index] = obj?.toFixed(2);
   });
-
+  debugger
+  
   if (chartContainer.value && instance) {
     chart = echarts.init(chartContainer.value);
     chart.setOption({

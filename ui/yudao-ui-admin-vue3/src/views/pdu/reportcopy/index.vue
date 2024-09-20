@@ -198,10 +198,14 @@
               </el-col>
               <el-col v-if="serChartContainerWidth == 10" :span="serChartContainerWidth">  
                 
-                <Radar width="29vw" height="25vh" :list="serverData" />
-
+                <!-- <Radar width="29vw" height="25vh" :list="serverData" /> -->
+                <div style="display: flex; justify-content: center; align-items: center;">
+                 <div ref="serChartContainer" id="serChartContainer" style="width: 70vw; height: 42vh;"></div>
+               </div>
               </el-col>
+
             </el-row>
+
           </div>
           <div class="pageBox" v-if="visControll.eqVis" >
             <div class="page-conTitle" >
@@ -251,6 +255,7 @@
 
 <script setup lang="ts">
 // import download from '@/utils/download'
+import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption'
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 import * as echarts from 'echarts';
 import { ElTree } from 'element-plus'
@@ -262,6 +267,7 @@ import Bar from './component/Bar.vue'
 import HorizontalBar from './component/HorizontalBar.vue'
 import EnvTemLine from './component/EnvTemLine.vue'
 import Radar from './component/Radar.vue'
+import { Flag } from '@element-plus/icons-vue/dist/types';
 
 // import Line from './component/Line.vue'
 // import PFLine from './component/PFLine.vue'
@@ -404,6 +410,8 @@ const PDUTableData = ref([]) as any
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
+  outletId: undefined as number | undefined,
+  pduId: undefined as number | undefined,
   devKey : "",
   id: undefined,
   type: 'total',
@@ -567,10 +575,13 @@ const outletItemStyle = ref({
     ]),
   },
 });
+
+
 const getList = async () => {
   
   loading.value = true
   eqData.value = await PDUDeviceApi.getConsumeData(queryParams);
+  
   if(eqData.value?.barRes?.series[0]){
     eqData.value.barRes.series[0].itemStyle = itemStyle.value;
   }
@@ -641,11 +652,11 @@ const getList = async () => {
   console.log(powValueArray)
   
   // 过滤出大于 0 的元素，并将值与下标保存到对象数组中
-  if(powValueArray && powValueArray.length > 0){
+  if(powValueArray && powValueArray.length >= 0){
     var resultArray = [] as any;
     
     for (var i = 0; i < powValueArray.length; i++) {
-      if (powValueArray[i] > 0) {
+      if (powValueArray[i] >= 0) {
         resultArray.push({
           value: powValueArray[i],
           index: i + 1
@@ -655,12 +666,11 @@ const getList = async () => {
 
     // 按值进行排序
     resultArray.sort(function(a, b) {
-      return a.value - b.value;
+      return b.value - a.value;
     });
-
     // 只保留前十个元素
     resultArray = resultArray.slice(0, 10);
-
+    
     
     // 根据 resultArray 中的元素生成 nameAndMax 数组和 value 数组
     var element = [] as any;
@@ -676,6 +686,7 @@ const getList = async () => {
     
     serverData.value.nameAndMax = element;
     serverData.value.value = valueArr;
+    
     serChartContainerWidth.value = 10;
     console.log(" serChartContainerWidth.value", serChartContainerWidth.value)
     if(resultArray.length==0){
@@ -706,9 +717,6 @@ const getList = async () => {
     consumeValue : PDU?.pdu_data?.pdu_total_data != null ? PDU.pdu_data.pdu_total_data.power_factor?.toFixed(2) : '/'
   })
   PDUTableData.value = temp;
-  
-  
-  // initChart();
   loading.value = false
 
 }
@@ -729,6 +737,7 @@ const initChart =  () => {
     // 将 serChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
     instance.appContext.config.globalProperties.serChart = serChart;
   }
+
   visControll.visAllReport = true;
 };
 
@@ -1073,8 +1082,8 @@ onMounted( async () =>  {
 }
 
 :deep .el-table thead tr th {
-    background: #01ada8 !important;
-    color: #fff;
+    background: #909399 !important;
+    color: #F5F7FA;
 }
 
 :deep(.master-left .el-card__body) {
