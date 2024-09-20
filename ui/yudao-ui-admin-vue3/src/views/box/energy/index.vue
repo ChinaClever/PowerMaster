@@ -3,7 +3,7 @@
     <template #NavInfo>
       <div class="navInfo">
         <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div>
+          <!-- <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div> -->
           <div class="name"></div>
           <div></div>
         </div>
@@ -76,9 +76,9 @@
               class="!w-160px"
               height="35"
             />
-          </el-form-item>
-          <el-form-item>
+          <el-form-item style="margin-left: 10px">
             <el-button style="margin-left: 12px" @click="getTableData(true)" ><Icon icon="ep:search" />搜索</el-button>
+          </el-form-item>            
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
@@ -103,27 +103,28 @@
             <button class="detail" @click.prevent="toDetail(item.roomId, item.id,item.location)" >详情</button>
           </div>
         </div>
-        <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" >
-          <el-table-column type="index" width="100" label="序号" align="center" />
+        <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" :border="true">
+          <el-table-column type="index" width="80px" label="序号" align="center" />
           <el-table-column label="位置" min-width="110" align="center" prop="local" />
-          <el-table-column label="昨日用能" min-width="110" align="center" prop="yesterdayEq" >
+          <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
+          <el-table-column label="昨日用能(kW·h)" min-width="110" align="center" prop="yesterdayEq" >
             <template #default="scope" >
               <el-text line-clamp="2" >
-                {{ scope.row.yesterdayEq }} kW·h
+                {{ scope.row.yesterdayEq }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="上周用能" min-width="110" align="center" prop="lastWeekEq" >
+          <el-table-column label="上周用能(kW·h)" min-width="110" align="center" prop="lastWeekEq" >
             <template #default="scope" >
               <el-text line-clamp="2" >
-                {{ scope.row.lastWeekEq }} kW·h
+                {{ scope.row.lastWeekEq }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="上月用能" min-width="110" align="center" prop="lastMonthEq" >
+          <el-table-column label="上月用能(kW·h)" min-width="110" align="center" prop="lastMonthEq" >
             <template #default="scope" >
               <el-text line-clamp="2" >
-                {{ scope.row.lastMonthEq }} kW·h
+                {{ scope.row.lastMonthEq }}
               </el-text>
             </template>
           </el-table-column>
@@ -193,7 +194,8 @@ const getTableData = async(reset = false) => {
           yesterdayEq: item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0',
           lastWeekEq: item.lastWeekEq ? item.lastWeekEq.toFixed(1) : '0.0',
           lastMonthEq: item.lastMonthEq ? item.lastMonthEq.toFixed(1) : '0.0',
-          status : item.runStatus
+          status : item.runStatus,
+          devKey:item.devKey,
         }
       })
       queryParams.pageTotal = res.total
@@ -412,5 +414,11 @@ onBeforeMount(() => {
       top: 4px;
     }
   }
+}
+::v-deep .el-table .el-table__header th{
+  background-color: #f5f7fa;
+  color: #909399;
+  height: 80px;
+
 }
 </style>

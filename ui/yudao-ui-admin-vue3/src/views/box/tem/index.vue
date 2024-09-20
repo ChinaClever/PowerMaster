@@ -3,7 +3,7 @@
     <template #NavInfo>
       <div>
         <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div>
+          <!-- <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div> -->
         </div>
         <div class="line"></div>
         <!-- <div class="status">
@@ -45,7 +45,7 @@
         label-width="68px"                          
       >
         <el-form-item >
-          <el-checkbox-group  v-model="queryParams.status">
+          <el-checkbox-group  v-model="queryParams.status"  @change="handleQuery">
             <el-checkbox :label="5" :value="5">在线</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
@@ -58,8 +58,7 @@
             placeholder="请输入网络地址"
             @select="handleQuery"
           />
-        </el-form-item>
-        <el-form-item>
+        <el-form-item style="margin-left: 10px">
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           <el-button
@@ -79,6 +78,7 @@
           >
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
+        </el-form-item>          
         </el-form-item>
         <div style="float:right">
           <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
@@ -87,28 +87,29 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openTemDetail" >
-        <el-table-column label="编号" align="center" prop="tableId" />
+      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openTemDetail" :border="true">
+        <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
-        <el-table-column v-if="valueMode == 0" label="A相温度" align="center" prop="atem" width="130px" >
+        <el-table-column label="网络地址" align="center" prop="devKey" width="150px"/>
+        <el-table-column v-if="valueMode == 0" label="A相温度(°C)" align="center" prop="atem" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.atem != null" :type=" scope.row.atemStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.atem }}°C
+              {{ scope.row.atem }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="B相温度" align="center" prop="btem" width="130px" >
+        <el-table-column v-if="valueMode == 0" label="B相温度(°C)" align="center" prop="btem" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.btem != null" :type=" scope.row.btemStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.btem }}°C
+              {{ scope.row.btem }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="C相温度" align="center" prop="ctem" width="130px" >
+        <el-table-column v-if="valueMode == 0" label="C相温度(°C)" align="center" prop="ctem" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.ctem != null" :type=" scope.row.ctemStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.ctem }}°C
+              {{ scope.row.ctem }}
             </el-text>
           </template>
         </el-table-column>
@@ -938,5 +939,11 @@ onActivated(() => {
 }
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+::v-deep .el-table .el-table__header th{
+  background-color: #f5f7fa;
+  color: #909399;
+  height: 80px;
+
 }
 </style>

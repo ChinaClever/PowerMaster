@@ -5,7 +5,7 @@
         <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
         </div> -->
-        <div class="line"></div>
+        <!-- <div class="line"></div> -->
         <div class="status">
           <div class="box">
             <div class="top">
@@ -733,6 +733,7 @@ onActivated(() => {
   .status {
     display: flex;
     flex-wrap: wrap;
+    margin-top: 20px;
     .box {
       height: 70px;
       width: 50%;

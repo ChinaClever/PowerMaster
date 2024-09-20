@@ -5,7 +5,6 @@
         <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
         </div> -->
-        <div class="line"></div>
         <div class="status">
           <div class="box">
             <div class="top">
@@ -53,6 +52,7 @@
           type="primary"
           plain
           @click="openForm('create')"
+          v-if="switchValue == 0 "
         >
           <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
         </el-button>
@@ -804,6 +804,7 @@ onActivated(() => {
   .status {
     display: flex;
     flex-wrap: wrap;
+    margin-top: 20px;
     .box {
       height: 70px;
       width: 50%;

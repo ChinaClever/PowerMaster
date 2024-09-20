@@ -147,7 +147,7 @@
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l3MaxCurTime" />
 
-        <el-table-column label="操作" align="center" width="100px">
+        <el-table-column label="操作" align="center" >
           <template #default="scope">
             <el-button
               link
@@ -195,7 +195,7 @@
           </template>
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l3MaxPowTime" />
-        <el-table-column label="操作" align="center" width="100px">
+        <el-table-column label="操作" align="center" >
           <template #default="scope">
             <el-button
               link
