@@ -960,7 +960,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                                 .subAggregation(AggregationBuilders.min("min_ele_active").field("ele_active"))
                                 .subAggregation(AggregationBuilders.max("max_ele_active").field("ele_active"))
                                 .subAggregation(PipelineAggregatorBuilders.bucketScript("eleValue",scriptMap,new Script("params.maxEleActive - params.minEleActive")))
-                                .subAggregation(PipelineAggregatorBuilders.bucketSelector("eleValue_range",selectMap,new Script("params.key > 0"))));
+                                .subAggregation(PipelineAggregatorBuilders.bucketSelector("eleValue_range",selectMap,new Script("params.key >= 0"))));
 
                 pduOutLetTotalRealSourceBuilder.size(0); // 设置返回的最大结果数
                 // 将搜索条件添加到请求中
@@ -1033,7 +1033,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         .terms("by_outlet_id").field("outlet_id").order(BucketOrder.aggregation("sum_eq",true)).size(24)
                         .subAggregation(AggregationBuilders.sum("sum_eq").field("eq_value"))
                         //筛选sumEle > 0的
-                        .subAggregation(PipelineAggregatorBuilders.bucketSelector("positive_sum_eq",map, new Script("params.sumEq > 0"))));
+                        .subAggregation(PipelineAggregatorBuilders.bucketSelector("positive_sum_eq",map, new Script("params.sumEq >= 0"))));
 
                 pduOutLetTotalDaySourceBuilder.size(0); // 设置返回的最大结果数
                 // 将搜索条件添加到请求中
@@ -1049,6 +1049,9 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
                     // 解析搜索请求
                     SearchResponse pduPowTotalRealDisResponse = multiSearchResponse.getResponses()[0].getResponse();
+
+
+
                     if(pduPowTotalRealDisResponse != null){
                         for ( Terms.Bucket bucket : ((ParsedLongTerms) pduPowTotalRealDisResponse.getAggregations().get("by_outlet_id")).getBuckets()) {
                             String outlet =  "输出位" + bucket.getKeyAsString();
@@ -1058,6 +1061,11 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                             outLetId.add(outlet);
                         }
                     }
+                    if(eqValue.size()>10){
+                        eqValue = eqValue.subList(eqValue.size()-10,eqValue.size());
+                        outLetId=outLetId.subList(outLetId.size()-10,outLetId.size());
+                    }
+
 
                     BarSeries barSeries = new BarSeries();
                     barSeries.setLabel("{ show: true, position: 'right' }");

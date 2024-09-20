@@ -114,8 +114,6 @@ public class HistoryDataController {
 
 
     }
-
-
     @GetMapping("/env-page")
     @Operation(summary = "获得pdu环境数据分页")
     public CommonResult<PageResult<Object>> getEnvDataPage(EnvDataPageReqVo pageReqVO) throws IOException {
@@ -183,6 +181,37 @@ public class HistoryDataController {
         } else {
             ExcelUtils.write(response, "pdu环境历史数据.xlsx", "数据", EnvHourAndDayPageRespVO.class,
                     BeanUtils.toBean(list, EnvHourAndDayPageRespVO.class));
+        }
+    }
+
+    @GetMapping("/export-Env-excel")
+    @Operation(summary = "导出pdu环境分析历史数据详情 Excel")
+//    @PreAuthorize("@ss.hasPermission('pdu:env-history-data:export')")
+    @OperateLog(type = EXPORT)
+    public void exportEnvDataExcel(EnvDataDetailsReqVO pageReqVO,
+                                       HttpServletResponse response) throws IOException {
+        pageReqVO.setPageSize(10000);
+        Map<String, Object> pageResult = historyDataService.getEnvDataDetails(pageReqVO);
+        List<Object> list = new ArrayList<>();
+        Object object = pageResult.get("list");
+        if(object instanceof List){
+            List<?> collection = (List<?>) object;
+            // 将集合中的元素添加到新创建的List中
+            list.addAll(collection);
+        }
+        else {
+        System.out.println("The value for key 'list' is not a List.");
+    }
+        historyDataService.getEnvExcelList(list);
+//         导出 Excel
+        if(list.stream()
+                .anyMatch(item -> item instanceof Map && ((Map<?, ?>) item).containsKey("tem_value"))){
+            ExcelUtils.write(response, "pdu历史数据详情.xlsx", "数据", HistoryEnvDataExportVO.class,
+                    BeanUtils.toBean(list, HistoryEnvDataExportVO.class));
+        } else if (list.stream()
+                .anyMatch(item -> item instanceof Map && ((Map<?, ?>) item).containsKey("tem_avg_value"))) {
+            ExcelUtils.write(response, "pdu历史数据详情.xlsx", "数据", HistoryEnvDetailsDataExportVO.class,
+                    BeanUtils.toBean(list, HistoryEnvDetailsDataExportVO.class));
         }
     }
 

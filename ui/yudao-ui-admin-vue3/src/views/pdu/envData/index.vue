@@ -119,7 +119,14 @@
         </el-table-column>
         <!-- 遍历其他列 -->
         <template v-for="column in tableColumns">
-          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
+          <el-table-column :key="column.prop" 
+                           :label="column.label" 
+                           :align="column.align" 
+                           :prop="column.prop" 
+                           :formatter="column.formatter" 
+                           :width="column.width" 
+                           v-if="column.istrue" 
+                           >
             <template #default="{ row }">
               <div v-if="column.slot === 'actions'">
                 <el-button link type="primary" @click="toDetails(row.pdu_id, row.location, row.address.address, row.address.channel, row.address.position, row.sensor_id)">详情</el-button>

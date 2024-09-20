@@ -42,7 +42,7 @@
           <br/>
       </div>
       
-        <div  class="descriptions-container" style="font-size: 14px;">
+        <div  class="descriptions-container" v-if="maxActivePowDataTimeTemp" style="font-size: 14px;">
           <div  class="description-item">
             <span class="label">最大值 :</span>
             <span >{{ formatNumber(maxActivePowDataTemp, 3) }} kW</span>
@@ -136,6 +136,12 @@
               :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
               :row-style="{ fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
+             <!-- 添加行号列 -->
+               <el-table-column label="序号" align="center" width="100px">
+                <template #default="{ $index }">
+                  {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
+                </template>
+              </el-table-column>
               <el-table-column prop="create_time" label="记录时间" />
               <!-- 动态生成表头 -->
               <template v-for="item in headerData" :key="item.name">
@@ -426,7 +432,7 @@ const getList = async () => {
       if (activeName.value === 'dayExtremumTabPane'){
         createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
       }else{
-        createTimeData.value = data.list.map((item) => formatDate(item.create_time));
+        createTimeData.value = data.list.map((item) => formatDate(item.create_time,"YYYY-MM-DD HH:mm"));
       }
       activePowData.value = data.list.map((item) => formatNumber(item.pow_active, 3));
       apparentPowData.value = data.list.map((item) => formatNumber(item.pow_apparent, 3));
@@ -434,27 +440,27 @@ const getList = async () => {
 
       curAvgValueData.value = data.list.map((item) => formatNumber(item.cur_avg_value, 2));
       curMaxValueData.value = data.list.map((item) => formatNumber(item.cur_max_value, 2));
-      curMaxTimeData.value = data.list.map((item) => formatDate(item.cur_max_time));
+      curMaxTimeData.value = data.list.map((item) => formatDate(item.cur_max_time,"YYYY-MM-DD HH:mm"));
       curMinValueData.value = data.list.map((item) => formatNumber(item.cur_min_value, 2));
-      curMinTimeData.value = data.list.map((item) => formatDate(item.cur_min_time));
+      curMinTimeData.value = data.list.map((item) => formatDate(item.cur_min_time,"YYYY-MM-DD HH:mm"));
 
       volAvgValueData.value = data.list.map((item) => formatNumber(item.vol_avg_value, 1));
       volMaxValueData.value = data.list.map((item) => formatNumber(item.vol_max_value, 1));
-      volMaxTimeData.value = data.list.map((item) => formatDate(item.vol_max_time));
+      volMaxTimeData.value = data.list.map((item) => formatDate(item.vol_max_time,"YYYY-MM-DD HH:mm"));
       volMinValueData.value = data.list.map((item) => formatNumber(item.vol_min_value, 1));
-      volMinTimeData.value = data.list.map((item) => formatDate(item.vol_min_time));
+      volMinTimeData.value = data.list.map((item) => formatDate(item.vol_min_time,"YYYY-MM-DD HH:mm"));
 
       activePowAvgValueData.value = data.list.map((item) => formatNumber(item.pow_active_avg_value, 3));
       activePowMaxValueData.value = data.list.map((item) => formatNumber(item.pow_active_max_value, 3));
-      activePowMaxTimeData.value = data.list.map((item) => formatDate(item.pow_active_max_time));
+      activePowMaxTimeData.value = data.list.map((item) => formatDate(item.pow_active_max_time,"YYYY-MM-DD HH:mm"));
       activePowMinValueData.value = data.list.map((item) => formatNumber(item.pow_active_min_value, 3));
-      activePowMinTimeData.value = data.list.map((item) => formatDate(item.pow_active_min_time));
+      activePowMinTimeData.value = data.list.map((item) => formatDate(item.pow_active_min_time,"YYYY-MM-DD HH:mm"));
 
       apparentPowAvgValueData.value = data.list.map((item) => formatNumber(item.pow_apparent_avg_value, 3));
       apparentPowMaxValueData.value = data.list.map((item) => formatNumber(item.pow_apparent_max_value, 3));
-      apparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.pow_apparent_max_time));
+      apparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.pow_apparent_max_time,"YYYY-MM-DD HH:mm"));
       apparentPowMinValueData.value = data.list.map((item) => formatNumber(item.pow_apparent_min_value, 3));
-      apparentPowMinTimeData.value = data.list.map((item) => formatDate(item.pow_apparent_min_time));
+      apparentPowMinTimeData.value = data.list.map((item) => formatDate(item.pow_apparent_min_time,"YYYY-MM-DD HH:mm"));
       
 
       if( activeName.value === 'realtimeTabPane' ){
