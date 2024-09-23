@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.bus.service.busindex;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEleTotalDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalMonthDo;
@@ -41,6 +42,8 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
 
 import org.elasticsearch.action.search.SearchRequest;
@@ -97,7 +100,7 @@ import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionU
 import static cn.iocoder.yudao.module.bus.constant.BoxConstants.SPLIT_KEY_BUS;
 import static cn.iocoder.yudao.module.bus.constant.BusConstants.*;
 import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.*;
-
+import cn.iocoder.yudao.framework.common.enums.DelEnums;
 /**
  * 始端箱索引 Service 实现类
  *
@@ -155,8 +158,26 @@ public class BusIndexServiceImpl implements BusIndexService {
         // 校验存在
         validateIndexExists(id);
         // 删除
-        busIndexMapper.deleteById(id);
+        //busIndexMapper.deleteById(id);
+        //逻辑删除
+        busIndexMapper.update(new LambdaUpdateWrapper<BusIndexDO>()
+                .eq(BusIndexDO::getId, id)
+                .set(BusIndexDO::getIsDeleted, DelEnums.DELETE.getStatus())
+        );
     }
+
+    @Override
+    public void restoreIndex(Long id) {
+        // 校验存在
+        validateIndexExists(id);
+        //逻辑恢复
+        busIndexMapper.update(new LambdaUpdateWrapper<BusIndexDO>()
+                .eq(BusIndexDO::getId, id)
+                .set(BusIndexDO::getIsDeleted, DelEnums.NO_DEL.getStatus())
+        );
+    }
+
+
 
     private void validateIndexExists(Long id) {
         if (busIndexMapper.selectById(id) == null) {
@@ -1766,6 +1787,24 @@ public class BusIndexServiceImpl implements BusIndexService {
             JSONObject jsonObject = (JSONObject) ops.get(REDIS_KEY_BUS + devKey);
             return jsonObject != null ? jsonObject.toJSONString() : null;
         }
+    }
+
+    @Override
+    public PageResult<BusIndexRes> getDeletedPage(BusIndexPageReqVO pageReqVO) {
+        PageResult<BusIndexDO> busIndexDOPageResult = busIndexMapper.selectPage(pageReqVO);
+        List<BusIndexDO> list = busIndexDOPageResult.getList();
+        List<BusIndexRes> res = new ArrayList<>();
+
+        for (BusIndexDO busIndexDO : list) {
+            BusIndexRes busIndexRes = new BusIndexRes();
+            busIndexRes.setStatus(busIndexDO.getRunStatus());
+            busIndexRes.setBusId(busIndexDO.getId());
+            busIndexRes.setDevKey(busIndexDO.getDevKey());
+            busIndexRes.setBusName(busIndexDO.getBusName());
+            res.add(busIndexRes);
+        }
+        getPosition(res);
+        return new PageResult<>(res,busIndexDOPageResult.getTotal());
     }
 
 

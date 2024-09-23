@@ -54,9 +54,16 @@ public class BoxIndexController {
     @DeleteMapping("/delete")
     @Operation(summary = "删除插接箱索引")
     @Parameter(name = "id", description = "编号", required = true)
-
     public CommonResult<Boolean> deleteIndex(@RequestParam("id") Long id) {
         indexService.deleteIndex(id);
+        return success(true);
+    }
+
+    @PutMapping("/restore")
+    @Operation(summary = "恢复插接箱索引")
+    @Parameter(name = "id", description = "编号", required = true)
+    public CommonResult<Boolean> restoreIndex(@RequestParam("id") Long id) {
+        indexService.restoreIndex(id);
         return success(true);
     }
 
@@ -85,6 +92,13 @@ public class BoxIndexController {
     @Operation(summary = "获得插接箱负荷分页")
     public CommonResult<PageResult<BoxIndexRes>> getIndexPage(@RequestBody BoxIndexPageReqVO pageReqVO) {
         PageResult<BoxIndexRes> pageResult = indexService.getIndexPage(pageReqVO);
+        return success(BeanUtils.toBean(pageResult, BoxIndexRes.class));
+    }
+
+    @PostMapping("/getDeletedPage")
+    @Operation(summary = "获得已经删除插接箱负荷分页")
+    public CommonResult<PageResult<BoxIndexRes>> getDeletedPage(@RequestBody BoxIndexPageReqVO pageReqVO) {
+        PageResult<BoxIndexRes> pageResult = indexService.getDeletedPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BoxIndexRes.class));
     }
 

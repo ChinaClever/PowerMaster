@@ -7,6 +7,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import org.apache.ibatis.annotations.Mapper;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import org.springframework.util.CollectionUtils;

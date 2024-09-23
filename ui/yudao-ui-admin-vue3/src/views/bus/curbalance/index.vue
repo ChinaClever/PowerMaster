@@ -93,9 +93,9 @@
         </el-form-item>          
         </el-form-item>
         <div style="float:right">
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
-          <el-button @click="statusList.forEach((item) => item.selected = true);pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压</el-button>
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;visMode = 0" :type="visMode == 0 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
+          <el-button @click="statusList.forEach((item) => item.selected = true);pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;visMode = 0" :type="visMode == 0 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;visMode = 1;" :type="visMode == 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
         </div>
       </el-form>
@@ -184,7 +184,7 @@
             <el-button
               link
               type="danger"
-              @click="handleDelete(scope.row.id)"
+              @click="handleDelete(scope.row.busId)"
               v-if="scope.row.status == 5"
             >
               删除
@@ -283,7 +283,7 @@ const visMode = ref(0);
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
-const pageSizeArr = ref([24,36,48])
+const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(0)
 const statusNumber = reactive({
   lessFifteen : 0,
@@ -804,7 +804,7 @@ onActivated(() => {
   .status {
     display: flex;
     flex-wrap: wrap;
-    margin-top: 20px;
+    margin-top: 30px;
     .box {
       height: 70px;
       width: 50%;
@@ -872,8 +872,7 @@ onActivated(() => {
   }
   .line {
     height: 1px;
-    margin-top: 28px;
-    margin-bottom: 20px;
+    margin-top: 18px;
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
 }

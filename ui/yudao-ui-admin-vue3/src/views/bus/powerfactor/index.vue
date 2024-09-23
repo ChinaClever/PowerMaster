@@ -81,7 +81,7 @@
         </el-form-item>          
         </el-form-item>
         <div style="float:right">
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
         </div>
       </el-form>
@@ -128,7 +128,7 @@
             <el-button
               link
               type="danger"
-              @click="handleDelete(scope.row.id)"
+              @click="handleDelete(scope.row.busId)"
               v-if="scope.row.status == 5"
             >
               删除
@@ -246,7 +246,7 @@ const location = ref() as any;
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
-const pageSizeArr = ref([24,36,48])
+const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(0)
 const valueMode = ref(0)
 const switchChartOrTable = ref(0)

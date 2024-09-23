@@ -111,7 +111,7 @@
         <div style="float:right">
           <el-button @click="visMode = 0;" :type="visMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />电流</el-button>
           <el-button @click="visMode = 1;" :type="visMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />功率</el-button>
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 15;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 15;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
         </div>
       </el-form>
@@ -159,7 +159,7 @@
             <el-button
               link
               type="danger"
-              @click="handleDelete(scope.row.id)"
+              @click="handleDelete(scope.row.busId)"
               v-if="scope.row.status == 5"
             >
               删除
@@ -208,7 +208,7 @@
             <el-button
               link
               type="danger"
-              @click="handleDelete(scope.row.id)"
+              @click="handleDelete(scope.row.busId)"
               v-if="scope.row.status == 5"
             >
               删除
@@ -304,7 +304,7 @@ const visMode = ref(0);
 const requirementLine = ref([]) as any;
 const detailVis = ref(false);
 const now = ref()
-const pageSizeArr = ref([24,36,48])
+const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(0)
 const showSearchBtn = ref(false)
 // const statusNumber = reactive({

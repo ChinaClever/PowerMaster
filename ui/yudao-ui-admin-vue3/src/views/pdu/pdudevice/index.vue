@@ -87,9 +87,9 @@
         </el-form-item>
        </el-form-item> 
         <div style="float:right">
-          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 0;showCollaspe = true;showPagination = 0;" :type="switchValue === 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;showCollaspe = true;showPagination = 0;" :type="switchValue === 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 2;showCollaspe = false;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 0;showPagination = 0;" :type="switchValue === 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;showPagination = 0;" :type="switchValue === 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 2;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''" v-show="switchValue ===1"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
         </div>
       </el-form>
       <el-form
@@ -135,9 +135,9 @@
         </el-form-item>
        </el-form-item> 
         <div style="float:right">
-          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 0;showCollaspe = true;showPagination = 0;" :type="switchValue === 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;showCollaspe = true;showPagination = 0;" :type="switchValue === 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 2;showCollaspe = false;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 0;showPagination = 0;" :type="switchValue === 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;showPagination = 0;" :type="switchValue === 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 2;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
         </div>
       </el-form>      
     </template>
@@ -298,7 +298,7 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
         />      
-      <template v-if="list.length == 0 && !switchValue">
+      <template v-if="list.length == 0 && switchValue ==0 && showPagination == 0">
         <el-empty description="暂无数据" :image-size="300" />
       </template>
     </template>
@@ -328,7 +328,6 @@ const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(0)
 const showPagination = ref(0)
-const showCollaspe = ref(true)
 const statusNumber = reactive({
   normal : 0,
   warn : 0,

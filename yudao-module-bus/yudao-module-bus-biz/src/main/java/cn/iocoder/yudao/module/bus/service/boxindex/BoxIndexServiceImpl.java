@@ -17,6 +17,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBus;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
+import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
 import cn.iocoder.yudao.framework.common.mapper.AisleBoxMapper;
 import cn.iocoder.yudao.framework.common.mapper.CabinetBusMapper;
@@ -36,6 +37,7 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.dal.dataobject.boxcurbalancecolor.BoxCurbalanceColorDO;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 
+import cn.iocoder.yudao.module.bus.dal.dataobject.boxindex.BoxIndexDO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxcurbalancecolor.BoxCurbalanceColorMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxindex.BoxIndexCopyMapper;
@@ -45,6 +47,7 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -155,7 +158,41 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         // 校验存在
         validateIndexExists(id);
         // 删除
-        boxIndexCopyMapper.deleteById(id);
+        //boxIndexCopyMapper.deleteById(id);
+        //逻辑删除
+        boxIndexCopyMapper.update(new LambdaUpdateWrapper<BoxIndex>()
+                .eq(BoxIndex::getId, id)
+                .set(BoxIndex::getIsDeleted,DelEnums.DELETE.getStatus())
+        );
+    }
+
+    @Override
+    public void restoreIndex(Long id) {
+        // 校验存在
+        validateIndexExists(id);
+
+        //逻辑恢复
+        boxIndexCopyMapper.update(new LambdaUpdateWrapper<BoxIndex>()
+                .eq(BoxIndex::getId, id)
+                .set(BoxIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
+        );
+    }
+
+    @Override
+    public PageResult<BoxIndexRes> getDeletedPage(BoxIndexPageReqVO pageReqVO) {
+        PageResult<BoxIndex> boxIndexDOPageResult = boxIndexCopyMapper.selectPage(pageReqVO);
+        List<BoxIndex> list = boxIndexDOPageResult.getList();
+        List<BoxIndexRes> res = new ArrayList<>();
+        for (BoxIndex boxIndexDO : list) {
+            BoxIndexRes boxIndexRes = new BoxIndexRes();
+            boxIndexRes.setStatus(boxIndexDO.getRunStatus());
+            boxIndexRes.setBoxId(boxIndexDO.getId());
+            boxIndexRes.setDevKey(boxIndexDO.getDevKey());
+            boxIndexRes.setBoxName(boxIndexDO.getBoxName());
+            res.add(boxIndexRes);
+        }
+        getPosition(res);
+        return new PageResult<>(res,boxIndexDOPageResult.getTotal());
     }
 
     private void validateIndexExists(Long id) {
