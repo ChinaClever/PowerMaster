@@ -240,13 +240,11 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="icon" v-if="item.color != null" >
-              负载率            
-            </div>
+            <div style="padding: 0 18px;margin-right:30px" v-show="item.status != 5"><Bar :width="80" :height="100" :max="{L1:item.aloadRate,L2:item.bloadRate,L3:item.cloadRate}" /></div>
             <div class="info">                  
-              <div v-if="item.aloadRate != null">A相：{{item.aloadRate}}%</div>
-              <div v-if="item.bloadRate != null">B相：{{item.bloadRate}}%</div>
-              <div v-if="item.cloadRate != null">C相：{{item.cloadRate}}%</div>
+              <div class="warnColor" v-if="item.aloadRate != null" :style="{ backgroundColor: getBackgroundColor(item.aloadRate) }">A相：{{item.aloadRate}}%</div>
+              <div class="warnColor" v-if="item.bloadRate != null" :style="{ backgroundColor: getBackgroundColor(item.bloadRate) }">B相：{{item.bloadRate}}%</div>
+              <div class="warnColor" v-if="item.cloadRate != null" :style="{ backgroundColor: getBackgroundColor(item.cloadRate) }">C相：{{item.cloadRate}}%</div>
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
@@ -284,7 +282,7 @@ import download from '@/utils/download'
 import { IndexApi } from '@/api/bus/busindex'
 // import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
-
+import Bar from './Bar.vue'
 
 
 /** PDU设备 列表 */
@@ -677,6 +675,16 @@ const handleExport = async () => {
   }
 }
 
+const getBackgroundColor = (loadRate: number) => {
+  if (loadRate < 60) {
+    return 'null' // 低于60时不显示颜色
+  } else if (loadRate < 90) {
+    return '#ffc402' // 60到90之间为黄色
+  } else {
+    return '#fa3333' // 高于90时为红色
+  }
+}
+
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
@@ -1005,10 +1013,13 @@ onActivated(() => {
         font-size: large;
         text-align: center;
       }
+      .warnColor {
+        transition: background-color 0.5s;
+      }
     }
     .devKey{
       position: absolute;
-      left: 8px;
+      left: 8px;  
       top: 8px;
     }
     .room {
