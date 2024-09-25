@@ -19,9 +19,6 @@
           </div>
         </div> -->
         <div class="descriptions-container" style="font-size: 14px;">
-      
-
-          
           <div class="description-item">
             <span class="label">最近一天 :</span>
             <span class="value">{{ lastDayTotalData }}条</span>
@@ -554,6 +551,10 @@ onMounted(() => {
   height: 100%;
   object-fit: cover; 
 }
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+}
+
 .description-item {
   display: flex;
   align-items: center;
@@ -564,14 +565,11 @@ onMounted(() => {
   text-align: right; /* 文本右对齐 */
   margin-right: 20px; /* 控制冒号后的间距 */
 }
-
-.value {
-  flex: 1; /* 自动扩展以对齐数据 */
-}
-  .line {
+.line {
     height: 1px;
     margin-top: 28px;
 
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
+
 </style>

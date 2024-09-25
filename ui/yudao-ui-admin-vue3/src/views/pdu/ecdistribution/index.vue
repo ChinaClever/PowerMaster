@@ -801,14 +801,13 @@ const handleExport1 = async () => {
   text-align: right; /* 文本右对齐 */
   margin-right: 10px; /* 控制冒号后的间距 */
 }
-
-.value {
-  flex: 1; /* 自动扩展以对齐数据 */
-}
   .line {
     height: 1px;
     margin-top: 28px;
 
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
+  .value {
+  flex: 1; /* 自动扩展以对齐数据 */
+}
 </style>

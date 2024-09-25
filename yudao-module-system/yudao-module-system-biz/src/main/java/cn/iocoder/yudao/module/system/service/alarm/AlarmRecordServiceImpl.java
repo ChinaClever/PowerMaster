@@ -116,6 +116,9 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
 
     @Override
     public PageResult<AlarmRecordRespVO> getRecordPage(AlarmRecordPageReqVO pageReqVO) {
+        if(pageReqVO.getA().equals("1")){
+            pageReqVO.setPageSize(-1);
+        }
         PageResult<SystemAlarmRecord> recordPageResult = alarmRecordMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<SystemAlarmRecord>()
                 .likeIfPresent(SystemAlarmRecord::getDevKey, pageReqVO.getDevKey())
                 .likeIfPresent(SystemAlarmRecord::getDevName, pageReqVO.getDevName())

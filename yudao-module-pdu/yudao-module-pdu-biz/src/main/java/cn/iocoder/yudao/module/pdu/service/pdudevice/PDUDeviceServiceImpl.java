@@ -1004,11 +1004,20 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         sortedEleValue.add(eleValue.get(index));
                         sortedOutLetId.add(outLetId.get(index));
                     }
+
+                    if(sortedEleValue.size()>12){
+                        sortedEleValue = sortedEleValue.subList(sortedEleValue.size()-12,sortedEleValue.size());
+                        sortedOutLetId=outLetId.subList(sortedOutLetId.size()-12,sortedOutLetId.size());
+                    }
+
                     BarSeries barSeries = new BarSeries();
                     barSeries.setLabel("{ show: true, position: 'right' }");
                     barSeries.setData(sortedEleValue);
                     cabinetChartResBase.setTime(sortedOutLetId);
                     cabinetChartResBase.getSeries().add(barSeries);
+
+
+
                     result.put("eleValue",sortedEleValue);
                     result.put("outLetId",sortedOutLetId);
                     result.put("barRes",cabinetChartResBase);
@@ -1061,9 +1070,10 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                             outLetId.add(outlet);
                         }
                     }
-                    if(eqValue.size()>10){
-                        eqValue = eqValue.subList(eqValue.size()-10,eqValue.size());
-                        outLetId=outLetId.subList(outLetId.size()-10,outLetId.size());
+
+                    if(eqValue.size()>12){
+                        eqValue = eqValue.subList(eqValue.size()-12,eqValue.size());
+                        outLetId=outLetId.subList(outLetId.size()-12,outLetId.size());
                     }
 
 
