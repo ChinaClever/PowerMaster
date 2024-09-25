@@ -30,7 +30,7 @@
             <span class="label">最近一月 :</span>
             <span class="value">{{ lastMonthTotalData }}条</span>
           </div>    <br/>
-          <div style="text-align: center"><span>母线始端箱新增能耗记录</span>
+          <div style="text-align: center"><span>母线插接箱新增能耗记录</span>
               <div class="line" style="margin-top: 10px;"></div>
             </div>
         </div>

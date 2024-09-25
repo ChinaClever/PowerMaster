@@ -264,12 +264,12 @@ const tableColumns = ref([
   { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true, width: '220px'},
   { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '160px' , istrue:true},
   { label: '开始', align: 'center', istrue: true, children: [
-      { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime1, width: '150px' , istrue:true},
+      { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime1, width: '100px' , istrue:true},
       { label: '电能(kWh)', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
     ]
   },
   { label: '结束', align: 'center', istrue: true, children: [
-      { label: '日期', align: 'center', prop: 'end_time' , formatter: formatTime1, width: '150px' , istrue:true},
+      { label: '日期', align: 'center', prop: 'end_time' , formatter: formatTime1, width: '100px' , istrue:true},
       { label: '电能(kWh)', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle},
     ]
   },

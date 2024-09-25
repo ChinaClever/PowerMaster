@@ -112,7 +112,7 @@
     </template>
     <template #Content>
       <!-- 列表 -->
-      <el-tabs v-model="activeName1">
+      <el-tabs v-model="activeName1" v-if="loading2">
         <el-tab-pane label="图表" name="lineChart">
           <div v-loading="loading" ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
         </el-tab-pane>
@@ -171,6 +171,7 @@ const headerData = ref<any[]>([]);
 const instance = getCurrentInstance();
 const selectTimeRange = ref(defaultDayTimeRange(14))
 const loading = ref(false) 
+const loading2 = ref(false) 
 const queryParams = reactive({
   boxId: undefined as number | undefined,
   granularity: 'day',
@@ -320,6 +321,7 @@ loading.value = true
 
     const data = await EnergyConsumptionApi.getBoxEQDataDetails(queryParams);
     if (data != null && data.total != 0){
+      loading2.value= true
       totalEqData.value = 0;
       startEleData.value = data.list.map((item) => formatNumber(item.start_ele, 1));
       startTimeData.value = data.list.map((item) => formatDate(item.start_time, 'YYYY-MM-DD'));
@@ -342,6 +344,7 @@ loading.value = true
       // 图表显示的位置变化
       nowAddress.value = nowAddressTemp.value
     }else{
+      loading2.value= false
       ElMessage({
         message: '暂无数据',
         type: 'warning',
@@ -505,7 +508,7 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 16px;
+    font-size: 14px;
     padding-top: 28px;
   }
 .nav_data{

@@ -69,6 +69,10 @@ public class HistoryDataController {
                                           HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list1 = historyDataService.getHistoryDataDetails(pageReqVO).getList();
+        if(list1==null){
+            List<HistoryDataDetailsExportVO> exportList= new ArrayList<>();;
+            ExcelUtils.write(response, "pdu历史数据详情.xlsx", "数据", HistoryDataDetailsExportVO.class,exportList );
+        }
         if(list1.stream()
                 .anyMatch(item -> item instanceof Map && ((Map<?, ?>) item).containsKey("vol_avg_value"))) {
             List<Object> list = historyDataService.getNewExcelList(list1, "3");

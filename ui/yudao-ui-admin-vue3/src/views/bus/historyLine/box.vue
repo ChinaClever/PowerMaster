@@ -3,14 +3,14 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <div class="carousel-container">
+        <!-- <div class="carousel-container"> -->
           <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
             <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
               <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
             </el-carousel-item>
           </el-carousel> -->
-        </div> 
-        <div class="nav_header">
+        <!-- </div>  -->
+        <!-- <div class="nav_header">
           <span v-if="nowAddress">{{nowAddress}}</span>
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
           <br/>
@@ -20,8 +20,8 @@
             <span>{{queryParams.timeRange[1]}}</span>
           </template>
           <br/>
-        </div>
-        <div class="nav_content" v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total'">
+        </div> -->
+        <!-- <div class="nav_content" v-if="queryParams.granularity == 'realtime' && queryParams.type == 'total'">
         <el-descriptions title="" direction="vertical" :column="1" border >
           <el-descriptions-item label="有功功率最大值 | 发生时间">
             <span>{{ formatNumber(maxActivePowDataTemp, 3) }} kWh</span> <br/>
@@ -32,6 +32,36 @@
             <span v-if="minActivePowDataTimeTemp">{{ minActivePowDataTimeTemp }}</span>
           </el-descriptions-item>
         </el-descriptions>
+        </div> -->
+
+        
+        <div class="nav_header" style="font-size: 14px;">
+          <span v-if="nowAddress">{{nowAddress}}</span>
+          <span v-if="nowLocation">( {{nowLocation}} ) </span>
+          <br/>
+      </div>
+      
+        <div  class="descriptions-container" v-if="maxActivePowDataTimeTemp" style="font-size: 14px;">
+          <div  class="description-item">
+            <span class="label">最大值 :</span>
+            <span >{{ formatNumber(maxActivePowDataTemp, 3) }} kW</span>
+          </div>
+          <div v-if="maxActivePowDataTimeTemp" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ maxActivePowDataTimeTemp }}</span>
+          </div>
+          <br/>
+          <div  class="description-item">
+            <span class="label">最小值 :</span>
+            <span >{{ formatNumber(minActivePowDataTemp, 3) }} kW</span>
+          </div>
+          <div v-if="minActivePowDataTimeTemp" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ minActivePowDataTimeTemp }}</span>
+          </div>
+          <div style="text-align: center">
+              <div class="line" style="margin-top: 10px;"></div>
+            </div>
         </div>
       </div>
     </template> 
@@ -84,7 +114,7 @@
     </template>
     <template #Content>
       <div v-loading="loading">
-        <el-tabs v-model="activeName1">
+        <el-tabs v-model="activeName1" v-if="loading2">
           <el-tab-pane label="图表" name="myChart">
             <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 65vh;"></div>
           </el-tab-pane>
@@ -390,6 +420,7 @@ const maxActivePowDataTemp = ref(0);// 最大有功功率
 const maxActivePowDataTimeTemp = ref();// 最大有功功率的发生时间 
 const minActivePowDataTemp = ref(0);// 最小有功功率 
 const minActivePowDataTimeTemp = ref();// 最小有功功率的发生时间 
+const loading2=ref(false);
 
 /** 查询列表 */
 const isHaveData = ref(false);
@@ -398,6 +429,7 @@ const getList = async () => {
   try {
     const data = await HistoryDataApi.getBoxHistoryDataDetails(queryParams);
     if (data != null && data.total != 0){
+      loading2.value=true;
       isHaveData.value = true
       powActiveData.value = data.list.map((item) => formatNumber(item.pow_active, 3));
       powReactiveData.value = data.list.map((item) => formatNumber(item.pow_reactive, 3));
@@ -406,7 +438,7 @@ const getList = async () => {
       if (activeName.value === 'dayExtremumTabPane'){
         createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
       }else{
-        createTimeData.value = data.list.map((item) => formatDate(item.create_time));
+        createTimeData.value = data.list.map((item) => formatDate(item.create_time,"YYYY-MM-DD HH:mm"));
       }
       loadRateData.value = data.list.map((item) => formatNumber(item.load_rate, 2));
       curThdData.value = data.list.map((item) => formatNumber(item.cur_thd, 1));
@@ -415,39 +447,39 @@ const getList = async () => {
 
       curAvgValueData.value = data.list.map((item) => formatNumber(item.cur_avg_value, 2));
       curMaxValueData.value = data.list.map((item) => formatNumber(item.cur_max_value, 2));
-      curMaxTimeData.value = data.list.map((item) => formatDate(item.cur_max_time));
+      curMaxTimeData.value = data.list.map((item) => formatDate(item.cur_max_time,"YYYY-MM-DD HH:mm"));
       curMinValueData.value = data.list.map((item) => formatNumber(item.cur_min_value, 2));
-      curMinTimeData.value = data.list.map((item) => formatDate(item.cur_min_time));
+      curMinTimeData.value = data.list.map((item) => formatDate(item.cur_min_time,"YYYY-MM-DD HH:mm"));
 
       volAvgValueData.value = data.list.map((item) => formatNumber(item.vol_avg_value, 1));
       volMaxValueData.value = data.list.map((item) => formatNumber(item.vol_max_value, 1));
-      volMaxTimeData.value = data.list.map((item) => formatDate(item.vol_max_time));
+      volMaxTimeData.value = data.list.map((item) => formatDate(item.vol_max_time,"YYYY-MM-DD HH:mm"));
       volMinValueData.value = data.list.map((item) => formatNumber(item.vol_min_value, 1));
-      volMinTimeData.value = data.list.map((item) => formatDate(item.vol_min_time));
+      volMinTimeData.value = data.list.map((item) => formatDate(item.vol_min_time,"YYYY-MM-DD HH:mm"));
 
       curThdAvgValueData.value = data.list.map((item) => formatNumber(item.cur_thd_avg_value, 1));
       curThdMaxValueData.value = data.list.map((item) => formatNumber(item.cur_thd_max_value, 1));
-      curThdMaxTimeData.value = data.list.map((item) => formatDate(item.cur_thd_max_time));
+      curThdMaxTimeData.value = data.list.map((item) => formatDate(item.cur_thd_max_time,"YYYY-MM-DD HH:mm"));
       curThdMinValueData.value = data.list.map((item) => formatNumber(item.cur_thd_min_value, 1));
-      curThdMinTimeData.value = data.list.map((item) => formatDate(item.cur_thd_min_time));
+      curThdMinTimeData.value = data.list.map((item) => formatDate(item.cur_thd_min_time,"YYYY-MM-DD HH:mm"));
 
       powActiveAvgValueData.value = data.list.map((item) => formatNumber(item.pow_active_avg_value, 3));
       powActiveMaxValueData.value = data.list.map((item) => formatNumber(item.pow_active_max_value, 3));
-      powActiveMaxTimeData.value = data.list.map((item) => formatDate(item.pow_active_max_time));
+      powActiveMaxTimeData.value = data.list.map((item) => formatDate(item.pow_active_max_time,"YYYY-MM-DD HH:mm"));
       powActiveMinValueData.value = data.list.map((item) => formatNumber(item.pow_active_min_value, 3));
-      powActiveMinTimeData.value = data.list.map((item) => formatDate(item.pow_active_min_time));
+      powActiveMinTimeData.value = data.list.map((item) => formatDate(item.pow_active_min_time,"YYYY-MM-DD HH:mm"));
 
       powReactiveAvgValueData.value = data.list.map((item) => formatNumber(item.pow_active_avg_value, 3));
       powReactiveMaxValueData.value = data.list.map((item) => formatNumber(item.pow_active_max_value, 3));
-      powReactiveMaxTimeData.value = data.list.map((item) => formatDate(item.pow_active_max_time));
+      powReactiveMaxTimeData.value = data.list.map((item) => formatDate(item.pow_active_max_time,"YYYY-MM-DD HH:mm"));
       powReactiveMinValueData.value = data.list.map((item) => formatNumber(item.pow_active_min_value, 3));
-      powReactiveMinTimeData.value = data.list.map((item) => formatDate(item.pow_active_min_time));
+      powReactiveMinTimeData.value = data.list.map((item) => formatDate(item.pow_active_min_time,"YYYY-MM-DD HH:mm"));
 
       powApparentAvgValueData.value = data.list.map((item) => formatNumber(item.pow_apparent_avg_value, 3));
       powApparentMaxValueData.value = data.list.map((item) => formatNumber(item.pow_apparent_max_value, 3));
-      powApparentMaxTimeData.value = data.list.map((item) => formatDate(item.pow_apparent_max_time));
+      powApparentMaxTimeData.value = data.list.map((item) => formatDate(item.pow_apparent_max_time,"YYYY-MM-DD HH:mm"));
       powApparentMinValueData.value = data.list.map((item) => formatNumber(item.pow_apparent_min_value, 3));
-      powApparentMinTimeData.value = data.list.map((item) => formatDate(item.pow_apparent_min_time));
+      powApparentMinTimeData.value = data.list.map((item) => formatDate(item.pow_apparent_min_time,"YYYY-MM-DD HH:mm"));
 
       maxActivePowDataTemp.value = Math.max(...powActiveData.value);
       minActivePowDataTemp.value = Math.min(...powActiveData.value);
@@ -466,6 +498,7 @@ const getList = async () => {
 
     }else{
       isHaveData.value = false;
+      loading2.value=false;
       ElMessage({
         message: '暂无数据',
         type: 'warning',
@@ -1686,5 +1719,27 @@ onMounted( async () => {
   height: 100%;
   object-fit: cover; 
 }
+.description-item {
+  display: flex;
+  align-items: center;
+}
+
+.label {
+  text-align: right; /* 文本右对齐 */
+  margin-right: 10px; /* 控制冒号后的间距 */
+  text-align: left;
+}
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
+
+}
+  .line {
+    height: 1px;
+    margin-top: 28px;
+
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
 
 </style>

@@ -100,7 +100,7 @@
           </div>
           
           <div class="line"></div>
-  </div>
+      </div>
     </div>
 
     </template>
@@ -159,7 +159,7 @@
     
     <template #Content>
       <div v-loading="loading">
-        <el-tabs v-model="activeName1">
+        <el-tabs v-model="activeName1" v-if="loading2">
           <el-tab-pane label="图表" name="myChart">
             <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 65vh;"></div>
           </el-tab-pane>
@@ -392,7 +392,7 @@ const minTemDataTemp = ref(0);// 最低温度
 const minTemDataTimeTemp = ref();// 最低温度的发生时间 
 const a=ref(0)
 const b=ref(0)
-
+const loading2=ref(false)
 
 /** 查询列表 */
 const isHaveData = ref(false);
@@ -402,6 +402,7 @@ const getList = async () => {
     // debugger
     const data = await EnvDataApi.getEnvDataDetails(queryParams);
     if (data != null && data.total != 0){
+      loading2.value=true
       isHaveData.value = true
       temValueData.value = data.list.map((item) => formatNumber(item.tem_value, 1));
       humValueData.value = data.list.map((item) => formatNumber(item.hum_value, 0));
@@ -452,16 +453,11 @@ const getList = async () => {
           b.value=1;     
         }});
       }
-
-        
-
-      
-
       // 图表显示的ip变化
-      nowLocation.value = data.ipAddr
-      
+      nowLocation.value = data.ipAddr     
     }else{
       isHaveData.value = false;
+      loading2.value=false
       ElMessage({
         message: '暂无数据',
         type: 'warning',

@@ -5,6 +5,7 @@ import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.EnergyC
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 public interface BusEnergyConsumptionService {
@@ -127,5 +128,7 @@ public interface BusEnergyConsumptionService {
      * @return 始端箱分段电能电费详情
      */
     PageResult<Object> getBoxSubBillDetails(EnergyConsumptionPageReqVO reqVO) throws IOException;
+
+    List<Object> getNewlList(List<Object> list);
 
 }

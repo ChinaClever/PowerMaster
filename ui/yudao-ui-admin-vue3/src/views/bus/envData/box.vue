@@ -3,12 +3,29 @@
     <template #NavInfo>
       <br/>    <br/> 
         <div class="nav_data">
-          <div class="nav_content">
+          <!-- <div class="nav_content">
             <el-descriptions title="全部插接箱新增环境记录" direction="vertical" :column="1" width="60px" border >
               <el-descriptions-item label="最近一小时"><span >{{ lastHourTotalData }} 条</span></el-descriptions-item>
               <el-descriptions-item label="最近一天"><span >{{ lastDayTotalData }} 条</span></el-descriptions-item>
               <el-descriptions-item label="最近一周" ><span >{{ lastWeekTotalData }} 条</span></el-descriptions-item>
             </el-descriptions>
+          </div> -->
+          <div class="descriptions-container" style="font-size: 14px;">
+            <div class="description-item">
+                <span class="label">最近一周 :</span>
+                <span class="value">{{ lastWeekTotalData }}条</span>
+            </div>
+            <div class="description-item">
+                <span class="label">最近一天 :</span>
+                <span class="value">{{ lastDayTotalData }}条</span>
+            </div>
+            <div class="description-item">
+                <span class="label">最近一小时 :</span>
+                <span class="value">{{ lastHourTotalData }}条</span>
+            </div>
+            <div style="text-align: center"><span>全部始端箱新增环境记录</span>
+              <div class="line" style="margin-top: 10px;"></div>
+            </div>
           </div>
         </div>
     </template>
@@ -477,5 +494,28 @@ onMounted( () => {
   height: 100%;
   object-fit: cover; 
 }
+.description-item {
+  display: flex;
+  align-items: center;
+}
 
+.label {
+  width:100px; /* 控制冒号前的宽度 */
+  text-align: right; /* 文本右对齐 */
+  margin-right: 20px; /* 控制冒号后的间距 */
+}
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+}
+  .line {
+    height: 1px;
+    margin-top: 28px;
+
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
+  ::v-deep .el-table .el-table__header th {
+    background-color: #F5F7FA;
+    color: #909399;
+}
 </style>

@@ -63,7 +63,7 @@
           <div style="text-align: center">
               <div class="line" style="margin-top: 10px;"></div>
             </div>
-  </div>
+        </div>
   
       </div> 
 
@@ -1516,13 +1516,15 @@ const handleExport1 = async () => {
 }
 
 .label {
-  width:100px; /* 控制冒号前的宽度 */
   text-align: right; /* 文本右对齐 */
   margin-right: 10px; /* 控制冒号后的间距 */
+  text-align: left;
 }
 
 .value {
   flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
+
 }
   .line {
     height: 1px;
@@ -1530,5 +1532,4 @@ const handleExport1 = async () => {
 
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
-
 </style>

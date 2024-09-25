@@ -198,7 +198,8 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
             }
             busId = busIds[0];
         }else {
-            busId = reqVO.getBusId();
+            return null;
+//            busId = reqVO.getBusId();
         }
 
         // 搜索源构建对象
@@ -290,8 +291,13 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
         // 添加范围查询
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        for (int i = 0; i < indices.length; i++) {
-            SearchRequest searchRequest = new SearchRequest(indices[i]);
+        for (int i = 0; i < (name.length==3?3:1); i++) {
+            SearchRequest searchRequest = new SearchRequest();
+            if(indices.length==2){
+                 searchRequest = new SearchRequest(indices[0],indices[1]);
+            }else{
+                searchRequest = new SearchRequest(indices[0]);
+            }
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
             searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(timeAgo[i].format(formatter))
@@ -313,7 +319,7 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
 
     @Override
     public Map<String, Object> getNewData() throws IOException {
-        String[] indices = new String[]{"bus_eq_total_day", "bus_eq_total_week", "bus_eq_total_month"};
+        String[] indices = new String[]{"bus_eq_total_day"};
         String[] name = new String[]{"day", "week", "month"};
         LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1), LocalDateTime.now().minusMonths(1)};
         Map<String, Object> map = getSumData(indices, name, timeAgo);
@@ -499,7 +505,8 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
             }
             boxId = boxIds[0];
         }else {
-            boxId = reqVO.getBoxId();
+            return null;
+//            boxId = reqVO.getBoxId();
         }
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
@@ -587,7 +594,7 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
 
     @Override
     public Map<String, Object> getBoxNewData() throws IOException {
-        String[] indices = new String[]{"box_eq_total_day", "box_eq_total_week", "box_eq_total_month"};
+        String[] indices = new String[]{"box_eq_total_day","box_eq_outlet_day"};
         String[] name = new String[]{"day", "week", "month"};
         LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1), LocalDateTime.now().minusMonths(1)};
         Map<String, Object> map = getSumData(indices, name, timeAgo);
@@ -647,6 +654,24 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                 .setTotal(totalHits);
         return pageResult;
 
+    }
+
+    @Override
+    public List<Object> getNewlList(List<Object> list) {
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        for (Object obj : list) {
+            if (obj instanceof Map && ((Map<?, ?>) obj).keySet().stream().allMatch(key -> key instanceof String)) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) obj;
+                mapList.add(map);
+            }
+        }
+        for(int i=0;i<mapList.size();i++){
+            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,16));
+            mapList.get(i).put("start_time",mapList.get(i).get("start_time").toString().substring(0,16));
+            mapList.get(i).put("end_time",mapList.get(i).get("end_time").toString().substring(0,16));
+        }
+        return list;
     }
 
 }

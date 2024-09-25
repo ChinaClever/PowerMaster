@@ -248,7 +248,7 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
                     Integer lineId = pageReqVO.getLineId();
                     // 创建匹配查询
                     QueryBuilder termQuery = QueryBuilders.termQuery ("line_id", lineId);
-                    if (busIds != null) {
+                    if (busIds != null&& busIds.length != 0) {
                         QueryBuilder termQuery1 = QueryBuilders.termQuery("bus_id", busIds[0]);
                         boolQuery.must(termQuery1);
                     }
@@ -331,7 +331,7 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
                     Integer lineId = pageReqVO.getLineId();
                     // 创建匹配查询
                     QueryBuilder termQuery = QueryBuilders.termQuery ("line_id", lineId);
-                    if (boxIds != null) {
+                    if (boxIds != null&&boxIds.length > 0) {
                         QueryBuilder termQuery1 = QueryBuilders.termQuery("box_id", boxIds[0]);
                         boolQuery.must(termQuery1);
                     }
@@ -353,7 +353,7 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
                     Integer loopId = pageReqVO.getLoopId();
                     // 创建匹配查询
                     QueryBuilder termQuery = QueryBuilders.termQuery ("loop_id", loopId);
-                    if (boxIds != null) {
+                    if (boxIds != null&&boxIds.length > 0) {
                         QueryBuilder termQuery1 = QueryBuilders.termQuery("box_id", boxIds[0]);
                         boolQuery.must(termQuery1);
                     }
@@ -375,7 +375,7 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
                     Integer outletId = pageReqVO.getOutletId();
                     // 创建匹配查询
                     QueryBuilder termQuery = QueryBuilders.termQuery ("outlet_id", outletId);
-                    if (boxIds != null) {
+                    if (boxIds != null&& boxIds.length > 0) {
                         QueryBuilder termQuery1 = QueryBuilders.termQuery("box_id", boxIds[0]);
                         boolQuery.must(termQuery1);
                     }

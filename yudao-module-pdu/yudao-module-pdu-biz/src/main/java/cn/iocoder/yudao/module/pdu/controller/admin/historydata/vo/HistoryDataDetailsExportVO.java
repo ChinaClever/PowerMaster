@@ -12,7 +12,6 @@ import lombok.Data;
 public class HistoryDataDetailsExportVO {
     @ExcelProperty("记录时间")
     private String create_time;
-
     @ExcelProperty("总有功功率(kW)")
     @NumberFormat("0.000")
     private Double pow_active;

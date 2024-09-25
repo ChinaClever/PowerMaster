@@ -497,7 +497,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         if (Objects.equals(pduId, null)){
             pduId = getPduIdByAddr(reqVO.getIpAddr(), reqVO.getCascadeAddr());
             if (Objects.equals(pduId, null)){
-                return null;
+                return new PageResult<>();
             }
         }
         // 创建BoolQueryBuilder对象
