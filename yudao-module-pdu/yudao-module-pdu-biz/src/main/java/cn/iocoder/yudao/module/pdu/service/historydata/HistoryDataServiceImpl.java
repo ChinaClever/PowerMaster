@@ -497,7 +497,10 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         if (Objects.equals(pduId, null)){
             pduId = getPduIdByAddr(reqVO.getIpAddr(), reqVO.getCascadeAddr());
             if (Objects.equals(pduId, null)){
-                return new PageResult<>();
+                PageResult<Object> pageResult=new PageResult<>();
+                pageResult.setList(new ArrayList<>())
+                        .setTotal(new Long(0));
+                return pageResult;
             }
         }
         // 创建BoolQueryBuilder对象
@@ -766,6 +769,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
 
     @Override
     public Map<String, Object> getEnvDataDetails(EnvDataDetailsReqVO reqVO) throws IOException {
+
         // 创建BoolQueryBuilder对象
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
@@ -823,7 +827,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             }
         }
         if (pduId == null){
-            return null;
+            return map;
         }
 
         // 创建匹配查询

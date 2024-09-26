@@ -106,6 +106,9 @@
 
         <el-form-item >
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button type="success" plain @click="handleExport1" :loading="exportLoading">
+             <Icon icon="ep:download" class="mr-5px" /> 导出
+           </el-button>
         </el-form-item>
       </el-form>
     </template>
@@ -118,13 +121,13 @@
         <el-tab-pane label="数据" name="lineChartData">
           <div style="height: 58vh;">
             <el-table  
-              border
+              :border="true"
+              :stripe="true"
               :data="tableData"
-              style="height: 58vh; width: 99.97%;--el-table-border-color: none;border-right: 1px #143275 solid;border-left: 1px #143275 solid;border-bottom: 1px #143275 solid;"
-              :highlight-current-row="false"
-              :header-cell-style="{ backgroundColor: '#143275', color: '#ffffff', fontSize: '18px', textAlign: 'center', borderLeft: '0.5px #ffffff solid', borderBottom: '1px #ffffff solid' }"
-              :cell-style="{ color: '#000000', fontSize: '16px', textAlign: 'center', borderBottom: '0.5px #143275 solid', borderLeft: '0.5px #143275 solid' }"
-              :row-style="{ color: '#fff', fontSize: '14px', textAlign: 'center', }"
+              style="height: 67vh; width: 99.97%;"
+              :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', borderBottom: '1px #EDEEF2 solid', fontFamily: 'Microsoft YaHei',fontWeight: 'bold'}"
+              :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
+              :row-style="{ fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
               <!-- 动态生成表头 -->
               <template v-for="item in headerData" :key="item.name">
@@ -158,8 +161,11 @@ import { IndexApi } from '@/api/bus/busindex'
 import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
 import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption'
 import PDUImage from '@/assets/imgs/PDU.jpg';
+import download from '@/utils/download'
 defineOptions({ name: 'ECDistribution' })
 
+const exportLoading = ref(false)
+const message = useMessage() // 消息弹窗
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const nowAddress = ref('')// 导航栏的位置信息
 const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
@@ -173,6 +179,8 @@ const loading = ref(false)
 const loading2 = ref(false)
 
 const queryParams = reactive({
+  pageNo: 1,
+  
   busId: undefined as number | undefined,
   granularity: 'day',
   // 进入页面原始数据默认显示最近2周
@@ -381,7 +389,26 @@ const initLineChart = () => {
     updateTableData();
   }
 };
-
+//导出Excel
+const handleExport1 = async () => {
+  try {
+    // 导出的二次确认
+    await message.exportConfirm()
+    // 发起导出
+    queryParams.pageNo = 1
+    exportLoading.value = true
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await EnergyConsumptionApi.exportBusDetailsPageData(queryParams, axiosConfig)
+    await download.excel(data, '始端箱能耗排名历史数据.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
+  } finally {
+    exportLoading.value = false
+  }
+}
 // 处理数据后有几位小数点
 function formatNumber(value, decimalPlaces) {
     if (!isNaN(value)) {

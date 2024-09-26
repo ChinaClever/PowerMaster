@@ -203,7 +203,10 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
         if (Objects.equals(pduId, null)){
             pduId = historyDataService.getPduIdByAddr(reqVO.getIpAddr(), reqVO.getCascadeAddr());
             if (Objects.equals(pduId, null)){
-                return null;
+                PageResult<Object> pageResult=new PageResult<>();
+                pageResult.setList(new ArrayList<>())
+                        .setTotal(new Long(0));
+                return pageResult;
             }
         }
         // 创建BoolQueryBuilder对象
@@ -424,8 +427,14 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
         // 添加范围查询 最近24小时
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        for (int i = 0; i < 3; i++) {
-            SearchRequest searchRequest = new SearchRequest(indices[0],indices[1]);
+        for (int i = 0; i < (name.length==4?4:3); i++) {
+            SearchRequest searchRequest;
+            if(name.length==4){
+                searchRequest = new SearchRequest(indices[i]);
+            }
+            else{
+                searchRequest = new SearchRequest(indices[0],indices[1]);
+            }
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
             searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(timeAgo[i].format(formatter))

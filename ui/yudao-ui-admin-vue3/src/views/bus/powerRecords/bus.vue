@@ -212,7 +212,7 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
   if (!cellValue) {
     return ''
   }
-  return dayjs(cellValue).format('YYYY-MM-DD HH:mm:ss')
+  return dayjs(cellValue).format('YYYY-MM-DD HH:mm')
 }
 
 

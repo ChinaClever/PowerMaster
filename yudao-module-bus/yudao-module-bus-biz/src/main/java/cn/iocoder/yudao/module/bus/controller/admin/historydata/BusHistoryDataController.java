@@ -88,11 +88,15 @@ public class BusHistoryDataController {
                                        HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = busHistoryDataService.getBoxHistoryDataPage(pageReqVO).getList();
+
         // 导出 Excel
         if (Objects.equals(pageReqVO.getGranularity(), "realtime")){
+            //处理list
+            busHistoryDataService.getNewBoxHistoryList(list);
             ExcelUtils.write(response, "母线插接箱历史数据.xlsx", "数据", BoxRealtimePageRespVO.class,
                     BeanUtils.toBean(list, BoxRealtimePageRespVO.class));
         }else{
+            busHistoryDataService.getNewBoxHistoryList1(list);
             ExcelUtils.write(response, "母线插接箱历史数据.xlsx", "数据", BoxHourAndDayPageRespVO.class,
                     BeanUtils.toBean(list, BoxHourAndDayPageRespVO.class));
         }
@@ -108,11 +112,14 @@ public class BusHistoryDataController {
 
         pageReqVO.setPageSize(10000);
         List<Object> list = busHistoryDataService.getBusHistoryDataPage(pageReqVO).getList();
+
         // 导出 Excel
         if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+            busHistoryDataService.getNewHistoryList(list);
             ExcelUtils.write(response, "母线始端箱历史数据.xlsx", "数据", BusRealtimePageRespVO.class,
                     BeanUtils.toBean(list, BusRealtimePageRespVO.class));
         } else {
+            busHistoryDataService.getNewHistoryList1(list);
             ExcelUtils.write(response, "母线始端箱历史数据.xlsx", "数据", BusHourAndDayPageRespVO.class,
                     BeanUtils.toBean(list, BusHourAndDayPageRespVO.class));
         }

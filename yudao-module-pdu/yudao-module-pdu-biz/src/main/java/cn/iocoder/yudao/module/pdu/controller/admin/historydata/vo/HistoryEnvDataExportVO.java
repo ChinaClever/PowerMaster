@@ -10,7 +10,7 @@ import lombok.Data;
 @Schema(description = "管理后台 - pdu环境分析 导出原始数据")
 @Data
 @ExcelIgnoreUnannotated
-@ColumnWidth(20)
+@ColumnWidth(30)
 public class HistoryEnvDataExportVO {
     @ExcelProperty("记录时间")
     private String create_time;

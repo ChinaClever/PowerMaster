@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.pdu.controller.admin.historydata;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
+import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.OutLetsPageRespVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.*;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import org.springframework.web.bind.annotation.*;
@@ -68,53 +69,57 @@ public class HistoryDataController {
     public void exportDetailsDataExcel(HistoryDataDetailsReqVO pageReqVO,
                                           HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
-        List<Object> list1 = historyDataService.getHistoryDataDetails(pageReqVO).getList();
-        if(list1==null){
-            List<HistoryDataDetailsExportVO> exportList= new ArrayList<>();;
-            ExcelUtils.write(response, "pdu历史数据详情.xlsx", "数据", HistoryDataDetailsExportVO.class,exportList );
+        List<Object> list = historyDataService.getHistoryDataDetails(pageReqVO).getList();
+
+        if(!list.isEmpty()){
+            if(list.stream()
+                    .anyMatch(item -> item instanceof Map && ((Map<?, ?>) item).containsKey("vol_avg_value"))) {
+                List<Object> list1 = historyDataService.getNewExcelList(list, "3");
+                // 导出 Excel
+                ExcelUtils.write(response, "pdu历史数据详情.xlsx", "数据", HistoryDataDetailsLineExportDetailsVO.class,
+                        BeanUtils.toBean(list1, HistoryDataDetailsLineExportDetailsVO.class));
+            }
+            else if(list.stream()
+                    .anyMatch(item -> item instanceof Map && ((Map<?, ?>) item).containsKey("cur_avg_value"))) {
+                List<Object> list1 = historyDataService.getNewExcelList(list, "4");
+                // 导出 Excel
+                ExcelUtils.write(response, "pdu历史数据详情.xlsx", "数据", HistoryDataDetailsOutletExportDetailsVO.class,
+                        BeanUtils.toBean(list1, HistoryDataDetailsOutletExportDetailsVO.class));
+            }
+            else if (list.stream()
+                    .anyMatch(item -> item instanceof Map && ((Map<?, ?>) item).containsKey("pow_apparent_avg_value"))) {
+                List<Object>list1 = historyDataService.getNewExcelList(list,"2");
+                // 导出 Excel
+                ExcelUtils.write(response, "pdu历史数据详情.xlsx", "数据", HistoryDataDetailsExportDetailsVO.class,
+                        BeanUtils.toBean(list1, HistoryDataDetailsExportDetailsVO.class));
+            }
+            else if(list.stream()
+                    .anyMatch(item -> item instanceof Map && ((Map<?, ?>) item).containsKey("vol_value"))){
+                List<Object>list1 = historyDataService.getNewExcelList(list,"1");
+                // 导出 Excel
+                ExcelUtils.write(response, "pdu历史数据详情.xlsx", "数据", HistoryDataDetailsLineExportVO.class,
+                        BeanUtils.toBean(list1, HistoryDataDetailsLineExportVO.class));
+            }
+            else if(list.stream()
+                    .anyMatch(item -> item instanceof Map && ((Map<?, ?>) item).containsKey("outlet_id"))){
+                List<Object>list1 = historyDataService.getNewExcelList(list,"1");
+                // 导出 Excel
+                ExcelUtils.write(response, "pdu历史数据详情.xlsx", "数据", HistoryDataDetailsOutletExportVO.class,
+                        BeanUtils.toBean(list1, HistoryDataDetailsOutletExportVO.class));
+            }
+
+            else {
+                List<Object>list1 = historyDataService.getNewExcelList(list,"1");
+                // 导出 Excel
+                ExcelUtils.write(response, "pdu历史数据详情.xlsx", "数据", HistoryDataDetailsExportVO.class,
+                        BeanUtils.toBean(list1, HistoryDataDetailsExportVO.class));
+            }
         }
-        if(list1.stream()
-                .anyMatch(item -> item instanceof Map && ((Map<?, ?>) item).containsKey("vol_avg_value"))) {
-            List<Object> list = historyDataService.getNewExcelList(list1, "3");
-            // 导出 Excel
-            ExcelUtils.write(response, "pdu历史数据详情.xlsx", "数据", HistoryDataDetailsLineExportDetailsVO.class,
-                    BeanUtils.toBean(list, HistoryDataDetailsLineExportDetailsVO.class));
-        }
-        else if(list1.stream()
-                .anyMatch(item -> item instanceof Map && ((Map<?, ?>) item).containsKey("cur_avg_value"))) {
-            List<Object> list = historyDataService.getNewExcelList(list1, "4");
-            // 导出 Excel
-            ExcelUtils.write(response, "pdu历史数据详情.xlsx", "数据", HistoryDataDetailsOutletExportDetailsVO.class,
-                    BeanUtils.toBean(list, HistoryDataDetailsOutletExportDetailsVO.class));
-        }
-        else if (list1.stream()
-                .anyMatch(item -> item instanceof Map && ((Map<?, ?>) item).containsKey("pow_apparent_avg_value"))) {
-            List<Object>list = historyDataService.getNewExcelList(list1,"2");
-            // 导出 Excel
-            ExcelUtils.write(response, "pdu历史数据详情.xlsx", "数据", HistoryDataDetailsExportDetailsVO.class,
-                    BeanUtils.toBean(list, HistoryDataDetailsExportDetailsVO.class));
-        }
-        else if(list1.stream()
-                .anyMatch(item -> item instanceof Map && ((Map<?, ?>) item).containsKey("vol_value"))){
-            List<Object>list = historyDataService.getNewExcelList(list1,"1");
-            // 导出 Excel
-            ExcelUtils.write(response, "pdu历史数据详情.xlsx", "数据", HistoryDataDetailsLineExportVO.class,
-                    BeanUtils.toBean(list, HistoryDataDetailsLineExportVO.class));
-        }
-        else if(list1.stream()
-                .anyMatch(item -> item instanceof Map && ((Map<?, ?>) item).containsKey("outlet_id"))){
-            List<Object>list = historyDataService.getNewExcelList(list1,"1");
-            // 导出 Excel
-            ExcelUtils.write(response, "pdu历史数据详情.xlsx", "数据", HistoryDataDetailsOutletExportVO.class,
-                    BeanUtils.toBean(list, HistoryDataDetailsOutletExportVO.class));
+        else{
+            List<HistoryDataDetailsExportVO>list2=new ArrayList<>();
+            ExcelUtils.write(response, "pdu历史数据详情.xlsx", "数据", HistoryDataDetailsExportVO.class,list2);
         }
 
-        else {
-            List<Object>list = historyDataService.getNewExcelList(list1,"1");
-            // 导出 Excel
-            ExcelUtils.write(response, "pdu历史数据详情.xlsx", "数据", HistoryDataDetailsExportVO.class,
-                    BeanUtils.toBean(list, HistoryDataDetailsExportVO.class));
-        }
 
 
     }
@@ -206,17 +211,29 @@ public class HistoryDataController {
         else {
         System.out.println("The value for key 'list' is not a List.");
     }
-        historyDataService.getEnvExcelList(list);
-//         导出 Excel
-        if(list.stream()
-                .anyMatch(item -> item instanceof Map && ((Map<?, ?>) item).containsKey("tem_value"))){
-            ExcelUtils.write(response, "pdu历史数据详情.xlsx", "数据", HistoryEnvDataExportVO.class,
-                    BeanUtils.toBean(list, HistoryEnvDataExportVO.class));
-        } else if (list.stream()
-                .anyMatch(item -> item instanceof Map && ((Map<?, ?>) item).containsKey("tem_avg_value"))) {
-            ExcelUtils.write(response, "pdu历史数据详情.xlsx", "数据", HistoryEnvDetailsDataExportVO.class,
-                    BeanUtils.toBean(list, HistoryEnvDetailsDataExportVO.class));
+
+
+        //导出 Excel
+        if(!list.isEmpty()){
+            //对list进行处理
+            historyDataService.getEnvExcelList(list);
+            // 导出 Excel
+            if(list.stream()
+                    .anyMatch(item -> item instanceof Map && ((Map<?, ?>) item).containsKey("tem_value"))){
+                ExcelUtils.write(response, "pdu历史数据详情.xlsx", "数据", HistoryEnvDataExportVO.class,
+                        BeanUtils.toBean(list, HistoryEnvDataExportVO.class));
+            } else if (list.stream()
+                    .anyMatch(item -> item instanceof Map && ((Map<?, ?>) item).containsKey("tem_avg_value"))) {
+                ExcelUtils.write(response, "pdu历史数据详情.xlsx", "数据", HistoryEnvDetailsDataExportVO.class,
+                        BeanUtils.toBean(list, HistoryEnvDetailsDataExportVO.class));
+            }
         }
+        else{
+            List<HistoryEnvDataExportVO>list1=new ArrayList<>();
+            ExcelUtils.write(response, "pdu历史数据详情.xlsx", "数据", HistoryEnvDataExportVO.class,list1);
+        }
+
+
     }
 
 }

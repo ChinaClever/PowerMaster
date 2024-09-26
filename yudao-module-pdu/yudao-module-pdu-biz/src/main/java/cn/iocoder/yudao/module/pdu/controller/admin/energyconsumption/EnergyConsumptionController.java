@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -97,11 +98,19 @@ public class EnergyConsumptionController {
     public void exportOutletsDataExcel(EnergyConsumptionPageReqVO reqVO,
                                     HttpServletResponse response) throws IOException {
         reqVO.setPageSize(10000);
-        List<Object> list1 = energyConsumptionService.getEQDataDetails(reqVO).getList();
-        List<Object> list = energyConsumptionService.getNewOutLetsList(list1);
-        // 导出 Excel
-        ExcelUtils.write(response, "PDU能耗趋势.xlsx", "数据", OutLetsPageRespVO.class,
-                BeanUtils.toBean(list, OutLetsPageRespVO.class));
+        List<Object> list = energyConsumptionService.getEQDataDetails(reqVO).getList();
+
+        if(!list.isEmpty()){
+            List<Object> list1 = energyConsumptionService.getNewOutLetsList(list);
+            // 导出 Excel
+            ExcelUtils.write(response, "PDU能耗趋势.xlsx", "数据", OutLetsPageRespVO.class,
+                    BeanUtils.toBean(list1, OutLetsPageRespVO.class));
+        }
+        else{
+            List<OutLetsPageRespVO>list2=new ArrayList<>();
+            ExcelUtils.write(response, "PDU能耗趋势.xlsx", "数据", OutLetsPageRespVO.class,list2);
+        }
+
     }
 
     @GetMapping("/realtime-page")

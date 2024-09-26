@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.bus.service.busenergyconsumption;
 
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.util.collection.MapUtils;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.EnergyConsumptionPageReqVO;
 
 import java.io.IOException;
@@ -131,4 +132,10 @@ public interface BusEnergyConsumptionService {
 
     List<Object> getNewlList(List<Object> list);
 
+
+    List<Object> getNewDetailList(List<Object> list);
+
+    List<Object> getNewBillList(List<Object> list);
+
+    List<Object>  getNewRealtimeList(List<Object> list);
 }
