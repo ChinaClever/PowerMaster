@@ -17,7 +17,7 @@ public class BusEnvHourAndDayPageRespVO {
     private String location;
 
     @ExcelProperty("IP地址")
-    private String ip_addr;
+    private String dev_key;
 
     @ExcelProperty("记录时间")
     private String create_time;
