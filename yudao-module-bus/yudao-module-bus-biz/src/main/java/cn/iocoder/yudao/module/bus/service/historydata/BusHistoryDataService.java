@@ -79,4 +79,12 @@ public interface BusHistoryDataService {
     List<Object> getNewBoxHistoryList(List<Object> list);
 
     List<Object> getNewBoxHistoryList1(List<Object> list);
+
+    List<Object> getNewDetailHistoryList(List<Object> list);
+
+    List<Object> getNewBoxDetailHistoryList(List<Object> list);
+
+    List<Object>  getNewEnvHistoryList(List<Object> list);
+
+    List<Object> getNewTemHistoryList(List<Object> list);
 }

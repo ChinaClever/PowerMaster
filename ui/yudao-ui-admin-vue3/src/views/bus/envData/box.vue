@@ -312,31 +312,31 @@ watch(() => queryParams.granularity, (newValues) => {
       tableColumns.value = [
         { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '140px'},
         { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
-        { label: '记录时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true},
+        { label: '记录时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true, formatter: formatTime},
 
         { label: 'A路平均温度(℃)', align: 'center', prop: 'tem_a_avg_value', istrue:true, width: '180px', formatter: formatData },
         { label: 'A路最高温度(℃)', align: 'center', prop: 'tem_a_max_value', istrue:true, width: '180px', formatter: formatData },
-        { label: 'A路最高温度时间', align: 'center', prop: 'tem_a_max_time' , width: '230px', istrue:true},
+        { label: 'A路最高温度时间', align: 'center', prop: 'tem_a_max_time' , width: '230px', istrue:true, formatter: formatTime},
         { label: 'A路最低温度(℃)', align: 'center', prop: 'tem_a_min_value', istrue:true, width: '180px', formatter: formatData },
-        { label: 'A路最低温度时间', align: 'center', prop: 'tem_a_min_time' , width: '230px', istrue:true},
+        { label: 'A路最低温度时间', align: 'center', prop: 'tem_a_min_time' , width: '230px', istrue:true, formatter: formatTime},
 
         { label: 'B路平均温度(℃)', align: 'center', prop: 'tem_b_avg_value', istrue:true, width: '180px', formatter: formatData },
         { label: 'B路最高温度(℃)', align: 'center', prop: 'tem_b_max_value', istrue:true, width: '180px', formatter: formatData },
-        { label: 'B路最高温度时间', align: 'center', prop: 'tem_b_max_time' , width: '230px', istrue:true},
+        { label: 'B路最高温度时间', align: 'center', prop: 'tem_b_max_time' , width: '230px', istrue:true, formatter: formatTime},
         { label: 'B路最低温度(℃)', align: 'center', prop: 'tem_b_min_value', istrue:true, width: '180px', formatter: formatData },
-        { label: 'B路最低温度时间', align: 'center', prop: 'tem_b_min_time' , width: '230px', istrue:true},
+        { label: 'B路最低温度时间', align: 'center', prop: 'tem_b_min_time' , width: '230px', istrue:true, formatter: formatTime},
 
         { label: 'C路平均温度(℃)', align: 'center', prop: 'tem_c_avg_value', istrue:true, width: '180px', formatter: formatData },
         { label: 'C路最高温度(℃)', align: 'center', prop: 'tem_c_max_value', istrue:true, width: '180px', formatter: formatData },
-        { label: 'C路最高温度时间', align: 'center', prop: 'tem_c_max_time' , width: '230px', istrue:true},
+        { label: 'C路最高温度时间', align: 'center', prop: 'tem_c_max_time' , width: '230px', istrue:true, formatter: formatTime},
         { label: 'C路最低温度(℃)', align: 'center', prop: 'tem_c_min_value', istrue:true, width: '180px', formatter: formatData },
-        { label: 'C路最低温度时间', align: 'center', prop: 'tem_c_min_time' , width: '230px', istrue:true},
+        { label: 'C路最低温度时间', align: 'center', prop: 'tem_c_min_time' , width: '230px', istrue:true, formatter: formatTime},
 
         { label: '中线平均温度(℃)', align: 'center', prop: 'tem_n_avg_value', istrue:true, width: '180px', formatter: formatData },
         { label: '中线最高温度(℃)', align: 'center', prop: 'tem_n_max_value', istrue:true, width: '180px', formatter: formatData },
-        { label: '中线最高温度时间', align: 'center', prop: 'tem_n_max_time' , width: '230px', istrue:true},
+        { label: '中线最高温度时间', align: 'center', prop: 'tem_n_max_time' , width: '230px', istrue:true, formatter: formatTime},
         { label: '中线最低温度(℃)', align: 'center', prop: 'tem_n_min_value', istrue:true, width: '180px', formatter: formatData },
-        { label: '中线最低温度时间', align: 'center', prop: 'tem_n_min_time' , width: '230px', istrue:true},
+        { label: '中线最低温度时间', align: 'center', prop: 'tem_n_min_time' , width: '230px', istrue:true, formatter: formatTime},
 
         { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
       ] as any;
@@ -382,7 +382,7 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
     return ''
   }
 
-  return dayjs(cellValue).format('YYYY-MM-DD HH:mm:ss.SSS')
+  return dayjs(cellValue).format('YYYY-MM-DD HH:mm')
 }
 
 // 格式化温湿度列数据，保留一位小数

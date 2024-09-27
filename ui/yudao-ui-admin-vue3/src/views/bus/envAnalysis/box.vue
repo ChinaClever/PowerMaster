@@ -134,6 +134,9 @@
 
         <el-form-item>
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button type="success" plain @click="handleExport1" :loading="exportLoading">
+             <Icon icon="ep:download" class="mr-5px" /> 导出
+           </el-button>
         </el-form-item>
 
       </el-form>
@@ -147,13 +150,13 @@
           <el-tab-pane label="数据" name="myData">
             <div style="height: 67vh;">
             <el-table  
-              border
+            :stripe="true" 
+              :border="true"
               :data="tableData"
-              style="height: 67vh; width: 99.97%;--el-table-border-color: none;border-right: 1px #143275 solid;border-left: 1px #143275 solid;border-bottom: 1px #143275 solid;"
-              :highlight-current-row="false"
-              :header-cell-style="{ backgroundColor: '#143275', color: '#ffffff', fontSize: '18px', textAlign: 'center', borderLeft: '0.5px #ffffff solid', borderBottom: '1px #ffffff solid' }"
-              :cell-style="{ color: '#000000', fontSize: '16px', textAlign: 'center', borderBottom: '0.5px #143275 solid', borderLeft: '0.5px #143275 solid' }"
-              :row-style="{ color: '#fff', fontSize: '14px', textAlign: 'center', }"
+              style="height: 67vh; width: 99.97%;"
+              :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', fontSize: '14px',borderBottom: '1px #EDEEF2 solid',fontWeight: 'bold' }"
+              :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
+              :row-style="{ fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
               <el-table-column prop="create_time" label="记录时间" />
               <!-- 动态生成表头 -->
@@ -209,10 +212,12 @@ import dayjs from 'dayjs'
 import { onMounted } from 'vue'
 import { EnvDataApi } from '@/api/bus/envData'
 import { formatDate } from '@/utils/formatTime'
+import download from '@/utils/download'
 // import PDUImage from '@/assets/imgs/PDU.jpg'
 import { ElMessage } from 'element-plus'
 defineOptions({ name: 'BoxEnvLine' })
-
+const message = useMessage() // 消息弹窗
+const exportLoading = ref(false)
 const activeName = ref('realtimeTabPane') // tab默认显示
 const activeName1 = ref('myChart') // tab默认显示
 const navList = ref([]) as any // 左侧导航栏树结构列表
@@ -224,6 +229,8 @@ const headerData = ref<any[]>([]);
 const needFlush = ref(0) // 是否需要刷新图表
 const loading = ref(false) //  列表的加载中
 const queryParams = reactive({
+  pageNo:1,
+  pageSize: 15,
   boxId: undefined as number | undefined,
   granularity: 'realtime',
   devkey: undefined as string | undefined,
@@ -387,32 +394,32 @@ const getList = async () => {
       if (activeName.value === 'dayExtremumTabPane'){
         createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
       }else{
-        createTimeData.value = data.list.map((item) => formatDate(item.create_time));
+        createTimeData.value = data.list.map((item) => formatDate(item.create_time,'YYYY-MM-DD HH:mm'));
       }
 
       aTemAvgValueData.value = data.list.map((item) => formatNumber(item.tem_a_avg_value, 1));
       aTemMaxValueData.value = data.list.map((item) => formatNumber(item.tem_a_max_value, 1));
-      aTemMaxTimeData.value = data.list.map((item) => formatDate(item.tem_a_max_time));
+      aTemMaxTimeData.value = data.list.map((item) => formatDate(item.tem_a_max_time,'YYYY-MM-DD HH:mm'));
       aTemMinValueData.value = data.list.map((item) => formatNumber(item.tem_a_min_value, 1));
-      aTemMinTimeData.value = data.list.map((item) => formatDate(item.tem_a_min_time));
+      aTemMinTimeData.value = data.list.map((item) => formatDate(item.tem_a_min_time,'YYYY-MM-DD HH:mm'));
 
       bTemAvgValueData.value = data.list.map((item) => formatNumber(item.tem_b_avg_value, 1));
       bTemMaxValueData.value = data.list.map((item) => formatNumber(item.tem_b_max_value, 1));
-      bTemMaxTimeData.value = data.list.map((item) => formatDate(item.tem_b_max_time));
+      bTemMaxTimeData.value = data.list.map((item) => formatDate(item.tem_b_max_time,'YYYY-MM-DD HH:mm'));
       bTemMinValueData.value = data.list.map((item) => formatNumber(item.tem_b_min_value, 1));
-      bTemMinTimeData.value = data.list.map((item) => formatDate(item.tem_b_min_time));
+      bTemMinTimeData.value = data.list.map((item) => formatDate(item.tem_b_min_time,'YYYY-MM-DD HH:mm'));
 
       cTemAvgValueData.value = data.list.map((item) => formatNumber(item.tem_c_avg_value, 1));
       cTemMaxValueData.value = data.list.map((item) => formatNumber(item.tem_c_max_value, 1));
-      cTemMaxTimeData.value = data.list.map((item) => formatDate(item.tem_c_max_time));
+      cTemMaxTimeData.value = data.list.map((item) => formatDate(item.tem_c_max_time,'YYYY-MM-DD HH:mm'));
       cTemMinValueData.value = data.list.map((item) => formatNumber(item.tem_c_min_value, 1));
-      cTemMinTimeData.value = data.list.map((item) => formatDate(item.tem_c_min_time));
+      cTemMinTimeData.value = data.list.map((item) => formatDate(item.tem_c_min_time,'YYYY-MM-DD HH:mm'));
 
       nTemAvgValueData.value = data.list.map((item) => formatNumber(item.tem_n_avg_value, 1));
       nTemMaxValueData.value = data.list.map((item) => formatNumber(item.tem_n_max_value, 1));
-      nTemMaxTimeData.value = data.list.map((item) => formatDate(item.tem_n_max_time));
+      nTemMaxTimeData.value = data.list.map((item) => formatDate(item.tem_n_max_time,'YYYY-MM-DD HH:mm'));
       nTemMinValueData.value = data.list.map((item) => formatNumber(item.tem_n_min_value, 1));
-      nTemMinTimeData.value = data.list.map((item) => formatDate(item.tem_n_min_time));
+      nTemMinTimeData.value = data.list.map((item) => formatDate(item.tem_n_min_time,'YYYY-MM-DD HH:mm'));
 
       maxTemDataTemp.value = Math.max(...aTemValueData.value);
       minTemDataTemp.value = Math.min(...aTemValueData.value);
@@ -768,6 +775,26 @@ const disabledDate = (date) => {
   // date.setHours(0, 0, 0, 0);
   // 如果date在今天之后，则禁用
   return date > today;
+}
+//导出Excel
+const handleExport1 = async () => {
+  try {
+    // 导出的二次确认
+    await message.exportConfirm()
+    // 发起导出
+    queryParams.pageNo = 1
+    exportLoading.value = true
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await EnvDataApi.exportBoxTemHistoryData(queryParams, axiosConfig)
+    await download.excel(data, '插接箱环境数据分析.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
+  } finally {
+    exportLoading.value = false
+  }
 }
 // 格式化日期
 function formatTime( cellValue: number): string {

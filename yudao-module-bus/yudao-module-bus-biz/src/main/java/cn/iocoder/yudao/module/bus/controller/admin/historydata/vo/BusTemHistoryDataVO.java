@@ -9,17 +9,7 @@ import lombok.Data;
 @Schema(description = "管理后台 - 始端箱环境历史数据（实时数据） 导出数据")
 @Data
 @ExcelIgnoreUnannotated
-public class BusEnvRealtimePageRespVO {
-
-    @ExcelProperty("母线名称")
-    private String bus_name;
-
-    @ExcelProperty("位置")
-    private String location;
-
-    @ExcelProperty("IP地址")
-    private String ip_addr;
-
+public class BusTemHistoryDataVO {
     @ExcelProperty("记录时间")
     private String create_time;
     @NumberFormat("0.0")

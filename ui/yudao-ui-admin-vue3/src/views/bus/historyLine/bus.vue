@@ -109,6 +109,9 @@
 
         <el-form-item >
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button type="success" plain @click="handleExport1" :loading="exportLoading">
+             <Icon icon="ep:download" class="mr-5px" /> 导出
+          </el-button>
         </el-form-item>
 
       </el-form>
@@ -122,85 +125,91 @@
           <el-tab-pane label="数据" name="myData">
             <div style="height: 67vh;">
             <el-table  
-              border
+              :border="true"
+              :stripe="true"
               :data="tableData"
-              style="height: 67vh; width: 99.97%;--el-table-border-color: none;border-right: 1px #143275 solid;border-left: 1px #143275 solid;border-bottom: 1px #143275 solid;"
-              :highlight-current-row="false"
-              :header-cell-style="{ backgroundColor: '#143275', color: '#ffffff', fontSize: '18px', textAlign: 'center', borderLeft: '0.5px #ffffff solid', borderBottom: '1px #ffffff solid' }"
-              :cell-style="{ color: '#000000', fontSize: '16px', textAlign: 'center', borderBottom: '0.5px #143275 solid', borderLeft: '0.5px #143275 solid' }"
-              :row-style="{ color: '#fff', fontSize: '14px', textAlign: 'center', }"
+              style="height: 67vh; width: 99.97%;"
+              :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', borderBottom: '1px #EDEEF2 solid', fontFamily: 'Microsoft YaHei',fontWeight: 'bold'}"
+              :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
+              :row-style="{ fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
+              <!-- 添加行号列 -->
+              <el-table-column label="序号" align="center" width="100px">
+                <template #default="{ $index }">
+                  {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
+                </template>
+              </el-table-column>
               <el-table-column prop="create_time" label="记录时间" />
               <!-- 动态生成表头 -->
               <template v-for="item in headerData" :key="item.name">
-                <el-table-column v-if="item.name === '最大有功功率'" label="有功功率最大值">
+                <el-table-column v-if="item.name === '最大有功功率(kW)'" label="有功功率最大值">
                   <el-table-column :prop="item.name" label="数值"/>  
                   <el-table-column prop="activePowMaxTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === '最小有功功率'" label="有功功率最小值">
+                <el-table-column v-else-if="item.name === '最小有功功率(kW)'" label="有功功率最小值">
                   <el-table-column :prop="item.name" label="数值"/>  
                   <el-table-column prop="activePowMinTimeData" label="发生时间"/>
                 </el-table-column>
 
 
-                <el-table-column v-else-if="item.name === '最大无功功率'" label="无功功率最大值">
+                <el-table-column v-else-if="item.name === '最大无功功率(kVar)'" label="无功功率最大值">
                   <el-table-column :prop="item.name" label="数值"/>  
                   <el-table-column prop="reactivePowMaxTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === '最小无功功率'" label="无功功率最小值">
+                <el-table-column v-else-if="item.name === '最小无功功率(kVar)'" label="无功功率最小值">
                   <el-table-column :prop="item.name" label="数值"/>  
                   <el-table-column prop="reactivePowMinTimeData" label="发生时间"/>
                 </el-table-column>
 
-                <el-table-column v-else-if="item.name === '最大剩余电流'" label="剩余电流最大值">
+                <el-table-column v-else-if="item.name === '最大剩余电流(A)'" label="剩余电流最大值">
                   <el-table-column :prop="item.name" label="数值"/>  
                   <el-table-column prop="curResidualMaxTime" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === '最小剩余电流'" label="剩余电流最小值">
+                <el-table-column v-else-if="item.name === '最小剩余电流(A)'" label="剩余电流最小值">
                   <el-table-column :prop="item.name" label="数值"/>  
                   <el-table-column prop="curResidualMinTime" label="发生时间"/>
                 </el-table-column>
 
-                <el-table-column v-else-if="item.name === '最大零线电流'" label="零线电流最大值">
+                <el-table-column v-else-if="item.name === '最大零线电流(A)'" label="零线电流最大值">
                   <el-table-column :prop="item.name" label="数值"/>  
                   <el-table-column prop="curZeroMaxTime" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === '最小零线电流'" label="零线电流最小值">
+                <el-table-column v-else-if="item.name === '最小零线电流(A)'" label="零线电流最小值">
                   <el-table-column :prop="item.name" label="数值"/>  
                   <el-table-column prop="curZeroMinTime" label="发生时间"/>
                 </el-table-column>
 
 
-                <el-table-column v-else-if="item.name === '最大视在功率'" label="视在功率最大值">
+                <el-table-column v-else-if="item.name === '最大视在功率(kVA)'" label="视在功率最大值">
                   <el-table-column :prop="item.name" label="数值"/>  
                   <el-table-column prop="apparentPowMaxTimeData" label="发生时间"/>
                 </el-table-column>
-                 <el-table-column v-else-if="item.name === '最小视在功率'" label="视在功率最小值">
+                 <el-table-column v-else-if="item.name === '最小视在功率(kVA)'" label="视在功率最小值">
                   <el-table-column :prop="item.name" label="数值"/>  
                   <el-table-column prop="apparentPowMinTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === '最大电压'" label="电压最大值">
+                <el-table-column v-else-if="item.name === '最大电压(V)'" label="电压最大值">
                   <el-table-column :prop="item.name" label="数值"/>  
                   <el-table-column prop="volMaxTimeData" label="发生时间"/>
                 </el-table-column>
-                 <el-table-column v-else-if="item.name === '最小电压'" label="电压最小值">
+                 <el-table-column v-else-if="item.name === '最小电压(V)'" label="电压最小值">
                   <el-table-column :prop="item.name" label="数值"/>  
                   <el-table-column prop="volMinTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === '最大线电压'" label="线电压最大值">
+                <el-table-column v-else-if="item.name === '最大线电压(V)'" label="线电压最大值">
                   <el-table-column :prop="item.name" label="数值"/>  
                   <el-table-column prop="volLineMaxTimeData" label="发生时间"/>
                 </el-table-column>
-                 <el-table-column v-else-if="item.name === '最小线电压'" label="线电压最小值">
+                 <el-table-column v-else-if="item.name === '最小线电压(V)'" label="线电压最小值">
                   <el-table-column :prop="item.name" label="数值"/>  
                   <el-table-column prop="volLineMinTimeData" label="发生时间"/>
                 </el-table-column>
 
-                <el-table-column v-else-if="item.name === '最大电流'" label="电流最大值">
+                <el-table-column v-else-if="item.name === '最大电流(A)'" label="电流最大值">
                   <el-table-column :prop="item.name" label="数值"/>  
                   <el-table-column prop="curMaxTimeData" label="发生时间"/>
                 </el-table-column>
-                 <el-table-column v-else-if="item.name === '最小电流'" label="电流最小值">
+                 <el-table-column v-else-if="item.name === '最小电流(A)'" label="电流最小值">
                   <el-table-column :prop="item.name" label="数值"/>  
                   <el-table-column prop="curMinTimeData" label="发生时间"/>
                 </el-table-column>
@@ -224,6 +233,7 @@ import { HistoryDataApi } from '@/api/bus/historydata'
 import { formatDate} from '@/utils/formatTime'
 import { IndexApi } from '@/api/bus/busindex'
 import { ElMessage } from 'element-plus'
+import download from '@/utils/download'
 
 defineOptions({ name: 'PDUHistoryLine' })
 
@@ -238,8 +248,12 @@ const instance = getCurrentInstance();
 const tableData = ref<Array<{ }>>([]); // 列表数据
 const headerData = ref<any[]>([]);
 const needFlush = ref(0) // 是否需要刷新图表
+const message = useMessage() // 消息弹窗
 const loading = ref(false) // 加载中
+const exportLoading = ref(false)
 const queryParams = reactive({
+  pageNo: 1,
+  pageSize: 15,
   busId: undefined as number | undefined,
   lineId: undefined,
   type: 'total',
@@ -437,9 +451,9 @@ const curZeroMinValueData = ref<number[]>([]);
 const curZeroMinTimeData = ref<string[]>([]);
 
 // 侧边栏显示需要
-const maxActivePowDataTemp = ref(0);// 最大有功功率 
+const maxActivePowDataTemp = ref(0);// 最大有功功率(kW) 
 const maxActivePowDataTimeTemp = ref();// 最大有功功率的发生时间 
-const minActivePowDataTemp = ref(0);// 最小有功功率 
+const minActivePowDataTemp = ref(0);// 最小有功功率(kW) 
 const minActivePowDataTimeTemp = ref();// 最小有功功率的发生时间 
 
 /** 查询列表 */
@@ -554,21 +568,21 @@ const initChart = () => {
         realtimeChart.setOption({
           title: { text: ''},
           tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-          legend: { data: ['总有功功率', '总视在功率', '总无功功率', '功率因素', '剩余电流', '零线电流', '电压三相不平衡', '电流三相不平衡'],
-                selected: {  "总有功功率": true, "总视在功率": true, "总无功功率": false, "功率因素": false, 
-                              "剩余电流": false, "零线电流": false, "电压三相不平衡": false, "电流三相不平衡": false }
+          legend: { data: ['总有功功率(kW)(kW)', '总视在功率(kVA)', '总无功功率(kVar)', '功率因素', '剩余电流(A)', '零线电流(A)', '电压三相不平衡', '电流三相不平衡'],
+                selected: {  "总有功功率(kW)(kW)": true, "总视在功率(kVA)": true, "总无功功率(kVar)": false, "功率因素": false, 
+                              "剩余电流(A)": false, "零线电流(A)": false, "电压三相不平衡": false, "电流三相不平衡": false }
               },
           grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
           toolbox: {feature: {  restore:{}, saveAsImage: {}}},
           xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
           yAxis: { type: 'value'},
           series: [
-            {name: '总有功功率', type: 'line', symbol: 'none', data: powActiveData.value},
-            {name: '总视在功率', type: 'line', symbol: 'none', data: powApparentData.value},
-            {name: '总无功功率', type: 'line', symbol: 'none', data: powReactiveData.value},
+            {name: '总有功功率(kW)(kW)', type: 'line', symbol: 'none', data: powActiveData.value},
+            {name: '总视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentData.value},
+            {name: '总无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveData.value},
             {name: '功率因素', type: 'line', symbol: 'none', data: powerFactorData.value},
-            {name: '剩余电流', type: 'line', symbol: 'none', data: curResidualData.value},
-            {name: '零线电流', type: 'line', symbol: 'none', data: curZeroData.value},
+            {name: '剩余电流(A)', type: 'line', symbol: 'none', data: curResidualData.value},
+            {name: '零线电流(A)', type: 'line', symbol: 'none', data: curZeroData.value},
             {name: '电流三相不平衡', type: 'line', symbol: 'none', data: curUnbalanceData.value},
             {name: '电压三相不平衡', type: 'line', symbol: 'none', data: volUnbalanceData.value},
         ],
@@ -661,21 +675,21 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
            realtimeChart.setOption({
               title: { text: ''},
               tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-              legend: { data: ['总有功功率', '总视在功率', '总无功功率', '功率因素', '剩余电流', '零线电流', '电压三相不平衡', '电流三相不平衡'],
-                    selected: {  "总有功功率": true, "总视在功率": true, "总无功功率": false, "功率因素": false, 
-                                  "剩余电流": false, "零线电流": false, "电压三相不平衡": false, "电流三相不平衡": false }
+              legend: { data: ['总有功功率(kW)', '总视在功率(kVA)', '总无功功率(kVar)', '功率因素', '剩余电流(A)', '零线电流(A)', '电压三相不平衡', '电流三相不平衡'],
+                    selected: {  "总有功功率(kW)": true, "总视在功率(kVA)": true, "总无功功率(kVar)": false, "功率因素": false, 
+                                  "剩余电流(A)": false, "零线电流(A)": false, "电压三相不平衡": false, "电流三相不平衡": false }
                   },
               grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
               toolbox: {feature: {  restore:{}, saveAsImage: {}}},
               xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
               yAxis: { type: 'value'},
               series: [
-                {name: '总有功功率', type: 'line', symbol: 'none', data: powActiveData.value},
-                {name: '总视在功率', type: 'line', symbol: 'none', data: powApparentData.value},
-                {name: '总无功功率', type: 'line', symbol: 'none', data: powReactiveData.value},
+                {name: '总有功功率(kW)', type: 'line', symbol: 'none', data: powActiveData.value},
+                {name: '总视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentData.value},
+                {name: '总无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveData.value},
                 {name: '功率因素', type: 'line', symbol: 'none', data: powerFactorData.value},
-                {name: '剩余电流', type: 'line', symbol: 'none', data: curResidualData.value},
-                {name: '零线电流', type: 'line', symbol: 'none', data: curZeroData.value},
+                {name: '剩余电流(A)', type: 'line', symbol: 'none', data: curResidualData.value},
+                {name: '零线电流(A)', type: 'line', symbol: 'none', data: curZeroData.value},
                 {name: '电流三相不平衡', type: 'line', symbol: 'none', data: curUnbalanceData.value},
                 {name: '电压三相不平衡', type: 'line', symbol: 'none', data: volUnbalanceData.value},
             ],
@@ -700,8 +714,8 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
             realtimeChart.setOption({     
               title: {text: ''},
               tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-              legend: { data: ['平均有功功率', '最大有功功率', '最小有功功率','平均无功功率', '最大无功功率', '最小无功功率','平均视在功率', '最大视在功率', '最小视在功率', 
-                                '平均剩余电流', '最大剩余电流', '最小剩余电流', '平均零线电流', '最大零线电流', '最小零线电流'],
+              legend: { data: ['平均有功功率(kW)', '最大有功功率(kW)', '最小有功功率(kW)','平均无功功率(kVar)', '最大无功功率(kVar)', '最小无功功率(kVar)','平均视在功率(kVA)', '最大视在功率(kVA)', '最小视在功率(kVA)', 
+                                '平均剩余电流(A)', '最大剩余电流(A)', '最小剩余电流(A)', '平均零线电流(A)', '最大零线电流(A)', '最小零线电流(A)'],
                         selected: { 平均有功功率: true, 最大有功功率: true, 最小有功功率: true, 平均无功功率: false, 最大无功功率: false, 最小无功功率: false, 
                         平均视在功率: false, 最大视在功率: false, 最小视在功率: false, 平均剩余电流: false, 最大剩余电流: false, 最小剩余电流: false,平均零线电流: false, 最大零线电流: false, 最小零线电流: false,}
               },
@@ -712,22 +726,22 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
               ],
               yAxis: { type: 'value'},
               series: [
-                { name: '平均有功功率', type: 'line', symbol: 'none', data: powActiveAvgValueData.value, },
-                { name: '最大有功功率', type: 'line', symbol: 'none', data: powActiveMaxValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '最小有功功率', type: 'line', symbol: 'none', data: powActiveMinValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '平均无功功率', type: 'line', symbol: 'none', data: powReactiveAvgValueData.value, },
-                { name: '最大无功功率', type: 'line', symbol: 'none', data: powReactiveMaxValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '最小无功功率', type: 'line', symbol: 'none', data: powReactiveMinValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '平均视在功率', type: 'line', symbol: 'none', data: powApparentAvgValueData.value, },
-                { name: '最大视在功率', type: 'line', symbol: 'none', data: powApparentMaxValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '最小视在功率', type: 'line', symbol: 'none', data: powApparentMinValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '平均有功功率(kW)', type: 'line', symbol: 'none', data: powActiveAvgValueData.value, },
+                { name: '最大有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMaxValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '最小有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMinValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '平均无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveAvgValueData.value, },
+                { name: '最大无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMaxValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '最小无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMinValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '平均视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentAvgValueData.value, },
+                { name: '最大视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMaxValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '最小视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMinValueData.value, lineStyle: {type: 'dashed'}},
 
-                { name: '平均剩余电流', type: 'line', symbol: 'none', data: curResidualAvgValueData.value, },
-                { name: '最大剩余电流', type: 'line', symbol: 'none', data: curResidualMaxValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '最小剩余电流', type: 'line', symbol: 'none', data: curResidualMinValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '平均零线电流', type: 'line', symbol: 'none', data: curZeroAvgValueData.value, },
-                { name: '最大零线电流', type: 'line', symbol: 'none', data: curZeroMaxValueData.value, lineStyle: {type: 'dashed'}},
-                { name: '最小零线电流', type: 'line', symbol: 'none', data: curZeroMinValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '平均剩余电流(A)', type: 'line', symbol: 'none', data: curResidualAvgValueData.value, },
+                { name: '最大剩余电流(A)', type: 'line', symbol: 'none', data: curResidualMaxValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '最小剩余电流(A)', type: 'line', symbol: 'none', data: curResidualMinValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '平均零线电流(A)', type: 'line', symbol: 'none', data: curZeroAvgValueData.value, },
+                { name: '最大零线电流(A)', type: 'line', symbol: 'none', data: curZeroMaxValueData.value, lineStyle: {type: 'dashed'}},
+                { name: '最小零线电流(A)', type: 'line', symbol: 'none', data: curZeroMinValueData.value, lineStyle: {type: 'dashed'}},
               ],
               dataZoom:[{type: "inside"}],
             });
@@ -755,23 +769,23 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                 // 这里设置 Echarts 的配置项和数据
                 title: { text: ''},
                 tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-                legend: { data:  ['有功功率', '视在功率', '无功功率', '功率因素', '电压', '电流', '负载率', '线电压'],
-                          selected: {  "有功功率": true, "视在功率": false, "无功功率": false, "功率因素": false
-                            , "电压": false, "电流": false, "负载率": false, "线电压": false
+                legend: { data:  ['有功功率(kW)', '视在功率(kVA)', '无功功率(kVar)', '功率因素', '电压(V)', '电流(A)', '负载率', '线电压(V)'],
+                          selected: {  "有功功率(kW)": true, "视在功率(kVA)": false, "无功功率(kVar)": false, "功率因素": false
+                            , "电压(V)": false, "电流(A)": false, "负载率": false, "线电压(V)": false
                            }},
                 grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
                 toolbox: {feature: {  restore:{}, saveAsImage: {}}},
                 xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
                 yAxis: { type: 'value'},
                 series: [
-                  {name: '有功功率', type: 'line', symbol: 'none', data: powActiveData.value},
-                  {name: '无功功率', type: 'line', symbol: 'none', data: powReactiveData.value},
+                  {name: '有功功率(kW)', type: 'line', symbol: 'none', data: powActiveData.value},
+                  {name: '无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveData.value},
                   {name: '功率因素', type: 'line', symbol: 'none', data: powerFactorData.value},
-                  {name: '视在功率', type: 'line', symbol: 'none', data: powApparentData.value},
-                  {name: '电压', type: 'line', symbol: 'none', data: powActiveData.value},
-                  {name: '电流', type: 'line', symbol: 'none', data: powActiveData.value},
+                  {name: '视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentData.value},
+                  {name: '电压(V)', type: 'line', symbol: 'none', data: powActiveData.value},
+                  {name: '电流(A)', type: 'line', symbol: 'none', data: powActiveData.value},
                   {name: '负载率', type: 'line', symbol: 'none', data: loadRateData.value},
-                  {name: '线电压', type: 'line', symbol: 'none', data: volLineData.value},
+                  {name: '线电压(V)', type: 'line', symbol: 'none', data: volLineData.value},
                 ],
                 dataZoom:[{type: "inside"}],
               });
@@ -794,8 +808,8 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
             realtimeChart.setOption( {
             title: {text: ''},
             tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-            legend: { data: [ '平均有功功率', '最大有功功率', '最小有功功率','平均无功功率', '最大无功功率', '最小无功功率','平均视在功率', '最大视在功率', '最小视在功率',
-                               '平均电流', '最大电流', '最小电流','平均电压', '最大电压', '最小电压','平均线电压', '最大线电压', '最小线电压'],
+            legend: { data: [ '平均有功功率(kW)', '最大有功功率(kW)', '最小有功功率(kW)','平均无功功率(kVar)', '最大无功功率(kVar)', '最小无功功率(kVar)','平均视在功率(kVA)', '最大视在功率(kVA)', '最小视在功率(kVA)',
+                               '平均电流(A)', '最大电流(A)', '最小电流(A)','平均电压(V)', '最大电压(V)', '最小电压(V)','平均线电压(V)', '最大线电压(V)', '最小线电压(V)'],
                       selected: {  平均有功功率: true, 最大有功功率: true, 最小有功功率: true, 平均无功功率: false, 最大无功功率: false, 最小无功功率: false,
                                   平均视在功率: false, 最大视在功率: false, 最小视在功率: false, 平均电流: false, 最大电流: false, 最小电流: false, 
                                   平均电压: false, 最大电压: false, 最小电压: false, 平均线电压: false, 最大线电压: false, 最小线电压: false }
@@ -807,26 +821,26 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
             ],
             yAxis: { type: 'value'},
             series: [
-              { name: '平均电流', type: 'line', symbol: 'none', data: curAvgValueData.value, },
-              { name: '最大电流', type: 'line', symbol: 'none', data: curMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最小电流', type: 'line', symbol: 'none', data: curMinValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '平均电压', type: 'line', symbol: 'none', data: volAvgValueData.value, },
-              { name: '最大电压', type: 'line', symbol: 'none', data: volMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最小电压', type: 'line', symbol: 'none', data: volMinValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '平均线电压', type: 'line', symbol: 'none', data: volLineAvgValueData.value, },
-              { name: '最大线电压', type: 'line', symbol: 'none', data: volLineMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最小线电压', type: 'line', symbol: 'none', data: volLineMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '平均电流(A)', type: 'line', symbol: 'none', data: curAvgValueData.value, },
+              { name: '最大电流(A)', type: 'line', symbol: 'none', data: curMaxValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '最小电流(A)', type: 'line', symbol: 'none', data: curMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '平均电压(V)', type: 'line', symbol: 'none', data: volAvgValueData.value, },
+              { name: '最大电压(V)', type: 'line', symbol: 'none', data: volMaxValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '最小电压(V)', type: 'line', symbol: 'none', data: volMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '平均线电压(V)', type: 'line', symbol: 'none', data: volLineAvgValueData.value, },
+              { name: '最大线电压(V)', type: 'line', symbol: 'none', data: volLineMaxValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '最小线电压(V)', type: 'line', symbol: 'none', data: volLineMinValueData.value, lineStyle: {type: 'dashed'}},
 
-              { name: '平均有功功率', type: 'line', symbol: 'none', data: powActiveAvgValueData.value, },
-              { name: '最大有功功率', type: 'line', symbol: 'none', data: powActiveMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最小有功功率', type: 'line', symbol: 'none', data: powActiveMinValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '平均无功功率', type: 'line', symbol: 'none', data: powReactiveAvgValueData.value, },
-              { name: '最大无功功率', type: 'line', symbol: 'none', data: powReactiveMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最小无功功率', type: 'line', symbol: 'none', data: powReactiveMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '平均有功功率(kW)', type: 'line', symbol: 'none', data: powActiveAvgValueData.value, },
+              { name: '最大有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMaxValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '最小有功功率(kW)', type: 'line', symbol: 'none', data: powActiveMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '平均无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveAvgValueData.value, },
+              { name: '最大无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMaxValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '最小无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveMinValueData.value, lineStyle: {type: 'dashed'}},
 
-              { name: '平均视在功率', type: 'line', symbol: 'none', data: powApparentAvgValueData.value, },
-              { name: '最大视在功率', type: 'line', symbol: 'none', data: powApparentMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '最小视在功率', type: 'line', symbol: 'none', data: powApparentMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '平均视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentAvgValueData.value, },
+              { name: '最大视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMaxValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '最小视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentMinValueData.value, lineStyle: {type: 'dashed'}},
             ],
             dataZoom:[{type: "inside"}],
             });
@@ -848,59 +862,59 @@ function totalRealtimeLegendListener(realtimeChart) {
     var legendName = params.name;
     var optionsToUpdate = {};
     switch (legendName) {
-      case '总有功功率':
+      case '总有功功率(kW)':
      if (params.selected[legendName]){
-          optionsToUpdate = {  "总有功功率": true , "功率因素": false, 
-                            "剩余电流": false, "零线电流": false, "电压三相不平衡": false, "电流三相不平衡": false };
+          optionsToUpdate = {  "总有功功率(kW)": true , "功率因素": false, 
+                            "剩余电流(A)": false, "零线电流(A)": false, "电压三相不平衡": false, "电流三相不平衡": false };
         }
         break;
 
-      case '总视在功率':
+      case '总视在功率(kVA)':
       if (params.selected[legendName]){
-          optionsToUpdate = { "总视在功率": true, "功率因素": false, 
-                            "剩余电流": false, "零线电流": false, "电压三相不平衡": false, "电流三相不平衡": false };
+          optionsToUpdate = { "总视在功率(kVA)": true, "功率因素": false, 
+                            "剩余电流(A)": false, "零线电流(A)": false, "电压三相不平衡": false, "电流三相不平衡": false };
       }
         break;
 
-      case '总无功功率':
+      case '总无功功率(kVar)':
       if (params.selected[legendName]){
-          optionsToUpdate = { "总无功功率": true, "功率因素": false, "剩余电流": false, "零线电流": false,
+          optionsToUpdate = { "总无功功率(kVar)": true, "功率因素": false, "剩余电流(A)": false, "零线电流(A)": false,
                              "电压三相不平衡": false, "电流三相不平衡": false };
       }
         break;
 
       case '功率因素':
       if (params.selected[legendName]){
-        optionsToUpdate = {  "总有功功率": false, "总视在功率": false, "总无功功率": false, "功率因素": true, 
-                            "剩余电流": false, "零线电流": false, "电压三相不平衡": false, "电流三相不平衡": false };
+        optionsToUpdate = {  "总有功功率(kW)": false, "总视在功率(kVA)": false, "总无功功率(kVar)": false, "功率因素": true, 
+                            "剩余电流(A)": false, "零线电流(A)": false, "电压三相不平衡": false, "电流三相不平衡": false };
       }
         break;
 
-      case '剩余电流':
+      case '剩余电流(A)':
       if (params.selected[legendName]){
-        optionsToUpdate =  {  "总有功功率": false, "总视在功率": false, "总无功功率": false, "功率因素": false, 
-                            "剩余电流": true, "零线电流": false, "电压三相不平衡": false, "电流三相不平衡": false };
+        optionsToUpdate =  {  "总有功功率(kW)": false, "总视在功率(kVA)": false, "总无功功率(kVar)": false, "功率因素": false, 
+                            "剩余电流(A)": true, "零线电流(A)": false, "电压三相不平衡": false, "电流三相不平衡": false };
       }
         break;
 
-      case '零线电流':
+      case '零线电流(A)':
       if (params.selected[legendName]){
-        optionsToUpdate = {  "总有功功率": false, "总视在功率": false, "总无功功率": false, "功率因素": false, 
-                            "剩余电流": false, "零线电流": true, "电压三相不平衡": false, "电流三相不平衡": false };
+        optionsToUpdate = {  "总有功功率(kW)": false, "总视在功率(kVA)": false, "总无功功率(kVar)": false, "功率因素": false, 
+                            "剩余电流(A)": false, "零线电流(A)": true, "电压三相不平衡": false, "电流三相不平衡": false };
       }
         break;
 
       case '电压三相不平衡':
       if (params.selected[legendName]){
-        optionsToUpdate ={  "总有功功率": false, "总视在功率": false, "总无功功率": false, "功率因素": false, 
-                            "剩余电流": false, "零线电流": false, "电压三相不平衡": true, "电流三相不平衡": false };
+        optionsToUpdate ={  "总有功功率(kW)": false, "总视在功率(kVA)": false, "总无功功率(kVar)": false, "功率因素": false, 
+                            "剩余电流(A)": false, "零线电流(A)": false, "电压三相不平衡": true, "电流三相不平衡": false };
       }
         break;
 
       case '电流三相不平衡':
       if (params.selected[legendName]){
-        optionsToUpdate = {  "总有功功率": false, "总视在功率": false, "总无功功率": false, "功率因素": false, 
-                            "剩余电流": false, "零线电流": false, "电压三相不平衡": false, "电流三相不平衡": true };
+        optionsToUpdate = {  "总有功功率(kW)": false, "总视在功率(kVA)": false, "总无功功率(kVar)": false, "功率因素": false, 
+                            "剩余电流(A)": false, "零线电流(A)": false, "电压三相不平衡": false, "电流三相不平衡": true };
       }
         break;
         
@@ -910,7 +924,7 @@ function totalRealtimeLegendListener(realtimeChart) {
 
     realtimeChart?.setOption({
       legend: {
-        data: ['总有功功率', '总视在功率', '总无功功率', '功率因素', '剩余电流', '零线电流', '电压三相不平衡', '电流三相不平衡'],
+        data: ['总有功功率(kW)', '总视在功率(kVA)', '总无功功率(kVar)', '功率因素', '剩余电流(A)', '零线电流(A)', '电压三相不平衡', '电流三相不平衡'],
         selected: optionsToUpdate
       },
     });
@@ -922,92 +936,92 @@ function customTooltipFormatter(params: any[]) {
   var tooltipContent = ''; 
   params.forEach(function(item) {
     switch( item.seriesName ){
-      case '总有功功率':
-      case '总无功功率':
-      case '有功功率':
-      case '无功功率':
-      case '平均有功功率':
-      case '平均无功功率':
+      case '总有功功率(kW)':
+      case '总无功功率(kVar)':
+      case '有功功率(kW)':
+      case '无功功率(kVar)':
+      case '平均有功功率(kW)':
+      case '平均无功功率(kVar)':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  记录时间: ' +params[0].name + '<br/>';
         break;
-      case '最大有功功率':
+      case '最大有功功率(kW)':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +powActiveMaxTimeData.value[item.dataIndex] + '<br/>';
         break;
-      case '最小有功功率':
+      case '最小有功功率(kW)':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +powActiveMinTimeData.value[item.dataIndex] + '<br/>';
         break;
       
-      case '最大无功功率':
+      case '最大无功功率(kVar)':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +powReactiveMaxTimeData.value[item.dataIndex] + '<br/>';
         break;
-      case '最小无功功率':
+      case '最小无功功率(kVar)':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +powReactiveMinTimeData.value[item.dataIndex] + '<br/>';
         break;
 
-      case '总视在功率':
-      case '视在功率':
-      case '平均视在功率':
+      case '总视在功率(kVA)':
+      case '视在功率(kVA)':
+      case '平均视在功率(kVA)':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  记录时间: ' +params[0].name + '<br/>';
         break;
-      case '最大视在功率':
+      case '最大视在功率(kVA)':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  发生时间: ' +powApparentMaxTimeData.value[item.dataIndex] + '<br/>';
         break;
-      case '最小视在功率':
+      case '最小视在功率(kVA)':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  发生时间: ' +powApparentMinTimeData.value[item.dataIndex] + '<br/>';
         break;
 
-      case '电流':
+      case '电流(A)':
       case '电流三相不平衡': 
-      case '平均电流':
+      case '平均电流(A)':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' A  记录时间: ' +params[0].name + '<br/>';
         break;
-      case '最大电流':
+      case '最大电流(A)':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' A  发生时间: ' +curMaxTimeData.value[item.dataIndex] + '<br/>';
         break;
-      case '最小电流':
+      case '最小电流(A)':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' A  发生时间: ' +curMinTimeData.value[item.dataIndex] + '<br/>';
         break;
 
-      case '剩余电流':
-      case '平均剩余电流':
+      case '剩余电流(A)':
+      case '平均剩余电流(A)':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' A  记录时间: ' +params[0].name + '<br/>';
         break;
-      case '最大剩余电流':
+      case '最大剩余电流(A)':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' A  发生时间: ' +curResidualMaxTimeData.value[item.dataIndex] + '<br/>';
         break;
-      case '最小剩余电流':
+      case '最小剩余电流(A)':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' A  发生时间: ' +curResidualMinTimeData.value[item.dataIndex] + '<br/>';
         break;
 
-      case '零线电流':
-      case '平均零线电流':
+      case '零线电流(A)':
+      case '平均零线电流(A)':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' A  记录时间: ' +params[0].name + '<br/>';
         break;
-      case '最大零线电流':
+      case '最大零线电流(A)':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' A  发生时间: ' +curZeroMaxTimeData.value[item.dataIndex] + '<br/>';
         break;
-      case '最小零线电流':
+      case '最小零线电流(A)':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' A  发生时间: ' +curZeroMinTimeData.value[item.dataIndex] + '<br/>';
         break;
 
-      case '电压':
-      case '线电压':
+      case '电压(V)':
+      case '线电压(V)':
       case '电压三相不平衡': 
-      case '平均电压':
-      case '平均线电压':
+      case '平均电压(V)':
+      case '平均线电压(V)':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' V  记录时间: ' +params[0].name + '<br/>';
         break;
-      case '最大电压':
+      case '最大电压(V)':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' V  发生时间: ' +volMaxTimeData.value[item.dataIndex] + '<br/>';
         break;
-      case '最小电压':
+      case '最小电压(V)':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' V  发生时间: ' +volMinTimeData.value[item.dataIndex] + '<br/>';
         break;
 
-      case '最大线电压':
+      case '最大线电压(V)':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' V  发生时间: ' +volLineMaxTimeData.value[item.dataIndex] + '<br/>';
         break;
-      case '最小线电压':
+      case '最小线电压(V)':
         tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' V  发生时间: ' +volLineMinTimeData.value[item.dataIndex] + '<br/>';
         break;
 
@@ -1027,48 +1041,48 @@ function totalHourAndDayLegendListener(realtimeChart) {
     var legendName = params.name;
     var optionsToUpdate = {};
     switch (legendName) {
-      case '平均视在功率':
-      case '最大视在功率':
-      case '最小视在功率':
+      case '平均视在功率(kVA)':
+      case '最大视在功率(kVA)':
+      case '最小视在功率(kVA)':
       if (params.selected[legendName]){
-        optionsToUpdate = { "平均视在功率": true, "最大视在功率": true, "最小视在功率": true, "平均剩余电流": false, "最大剩余电流": false, "最小剩余电流": false, 
-        "平均零线电流": false, "最大零线电流": false, "最小零线电流": false };
+        optionsToUpdate = { "平均视在功率(kVA)": true, "最大视在功率(kVA)": true, "最小视在功率(kVA)": true, "平均剩余电流(A)": false, "最大剩余电流(A)": false, "最小剩余电流(A)": false, 
+        "平均零线电流(A)": false, "最大零线电流(A)": false, "最小零线电流(A)": false };
       }
         break;
 
-      case '平均有功功率':
-      case '最大有功功率':
-      case '最小有功功率':
+      case '平均有功功率(kW)':
+      case '最大有功功率(kW)':
+      case '最小有功功率(kW)':
       if (params.selected[legendName]){
-        optionsToUpdate = { "平均有功功率": true, "最大有功功率": true, "最小有功功率": true, "平均剩余电流": false, "最大剩余电流": false, "最小剩余电流": false, 
-        "平均零线电流": false, "最大零线电流": false, "最小零线电流": false };
+        optionsToUpdate = { "平均有功功率(kW)": true, "最大有功功率(kW)": true, "最小有功功率(kW)": true, "平均剩余电流(A)": false, "最大剩余电流(A)": false, "最小剩余电流(A)": false, 
+        "平均零线电流(A)": false, "最大零线电流(A)": false, "最小零线电流(A)": false };
       }
         break;
 
-      case '平均无功功率':
-      case '最大无功功率':
-      case '最小无功功率':
+      case '平均无功功率(kVar)':
+      case '最大无功功率(kVar)':
+      case '最小无功功率(kVar)':
       if (params.selected[legendName]){
-        optionsToUpdate = { "平均无功功率": true, "最大无功功率": true, "最小无功功率": true, "平均剩余电流": false, "最大剩余电流": false, "最小剩余电流": false, 
-        "平均零线电流": false, "最大零线电流": false, "最小零线电流": false };
+        optionsToUpdate = { "平均无功功率(kVar)": true, "最大无功功率(kVar)": true, "最小无功功率(kVar)": true, "平均剩余电流(A)": false, "最大剩余电流(A)": false, "最小剩余电流(A)": false, 
+        "平均零线电流(A)": false, "最大零线电流(A)": false, "最小零线电流(A)": false };
       }
         break;
 
-      case '平均剩余电流':
-      case '最大剩余电流':
-      case '最小剩余电流':
+      case '平均剩余电流(A)':
+      case '最大剩余电流(A)':
+      case '最小剩余电流(A)':
       if (params.selected[legendName]){
-        optionsToUpdate = { "平均剩余电流": true, "最大剩余电流": true, "最小剩余电流": true, "平均视在功率": false, "最大视在功率": false, "最小视在功率": false,
-                          "平均有功功率": false, "最大有功功率": false, "最小有功功率": false,"平均无功功率": false, "最大无功功率": false, "最小无功功率": false};
+        optionsToUpdate = { "平均剩余电流(A)": true, "最大剩余电流(A)": true, "最小剩余电流(A)": true, "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false,
+                          "平均有功功率(kW)": false, "最大有功功率(kW)": false, "最小有功功率(kW)": false,"平均无功功率(kVar)": false, "最大无功功率(kVar)": false, "最小无功功率(kVar)": false};
       }
         break;
 
-      case '平均零线电流':
-      case '最大零线电流':
-      case '最小零线电流':
+      case '平均零线电流(A)':
+      case '最大零线电流(A)':
+      case '最小零线电流(A)':
       if (params.selected[legendName]){
-        optionsToUpdate = { "平均零线电流": true, "最大零线电流": true, "最小零线电流": true, "平均视在功率": false, "最大视在功率": false, "最小视在功率": false,
-                          "平均有功功率": false, "最大有功功率": false, "最小有功功率": false,"平均无功功率": false, "最大无功功率": false, "最小无功功率": false};
+        optionsToUpdate = { "平均零线电流(A)": true, "最大零线电流(A)": true, "最小零线电流(A)": true, "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false,
+                          "平均有功功率(kW)": false, "最大有功功率(kW)": false, "最小有功功率(kW)": false,"平均无功功率(kVar)": false, "最大无功功率(kVar)": false, "最小无功功率(kVar)": false};
       }
         break;
 
@@ -1079,8 +1093,8 @@ function totalHourAndDayLegendListener(realtimeChart) {
 
     realtimeChart?.setOption({
       legend: {
-        data:  ['平均有功功率', '最大有功功率', '最小有功功率','平均无功功率', '最大无功功率', '最小无功功率','平均视在功率', '最大视在功率', '最小视在功率', 
-                '平均剩余电流', '最大剩余电流', '最小剩余电流', '平均零线电流', '最大零线电流', '最小零线电流'],
+        data:  ['平均有功功率(kW)', '最大有功功率(kW)', '最小有功功率(kW)','平均无功功率(kVar)', '最大无功功率(kVar)', '最小无功功率(kVar)','平均视在功率(kVA)', '最大视在功率(kVA)', '最小视在功率(kVA)', 
+                '平均剩余电流(A)', '最大剩余电流(A)', '最小剩余电流(A)', '平均零线电流(A)', '最大零线电流(A)', '最小零线电流(A)'],
         selected: optionsToUpdate
       },
     });
@@ -1093,59 +1107,59 @@ function lineRealtimeLegendListener(realtimeChart) {
     var legendName = params.name;
     var optionsToUpdate = {};
     switch (legendName) {
-      case '有功功率':
+      case '有功功率(kW)':
      if (params.selected[legendName]){
-          optionsToUpdate = { "有功功率": true,  "功率因素": false , "电压": false, 
-                            "电流": false, "负载率": false, "线电压": false }
+          optionsToUpdate = { "有功功率(kW)": true,  "功率因素": false , "电压(V)": false, 
+                            "电流(A)": false, "负载率": false, "线电压(V)": false }
         }
         break;
 
-      case '视在功率':
+      case '视在功率(kVA)':
       if (params.selected[legendName]){
-          optionsToUpdate = { "视在功率": true,  "功率因素": false , "电压": false, 
-                            "电流": false, "负载率": false, "线电压": false }
+          optionsToUpdate = { "视在功率(kVA)": true,  "功率因素": false , "电压(V)": false, 
+                            "电流(A)": false, "负载率": false, "线电压(V)": false }
       }
         break;
 
-      case '无功功率':
+      case '无功功率(kVar)':
       if (params.selected[legendName]){
-          optionsToUpdate = { "无功功率": true,  "功率因素": false , "电压": false, 
-                            "电流": false, "负载率": false, "线电压": false }
+          optionsToUpdate = { "无功功率(kVar)": true,  "功率因素": false , "电压(V)": false, 
+                            "电流(A)": false, "负载率": false, "线电压(V)": false }
       }
         break;
 
       case '功率因素':
       if (params.selected[legendName]){
-        optionsToUpdate = { "功率因素": true,  "有功功率": false,  "视在功率": false,  
-                           "无功功率": false , "电压": false, "电流": false, "负载率": false, "线电压": false }
+        optionsToUpdate = { "功率因素": true,  "有功功率(kW)": false,  "视在功率(kVA)": false,  
+                           "无功功率(kVar)": false , "电压(V)": false, "电流(A)": false, "负载率": false, "线电压(V)": false }
       }
         break;
 
-      case '电流':
+      case '电流(A)':
       if (params.selected[legendName]){
-        optionsToUpdate = { "电流": true, "功率因素": false , "有功功率": false,  "视在功率": false,  
-                             "无功功率": false , "电压": false,  "负载率": false, "线电压": false }
+        optionsToUpdate = { "电流(A)": true, "功率因素": false , "有功功率(kW)": false,  "视在功率(kVA)": false,  
+                             "无功功率(kVar)": false , "电压(V)": false,  "负载率": false, "线电压(V)": false }
       }
         break;
 
-      case '电压':
+      case '电压(V)':
       if (params.selected[legendName]){
-        optionsToUpdate = { "电压": true, "功率因素": false , "有功功率": false, "电流": false, 
-                          "视在功率": false,  "无功功率": false, "负载率": false}
+        optionsToUpdate = { "电压(V)": true, "功率因素": false , "有功功率(kW)": false, "电流(A)": false, 
+                          "视在功率(kVA)": false,  "无功功率(kVar)": false, "负载率": false}
       }
         break;
 
-      case '线电压':
+      case '线电压(V)':
       if (params.selected[legendName]){
-        optionsToUpdate = { "线电压": true, "功率因素": false , "有功功率": false, "电流": false, 
-                            "视在功率": false,  "无功功率": false, "负载率": false}
+        optionsToUpdate = { "线电压(V)": true, "功率因素": false , "有功功率(kW)": false, "电流(A)": false, 
+                            "视在功率(kVA)": false,  "无功功率(kVar)": false, "负载率": false}
       }
         break;
 
       case '负载率':
       if (params.selected[legendName]){
-        optionsToUpdate = { "负载率": true, "电压": false, "线电压": false, "功率因素": false ,"电流": false,  
-                            "有功功率": false,  "视在功率": false,  "无功功率": false}
+        optionsToUpdate = { "负载率": true, "电压(V)": false, "线电压(V)": false, "功率因素": false ,"电流(A)": false,  
+                            "有功功率(kW)": false,  "视在功率(kVA)": false,  "无功功率(kVar)": false}
       }
         break;
         
@@ -1155,7 +1169,7 @@ function lineRealtimeLegendListener(realtimeChart) {
 
     realtimeChart?.setOption({
       legend: {
-        data: ['有功功率', '视在功率', '无功功率', '功率因素', '电压', '电流', '负载率', '线电压'],
+        data: ['有功功率(kW)', '视在功率(kVA)', '无功功率(kVar)', '功率因素', '电压(V)', '电流(A)', '负载率', '线电压(V)'],
         selected: optionsToUpdate
       },
     });
@@ -1168,60 +1182,60 @@ function lineHourAndDayLegendListener(realtimeChart) {
     var legendName = params.name;
     var optionsToUpdate = {};
     switch (legendName) {
-      case '平均视在功率':
-      case '最大视在功率':
-      case '最小视在功率':
+      case '平均视在功率(kVA)':
+      case '最大视在功率(kVA)':
+      case '最小视在功率(kVA)':
       if (params.selected[legendName]){
-        optionsToUpdate = { "平均视在功率": true, "最大视在功率": true, "最小视在功率": true, "平均电流": false, "最大电流": false, "最小电流": false, 
-                            "平均电压": false, "最大电压": false, "最小电压": false, "平均线电压": false, "最大线电压": false, "最小线电压": false,  };
+        optionsToUpdate = { "平均视在功率(kVA)": true, "最大视在功率(kVA)": true, "最小视在功率(kVA)": true, "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false, 
+                            "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false, "平均线电压(V)": false, "最大线电压(V)": false, "最小线电压(V)": false,  };
       }
         break;
 
-      case '平均有功功率':
-      case '最大有功功率':
-      case '最小有功功率':
+      case '平均有功功率(kW)':
+      case '最大有功功率(kW)':
+      case '最小有功功率(kW)':
       if (params.selected[legendName]){
-        optionsToUpdate = { "平均有功功率": true, "最大有功功率": true, "最小有功功率": true, "平均电流": false, "最大电流": false, "最小电流": false, 
-                          "平均电压": false, "最大电压": false, "最小电压": false, "平均线电压": false, "最大线电压": false, "最小线电压": false, };
+        optionsToUpdate = { "平均有功功率(kW)": true, "最大有功功率(kW)": true, "最小有功功率(kW)": true, "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false, 
+                          "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false, "平均线电压(V)": false, "最大线电压(V)": false, "最小线电压(V)": false, };
       }
         break;
 
-      case '平均无功功率':
-      case '最大无功功率':
-      case '最小无功功率':
+      case '平均无功功率(kVar)':
+      case '最大无功功率(kVar)':
+      case '最小无功功率(kVar)':
       if (params.selected[legendName]){
-        optionsToUpdate = { "平均无功功率": true, "最大无功功率": true, "最小无功功率": true, "平均电流": false, "最大电流": false, "最小电流": false, 
-                         "平均电压": false, "最大电压": false, "最小电压": false, "平均线电压": false, "最大线电压": false, "最小线电压": false };
+        optionsToUpdate = { "平均无功功率(kVar)": true, "最大无功功率(kVar)": true, "最小无功功率(kVar)": true, "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false, 
+                         "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false, "平均线电压(V)": false, "最大线电压(V)": false, "最小线电压(V)": false };
       }
         break;
 
-      case '平均电流':
-      case '最大电流':
-      case '最小电流':
+      case '平均电流(A)':
+      case '最大电流(A)':
+      case '最小电流(A)':
       if (params.selected[legendName]){
-        optionsToUpdate = { "平均电流": true, "最大电流": true, "最小电流": true, "平均视在功率": false, "最大视在功率": false, "最小视在功率": false,
-                          "平均有功功率": false, "最大有功功率": false, "最小有功功率": false,"平均无功功率": false, "最大无功功率": false, "最小无功功率": false,
-                           "平均电压": false, "最大电压": false, "最小电压": false, "平均线电压": false, "最大线电压": false, "最小线电压": false};
+        optionsToUpdate = { "平均电流(A)": true, "最大电流(A)": true, "最小电流(A)": true, "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false,
+                          "平均有功功率(kW)": false, "最大有功功率(kW)": false, "最小有功功率(kW)": false,"平均无功功率(kVar)": false, "最大无功功率(kVar)": false, "最小无功功率(kVar)": false,
+                           "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false, "平均线电压(V)": false, "最大线电压(V)": false, "最小线电压(V)": false};
       }
         break;
 
-      case '平均电压':
-      case '最大电压':
-      case '最小电压':
+      case '平均电压(V)':
+      case '最大电压(V)':
+      case '最小电压(V)':
       if (params.selected[legendName]){
-        optionsToUpdate = { "平均电压": true, "最大电压": true, "最小电压": true, "平均视在功率": false, "最大视在功率": false, "最小视在功率": false,
-                 "平均有功功率": false, "最大有功功率": false, "最小有功功率": false,"平均无功功率": false, "最大无功功率": false, "最小无功功率": false,
-                 "平均电流": false, "最大电流": false, "最小电流": false }
+        optionsToUpdate = { "平均电压(V)": true, "最大电压(V)": true, "最小电压(V)": true, "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false,
+                 "平均有功功率(kW)": false, "最大有功功率(kW)": false, "最小有功功率(kW)": false,"平均无功功率(kVar)": false, "最大无功功率(kVar)": false, "最小无功功率(kVar)": false,
+                 "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false }
           }
         break;
 
-      case '平均线电压':
-      case '最大线电压':
-      case '最小线电压':
+      case '平均线电压(V)':
+      case '最大线电压(V)':
+      case '最小线电压(V)':
       if (params.selected[legendName]){
-        optionsToUpdate = {"平均线电压": true, "最大线电压": true, "最小线电压": true, "平均视在功率": false, "最大视在功率": false, "最小视在功率": false,
-                 "平均有功功率": false, "最大有功功率": false, "最小有功功率": false,"平均无功功率": false, "最大无功功率": false, "最小无功功率": false,
-                 "平均电流": false, "最大电流": false, "最小电流": false  };
+        optionsToUpdate = {"平均线电压(V)": true, "最大线电压(V)": true, "最小线电压(V)": true, "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false,
+                 "平均有功功率(kW)": false, "最大有功功率(kW)": false, "最小有功功率(kW)": false,"平均无功功率(kVar)": false, "最大无功功率(kVar)": false, "最小无功功率(kVar)": false,
+                 "平均电流(A)": false, "最大电流(A)": false, "最小电流(A)": false  };
       }
         break;
 
@@ -1232,8 +1246,8 @@ function lineHourAndDayLegendListener(realtimeChart) {
 
     realtimeChart?.setOption({
       legend: {
-        data:  ['平均有功功率', '最大有功功率', '最小有功功率','平均无功功率', '最大无功功率', '最小无功功率','平均视在功率', '最大视在功率', '最小视在功率', 
-                '平均电流', '最大电流', '最小电流', '平均电压', '最大电压', '最小电压', '平均线电压', '最大线电压', '最小线电压'],
+        data:  ['平均有功功率(kW)', '最大有功功率(kW)', '最小有功功率(kW)','平均无功功率(kVar)', '最大无功功率(kVar)', '最小无功功率(kVar)','平均视在功率(kVA)', '最大视在功率(kVA)', '最小视在功率(kVA)', 
+                '平均电流(A)', '最大电流(A)', '最小电流(A)', '平均电压(V)', '最大电压(V)', '最小电压(V)', '平均线电压(V)', '最大线电压(V)', '最小线电压(V)'],
         selected: optionsToUpdate
       },
     });
@@ -1321,6 +1335,27 @@ const handleClick = async (row) => {
       nowLocationTemp.value = row.unique
     });
     handleQuery();
+  }
+}
+
+//导出Excel
+const handleExport1 = async () => {
+  try {
+    // 导出的二次确认
+    await message.exportConfirm()
+    // 发起导出
+    queryParams.pageNo = 1
+    exportLoading.value = true
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await HistoryDataApi.exportBusHistorydetailsPageData(queryParams, axiosConfig)
+    await download.excel(data, '母线始端箱电力分析.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
+  } finally {
+    exportLoading.value = false
   }
 }
 

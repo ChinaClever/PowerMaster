@@ -189,6 +189,7 @@
                   <el-table-column :prop="item.name" label="数值"/>   
                   <el-table-column prop="temMaxTimeData" label="发生时间"/>
                 </el-table-column>
+                
                 <el-table-column v-else-if="item.name === '最低温度'" label="温度最低值℃">
                   <el-table-column :prop="item.name" label="数值"/>   
                   <el-table-column prop="temMinTimeData" label="发生时间"/>
@@ -201,7 +202,7 @@
                   <el-table-column :prop="item.name" label="数值"/>   
                   <el-table-column prop="humMinTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-else :prop="item.name" :label="item.name"/>   
+                <el-table-column v-else :prop="item.name" :label="item.name"/>  
               </template>
             </el-table>
             </div>
