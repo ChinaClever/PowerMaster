@@ -206,7 +206,7 @@ public class BusHistoryDataController {
     }
 
     @GetMapping("/bus-tem-export-excel")
-    @Operation(summary = "导出母线插接箱环境历史数据 Excel")
+    @Operation(summary = "导出母线始端箱温度分析环境历史数据 Excel")
 //    @PreAuthorize("@ss.hasPermission('pdu:env-history-data:export')")
     @OperateLog(type = EXPORT)
     public void exportBusTemHistoryDataExcel(BusHistoryDataDetailsReqVO pageReqVO,
@@ -226,7 +226,7 @@ public class BusHistoryDataController {
     }
 
     @GetMapping("/box-tem-export-excel")
-    @Operation(summary = "导出母线插接箱环境历史数据 Excel")
+    @Operation(summary = "导出母线插接箱温度分析环境历史数据 Excel")
 //    @PreAuthorize("@ss.hasPermission('pdu:env-history-data:export')")
     @OperateLog(type = EXPORT)
     public void exportBoxTemHistoryDataExcel(BusHistoryDataDetailsReqVO pageReqVO,
