@@ -459,7 +459,7 @@ const queryParams = reactive({
   powGranularity: "oneHour",
 })
 
-// const queryFormRef = ref() // 搜索的表单
+const queryFormRef = ref() // 搜索的表单
 // const exportLoading = ref(false) // 导出的加载中
 
 //数据
@@ -604,7 +604,6 @@ const initChart = async () => {
   chartData.value.factorList.forEach((obj,index) => {
     chartData.value.factorList[index] = obj?.toFixed(2);
   });
-  debugger
   
   if (chartContainer.value && instance) {
     chart = echarts.init(chartContainer.value);
@@ -774,7 +773,7 @@ const flashChartData = async () =>{
   beforeChartUnmount();
 
   var tempParams = { devKey : queryParams.devKey, type : queryParams.powGranularity}
-  chartData.value = await PDUDeviceApi.PDUHis(tempParams); 
+  chartData.value = await PDUDeviceApi.PDUHis(tempParams);
   chartData.value.apparentList.forEach((obj,index) => {
     chartData.value.apparentList[index] = obj?.toFixed(3);
   });
@@ -896,7 +895,7 @@ const getTestData = async()=>{
   circleList.value = [];
   output.value = [];
 
-  if(testData.value.pdu_data?.loop_item_list?.pow_apparent != null && testData.value.pdu_data?.loop_item_list?.pow_apparent.length > 0){
+  if(testData.value?.pdu_data?.loop_item_list?.pow_apparent != null && testData.value?.pdu_data?.loop_item_list?.pow_apparent.length > 0){
     var temp = [] as any;
     for (let i = 0; i < testData.value.pdu_data?.loop_item_list["pow_apparent"].length; i++) {
       let loopItem = {} as any;
@@ -932,7 +931,7 @@ const getTestData = async()=>{
   });
 
   
-  if(testData.value.pdu_data?.output_item_list?.name != null && testData.value.pdu_data?.output_item_list?.name.length > 0){
+  if(testData.value?.pdu_data?.output_item_list?.name != null && testData.value?.pdu_data?.output_item_list?.name.length > 0){
     var temp = [] as any;
     for (let i = 0; i < testData.value.pdu_data.output_item_list["name"].length; i++) {
       let loopItem = {} as any;
@@ -967,7 +966,7 @@ const getTestData = async()=>{
     element.power_factor = element.power_factor?.toFixed(2);
   });
 
-  if(testData.value.pdu_data?.env_item_list?.tem_value){
+  if(testData.value?.pdu_data?.env_item_list?.tem_value){
     var temp = [] as any;
     for(let i = 0; i < testData.value.pdu_data.env_item_list["tem_value"].length; i++){
       if(testData.value.pdu_data.env_item_list.insert[i] != 1){
