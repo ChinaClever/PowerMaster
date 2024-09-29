@@ -3,14 +3,14 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <div class="carousel-container">
+        <!-- <div class="carousel-container"> -->
           <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
             <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
               <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
             </el-carousel-item>
           </el-carousel> -->
-        </div> 
-        <div class="nav_header">
+        <!-- </div>  -->
+        <!-- <div class="nav_header">
           <span v-if="nowAddress">{{nowAddress}}</span>
           <br/>
           <template v-if="queryParams.granularity == 'realtime' && queryParams.timeRange != null">
@@ -31,7 +31,36 @@
             <span v-if="minActivePowDataTimeTemp">{{ minActivePowDataTimeTemp }}</span>
           </el-descriptions-item>
         </el-descriptions>
+        </div> -->
+        
+        <div class="nav_header" style="font-size: 14px;">
+          <span v-if="nowAddress">{{nowAddress}}</span>
+          <br/>
+      </div>
+      
+        <div  class="descriptions-container" v-if="maxActivePowDataTimeTemp" style="font-size: 14px;">
+          <div  class="description-item">
+            <span class="label">最大值 :</span>
+            <span >{{ formatNumber(maxActivePowDataTemp, 3) }} kW</span>
+          </div>
+          <div v-if="maxActivePowDataTimeTemp" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ maxActivePowDataTimeTemp }}</span>
+          </div>
+          <br/>
+          <div  class="description-item">
+            <span class="label">最小值 :</span>
+            <span >{{ formatNumber(minActivePowDataTemp, 3) }} kW</span>
+          </div>
+          <div v-if="minActivePowDataTimeTemp" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ minActivePowDataTimeTemp }}</span>
+          </div>
+          <div style="text-align: center">
+              <div class="line" style="margin-top: 10px;"></div>
+            </div>
         </div>
+
       </div>
     </template>
     <template #ActionBar>
@@ -71,7 +100,7 @@
     </template>
     <template #Content>
       <div v-loading="loading">
-        <el-tabs v-model="activeName1">
+        <el-tabs v-model="activeName1" v-if="loading2">
           <el-tab-pane label="图表" name="myChart">
             <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 65vh;"></div>
           </el-tab-pane>
@@ -136,6 +165,7 @@ const activeName1 = ref('myChart')
 const instance = getCurrentInstance()
 const tableData = ref<Array<{ }>>([]) // 列表数据
 const headerData = ref<any[]>([])
+const loading2=ref(false);
 const needFlush = ref(0) // 是否需要刷新图表
 const queryParams = reactive({
   rackId: undefined as number | undefined,
@@ -272,6 +302,7 @@ loading.value = true
  try {
     const data = await HistoryDataApi.getHistoryDataDetails(queryParams);
     if (data != null && data.total != 0){
+      loading2.value=true
       isHaveData.value = true
       totalActivePowData.value = data.list.map((item) => formatNumber(item.active_total, 3));
       totalApparentPowData.value = data.list.map((item) => formatNumber(item.apparent_total, 3)); 
@@ -307,6 +338,7 @@ loading.value = true
 
     }else{
       isHaveData.value = false;
+      loading2.value=false
       ElMessage({
         message: '暂无数据',
         type: 'warning',

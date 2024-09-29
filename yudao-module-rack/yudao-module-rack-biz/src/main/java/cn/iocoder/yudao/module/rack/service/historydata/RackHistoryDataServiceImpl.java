@@ -206,4 +206,31 @@ public class RackHistoryDataServiceImpl implements RackHistoryDataService {
         return map;
     }
 
+    @Override
+    public List<Object> getNewList(List<Object> list) {
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        for (Object obj : list) {
+            if (obj instanceof Map && ((Map<?, ?>) obj).keySet().stream().allMatch(key -> key instanceof String)) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) obj;
+                mapList.add(map);
+            }
+        }
+        for(int i=0;i<mapList.size();i++) {
+            mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
+        }
+        if(mapList.get(0).containsKey("reactive_total_min_time")){
+            for(int i=0;i<mapList.size();i++) {
+                mapList.get(i).put("reactive_total_min_time", mapList.get(i).get("reactive_total_min_time").toString().substring(0, 16));
+                mapList.get(i).put("reactive_total_max_time", mapList.get(i).get("reactive_total_max_time").toString().substring(0, 16));
+                mapList.get(i).put("active_total_min_time", mapList.get(i).get("active_total_min_time").toString().substring(0, 16));
+                mapList.get(i).put("active_total_max_time", mapList.get(i).get("active_total_max_time").toString().substring(0, 16));
+                mapList.get(i).put("apparent_total_max_time", mapList.get(i).get("apparent_total_max_time").toString().substring(0, 16));
+                mapList.get(i).put("apparent_total_min_time", mapList.get(i).get("apparent_total_min_time").toString().substring(0, 16));
+            }
+        }
+
+        return list;
+    }
+
 }

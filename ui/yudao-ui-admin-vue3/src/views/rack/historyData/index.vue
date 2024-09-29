@@ -3,13 +3,13 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <div class="carousel-container">
+        <!-- <div class="carousel-container"> -->
           <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
             <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
               <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
             </el-carousel-item>
           </el-carousel> -->
-        </div>
+        <!-- </div>
         <div class="nav_header">
           <br/>
           <span v-if="queryParams.granularity == 'realtime' ">全部机架最近一分钟新增记录</span>
@@ -20,7 +20,22 @@
           <el-descriptions title="" direction="vertical" :column="1" border >
             <el-descriptions-item label=""><span >{{ navTotalData }} 条</span></el-descriptions-item>
           </el-descriptions>
-        </div>
+        </div> -->
+
+        <div class="descriptions-container" style="font-size: 14px;">
+          <div class="description-item">
+            <span class="label" >总数据 :</span>
+            <span class="value">{{ navTotalData }}条</span>
+          </div>
+          <div style="text-align: center">
+            <div v-if="queryParams.granularity == 'realtime' " style="text-align: center"><span>全部PDU最近一分钟新增记录</span></div>
+              <div v-if="queryParams.granularity == 'hour' " style="text-align: center"><span>全部PDU最近一小时新增记录</span></div>
+              <div v-if="queryParams.granularity == 'day' " style="text-align: center"><span>全部PDU最近一天新增记录</span></div>
+                <div class="line" style="margin-top: 10px;"></div>
+          </div>
+          </div>
+
+        
       </div>
     </template>
       <template #ActionBar>
@@ -121,11 +136,11 @@
 </template>
 
 <script setup lang="ts">
-import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { HistoryDataApi } from '@/api/rack/historydata'
 import { CabinetApi } from '@/api/cabinet/info'
 import { IndexApi } from '@/api/rack/index'
+import dayjs from 'dayjs'
 const { push } = useRouter()
 /** 机架历史数据 列表 */
 defineOptions({ name: 'CabinetHistoryData' })
@@ -246,7 +261,7 @@ watch(() => queryParams.granularity, (newValues) => {
         { label: '机架名', align: 'center', prop: 'rack_name', istrue:true},
         { label: '有功功率(kW)', align: 'center', prop: 'active_total' , istrue:true, formatter: formatPower},
         { label: '视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, formatter: formatPower},
-        { label: '时间', align: 'center', prop: 'create_time', formatter: dateFormatter, istrue:true},
+        { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
         { label: '操作', align: 'center', slot: 'actions' , istrue:true},
       ]
       queryParams.pageNo = 1;
@@ -276,17 +291,17 @@ watch(() => queryParams.granularity, (newValues) => {
       tableColumns.value = [
         { label: '位置', align: 'center', prop: 'location' , width: '160px' , istrue:true},
         { label: '机架名', align: 'center', prop: 'rack_name', width: '160px', istrue:true},
+        { label: '记录时间', align: 'center', prop: 'create_time' , width: '230px',  formatter: formatTime,istrue:true},
         { label: '平均有功功率(kW)', align: 'center', prop: 'active_total_avg_value', istrue:true, width: '180px', formatter: formatPower},
         { label: '最大有功功率(kW)', align: 'center', prop: 'active_total_max_value', istrue:true, width: '180px', formatter: formatPower},
-        { label: '最大有功功率时间', align: 'center', prop: 'active_total_max_time', formatter: dateFormatter, width: '200px', istrue:true},
+        { label: '最大有功功率时间', align: 'center', prop: 'active_total_max_time', formatter: formatTime, width: '200px', istrue:true},
         { label: '最小有功功率(kW)', align: 'center', prop: 'active_total_min_value', istrue:true, width: '180px', formatter: formatPower},
-        { label: '最小有功功率时间', align: 'center', prop: 'active_total_min_time', formatter: dateFormatter, width: '200px', istrue:true},
+        { label: '最小有功功率时间', align: 'center', prop: 'active_total_min_time', formatter: formatTime, width: '200px', istrue:true},
         { label: '平均视在功率(kVA)', align: 'center', prop: 'apparent_total_avg_value', istrue:true, width: '180px', formatter: formatPower},
         { label: '最大视在功率(kVA)', align: 'center', prop: 'apparent_total_max_value', istrue:true, width: '180px', formatter: formatPower},
-        { label: '最大视在功率时间', align: 'center', prop: 'apparent_total_max_time', formatter: dateFormatter, width: '200px', istrue:true},
+        { label: '最大视在功率时间', align: 'center', prop: 'apparent_total_max_time', formatter: formatTime, width: '200px', istrue:true},
         { label: '最小视在功率(kVA)', align: 'center', prop: 'apparent_total_min_value', istrue:true, width: '180px', formatter: formatPower},
-        { label: '最小视在功率时间', align: 'center', prop: 'apparent_total_min_time', formatter: dateFormatter, width: '200px', istrue:true},
-        { label: '记录时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true},
+        { label: '最小视在功率时间', align: 'center', prop: 'apparent_total_min_time', formatter: formatTime, width: '200px', istrue:true},
         { label: '操作', align: 'center', slot: 'actions', istrue:true},
       ];
       queryParams.pageNo = 1;
@@ -301,7 +316,7 @@ const tableColumns = ref([
   { label: '机架名', align: 'center', prop: 'rack_name', istrue:true},
   { label: '有功功率(kW)', align: 'center', prop: 'active_total' , istrue:true, formatter: formatPower},
   { label: '视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, formatter: formatPower},
-  { label: '时间', align: 'center', prop: 'create_time', formatter: dateFormatter, istrue:true},
+  { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
   { label: '操作', align: 'center', slot: 'actions' , istrue:true},
 ]) as any;
 
@@ -382,7 +397,13 @@ const toDetails = (rackId: number, location:string, rackName:string) => {
   location += '-'+rackName
   push('/u/record/historyLine?rackId='+rackId+'&location='+location);
 }
-
+// 格式化日期
+function formatTime(_row: any, _column: any, cellValue: number): string {
+  if (!cellValue) {
+    return ''
+  }
+  return dayjs(cellValue).format('YYYY-MM-DD HH:mm')
+}
 /** 导出按钮操作 */
 const handleExport = async () => {
   try {
@@ -447,5 +468,29 @@ onMounted(() => {
   height: 100%;
   object-fit: cover; 
 }
+.description-item {
+  display: flex;
+  align-items: center;
+}
 
+.label {
+  width:100px; /* 控制冒号前的宽度 */
+  text-align: right; /* 文本右对齐 */
+  margin-right: 20px; /* 控制冒号后的间距 */
+}
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+}
+  .line {
+    height: 1px;
+    margin-top: 28px;
+
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
+
+  ::v-deep .el-table .el-table__header th {
+    background-color: #F5F7FA;
+    color: #909399;
+}
 </style>

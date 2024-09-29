@@ -239,7 +239,7 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnergyConsumptionApi.exportRealtimeEQPageData(queryParams, axiosConfig)
-    await download.excel(data, 'PDU电能记录.xlsx')
+    await download.excel(data, '机柜电能记录.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
