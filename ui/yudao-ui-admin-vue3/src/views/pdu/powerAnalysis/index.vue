@@ -32,9 +32,10 @@
             <span class="value">{{ lastMonthTotalData }}条</span>
           </div>    <br/>
           <div style="text-align: center"><span>全部PDU新增能耗记录</span>
-              <div class="line" style="margin-top: 10px;"></div>
-            </div>
+            <div class="line" style="margin-top: 10px;"></div>
+          </div>
         </div>
+        
       </div>
     </template>
     <template #ActionBar>

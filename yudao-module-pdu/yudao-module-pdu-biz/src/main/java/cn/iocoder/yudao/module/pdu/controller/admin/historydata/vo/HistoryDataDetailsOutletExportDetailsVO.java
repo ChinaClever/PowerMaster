@@ -4,16 +4,21 @@ import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.NumberFormat;
 import com.alibaba.excel.annotation.write.style.ColumnWidth;
+import com.alibaba.excel.annotation.write.style.ContentStyle;
 import com.alibaba.excel.annotation.write.style.HeadRowHeight;
+import com.alibaba.excel.annotation.write.style.HeadStyle;
+import com.alibaba.excel.enums.poi.HorizontalAlignmentEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 
 @Schema(description = "管理后台 - pdu历史数据详情 导出原始数据")
 @Data
 @ExcelIgnoreUnannotated
 @HeadRowHeight(20)
 @ColumnWidth(20)
-
+@HeadStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
+@ContentStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
 public class HistoryDataDetailsOutletExportDetailsVO {
     @ExcelProperty("记录时间")
     private String create_time;

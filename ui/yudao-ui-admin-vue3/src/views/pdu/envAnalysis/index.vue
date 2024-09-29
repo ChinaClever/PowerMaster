@@ -400,7 +400,7 @@ const isHaveData = ref(false);
 const getList = async () => { 
   loading.value = true;
   try {
-    // debugger
+    // 
     const data = await EnvDataApi.getEnvDataDetails(queryParams);
     if (data != null && data.total != 0){
       loading2.value=true
@@ -501,6 +501,7 @@ const initChart = () => {
     setupLegendListener(realtimeChart);
   }
   // 每次切换图就要动态生成数据表头
+  debugger
   headerData.value = realtimeChart?.getOption().series as any[];
   updateTableData();
 };
@@ -521,6 +522,7 @@ const updateTableData = () => {
     }
     data.push(rowData);
   }
+  
   tableData.value = data;
 };
 
@@ -580,6 +582,7 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
           setupLegendListener(realtimeChart);
         } 
         // 每次切换图就要动态生成数据表头
+        debugger
         headerData.value = realtimeChart?.getOption().series as any[];
         updateTableData();
     }else{
@@ -619,6 +622,7 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
         setupLegendListener1(realtimeChart);          
       }
       // 每次切换图就要动态生成数据表头
+      debugger
       headerData.value = realtimeChart?.getOption().series as any[];
       updateTableData();
     }
@@ -855,6 +859,7 @@ const handleClick = async (row) => {
       nowAddress.value = fullName
     });
     let data: any[] = [];
+    
     tableData.value = data;
     handleQuery();
   }

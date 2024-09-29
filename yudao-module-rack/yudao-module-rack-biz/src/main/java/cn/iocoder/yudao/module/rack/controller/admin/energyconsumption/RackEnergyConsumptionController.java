@@ -5,10 +5,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
-import cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO.BillPageRespVO;
-import cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO.EQPageRespVO;
-import cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO.RackEnergyConsumptionPageReqVO;
-import cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO.RealtimeEQPageRespVO;
+import cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO.*;
 import cn.iocoder.yudao.module.rack.service.energyconsumption.RackEnergyConsumptionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -49,6 +46,7 @@ public class RackEnergyConsumptionController {
                                   HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = rackEnergyConsumptionService.getEQDataPage(pageReqVO).getList();
+        rackEnergyConsumptionService.getNewEqList(list);
         // 导出 Excel
         ExcelUtils.write(response, "机架能耗趋势数据.xlsx", "数据", EQPageRespVO.class,
                 BeanUtils.toBean(list, EQPageRespVO.class));
@@ -122,4 +120,18 @@ public class RackEnergyConsumptionController {
         return success(pageResult);
     }
 
+
+    @GetMapping("/outlets-export-excel")
+    @Operation(summary = "导出机架能耗排名数据 Excel")
+//    @PreAuthorize("@ss.hasPermission('pdu:history-data:export')")
+    @OperateLog(type = EXPORT)
+    public void exportOutletsEQDataExcel(RackEnergyConsumptionPageReqVO pageReqVO,
+                                          HttpServletResponse response) throws IOException {
+        pageReqVO.setPageSize(10000);
+        List<Object> list = rackEnergyConsumptionService.getEQDataDetails(pageReqVO).getList();
+        rackEnergyConsumptionService.getNewOutletsList(list);
+        // 导出 Excel
+        ExcelUtils.write(response, "机架能耗排名数据.xlsx", "数据", RackEnergyExportPageVO.class,
+                BeanUtils.toBean(list, RackEnergyExportPageVO.class));
+    }
 }

@@ -169,7 +169,7 @@
                   <el-table-column :prop="item.name" label="数值"/>   
                   <el-table-column prop="aTemMinTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-if="item.name === 'B路最高温度'" label="B路温度最高值">
+                <el-table-column v-else-if="item.name === 'B路最高温度'" label="B路温度最高值">
                   <el-table-column :prop="item.name" label="数值"/>   
                   <el-table-column prop="bTemMaxTimeData" label="发生时间"/>
                 </el-table-column>
@@ -177,7 +177,7 @@
                   <el-table-column :prop="item.name" label="数值"/>   
                   <el-table-column prop="bTemMinTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-if="item.name === 'C路最高温度'" label="C路温度最高值">
+                <el-table-column v-else-if="item.name === 'C路最高温度'" label="C路温度最高值">
                   <el-table-column :prop="item.name" label="数值"/>   
                   <el-table-column prop="cTemMaxTimeData" label="发生时间"/>
                 </el-table-column>
@@ -185,7 +185,7 @@
                   <el-table-column :prop="item.name" label="数值"/>   
                   <el-table-column prop="cTemMinTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-if="item.name === '中线最高温度'" label="中线温度最高值">
+                <el-table-column v-else-if="item.name === '中线最高温度'" label="中线温度最高值">
                   <el-table-column :prop="item.name" label="数值"/>   
                   <el-table-column prop="nTemMaxTimeData" label="发生时间"/>
                 </el-table-column>

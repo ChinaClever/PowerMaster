@@ -258,9 +258,8 @@ public class BusHistoryDataController {
 
         pageReqVO.setPageSize(10000);
         List<Object> list = busHistoryDataService.getBusHistoryDataDetails(pageReqVO).getList();
+
         busHistoryDataService.getNewDetailHistoryList(list);
-
-
        if(((Map)list.get(0)).containsKey("line_id")){
            // 导出 Excel
            if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
