@@ -30,14 +30,14 @@ export const BusPowerLoadDetailApi = {
     return await request.post({ url: `/bus/PowerLoad/bus/eqData`, params })
   },
 
-  //查询id
-  getBusId: async (params: any) => {
-    return await request.post({ url: `/bus/PowerLoad/bus/BusId`, params })
+  //查询id和位置
+  getBusIdAndLocation: async (params: any) => {
+    return await request.post({ url: `/bus/PowerLoad/bus/idAndLocation`, params })
   },
 
-  //查询id
-  getBoxId: async (params: any) => {
-    return await request.post({ url: `/bus/PowerLoad/bus/BoxId`, params })
+  //查询id和位置
+  getBoxIdAndLocation: async (params: any) => {
+    return await request.post({ url: `/bus/PowerLoad/box/idAndLocation`, params })
   },
 
   getBusdevKeyList: async () => {

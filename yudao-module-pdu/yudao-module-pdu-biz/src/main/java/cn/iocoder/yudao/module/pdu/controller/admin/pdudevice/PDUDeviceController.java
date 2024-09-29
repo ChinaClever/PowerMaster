@@ -74,6 +74,12 @@ public class PDUDeviceController {
         return success(pDUDeviceService.getDisplayDataByDevKey(devKey));
     }
 
+    @GetMapping("/displayscreen/location")
+    @Operation(summary = "获得位置")
+    public CommonResult<String> getLocationByDevKey(String devKey) {
+        return success(pDUDeviceService.getLocationByDevKey(devKey));
+    }
+
     @GetMapping("/hisdata")
     @Operation(summary = "获得PDU历史数据")
     public CommonResult<Map> getHistoryDataByDevKey(String devKey,String type) {

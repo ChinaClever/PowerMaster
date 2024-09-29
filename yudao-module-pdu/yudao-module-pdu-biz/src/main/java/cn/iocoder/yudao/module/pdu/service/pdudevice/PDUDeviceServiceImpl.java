@@ -457,6 +457,25 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     }
 
     @Override
+    public String getLocationByDevKey(String devKey) {
+        List<PDUDeviceDO> result = new ArrayList<>();
+        PduIndex pduIndex = pDUDeviceMapper.selectOne(PduIndex :: getDevKey, devKey);
+        if (pduIndex == null){
+            return null;
+        }
+        List<PduIndex> pduIndices = new ArrayList<>();
+        pduIndices.add(pduIndex);
+            PDUDeviceDO pduDeviceDO = new PDUDeviceDO();
+            pduDeviceDO.setStatus(pduIndex.getRunStatus());
+            pduDeviceDO.setId(pduIndex.getId());
+            pduDeviceDO.setDevKey(pduIndex.getDevKey());
+            pduDeviceDO.setDeleted(pduIndex.getIsDeleted().equals(1));
+            result.add(pduDeviceDO);
+        setLocation(pduIndices,result);
+        return  result.get(0).getLocation();
+    }
+
+    @Override
     public Integer getPDUMaxLineId(PDUDevicePageReqVO pageReqVO) {
         try {
         String index = null;

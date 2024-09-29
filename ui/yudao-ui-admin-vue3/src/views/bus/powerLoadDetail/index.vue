@@ -41,7 +41,7 @@
     </div>
   </div>
   <div style="margin:10px;">
-  <el-row >
+  <el-row v-show="hasData">
     <el-col :span="12" style="background-color: #E7E7E7;padding: 0px;padding-right: 10px;">
       <div  style="background-color: #FFFFFF;width: 100%;height: 100%;border-radius: 5px">
       <div style="color:#606266;padding-left:10px;padding-top:10px">| 电力负荷</div>
@@ -107,9 +107,12 @@
       </div>
     </el-col>
   </el-row>
+  <el-row v-show="!hasData" >
+    <el-col>设备离线或者输入的地址不正确</el-col>
+  </el-row>
   </div>
-  <div style="margin:10px;background-color: #ffffff;padding: 10px;border-radius: 5px" >
-  <el-row >
+  <div style="margin:10px;background-color: #ffffff;padding: 10px;border-radius: 5px" v-show="hasData">
+  <el-row  v-show="hasData">
     <el-col :span="19">
     <el-radio-group v-model="typeRadio">
       <el-radio-button label="电流" value="电流" @click="switchChartContainer =0"/>
@@ -120,6 +123,7 @@
       <el-radio-button label="视在功率" value="视在功率" @click="switchChartContainer =0"/>
       <el-radio-button label="功率因素" value="功率因素" @click="switchChartContainer =0"/>
       <el-radio-button label="负载率" value="负载率" :disabled="isLoadRateDisabled" @click="switchChartContainer =0"/>
+      <el-radio-button label="线电压" value="线电压" @click="switchChartContainer =0"/>
     </el-radio-group>
   </el-col>
   <el-col :span="5">
@@ -144,9 +148,11 @@ import * as echarts from 'echarts';
 import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
 import { ElMessage } from 'element-plus';
 import { formatDate} from '@/utils/formatTime'
+import { has } from 'lodash-es';
 const queryFormRef = ref() // 搜索的表单
 const input = ref('')
 // const value1 = ref('')
+const hasData = ref(true)
 const location = ref(history?.state?.location)
 const instance = getCurrentInstance();
 const typeRadio = ref('电流')
@@ -546,6 +552,7 @@ const getDetailData =async () => {
  try {
     const data = await BusPowerLoadDetailApi.getDetailData(queryParams);
     if (data != null){
+      hasData.value = true
       runLoad.value = formatNumber(data.runLoad, 2);
       ratedCapacity.value = formatNumber(data.ratedCapacity, 1);
       reserveMargin.value = formatNumber(data.reserveMargin, 2);
@@ -564,26 +571,21 @@ const getDetailData =async () => {
         xAxisLabel.value = '高损耗运行'
       }
     }else{
-      ElMessage({
-        message: '设备离线或者输入的地址不正确',
-        type: 'warning',
-      });  
+        hasData.value = false;
     }
  } finally {
  }
 }
 
-const getBusId =async () => {
+const getBusIdAndLocation =async () => {
  try {
-    const data = await BusPowerLoadDetailApi.getBusId(queryParams);
+    const data = await BusPowerLoadDetailApi.getBusIdAndLocation(queryParams);
     if (data != null){
-      queryParams.id = data
-      lineChartQueryParams.id = data
+      queryParams.id = data.busId
+      lineChartQueryParams.id = data.busId
+      location.value = data.location
     }else{
-      ElMessage({
-        message: '设备离线或者输入的地址不正确',
-        type: 'warning',
-      });  
+      location.value = null
     }
  } finally {
  }
@@ -1164,23 +1166,6 @@ const getLineChartData =async () => {
       await initData();
       isHaveData.value = true
     }else{
-      // 没查到数据
-      isHaveData.value = false
-      ElMessage({
-        message: '暂无数据',
-        type: 'warning',
-      }); 
-      myChart2?.setOption({
-        title: {
-          text: '暂无数据',
-          x: 'center',
-          y: 'center',
-          textStyle: {
-            fontSize: 16,
-            fontWeight: 'normal',
-          }
-        }
-      }, true);
     }
 
     const data2 = await BusPowerLoadDetailApi.getBusEqChartData(lineChartQueryParams);
@@ -1195,23 +1180,6 @@ const getLineChartData =async () => {
       await initData();
       isHaveData.value = true
     }else{
-      // 没查到数据
-      isHaveData.value = false
-      ElMessage({
-        message: '暂无数据',
-        type: 'warning',
-      }); 
-      myChart3?.setOption({
-        title: {
-          text: '暂无数据',
-          x: 'center',
-          y: 'center',
-          textStyle: {
-            fontSize: 16,
-            fontWeight: 'normal',
-          }
-        }
-      }, true);
     }
  } finally {
  }
@@ -1221,124 +1189,193 @@ function initData (){
   if(timeRadio.value == '近一小时'){
     switch (typeRadio.value){
       case '电流':
+        if(allLineData.value != null){
         L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.cur_value, 2));
         L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.cur_value, 2));
         L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.cur_value, 2));
+        }
         break;
       case '电压':
+        if(allLineData.value != null){
         L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.vol_value, 1));
         L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.vol_value, 1));
         L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.vol_value, 1));
+        }
         break;
       case '有效电能':
+        if(allEqData.value != null){
         eqValue.value = allEqData.value.L1.map((item) => formatNumber(item.eq_value, 3));
+        }
         break;
       case '有功功率':
+        if(allLineData.value != null){
         L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_active, 3));
         L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_active, 3));
         L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_active, 3));
+        }
         break;              
       case '无功功率':
+        if(allLineData.value != null){
         L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_reactive, 3));
         L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_reactive, 3));
         L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_reactive, 3));
+        }
        break;
       case '视在功率':
+        if(allLineData.value != null){
         L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_apparent, 3));
         L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_apparent, 3));
         L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_apparent, 3));
+        }
        break;
       case '功率因素':
+        if(allLineData.value != null){
         L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.power_factor, 2));
         L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.power_factor, 2));
         L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.power_factor, 2));
+        }
+        break;
+      case '线电压':
+        if(allLineData.value != null){
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.vol_line, 2));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.vol_line, 2));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.vol_line, 2));
+        }
         break;
       case '负载率':
+        if(allLineData.value != null){
         L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.load_rate, 1));
         L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.load_rate, 1));
         L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.load_rate, 1));
+        }
         break;             
     }
   }else if(timeRadio.value == '近一天' || timeRadio.value == '近三天'){
     switch (typeRadio.value){
       case '电流':
+        if(allLineData.value != null){
         L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.cur_avg_value, 2));
         L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.cur_avg_value, 2));
         L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.cur_avg_value, 2));
+        }
         break;
       case '电压':
+        if(allLineData.value != null){
         L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.vol_avg_value, 1));
         L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.vol_avg_value, 1));
         L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.vol_avg_value, 1));
+        }
         break;
       case '有效电能':
+        if(allEqData.value != null){
         eqValue.value = allEqData.value.L1.map((item) => formatNumber(item.ele_active, 3));
+        }
         break;
       case '有功功率':
+        if(allLineData.value != null){
         L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_active_avg_value, 3));
         L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_active_avg_value, 3));
         L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_active_avg_value, 3));
+        }
         break;              
       case '无功功率':
+        if(allLineData.value != null){
         L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_reactive_avg_value, 3));
         L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_reactive_avg_value, 3));
         L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_reactive_avg_value, 3));
+        }
        break;
       case '视在功率':
+        if(allLineData.value != null){
         L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_apparent_avg_value, 3));
         L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_apparent_avg_value, 3));
         L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_apparent_avg_value, 3));
+        }
        break;
       case '功率因素':
+        if(allLineData.value != null){
         L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.power_factor_avg_value, 2));
         L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.power_factor_avg_value, 2));
         L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.power_factor_avg_value, 2));
+        }
+        break;
+      case '线电压':
+        if(allLineData.value != null){
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.vol_line_avg_value, 2));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.vol_line_avg_value, 2));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.vol_line_avg_value, 2));
+        }
         break;
       case '负载率':
+        if(allLineData.value != null){
         L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.load_rate, 1));
         L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.load_rate, 1));
         L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.load_rate, 1));
+        }
         break;    
       }
   }else{
         switch (typeRadio.value){
       case '电流':
+        if(allLineData.value != null){
         L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.cur_avg_value, 2));
         L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.cur_avg_value, 2));
         L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.cur_avg_value, 2));
+        }
         break;
       case '电压':
+        if(allLineData.value != null){
         L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.vol_avg_value, 1));
         L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.vol_avg_value, 1));
         L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.vol_avg_value, 1));
+        }
         break;
       case '有效电能':
+        if(allEqData.value != null){
         eqValue.value = allEqData.value.L1.map((item) => formatNumber(item.eq_value, 3));
+        }
         break;
       case '有功功率':
+        if(allLineData.value != null){
         L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_active_avg_value, 3));
         L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_active_avg_value, 3));
         L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_active_avg_value, 3));
+        }
         break;              
       case '无功功率':
+        if(allLineData.value != null){
         L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_reactive_avg_value, 3));
         L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_reactive_avg_value, 3));
         L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_reactive_avg_value, 3));
+        }
        break;
       case '视在功率':
+        if(allLineData.value != null){
         L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_apparent_avg_value, 3));
         L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_apparent_avg_value, 3));
         L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_apparent_avg_value, 3));
+        }
        break;
       case '功率因素':
+        if(allLineData.value != null){
         L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.power_factor_avg_value, 2));
         L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.power_factor_avg_value, 2));
         L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.power_factor_avg_value, 2));
+        }
+        break;
+      case '线电压':
+        if(allLineData.value != null){
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.vol_line_avg_value, 2));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.vol_line_avg_value, 2));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.vol_line_avg_value, 2));
+        }
         break;
       case '负载率':
+        if(allLineData.value != null){
         L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.load_rate, 1));
         L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.load_rate, 1));
         L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.load_rate, 1));
+        }
         break;    
       }
   }
@@ -1366,7 +1403,7 @@ function formatNumber(value, decimalPlaces) {
 /** 搜索按钮操作 */
 const handleQuery = async () => {
   queryParams.devKey = queryParamsSearch.devKey;
-  await getBusId();
+  await getBusIdAndLocation();
   await flashChartData();
 }
 

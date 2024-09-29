@@ -2,11 +2,17 @@ package cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail;
 
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxResBase;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusResBase;
 import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailReqVO;
 import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailRespVO;
+import cn.iocoder.yudao.module.bus.service.boxindex.BoxIndexServiceImpl;
+import cn.iocoder.yudao.module.bus.service.busindex.BusIndexServiceImpl;
 import cn.iocoder.yudao.module.bus.service.buspowerloaddetail.BusPowerLoadDetailService;
+import cn.iocoder.yudao.module.bus.service.historydata.BusHistoryDataService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +32,13 @@ import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 public class BusPowerLoadDetailController {
     @Resource
     private BusPowerLoadDetailService busPowerLoadDetailService;
+
+    @Autowired
+    private BusIndexServiceImpl busIndexService;
+
+    @Autowired
+    private BoxIndexServiceImpl boxIndexService;
+
     @PostMapping("/detail")
     @Operation(summary = "查询电力负荷详情")
     public CommonResult<BusPowerLoadDetailRespVO> getBusDetailData(@Valid BusPowerLoadDetailReqVO reqVO) throws IOException {
@@ -68,27 +81,27 @@ public class BusPowerLoadDetailController {
         return success(resultMap);
     }
 
-    @PostMapping("/bus/BusId")
-    @Operation(summary = "查询电量数据 折线图数据")
-    public CommonResult<Long>  getBusId(@Valid BusPowerLoadDetailReqVO reqVO) throws IOException {
-        Long id = busPowerLoadDetailService.getBusId(reqVO);
-        return success(id);
+    @PostMapping("/bus/idAndLocation")
+    @Operation(summary = "根据devKey查询id和location")
+    public CommonResult<BusResBase>  getBusIdAndLocationByDevKey(@Valid BusPowerLoadDetailReqVO reqVO) throws IOException {
+        BusResBase busResBase   =  busPowerLoadDetailService.getBusIdAndLocationByDevKey(reqVO);
+        return success(busResBase);
     }
 
-    @PostMapping("/bus/BoxId")
-    @Operation(summary = "查询电量数据 折线图数据")
-    public CommonResult<Long>  getBoxId(@Valid BusPowerLoadDetailReqVO reqVO) throws IOException {
-        Long id = busPowerLoadDetailService.getBoxId(reqVO);
-        return success(id);
+    @PostMapping("/box/idAndLocation")
+    @Operation(summary = "根据devKey查询id和location")
+    public CommonResult<BoxResBase>  getBoxAndLocationByDevKey(@Valid BusPowerLoadDetailReqVO reqVO) throws IOException {
+        BoxResBase boxResBase = busPowerLoadDetailService.getBoxIdAndLocationByDevKey(reqVO);
+        return success(boxResBase);
     }
 
     @GetMapping("/bus/devKeyList")
-    @Operation(summary = "获得PDU设备devKey列表")
+    @Operation(summary = "获得devKey列表")
     public List<String> getBusDevKeyList() {
         return busPowerLoadDetailService.getBusDevKeyList();
     }
     @GetMapping("/box/devKeyList")
-    @Operation(summary = "获得PDU设备devKey列表")
+    @Operation(summary = "获得devKey列表")
     public List<String> getBoxDevKeyList() {
         return busPowerLoadDetailService.getBoxDevKeyList();
     }

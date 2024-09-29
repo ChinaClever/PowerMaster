@@ -4,12 +4,16 @@ import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
 import cn.iocoder.yudao.framework.common.exception.ServiceException;
 import cn.iocoder.yudao.framework.common.mapper.BoxIndexMapper;
+import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxResBase;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusResBase;
 import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailReqVO;
 import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailRespVO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.boxindex.BoxIndexDO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxindex.BoxIndexCopyMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
+import cn.iocoder.yudao.module.bus.service.boxindex.BoxIndexServiceImpl;
+import cn.iocoder.yudao.module.bus.service.busindex.BusIndexServiceImpl;
 import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -47,6 +51,12 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
     private BusIndexMapper busIndexMapper;
     @Autowired
     private BoxIndexCopyMapper boxIndexCopyMapper;
+
+    @Autowired
+    private BusIndexServiceImpl busIndexService;
+
+    @Autowired
+    private BoxIndexServiceImpl boxIndexService;
 
 
     @Override
@@ -127,25 +137,25 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
         searchSourceBuilder.query(QueryBuilders.termQuery("bus_id", busId));
         if (Objects.equals(reqVO.getGranularity(), "realtime")){
             searchRequest.indices("bus_hda_line_realtime");
-            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id", "pow_active","pow_reactive","pow_apparent", "power_factor", "vol_value",  "cur_value","load_rate", "create_time"}, null);
+            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id", "pow_active","pow_reactive","pow_apparent", "power_factor", "vol_value",  "cur_value","load_rate", "vol_line","create_time"}, null);
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(oneHourAgo.format(formatter))
                     .to(now.format(formatter)));
         } else if (Objects.equals(reqVO.getGranularity(), "hour")) {
             searchRequest.indices("bus_hda_line_hour");
-            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value","power_factor_avg_value", "pow_apparent_avg_value", "vol_avg_value",  "cur_avg_value","create_time"}, null);
+            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value","power_factor_avg_value", "pow_apparent_avg_value", "vol_avg_value",  "cur_avg_value","vol_line_avg_value","create_time"}, null);
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(oneDayAgo.format(formatter))
                     .to(now.format(formatter)));
         } else if (Objects.equals(reqVO.getGranularity(), "SeventyHours")) {
             searchRequest.indices("bus_hda_line_hour");
-            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value","power_factor_avg_value", "pow_apparent_avg_value", "vol_avg_value",  "cur_avg_value","create_time"}, null);
+            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value","power_factor_avg_value", "pow_apparent_avg_value", "vol_avg_value",  "cur_avg_value","vol_line_avg_value","create_time"}, null);
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(threeDaysAgo.format(formatter))
                     .to(now.format(formatter)));
         }else{
             searchRequest.indices("bus_hda_line_day");
-            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value","power_factor_avg_value", "pow_apparent_avg_value" ,"vol_avg_value",  "cur_avg_value","create_time"}, null);
+            searchSourceBuilder.fetchSource(new String[]{"bus_id", "line_id", "pow_active_avg_value", "pow_reactive_avg_value","power_factor_avg_value", "pow_apparent_avg_value" ,"vol_avg_value",  "cur_avg_value","vol_line_avg_value","create_time"}, null);
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(oneMonthAgo.format(formatter))
                     .to(now.format(formatter)));
@@ -507,31 +517,6 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
         return resultMap;
     }
 
-    @Override
-    public Long getBusId(BusPowerLoadDetailReqVO reqVO) {
-        if (StringUtils.isEmpty(reqVO.getDevKey())){
-            return null;
-        }
-        BusIndexDO busIndexDO =  busIndexMapper.selectOne(BusIndexDO::getDevKey, reqVO.getDevKey());
-        if (busIndexDO == null){
-            return null;
-        }
-        long busId = busIndexDO.getId();
-        return busId;
-    }
-
-    @Override
-    public Long getBoxId(BusPowerLoadDetailReqVO reqVO) {
-        if (StringUtils.isEmpty(reqVO.getDevKey())){
-            return null;
-        }
-        BoxIndex boxIndex = boxIndexCopyMapper.selectOne(BoxIndex::getDevKey, reqVO.getDevKey());
-        if (boxIndex == null){
-            return null;
-        }
-        long boxId = boxIndex.getId();
-        return boxId;
-    }
 
     @Override
     public List<String> getBusDevKeyList() {
@@ -545,6 +530,49 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
         List<String> result = boxIndexCopyMapper.selectList().stream().limit(10).collect(Collectors.toList())
                 .stream().map(BoxIndex::getDevKey).collect(Collectors.toList());
         return result;
+    }
+
+    @Override
+    public BusResBase getBusIdAndLocationByDevKey(BusPowerLoadDetailReqVO reqVO) {
+        BusIndexDO busIndexDO = busIndexMapper.selectOne(BusIndexDO::getDevKey, reqVO.getDevKey());
+        if (busIndexDO != null) {
+            List<BusResBase> busResBaseList = new ArrayList<>();
+            BusResBase busResBase = new BusResBase();// 创建 BusResBase 对象
+            busResBase.setBusId(busIndexDO.getId());
+            busResBase.setBusName(busIndexDO.getBusName());
+            busResBase.setDevKey(reqVO.getDevKey());
+            busResBaseList.add(busResBase);// 将对象添加到列表中
+            try {
+                busIndexService.getPosition(busResBaseList);
+                return busResBaseList.get(0);
+            } catch (Exception e) {
+                return null;
+            }
+        }else {
+            return null;
+        }
+    }
+
+    @Override
+    public BoxResBase getBoxIdAndLocationByDevKey(BusPowerLoadDetailReqVO reqVO) {
+         BoxIndex boxIndex = boxIndexCopyMapper.selectOne(BoxIndex::getDevKey, reqVO.getDevKey());
+         if (boxIndex != null) {
+             List<BoxResBase> boxResBaseList = new ArrayList<>();
+             BoxResBase boxResBase = new BoxResBase();// 创建 BoxResBase 对象
+             boxResBase.setBoxId(boxIndex.getId());
+             boxResBase.setBoxName(boxIndex.getBoxName());
+             boxResBase.setDevKey(reqVO.getDevKey());
+             boxResBaseList.add(boxResBase);// 将对象添加到列表中
+             try {
+                 boxIndexService.getPosition(boxResBaseList);
+                 return boxResBaseList.get(0);
+             } catch (Exception e) {
+                 return null;
+             }
+         }else {
+             return null;
+         }
+
     }
 
 
