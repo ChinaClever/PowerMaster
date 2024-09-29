@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.bus.service.buspowerloaddetail;
 
+import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxResBase;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusResBase;
 import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailReqVO;
 import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailRespVO;
 
@@ -21,11 +23,11 @@ public interface BusPowerLoadDetailService {
 
     Map<String, Object> getBusEqData(BusPowerLoadDetailReqVO reqVO) throws IOException;
 
-    Long getBusId(BusPowerLoadDetailReqVO reqVO);
-
-    Long getBoxId(BusPowerLoadDetailReqVO reqVO);
-
     List<String> getBusDevKeyList();
 
     List<String> getBoxDevKeyList();
+
+    BusResBase getBusIdAndLocationByDevKey(BusPowerLoadDetailReqVO reqVO);
+
+    BoxResBase getBoxIdAndLocationByDevKey(BusPowerLoadDetailReqVO reqVO);
 }

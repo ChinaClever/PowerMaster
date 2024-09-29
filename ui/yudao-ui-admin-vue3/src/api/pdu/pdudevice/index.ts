@@ -57,7 +57,11 @@ export const PDUDeviceApi = {
   PDUDisplay: async (params) => {
     return await request.get({ url: `/pdu/PDU-device/displayscreen`, params })
   },
-
+  
+  getLocation: async (params) => {
+    return await request.get({ url: `/pdu/PDU-device/displayscreen/location`, params })
+  },
+  
   PDUHis: async (params) => {
     return await request.get({ url: `/pdu/PDU-device/hisdata/`, params})
   },

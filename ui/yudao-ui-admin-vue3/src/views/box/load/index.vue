@@ -154,11 +154,11 @@
         <el-table-column label="运行状态" align="center" prop="color" >
           <template #default="scope" >
             <el-tag type="info"  v-if="scope.row.status == 5">离线</el-tag>
-            <el-tag type="info"  v-if="scope.row.color == 0">空载</el-tag>
-            <el-tag type="success"  v-if="scope.row.color == 1">&lt;30%</el-tag>
-            <el-tag type="primary"  v-if="scope.row.color == 2">30%-60%</el-tag>
-            <el-tag type="warning" v-if="scope.row.color == 3">60%-90%</el-tag>
-            <el-tag type="danger" v-if="scope.row.color == 4">&gt;90%</el-tag>
+            <el-tag type="info"  v-if="scope.row.color == 0&&scope.row.status != 5">空载</el-tag>
+            <el-tag type="success"  v-if="scope.row.color == 1&&scope.row.status != 5">&lt;30%</el-tag>
+            <el-tag type="primary"  v-if="scope.row.color == 2&&scope.row.status != 5">30%-60%</el-tag>
+            <el-tag type="warning" v-if="scope.row.color == 3&&scope.row.status != 5">60%-90%</el-tag>
+            <el-tag type="danger" v-if="scope.row.color == 4&&scope.row.status != 5">&gt;90%</el-tag>
             <el-tag type="danger" v-if="scope.row.color != 0 && scope.row.color != 4 && scope.row.color != 3 && scope.row.color != 2 && scope.row.color != 1 && scope.row.status != 5">异常</el-tag>
           </template>
         </el-table-column>
@@ -252,12 +252,12 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
-            <el-tag type="info"  v-if="item.color == 0">空载</el-tag>
+            <el-tag type="info"  v-if="item.color == 0 && item.status != 5">空载</el-tag>
             <el-tag type="info"  v-if="item.status == 5">离线</el-tag>
-            <el-tag type="success"  v-if="item.color == 1">&lt;30%</el-tag>
-            <el-tag type="primary"  v-if="item.color == 2">30%-60%</el-tag>
-            <el-tag type="warning" v-if="item.color == 3">60%-90%</el-tag>
-            <el-tag type="danger" v-if="item.color == 4">&gt;90%</el-tag>
+            <el-tag type="success"  v-if="item.color == 1&& item.status != 5">&lt;30%</el-tag>
+            <el-tag type="primary"  v-if="item.color == 2&& item.status != 5">30%-60%</el-tag>
+            <el-tag type="warning" v-if="item.color == 3&& item.status != 5">60%-90%</el-tag>
+            <el-tag type="danger" v-if="item.color == 4&& item.status != 5">&gt;90%</el-tag>
             <el-tag type="danger" v-if="item.color != 0 && item.color != 4 && item.color != 3 && item.color != 2 && item.color != 1 && item.status != 5">异常</el-tag>
           </div>
           <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 5" >详情</button>

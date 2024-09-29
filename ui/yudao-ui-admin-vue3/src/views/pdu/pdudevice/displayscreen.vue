@@ -1,7 +1,7 @@
 <template>
  <div style="background-color: #E7E7E7;">
   <div class="header_app">
-    <div class="header_app_text">所在位置：{{ location }}</div>
+    <div class="header_app_text">所在位置：{{ location2 }}</div>
     <div class="header_app_text_other1">
           <el-col :span="10">
             <el-form
@@ -1226,10 +1226,19 @@ const handleQuery = async () => {
   //   flashChartData();
   // }
     await getTestData();
+    await getLocation();
     flashChartData();
 }
 
+const getLocation = async () => {
+  const data = await PDUDeviceApi.getLocation(queryParams);
+  if(data){
+    location2.value = data;
+  }else{
+    location2.value = '';
+  }
 
+}
 
 /** 初始化 **/
 onMounted(async () => {
@@ -1237,9 +1246,6 @@ onMounted(async () => {
   //1
   devKeyList.value = await loadAll();
   // console.log(devKeyList.value)
-  const route = useRoute();
-  const queryDevKey=route.query.devKey as string ;
-  queryParams.devKey=queryDevKey?queryDevKey:"";
 })
 
 onBeforeMount(async () =>{
@@ -1298,6 +1304,8 @@ const query = route.query;
 const devKey = query.devKey as string;
 const id = parseInt(query.id as string, 10);
 const location = query.location as string;
+const location2 =  ref('');
+location2.value = location;
 
 queryParams.devKey = devKey;
 queryParams.id = id;
