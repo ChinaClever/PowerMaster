@@ -160,35 +160,35 @@
               <el-table-column prop="create_time" label="记录时间" />
               <!-- 动态生成表头 -->
               <template v-for="item in headerData" :key="item.name">
-                <el-table-column v-if="item.name === 'A路最高温度'" label="A路温度最高值">
+                <el-table-column v-if="item.name === 'A路最高温度'" label="A路温度最高值℃">
                   <el-table-column :prop="item.name" label="数值"/>   
                   <el-table-column prop="aTemMaxTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === 'A路最低温度'" label="A路温度最低值">
+                <el-table-column v-else-if="item.name === 'A路最低温度'" label="A路温度最低值℃">
                   <el-table-column :prop="item.name" label="数值"/>   
                   <el-table-column prop="aTemMinTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-if="item.name === 'B路最高温度'" label="B路温度最高值">
+                <el-table-column v-else-if="item.name === 'B路最高温度'" label="B路温度最高值℃">
                   <el-table-column :prop="item.name" label="数值"/>   
                   <el-table-column prop="bTemMaxTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === 'B路最低温度'" label="B路温度最低值">
+                <el-table-column v-else-if="item.name === 'B路最低温度'" label="B路温度最低值℃">
                   <el-table-column :prop="item.name" label="数值"/>   
                   <el-table-column prop="bTemMinTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-if="item.name === 'C路最高温度'" label="C路温度最高值">
+                <el-table-column v-else-if="item.name === 'C路最高温度'" label="C路温度最高值℃">
                   <el-table-column :prop="item.name" label="数值"/>   
                   <el-table-column prop="cTemMaxTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === 'C路最低温度'" label="C路温度最低值">
+                <el-table-column v-else-if="item.name === 'C路最低温度'" label="C路温度最低值℃">
                   <el-table-column :prop="item.name" label="数值"/>   
                   <el-table-column prop="cTemMinTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-if="item.name === '中线最高温度'" label="中线温度最高值">
+                <el-table-column v-else-if="item.name === '中线最高温度'" label="中线温度最高值℃">
                   <el-table-column :prop="item.name" label="数值"/>   
                   <el-table-column prop="nTemMaxTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === '中线最低温度'" label="中线温度最低值">
+                <el-table-column v-else-if="item.name === '中线最低温度'" label="中线温度最低值℃">
                   <el-table-column :prop="item.name" label="数值"/>   
                   <el-table-column prop="nTemMinTimeData" label="发生时间"/>
                 </el-table-column>
@@ -479,6 +479,7 @@ const initChart = () => {
     // setupLegendListener(realtimeChart);
   }
   // 每次切换图就要动态生成数据表头
+  debugger
   headerData.value = realtimeChart?.getOption().series as any[];
   updateTableData();
 };
@@ -503,6 +504,7 @@ const updateTableData = () => {
     }
     data.push(rowData);
   }
+  
   tableData.value = data;
 };
 
@@ -564,6 +566,7 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
           // setupLegendListener(realtimeChart);
         } 
         // 每次切换图就要动态生成数据表头
+        debugger
         headerData.value = realtimeChart?.getOption().series as any[];
         updateTableData();
     }else{
@@ -613,6 +616,7 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
         setupLegendListener1(realtimeChart);          
       }
       // 每次切换图就要动态生成数据表头
+      debugger
       headerData.value = realtimeChart?.getOption().series as any[];
       updateTableData();
     }
@@ -879,6 +883,7 @@ const handleClick = async (row) => {
       nowAddress.value = fullName
     });
     let data: any[] = [];
+    
     tableData.value = data;
     handleQuery();
   }

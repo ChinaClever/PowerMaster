@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO;
 
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.format.NumberFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -21,16 +22,16 @@ public class EQPageRespVO {
 
     @ExcelProperty("开始日期")
     private String start_time;
-
+    @NumberFormat("0.0")
     @ExcelProperty("开始电能(kWh)")
     private Double start_ele;
 
     @ExcelProperty("结束日期")
     private String end_time;
-
+    @NumberFormat("0.0")
     @ExcelProperty("结束电能(kWh)")
     private Double end_ele;
-
+    @NumberFormat("0.0")
     @ExcelProperty("耗电量(kWh)")
     private Double eq_value;
 

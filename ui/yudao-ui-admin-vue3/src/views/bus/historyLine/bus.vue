@@ -402,12 +402,14 @@ const volUnbalanceData = ref<number[]>([]);
 const loadRateData = ref<number[]>([]);
 const volLineData = ref<number[]>([]);
 
+const curValue= ref<number[]>([]);
 const curAvgValueData = ref<number[]>([]);
 const curMaxValueData = ref<number[]>([]);
 const curMaxTimeData = ref<string[]>([]);
 const curMinValueData = ref<number[]>([]);
 const curMinTimeData = ref<string[]>([]);
 
+const volValue= ref<number[]>([]);
 const volAvgValueData = ref<number[]>([]);
 const volMaxValueData = ref<number[]>([]);
 const volMaxTimeData = ref<string[]>([]);
@@ -463,8 +465,11 @@ const getList = async () => {
   try {
     const data = await HistoryDataApi.getBusHistoryDataDetails(queryParams);
     if (data != null && data.total != 0){
+      debugger
       loading2.value=true;
       isHaveData.value = true
+      curValue.value = data.list.map((item) => formatNumber(item.cur_value, 2));
+      volValue.value = data.list.map((item) => formatNumber(item.vol_value, 1));
       powActiveData.value = data.list.map((item) => formatNumber(item.pow_active, 3));
       powReactiveData.value = data.list.map((item) => formatNumber(item.pow_reactive, 3));
       powApparentData.value = data.list.map((item) => formatNumber(item.pow_apparent, 3));
@@ -517,11 +522,11 @@ const getList = async () => {
       powActiveMinValueData.value = data.list.map((item) => formatNumber(item.pow_active_min_value, 3));
       powActiveMinTimeData.value = data.list.map((item) => formatDate(item.pow_active_min_time,"YYYY-MM-DD HH:mm"));
 
-      powReactiveAvgValueData.value = data.list.map((item) => formatNumber(item.pow_active_avg_value, 3));
-      powReactiveMaxValueData.value = data.list.map((item) => formatNumber(item.pow_active_max_value, 3));
-      powReactiveMaxTimeData.value = data.list.map((item) => formatDate(item.pow_active_max_time,"YYYY-MM-DD HH:mm"));
-      powReactiveMinValueData.value = data.list.map((item) => formatNumber(item.pow_active_min_value, 3));
-      powReactiveMinTimeData.value = data.list.map((item) => formatDate(item.pow_active_min_time,"YYYY-MM-DD HH:mm"));
+      powReactiveAvgValueData.value = data.list.map((item) => formatNumber(item.pow_reactive_avg_value, 3));
+      powReactiveMaxValueData.value = data.list.map((item) => formatNumber(item.pow_reactive_max_value, 3));
+      powReactiveMaxTimeData.value = data.list.map((item) => formatDate(item.pow_reactive_max_time,"YYYY-MM-DD HH:mm"));
+      powReactiveMinValueData.value = data.list.map((item) => formatNumber(item.pow_reactive_min_value, 3));
+      powReactiveMinTimeData.value = data.list.map((item) => formatDate(item.pow_reactive_min_time,"YYYY-MM-DD HH:mm"));
 
       powApparentAvgValueData.value = data.list.map((item) => formatNumber(item.pow_apparent_avg_value, 3));
       powApparentMaxValueData.value = data.list.map((item) => formatNumber(item.pow_apparent_max_value, 3));
@@ -539,7 +544,7 @@ const getList = async () => {
           minActivePowDataTimeTemp.value = createTimeData.value[index]
         }
       });
-
+      
       // 图表显示的位置变化
       nowAddress.value = nowAddressTemp.value
       nowLocation.value = nowLocationTemp.value
@@ -782,8 +787,8 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                   {name: '无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveData.value},
                   {name: '功率因素', type: 'line', symbol: 'none', data: powerFactorData.value},
                   {name: '视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentData.value},
-                  {name: '电压(V)', type: 'line', symbol: 'none', data: powActiveData.value},
-                  {name: '电流(A)', type: 'line', symbol: 'none', data: powActiveData.value},
+                  {name: '电压(V)', type: 'line', symbol: 'none', data: volValue.value},
+                  {name: '电流(A)', type: 'line', symbol: 'none', data: curValue.value},
                   {name: '负载率', type: 'line', symbol: 'none', data: loadRateData.value},
                   {name: '线电压(V)', type: 'line', symbol: 'none', data: volLineData.value},
                 ],

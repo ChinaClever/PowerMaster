@@ -5,6 +5,7 @@ import cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO.RackEn
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 public interface RackEnergyConsumptionService {
@@ -54,4 +55,7 @@ public interface RackEnergyConsumptionService {
      */
     PageResult<Object> getSubBillDetails(RackEnergyConsumptionPageReqVO reqVO) throws IOException;
 
+    List<Object> getNewEqList(List<Object> list);
+
+    List<Object>  getNewOutletsList(List<Object> list);
 }

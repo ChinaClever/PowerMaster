@@ -794,7 +794,7 @@ const getList = async () => {
   //获得告警信息
   getTableData()
   //处理告警信息数据
-  debugger
+  // debugger
   //处理时间信息
   const oldDate = new Date(queryParams.oldTime);
   const newDate = new Date(queryParams.newTime);
@@ -989,7 +989,7 @@ const targetId = ref('')
 const getTableData = async(reset = false) => {
   tableLoading.value = true
   try {
-    debugger
+    // debugger
     const res = await AlarmApi.getAlarmRecord({
       pageNo: 1,
       pageSize: 10,

@@ -35,48 +35,45 @@
         </el-descriptions>
       </div>
       </div> -->
-        <div class="nav_header">
-          
-        <span v-if="nowAddress">{{nowAddress}}</span>
-        <span v-if="nowLocation">( {{nowLocation}} ) </span>
-      </div>
-      <br/> 
-    <div class="descriptions-container"  v-if="maxEqDataTimeTemp" style="font-size: 14px;">
- 
-    <div class="description-item" >
-      <span class="label">开始日期 :</span>
-      <span >{{selectTimeRange[0]}}</span>
-    </div>
-    <div class="description-item" >
-      <span class="label">结束日期 :</span>
-      <span >{{selectTimeRange[1]}}</span>
-    </div>
-    <div class="description-item">
-      <span class="label">总耗电量 :</span>
-      <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
-    </div>
-    <div class="description-item">
-      <span class="label">最大耗电量 :</span>
-      <span >{{ formatNumber(maxEqDataTemp, 1) }} kWh</span>
-    </div>
-    <div v-if="maxEqDataTimeTemp" class="description-item">
-      <span class="label">发生时间 :</span>
-      <span class="value">{{ maxEqDataTimeTemp }}</span>
-    </div>
+        <div class="nav_header">      
+          <span v-if="nowAddress">{{nowAddress}}</span>
+          <span v-if="nowLocation">( {{nowLocation}} ) </span>
+        </div>
+        <br/> 
+        <div class="descriptions-container"  v-if="maxEqDataTimeTemp" style="font-size: 14px;">
+        <div class="description-item" >
+          <span class="label">开始日期 :</span>
+          <span >{{selectTimeRange[0]}}</span>
+        </div>
+        <div class="description-item" >
+          <span class="label">结束日期 :</span>
+          <span >{{selectTimeRange[1]}}</span>
+        </div>
+        <div class="description-item">
+          <span class="label">总耗电量 :</span>
+          <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
+        </div>
+        <div class="description-item">
+          <span class="label">最大耗电量 :</span>
+          <span >{{ formatNumber(maxEqDataTemp, 1) }} kWh</span>
+        </div>
+        <div v-if="maxEqDataTimeTemp" class="description-item">
+          <span class="label">发生时间 :</span>
+          <span class="value">{{ maxEqDataTimeTemp }}</span>
+        </div>
 
-   <div class="description-item">
-      <span class="label">最小耗电量 :</span>
-      <span >{{ formatNumber(minEqDataTemp, 1) }} kWh</span>
-    </div>
-    <div v-if="minEqDataTimeTemp" class="description-item">
-      <span class="label">发生时间 :</span>
-      <span class="value">{{ minEqDataTimeTemp }}</span>
-    </div>
-    <div class="line" style="margin-top: 10px;"></div>
-  </div>
-  
-      </div>
-      
+        <div class="description-item">
+          <span class="label">最小耗电量 :</span>
+          <span >{{ formatNumber(minEqDataTemp, 1) }} kWh</span>
+        </div>
+        <div v-if="minEqDataTimeTemp" class="description-item">
+          <span class="label">发生时间 :</span>
+          <span class="value">{{ minEqDataTimeTemp }}</span>
+        </div>
+        <div class="line" style="margin-top: 10px;"></div>
+        </div>
+
+      </div>      
     </template>
     
     <template #ActionBar>
