@@ -67,6 +67,7 @@ public class RackEnergyConsumptionController {
                                     HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = rackEnergyConsumptionService.getBillDataPage(pageReqVO).getList();
+        rackEnergyConsumptionService.getNewBillList(list);
         // 导出 Excel
         ExcelUtils.write(response, "机架电费统计数据.xlsx", "数据", BillPageRespVO.class,
                 BeanUtils.toBean(list, BillPageRespVO.class));
@@ -94,6 +95,7 @@ public class RackEnergyConsumptionController {
                                           HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = rackEnergyConsumptionService.getRealtimeEQDataPage(pageReqVO).getList();
+        rackEnergyConsumptionService.getNewRealTimeList(list);
         // 导出 Excel
         ExcelUtils.write(response, "机架电能记录数据.xlsx", "数据", RealtimeEQPageRespVO.class,
                 BeanUtils.toBean(list, RealtimeEQPageRespVO.class));

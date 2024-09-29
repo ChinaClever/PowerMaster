@@ -58,4 +58,8 @@ public interface RackEnergyConsumptionService {
     List<Object> getNewEqList(List<Object> list);
 
     List<Object>  getNewOutletsList(List<Object> list);
+
+    List<Object> getNewBillList(List<Object> list);
+
+    List<Object>  getNewRealTimeList(List<Object> list);
 }
