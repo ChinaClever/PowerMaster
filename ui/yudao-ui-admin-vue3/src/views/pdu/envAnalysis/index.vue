@@ -501,7 +501,7 @@ const initChart = () => {
     setupLegendListener(realtimeChart);
   }
   // 每次切换图就要动态生成数据表头
-  debugger
+  //debugger
   headerData.value = realtimeChart?.getOption().series as any[];
   updateTableData();
 };
@@ -582,7 +582,7 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
           setupLegendListener(realtimeChart);
         } 
         // 每次切换图就要动态生成数据表头
-        debugger
+        //debugger
         headerData.value = realtimeChart?.getOption().series as any[];
         updateTableData();
     }else{
@@ -622,7 +622,7 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
         setupLegendListener1(realtimeChart);          
       }
       // 每次切换图就要动态生成数据表头
-      debugger
+      //debugger
       headerData.value = realtimeChart?.getOption().series as any[];
       updateTableData();
     }

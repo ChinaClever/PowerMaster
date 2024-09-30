@@ -35,4 +35,7 @@ public interface CabinetHistoryDataService {
     Map<String, Object> getNavNewData(String granularity) throws IOException;
 
 
+    List<Object> getNewHistoryList(List<Object> list);
+
+    List<Object>  getNewDetailHistoryList(List<Object> list);
 }

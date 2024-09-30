@@ -465,7 +465,7 @@ const getList = async () => {
   try {
     const data = await HistoryDataApi.getBusHistoryDataDetails(queryParams);
     if (data != null && data.total != 0){
-      debugger
+      //debugger
       loading2.value=true;
       isHaveData.value = true
       curValue.value = data.list.map((item) => formatNumber(item.cur_value, 2));

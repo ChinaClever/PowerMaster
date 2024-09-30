@@ -353,20 +353,20 @@ watch(() => queryParams.granularity, (newValues) => {
       // 配置表格列
       tableColumns.value = [
         { label: '位置', align: 'center', prop: 'address.address', istrue:true, width: '180px'}, 
+        { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
         { label: '监测点', align: 'center', slot: 'detect' , istrue: true},
         { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:false, width: '160px'},
-        { label: '平均温度(℃)', align: 'center', prop: 'tem_avg_value', istrue:true, width: '180px', formatter: formatData },
-        { label: '最高温度(℃)', align: 'center', prop: 'tem_max_value', istrue:true, width: '180px', formatter: formatData },
-        { label: '最高温度时间', align: 'center', prop: 'tem_max_time' , width: '230px', istrue:true,formatter: formatTime},
-        { label: '最低温度(℃)', align: 'center', prop: 'tem_min_value', istrue:true, width: '180px', formatter: formatData },
-        { label: '最低温度时间', align: 'center', prop: 'tem_min_time' , width: '230px', istrue:true,formatter: formatTime},
+        { label: '记录时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true,formatter: formatTime},
         { label: '平均湿度(%RH)', align: 'center', prop: 'hum_avg_value', istrue:false, width: '180px', formatter: formatData},
         { label: '最大湿度(%RH)', align: 'center', prop: 'hum_max_value', istrue:false, width: '180px', formatter: formatData },
         { label: '最大湿度时间', align: 'center', prop: 'hum_max_time' , width: '230px', istrue:false,formatter: formatTime},
         { label: '最小湿度(%RH)', align: 'center', prop: 'hum_min_value', istrue:false, width: '180px', formatter: formatData },
         { label: '最小湿度时间', align: 'center', prop: 'hum_min_time' , width: '230px', istrue:false,formatter: formatTime},
-        { label: '记录时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true,formatter: formatTime},
-        { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
+        { label: '平均温度(℃)', align: 'center', prop: 'tem_avg_value', istrue:true, width: '180px', formatter: formatData },
+        { label: '最高温度(℃)', align: 'center', prop: 'tem_max_value', istrue:true, width: '180px', formatter: formatData },
+        { label: '最高温度时间', align: 'center', prop: 'tem_max_time' , width: '230px', istrue:true,formatter: formatTime},
+        { label: '最低温度(℃)', align: 'center', prop: 'tem_min_value', istrue:true, width: '180px', formatter: formatData },
+        { label: '最低温度时间', align: 'center', prop: 'tem_min_time' , width: '230px', istrue:true,formatter: formatTime},
         { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
       ] as any;
       queryParams.pageNo = 1;
@@ -513,7 +513,7 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnvDataApi.exportEnvHistoryData(queryParams, axiosConfig)
-    await download.excel(data, 'PDU环境历史数据.xlsx')
+    await download.excel(data, '机柜环境记录.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)

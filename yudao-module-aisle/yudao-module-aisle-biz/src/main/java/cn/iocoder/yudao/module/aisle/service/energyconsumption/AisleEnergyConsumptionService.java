@@ -5,6 +5,7 @@ import cn.iocoder.yudao.module.aisle.controller.admin.energyconsumption.VO.Aisle
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 public interface AisleEnergyConsumptionService {
@@ -54,4 +55,11 @@ public interface AisleEnergyConsumptionService {
      */
     PageResult<Object> getSubBillDetails(AisleEnergyConsumptionPageReqVO reqVO) throws IOException;
 
+    List<Object> getEqExcelList(List<Object> list);
+
+    List<Object> getDetailsExcelList(List<Object> list);
+
+    List<Object> getBillExcelList(List<Object> list);
+
+    List<Object> getRealtimeExcelList(List<Object> list);
 }

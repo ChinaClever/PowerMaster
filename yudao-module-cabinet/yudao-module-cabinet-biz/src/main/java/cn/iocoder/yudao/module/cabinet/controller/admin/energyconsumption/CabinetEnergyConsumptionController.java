@@ -68,6 +68,7 @@ public class CabinetEnergyConsumptionController {
                                     HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = cabinetEnergyConsumptionService.getBillDataPage(pageReqVO).getList();
+        cabinetEnergyConsumptionService.getNewEqList(list);
         // 导出 Excel
         ExcelUtils.write(response, "机柜电费统计数据.xlsx", "数据", BillPageRespVO.class,
                 BeanUtils.toBean(list, BillPageRespVO.class));
@@ -109,6 +110,7 @@ public class CabinetEnergyConsumptionController {
                                           HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = cabinetEnergyConsumptionService.getRealtimeEQDataPage(pageReqVO).getList();
+        cabinetEnergyConsumptionService.getNewRealtimeList(list);
         // 导出 Excel
         ExcelUtils.write(response, "机柜电能记录数据.xlsx", "数据", RealtimeEQPageRespVO.class,
                 BeanUtils.toBean(list, RealtimeEQPageRespVO.class));

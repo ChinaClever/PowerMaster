@@ -236,7 +236,7 @@ const saveAlarmConfig = async() => {
 }
 // 获取数据
 const getTableData = async(reset = false) => {
-  // debugger
+  // //debugger
   tableLoading.value = true
   if (reset) queryParams.pageNo = 1
   try {

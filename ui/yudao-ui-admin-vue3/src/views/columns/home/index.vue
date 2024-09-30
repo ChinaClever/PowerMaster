@@ -117,7 +117,7 @@ const mainInfo = reactive({})
 const EqInfo = reactive({})
 
 const getMainData = async() => {
-  // debugger
+  // //debugger
   const res =  await MachineColumnApi.getMaindata({id: containerInfo.cabinetColumnId})
   Object.assign(mainInfo, res)
   console.log('res', res)

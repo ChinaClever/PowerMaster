@@ -57,4 +57,6 @@ public interface CabinetEnergyConsumptionService {
     List<Object> getNewEqList(List<Object> list);
 
     List<Object>  getNewDetailsList(List<Object> list);
+
+    List<Object> getNewRealtimeList(List<Object> list);
 }

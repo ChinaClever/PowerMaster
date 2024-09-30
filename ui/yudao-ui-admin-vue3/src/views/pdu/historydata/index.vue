@@ -953,29 +953,29 @@ onMounted( () => {
   height: 100%;
   object-fit: cover; 
 }
-.description-item {
-  display: flex;
-  align-items: center;
-}
-
-.label {
-  width:100px; /* 控制冒号前的宽度 */
-  text-align: right; /* 文本右对齐 */
-  margin-right: 20px; /* 控制冒号后的间距 */
-}
-
-.value {
-  flex: 1; /* 自动扩展以对齐数据 */
-}
-  .line {
-    height: 1px;
-    margin-top: 28px;
-
-    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  .description-item {
+    display: flex;
+    align-items: center;
   }
 
-  ::v-deep .el-table .el-table__header th {
-    background-color: #F5F7FA;
-    color: #909399;
-}
+  .label {
+    width:100px; /* 控制冒号前的宽度 */
+    text-align: right; /* 文本右对齐 */
+    margin-right: 20px; /* 控制冒号后的间距 */
+  }
+
+  .value {
+    flex: 1; /* 自动扩展以对齐数据 */
+  }
+    .line {
+      height: 1px;
+      margin-top: 28px;
+
+      background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+    }
+
+    ::v-deep .el-table .el-table__header th {
+      background-color: #F5F7FA;
+      color: #909399;
+  }
 </style>

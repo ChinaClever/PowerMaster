@@ -185,7 +185,7 @@ const xAxisLabel = ref('');
 
 const devKeyList = ref([])
 const loadAll = async () => {
-  //debugger
+//debugger
   var data = await BusPowerLoadDetailApi.getBoxdevKeyList();
   var objectArray = data.map((str) => {
     return { value: str };

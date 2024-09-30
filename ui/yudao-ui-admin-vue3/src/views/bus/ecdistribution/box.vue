@@ -130,19 +130,26 @@
               :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
               :row-style="{ fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
+              
+             <!-- 添加行号列 -->
+            <el-table-column label="序号" align="center" width="80px">
+              <template #default="{ $index }">
+                {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
+              </template>
+            </el-table-column>
               <!-- 动态生成表头 -->
               <template v-for="item in headerData" :key="item.name">
                 <el-table-column  label="开始电能">
-                  <el-table-column prop="startEleData" label="数值"/>   
-                  <el-table-column prop="startTimeData" label="发生时间"/>
+                  <el-table-column prop="startEleData" label="开始电能(kWh)"/>   
+                  <el-table-column prop="startTimeData" label="开始日期"/>
                 </el-table-column>
                 <el-table-column  label="结束电能">
-                  <el-table-column prop="endEleData" label="数值"/>   
-                  <el-table-column prop="endTimeData" label="发生时间"/>
+                  <el-table-column prop="endEleData" label="结束电能(kWh)"/>   
+                  <el-table-column prop="endTimeData" label="结束日期"/>
                 </el-table-column>
                 <el-table-column v-if="item.name === '耗电量'" label="耗电量">
-                  <el-table-column :prop="item.name" label="数值"/>   
-                  <el-table-column prop="create_time" label="记录时间"/>
+                  <el-table-column :prop="item.name" label="电量(kWh)"/>   
+                  <el-table-column prop="create_time" label="记录日期"/>
                 </el-table-column>
               </template>
             </el-table>
@@ -517,9 +524,13 @@ const handleQuery = async() => {
 /** 初始化 **/ 
 onMounted(async () => {
   getNavList()
+  
   // 获取路由参数中的 box_id
   const queryBoxId = useRoute().query.boxId as string | undefined;
   const queryLocation = useRoute().query.location as string;
+  const queryDevkey = useRoute().query.devKey as string | undefined;
+  queryParams.devkey =queryDevkey? queryDevkey : undefined;
+  
   queryParams.boxId = queryBoxId ? parseInt(queryBoxId, 10) : undefined;
   if (queryParams.boxId != undefined){
     await getLineChartData();

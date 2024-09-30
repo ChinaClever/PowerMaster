@@ -21,7 +21,7 @@ const prop = defineProps({
   }
 })
 
-// debugger
+// //debugger
 // // 设置饼图的选项
 // const echartsOption = ref({
 //   radar: { indicator: prop.list.nameAndMax },

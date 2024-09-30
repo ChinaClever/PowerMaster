@@ -5,10 +5,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
-import cn.iocoder.yudao.module.cabinet.controller.admin.historydata.vo.CabinetHistoryDataDetailsReqVO;
-import cn.iocoder.yudao.module.cabinet.controller.admin.historydata.vo.CabinetHistoryDataPageReqVO;
-import cn.iocoder.yudao.module.cabinet.controller.admin.historydata.vo.HourAndDayPageRespVO;
-import cn.iocoder.yudao.module.cabinet.controller.admin.historydata.vo.RealtimePageRespVO;
+import cn.iocoder.yudao.module.cabinet.controller.admin.historydata.vo.*;
 import cn.iocoder.yudao.module.cabinet.service.historydata.CabinetHistoryDataService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -66,6 +63,7 @@ public class CabinetHistoryDataController {
                                        HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = cabinetHistoryDataService.getHistoryDataPage(pageReqVO).getList();
+        cabinetHistoryDataService.getNewHistoryList(list);
         // 导出 Excel
         if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
             ExcelUtils.write(response, "机柜电力历史数据.xlsx", "数据", RealtimePageRespVO.class,
@@ -73,6 +71,44 @@ public class CabinetHistoryDataController {
         } else {
             ExcelUtils.write(response, "机柜电力历史数据.xlsx", "数据", HourAndDayPageRespVO.class,
                     BeanUtils.toBean(list, HourAndDayPageRespVO.class));
+        }
+    }
+
+    @GetMapping("/details-export-excel")
+    @Operation(summary = "导出机柜电力分析历史数据 Excel")
+//    @PreAuthorize("@ss.hasPermission('pdu:history-data:export')")
+    @OperateLog(type = EXPORT)
+    public void exportDetailsHistoryDataExcel(CabinetHistoryDataDetailsReqVO pageReqVO,
+                                       HttpServletResponse response) throws IOException {
+        pageReqVO.setPageSize(10000);
+        List<Object> list = cabinetHistoryDataService.getHistoryDataDetails(pageReqVO).getList();
+        cabinetHistoryDataService.getNewDetailHistoryList(list);
+        // 导出 Excel
+        if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+            if(Objects.equals(pageReqVO.getAbtotal(), "a")){
+                ExcelUtils.write(response, "机柜电力历史数据.xlsx", "数据", DetailHistoryDataExcelExportA.class,
+                        BeanUtils.toBean(list, DetailHistoryDataExcelExportA.class));
+            } else if (Objects.equals(pageReqVO.getAbtotal(), "b")) {
+                ExcelUtils.write(response, "机柜电力历史数据.xlsx", "数据", DetailHistoryDataExcelExportB.class,
+                        BeanUtils.toBean(list, DetailHistoryDataExcelExportB.class));
+            }else{
+                ExcelUtils.write(response, "机柜电力历史数据.xlsx", "数据", DetailHistoryDataExcelExport.class,
+                        BeanUtils.toBean(list, DetailHistoryDataExcelExport.class));
+            }
+
+        } else {
+            if(Objects.equals(pageReqVO.getAbtotal(), "total")){
+                ExcelUtils.write(response, "机柜电力历史数据.xlsx", "数据", HourAndDayDetailHistoryDataExcelExport.class,
+                        BeanUtils.toBean(list, HourAndDayDetailHistoryDataExcelExport.class));
+            } else if (Objects.equals(pageReqVO.getAbtotal(), "a")) {
+                ExcelUtils.write(response, "机柜电力历史数据.xlsx", "数据", HourAndDayDetailHistoryDataExcelExportA.class,
+                        BeanUtils.toBean(list, HourAndDayDetailHistoryDataExcelExportA.class));
+            }
+            else{
+                ExcelUtils.write(response, "机柜电力历史数据.xlsx", "数据", HourAndDayDetailHistoryDataExcelExportB.class,
+                        BeanUtils.toBean(list, HourAndDayDetailHistoryDataExcelExportB.class));
+            }
+
         }
     }
 

@@ -138,4 +138,6 @@ public interface BusEnergyConsumptionService {
     List<Object> getNewBillList(List<Object> list);
 
     List<Object>  getNewRealtimeList(List<Object> list);
+
+    List<Object> getNewList(List<Object> list);
 }

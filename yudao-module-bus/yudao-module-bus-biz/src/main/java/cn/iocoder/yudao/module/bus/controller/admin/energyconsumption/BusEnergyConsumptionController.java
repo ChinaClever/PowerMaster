@@ -185,6 +185,7 @@ public class BusEnergyConsumptionController {
                                   HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = busEnergyConsumptionService.getBoxEQDataPage(pageReqVO).getList();
+        busEnergyConsumptionService.getNewList(list);
         // 导出 Excel
         ExcelUtils.write(response, "插接箱能耗趋势数据.xlsx", "数据", EQPageRespVO.class,
                 BeanUtils.toBean(list, EQPageRespVO.class));
