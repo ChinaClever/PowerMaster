@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU能耗趋势" placeholder="如:192.168.1.96-0">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU能耗统计" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
         <br/>    <br/> 
         <div class="nav_data">
@@ -18,25 +18,24 @@
             </el-descriptions>
           </div>
         </div> -->
-          <div class="descriptions-container" style="font-size: 14px;">
- 
-        <div style="text-align: center"><span>全部PDU新增能耗记录</span></div>
-        <br/>
-    <div class="description-item">
-      <span class="label">最近一天 :</span>
-      <span class="value">{{ lastDayTotalData }}条</span>
-    </div>
-    <div class="description-item">
-      <span class="label">最近一周 :</span>
-      <span class="value">{{ lastWeekTotalData }}条</span>
-    </div>
-    <div class="description-item">
-      <span class="label">最近一月 :</span>
-      <span class="value">{{ lastMonthTotalData }}条</span>
-    </div>
-
-  </div>
-      <div class="line"></div>
+        <div class="descriptions-container" style="font-size: 14px;">
+          <div class="description-item">
+            <span class="label">最近一天 :</span>
+            <span class="value">{{ lastDayTotalData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">最近一周 :</span>
+            <span class="value">{{ lastWeekTotalData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">最近一月 :</span>
+            <span class="value">{{ lastMonthTotalData }}条</span>
+          </div>    <br/>
+          <div style="text-align: center"><span>全部PDU新增能耗记录</span>
+            <div class="line" style="margin-top: 10px;"></div>
+          </div>
+        </div>
+        
       </div>
     </template>
     <template #ActionBar>
@@ -98,9 +97,11 @@
           <template #default="{ $index }">
             {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
           </template>
+          
         </el-table-column>
        <!-- 遍历其他列 -->
-      <template v-for="column in tableColumns" :key="column.label">
+      <template
+       v-for="column in tableColumns" :key="column.label">
         <el-table-column
           v-if="!column.children && column.istrue"
           :key="column.prop"
@@ -115,6 +116,8 @@
           </template>
         </el-table-column>
         
+
+
         <el-table-column
           v-else-if="column.istrue"
           :label="column.label"
@@ -122,13 +125,12 @@
         >
           <template v-for="child in column.children" :key="child.prop">
             <el-table-column
-              :key="child.prop"
+            v-if="child.istrue"
               :label="child.label"
               :align="child.align"
               :prop="child.prop"
               :formatter="child.formatter"
               :width="child.width"
-              v-if="child.istrue"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
                 <el-button link type="primary" @click="toDetails(row.pdu_id, row.address)">详情</el-button>
@@ -136,6 +138,8 @@
             </el-table-column>
           </template>
         </el-table-column>
+
+
       </template>
       <!-- 超过一万条数据提示信息 -->
       <template v-if="shouldShowDataExceedMessage" #append>
@@ -548,6 +552,10 @@ onMounted(() => {
   height: 100%;
   object-fit: cover; 
 }
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+}
+
 .description-item {
   display: flex;
   align-items: center;
@@ -556,16 +564,13 @@ onMounted(() => {
 .label {
   width:100px; /* 控制冒号前的宽度 */
   text-align: right; /* 文本右对齐 */
-  margin-right: 20px; /* 控制冒号后的间距 */
+  margin-right: 5px; /* 控制冒号后的间距 */
 }
-
-.value {
-  flex: 1; /* 自动扩展以对齐数据 */
-}
-  .line {
+.line {
     height: 1px;
     margin-top: 28px;
 
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
+
 </style>

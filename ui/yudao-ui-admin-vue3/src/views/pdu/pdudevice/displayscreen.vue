@@ -1,20 +1,51 @@
 <template>
  <div style="background-color: #E7E7E7;">
-  <el-row :gutter="18" >
+  <div class="header_app">
+    <div class="header_app_text">所在位置：{{ location2 }}</div>
+    <div class="header_app_text_other1">
+          <el-col :span="10">
+            <el-form
+              class="-mb-15px"
+              :model="queryParams"
+              ref="queryFormRef"
+              :inline="true"
+              label-width="120px"
+            >
+              <el-form-item label="网络地址" prop="devKey" >
+              <el-autocomplete
+                v-model="queryParams.devKey"
+                :fetch-suggestions="querySearch"
+                placeholder="请输入网络地址"  
+                clearable
+                class="!w-160px"
+                @select="handleQuery" 
+              />
+              </el-form-item>
+            </el-form>
+          </el-col>      
+    </div>
+    <div class="header_app_text_other">
+      <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+    </div>
+    <div class="header_app_text_other">
+          <el-col :span="2">
+            <el-button type="primary" @click="openNewPage(queryParams.devKey)" >进入管理界面</el-button>
+          </el-col>
+    </div>
+
+  </div>
+
+  <!-- <el-row :gutter="18">
     <el-col>
-      <el-card>
-        <el-row :gutter="18" >
+      <el-card >
+        <el-row  :gutter="18">
           <el-col :span="5">
-            <el-text line-clamp="2">
+            <el-text line-clamp="2">                  
               <el-text class="mx-1" size="large">所在位置：{{ location }}</el-text>
             </el-text>
           </el-col>
-          <!-- <el-col :span="5">
-            <el-text line-clamp="2">
-              <el-text class="mx-1" size="large">网络地址：{{ queryParams.devKey }}</el-text>
-            </el-text>
-          </el-col> -->
-          <el-col :span="10">
+
+          <el-col :span="5">
             <el-form
               class="-mb-15px"
               :model="queryParams"
@@ -31,19 +62,7 @@
                 class="!w-160px"
                 @select="handleQuery"
               />
-              </el-form-item>
-
-              <!-- <el-form-item label="级联地址" prop="cascadeAddr" label-width="70px">
-                <el-input-number
-                  v-model="queryParams.cascadeAddr"
-                  :min="0"
-                  controls-position="right"
-                  :value-on-clear="0"
-                    class="!w-100px"
-                />
-              </el-form-item> -->
-              <el-form-item>
-                <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+               <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
               </el-form-item>
             </el-form>
           </el-col>
@@ -53,8 +72,23 @@
         </el-row>
       </el-card>
     </el-col>
-  </el-row>
+  </el-row> -->
 
+<!-- <el-col :span="5">
+  <el-text line-clamp="2">
+    <el-text class="mx-1" size="large">网络地址：{{ queryParams.devKey }}</el-text>
+  </el-text>
+</el-col> -->
+
+    <!-- <el-form-item label="级联地址" prop="cascadeAddr" label-width="70px">
+      <el-input-number
+        v-model="queryParams.cascadeAddr"
+        :min="0"
+        controls-position="right"
+        :value-on-clear="0"
+          class="!w-100px"
+      />
+    </el-form-item> -->
   <div>
     <el-row :gutter="20" style="margin: 0px; margin-top : 10px;margin-top : 10px" >
       <el-col :span="6" class="card-box" >
@@ -339,7 +373,8 @@
 
 // import download from '@/utils/download'
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
-import * as echarts from 'echarts';
+import * as echarts from 'echarts'
+import { onMounted } from 'vue'
 // import { object } from 'vue-types';
 
 /** PDU设备 列表 */
@@ -388,7 +423,7 @@ const controlVis = ref({
   display: false,
 })
 
-const location = ref(history?.state?.location || "/");
+//const location = ref(history?.state?.location || "/");
 // const message = useMessage() // 消息弹窗
 // const { t } = useI18n() // 国际化
 
@@ -415,16 +450,16 @@ const chartData = ref({
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  devKey: history?.state?.devKey,
+  devKey: "",
   ipAddr: null,
   cascadeAddr:0,
   createTime: [],
   cascadeNum: undefined,
-  id : history?.state?.id,
+  id : 0,
   powGranularity: "oneHour",
 })
 
-// const queryFormRef = ref() // 搜索的表单
+const queryFormRef = ref() // 搜索的表单
 // const exportLoading = ref(false) // 导出的加载中
 
 //数据
@@ -469,6 +504,7 @@ const C = ref({
 
 const devKeyList = ref([])
 const loadAll = async () => {
+  //debugger
   var data = await PDUDeviceApi.devKeyList();
   var objectArray = data.map((str) => {
     return { value: str };
@@ -568,7 +604,7 @@ const initChart = async () => {
   chartData.value.factorList.forEach((obj,index) => {
     chartData.value.factorList[index] = obj?.toFixed(2);
   });
-
+  
   if (chartContainer.value && instance) {
     chart = echarts.init(chartContainer.value);
     chart.setOption({
@@ -589,7 +625,7 @@ const initChart = async () => {
                                     return result;
                                   }},
       //显示线的按钮
-      legend: { data: ['有功功率','视在功率','功率因素']},
+      legend: { data: ['有功功率','视在功率','功率因素'], selectedMode: 'single'},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
       xAxis: {type: 'category', axisLabel: { formatter: 
@@ -737,7 +773,7 @@ const flashChartData = async () =>{
   beforeChartUnmount();
 
   var tempParams = { devKey : queryParams.devKey, type : queryParams.powGranularity}
-  chartData.value = await PDUDeviceApi.PDUHis(tempParams); 
+  chartData.value = await PDUDeviceApi.PDUHis(tempParams);
   chartData.value.apparentList.forEach((obj,index) => {
     chartData.value.apparentList[index] = obj?.toFixed(3);
   });
@@ -768,7 +804,7 @@ const flashChartData = async () =>{
                                     }
                                     return result;
                                   }},
-      legend: { data: ['有功功率','视在功率','功率因素']},
+      legend: { data: ['有功功率','视在功率','功率因素'], selectedMode: 'single'},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
       xAxis: {type: 'category', axisLabel: { formatter: 
@@ -859,7 +895,7 @@ const getTestData = async()=>{
   circleList.value = [];
   output.value = [];
 
-  if(testData.value.pdu_data?.loop_item_list?.pow_apparent != null && testData.value.pdu_data?.loop_item_list?.pow_apparent.length > 0){
+  if(testData.value?.pdu_data?.loop_item_list?.pow_apparent != null && testData.value?.pdu_data?.loop_item_list?.pow_apparent.length > 0){
     var temp = [] as any;
     for (let i = 0; i < testData.value.pdu_data?.loop_item_list["pow_apparent"].length; i++) {
       let loopItem = {} as any;
@@ -895,7 +931,7 @@ const getTestData = async()=>{
   });
 
   
-  if(testData.value.pdu_data?.output_item_list?.name != null && testData.value.pdu_data?.output_item_list?.name.length > 0){
+  if(testData.value?.pdu_data?.output_item_list?.name != null && testData.value?.pdu_data?.output_item_list?.name.length > 0){
     var temp = [] as any;
     for (let i = 0; i < testData.value.pdu_data.output_item_list["name"].length; i++) {
       let loopItem = {} as any;
@@ -930,7 +966,7 @@ const getTestData = async()=>{
     element.power_factor = element.power_factor?.toFixed(2);
   });
 
-  if(testData.value.pdu_data?.env_item_list?.tem_value){
+  if(testData.value?.pdu_data?.env_item_list?.tem_value){
     var temp = [] as any;
     for(let i = 0; i < testData.value.pdu_data.env_item_list["tem_value"].length; i++){
       if(testData.value.pdu_data.env_item_list.insert[i] != 1){
@@ -966,7 +1002,9 @@ const getTestData = async()=>{
     message.error("设备离线或者输入的地址不正确");
     return;
   }
-  
+
+  //开始无判断
+  if(testData.value.pdu_data?.pdu_total_data){
   totalData.value.pow =  testData.value.pdu_data.pdu_total_data.pow_active?.toFixed(3);
 
   totalData.value.ele = testData.value.pdu_data.pdu_total_data.ele_active?.toFixed(1);
@@ -974,65 +1012,76 @@ const getTestData = async()=>{
   totalData.value.pf = testData.value.pdu_data.pdu_total_data.power_factor?.toFixed(2);
   totalData.value.frequency = testData.value.dev_hz;
   totalData.value.powApparent = testData.value.pdu_data.pdu_total_data.pow_apparent?.toFixed(3);
-  
+  }
+  if (testData.value.pdu_data?.line_item_list){
   A.value.cur_value = testData.value.pdu_data.line_item_list.cur_value[0]?.toFixed(2);
   A.value.curPercemtage = (testData.value.pdu_data.line_item_list.cur_value[0] / testData.value.pdu_data.line_item_list.cur_alarm_max[0]) * 100;
   A.value.cur_alarm_max = testData.value.pdu_data.line_item_list.cur_alarm_max[0];
-  let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[0];
-  if(curalarm == 1 || curalarm == 8 ){
-    A.value.curColor = "red";
-  } else if(curalarm == 2 || curalarm == 4 ){
-    A.value.curColor = "yellow";
-  } else{
-    A.value.curColor = "";
+  if(testData.value.pdu_data.line_item_list.cur_alarm_status){
+    let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[0];
+    if(curalarm == 1 || curalarm == 8 ){
+      A.value.curColor = "red";
+    } else if(curalarm == 2 || curalarm == 4 ){
+      A.value.curColor = "yellow";
+    } else{
+      A.value.curColor = "";
+    }
   }
 
   A.value.vol_value = testData.value.pdu_data.line_item_list.vol_value[0]?.toFixed(1);
-  let u1alarm = testData.value.pdu_data.line_item_list.vol_alarm_status[0];
-  if(u1alarm == 1 || u1alarm == 8 ){
-    A.value.volColor = "red";
-  } else if(u1alarm == 2 || u1alarm == 4 ){
-    A.value.volColor = "yellow";
-  } else{
-    A.value.volColor = "";
-  }
-  
-  A.value.pow_value =testData.value.pdu_data.line_item_list.pow_value[0]?.toFixed(3);
-  let powalarm = testData.value.pdu_data.line_item_list.pow_alarm_status[0];
-  if(powalarm == 1 || powalarm == 8 ){
-    A.value.powColor = "red";
-  } else if(powalarm == 2 || powalarm == 4 ){
-    A.value.powColor = "yellow";
-  } else {
-    A.value.powColor = "";
+  if(testData.value.pdu_data.line_item_list.vol_alarm_status){
+    let u1alarm = testData.value.pdu_data.line_item_list.vol_alarm_status[0];
+    if(u1alarm == 1 || u1alarm == 8 ){
+      A.value.volColor = "red";
+    } else if(u1alarm == 2 || u1alarm == 4 ){
+      A.value.volColor = "yellow";
+    } else{
+      A.value.volColor = "";
+    }    
   }
 
+  A.value.pow_value =testData.value.pdu_data.line_item_list.pow_value[0]?.toFixed(3);
+  if(testData.value.pdu_data.line_item_list.pow_alarm_status){
+    let powalarm = testData.value.pdu_data.line_item_list.pow_alarm_status[0];
+    if(powalarm == 1 || powalarm == 8 ){
+      A.value.powColor = "red";
+    } else if(powalarm == 2 || powalarm == 4 ){
+      A.value.powColor = "yellow";
+    } else {
+      A.value.powColor = "";
+    }    
+  }
   A.value.pf = testData.value.pdu_data.line_item_list.power_factor[0]?.toFixed(2);
 
   if(testData.value.pdu_data.line_item_list.ele_active.length > 1){
     B.value.cur_value = testData.value.pdu_data.line_item_list.cur_value[1]?.toFixed(2);
     B.value.curPercemtage = (testData.value.pdu_data.line_item_list.cur_value[1] / testData.value.pdu_data.line_item_list.cur_alarm_max[1]) * 100;
     B.value.cur_alarm_max = testData.value.pdu_data.line_item_list.cur_alarm_max[1];
-    let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[1];
-    if(curalarm == 1 || curalarm == 8 ){
-      B.value.curColor = "red";
-    } else if(curalarm == 2 || curalarm == 4 ){
-      B.value.curColor = "yellow";
-    } else{
-      B.value.curColor = "";
+    if(testData.value.pdu_data.line_item_list.cur_alarm_status){
+      let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[1];
+      if(curalarm == 1 || curalarm == 8 ){
+        B.value.curColor = "red";
+      } else if(curalarm == 2 || curalarm == 4 ){
+        B.value.curColor = "yellow";
+      } else{
+        B.value.curColor = "";
+      }      
     }
 
     B.value.vol_value = testData.value.pdu_data.line_item_list.vol_value[1]?.toFixed(1);
-    let u2alarm = testData.value.pdu_data.line_item_list.vol_alarm_status[1];
-    if(u2alarm == 1 || u2alarm == 8 ){
-      B.value.volColor = "red";
-    } else if(u2alarm == 2 || u2alarm == 4 ){
-      B.value.volColor = "yellow";
-    } else {
-      B.value.volColor = "";
+    if(testData.value.pdu_data.line_item_list.vol_alarm_status){
+      let u2alarm = testData.value.pdu_data.line_item_list.vol_alarm_status[1];
+      if(u2alarm == 1 || u2alarm == 8 ){
+        B.value.volColor = "red";
+      } else if(u2alarm == 2 || u2alarm == 4 ){
+        B.value.volColor = "yellow";
+      } else {
+        B.value.volColor = "";
+      }      
     }
     
     B.value.pow_value =testData.value.pdu_data.line_item_list.pow_value[1]?.toFixed(3);
+  if(testData.value.pdu_data.line_item_list.pow_alarm_status){    
     let powalarm = testData.value.pdu_data.line_item_list.pow_alarm_status[1];
     if(powalarm == 1 || powalarm == 8 ){
       B.value.powColor = "red";
@@ -1041,7 +1090,7 @@ const getTestData = async()=>{
     } else {
       B.value.powColor = "";
     }
-    
+  }    
     B.value.pf = testData.value.pdu_data.line_item_list.power_factor[1]?.toFixed(2);
     controlVis.value.haveB = true;
   }
@@ -1049,37 +1098,45 @@ const getTestData = async()=>{
     C.value.cur_value = testData.value.pdu_data.line_item_list.cur_value[2]?.toFixed(2);
     C.value.curPercemtage = (testData.value.pdu_data.line_item_list.cur_value[2] / testData.value.pdu_data.line_item_list.cur_alarm_max[2]) * 100;
     C.value.cur_alarm_max = testData.value.pdu_data.line_item_list.cur_alarm_max[2];
-    let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[2];
-    if(curalarm == 1 || curalarm == 8 ){
-      C.value.curColor = "red";
-    } else if(curalarm == 2 || curalarm == 4 ){
-      C.value.curColor = "yellow";
-    } else{
-      C.value.curColor = "";
+    if(testData.value.pdu_data.line_item_list.cur_alarm_status){
+      let curalarm = testData.value.pdu_data.line_item_list.cur_alarm_status[2];
+      if(curalarm == 1 || curalarm == 8 ){
+        C.value.curColor = "red";
+      } else if(curalarm == 2 || curalarm == 4 ){
+        C.value.curColor = "yellow";
+      } else{
+        C.value.curColor = "";
+      }
     }
 
     C.value.vol_value = testData.value.pdu_data.line_item_list.vol_value[2]?.toFixed(1);
-    let u2alarm = testData.value.pdu_data.line_item_list.vol_alarm_status[2];
-    if(u2alarm == 1 || u2alarm == 8 ){
-      C.value.volColor = "red";
-    } else if(u2alarm == 2 || u2alarm == 4 ){
-      C.value.volColor = "yellow";
-    } else{
-      C.value.volColor = "";
+    if(testData.value.pdu_data.line_item_list.vol_alarm_status){
+      let u2alarm = testData.value.pdu_data.line_item_list.vol_alarm_status[2];
+      if(u2alarm == 1 || u2alarm == 8 ){
+        C.value.volColor = "red";
+      } else if(u2alarm == 2 || u2alarm == 4 ){
+        C.value.volColor = "yellow";
+      } else{
+        C.value.volColor = "";
+      }
     }
-    
+ 
     C.value.pow_value =testData.value.pdu_data.line_item_list.pow_value[2]?.toFixed(3);
-    let powalarm = testData.value.pdu_data.line_item_list.pow_alarm_status[2];
-    if(powalarm == 1 || powalarm == 8 ){
-      C.value.powColor = "red";
-    } else if(powalarm == 2 || powalarm == 4 ){
-      C.value.powColor = "yellow";
-    } else {
-      C.value.powColor = "";
+  if(testData.value.pdu_data.line_item_list.pow_alarm_status){
+    if(testData.value.pdu_data.line_item_list.pow_alarm_status){
+      let powalarm = testData.value.pdu_data.line_item_list.pow_alarm_status[2];
+      if(powalarm == 1 || powalarm == 8 ){
+        C.value.powColor = "red";
+      } else if(powalarm == 2 || powalarm == 4 ){
+        C.value.powColor = "yellow";
+      } else {
+        C.value.powColor = "";
+      }
     }
-
+  }
     C.value.pf = testData.value.pdu_data.line_item_list.power_factor[2]?.toFixed(2);
     controlVis.value.haveC = true;
+  }
   }
   controlVis.value.display = true;
 }
@@ -1119,7 +1176,7 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
                                       }
                                       return result;
                                     }},
-        legend: { data: ['有功功率','视在功率','功率因素']},
+        legend: { data: ['有功功率','视在功率','功率因素'], selectedMode: 'single'},
         grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
         toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
         xAxis: {type: 'category', axisLabel: { formatter: 
@@ -1163,23 +1220,35 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
 /** 搜索按钮操作 */
 const handleQuery = async () => {
   controlVis.value.display = false;
-  if(queryParams.ipAddr){
-    queryParams.devKey = queryParams.ipAddr +'-' +  queryParams.cascadeAddr;
+  // if(queryParams.ipAddr){
+  //   queryParams.devKey = queryParams.ipAddr +'-' +  queryParams.cascadeAddr;
+  //   await getTestData();
+  //   flashChartData();
+  // }
     await getTestData();
+    await getLocation();
     flashChartData();
-  }
 }
 
+const getLocation = async () => {
+  const data = await PDUDeviceApi.getLocation(queryParams);
+  if(data){
+    location2.value = data;
+  }else{
+    location2.value = '';
+  }
 
+}
 
 /** 初始化 **/
 onMounted(async () => {
+  //debugger
+  //1
   devKeyList.value = await loadAll();
-
+  // console.log(devKeyList.value)
 })
 
 onBeforeMount(async () =>{
-
   await getTestData();
   initChart();
   flashListTimer.value.tableDataTimer = setInterval((getTestData), 5000);
@@ -1223,12 +1292,51 @@ onBeforeRouteLeave(()=>{
     flashListTimer.value.chartTimer = null;
     firstTimerCreate.value = false;
   }
-  
 })
 
+import { useRoute } from 'vue-router';
 
 
+const route = useRoute();
+const query = route.query;
 
+// 将查询参数转换为适当的类型
+const devKey = query.devKey as string;
+const id = parseInt(query.id as string, 10);
+const location = query.location as string;
+const location2 =  ref('');
+location2.value = location;
 
+queryParams.devKey = devKey;
+queryParams.id = id;
 </script>
 
+<style scoped lang="scss">
+//   ::v-deep .el-card__body {
+//     padding:12px;
+
+// }
+.header_app{
+  background-color: white;
+  display: flex;
+  height: 50px;
+  padding-left: 10px;
+  box-shadow: 20px;
+}
+.header_app_text{                     
+  background-color: white;
+  width: 100%;
+  align-content: center;
+  color:#606266;
+}                                                       
+.header_app_text_other{
+  align-content: center;
+  background-color: white;
+  margin-right: 5px;
+}
+.header_app_text_other1{
+  align-content: center;
+  background-color: white;
+
+}
+</style>

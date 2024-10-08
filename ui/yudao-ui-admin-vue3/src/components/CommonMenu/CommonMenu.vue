@@ -134,6 +134,7 @@ const handleCheck = (data) => {
   .master-right {
     flex: 1;
     overflow: hidden;
+    width: 100%;
   }
 }
 .navBar {
@@ -146,7 +147,7 @@ const handleCheck = (data) => {
   font-size: 14px;
 }
 .nav-left {
-  width: 215px;
+  width: 200px;
   height: 100%;
 }
 :deep(.master-left .el-card__body) {

@@ -106,6 +106,9 @@ public class BoxRedisDataRes extends BoxResBase {
     @Schema(description = "负载率所在范围")
     private Integer color;
 
+    @Schema(description = "总视在功率")
+    private Double powActive;
+
     @Schema(description = "运行状态")
     private Integer status;
 

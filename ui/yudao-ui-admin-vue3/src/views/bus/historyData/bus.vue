@@ -3,13 +3,13 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <div class="carousel-container">
+        <!-- <div class="carousel-container"> -->
           <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
             <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
               <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
             </el-carousel-item>
           </el-carousel> -->
-        </div>
+        <!-- </div>
         <div class="nav_header">
           <br/>
           <span v-if="queryParams.granularity == 'realtime' ">全部始端箱最近一分钟新增记录</span>
@@ -21,6 +21,22 @@
             <el-descriptions-item label="总数据"><span >{{ navTotalData }} 条</span></el-descriptions-item>
             <el-descriptions-item label="相数据"><span >{{ navLineData }} 条</span></el-descriptions-item>
           </el-descriptions>
+        </div>-->
+        <div class="descriptions-container" style="font-size: 14px;">
+          <div class="description-item">
+            <span class="label">总数据 :</span>
+            <span class="value">{{ navTotalData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">相数据 :</span>
+            <span class="value">{{ navLineData }}条</span>
+          </div>
+        </div>
+        <div style="text-align: center;font-size: 14px">
+            <div v-if="queryParams.granularity == 'realtime' " style="text-align: center"><span>始端箱最近一分钟新增记录</span></div>
+              <div v-if="queryParams.granularity == 'hour' " style="text-align: center"><span>始端箱最近一小时新增记录</span></div>
+              <div v-if="queryParams.granularity == 'day' " style="text-align: center"><span>始端箱最近一天新增记录</span></div>
+                <div class="line" style="margin-top: 10px;"></div>
         </div>
       </div>
     </template>
@@ -79,7 +95,7 @@
           start-placeholder="开始时间"
           end-placeholder="结束时间"
           :disabled-date="disabledDate" 
-          class="!w-335px"
+          class="!w-280px"
         />
         </el-form-item>
         <!-- <div style="float:right; padding-right:78px"> -->
@@ -597,7 +613,7 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
   if (!cellValue) {
     return ''
   }
-  return dayjs(cellValue).format('YYYY-MM-DD HH:mm:ss.SSS')
+  return dayjs(cellValue).format('YYYY-MM-DD HH:mm')
 }
 
 // 禁选未来的日期
@@ -736,5 +752,31 @@ onMounted( () => {
   width: 100%;
   height: 100%;
   object-fit: cover; 
+}
+
+.description-item {
+  display: flex;
+  align-items: center;
+}
+
+.label {
+  width:100px; /* 控制冒号前的宽度 */
+  text-align: right; /* 文本右对齐 */
+  margin-right: 20px; /* 控制冒号后的间距 */
+}
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+}
+  .line {
+    height: 1px;
+    margin-top: 28px;
+
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
+
+  ::v-deep .el-table .el-table__header th {
+    background-color: #F5F7FA;
+    color: #909399;
 }
 </style>

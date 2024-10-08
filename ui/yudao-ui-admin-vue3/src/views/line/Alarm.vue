@@ -31,6 +31,7 @@
         label-width="68px"
         v-loading="queryLoading"
         @submit.prevent=""
+        
       >
         <div>
           <el-form-item label="" label-width="100">
@@ -70,6 +71,8 @@
         :data="tableData"
         highlight-current-row
         style="width: 100%"
+        :stripe="true" 
+        :border="true"
         @current-change="handleCurrentChange"
       >
           <!-- <el-table-column type="selection" width="55" /> -->
@@ -122,6 +125,7 @@ const queryParams = reactive({
   search: '',
   pageNo: 1,
   pageSize: 10,
+  a: 0,
   pageTotal: 8,
   id: '',
   openEmail: false,
@@ -232,12 +236,14 @@ const saveAlarmConfig = async() => {
 }
 // 获取数据
 const getTableData = async(reset = false) => {
+  // //debugger
   tableLoading.value = true
   if (reset) queryParams.pageNo = 1
   try {
     const res = await AlarmApi.getAlarmRecord({
       pageNo: queryParams.pageNo,
       pageSize: queryParams.pageSize,
+      a: 0,
       status: preStatus.value,
       likeName: queryParams.search
     })
@@ -341,5 +347,9 @@ getAlarmConfig()
 }
 :deep(.el-menu) {
   border-right: none;
+}
+::v-deep .el-table .el-table__header th {
+    background-color: #F5F7FA;
+    color: #909399;
 }
 </style>

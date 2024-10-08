@@ -2,10 +2,9 @@
   <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="不平衡度">
     <template #NavInfo>
       <div>
-        <div class="header">
+        <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
-        </div>
-        <div class="line"></div>
+        </div> -->
         <div class="status">
           <div class="box">
             <div class="top">
@@ -53,11 +52,12 @@
           type="primary"
           plain
           @click="openForm('create')"
+          v-if="switchValue == 0 "
         >
           <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
         </el-button>
         <el-form-item >
-          <el-checkbox-group  v-model="queryParams.status">
+          <el-checkbox-group  v-model="queryParams.status" @change="handleQuery">
             <el-checkbox :label="5" :value="5">在线</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
@@ -70,8 +70,7 @@
             placeholder="请输入网络地址"
             @select="handleQuery"
           />
-        </el-form-item>
-        <el-form-item>
+        <el-form-item style="margin-left: 10px">
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           <el-button
@@ -91,20 +90,22 @@
           >
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
+        </el-form-item>          
         </el-form-item>
         <div style="float:right">
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
-          <el-button @click="statusList.forEach((item) => item.selected = true);pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压</el-button>
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;visMode = 0" :type="visMode == 0 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
+          <el-button @click="statusList.forEach((item) => item.selected = true);pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;visMode = 0" :type="visMode == 0 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;visMode = 1;" :type="visMode == 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
         </div>
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="visMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" >
-        <el-table-column label="编号" align="center" prop="tableId" />
+      <el-table v-show="visMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
+        <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="所在位置" align="center" prop="location" width="218px"/>    
+        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>      
         <el-table-column label="运行状态" align="center" prop="color" v-if="switchValue == 0">
           <template #default="scope" >
               <el-tag type="info"  v-if="scope.row.color == 1">小电流不平衡</el-tag>
@@ -113,59 +114,59 @@
               <el-tag type="danger" v-if="scope.row.color == 4">大电流不平衡</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="不平衡度" align="center" prop="curUnbalance" width="130px" v-if="switchValue == 0">
+        <el-table-column label="不平衡度(%)" align="center" prop="curUnbalance" width="130px" v-if="switchValue == 0">
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.curUnbalance != null" >
-              {{ scope.row.curUnbalance }}%
+              {{ scope.row.curUnbalance }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="A相" align="center" prop="acur" width="130px" v-if="switchValue == 0" >
+        <el-table-column label="A相(A)" align="center" prop="acur" width="130px" v-if="switchValue == 0" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.acur != null">
-              {{ scope.row.acur }}A
+              {{ scope.row.acur }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="B相" align="center" prop="bcur" width="130px" v-if="switchValue == 0">
+        <el-table-column label="B相(A)" align="center" prop="bcur" width="130px" v-if="switchValue == 0">
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.bcur != null">
-              {{ scope.row.bcur }}A
+              {{ scope.row.bcur }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="C相" align="center" prop="ccur" width="130px" v-if="switchValue == 0">
+        <el-table-column label="C相(A)" align="center" prop="ccur" width="130px" v-if="switchValue == 0">
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.ccur != null">
-              {{ scope.row.ccur }}A
+              {{ scope.row.ccur }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="不平衡度" align="center" prop="volUnbalance" width="130px" v-if="switchValue == 1">
+        <el-table-column label="不平衡度(%)" align="center" prop="volUnbalance" width="130px" v-if="switchValue == 1">
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.volUnbalance != null" >
-              {{ scope.row.volUnbalance }}%
+              {{ scope.row.volUnbalance }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="A相" align="center" prop="avol" width="130px" v-if="switchValue == 1">
+        <el-table-column label="A相(V)" align="center" prop="avol" width="130px" v-if="switchValue == 1">
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.avol">
-              {{ scope.row.avol }}V
+              {{ scope.row.avol }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="B相" align="center" prop="bvol" width="130px" v-if="switchValue == 1">
+        <el-table-column label="B相(V)" align="center" prop="bvol" width="130px" v-if="switchValue == 1">
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.bvol">
-              {{ scope.row.bvol }}V
+              {{ scope.row.bvol }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="C相" align="center" prop="cvol" width="130px" v-if="switchValue == 1">
+        <el-table-column label="C相(V)" align="center" prop="cvol" width="130px" v-if="switchValue == 1">
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.cvol">
-              {{ scope.row.cvol }}V
+              {{ scope.row.cvol }}
             </el-text>
           </template>
         </el-table-column>
@@ -183,7 +184,7 @@
             <el-button
               link
               type="danger"
-              @click="handleDelete(scope.row.id)"
+              @click="handleDelete(scope.row.busId)"
               v-if="scope.row.status == 5"
             >
               删除
@@ -282,7 +283,7 @@ const visMode = ref(0);
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
-const pageSizeArr = ref([24,36,48])
+const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(0)
 const statusNumber = reactive({
   lessFifteen : 0,
@@ -555,10 +556,10 @@ const handleSelectStatus = (index) => {
   const statusArr = status.map(item => item.value)
   if(statusArr.length != statusList.length){
     queryParams.color = statusArr;
-    queryParams.status = [5];
+    //queryParams.status = [5];
   }else{
-    queryParams.color = [];
-    queryParams.status = [];
+    queryParams.color = null;
+    //queryParams.status = [];
   }
   
   handleQuery();
@@ -803,6 +804,7 @@ onActivated(() => {
   .status {
     display: flex;
     flex-wrap: wrap;
+    margin-top: 30px;
     .box {
       height: 70px;
       width: 50%;
@@ -870,8 +872,7 @@ onActivated(() => {
   }
   .line {
     height: 1px;
-    margin-top: 28px;
-    margin-bottom: 20px;
+    margin-top: 18px;
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
 }
@@ -977,5 +978,11 @@ onActivated(() => {
 }
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+::v-deep .el-table .el-table__header th{
+  background-color: #f5f7fa;
+  color: #909399;
+  height: 80px;
+
 }
 </style>

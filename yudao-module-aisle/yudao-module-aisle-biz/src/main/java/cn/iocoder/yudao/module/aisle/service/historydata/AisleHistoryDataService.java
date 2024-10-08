@@ -35,4 +35,7 @@ public interface AisleHistoryDataService {
     Map<String, Object> getNavNewData(String granularity) throws IOException;
 
 
+    List<Object> getNewExcelList(List<Object> list);
+
+    List<Object> getNewDetailsExcelList(List<Object> list);
 }

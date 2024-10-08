@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO;
 
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.format.NumberFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -20,6 +21,7 @@ public class RealtimeEQPageRespVO {
     private String create_time;
 
     @ExcelProperty("电能 (kWh)")
+    @NumberFormat("0.0")
     private Double ele_active;
 
 }

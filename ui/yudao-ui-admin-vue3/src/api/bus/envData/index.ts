@@ -21,6 +21,10 @@ export const EnvDataApi = {
   getBusEnvNavNewData: async () => {
     return await request.get({ url: `/bus/history-data/bus-env-new-data`})
   },
+  // 导出插接箱环境历史数据 Excel
+  exportBusTemHistoryData: async (params, axiosConfig) => {
+    return await request.download({ url: `/bus/history-data/bus-tem-export-excel`, params, ...axiosConfig })
+  },
 
     // 查询插接箱环境数据分页
     getBoxEnvDataPage: async (params: any) => {
@@ -40,5 +44,9 @@ export const EnvDataApi = {
     // 查询插接箱环境数据导航的新增多少条记录数据
     getBoxEnvNavNewData: async () => {
       return await request.get({ url: `/bus/history-data/box-env-new-data`})
+    },
+        // 导出插接箱环境历史数据 Excel
+    exportBoxTemHistoryData: async (params, axiosConfig) => {
+      return await request.download({ url: `/bus/history-data/box-tem-export-excel`, params, ...axiosConfig })
     },
 }

@@ -22,4 +22,8 @@ export const HistoryDataApi = {
   getNavNewData: async (granularity: string) => {
     return await request.get({ url: `/cabinet/history-data/new-data/`+granularity})
   },
+    // 导出机柜历史数据 Excel
+    exportHistorydetailsPageData: async (params, axiosConfig) => {
+      return await request.download({ url: `/cabinet/history-data/details-export-excel`, params, ...axiosConfig })
+    },
 }

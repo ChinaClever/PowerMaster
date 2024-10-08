@@ -111,4 +111,8 @@ public interface BusIndexService {
     Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
     String getBusRedisByDevKey(String devKey);
+
+    PageResult<BusIndexRes> getDeletedPage(BusIndexPageReqVO pageReqVO);
+
+    void restoreIndex(Long id);
 }

@@ -2,10 +2,11 @@
   <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="false"  :lazy="true" :load="loadNode" navTitle="PDU报表">
     <template #NavInfo>
       <div >
-        <div class="header">
+        <br/>
+        <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
         </div>
-        <div class="line"></div>
+        <div class="line"></div> -->
         <!-- <div class="status">
           <div class="box">
             <div class="top">
@@ -32,8 +33,7 @@
             <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
           </div>
         </div> -->
-        <div class="line"></div>
-
+        <!-- <div class="line"></div> -->
       </div>
     </template>
     <template #ActionBar>
@@ -54,16 +54,29 @@
           />
         </el-form-item> -->
 
-        <el-form-item label="IP地址" prop="ipAddr" >
+        <el-form-item  label="IP地址" prop="ipAddr" >
           <el-autocomplete
             v-model="queryParams.ipAddr"
             :fetch-suggestions="querySearch"
             clearable
             class="!w-140px"
             placeholder="请输入IP地址"
+            @keyup.enter="handleQuery"
             @select="handleQuery"
+
           />
         </el-form-item>
+<!-- 
+        <el-form-item label="IP地址" prop="ipAddr">
+    <el-input
+      v-model="queryParams.ipAddr"
+      clearable
+      class="!w-140px"
+      placeholder="请输入IP地址"
+      @select="handleQuery"
+    />
+  </el-form-item> -->
+        
 
         <el-form-item label="级联地址" prop="cascadeAddr" label-width="70px">
           <el-input-number
@@ -79,7 +92,7 @@
             @click="queryParams.timeType = 0;now = new Date();now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 0;handleDayPick();handleQuery()" 
             :type="switchValue == 0 ? 'primary' : ''"
           >
-            日报
+            日报 
           </el-button>
           <el-button 
             @click="queryParams.timeType = 1;now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 1;handleMonthPick();handleQuery()" 
@@ -178,15 +191,21 @@
                     <el-table-column  align="center" label="能耗">
                       <el-table-column  prop="consumeName"  />
                       <el-table-column  prop="consumeValue" />
-                    </el-table-column>
+                    </el-table-column>  
                     
                   </el-table>
                 </div>
               </el-col>
-              <el-col v-if="serChartContainerWidth == 10" :span="serChartContainerWidth">
-                <Radar width="29vw" height="25vh" :list="serverData" />
+              <el-col v-if="serChartContainerWidth == 10" :span="serChartContainerWidth">  
+                
+                <!-- <Radar width="29vw" height="25vh" :list="serverData" /> -->
+                <div >
+                 <div ref="serChartContainer" id="serChartContainer" style="width: 60vh; height: 25vh"></div>
+               </div>
               </el-col>
+
             </el-row>
+
           </div>
           <div class="pageBox" v-if="visControll.eqVis" >
             <div class="page-conTitle" >
@@ -215,7 +234,7 @@
               输出位电量排名
             </div>
             <HorizontalBar width="70vw" height="58vh" :list="outletList" />
-          </div>
+          </div>       
           <div class="pageBox" v-if="visControll.temVis">
             <div class="page-conTitle">
               温度曲线
@@ -224,6 +243,42 @@
             <p v-show="temData.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{temData.temMinValue}}°C， 最低温度发生时间{{temData.temMinTime}}，由温度传感器{{temData.temMinSensorId}}采集得到</p>
             <EnvTemLine  width="70vw" height="58vh" :list="temList"  />
           </div>
+          <div class="pageBox"  v-if="temp1 && temp1.length > 0">
+            <div class="page-conTitle">
+              告警信息
+            </div>
+      <el-table
+        ref="multipleTableRef"
+        :data="temp1"
+        highlight-current-row
+        style="width: 100%"
+        :stripe="true" 
+        :border="true"
+        @current-change="handleCurrentChange"
+      >
+          <!-- <el-table-column type="selection" width="55" /> -->
+          <el-table-column type="index" width="80" label="序号" align="center" />
+          <el-table-column property="devPosition" label="区域" min-width="100" align="center" />
+          <el-table-column property="devName" label="设备" min-width="100" align="center" />
+          <el-table-column property="alarmLevelDesc" label="告警等级" min-width="100" align="center" />
+          <el-table-column property="alarmTypeDesc" label="告警类型" min-width="100" align="center" />
+          <el-table-column property="alarmDesc" label="描述" min-width="120" align="center">
+            <template #default="scope">
+              <el-tooltip  placement="right">
+                <div class="table-desc">{{scope.row.alarmDesc}}</div>
+                <template #content>
+                  <div class="tooltip-width">{{scope.row.alarmDesc}}</div>
+                </template>
+              </el-tooltip>
+            </template>
+          </el-table-column>
+          <el-table-column property="startTime" label="开始时间" min-width="100" align="center" />
+          <el-table-column property="endTime" label="结束时间" min-width="100" align="center" />
+          <el-table-column property="finishReason" label="结束原因" min-width="100" align="center" />
+          <el-table-column property="confirmReason" label="确认原因" min-width="100" align="center" />
+      </el-table>
+          </div>
+          
         </div>
 
       </div>
@@ -236,6 +291,8 @@
 
 <script setup lang="ts">
 // import download from '@/utils/download'
+import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption'
+import { AlarmApi } from '@/api/system/notify/alarm'
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 import * as echarts from 'echarts';
 import { ElTree } from 'element-plus'
@@ -247,6 +304,18 @@ import Bar from './component/Bar.vue'
 import HorizontalBar from './component/HorizontalBar.vue'
 import EnvTemLine from './component/EnvTemLine.vue'
 import Radar from './component/Radar.vue'
+import { Flag } from '@element-plus/icons-vue/dist/types';
+import { size } from 'min-dash';
+import { viewDepthKey } from 'vue-router';
+import { Bottom } from '@element-plus/icons-vue/dist/types';
+import { ElMessageBox, ElMessage } from 'element-plus'
+import { remove } from 'nprogress';
+
+
+// import Line from './component/Line.vue'
+// import PFLine from './component/PFLine.vue'
+// import Bar from './component/Bar.vue'
+// import EnvTemLine from './component/EnvTemLine.vue'
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -258,7 +327,7 @@ const totalLineList = ref() as any;
 const pfLineList = ref() as any;
 const now = ref()
 const switchValue = ref(1);
-const ipList = ref([])
+const ipList = ref([])// 初始化 ipList 为一个空数组
 const instance = getCurrentInstance();
 const visControll = reactive({
   visAllReport : false,
@@ -280,6 +349,7 @@ const loadAll = async () => {
 }
 
 const querySearch = (queryString: string, cb: any) => {
+  
   const results = queryString
     ? ipList.value.filter(createFilter(queryString))
     : ipList.value
@@ -383,7 +453,10 @@ const PDUTableData = ref([]) as any
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
-  devKey : undefined,
+  a: 0,
+  outletId: undefined as number | undefined,
+  pduId: undefined as number | undefined,
+  devKey : "",
   id: undefined,
   type: 'total',
   eqGranularity:"day",
@@ -398,6 +471,7 @@ const queryParams = reactive({
   timeType: 1,
   cascadeAddr : 0
 }) as any
+
 
 const loadNode = async (node: Node, resolve: (data: Tree[]) => void) => {
   if (node.level === 0) {
@@ -480,6 +554,20 @@ interface TemData {
   temMinTime : string;
   temMinSensorId : number;
 }
+interface RadarData{
+  index: number;
+  powApparent: number;
+  powValue : number;
+  curValue : number;
+  name: string;
+}
+const result=ref<RadarData>({
+  index : 0,
+  powApparent : 0.000,
+  powValue : 0.000,
+  curValue : 0.00,
+  name: ""
+})
 const temData = ref<TemData>({
   temAvgValue : [],
   time : [],
@@ -491,16 +579,27 @@ const temData = ref<TemData>({
   temMinSensorId : 0,
 }) as any
 
+
 interface ServerData {
   nameAndMax: object[];
-  value: number[];
+  curvalue: number[];
+  powvalue: number[];
+  powapparent: number[];
 }
+// 获得雷达视在功率数据
 const serverData = ref<ServerData>({
-  nameAndMax : [
-  ],
-  value: []
+  nameAndMax : [],
+  curvalue: [],
+  powvalue: [],
+  powapparent: []
 }) as any
-
+//切换功率时调整nameAndMax
+const serverData1 = ref<ServerData>({
+  nameAndMax : [],
+  curvalue: [],
+  powvalue: [],
+  powapparent: []
+}) as any
 interface OutLetRankData {
   outLetId: string[];
   eleValue: number[];
@@ -532,7 +631,15 @@ const itemStyle = ref({
     )  
   }  
 });
-
+// 截取前10个元素
+const truncateArrays = (data: ServerData): ServerData => {
+  return {
+    nameAndMax: data.nameAndMax.slice(0, 12),
+    curvalue: data.curvalue.slice(0, 12),
+    powvalue: data.powvalue.slice(0, 12),
+    powapparent: data.powapparent.slice(0, 12)
+  };
+};
 const outletItemStyle = ref({
   emphasis: {
     barBorderRadius: 7,
@@ -546,9 +653,12 @@ const outletItemStyle = ref({
     ]),
   },
 });
+const temp1 = ref([]) as any
 const getList = async () => {
+  
   loading.value = true
   eqData.value = await PDUDeviceApi.getConsumeData(queryParams);
+  
   if(eqData.value?.barRes?.series[0]){
     eqData.value.barRes.series[0].itemStyle = itemStyle.value;
   }
@@ -613,50 +723,51 @@ const getList = async () => {
   var PDU = await PDUDeviceApi.PDUDisplay(queryParams);
   PDU = JSON.parse(PDU)
   var temp = [] as any;
+  var resultArray=[] as any;
   var baseInfo = await PDUDeviceApi.getPDUDevicePage(queryParams);
   // 假设 PDU.pdu_data.output_item_list.pow_value 是一个 double 数组
+  var powApparentValueArray = PDU?.pdu_data?.output_item_list?.pow_apparent;
   var powValueArray = PDU?.pdu_data?.output_item_list?.pow_value;
-  console.log(powValueArray)
-  // 过滤出大于 0 的元素，并将值与下标保存到对象数组中
-  if(powValueArray && powValueArray.length > 0){
-    var resultArray = [] as any;
+  var curValueArray = PDU?.pdu_data?.output_item_list?.cur_value;
+  
+  // console.log(powValueArray)
+  // 将值与下标保存到对象数组中
+  if(powValueArray && powValueArray.length >= 0){
     for (var i = 0; i < powValueArray.length; i++) {
-      if (powValueArray[i] > 0) {
-        resultArray.push({
-          value: powValueArray[i],
-          index: i + 1
-        });
-      }
+      result.value.index=i + 1
+      result.value.name = "输出位" + (i + 1)
+      result.value.powApparent = powApparentValueArray[i]
+      result.value.curValue = curValueArray[i]
+      result.value.powValue= powValueArray[i]
+      resultArray.push({ ...result.value });
     }
-
     // 按值进行排序
-    resultArray.sort(function(a, b) {
-      return a.value - b.value;
-    });
-
+    resultArray.sort((a, b) => b.curValue - a.curValue);
     // 只保留前十个元素
-    resultArray = resultArray.slice(0, 10);
-
-    // 根据 resultArray 中的元素生成 nameAndMax 数组和 value 数组
-    var element = [] as any;
-    var valueArr = [] as any;
-    for (var j = 0; j < resultArray.length; j++) {
-      var name = "输出位" + resultArray[j].index;
-      element.push({
-        name: name,
-        max: resultArray[j].value + 0.001
-      });
-      valueArr.push(resultArray[j].value?.toFixed(3))
+    resultArray = resultArray.slice(0, 12);
+    for(var i=0;i<resultArray.length;i++){
+      serverData.value.nameAndMax.push({
+        name: resultArray[i].name,
+        max: resultArray[i].curValue+0.001,
+      })
+      serverData1.value.nameAndMax.push({
+        name: resultArray[i].name,
+        max: resultArray[i].powApparent+0.001,
+      })
+      // console.log(serverData1.value.nameAndMax)
+      serverData.value.curvalue.push(resultArray[i].curValue)
+      serverData.value.powvalue.push(resultArray[i].powValue)
+      serverData.value.powapparent.push(resultArray[i].powApparent)
     }
-    serverData.value.nameAndMax = element;
-    serverData.value.value = valueArr;
+    // 根据 resultArray 中的元素生成 nameAndMax 数组和 value 数组
     serChartContainerWidth.value = 10;
-    console.log(" serChartContainerWidth.value", serChartContainerWidth.value)
+    // console.log(" serChartContainerWidth.value", serChartContainerWidth.value)
+    if(resultArray.length==0){
+      serChartContainerWidth.value = 0;
+    }
   }else{
     serChartContainerWidth.value = 0;
   }
-  
-
   temp.push({
     baseInfoName : "所属位置",
     baseInfoValue : baseInfo?.list && baseInfo?.list.length > 0 ? baseInfo?.list[0].location : "/",
@@ -677,28 +788,134 @@ const getList = async () => {
     consumeValue : PDU?.pdu_data?.pdu_total_data != null ? PDU.pdu_data.pdu_total_data.power_factor?.toFixed(2) : '/'
   })
   PDUTableData.value = temp;
-  
-  
-  // initChart();
   loading.value = false
-
+  //清除temp1的缓存数据
+  temp1.value=[]
+  //获得告警信息
+  getTableData()
+  //处理告警信息数据
+  // //debugger
+  //处理时间信息
+  const oldDate = new Date(queryParams.oldTime);
+  const newDate = new Date(queryParams.newTime);
+  
+  
+  console.log(typeof tableData.value)
+  Object.values(tableData.value).forEach((item: any)=>item.devKey== temp[1].baseInfoValue&&newDate>=new Date(item.startTime)&&new Date(item.startTime)>=oldDate?temp1.value.push(item):console.log("no"))
+  
+  
 }
 
 const serChartContainer = ref<HTMLElement | null>(null);
 let serChart = null as echarts.ECharts | null; // 显式声明 serChart 的类型
-
+let num=0
+const indicator =ref<ServerData>({
+  nameAndMax: [],
+  curvalue: [],
+  powvalue: [],
+  powapparent: [],
+})
+indicator.value.nameAndMax=serverData.value.nameAndMax
 const initChart =  () => {
   if (serChartContainer.value && instance && serverData.value.nameAndMax && serverData.value.nameAndMax.length > 0) {
+    
     serChart = echarts.init(serChartContainer.value);
     serChart.setOption({
-      radar: { indicator: serverData.value.nameAndMax },
+      legend: {
+                data: ['电流','视在功率', '有功功率'],
+                selected: { // 默认选择状态
+                  '电流': true, // 默认选中电能
+                  '视在功率': false,
+                  '有功功率': false
+                           },
+                bottom: 0,
+                right: 0,
+              },
+      grid: {
+                bottom: 0,
+                top: 0,
+              },
+      radar: { indicator: indicator.value.nameAndMax},
       series: [
-        { name: '服务器IT总视在功率', type: 'radar', label: { show: true, position: 'top' } ,data: [ { value: serverData.value.value, name: '总视在功率' }, ] }
+
+          { 
+          name: 'PDU输出位电能', 
+          type: 'radar', 
+          label: { show: true, position: 'top' } ,
+          data: 
+          [ { value: serverData.value.curvalue, name: '电流' }, ] },
+        { 
+          name: 'PDU输出位视在功率', 
+          type: 'radar', 
+          label: { show: true, position: 'top' } ,
+          data: [ { value: serverData.value.powapparent, name: '视在功率' }, ] },
+          { 
+          name: 'PDU输出位有功功率', 
+          type: 'radar', 
+          label: { show: true, position: 'top' } ,
+          data: [ { value: serverData.value.powvalue, name: '有功功率' }, ] }
       ]
     });
+    
+    serChart.on('legendselectchanged', function (queryParams) {
+      // console.log(indicator.value.nameAndMax)
+      // console.log(serverData.value.nameAndMax)
+      // console.log(serverData1.value.nameAndMax)
+      const selected = queryParams.selected;
+      console.log(selected)
+      console.log(!selected['电流'])
+      if(selected['电流']&&(selected['视在功率']||selected['有功功率'])){
+        num++;
+      }
+      // if(!selected['电流']&&selected['视在功率']&&!selected['有功功率']){
+      //   selected['电流'] = false;
+      //   selected['视在功率'] = true;
+      //   selected['有功功率'] = false;
+      //   indicator.value.nameAndMax=serverData1.value.nameAndMax
+      // }
+      // else if(!selected['电流']&&!selected['视在功率']&&selected['有功功率']){
+      //   selected['电流'] = false;
+      //   selected['视在功率'] = false;
+      //   selected['有功功率'] = true;
+      //   indicator.value.nameAndMax=serverData1.value.nameAndMax
+      // }
+      if(selected['电流']&&!selected['视在功率']&&!selected['有功功率']){
+        selected['电流'] = true;
+        selected['视在功率'] = false;
+        selected['有功功率'] = false;
+        num=0;
+        indicator.value.nameAndMax=serverData.value.nameAndMax
+      }
+      else if(num%2==0){
+        selected['电流'] = true;
+        selected['视在功率'] = false;
+        selected['有功功率'] = false;
+        indicator.value.nameAndMax=serverData.value.nameAndMax
+      }
+      else{
+        selected['电流'] = false;
+        indicator.value.nameAndMax=serverData1.value.nameAndMax
+
+      }
+      
+
+      // 更新图表配置
+      if(serChart){
+      serChart.setOption({legend: {selected: selected},radar: { indicator: indicator.value.nameAndMax}});
+      }
+});
+        // serverData.value.nameAndMax=[]
+        // serverData.value.curvalue=[]
+        // serverData.value.powapparent=[]
+        // serverData.value.powvalue=[]
+        // serverData1.value.nameAndMax=[]
     // 将 serChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+    // 使用截取后的数据
+    serverData.value = truncateArrays(serverData.value);
+    serverData1.value = truncateArrays(serverData1.value);
     instance.appContext.config.globalProperties.serChart = serChart;
   }
+
   visControll.visAllReport = true;
 };
 
@@ -731,7 +948,7 @@ const arraySpanMethod = ({
 
 /** 搜索按钮操作 */
 const handleQuery = async () => {
-
+  
   if(queryParams.ipAddr){
     if(queryParams.oldTime && queryParams.newTime){
       queryParams.devKey = queryParams.ipAddr +'-' +  queryParams.cascadeAddr;
@@ -741,6 +958,106 @@ const handleQuery = async () => {
     }
   }
   
+}
+
+// const queryLoading = ref(false)
+const tableLoading = ref(false)
+const preStatus = ref([0])
+const tableData = ref([])
+// const message = useMessage() // 消息弹窗
+// const alarmForm = ref()
+const targetId = ref('')
+
+// // 获取警告配置
+// const getAlarmConfig = async() => {
+//   queryLoading.value = true
+//   try {
+//     const res = await AlarmApi.getAlarmConfig({})
+//     console.log('res', res)
+//     if (res) {
+//       queryParams.id = res.id
+//       queryParams.openEmail = !!res.mailAlarm
+//       queryParams.openVoice = !!res.voiceAlarm
+//       queryParams.openMessage = !!res.smsAlarm
+//     }
+//   } finally  {
+//     queryLoading.value = false
+//   }
+// }
+
+// 获取告警信息数据
+const getTableData = async(reset = false) => {
+  tableLoading.value = true
+  try {
+    // //debugger
+    const res = await AlarmApi.getAlarmRecord({
+      pageNo: 1,
+      pageSize: 10,
+      a: 1,
+      status: preStatus.value,
+      likeName: queryParams.search
+    })
+    console.log('res', res)
+    if (res.list) {    
+      tableData.value = res.list
+      queryParams.pageTotal = res.total   
+    }
+  } finally {
+    tableLoading.value = false
+    queryParams.a.value=0
+  }
+}
+getTableData()
+// 保存警告配置
+// const saveAlarmConfig = async() => {
+//   queryLoading.value = true
+//   try {
+//     const res = await AlarmApi.saveAlarmConfig({
+//       id: queryParams.id,
+//       mailAlarm: queryParams.openEmail ? 1 : 0,
+//       voiceAlarm: queryParams.openVoice ? 1 : 0,
+//       smsAlarm: queryParams.openMessage ? 1 : 0,
+//     })
+//     console.log('保存警告配置', res)
+//     if (res) message.success('配置修改成功')
+//   } finally {
+//     queryLoading.value = false
+//   }
+//   console.log('saveAlarmConfig')
+// }
+
+// 处理表单弹窗
+// const handleFormOpen = (type) => {
+//   alarmForm.value.open(type)
+// }
+
+// 警告处理
+// const toHandle = (type) => {
+//   const statusList = ['挂起', '确认', '结束']
+//   ElMessageBox.prompt('请输入原因：', `${statusList[type-1]}告警`, {
+//     confirmButtonText: '确定',
+//     cancelButtonText: '取消',
+//     inputErrorMessage: '请输入',
+//   })
+//     .then(({ value }) => {
+//       console.log(value)
+//       AlarmApi.saveAlarmRecord({
+//         id: targetId.value,
+//         status: type,
+//         confirmReason: value
+//       }).then(() => {
+//         ElMessage({
+//           type: 'success', // 0 未处理 1 挂起 2确认 3结束
+//           message: '成功',
+//         })
+//       })
+//     })
+// }
+
+// 表格行选择处理
+const handleCurrentChange = (val) => {
+  if (!val) return
+  targetId.value = val.id
 }
 
 /** 重置按钮操作 */
@@ -1042,8 +1359,8 @@ onMounted( async () =>  {
 }
 
 :deep .el-table thead tr th {
-    background: #01ada8 !important;
-    color: #fff;
+    background: #F5F7FA!important;
+    color: #909399;
 }
 
 :deep(.master-left .el-card__body) {

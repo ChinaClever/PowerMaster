@@ -25,31 +25,31 @@
           </el-descriptions>
         </div>
       </div> -->
-      <div class="descriptions-container" style="font-size: 14px;">
- 
-        <div v-if="queryParams.granularity == 'realtime' " style="text-align: center"><span>全部PDU最近一分钟新增记录</span></div>
-        <div v-if="queryParams.granularity == 'hour' " style="text-align: center"><span>全部PDU最近一小时新增记录</span></div>
-        <div v-if="queryParams.granularity == 'day' " style="text-align: center"><span>全部PDU最近一天新增记录</span></div>
+        <div class="descriptions-container" style="font-size: 14px;">
+          <div class="description-item">
+            <span class="label">总数据 :</span>
+            <span class="value">{{ navTotalData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">相数据 :</span>
+            <span class="value">{{ navLineData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">回路数据 :</span>
+            <span class="value">{{ navLoopData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">输出位数据 :</span>
+            <span class="value">{{ navOutletData }}条</span>
+          </div>
+          <div style="text-align: center">
+            <div v-if="queryParams.granularity == 'realtime' " style="text-align: center"><span>全部PDU最近一分钟新增记录</span></div>
+              <div v-if="queryParams.granularity == 'hour' " style="text-align: center"><span>全部PDU最近一小时新增记录</span></div>
+              <div v-if="queryParams.granularity == 'day' " style="text-align: center"><span>全部PDU最近一天新增记录</span></div>
+                <div class="line" style="margin-top: 10px;"></div>
+          </div>
+          </div>
 
-        <br/>
-    <div class="description-item">
-      <span class="label">总电能 :</span>
-      <span class="value">{{ navTotalData }}条</span>
-    </div>
-    <div class="description-item">
-      <span class="label">相电能 :</span>
-      <span class="value">{{ navLineData }}条</span>
-    </div>
-    <div class="description-item">
-      <span class="label">回路电能 :</span>
-      <span class="value">{{ navLoopData }}条</span>
-    </div>
-    <div class="description-item">
-      <span class="label">输出位电能 :</span>
-      <span class="value">{{ navOutletData }}条</span>
-    </div>
-  </div>
-      <div class="line"></div>
       </div>
     </template>
     <template #ActionBar>
@@ -122,14 +122,24 @@
         <!-- </div> -->
       </el-form>
     </template>
+
     <template #Content>
-      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+      <el-table v-loading="loading" 
+                :data="list" 
+                :stripe="true" 
+                :show-overflow-tooltip="true" 
+                :border="true"
+                >
           <!-- 添加行号列 -->
-        <el-table-column label="序号" align="center" width="100px">
+        <el-table-column  label="序号" 
+                          align="center" 
+                          width="100px"
+                          >
           <template #default="{ $index }">
             {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
           </template>
         </el-table-column>
+        
         <!-- 遍历其他列 -->
         <template v-for="column in tableColumns">
           <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
@@ -138,6 +148,7 @@
             </template>
           </el-table-column>
         </template>
+        
         <!-- 超过一万条数据提示信息 -->
         <template v-if="shouldShowDataExceedMessage" #append>
           <tr>
@@ -942,24 +953,29 @@ onMounted( () => {
   height: 100%;
   object-fit: cover; 
 }
-.description-item {
-  display: flex;
-  align-items: center;
-}
+  .description-item {
+    display: flex;
+    align-items: center;
+  }
 
-.label {
-  width:100px; /* 控制冒号前的宽度 */
-  text-align: right; /* 文本右对齐 */
-  margin-right: 20px; /* 控制冒号后的间距 */
-}
+  .label {
+    width:100px; /* 控制冒号前的宽度 */
+    text-align: right; /* 文本右对齐 */
+    margin-right: 20px; /* 控制冒号后的间距 */
+  }
 
-.value {
-  flex: 1; /* 自动扩展以对齐数据 */
-}
-  .line {
-    height: 1px;
-    margin-top: 28px;
+  .value {
+    flex: 1; /* 自动扩展以对齐数据 */
+  }
+    .line {
+      height: 1px;
+      margin-top: 28px;
 
-    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+      background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+    }
+
+    ::v-deep .el-table .el-table__header th {
+      background-color: #F5F7FA;
+      color: #909399;
   }
 </style>

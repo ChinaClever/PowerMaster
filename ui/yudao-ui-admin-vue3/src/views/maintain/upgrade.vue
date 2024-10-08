@@ -230,7 +230,7 @@ const handleSubmit = async() => {
     const params = {
       upgradeDev: dialogFrom.value.type
     } as any
-    debugger
+    //debugger
     if (params.upgradeDev == 2) params.ipList = dialogFrom.value.ips.map(item=>item.ip)
     if (params.upgradeDev == 1) params.roomIds = dialogFrom.value.rooms
     console.log('params', params, dialogFrom.value.ips)

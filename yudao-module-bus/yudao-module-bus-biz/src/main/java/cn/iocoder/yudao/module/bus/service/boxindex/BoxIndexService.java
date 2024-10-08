@@ -115,4 +115,8 @@ public interface BoxIndexService {
     Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
     String getBoxRedisByDevKey(String devKey);
+
+    void restoreIndex(Long id);
+
+    PageResult<BoxIndexRes> getDeletedPage(BoxIndexPageReqVO pageReqVO);
 }

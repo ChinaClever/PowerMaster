@@ -34,14 +34,14 @@ public class HourAndDayPageRespVO {
     private Double pow_active_avg_value;
 
     @ExcelProperty("最大有功功率时间")
-    private Double pow_active_max_time;
+    private String pow_active_max_time;
 
     @ExcelProperty("最大有功功率(kW)")
     @NumberFormat("0.000")
     private Double pow_active_max_value;
 
     @ExcelProperty("最小有功功率时间")
-    private Double pow_active_min_time;
+    private String pow_active_min_time;
 
     @ExcelProperty("最小有功功率(kW)")
     @NumberFormat("0.000")
@@ -91,7 +91,7 @@ public class HourAndDayPageRespVO {
 
     @ExcelProperty("最大电流(A)")
     @NumberFormat("0.00")
-    private String cur_max_value;
+    private Double cur_max_value;
 
     @ExcelProperty("最小电流时间")
     private String cur_min_time;

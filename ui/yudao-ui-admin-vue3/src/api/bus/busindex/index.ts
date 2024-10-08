@@ -19,6 +19,11 @@ export const IndexApi = {
     return await request.post({ url: `/bus/index/page`, data })
   },
 
+  // 查询已删除的始端箱索引分页
+  getDeletedIndexPage: async (data: any) => {
+    return await request.post({ url: `/bus/index/getDeletedPage`, data })
+  },  
+
   // 查询始端箱索引详情
   getIndex: async (id: number) => {
     return await request.get({ url: `/bus/index/get?id=` + id })
@@ -38,6 +43,11 @@ export const IndexApi = {
   deleteIndex: async (id: number) => {
     return await request.delete({ url: `/bus/index/delete?id=` + id })
   },
+
+  // 恢复始端箱索引
+  restoreIndex: async (id: number) => {
+    return await request.put({ url: `/bus/index/restore?id=` + id })
+  },  
 
   // 导出始端箱索引 Excel
   exportIndex: async (params) => {
