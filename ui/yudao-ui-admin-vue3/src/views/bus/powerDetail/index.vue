@@ -1,8 +1,37 @@
 <template>
+<div style="background-color: #E7E7E7;">
+  <div class="header_app">
+    <div class="header_app_text">所在位置：{{ location }}</div>
+    <div class="header_app_text_other1">
+          <el-col :span="10">
+            <el-form
+              class="-mb-15px"
+              :model="queryParamsSearch"
+              ref="queryFormRef"
+              :inline="true"
+              label-width="120px"
+            >
+              <el-form-item label="网络地址" prop="devKey" >
+              <el-autocomplete
+                v-model="queryParamsSearch.devKey"
+                :fetch-suggestions="querySearch"
+                placeholder="请输入网络地址"  
+                clearable
+                class="!w-160px"
+                @select="handleQuery" 
+              />
+              </el-form-item>
+            </el-form>
+          </el-col>      
+    </div>
+    <div class="header_app_text_other">
+      <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+    </div>
+  </div>
   <div class="TransformerMonitor">
     <div class="center-part">
       <div class="left-part">
-        <el-tag size="large">{{ location }}</el-tag>
+        <!-- <el-tag size="large">{{ location }}</el-tag> -->
         <Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData.loadFactor" />
         <p v-if="!visContro.gaugeVis" class="noData">暂无数据</p>
       </div>
@@ -35,11 +64,11 @@
         </div>
         <div  class="center-bottom-part">
           <div  class="top-part">
-            <span >负载</span>
-            <span >电流</span>
-            <span >电压</span>
-            <span >温度</span>
-            <span >总谐波含有率</span>
+            <span >| 负载</span>
+            <span >| 电流</span>
+            <span >| 电压</span>
+            <span >| 温度</span>
+            <span >| 总谐波含有率</span>
           </div>
           <div  class="block-part">
             <div  class="content-part">
@@ -47,55 +76,65 @@
               <p >视在功率<span  class="vale-part">{{redisData?.s}}</span>kVA</p>
               <p >有功功率<span  class="vale-part">{{redisData?.p}}</span>kW</p>
               <p >无功功率<span  class="vale-part">{{redisData?.q}}</span>kVar</p>
-              <p >最大需量<span  class="vale-part">{{redisData?.md}}</span>kW </p>
+              <p >最大需量<span  class="vale-part">{{redisData?.md}}</span>kVA </p>
               <p >{{redisData?.updateTime}}</p>
             </div>
             <div  class="content-part">
-              <p  class="AColor">A相 <span  class="vale-part AColor">{{redisData?.ia}}</span>A </p>
-              <p  class="BColor">B相 <span  class="vale-part BColor">{{redisData?.ib}}</span>A </p>
-              <p  class="CColor">C相 <span  class="vale-part CColor">{{redisData?.ic}}</span>A </p>
+              <p  >A相 <span  class="vale-part AColor">{{redisData?.ia}}</span>A </p>
+              <p  >B相 <span  class="vale-part BColor">{{redisData?.ib}}</span>A </p>
+              <p >C相 <span  class="vale-part CColor">{{redisData?.ic}}</span>A </p>
             </div>
             <div  class="content-part">
-              <p  class="AColor">Uab <span  class="vale-part AColor">{{redisData?.uab}}</span>V</p>
-              <p  class="BColor">Ubc <span  class="vale-part BColor">{{redisData?.ubc}}</span>V</p>
-              <p  class="CColor">Uca <span  class="vale-part CColor">{{redisData?.uca}}</span>V</p>
-              <p  class="AColor">Ua <span  class="vale-part AColor">{{redisData?.ua}}</span>V </p>
-              <p  class="BColor">Ub <span  class="vale-part BColor">{{redisData?.ub}}</span>V </p>
-              <p  class="CColor">Uc <span  class="vale-part CColor">{{redisData?.uc}}</span>V </p>
+              <p  >Uab <span  class="vale-part AColor">{{redisData?.uab}}</span>V</p>
+              <p  >Ubc <span  class="vale-part BColor">{{redisData?.ubc}}</span>V</p>
+              <p  >Uca <span  class="vale-part CColor">{{redisData?.uca}}</span>V</p>
+              <p  >Ua <span  class="vale-part AColor">{{redisData?.ua}}</span>V </p>
+              <p  >Ub <span  class="vale-part BColor">{{redisData?.ub}}</span>V </p>
+              <p  >Uc <span  class="vale-part CColor">{{redisData?.uc}}</span>V </p>
             </div>
             <div  class="content-part">
-              <p  class="AColor">A相温度 <span  class="vale-part AColor">{{redisData?.tempA}}</span>℃</p>
-              <p  class="BColor">B相温度 <span  class="vale-part BColor">{{redisData?.tempB}}</span>℃</p>
-              <p  class="CColor">C相温度 <span  class="vale-part CColor">{{redisData?.tempC}}</span>℃</p>
-              <p  class="CColor">N相温度 <span  class="vale-part CColor">{{redisData?.tempN}}</span>℃</p>
+              <p  >A相温度 <span  class="vale-part AColor">{{redisData?.tempA}}</span>℃</p>
+              <p  >B相温度 <span  class="vale-part BColor">{{redisData?.tempB}}</span>℃</p>
+              <p  >C相温度 <span  class="vale-part CColor">{{redisData?.tempC}}</span>℃</p>
+              <p  >N相温度 <span  class="vale-part CColor">{{redisData?.tempN}}</span>℃</p>
             </div><!---->
             <div  class="content-part">
-              <p  class="AColor">A相电流 <span  class="vale-part AColor">{{redisData?.iaTHD}}</span>%</p>
-              <p  class="BColor">B相电流 <span  class="vale-part BColor">{{redisData?.ibTHD}}</span>%</p>
-              <p  class="CColor">C相电流 <span  class="vale-part CColor">{{redisData?.icTHD}}</span>%</p>
-              <p  class="AColor">A相电压 <span  class="vale-part AColor">{{redisData?.uaTHD}}</span>%</p>
-              <p  class="BColor">B相电压 <span  class="vale-part BColor">{{redisData?.ubTHD}}</span>%</p>
-              <p  class="CColor">C相电压 <span  class="vale-part CColor">{{redisData?.ucTHD}}</span>%</p>
+              <p  >A相电流 <span  class="vale-part AColor">{{redisData?.iaTHD}}</span>%</p>
+              <p  >B相电流 <span  class="vale-part BColor">{{redisData?.ibTHD}}</span>%</p>
+              <p  >C相电流 <span  class="vale-part CColor">{{redisData?.icTHD}}</span>%</p>
+              <p  >A相电压 <span  class="vale-part AColor">{{redisData?.uaTHD}}</span>%</p>
+              <p  >B相电压 <span  class="vale-part BColor">{{redisData?.ubTHD}}</span>%</p>
+              <p  >C相电压 <span  class="vale-part CColor">{{redisData?.ucTHD}}</span>%</p>
             </div>
           </div>
         </div>
       </div>
     </div>
     <div  class="bottom-part">
+        <el-row>
+        <el-col>
+            <el-radio-group v-model="queryParams.timeGranularity">
+            <el-radio-button label="今天" value = "今天" @click="handleQuery"/>
+            <el-radio-button label="近一天" value = "近一天" @click="handleQuery"/>
+            <el-radio-button label="近三天" value = "近三天" @click="handleQuery"/>
+            </el-radio-group>
+        </el-col>
+        </el-row>
       <div  class="bottomLineDiv">
-        <p >负载率曲线</p>
+        <p >| 负载率曲线</p>    
         <MarkLine v-if="visContro.loadRateVis"  width="100%" height="100%" :list="loadRateList"/>
       </div>
       <div  class="bottomLineDiv">
-        <p >有功功率</p>
+        <p >| 有功功率</p>
         <PowActiveLine v-if="visContro.powActiveVis"  width="100%" height="100%" :list="powActiveList"/>
       </div>
       <div  class="bottomLineDiv">
-        <p >无功功率</p>
+        <p >| 无功功率</p>
         <PowReactiveLine v-if="visContro.powReactiveVis"  width="100%" height="100%" :list="powReactiveList"/>
       </div>
     </div>
   </div>
+</div> 
 </template>
 
 <script setup lang="ts">
@@ -106,6 +145,7 @@ import MarkLine from './component/MarkLine.vue'
 import PowReactiveLine from './component/PowReactiveLine.vue'
 import PowActiveLine from './component/PowActiveLine.vue'
 import { IndexApi } from '@/api/bus/busindex'
+import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
 
 const redisData = ref() as any;
 const loadRateList = ref() as any;
@@ -133,7 +173,9 @@ const getFullTimeByDate = (date) => {
       (min > 9 ? min : ("0" + min)) + ":" +
       (second > 9 ? second : ("0" + second));
 }
-
+const queryParamsSearch = reactive({
+  devKey : history?.state?.devKey as string | undefined,
+})
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
@@ -146,12 +188,13 @@ const queryParams = reactive({
   cabinetIds:[],
   timeType : 0,
   timeArr:[],
+  timeGranularity: '今天',
   oldTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0)),
   newTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),23,59,59)),
 }) as any
 
 const getRedisData = async () => {
-  const data =  await IndexApi.getBusPowerRedisData(queryParams);
+  const data =  await IndexApi.getBusPowerRedisData(queryParams);//devKey
   let loopItem = {} as any;
   for (let key in data) {  
     if (data.hasOwnProperty(key)) {  
@@ -168,10 +211,15 @@ const getRedisData = async () => {
   if(redisData.value.loadFactor != null){
     visContro.value.gaugeVis = true;
   }
+  
+  if(redisData.value.loadFactor >= 100 ){
+    console.log(redisData.value.loadFactor+'负载率爆表了')
+    redisData.value.loadFactor = 100
+  }
 }
 
 const getLoadRateList = async () =>{
-    const data = await IndexApi.getBusLoadRateLine(queryParams);
+    const data = await IndexApi.getBusLoadRateLine(queryParams);//oldtime newtime id
     loadRateList.value = data;
     if(loadRateList.value?.time != null && loadRateList.value?.time?.length > 0){
         visContro.value.loadRateVis = true;
@@ -181,7 +229,7 @@ const getLoadRateList = async () =>{
 }
 
 const getBusPowActiveList = async () =>{
-    const data = await IndexApi.getBusPowActiveLine(queryParams);
+    const data = await IndexApi.getBusPowActiveLine(queryParams);//oldtime newtime id
     powActiveList.value = data;
     if(powActiveList.value?.time != null && powActiveList.value?.time?.length > 0){
         visContro.value.powActiveVis = true;
@@ -190,8 +238,22 @@ const getBusPowActiveList = async () =>{
     }
 }
 
+const getBusIdAndLocation =async () => {
+ try {
+    const data = await BusPowerLoadDetailApi.getBusIdAndLocation(queryParams);//devKey
+    if (data != null){
+      location.value = data.location
+      queryParams.busId = data.busId
+    }else{
+      location.value = null
+      queryParams.busId = null
+    }
+ } finally {
+ }
+}
+
 const getBusPowReactiveList = async () =>{
-    const data = await IndexApi.getBusPowReactiveLine(queryParams);
+    const data = await IndexApi.getBusPowReactiveLine(queryParams);//oldtime newtime id
     powReactiveList.value = data;
     if(powReactiveList.value?.time != null && powReactiveList.value?.time?.length > 0){
         visContro.value.powReactiveVis = true;
@@ -199,11 +261,53 @@ const getBusPowReactiveList = async () =>{
         visContro.value.powReactiveVis = false;
     }
 }
+//刷新数据
+const flashChartData = async () =>{
+    await getRedisData();
+    await getLoadRateList();
+    await getBusPowActiveList();
+    await getBusPowReactiveList();
+}
+
+const handleQuery = async () => {
+  queryParams.devKey = queryParamsSearch.devKey;
+   await getBusIdAndLocation();
+   await flashChartData();
+}
+
+const devKeyList = ref([])
+const loadAll = async () => {
+  //debugger
+  var data = await BusPowerLoadDetailApi.getBusdevKeyList();
+  var objectArray = data.map((str) => {
+    return { value: str };
+  });
+  console.log(objectArray)
+  return objectArray;
+}
+
+const querySearch = (queryString: string, cb: any) => {
+
+  const results = queryString
+    ? devKeyList.value.filter(createFilter(queryString))
+    : devKeyList.value
+  // call callback function to return suggestions
+  cb(results)
+}
+
+const createFilter = (queryString: string) => {
+  return (devKeyList) => {
+    return (
+      devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+    )
+  }
+}
    
 /** 初始化 **/
 onMounted(async () => {
   // await getDetailData();
   // await getLineChartData();
+  devKeyList.value = await loadAll();
   await getRedisData();
   await getLoadRateList();
   await getBusPowActiveList();
@@ -237,7 +341,7 @@ onMounted(async () => {
 
 .TransformerMonitor {
     height: calc(100vh - 84px);
-    padding: 0 5px
+    padding: 10px 10px;
 }
 
 .TransformerMonitor .topdiv {
@@ -357,7 +461,7 @@ body .TransformerMonitor .center-part .center-top-part .div-part p,body .Transfo
 }
 
 body .TransformerMonitor .center-part .center-top-part .div-part p,body .TransformerMonitor .center-part .center-top-part .div-part p,body .TransformerMonitor .center-part .center-top-part .div-part p {
-    color: #1e9fe9  
+    color: rgb(131, 131, 133)  
 }
 
 .TransformerMonitor .center-part .center-top-part .div-part .div-part1,.TransformerMonitor .center-part .center-top-part .div-part .div-part2,.TransformerMonitor .center-part .center-top-part .div-part .div-part3,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 {
@@ -723,16 +827,39 @@ body .TransformerMonitor .center-part .center-bottom-part .top-part span {
 
 body .TransformerMonitor .bottom-part .bottomLineDiv p,body .TransformerMonitor .bottom-part .bottomLineDiv p {
     border-left: 2px solid #fff;
-    background: #01ada8;
-    color: #fff
+    //background: #01ada8;
+    color: #606266
 }
 
 body .TransformerMonitor .center-part .center-bottom-part .top-part,body .TransformerMonitor .center-part .center-bottom-part .top-part {
-    background: #01ada8
+    //background: #01ada8
 }
 
 body .TransformerMonitor .center-part .center-bottom-part .top-part span,body .TransformerMonitor .center-part .center-bottom-part .top-part span {
-    color: #fff
+    color: #606266
 }
 
+.header_app{
+  background-color: white;
+  display: flex;
+  height: 50px;
+  padding-left: 10px;
+  box-shadow: 20px;
+}
+.header_app_text{                     
+  background-color: white;
+  width: 100%;
+  align-content: center;
+  color:#606266;
+}                                                       
+.header_app_text_other{
+  align-content: center;
+  background-color: white;
+  margin-right: 5px;
+}
+.header_app_text_other1{
+  align-content: center;
+  background-color: white;
+
+}
 </style>

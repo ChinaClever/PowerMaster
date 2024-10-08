@@ -91,7 +91,7 @@ watchEffect(() => {
             symbolSize : 10,  
             label: {  
               show: true,  
-              position: 'top',  
+              position: [380, -280],   
               formatter: '{b}: {c}'  
             }
           },  
@@ -102,7 +102,7 @@ watchEffect(() => {
             symbolSize : 10,
             label: {  
               show: true,  
-
+              position: [380, -260], 
               formatter: '{b}: {c}'  
             }    
             // 自定义样式和其他属性  

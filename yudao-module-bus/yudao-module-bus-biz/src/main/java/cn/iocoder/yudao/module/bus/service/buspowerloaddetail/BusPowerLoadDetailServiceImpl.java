@@ -527,8 +527,11 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
 
     @Override
     public List<String> getBoxDevKeyList() {
-        List<String> result = boxIndexCopyMapper.selectList().stream().limit(10).collect(Collectors.toList())
-                .stream().map(BoxIndex::getDevKey).collect(Collectors.toList());
+        List<String> result = boxIndexCopyMapper.selectList().stream()
+                .limit(10)
+                .filter(boxIndex -> boxIndex.getBoxType() == 0)
+                .map(BoxIndex::getDevKey)
+                .collect(Collectors.toList());
         return result;
     }
 
