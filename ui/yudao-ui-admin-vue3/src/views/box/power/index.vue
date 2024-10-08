@@ -5,7 +5,7 @@
         <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div>
         </div> -->
-        <div class="line"></div>
+        <!-- <div class="line"></div> -->
         <!-- <div class="status">
           <div class="box">
             <div class="top">
@@ -32,6 +32,32 @@
             <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
           </div>
         </div> -->
+        <div class="status">
+          <div class="box">
+            <div class="top">
+              <div class="tag"></div>正常
+            </div>
+            <div class="value"><span class="number">{{ statusNumber.normal }}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag empty"></div>离线
+            </div>
+            <div class="value"><span class="number">{{ statusNumber.offline }}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag warn"></div>预警
+            </div>
+            <div class="value"><span class="number">{{ statusNumber.warn }}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag error"></div>告警
+            </div>
+            <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
+          </div>
+        </div>
         <div class="line"></div>
 
       </div>
@@ -350,6 +376,12 @@ const switchValue = ref(0)
 const valueMode = ref(0)
 
 const devKeyList = ref([])
+const statusNumber = reactive({
+  normal : 0,
+  warn : 0,
+  alarm : 0,
+  offline : 0
+})
 const loadAll = async () => {
   var data = await IndexApi.devKeyList();
   var objectArray = data.map((str) => {
@@ -434,10 +466,39 @@ const list = ref([
     curUnbalance : null,
   }
 ]) as any// 列表的数据
+const allList = ref([
+  { 
+    id:null,
+    status:null,
+    apparentPow:null,
+    pow:null,
+    ele:null,
+    devKey:null,
+    location:null,
+    dataUpdateTime : "",
+    pduAlarm:"",
+    pf:null,
+    acur : null,
+    bcur : null,
+    ccur : null,
+    curUnbalance : null,
+  }
+]) as any// 列表的数据
+
 const total = ref(0) // 列表的总页数
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
+  devKey: undefined,
+  createTime: [],
+  cascadeNum: undefined,
+  serverRoomData:undefined,
+  status:[],
+  cabinetIds : [],
+})as any
+const queryParamsAll = reactive({
+  pageNo: 1,
+  pageSize: -1,
   devKey: undefined,
   createTime: [],
   cascadeNum: undefined,
@@ -479,6 +540,38 @@ const getList = async () => {
     total.value = data.total
   } finally {
     loading.value = false
+  }
+}
+
+const getListAll = async () => {
+  try {
+    var normal = 0;
+    var offline = 0;
+    var alarm = 0;
+    var warn = 0;
+    const allData = await IndexApi.getBoxRedisPage(queryParamsAll);
+    allList.value = allData.list
+    allList.value.forEach((objAll) => {
+      if(objAll?.dataUpdateTime == null && objAll?.acur == null && objAll?.bcur == null && objAll?.ccur == null){
+        objAll.status = 5;
+        offline++;
+        return;
+      }  
+      if(objAll?.status == 0){
+        normal++;
+      } else if (objAll?.status == 1){
+        warn++;
+      } else if (objAll?.status == 2){
+        alarm++;
+      }          
+    });
+    //设置左边数量
+    statusNumber.normal = normal;
+    statusNumber.offline = offline;
+    statusNumber.alarm = alarm;
+    statusNumber.warn = warn;
+  } catch (error) {
+    
   }
 }
 
@@ -595,7 +688,9 @@ onMounted(async () => {
   devKeyList.value = await loadAll();
   getList()
   getNavList();
+  getListAll();
   flashListTimer.value = setInterval((getListNoLoading), 5000);
+  flashListTimer.value = setInterval((getListAll), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -618,6 +713,7 @@ onActivated(() => {
   getNavList();
   if(!firstTimerCreate.value){
     flashListTimer.value = setInterval((getListNoLoading), 5000);
+    flashListTimer.value = setInterval((getListAll), 5000);
   }
 })
 </script>
@@ -782,6 +878,7 @@ onActivated(() => {
   .status {
     display: flex;
     flex-wrap: wrap;
+    margin-top: 20px;
     .box {
       height: 70px;
       width: 50%;

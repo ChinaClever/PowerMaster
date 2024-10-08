@@ -4,7 +4,8 @@
 
 <script lang="ts" setup>
 import 'echarts'
-const {loadFactor} = defineProps({
+import { reactive, watch, defineProps, onUnmounted } from 'vue';
+const props = defineProps({
   loadFactor: {
     type: Number,
     required: true
@@ -18,6 +19,7 @@ const {loadFactor} = defineProps({
     default: 60
   }
 })
+
 
 // 设置饼图的选项
 const echartsOption = reactive({
@@ -72,7 +74,7 @@ const echartsOption = reactive({
           offsetCenter: [0, "50%"]
       },
       data: [{
-          value: loadFactor,
+          value: props.loadFactor,
           name:  "负载率(%)"
       }]
   }]
@@ -80,6 +82,10 @@ const echartsOption = reactive({
 onUnmounted(() => {
   console.log('onUnmounted******')
 })
+
+watch(() => props.loadFactor, (newVal) => {
+  echartsOption.series[0].data[0].value = newVal;
+});
 
 </script>
 

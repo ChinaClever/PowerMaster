@@ -67,6 +67,11 @@ public class BoxIndex implements Serializable {
     private String boxName;
 
     /**
+     * 插接箱类型0：插接箱；1：温度模块
+     */
+    private int boxType;
+
+    /**
      * 更新时间
      */
     @TableField(fill = FieldFill.INSERT_UPDATE)
