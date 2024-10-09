@@ -36,6 +36,7 @@ public class AlarmRecordPageReqVO extends PageParam {
     @Schema(description = "设备位置", requiredMode = Schema.RequiredMode.REQUIRED, example = "yudao")
     private String devPosition;
 
-    @Schema(description = "搜索", requiredMode = Schema.RequiredMode.REQUIRED, example = "yudao")
     private String likeName;
+
+    private String a;
 }

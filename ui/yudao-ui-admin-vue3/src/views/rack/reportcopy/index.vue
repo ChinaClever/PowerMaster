@@ -2,12 +2,13 @@
   <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="false"  :lazy="true" :load="loadNode" navTitle="机架报表">
     <template #NavInfo>
       <div >
-        <div class="header">
+        <br/>
+        <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
           <div class="name">微模块机房</div>
           <div>{{ location }}</div>
-        </div>
-        <div class="line"></div>
+        </div> -->
+        <!-- <div class="line"></div> -->
         <!-- <div class="status">
           <div class="box">
             <div class="top">
@@ -34,8 +35,8 @@
             <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
           </div>
         </div> -->
-        <div class="line"></div>
-
+        <!-- <div class="line"></div> -->
+        
       </div>
     </template>
     <template #ActionBar>
@@ -63,6 +64,7 @@
             clearable
             class="!w-140px"
             placeholder="请输入id"
+            @keyup.enter="handleQuery"
             @select="handleQuery"
           />
         </el-form-item>

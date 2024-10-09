@@ -47,4 +47,12 @@ export const HistoryDataApi = {
   getBoxNavNewData: async (granularity: string) => {
     return await request.get({ url: `/bus/history-data/box-new-data/`+granularity})
   },
+    // 导出母线始端箱历史数据 Excel
+    exportBusHistorydetailsPageData: async (params, axiosConfig) => {
+      return await request.download({ url: `/bus/history-data/bus-export-detail-excel`, params, ...axiosConfig })
+    },
+    // 导出母线插接箱历史数据 Excel
+    exportBoxHistorydetailsPageData: async (params, axiosConfig) => {
+      return await request.download({ url: `/bus/history-data/box-export-detail-excel`, params, ...axiosConfig })
+    },
 }

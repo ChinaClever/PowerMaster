@@ -5,10 +5,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
-import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BillPageRespVO;
-import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.EQPageRespVO;
-import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.EnergyConsumptionPageReqVO;
-import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.RealtimeEQPageRespVO;
+import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.*;
 import cn.iocoder.yudao.module.bus.service.busenergyconsumption.BusEnergyConsumptionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -49,10 +47,14 @@ public class BusEnergyConsumptionController {
                                   HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = busEnergyConsumptionService.getEQDataPage(pageReqVO).getList();
+        //对list进行处理
+        busEnergyConsumptionService.getNewlList(list);
         // 导出 Excel
         ExcelUtils.write(response, "始端箱能耗趋势数据.xlsx", "数据", EQPageRespVO.class,
                 BeanUtils.toBean(list, EQPageRespVO.class));
     }
+
+
 
 
     @GetMapping("/bus/bill-page")
@@ -70,9 +72,20 @@ public class BusEnergyConsumptionController {
                                     HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = busEnergyConsumptionService.getBillDataPage(pageReqVO).getList();
-        // 导出 Excel
-        ExcelUtils.write(response, "始端箱电费统计数据.xlsx", "数据", BillPageRespVO.class,
-                BeanUtils.toBean(list, BillPageRespVO.class));
+
+        if(!list.isEmpty()){
+            //对list进行处理
+            busEnergyConsumptionService.getNewBillList(list);
+            // 导出 Excel
+            ExcelUtils.write(response, "始端箱电费统计数据.xlsx", "数据", BillPageRespVO.class,
+                    BeanUtils.toBean(list, BillPageRespVO.class));
+        }
+        else{
+            List<BillPageRespVO>list1=new ArrayList<>();
+            ExcelUtils.write(response, "始端箱电费统计数据.xlsx", "数据", BillPageRespVO.class,list1);
+        }
+
+
     }
 
     @GetMapping("/bus/details")
@@ -80,6 +93,27 @@ public class BusEnergyConsumptionController {
     public CommonResult<PageResult<Object>> getEQDataDetails(EnergyConsumptionPageReqVO reqVO) throws IOException {
         PageResult<Object> pageResult = busEnergyConsumptionService.getEQDataDetails(reqVO);
         return success(pageResult);
+    }
+
+    @GetMapping("/bus/details-export-excel")
+    @Operation(summary = "导出始端箱能耗排名历史数据 Excel")
+//    @PreAuthorize("@ss.hasPermission('pdu:history-data:export')")
+    @OperateLog(type = EXPORT)
+    public void exportBuxDetailsDataExcel(EnergyConsumptionPageReqVO pageReqVO,
+                                          HttpServletResponse response) throws IOException {
+        pageReqVO.setPageSize(10000);
+        List<Object> list = busEnergyConsumptionService.getEQDataDetails(pageReqVO).getList();
+        if(!list.isEmpty()){
+            //对list进行处理
+            busEnergyConsumptionService.getNewDetailList(list);
+            // 导出 Excel
+            ExcelUtils.write(response, "始端箱能耗排名历史数据.xlsx", "数据", DetailsPageRespVO.class,
+                    BeanUtils.toBean(list, DetailsPageRespVO.class));
+        }
+        else{
+            List<DetailsPageRespVO>list1=new ArrayList<>();
+            ExcelUtils.write(response, "始端箱能耗排名历史数据.xlsx", "数据", DetailsPageRespVO.class,list1);
+        }
     }
 
     @GetMapping("/bus/realtime-page")
@@ -97,9 +131,20 @@ public class BusEnergyConsumptionController {
                                           HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = busEnergyConsumptionService.getRealtimeEQDataPage(pageReqVO).getList();
-        // 导出 Excel
-        ExcelUtils.write(response, "始端箱电能记录数据.xlsx", "数据", RealtimeEQPageRespVO.class,
-                BeanUtils.toBean(list, RealtimeEQPageRespVO.class));
+
+        if(!list.isEmpty()){
+            //对list进行处理
+            busEnergyConsumptionService.getNewRealtimeList(list);
+            // 导出 Excel
+            ExcelUtils.write(response, "始端箱电能记录数据.xlsx", "数据", RealtimeEQPageRespVO.class,
+                    BeanUtils.toBean(list, RealtimeEQPageRespVO.class));
+        }
+        else{
+            List<RealtimeEQPageRespVO>list1=new ArrayList<>();
+            ExcelUtils.write(response, "插接箱电能记录数据.xlsx", "数据", RealtimeEQPageRespVO.class,list1);
+        }
+
+
     }
 
     @GetMapping("/bus/new-data")
@@ -140,6 +185,7 @@ public class BusEnergyConsumptionController {
                                   HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = busEnergyConsumptionService.getBoxEQDataPage(pageReqVO).getList();
+        busEnergyConsumptionService.getNewList(list);
         // 导出 Excel
         ExcelUtils.write(response, "插接箱能耗趋势数据.xlsx", "数据", EQPageRespVO.class,
                 BeanUtils.toBean(list, EQPageRespVO.class));
@@ -153,17 +199,30 @@ public class BusEnergyConsumptionController {
         return success(pageResult);
     }
 
+
+
+
     @GetMapping("/box/bill-export-excel")
     @Operation(summary = "导出插接箱电费统计数据 Excel")
 //    @PreAuthorize("@ss.hasPermission('pdu:history-data:export')")
     @OperateLog(type = EXPORT)
-    public void exportBoxBillDataExcel(EnergyConsumptionPageReqVO pageReqVO,
+    public void exportBoxBillDataExcel(EnergyConsumptionPageReqVO reqVO,
                                     HttpServletResponse response) throws IOException {
-        pageReqVO.setPageSize(10000);
-        List<Object> list = busEnergyConsumptionService.getBoxBillDataPage(pageReqVO).getList();
-        // 导出 Excel
-        ExcelUtils.write(response, "插接箱电费统计数据.xlsx", "数据", BillPageRespVO.class,
-                BeanUtils.toBean(list, BillPageRespVO.class));
+        reqVO.setPageSize(10000);
+        List<Object> list = busEnergyConsumptionService.getBoxBillDataPage(reqVO).getList();
+
+        if(!list.isEmpty()){
+            //对list进行处理
+            busEnergyConsumptionService.getNewDetailList(list);
+            // 导出 Excel
+            ExcelUtils.write(response, "插接箱电费统计数据.xlsx", "数据", BillPageRespVO.class,
+                    BeanUtils.toBean(list, BillPageRespVO.class));
+        }
+        else{
+            List<BillPageRespVO>list1=new ArrayList<>();
+            ExcelUtils.write(response, "插接箱电费统计数据.xlsx", "数据", BillPageRespVO.class,list1);
+        }
+
     }
 
     @GetMapping("/box/details")
@@ -172,6 +231,30 @@ public class BusEnergyConsumptionController {
         PageResult<Object> pageResult = busEnergyConsumptionService.getBoxEQDataDetails(reqVO);
         return success(pageResult);
     }
+
+
+    @GetMapping("/box/details-export-excel")
+    @Operation(summary = "导出插接箱能耗排名历史数据 Excel")
+//    @PreAuthorize("@ss.hasPermission('pdu:history-data:export')")
+    @OperateLog(type = EXPORT)
+    public void exportBoxDetailsDataExcel(EnergyConsumptionPageReqVO pageReqVO,
+                                          HttpServletResponse response) throws IOException {
+        pageReqVO.setPageSize(10000);
+        List<Object> list = busEnergyConsumptionService .getBoxBillDataPage(pageReqVO).getList();
+        if(!list.isEmpty()){
+            //对list进行处理
+            busEnergyConsumptionService.getNewDetailList(list);
+            // 导出 Excel
+            ExcelUtils.write(response, "插接箱能耗排名历史数据.xlsx", "数据", DetailsPageRespVO.class,
+                    BeanUtils.toBean(list, DetailsPageRespVO.class));
+        }
+        else{
+            List<DetailsPageRespVO>list1=new ArrayList<>();
+            ExcelUtils.write(response, "插接箱能耗排名历史数据.xlsx", "数据", DetailsPageRespVO.class,list1);
+        }
+        }
+
+
 
     @GetMapping("/box/realtime-page")
     @Operation(summary = "获得插接箱实时电量数据分页")
@@ -188,9 +271,19 @@ public class BusEnergyConsumptionController {
                                           HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = busEnergyConsumptionService.getBoxRealtimeEQDataPage(pageReqVO).getList();
-        // 导出 Excel
-        ExcelUtils.write(response, "插接箱电能记录数据.xlsx", "数据", RealtimeEQPageRespVO.class,
-                BeanUtils.toBean(list, RealtimeEQPageRespVO.class));
+        if(!list.isEmpty()){
+            //对list进行处理
+            busEnergyConsumptionService.getNewRealtimeList(list);
+            // 导出 Excel
+            ExcelUtils.write(response, "插接箱电能记录数据.xlsx", "数据", RealtimeEQPageRespVO.class,
+                    BeanUtils.toBean(list, RealtimeEQPageRespVO.class));
+        }
+        else{
+            List<RealtimeEQPageRespVO>list1=new ArrayList<>();
+            ExcelUtils.write(response, "插接箱电能记录数据.xlsx", "数据", RealtimeEQPageRespVO.class,list1);
+        }
+
+;
     }
 
     @GetMapping("/box/new-data")

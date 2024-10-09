@@ -3,7 +3,7 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <div class="carousel-container">
+        <!-- <div class="carousel-container">
           <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
             <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
               <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
@@ -33,7 +33,76 @@
           </el-descriptions-item>
         </el-descriptions>
       </div>
+    </div> -->
+
+    <div class="nav_header" style="font-size: 14px;">
+          <span v-if="nowAddress">{{nowAddress}}</span>
+          <span v-if="nowLocation">( {{nowLocation}} ) </span>
+          <br/>
+      </div>
+    <div class="descriptions-container" v-if="maxTemDataTimeTemp" style="font-size: 14px;">
+                <!-- 处理原始数据和小时极值数据的菜单栏 -->
+      <div v-if="queryParams.granularity != 'day'&& queryParams.timeRange != null" class="description-item" > 
+            <span class="label">开始时间 :</span>
+            <span class="value">{{   formatTime(parseInt(queryParams.timeRange[0]))  }}</span>
+          </div>
+          
+          <div  v-if="queryParams.granularity != 'day'  && queryParams.timeRange != null" class="description-item">
+            <span class="label">结束时间 :</span>
+            <span class="value">{{ formatTime(parseInt(queryParams.timeRange[1]))}}</span>
+          </div>
+
+
+          <div  class="description-item" v-if="queryParams.granularity != 'day'" >
+            <span class="label">最高温度 :</span>
+            <span >{{ formatNumber(maxTemDataTemp, 1)}} ℃</span>
+          </div>
+          <div v-if="maxTemDataTimeTemp &&queryParams.granularity != 'day'" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatTime(maxTemDataTimeTemp) }}</span>
+          </div>
+
+          <div class="description-item" v-if="queryParams.granularity != 'day'">
+              <span class="label">最低温度 :</span>
+              <span >{{ formatNumber(minTemDataTemp, 1)}}℃ </span>
+            </div>
+          <div v-if="minTemDataTimeTemp &&queryParams.granularity != 'day'" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatTime(minTemDataTimeTemp) }}</span>
+          </div>
+
+          <!-- 处理天极值数据的菜单栏 -->
+          <div v-if="queryParams.granularity == 'day'&& queryParams.timeRange != null" class="description-item" > 
+            <span class="label">开始时间 :</span>
+            <span class="value">{{   formatDayTime(parseInt(queryParams.timeRange[0]))  }}</span>
+          </div>
+          
+          <div  v-if="queryParams.granularity == 'day'  && queryParams.timeRange != null" class="description-item">
+            <span class="label">结束时间 :</span>
+            <span class="value">{{ formatDayTime(parseInt(queryParams.timeRange[1]))}}</span>
+          </div>
+          <div  class="description-item" v-if="queryParams.granularity == 'day'" >
+            <span class="label">最高温度 :</span>
+            <span >{{ formatNumber(maxTemDataTemp, 1)}} ℃</span>
+          </div>
+          <div v-if="maxTemDataTimeTemp &&queryParams.granularity == 'day'" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatDayTime(maxTemDataTimeTemp) }}</span>
+          </div>
+
+          <div class="description-item" v-if="queryParams.granularity == 'day'">
+              <span class="label">最低温度 :</span>
+              <span >{{ formatNumber(minTemDataTemp, 1)}}℃ </span>
+            </div>
+          <div v-if="minTemDataTimeTemp &&queryParams.granularity == 'day'" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatDayTime(minTemDataTimeTemp) }}</span>
+          </div>
+          
+          <div class="line"></div>
+      </div>
     </div>
+
     </template>
     <template #ActionBar>
       <el-tabs v-model="activeName">
@@ -81,46 +150,59 @@
 
         <el-form-item >
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button type="success" plain @click="handleExport1" :loading="exportLoading">
+             <Icon icon="ep:download" class="mr-5px" /> 导出
+           </el-button>
         </el-form-item>
       </el-form>
     </template>
+    
     <template #Content>
       <div v-loading="loading">
-        <el-tabs v-model="activeName1">
+        <el-tabs v-model="activeName1" v-if="loading2">
           <el-tab-pane label="图表" name="myChart">
             <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 65vh;"></div>
           </el-tab-pane>
+          
           <el-tab-pane label="数据" name="myData">
             <div style="height: 67vh;">
             <el-table  
-              border
+            :stripe="true" 
+              :border="true"
               :data="tableData"
-              style="height: 67vh; width: 99.97%;--el-table-border-color: none;border-right: 1px #143275 solid;border-left: 1px #143275 solid;border-bottom: 1px #143275 solid;"
-              :highlight-current-row="false"
-              :header-cell-style="{ backgroundColor: '#143275', color: '#ffffff', fontSize: '18px', textAlign: 'center', borderLeft: '0.5px #ffffff solid', borderBottom: '1px #ffffff solid' }"
-              :cell-style="{ color: '#000000', fontSize: '16px', textAlign: 'center', borderBottom: '0.5px #143275 solid', borderLeft: '0.5px #143275 solid' }"
-              :row-style="{ color: '#fff', fontSize: '14px', textAlign: 'center', }"
+              style=" width: 99.97%;"
+              :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', fontSize: '14px',borderBottom: '1px #EDEEF2 solid',fontWeight: 'bold' }"
+              :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
+              :row-style="{ fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
-              <el-table-column prop="create_time" label="记录时间" />
+
+            <!-- 添加行号列 -->
+              <el-table-column label="序号" align="center" width="100px">
+                <template #default="{ $index }">
+                  {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
+                </template>
+              </el-table-column>
+              <el-table-column  prop="create_time" label="记录时间" />
               <!-- 动态生成表头 -->
               <template v-for="item in headerData" :key="item.name">
-                <el-table-column v-if="item.name === '最高温度'" label="温度最高值">
+                <el-table-column v-if="item.name === '最高温度'" label="温度最高值℃">
                   <el-table-column :prop="item.name" label="数值"/>   
                   <el-table-column prop="temMaxTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === '最低温度'" label="温度最低值">
+                
+                <el-table-column v-else-if="item.name === '最低温度'" label="温度最低值℃">
                   <el-table-column :prop="item.name" label="数值"/>   
                   <el-table-column prop="temMinTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === '最大湿度'" label="湿度最大值">
+                <el-table-column v-else-if="item.name === '最大湿度'" label="湿度最大值(%RH)">
                   <el-table-column :prop="item.name" label="数值"/>   
                   <el-table-column prop="humMaxTimeData" label="发生时间"/>
                 </el-table-column>
-                 <el-table-column v-else-if="item.name === '最小湿度'" label="湿度最小值">
+                 <el-table-column v-else-if="item.name === '最小湿度'" label="湿度最小值(%RH)">
                   <el-table-column :prop="item.name" label="数值"/>   
                   <el-table-column prop="humMinTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-else :prop="item.name" :label="item.name"/>   
+                <el-table-column v-else :prop="item.name" :label="item.name"/>  
               </template>
             </el-table>
             </div>
@@ -139,6 +221,10 @@ import { onMounted } from 'vue'
 import { EnvDataApi } from '@/api/pdu/envData'
 import { formatDate } from '@/utils/formatTime'
 import PDUImage from '@/assets/imgs/PDU.jpg'
+import dayjs from 'dayjs'
+import download from '@/utils/download'
+import { HistoryDataApi } from '@/api/pdu/historydata'
+
 
 /** pdu曲线 */
 defineOptions({ name: 'PDUEnvLine' })
@@ -154,7 +240,11 @@ const headerData = ref<any[]>([]);
 const needFlush = ref(0) // 是否需要刷新图表
 const loading = ref(false) //  列表的加载中
 const detect = ref('11') as any// 监测点的值 默认全部
+const message = useMessage() // 消息弹窗
+const exportLoading = ref(false)
 const queryParams = reactive({
+  pageNo: 1,
+  pageSize: 15,
   pduId: undefined as number | undefined,
   sensorId: undefined as number | undefined,
   channel: undefined as number | undefined,
@@ -301,50 +391,74 @@ const maxTemDataTemp = ref(0);// 最高温度
 const maxTemDataTimeTemp = ref();// 最高温度的发生时间 
 const minTemDataTemp = ref(0);// 最低温度 
 const minTemDataTimeTemp = ref();// 最低温度的发生时间 
+const a=ref(0)
+const b=ref(0)
+const loading2=ref(false)
 
 /** 查询列表 */
 const isHaveData = ref(false);
-const getList = async () => {
+const getList = async () => { 
   loading.value = true;
   try {
+    // 
     const data = await EnvDataApi.getEnvDataDetails(queryParams);
     if (data != null && data.total != 0){
+      loading2.value=true
       isHaveData.value = true
-      humValueData.value = data.list.map((item) => formatNumber(item.hum_value, 1));
       temValueData.value = data.list.map((item) => formatNumber(item.tem_value, 1));
+      humValueData.value = data.list.map((item) => formatNumber(item.hum_value, 0));
       if (activeName.value === 'dayExtremumTabPane'){
         createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
       }else{
-        createTimeData.value = data.list.map((item) => formatDate(item.create_time));
+        createTimeData.value = data.list.map((item) => formatDate(item.create_time,"YYYY-MM-DD HH:mm"));
       }
-      humAvgValueData.value = data.list.map((item) => formatNumber(item.hum_avg_value, 1));
-      humMaxValueData.value = data.list.map((item) => formatNumber(item.hum_max_value, 1));
-      humMaxTimeData.value = data.list.map((item) => formatDate(item.hum_max_time));
-      HumMinValueData.value = data.list.map((item) => formatNumber(item.hum_min_value, 1));
-      humMinTimeData.value = data.list.map((item) => formatDate(item.hum_min_time));
+      humAvgValueData.value = data.list.map((item) => formatNumber(item.hum_avg_value, 0));
+      humMaxValueData.value = data.list.map((item) => formatNumber(item.hum_max_value, 0));
+      humMaxTimeData.value = data.list.map((item) => formatDate(item.hum_max_time,"YYYY-MM-DD HH:mm"));
+      HumMinValueData.value = data.list.map((item) => formatNumber(item.hum_min_value, 0));
+      humMinTimeData.value = data.list.map((item) => formatDate(item.hum_min_time,"YYYY-MM-DD HH:mm"));
 
       temAvgValueData.value = data.list.map((item) => formatNumber(item.tem_avg_value, 1));
       temMaxValueData.value = data.list.map((item) => formatNumber(item.tem_max_value, 1));
-      temMaxTimeData.value = data.list.map((item) => formatDate(item.tem_max_time));
+      temMaxTimeData.value = data.list.map((item) => formatDate(item.tem_max_time,"YYYY-MM-DD HH:mm"));
       temMinValueData.value = data.list.map((item) => formatNumber(item.tem_min_value, 1));
-      temMinTimeData.value = data.list.map((item) => formatDate(item.tem_min_time));
-
+      temMinTimeData.value = data.list.map((item) => formatDate(item.tem_min_time,"YYYY-MM-DD HH:mm"));
+      
+      if(activeName.value == "realtimeTabPane"){
       maxTemDataTemp.value = Math.max(...temValueData.value);
       minTemDataTemp.value = Math.min(...temValueData.value);
       temValueData.value.forEach(function(num, index) {
-        if (num == maxTemDataTemp.value){
+        if (num == maxTemDataTemp.value&&a.value==0){
           maxTemDataTimeTemp.value = createTimeData.value[index]
+          a.value=1;
         }
-        if (num == minTemDataTemp.value){
+          if (num == minTemDataTemp.value&&b.value==0){
           minTemDataTimeTemp.value = createTimeData.value[index]
-        }
-      });
+          b.value=1;
+        }});
+      }
+      else if(activeName.value != "realtimeTabPane"){
+      maxTemDataTemp.value = Math.max(...temMaxValueData.value);
+      minTemDataTemp.value = Math.min(...temMinValueData.value);
+      temMaxValueData.value.forEach(function(num, index) {
+        if (num == maxTemDataTemp.value&&a.value==0){
+          
+          maxTemDataTimeTemp.value = createTimeData.value[index]
+          a.value=1;
 
+        }});
+      temMinValueData.value.forEach(function(num, index) {
+          if (num == minTemDataTemp.value&&b.value==0){
+          
+          minTemDataTimeTemp.value = createTimeData.value[index]
+          b.value=1;     
+        }});
+      }
       // 图表显示的ip变化
-      nowLocation.value = data.ipAddr
-      
+      nowLocation.value = data.ipAddr     
     }else{
       isHaveData.value = false;
+      loading2.value=false
       ElMessage({
         message: '暂无数据',
         type: 'warning',
@@ -352,6 +466,8 @@ const getList = async () => {
     }
   } finally {
     loading.value = false;
+    a.value=0;
+    b.value=0;
   }
 }
 
@@ -385,6 +501,7 @@ const initChart = () => {
     setupLegendListener(realtimeChart);
   }
   // 每次切换图就要动态生成数据表头
+  //debugger
   headerData.value = realtimeChart?.getOption().series as any[];
   updateTableData();
 };
@@ -405,6 +522,7 @@ const updateTableData = () => {
     }
     data.push(rowData);
   }
+  
   tableData.value = data;
 };
 
@@ -464,6 +582,7 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
           setupLegendListener(realtimeChart);
         } 
         // 每次切换图就要动态生成数据表头
+        //debugger
         headerData.value = realtimeChart?.getOption().series as any[];
         updateTableData();
     }else{
@@ -503,6 +622,7 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
         setupLegendListener1(realtimeChart);          
       }
       // 每次切换图就要动态生成数据表头
+      //debugger
       headerData.value = realtimeChart?.getOption().series as any[];
       updateTableData();
     }
@@ -607,11 +727,28 @@ function setupLegendListener1(realtimeChart) {
 
 // 处理数据后有几位小数点
 function formatNumber(value, decimalPlaces) {
+
     if (!isNaN(value)) {
         return Number(value).toFixed(decimalPlaces);
     } else {
         return null; // 或者其他默认值
     }
+}
+
+// 格式化日期
+function formatTime( cellValue: number): string {
+  if (!cellValue) {
+    return ''
+  }
+
+  return dayjs(cellValue).format('YYYY-MM-DD HH:mm')
+}
+function formatDayTime( cellValue: number): string {
+  if (!cellValue) {
+    return ''
+  }
+
+  return dayjs(cellValue).format('YYYY-MM-DD')
 }
 
 // 原始数据默认查询的时间范围
@@ -633,6 +770,27 @@ const disabledDate = (date) => {
   // date.setHours(0, 0, 0, 0);
   // 如果date在今天之后，则禁用
   return date > today;
+}
+
+//导出Excel
+const handleExport1 = async () => {
+  try {
+    // 导出的二次确认
+    await message.exportConfirm()
+    // 发起导出
+    queryParams.pageNo = 1
+    exportLoading.value = true
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await HistoryDataApi.exportEnvHistorydetailsPageData(queryParams, axiosConfig)
+    await download.excel(data, 'PDU环境分析历史数据详情.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
+  } finally {
+    exportLoading.value = false
+  }
 }
 
 // 处理实时数据的时间选择不超过xxx范围
@@ -701,6 +859,7 @@ const handleClick = async (row) => {
       nowAddress.value = fullName
     });
     let data: any[] = [];
+    
     tableData.value = data;
     handleQuery();
   }
@@ -765,15 +924,15 @@ onMounted( async () => {
 /*  
 // 表格部分样式
 // 最外层透明 */
-:deep( .el-table),
+/* :deep( .el-table),
 :deep( .el-table__expanded-cell) {
   background-color: transparent;
   color: #93dcfe;
   font-size: 24px;
-}
+} */
  
 /* 表格内背景颜色  */
-:deep( .el-table th),
+/* :deep( .el-table th),
 :deep( .el-table tr),
 :deep( .el-table td) {
   background-color: transparent;
@@ -783,7 +942,7 @@ onMounted( async () => {
   height: 5px;
   font-family: Source Han Sans CN Normal, Source Han Sans CN Normal-Normal;
   font-weight: Normal;
-}
+} */
  
 /* // 去掉最下面的那一条线  */
 .el-table::before {
@@ -848,5 +1007,26 @@ onMounted( async () => {
   height: 100%;
   object-fit: cover; 
 }
+.description-item {
+  display: flex;
+  align-items: center;
+}
 
+.label {
+  text-align: right; /* 文本右对齐 */
+  margin-right: 10px; /* 控制冒号后的间距 */
+  text-align: left;
+}
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
+
+}
+  .line {
+    height: 1px;
+    margin-top: 28px;
+
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
 </style>

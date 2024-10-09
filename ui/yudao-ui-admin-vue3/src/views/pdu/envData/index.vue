@@ -3,7 +3,7 @@
     <template #NavInfo>
       <br/>    <br/> 
         <div class="nav_data">
-          <div class="carousel-container">
+          <!-- <div class="carousel-container">
             <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
               <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
                 <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
@@ -16,6 +16,25 @@
               <el-descriptions-item label="最近一天"><span >{{ lastDayTotalData }} 条</span></el-descriptions-item>
               <el-descriptions-item label="最近一周" ><span >{{ lastWeekTotalData }} 条</span></el-descriptions-item>
             </el-descriptions>
+          </div>
+        </div> -->
+
+          <div class="descriptions-container" style="font-size: 14px;">
+            <div class="description-item">
+                <span class="label">最近一周 :</span>
+                <span class="value">{{ lastWeekTotalData }}条</span>
+            </div>
+            <div class="description-item">
+                <span class="label">最近一天 :</span>
+                <span class="value">{{ lastDayTotalData }}条</span>
+            </div>
+            <div class="description-item">
+                <span class="label">最近一小时 :</span>
+                <span class="value">{{ lastHourTotalData }}条</span>
+            </div>
+            <div style="text-align: center"><span>全部传感器新增环境记录</span>
+              <div class="line" style="margin-top: 10px;"></div>
+            </div>
           </div>
         </div>
     </template>
@@ -68,7 +87,7 @@
 
         <el-form-item label="时间段" prop="timeRange">
           <el-date-picker
-          value-format="YYYY-MM-DD HH:mm:ss"
+          value-format="YYYY-MM-DD HH:mm"
           v-model="queryParams.timeRange"
           type="datetimerange"
           :shortcuts="shortcuts"
@@ -91,7 +110,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true">
           <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="100px">
           <template #default="{ $index }">
@@ -100,7 +119,14 @@
         </el-table-column>
         <!-- 遍历其他列 -->
         <template v-for="column in tableColumns">
-          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
+          <el-table-column :key="column.prop" 
+                           :label="column.label" 
+                           :align="column.align" 
+                           :prop="column.prop" 
+                           :formatter="column.formatter" 
+                           :width="column.width" 
+                           v-if="column.istrue" 
+                           >
             <template #default="{ row }">
               <div v-if="column.slot === 'actions'">
                 <el-button link type="primary" @click="toDetails(row.pdu_id, row.location, row.address.address, row.address.channel, row.address.position, row.sensor_id)">详情</el-button>
@@ -327,20 +353,20 @@ watch(() => queryParams.granularity, (newValues) => {
       // 配置表格列
       tableColumns.value = [
         { label: '位置', align: 'center', prop: 'address.address', istrue:true, width: '180px'}, 
+        { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
         { label: '监测点', align: 'center', slot: 'detect' , istrue: true},
         { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:false, width: '160px'},
-        { label: '平均温度(℃)', align: 'center', prop: 'tem_avg_value', istrue:true, width: '180px', formatter: formatData },
-        { label: '最高温度(℃)', align: 'center', prop: 'tem_max_value', istrue:true, width: '180px', formatter: formatData },
-        { label: '最高温度时间', align: 'center', prop: 'tem_max_time' , width: '230px', istrue:true},
-        { label: '最低温度(℃)', align: 'center', prop: 'tem_min_value', istrue:true, width: '180px', formatter: formatData },
-        { label: '最低温度时间', align: 'center', prop: 'tem_min_time' , width: '230px', istrue:true},
+        { label: '记录时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true,formatter: formatTime},
         { label: '平均湿度(%RH)', align: 'center', prop: 'hum_avg_value', istrue:false, width: '180px', formatter: formatData},
         { label: '最大湿度(%RH)', align: 'center', prop: 'hum_max_value', istrue:false, width: '180px', formatter: formatData },
-        { label: '最大湿度时间', align: 'center', prop: 'hum_max_time' , width: '230px', istrue:false},
+        { label: '最大湿度时间', align: 'center', prop: 'hum_max_time' , width: '230px', istrue:false,formatter: formatTime},
         { label: '最小湿度(%RH)', align: 'center', prop: 'hum_min_value', istrue:false, width: '180px', formatter: formatData },
-        { label: '最小湿度时间', align: 'center', prop: 'hum_min_time' , width: '230px', istrue:false},
-        { label: '记录时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true},
-        { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '160px'},
+        { label: '最小湿度时间', align: 'center', prop: 'hum_min_time' , width: '230px', istrue:false,formatter: formatTime},
+        { label: '平均温度(℃)', align: 'center', prop: 'tem_avg_value', istrue:true, width: '180px', formatter: formatData },
+        { label: '最高温度(℃)', align: 'center', prop: 'tem_max_value', istrue:true, width: '180px', formatter: formatData },
+        { label: '最高温度时间', align: 'center', prop: 'tem_max_time' , width: '230px', istrue:true,formatter: formatTime},
+        { label: '最低温度(℃)', align: 'center', prop: 'tem_min_value', istrue:true, width: '180px', formatter: formatData },
+        { label: '最低温度时间', align: 'center', prop: 'tem_min_time' , width: '230px', istrue:true,formatter: formatTime},
         { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
       ] as any;
       queryParams.pageNo = 1;
@@ -356,7 +382,7 @@ const tableColumns = ref([
   { label: '监测点', align: 'center', slot: 'detect' , istrue: true},
   { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:false, width: '120px'},
   { label: '温度(℃)', align: 'center', prop: 'tem_value', istrue:true, formatter: formatData},
-  { label: '湿度(%RH)', align: 'center', prop: 'hum_value' , istrue:true, formatter: formatData},
+  { label: '湿度(%RH)', align: 'center', prop: 'hum_value' , istrue:true, formatter: formatData1},
   { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '120px'},
 ]) as any;
 
@@ -404,12 +430,15 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
     return ''
   }
 
-  return dayjs(cellValue).format('YYYY-MM-DD HH:mm:ss.SSS')
+  return dayjs(cellValue).format('YYYY-MM-DD HH:mm')
 }
 
 // 格式化温湿度列数据，保留一位小数
 function formatData(_row: any, _column: any, cellValue: number): string {
   return Number(cellValue).toFixed(1);
+}
+function formatData1(_row: any, _column: any, cellValue: number): string {
+  return Number(cellValue).toFixed(0);
 }
 
 // 导航栏选择后触发
@@ -484,7 +513,7 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnvDataApi.exportEnvHistoryData(queryParams, axiosConfig)
-    await download.excel(data, 'PDU环境历史数据.xlsx')
+    await download.excel(data, '机柜环境记录.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -538,4 +567,28 @@ onMounted( () => {
   object-fit: cover; 
 }
 
+.description-item {
+  display: flex;
+  align-items: center;
+}
+
+.label {
+  width:100px; /* 控制冒号前的宽度 */
+  text-align: right; /* 文本右对齐 */
+  margin-right: 20px; /* 控制冒号后的间距 */
+}
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+}
+  .line {
+    height: 1px;
+    margin-top: 28px;
+
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
+  ::v-deep .el-table .el-table__header th {
+    background-color: #F5F7FA;
+    color: #909399;
+}
 </style>

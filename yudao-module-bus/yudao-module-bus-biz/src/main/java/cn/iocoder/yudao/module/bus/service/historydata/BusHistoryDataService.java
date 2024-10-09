@@ -72,4 +72,19 @@ public interface BusHistoryDataService {
 
     Map<String, Object> getBoxEnvNavNewData() throws IOException;
 
+    List<Object> getNewHistoryList(List<Object> list);
+
+    List<Object> getNewHistoryList1(List<Object> list);
+
+    List<Object> getNewBoxHistoryList(List<Object> list);
+
+    List<Object> getNewBoxHistoryList1(List<Object> list);
+
+    List<Object> getNewDetailHistoryList(List<Object> list);
+
+    List<Object> getNewBoxDetailHistoryList(List<Object> list);
+
+    List<Object>  getNewEnvHistoryList(List<Object> list);
+
+    List<Object> getNewTemHistoryList(List<Object> list);
 }

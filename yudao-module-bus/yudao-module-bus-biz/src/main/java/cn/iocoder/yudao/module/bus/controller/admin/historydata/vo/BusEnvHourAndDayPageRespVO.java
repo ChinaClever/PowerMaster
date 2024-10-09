@@ -2,12 +2,16 @@ package cn.iocoder.yudao.module.bus.controller.admin.historydata.vo;
 
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.write.style.ColumnWidth;
+import com.alibaba.excel.annotation.write.style.HeadRowHeight;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Schema(description = "管理后台 - 始端箱环境（小时、天数据） 导出数据")
 @Data
 @ExcelIgnoreUnannotated
+@ColumnWidth(30)
+@HeadRowHeight(20)
 public class BusEnvHourAndDayPageRespVO {
 
     @ExcelProperty("母线名称")
@@ -17,7 +21,7 @@ public class BusEnvHourAndDayPageRespVO {
     private String location;
 
     @ExcelProperty("IP地址")
-    private String ip_addr;
+    private String dev_key;
 
     @ExcelProperty("记录时间")
     private String create_time;

@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.pdu.service.historydata;
 
 
+import cn.iocoder.yudao.framework.common.util.collection.MapUtils;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.EnvDataDetailsReqVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.EnvDataPageReqVo;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataDetailsReqVO;
@@ -72,4 +73,11 @@ public interface HistoryDataService {
 
     Map<String, Object> getEnvNavNewData() throws IOException;
 
+    List<Object> getEnExcelList(List<Object> list);
+
+    List<Object> getNewHistoryDataDetails(List<Object> list,String ob);
+
+    List<Object> getNewExcelList(List<Object> list1,String ob);
+
+    void getEnvExcelList(List<Object> list);
 }

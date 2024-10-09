@@ -194,11 +194,18 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
             String[] devkeys = new String[]{reqVO.getDevkey()};
             Integer[] busIds = getBusIdsByDevkeys(devkeys);
             if (busIds.length == 0){
-                return null;
+                PageResult<Object> pageResult=new PageResult<>();
+                pageResult.setList(new ArrayList<>())
+                        .setTotal(new Long(0));
+                return pageResult;
             }
             busId = busIds[0];
         }else {
-            busId = reqVO.getBusId();
+            PageResult<Object> pageResult=new PageResult<>();
+            pageResult.setList(new ArrayList<>())
+                    .setTotal(new Long(0));
+            return pageResult;
+//            busId = reqVO.getBusId();
         }
 
         // 搜索源构建对象
@@ -290,16 +297,28 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
         // 添加范围查询
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        for (int i = 0; i < indices.length; i++) {
-            SearchRequest searchRequest = new SearchRequest(indices[i]);
+        for (int i = 0; i < (name.length==3?3:1); i++) {
+            SearchRequest searchRequest;
+            if(indices.length==2){
+                 searchRequest = new SearchRequest(indices[0],indices[1]);
+            }else{
+                searchRequest = new SearchRequest(indices[0]);
+            }
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
             searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(timeAgo[i].format(formatter))
                     .to(now.format(formatter)));
             // 添加计数聚合
-            searchSourceBuilder.aggregation(
+            if(indices[0]=="bus_eq_total_day"||indices[0]=="bus_ele_total_realtime"){
+                searchSourceBuilder.aggregation(
                     AggregationBuilders.count("total_insertions").field("bus_id")
             );
+            }
+            else{
+                searchSourceBuilder.aggregation(
+                        AggregationBuilders.count("total_insertions").field("box_id")
+                );
+            }
             searchRequest.source(searchSourceBuilder);
             // 执行搜索请求
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -313,7 +332,7 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
 
     @Override
     public Map<String, Object> getNewData() throws IOException {
-        String[] indices = new String[]{"bus_eq_total_day", "bus_eq_total_week", "bus_eq_total_month"};
+        String[] indices = new String[]{"bus_eq_total_day"};
         String[] name = new String[]{"day", "week", "month"};
         LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1), LocalDateTime.now().minusMonths(1)};
         Map<String, Object> map = getSumData(indices, name, timeAgo);
@@ -495,11 +514,19 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
             String[] devkeys = new String[]{reqVO.getDevkey()};
             Integer[] boxIds = getBoxIdsByDevkeys(devkeys);
             if (boxIds.length == 0){
-                return null;
+                PageResult<Object>pageResult=new PageResult<>();
+                pageResult.setList(new ArrayList<>())
+                        .setTotal(new Long(0));
+                return pageResult;
+
             }
             boxId = boxIds[0];
         }else {
-            boxId = reqVO.getBoxId();
+            PageResult<Object>pageResult=new PageResult<>();
+            pageResult.setList(new ArrayList<>())
+                    .setTotal(new Long(0));
+            return pageResult;
+//            boxId = reqVO.getBoxId();
         }
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
@@ -541,6 +568,12 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
 
     @Override
     public PageResult<Object> getBoxRealtimeEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
+        if (pageReqVO==null){
+            PageResult<Object> pageResult = new PageResult<>();
+            pageResult.setTotal(new Long(0));
+            pageResult.setList(new ArrayList<>());
+        }
+
         // 搜索源构建对象
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         int pageNo = pageReqVO.getPageNo();
@@ -587,7 +620,7 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
 
     @Override
     public Map<String, Object> getBoxNewData() throws IOException {
-        String[] indices = new String[]{"box_eq_total_day", "box_eq_total_week", "box_eq_total_month"};
+        String[] indices = new String[]{"box_eq_outlet_day","box_eq_total_day"};
         String[] name = new String[]{"day", "week", "month"};
         LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1), LocalDateTime.now().minusMonths(1)};
         Map<String, Object> map = getSumData(indices, name, timeAgo);
@@ -648,5 +681,94 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
         return pageResult;
 
     }
+
+    @Override
+    public List<Object> getNewlList(List<Object> list) {
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        for (Object obj : list) {
+            if (obj instanceof Map && ((Map<?, ?>) obj).keySet().stream().allMatch(key -> key instanceof String)) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) obj;
+                mapList.add(map);
+            }
+        }
+        for(int i=0;i<mapList.size();i++){
+            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,10));
+            mapList.get(i).put("start_time",mapList.get(i).get("start_time").toString().substring(0,10));
+            mapList.get(i).put("end_time",mapList.get(i).get("end_time").toString().substring(0,10));
+        }
+        return list;
+    }
+
+    @Override
+    public List<Object> getNewDetailList(List<Object> list) {
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        for (Object obj : list) {
+            if (obj instanceof Map && ((Map<?, ?>) obj).keySet().stream().allMatch(key -> key instanceof String)) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) obj;
+                mapList.add(map);
+            }
+        }
+        for(int i=0;i<mapList.size();i++){
+            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,16));
+            mapList.get(i).put("start_time",mapList.get(i).get("start_time").toString().substring(0,16));
+            mapList.get(i).put("end_time",mapList.get(i).get("end_time").toString().substring(0,16));
+        }
+        return list;
+    }
+
+    @Override
+    public List<Object> getNewBillList(List<Object> list) {
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        for (Object obj : list) {
+            if (obj instanceof Map && ((Map<?, ?>) obj).keySet().stream().allMatch(key -> key instanceof String)) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) obj;
+                mapList.add(map);
+            }
+        }
+        for(int i=0;i<mapList.size();i++){
+            mapList.get(i).put("start_time",mapList.get(i).get("start_time").toString().substring(0,16));
+            mapList.get(i).put("end_time",mapList.get(i).get("end_time").toString().substring(0,16));
+        }
+        return list;
+    }
+
+    @Override
+    public List<Object> getNewRealtimeList(List<Object> list) {
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        for (Object obj : list) {
+            if (obj instanceof Map && ((Map<?, ?>) obj).keySet().stream().allMatch(key -> key instanceof String)) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) obj;
+                mapList.add(map);
+            }
+        }
+        for(int i=0;i<mapList.size();i++){
+            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,16));
+        }
+        return list;
+    }
+
+    @Override
+    public List<Object> getNewList(List<Object> list) {
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        for (Object obj : list) {
+            if (obj instanceof Map && ((Map<?, ?>) obj).keySet().stream().allMatch(key -> key instanceof String)) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) obj;
+                mapList.add(map);
+            }
+        }
+        for(int i=0;i<mapList.size();i++){
+            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,10));
+            mapList.get(i).put("start_time",mapList.get(i).get("start_time").toString().substring(0,10));
+            mapList.get(i).put("end_time",mapList.get(i).get("end_time").toString().substring(0,10));
+
+        }
+        return list;
+    }
+
 
 }

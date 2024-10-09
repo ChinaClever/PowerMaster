@@ -2,12 +2,22 @@ package cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo;
 
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.format.NumberFormat;
+import com.alibaba.excel.annotation.write.style.ColumnWidth;
+import com.alibaba.excel.annotation.write.style.ContentStyle;
+import com.alibaba.excel.annotation.write.style.HeadRowHeight;
+import com.alibaba.excel.annotation.write.style.HeadStyle;
+import com.alibaba.excel.enums.poi.HorizontalAlignmentEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Schema(description = "管理后台 - pdu环境（小时、天数据） 导出数据")
 @Data
 @ExcelIgnoreUnannotated
+@HeadStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
+@ContentStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
+@ColumnWidth(30)
+@HeadRowHeight(20)
 public class EnvHourAndDayPageRespVO {
 
     @ExcelProperty("位置")
@@ -16,6 +26,9 @@ public class EnvHourAndDayPageRespVO {
     @ExcelProperty("网络地址")
     private String location;
 
+    @ExcelProperty("监测点")
+    private Integer a;
+
     @ExcelProperty("传感器")
     private Integer sensor_id;
 
@@ -23,22 +36,24 @@ public class EnvHourAndDayPageRespVO {
     private String create_time;
 
     @ExcelProperty("平均湿度(%RH)")
+    @NumberFormat("0.0")
     private Double hum_avg_value;
 
     @ExcelProperty("最大湿度时间")
-    private Double hum_max_time;
+    private String hum_max_time;
 
     @ExcelProperty("最大湿度(%RH)")
     private Double hum_max_value;
 
     @ExcelProperty("最小湿度时间")
-    private Double hum_min_time;
+    private String hum_min_time;
 
     @ExcelProperty("最小湿度(%RH)")
     private Double hum_min_value;
 
+    @NumberFormat("0.0")
     @ExcelProperty("平均温度(℃)")
-    private String tem_avg_value;
+    private Double tem_avg_value;
 
     @ExcelProperty("最高温度时间")
     private String tem_max_time;

@@ -5,10 +5,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
-import cn.iocoder.yudao.module.aisle.controller.admin.historydata.vo.AisleHistoryDataDetailsReqVO;
-import cn.iocoder.yudao.module.aisle.controller.admin.historydata.vo.AisleHistoryDataPageReqVO;
-import cn.iocoder.yudao.module.aisle.controller.admin.historydata.vo.HourAndDayPageRespVO;
-import cn.iocoder.yudao.module.aisle.controller.admin.historydata.vo.RealtimePageRespVO;
+import cn.iocoder.yudao.module.aisle.controller.admin.historydata.vo.*;
 import cn.iocoder.yudao.module.aisle.service.historydata.AisleHistoryDataService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -50,6 +47,43 @@ public class AisleHistoryDataController {
         PageResult<Object> pageResult = aisleHistoryDataService.getHistoryDataDetails(reqVO);
         return success(pageResult);
     }
+    @GetMapping("/details-export-excel")
+    @Operation(summary = "导出柜列电力分析历史数据 Excel")
+    @OperateLog(type = EXPORT)
+    public void exportDetaHistoryDataExcel(AisleHistoryDataDetailsReqVO pageReqVO,
+                                       HttpServletResponse response) throws IOException {
+        pageReqVO.setPageSize(10000);
+        List<Object> list = aisleHistoryDataService.getHistoryDataDetails(pageReqVO).getList();
+        aisleHistoryDataService.getNewDetailsExcelList(list);
+
+        // 导出 Excel
+        if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+            if(Objects.equals(pageReqVO.getAbtotal(), "a")){
+                ExcelUtils.write(response, "机柜列电力分析历史数据.xlsx", "数据", DetailHistoryDataExcelExportA.class,
+                        BeanUtils.toBean(list, DetailHistoryDataExcelExportA.class));
+            } else if (Objects.equals(pageReqVO.getAbtotal(), "b")) {
+                ExcelUtils.write(response, "机柜列电力分析历史数据.xlsx", "数据", DetailHistoryDataExcelExportB.class,
+                        BeanUtils.toBean(list, DetailHistoryDataExcelExportB.class));
+            }else{
+                ExcelUtils.write(response, "机柜列电力分析历史数据.xlsx", "数据", DetailHistoryDataExcelExport.class,
+                        BeanUtils.toBean(list, DetailHistoryDataExcelExport.class));
+            }
+
+        } else {
+            if(Objects.equals(pageReqVO.getAbtotal(), "total")){
+                ExcelUtils.write(response, "机柜列电力分析历史数据.xlsx", "数据", HourAndDayDetailHistoryDataExcelExport.class,
+                        BeanUtils.toBean(list, HourAndDayDetailHistoryDataExcelExport.class));
+            } else if (Objects.equals(pageReqVO.getAbtotal(), "a")) {
+                ExcelUtils.write(response, "机柜列电力分析历史数据.xlsx", "数据", HourAndDayDetailHistoryDataExcelExportA.class,
+                        BeanUtils.toBean(list, HourAndDayDetailHistoryDataExcelExportA.class));
+            }
+            else{
+                ExcelUtils.write(response, "机柜列电力分析历史数据.xlsx", "数据", HourAndDayDetailHistoryDataExcelExportB.class,
+                        BeanUtils.toBean(list, HourAndDayDetailHistoryDataExcelExportB.class));
+            }
+
+        }
+    }
 
     @GetMapping("/new-data/{granularity}")
     @Operation(summary = "获得柜列电力分析导航显示的插入的数据量")
@@ -65,6 +99,9 @@ public class AisleHistoryDataController {
                                        HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = aisleHistoryDataService.getHistoryDataPage(pageReqVO).getList();
+
+        aisleHistoryDataService.getNewExcelList(list);
+
         // 导出 Excel
         if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
             ExcelUtils.write(response, "柜列电力历史数据.xlsx", "数据", RealtimePageRespVO.class,

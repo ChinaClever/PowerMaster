@@ -5,10 +5,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
-import cn.iocoder.yudao.module.aisle.controller.admin.energyconsumption.VO.BillPageRespVO;
-import cn.iocoder.yudao.module.aisle.controller.admin.energyconsumption.VO.AisleEnergyConsumptionPageReqVO;
-import cn.iocoder.yudao.module.aisle.controller.admin.energyconsumption.VO.EQPageRespVO;
-import cn.iocoder.yudao.module.aisle.controller.admin.energyconsumption.VO.RealtimeEQPageRespVO;
+import cn.iocoder.yudao.module.aisle.controller.admin.energyconsumption.VO.*;
 import cn.iocoder.yudao.module.aisle.service.energyconsumption.AisleEnergyConsumptionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -49,10 +46,13 @@ public class AisleEnergyConsumptionController {
                                   HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = aisleEnergyConsumptionService.getEQDataPage(pageReqVO).getList();
+        aisleEnergyConsumptionService.getEqExcelList(list);
         // 导出 Excel
         ExcelUtils.write(response, "柜列能耗趋势数据.xlsx", "数据", EQPageRespVO.class,
                 BeanUtils.toBean(list, EQPageRespVO.class));
     }
+
+
 
 
     @GetMapping("/bill-page")
@@ -70,6 +70,7 @@ public class AisleEnergyConsumptionController {
                                     HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = aisleEnergyConsumptionService.getBillDataPage(pageReqVO).getList();
+        aisleEnergyConsumptionService.getBillExcelList(list);
         // 导出 Excel
         ExcelUtils.write(response, "柜列电费统计数据.xlsx", "数据", BillPageRespVO.class,
                 BeanUtils.toBean(list, BillPageRespVO.class));
@@ -82,6 +83,19 @@ public class AisleEnergyConsumptionController {
         return success(pageResult);
     }
 
+    @GetMapping("/detail-export-excel")
+    @Operation(summary = "导出柜列能耗分布数据 Excel")
+//    @PreAuthorize("@ss.hasPermission('pdu:history-data:export')")
+    @OperateLog(type = EXPORT)
+    public void exportOutletsDataExcel(AisleEnergyConsumptionPageReqVO pageReqVO,
+                                       HttpServletResponse response) throws IOException {
+        pageReqVO.setPageSize(10000);
+        List<Object> list = aisleEnergyConsumptionService.getEQDataDetails(pageReqVO).getList();
+        aisleEnergyConsumptionService.getDetailsExcelList(list);
+        // 导出 Excel
+        ExcelUtils.write(response, "柜列能耗趋势数据.xlsx", "数据", DetailsExportPageRespVO.class,
+                BeanUtils.toBean(list, DetailsExportPageRespVO.class));
+    }
     @GetMapping("/realtime-page")
     @Operation(summary = "获得柜列实时电量数据分页")
     public CommonResult<PageResult<Object>> getRealtimeEQDataPage(AisleEnergyConsumptionPageReqVO pageReqVO) throws IOException {
@@ -97,6 +111,7 @@ public class AisleEnergyConsumptionController {
                                           HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = aisleEnergyConsumptionService.getRealtimeEQDataPage(pageReqVO).getList();
+        aisleEnergyConsumptionService.getRealtimeExcelList(list);
         // 导出 Excel
         ExcelUtils.write(response, "柜列电能记录数据.xlsx", "数据", RealtimeEQPageRespVO.class,
                 BeanUtils.toBean(list, RealtimeEQPageRespVO.class));

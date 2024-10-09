@@ -3,18 +3,29 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <div class="carousel-container">
+        <!-- <div class="carousel-container"> -->
           <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
             <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
               <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
             </el-carousel-item>
           </el-carousel> -->
-        </div>
+        <!-- </div>
         <div class="nav_content">
           <el-descriptions title="全部始端箱最近一天新增记录" direction="vertical" :column="1" width="80px" border >
             <el-descriptions-item label="电能"><span>{{ navTotalData }} 条</span></el-descriptions-item>
           </el-descriptions>
+        </div> -->
+
+        <div class="descriptions-container" style="font-size: 14px;">
+          <div class="description-item">
+            <span class="label">总电能 :</span>
+            <span class="value">{{ navTotalData }}条</span>
+          </div>
+          <div style="text-align: center"><span>始端箱新增电能记录</span>
+           <div class="line" style="margin-top: 10px;"></div>
+          </div>
         </div>
+        
       </div>
     </template>
     <template #ActionBar>
@@ -201,7 +212,7 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
   if (!cellValue) {
     return ''
   }
-  return dayjs(cellValue).format('YYYY-MM-DD HH:mm:ss')
+  return dayjs(cellValue).format('YYYY-MM-DD HH:mm')
 }
 
 
@@ -298,5 +309,30 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   object-fit: cover; 
+}
+.description-item {
+  display: flex;
+  align-items: center;
+}
+
+.label {
+  width:100px; /* 控制冒号前的宽度 */
+  text-align: right; /* 文本右对齐 */
+  margin-right: 20px; /* 控制冒号后的间距 */
+}
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+}
+  .line {
+    height: 1px;
+    margin-top: 28px;
+
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
+
+  ::v-deep .el-table .el-table__header th {
+    background-color: #F5F7FA;
+    color: #909399;
 }
 </style>

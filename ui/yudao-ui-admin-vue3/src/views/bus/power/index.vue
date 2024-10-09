@@ -2,10 +2,10 @@
   <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="母线电力">
     <template #NavInfo>
       <div>
-        <div class="header">
+        <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
-        </div>
-        <div class="line"></div>
+        </div> -->
+        <!-- <div class="line"></div> -->
         <!-- <div class="status">
           <div class="box">
             <div class="top">
@@ -32,6 +32,32 @@
             <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
           </div>
         </div> -->
+        <div class="status">
+          <div class="box">
+            <div class="top">
+              <div class="tag"></div>正常
+            </div>
+            <div class="value"><span class="number">{{ statusNumber.normal }}</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag empty"></div>离线
+            </div>
+            <div class="value"><span class="number">{{ statusNumber.offline }}</span>个</div>
+          </div>
+          <!-- <div class="box">
+            <div class="top">
+              <div class="tag warn"></div>预警
+            </div>
+            <div class="value"><span class="number">{{ statusNumber.warn }}</span>个</div>
+          </div> -->
+          <div class="box">
+            <div class="top">
+              <div class="tag error"></div>告警
+            </div>
+            <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
+          </div>
+        </div>        
         <div class="line"></div>
 
       </div>
@@ -42,26 +68,26 @@
         :model="queryParams"
         ref="queryFormRef"
         :inline="true"
-        label-width="68px"                          
+        label-width="68px"
+        v-show="switchValue !== 4"  
       >
-        <el-form-item  prop="status">
-          <el-checkbox-group  v-model="queryParams.status">
-              <el-checkbox  value="5">在线</el-checkbox>
-          </el-checkbox-group>
+        <el-form-item>
+          <template v-for="(status, index) in statusList" :key="index">
+            <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
+          </template>
         </el-form-item>
         <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
             v-model="queryParams.devKey"
             :fetch-suggestions="querySearch"
             clearable
-            class="!w-200px"
+            class="!w-160px"
             placeholder="请输入网络地址"
             @select="handleQuery"
           />
-        </el-form-item>
-        <el-form-item>
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+        <el-form-item style="margin-left: 5px;margin-right: 6px">
+          <el-button @click="handleQuery" style="width:70px"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="resetQuery" style="width:70px;" ><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           <el-button
             type="primary"
             plain
@@ -79,103 +105,159 @@
           >
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
+        </el-form-item>         
+        </el-form-item >
+        <div style="float:right;margin-top: 1.5px;">
+          <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''" ><Icon icon="ep:grid" style="margin: 0px" />电流</el-button>            
+          <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''" ><Icon icon="ep:grid" style="margin: 0px" />电压</el-button>            
+          <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''" style="width:95px"><Icon icon="ep:grid" style="margin: 0px" />有功功率</el-button>            
+          <el-button @click="valueMode = 3;" :type="valueMode == 3 ? 'primary' : ''" style="width:95px"><Icon icon="ep:grid" style="margin: 0px" />无功功率</el-button>
+          <el-button @click="valueMode = 4;" :type="valueMode == 4 ? 'primary' : ''" style="width:95px"><Icon icon="ep:grid" style="margin-right: 3px" />视在功率</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;switchValue = 0;showPagination = 0" style="width:95px" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 3px" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;switchValue = 3;showPagination = 0" style="width:95px" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 3px" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 4;showPagination = 1" style="width:80px" :type="switchValue === 4 ? 'primary' : ''" v-show="switchValue == 3"><Icon icon="ep:expand" style="margin-right: 4px" />已删除</el-button>      
+        </div>
+      </el-form>
+      <el-form
+        class="-mb-15px"
+        :model="queryDeletedPageParams"
+        ref="queryFormRef"
+        :inline="true"
+        label-width="68px"     
+        v-show="switchValue == 4"        
+      >
+        <el-form-item label="网络地址" prop="devKey">
+          <el-autocomplete
+            v-model="queryDeletedPageParams.devKey"
+            :fetch-suggestions="querySearch"
+            clearable
+            class="!w-200px"
+            placeholder="请输入网络地址"
+            @select="handleQuery"
+          />
+        <el-form-item style="margin-left: 10px;">
+          <el-button @click="handleQuery" style="width:70px"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="resetQuery" style="width:70px"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+          <el-button
+            type="primary"
+            plain
+            @click="openForm('create')"
+            v-hasPermi="['pdu:PDU-device:create']"
+          >
+            <Icon icon="ep:plus" class="mr-5px" /> 新增
+          </el-button>
+          <el-button
+            type="success"
+            plain
+            @click="handleExport"
+            :loading="exportLoading"
+            v-hasPermi="['pdu:PDU-device:export']"
+          >
+            <Icon icon="ep:download" class="mr-5px" /> 导出
+          </el-button>
+        </el-form-item>         
         </el-form-item>
-        <div style="float:right">
-          <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
-          <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压</el-button>            
-          <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />有功功率</el-button>            
-          <el-button @click="valueMode = 3;" :type="valueMode == 3 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />无功功率</el-button>                     
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
+        <div style="float:right">                
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;switchValue = 0;showPagination = 0" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;switchValue = 3;showPagination = 0" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 4;showPagination = 1" :type="switchValue === 4 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>      
         </div>
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" >
-        <el-table-column label="编号" align="center" prop="tableId" />
+      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
+        <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
-        <el-table-column v-if="valueMode == 0" label="A相电流" align="center" prop="acur" width="130px" >
+        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
+        <el-table-column v-if="valueMode == 0" label="A相电流(A)" align="center" prop="acur" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.acur != null" :type=" scope.row.acurStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.acur }}A
+              {{ scope.row.acur }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="B相电流" align="center" prop="bcur" width="130px" >
+        <el-table-column v-if="valueMode == 0" label="B相电流(A)" align="center" prop="bcur" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.bcur != null" :type=" scope.row.bcurStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.bcur }}A
+              {{ scope.row.bcur }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="C相电流" align="center" prop="ccur" width="130px" >
+        <el-table-column v-if="valueMode == 0" label="C相电流(A)" align="center" prop="ccur" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.ccur != null" :type=" scope.row.ccurStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.ccur }}A
+              {{ scope.row.ccur }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column  v-if="valueMode == 1"  label="A相电压" align="center" prop="avol" width="130px" >
+        <el-table-column  v-if="valueMode == 1"  label="A相电压(V)" align="center" prop="avol" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.avol" :type=" scope.row.avolStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.avol }}V
+              {{ scope.row.avol }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 1" label="B相电压" align="center" prop="bvol" width="130px" >
+        <el-table-column v-if="valueMode == 1" label="B相电压(V)" align="center" prop="bvol" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.bvol" :type=" scope.row.bvolStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.bvol }}V
+              {{ scope.row.bvol }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 1" label="C相电压" align="center" prop="cvol" width="130px" >
+        <el-table-column v-if="valueMode == 1" label="C相电压(V)" align="center" prop="cvol" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.cvol" :type=" scope.row.cvolStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.cvol }}V
+              {{ scope.row.cvol }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 2" label="A相有功功率" align="center" prop="aactivePow" width="130px" >
+        <el-table-column v-if="valueMode == 2" label="A相有功功率(kW)" align="center" prop="aactivePow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.aactivePow" :type=" scope.row.aactivePowStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.aactivePow }}kW
+              {{ scope.row.aactivePow }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 2" label="B相有功功率" align="center" prop="bactivePow" width="130px" >
+        <el-table-column v-if="valueMode == 2" label="B相有功功率(kW)" align="center" prop="bactivePow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.bactivePow" :type=" scope.row.bactivePowStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.bactivePow }}kW
+              {{ scope.row.bactivePow }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 2" label="C相有功功率" align="center" prop="cactivePow" width="130px" >
+        <el-table-column v-if="valueMode == 2" label="C相有功功率(kW)" align="center" prop="cactivePow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.cactivePow" :type=" scope.row.cactivePowStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.cactivePow }}kW
+              {{ scope.row.cactivePow }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 3" label="A相无功功率" align="center" prop="areactivePow" width="130px" >
+        <el-table-column v-if="valueMode == 3" label="A相无功功率(kVar)" align="center" prop="areactivePow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.aactivePow">
-              {{ scope.row.aactivePow }}kVar
+              {{ scope.row.aactivePow }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 3" label="B相无功功率" align="center" prop="breactivePow" width="130px" >
+        <el-table-column v-if="valueMode == 3" label="B相无功功率(kVar)" align="center" prop="breactivePow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.breactivePow">
-              {{ scope.row.breactivePow }}kVar
+              {{ scope.row.breactivePow }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 3" label="C相无功功率" align="center" prop="creactivePow" width="130px" >
+        <el-table-column v-if="valueMode == 3" label="C相无功功率(kVar)" align="center" prop="powApparent" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.creactivePow">
-              {{ scope.row.creactivePow }}kVar
+              {{ scope.row.creactivePow }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 4" label="视在功率(kVA)" align="center" prop="powApparent" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powApparent">
+              {{ scope.row.powApparent }}
             </el-text>
           </template>
         </el-table-column>
@@ -193,7 +275,7 @@
             <el-button
               link
               type="danger"
-              @click="handleDelete(scope.row.id)"
+              @click="handleDelete(scope.row.busId)"
               v-if="scope.row.status == 5"
             >
               删除
@@ -201,7 +283,38 @@
           </template>
         </el-table-column>
       </el-table>    
-
+    <!-- 查询已删除-->
+      <el-table v-show="switchValue == 4" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
+        <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
+        <!-- 数据库查询 -->
+        <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="运行状态" align="center" prop="status" >
+          <template #default="scope">
+            <el-tag type="info" v-if="scope.row.status">已删除</el-tag>
+          </template>
+        </el-table-column>        
+        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
+        <!-- 数据库查询 -->
+        <el-table-column label="操作" align="center">
+          <template #default="scope">
+            <el-button
+              link
+              type="danger"
+              @click="handleRestore(scope.row.busId)"
+            >
+              恢复设备
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <Pagination
+        v-if="showPagination == 1"
+        :total="deletedTotal"
+        :page-size-arr="pageSizeArr"
+        v-model:page="queryDeletedPageParams.pageNo"
+        v-model:limit="queryDeletedPageParams.pageSize"
+        @pagination="getDeletedList"
+      />     
       <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
@@ -218,6 +331,9 @@
               </div> 
               <div v-if="valueMode == 3 && item.areactivePow != null" >
                 无功功率
+              </div> 
+              <div v-if="valueMode == 4 && item.powApparent != null" >
+                视在功率
               </div> 
             </div>
             <div class="info" v-if="valueMode == 0" >                  
@@ -288,20 +404,27 @@
                 </el-text>
               </div>
             </div>
+            <div class="info" v-if="valueMode == 4">                  
+              <div v-if="item.powApparent != null">
+                <el-text v-if="item.powApparent != null">
+                  ：{{item.powApparent}}kVA
+                </el-text>
+              </div>
+            </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" v-if="valueMode == 0">
-            <el-tag type="info" v-if="item.acurStatus == null " >离线</el-tag>
+            <el-tag type="info" v-if="item.acurStatus == null || item.status == 5 || item.status == null" >离线</el-tag>
             <el-tag type="danger" v-else-if="item.acurStatus != 0 || item.bcurStatus != 0  || item.ccurStatus != 0 " >告警</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>
           <div class="status" v-if="valueMode == 1">
-            <el-tag type="info" v-if="item.avolStatus == null " >离线</el-tag>
+            <el-tag type="info" v-if="item.avolStatus == null || item.status == 5 || item.status == null" >离线</el-tag>
             <el-tag type="danger" v-else-if="item.avolStatus != 0 || item.bvolStatus != 0 || item.cvolStatus != 0 " >告警</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>
           <div class="status" v-if="valueMode == 2">
-            <el-tag type="info" v-if="item.aactivePowStatus == null " >离线</el-tag>
+            <el-tag type="info" v-if="item.aactivePowStatus == null || item.status == 5 || item.status == null" >离线</el-tag>
             <el-tag type="danger" v-else-if="item.aactivePowStatus != 0 || item.bactivePowStatus != 0 || item.cactivePowStatus != 0" >告警</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>
@@ -312,13 +435,14 @@
         </div>
       </div>
       <Pagination
+        v-if="showPagination == 0"
         :total="total"
         :page-size-arr="pageSizeArr"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
-      <template v-if="list.length == 0 && switchValue != 3">
+      <template v-if="list.length == 0 && switchValue == 2 && showPagination == 0">
         <el-empty description="暂无数据" :image-size="300" />
       </template>
     </template>
@@ -342,14 +466,42 @@ import { ElTree } from 'element-plus'
 defineOptions({ name: 'PDUDevice' })
 
 const { push } = useRouter()
-
+const showPagination = ref(0)
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
-const pageSizeArr = ref([24,36,48])
+const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(0)
 const valueMode = ref(0)
-
+const statusNumber = reactive({
+  normal : 0,
+  warn : 0,
+  alarm : 0,
+  offline : 0
+})
+const statusList = reactive([
+  {
+    name: '正常',
+    selected: true,
+    value: 1,
+    cssClass: 'btn_normal',
+    activeClass: 'btn_normal normal'
+  },
+  {
+    name: '告警',
+    selected: true,
+    value: 2,
+    cssClass: 'btn_error',
+    activeClass: 'btn_error error'
+  },
+  {
+    name: '离线',
+    selected: true,
+    value: 5,
+    cssClass: 'btn_offline',
+    activeClass: 'btn_offline offline'
+  },
+])
 const devKeyList = ref([])
 const loadAll = async () => {
   var data = await IndexApi.devKeyList();
@@ -383,7 +535,9 @@ const handleClick = (row) => {
 const handleCheck = async (row) => {
   if(row.length == 0){
     queryParams.busDevKeyList = null;
+    queryDeletedPageParams.busDevKeyList = null;
     getList();
+    getDeletedList();
     return;
   }
   const ids = [] as any
@@ -396,11 +550,14 @@ const handleCheck = async (row) => {
   })
   if(!haveCabinet ){
     queryParams.busDevKeyList = [-1]
+    queryDeletedPageParams.busDevKeyList = [-1]
   }else{
     queryParams.busDevKeyList = ids
+    queryDeletedPageParams.busDevKeyList = ids
   }
 
   getList();
+  getDeletedList();
 }
 
 const serverRoomArr =  ref([])
@@ -435,7 +592,44 @@ const list = ref([
     curUnbalance : null,
   }
 ]) as any// 列表的数据
+const allList = ref([
+  { 
+    id:null,
+    status:null,
+    apparentPow:null,
+    pow:null,
+    ele:null,
+    devKey:null,
+    location:null,
+    dataUpdateTime : "",
+    pduAlarm:"",
+    pf:null,
+    acur : null,
+    bcur : null,
+    ccur : null,
+    curUnbalance : null,
+  }
+]) as any// 列表的数据
+const deletedList = ref([
+  { 
+    id:null,
+    status:null,
+    apparentPow:null,
+    pow:null,
+    ele:null,
+    devKey:null,
+    location:null,
+    dataUpdateTime : "",
+    pduAlarm:"",
+    pf:null,
+    aloadRate : null,
+    bloadRate : null,
+    cloadRate : null,
+    curUnbalance : null,
+  }
+]) as any// 列表的数据
 const total = ref(0) // 列表的总页数
+const deletedTotal = ref(0) // 已删除列表的总页数
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
@@ -445,8 +639,31 @@ const queryParams = reactive({
   serverRoomData:undefined,
   status:undefined,
   cabinetIds : [],
+  isDeleted: 0,
+})as any
+const queryParamsAll = reactive({
+  pageNo: 1,
+  pageSize: -1,
+  devKey: undefined,
+  createTime: [],
+  cascadeNum: undefined,
+  serverRoomData:undefined,
+  status:undefined,
+  cabinetIds : [],
+})as any
+const queryDeletedPageParams = reactive({
+  pageNo: 1,
+  pageSize: 24,
+  devAddr: undefined,
+  createTime: [],
+  cascadeNum: undefined,
+  serverRoomData:undefined,
+  status:undefined,
+  cabinetIds : [],
+  isDeleted: 1,
 })as any
 const queryFormRef = ref() // 搜索的表单
+const queryFormRef2 = ref()
 const exportLoading = ref(false) // 导出的加载中
 
 /** 查询列表 */
@@ -475,11 +692,28 @@ const getList = async () => {
       obj.areactivePow = obj.areactivePow?.toFixed(3);
       obj.breactivePow = obj.breactivePow?.toFixed(3);
       obj.creactivePow = obj.creactivePow?.toFixed(3);
+      obj.powApparent = obj.powApparent?.toFixed(3);
     });
 
     total.value = data.total
   } finally {
     loading.value = false
+  }
+}
+
+const getDeletedList = async () => {
+  try {
+    const data = await IndexApi.getDeletedIndexPage(queryDeletedPageParams)
+    deletedList.value = data.list
+    var tableIndex = 0;    
+
+    deletedList.value.forEach((obj) => {
+      obj.tableId = (queryDeletedPageParams.pageNo - 1) * queryDeletedPageParams.pageSize + ++tableIndex;
+    });
+
+    deletedTotal.value = data.total
+  } catch (error) {
+    
   }
 }
 
@@ -515,6 +749,38 @@ const getListNoLoading = async () => {
   }
 }
 
+const getListAll = async () => {
+  try {
+    var normal = 0;
+    var offline = 0;
+    var alarm = 0;
+    var warn = 0;
+    const allData = await await IndexApi.getBusRedisPage(queryParamsAll)
+    allList.value = allData.list
+    allList.value.forEach((objAll) => {
+      if(objAll?.dataUpdateTime == null && objAll?.acur == null && objAll?.bcur == null && objAll?.ccur == null){
+        objAll.status = 5;
+        offline++;
+        return;
+      }  
+      if(objAll?.status == 1){
+        normal++;
+      } else if (objAll?.status == 3){
+        warn++;
+      } else if (objAll?.status == 2){
+        alarm++;
+      }          
+    });
+    //设置左边数量
+    statusNumber.normal = normal;
+    statusNumber.offline = offline;
+    statusNumber.alarm = alarm;
+    statusNumber.warn = warn;
+  } catch (error) {
+    
+  }
+}
+
 const getNavList = async() => {
   const res = await IndexApi.getBusMenu()
   serverRoomArr.value = res
@@ -543,11 +809,20 @@ const toDeatil = (row) =>{
 //   window.open(url, '_blank');
 // }
 
+const handleSelectStatus = (index) => {
+  statusList[index].selected = !statusList[index].selected
+  const status =  statusList.filter(item => item.selected)
+  const statusArr = status.map(item => item.value)
+  queryParams.status = statusArr;
+  console.log(queryParams.status+'aaaaaaaaaaaaaaaaaaaaaaaaaa')
+  handleQuery();
+}
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
   getList()
+  getDeletedList();
 }
 
 /** 重置按钮操作 */
@@ -571,7 +846,20 @@ const handleDelete = async (id: number) => {
     await IndexApi.deleteIndex(id)
     message.success(t('common.delSuccess'))
     // 刷新列表
-    // await getList()
+     await getList()
+  } catch {}
+}
+
+/** 恢复按钮操作 */
+const handleRestore = async (id: number) => {
+  try {
+    // 删除的二次确认
+    await message.delConfirm()
+    // 发起删除
+    await IndexApi.restoreIndex(id)
+    message.success(t('common.restoreSuccess'))
+    // 刷新列表
+     await getDeletedList()
   } catch {}
 }
 
@@ -595,7 +883,9 @@ onMounted(async () => {
   devKeyList.value = await loadAll();
   getList()
   getNavList();
+  getListAll();
   flashListTimer.value = setInterval((getListNoLoading), 5000);
+  flashListTimer.value = setInterval((getListAll), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -618,6 +908,7 @@ onActivated(() => {
   getNavList();
   if(!firstTimerCreate.value){
     flashListTimer.value = setInterval((getListNoLoading), 5000);
+    flashListTimer.value = setInterval((getListAll), 5000);
   }
 })
 </script>
@@ -782,6 +1073,7 @@ onActivated(() => {
   .status {
     display: flex;
     flex-wrap: wrap;
+    margin-top: 30px;
     .box {
       height: 70px;
       width: 50%;
@@ -849,8 +1141,7 @@ onActivated(() => {
   }
   .line {
     height: 1px;
-    margin-top: 28px;
-    margin-bottom: 20px;
+    margin-top: 18px;
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
 }
@@ -957,5 +1248,11 @@ onActivated(() => {
 }
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+::v-deep .el-table .el-table__header th{
+  background-color: #f5f7fa;
+  color: #909399;
+  height: 80px;
+
 }
 </style>

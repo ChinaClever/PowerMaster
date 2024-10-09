@@ -14,7 +14,16 @@ export const PDUDeviceApi = {
   getPDUDevicePage: async (data: any) => {
     return await request.post({ url: `/pdu/PDU-device/page`, data })
   },
+    
+  // 获取已删除的PDU设备
+  getDeletedPDUDevice: async (data: any) => {
+    return await request.post({ url: `/pdu/PDU-device/getDeletedPage`,data})
+  },
 
+  getPDUDeviceMaxCur: async (data: any) => {
+    return await request.post({ url: `/pdu/PDU-device/line/getMaxCur`,data})
+  },
+  
   // 查询PDU设备详情
   getPDUDevice: async (id: number) => {
     return await request.get({ url: `/pdu/PDU-device/get?id=` + id })
@@ -35,6 +44,11 @@ export const PDUDeviceApi = {
     return await request.get({ url: `/pdu/PDU-device/delete`, params })
   },
 
+  //恢复PDU设备
+  restorePDUDevice: async (params: any) => {
+    return await request.get({ url: `/pdu/PDU-device/restore`, params })
+  },
+
   // 导出PDU设备 Excel
   exportPDUDevice: async (params) => {
     return await request.download({ url: `/pdu/PDU-device/export-excel`, params })
@@ -43,7 +57,11 @@ export const PDUDeviceApi = {
   PDUDisplay: async (params) => {
     return await request.get({ url: `/pdu/PDU-device/displayscreen`, params })
   },
-
+  
+  getLocation: async (params) => {
+    return await request.get({ url: `/pdu/PDU-device/displayscreen/location`, params })
+  },
+  
   PDUHis: async (params) => {
     return await request.get({ url: `/pdu/PDU-device/hisdata/`, params})
   },
@@ -76,6 +94,10 @@ export const PDUDeviceApi = {
     return await request.post({ url: `/pdu/PDU-device/line/page`,data})
   },
 
+  getPDUMaxLineId: async (data) => {
+    return await request.post({ url: `/pdu/PDU-device/line/getMaxLineId`,data})
+  },  
+
   devKeyList: async () => {
     return await request.download({ url: `/pdu/PDU-device/devKeyList` })
   },
@@ -83,6 +105,5 @@ export const PDUDeviceApi = {
   ipList: async () => {
     return await request.download({ url: `/pdu/PDU-device/ipList` })
   },
-
   
 }

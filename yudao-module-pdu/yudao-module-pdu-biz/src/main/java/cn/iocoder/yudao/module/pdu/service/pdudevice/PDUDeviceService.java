@@ -25,6 +25,8 @@ public interface PDUDeviceService {
      */
     PageResult<PDUDeviceDO> getPDUDevicePage(PDUDevicePageReqVO pageReqVO);
 
+    PageResult<PDUDeviceDO> getDeletedPDUDevicePage(PDUDevicePageReqVO pageReqVO);
+
     String getDisplayDataByDevKey(String devKey);
 
     Map getHistoryDataByDevKey(String devKey, String type);
@@ -49,4 +51,12 @@ public interface PDUDeviceService {
     Map getPDUPFLine(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
     int deletePDU(String devKey) throws Exception;
+
+    int restorePDU(String devKey) throws Exception;
+
+    Integer getPDUMaxLineId(PDUDevicePageReqVO pageReqVO);
+
+    PageResult<PDULineRes> getPDUMaxCurData(PDUDevicePageReqVO pageReqVO);
+
+    String getLocationByDevKey(String devKey);
 }

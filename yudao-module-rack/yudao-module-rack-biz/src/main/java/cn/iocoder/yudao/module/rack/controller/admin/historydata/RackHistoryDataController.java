@@ -66,6 +66,7 @@ public class RackHistoryDataController {
                                        HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = rackHistoryDataService.getHistoryDataPage(pageReqVO).getList();
+        rackHistoryDataService.getNewList(list);
         // 导出 Excel
         if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
             ExcelUtils.write(response, "机架电力历史数据.xlsx", "数据", RealtimePageRespVO.class,

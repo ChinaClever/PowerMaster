@@ -3,19 +3,37 @@
     <template #NavInfo>
     <br/>    <br/> 
         <div class="nav_data">
-          <div class="carousel-container">
+          <!-- <div class="carousel-container">
             <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
               <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
                 <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
               </el-carousel-item>
             </el-carousel>
-          </div>
+          </div> -->
           <div class="nav_content">
-          <el-descriptions title="" direction="vertical" :column="1" border >
+          <!-- <el-descriptions title="" direction="vertical" :column="1" border >
               <el-descriptions-item label="最近一天"><span>{{ lastDayTotalData }} 条</span></el-descriptions-item>
               <el-descriptions-item label="最近一周"><span>{{ lastWeekTotalData }} 条</span></el-descriptions-item>
               <el-descriptions-item label="最近一月" ><span>{{ lastMonthTotalData }} 条</span></el-descriptions-item>
-            </el-descriptions>
+            </el-descriptions> -->
+            
+            <div class="descriptions-container" style="font-size: 14px;">
+          <div class="description-item">
+            <span class="label">最近一天 :</span>
+            <span class="value">{{ lastDayTotalData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">最近一周 :</span>
+            <span class="value">{{ lastWeekTotalData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">最近一月 :</span>
+            <span class="value">{{ lastMonthTotalData }}条</span>
+          </div>    <br/>
+          <div style="text-align: center"><span>母线始端箱新增能耗记录</span>
+              <div class="line" style="margin-top: 10px;"></div>
+            </div>
+        </div>
           </div>
         </div>
     </template>
@@ -79,7 +97,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.bus_id, row.location)">详情</el-button>
+            <el-button link type="primary" @click="toDetails(row.bus_id, row.location,row.dev_key)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -99,7 +117,7 @@
               v-if="child.istrue"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.bus_id, row.location)">详情</el-button>
+                <el-button link type="primary" @click="toDetails(row.bus_id, row.location,row.dev_key)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -242,16 +260,16 @@ watch(() => queryParams.granularity, () => {
 });
 
 const tableColumns = ref([
-  { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
-  { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true, width: '220px'},
+  { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '300%'},
+  { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true, width: '180px'},
   { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '160px' , istrue:true},
   { label: '开始', align: 'center', istrue: true, children: [
-      { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime1, width: '150px' , istrue:true},
+      { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime1, width: '100px' , istrue:true},
       { label: '电能(kWh)', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
     ]
   },
   { label: '结束', align: 'center', istrue: true, children: [
-      { label: '日期', align: 'center', prop: 'end_time' , formatter: formatTime1, width: '150px' , istrue:true},
+      { label: '日期', align: 'center', prop: 'end_time' , formatter: formatTime1, width: '100px' , istrue:true},
       { label: '电能(kWh)', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle},
     ]
   },
@@ -411,8 +429,8 @@ const handleExport = async () => {
 
 
 /** 详情操作*/
-const toDetails = (busId: number, location: string) => {
-  push('/bus/nenghao/ecdistribution/bus?busId='+busId+'&location='+location);
+const toDetails = (busId: number,location: string, devKey: string) => {
+  push('/bus/nenghao/ecdistribution/bus?busId='+busId+'&location='+location+'&devKey='+devKey);
 }
 
 /** 初始化 **/
@@ -440,7 +458,7 @@ onMounted(() => {
   width: 170px;
 }
 .nav_content span{
-  font-size: 18px;
+  font-size: 14px;
 }
 .carousel-container {
   width: 100%;
@@ -452,4 +470,21 @@ onMounted(() => {
   height: 100%;
   object-fit: cover; 
 }
+
+.description-item {
+  display: flex;
+  align-items: center;
+}
+
+.label {
+  width:100px; /* 控制冒号前的宽度 */
+  text-align: right; /* 文本右对齐 */
+  margin-right: 20px; /* 控制冒号后的间距 */
+}
+.line {
+    height: 1px;
+    margin-top: 28px;
+
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
 </style>

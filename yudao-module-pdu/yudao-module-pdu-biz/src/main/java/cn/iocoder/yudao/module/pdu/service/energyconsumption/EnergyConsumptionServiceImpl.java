@@ -203,7 +203,10 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
         if (Objects.equals(pduId, null)){
             pduId = historyDataService.getPduIdByAddr(reqVO.getIpAddr(), reqVO.getCascadeAddr());
             if (Objects.equals(pduId, null)){
-                return null;
+                PageResult<Object> pageResult=new PageResult<>();
+                pageResult.setList(new ArrayList<>())
+                        .setTotal(new Long(0));
+                return pageResult;
             }
         }
         // 创建BoolQueryBuilder对象
@@ -424,8 +427,14 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
         // 添加范围查询 最近24小时
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        for (int i = 0; i < indices.length; i++) {
-            SearchRequest searchRequest = new SearchRequest(indices[i]);
+        for (int i = 0; i < (name.length==4?4:3); i++) {
+            SearchRequest searchRequest;
+            if(name.length==4){
+                searchRequest = new SearchRequest(indices[i]);
+            }
+            else{
+                searchRequest = new SearchRequest(indices[0],indices[1]);
+            }
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
             searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(timeAgo[i].format(formatter))
@@ -447,7 +456,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
 
     @Override
     public Map<String, Object> getNewData() throws IOException {
-        String[] indices = new String[]{"pdu_eq_total_day", "pdu_eq_total_week", "pdu_eq_total_month"};
+        String[] indices = new String[]{"pdu_eq_total_day", "pdu_eq_outlet_day"};
         String[] name = new String[]{"day", "week", "month"};
         LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1), LocalDateTime.now().minusMonths(1)};
         Map<String, Object> map = getSumData(indices, name, timeAgo);
@@ -517,6 +526,83 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
         pageResult.setList(resultList)
                 .setTotal(totalHits);
         return pageResult;
+    }
+
+    @Override
+    public List<Object> getNewList(List<Object> list) {
+        List<Map<String, Object>> mapList = new ArrayList<>();
+
+        for (Object obj : list) {
+            if (obj instanceof Map && ((Map<?, ?>) obj).keySet().stream().allMatch(key -> key instanceof String)) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) obj;
+                mapList.add(map);
+            }
+        }
+
+        for(int i=0;i<mapList.size();i++){
+            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,16));
+            mapList.get(i).put("start_time",mapList.get(i).get("start_time").toString().substring(0,16));
+            mapList.get(i).put("end_time",mapList.get(i).get("end_time").toString().substring(0,16));
+        }
+        return list;
+    }
+
+    @Override
+    public List<Object> getNewBillList(List<Object> list) {
+        List<Map<String, Object>> mapList = new ArrayList<>();
+
+        for (Object obj : list) {
+            if (obj instanceof Map && ((Map<?, ?>) obj).keySet().stream().allMatch(key -> key instanceof String)) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) obj;
+                mapList.add(map);
+            }
+        }
+
+        for(int i=0;i<mapList.size();i++){
+            mapList.get(i).put("start_time",mapList.get(i).get("start_time").toString().substring(0,16));
+            mapList.get(i).put("end_time",mapList.get(i).get("end_time").toString().substring(0,16));
+        }
+        return list;
+    }
+
+    @Override
+    public List<Object> getNewEQList(List<Object> list) {
+        List<Map<String, Object>> mapList = new ArrayList<>();
+
+        for (Object obj : list) {
+            if (obj instanceof Map && ((Map<?, ?>) obj).keySet().stream().allMatch(key -> key instanceof String)) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) obj;
+                mapList.add(map);
+            }
+        }
+
+        for(int i=0;i<mapList.size();i++){
+            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,16));
+        }
+        return list;
+    }
+
+    @Override
+    public List<Object> getNewOutLetsList(List<Object> list) {
+        List<Map<String, Object>> mapList = new ArrayList<>();
+
+        for (Object obj : list) {
+            if (obj instanceof Map && ((Map<?, ?>) obj).keySet().stream().allMatch(key -> key instanceof String)) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) obj;
+                mapList.add(map);
+            }
+        }
+
+        for(int i=0;i<mapList.size();i++){
+            mapList.get(i).put("start_time",mapList.get(i).get("start_time").toString().substring(0,10));
+            mapList.get(i).put("end_time",mapList.get(i).get("end_time").toString().substring(0,10));
+            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,10));
+        }
+        return list;
     }
 
 }

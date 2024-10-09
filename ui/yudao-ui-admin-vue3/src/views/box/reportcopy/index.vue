@@ -2,10 +2,10 @@
   <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="false"  :lazy="true" :load="loadNode" navTitle="插接箱报表">
     <template #NavInfo>
       <div >
-        <div class="header">
+        <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div>
         </div>
-        <div class="line"></div>
+        <div class="line"></div> -->
         <!-- <div class="status">
           <div class="box">
             <div class="top">
@@ -32,7 +32,8 @@
             <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
           </div>
         </div> -->
-        <div class="line"></div>
+        <!-- <div class="line"></div> -->
+         <br/>
 
       </div>
     </template>

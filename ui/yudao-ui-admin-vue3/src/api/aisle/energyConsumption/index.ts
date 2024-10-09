@@ -36,6 +36,10 @@ export const EnergyConsumptionApi = {
   exportEQPageData: async (params, axiosConfig) => {
     return await request.download({ url: `/aisle/eq-data/export-excel`, params, ...axiosConfig })
   },
+    // 导出机柜能耗分布历史数据 Excel
+    exportDetailPageData: async (params, axiosConfig) => {
+      return await request.download({ url: `/aisle/eq-data/detail-export-excel`, params, ...axiosConfig })
+    },
 
   // 导出机柜电费统计历史数据 Excel
   exportBillPageData: async (params, axiosConfig) => {

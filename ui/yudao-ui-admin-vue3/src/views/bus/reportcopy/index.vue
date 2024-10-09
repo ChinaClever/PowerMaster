@@ -2,10 +2,11 @@
   <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="false"  :lazy="true" :load="loadNode" navTitle="母线报表">
     <template #NavInfo>
       <div >
-        <div class="header">
+        <br/>
+        <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
         </div>
-        <div class="line"></div>
+        <div class="line"></div> -->
         <!-- <div class="status">
           <div class="box">
             <div class="top">
@@ -32,7 +33,7 @@
             <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
           </div>
         </div> -->
-        <div class="line"></div>
+        <!-- <div class="line"></div> -->
 
       </div>
     </template>
@@ -61,6 +62,7 @@
             clearable
             class="!w-200px"
             placeholder="请输入网络地址"
+            @keyup.enter="handleQuery"
             @select="handleQuery"
           />
         </el-form-item>
@@ -496,6 +498,7 @@ const itemStyle = ref({
 });
 
 const getList = async () => {
+  //debugger
   loading.value = true
   eqData.value = await IndexApi.getConsumeData(queryParams);
   if(eqData.value?.barRes?.series[0]){
@@ -617,7 +620,7 @@ const arraySpanMethod = ({
 
 /** 搜索按钮操作 */
 const handleQuery = async () => {
-
+  //debugger
   if(queryParams.devKey){
     if(queryParams.oldTime && queryParams.newTime){
       await getList();
