@@ -948,49 +948,49 @@ function customTooltipFormatter(params: any[]) {
       case '无功功率(kVar)':
       case '平均有功功率(kW)':
       case '平均无功功率(kVar)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +'记录时间:'  +params[0].name+ '<br/>';
         break;
       case '最大有功功率(kW)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '<br/>';
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value+'发生时间' +powActiveMaxTimeData.value[item.dataIndex]+ '<br/>';
         break;
       case '最小有功功率(kW)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +'发生时间'+powActiveMinTimeData.value[item.dataIndex]+ '<br/>';
               break;
       
       case '最大无功功率(kVar)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +'发生时间'+powReactiveMaxTimeData.value[item.dataIndex] + '<br/>';
               break;
       case '最小无功功率(kVar)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value+'发生时间'  +powReactiveMaxTimeData.value[item.dataIndex]+ '<br/>';
               break;
 
       case '总视在功率(kVA)':
       case '视在功率(kVA)':
       case '平均视在功率(kVA)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
-              break;
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +'记录时间:'  +params[0].name+ '<br/>';
+      break;
       case '最大视在功率(kVA)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value+'发生时间' +powApparentMaxTimeData.value[item.dataIndex] + '<br/>';
               break;
       case '最小视在功率(kVA)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value+'发生时间'  +powApparentMaxTimeData.value[item.dataIndex]+ '<br/>';
               break;
 
       case '电流(A)':
       case '电流三相不平衡': 
       case '平均电流(A)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
-        break;
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +'记录时间:'  +params[0].name+ '<br/>';
+      break;
       case '最大电流(A)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +'发生时间' +curMaxTimeData.value[item.dataIndex]+ '<br/>' ;
       break;
       case '最小电流(A)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value+'发生时间' +curMinTimeData.value[item.dataIndex] + '<br/>';
       break;
 
       case '剩余电流(A)':
       case '平均剩余电流(A)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value   + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +'记录时间:'  +params[0].name+ '<br/>';
       break;
       case '最大剩余电流(A)':
       tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value   + '<br/>';
@@ -1001,13 +1001,13 @@ function customTooltipFormatter(params: any[]) {
 
       case '零线电流(A)':
       case '平均零线电流(A)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value   + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +'记录时间:'  +params[0].name+ '<br/>';
       break;
       case '最大零线电流(A)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +'发生时间' +curZeroMaxTimeData.value[item.dataIndex]+ '<br/>';
       break;
       case '最小零线电流(A)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value+'发生时间' +curZeroMaxTimeData.value[item.dataIndex] + '<br/>';
       break;
 
       case '电压(V)':
@@ -1015,30 +1015,29 @@ function customTooltipFormatter(params: any[]) {
       case '电压三相不平衡': 
       case '平均电压(V)':
       case '平均线电压(V)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
-        break;
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +'记录时间:'  +params[0].name+ '<br/>';
+      break;
       case '最大电压(V)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value   + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +'发生时间'+volMaxTimeData.value[item.dataIndex] + '<br/>';
       break;
       case '最小电压(V)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value   + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +'发生时间' +volMinTimeData.value[item.dataIndex] + '<br/>';
       break;
 
       case '最大线电压(V)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value   + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +'发生时间' +volLineMaxTimeData.value[item.dataIndex] + '<br/>';
       break;
       case '最小线电压(V)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value   + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +'发生时间' +volLineMaxTimeData.value[item.dataIndex]+ '<br/>';
       break;
 
       case '功率因素':
       case '负载率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
-        break;
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +'记录时间:'  +params[0].name+ '<br/>';
+      break;
     }
     
   });
-  tooltipContent +='记录时间:'  +params[0].name
 
   return tooltipContent;
 }

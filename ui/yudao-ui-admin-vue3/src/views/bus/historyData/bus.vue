@@ -31,13 +31,14 @@
             <span class="label">相数据 :</span>
             <span class="value">{{ navLineData }}条</span>
           </div>
-        </div>
-        <div style="text-align: center;font-size: 14px">
-            <div v-if="queryParams.granularity == 'realtime' " style="text-align: center"><span>始端箱最近一分钟新增记录</span></div>
-              <div v-if="queryParams.granularity == 'hour' " style="text-align: center"><span>始端箱最近一小时新增记录</span></div>
-              <div v-if="queryParams.granularity == 'day' " style="text-align: center"><span>始端箱最近一天新增记录</span></div>
+          <div class="description-item" style="font-size: 14px">
+            <div v-if="queryParams.granularity == 'realtime' " ><span>始端箱最近一分钟新增记录</span></div>
+              <div v-if="queryParams.granularity == 'hour' " ><span>始端箱最近一小时新增记录</span></div>
+              <div v-if="queryParams.granularity == 'day' " ><span>始端箱最近一天新增记录</span></div>
                 <div class="line" style="margin-top: 10px;"></div>
         </div>
+        </div>
+
       </div>
     </template>
     <template #ActionBar>
@@ -313,9 +314,10 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         originalArray.value = ["pow_active", "pow_reactive", "pow_apparent", "power_factor", "cur_residual", "cur_zero", "vol_unbalance", "cur_unbalance"];
         // 配置表格列
         tableColumns.value =([
-        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
           { label: '所在位置', align: 'center', prop: 'location', width: '300%' , istrue:true},
           { label: '设备地址', align: 'center', prop: 'dev_key', width: '190px', istrue:true},
+          { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
+
           { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, width: '150px', formatter: formatPower},
           { label: '总无功功率(kVar)', align: 'center', prop: 'pow_reactive', istrue:true, width: '150px', formatter: formatPower},
           { label: '总视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, width: '150px', formatter: formatPower},
@@ -373,9 +375,10 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
                             "cur_zero_avg_value", "cur_zero_max", "cur_zero_min",],
         // 配置表格列
         tableColumns.value = [
-        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
           { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '300%'},
           { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '160px'},
+        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
+          
           { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '180px', formatter: formatPower},
           { label: '最大有功功率(kW)', align: 'center', prop: 'pow_active_max_value', istrue:true, width: '180px', formatter: formatPower},
           { label: '最大有功功率时间', align: 'center', prop: 'pow_active_max_time', formatter: formatTime, width: '230px', istrue:true},
@@ -434,9 +437,10 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         originalArray.value =["vol_value", "cur_value", "pow_active", "pow_reactive", "pow_apparent", "power_factor", "load_rate", "vol_line", "cur_thd", "vol_thd"];
         // 配置表格列
         tableColumns.value = [
-          { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
           { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '300%'},
           { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '190px'},
+          { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
+
           { label: '相', align: 'center', prop: 'line_id', istrue:true, formatter: formatLineId, width: '120px'},
           { label: '有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower, width: '140px'},
           { label: '无功功率(kVar)', align: 'center', prop: 'pow_reactive', istrue:true, formatter: formatPower, width: '140px'},
@@ -504,9 +508,10 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
                             "pow_apparent_avg_value", "pow_apparent_max", "pow_apparent_min"],
         // 配置表格列
         tableColumns.value = [
-        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
           { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '300%'},
           { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '160px'},
+        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
+
           { label: '相', align: 'center', prop: 'line_id', istrue:true, width: '100px', formatter: formatLineId},
 
           { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '180px', formatter: formatPower},
@@ -555,9 +560,10 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
   });
 
 const tableColumns = ref([  
-{ label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
     { label: '所在位置', align: 'center', prop: 'location', width: '300%' , istrue:true},
     { label: '设备地址', align: 'center', prop: 'dev_key', width: '190px', istrue:true},
+{ label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
+
     { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, width: '150px', formatter: formatPower},
     { label: '总无功功率(kVar)', align: 'center', prop: 'pow_reactive', istrue:true, width: '150px', formatter: formatPower},
     { label: '总视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, width: '150px', formatter: formatPower},
@@ -766,13 +772,15 @@ onMounted( () => {
 }
 
 .label {
-  width:100px; /* 控制冒号前的宽度 */
   text-align: right; /* 文本右对齐 */
-  margin-right: 20px; /* 控制冒号后的间距 */
+  margin-right: 10px; /* 控制冒号后的间距 */
+  text-align: left;
 }
 
 .value {
   flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
+
 }
   .line {
     height: 1px;
@@ -780,7 +788,6 @@ onMounted( () => {
 
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
-
   ::v-deep .el-table .el-table__header th {
     background-color: #F5F7FA;
     color: #909399;

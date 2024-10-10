@@ -30,7 +30,7 @@
             <span class="label">最近一月 :</span>
             <span class="value">{{ lastMonthTotalData }}条</span>
           </div>    <br/>
-          <div style="text-align: center"><span>母线始端箱新增能耗记录</span>
+          <div ><span>母线始端箱新增能耗记录</span>
               <div class="line" style="margin-top: 10px;"></div>
             </div>
         </div>
@@ -262,6 +262,8 @@ watch(() => queryParams.granularity, () => {
 const tableColumns = ref([
   { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '300%'},
   { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true, width: '180px'},
+  { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
+
   { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '160px' , istrue:true},
   { label: '开始', align: 'center', istrue: true, children: [
       { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime1, width: '100px' , istrue:true},
@@ -477,11 +479,17 @@ onMounted(() => {
 }
 
 .label {
-  width:100px; /* 控制冒号前的宽度 */
   text-align: right; /* 文本右对齐 */
-  margin-right: 20px; /* 控制冒号后的间距 */
+  margin-right: 10px; /* 控制冒号后的间距 */
+  text-align: left;
 }
-.line {
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
+
+}
+  .line {
     height: 1px;
     margin-top: 28px;
 

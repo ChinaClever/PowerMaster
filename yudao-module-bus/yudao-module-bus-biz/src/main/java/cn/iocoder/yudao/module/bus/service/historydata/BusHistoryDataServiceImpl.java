@@ -631,50 +631,93 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
     @Override
     public Map<String, Object> getBusNavNewData(String granularity) throws IOException {
         String[] indices = new String[0];
-        String[] key = new String[]{"total", "line"};
+        String[] key = new String[]{};
         LocalDateTime[] timeAgo = new LocalDateTime[0];
         Map<String, Object> map;
         switch (granularity){
             case "realtime":
+                key= new String[]{"total", "line"};
                 indices = new String[]{"bus_hda_total_realtime", "bus_hda_line_realtime"};
                 timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1)};
                 break;
             case "hour":
-                indices = new String[]{"bus_hda_total_hour", "bus_hda_line_hour"};
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1)};
+                key= new String[]{"total","total1","line","line1"};
+                indices = new String[]{"bus_hda_total_realtime", "bus_hda_total_hour", "bus_hda_line_realtime","bus_hda_line_hour"};
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1),LocalDateTime.now().minusHours(1),LocalDateTime.now().minusHours(1)};
                 break;
             case "day":
-                indices = new String[]{"bus_hda_total_day", "bus_hda_line_day"};
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1)};
+                key= new String[]{"total","total1","total2","line","line1","line2"};
+                indices = new String[]{"bus_hda_total_realtime","bus_hda_total_hour", "bus_hda_total_day", "bus_hda_line_realtime","bus_hda_line_hour", "bus_hda_line_day"};
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1)};
                 break;
             default:
         }
         map = getSumData(indices, key, timeAgo,"bus_id");
+        if(map.containsKey("total1")){
+           map.put("total", (Long)map.get("total1")+ (Long)map.get("total"));
+        }
+        if(map.containsKey("total2")){
+            map.put("total", (Long)map.get("total2")+ (Long)map.get("total"));
+        }
+        if(map.containsKey("line1")){
+            map.put("line", (Long)map.get("line1")+ (Long)map.get("line"));
+        }
+        if(map.containsKey("line2")){
+            map.put("line", (Long)map.get("line2")+ (Long)map.get("line"));
+        }
         return map;
     }
 
     @Override
     public Map<String, Object> getBoxNavNewData(String granularity) throws IOException {
         String[] indices = new String[0];
-        String[] key = new String[]{"total", "line", "loop", "outlet"};
+        String[] key = new String[]{};
         LocalDateTime[] timeAgo = new LocalDateTime[0];
         Map<String, Object> map;
         switch (granularity){
             case "realtime":
+                key= new String[]{"total", "line", "loop", "outlet"};
                 indices = new String[]{"box_hda_total_realtime", "box_hda_line_realtime", "box_hda_loop_realtime", "box_hda_outlet_realtime"};
                 timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1)};
                 break;
             case "hour":
-                indices = new String[]{"box_hda_total_hour", "box_hda_line_hour", "box_hda_loop_hour", "box_hda_outlet_hour"};
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1)};
+                key= new String[]{"total","total1","line","line1","loop", "loop1","outlet","outlet1"};
+                indices = new String[]{"box_hda_total_realtime","box_hda_total_hour", "box_hda_line_realtime","box_hda_line_hour", "box_hda_loop_realtime", "box_hda_loop_hour", "box_hda_outlet_realtime","box_hda_outlet_hour"};
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1),LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1)};
                 break;
             case "day":
-                indices = new String[]{"box_hda_total_day", "box_hda_line_day", "box_hda_loop_day", "box_hda_outlet_day"};
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1)};
+                key= new String[]{"total","total1","total2","line","line1","line2","loop", "loop1","loop2","outlet","outlet1","outlet2"};
+                indices = new String[]{"box_hda_total_realtime","box_hda_total_hour", "box_hda_total_day","box_hda_line_realtime","box_hda_line_hour",  "box_hda_line_day","box_hda_loop_realtime", "box_hda_loop_hour", "box_hda_loop_day", "box_hda_outlet_realtime","box_hda_outlet_hour", "box_hda_outlet_day"};
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1),LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1),LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1)};
                 break;
             default:
         }
         map = getSumData(indices, key, timeAgo,"box_id");
+        if(map.containsKey("total1")){
+            map.put("total", (Long)map.get("total1")+ (Long)map.get("total"));
+        }
+        if(map.containsKey("total2")){
+            map.put("total", (Long)map.get("total2")+ (Long)map.get("total"));
+        }
+        if(map.containsKey("line1")){
+            map.put("line", (Long)map.get("line1")+ (Long)map.get("line"));
+        }
+        if(map.containsKey("line2")){
+            map.put("line", (Long)map.get("line2")+ (Long)map.get("line"));
+        }
+        if(map.containsKey("loop1")){
+            map.put("loop", (Long)map.get("loop1")+ (Long)map.get("loop"));
+        }
+        if(map.containsKey("loop2")){
+            map.put("loop", (Long)map.get("loop2")+ (Long)map.get("loop"));
+        }
+        if(map.containsKey("outlet1")){
+            map.put("outlet", (Long)map.get("outlet1")+ (Long)map.get("outlet"));
+        }
+        if(map.containsKey("outlet2")){
+            map.put("outlet", (Long)map.get("outlet2")+ (Long)map.get("outlet"));
+        }
+
         return map;
     }
 

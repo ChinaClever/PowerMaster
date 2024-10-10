@@ -25,7 +25,8 @@ public class EQPageRespVO {
 
     @ExcelProperty("设备地址")
     private String dev_key;
-
+    @ExcelProperty("设备名称")
+    private String bus_name;
     @ExcelProperty("记录日期")
     private String create_time;
 
