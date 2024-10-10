@@ -550,7 +550,7 @@ const getDetailData =async () => {
     if (data != null){
       hasData.value = true
       runLoad.value = formatNumber(data.runLoad, 2);
-      ratedCapacity.value = formatNumber(data.ratedCapacity, 1);
+      ratedCapacity.value = formatNumber(data.ratedCapacity, 2);
       reserveMargin.value = formatNumber(data.reserveMargin, 2);
       powActive.value = formatNumber(data.powActive, 2);
       powReactive.value = formatNumber(data.powReactive, 2);
