@@ -124,12 +124,11 @@
               :border="true"
               :stripe="true"
               :data="tableData"
-              style="height: 67vh; width: 99.97%;"
+              style="height: 100%; width: 99.97%;"
               :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', borderBottom: '1px #EDEEF2 solid', fontFamily: 'Microsoft YaHei',fontWeight: 'bold'}"
               :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
               :row-style="{ fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
-
               <!-- 添加行号列 -->
               <el-table-column label="序号" align="center" width="80px">
                 <template #default="{ $index }">
@@ -309,6 +308,8 @@ const updateTableData = () => {
     }
     data.push(rowData);
   }
+
+  
   tableData.value = data;
 };
 

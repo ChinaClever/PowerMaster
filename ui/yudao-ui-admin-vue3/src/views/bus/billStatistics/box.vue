@@ -190,7 +190,7 @@ const shortcuts = [
 watch(() => queryParams.granularity, () => {
     if (queryParams.granularity == 'day'){
       tableColumns.value = [
-        { label: '所在位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '所在位置', align: 'center', prop: 'location' , istrue:true,width: '300%'},
         { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true},
         { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
@@ -199,7 +199,7 @@ watch(() => queryParams.granularity, () => {
       ]
     }else{
       tableColumns.value = [
-        { label: '所在位置', align: 'center', prop: 'location' , istrue:true},
+        { label: '所在位置', align: 'center', prop: 'location' , istrue:true,width: '300%'},
         { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true},
         { label: '开始日期', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
         { label: '结束日期', align: 'center', prop: 'end_time', formatter: formatTime, istrue:true},
@@ -212,7 +212,7 @@ watch(() => queryParams.granularity, () => {
 });
 
 const tableColumns = ref([
-  { label: '所在位置', align: 'center', prop: 'location' , istrue:true},
+  { label: '所在位置', align: 'center', prop: 'location' , istrue:true,width: '300%'},
   { label: '网络地址', align: 'center', prop: 'dev_key', istrue:true},
   { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
   { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},

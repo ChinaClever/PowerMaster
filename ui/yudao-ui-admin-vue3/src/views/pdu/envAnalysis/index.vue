@@ -83,7 +83,7 @@
           </div>
           <div  class="description-item" v-if="queryParams.granularity == 'day'" >
             <span class="label">最高温度 :</span>
-            <span >{{ formatNumber(maxTemDataTemp, 1)}} ℃</span>
+            <span >{{ maxTemDataTemp}} ℃</span>
           </div>
           <div v-if="maxTemDataTimeTemp &&queryParams.granularity == 'day'" class="description-item">
             <span class="label">发生时间 :</span>
@@ -92,7 +92,7 @@
 
           <div class="description-item" v-if="queryParams.granularity == 'day'">
               <span class="label">最低温度 :</span>
-              <span >{{ formatNumber(minTemDataTemp, 1)}}℃ </span>
+              <span >{{minTemDataTemp}}℃ </span>
             </div>
           <div v-if="minTemDataTimeTemp &&queryParams.granularity == 'day'" class="description-item">
             <span class="label">发生时间 :</span>

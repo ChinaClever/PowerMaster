@@ -127,75 +127,81 @@
             :border="true"
               :stripe="true"
               :data="tableData"
-              style="height: 67vh; width: 99.97%;"
+              style="height: 100%; width: 99.97%;"
               :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', borderBottom: '1px #EDEEF2 solid', fontFamily: 'Microsoft YaHei',fontWeight: 'bold'}"
               :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
               :row-style="{ fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
+              <!-- 添加行号列 -->
+              <el-table-column label="序号" align="center" width="100px">
+                <template #default="{ $index }">
+                  {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
+                </template>
+              </el-table-column>
               <el-table-column prop="create_time" label="记录时间" />
               <!-- 动态生成表头 -->
               <template v-for="item in headerData" :key="item.name">
-                <el-table-column v-if="item.name === '最大有功功率(kW)'" label="有功功率最大值(kW)">
-                  <el-table-column :prop="item.name" label="数值"/>  
-                  <el-table-column prop="activePowMaxTimeData" label="发生时间"/>
+                <el-table-column v-if="item.name === '最大有功功率(kW)'" label="有功功率最大值">
+                  <el-table-column :prop="item.name" label="有功功率最大值(kW)" width="120%"/>  
+                  <el-table-column prop="activePowMaxTimeData" label="发生时间"  width="110%"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === '最小有功功率(kW)'" label="有功功率最小值(kW)">
-                  <el-table-column :prop="item.name" label="数值"/>  
-                  <el-table-column prop="activePowMinTimeData" label="发生时间"/>
+                <el-table-column v-else-if="item.name === '最小有功功率(kW)'" label="有功功率最小值">
+                  <el-table-column :prop="item.name" label="有功功率最小值(kW)" width="120%"/>  
+                  <el-table-column prop="activePowMinTimeData" label="发生时间" width="110%"/>
                 </el-table-column>
 
-                <el-table-column v-else-if="item.name === '最大无功功率(kVar)'" label="无功功率最大值(kVar)">
-                  <el-table-column :prop="item.name" label="数值"/>  
-                  <el-table-column prop="reactivePowMaxTimeData" label="发生时间"/>
+                <el-table-column v-else-if="item.name === '最大无功功率(kVar)'" label="无功功率最大值">
+                  <el-table-column :prop="item.name" label="无功功率最大值(kVar)" width="130%"/>  
+                  <el-table-column prop="reactivePowMaxTimeData" label="发生时间" width="110%"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === '最小无功功率(kVar)'" label="无功功率最小值(kVar)">
-                  <el-table-column :prop="item.name" label="数值"/>  
-                  <el-table-column prop="reactivePowMinTimeData" label="发生时间"/>
+                <el-table-column v-else-if="item.name === '最小无功功率(kVar)'" label="无功功率最小值">
+                  <el-table-column :prop="item.name" label="无功功率最小值(kVar)" width="130%"/>  
+                  <el-table-column prop="reactivePowMinTimeData" label="发生时间" width="110%"/>
                 </el-table-column>
 
                 <el-table-column v-else-if="item.name === '最大电流谐波含量'" label="电流谐波含量最大值">
-                  <el-table-column :prop="item.name" label="数值"/>  
-                  <el-table-column prop="curThdMaxTimeData" label="发生时间"/>
+                  <el-table-column :prop="item.name" label="电流谐波含量最大值"/>  
+                  <el-table-column prop="curThdMaxTimeData" label="发生时间" width="110%"/>
                 </el-table-column>
                 <el-table-column v-else-if="item.name === '最小电流谐波含量'" label="电流谐波含量最小值">
-                  <el-table-column :prop="item.name" label="数值"/>  
-                  <el-table-column prop="curThdMinTimeData" label="发生时间"/>
+                  <el-table-column :prop="item.name" label="电流谐波含量最小值"/>  
+                  <el-table-column prop="curThdMinTimeData" label="发生时间" width="110%"/>
                 </el-table-column>
 
-                <el-table-column v-else-if="item.name === '最大视在功率(kVA)'" label="视在功率最大值(kVA)">
-                  <el-table-column :prop="item.name" label="数值"/>  
-                  <el-table-column prop="apparentPowMaxTimeData" label="发生时间"/>
+                <el-table-column v-else-if="item.name === '最大视在功率(kVA)'" label="视在功率最大值">
+                  <el-table-column :prop="item.name" label="视在功率最大值(kVA)" width="120%"/>  
+                  <el-table-column prop="apparentPowMaxTimeData" label="发生时间" width="110%"/>
                 </el-table-column>
-                 <el-table-column v-else-if="item.name === '最小视在功率(kVA)'" label="视在功率最小值(kVA)">
-                  <el-table-column :prop="item.name" label="数值"/>  
-                  <el-table-column prop="apparentPowMinTimeData" label="发生时间"/>
+                 <el-table-column v-else-if="item.name === '最小视在功率(kVA)'" label="视在功率最小值">
+                  <el-table-column :prop="item.name" label="视在功率最小值(kVA)" width="120%"/>  
+                  <el-table-column prop="apparentPowMinTimeData" label="发生时间" width="110%"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === '最大电压(V)'" label="电压最大值(V)">
-                  <el-table-column :prop="item.name" label="数值"/>  
-                  <el-table-column prop="volMaxTimeData" label="发生时间"/>
+                <el-table-column v-else-if="item.name === '最大电压(V)'" label="电压最大值">
+                  <el-table-column :prop="item.name" label="电压最大值(V)" width="120%"/>  
+                  <el-table-column prop="volMaxTimeData" label="发生时间" width="110%"/>
                 </el-table-column>
-                 <el-table-column v-else-if="item.name === '最小电压(V)'" label="电压最小值(V)">
-                  <el-table-column :prop="item.name" label="数值"/>  
-                  <el-table-column prop="volMinTimeData" label="发生时间"/>
+                 <el-table-column v-else-if="item.name === '最小电压(V)'" label="电压最小值">
+                  <el-table-column :prop="item.name" label="电压最小值(V)" width="120%"/>  
+                  <el-table-column prop="volMinTimeData" label="发生时间" width="110%"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === '最大线电压'" label="线电压最大值(V)">
-                  <el-table-column :prop="item.name" label="数值"/>  
-                  <el-table-column prop="volLineMaxTimeData" label="发生时间"/>
+                <el-table-column v-else-if="item.name === '最大线电压'" label="线电压最大值">
+                  <el-table-column :prop="item.name" label="线电压最大值(V)" width="120%"/>  
+                  <el-table-column prop="volLineMaxTimeData" label="发生时间" width="110%"/>
                 </el-table-column>
-                 <el-table-column v-else-if="item.name === '最小线电压'" label="线电压最小值(V)">
-                  <el-table-column :prop="item.name" label="数值"/>  
-                  <el-table-column prop="volLineMinTimeData" label="发生时间"/>
+                 <el-table-column v-else-if="item.name === '最小线电压'" label="线电压最小值">
+                  <el-table-column :prop="item.name" label="线电压最小值(V)" width="120%"/>  
+                  <el-table-column prop="volLineMinTimeData" label="发生时间" width="110%"/>
                 </el-table-column>
 
-                <el-table-column v-else-if="item.name === '最大电流(A)'" label="电流最大值(A)">
-                  <el-table-column :prop="item.name" label="数值"/>  
-                  <el-table-column prop="curMaxTimeData" label="发生时间"/>
+                <el-table-column v-else-if="item.name === '最大电流(A)'" label="电流最大值">
+                  <el-table-column :prop="item.name" label="电流最大值(A)" width="120%"/>  
+                  <el-table-column prop="curMaxTimeData" label="发生时间" width="110%"/>
                 </el-table-column>
-                 <el-table-column v-else-if="item.name === '最小电流(A)'" label="电流最小值(A)">
-                  <el-table-column :prop="item.name" label="数值"/>  
-                  <el-table-column prop="curMinTimeData" label="发生时间"/>
+                 <el-table-column v-else-if="item.name === '最小电流(A)'" label="电流最小值">
+                  <el-table-column :prop="item.name" label="电流最小值(A)" width="120%"/>  
+                  <el-table-column prop="curMinTimeData" label="发生时间" width="110%"/>
                 </el-table-column>
-                <el-table-column v-else :prop="item.name" :label="item.name"/>   
+                <el-table-column v-else :prop="item.name" :label="item.name"  width="120%"/>   
               </template>
             </el-table>
             </div>
@@ -374,6 +380,8 @@ const typeCascaderChange = (selected) => {
       queryParams.outletId = undefined;
       break;
   }
+  needFlush.value ++
+
 }
 
 // 处理折线图数据
@@ -507,7 +515,6 @@ const getList = async () => {
       // 图表显示的位置变化
       nowAddress.value = nowAddressTemp.value
       nowLocation.value = nowLocationTemp.value
-
     }else{
       isHaveData.value = false;
       loading2.value=false;
@@ -518,6 +525,7 @@ const getList = async () => {
     }
   } finally {
     loading.value = false;
+
   }
 }
 
@@ -615,6 +623,7 @@ watch( ()=>activeName.value, async(newActiveName)=>{
 
 // 监听类型颗粒度
 watch(() => [activeName.value, queryParams.type, needFlush.value], async (newValues) => {
+    
     const [newActiveName, newType] = newValues;
           console.log(newType)
     // 处理参数变化
@@ -667,8 +676,8 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
               title: {text: ''},
               tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
               legend: { data: ['平均有功功率(kW)', '最大有功功率(kW)', '最小有功功率(kW)','平均无功功率(kVar)', '最大无功功率(kVar)', '最小无功功率(kVar)','平均视在功率(kVA)', '最大视在功率(kVA)', '最小视在功率(kVA)' ],
-                        selected: { 平均有功功率: true, 最大有功功率: true, 最小有功功率: true, 平均无功功率: false, 最大无功功率: false, 最小无功功率: false, 
-                        平均视在功率: false, 最大视在功率: false, 最小视在功率: false }
+                        selected: { "平均有功功率(kW)": true, "最大有功功率(kW)": false, "最小有功功率(kW)": false, "平均无功功率(kVar)": true, "最大无功功率(kVar)": false, "最小无功功率(kVar)": false,
+                                  "平均视在功率(kVA)": true, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false }
                       },
               grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
               toolbox: {feature: {  restore:{}, saveAsImage: {}}},
@@ -714,8 +723,8 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                 title: { text: ''},
                 tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
                 legend: { data:  ['有功功率(kW)', '视在功率(kVA)', '无功功率(kVar)', '功率因素', '电压(V)', '电流(A)', '负载率', '电流谐波含量'],
-                          selected: {  "有功功率(kW)": true, "视在功率(kVA)": false, "无功功率(kVar)": false, "功率因素": false
-                            , "电压(V)": false, "电流(A)": false, "负载率": false, "电流谐波含量": false
+                          selected: {  "有功功率(kW)": false, "视在功率(kVA)": false, "无功功率(kVar)": false, "功率因素": false
+                            , "电压(V)": false, "电流(A)": true, "负载率": false, "电流谐波含量": false
                            }},
                 grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
                 toolbox: {feature: {  restore:{}, saveAsImage: {}}},
@@ -754,9 +763,9 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
             tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
             legend: { data: [ '平均有功功率(kW)', '最大有功功率(kW)', '最小有功功率(kW)','平均无功功率(kVar)', '最大无功功率(kVar)', '最小无功功率(kVar)','平均视在功率(kVA)', '最大视在功率(kVA)', '最小视在功率(kVA)',
                                '平均电流(A)', '最大电流(A)', '最小电流(A)','平均电压(V)', '最大电压(V)', '最小电压(V)','平均电流谐波含量', '最大电流谐波含量', '最小电流谐波含量'],
-                      selected: {  平均有功功率: true, 最大有功功率: true, 最小有功功率: true, 平均无功功率: false, 最大无功功率: false, 最小无功功率: false,
-                                  平均视在功率: false, 最大视在功率: false, 最小视在功率: false, 平均电流: false, 最大电流: false, 最小电流: false, 
-                                  平均电压: false, 最大电压: false, 最小电压: false, 平均电流谐波含量: false, 最大电流谐波含量: false, 最小电流谐波含量: false }
+                      selected: {  "平均有功功率(kW)": false, "最大有功功率(kW)": false, "最小有功功率(kW)": false, "平均无功功率(kVar)": false, "最大无功功率(kVar)": false, "最小无功功率(kVar)": false,
+                                  "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false, "平均电流(A)": true, "最大电流(A)": true, "最小电流(A)": true, 
+                                  "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false, "平均电流谐波含量": false, "最大电流谐波含量": false, "最小电流谐波含量": false }
                     },
             grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
             toolbox: {feature: {  restore:{}, saveAsImage: {}}},
@@ -812,7 +821,7 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                 title: { text: ''},
                 tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
                 legend: { data:  ['有功功率(kW)', '视在功率(kVA)', '无功功率(kVar)', '功率因素', '电压(V)', '电流(A)'],
-                          selected: {  "有功功率(kW)": true, "视在功率(kVA)": false, "无功功率(kVar)": false, "功率因素": false, "电压(V)": false, "电流(A)": false }},
+                          selected: {  "有功功率(kW)": false, "视在功率(kVA)": false, "无功功率(kVar)": false, "功率因素": false, "电压(V)": false, "电流(A)": true }},
                 grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
                 toolbox: {feature: {  restore:{}, saveAsImage: {}}},
                 xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
@@ -848,9 +857,9 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
             tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
             legend: { data: [ '平均有功功率(kW)', '最大有功功率(kW)', '最小有功功率(kW)','平均无功功率(kVar)', '最大无功功率(kVar)', '最小无功功率(kVar)','平均视在功率(kVA)', '最大视在功率(kVA)', '最小视在功率(kVA)',
                                '平均电流(A)', '最大电流(A)', '最小电流(A)','平均电压(V)', '最大电压(V)', '最小电压(V)'],
-                      selected: {  平均有功功率: true, 最大有功功率: true, 最小有功功率: true, 平均无功功率: false, 最大无功功率: false, 最小无功功率: false,
-                                  平均视在功率: false, 最大视在功率: false, 最小视在功率: false, 平均电流: false, 最大电流: false, 最小电流: false, 
-                                  平均电压: false, 最大电压: false, 最小电压: false }
+                      selected: {  "平均有功功率(kW)": false, "最大有功功率(kW)": false, "最小有功功率(kW)": false, "平均无功功率(kVar)": false, "最大无功功率(kVar)": false, "最小无功功率(kVar)": false,
+                                  "平均视在功率(kVA)": false, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false, "平均电流(A)": true, "最大电流(A)": true, "最小电流(A)": true, 
+                                 "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false }
                     },
             grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
             toolbox: {feature: {  restore:{}, saveAsImage: {}}},
@@ -937,8 +946,8 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
               title: {text: ''},
               tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
               legend: { data: ['平均有功功率(kW)', '最大有功功率(kW)', '最小有功功率(kW)','平均无功功率(kVar)', '最大无功功率(kVar)', '最小无功功率(kVar)','平均视在功率(kVA)', '最大视在功率(kVA)', '最小视在功率(kVA)' ],
-                        selected: { 平均有功功率: true, 最大有功功率: true, 最小有功功率: true, 平均无功功率: false, 最大无功功率: false, 最小无功功率: false, 
-                        平均视在功率: false, 最大视在功率: false, 最小视在功率: false }
+                        selected: { "平均有功功率(kW)": true, "最大有功功率(kW)": false, "最小有功功率(kW)": false, "平均无功功率(kVar)": true, "最大无功功率(kVar)": false, "最小无功功率(kVar)": false,
+                                  "平均视在功率(kVA)": true, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false }
                       },
               grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
               toolbox: {feature: {  restore:{}, saveAsImage: {}}},
@@ -1391,76 +1400,77 @@ function customTooltipFormatter(params: any[]) {
       case '无功功率(kVar)':
       case '平均有功功率(kW)':
       case '平均无功功率(kVar)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  记录时间: ' +params[0].name + '<br/>';
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
         break;
       case '最大有功功率(kW)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +powActiveMaxTimeData.value[item.dataIndex] + '<br/>';
-        break;
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
+      break;
       case '最小有功功率(kW)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +powActiveMinTimeData.value[item.dataIndex] + '<br/>';
-        break;
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
+      break;
       
       case '最大无功功率(kVar)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +powReactiveMaxTimeData.value[item.dataIndex] + '<br/>';
-        break;
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '<br/>';
+      break;
       case '最小无功功率(kVar)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +powReactiveMinTimeData.value[item.dataIndex] + '<br/>';
-        break;
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
+      break;
 
       case '总视在功率(kVA)':
       case '视在功率(kVA)':
       case '平均视在功率(kVA)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  记录时间: ' +params[0].name + '<br/>';
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value   + '<br/>';
         break;
       case '最大视在功率(kVA)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  发生时间: ' +powApparentMaxTimeData.value[item.dataIndex] + '<br/>';
-        break;
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value   + '<br/>';
+      break;
       case '最小视在功率(kVA)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  发生时间: ' +powApparentMinTimeData.value[item.dataIndex] + '<br/>';
-        break;
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value   + '<br/>';
+      break;
 
       case '电流(A)':
       case '电流三相不平衡': 
       case '平均电流(A)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' A  记录时间: ' +params[0].name + '<br/>';
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
         break;
       case '最大电流(A)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' A  发生时间: ' +curMaxTimeData.value[item.dataIndex] + '<br/>';
-        break;
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '<br/>';
+      break;
       case '最小电流(A)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' A  发生时间: ' +curMinTimeData.value[item.dataIndex] + '<br/>';
-        break;
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '<br/>';
+      break;
 
       case '电压(V)':
       case '线电压':
       case '电压三相不平衡': 
       case '平均电压(V)':
       case '平均线电压':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' V  记录时间: ' +params[0].name + '<br/>';
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
         break;
       case '最大电压(V)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' V  发生时间: ' +volMaxTimeData.value[item.dataIndex] + '<br/>';
-        break;
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '<br/>';
+      break;
       case '最小电压(V)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' V  发生时间: ' +volMinTimeData.value[item.dataIndex] + '<br/>';
-        break;
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
+      break;
 
       case '最大电流谐波含量':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '   发生时间: ' +curThdMaxTimeData.value[item.dataIndex] + '<br/>';
-        break;
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
+      break;
       case '最小电流谐波含量':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '   发生时间: ' +curThdMinTimeData.value[item.dataIndex] + '<br/>';
-        break;
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +  '<br/>';
+      break;
 
       case '功率因素':
       case '负载率':
       case '电流谐波含量':
       case '平均电流谐波含量':  
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '   记录时间: ' +params[0].name + '<br/>';
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
         break;
     }
     
   });
+  tooltipContent += "记录时间: "+params[0].name 
   return tooltipContent;
 }
 
@@ -1544,7 +1554,7 @@ const handleClick = async (row) => {
       nowAddressTemp.value = fullName
       nowLocationTemp.value = row.unique
     });
-    handleQuery();
+    handleQuery();    
   }
 }
 
@@ -1575,6 +1585,7 @@ const handleQuery = () => {
 // 参数类型选择框初始化
 const getTypeMaxValue = async () => {
     const data = await HistoryDataApi.getTypeMaxValue(queryParams.boxId)
+    
     const lineIdMaxValue = data.line_id_max_value;
     const loopIdMaxValue = data.loop_id_max_value;
     const outletIdMaxValue = data.outlet_id_max_value;
@@ -1647,8 +1658,9 @@ onMounted( async () => {
   const queryBoxId = useRoute().query.boxId as string  | undefined;
   const queryLocation = useRoute().query.location as string;
   queryParams.boxId = queryBoxId ? parseInt(queryBoxId, 10) : undefined;
+  getTypeMaxValue();
+
   if (queryParams.boxId != undefined){
-    getTypeMaxValue();
     await getList(); 
     nowAddress.value = queryLocation
     nowAddressTemp.value = queryLocation

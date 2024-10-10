@@ -259,7 +259,8 @@ watch(() => queryParams.granularity, (newValues) => {
       originalArray.value =["tem_a", "tem_b", "tem_c", "tem_n", "dev_key"];
       // 配置表格列
       tableColumns.value =([
-        { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
+      { label: '设备名称',align: 'center',prop: 'bus_name', istrue:true, width: '300px'},
+        { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '300%'},
         { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
         { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
         { label: 'A路温度(℃)', align: 'center', prop: 'tem_a', istrue:true, formatter: formatData},
@@ -312,7 +313,8 @@ watch(() => queryParams.granularity, (newValues) => {
                           "tem_c_avg_value", "tem_c_max", "tem_c_min", "tem_n_avg_value", "tem_n_max", "tem_n_min", "dev_key",],
       // 配置表格列
       tableColumns.value = [
-        { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '180px'}, 
+      { label: '设备名称',align: 'center',prop: 'bus_name', istrue:true, width: '300px'},
+        { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '300%'}, 
         { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
         { label: '记录时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true,formatter: formatTime},
 
@@ -349,7 +351,8 @@ watch(() => queryParams.granularity, (newValues) => {
   });
 
 const tableColumns = ref([
-  { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
+  { label: '设备名称',align: 'center',prop: 'bus_name', istrue:true, width: '300px'},
+  { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '300%'},
   { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
   { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
   { label: 'A路温度(℃)', align: 'center', prop: 'tem_a', istrue:true, formatter: formatData},
@@ -389,7 +392,7 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
 
 // 格式化温湿度列数据，保留一位小数
 function formatData(_row: any, _column: any, cellValue: number): string {
-  return Number(cellValue).toFixed(1);
+  return Number(cellValue).toFixed(0);
 }
 
 // 导航栏选择后触发
