@@ -282,8 +282,12 @@ public class BusIndexServiceImpl implements BusIndexService {
             JSONArray powValue = lineItemList.getJSONArray("pow_value");
             JSONArray powStatus = lineItemList.getJSONArray("pow_status");
             JSONArray powReactive = lineItemList.getJSONArray("pow_reactive");
+            JSONArray powApparent = lineItemList.getJSONArray("pow_apparent");
             busRedisDataRes.setDataUpdateTime(jsonObject.getString("sys_time"));
             busRedisDataRes.setPowApparent(jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getDouble("pow_apparent"));
+            busRedisDataRes.setPowReactive(jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getDouble("pow_reactive"));
+            busRedisDataRes.setPowValue(jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getDouble("pow_value"));
+            busRedisDataRes.setPowStatus(jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getInteger("pow_status"));
             for (int i = 0; i < 3; i++) {
                 double vol = volValue.getDoubleValue(i);
                 Integer volSta = volStatus.getInteger(i);
@@ -292,6 +296,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                 double activePow = powValue.getDoubleValue(i);
                 Integer activePowSta =powStatus.getInteger(i);
                 double reactivePow = powReactive.getDoubleValue(i);
+                double apparentPow = powApparent.getDoubleValue(i);
                 if (i == 0){
                     busRedisDataRes.setACur(cur);
                     busRedisDataRes.setACurStatus(curSta);
@@ -309,6 +314,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                         busRedisDataRes.setAActivePowColor("red");
                     }
                     busRedisDataRes.setAReactivePow(reactivePow);
+                    busRedisDataRes.setAPowApparent(apparentPow);
                 }else if(i == 1){
                     busRedisDataRes.setBCur(cur);
                     busRedisDataRes.setBCurStatus(curSta);
@@ -326,6 +332,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                         busRedisDataRes.setBActivePowColor("red");
                     }
                     busRedisDataRes.setBReactivePow(reactivePow);
+                    busRedisDataRes.setBPowApparent(apparentPow);
                 }else if(i == 2){
                     busRedisDataRes.setCCur(cur);
                     busRedisDataRes.setCCurStatus(curSta);
@@ -343,6 +350,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                         busRedisDataRes.setCActivePowColor("red");
                     }
                     busRedisDataRes.setCReactivePow(reactivePow);
+                    busRedisDataRes.setCPowApparent(apparentPow);
                 }
             }
         }

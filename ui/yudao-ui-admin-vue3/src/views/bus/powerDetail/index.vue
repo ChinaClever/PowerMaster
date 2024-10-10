@@ -1,7 +1,7 @@
 <template>
 <div style="background-color: #E7E7E7;height:850px">
   <div class="header_app">
-    <div class="header_app_text">所在位置：{{ location }}</div>
+    <div class="header_app_text">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{busName}})</div>
     <div class="header_app_text_other1">
           <el-col :span="10" >
             <el-form
@@ -158,6 +158,7 @@ const powActiveList = ref() as any;
 const powReactiveList = ref() as any;
 const selectedOption = ref('current')
 const location = ref(history?.state?.location)
+const busName = ref(history?.state?.busName)
 const visContro = ref({
   gaugeVis : false,
   loadRateVis : false,
@@ -250,9 +251,11 @@ const getBusIdAndLocation =async () => {
     if (data != null){
       location.value = data.location
       queryParams.busId = data.busId
+      busName.value = data.busName
     }else{
       location.value = null
       queryParams.busId = null
+      busName.value = null
     }
  } finally {
  }

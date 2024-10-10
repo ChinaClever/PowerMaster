@@ -150,6 +150,7 @@
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="设备名称" align="center" prop="busName" />
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column label="运行状态" align="center" prop="color" >
           <template #default="scope" >
@@ -163,21 +164,21 @@
         </el-table-column>
         <el-table-column label="A相负载率(%)" align="center" prop="aloadRate" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.aloadRate != null">
+            <el-text line-clamp="2" :style="{ color: getColor(scope.row.aloadRate) }" v-if="scope.row.aloadRate != null">
               {{ scope.row.aloadRate }}
             </el-text>
           </template>
         </el-table-column>
         <el-table-column label="B相负载率(%)" align="center" prop="bloadRate" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.bloadRate != null">
+            <el-text line-clamp="2" :style="{ color: getColor(scope.row.bloadRate) }" v-if="scope.row.bloadRate != null">
               {{ scope.row.bloadRate }}
             </el-text>
           </template>
         </el-table-column>
         <el-table-column label="C相负载率(%)" align="center" prop="cloadRate" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.cloadRate != null">
+            <el-text line-clamp="2" :style="{ color: getColor(scope.row.cloadRate) }" v-if="scope.row.cloadRate != null">
               {{ scope.row.cloadRate }}
             </el-text>
           </template>
@@ -209,6 +210,7 @@
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="设备名称" align="center" prop="busName" />
         <el-table-column label="运行状态" align="center" prop="status" >
           <template #default="scope">
             <el-tag type="info" v-if="scope.row.status">已删除</el-tag>
@@ -242,9 +244,9 @@
           <div class="content">
             <div style="padding: 0 18px;margin-right:30px" v-show="item.status != 5"><Bar :width="80" :height="100" :max="{L1:item.aloadRate,L2:item.bloadRate,L3:item.cloadRate}" /></div>
             <div class="info">                  
-              <div class="warnColor" v-if="item.aloadRate != null" :style="{ backgroundColor: getBackgroundColor(item.aloadRate) }">A相：{{item.aloadRate}}%</div>
-              <div class="warnColor" v-if="item.bloadRate != null" :style="{ backgroundColor: getBackgroundColor(item.bloadRate) }">B相：{{item.bloadRate}}%</div>
-              <div class="warnColor" v-if="item.cloadRate != null" :style="{ backgroundColor: getBackgroundColor(item.cloadRate) }">C相：{{item.cloadRate}}%</div>
+              <div  v-if="item.aloadRate != null && item.status != 5" ><el-text :style="{ color: getColor(item.aloadRate) }">A相：{{item.aloadRate}}%</el-text></div>
+              <div  v-if="item.bloadRate != null && item.status != 5" ><el-text :style="{ color: getColor(item.bloadRate) }">B相：{{item.bloadRate}}%</el-text></div>
+              <div  v-if="item.cloadRate != null && item.status != 5" ><el-text :style="{ color: getColor(item.cloadRate) }">C相：{{item.cloadRate}}%</el-text></div>
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
@@ -301,7 +303,6 @@ const statusNumber = reactive({
   greaterSixty : 0,
   greaterNinety : 0
 })
-
 const statusList = reactive([
   {
     name: '空载',
@@ -496,7 +497,13 @@ const getList = async () => {
     var greaterNinety = 0;
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-
+      //数据测试
+      // obj.aloadRate = 35
+      // obj.bloadRate = 65 
+      // obj.cloadRate = 95
+      // obj.aloadRate = 15
+      // obj.bloadRate = 25 
+      // obj.cloadRate = 95
       if(obj.color == 4){
         greaterNinety++;
       } else if (obj.color == 1) {
@@ -516,7 +523,6 @@ const getList = async () => {
     loading.value = false
   }
 }
-
 const getDeletedList = async () => {
   try {
     const data = await IndexApi.getDeletedIndexPage(queryDeletedPageParams)
@@ -544,7 +550,6 @@ const getListNoLoading = async () => {
     var greaterNinety = 0;
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-
 
       if(obj.color == 4){
         greaterNinety++;
@@ -586,7 +591,8 @@ const toDetail = (row) =>{
   const devKey = row.devKey;
   const busId = row.busId
   const location = row.location != null ? row.location : devKey;
-  push({path: '/bus/busmonitor/powerLoadDetail', state: { devKey, busId ,location }})
+  const busName = row.busName;
+  push({path: '/bus/busmonitor/powerLoadDetail', state: { devKey, busId ,location,busName }})
 }
 
 
@@ -675,7 +681,7 @@ const handleExport = async () => {
   }
 }
 
-const getBackgroundColor = (loadRate: number) => {
+const getColor = (loadRate: number) => {
   if (loadRate < 60) {
     return 'null' // 低于60时不显示颜色
   } else if (loadRate < 90) {
@@ -1012,9 +1018,6 @@ onActivated(() => {
         margin: 0 28px;
         font-size: large;
         text-align: center;
-      }
-      .warnColor {
-        transition: background-color 0.5s;
       }
     }
     .devKey{
