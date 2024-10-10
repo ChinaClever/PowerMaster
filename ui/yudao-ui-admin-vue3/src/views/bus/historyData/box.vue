@@ -322,10 +322,11 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         originalArray.value = ["pow_active", "pow_reactive", "pow_apparent", "power_factor"];
         // 配置表格列
         tableColumns.value =([
+        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
           { label: '所在位置', align: 'center', prop: 'location' , width: '250px', istrue:true},
           { label: '设备地址', align: 'center', prop: 'dev_key', width: '250px', istrue:true},
           { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, width: '160px', formatter: formatPower},
-          { label: '总无功功率(kW)', align: 'center', prop: 'pow_reactive', istrue:true, width: '160px', formatter: formatPower},
+          { label: '总无功功率(kVar)', align: 'center', prop: 'pow_reactive', istrue:true, width: '160px', formatter: formatPower},
           { label: '总视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, width: '160px', formatter: formatPower},
           { label: '功率因素', align: 'center', prop: 'power_factor' , istrue:true, width: '160px', formatter: formatPowerFactor},
           { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px', istrue:true},
@@ -364,6 +365,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
                         ],
         // 配置表格列
         tableColumns.value = [
+        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
           { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '250px'},
           { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
           { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '160px', formatter: formatPower},
@@ -410,11 +412,12 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         originalArray.value =["vol_value", "cur_value", "pow_active", "pow_reactive", "pow_apparent", "power_factor", "load_rate", "cur_thd"];
         // 配置表格列
         tableColumns.value = [
+        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
           { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '250px'},
           { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
           { label: '相', align: 'center', prop: 'line_id', istrue:true, formatter: formatLineId, width: '140px'},
           { label: '有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower, width: '140px'},
-          { label: '无功功率(kW)', align: 'center', prop: 'pow_reactive', istrue:true, formatter: formatPower, width: '140px'},
+          { label: '无功功率(kVar)', align: 'center', prop: 'pow_reactive', istrue:true, formatter: formatPower, width: '140px'},
           { label: '视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, formatter: formatPower, width: '140px'},
           { label: '功率因素', align: 'center', prop: 'power_factor', istrue:true, formatter: formatPowerFactor, width: '140px'},
           { label: '电压(V)', align: 'center', prop: 'vol_value', istrue:true, formatter: formatVoltage, width: '140px'},
@@ -478,6 +481,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
                             "cur_thd_avg", "cur_thd_max", "cur_thd_min"],
         // 配置表格列
         tableColumns.value = [
+        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
           { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '250px'},
           { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
           { label: '相', align: 'center', prop: 'line_id', istrue:true, width: '100px', formatter: formatLineId},
@@ -541,11 +545,12 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         originalArray.value =["vol_value", "cur_value", "pow_active", "pow_reactive", "pow_apparent", "power_factor"];
         // 配置表格列
         tableColumns.value = [
+        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
           { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '250px'},
           { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
           { label: '回路', align: 'center', prop: 'loop_id', istrue:true, formatter: formatLoopId, width: '140px'},
           { label: '有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower, width: '140px'},
-          { label: '无功功率(kW)', align: 'center', prop: 'pow_reactive', istrue:true, formatter: formatPower, width: '140px'},
+          { label: '无功功率(kVar)', align: 'center', prop: 'pow_reactive', istrue:true, formatter: formatPower, width: '140px'},
           { label: '视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, formatter: formatPower, width: '140px'},
           { label: '功率因素', align: 'center', prop: 'power_factor', istrue:true, formatter: formatPowerFactor, width: '140px'},
           { label: '电压(V)', align: 'center', prop: 'vol_value', istrue:true, formatter: formatVoltage, width: '140px'},
@@ -601,6 +606,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
                            ],
         // 配置表格列
         tableColumns.value = [
+        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
           { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '250px'},
           { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
           { label: '回路', align: 'center', prop: 'loop_id', istrue:true, width: '100px', formatter: formatLoopId},
@@ -656,11 +662,12 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         originalArray.value =[ "pow_active", "pow_reactive", "pow_apparent", "power_factor"];
         // 配置表格列
         tableColumns.value = [
+        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
           { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '250px'},
           { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
           { label: '输出位', align: 'center', prop: 'outlet_id', istrue:true, width: '140px'},
           { label: '有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower, width: '140px'},
-          { label: '无功功率(kW)', align: 'center', prop: 'pow_reactive', istrue:true, formatter: formatPower, width: '140px'},
+          { label: '无功功率(kVar)', align: 'center', prop: 'pow_reactive', istrue:true, formatter: formatPower, width: '140px'},
           { label: '视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, formatter: formatPower, width: '140px'},
           { label: '功率因素', align: 'center', prop: 'power_factor', istrue:true, formatter: formatPowerFactor, width: '140px'},
           { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true, width: '220px'},
@@ -700,6 +707,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
                            ],
         // 配置表格列
         tableColumns.value = [
+        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
           { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '250px'},
           { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
           { label: '输出位', align: 'center', prop: 'outlet_id', istrue:true, width: '100px'},
@@ -732,10 +740,11 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
   });
 
 const tableColumns = ref([
+{ label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
   { label: '所在位置', align: 'center', prop: 'location' , width: '250px', istrue:true},
   { label: '设备地址', align: 'center', prop: 'dev_key', width: '250px', istrue:true},
   { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, width: '160px', formatter: formatPower},
-  { label: '总无功功率(kW)', align: 'center', prop: 'pow_reactive', istrue:true, width: '160px', formatter: formatPower},
+  { label: '总无功功率(kVar)', align: 'center', prop: 'pow_reactive', istrue:true, width: '160px', formatter: formatPower},
   { label: '总视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, width: '160px', formatter: formatPower},
   { label: '功率因素', align: 'center', prop: 'power_factor' , istrue:true, width: '140px', formatter: formatPowerFactor},
   { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px', istrue:true},

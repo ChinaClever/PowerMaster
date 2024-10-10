@@ -97,6 +97,7 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
                     String dev_key = busIndex.getDevKey();
 //                    String[] parts = dev_key.split("_");
                     map.put("dev_key", dev_key);
+                    map.put("bus_name",busIndex.getBusName());
 //                    map.put("ip_addr", parts[0]);
                     // 创建一个列表来存放要传递的对象 用于获取位置信息
                     List<BusResBase> busResBaseList = new ArrayList<>();
@@ -135,7 +136,7 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
                 BoxIndex boxIndex = boxIndexMapper.selectById( (int)boxId );
                 if (boxIndex != null){
                     map.put("dev_key", boxIndex.getDevKey());
-//                    map.put("bus_name", boxIndex.getBusName());
+                    map.put("bus_name", boxIndex.getBusName()+"-"+boxIndex.getBoxName());
 //                    map.put("ip_addr", boxIndex.getIpAddr());
                     // 创建一个列表来存放要传递的对象 用于获取位置信息
                     List<BoxResBase> boxResBaseList = new ArrayList<>();
@@ -489,7 +490,7 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
             String devkey = reqVO.getDevkey();
             String[] devkeys = new String[1];
             devkeys[0] = devkey;
-            String[] boxIds = getBusIdsbyBusDevkeys(devkeys);
+            String[] boxIds = getBoxIdsbyBoxDevkeys(devkeys);
             if (boxIds.length == 0){
                 return null;
             }
@@ -721,6 +722,8 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
         List<Map<String, Object>> mapList = new ArrayList<>();
         SearchHits hits = searchResponse.getHits();
         hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
+        //获得设备名称
+        mapList.forEach(map -> map.put("bus_name",  busIndexMapper.selectById((Integer) map.get("bus_id"))!=null? busIndexMapper.selectById(Integer.valueOf(map.get("bus_id").toString())).getBusName(): "" ));
         // 匹配到的总记录数
         Long totalHits = hits.getTotalHits().value;
         // 返回的结果
@@ -851,7 +854,7 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
             String devkey = reqVO.getDevkey();
             String[] devkeys = new String[1];
             devkeys[0] = devkey;
-            String[] boxIds = getBusIdsbyBusDevkeys(devkeys);
+            String[] boxIds = getBoxIdsbyBoxDevkeys(devkeys);
             if (boxIds.length == 0){
                 return null;
             }

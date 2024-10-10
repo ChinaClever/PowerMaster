@@ -266,7 +266,7 @@ const getNavList = async() => {
 
 // 获取导航的数据显示
 const getNavOneDayData = async() => {
-  const res = await EnergyConsumptionApi.getNavOneDayData({})
+  const res = await EnergyConsumptionApi.getBoxNavOneDayData({})
   navTotalData.value = res.total
 }
 
