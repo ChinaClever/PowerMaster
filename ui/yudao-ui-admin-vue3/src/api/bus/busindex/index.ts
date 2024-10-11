@@ -161,4 +161,8 @@ export const IndexApi = {
   getBusRedisByDevKey: async (data) => {
     return await request.post({ url: `/bus/index/redisbydevkey`, data })
   },
+
+  getPeakDemand: async (data: any) => {
+    return await request.post({ url: `/bus/index/peakDemand` ,  data})
+  },
 }

@@ -36,6 +36,7 @@ import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxHarmonicRes;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxIndexPageReqVO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusTemDetailRes;
+import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailRespVO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.buscurbalancecolor.BusCurbalanceColorDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.buscurbalancecolor.BusCurbalanceColorMapper;
 import cn.iocoder.yudao.module.bus.util.TimeUtil;
@@ -60,10 +61,7 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.BucketOrder;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
-import org.elasticsearch.search.aggregations.metrics.Cardinality;
-import org.elasticsearch.search.aggregations.metrics.ParsedMax;
-import org.elasticsearch.search.aggregations.metrics.ParsedTopHits;
-import org.elasticsearch.search.aggregations.metrics.TopHits;
+import org.elasticsearch.search.aggregations.metrics.*;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.collapse.CollapseBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
@@ -86,6 +84,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -99,6 +98,7 @@ import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY_AISLE;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static cn.iocoder.yudao.module.bus.constant.BoxConstants.BOX_ID;
 import static cn.iocoder.yudao.module.bus.constant.BoxConstants.SPLIT_KEY_BUS;
 import static cn.iocoder.yudao.module.bus.constant.BusConstants.*;
 import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.*;
@@ -179,7 +179,73 @@ public class BusIndexServiceImpl implements BusIndexService {
         );
     }
 
+    @Override
+    public BusPowerLoadDetailRespVO getPeakDemand(BusIndexPageReqVO pageReqVO) throws IOException{
+        // 返回数据
+        BusPowerLoadDetailRespVO respVO = new BusPowerLoadDetailRespVO();
+        String startTime = null;
+        String endTime = null;
+            if (pageReqVO.getTimeGranularity().equals("近一小时") || pageReqVO.getTimeGranularity().equals("今天")){
+                SearchRequest searchRequest = new SearchRequest();
+                searchRequest.indices("bus_hda_total_realtime");
+                SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
+                if (pageReqVO.getTimeGranularity().equals("近一小时")){
+                    startTime = localDateTimeToString(LocalDateTime.now().minusHours(1));
+                    endTime = localDateTimeToString(LocalDateTime.now());
+                    searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
+                            .must(QueryBuilders.termQuery("bus_id", pageReqVO.getBusId()))));
+                } else{
+                    startTime = localDateTimeToString(pageReqVO.getOldTime());
+                    endTime = localDateTimeToString(pageReqVO.getNewTime());
+                    searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
+                            .must(QueryBuilders.termQuery("bus_id", pageReqVO.getBusId()))));
+                }
+                searchSourceBuilder.sort("pow_apparent", SortOrder.DESC);
+                // 执行搜索
+                searchRequest.source(searchSourceBuilder);
+                searchSourceBuilder.size(1);
+                SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+                // 获取第一个结果
+                SearchHit[] hits = searchResponse.getHits().getHits();
+                if (hits.length > 0) {
+                    // 获取最大值和时间字段
+                    Map<String, Object> sourceAsMap = hits[0].getSourceAsMap();
+                    respVO.setPeakDemand((Double) sourceAsMap.get("pow_apparent"));
+                    respVO.setPeakDemandTime((String) sourceAsMap.get("create_time"));
+                }
+            } else if (pageReqVO.getTimeGranularity().equals("近一天") || pageReqVO.getTimeGranularity().equals("近三天")) {
+                SearchRequest searchRequest = new SearchRequest();
+                searchRequest.indices("bus_hda_total_hour");
+                SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+                if (pageReqVO.getTimeGranularity().equals("近一天")){
+                    startTime = localDateTimeToString(LocalDateTime.now().minusDays(1));
+                    endTime = localDateTimeToString(LocalDateTime.now());
+                    searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
+                            .must(QueryBuilders.termQuery("bus_id", pageReqVO.getBusId()))));
+                } else{
+                    startTime = localDateTimeToString(LocalDateTime.now().minusDays(3));
+                    endTime = localDateTimeToString(LocalDateTime.now());
+                    searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
+                            .must(QueryBuilders.termQuery("bus_id", pageReqVO.getBusId()))));
+                }
+                searchSourceBuilder.sort("pow_apparent_max_value", SortOrder.DESC);
+                // 执行搜索
+                searchRequest.source(searchSourceBuilder);
+                searchSourceBuilder.size(1);
+                SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+                // 获取第一个结果
+                SearchHit[] hits = searchResponse.getHits().getHits();
+                if (hits.length > 0) {
+                    // 获取最大值和时间字段
+                    Map<String, Object> sourceAsMap = hits[0].getSourceAsMap();
+                    respVO.setPeakDemand((Double) sourceAsMap.get("pow_apparent_max_value"));
+                    respVO.setPeakDemandTime((String) sourceAsMap.get("pow_apparent_max_time"));
+                }
+            }
+        return respVO;
+    }
 
     private void validateIndexExists(Long id) {
         if (busIndexMapper.selectById(id) == null) {
@@ -1003,14 +1069,21 @@ public class BusIndexServiceImpl implements BusIndexService {
 
     @Override
     public BusLineResBase getBusLoadRateLine(BusIndexPageReqVO pageReqVO) {
-        if (!pageReqVO.getTimeGranularity().equals("今天")){
+        if (pageReqVO.getTimeGranularity().equals("近一天") || pageReqVO.getTimeGranularity().equals("近三天")){
             return null;
         }
         BusHarmonicLineRes result = new BusHarmonicLineRes();
         try {
             List<Integer> ids = Arrays.asList(pageReqVO.getBusId());
-            String startTime = localDateTimeToString(pageReqVO.getOldTime());
-            String endTime = localDateTimeToString(pageReqVO.getNewTime());
+            String startTime = null;
+            String endTime = null;
+            if (pageReqVO.getTimeGranularity().equals("近一小时")) {
+                startTime = localDateTimeToString(LocalDateTime.now().minusHours(1));
+                endTime = localDateTimeToString(LocalDateTime.now());
+            } else {
+                startTime = localDateTimeToString(pageReqVO.getOldTime());
+                endTime = localDateTimeToString(pageReqVO.getNewTime());
+            }
             List<String> busHdaLineRealtime = getData(startTime, endTime, ids, "bus_hda_line_realtime");
             Map<Integer, List<BusLineRealtimeDo>> lineMap = busHdaLineRealtime.stream()
                     .map(str -> JsonUtils.parseObject(str, BusLineRealtimeDo.class))
@@ -1047,125 +1120,95 @@ public class BusIndexServiceImpl implements BusIndexService {
         BusHarmonicLineRes result = new BusHarmonicLineRes();
         try {
             List<Integer> ids = Arrays.asList(pageReqVO.getBusId());
-            switch (pageReqVO.getTimeGranularity()) {
-                case "今天": {
-                    String startTime = localDateTimeToString(pageReqVO.getOldTime());
-                    String endTime = localDateTimeToString(pageReqVO.getNewTime());
-                    List<String> busHdaLineRealtime = getData(startTime, endTime, ids, "bus_hda_line_realtime");
-                    List<String> busHdaTotalRealtime = getData(startTime, endTime, ids, "bus_hda_total_realtime");
-                    LineSeries lineSeries = new LineSeries();
-                    lineSeries.setName("P");
-                    busHdaTotalRealtime.forEach( str ->{
-                        BusTotalRealtimeDo esDo = JsonUtils.parseObject(str, BusTotalRealtimeDo.class);
-                        lineSeries.getData().add(esDo.getPowActive());
-                    });
-                    result.getSeries().add(lineSeries);
-                    Map<Integer, List<BusLineRealtimeDo>> lineMap = busHdaLineRealtime.stream()
-                            .map(str -> JsonUtils.parseObject(str, BusLineRealtimeDo.class))
-                            .collect(Collectors.groupingBy(BusLineRealtimeDo::getLineId));
-                    boolean first = false;
-                    for (int i = 1; i < 4; i++) {
-                        if(lineMap.get(i) != null){
-                            List<BusLineRealtimeDo> busLineRealtimeDos = lineMap.get(i);
-                            List<Float> powActive = busLineRealtimeDos.stream().map(BusLineRealtimeDo::getPowActive).collect(Collectors.toList());
-                            LineSeries series = new LineSeries();
-                            if(!first){
-                                List<String> time = busLineRealtimeDos.stream().map(hour -> hour.getCreateTime().toString("HH:mm")).collect(Collectors.toList());
-                                result.setTime(time);
-                            }
-                            if(i == 1){
-                                series.setName("Pa");
-                            }else if (i == 2){
-                                series.setName("Pb");
-                            }else{
-                                series.setName("Pc");
-                            }
-                            series.setData(powActive);
-                            result.getSeries().add(series);
-                        }
-                    }
-                    break;
-                }
-                case "近一天": {
-                    String startTime = localDateTimeToString(LocalDateTime.now().minusDays(1));
-                    String endTime = localDateTimeToString(LocalDateTime.now());
-                    List<String> busHdaLineHour = getData(startTime, endTime, ids, "bus_hda_line_hour");
-                    List<String> busHdaTotalHour = getData(startTime, endTime, ids, "bus_hda_total_hour");
 
-                    LineSeries lineSeries = new LineSeries();
-                    lineSeries.setName("P");
-                    busHdaTotalHour.forEach( str ->{
-                        BusTotalHourDo esDo = JsonUtils.parseObject(str, BusTotalHourDo.class);
-                        lineSeries.getData().add(esDo.getPowActiveAvgValue());
-                    });
-                    result.getSeries().add(lineSeries);
-                    Map<Integer, List<BusLineHourDo>> lineMap = busHdaLineHour.stream()
-                            .map(str -> JsonUtils.parseObject(str, BusLineHourDo.class))
-                            .collect(Collectors.groupingBy(BusLineHourDo::getLineId));
-                    boolean first = false;
-                    for (int i = 1; i < 4; i++) {
-                        if(lineMap.get(i) != null){
-                            List<BusLineHourDo> busLineHourDos = lineMap.get(i);
-                            List<Float> powActive = busLineHourDos.stream().map(BusLineHourDo::getPowActiveAvgValue).collect(Collectors.toList());
-                            LineSeries series = new LineSeries();
-                            if(!first){
-                                List<String> time = busLineHourDos.stream().map(hour -> hour.getCreateTime().toString("MM:dd HH:mm")).collect(Collectors.toList());
-                                result.setTime(time);
-                            }
-                            if(i == 1){
-                                series.setName("Pa");
-                            }else if (i == 2){
-                                series.setName("Pb");
-                            }else{
-                                series.setName("Pc");
-                            }
-                            series.setData(powActive);
-                            result.getSeries().add(series);
-                        }
-                    }
-                    break;
+            if (pageReqVO.getTimeGranularity().equals("近一小时") || pageReqVO.getTimeGranularity().equals("今天")) {
+                String startTime = null;
+                String endTime = null;
+                if (pageReqVO.getTimeGranularity().equals("近一小时")) {
+                    startTime = localDateTimeToString(LocalDateTime.now().minusHours(1));
+                    endTime = localDateTimeToString(LocalDateTime.now());
+                } else {
+                    startTime = localDateTimeToString(pageReqVO.getOldTime());
+                    endTime = localDateTimeToString(pageReqVO.getNewTime());
                 }
-                case "近三天": {
-                    String startTime = localDateTimeToString(LocalDateTime.now().minusDays(3));
-                    String endTime = localDateTimeToString(LocalDateTime.now());
-                    List<String> busHdaLineDay = getData(startTime, endTime, ids, "bus_hda_line_day");
-                    List<String> busHdaTotalDay = getData(startTime, endTime, ids, "bus_hda_total_day");
-
-                    LineSeries lineSeries = new LineSeries();
-                    lineSeries.setName("P");
-                    busHdaTotalDay.forEach( str ->{
-                        BusTotalDayDo esDo = JsonUtils.parseObject(str, BusTotalDayDo.class);
-                        lineSeries.getData().add(esDo.getPowActiveAvgValue());
-                    });
-                    result.getSeries().add(lineSeries);
-                    Map<Integer, List<BusLineDayDo>> lineMap = busHdaLineDay.stream()
-                            .map(str -> JsonUtils.parseObject(str, BusLineDayDo.class))
-                            .collect(Collectors.groupingBy(BusLineDayDo::getLineId));
-                    boolean first = false;
-                    for (int i = 1; i < 4; i++) {
-                        if(lineMap.get(i) != null){
-                            List<BusLineDayDo> busLineDayDos = lineMap.get(i);
-                            List<Float> powActive = busLineDayDos.stream().map(BusLineDayDo::getPowActiveAvgValue).collect(Collectors.toList());
-                            LineSeries series = new LineSeries();
-                            if(!first){
-                                List<String> time = busLineDayDos.stream().map(hour -> hour.getCreateTime().toString("MM:dd HH:mm")).collect(Collectors.toList());
-                                result.setTime(time);
-                            }
-                            if(i == 1){
-                                series.setName("Pa");
-                            }else if (i == 2){
-                                series.setName("Pb");
-                            }else{
-                                series.setName("Pc");
-                            }
-                            series.setData(powActive);
-                            result.getSeries().add(series);
+                List<String> busHdaLineRealtime = getData(startTime, endTime, ids, "bus_hda_line_realtime");
+                List<String> busHdaTotalRealtime = getData(startTime, endTime, ids, "bus_hda_total_realtime");
+                LineSeries lineSeries = new LineSeries();
+                lineSeries.setName("P");
+                busHdaTotalRealtime.forEach( str ->{
+                    BusTotalRealtimeDo esDo = JsonUtils.parseObject(str, BusTotalRealtimeDo.class);
+                    lineSeries.getData().add(esDo.getPowActive());
+                });
+                result.getSeries().add(lineSeries);
+                Map<Integer, List<BusLineRealtimeDo>> lineMap = busHdaLineRealtime.stream()
+                        .map(str -> JsonUtils.parseObject(str, BusLineRealtimeDo.class))
+                        .collect(Collectors.groupingBy(BusLineRealtimeDo::getLineId));
+                boolean first = false;
+                for (int i = 1; i < 4; i++) {
+                    if(lineMap.get(i) != null){
+                        List<BusLineRealtimeDo> busLineRealtimeDos = lineMap.get(i);
+                        List<Float> powActive = busLineRealtimeDos.stream().map(BusLineRealtimeDo::getPowActive).collect(Collectors.toList());
+                        LineSeries series = new LineSeries();
+                        if(!first){
+                            List<String> time = busLineRealtimeDos.stream().map(hour -> hour.getCreateTime().toString("HH:mm")).collect(Collectors.toList());
+                            result.setTime(time);
                         }
+                        if(i == 1){
+                            series.setName("Pa");
+                        }else if (i == 2){
+                            series.setName("Pb");
+                        }else{
+                            series.setName("Pc");
+                        }
+                        series.setData(powActive);
+                        result.getSeries().add(series);
                     }
-                    break;
+                }
+            }else if (pageReqVO.getTimeGranularity().equals("近一天") || pageReqVO.getTimeGranularity().equals("近三天")) {
+                String startTime = null;
+                String endTime = null;
+                if (pageReqVO.getTimeGranularity().equals("近一天")) {
+                    startTime = localDateTimeToString(LocalDateTime.now().minusDays(1));
+                    endTime = localDateTimeToString(LocalDateTime.now());
+                } else {
+                    startTime = localDateTimeToString(LocalDateTime.now().minusDays(3));
+                    endTime = localDateTimeToString(LocalDateTime.now());
+                }
+                List<String> busHdaLineHour = getData(startTime, endTime, ids, "bus_hda_line_hour");
+                List<String> busHdaTotalHour = getData(startTime, endTime, ids, "bus_hda_total_hour");
+
+                LineSeries lineSeries = new LineSeries();
+                lineSeries.setName("P");
+                busHdaTotalHour.forEach( str ->{
+                    BusTotalHourDo esDo = JsonUtils.parseObject(str, BusTotalHourDo.class);
+                    lineSeries.getData().add(esDo.getPowActiveAvgValue());
+                });
+                result.getSeries().add(lineSeries);
+                Map<Integer, List<BusLineHourDo>> lineMap = busHdaLineHour.stream()
+                        .map(str -> JsonUtils.parseObject(str, BusLineHourDo.class))
+                        .collect(Collectors.groupingBy(BusLineHourDo::getLineId));
+                boolean first = false;
+                for (int i = 1; i < 4; i++) {
+                    if(lineMap.get(i) != null){
+                        List<BusLineHourDo> busLineHourDos = lineMap.get(i);
+                        List<Float> powActive = busLineHourDos.stream().map(BusLineHourDo::getPowActiveAvgValue).collect(Collectors.toList());
+                        LineSeries series = new LineSeries();
+                        if(!first){
+                            List<String> time = busLineHourDos.stream().map(hour -> hour.getCreateTime().toString("MM:dd HH:00")).collect(Collectors.toList());
+                            result.setTime(time);
+                        }
+                        if(i == 1){
+                            series.setName("Pa");
+                        }else if (i == 2){
+                            series.setName("Pb");
+                        }else{
+                            series.setName("Pc");
+                        }
+                        series.setData(powActive);
+                        result.getSeries().add(series);
+                    }
                 }
             }
-
         }catch (Exception e){
             log.error("获取数据失败",e);
         }
@@ -1177,123 +1220,93 @@ public class BusIndexServiceImpl implements BusIndexService {
         BusHarmonicLineRes result = new BusHarmonicLineRes();
         try {
             List<Integer> ids = Arrays.asList(pageReqVO.getBusId());
-            switch (pageReqVO.getTimeGranularity()) {
-                case "今天": {
-                    String startTime = localDateTimeToString(pageReqVO.getOldTime());
-                    String endTime = localDateTimeToString(pageReqVO.getNewTime());
-                    List<String> busHdaLineRealtime = getData(startTime, endTime, ids, "bus_hda_line_realtime");
-                    List<String> busHdaTotalRealtime = getData(startTime, endTime, ids, "bus_hda_total_realtime");
+            if (pageReqVO.getTimeGranularity().equals("近一小时") || pageReqVO.getTimeGranularity().equals("今天")){
+                String startTime = null;
+                String endTime = null;
+                if (pageReqVO.getTimeGranularity().equals("近一小时")){
+                    startTime = localDateTimeToString(LocalDateTime.now().minusHours(1));
+                    endTime = localDateTimeToString(LocalDateTime.now());
+                } else {
+                     startTime = localDateTimeToString(pageReqVO.getOldTime());
+                     endTime = localDateTimeToString(pageReqVO.getNewTime());
+                }
+                List<String> busHdaLineRealtime = getData(startTime, endTime, ids, "bus_hda_line_realtime");
+                List<String> busHdaTotalRealtime = getData(startTime, endTime, ids, "bus_hda_total_realtime");
 
-                    LineSeries lineSeries = new LineSeries();
-                    lineSeries.setName("Q");
-                    busHdaTotalRealtime.forEach( str ->{
-                        BusTotalRealtimeDo esDo = JsonUtils.parseObject(str, BusTotalRealtimeDo.class);
-                        lineSeries.getData().add(esDo.getPowReactive());
-                    });
-                    result.getSeries().add(lineSeries);
-                    Map<Integer, List<BusLineRealtimeDo>> lineMap = busHdaLineRealtime.stream()
-                            .map(str -> JsonUtils.parseObject(str, BusLineRealtimeDo.class))
-                            .collect(Collectors.groupingBy(BusLineRealtimeDo::getLineId));
-                    boolean first = false;
-                    for (int i = 1; i < 4; i++) {
-                        if(lineMap.get(i) != null){
-                            List<BusLineRealtimeDo> busLineRealtimeDos = lineMap.get(i);
-                            List<Float> powReactive = busLineRealtimeDos.stream().map(BusLineRealtimeDo::getPowReactive).collect(Collectors.toList());
-                            LineSeries series = new LineSeries();
-                            if(!first){
+                LineSeries lineSeries = new LineSeries();
+                lineSeries.setName("Q");
+                busHdaTotalRealtime.forEach( str ->{
+                    BusTotalRealtimeDo esDo = JsonUtils.parseObject(str, BusTotalRealtimeDo.class);
+                    lineSeries.getData().add(esDo.getPowReactive());
+                });
+                result.getSeries().add(lineSeries);
+                Map<Integer, List<BusLineRealtimeDo>> lineMap = busHdaLineRealtime.stream()
+                        .map(str -> JsonUtils.parseObject(str, BusLineRealtimeDo.class))
+                        .collect(Collectors.groupingBy(BusLineRealtimeDo::getLineId));
+                boolean first = false;
+                for (int i = 1; i < 4; i++) {
+                    if(lineMap.get(i) != null){
+                        List<BusLineRealtimeDo> busLineRealtimeDos = lineMap.get(i);
+                        List<Float> powReactive = busLineRealtimeDos.stream().map(BusLineRealtimeDo::getPowReactive).collect(Collectors.toList());
+                        LineSeries series = new LineSeries();
+                        if(!first){
                                 List<String> time = busLineRealtimeDos.stream().map(hour -> hour.getCreateTime().toString("HH:mm")).collect(Collectors.toList());
                                 result.setTime(time);
-                            }
-                            if(i == 1){
-                                series.setName("Qa");
-                            }else if (i == 2){
-                                series.setName("Qb");
-                            }else{
-                                series.setName("Qc");
-                            }
-                            series.setData(powReactive);
-                            result.getSeries().add(series);
                         }
+                        if(i == 1){
+                            series.setName("Qa");
+                        }else if (i == 2){
+                            series.setName("Qb");
+                        }else{
+                            series.setName("Qc");
+                        }
+                        series.setData(powReactive);
+                        result.getSeries().add(series);
                     }
-                    break;
                 }
-                case "近一天": {
-                    String startTime = localDateTimeToString(LocalDateTime.now().minusDays(1));
-                    String endTime = localDateTimeToString(LocalDateTime.now());
-                    List<String> busHdaLineHour = getData(startTime, endTime, ids, "bus_hda_line_hour");
-                    List<String> busHdaTotalHour = getData(startTime, endTime, ids, "bus_hda_total_hour");
-
-                    LineSeries lineSeries = new LineSeries();
-                    lineSeries.setName("Q");
-                    busHdaTotalHour.forEach( str ->{
-                        BusTotalHourDo esDo = JsonUtils.parseObject(str, BusTotalHourDo.class);
-                        lineSeries.getData().add(esDo.getPowReactiveAvgValue());
-                    });
-                    result.getSeries().add(lineSeries);
-                    Map<Integer, List<BusLineHourDo>> lineMap = busHdaLineHour.stream()
-                            .map(str -> JsonUtils.parseObject(str, BusLineHourDo.class))
-                            .collect(Collectors.groupingBy(BusLineHourDo::getLineId));
-                    boolean first = false;
-                    for (int i = 1; i < 4; i++) {
-                        if(lineMap.get(i) != null){
-                            List<BusLineHourDo> busLineHourDos = lineMap.get(i);
-                            List<Float> powReactive = busLineHourDos.stream().map(BusLineHourDo::getPowReactiveAvgValue).collect(Collectors.toList());
-                            LineSeries series = new LineSeries();
-                            if(!first){
-                                List<String> time = busLineHourDos.stream().map(hour -> hour.getCreateTime().toString("MM:dd HH:mm")).collect(Collectors.toList());
-                                result.setTime(time);
-                            }
-                            if(i == 1){
-                                series.setName("Qa");
-                            }else if (i == 2){
-                                series.setName("Qb");
-                            }else{
-                                series.setName("Qc");
-                            }
-                            series.setData(powReactive);
-                            result.getSeries().add(series);
-                        }
-                    }
-                    break;
+            }else if (pageReqVO.getTimeGranularity().equals("近一天") || pageReqVO.getTimeGranularity().equals("近三天")){
+                String startTime = null;
+                String endTime = null;
+                if (pageReqVO.getTimeGranularity().equals("近一天")){
+                    startTime = localDateTimeToString(LocalDateTime.now().minusDays(1));
+                    endTime = localDateTimeToString(LocalDateTime.now());
+                } else {
+                    startTime = localDateTimeToString(LocalDateTime.now().minusDays(3));
+                    endTime = localDateTimeToString(LocalDateTime.now());
                 }
-                case "近三天": {
-                    String startTime = localDateTimeToString(LocalDateTime.now().minusDays(3));
-                    String endTime = localDateTimeToString(LocalDateTime.now());
-                    List<String> busHdaLineDay = getData(startTime, endTime, ids, "bus_hda_line_day");
-                    List<String> busHdaTotalDay = getData(startTime, endTime, ids, "bus_hda_total_day");
+                List<String> busHdaLineHour = getData(startTime, endTime, ids, "bus_hda_line_hour");
+                List<String> busHdaTotalHour = getData(startTime, endTime, ids, "bus_hda_total_hour");
 
-                    LineSeries lineSeries = new LineSeries();
-                    lineSeries.setName("Q");
-                    busHdaTotalDay.forEach( str ->{
-                        BusTotalDayDo esDo = JsonUtils.parseObject(str, BusTotalDayDo.class);
-                        lineSeries.getData().add(esDo.getPowReactiveAvgValue());
-                    });
-                    result.getSeries().add(lineSeries);
-                    Map<Integer, List<BusLineDayDo>> lineMap = busHdaLineDay.stream()
-                            .map(str -> JsonUtils.parseObject(str, BusLineDayDo.class))
-                            .collect(Collectors.groupingBy(BusLineDayDo::getLineId));
-                    boolean first = false;
-                    for (int i = 1; i < 4; i++) {
-                        if(lineMap.get(i) != null){
-                            List<BusLineDayDo> busLineDayDos = lineMap.get(i);
-                            List<Float> powReactive = busLineDayDos.stream().map(BusLineDayDo::getPowReactiveAvgValue).collect(Collectors.toList());
-                            LineSeries series = new LineSeries();
-                            if(!first){
-                                List<String> time = busLineDayDos.stream().map(hour -> hour.getCreateTime().toString("MM:dd HH:mm")).collect(Collectors.toList());
-                                result.setTime(time);
-                            }
-                            if(i == 1){
-                                series.setName("Qa");
-                            }else if (i == 2){
-                                series.setName("Qb");
-                            }else{
-                                series.setName("Qc");
-                            }
-                            series.setData(powReactive);
-                            result.getSeries().add(series);
+                LineSeries lineSeries = new LineSeries();
+                lineSeries.setName("Q");
+                busHdaTotalHour.forEach( str ->{
+                    BusTotalHourDo esDo = JsonUtils.parseObject(str, BusTotalHourDo.class);
+                    lineSeries.getData().add(esDo.getPowReactiveAvgValue());
+                });
+                result.getSeries().add(lineSeries);
+                Map<Integer, List<BusLineHourDo>> lineMap = busHdaLineHour.stream()
+                        .map(str -> JsonUtils.parseObject(str, BusLineHourDo.class))
+                        .collect(Collectors.groupingBy(BusLineHourDo::getLineId));
+                boolean first = false;
+                for (int i = 1; i < 4; i++) {
+                    if(lineMap.get(i) != null){
+                        List<BusLineHourDo> busLineHourDos = lineMap.get(i);
+                        List<Float> powReactive = busLineHourDos.stream().map(BusLineHourDo::getPowReactiveAvgValue).collect(Collectors.toList());
+                        LineSeries series = new LineSeries();
+                        if(!first){
+                            List<String> time = busLineHourDos.stream().map(hour -> hour.getCreateTime().toString("MM:dd HH:00")).collect(Collectors.toList());
+                            result.setTime(time);
                         }
+                        if(i == 1){
+                            series.setName("Qa");
+                        }else if (i == 2){
+                            series.setName("Qb");
+                        }else{
+                            series.setName("Qc");
+                        }
+                        series.setData(powReactive);
+                        result.getSeries().add(series);
                     }
-                    break;
                 }
             }
         }catch (Exception e){

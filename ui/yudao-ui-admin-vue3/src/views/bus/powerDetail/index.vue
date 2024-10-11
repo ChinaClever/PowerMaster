@@ -26,7 +26,8 @@
     </div>
     <div class="header_app_text_other">
       <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-      <el-button @click="changeTime ('今天');" :type="queryParams.timeGranularity == '今天' ? 'primary' : ''" style="margin-left: 100px;">今天</el-button>
+      <el-button @click="changeTime ('近一小时');" :type="queryParams.timeGranularity == '近一小时' ? 'primary' : ''" style="margin-left: 65px;">近一小时</el-button>
+      <el-button @click="changeTime ('今天');" :type="queryParams.timeGranularity == '今天' ? 'primary' : ''">今天</el-button>
       <el-button @click="changeTime('近一天');" :type="queryParams.timeGranularity == '近一天' ? 'primary' : ''">近一天</el-button>
       <el-button @click="changeTime('近三天');" :type="queryParams.timeGranularity == '近三天' ? 'primary' : ''">近三天</el-button>
     </div>
@@ -36,9 +37,8 @@
       <div class="left-part">
         <!-- <el-tag size="large">{{ location }}</el-tag> -->
         <div style="height:85%"><Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData.loadFactor" /></div>
-        <div style="height:15%;display:flex;align-items: center;margin-left:30px">              
-            <p style="color:black;">最大需量<span  class="vale-part BColor" style="margin-right: 10px;margin-left: 10px;">{{redisData?.md}}</span>kVA </p>
-            <p style="color:black;margin-left:30px">{{redisData?.updateTime}}</p>
+        <div style="height:15%;display:flex;align-items: center;margin-left:5px">              
+            <p style="color:black;">最大需量：<span  class="vale-part BColor" >{{peakDemand}}</span>kVA(发生时间：{{peakDemandTime}})</p>
         </div>
         <p v-if="!visContro.gaugeVis" class="noData">暂无数据</p>
       </div>
@@ -152,6 +152,8 @@ import PowActiveLine from './component/PowActiveLine.vue'
 import { IndexApi } from '@/api/bus/busindex'
 import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
 
+const peakDemand = ref(0);
+const peakDemandTime = ref('')
 const redisData = ref() as any;
 const loadRateList = ref() as any;
 const powActiveList = ref() as any;
@@ -195,7 +197,7 @@ const queryParams = reactive({
   cabinetIds:[],
   timeType : 0,
   timeArr:[],
-  timeGranularity: '今天',
+  timeGranularity: '近一小时',
   oldTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0)),
   newTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),23,59,59)),
 }) as any
@@ -261,6 +263,17 @@ const getBusIdAndLocation =async () => {
  }
 }
 
+const getPeakDemand =async () => {
+ try {
+    const data = await IndexApi.getPeakDemand(queryParams);
+    if (data != null){
+        peakDemand.value = data.peakDemand.toFixed(3);
+        peakDemandTime.value = data.peakDemandTime
+    }
+ } finally {
+ }
+}
+
 const getBusPowReactiveList = async () =>{
     const data = await IndexApi.getBusPowReactiveLine(queryParams);//oldtime newtime id
     powReactiveList.value = data;
@@ -273,6 +286,7 @@ const getBusPowReactiveList = async () =>{
 //刷新数据
 const flashChartData = async () =>{
     await getRedisData();
+    await getPeakDemand();
     await getLoadRateList();
     await getBusPowActiveList();
     await getBusPowReactiveList();
@@ -329,6 +343,7 @@ onMounted(async () => {
   // await getLineChartData();
   devKeyList.value = await loadAll();
   await getRedisData();
+  await getPeakDemand();
   await getLoadRateList();
   await getBusPowActiveList();
   await getBusPowReactiveList();
@@ -874,7 +889,7 @@ body .TransformerMonitor .center-part .center-bottom-part .top-part span,body .T
   color:#606266;
 }                                                       
 .header_app_text_other{
-  width: 50%;
+  width: 65%;
   align-content: center;
   background-color: white;
   margin-right: 5px;
