@@ -1,7 +1,7 @@
 <template>
   <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="始端箱能耗排名" :showCheckbox="false">
     <template #NavInfo>
-      <br/>    <br/> 
+      
       <div class="nav_data">
         <!-- <div class="carousel-container">
           <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
@@ -39,15 +39,6 @@
         </div>
         <br/> 
       <div class="descriptions-container"  v-if="maxEqDataTimeTemp" style="font-size: 14px;">
-   
-      <div class="description-item" >
-        <span class="label">开始日期 :</span>
-        <span >{{selectTimeRange[0]}}</span>
-      </div>
-      <div class="description-item" >
-        <span class="label">结束日期 :</span>
-        <span >{{selectTimeRange[1]}}</span>
-      </div>
       <div class="description-item">
         <span class="label">总耗电量 :</span>
         <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
@@ -146,7 +137,7 @@
                   <el-table-column prop="endTimeData" label="结束日期"/>
                 </el-table-column>
                 <el-table-column v-if="item.name === '耗电量'" label="耗电量">
-                  <el-table-column :prop="item.name" label="电量(kWh)"/>   
+                  <el-table-column :prop="item.name" label="耗电量(kWh)"/>   
                   <el-table-column prop="create_time" label="记录日期"/>
                 </el-table-column>
               </template>
@@ -574,9 +565,15 @@ onMounted(async () => {
 }
 
 .label {
-  width:100px; /* 控制冒号前的宽度 */
   text-align: right; /* 文本右对齐 */
   margin-right: 10px; /* 控制冒号后的间距 */
+  text-align: left;
+}
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
+
 }
   .line {
     height: 1px;

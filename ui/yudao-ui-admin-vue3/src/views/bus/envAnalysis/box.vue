@@ -896,45 +896,49 @@ function customTooltipFormatter(params: any[]) {
   var tooltipContent = ''; // X 轴数值
   params.forEach(function(item) {
     switch( item.seriesName ){
-      case 'A路温度(℃)':
-      case 'B路温度(℃)':
-      case 'C路温度(℃)':
-      case '中线温度(℃)':
       case 'A路平均温度(℃)':
       case 'B路平均温度(℃)':
       case 'C路平均温度(℃)':
       case '中线平均温度(℃)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +'记录时间:'  +params[0].name+ '<br/>';
         break;
-        case 'A路最高温度(℃)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '<br/>';
-        break;
+      case 'A路最高温度(℃)':
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+aTemMaxTimeData.value[item.dataIndex]+'<br/>';
+      break;
       case 'B路最高温度(℃)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+bTemMaxTimeData.value[item.dataIndex]+'<br/>';
       break;
       case 'C路最高温度(℃)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+cTemMaxTimeData.value[item.dataIndex]+'<br/>';
       break;
       case '中线最高温度(℃)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+nTemMaxTimeData.value[item.dataIndex]+'<br/>';
       break;
 
       case 'A路最低温度(℃)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+aTemMinTimeData.value[item.dataIndex]+'<br/>';
       break;
       case 'B路最低温度(℃)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+bTemMinTimeData.value[item.dataIndex]+'<br/>';
       break;
       case 'C路最低温度(℃)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+cTemMinTimeData.value[item.dataIndex]+'<br/>';
       break;
       case '中线最低温度(℃)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+nTemMinTimeData.value[item.dataIndex]+'<br/>';
       break;
+      case 'A路温度(℃)':
+      case 'B路温度(℃)':
+      case 'C路温度(℃)':
+      case '中线温度(℃)':
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +'<br/>'
+      break
     }
     
   });
-  tooltipContent+='记录时间: ' +params[0].name + '<br/>'
+  if(params[0].seriesName == "A路温度(℃)"|| params[0].seriesName == "B路温度(℃)" || params[0].seriesName == "C路温度(℃)"|| params[0].seriesName == "中线温度(℃)"){
+    tooltipContent +='记录时间:'  +params[0].name+ '<br/>'
+  }
 
   return tooltipContent;
 }

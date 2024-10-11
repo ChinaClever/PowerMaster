@@ -20,17 +20,17 @@ import lombok.Data;
 @HeadRowHeight(20)
 public class DetailsPageRespVO {
 
-    @ExcelProperty({"开始电能","数值"})
+    @ExcelProperty({"开始电能","开始电能(kWh)"})
     @NumberFormat("0.0")
     private Double start_ele;
     @ExcelProperty({"开始电能","发生时间"})
     private String start_time;
-    @ExcelProperty({"结束电能","数值"})
+    @ExcelProperty({"结束电能","结束电能(kWh)"})
     @NumberFormat("0.0")
     private Double end_ele;
     @ExcelProperty({"结束电能","发生时间"})
     private String end_time;
-    @ExcelProperty({"耗电量","数值"})
+    @ExcelProperty({"耗电量","耗电量(kWh)"})
     @NumberFormat("0.0")
     private Double eq_value;
     @ExcelProperty({"耗电量","记录时间"})
