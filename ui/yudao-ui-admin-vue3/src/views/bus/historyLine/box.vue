@@ -291,6 +291,16 @@ const shortcuts = [
       return [start, end]
     },
   },
+  {
+    text: '最近三天',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setHours(start.getHours() - 72)
+      return [start, end]
+    },
+  },
+  
 ]
 const shortcuts1 = [
   {

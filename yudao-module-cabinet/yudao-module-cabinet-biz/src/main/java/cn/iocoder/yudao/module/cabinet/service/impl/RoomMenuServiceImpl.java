@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.cabinet.service.impl;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
@@ -22,9 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.module.cabinet.constant.CabConstants.SPLIT;
@@ -53,7 +52,8 @@ public class RoomMenuServiceImpl implements RoomMenuService {
     AisleBarMapper aisleBarMapper;
     @Autowired
     AisleBoxMapper aisleBoxMapper;
-
+    @Autowired
+    BoxIndexMapper boxIndexMapper;
 
     @Override
     public List<RoomIndex> roomList(String name) {
@@ -600,20 +600,22 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                     });
 
                     List<Integer> aisleBarIds = barList.stream().map(AisleBar::getId).collect(Collectors.toList());
-
-                    List<AisleBox>  boxList = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
+                    List<AisleBox>boxList = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
                             .in(AisleBox::getAisleBarId,aisleBarIds));
-
-                    if (!CollectionUtils.isEmpty(boxList)) {
-                        boxList.forEach(aisleBox -> {
-                            if (StringUtils.isNotEmpty(aisleBox.getBarKey())) {
+                    List<String>barKeys=boxList.stream().map(AisleBox::getBarKey).collect(Collectors.toList());
+                    List<BoxIndex>boxIndexlist1=boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>()
+                            .in(BoxIndex::getDevKey,barKeys));
+                    Collections.sort(boxIndexlist1, Comparator.comparing(BoxIndex::getBoxName));
+                    if (!CollectionUtils.isEmpty(boxIndexlist1)) {
+                        boxIndexlist1.forEach(aisleBox -> {
+                            if (StringUtils.isNotEmpty(aisleBox.getDevKey())) {
                                 RoomMenuDTO roomMenuDTOA = new RoomMenuDTO();
                                 roomMenuDTOA.setChildren(new ArrayList<>());
                                 roomMenuDTOA.setType(MenuTypeEnums.BOX.getType());
                                 roomMenuDTOA.setName(aisleBox.getBoxName());
-                                roomMenuDTOA.setUnique(aisleBox.getBarKey());
+                                roomMenuDTOA.setUnique(aisleBox.getDevKey());
                                 //父id设置柜列
-                                roomMenuDTOA.setParentId(aisleBox.getAisleBarId());
+                                roomMenuDTOA.setParentId(aisleBoxMapper.selectOne(new LambdaQueryWrapper<AisleBox>().in(AisleBox::getBarKey,aisleBox.getDevKey())).getAisleBarId());
                                 roomMenuDTOA.setParentType(MenuTypeEnums.BUS.getType());
                                 //非插接箱id  绑定ID
                                 roomMenuDTOA.setId(aisleBox.getId());
