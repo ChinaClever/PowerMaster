@@ -18,6 +18,9 @@ public class BoxResBase {
     @Schema(description = "位置")
     private String location;
 
-    @Schema(description = "始端箱名称")
+    @Schema(description = "插接箱名称")
     private String boxName;
+
+    @Schema(description = "始端箱名称")
+    private String busName;
 }

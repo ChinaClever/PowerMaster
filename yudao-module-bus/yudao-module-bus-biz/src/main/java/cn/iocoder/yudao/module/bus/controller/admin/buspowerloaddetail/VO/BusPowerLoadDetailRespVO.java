@@ -35,4 +35,6 @@ public class BusPowerLoadDetailRespVO {
      * 最大需量 es 始端箱总数据 小时表 近24小时最大
      */
     private Double peakDemand;
+
+    private String peakDemandTime;
 }

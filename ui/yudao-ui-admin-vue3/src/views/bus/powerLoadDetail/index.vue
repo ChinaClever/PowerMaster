@@ -470,6 +470,12 @@ const initChart2 = () => {
             }
           }
         },
+                grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },
         series: [
           {name: 'L1', type: 'line', symbol: 'none', data: L1Data.value },
           {name: 'L2', type: 'line', symbol: 'none', data: L2Data.value},
@@ -539,6 +545,12 @@ const initChart3 = () => {
               }
             }
           }
+        },
+                grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
         },
         series: [
           {name: '电量', type: 'line', symbol: 'none', data: eqValue.value},
@@ -660,6 +672,12 @@ watch( ()=>typeRadio.value, async(value)=>{
             }
           }
         },
+                grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },
       series: [
         {name: 'L1', type: 'line', symbol: 'none', data: L1Data.value},
         {name: 'L2', type: 'line', symbol: 'none', data: L2Data.value},
@@ -716,6 +734,12 @@ watch( ()=>typeRadio.value, async(value)=>{
           }
         }
       },            
+              grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },
       series: [
         {name: '电量', type: 'line', symbol: 'none', data: eqValue.value},
       ],
@@ -800,6 +824,12 @@ watch( ()=>timeRadio.value, async(value)=>{
             }
           }
         },
+                grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },
     series: [
       {name: 'L1', type: 'line', symbol: 'none', data: L1Data.value},
       {name: 'L2', type: 'line', symbol: 'none', data: L2Data.value},
@@ -863,6 +893,12 @@ watch( ()=>timeRadio.value, async(value)=>{
               }
             }
           }
+        },
+                grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
         },
     series: [
       {name: '电量', type: 'line', symbol: 'none', data: eqValue.value},
@@ -1091,6 +1127,12 @@ const flashChartData = async () =>{
           }
         }
       },
+              grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },
       series: [
         {name: 'L1', type: 'line', symbol: 'none', data: L1Data.value},
         {name: 'L2', type: 'line', symbol: 'none', data: L2Data.value},
@@ -1147,6 +1189,12 @@ const flashChartData = async () =>{
           }
         }
       },
+              grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },
       series: [
         {name: '电量', type: 'line', symbol: 'none', data: eqValue.value},
       ],

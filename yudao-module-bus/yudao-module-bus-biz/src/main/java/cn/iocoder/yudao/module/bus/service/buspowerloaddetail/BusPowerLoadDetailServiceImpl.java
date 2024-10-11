@@ -40,6 +40,9 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
+import static cn.iocoder.yudao.module.bus.constant.BusConstants.KEYWORD;
+
 @Service
 public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService {
     @Autowired
@@ -80,14 +83,16 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
                 SearchRequest searchRequest = new SearchRequest();
                 searchRequest.indices("bus_hda_total_hour");
                 SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-                searchSourceBuilder.query(QueryBuilders.termQuery("bus_id", reqVO.getId()));
-                searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
-                searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                        .from("now-24h")
-                        .to("now"));
+
+
+                String startTime = localDateTimeToString(LocalDateTime.now().minusDays(1));
+                String endTime = localDateTimeToString(LocalDateTime.now());
+                searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
+                        .must(QueryBuilders.termQuery("bus_id", reqVO.getId()))));
                 searchSourceBuilder.aggregation(
                         AggregationBuilders.max("pow_apparent_max").field("pow_apparent_max_value")
                 );
+                searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
                 searchRequest.source(searchSourceBuilder);
 
                 // 执行搜索
@@ -113,6 +118,11 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
         respVO.setPeakDemand(peakDemand);
 
         return respVO;
+    }
+
+    private String localDateTimeToString(LocalDateTime time){
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return time.format(fmt);
     }
 
     @Override
@@ -276,7 +286,7 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
         SearchRequest searchRequest = new SearchRequest();
         searchSourceBuilder.query(QueryBuilders.termQuery("box_id", boxId));
         if (Objects.equals(reqVO.getGranularity(), "realtime")){
-            searchRequest.indices("box_hda_line_realtime");
+                searchRequest.indices("box_hda_line_realtime");
             searchSourceBuilder.fetchSource(new String[]{"box_id", "line_id", "pow_active","pow_reactive","pow_apparent", "power_factor", "vol_value",  "cur_value","load_rate", "create_time"}, null);
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(oneHourAgo.format(formatter))
@@ -564,6 +574,7 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
              BoxResBase boxResBase = new BoxResBase();// 创建 BoxResBase 对象
              boxResBase.setBoxId(boxIndex.getId());
              boxResBase.setBoxName(boxIndex.getBoxName());
+             boxResBase.setBusName(boxIndex.getBusName());
              boxResBase.setDevKey(reqVO.getDevKey());
              boxResBaseList.add(boxResBase);// 将对象添加到列表中
              try {

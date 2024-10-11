@@ -236,23 +236,23 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             JSONArray loadRate = lineItemList.getJSONArray("load_rate");
             List<Double> rateList = loadRate.toList(Double.class);
             if(rateList.size() > 1) {
-                boxIndexRes.setALoadRate(loadRate.getDouble(0));
-                boxIndexRes.setBLoadRate(loadRate.getDouble(1));
-                boxIndexRes.setCLoadRate(loadRate.getDouble(2));
+                boxIndexRes.setALoadRate(loadRate.getDouble(0)/100);
+                boxIndexRes.setBLoadRate(loadRate.getDouble(1)/100);
+                boxIndexRes.setCLoadRate(loadRate.getDouble(2)/100);
             } else{
-                boxIndexRes.setALoadRate(loadRate.getDouble(0));
+                boxIndexRes.setALoadRate(loadRate.getDouble(0)/100);
             }
             rateList.sort(Collections.reverseOrder());
             Double biggest = rateList.get(0);
             if (biggest == 0){
                 boxIndexRes.setColor(0);
-            } else if (biggest < 30){
+            } else if (biggest/100 < 30){
                 boxIndexRes.setColor(1);
-            } else if (biggest < 60){
+            } else if (biggest/100 < 60){
                 boxIndexRes.setColor(2);
-            } else if (biggest < 90){
+            } else if (biggest/100 < 90){
                 boxIndexRes.setColor(3);
-            } else if (biggest >= 90){
+            } else if (biggest/100 >= 90){
                 boxIndexRes.setColor(4);
             }
             if(pageReqVO.getColor() != null){
