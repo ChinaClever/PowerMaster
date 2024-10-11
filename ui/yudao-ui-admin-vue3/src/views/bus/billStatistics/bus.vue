@@ -31,7 +31,7 @@
             <span class="label">最近一月 :</span>
             <span class="value">{{ lastMonthTotalData }}条</span>
           </div>
-          <div style="text-align: center"><span>全部始端箱新增电费记录</span>
+          <div ><span>全部始端箱新增电费记录</span>
                     <div class="line" style="margin-top: 10px;"></div>
                   </div>
           </div>
@@ -193,6 +193,7 @@ watch(() => queryParams.granularity, () => {
       tableColumns.value = [
         { label: '所在位置', align: 'center', prop: 'location' , istrue:true},
         { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true},
+        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
         { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
         { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
@@ -202,6 +203,7 @@ watch(() => queryParams.granularity, () => {
       tableColumns.value = [
         { label: '所在位置', align: 'center', prop: 'location' , istrue:true},
         { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true},
+        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
         { label: '开始日期', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
         { label: '结束日期', align: 'center', prop: 'end_time', formatter: formatTime, istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
@@ -215,6 +217,7 @@ watch(() => queryParams.granularity, () => {
 const tableColumns = ref([
   { label: '所在位置', align: 'center', prop: 'location' , istrue:true},
   { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true},
+  { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
   { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
   { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
   { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
@@ -400,15 +403,19 @@ onMounted(() => {
   display: flex;
   align-items: center;
 }
+
 .label {
-  width:100px; /* 控制冒号前的宽度 */
   text-align: right; /* 文本右对齐 */
-  margin-right: 5px; /* 控制冒号后的间距 */
+  margin-right: 10px; /* 控制冒号后的间距 */
+  text-align: left;
 }
+
 .value {
   flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
+
 }
-.line {
+  .line {
     height: 1px;
     margin-top: 28px;
 

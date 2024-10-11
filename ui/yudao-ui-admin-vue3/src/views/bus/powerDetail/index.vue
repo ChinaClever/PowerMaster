@@ -1,9 +1,9 @@
 <template>
-<div style="background-color: #E7E7E7;">
+<div style="background-color: #E7E7E7;height:850px">
   <div class="header_app">
-    <div class="header_app_text">所在位置：{{ location }}</div>
+    <div class="header_app_text">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{busName}})</div>
     <div class="header_app_text_other1">
-          <el-col :span="10">
+          <el-col :span="10" >
             <el-form
               class="-mb-15px"
               :model="queryParamsSearch"
@@ -11,7 +11,7 @@
               :inline="true"
               label-width="120px"
             >
-              <el-form-item label="网络地址" prop="devKey" >
+              <el-form-item label="网络地址" prop="devKey" style="margin-top:2px;">
               <el-autocomplete
                 v-model="queryParamsSearch.devKey"
                 :fetch-suggestions="querySearch"
@@ -22,17 +22,24 @@
               />
               </el-form-item>
             </el-form>
-          </el-col>      
+          </el-col>
     </div>
     <div class="header_app_text_other">
       <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+      <el-button @click="changeTime ('今天');" :type="queryParams.timeGranularity == '今天' ? 'primary' : ''" style="margin-left: 100px;">今天</el-button>
+      <el-button @click="changeTime('近一天');" :type="queryParams.timeGranularity == '近一天' ? 'primary' : ''">近一天</el-button>
+      <el-button @click="changeTime('近三天');" :type="queryParams.timeGranularity == '近三天' ? 'primary' : ''">近三天</el-button>
     </div>
   </div>
   <div class="TransformerMonitor">
     <div class="center-part">
       <div class="left-part">
         <!-- <el-tag size="large">{{ location }}</el-tag> -->
-        <Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData.loadFactor" />
+        <div style="height:85%"><Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData.loadFactor" /></div>
+        <div style="height:15%;display:flex;align-items: center;margin-left:30px">              
+            <p style="color:black;">最大需量<span  class="vale-part BColor" style="margin-right: 10px;margin-left: 10px;">{{redisData?.md}}</span>kVA </p>
+            <p style="color:black;margin-left:30px">{{redisData?.updateTime}}</p>
+        </div>
         <p v-if="!visContro.gaugeVis" class="noData">暂无数据</p>
       </div>
       <div  class="right-part">
@@ -67,62 +74,60 @@
             <span >| 负载</span>
             <span >| 电流</span>
             <span >| 电压</span>
+            <span >| 线电压</span>
             <span >| 温度</span>
-            <span >| 总谐波含有率</span>
+            <span >| 总谐波含有率
+                <el-button @click="selectedOption = 'current'" :type="selectedOption == 'current' ? 'primary' : ''"  style="width: 50px;height:25px; background-color:#F5F7FA;margin-bottom:3px;color:#606266" >电流</el-button>
+            </span>
+            <span style="width: 50px;padding:0">
+                <el-button @click="selectedOption = 'voltage'" :type="selectedOption == 'voltage' ? 'primary' : ''" style="width: 50px;height:25px; background-color:#F5F7FA;margin-bottom:3px;color:#606266">电压</el-button>
+            </span>
           </div>
           <div  class="block-part">
             <div  class="content-part">
-              <p >额定容量<span  class="vale-part">{{redisData?.finstalledCapacity}}</span>kVA </p>
-              <p >视在功率<span  class="vale-part">{{redisData?.s}}</span>kVA</p>
-              <p >有功功率<span  class="vale-part">{{redisData?.p}}</span>kW</p>
-              <p >无功功率<span  class="vale-part">{{redisData?.q}}</span>kVar</p>
-              <p >最大需量<span  class="vale-part">{{redisData?.md}}</span>kVA </p>
-              <p >{{redisData?.updateTime}}</p>
+              <p >额定容量<span  class="vale-part BColor">{{redisData?.finstalledCapacity}}</span>kVA </p>
+              <p >视在功率<span  class="vale-part BColor">{{redisData?.s}}</span>kVA</p>
+              <p >有功功率<span  class="vale-part BColor">{{redisData?.p}}</span>kW</p>
+              <p >无功功率<span  class="vale-part BColor">{{redisData?.q}}</span>kVar</p>
             </div>
             <div  class="content-part">
-              <p  >A相 <span  class="vale-part AColor">{{redisData?.ia}}</span>A </p>
-              <p  >B相 <span  class="vale-part BColor">{{redisData?.ib}}</span>A </p>
-              <p >C相 <span  class="vale-part CColor">{{redisData?.ic}}</span>A </p>
+              <p  >A相 <span  class="vale-part BColor" style="width:30px" :style="{ backgroundColor: getBackgroundColor(redisData?.curStatusA) }">{{redisData?.ia}}</span>A </p>
+              <p  >B相 <span  class="vale-part BColor" style="width:30px" :style="{ backgroundColor: getBackgroundColor(redisData?.curStatusB) }">{{redisData?.ib}}</span>A </p>
+              <p  >C相 <span  class="vale-part BColor" style="width:30px" :style="{ backgroundColor: getBackgroundColor(redisData?.curStatusC) }">{{redisData?.ic}}</span>A </p>
             </div>
             <div  class="content-part">
-              <p  >Uab <span  class="vale-part AColor">{{redisData?.uab}}</span>V</p>
-              <p  >Ubc <span  class="vale-part BColor">{{redisData?.ubc}}</span>V</p>
-              <p  >Uca <span  class="vale-part CColor">{{redisData?.uca}}</span>V</p>
-              <p  >Ua <span  class="vale-part AColor">{{redisData?.ua}}</span>V </p>
-              <p  >Ub <span  class="vale-part BColor">{{redisData?.ub}}</span>V </p>
-              <p  >Uc <span  class="vale-part CColor">{{redisData?.uc}}</span>V </p>
+              <p  >Ua <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.volStatusA) }">{{redisData?.ua}}</span>V </p>
+              <p  >Ub <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.volStatusB) }">{{redisData?.ub}}</span>V </p>
+              <p  >Uc <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.volStatusC) }">{{redisData?.uc}}</span>V </p>
             </div>
             <div  class="content-part">
-              <p  >A相温度 <span  class="vale-part AColor">{{redisData?.tempA}}</span>℃</p>
-              <p  >B相温度 <span  class="vale-part BColor">{{redisData?.tempB}}</span>℃</p>
-              <p  >C相温度 <span  class="vale-part CColor">{{redisData?.tempC}}</span>℃</p>
-              <p  >N相温度 <span  class="vale-part CColor">{{redisData?.tempN}}</span>℃</p>
+              <p  >Uab <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.volLineStatusA) }">{{redisData?.uab}}</span>V</p>
+              <p  >Ubc <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.volLineStatusB) }">{{redisData?.ubc}}</span>V</p>
+              <p  >Uca <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.volLineStatusC) }">{{redisData?.uca}}</span>V</p>
+            </div>
+            <div  class="content-part">
+              <p  >A相温度 <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.temStatusA) }">{{redisData?.tempA}}</span>℃</p>
+              <p  >B相温度 <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.temStatusB) }">{{redisData?.tempB}}</span>℃</p>
+              <p  >C相温度 <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.temStatusC) }">{{redisData?.tempC}}</span>℃</p>
+              <p  >N相温度 <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.temStatusN) }">{{redisData?.tempN}}</span>℃</p>
             </div><!---->
             <div  class="content-part">
-              <p  >A相电流 <span  class="vale-part AColor">{{redisData?.iaTHD}}</span>%</p>
-              <p  >B相电流 <span  class="vale-part BColor">{{redisData?.ibTHD}}</span>%</p>
-              <p  >C相电流 <span  class="vale-part CColor">{{redisData?.icTHD}}</span>%</p>
-              <p  >A相电压 <span  class="vale-part AColor">{{redisData?.uaTHD}}</span>%</p>
-              <p  >B相电压 <span  class="vale-part BColor">{{redisData?.ubTHD}}</span>%</p>
-              <p  >C相电压 <span  class="vale-part CColor">{{redisData?.ucTHD}}</span>%</p>
+              <p  v-show="selectedOption === 'current'">A相电流 <span  class="vale-part BColor">{{redisData?.iaTHD}}</span>%</p>
+              <p  v-show="selectedOption === 'current'">B相电流 <span  class="vale-part BColor">{{redisData?.ibTHD}}</span>%</p>
+              <p  v-show="selectedOption === 'current'">C相电流 <span  class="vale-part BColor">{{redisData?.icTHD}}</span>%</p>
+              <p  v-show="selectedOption === 'voltage'">A相电压 <span  class="vale-part BColor">{{redisData?.uaTHD}}</span>%</p>
+              <p  v-show="selectedOption === 'voltage'">B相电压 <span  class="vale-part BColor">{{redisData?.ubTHD}}</span>%</p>
+              <p  v-show="selectedOption === 'voltage'">C相电压 <span  class="vale-part BColor">{{redisData?.ucTHD}}</span>%</p>
             </div>
           </div>
         </div>
       </div>
     </div>
     <div  class="bottom-part">
-        <el-row>
-        <el-col>
-            <el-radio-group v-model="queryParams.timeGranularity">
-            <el-radio-button label="今天" value = "今天" @click="handleQuery"/>
-            <el-radio-button label="近一天" value = "近一天" @click="handleQuery"/>
-            <el-radio-button label="近三天" value = "近三天" @click="handleQuery"/>
-            </el-radio-group>
-        </el-col>
-        </el-row>
       <div  class="bottomLineDiv">
         <p >| 负载率曲线</p>    
         <MarkLine v-if="visContro.loadRateVis"  width="100%" height="100%" :list="loadRateList"/>
+        <p v-if="!visContro.loadRateVis" class="noData">暂无数据</p>
       </div>
       <div  class="bottomLineDiv">
         <p >| 有功功率</p>
@@ -151,7 +156,9 @@ const redisData = ref() as any;
 const loadRateList = ref() as any;
 const powActiveList = ref() as any;
 const powReactiveList = ref() as any;
+const selectedOption = ref('current')
 const location = ref(history?.state?.location)
+const busName = ref(history?.state?.busName)
 const visContro = ref({
   gaugeVis : false,
   loadRateVis : false,
@@ -244,9 +251,11 @@ const getBusIdAndLocation =async () => {
     if (data != null){
       location.value = data.location
       queryParams.busId = data.busId
+      busName.value = data.busName
     }else{
       location.value = null
       queryParams.busId = null
+      busName.value = null
     }
  } finally {
  }
@@ -275,6 +284,11 @@ const handleQuery = async () => {
    await flashChartData();
 }
 
+const changeTime = async (data) => {
+    queryParams.timeGranularity = data;   
+    handleQuery();
+}
+
 const devKeyList = ref([])
 const loadAll = async () => {
   //debugger
@@ -300,6 +314,12 @@ const createFilter = (queryString: string) => {
     return (
       devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
     )
+  }
+}
+
+const getBackgroundColor = (wornStatus: number) => {
+  if (wornStatus != 0) {
+    return '#fa3333' //红色
   }
 }
    
@@ -364,7 +384,7 @@ body .TransformerMonitor .topdiv span,body .TransformerMonitor .topdiv span,body
 }
 
 .TransformerMonitor .center-part {
-    height: 50%;
+    height: 350px;
     width: 100%;
     margin-bottom: 5px
 }
@@ -585,7 +605,7 @@ body .TransformerMonitor .center-part .center-bottom-part {
 
 .TransformerMonitor .center-part .center-bottom-part .top-part span {
     display: inline-block;
-    width: 17%;
+    width: 14%;
     line-height: 40px;
     font-size: 16px;
     padding-left: 20px;
@@ -598,7 +618,7 @@ body .TransformerMonitor .center-part .center-bottom-part {
 }
 
 .TransformerMonitor .center-part .center-bottom-part .block-part .content-part {
-    width: 17%;
+    width: 14%;
     height: 100%;
     min-width: 155px;
     padding-left: 20px;
@@ -628,7 +648,7 @@ body .TransformerMonitor .center-part .center-bottom-part .block-part .content-p
 }
 
 .TransformerMonitor .bottom-part {
-    height: calc(50% - 60px);
+    height: calc(50% - 10px);
     width: 100%
 }
 
@@ -818,16 +838,17 @@ body .TransformerMonitor .bottom-part {
 }
 
 body .TransformerMonitor .center-part .center-bottom-part .top-part {
-    background: #fff
+    background: #f5f7fa
 }
 
 body .TransformerMonitor .center-part .center-bottom-part .top-part span {
-    color: #000
+    color: #000;
+
 }
 
 body .TransformerMonitor .bottom-part .bottomLineDiv p,body .TransformerMonitor .bottom-part .bottomLineDiv p {
     border-left: 2px solid #fff;
-    //background: #01ada8;
+    background: #f5f7fa;
     color: #606266
 }
 
@@ -853,6 +874,7 @@ body .TransformerMonitor .center-part .center-bottom-part .top-part span,body .T
   color:#606266;
 }                                                       
 .header_app_text_other{
+  width: 50%;
   align-content: center;
   background-color: white;
   margin-right: 5px;

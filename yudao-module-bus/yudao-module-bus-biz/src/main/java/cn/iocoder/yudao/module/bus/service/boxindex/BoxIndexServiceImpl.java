@@ -2745,7 +2745,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 if(aisleBoxKeyMap.get(box.getDevKey()) != null){
                     AisleBox aisleBox = aisleBoxKeyMap.get(box.getDevKey());
                     Integer aisleId = aisleBox.getAisleId();
-                    box.setLocation(positionMap.get(aisleId) +  SPLIT_KEY + pathMap.get(aisleBox.getAisleBarId()) + "路" + SPLIT_KEY + box.getBoxName());
+                    box.setLocation(positionMap.get(aisleId) +  SPLIT_KEY + pathMap.get(aisleBox.getAisleBarId()) + "路");
                 }
             });
         }

@@ -69,7 +69,7 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
         Double runLoad = jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getDouble("pow_apparent");
         List<Double> curMax = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list").getJSONArray("cur_max").toList(Double.class);
         curMax.sort(Collections.reverseOrder());
-        Double ratedCapacity = curMax.get(0) * 220 +curMax.get(1) * 220 + curMax.get(2) * 220;
+        Double ratedCapacity = (curMax.get(0) * 220 +curMax.get(1) * 220 + curMax.get(2) * 220)/1000;
         Double reserveMargin = ratedCapacity - runLoad;
         Double powActive = jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getDouble("pow_value");
         Double powReactive = jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getDouble("pow_reactive");
@@ -209,7 +209,7 @@ public class BusPowerLoadDetailServiceImpl implements BusPowerLoadDetailService 
         Double runLoad = jsonObject.getJSONObject("box_data").getJSONObject("box_total_data").getDouble("pow_apparent");
         List<Double> curMax = jsonObject.getJSONObject("box_data").getJSONObject("loop_item_list").getJSONArray("cur_max").toList(Double.class);
         curMax.sort(Collections.reverseOrder());
-        Double ratedCapacity = curMax.get(0) * 220 +curMax.get(1) * 220 + curMax.get(2) * 220;
+        Double ratedCapacity = (curMax.get(0) * 220 +curMax.get(1) * 220 + curMax.get(2) * 220)/1000;
         Double reserveMargin = ratedCapacity - runLoad;
         Double powActive = jsonObject.getJSONObject("box_data").getJSONObject("box_total_data").getDouble("pow_active");
         Double powReactive = jsonObject.getJSONObject("box_data").getJSONObject("box_total_data").getDouble("pow_reactive");
