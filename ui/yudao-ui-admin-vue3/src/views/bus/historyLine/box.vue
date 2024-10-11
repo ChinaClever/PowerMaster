@@ -641,7 +641,7 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
               title: { text: ''},
               tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
               legend: { data: ['总有功功率(kW)', '总视在功率(kVA)', '总无功功率(kVar)', '功率因素'],
-                    selected: {  "总有功功率(kW)": true, "总视在功率(kVA)": false, "总无功功率(kVar)": false, "功率因素": false, }
+                    selected: {  "总有功功率(kW)": true, "总视在功率(kVA)": true, "总无功功率(kVar)": true, "功率因素": false, }
                   },
               grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
               toolbox: {feature: {  restore:{}, saveAsImage: {}}},
@@ -1394,50 +1394,44 @@ function customTooltipFormatter(params: any[]) {
   var tooltipContent = ''; 
   params.forEach(function(item) {
     switch( item.seriesName ){
-      case '总有功功率(kW)':
-      case '总无功功率(kVar)':
-      case '有功功率(kW)':
-      case '无功功率(kVar)':
+
       case '平均有功功率(kW)':
       case '平均无功功率(kVar)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
-        break;
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +' 记录时间：'  +params[0].name+ '<br/>';
+      break;
       case '最大有功功率(kW)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
-      break;
-      case '最小有功功率(kW)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
-      break;
-      
-      case '最大无功功率(kVar)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '<br/>';
-      break;
-      case '最小无功功率(kVar)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
-      break;
-
-      case '总视在功率(kVA)':
-      case '视在功率(kVA)':
-      case '平均视在功率(kVA)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value   + '<br/>';
+        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value+' 发生时间：' +powActiveMaxTimeData.value[item.dataIndex]+ '<br/>';
         break;
+      case '最小有功功率(kW)':
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +' 发生时间：'+powActiveMinTimeData.value[item.dataIndex]+ '<br/>';
+              break;
+      case '最大无功功率(kVar)':
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +' 发生时间：'+powReactiveMaxTimeData.value[item.dataIndex] + '<br/>';
+              break;
+      case '最小无功功率(kVar)':
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value+' 发生时间：'  +powReactiveMaxTimeData.value[item.dataIndex]+ '<br/>';
+              break;
+
+      case '平均视在功率(kVA)':
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +' 记录时间：'  +params[0].name+ '<br/>';
+      break;
       case '最大视在功率(kVA)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value   + '<br/>';
-      break;
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value+' 发生时间：' +powApparentMaxTimeData.value[item.dataIndex] + '<br/>';
+              break;
       case '最小视在功率(kVA)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value   + '<br/>';
-      break;
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value+' 发生时间：'  +powApparentMaxTimeData.value[item.dataIndex]+ '<br/>';
+              break;
 
       case '电流(A)':
       case '电流三相不平衡': 
       case '平均电流(A)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
-        break;
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +' 记录时间：'  +params[0].name+ '<br/>';
+      break;
       case '最大电流(A)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +' 发生时间：' +curMaxTimeData.value[item.dataIndex]+ '<br/>' ;
       break;
       case '最小电流(A)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value+' 发生时间：' +curMinTimeData.value[item.dataIndex] + '<br/>';
       break;
 
       case '电压(V)':
@@ -1445,32 +1439,44 @@ function customTooltipFormatter(params: any[]) {
       case '电压三相不平衡': 
       case '平均电压(V)':
       case '平均线电压':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
-        break;
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +' 记录时间：'  +params[0].name+ '<br/>';
+      break;
       case '最大电压(V)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +' 发生时间：'+volMaxTimeData.value[item.dataIndex] + '<br/>';
       break;
       case '最小电压(V)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +' 发生时间：' +volMinTimeData.value[item.dataIndex] + '<br/>';
       break;
 
       case '最大电流谐波含量':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +curThdMaxTimeData.value[item.dataIndex]+ '<br/>';
       break;
       case '最小电流谐波含量':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +  '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + " 发生时间："+curThdMinTimeData.value[item.dataIndex]+ '<br/>';
       break;
 
       case '功率因素':
       case '负载率':
       case '电流谐波含量':
       case '平均电流谐波含量':  
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +' 记录时间：'  +params[0].name+ '<br/>';
         break;
+      case '无功功率(kVar)':
+      case '视在功率(kVA)':
+      case '有功功率(kW)':
+      case '总有功功率(kW)':
+      case '总无功功率(kVar)':
+      case '总视在功率(kVA)':
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  + '<br/>';
+      break;
     }
     
-  });
-  tooltipContent += "记录时间: "+params[0].name 
+  })
+  if(params[0].seriesName == "总有功功率(kW)"|| params[0].seriesName == "总无功功率(kVar)" || params[0].seriesName == "总视在功率(kVA)"||params[0].seriesName == "有功功率(kW)"|| params[0].seriesName =='无功功率(kVar)'|| params[0].seriesName == '视在功率(kVA)'){
+    tooltipContent +='记录时间：'  +params[0].name+ '<br/>'
+  }
+  
+  
   return tooltipContent;
 }
 
