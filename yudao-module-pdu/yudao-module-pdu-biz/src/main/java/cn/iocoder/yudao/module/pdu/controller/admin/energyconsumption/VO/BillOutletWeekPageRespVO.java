@@ -11,37 +11,35 @@ import com.alibaba.excel.enums.poi.HorizontalAlignmentEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-@Schema(description = "管理后台 - pdu（天周月） 导出数据")
+@Schema(description = "管理后台 - pdu电费统计（天周月） 导出数据")
 @Data
 @ExcelIgnoreUnannotated
 @HeadStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
 @ContentStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
 @ColumnWidth(30)
 @HeadRowHeight(20)
-public class RealtimeEQPageRespVO {
+public class BillOutletWeekPageRespVO {
 
     @ExcelProperty("所在位置")
     private String address;
 
+    @ExcelProperty("输出位")
+    private Integer outlet_id;
 
     @ExcelProperty("网络地址")
     private String location;
 
-    @ExcelProperty("发生时间")
-    private String create_time;
+    @ExcelProperty("开始时间")
+    private String start_time;
 
-//    @ExcelProperty("相")
-//    private Integer line_id;
-
-//    @ExcelProperty("回路")
-//    private Integer loop_id;
-//
-//    @ExcelProperty("输出位")
-//    private Integer outlet_id;
-
-    @ExcelProperty("电能 (kWh)")
+    @ExcelProperty("结束时间")
+    private String end_time;
     @NumberFormat("0.0")
-    private Double ele_active;
-//    private Double eq_value;
+    @ExcelProperty("耗电量(kWh)")
+    private Double eq_value;
+
+    @NumberFormat("0.00")
+    @ExcelProperty("电费(元)")
+    private Double bill_value;
 
 }

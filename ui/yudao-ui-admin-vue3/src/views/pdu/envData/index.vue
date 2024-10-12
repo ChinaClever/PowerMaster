@@ -32,7 +32,7 @@
                 <span class="label">最近一小时 :</span>
                 <span class="value">{{ lastHourTotalData }}条</span>
             </div>
-            <div style="text-align: center"><span>全部传感器新增环境记录</span>
+            <div><span>全部传感器新增环境记录</span>
               <div class="line" style="margin-top: 10px;"></div>
             </div>
           </div>
@@ -573,13 +573,15 @@ onMounted( () => {
 }
 
 .label {
-  width:100px; /* 控制冒号前的宽度 */
   text-align: right; /* 文本右对齐 */
-  margin-right: 20px; /* 控制冒号后的间距 */
+  margin-right: 10px; /* 控制冒号后的间距 */
+  text-align: left;
 }
 
 .value {
   flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
+
 }
   .line {
     height: 1px;

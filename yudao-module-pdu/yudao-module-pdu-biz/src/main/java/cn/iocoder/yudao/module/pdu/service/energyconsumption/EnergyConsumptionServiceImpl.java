@@ -561,8 +561,8 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
         }
 
         for(int i=0;i<mapList.size();i++){
-            mapList.get(i).put("start_time",mapList.get(i).get("start_time").toString().substring(0,16));
-            mapList.get(i).put("end_time",mapList.get(i).get("end_time").toString().substring(0,16));
+            mapList.get(i).put("start_time",mapList.get(i).get("start_time").toString().substring(0,10));
+            mapList.get(i).put("end_time",mapList.get(i).get("end_time").toString().substring(0,10));
         }
         return list;
     }

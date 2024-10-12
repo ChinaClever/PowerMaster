@@ -342,7 +342,6 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                             //父id设置机柜
                             roomMenuDTOB.setParentId(cabinetPdu.getCabinetId());
                             roomMenuDTOB.setParentType( MenuTypeEnums.CABINET.getType());
-
                             menuDTOS.add(roomMenuDTOB);
                         }
 

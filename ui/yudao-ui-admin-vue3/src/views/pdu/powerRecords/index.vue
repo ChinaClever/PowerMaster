@@ -39,7 +39,7 @@
             <span class="label">输出位电能 :</span>
             <span class="value">{{ navOutletData }}条</span>
           </div>
-          <div style="text-align: center"><span>全部PDU新增电能记录</span>
+          <div ><span>全部PDU新增电能记录</span>
             <div class="line" style="margin-top: 10px;"></div>
           </div>
         </div>
@@ -208,9 +208,9 @@ const typeCascaderChange = (selected) => {
   switch(selected[0]){
     case 'line':
       tableColumns.value = [
-        { label: '位置', align: 'center', prop: 'address' , istrue:true},
+        { label: '所在位置', align: 'center', prop: 'address' , istrue:true, width: '300%'},
         { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
-        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '发生时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
         { label: '相', align: 'center', prop: 'line_id' , istrue:true, formatter: formatLineId}, 
         { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
       ]
@@ -220,9 +220,9 @@ const typeCascaderChange = (selected) => {
       break;
     case 'loop':
       tableColumns.value = [
-        { label: '位置', align: 'center', prop: 'address' , istrue:true},
+        { label: '所在位置', align: 'center', prop: 'address' , istrue:true, width: '300%'},
         { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
-        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '发生时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
         { label: '回路', align: 'center', prop: 'loop_id' , istrue:true, formatter: formatLoopId},
         { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
       ]
@@ -232,9 +232,9 @@ const typeCascaderChange = (selected) => {
       break;
     case 'outlet':
       tableColumns.value = [
-        { label: '位置', align: 'center', prop: 'address' , istrue:true},
+        { label: '所在位置', align: 'center', prop: 'address' , istrue:true, width: '300%'},
         { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
-        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '发生时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
         { label: '输出位', align: 'center', prop: 'outlet_id' , istrue:true},
         { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
       ]
@@ -244,9 +244,9 @@ const typeCascaderChange = (selected) => {
       break;
     case 'total':
       tableColumns.value = [
-        { label: '位置', align: 'center', prop: 'address' , istrue:true},
+        { label: '所在位置', align: 'center', prop: 'address' , istrue:true, width: '300%'},
         { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
-        { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+        { label: '发生时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
         { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
       ]
       queryParams.lineId = undefined;
@@ -259,9 +259,9 @@ const typeCascaderChange = (selected) => {
 }
 
 const tableColumns = ref([
-  { label: '位置', align: 'center', prop: 'address' , istrue:true},
+  { label: '所在位置', align: 'center', prop: 'address' , istrue:true, width: '300%'},
   { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
-  { label: '记录时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
+  { label: '发生时间', align: 'center', prop: 'create_time', formatter: formatTime, istrue:true},
   { label: '电能(kWh)', align: 'center', prop: 'ele_active' , istrue:true, formatter: formatEle},
 ]);
 
@@ -484,13 +484,15 @@ onMounted(() => {
 }
 
 .label {
-  width:100px; /* 控制冒号前的宽度 */
   text-align: right; /* 文本右对齐 */
-  margin-right: 20px; /* 控制冒号后的间距 */
+  margin-right: 10px; /* 控制冒号后的间距 */
+  text-align: left;
 }
 
 .value {
   flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
+
 }
   .line {
     height: 1px;

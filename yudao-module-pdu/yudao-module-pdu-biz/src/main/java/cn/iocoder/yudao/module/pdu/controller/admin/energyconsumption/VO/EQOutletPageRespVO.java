@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo;
+package cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO;
 
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
@@ -11,51 +11,43 @@ import com.alibaba.excel.enums.poi.HorizontalAlignmentEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-@Schema(description = "管理后台 - pdu电力（实时数据） 导出数据")
+@Schema(description = "管理后台 - pdu能耗趋势（天周月） 导出数据")
 @Data
 @ExcelIgnoreUnannotated
 @HeadStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
 @ContentStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
 @ColumnWidth(30)
 @HeadRowHeight(20)
-public class RealtimePageRespVO {
+public class EQOutletPageRespVO {
 
     @ExcelProperty("所在位置")
     private String address;
 
+    @ExcelProperty("输出位")
+    private Integer outlet_id;
+
     @ExcelProperty("网络地址")
     private String location;
 
-    @ExcelProperty("发生时间")
+    @ExcelProperty("记录日期")
     private String create_time;
 
-//    @ExcelProperty("相")
-//    private Integer line_id;
-//
-//    @ExcelProperty("回路")
-//    private Integer loop_id;
-//
-//    @ExcelProperty("输出位")
-//    private Integer outlet_id;
+    @NumberFormat("0.0")
+    @ExcelProperty({"开始电能","开始电能(kWh)"})
+    private Double start_ele;
 
-    @ExcelProperty("总有功功率(kW)")
-    @NumberFormat("0.000")
-    private Double pow_active;
+    @ExcelProperty({"开始电能","开始时间"})
+    private String start_time;
 
-    @ExcelProperty("总视在功率(kVA)")
-    @NumberFormat("0.000")
-    private Double pow_apparent;
+    @ExcelProperty({"结束电能","结束电能(kWh)"})
+    @NumberFormat("0.0")
+    private Double end_ele;
 
-    @ExcelProperty("功率因素")
-    @NumberFormat("0.00")
-    private Double power_factor;
+    @ExcelProperty({"结束电能","结束时间"})
+    private String end_time;
 
-//    @ExcelProperty("电压(V)")
-//    @NumberFormat("0.0")
-//    private Double vol_value;
-//
-//    @ExcelProperty("电流(A)")
-//    @NumberFormat("0.00")
-//    private Double cur_value;
+    @NumberFormat("0.0")
+    @ExcelProperty("耗电量(kWh)")
+    private Double eq_value;
 
 }
