@@ -167,6 +167,13 @@ public class BusIndexController {
         return success(pageResult);
     }
 
+    @Operation(summary = "始端箱用能列表分页")
+    @PostMapping("/eq/maxEq")
+    public CommonResult<PageResult<BusIndexDTO>> getMaxEq(@RequestBody BusIndexPageReqVO pageReqVO) {
+        PageResult<BusIndexDTO> pageResult = indexService.getMaxEq(pageReqVO);
+        return success(pageResult);
+    }
+
     /**
      * 始端箱有功功率趋势
      *

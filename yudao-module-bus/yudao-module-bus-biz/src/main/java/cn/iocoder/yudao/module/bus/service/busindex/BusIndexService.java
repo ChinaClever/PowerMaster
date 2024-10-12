@@ -119,4 +119,6 @@ public interface BusIndexService {
     void restoreIndex(Long id);
 
     BusPowerLoadDetailRespVO getPeakDemand(BusIndexPageReqVO pageReqVO) throws IOException;
+
+    PageResult<BusIndexDTO> getMaxEq(BusIndexPageReqVO pageReqVO);
 }
