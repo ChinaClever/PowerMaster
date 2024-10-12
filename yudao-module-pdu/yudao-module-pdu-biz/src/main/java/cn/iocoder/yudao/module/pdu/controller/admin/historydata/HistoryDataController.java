@@ -160,17 +160,51 @@ public class HistoryDataController {
               HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = historyDataService.getHistoryDataPage(pageReqVO).getList();
+        historyDataService.getNewHistoryDataDetails(list);
 
         // 导出 Excel
-        if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
-            historyDataService.getNewHistoryDataDetails(list,"realtime");
-            ExcelUtils.write(response, "pdu电力历史数据.xlsx", "数据", RealtimePageRespVO.class,
-                    BeanUtils.toBean(list, RealtimePageRespVO.class));
-        } else {
-            historyDataService.getNewHistoryDataDetails(list,"not_realtime");
-            ExcelUtils.write(response, "pdu电力历史数据.xlsx", "数据", HourAndDayPageRespVO.class,
-                    BeanUtils.toBean(list, HourAndDayPageRespVO.class));
+        if(pageReqVO.getType().equals("line")){
+            if(pageReqVO.getGranularity().equals("realtime")){
+                ExcelUtils.write(response, "pdu电力历史数据.xlsx", "数据", RealtimeLinePageRespVO.class,
+                        BeanUtils.toBean(list, RealtimeLinePageRespVO.class));
+            }
+            else{
+                ExcelUtils.write(response, "pdu电力历史数据.xlsx", "数据", HourAndDayLinePageRespVO.class,
+                        BeanUtils.toBean(list, HourAndDayLinePageRespVO.class));
+            }
         }
+        else if(pageReqVO.getType().equals("loop")){
+            if(pageReqVO.getGranularity().equals("realtime")){
+                ExcelUtils.write(response, "pdu电力历史数据.xlsx", "数据", RealtimeLoopPageRespVO.class,
+                        BeanUtils.toBean(list, RealtimeLoopPageRespVO.class));
+            }
+            else{
+                ExcelUtils.write(response, "pdu电力历史数据.xlsx", "数据", HourAndDayLoopPageRespVO.class,
+                        BeanUtils.toBean(list, HourAndDayLoopPageRespVO.class));
+            }
+        }
+        else if(pageReqVO.getType().equals("outlet")){
+            if(pageReqVO.getGranularity().equals("realtime")){
+                ExcelUtils.write(response, "pdu电力历史数据.xlsx", "数据", RealtimeOutletPageRespVO.class,
+                        BeanUtils.toBean(list, RealtimeOutletPageRespVO.class));
+            }
+            else{
+                ExcelUtils.write(response, "pdu电力历史数据.xlsx", "数据", HourAndDayOutletPageRespVO.class,
+                        BeanUtils.toBean(list, HourAndDayOutletPageRespVO.class));
+            }
+        }
+        else{
+            if(pageReqVO.getGranularity().equals("realtime")){
+                ExcelUtils.write(response, "pdu电力历史数据.xlsx", "数据", RealtimePageRespVO.class,
+                        BeanUtils.toBean(list, RealtimePageRespVO.class));
+            }
+            else{
+                ExcelUtils.write(response, "pdu电力历史数据.xlsx", "数据", HourAndDayPageRespVO.class,
+                        BeanUtils.toBean(list, HourAndDayPageRespVO.class));
+            }
+        }
+
+
     }
 
     @GetMapping("/env-export-excel")

@@ -31,7 +31,7 @@
             <span class="label">最近一月 :</span>
             <span class="value">{{ lastMonthTotalData }}条</span>
           </div>    <br/>
-          <div style="text-align: center"><span>全部PDU新增能耗记录</span>
+          <div ><span>全部PDU新增能耗记录</span>
             <div class="line" style="margin-top: 10px;"></div>
           </div>
         </div>
@@ -91,13 +91,12 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" >
         <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="80px">
           <template #default="{ $index }">
             {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
-          </template>
-          
+          </template>   
         </el-table-column>
        <!-- 遍历其他列 -->
       <template
@@ -306,17 +305,17 @@ watch(() => queryParams.granularity, () => {
 });
 
 const tableColumns = ref([
-  { label: '位置', align: 'center', prop: 'address' , istrue:true, width: '180px'},
+  { label: '所在位置', align: 'center', prop: 'address' , istrue:true, width: '300%'},
   { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '150px'},
   { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '150px' , istrue:true},
-  { label: '开始', align: 'center', istrue: true, children: [
-      { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime1, width: '150px' , istrue:true},
-      { label: '电能(kWh)', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
+  { label: '开始电能', align: 'center', istrue: true, children: [
+      { label: '开始电能(kWh)', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
+      { label: '开始时间', align: 'center', prop: 'start_time' , formatter: formatTime1, width: '150px' , istrue:true},
     ]
   },
-  { label: '结束', align: 'center', istrue: true, children: [
-      { label: '日期', align: 'center', prop: 'end_time' , formatter: formatTime1, width: '150px' , istrue:true},
-      { label: '电能(kWh)', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle},
+  { label: '结束电能', align: 'center', istrue: true, children: [
+      { label: '结束电能(kWh)', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle},
+      { label: '结束时间', align: 'center', prop: 'end_time' , formatter: formatTime1, width: '150px' , istrue:true},
     ]
   },
   { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' ,istrue: true,formatter: formatEle },
@@ -506,7 +505,7 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnergyConsumptionApi.exportEQPageData(queryParams, axiosConfig)
-    await download.excel(data, 'PDU能耗趋势.xlsx')
+    await download.excel(data, 'PDU能耗统计.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -562,11 +561,17 @@ onMounted(() => {
 }
 
 .label {
-  width:100px; /* 控制冒号前的宽度 */
   text-align: right; /* 文本右对齐 */
-  margin-right: 5px; /* 控制冒号后的间距 */
+  margin-right: 10px; /* 控制冒号后的间距 */
+  text-align: left;
 }
-.line {
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
+
+}
+  .line {
     height: 1px;
     margin-top: 28px;
 

@@ -243,40 +243,43 @@
             <p v-show="temData.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{temData.temMinValue}}°C， 最低温度发生时间{{temData.temMinTime}}，由温度传感器{{temData.temMinSensorId}}采集得到</p>
             <EnvTemLine  width="70vw" height="58vh" :list="temList"  />
           </div>
+
+
+          
           <div class="pageBox"  v-if="temp1 && temp1.length > 0">
             <div class="page-conTitle">
               告警信息
             </div>
-      <el-table
-        ref="multipleTableRef"
-        :data="temp1"
-        highlight-current-row
-        style="width: 100%"
-        :stripe="true" 
-        :border="true"
-        @current-change="handleCurrentChange"
-      >
-          <!-- <el-table-column type="selection" width="55" /> -->
-          <el-table-column type="index" width="80" label="序号" align="center" />
-          <el-table-column property="devPosition" label="区域" min-width="100" align="center" />
-          <el-table-column property="devName" label="设备" min-width="100" align="center" />
-          <el-table-column property="alarmLevelDesc" label="告警等级" min-width="100" align="center" />
-          <el-table-column property="alarmTypeDesc" label="告警类型" min-width="100" align="center" />
-          <el-table-column property="alarmDesc" label="描述" min-width="120" align="center">
-            <template #default="scope">
-              <el-tooltip  placement="right">
-                <div class="table-desc">{{scope.row.alarmDesc}}</div>
-                <template #content>
-                  <div class="tooltip-width">{{scope.row.alarmDesc}}</div>
-                </template>
-              </el-tooltip>
-            </template>
-          </el-table-column>
-          <el-table-column property="startTime" label="开始时间" min-width="100" align="center" />
-          <el-table-column property="endTime" label="结束时间" min-width="100" align="center" />
-          <el-table-column property="finishReason" label="结束原因" min-width="100" align="center" />
-          <el-table-column property="confirmReason" label="确认原因" min-width="100" align="center" />
-      </el-table>
+                <el-table
+                  ref="multipleTableRef"
+                  :data="temp1"
+                  highlight-current-row
+                  style="width: 100%"
+                  :stripe="true" 
+                  :border="true"
+                  @current-change="handleCurrentChange"
+                >
+                    <!-- <el-table-column type="selection" width="55" /> -->
+                    <el-table-column type="index" width="80" label="序号" align="center" />
+                    <el-table-column property="devPosition" label="区域" min-width="100" align="center" />
+                    <el-table-column property="devName" label="设备" min-width="100" align="center" />
+                    <el-table-column property="alarmLevelDesc" label="告警等级" min-width="100" align="center" />
+                    <el-table-column property="alarmTypeDesc" label="告警类型" min-width="100" align="center" />
+                    <el-table-column property="alarmDesc" label="描述" min-width="120" align="center">
+                      <template #default="scope">
+                        <el-tooltip  placement="right">
+                          <div class="table-desc">{{scope.row.alarmDesc}}</div>
+                          <template #content>
+                            <div class="tooltip-width">{{scope.row.alarmDesc}}</div>
+                          </template>
+                        </el-tooltip>
+                      </template>
+                    </el-table-column>
+                    <el-table-column property="startTime" label="开始时间" min-width="100" align="center" />
+                    <el-table-column property="endTime" label="结束时间" min-width="100" align="center" />
+                    <el-table-column property="finishReason" label="结束原因" min-width="100" align="center" />
+                    <el-table-column property="confirmReason" label="确认原因" min-width="100" align="center" />
+                </el-table>
           </div>
           
         </div>

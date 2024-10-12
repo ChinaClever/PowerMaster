@@ -144,37 +144,37 @@
               </el-table-column>
               <el-table-column prop="create_time" label="记录时间" />
               <!-- 动态生成表头 -->
-              <template v-for="item in headerData" :key="item.name">
-                <el-table-column v-if="item.name === '最大有功功率(kW)'" label="有功功率最大值(kW)">
-                  <el-table-column :prop="item.name" label="数值"/>  
+              <template v-for="item in headerData" :key="item.name" >
+                <el-table-column v-if="item.name === '最大有功功率(kW)'" label="有功功率最大值" >
+                  <el-table-column :prop="item.name" label="有功功率最大值(kW)"/>  
                   <el-table-column prop="activePowMaxTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === '最小有功功率(kW)'" label="有功功率最小值(kW)">
-                  <el-table-column :prop="item.name" label="数值"/>  
+                <el-table-column v-else-if="item.name === '最小有功功率(kW)'" label="有功功率最小值">
+                  <el-table-column :prop="item.name" label="有功功率最小值(kW)"/>  
                   <el-table-column prop="activePowMinTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === '最大视在功率(kVA)'" label="视在功率最大值(kVA)">
-                  <el-table-column :prop="item.name" label="数值"/>  
+                <el-table-column v-else-if="item.name === '最大视在功率(kVA)'" label="视在功率最大值">
+                  <el-table-column :prop="item.name" label="视在功率最大值(kVA)"/>  
                   <el-table-column prop="apparentPowMaxTimeData" label="发生时间"/>
                 </el-table-column>
-                 <el-table-column v-else-if="item.name === '最小视在功率(kVA)'" label="视在功率最小值(kVA)">
-                  <el-table-column :prop="item.name" label="数值"/>  
+                 <el-table-column v-else-if="item.name === '最小视在功率(kVA)'" label="视在功率最小值">
+                  <el-table-column :prop="item.name" label="视在功率最小值(kVA)"/>  
                   <el-table-column prop="apparentPowMinTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === '最大电压(V)'" label="电压最大值(V)">
-                  <el-table-column :prop="item.name" label="数值"/>  
+                <el-table-column v-else-if="item.name === '最大电压(V)'" label="电压最大值">
+                  <el-table-column :prop="item.name" label="电压最大值(V)"/>  
                   <el-table-column prop="volMaxTimeData" label="发生时间"/>
                 </el-table-column>
-                 <el-table-column v-else-if="item.name === '最小电压(V)'" label="电压最小值(V)">
-                  <el-table-column :prop="item.name" label="数值"/>  
+                 <el-table-column v-else-if="item.name === '最小电压(V)'" label="电压最小值">
+                  <el-table-column :prop="item.name" label="电压最小值(V)"/>  
                   <el-table-column prop="volMinTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === '最大电流(A)'" label="电流最大值(A)">
-                  <el-table-column :prop="item.name" label="数值"/>  
+                <el-table-column v-else-if="item.name === '最大电流(A)'" label="电流最大值">
+                  <el-table-column :prop="item.name" label="电流最大值(A)"/>  
                   <el-table-column prop="curMaxTimeData" label="发生时间"/>
                 </el-table-column>
-                 <el-table-column v-else-if="item.name === '最小电流(A)'" label="电流最小值(A)">
-                  <el-table-column :prop="item.name" label="数值"/>  
+                 <el-table-column v-else-if="item.name === '最小电流(A)'" label="电流最小值">
+                  <el-table-column :prop="item.name" label="电流最小值(A)"/>  
                   <el-table-column prop="curMinTimeData" label="发生时间"/>
                 </el-table-column>
                 <el-table-column v-else :prop="item.name" :label="item.name"/>   

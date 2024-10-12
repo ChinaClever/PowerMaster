@@ -18,7 +18,7 @@ import lombok.Data;
 @ContentStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
 @ColumnWidth(30)
 @HeadRowHeight(20)
-public class HourAndDayPageRespVO {
+public class HourAndDayOutletPageRespVO {
 
     @ExcelProperty("所在位置")
     private String address;
@@ -30,13 +30,48 @@ public class HourAndDayPageRespVO {
     private String create_time;
 //    @ExcelProperty("相")
 //    private Integer line_id;
-//
+////
 //    @ExcelProperty("回路")
 //    private Integer loop_id;
 //
-//    @ExcelProperty("输出位")
-//    private Integer outlet_id;
+    @ExcelProperty("输出位")
+    private Integer outlet_id;
 
+    @ExcelProperty("平均电压(V)")
+    @NumberFormat("0.0")
+    private Double vol_avg_value;
+
+    @ExcelProperty("最大电压(V)")
+    @NumberFormat("0.0")
+    private Double vol_max_value;
+
+    @ExcelProperty("最大电压时间")
+    private String vol_max_time;
+    
+    @NumberFormat("0.0")
+    @ExcelProperty("最小电压(V)")
+    private Double vol_min_value;
+
+    @ExcelProperty("最小电压时间")
+    private String vol_min_time;
+
+    @ExcelProperty("平均电流(A)")
+    @NumberFormat("0.00")
+    private Double cur_avg_value;
+
+    @ExcelProperty("最大电流(A)")
+    @NumberFormat("0.00")
+    private Double cur_max_value;
+
+    @ExcelProperty("最大电流时间")
+    private String cur_max_time;
+
+    @ExcelProperty("最小电流(A)")
+    @NumberFormat("0.00")
+    private Double cur_min_value;
+
+    @ExcelProperty("最小电流时间")
+    private String cur_min_time;
 
     @ExcelProperty("平均有功功率(kW)")
     @NumberFormat("0.000")
@@ -74,39 +109,6 @@ public class HourAndDayPageRespVO {
     @ExcelProperty("最小视在功率时间")
     private String pow_apparent_min_time;
 //
-//    @ExcelProperty("平均电压(V)")
-//    @NumberFormat("0.0")
-//    private Double vol_avg_value;
-//
-//    @ExcelProperty("最大电压时间")
-//    private String vol_max_time;
-//
-//    @ExcelProperty("最大电压(V)")
-//    @NumberFormat("0.0")
-//    private Double vol_max_value;
-//
-//    @ExcelProperty("最小电压时间")
-//    private String vol_min_time;
-//
-//    @ExcelProperty("最小电压(V)")
-//    private Double vol_min_value;
-//
-//    @ExcelProperty("平均电流(A)")
-//    @NumberFormat("0.00")
-//    private Double cur_avg_value;
-//
-//    @ExcelProperty("最大电流时间")
-//    private String cur_max_time;
-//
-//    @ExcelProperty("最大电流(A)")
-//    @NumberFormat("0.00")
-//    private Double cur_max_value;
-//
-//    @ExcelProperty("最小电流时间")
-//    private String cur_min_time;
-//
-//    @ExcelProperty("最小电流(A)")
-//    @NumberFormat("0.00")
-//    private Double cur_min_value;
+
 
 }
