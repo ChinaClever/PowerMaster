@@ -1,11 +1,35 @@
 <template>
   <!-- <div id="main"></div> -->
-  <div class="energy">
-    <div class="top">
-      <ContentWrap>
-        <el-tag size="large">{{ location }}</el-tag>
-      </ContentWrap>
+  <div class="energy" style="background-color: #E7E7E7;">
+  <div class="header_app">
+    <div class="header_app_text">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{busName}})
     </div>
+    <div class="header_app_text_other1">
+          <el-col :span="10"> 
+            <el-form
+              class="-mb-15px"
+              :model="queryParamsSearch"
+              ref="queryFormRef"
+              :inline="true"
+              label-width="120px"
+            >
+              <el-form-item label="网络地址" prop="devKey" >
+              <el-autocomplete
+                v-model="queryParamsSearch.devKey"
+                :fetch-suggestions="querySearch"
+                placeholder="请输入网络地址"  
+                clearable
+                class="!w-160px"
+                @select="handleQuery" 
+              />
+              </el-form-item>
+            </el-form>
+          </el-col>      
+    </div>
+    <div class="header_app_text_other">
+      <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+    </div>
+  </div>
     <div class="content">
       <el-card class="card-hb" shadow="never">
         <template #header>
@@ -98,8 +122,10 @@ import { EChartsOption } from 'echarts'
 import { CabinetApi } from '@/api/cabinet/info'
 import { BusEnergyApi } from '@/api/bus/busenergy'
 import 'echarts/lib/component/dataZoom';
+import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail';
 
 const location = ref(history?.state?.location )
+const busName = ref(history?.state?.busName )
 const roomList = ref([]) // 左侧导航栏树结构列表
 const machineList = ref([]) // 左侧导航栏树结构列表
 const radioBtn = ref('DAY')
@@ -111,7 +137,12 @@ const EleTrendOption = {
 const EleTrendLoading = ref(false)
 const queryParams = reactive({
   busId: history?.state?.id || 1,
-  cabinetroomId: history?.state?.roomId || 1
+  cabinetroomId: history?.state?.roomId || 1,
+  devKey : history?.state?.devKey as string | undefined,
+})
+const queryParamsSearch = reactive({
+  id: history?.state?.busId as number | undefined,
+  devKey : history?.state?.devKey as string | undefined,
 })
 const EleChain = reactive({
   todayEq: '',
@@ -125,6 +156,49 @@ const EleChain = reactive({
   monthRate: '',
 })
 const ActivePowTrend = reactive({})
+
+const devKeyList = ref([])
+const loadAll = async () => {
+  //debugger
+  var data = await BusPowerLoadDetailApi.getBusdevKeyList();
+  var objectArray = data.map((str) => {
+    return { value: str };
+  });
+  console.log(objectArray)
+  return objectArray;
+}
+
+const querySearch = (queryString: string, cb: any) => {
+
+  const results = queryString
+    ? devKeyList.value.filter(createFilter(queryString))
+    : devKeyList.value
+  // call callback function to return suggestions
+  cb(results)
+}
+
+const createFilter = (queryString: string) => {
+  return (devKeyList) => {
+    return (
+      devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+    )
+  }
+}
+
+const getBusIdAndLocation =async () => {
+ try {
+    const data = await BusPowerLoadDetailApi.getBusIdAndLocation(queryParams);
+    if (data != null){
+      queryParams.busId = data.busId
+      location.value = data.location
+      busName.value = data.busName
+    }else{
+      location.value = null
+      busName.value = null
+    }
+ } finally {
+ }
+}
 
 watch(() => queryParams.cabinetroomId, (val) => {
   machineList.value = handleNavList(val)
@@ -172,7 +246,7 @@ const handleNavList = (cabinetroomId) => {
 
 // 获取机柜有功功率趋势
 const getActivePowTrend = async() => {
-  const res = await BusEnergyApi.getActivePowTrend({id:queryParams.busId})
+  const res = await BusEnergyApi.getActivePowTrend({id:queryParams.busId})//id
   Object.assign(ActivePowTrend, res)
   console.log('获取机柜有功功率趋势------', res.yesterdayList?.map(item => item?.dateTime?.split(' ')[1]))
   echartsOptionPowTrend.value = {
@@ -209,7 +283,9 @@ const getActivePowTrend = async() => {
         type: 'category',
         boundaryGap: false,
         axisLine: { onZero: false },
-        data: res.yesterdayList?.length > 0 ? res.yesterdayList?.map(item => item?.dateTime?.split(' ')[1]) : res.todayList?.map(item => item?.dateTime?.split(' ')[1]) 
+        data: res.yesterdayList?.length > 0 
+          ? res.yesterdayList?.map(item => item?.dateTime?.split(' ')[1].split(':').slice(0, 2).join(':')) 
+          : res.todayList?.map(item => item?.dateTime?.split(' ')[1].split(':').slice(0, 2).join(':'))
       }
     ],
     yAxis: [
@@ -231,14 +307,14 @@ const getActivePowTrend = async() => {
           data: [
             {
               type: 'average',
-              name: 'Avg1',
+              name: '昨日有功功率平均值线',
             },
           ]
         },
         emphasis: {
           focus: 'series'
         },
-        data: res.yesterdayList?.map(item => item?.activePow)
+        data: res.yesterdayList?.map(item => item?.activePow.toFixed(3))
       },
       {
         name: '当日',
@@ -252,9 +328,9 @@ const getActivePowTrend = async() => {
           focus: 'series'
         },
         markLine: {
-          data: [{ type: 'average', name: 'Avg2' }]
+          data: [{ type: 'average', name: '当日有功功率平均值线' }]
         },
-        data: res.todayList?.map(item => item?.activePow)
+        data: res.todayList?.map(item => item?.activePow.toFixed(3))
       }
     ]
   }
@@ -262,7 +338,7 @@ const getActivePowTrend = async() => {
 }
 // 获取机柜用能环比
 const getMachineEleChain = async() => {
-  const res = await BusEnergyApi.getEleChain({id:queryParams.busId})
+  const res = await BusEnergyApi.getEleChain({id:queryParams.busId})//id
   Object.assign(EleChain, res)
   console.log('获取机柜用能环比', EleChain)
 }
@@ -270,7 +346,7 @@ const getMachineEleChain = async() => {
 const getMachineEleTrend = async(type) => {
   try {
     EleTrendLoading.value = true
-    const res = await BusEnergyApi.getEleTrend({ id: queryParams.busId, type })
+    const res = await BusEnergyApi.getEleTrend({ id: queryParams.busId, type })//id type
     echarsOptionEleTrend.value ={
       tooltip: {
         trigger: 'axis',
@@ -347,8 +423,19 @@ const getMachineEleTrend = async(type) => {
   
 }
 
+/** 搜索按钮操作 */
+const handleQuery = async () => {
+  queryParams.devKey = queryParamsSearch.devKey;
+  await getBusIdAndLocation();
+
+}
+
+onMounted(async () => {
+  devKeyList.value = await loadAll();
+})
+
 onBeforeMount(() => {
-  getNavList()
+  //getNavList()
   getActivePowTrend()
   getMachineEleChain()
   getMachineEleTrend('DAY')
@@ -376,9 +463,11 @@ const echartsOptionPowTrend = ref<EChartsOption>({})
   .content {
     width: 100%;
     display: flex;
+    margin-top:10px;
     .card-hb {
       width: 40%;
-      margin-right: 10px;
+      margin-left: 10px;
+      margin-right: 5px;
       .hb-content {
         display: flex;
         flex-wrap: wrap;
@@ -406,6 +495,7 @@ const echartsOptionPowTrend = ref<EChartsOption>({})
     }
     .card-nh {
       width: 60%;
+      margin-right: 10px;
       .chart-nh {
         position: relative;
         .btns {
@@ -458,5 +548,27 @@ const echartsOptionPowTrend = ref<EChartsOption>({})
     }
   }
 }
+.header_app{
+  background-color: white;
+  display: flex;
+  height: 50px;
+  padding-left: 10px;
+  box-shadow: 20px;
+}
+.header_app_text{                     
+  background-color: white;
+  width: 100%;
+  align-content: center;
+  color:#606266;
+}                                                       
+.header_app_text_other{
+  align-content: center;
+  background-color: white;
+  margin-right: 5px;
+}
+.header_app_text_other1{
+  align-content: center;
+  background-color: white;
 
+}
 </style>
