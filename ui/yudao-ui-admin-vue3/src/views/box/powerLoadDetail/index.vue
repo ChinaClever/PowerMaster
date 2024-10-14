@@ -13,7 +13,7 @@
   <!-- <el-button  type="primary"><Icon icon="ep:search" class="mr-5px" /> 查询</el-button>
   <hr/> <br/> -->
   <div class="header_app">
-    <div class="header_app_text">所在位置：{{ location }}</div>
+    <div class="header_app_text">所在位置：{{ location }}&nbsp;&nbsp;&nbsp;{{busName}}-{{boxName}}</div>
     <div class="header_app_text_other1">
           <el-col :span="10">
             <el-form
@@ -148,7 +148,9 @@ import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
 import { ElMessage } from 'element-plus';
 import { formatDate} from '@/utils/formatTime'
 const input = ref('')
-// const value1 = ref('')
+
+const busName = ref()
+const boxName = ref()
 const location = ref(history?.state?.location)
 const instance = getCurrentInstance();
 const typeRadio = ref('电流')
@@ -438,6 +440,12 @@ const initChart2 = () => {
                                   }},
         legend: { orient: 'horizontal', right: '25'},
         dataZoom:[{type: "inside"}],
+        grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },  
         xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
         yAxis: { 
           type: 'value',
@@ -508,6 +516,12 @@ const initChart3 = () => {
                                   }},
         legend: { orient: 'horizontal', right: '25'},
         dataZoom:[{type: "inside"}],
+        grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },  
         xAxis: {type: 'category', boundaryGap: false, data:eqCreateTimeData.value},
         yAxis: { 
           type: 'value',
@@ -550,11 +564,11 @@ const getDetailData =async () => {
     if (data != null){
       hasData.value = true
       runLoad.value = formatNumber(data.runLoad, 2);
-      ratedCapacity.value = formatNumber(data.ratedCapacity, 1);
+      ratedCapacity.value = formatNumber(data.ratedCapacity, 2);
       reserveMargin.value = formatNumber(data.reserveMargin, 2);
-      powActive.value = formatNumber(data.powActive, 2);
-      powReactive.value = formatNumber(data.powReactive, 2);
-      peakDemand.value = formatNumber(data.peakDemand, 2);
+      powActive.value = formatNumber(data.powActive, 3);
+      powReactive.value = formatNumber(data.powReactive, 3);
+      peakDemand.value = formatNumber(data.peakDemand, 3);
       powActivepPercentage.value = runLoad.value == 0 ? 0 :  ((powActive.value / runLoad.value) * 100).toFixed(2);
       powReactivepPercentage.value = runLoad.value == 0 ? 0 : ((powReactive.value / runLoad.value) * 100 ).toFixed(2)
       loadPercentage.value = ratedCapacity.value == 0 ? 0 :  ((runLoad.value / ratedCapacity.value) * 100).toFixed(2);
@@ -580,8 +594,12 @@ const getBoxIdAndLocation =async () => {
       queryParams.id = data.boxId
       lineChartQueryParams.id = data.boxId
       location.value = data.location
+      busName.value = data.busName
+      boxName.value = data.boxName
     }else{
       location.value = null
+      busName.value = null
+      boxName.value = null
     }
  } finally {
  }
@@ -652,6 +670,12 @@ watch( ()=>typeRadio.value, async(value)=>{
           }
         }
       },
+        grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },
       series: [
         {name: 'L1', type: 'line', symbol: 'none', data: L1Data.value},
         {name: 'L2', type: 'line', symbol: 'none', data: L2Data.value},
@@ -708,6 +732,12 @@ watch( ()=>typeRadio.value, async(value)=>{
           }
         }
       },
+        grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },
       series: [
         {name: '电量', type: 'line', symbol: 'none', data: eqValue.value},
       ],
@@ -792,6 +822,12 @@ watch( ()=>timeRadio.value, async(value)=>{
         }
       }
     },
+            grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },
     series: [
       {name: 'L1', type: 'line', symbol: 'none', data: L1Data.value},
       {name: 'L2', type: 'line', symbol: 'none', data: L2Data.value},
@@ -856,6 +892,12 @@ watch( ()=>timeRadio.value, async(value)=>{
         }
       }
     },
+        grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },
     series: [
       {name: '电量', type: 'line', symbol: 'none', data: eqValue.value},
     ],
@@ -1082,6 +1124,12 @@ const flashChartData = async () =>{
           }
         }
       },
+              grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },
       series: [
         {name: 'L1', type: 'line', symbol: 'none', data: L1Data.value},
         {name: 'L2', type: 'line', symbol: 'none', data: L2Data.value},
@@ -1138,6 +1186,12 @@ const flashChartData = async () =>{
           }
         }
       },
+              grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },
       series: [
         {name: '电量', type: 'line', symbol: 'none', data: eqValue.value},
       ],
@@ -1386,6 +1440,7 @@ const handleQuery = async () => {
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
+  await getBoxIdAndLocation();
   await getDetailData();
   await getLineChartData();
   initChart();

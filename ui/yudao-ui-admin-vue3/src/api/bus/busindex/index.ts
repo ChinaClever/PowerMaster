@@ -62,6 +62,10 @@ export const IndexApi = {
     return await request.post({ url: `/bus/index/eq/page`, data })
   },
 
+  getEqMax: async (data: any) => {
+    return await request.post({ url: `/bus/index/eq/maxEq`, data })
+  },
+
   getBalancePage: async (data: any) => {
     return await request.post({ url: `/bus/index/balance`, data })
   },
@@ -160,5 +164,9 @@ export const IndexApi = {
 
   getBusRedisByDevKey: async (data) => {
     return await request.post({ url: `/bus/index/redisbydevkey`, data })
+  },
+
+  getPeakDemand: async (data: any) => {
+    return await request.post({ url: `/bus/index/peakDemand` ,  data})
   },
 }

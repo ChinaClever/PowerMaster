@@ -103,8 +103,26 @@ public class BusRedisDataRes  extends BusResBase{
     @Schema(description = "C的无功功率")
     private Double cReactivePow;
 
+    @Schema(description = "A的视在功率")
+    private Double aPowApparent;
+
+    @Schema(description = "B的视在功率")
+    private Double bPowApparent;
+
+    @Schema(description = "C的视在功率")
+    private Double cPowApparent;
+
     @Schema(description = "总视在功率")
     private Double powApparent;
+
+    @Schema(description = "总有功功率")
+    private Double powValue;
+
+    @Schema(description = "总有功功率运行状态")
+    private Integer powStatus;
+
+    @Schema(description = "总无功功率")
+    private Double powReactive;
 
     @Schema(description = "负载率所在范围")
     private Integer color;

@@ -13,7 +13,8 @@
  <!-- <el-button  type="primary"><Icon icon="ep:search" class="mr-5px" /> 查询</el-button>
   <hr/> <br/> -->
   <div class="header_app">
-    <div class="header_app_text">所在位置：{{ location }}</div>
+    <div class="header_app_text">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{busName}})
+    </div>
     <div class="header_app_text_other1">
           <el-col :span="10">
             <el-form
@@ -154,6 +155,7 @@ const input = ref('')
 // const value1 = ref('')
 const hasData = ref(true)
 const location = ref(history?.state?.location)
+const busName = ref(history?.state?.busName)
 const instance = getCurrentInstance();
 const typeRadio = ref('电流')
 const timeRadio = ref('近一小时')
@@ -425,7 +427,7 @@ const initChart2 = () => {
                                       //判断是否给鼠标悬停上显示符号
                                       if(typeRadio.value === '电流') {
                                         result += ' A';
-                                      }else if (typeRadio.value === '电压') {
+                                      }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
                                         result += ' V';
                                       }else if (typeRadio.value === '有功功率') {
                                         result += ' kW';
@@ -450,7 +452,7 @@ const initChart2 = () => {
               // 根据 typeRadio 的值添加单位
               if (typeRadio.value === '电流') {
                 return value + ' A';
-              } else if (typeRadio.value === '电压') {
+              } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
                 return value + ' V';
               } else if (typeRadio.value === '有功功率') {
                 return value + ' kW';
@@ -467,6 +469,12 @@ const initChart2 = () => {
               }
             }
           }
+        },
+                grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
         },
         series: [
           {name: 'L1', type: 'line', symbol: 'none', data: L1Data.value },
@@ -493,7 +501,7 @@ const initChart3 = () => {
                                       //判断是否给鼠标悬停上显示符号
                                       if(typeRadio.value === '电流') {
                                         result += ' A';
-                                      }else if (typeRadio.value === '电压') {
+                                      }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
                                         result += ' V';
                                       }else if (typeRadio.value === '有功功率') {
                                         result += ' kW';
@@ -520,7 +528,7 @@ const initChart3 = () => {
               // 根据 typeRadio 的值添加单位
               if (typeRadio.value === '电流') {
                 return value + ' A';
-              } else if (typeRadio.value === '电压') {
+              } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
                 return value + ' V';
               } else if (typeRadio.value === '有功功率') {
                 return value + ' kW';
@@ -538,6 +546,12 @@ const initChart3 = () => {
             }
           }
         },
+                grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },
         series: [
           {name: '电量', type: 'line', symbol: 'none', data: eqValue.value},
         ],
@@ -554,7 +568,7 @@ const getDetailData =async () => {
     if (data != null){
       hasData.value = true
       runLoad.value = formatNumber(data.runLoad, 2);
-      ratedCapacity.value = formatNumber(data.ratedCapacity, 1);
+      ratedCapacity.value = formatNumber(data.ratedCapacity, 2);
       reserveMargin.value = formatNumber(data.reserveMargin, 2);
       powActive.value = formatNumber(data.powActive, 2);
       powReactive.value = formatNumber(data.powReactive, 2);
@@ -584,8 +598,10 @@ const getBusIdAndLocation =async () => {
       queryParams.id = data.busId
       lineChartQueryParams.id = data.busId
       location.value = data.location
+      busName.value = data.busName
     }else{
       location.value = null
+      busName.value = null
     }
  } finally {
  }
@@ -614,7 +630,7 @@ watch( ()=>typeRadio.value, async(value)=>{
                                     //判断是否给鼠标悬停上显示符号
                                     if(typeRadio.value === '电流') {
                                       result += ' A';
-                                    }else if (typeRadio.value === '电压') {
+                                    }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
                                       result += ' V';
                                     }else if (typeRadio.value === '有功功率') {
                                       result += ' kW';
@@ -638,7 +654,7 @@ watch( ()=>typeRadio.value, async(value)=>{
               // 根据 typeRadio 的值添加单位
               if (typeRadio.value === '电流') {
                 return value + ' A';
-              } else if (typeRadio.value === '电压') {
+              } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
                 return value + ' V';
               } else if (typeRadio.value === '有功功率') {
                 return value + ' kW';
@@ -656,6 +672,12 @@ watch( ()=>typeRadio.value, async(value)=>{
             }
           }
         },
+                grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },
       series: [
         {name: 'L1', type: 'line', symbol: 'none', data: L1Data.value},
         {name: 'L2', type: 'line', symbol: 'none', data: L2Data.value},
@@ -670,7 +692,7 @@ watch( ()=>typeRadio.value, async(value)=>{
                                     //判断是否给鼠标悬停上显示符号
                                     if(typeRadio.value === '电流') {
                                       result += ' A';
-                                    }else if (typeRadio.value === '电压') {
+                                    }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
                                       result += ' V';
                                     }else if (typeRadio.value === '有功功率') {
                                       result += ' kW';
@@ -694,7 +716,7 @@ watch( ()=>typeRadio.value, async(value)=>{
             // 根据 typeRadio 的值添加单位
             if (typeRadio.value === '电流') {
               return value + ' A';
-            } else if (typeRadio.value === '电压') {
+            } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
               return value + ' V';
             } else if (typeRadio.value === '有功功率') {
               return value + ' kW';
@@ -712,6 +734,12 @@ watch( ()=>typeRadio.value, async(value)=>{
           }
         }
       },            
+              grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },
       series: [
         {name: '电量', type: 'line', symbol: 'none', data: eqValue.value},
       ],
@@ -751,7 +779,7 @@ watch( ()=>timeRadio.value, async(value)=>{
                             //判断是否给鼠标悬停上显示符号
                             if(typeRadio.value === '电流') {
                               result += ' A';
-                            }else if (typeRadio.value === '电压') {
+                            }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
                               result += ' V';
                             }else if (typeRadio.value === '有功功率') {
                               result += ' kW';
@@ -778,7 +806,7 @@ watch( ()=>timeRadio.value, async(value)=>{
               // 根据 typeRadio 的值添加单位
               if (typeRadio.value === '电流') {
                 return value + ' A';
-              } else if (typeRadio.value === '电压') {
+              } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
                 return value + ' V';
               } else if (typeRadio.value === '有功功率') {
                 return value + ' kW';
@@ -795,6 +823,12 @@ watch( ()=>timeRadio.value, async(value)=>{
               }
             }
           }
+        },
+                grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
         },
     series: [
       {name: 'L1', type: 'line', symbol: 'none', data: L1Data.value},
@@ -815,7 +849,7 @@ watch( ()=>timeRadio.value, async(value)=>{
                                   //判断是否给鼠标悬停上显示符号
                                   if(typeRadio.value === '电流') {
                                     result += ' A';
-                                  }else if (typeRadio.value === '电压') {
+                                  }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
                                     result += ' V';
                                   }else if (typeRadio.value === '有功功率') {
                                     result += ' kW';
@@ -842,7 +876,7 @@ watch( ()=>timeRadio.value, async(value)=>{
               // 根据 typeRadio 的值添加单位
               if (typeRadio.value === '电流') {
                 return value + ' A';
-              } else if (typeRadio.value === '电压') {
+              } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
                 return value + ' V';
               } else if (typeRadio.value === '有功功率') {
                 return value + ' kW';
@@ -859,6 +893,12 @@ watch( ()=>timeRadio.value, async(value)=>{
               }
             }
           }
+        },
+                grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
         },
     series: [
       {name: '电量', type: 'line', symbol: 'none', data: eqValue.value},
@@ -1045,7 +1085,7 @@ const flashChartData = async () =>{
                                     //判断是否给鼠标悬停上显示符号
                                     if(typeRadio.value === '电流') {
                                       result += ' A';
-                                    }else if (typeRadio.value === '电压') {
+                                    }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
                                       result += ' V';
                                     }else if (typeRadio.value === '有功功率') {
                                       result += ' kW';
@@ -1069,7 +1109,7 @@ const flashChartData = async () =>{
             // 根据 typeRadio 的值添加单位
             if (typeRadio.value === '电流') {
               return value + ' A';
-            } else if (typeRadio.value === '电压') {
+            } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
               return value + ' V';
             } else if (typeRadio.value === '有功功率') {
               return value + ' kW';
@@ -1087,6 +1127,12 @@ const flashChartData = async () =>{
           }
         }
       },
+              grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },
       series: [
         {name: 'L1', type: 'line', symbol: 'none', data: L1Data.value},
         {name: 'L2', type: 'line', symbol: 'none', data: L2Data.value},
@@ -1101,7 +1147,7 @@ const flashChartData = async () =>{
                                     //判断是否给鼠标悬停上显示符号
                                     if(typeRadio.value === '电流') {
                                       result += ' A';
-                                    }else if (typeRadio.value === '电压') {
+                                    }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
                                       result += ' V';
                                     }else if (typeRadio.value === '有功功率') {
                                       result += ' kW';
@@ -1125,7 +1171,7 @@ const flashChartData = async () =>{
             // 根据 typeRadio 的值添加单位
             if (typeRadio.value === '电流') {
               return value + ' A';
-            } else if (typeRadio.value === '电压') {
+            } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
               return value + ' V';
             } else if (typeRadio.value === '有功功率') {
               return value + ' kW';
@@ -1143,6 +1189,12 @@ const flashChartData = async () =>{
           }
         }
       },
+              grid: {
+          left: '5%',   // 设置左侧边距
+          right: '5%',  // 设置右侧边距
+          top: '10%',    // 设置上侧边距
+          bottom: '10%', // 设置下侧边距
+        },
       series: [
         {name: '电量', type: 'line', symbol: 'none', data: eqValue.value},
       ],
@@ -1237,9 +1289,9 @@ function initData (){
         break;
       case '线电压':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.vol_line, 2));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.vol_line, 2));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.vol_line, 2));
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.vol_line, 1));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.vol_line, 1));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.vol_line, 1));
         }
         break;
       case '负载率':
@@ -1301,9 +1353,9 @@ function initData (){
         break;
       case '线电压':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.vol_line_avg_value, 2));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.vol_line_avg_value, 2));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.vol_line_avg_value, 2));
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.vol_line_avg_value, 1));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.vol_line_avg_value, 1));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.vol_line_avg_value, 1));
         }
         break;
       case '负载率':
@@ -1365,9 +1417,9 @@ function initData (){
         break;
       case '线电压':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.vol_line_avg_value, 2));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.vol_line_avg_value, 2));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.vol_line_avg_value, 2));
+        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.vol_line_avg_value, 1));
+        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.vol_line_avg_value, 1));
+        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.vol_line_avg_value, 1));
         }
         break;
       case '负载率':

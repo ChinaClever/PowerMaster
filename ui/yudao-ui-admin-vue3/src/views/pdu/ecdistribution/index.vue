@@ -1,7 +1,7 @@
 <template>
   <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="PDU能耗趋势" :showCheckbox="false" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
-      <br/>    <br/> 
+      <br/>   
       <div class="nav_data">
         <!-- <div class="carousel-container">
           <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
@@ -41,14 +41,14 @@
         </div>
         <br/> 
         <div class="descriptions-container"  v-if="maxEqDataTimeTemp" style="font-size: 14px;">
-        <div class="description-item" >
+        <!-- <div class="description-item" >
           <span class="label">开始日期 :</span>
           <span >{{selectTimeRange[0]}}</span>
         </div>
         <div class="description-item" >
           <span class="label">结束日期 :</span>
           <span >{{selectTimeRange[1]}}</span>
-        </div>
+        </div> -->
         <div class="description-item">
           <span class="label">总耗电量 :</span>
           <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
@@ -72,7 +72,6 @@
         </div>
         <div class="line" style="margin-top: 10px;"></div>
         </div>
-
       </div>      
     </template>
     
@@ -142,19 +141,25 @@
               :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
               :row-style="{ fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
+               <!-- 添加行号列 -->
+              <el-table-column label="序号" align="center" width="80px">
+                <template #default="{ $index }">
+                  {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
+                </template>  
+              </el-table-column>
               <!-- 动态生成表头 -->
               <template  v-for="item in headerData" :key="item.name">
                 <el-table-column  label="开始电能">
-                  <el-table-column prop="startEleData" label="电能(kWh)"/>   
-                  <el-table-column prop="startTimeData" label="开始日期"/>
+                  <el-table-column prop="startEleData" label="开始电能(kWh)"/>   
+                  <el-table-column prop="startTimeData" label="开始时间"/>
                 </el-table-column>
                 <el-table-column  label="结束电能">
-                  <el-table-column prop="endEleData" label="电能(kWh))"/>   
-                  <el-table-column prop="endTimeData" label="结束日期"/>
+                  <el-table-column prop="endEleData" label="结束电能(kWh)"/>   
+                  <el-table-column prop="endTimeData" label="结束时间"/>
                 </el-table-column>
                 <el-table-column v-if="item.name === '耗电量'" label="耗电量">
-                  <el-table-column :prop="item.name" label="电量(kWh)"/>   
-                  <el-table-column prop="create_time" label="记录日期"/>
+                  <el-table-column :prop="item.name" label="耗电量(kWh)"/>   
+                  <el-table-column prop="create_time" label="记录时间"/>
                 </el-table-column>
               </template>
             </el-table>
@@ -794,9 +799,15 @@ const handleExport1 = async () => {
 }
 
 .label {
-  width:100px; /* 控制冒号前的宽度 */
   text-align: right; /* 文本右对齐 */
   margin-right: 10px; /* 控制冒号后的间距 */
+  text-align: left;
+}
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
+
 }
   .line {
     height: 1px;
@@ -804,7 +815,4 @@ const handleExport1 = async () => {
 
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
-  .value {
-  flex: 1; /* 自动扩展以对齐数据 */
-}
 </style>

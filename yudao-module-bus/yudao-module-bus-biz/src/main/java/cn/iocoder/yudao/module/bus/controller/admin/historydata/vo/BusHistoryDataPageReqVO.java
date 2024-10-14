@@ -32,4 +32,5 @@ public class BusHistoryDataPageReqVO extends PageParam {
 
     private String[] boxIds;
 
+    private String busName;
 }

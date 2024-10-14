@@ -2,6 +2,8 @@ package cn.iocoder.yudao.module.bus.controller.admin.busindex;
 
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusTemDetailRes;
+import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailReqVO;
+import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailRespVO;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +24,7 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.service.busindex.BusIndexService;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -164,6 +167,13 @@ public class BusIndexController {
         return success(pageResult);
     }
 
+    @Operation(summary = "始端箱用能列表分页")
+    @PostMapping("/eq/maxEq")
+    public CommonResult<PageResult<BusIndexDTO>> getMaxEq(@RequestBody BusIndexPageReqVO pageReqVO) {
+        PageResult<BusIndexDTO> pageResult = indexService.getMaxEq(pageReqVO);
+        return success(pageResult);
+    }
+
     /**
      * 始端箱有功功率趋势
      *
@@ -241,6 +251,13 @@ public class BusIndexController {
     public CommonResult<PowerRedisDataRes> getBusPowerRedisData(@RequestBody BusIndexPageReqVO pageReqVO) {
         PowerRedisDataRes result = indexService.getBusPowerRedisData(pageReqVO.getDevKey());
         return success(result);
+    }
+
+    @PostMapping("/peakDemand")
+    @Operation(summary = "获得最大需量")
+    public CommonResult<BusPowerLoadDetailRespVO> getPeakDemand(@RequestBody BusIndexPageReqVO pageReqVO) throws IOException {
+        BusPowerLoadDetailRespVO detailRespVO = indexService.getPeakDemand(pageReqVO);
+        return success(BeanUtils.toBean(detailRespVO, BusPowerLoadDetailRespVO.class));
     }
 
     @Operation(summary = "始端箱电力详情负载率图表")

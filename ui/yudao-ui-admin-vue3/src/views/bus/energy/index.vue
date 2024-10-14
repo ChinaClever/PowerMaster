@@ -7,35 +7,7 @@
           <div class="name"></div>
           <div></div>
         </div> -->
-        <div class="line"></div>
-        <!-- <div class="line"></div>
-        <div class="status">
-          <div class="box">
-            <div class="top">
-              <div class="tag"></div>正常
-            </div>
-            <div class="value"><span class="number">24</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag empty"></div>空载
-            </div>
-            <div class="value"><span class="number">1</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag warn"></div>预警
-            </div>
-            <div class="value"><span class="number">1</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag error"></div>故障
-            </div>
-            <div class="value"><span class="number">0</span>个</div>
-          </div>
-        </div>
-        <div class="line"></div> -->
+        <!-- <div class="line"></div> -->
         <!-- <div class="overview">
           <div class="count">
             <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
@@ -59,6 +31,22 @@
             </div>
           </div>
         </div> -->
+        <div style="font-size: 14px;margin-top: 45px;margin-left:10px">
+          <div ><span>用能最多</span>
+          </div>
+          <div>
+            <span class="label">昨日用能：</span>
+            <span class="value">{{ busName1 }}</span>
+          </div>
+          <div >
+            <span class="label">上周用能：</span>
+            <span class="value">{{ busName2 }}</span>
+          </div>
+          <div >
+            <span class="label">上月用能：</span>
+            <span class="value">{{ busName3 }}</span>
+          </div>
+          </div>
         <div class="line"></div>        
       </div>
     </template>
@@ -69,20 +57,34 @@
         :inline="true"
         label-width="68px"
       >
-        <div>
-          <el-form-item label="公司名称" prop="username">
-            <el-input
-              v-model="queryParams.company"
-              placeholder="请输入公司名称"
-              clearable
-              class="!w-160px"
-              height="35"
-            />
-          </el-form-item>
-          <el-form-item>
-            <el-button style="margin-left: 12px" @click="getTableData(true)" ><Icon icon="ep:search" />搜索</el-button>
-          </el-form-item>
-        </div>
+        <el-form-item label="用能排序"  label-width="100px">
+          <el-button @click="changeTimeGranularity('yesterday')"
+          >
+            昨日
+          </el-button>
+          <el-button @click="changeTimeGranularity('lastWeek')"
+          >
+            上周
+          </el-button>
+          <el-button @click="changeTimeGranularity('lastMonth')"
+          >
+            上月
+          </el-button>                            
+        </el-form-item>
+        <el-form-item label="网络地址" prop="devKey" style="margin-left:80px">
+          <el-autocomplete
+            v-model="queryParamsDevKey"
+            :fetch-suggestions="querySearch"
+            clearable
+            class="!w-160px"
+            placeholder="请输入网络地址"
+            @select="handleQuery"
+          />
+        <el-form-item style="margin-left: 5px;margin-right: 6px">
+          <el-button @click="handleQuery" style="width:70px"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="resetQuery" style="width:70px;" ><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+        </el-form-item>         
+        </el-form-item >
         <el-form-item style="margin-left: auto">
           <el-button @click="handleSwitchModal(0)" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />阵列模式</el-button>
           <el-button @click="handleSwitchModal(1)" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
@@ -102,12 +104,14 @@
               </div>
             </div>
             <div class="room">{{item.location}}</div>
-            <button class="detail" @click.prevent="toDetail(item.roomId, item.id,item.location)" >详情</button>
+            <div class="name">{{item.busName}}</div>
+            <button class="detail" @click.prevent="toDetail(item.devKey,item.roomId, item.id,item.location,item.busName)" >详情</button>
           </div>
         </div>
         <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" :border="true">
           <el-table-column type="index" width="80px" label="序号" align="center" />
           <el-table-column label="位置" min-width="110" align="center" prop="local" />
+          <el-table-column label="设备名称"  align="center" prop="busName" />
           <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
           <el-table-column label="昨日用能(kW·h)" min-width="110" align="center" prop="yesterdayEq" >
             <template #default="scope" >
@@ -130,6 +134,17 @@
               </el-text>
             </template>
           </el-table-column>
+        <el-table-column label="操作" align="center">
+          <template #default="scope">
+            <el-button
+              link
+              type="primary"
+              @click="toDetail(scope.row.devKey,scope.row.roomId,scope.row.id,scope.row.location,scope.row.busName)"
+            >
+            详情
+            </el-button>
+          </template>
+        </el-table-column>
         </el-table>
         <Pagination
           :total="queryParams.pageTotal"
@@ -149,20 +164,64 @@
 import { IndexApi } from '@/api/bus/busindex'
 
 const { push } = useRouter() // 路由跳转
-
+const queryParamsDevKey = ref('')
 const tableLoading = ref(false) // 
 const isFirst = ref(true) // 是否第一次调用getTableData函数
 const navList = ref([]) // 左侧导航栏树结构列表
 const tableData = ref([])as any
+const tableDataMax = ref([])as any
 const switchValue = ref(0) // 表格(1) 矩阵(0)切换
 const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
+const yesterdayMaxEq = ref(0)
+const lastWeekMaxEq = ref(0)
+const lastMonthMaxEq = ref(0)
+const busName1 = ref('无数据')
+const busName2 = ref('无数据')
+const busName3 = ref('无数据')
 const queryParams = reactive({
   company: undefined,
   pageNo: 1,
   pageSize: 24,
   pageTotal: 0,
   busDevKeyList : [],
+  isDeleted: 0,
+  timeGranularity:'',
 }) as any
+
+const queryParamsAll = reactive({
+  company: undefined,
+  pageNo: 1,
+  pageSize: -1,
+  pageTotal: 0,
+  busDevKeyList : [],
+  isDeleted: 0,
+}) as any
+
+const devKeyList = ref([])
+const loadAll = async () => {
+  var data = await IndexApi.devKeyList();
+  var objectArray = data.map((str) => {
+    return { value: str };
+  });
+  return objectArray;
+}
+
+const querySearch = (queryString: string, cb: any) => {
+
+  const results = queryString
+    ? devKeyList.value.filter(createFilter(queryString))
+    : devKeyList.value
+  // call callback function to return suggestions
+  cb(results)
+}
+
+const createFilter = (queryString: string) => {
+  return (devKeyList) => {
+    return (
+      devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+    )
+  }
+}
 
 // 接口获取机房导航列表
 const getNavList = async() => {
@@ -195,7 +254,9 @@ const getTableData = async(reset = false) => {
       runStatus: [],
       pduBox: 0,
       company: queryParams.company,
-      busDevKeyList : queryParams.busDevKeyList
+      busDevKeyList : queryParams.busDevKeyList,
+      isDeleted : queryParams.isDeleted,
+      timeGranularity : queryParams.timeGranularity
     })
     if (res.list) {
       tableData.value = res.list.map(item => {
@@ -207,13 +268,42 @@ const getTableData = async(reset = false) => {
           yesterdayEq: item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0',
           lastWeekEq: item.lastWeekEq ? item.lastWeekEq.toFixed(1) : '0.0',
           lastMonthEq: item.lastMonthEq ? item.lastMonthEq.toFixed(1) : '0.0',
-          status : item.runStatus
+          status : item.runStatus,
+          busName : item.busName,
         }
       })
       queryParams.pageTotal = res.total
     }
   } finally {
     tableLoading.value = false
+  }
+}
+
+const getMaxData = async(reset = false) => {
+  try {
+    const res = await IndexApi.getEqMax({
+      pageNo: queryParamsAll.pageNo,
+      pageSize: queryParamsAll.pageSize,
+      cabinetIds: isFirst.value ? null : cabinetIds.value,
+      company: queryParamsAll.company,
+      busDevKeyList : queryParamsAll.busDevKeyList,
+      isDeleted : queryParams.isDeleted
+    })
+    if (res.list) {
+        //借用id值来辅助判断是哪个时间的集合，0为昨日，1为上周，2为上月
+        const dataList = res.list
+        dataList.forEach(item => {
+          if(item.id == 0){
+            busName1.value = item.busName
+          }else if (item.id == 1){
+            busName2.value = item.busName
+          }else if (item.id == 2){
+            busName3.value = item.busName
+          }
+        })
+    }
+  } finally {
+    
   }
 }
 
@@ -252,15 +342,36 @@ const handleCheck = (row) => {
   getTableData(true)
 }
 
-// 跳转详情
-const toDetail = (roomId, id,location) => {
-  
-  push({path: '/bus/busmonitor/busenergydetail', state: { roomId, id,location }})
+/** 搜索按钮操作 */
+const handleQuery = () => {
+  queryParams.busDevKeyList = [queryParamsDevKey.value]
+  getTableData(true)
 }
+
+const resetQuery = () => {
+  queryParams.busDevKeyList = []
+  getTableData(true)
+}
+
+const changeTimeGranularity = (value) => {
+  queryParams.timeGranularity = value;
+  getTableData(true);
+}
+
+// 跳转详情
+const toDetail = (devKey,roomId, id,location,busName) => {
+  
+  push({path: '/bus/busmonitor/busenergydetail', state: {devKey, roomId, id,location,busName }})
+}
+
+onMounted(async () => {
+  devKeyList.value = await loadAll();
+})
 
 onBeforeMount(() => {
   getNavList()
   getTableData()
+  getMaxData()
 })
 </script>
 
@@ -408,7 +519,18 @@ onBeforeMount(() => {
       position: absolute;
       left: 10px;
       top: 8px;
-      font-size: 13px;
+      font-size: 14px;
+    }
+    .name {
+      height: 20px;
+      font-size: 14px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      right: 5px;
+      top: 4px;
     }
     .detail {
       width: 35px;
@@ -423,7 +545,7 @@ onBeforeMount(() => {
       background-color: #fff;
       position: absolute;
       right: 5px;
-      top: 4px;
+      bottom: 4px;
     }
   }
 }

@@ -57,6 +57,12 @@
             </div>
             <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
           </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag empty"></div>总共
+            </div>
+            <div class="value"><span class="number">{{ busTotal }}</span>个</div>
+          </div>
         </div>        
         <div class="line"></div>
 
@@ -70,13 +76,13 @@
         :inline="true"
         label-width="68px"
         v-show="switchValue !== 4"  
-      >
-        <el-form-item>
+      > <el-form-item>
+        <el-form-item v-show="valueMode != 3 && valueMode != 4">
           <template v-for="(status, index) in statusList" :key="index">
             <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
           </template>
         </el-form-item>
-        <el-form-item label="网络地址" prop="devKey">
+        <el-form-item label="网络地址" prop="devKey" style="margin-left:10px">
           <el-autocomplete
             v-model="queryParams.devKey"
             :fetch-suggestions="querySearch"
@@ -107,6 +113,7 @@
           </el-button>
         </el-form-item>         
         </el-form-item >
+      </el-form-item>
         <div style="float:right;margin-top: 1.5px;">
           <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''" ><Icon icon="ep:grid" style="margin: 0px" />电流</el-button>            
           <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''" ><Icon icon="ep:grid" style="margin: 0px" />电压</el-button>            
@@ -169,6 +176,7 @@
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="设备名称" align="center" prop="busName" />
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column v-if="valueMode == 0" label="A相电流(A)" align="center" prop="acur" width="130px" >
           <template #default="scope" >
@@ -233,6 +241,13 @@
             </el-text>
           </template>
         </el-table-column>
+        <el-table-column v-if="valueMode == 2" label="总有功功率(kW)" align="center" prop="powValue" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powValue" :type=" scope.row.powStatus != 0 ? 'danger' : '' ">
+              {{ scope.row.powValue }}
+            </el-text>
+          </template>
+        </el-table-column>
         <el-table-column v-if="valueMode == 3" label="A相无功功率(kVar)" align="center" prop="areactivePow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.aactivePow">
@@ -247,14 +262,42 @@
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 3" label="C相无功功率(kVar)" align="center" prop="powApparent" width="130px" >
+        <el-table-column v-if="valueMode == 3" label="C相无功功率(kVar)" align="center" prop="creactivePow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.creactivePow">
               {{ scope.row.creactivePow }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 4" label="视在功率(kVA)" align="center" prop="powApparent" width="130px" >
+        <el-table-column v-if="valueMode == 3" label="总无功功率(kVar)" align="center" prop="powReactive" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powReactive">
+              {{ scope.row.powReactive }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 4" label="A相视在功率(kVA)" align="center" prop="apowApparent" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.apowApparent">
+              {{ scope.row.apowApparent }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 4" label="B相视在功率(kVA)" align="center" prop="bpowApparent" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.bpowApparent">
+              {{ scope.row.bpowApparent }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 4" label="C相视在功率(kVA)" align="center" prop="cpowApparent" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.cpowApparent">
+              {{ scope.row.cpowApparent }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 4" label="总视在功率(kVA)" align="center" prop="powApparent" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.powApparent">
               {{ scope.row.powApparent }}
@@ -288,6 +331,7 @@
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="设备名称" align="center" prop="busName" />
         <el-table-column label="运行状态" align="center" prop="status" >
           <template #default="scope">
             <el-tag type="info" v-if="scope.row.status">已删除</el-tag>
@@ -319,21 +363,32 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="icon" >
-              <div v-if="valueMode == 0 && item.acur != null" >
+            <div style="padding: 0 18px;margin-right:30px;" v-if="valueMode == 0 && item.acur != null"><Bar :width="80" :height="100" :max="{L1:item.acur,L2:item.bcur,L3:item.ccur,L4:item.acurStatus,L5:item.bcurStatus,L6:item.ccurStatus}" /></div>
+            <div style="padding: 0 18px;margin-right:30px;" v-if="valueMode == 1 && item.avol != null"><Bar :width="80" :height="100" :max="{L1:item.avol,L2:item.bvol,L3:item.cvol,L4:item.avolStatus,L5:item.bvolStatus,L6:item.cvolStatus}" /></div>
+            <div class="icon" v-if="valueMode != 0 && valueMode != 1">
+              <!-- <div v-if="valueMode == 0 && item.acur != null" style="font-size:large">
                 电流
-              </div>    
-              <div v-if="valueMode == 1 && item.avol != null" >
+              </div>     -->
+              <!-- <div v-if="valueMode == 1 && item.avol != null" style="font-size:large">
                 电压
-              </div>           
+              </div> -->
+              <div v-if="valueMode == 2 && item.aactivePow != null" style="font-size:20px">
+                {{item.powValue}}
+              </div>
               <div v-if="valueMode == 2 && item.aactivePow != null" >
-                有功功率
-              </div> 
+                总有功功率(kW)
+              </div>
+              <div v-if="valueMode == 3 && item.areactivePow != null" style="font-size:20px">
+                {{item.powReactive}}
+              </div>
               <div v-if="valueMode == 3 && item.areactivePow != null" >
-                无功功率
-              </div> 
+                总无功功率(kVar)
+              </div>
+              <div v-if="valueMode == 4 && item.areactivePow != null" style="font-size:20px">
+                {{item.powApparent}}
+              </div>
               <div v-if="valueMode == 4 && item.powApparent != null" >
-                视在功率
+                总视在功率(kVA)
               </div> 
             </div>
             <div class="info" v-if="valueMode == 0" >                  
@@ -353,7 +408,7 @@
                 </el-text>
               </div>
             </div>
-            <div class="info" v-if="valueMode == 1">                  
+            <div class="info" v-if="valueMode == 1" >                  
               <div v-if="item.avol != null">
                 <el-text v-if="item.avol != null" :type=" item.avolStatus != 0 ? 'danger' : '' ">
                   A相：{{item.avol}}V
@@ -405,9 +460,19 @@
               </div>
             </div>
             <div class="info" v-if="valueMode == 4">                  
-              <div v-if="item.powApparent != null">
-                <el-text v-if="item.powApparent != null">
-                  ：{{item.powApparent}}kVA
+              <div v-if="item.apowApparent != null">
+                <el-text v-if="item.apowApparent != null">
+                  A相：{{item.apowApparent}}kVA
+                </el-text>
+              </div>
+              <div v-if="item.bpowApparent != null">
+                <el-text v-if="item.bpowApparent != null">
+                  B相：{{item.bpowApparent}}kVA
+                </el-text>
+              </div>
+              <div v-if="item.cpowApparent != null">
+                <el-text v-if="item.cpowApparent != null">
+                  C相：{{item.cpowApparent}}kVA
                 </el-text>
               </div>
             </div>
@@ -430,6 +495,11 @@
           </div>
           <div class="status" v-if="valueMode == 3">
             <el-tag type="info" v-if="item.status == null ||  item.status == 5" >离线</el-tag>
+            <el-tag v-else >正常</el-tag>
+          </div>
+          <div class="status" v-if="valueMode == 4">
+            <el-tag type="info" v-if="item.status == null ||  item.status == 5" >离线</el-tag>
+            <el-tag v-else >正常</el-tag>
           </div>
           <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 5" >详情</button>
         </div>
@@ -459,7 +529,7 @@ import download from '@/utils/download'
 import { IndexApi } from '@/api/bus/busindex'
 // import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
-
+import Bar from './Bar.vue'
 // import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
 
 /** PDU设备 列表 */
@@ -629,6 +699,7 @@ const deletedList = ref([
   }
 ]) as any// 列表的数据
 const total = ref(0) // 列表的总页数
+const busTotal = ref(0)//母线总数
 const deletedTotal = ref(0) // 已删除列表的总页数
 const queryParams = reactive({
   pageNo: 1,
@@ -650,6 +721,7 @@ const queryParamsAll = reactive({
   serverRoomData:undefined,
   status:undefined,
   cabinetIds : [],
+  isDeleted: 0,
 })as any
 const queryDeletedPageParams = reactive({
   pageNo: 1,
@@ -683,6 +755,15 @@ const getList = async () => {
       obj.acur = obj.acur?.toFixed(2);
       obj.bcur = obj.bcur?.toFixed(2);
       obj.ccur = obj.ccur?.toFixed(2);
+      //测试数据
+      // obj.acur = 0.3
+      // obj.bcur = 0.6
+      // obj.ccur = 0.9
+      // obj.avol = 210
+      // obj.bvol = 250
+      // obj.cvol = 400
+      // obj.acurStatus = 1
+      // obj.cvolStatus = 9
       obj.avol = obj.avol?.toFixed(1);
       obj.bvol = obj.bvol?.toFixed(1);
       obj.cvol = obj.cvol?.toFixed(1);
@@ -742,7 +823,6 @@ const getListNoLoading = async () => {
       obj.creactivePow = obj.creactivePow?.toFixed(3);
     });
 
-
     total.value = data.total
   } catch (error) {
     
@@ -776,6 +856,7 @@ const getListAll = async () => {
     statusNumber.offline = offline;
     statusNumber.alarm = alarm;
     statusNumber.warn = warn;
+    busTotal.value = allData.total
   } catch (error) {
     
   }
@@ -801,7 +882,8 @@ const toDeatil = (row) =>{
   const devKey = row.devKey;
   const busId = row.busId;
   const location = row.location != null ? row.location : row.devKey
-  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location }})
+  const busName = row.busName;
+  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location , busName }})
 }
 
 // const openNewPage = (scope) => {
@@ -814,7 +896,6 @@ const handleSelectStatus = (index) => {
   const status =  statusList.filter(item => item.selected)
   const statusArr = status.map(item => item.value)
   queryParams.status = statusArr;
-  console.log(queryParams.status+'aaaaaaaaaaaaaaaaaaaaaaaaaa')
   handleQuery();
 }
 
@@ -1191,10 +1272,10 @@ onActivated(() => {
       display: flex;
       align-items: center;
       .icon {
-        width: 74px;
+        width: 90px;
         height: 30px;
-        margin: 0 28px;
-        font-size: large;
+        margin: 0 28px 30px;
+        font-size: 15px;
         text-align: center;
       }
     }

@@ -75,7 +75,7 @@ public interface HistoryDataService {
 
     List<Object> getEnExcelList(List<Object> list);
 
-    List<Object> getNewHistoryDataDetails(List<Object> list,String ob);
+    List<Object> getNewHistoryDataDetails(List<Object> list);
 
     List<Object> getNewExcelList(List<Object> list1,String ob);
 

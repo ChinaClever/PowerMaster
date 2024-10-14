@@ -47,6 +47,7 @@ public class BusEnergyConsumptionController {
                                   HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = busEnergyConsumptionService.getEQDataPage(pageReqVO).getList();
+
         //对list进行处理
         busEnergyConsumptionService.getNewlList(list);
         // 导出 Excel
@@ -240,7 +241,7 @@ public class BusEnergyConsumptionController {
     public void exportBoxDetailsDataExcel(EnergyConsumptionPageReqVO pageReqVO,
                                           HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
-        List<Object> list = busEnergyConsumptionService .getBoxBillDataPage(pageReqVO).getList();
+        List<Object> list = busEnergyConsumptionService .getBoxEQDataDetails(pageReqVO).getList();
         if(!list.isEmpty()){
             //对list进行处理
             busEnergyConsumptionService.getNewDetailList(list);

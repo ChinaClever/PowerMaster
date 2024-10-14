@@ -914,7 +914,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     }
 
     @Override
-    public List<Object> getNewHistoryDataDetails(List<Object> list,String ob) {
+    public List<Object> getNewHistoryDataDetails(List<Object> list) {
         List<Map<String, Object>> mapList = new ArrayList<>();
 
         for (Object obj : list) {
@@ -924,25 +924,25 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 mapList.add(map);
             }
         }
-        if(ob.equals("realtime")){
             for (int i = 0; i < mapList.size(); i++) {
                 mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
             }
-        }
-        else if(ob.equals("not_realtime")){
+            if(mapList.get(0).containsKey("pow_apparent_max_time")){
+                for (int i = 0; i < mapList.size(); i++) {
+                    mapList.get(i).put("pow_apparent_max_time", mapList.get(i).get("pow_apparent_max_time").toString().substring(0, 16));
+                    mapList.get(i).put("pow_apparent_min_time", mapList.get(i).get("pow_apparent_min_time").toString().substring(0, 16));
+                    mapList.get(i).put("pow_active_max_time", mapList.get(i).get("pow_active_max_time").toString().substring(0, 16));
+                    mapList.get(i).put("pow_active_min_time", mapList.get(i).get("pow_active_min_time").toString().substring(0, 16));
+                }
+            }
+        if(mapList.get(0).containsKey("vol_max_time")){
             for (int i = 0; i < mapList.size(); i++) {
-                mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
-                mapList.get(i).put("pow_apparent_max_time", mapList.get(i).get("pow_apparent_max_time").toString().substring(0, 16));
-                mapList.get(i).put("pow_apparent_min_time", mapList.get(i).get("pow_apparent_min_time").toString().substring(0, 16));
-                mapList.get(i).put("pow_active_max_time", mapList.get(i).get("pow_active_max_time").toString().substring(0, 16));
-                mapList.get(i).put("pow_active_min_time", mapList.get(i).get("pow_active_min_time").toString().substring(0, 16));
                 mapList.get(i).put("vol_max_time", mapList.get(i).get("vol_max_time").toString().substring(0, 16));
                 mapList.get(i).put("vol_min_time", mapList.get(i).get("vol_min_time").toString().substring(0, 16));
                 mapList.get(i).put("cur_max_time", mapList.get(i).get("cur_max_time").toString().substring(0, 16));
                 mapList.get(i).put("cur_min_time", mapList.get(i).get("cur_min_time").toString().substring(0, 16));
             }
         }
-
         return list;
     }
 

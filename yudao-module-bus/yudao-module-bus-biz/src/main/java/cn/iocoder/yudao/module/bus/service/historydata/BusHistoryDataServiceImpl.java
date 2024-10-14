@@ -97,6 +97,7 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
                     String dev_key = busIndex.getDevKey();
 //                    String[] parts = dev_key.split("_");
                     map.put("dev_key", dev_key);
+                    map.put("bus_name",busIndex.getBusName());
 //                    map.put("ip_addr", parts[0]);
                     // 创建一个列表来存放要传递的对象 用于获取位置信息
                     List<BusResBase> busResBaseList = new ArrayList<>();
@@ -135,7 +136,7 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
                 BoxIndex boxIndex = boxIndexMapper.selectById( (int)boxId );
                 if (boxIndex != null){
                     map.put("dev_key", boxIndex.getDevKey());
-//                    map.put("bus_name", boxIndex.getBusName());
+                    map.put("bus_name", boxIndex.getBusName()+"-"+boxIndex.getBoxName());
 //                    map.put("ip_addr", boxIndex.getIpAddr());
                     // 创建一个列表来存放要传递的对象 用于获取位置信息
                     List<BoxResBase> boxResBaseList = new ArrayList<>();
@@ -489,7 +490,7 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
             String devkey = reqVO.getDevkey();
             String[] devkeys = new String[1];
             devkeys[0] = devkey;
-            String[] boxIds = getBusIdsbyBusDevkeys(devkeys);
+            String[] boxIds = getBoxIdsbyBoxDevkeys(devkeys);
             if (boxIds.length == 0){
                 return null;
             }
@@ -630,50 +631,93 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
     @Override
     public Map<String, Object> getBusNavNewData(String granularity) throws IOException {
         String[] indices = new String[0];
-        String[] key = new String[]{"total", "line"};
+        String[] key = new String[]{};
         LocalDateTime[] timeAgo = new LocalDateTime[0];
         Map<String, Object> map;
         switch (granularity){
             case "realtime":
+                key= new String[]{"total", "line"};
                 indices = new String[]{"bus_hda_total_realtime", "bus_hda_line_realtime"};
                 timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1)};
                 break;
             case "hour":
-                indices = new String[]{"bus_hda_total_hour", "bus_hda_line_hour"};
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1)};
+                key= new String[]{"total","total1","line","line1"};
+                indices = new String[]{"bus_hda_total_realtime", "bus_hda_total_hour", "bus_hda_line_realtime","bus_hda_line_hour"};
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1),LocalDateTime.now().minusHours(1),LocalDateTime.now().minusHours(1)};
                 break;
             case "day":
-                indices = new String[]{"bus_hda_total_day", "bus_hda_line_day"};
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1)};
+                key= new String[]{"total","total1","total2","line","line1","line2"};
+                indices = new String[]{"bus_hda_total_realtime","bus_hda_total_hour", "bus_hda_total_day", "bus_hda_line_realtime","bus_hda_line_hour", "bus_hda_line_day"};
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1),LocalDateTime.now().minusDays(1)};
                 break;
             default:
         }
         map = getSumData(indices, key, timeAgo,"bus_id");
+        if(map.containsKey("total1")){
+           map.put("total", (Long)map.get("total1")+ (Long)map.get("total"));
+        }
+        if(map.containsKey("total2")){
+            map.put("total", (Long)map.get("total2")+ (Long)map.get("total"));
+        }
+        if(map.containsKey("line1")){
+            map.put("line", (Long)map.get("line1")+ (Long)map.get("line"));
+        }
+        if(map.containsKey("line2")){
+            map.put("line", (Long)map.get("line2")+ (Long)map.get("line"));
+        }
         return map;
     }
 
     @Override
     public Map<String, Object> getBoxNavNewData(String granularity) throws IOException {
         String[] indices = new String[0];
-        String[] key = new String[]{"total", "line", "loop", "outlet"};
+        String[] key = new String[]{};
         LocalDateTime[] timeAgo = new LocalDateTime[0];
         Map<String, Object> map;
         switch (granularity){
             case "realtime":
+                key= new String[]{"total", "line", "loop", "outlet"};
                 indices = new String[]{"box_hda_total_realtime", "box_hda_line_realtime", "box_hda_loop_realtime", "box_hda_outlet_realtime"};
                 timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1)};
                 break;
             case "hour":
-                indices = new String[]{"box_hda_total_hour", "box_hda_line_hour", "box_hda_loop_hour", "box_hda_outlet_hour"};
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1)};
+                key= new String[]{"total","total1","line","line1","loop", "loop1","outlet","outlet1"};
+                indices = new String[]{"box_hda_total_realtime","box_hda_total_hour", "box_hda_line_realtime","box_hda_line_hour", "box_hda_loop_realtime", "box_hda_loop_hour", "box_hda_outlet_realtime","box_hda_outlet_hour"};
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1),LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1)};
                 break;
             case "day":
-                indices = new String[]{"box_hda_total_day", "box_hda_line_day", "box_hda_loop_day", "box_hda_outlet_day"};
-                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1)};
+                key= new String[]{"total","total1","total2","line","line1","line2","loop", "loop1","loop2","outlet","outlet1","outlet2"};
+                indices = new String[]{"box_hda_total_realtime","box_hda_total_hour", "box_hda_total_day","box_hda_line_realtime","box_hda_line_hour",  "box_hda_line_day","box_hda_loop_realtime", "box_hda_loop_hour", "box_hda_loop_day", "box_hda_outlet_realtime","box_hda_outlet_hour", "box_hda_outlet_day"};
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1),LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1),LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1)};
                 break;
             default:
         }
         map = getSumData(indices, key, timeAgo,"box_id");
+        if(map.containsKey("total1")){
+            map.put("total", (Long)map.get("total1")+ (Long)map.get("total"));
+        }
+        if(map.containsKey("total2")){
+            map.put("total", (Long)map.get("total2")+ (Long)map.get("total"));
+        }
+        if(map.containsKey("line1")){
+            map.put("line", (Long)map.get("line1")+ (Long)map.get("line"));
+        }
+        if(map.containsKey("line2")){
+            map.put("line", (Long)map.get("line2")+ (Long)map.get("line"));
+        }
+        if(map.containsKey("loop1")){
+            map.put("loop", (Long)map.get("loop1")+ (Long)map.get("loop"));
+        }
+        if(map.containsKey("loop2")){
+            map.put("loop", (Long)map.get("loop2")+ (Long)map.get("loop"));
+        }
+        if(map.containsKey("outlet1")){
+            map.put("outlet", (Long)map.get("outlet1")+ (Long)map.get("outlet"));
+        }
+        if(map.containsKey("outlet2")){
+            map.put("outlet", (Long)map.get("outlet2")+ (Long)map.get("outlet"));
+        }
+
         return map;
     }
 
@@ -721,6 +765,8 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
         List<Map<String, Object>> mapList = new ArrayList<>();
         SearchHits hits = searchResponse.getHits();
         hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
+        //获得设备名称
+        mapList.forEach(map -> map.put("bus_name",  busIndexMapper.selectById((Integer) map.get("bus_id"))!=null? busIndexMapper.selectById(Integer.valueOf(map.get("bus_id").toString())).getBusName(): "" ));
         // 匹配到的总记录数
         Long totalHits = hits.getTotalHits().value;
         // 返回的结果
@@ -851,7 +897,7 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
             String devkey = reqVO.getDevkey();
             String[] devkeys = new String[1];
             devkeys[0] = devkey;
-            String[] boxIds = getBusIdsbyBusDevkeys(devkeys);
+            String[] boxIds = getBoxIdsbyBoxDevkeys(devkeys);
             if (boxIds.length == 0){
                 return null;
             }

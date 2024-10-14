@@ -6,9 +6,6 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
 import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.*;
-import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataPageReqVO;
-import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HourAndDayPageRespVO;
-import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.RealtimePageRespVO;
 import cn.iocoder.yudao.module.pdu.service.energyconsumption.EnergyConsumptionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,7 +20,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 import static cn.iocoder.yudao.framework.operatelog.core.enums.OperateTypeEnum.EXPORT;
@@ -54,8 +50,15 @@ public class EnergyConsumptionController {
         //处理list
         List<Object>list=energyConsumptionService.getNewList(list1);
         // 导出 Excel
-        ExcelUtils.write(response, "pdu能耗趋势数据.xlsx", "数据", EQPageRespVO.class,
-                BeanUtils.toBean(list, EQPageRespVO.class));
+        if(((Map)list.get(0)).containsKey("outlet_id")){
+            ExcelUtils.write(response, "pdu能耗趋势数据.xlsx", "数据", EQOutletPageRespVO.class,
+                    BeanUtils.toBean(list, EQOutletPageRespVO.class));
+        }
+        else{
+            ExcelUtils.write(response, "pdu能耗趋势数据.xlsx", "数据", EQPageRespVO.class,
+                    BeanUtils.toBean(list, EQPageRespVO.class));
+        }
+
     }
 
     @GetMapping("/bill-page")
@@ -74,9 +77,29 @@ public class EnergyConsumptionController {
         pageReqVO.setPageSize(10000);
         List<Object> list1 = energyConsumptionService.getBillDataPage(pageReqVO).getList();
         List<Object> list=energyConsumptionService.getNewBillList(list1);
+
         // 导出 Excel
-        ExcelUtils.write(response, "pdu电费统计数据.xlsx", "数据", BillPageRespVO.class,
-                BeanUtils.toBean(list, BillPageRespVO.class));
+        if(pageReqVO.getGranularity().equals("day")){
+            if(((Map)list.get(0)).containsKey("outlet_id")){
+                ExcelUtils.write(response, "pdu能耗趋势数据.xlsx", "数据", BillOutletDayPageRespVO.class,
+                        BeanUtils.toBean(list, BillOutletDayPageRespVO.class));
+            }
+            else{
+                ExcelUtils.write(response, "pdu电费统计数据.xlsx", "数据", BillDayPageRespVO.class,
+                        BeanUtils.toBean(list, BillDayPageRespVO.class));
+            }
+        }
+        else{
+            if(((Map)list.get(0)).containsKey("outlet_id")){
+                ExcelUtils.write(response, "pdu能耗趋势数据.xlsx", "数据", BillOutletWeekPageRespVO.class,
+                        BeanUtils.toBean(list, BillOutletWeekPageRespVO.class));
+            }
+            else{
+                ExcelUtils.write(response, "pdu电费统计数据.xlsx", "数据", BillWeekPageRespVO.class,
+                        BeanUtils.toBean(list, BillWeekPageRespVO.class));
+            }
+        }
+
     }
 
     @GetMapping("/details")

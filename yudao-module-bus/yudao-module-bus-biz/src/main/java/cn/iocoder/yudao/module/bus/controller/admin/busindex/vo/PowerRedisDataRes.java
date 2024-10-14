@@ -38,4 +38,17 @@ public class PowerRedisDataRes {
     private Double ic;
     private Double ucTHD;
     private Double uaTHD;
+    private Integer curStatusA;
+    private Integer curStatusB;
+    private Integer curStatusC;
+    private Integer VolStatusA;
+    private Integer VolStatusB;
+    private Integer VolStatusC;
+    private Integer VolLineStatusA;
+    private Integer VolLineStatusB;
+    private Integer VolLineStatusC;
+    private Integer temStatusA;
+    private Integer temStatusB;
+    private Integer temStatusC;
+    private Integer temStatusN;
 }

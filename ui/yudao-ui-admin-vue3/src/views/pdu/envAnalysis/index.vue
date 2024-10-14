@@ -83,7 +83,7 @@
           </div>
           <div  class="description-item" v-if="queryParams.granularity == 'day'" >
             <span class="label">最高温度 :</span>
-            <span >{{ formatNumber(maxTemDataTemp, 1)}} ℃</span>
+            <span >{{ maxTemDataTemp}} ℃</span>
           </div>
           <div v-if="maxTemDataTimeTemp &&queryParams.granularity == 'day'" class="description-item">
             <span class="label">发生时间 :</span>
@@ -92,7 +92,7 @@
 
           <div class="description-item" v-if="queryParams.granularity == 'day'">
               <span class="label">最低温度 :</span>
-              <span >{{ formatNumber(minTemDataTemp, 1)}}℃ </span>
+              <span >{{minTemDataTemp}}℃ </span>
             </div>
           <div v-if="minTemDataTimeTemp &&queryParams.granularity == 'day'" class="description-item">
             <span class="label">发生时间 :</span>
@@ -185,21 +185,21 @@
               <el-table-column  prop="create_time" label="记录时间" />
               <!-- 动态生成表头 -->
               <template v-for="item in headerData" :key="item.name">
-                <el-table-column v-if="item.name === '最高温度'" label="温度最高值℃">
-                  <el-table-column :prop="item.name" label="数值"/>   
+                <el-table-column v-if="item.name === '最高温度'" label="温度最高值">
+                  <el-table-column :prop="item.name" label="温度最高值℃"/>   
                   <el-table-column prop="temMaxTimeData" label="发生时间"/>
                 </el-table-column>
                 
-                <el-table-column v-else-if="item.name === '最低温度'" label="温度最低值℃">
-                  <el-table-column :prop="item.name" label="数值"/>   
+                <el-table-column v-else-if="item.name === '最低温度'" label="温度最低值">
+                  <el-table-column :prop="item.name" label="温度最低值℃"/>   
                   <el-table-column prop="temMinTimeData" label="发生时间"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === '最大湿度'" label="湿度最大值(%RH)">
-                  <el-table-column :prop="item.name" label="数值"/>   
+                <el-table-column v-else-if="item.name === '最大湿度'" label="湿度最大值">
+                  <el-table-column :prop="item.name" label="湿度最大值(%RH)"/>   
                   <el-table-column prop="humMaxTimeData" label="发生时间"/>
                 </el-table-column>
-                 <el-table-column v-else-if="item.name === '最小湿度'" label="湿度最小值(%RH)">
-                  <el-table-column :prop="item.name" label="数值"/>   
+                 <el-table-column v-else-if="item.name === '最小湿度'" label="湿度最小值">
+                  <el-table-column :prop="item.name" label="湿度最小值(%RH)"/>   
                   <el-table-column prop="humMinTimeData" label="发生时间"/>
                 </el-table-column>
                 <el-table-column v-else :prop="item.name" :label="item.name"/>  

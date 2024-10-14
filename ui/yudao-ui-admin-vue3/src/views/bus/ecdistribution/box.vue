@@ -1,7 +1,6 @@
 <template>
   <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="插接箱能耗排名" :showCheckbox="false">
     <template #NavInfo>
-      <br/>    <br/> 
       <div class="nav_data">
         <!-- <div class="carousel-container">
           <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
@@ -40,15 +39,6 @@
         </div>
         <br/> 
       <div class="descriptions-container"  v-if="maxEqDataTimeTemp" style="font-size: 14px;">
-   
-      <div class="description-item" >
-        <span class="label">开始日期 :</span>
-        <span >{{selectTimeRange[0]}}</span>
-      </div>
-      <div class="description-item" >
-        <span class="label">结束日期 :</span>
-        <span >{{selectTimeRange[1]}}</span>
-      </div>
       <div class="description-item">
         <span class="label">总耗电量 :</span>
         <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
@@ -125,7 +115,7 @@
             :border="true"
               :stripe="true"
               :data="tableData"
-              style="height: 67vh; width: 99.97%;"
+              style="height: 100%; width: 99.97%;"
               :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', borderBottom: '1px #EDEEF2 solid', fontFamily: 'Microsoft YaHei',fontWeight: 'bold'}"
               :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
               :row-style="{ fontSize: '14px', textAlign: 'center', }"
@@ -151,6 +141,17 @@
                   <el-table-column :prop="item.name" label="电量(kWh)"/>   
                   <el-table-column prop="create_time" label="记录日期"/>
                 </el-table-column>
+                     <!-- 创建一个空白列 -->
+                     <el-table-column
+                    fixed
+                    width="50"
+                    :label="''"
+                    align="center"
+                  >
+                    <template #default="">
+                      &nbsp; <!-- 使用空格或任何其他占位符 -->
+                    </template>
+                  </el-table-column>
               </template>
             </el-table>
           </div>
@@ -574,11 +575,17 @@ onMounted(async () => {
 }
 
 .label {
-  width:100px; /* 控制冒号前的宽度 */
   text-align: right; /* 文本右对齐 */
   margin-right: 10px; /* 控制冒号后的间距 */
+  text-align: left;
 }
-.line {
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
+
+}
+  .line {
     height: 1px;
     margin-top: 28px;
 
