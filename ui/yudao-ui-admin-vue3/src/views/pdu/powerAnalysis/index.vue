@@ -31,7 +31,7 @@
             <span class="label">最近一月 :</span>
             <span class="value">{{ lastMonthTotalData }}条</span>
           </div>    <br/>
-          <div style="text-align: center"><span>全部PDU新增能耗记录</span>
+          <div style="text-align: left"><span>全部PDU新增能耗记录</span>
             <div class="line" style="margin-top: 10px;"></div>
           </div>
         </div>
@@ -562,8 +562,8 @@ onMounted(() => {
 }
 
 .label {
-  width:100px; /* 控制冒号前的宽度 */
-  text-align: right; /* 文本右对齐 */
+  /* width:100px; 控制冒号前的宽度 */
+  text-align: left; /* 文本右对齐 */
   margin-right: 5px; /* 控制冒号后的间距 */
 }
 .line {
