@@ -68,12 +68,21 @@
         :model="queryParams"
         ref="queryFormRef"
         :inline="true"
-        label-width="68px"                          
+        label-width="68px"
       >
         <el-form-item >
           <el-checkbox-group  v-model="queryParams.status" @change="handleQuery">
             <el-checkbox :label="5" :value="5">在线</el-checkbox>
           </el-checkbox-group>
+        </el-form-item>
+        <el-form-item label="参数类型" prop="type">
+        <el-cascader
+          v-model="defaultSelected"
+          collapse-tags
+          :options="typeSelection"
+          @change="typeCascaderChange"
+          class="!w-130px"
+        />
         </el-form-item>
         <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
@@ -104,7 +113,7 @@
           >
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
-        </el-form-item>          
+        </el-form-item>
         </el-form-item>
         <div style="float:right">
           <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
@@ -227,7 +236,7 @@
             </el-button>
           </template>
         </el-table-column>
-      </el-table>    
+      </el-table>
 
       <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
@@ -236,18 +245,18 @@
             <div class="icon" >
               <div v-if="valueMode == 0 && item.acur != null" >
                 电流
-              </div>    
+              </div>
               <div v-if="valueMode == 1 && item.avol != null" >
                 电压
-              </div>           
+              </div>
               <div v-if="valueMode == 2 && item.aactivePow != null" >
                 有功功率
-              </div> 
+              </div>
               <div v-if="valueMode == 3 && item.areactivePow != null" >
                 无功功率
-              </div> 
+              </div>
             </div>
-            <div class="info" v-if="valueMode == 0" >                  
+            <div class="info" v-if="valueMode == 0" >
               <div v-if="item.acur != null">
                 <el-text v-if="item.acur != null" :type=" item.acurStatus != 0 ? 'danger' : '' ">
                   A相：{{item.acur}}A
@@ -264,7 +273,7 @@
                 </el-text>
               </div>
             </div>
-            <div class="info" v-if="valueMode == 1">                  
+            <div class="info" v-if="valueMode == 1">
               <div v-if="item.avol != null">
                 <el-text v-if="item.avol != null" :type=" item.avolStatus != 0 ? 'danger' : '' ">
                   A相：{{item.avol}}V
@@ -281,7 +290,7 @@
                 </el-text>
               </div>
             </div>
-            <div class="info" v-if="valueMode == 2">                  
+            <div class="info" v-if="valueMode == 2">
               <div  v-if="item.aactivePow != null">
                 <el-text v-if="item.aactivePow != null" :type=" item.aactivePowStatus != 0 ? 'danger' : '' ">
                   A相：{{item.aactivePow}}kW
@@ -298,7 +307,7 @@
                 </el-text>
               </div>
             </div>
-            <div class="info" v-if="valueMode == 3">                  
+            <div class="info" v-if="valueMode == 3">
               <div v-if="item.areactivePow != null">
                 <el-text v-if="item.areactivePow != null">
                   A相：{{item.areactivePow}}kVar
@@ -449,7 +458,7 @@ const { t } = useI18n() // 国际化
 
 const loading = ref(false) // 列表的加载中
 const list = ref([
-  { 
+  {
     id:null,
     status:null,
     apparentPow:null,
@@ -467,7 +476,7 @@ const list = ref([
   }
 ]) as any// 列表的数据
 const allList = ref([
-  { 
+  {
     id:null,
     status:null,
     apparentPow:null,
@@ -522,7 +531,7 @@ const getList = async () => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       if(obj?.acur == null){
         return;
-      } 
+      }
       obj.acur = obj.acur?.toFixed(2);
       obj.bcur = obj.bcur?.toFixed(2);
       obj.ccur = obj.ccur?.toFixed(2);
@@ -556,14 +565,14 @@ const getListAll = async () => {
         objAll.status = 5;
         offline++;
         return;
-      }  
+      }
       if(objAll?.status == 0){
         normal++;
       } else if (objAll?.status == 1){
         warn++;
       } else if (objAll?.status == 2){
         alarm++;
-      }          
+      }
     });
     //设置左边数量
     statusNumber.normal = normal;
@@ -579,13 +588,13 @@ const getListNoLoading = async () => {
   try {
     const data = await IndexApi.getBoxRedisPage(queryParams)
     list.value = data.list
-    var tableIndex = 0;    
+    var tableIndex = 0;
 
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       if(obj?.acur == null){
         return;
-      } 
+      }
       obj.acur = obj.acur?.toFixed(2);
       obj.bcur = obj.bcur?.toFixed(2);
       obj.ccur = obj.ccur?.toFixed(2);
@@ -628,6 +637,35 @@ const toDeatil = (row) =>{
   const boxId = row.boxId;
   const location = row.location != null ? row.location : row.devKey
   push({path: '/bus/boxmonitor/boxpowerdetail', state: { devKey, boxId ,location}})
+}
+
+const defaultSelected = ref(['phase'])
+const typeSelection = ref([]) as any;
+
+// 参数类型改变触发
+const typeCascaderChange = (selected) => {
+  queryParams.type = selected[0];
+  // 自动搜索
+  handleQuery()
+}
+
+// 参数类型选择框初始化，相固定3相
+const getTypeMaxValue = async () => {
+    const typeSelectionValue  = [
+    {
+      value: "line",
+      label: '相'
+    },
+    {
+    value: "loop",
+    label: '回路'
+    },
+    {
+    value: "outlet",
+    label: '输出位'
+    },
+  ]
+  typeSelection.value = typeSelectionValue;
 }
 
 
@@ -689,6 +727,7 @@ onMounted(async () => {
   getList()
   getNavList();
   getListAll();
+  getTypeMaxValue();
   flashListTimer.value = setInterval((getListNoLoading), 5000);
   flashListTimer.value = setInterval((getListAll), 5000);
 })

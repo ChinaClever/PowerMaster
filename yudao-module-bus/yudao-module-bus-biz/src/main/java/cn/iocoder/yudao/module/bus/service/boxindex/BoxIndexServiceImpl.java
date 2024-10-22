@@ -290,75 +290,164 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             }
             String devKey = jsonObject.getString("dev_ip") + "-" + jsonObject.getString("bar_id") + "-" + jsonObject.getString("addr");
             BoxRedisDataRes boxRedisDataRes = resMap.get(devKey);
-            JSONObject loopItemList = jsonObject.getJSONObject("box_data").getJSONObject("loop_item_list");
-            JSONArray volValue = loopItemList.getJSONArray("vol_value");
-            JSONArray volStatus = loopItemList.getJSONArray("vol_status");
-            JSONArray curValue = loopItemList.getJSONArray("cur_value");
-            JSONArray curStatus = loopItemList.getJSONArray("cur_status");
-            JSONArray powValue = loopItemList.getJSONArray("pow_value");
-            JSONArray powStatus = loopItemList.getJSONArray("pow_status");
-            JSONArray powReactive = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list").getJSONArray("pow_reactive");
+            JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");
+            JSONArray volValue = lineItemList.getJSONArray("vol_value");
+            JSONArray volStatus = lineItemList.getJSONArray("vol_status");
+            JSONArray curValue = lineItemList.getJSONArray("cur_value");
+            JSONArray curStatus = lineItemList.getJSONArray("cur_status");
+            JSONArray powValue = lineItemList.getJSONArray("pow_value");
+            JSONArray powStatus = lineItemList.getJSONArray("pow_status");
+            JSONArray powReactive = lineItemList.getJSONArray("pow_reactive");
             for (int i = 0; i < 3; i++) {
                 double vol = volValue.getDoubleValue(i);
                 Integer volSta = volStatus.getInteger(i);
                 double cur = curValue.getDoubleValue(i);
-                Integer curSta =curStatus.getInteger(i);
+                Integer curSta = curStatus.getInteger(i);
                 double activePow = powValue.getDoubleValue(i);
-                Integer activePowSta =powStatus.getInteger(i);
+                Integer activePowSta = powStatus.getInteger(i);
                 double reactivePow = powReactive.getDoubleValue(i);
-                if (i == 0){
+                if (i == 0) {
                     boxRedisDataRes.setACur(cur);
                     boxRedisDataRes.setACurStatus(curSta);
-                    if(curSta != 0){
+                    if (curSta != 0) {
                         boxRedisDataRes.setACurColor("red");
                     }
                     boxRedisDataRes.setAVol(vol);
                     boxRedisDataRes.setAVolStatus(volSta);
-                    if(volSta != 0){
+                    if (volSta != 0) {
                         boxRedisDataRes.setAVolColor("red");
                     }
                     boxRedisDataRes.setAActivePow(activePow);
                     boxRedisDataRes.setAActivePowStatus(activePowSta);
-                    if(activePowSta != 0){
+                    if (activePowSta != 0) {
                         boxRedisDataRes.setAActivePowColor("red");
                     }
                     boxRedisDataRes.setAReactivePow(reactivePow);
-                }else if(i == 1){
+                } else if (i == 1) {
                     boxRedisDataRes.setBCur(cur);
                     boxRedisDataRes.setBCurStatus(curSta);
-                    if(curSta != 0){
+                    if (curSta != 0) {
                         boxRedisDataRes.setBCurColor("red");
                     }
                     boxRedisDataRes.setBVol(vol);
                     boxRedisDataRes.setBVolStatus(volSta);
-                    if(volSta != 0){
+                    if (volSta != 0) {
                         boxRedisDataRes.setBVolColor("red");
                     }
                     boxRedisDataRes.setBActivePow(activePow);
                     boxRedisDataRes.setBActivePowStatus(activePowSta);
-                    if(activePowSta != 0){
+                    if (activePowSta != 0) {
                         boxRedisDataRes.setBActivePowColor("red");
                     }
                     boxRedisDataRes.setBReactivePow(reactivePow);
-                }else if(i == 2){
+                } else if (i == 2) {
                     boxRedisDataRes.setCCur(cur);
                     boxRedisDataRes.setCCurStatus(curSta);
-                    if(curSta != 0){
+                    if (curSta != 0) {
                         boxRedisDataRes.setCCurColor("red");
                     }
                     boxRedisDataRes.setCVol(vol);
                     boxRedisDataRes.setCVolStatus(volSta);
-                    if(volSta != 0){
+                    if (volSta != 0) {
                         boxRedisDataRes.setCVolColor("red");
                     }
                     boxRedisDataRes.setCActivePow(activePow);
                     boxRedisDataRes.setCActivePowStatus(activePowSta);
-                    if(activePowSta != 0){
+                    if (activePowSta != 0) {
                         boxRedisDataRes.setCActivePowColor("red");
                     }
                     boxRedisDataRes.setCReactivePow(reactivePow);
                 }
             }
+            //回路数据解析
+            JSONObject loopItemList = jsonObject.getJSONObject("box_data").getJSONObject("loop_item_list");
+            volValue = loopItemList.getJSONArray("vol_value");
+            volStatus = loopItemList.getJSONArray("vol_status");
+            curValue = loopItemList.getJSONArray("cur_value");
+            curStatus = loopItemList.getJSONArray("cur_status");
+            powValue = loopItemList.getJSONArray("pow_value");
+            powStatus = loopItemList.getJSONArray("pow_status");
+            powReactive = loopItemList.getJSONArray("pow_reactive");
+
+            List<String> loopCurColor = new ArrayList<>();
+            List<String> loopVolColor = new ArrayList<>();
+            List<String> loopPowColor = new ArrayList<>();
+
+            List<Double> loopCurValue = new ArrayList<>();
+            for(Object obj : curValue){
+                loopCurValue.add((Double) obj);
+            }
+            List<Integer> loopCurStatus = new ArrayList<>();
+            for(Object obj : curStatus){
+                if((Integer)obj == 0){
+                    loopCurColor.add("red");
+                }
+                loopCurStatus.add((Integer) obj);
+            }
+            List<Double> loopVolValue = new ArrayList<>();
+            for(Object obj : volValue){
+                loopVolValue.add((Double) obj);
+            }
+            List<Integer> loopVolStatus = new ArrayList<>();
+            for(Object obj : volStatus){
+                if((Integer)obj == 0){
+                    loopVolColor.add("red");
+                }
+                loopVolStatus.add((Integer) obj);
+            }
+            List<Double> loopPowValue = new ArrayList<>();
+            for(Object obj : powValue){
+                loopPowValue.add((Double) obj);
+            }
+            List<Integer> loopPowStatus = new ArrayList<>();
+            for(Object obj : powStatus){
+                if((Integer)obj == 0){
+                    loopPowColor.add("red");
+                }
+                loopPowStatus.add((Integer) obj);
+            }
+            List<Double> loopReactivePowValue = new ArrayList<>();
+            for(Object obj : powReactive){
+                loopReactivePowValue.add((Double) obj);
+            }
+            boxRedisDataRes.setLoopCur(loopCurValue);
+            boxRedisDataRes.setLoopCurStatus(loopCurStatus);
+            boxRedisDataRes.setLoopCurColor(loopCurColor);
+            boxRedisDataRes.setLoopVol(loopVolValue);
+            boxRedisDataRes.setLoopVolStatus(loopVolStatus);
+            boxRedisDataRes.setLoopVolColor(loopVolColor);
+            boxRedisDataRes.setLoopActivePow(loopPowValue);
+            boxRedisDataRes.setLoopActivePowStatus(loopPowStatus);
+            boxRedisDataRes.setLoopActivePowColor(loopPowColor);
+            boxRedisDataRes.setLoopReactivePow(loopReactivePowValue);
+
+            //输出位数据解析
+            JSONObject outletItemList = jsonObject.getJSONObject("box_data").getJSONObject("outlet_item_list");
+            powValue = outletItemList.getJSONArray("pow_active");
+            JSONArray reactivePowValue = outletItemList.getJSONArray("pow_reactive");
+            JSONArray apparentPowValue = outletItemList.getJSONArray("pow_apparent");
+            JSONArray powFactor = outletItemList.getJSONArray("pow_factor");
+
+            List<Double> outletPowValue = new ArrayList<>();
+            for(Object obj : powValue){
+                outletPowValue.add((Double) obj);
+            }
+            List<Double> outletReactivePowValue = new ArrayList<>();
+            for(Object obj : reactivePowValue){
+                outletReactivePowValue.add((Double) obj);
+            }
+            List<Double> outletApparentPowValue = new ArrayList<>();
+            for(Object obj : apparentPowValue){
+                outletApparentPowValue.add((Double) obj);
+            }
+            List<Double> outletPowFactor = new ArrayList<>();
+            for(Object obj : powFactor){
+                outletPowFactor.add((Double) obj);
+            }
+            boxRedisDataRes.setOutletActivePow(outletPowValue);
+            boxRedisDataRes.setOutletReactivePow(outletReactivePowValue);
+            boxRedisDataRes.setOutletApparentPowColor(outletApparentPowValue);
+            boxRedisDataRes.setOutletPowFactor(outletPowFactor);
         }
         return new PageResult<>(res,boxIndexDOPageResult.getTotal());
     }

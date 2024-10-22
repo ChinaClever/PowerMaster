@@ -296,7 +296,7 @@ const cascaderChange = (selectedCol) => {
         column.istrue = true;
         break;
       }
-    };     
+    };
     for (const col of notSelectedCol) {
       if (column.prop?.startsWith(col)){
         column.istrue = false;
@@ -308,7 +308,7 @@ const cascaderChange = (selectedCol) => {
 
 // 处理颗粒度筛选变化 有变化重新获取导航栏显示的新增记录
 const granularityChange = () => {
-   getBoxNavNewData()
+  getBoxNavNewData()
 }
 
 // 最后一页显示数据量过大的提示
@@ -379,7 +379,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         tableColumns.value = [
           { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '250px'},
           { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
-        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
+          { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
 
           { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '160px', formatter: formatPower},
           { label: '最大有功功率(kW)', align: 'center', prop: 'pow_active_max_value', istrue:true, width: '160px', formatter: formatPower},
@@ -614,12 +614,12 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           },
         ] as any;
         originalArray.value =[
-                            "vol_avg_value", "vol_max", "vol_min",
-                            "cur_avg_value", "cur_max", "cur_min",
-                            "pow_active_avg_value", "pow_active_max", "pow_active_min", 
-                            "pow_reactive_avg_value", "pow_reactive_max", "pow_reactive_min", 
-                            "pow_apparent_avg_value", "pow_apparent_max", "pow_apparent_min",
-                           ],
+          "vol_avg_value", "vol_max", "vol_min",
+          "cur_avg_value", "cur_max", "cur_min",
+          "pow_active_avg_value", "pow_active_max", "pow_active_min",
+          "pow_reactive_avg_value", "pow_reactive_max", "pow_reactive_min",
+          "pow_apparent_avg_value", "pow_apparent_max", "pow_apparent_min",
+        ],
         // 配置表格列
         tableColumns.value = [
           { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '250px'},
@@ -719,10 +719,10 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
           },
         ] as any;
         originalArray.value =[
-                            "pow_active_avg_value", "pow_active_max", "pow_active_min", 
-                            "pow_reactive_avg_value", "pow_reactive_max", "pow_reactive_min", 
-                            "pow_apparent_avg_value", "pow_apparent_max", "pow_apparent_min",
-                           ],
+          "pow_active_avg_value", "pow_active_max", "pow_active_min",
+          "pow_reactive_avg_value", "pow_reactive_max", "pow_reactive_min",
+          "pow_apparent_avg_value", "pow_apparent_max", "pow_apparent_min",
+        ],
         // 配置表格列
         tableColumns.value = [
           { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '250px'},
