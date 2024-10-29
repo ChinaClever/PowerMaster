@@ -562,7 +562,7 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
 const tableColumns = ref([
     { label: '所在位置', align: 'center', prop: 'location', width: '300%' , istrue:true},
     { label: '设备地址', align: 'center', prop: 'dev_key', width: '190px', istrue:true},
-{ label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
+    { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
 
     { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, width: '150px', formatter: formatPower},
     { label: '总无功功率(kVar)', align: 'center', prop: 'pow_reactive', istrue:true, width: '150px', formatter: formatPower},
