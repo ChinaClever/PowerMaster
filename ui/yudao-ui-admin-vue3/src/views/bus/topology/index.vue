@@ -48,7 +48,7 @@
         <div class="box-empty" v-else></div>
         <div class="line"></div>
         <div class="boxList">
-          <div class="boxItem" v-for="(box, index) in pluginBoxA.slice(0,pluginBoxANum)" :key="index">
+          <div class="boxItem" v-for="(box, index) in pluginBoxA.filter(item=>item.data !== undefined)" :key="index">
             <div class="layer"></div>
             <div class="stage" v-if="box.data.box_data.box_cfg.box_type==0"></div>
             <div class="box" v-if="box.data.box_data.box_cfg.box_type==0">
@@ -100,7 +100,7 @@
         <div class="box-empty boxB" v-else></div>
         <div class="line"></div>
         <div class="boxList">
-          <div class="boxItem" v-for="(box, index) in pluginBoxB.slice(0,pluginBoxBNum)" :key="index">
+          <div class="boxItem" v-for="(box, index) in pluginBoxB.filter(item=>item.data !== undefined)" :key="index">
             <div v-if="box && box.data">
             <div class="box" v-if="box.data.box_data.box_cfg.box_type==0">
               <div class="title">B{{(index + 1)}}#插接箱</div>
@@ -220,8 +220,6 @@ const pluginBoxA = ref([])
 const pluginBoxB = ref([])
 const startingBoxA = ref([])
 const startingBoxB = ref({})
-const pluginBoxANum = ref(0)
-const pluginBoxBNum = ref(0)
 
 const startingBoxATEM = ref([])
 const startingBoxBTEM = ref({})
@@ -265,8 +263,6 @@ const getBusData = async() => {
     pluginBoxA.value = res[0].boxDataList
     pluginBoxB.value = res[1].boxDataList
     
-    pluginBoxANum.value = res[0].busData.bus_data.bus_cfg.box_num
-    pluginBoxBNum.value = res[1].busData.bus_data.bus_cfg.box_num
     // console.log('btns[chosenBtn.value]', btns[chosenBtn.value], startingBoxA.value)
     // console.log('startingBoxA.value', startingBoxA.value, startingBoxA.value[(btns[chosenBtn.value].paramBox)], pluginBoxA.value[0])
   } else {
