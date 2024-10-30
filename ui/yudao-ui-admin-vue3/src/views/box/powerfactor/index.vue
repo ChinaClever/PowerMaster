@@ -49,6 +49,17 @@
             <el-checkbox :label="5" :value="5">在线</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
+        <el-form-item label="参数类型" prop="type">
+        <el-cascader
+          v-model="defaultSelected"
+          collapse-tags
+          :options="typeSelection"
+          collapse-tags-tooltip
+          :show-all-levels="true"
+          @change="typeCascaderChange"
+          class="!w-130px"
+        />
+        </el-form-item>
         <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
             v-model="queryParams.devKey"
@@ -92,24 +103,117 @@
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="300px"/>
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
-        <el-table-column v-if="valueMode == 0" label="A相功率因素" align="center" prop="apf" width="130px" >
+        <el-table-column v-if="typeText == 'line'" label="总功率因数" align="center" prop="totalPf" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.totalPowFactor != null">
+              {{ scope.row.totalPowFactor }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="typeText == 'line'" label="A相功率因数" align="center" prop="apf" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.apf != null">
               {{ scope.row.apf }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="B相功率因素" align="center" prop="bpf" width="130px" >
+        <el-table-column v-if="typeText == 'line'" label="B相功率因数" align="center" prop="bpf" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.bpf != null">
               {{ scope.row.bpf }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="C相功率因素" align="center" prop="cpf" width="130px" >
+        <el-table-column v-if="typeText == 'line'" label="C相功率因数" align="center" prop="cpf" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.cpf != null">
               {{ scope.row.cpf }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="typeText == 'loop'" label="回路1功率因数" align="center" prop="loop1pf" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopPowFactor != null">
+              {{ scope.row.loopPowFactor[0] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="typeText == 'loop'" label="回路2功率因数" align="center" prop="loop2pf" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopPowFactor != null">
+              {{ scope.row.loopPowFactor[1] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="typeText == 'loop'" label="回路3功率因数" align="center" prop="loop3pf" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopPowFactor != null">
+              {{ scope.row.loopPowFactor[2] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="typeText == 'loop'" label="回路4功率因数" align="center" prop="loop4pf" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopPowFactor != null">
+              {{ scope.row.loopPowFactor[3] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="typeText == 'loop'" label="回路5功率因数" align="center" prop="loop5pf" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopPowFactor != null">
+              {{ scope.row.loopPowFactor[4] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="typeText == 'loop'" label="回路6功率因数" align="center" prop="loop6pf" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopPowFactor != null">
+              {{ scope.row.loopPowFactor[5] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="typeText == 'loop'" label="回路7功率因数" align="center" prop="loop7pf" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopPowFactor != null">
+              {{ scope.row.loopPowFactor[6] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="typeText == 'loop'" label="回路8功率因数" align="center" prop="loop8pf" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopPowFactor != null">
+              {{ scope.row.loopPowFactor[7] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="typeText == 'loop'" label="回路9功率因数" align="center" prop="loop9pf" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopPowFactor != null">
+              {{ scope.row.loopPowFactor[8] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        
+        
+        <el-table-column v-if="typeText == 'outlet'" label="输出位1功率因数" align="center" prop="outlet1pf" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.outletPowFactor != null">
+              {{ scope.row.outletPowFactor[0] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="typeText == 'outlet'" label="输出位2功率因数" align="center" prop="outlet2pf" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.outletPowFactor != null">
+              {{ scope.row.outletPowFactor[1] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="typeText == 'outlet'" label="输出位3功率因数" align="center" prop="outlet3pf" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.outletPowFactor != null">
+              {{ scope.row.outletPowFactor[2] }}
             </el-text>
           </template>
         </el-table-column>
@@ -142,19 +246,31 @@
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="icon">
-              <div v-if=" item.totalPf != null ">
-                <span style="font-size: 20px;">{{ item.totalPf }}</span><br/>总功率因素
+              <div v-if=" item.totalPowFactor != null  && typeText == 'line'">
+                <span style="font-size: 20px;">{{ item.totalPowFactor }}</span><br/>总功率因数
               </div>                    
             </div>
-            <div class="info" >                  
-              <div  v-if="item.apf != null">A:{{item.apf}}</div>
-              <div  v-if="item.bpf != null">B:{{item.bpf}}</div>
-              <div  v-if="item.cpf != null">C:{{item.cpf}}</div>
+            <div class="info" >
+              <div v-if="item.phasePowFactor!= null && typeText == 'line'">
+                <div v-for="(phasePF,index) in item.phasePowFactor" :key="index">
+                  <div >{{ phaseLineText[index] }}{{phasePF}}</div>
+                </div>
+              </div>
+              <div v-else-if="item.loopPowFactor != null && typeText == 'loop'">
+                <div v-for="(loopPF,index) in item.loopPowFactor" :key="index">
+                  <div>{{ loopLineText[index] }}{{loopPF}}</div>
+                </div>
+              </div>
+              <div v-else-if="item.outletPowFactor != null && typeText == 'outlet'">
+                <div v-for="(outletPF,index) in item.outletPowFactor" :key="index">
+                  <div>{{ outletLineText[index] }}{{outletPF}}</div>
+                </div>
+              </div>
             </div>          
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
-            <el-tag v-if="item.apf != null" >功率因素</el-tag>
+            <el-tag v-if="item.phasePowFactor != null" >功率因数</el-tag>
             <el-tag v-else  type="info">离线</el-tag>
           </div>
           <button class="detail" @click="openPFDetail(item)"  v-if="item.status != null && item.status != 5">详情</button>
@@ -171,7 +287,7 @@
         <el-empty description="暂无数据" :image-size="300" />
       </template>
 
-      <el-dialog v-model="detailVis" title="功率因素详情"  width="70vw" height="58vh" >
+      <el-dialog v-model="detailVis" title="功率因数详情"  width="70vw" height="58vh" >
         <el-row>
           <el-tag>{{ location }}</el-tag>
           <div >
@@ -216,10 +332,10 @@
         <br/>
         <PFDetail v-show="switchChartOrTable == 0"  width="68vw" height="58vh"  :list="pfESList"   />
         <el-table v-show="switchChartOrTable == 1" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" >
-          <el-table-column label="时间" align="center" prop="time" />
-          <el-table-column label="A相功率因素" align="center" prop="powerFactorAvgValueA" />
-          <el-table-column label="B相功率因素" align="center" prop="powerFactorAvgValueB" />
-          <el-table-column label="C相功率因素" align="center" prop="powerFactorAvgValueC" />
+          <el-table-column label="时间" align="center" prop="time"/>
+          <el-table-column label="A相功率因数" align="center" prop="powerFactorAvgValueA"/>
+          <el-table-column label="B相功率因数" align="center" prop="powerFactorAvgValueB"/>
+          <el-table-column label="C相功率因数" align="center" prop="powerFactorAvgValueC"/>
         </el-table>
       </el-dialog>
     </template>
@@ -247,7 +363,6 @@ const flashListTimer = ref();
 const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(0)
-const valueMode = ref(0)
 const switchChartOrTable = ref(0)
 const detailVis = ref(false);
 
@@ -311,6 +426,41 @@ const handleDayPick = async () => {
     
   } 
 }
+
+const phaseLineText = ref(['A相：','B相：','C相：']);
+const loopLineText = ref(['回路1：','回路2：','回路3：','回路4：','回路5：','回路6：','回路7：','回路8：','回路9：']);
+const outletLineText = ref(['输出位1：','输出位2：','输出位3：']);
+
+const defaultSelected = ref(['line'])
+const typeSelection = ref([]) as any;
+var typeText = ref('line');
+// 参数类型改变触发
+const typeCascaderChange = (selected) => {
+  queryParams.type = selected[0];
+  typeText = selected[0];
+  // 自动搜索
+  handleQuery()
+}
+
+// 参数类型选择框初始化，相固定3相
+const getTypeMaxValue = async () => {
+    const typeSelectionValue  = [
+    {
+      value: "line",
+      label: '相'
+    },
+    {
+    value: "loop",
+    label: '回路'
+    },
+    {
+    value: "outlet",
+    label: '输出位'
+    },
+  ]
+  typeSelection.value = typeSelectionValue;
+}
+
 
 const subtractOneDay = () => {
   var date = new Date(queryParams.oldTime + "Z"); // 添加 "Z" 表示 UTC 时间
@@ -423,6 +573,7 @@ const getDetail = async () => {
 
   pfTableList.value = data?.table;
   pfTableList.value?.forEach((obj) => {
+    console.log(obj,obj.powerFactorAvgValueA);
     obj.powerFactorAvgValueA = obj?.powerFactorAvgValueA?.toFixed(2);
     obj.powerFactorAvgValueB = obj?.powerFactorAvgValueB?.toFixed(2);
     obj.powerFactorAvgValueC = obj?.powerFactorAvgValueC?.toFixed(2);
@@ -438,13 +589,22 @@ const getList = async () => {
 
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.apf == null){
+      if(obj?.phasePowFactor == null){
         return;
       } 
-      obj.apf = obj.apf?.toFixed(2);
-      obj.bpf = obj.bpf?.toFixed(2);
-      obj.cpf = obj.cpf?.toFixed(2);
-      obj.totalPf = obj.totalPf?.toFixed(2);
+      for(var i= 0;i < obj.phasePowFactor.length; i++)
+      {
+        obj.phasePowFactor[i] = obj.phasePowFactor[i]?.toFixed(2);
+      }
+      for(var i= 0;i < obj.loopPowFactor.length; i++)
+      {
+        obj.loopPowFactor[i] = obj.loopPowFactor[i]?.toFixed(2);
+      }
+      for(var i= 0;i < obj.outletPowFactor.length; i++)
+      {
+        obj.outletPowFactor[i] = obj.outletPowFactor[i]?.toFixed(2);
+      }
+      obj.totalPowFactor = obj.totalPowFactor?.toFixed(2);
     });
 
     total.value = data.total
@@ -461,13 +621,22 @@ const getListNoLoading = async () => {
 
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.apf == null){
+      if(obj?.phasePowFactor == null){
         return;
       } 
-      obj.apf = obj.apf?.toFixed(2);
-      obj.bpf = obj.bpf?.toFixed(2);
-      obj.cpf = obj.cpf?.toFixed(2);
-      obj.totalPf = obj.totalPf?.toFixed(2);
+      for(var i= 0;i < obj.phasePowFactor.length; i++)
+      {
+        obj.phasePowFactor[i] = obj.phasePowFactor[i]?.toFixed(2);
+      }
+      for(var i= 0;i < obj.loopPowFactor.length; i++)
+      {
+        obj.loopPowFactor[i] = obj.loopPowFactor[i]?.toFixed(2);
+      }
+      for(var i= 0;i < obj.outletPowFactor.length; i++)
+      {
+        obj.outletPowFactor[i] = obj.outletPowFactor[i]?.toFixed(2);
+      }
+      obj.totalPowFactor = obj.totalPowFactor?.toFixed(2);
     });
 
     total.value = data.total
@@ -551,6 +720,7 @@ onMounted(async () => {
   devKeyList.value = await loadAll();
   getList()
   getNavList();
+  getTypeMaxValue();
   flashListTimer.value = setInterval((getListNoLoading), 5000);
 })
 

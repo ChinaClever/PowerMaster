@@ -1137,20 +1137,29 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             }
             String devKey = jsonObject.getString("dev_ip") + "-" + jsonObject.getString("bar_id") + "-" + jsonObject.getString("addr");
             BoxPFRes boxPFRes = resMap.get(devKey);
-            JSONObject loopItemList = jsonObject.getJSONObject("box_data").getJSONObject("loop_item_list");
-            JSONArray pfValue = loopItemList.getJSONArray("power_factor");
 
-            for (int i = 0; i < 3; i++) {
-                double pf = pfValue.getDoubleValue(i);
-                if (i == 0){
-                    boxPFRes.setApf(pf);
-                }else if(i == 1){
-                    boxPFRes.setBpf(pf);
-                }else if(i == 2){
-                    boxPFRes.setCpf(pf);
-                }
-            }
-            boxPFRes.setTotalPf(jsonObject.getJSONObject("box_data").getJSONObject("box_total_data").getDoubleValue("power_factor"));
+            JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");
+            JSONArray phasePFValue = lineItemList.getJSONArray("power_factor");
+
+            JSONObject loopItemList = jsonObject.getJSONObject("box_data").getJSONObject("loop_item_list");
+            JSONArray loopPFValue = loopItemList.getJSONArray("power_factor");
+
+            JSONObject outletItemList = jsonObject.getJSONObject("box_data").getJSONObject("outlet_item_list");
+            JSONArray outletPFValue = outletItemList.getJSONArray("power_factor");
+
+            List<Double> phasePowFactor = new ArrayList<>();
+            List<Double> loopPowFactor = new ArrayList<>();
+            List<Double> outletPowFactor = new ArrayList<>();
+
+            phasePowFactor = phasePFValue.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
+            loopPowFactor = loopPFValue.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
+            outletPowFactor = outletPFValue.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
+
+            boxPFRes.setPhasePowFactor(phasePowFactor);
+            boxPFRes.setLoopPowFactor(loopPowFactor);
+            boxPFRes.setOutletPowFactor(outletPowFactor);
+
+            boxPFRes.setTotalPowFactor(jsonObject.getJSONObject("box_data").getJSONObject("box_total_data").getDoubleValue("power_factor"));
         }
         return new PageResult<>(res,boxIndexDOPageResult.getTotal());
     }
