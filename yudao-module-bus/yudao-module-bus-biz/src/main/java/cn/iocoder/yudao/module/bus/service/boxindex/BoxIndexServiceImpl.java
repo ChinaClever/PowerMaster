@@ -17,10 +17,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBus;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
-import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
-import cn.iocoder.yudao.framework.common.mapper.AisleBoxMapper;
-import cn.iocoder.yudao.framework.common.mapper.CabinetBusMapper;
-import cn.iocoder.yudao.framework.common.mapper.CabinetIndexMapper;
+import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
@@ -36,8 +33,10 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.dal.dataobject.boxcurbalancecolor.BoxCurbalanceColorDO;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 
+import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxcurbalancecolor.BoxCurbalanceColorMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxindex.BoxIndexCopyMapper;
+import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 import cn.iocoder.yudao.module.bus.util.TimeUtil;
 import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson2.JSON;
@@ -659,7 +658,133 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 dto.setYesterdayEq(yesterdayMap.get(dto.getId()));
                 dto.setLastWeekEq(weekMap.get(dto.getId()));
                 dto.setLastMonthEq(monthMap.get(dto.getId()));
+                if (dto.getYesterdayEq() == null){
+                    dto.setYesterdayEq(0.0);
+                }
+                if (dto.getLastWeekEq() == null){
+                    dto.setLastWeekEq(0.0);
+                }
+                if (dto.getLastMonthEq() == null){
+                    dto.setLastMonthEq(0.0);
+                }
             });
+            getPosition(result);
+            if(pageReqVO.getTimeGranularity().equals("yesterday")){
+                result.sort(Comparator.comparing(BoxIndexDTO::getYesterdayEq).reversed());
+            } else if (pageReqVO.getTimeGranularity().equals("lastWeek")){
+                result.sort(Comparator.comparing(BoxIndexDTO::getLastWeekEq).reversed());
+            } else if (pageReqVO.getTimeGranularity().equals("lastMonth")){
+                result.sort(Comparator.comparing(BoxIndexDTO::getLastMonthEq).reversed());
+            }
+            return new PageResult<>(result, boxIndexDOPageResult.getTotal());
+        }catch (Exception e) {
+            log.error("获取数据失败：", e);
+        }
+        return new PageResult<>(new ArrayList<>(), 0L);
+    }
+    @Override
+    public PageResult<BoxIndexDTO> getMaxEq(BoxIndexPageReqVO pageReqVO) {
+        try {
+            PageResult<BoxIndex> boxIndexDOPageResult = boxIndexCopyMapper.selectPage(pageReqVO);
+            List<BoxIndex> boxIndexDOList = boxIndexDOPageResult.getList();
+            List<BoxIndexDTO> result = new ArrayList<>();
+            List<Integer> ids = boxIndexDOList.stream().map(BoxIndex::getId).collect(Collectors.toList());
+            String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
+            String endTime =DateUtil.formatDateTime(DateUtil.endOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
+
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest("box_eq_total_day");
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
+                    .must(QueryBuilders.termsQuery("box_id", ids))));
+            builder.sort("eq_value", SortOrder.DESC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            builder.size(1);
+
+            List<String> list = new ArrayList<>();
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            SearchHit[] hits = searchResponse.getHits().getHits();
+            if (hits.length > 0) {
+                // 获取最大值和时间字段
+                Map<String, Object> sourceAsMap = hits[0].getSourceAsMap();
+                BoxIndexDTO boxIndexDTO = new BoxIndexDTO();
+                boxIndexDTO.setYesterdayEq((Double) sourceAsMap.get("eq_value"));
+                boxIndexDTO.setBoxId((Integer) sourceAsMap.get("box_id"));
+                BoxIndex boxIndex = boxIndexCopyMapper.selectOne(BoxIndex::getId ,boxIndexDTO.getBoxId());
+                boxIndexDTO.setDevKey(boxIndex.getDevKey());
+                boxIndexDTO.setBoxName(boxIndex.getBoxName());
+                boxIndexDTO.setId(0);//借用id值来辅助判断是哪个时间的集合，0为昨天，1为上周，2为上月
+                result.add(boxIndexDTO);
+            }
+
+
+            //上周
+            String startTime1 = DateUtil.formatDateTime(DateUtil.beginOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
+            String endTime1 =DateUtil.formatDateTime(DateUtil.endOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest1 = new SearchRequest("box_eq_total_week");
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder1 = new SearchSourceBuilder();
+
+            //获取需要处理的数据
+            builder1.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime1).lte(endTime1))
+                    .must(QueryBuilders.termsQuery("box_id", ids))));
+            builder1.sort("eq_value", SortOrder.DESC);
+            // 设置搜索条件
+            searchRequest1.source(builder1);
+            builder1.size(1);
+            // 执行ES请求
+            SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
+            SearchHit[] hits1 = searchResponse1.getHits().getHits();
+            if (hits1.length > 0) {
+                // 获取最大值和时间字段
+                Map<String, Object> sourceAsMap = hits1[0].getSourceAsMap();
+                BoxIndexDTO boxIndexDTO = new BoxIndexDTO();
+                boxIndexDTO.setLastWeekEq((Double) sourceAsMap.get("eq_value"));
+                boxIndexDTO.setBoxId((Integer) sourceAsMap.get("box_id"));
+                BoxIndex boxIndexDO = boxIndexCopyMapper.selectOne(BoxIndex::getId ,boxIndexDTO.getBoxId());
+                boxIndexDTO.setDevKey(boxIndexDO.getDevKey());
+                boxIndexDTO.setBoxName(boxIndexDO.getBoxName());
+                boxIndexDTO.setId(1);//借用id值来辅助判断是哪个时间的集合，0为昨天，1为上周，2为上月
+                result.add(boxIndexDTO);
+            }
+
+            //上月
+            String startTime2 = DateUtil.formatDateTime(DateUtil.beginOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
+            String endTime2 =DateUtil.formatDateTime(DateUtil.endOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest2 = new SearchRequest("box_eq_total_month");
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder2 = new SearchSourceBuilder();
+
+            //获取需要处理的数据
+            builder2.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime2).lte(endTime2))
+                    .must(QueryBuilders.termsQuery("box_id", ids))));
+            builder2.sort("eq_value", SortOrder.DESC);
+            // 设置搜索条件
+            searchRequest2.source(builder2);
+            builder2.size(1);
+
+            // 执行ES请求
+            SearchResponse searchResponse2 = client.search(searchRequest2, RequestOptions.DEFAULT);
+            SearchHit[] hits2 = searchResponse2.getHits().getHits();
+            if (hits2.length > 0) {
+                // 获取最大值和时间字段
+                Map<String, Object> sourceAsMap = hits2[0].getSourceAsMap();
+                BoxIndexDTO boxIndexDTO = new BoxIndexDTO();
+                boxIndexDTO.setLastMonthEq((Double) sourceAsMap.get("eq_value"));
+                boxIndexDTO.setBoxId((Integer) sourceAsMap.get("box_id"));
+                BoxIndex boxIndexDO = boxIndexCopyMapper.selectOne(BoxIndex::getId ,boxIndexDTO.getBoxId());
+                boxIndexDTO.setDevKey(boxIndexDO.getDevKey());
+                boxIndexDTO.setBoxName(boxIndexDO.getBoxName());
+                boxIndexDTO.setId(2);//借用id值来辅助判断是哪个时间的集合，0为昨天，1为上周，2为上月
+                result.add(boxIndexDTO);
+            }
             getPosition(result);
             return new PageResult<>(result, boxIndexDOPageResult.getTotal());
         }catch (Exception e) {
@@ -667,7 +792,6 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         }
         return new PageResult<>(new ArrayList<>(), 0L);
     }
-
 
     public static final String HOUR_FORMAT = "yyyy-MM-dd";
 
