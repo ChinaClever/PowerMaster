@@ -338,7 +338,7 @@ const getList = async () => {
     if(selectTimeRange.value == null){
       queryParams.timeRange = undefined
     }
-    const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
+    const data = await EnergyConsumptionApi.getEQDataPage(queryParams);
     eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
     list.value = data.list
     realTotel.value = data.total
@@ -395,6 +395,7 @@ function formatTime1(_row: any, _column: any, cellValue: number): string {
 
 // 格式化电能列数据，保留1位小数（不用传参）
 function formatEle(_row: any, _column: any, cellValue: number): string {
+  
   return Number(cellValue).toFixed(1);
 }
 
