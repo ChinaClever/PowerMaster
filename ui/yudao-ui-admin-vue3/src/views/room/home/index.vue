@@ -94,7 +94,7 @@ import CabTopology from "../topology/index.vue"
 import { MachineRoomApi } from '@/api/cabinet/room'
 import { EChartsOption } from 'echarts'
 
-const echartOptionsPower = ref<EChartsOption>({})
+const echartOptionsPower = ref<EChartsOption>({}) //用来存储功率曲线图表的配置选项
 const roomId = ref<number>(0)
 const radioBtn = ref('pow')
 const containerInfo = reactive({
@@ -105,9 +105,9 @@ const energyInfo = reactive({}) // 用能信息
 const powerInfo = reactive({}) // 功率信息
 const spaceInfo = reactive({}) // 空间信息
 const envInfo = reactive({}) // 空间信息
-const echartInfo = reactive<any>({})
+const echartInfo = reactive<any>({}) //配置图表的数据系列
 
-//
+//获取数据
 const handleGetRoomId = (data) => {
   roomId.value = data
   getRoomDataDetail()
@@ -163,7 +163,7 @@ const handleBackData = (data) => {
   console.log('***',data)
   Object.assign(spaceInfo, data)
 }
-
+//配置ECharts图表
 const switchTrend = (type, first = false) => {
   if (type == radioBtn.value && !first) return
   radioBtn.value = type
@@ -232,7 +232,7 @@ const switchTrend = (type, first = false) => {
       yAxis: {
         type: 'value'
       },
-      series: [
+      series: [//配置图表的数据系列
         {
           name: '近一个月用能',
           data: echartInfo.eqList.map(item => item.eq),
