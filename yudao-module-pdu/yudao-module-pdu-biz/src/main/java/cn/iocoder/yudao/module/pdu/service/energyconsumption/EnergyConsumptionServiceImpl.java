@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.pdu.service.energyconsumption;
 
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.EleTotalRealtimeReqDTO;
 import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.EnergyConsumptionPageReqVO;
 import cn.iocoder.yudao.module.pdu.service.historydata.HistoryDataService;
 import org.elasticsearch.action.search.SearchRequest;
@@ -12,7 +13,12 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.PipelineAggregatorBuilders;
+import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.CardinalityAggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.TopHitsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.ValueCount;
+import org.elasticsearch.search.aggregations.pipeline.BucketSortPipelineAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -604,5 +610,79 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
         }
         return list;
     }
+
+    @Override
+    public PageResult<Object> getEleTotalRealtime(EleTotalRealtimeReqDTO reqDTO) throws IOException {
+        PageResult<Object> pageResult = null;
+        // 创建BoolQueryBuilder对象
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        // 搜索源构建对象
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        // 设置要排除的字段
+        //searchSourceBuilder.fetchSource(null, new String[]{"id", "bill_value", "bill_mode", "bill_period"});
+        int pageNo = reqDTO.getPageNo();
+        int pageSize = reqDTO.getPageSize();
+        int index = (pageNo - 1) * pageSize;
+        searchSourceBuilder.from(index);
+
+
+
+        //分页指标--用于统计分页total总数
+        CardinalityAggregationBuilder cardinalityAggregation = AggregationBuilders.cardinality("custCard").field("customer_no.keyword");
+
+
+        //返回字段取最新一条记录
+        TopHitsAggregationBuilder topHitsAggregation = AggregationBuilders.topHits("latestCust")
+                .fetchSource(new String[]{"pdu_id", "ele_active", "create_time"} , null).size(1)
+                .sort("create_time", SortOrder.DESC);
+
+
+        //以会员编码分组
+        TermsAggregationBuilder termsAggregationBuilder = AggregationBuilders.terms("topCustomer").field("customer_no.keyword")
+                .size(pageNo* pageSize)
+                .subAggregation(topHitsAggregation);
+
+        //hit查询返回0条数据
+        searchSourceBuilder.size(0);
+        searchSourceBuilder.from(0);
+        //排序
+        searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
+        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        if (reqDTO.getTimeRange() != null && reqDTO.getTimeRange().length != 0) {
+            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                    .from(reqDTO.getTimeRange()[0])
+                    .to(reqDTO.getTimeRange()[1]));
+        }
+        List<String> pduIds = null;
+        String[] ipArray = reqDTO.getIpArray();
+        if (ipArray != null) {
+            pduIds = historyDataService.getPduIdsByIps(ipArray);
+            searchSourceBuilder.query(QueryBuilders.termsQuery("pdu_id", pduIds));
+        }
+        // 搜索请求对象
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.indices("bus_ele_total_realtime");
+
+        //query条件--正常查询条件
+        searchRequest.source(searchSourceBuilder);
+
+        //聚合条件 分组+分页指标    searchRequest.source(searchSourceBuilder.aggregation(termsAggregationBuilder));
+        searchRequest.source(searchSourceBuilder.aggregation(cardinalityAggregation));
+        // 执行搜索,向ES发起http请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        // 搜索结果
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        SearchHits hits = searchResponse.getHits();
+        hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
+        // 匹配到的总记录数
+        Long totalHits = hits.getTotalHits().value;
+        // 返回的结果
+        pageResult = new PageResult<>();
+        pageResult.setList(historyDataService.getLocationsByPduIds(mapList))
+                .setTotal(totalHits);
+        return pageResult;
+    }
+
+
 
 }

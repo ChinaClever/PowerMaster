@@ -10,9 +10,7 @@ import cn.iocoder.yudao.module.pdu.service.energyconsumption.EnergyConsumptionSe
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -193,5 +191,12 @@ public class EnergyConsumptionController {
     public CommonResult<PageResult<Object>> getSubBillDetails(EnergyConsumptionPageReqVO reqVO) throws IOException {
         PageResult<Object> pageResult = energyConsumptionService.getSubBillDetails(reqVO);
         return success(pageResult);
+    }
+
+    @PostMapping("ele_total_realtime")
+    @Operation(summary = "获取实时电量")
+    public CommonResult<PageResult<Object>> getEleTotalRealtime(@RequestBody EleTotalRealtimeReqDTO reqDTO) throws IOException {
+        PageResult<Object> list1 = energyConsumptionService.getEleTotalRealtime(reqDTO);
+        return success(list1);
     }
 }
