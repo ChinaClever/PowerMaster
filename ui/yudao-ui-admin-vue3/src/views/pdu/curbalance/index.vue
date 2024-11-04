@@ -1,11 +1,11 @@
 <template>
-  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="均衡配电">
+  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="navList" navTitle="均衡配电">
     <template #NavInfo>
       <div>
-        <div class="header">
+        <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
-        </div>
-        <div class="line"></div>
+        </div> -->
+        <!-- <div class="line"></div> -->
         <div class="status">
           <div class="box">
             <div class="top">
@@ -49,13 +49,15 @@
             <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
           </template>
         </el-form-item>
-        <el-button
+        <el-button 
+          v-show="switchValue == 2 || switchValue == 3"
           type="primary"
           plain
           @click="openForm('create')"
         >
           <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
         </el-button>
+      <el-form-item>
         <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
             v-model="queryParams.devKey"
@@ -65,8 +67,7 @@
             placeholder="请输入网络地址"
             @select="handleQuery"
           />
-        </el-form-item>
-        <el-form-item>
+      <el-form-item :style="{ marginLeft: '10px'}">
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           <el-button
@@ -86,20 +87,23 @@
           >
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
+        </el-form-item>         
         </el-form-item>
+      </el-form-item>
         <div style="float:right">
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流阵列</el-button>            
-          <el-button @click="statusList.forEach((item) => item.selected = true);pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压阵列</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 2;" :type="switchValue == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流阵列</el-button>            
+          <el-button @click="statusList.forEach((item) => item.selected = true);pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压阵列</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
         </div>
       </el-form>
     </template>
     <template #Content>
       <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
-        <el-table-column label="编号" align="center" prop="tableId" width="80px" />
+        <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" width="180px" />
-        <el-table-column label="运行状态" align="center" prop="color" >
+        <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="125px"/>
+        <el-table-column label="运行状态" align="center" prop="color" width="120px">
           <template #default="scope" >
               <el-tag type="info"  v-if="scope.row.color == 1">小电流不平衡</el-tag>
               <el-tag type="success"  v-if="scope.row.color == 2">大电流不平衡</el-tag>
@@ -107,69 +111,69 @@
               <el-tag type="danger" v-if="scope.row.color == 4">大电流不平衡</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="电流" align="center">
-          <el-table-column label="A相" align="center" prop="acur" width="100px" >
+        <el-table-column label="电流(A)" align="center">
+          <el-table-column label="A相" align="center" prop="acur" width="95px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.acur != null">
-                {{ scope.row.acur }}A
+                {{ scope.row.acur }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="B相" align="center" prop="bcur" width="100px" >
+          <el-table-column label="B相" align="center" prop="bcur" width="95px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.bcur != null">
-                {{ scope.row.bcur }}A
+                {{ scope.row.bcur }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="C相" align="center" prop="ccur" width="100px" >
+          <el-table-column label="C相" align="center" prop="ccur" width="95px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.ccur != null">
-                {{ scope.row.ccur }}A
+                {{ scope.row.ccur }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="不平衡度" align="center" prop="curUnbalance" width="100px">
+          <el-table-column label="不平衡度(%)" align="center" prop="curUnbalance" width="95px">
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.curUnbalance != null" >
-                {{ scope.row.curUnbalance }}%
+                {{ scope.row.curUnbalance }}
               </el-text>
             </template>
           </el-table-column>
         </el-table-column>
-        <el-table-column label="电压" align="center">
-          <el-table-column label="A相" align="center" prop="avol" width="100px" >
+        <el-table-column label="电压(V)" align="center">
+          <el-table-column label="A相" align="center" prop="avol" width="95px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.avol">
-                {{ scope.row.avol }}V
+                {{ scope.row.avol }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="B相" align="center" prop="bvol" width="100px" >
+          <el-table-column label="B相" align="center" prop="bvol" width="95px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.bvol">
-                {{ scope.row.bvol }}V
+                {{ scope.row.bvol }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="C相" align="center" prop="cvol" width="100px" >
+          <el-table-column label="C相" align="center" prop="cvol" width="95px" >
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.cvol">
-                {{ scope.row.cvol }}V
+                {{ scope.row.cvol }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="不平衡度" align="center" prop="volUnbalance" width="100px">
+          <el-table-column label="不平衡度(%)" align="center" prop="volUnbalance" width="95px">
             <template #default="scope" >
               <el-text line-clamp="2" v-if="scope.row.volUnbalance != null" >
-                {{ scope.row.volUnbalance }}%
+                {{ scope.row.volUnbalance }}
               </el-text>
             </template>
           </el-table-column>
         </el-table-column>
         
         <!-- 数据库查询 -->
-        <el-table-column label="操作" align="center" width="100px">
+        <el-table-column label="操作" align="center" width="95px">
           <template #default="scope">
             <el-button
               link
@@ -215,6 +219,12 @@
             <el-tag type="warning" v-if="item.color == 3">大电流不平衡</el-tag>
             <el-tag type="danger" v-if="item.color == 4">大电流不平衡</el-tag>
           </div>
+          <div class="status" v-if="item.ccur == null && item.status != 5">
+            <el-tag type="info">单相设备</el-tag>              
+          </div>
+          <div class="status" v-if="item.status == 5">
+            <el-tag type="info">离线</el-tag>              
+          </div>                                       
           <button v-if="item.status != null && item.status != 5" class="detail" @click="toPDUDisplayScreen(item)">详情</button>
         </div>
       </div>
@@ -275,12 +285,12 @@ import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
 defineOptions({ name: 'PDUDevice' })
 
 const { push } = useRouter()
-
+const navList = ref([]) as any // 左侧导航栏树结构列表
 const devKeyList = ref([])
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
-const pageSizeArr = ref([24,36,48])
+const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(2)
 const statusNumber = reactive({
   lessFifteen : 0,
@@ -374,7 +384,6 @@ const handleCheck = async (row) => {
 }
 
 
-const serverRoomArr =  ref([])
 
 const filterText = ref('')
 const treeRef = ref<InstanceType<typeof ElTree>>()
@@ -534,30 +543,28 @@ const getListNoLoading = async () => {
   }
 }
 
+// 接口获取导航列表
 const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
-  serverRoomArr.value = res
-  if (res && res.length > 0) {
-    const room = res[0]
-    const keys = [] as string[]
-    room.children.forEach(child => {
-      if(child.children.length > 0) {
-        child.children.forEach(son => {
-          keys.push(son.id + '-' + son.type)
-        })
-      }
-    })
+  const res = await CabinetApi.getRoomList({})
+  let arr = [] as any
+  for (let i=0; i<res.length;i++){
+  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  arr = arr.concat(temp);
   }
-
+  navList.value = arr
 }
 
-const toPDUDisplayScreen = (row) =>{
-  const devKey = row.devKey;
-  const location = row.location;
-  const id = row.id;
-  push({path: '/pdu/pdudisplayscreen', state: { devKey, id, location }})
-}
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
+
+const toPDUDisplayScreen = (row: { devKey: string; location: string; id: number }) => {
+  const { devKey, location, id } = row;
+  router.push({
+    path: '/pdu/pdudisplayscreen',
+    query: { devKey, id: id.toString(), location }
+  });
+};
 // const openNewPage = (scope) => {
 //   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
 //   window.open(url, '_blank');
@@ -818,6 +825,7 @@ onActivated(() => {
   .status {
     display: flex;
     flex-wrap: wrap;
+    margin-top: 20px;
     .box {
       height: 70px;
       width: 50%;
@@ -992,5 +1000,10 @@ onActivated(() => {
 }
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+::v-deep .el-table .el-table__header th{
+  background-color: #f5f7fa;
+  color: #909399;
+
 }
 </style>

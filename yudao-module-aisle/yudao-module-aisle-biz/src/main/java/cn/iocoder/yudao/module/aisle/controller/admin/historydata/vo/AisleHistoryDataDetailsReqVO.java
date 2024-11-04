@@ -12,6 +12,7 @@ public class AisleHistoryDataDetailsReqVO extends PageParam {
     private Integer aisleId;
 
     private String granularity;
+    private String abtotal;
 
     private String[] timeRange;
 

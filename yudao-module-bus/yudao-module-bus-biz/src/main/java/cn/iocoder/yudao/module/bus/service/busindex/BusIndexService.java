@@ -4,9 +4,11 @@ import javax.validation.*;
 
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
+import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailRespVO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -111,4 +113,12 @@ public interface BusIndexService {
     Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
     String getBusRedisByDevKey(String devKey);
+
+    PageResult<BusIndexRes> getDeletedPage(BusIndexPageReqVO pageReqVO);
+
+    void restoreIndex(Long id);
+
+    BusPowerLoadDetailRespVO getPeakDemand(BusIndexPageReqVO pageReqVO) throws IOException;
+
+    PageResult<BusIndexDTO> getMaxEq(BusIndexPageReqVO pageReqVO);
 }

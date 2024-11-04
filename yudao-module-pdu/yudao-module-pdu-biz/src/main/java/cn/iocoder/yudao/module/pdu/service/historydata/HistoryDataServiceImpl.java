@@ -38,7 +38,7 @@ import java.util.*;
  */
 @Service
 public class HistoryDataServiceImpl implements HistoryDataService {
-
+    private static final int BATCH_SIZE = 200; // 每批处理的数据量
     @Autowired
     private RedisTemplate redisTemplate;
 
@@ -66,9 +66,10 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     @Autowired
     private CabinetEnvSensorMapper cabinetEnvSensorMapper;
 
+
     @Override
     public List<Object> getLocationsByPduIds(List<Map<String, Object>> mapList) {
-        List<Object> resultList = new ArrayList<>();
+        List<Object> resultList = new ArrayList<>(mapList.size());
         for (Map<String, Object> map : mapList){
             Object pduId = map.get("pdu_id");
             if (pduId instanceof Integer) {
@@ -87,6 +88,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             }
             resultList.add(map);
         }
+
         return resultList;
     }
 
@@ -117,40 +119,95 @@ public class HistoryDataServiceImpl implements HistoryDataService {
 
     @Override
     public String getAddressByIpAddr(String location) {
+//        String[] ipParts = location.split("-");
+//        String address = null;
+//        CabinetPdu cabinetPduA = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
+//                .eq(CabinetPdu::getPduIpA, ipParts[0])
+//                .eq(CabinetPdu::getCasIdA, ipParts[1]));
+//        CabinetPdu cabinetPduB = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
+//                .eq(CabinetPdu::getPduIpB, ipParts[0])
+//                .eq(CabinetPdu::getCasIdB, ipParts[1]));
+//        if(cabinetPduA != null){
+//            int cabinetId = cabinetPduA.getCabinetId();
+//            CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
+//            String cabinetName = cabinet.getName();
+//            RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
+//            String roomName = roomIndex.getName();
+//            if(cabinet.getAisleId() != 0){
+//                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+//                address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
+//            }else {
+//                address = roomName + "-"  + cabinetName +  "-" + "A路";
+//            }
+//        }
+//        if(cabinetPduB != null){
+//            int cabinetId = cabinetPduB.getCabinetId();
+//            CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
+//            String cabinetName = cabinet.getName();
+//            RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
+//            String roomName = roomIndex.getName();
+//            if(cabinet.getAisleId() != 0){
+//                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+//                address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";
+//            }else {
+//                address = roomName + "-"  + cabinetName +  "-" + "B路";
+//            }
+//        }
+//        return address;
+//    }
+        // 分割字符串并检查长度
         String[] ipParts = location.split("-");
+        if (ipParts.length < 2) {
+//            // 如果分割后的数组长度小于 2，则返回 null 或抛出异常
+             ipParts = location.split(":");
+        }
+
         String address = null;
-        CabinetPdu cabinetPduA = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
-                .eq(CabinetPdu::getPduIpA, ipParts[0])
-                .eq(CabinetPdu::getCasIdA, ipParts[1]));
-        CabinetPdu cabinetPduB = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
-                .eq(CabinetPdu::getPduIpB, ipParts[0])
-                .eq(CabinetPdu::getCasIdB, ipParts[1]));
-        if(cabinetPduA != null){
+
+        // A 路
+        CabinetPdu cabinetPduA = cabinetPduMapper.selectOne(
+                new LambdaQueryWrapperX<CabinetPdu>()
+                        .eq(CabinetPdu::getPduIpA, ipParts[0])
+                        .eq(CabinetPdu::getCasIdA, ipParts[1])
+        );
+
+        if (cabinetPduA != null) {
             int cabinetId = cabinetPduA.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
             String cabinetName = cabinet.getName();
             RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
             String roomName = roomIndex.getName();
-            if(cabinet.getAisleId() != 0){
+
+            if (cabinet.getAisleId() != 0) {
                 String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
                 address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
-            }else {
-                address = roomName + "-"  + cabinetName +  "-" + "A路";
+            } else {
+                address = roomName + "-" + cabinetName + "-" + "A路";
             }
         }
-        if(cabinetPduB != null){
+
+        // B 路
+        CabinetPdu cabinetPduB = cabinetPduMapper.selectOne(
+                new LambdaQueryWrapperX<CabinetPdu>()
+                        .eq(CabinetPdu::getPduIpB, ipParts[0])
+                        .eq(CabinetPdu::getCasIdB, ipParts[1])
+        );
+
+        if (cabinetPduB != null) {
             int cabinetId = cabinetPduB.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
             String cabinetName = cabinet.getName();
             RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
             String roomName = roomIndex.getName();
-            if(cabinet.getAisleId() != 0){
+
+            if (cabinet.getAisleId() != 0) {
                 String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
                 address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";
-            }else {
-                address = roomName + "-"  + cabinetName +  "-" + "B路";
+            } else {
+                address = roomName + "-" + cabinetName + "-" + "B路";
             }
         }
+
         return address;
     }
 
@@ -440,7 +497,10 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         if (Objects.equals(pduId, null)){
             pduId = getPduIdByAddr(reqVO.getIpAddr(), reqVO.getCascadeAddr());
             if (Objects.equals(pduId, null)){
-                return null;
+                PageResult<Object> pageResult=new PageResult<>();
+                pageResult.setList(new ArrayList<>())
+                        .setTotal(new Long(0));
+                return pageResult;
             }
         }
         // 创建BoolQueryBuilder对象
@@ -709,6 +769,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
 
     @Override
     public Map<String, Object> getEnvDataDetails(EnvDataDetailsReqVO reqVO) throws IOException {
+
         // 创建BoolQueryBuilder对象
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
@@ -766,7 +827,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             }
         }
         if (pduId == null){
-            return null;
+            return map;
         }
 
         // 创建匹配查询
@@ -827,5 +888,138 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         Map<String, Object> map = energyConsumptionService.getSumData(indices, name, timeAgo);
         return map;
     }
+    @Override
+    public List<Object> getEnExcelList(List<Object> list){
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        for (Object obj : list) {
+            if (obj instanceof Map && ((Map<?, ?>) obj).keySet().stream().allMatch(key -> key instanceof String)) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) obj;
+                mapList.add(map);
+            }
+        }
+        for(int i=0;i<mapList.size();i++){
+            Map mp=(Map)mapList.get(i).get("address");
+            mapList.get(i).put("address",mp.get("address"));
+            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,16));
+            if(mapList.get(i).containsKey("tem_max_time")&&mapList.get(i).containsKey("tem_min_time")){
+                mapList.get(i).put("tem_max_time",mapList.get(i).get("tem_max_time").toString().substring(0,16));
+                mapList.get(i).put("tem_min_time",mapList.get(i).get("tem_min_time").toString().substring(0,16));
+                mapList.get(i).put("hum_max_time",mapList.get(i).get("hum_max_time").toString().substring(0,16));
+                mapList.get(i).put("hum_min_time",mapList.get(i).get("hum_min_time").toString().substring(0,16));
+
+            }
+        }
+        return list;
+    }
+
+    @Override
+    public List<Object> getNewHistoryDataDetails(List<Object> list) {
+        List<Map<String, Object>> mapList = new ArrayList<>();
+
+        for (Object obj : list) {
+            if (obj instanceof Map && ((Map<?, ?>) obj).keySet().stream().allMatch(key -> key instanceof String)) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) obj;
+                mapList.add(map);
+            }
+        }
+            for (int i = 0; i < mapList.size(); i++) {
+                mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
+            }
+            if(mapList.get(0).containsKey("pow_apparent_max_time")){
+                for (int i = 0; i < mapList.size(); i++) {
+                    mapList.get(i).put("pow_apparent_max_time", mapList.get(i).get("pow_apparent_max_time").toString().substring(0, 16));
+                    mapList.get(i).put("pow_apparent_min_time", mapList.get(i).get("pow_apparent_min_time").toString().substring(0, 16));
+                    mapList.get(i).put("pow_active_max_time", mapList.get(i).get("pow_active_max_time").toString().substring(0, 16));
+                    mapList.get(i).put("pow_active_min_time", mapList.get(i).get("pow_active_min_time").toString().substring(0, 16));
+                }
+            }
+        if(mapList.get(0).containsKey("vol_max_time")){
+            for (int i = 0; i < mapList.size(); i++) {
+                mapList.get(i).put("vol_max_time", mapList.get(i).get("vol_max_time").toString().substring(0, 16));
+                mapList.get(i).put("vol_min_time", mapList.get(i).get("vol_min_time").toString().substring(0, 16));
+                mapList.get(i).put("cur_max_time", mapList.get(i).get("cur_max_time").toString().substring(0, 16));
+                mapList.get(i).put("cur_min_time", mapList.get(i).get("cur_min_time").toString().substring(0, 16));
+            }
+        }
+        return list;
+    }
+
+    @Override
+    public List<Object> getNewExcelList(List<Object> list,String ob) {
+        List<Map<String, Object>> mapList = new ArrayList<>();
+
+        for (Object obj : list) {
+            if (obj instanceof Map && ((Map<?, ?>) obj).keySet().stream().allMatch(key -> key instanceof String)) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) obj;
+                mapList.add(map);
+            }
+        }
+        if(ob.equals("1")){
+            for (int i = 0; i < mapList.size(); i++) {
+                mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
+            }
+        }
+        else if (ob.equals("3")){
+            for (int i = 0; i < mapList.size(); i++) {
+                mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
+                mapList.get(i).put("pow_active_max_time", mapList.get(i).get("pow_active_max_time").toString().substring(0, 16));
+                mapList.get(i).put("pow_active_min_time", mapList.get(i).get("pow_active_min_time").toString().substring(0, 16));
+                mapList.get(i).put("pow_apparent_max_time", mapList.get(i).get("pow_apparent_max_time").toString().substring(0, 16));
+                mapList.get(i).put("pow_apparent_min_time", mapList.get(i).get("pow_apparent_min_time").toString().substring(0, 16));
+                mapList.get(i).put("cur_max_time", mapList.get(i).get("cur_max_time").toString().substring(0, 16));
+                mapList.get(i).put("cur_min_time", mapList.get(i).get("cur_min_time").toString().substring(0, 16));
+                mapList.get(i).put("vol_max_time", mapList.get(i).get("vol_max_time").toString().substring(0, 16));
+                mapList.get(i).put("vol_min_time", mapList.get(i).get("vol_min_time").toString().substring(0, 16));
+            }
+        }
+        else if (ob.equals("4")){
+            for (int i = 0; i < mapList.size(); i++) {
+                mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
+                mapList.get(i).put("pow_active_max_time", mapList.get(i).get("pow_active_max_time").toString().substring(0, 16));
+                mapList.get(i).put("pow_active_min_time", mapList.get(i).get("pow_active_min_time").toString().substring(0, 16));
+                mapList.get(i).put("pow_apparent_max_time", mapList.get(i).get("pow_apparent_max_time").toString().substring(0, 16));
+                mapList.get(i).put("pow_apparent_min_time", mapList.get(i).get("pow_apparent_min_time").toString().substring(0, 16));
+                mapList.get(i).put("cur_max_time", mapList.get(i).get("cur_max_time").toString().substring(0, 16));
+                mapList.get(i).put("cur_min_time", mapList.get(i).get("cur_min_time").toString().substring(0, 16));
+            }
+        }
+        else {
+            for (int i = 0; i < mapList.size(); i++) {
+                mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
+                mapList.get(i).put("pow_active_max_time", mapList.get(i).get("pow_active_max_time").toString().substring(0, 16));
+                mapList.get(i).put("pow_active_min_time", mapList.get(i).get("pow_active_min_time").toString().substring(0, 16));
+                mapList.get(i).put("pow_apparent_max_time", mapList.get(i).get("pow_apparent_max_time").toString().substring(0, 16));
+                mapList.get(i).put("pow_apparent_min_time", mapList.get(i).get("pow_apparent_min_time").toString().substring(0, 16));
+            }
+        }
+
+        return list;
+    }
+
+    @Override
+    public void getEnvExcelList(List<Object> list) {
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        for (Object obj : list) {
+            if (obj instanceof Map && ((Map<?, ?>) obj).keySet().stream().allMatch(key -> key instanceof String)) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) obj;
+                mapList.add(map);
+            }
+        }
+
+        for(int i=0;i<mapList.size();i++){
+            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,16));
+            if(mapList.get(i).containsKey("tem_max_time")&&mapList.get(i).containsKey("tem_min_time")){
+                mapList.get(i).put("tem_max_time",mapList.get(i).get("tem_max_time").toString().substring(0,16));
+                mapList.get(i).put("tem_min_time",mapList.get(i).get("tem_min_time").toString().substring(0,16));
+                mapList.get(i).put("hum_max_time",mapList.get(i).get("hum_max_time").toString().substring(0,16));
+                mapList.get(i).put("hum_min_time",mapList.get(i).get("hum_min_time").toString().substring(0,16));
+
+            }
+            }
+        }
 
 }

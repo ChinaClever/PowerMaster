@@ -64,6 +64,8 @@ public interface BoxIndexService {
 
     PageResult<BoxIndexDTO> getEqPage(BoxIndexPageReqVO pageReqVO);
 
+    PageResult<BoxIndexDTO> getMaxEq(BoxIndexPageReqVO pageReqVO);
+
     PageResult<BoxBalanceDataRes> getBoxBalancePage(BoxIndexPageReqVO pageReqVO);
 
     PageResult<BoxTemRes> getBoxTemPage(BoxIndexPageReqVO pageReqVO);
@@ -115,4 +117,8 @@ public interface BoxIndexService {
     Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
     String getBoxRedisByDevKey(String devKey);
+
+    void restoreIndex(Long id);
+
+    PageResult<BoxIndexRes> getDeletedPage(BoxIndexPageReqVO pageReqVO);
 }

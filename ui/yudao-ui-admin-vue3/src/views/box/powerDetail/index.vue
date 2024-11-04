@@ -47,7 +47,7 @@
               <p >视在功率<span  class="vale-part">{{redisData?.s}}</span>kVA</p>
               <p >有功功率<span  class="vale-part">{{redisData?.p}}</span>kW</p>
               <p >无功功率<span  class="vale-part">{{redisData?.q}}</span>kVar</p>
-              <p >最大需量<span  class="vale-part">{{redisData?.md}}</span>kW </p>
+              <p >最大需量<span  class="vale-part">{{redisData?.md}}</span>kVA </p>
               <p >{{redisData?.updateTime}}</p>
             </div>
             <div  class="content-part">

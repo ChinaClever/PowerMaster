@@ -3,13 +3,13 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <div class="carousel-container">
+        <!-- <div class="carousel-container"> -->
           <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
             <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
               <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
             </el-carousel-item>
           </el-carousel> -->
-        </div>
+        <!-- </div>
         <div class="nav_header">
           <br/>
           <span v-if="queryParams.granularity == 'realtime' ">全部始端箱最近一分钟新增记录</span>
@@ -21,7 +21,24 @@
             <el-descriptions-item label="总数据"><span >{{ navTotalData }} 条</span></el-descriptions-item>
             <el-descriptions-item label="相数据"><span >{{ navLineData }} 条</span></el-descriptions-item>
           </el-descriptions>
+        </div>-->
+        <div class="descriptions-container" style="font-size: 14px;">
+          <div class="description-item">
+            <span class="label">总数据 :</span>
+            <span class="value">{{ navTotalData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">相数据 :</span>
+            <span class="value">{{ navLineData }}条</span>
+          </div>
+          <div class="description-item" style="font-size: 14px">
+            <div v-if="queryParams.granularity == 'realtime' " ><span>始端箱最近一分钟新增记录</span></div>
+              <div v-if="queryParams.granularity == 'hour' " ><span>始端箱最近一小时新增记录</span></div>
+              <div v-if="queryParams.granularity == 'day' " ><span>始端箱最近一天新增记录</span></div>
+                <div class="line" style="margin-top: 10px;"></div>
         </div>
+        </div>
+
       </div>
     </template>
     <template #ActionBar>
@@ -32,7 +49,7 @@
         :inline="true"
         label-width="auto"
       >
-        <el-form-item label="参数类型" prop="type">
+      <el-form-item label="参数类型" prop="type">
         <el-cascader
           v-model="defaultSelected"
           collapse-tags
@@ -79,7 +96,7 @@
           start-placeholder="开始时间"
           end-placeholder="结束时间"
           :disabled-date="disabledDate" 
-          class="!w-335px"
+          class="!w-280px"
         />
         </el-form-item>
         <!-- <div style="float:right; padding-right:78px"> -->
@@ -254,7 +271,7 @@ const cascaderChange = (selectedCol) => {
         column.istrue = true;
         break;
       }
-    };     
+    };
     for (const col of notSelectedCol) {
       if (column.prop?.startsWith(col)){
         column.istrue = false;
@@ -297,10 +314,12 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         originalArray.value = ["pow_active", "pow_reactive", "pow_apparent", "power_factor", "cur_residual", "cur_zero", "vol_unbalance", "cur_unbalance"];
         // 配置表格列
         tableColumns.value =([
-          { label: '所在位置', align: 'center', prop: 'location', width: '190px' , istrue:true},
+          { label: '所在位置', align: 'center', prop: 'location', width: '300%' , istrue:true},
           { label: '设备地址', align: 'center', prop: 'dev_key', width: '190px', istrue:true},
+          { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
+
           { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, width: '150px', formatter: formatPower},
-          { label: '总无功功率(kW)', align: 'center', prop: 'pow_reactive', istrue:true, width: '150px', formatter: formatPower},
+          { label: '总无功功率(kVar)', align: 'center', prop: 'pow_reactive', istrue:true, width: '150px', formatter: formatPower},
           { label: '总视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, width: '150px', formatter: formatPower},
           { label: '功率因素', align: 'center', prop: 'power_factor' , istrue:true, width: '140px', formatter: formatPowerFactor},
           { label: '剩余电流', align: 'center', prop: 'cur_residual' , istrue:false, width: '140px', formatter: formatCurrent},
@@ -336,13 +355,13 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
               { value: "pow_apparent_min", label: '最小视在功率' },
             ]
           },
-             { value: "cur_residual", label: '剩余电流', children: [
+          {value: "cur_residual", label: '剩余电流', children: [
               { value: "cur_residual_avg_value", label: '平均剩余电流'},
               { value: "cur_residual_max", label: '最大剩余电流' },
               { value: "cur_residual_min", label: '最小剩余电流' },
             ]
           },
-             { value: "cur_zero", label: '零线电流', children: [
+          { value: "cur_zero", label: '零线电流', children: [
               { value: "cur_zero_avg_value", label: '平均零线电流'},
               { value: "cur_zero_max", label: '最大零线电流' },
               { value: "cur_zero_min", label: '最小零线电流' },
@@ -356,8 +375,10 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
                             "cur_zero_avg_value", "cur_zero_max", "cur_zero_min",],
         // 配置表格列
         tableColumns.value = [
-          { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '220px'},
+          { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '300%'},
           { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '160px'},
+        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
+          
           { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '180px', formatter: formatPower},
           { label: '最大有功功率(kW)', align: 'center', prop: 'pow_active_max_value', istrue:true, width: '180px', formatter: formatPower},
           { label: '最大有功功率时间', align: 'center', prop: 'pow_active_max_time', formatter: formatTime, width: '230px', istrue:true},
@@ -416,11 +437,13 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
         originalArray.value =["vol_value", "cur_value", "pow_active", "pow_reactive", "pow_apparent", "power_factor", "load_rate", "vol_line", "cur_thd", "vol_thd"];
         // 配置表格列
         tableColumns.value = [
-          { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '190px'},
+          { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '300%'},
           { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '190px'},
+          { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
+
           { label: '相', align: 'center', prop: 'line_id', istrue:true, formatter: formatLineId, width: '120px'},
           { label: '有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, formatter: formatPower, width: '140px'},
-          { label: '无功功率(kW)', align: 'center', prop: 'pow_reactive', istrue:true, formatter: formatPower, width: '140px'},
+          { label: '无功功率(kVar)', align: 'center', prop: 'pow_reactive', istrue:true, formatter: formatPower, width: '140px'},
           { label: '视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, formatter: formatPower, width: '140px'},
           { label: '功率因素', align: 'center', prop: 'power_factor', istrue:true, formatter: formatPowerFactor, width: '140px'},
           { label: '电压(V)', align: 'center', prop: 'vol_value', istrue:true, formatter: formatVoltage, width: '140px'},
@@ -485,8 +508,10 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
                             "pow_apparent_avg_value", "pow_apparent_max", "pow_apparent_min"],
         // 配置表格列
         tableColumns.value = [
-          { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '220px'},
+          { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '300%'},
           { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '160px'},
+        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
+
           { label: '相', align: 'center', prop: 'line_id', istrue:true, width: '100px', formatter: formatLineId},
 
           { label: '平均有功功率(kW)', align: 'center', prop: 'pow_active_avg_value', istrue:true, width: '180px', formatter: formatPower},
@@ -534,11 +559,13 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
     }
   });
 
-const tableColumns = ref([  
-    { label: '所在位置', align: 'center', prop: 'location', width: '190px' , istrue:true},
+const tableColumns = ref([
+    { label: '所在位置', align: 'center', prop: 'location', width: '300%' , istrue:true},
     { label: '设备地址', align: 'center', prop: 'dev_key', width: '190px', istrue:true},
+    { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
+
     { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, width: '150px', formatter: formatPower},
-    { label: '总无功功率(kW)', align: 'center', prop: 'pow_reactive', istrue:true, width: '150px', formatter: formatPower},
+    { label: '总无功功率(kVar)', align: 'center', prop: 'pow_reactive', istrue:true, width: '150px', formatter: formatPower},
     { label: '总视在功率(kVA)', align: 'center', prop: 'pow_apparent', istrue:true, width: '150px', formatter: formatPower},
     { label: '功率因素', align: 'center', prop: 'power_factor' , istrue:true, width: '140px', formatter: formatPowerFactor},
     { label: '剩余电流', align: 'center', prop: 'cur_residual' , istrue:false, width: '140px', formatter: formatCurrent},
@@ -589,7 +616,7 @@ function formatPowerFactor(_row: any, _column: any, cellValue: number): string {
 
 // 格式化相id
 function formatLineId(_row: any, _column: any, cellValue: number): string {
-   return 'L'+cellValue;
+  return 'L'+cellValue;
 }
 
 // 格式化日期
@@ -597,7 +624,7 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
   if (!cellValue) {
     return ''
   }
-  return dayjs(cellValue).format('YYYY-MM-DD HH:mm:ss.SSS')
+  return dayjs(cellValue).format('YYYY-MM-DD HH:mm')
 }
 
 // 禁选未来的日期
@@ -667,6 +694,7 @@ const handleExport = async () => {
 // 获取导航的数据显示
 const getBusNavNewData = async() => {
   const res = await HistoryDataApi.getBusNavNewData(queryParams.granularity)
+  
   navTotalData.value = res.total
   navLineData.value = res.line
 }
@@ -736,5 +764,32 @@ onMounted( () => {
   width: 100%;
   height: 100%;
   object-fit: cover; 
+}
+
+.description-item {
+  display: flex;
+  align-items: center;
+}
+
+.label {
+  text-align: right; /* 文本右对齐 */
+  margin-right: 10px; /* 控制冒号后的间距 */
+  text-align: left;
+}
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
+
+}
+  .line {
+    height: 1px;
+    margin-top: 28px;
+
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
+  ::v-deep .el-table .el-table__header th {
+    background-color: #F5F7FA;
+    color: #909399;
 }
 </style>

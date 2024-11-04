@@ -19,6 +19,11 @@ export const IndexApi = {
     return await request.post({ url: `/box/index/page`, data })
   },
 
+  // 查询已删除的始端箱索引分页
+  getDeletedIndexPage: async (data: any) => {
+    return await request.post({ url: `/box/index/getDeletedPage`, data })
+  },  
+
   // 查询始端箱索引详情
   getIndex: async (id: number) => {
     return await request.get({ url: `/box/index/get?id=` + id })
@@ -39,6 +44,11 @@ export const IndexApi = {
     return await request.delete({ url: `/box/index/delete?id=` + id })
   },
 
+  // 恢复始端箱索引
+  restoreIndex: async (id: number) => {
+    return await request.put({ url: `/box/index/restore?id=` + id })
+  },  
+
   // 导出始端箱索引 Excel
   exportIndex: async (params) => {
     return await request.download({ url: `/box/index/export-excel`, params })
@@ -50,6 +60,10 @@ export const IndexApi = {
 
   getEqPage: async (data: any) => {
     return await request.post({ url: `/box/index/eq/page`, data })
+  },
+
+  getEqMax: async (data: any) => {
+    return await request.post({ url: `/box/index/eq/maxEq`, data })
   },
 
   getBalancePage: async (data: any) => {

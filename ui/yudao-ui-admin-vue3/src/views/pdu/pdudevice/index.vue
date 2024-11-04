@@ -1,12 +1,12 @@
 <template>
-  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="PDU配电">
+  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="navList" navTitle="PDU配电">
     <template #NavInfo>
       <div >
-        <div class="header">
+        <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
 
-        </div>
-        <div class="line"></div>
+        </div> -->
+        <!-- <div class="line"></div> -->
         <div class="status">
           <div class="box">
             <div class="top">
@@ -44,13 +44,15 @@
         :model="queryParams"
         ref="queryFormRef"
         :inline="true"
-        label-width="68px"                          
+        label-width="68px"
+        v-show="switchValue !== 2"                          
       >
         <el-form-item>
           <template v-for="(status, index) in statusList" :key="index">
             <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
           </template>
         </el-form-item>
+      <el-form-item>
         <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
             v-model="queryParams.devKey"
@@ -58,12 +60,11 @@
             clearable
             class="!w-200px"
             placeholder="请输入网络地址"
-            @select="handleQuery"
+            @select="handleQuery"                       
           />
         </el-form-item>
-      
-
-        <el-form-item>
+     
+      <el-form-item :style="{ marginLeft: '10px'}">
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           <el-button
@@ -84,15 +85,66 @@
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
         </el-form-item>
+       </el-form-item> 
         <div style="float:right">
-          <el-button @click="pageSizeArr=[24,36,48];queryParams.pageSize = 24;getList();switchValue = 0;" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 0;showPagination = 0;" :type="switchValue === 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;showPagination = 0;" :type="switchValue === 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 2;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''" v-show="switchValue ===1"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
         </div>
       </el-form>
+      <el-form
+        class="-mb-15px"
+        :model="queryDeletedPageParams"
+        ref="queryFormRef2"
+        :inline="true"
+        label-width="68px"    
+        v-show="switchValue == 2"                 
+      >
+      <el-form-item>
+        <el-form-item label="网络地址" prop="devKey" >
+          <el-autocomplete
+            v-model="queryDeletedPageParams.devKey"
+            :fetch-suggestions="querySearch"
+            clearable
+            class="!w-200px"
+            placeholder="请输入网络地址"
+            @select="handleQuery"                       
+          />
+        </el-form-item>        
+      
+      <el-form-item :style="{ marginLeft: '20px'}">
+          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+          <el-button
+            type="primary"
+            plain
+            @click="openForm('create')"
+            v-hasPermi="['pdu:PDU-device:create']"
+          >
+            <Icon icon="ep:plus" class="mr-5px" /> 新增
+          </el-button>
+          <el-button
+            type="success"
+            plain
+            @click="handleExport"
+            :loading="exportLoading"
+            v-hasPermi="['pdu:PDU-device:export']"
+          >
+            <Icon icon="ep:download" class="mr-5px" /> 导出
+          </el-button>
+        </el-form-item>
+       </el-form-item> 
+        <div style="float:right">
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 0;showPagination = 0;" :type="switchValue === 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;showPagination = 0;" :type="switchValue === 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
+          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 2;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
+        </div>
+      </el-form>      
     </template>
     <template #Content>
-      <el-table  v-show="switchValue" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
-        <el-table-column label="编号" align="center" prop="tableId" />
+     <div>
+      <el-table  v-show="switchValue == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
+        <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
         <el-table-column label="运行状态" align="center" prop="status" >
@@ -116,26 +168,26 @@
             <el-tag type="info" v-if="scope.row.status == 5">离线</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="总视在功率" align="center" prop="apparentPow" width="130px" >
+        <el-table-column label="总视在功率(kVA)" align="center" prop="apparentPow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if=" scope.row.apparentPow != null" >
-              {{ scope.row.apparentPow }}kVA
+              {{ scope.row.apparentPow }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="总有功功率" align="center" prop="pow" width="130px">
+        <el-table-column label="总有功功率(kW)" align="center" prop="pow" width="130px">
           <template #default="scope" >
             <el-text line-clamp="2" v-if=" scope.row.pow != null" >
-              {{ scope.row.pow }}kW
+              {{ scope.row.pow }}
             </el-text>
           </template>
         </el-table-column>
         <el-table-column label="功率因素" align="center" prop="pf" width="180px" />
         <!-- 数据库查询 -->
-        <el-table-column label="总电能" align="center" prop="ele" >
+        <el-table-column label="总电能(kWh)" align="center" prop="ele" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if=" scope.row.ele != null" >
-              {{ scope.row.ele }}kWh
+              {{ scope.row.ele }}
             </el-text>
           </template>
         </el-table-column>
@@ -159,21 +211,55 @@
               删除
             </el-button>
           </template>
+        </el-table-column>   
+      </el-table> 
+     </div> 
+      <!-- 查看已删除PDU设备 -->
+      <el-table  v-show="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true" :border="true">
+        <el-table-column label="编号" align="center" prop="tableId" width="80px" />
+        <!-- 数据库查询 -->
+        <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="运行状态" align="center" prop="status" >
+          <template #default="scope">
+            <el-tag type="info" v-if="scope.row.deleted">已删除</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" /> 
+        <el-table-column label="操作" align="center">
+          <template #default="scope">
+            <el-button
+              link
+              type="danger"
+              @click="handleRestore(scope.row.devKey)"
+              v-if="scope.row.status == 5"
+            >
+              恢复设备
+            </el-button>
+          </template>
         </el-table-column>
       </el-table>
-      <!-- 分页 -->
-      <div class="arrayContainer" v-show="!switchValue && list.length > 0">
+        <Pagination
+        v-if="showPagination == 1"
+        :total="deletedTotal"
+        :page-size-arr="pageSizeArr"
+        v-model:page="queryDeletedPageParams.pageNo"
+        v-model:limit="queryDeletedPageParams.pageSize"
+        @pagination="getDeletedList"
+        />               
+      <!-- 阵列模式分页 --> 
+      <div class="arrayContainer" v-show="!switchValue && list.length > 0"> 
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="icon">
-              <div v-if=" item.pow != null ">
-                {{item.pow}}<br/>kW
+              <div v-if="item.pf != null">
+                {{item.pf}}<br/>
+                <span class="text-pf">PF</span>
               </div>                    
             </div>
             <div class="info">
               
-              <div v-if="item.pf != null">功率因素：{{item.pf}}</div>
+              <div v-if=" item.pow != null ">有功功率：{{item.pow}}kW</div>    
               <div v-if="item.apparentPow != null">视在功率：{{item.apparentPow}}kVA</div>
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
@@ -197,23 +283,26 @@
                 <el-tag type="danger">告警</el-tag>
               </template>
             </el-popover>
+
             <el-tag type="info" v-if="item.status == 4">故障</el-tag>
             <el-tag type="info" v-if="item.status == 5">离线</el-tag>
           </div>
           <button v-if="item.status != null && item.status != 5" class="detail" @click="toPDUDisplayScreen(item)">详情</button>
-        </div>
+        </div>      
       </div>
-      <Pagination
+        <Pagination
+        v-if="showPagination == 0"
         :total="total"
         :page-size-arr="pageSizeArr"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
-      />
-      <template v-if="list.length == 0 && !switchValue">
+        />      
+      <template v-if="list.length == 0 && switchValue ==0 && showPagination == 0">
         <el-empty description="暂无数据" :image-size="300" />
       </template>
     </template>
+
   </CommonMenu>
   <!-- 表单弹窗：添加/修改 -->
   <!-- <PDUDeviceForm ref="formRef" @success="getList" /> -->
@@ -226,17 +315,19 @@ import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 // import PDUDeviceForm from './PDUDeviceForm.vue'
 import { ElTree } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
+import { get } from 'http'
 
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
 const { push } = useRouter()
-
+const navList = ref([]) as any // 左侧导航栏树结构列表
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
-const pageSizeArr = ref([24,36,48])
+const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(0)
+const showPagination = ref(0)
 const statusNumber = reactive({
   normal : 0,
   warn : 0,
@@ -314,6 +405,7 @@ const statusList = reactive([
 const handleClick = (row) => {
   if(row.type != null  && row.type == 3){
     queryParams.devKey = row.devKey
+    queryDeletedPageParams.devKey = row.devKey
     handleQuery();
   }
 }
@@ -321,6 +413,8 @@ const handleClick = (row) => {
 const handleCheck = async (row) => {
   if(row.length == 0){
     queryParams.cabinetIds = null;
+    queryDeletedPageParams.cabinetIds = null;
+    getDeletedList();
     getList();
     return;
   }
@@ -334,15 +428,17 @@ const handleCheck = async (row) => {
   })
   if(!haveCabinet ){
     queryParams.cabinetIds = [-1]
+    queryDeletedPageParams.cabinetIds = [-1]
   }else{
     queryParams.cabinetIds = ids
+    queryDeletedPageParams.cabinetIds = ids
   }
 
   getList();
+  getDeletedList();
 }
 
 
-const serverRoomArr =  ref([])
 
 const filterText = ref('')
 const treeRef = ref<InstanceType<typeof ElTree>>()
@@ -369,7 +465,31 @@ const list = ref([
     pf:null
   }
 ]) as any// 列表的数据
+const allList = ref([
+  { 
+    id:null,
+    status:null,
+    apparentPow:null,
+    pow:null,
+    ele:null,
+    devKey:null,
+    location:null,
+    dataUpdateTime : "",
+    pduAlarm:"",
+    pf:null
+  }
+]) as any//总列表的数据
+const deletedList = ref([
+  { 
+    id:null,
+    status:null,
+    devKey:null,
+    location:null,
+    dataUpdateTime : "",
+  }
+]) as any//已经删除的PDU设备
 const total = ref(0) // 列表的总页数
+const deletedTotal = ref(0) // 已删除PDU设备列表的总页数
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
@@ -380,7 +500,28 @@ const queryParams = reactive({
   status:[],
   cabinetIds:[],
 }) as any
+const queryParamsAll = reactive({
+  pageNo: 1,
+  pageSize: -1,
+  devKey: undefined,
+  createTime: [],
+  cascadeNum: undefined,
+  serverRoomData:undefined,
+  status:[],
+  cabinetIds:[],
+}) as any
+const queryDeletedPageParams = reactive({
+  pageNo: 1,
+  pageSize: 24,
+  devKey: undefined,
+  createTime: [],
+  cascadeNum: undefined,
+  serverRoomData:undefined,
+  status:[],
+  cabinetIds:[],
+}) as any
 const queryFormRef = ref() // 搜索的表单
+const queryFormRef2 = ref()
 const exportLoading = ref(false) // 导出的加载中
 
 /** 查询列表 */
@@ -390,15 +531,15 @@ const getList = async () => {
     const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
     list.value = data.list
     var tableIndex = 0;
-    var normal = 0;
-    var offline = 0;
-    var alarm = 0;
-    var warn = 0;
+    // var normal = 0;
+    // var offline = 0;
+    // var alarm = 0;
+    // var warn = 0;
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       if(obj?.dataUpdateTime == null && obj?.pow == null){
         obj.status = 5;
-        offline++;
+        //offline++;
         return;
       }
       const splitArray = obj.dataUpdateTime.split(' ');
@@ -409,21 +550,56 @@ const getList = async () => {
       obj.ele = obj.ele.toFixed(1);
       obj.pf = obj.pf.toFixed(2);
       
-      if(obj.status == 0){
-        normal++;
-      } else if (obj.status == 1){
-        warn++;
-      } else if (obj.status == 2){
-        alarm++;
-      } 
+      // if(obj.status == 0){
+      //   normal++;
+      // } else if (obj.status == 1){
+      //   warn++;
+      // } else if (obj.status == 2){
+      //   alarm++;
+      // } 
     });
-    statusNumber.normal = normal;
-    statusNumber.offline = offline;
-    statusNumber.alarm = alarm;
-    statusNumber.warn = warn;
+    // const allData = await PDUDeviceApi.getPDUDevicePage(queryParamsAll);
+    // allList.value = allData.list
+    // allList.value.forEach((objAll) => {
+    //   if(objAll?.dataUpdateTime == null && objAll?.pow == null){
+    //     objAll.status = 5;
+    //     offline++;
+    //     return;
+    //   }  
+    //   if(objAll?.status == 0){
+    //     normal++;
+    //   } else if (objAll?.status == 1){
+    //     warn++;
+    //   } else if (objAll?.status == 2){
+    //     alarm++;
+    //   }          
+    // });    
+    //设置左边数量
+    // statusNumber.normal = normal;
+    // statusNumber.offline = offline;
+    // statusNumber.alarm = alarm;
+    // statusNumber.warn = warn;
     total.value = data.total
   } finally {
     loading.value = false
+  }
+}
+
+
+
+const getDeletedList = async () => {
+  try {
+    const data = await PDUDeviceApi.getDeletedPDUDevice(queryDeletedPageParams);
+    deletedList.value = data.list
+    var tableIndex = 0;
+    deletedList.value.forEach((obj) => {
+      obj.tableId = (queryDeletedPageParams.pageNo - 1) * queryDeletedPageParams.pageSize + ++tableIndex;
+      const splitArray = obj.dataUpdateTime.split(' ');
+      obj.dataUpdateTime = splitArray[1];
+    });  
+    deletedTotal.value = data.total
+  } catch (error) {
+    
   }
 }
 
@@ -432,15 +608,15 @@ const getListNoLoading = async () => {
     const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
     list.value = data.list
     var tableIndex = 0;
-    var normal = 0;
-    var offline = 0;
-    var alarm = 0;
-    var warn = 0;
+    // var normal = 0;
+    // var offline = 0;
+    // var alarm = 0;
+    // var warn = 0;
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       if(obj?.dataUpdateTime == null && obj?.pow == null){
         obj.status = 5;
-        offline++;
+        //offline++;
         return;
       }
       const splitArray = obj?.dataUpdateTime?.split(' ');
@@ -451,18 +627,35 @@ const getListNoLoading = async () => {
       obj.ele = obj?.ele?.toFixed(1);
       obj.pf = obj?.pf?.toFixed(2);
 
-      if(obj?.status == 0){
-        normal++;
-      } else if (obj?.status == 1){
-        warn++;
-      } else if (obj?.status == 2){
-        alarm++;
-      }
+      // if(obj?.status == 0){
+      //   normal++;
+      // } else if (obj?.status == 1){
+      //   warn++;
+      // } else if (obj?.status == 2){
+      //   alarm++;
+      // }
     });
-    statusNumber.normal = normal;
-    statusNumber.offline = offline;
-    statusNumber.alarm = alarm;
-    statusNumber.warn = warn;
+    // const allData = await PDUDeviceApi.getPDUDevicePage(queryParamsAll);
+    // allList.value = allData.list
+    // allList.value.forEach((objAll) => {
+    //   if(objAll?.dataUpdateTime == null && objAll?.pow == null){
+    //     objAll.status = 5;
+    //     offline++;
+    //     return;
+    //   }  
+    //   if(objAll?.status == 0){
+    //     normal++;
+    //   } else if (objAll?.status == 1){
+    //     warn++;
+    //   } else if (objAll?.status == 2){
+    //     alarm++;
+    //   }          
+    // });
+    // //设置左边数量
+    // statusNumber.normal = normal;
+    // statusNumber.offline = offline;
+    // statusNumber.alarm = alarm;
+    // statusNumber.warn = warn;
 
     total.value = data.total
   } catch (error) {
@@ -470,29 +663,60 @@ const getListNoLoading = async () => {
   }
 }
 
-const getNavList = async() => {
-  const res = await CabinetApi.getRoomMenuAll({})
-  serverRoomArr.value = res
-  if (res && res.length > 0) {
-    const room = res[0]
-    const keys = [] as string[]
-    room.children.forEach(child => {
-      if(child.children.length > 0) {
-        child.children.forEach(son => {
-          keys.push(son.id + '-' + son.type)
-        })
-      }
-    })
+const getListAll = async () => {
+  try {
+    var normal = 0;
+    var offline = 0;
+    var alarm = 0;
+    var warn = 0;
+    const allData = await PDUDeviceApi.getPDUDevicePage(queryParamsAll);
+    allList.value = allData.list
+    allList.value.forEach((objAll) => {
+      if(objAll?.dataUpdateTime == null && objAll?.pow == null){
+        objAll.status = 5;
+        offline++;
+        return;
+      }  
+      if(objAll?.status == 0){
+        normal++;
+      } else if (objAll?.status == 1){
+        warn++;
+      } else if (objAll?.status == 2){
+        alarm++;
+      }          
+    });
+    //设置左边数量
+    statusNumber.normal = normal;
+    statusNumber.offline = offline;
+    statusNumber.alarm = alarm;
+    statusNumber.warn = warn;
+  } catch (error) {
+    
   }
 }
 
-const toPDUDisplayScreen = (row) =>{
-  const devKey = row.devKey;
-  const location = row.location;
-  const id = row.id;
-  console.log(devKey,location,id)
-  push({path: '/pdu/pdudisplayscreen', state: { devKey, id, location }})
+// 接口获取导航列表
+const getNavList = async() => {
+  const res = await CabinetApi.getRoomList({})
+  let arr = [] as any
+  for (let i=0; i<res.length;i++){
+  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  arr = arr.concat(temp);
+  }
+  navList.value = arr
 }
+
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+const toPDUDisplayScreen = (row: { devKey: string; location: string; id: number }) => {
+  const { devKey, location, id } = row;
+  router.push({
+    path: '/pdu/pdudisplayscreen',
+    query: { devKey, id: id.toString(), location }
+  });
+};
 
 // const openNewPage = (scope) => {
 //   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
@@ -510,12 +734,15 @@ const handleSelectStatus = (index) => {
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
+  queryDeletedPageParams.pageNo = 1
   getList()
+  getDeletedList()
 }
 
 /** 重置按钮操作 */
 const resetQuery = () => {
   queryFormRef.value.resetFields()
+  queryFormRef2.value.resetFields()
   statusList.forEach((item) => item.selected = true)
   queryParams.status = [];
   handleQuery()
@@ -538,7 +765,22 @@ const handleDelete = async (devKey: string) => {
     })
     message.success(t('common.delSuccess'))
     // 刷新列表
-    // await getList()
+    await getList()
+  } catch {}
+}
+
+/** 恢复按钮操作 */
+const handleRestore = async (devKey: string) => {
+  try {
+     // 恢复的二次确认
+    await message.restoreConfirm()
+    // 发起恢复请求
+    await PDUDeviceApi.restorePDUDevice({
+      devKey: devKey
+    })
+    message.success(t('common.restoreSuccess'))
+    // 刷新列表
+    await getDeletedList();
   } catch {}
 }
 
@@ -562,7 +804,9 @@ onMounted(async () => {
   devKeyList.value = await loadAll();
   getList()
   getNavList();
+  getListAll();
   flashListTimer.value = setInterval((getListNoLoading), 5000);
+  flashListTimer.value = setInterval((getListAll), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -585,6 +829,7 @@ onActivated(() => {
   getNavList();
   if(!firstTimerCreate.value){
     flashListTimer.value = setInterval((getListNoLoading), 5000);
+    flashListTimer.value = setInterval((getListAll), 5000);
   }
 })
 </script>
@@ -749,6 +994,7 @@ onActivated(() => {
   .status {
     display: flex;
     flex-wrap: wrap;
+    margin-top: 20px;
     .box {
       height: 70px;
       width: 50%;
@@ -866,11 +1112,20 @@ onActivated(() => {
     .content {
       display: flex;
       align-items: center;
+      height: 100%;
       .icon {
+        font-size: 20px;
         width: 60px;
         height: 30px;
-        margin: 0 28px;
+        margin: 0 25px 39px;
         text-align: center;
+          .text-pf{
+          font-size: 16px;
+        }
+      }
+      .info{
+        font-size: 16px;
+        margin-bottom: 20px;
       }
     }
     .devKey{
@@ -923,5 +1178,11 @@ onActivated(() => {
 }
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+::v-deep .el-table .el-table__header th{
+  background-color: #f5f7fa;
+  color: #909399;
+  height: 80px;
+
 }
 </style>

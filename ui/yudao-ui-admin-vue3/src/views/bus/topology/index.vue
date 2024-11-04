@@ -32,21 +32,46 @@
       <div class="loadA">
         <div class="box" v-if="startingBoxA">
           <div class="title">A路始端箱</div>
-          <div class="info" v-for="(item, index) in startingBoxA[btns[chosenBtn].paramBus]" :key="index">
-            <div>{{btns[chosenBtn].unitName}}{{letters[index]}}</div>
-            <div>{{item.toFixed(btns[chosenBtn].fixNum)}}{{btns[chosenBtn].unit}}</div>
+          <div v-if="chosenBtn==6">
+            <div class="info" v-for="(item, index) in startingBoxATEM[btns[chosenBtn].paramBus]" :key="index">
+              <div>{{btns[chosenBtn].unitName}}{{letters[index]}}</div>
+              <div>{{item.toFixed(btns[chosenBtn].fixNum)}}{{btns[chosenBtn].unit}}</div>
+            </div>
+          </div>
+          <div v-else-if="chosenBtn!=6">
+            <div class="info" v-for="(item, index) in startingBoxA[btns[chosenBtn].paramBus]" :key="index">
+              <div>{{btns[chosenBtn].unitName}}{{letters[index]}}</div>
+              <div>{{item.toFixed(btns[chosenBtn].fixNum)}}{{btns[chosenBtn].unit}}</div>
+            </div>
           </div>
         </div>
         <div class="box-empty" v-else></div>
         <div class="line"></div>
         <div class="boxList">
-          <div class="boxItem" v-for="(box, index) in pluginBoxA" :key="index">
+          <div class="boxItem" v-for="(box, index) in pluginBoxA.filter(item=>item.data !== undefined)" :key="index">
             <div class="layer"></div>
-            <div class="stage"></div>
-            <div class="box">
+            <div class="stage" v-if="box.data.box_data.box_cfg.box_type==0"></div>
+            <div class="box" v-if="box.data.box_data.box_cfg.box_type==0">
               <div class="title">A{{(index + 1)}}#插接箱</div>
-              <template v-if="box.data">
+              <div v-if="box.data">
+              <template v-if="chosenBtn!=6">
                 <div class="info" v-for="(item, i) in box.data.box_data.line_item_list[btns[chosenBtn].paramBox]" :key="i">
+                  <div>{{btns[chosenBtn].unitName}}{{letters[i]}}</div>
+                  <div>{{item.toFixed(btns[chosenBtn].fixNum)}}{{btns[chosenBtn].unit}}</div>
+                </div>
+              </template>
+              <template v-else>
+                <div class="info" v-for="(item, i) in box.data.env_item_list[btns[chosenBtn].paramBox]" :key="i">
+                  <div>{{btns[chosenBtn].unitName}}{{letters[i]}}</div>
+                  <div>{{item.toFixed(btns[chosenBtn].fixNum)}}{{btns[chosenBtn].unit}}</div>
+                </div>
+              </template>
+            </div>
+            </div>
+            <div class="boxconnect" v-if="box.data.box_data.box_cfg.box_type==1">
+              <div class="title">A{{(index + 1)}}#连接器</div>
+              <template v-if="chosenBtn==6">
+                <div class="info" v-for="(item, i) in box.data.env_item_list[btns[chosenBtn].paramBox]" :key="i">
                   <div>{{btns[chosenBtn].unitName}}{{letters[i]}}</div>
                   <div>{{item.toFixed(btns[chosenBtn].fixNum)}}{{btns[chosenBtn].unit}}</div>
                 </div>
@@ -59,25 +84,51 @@
       <div class="loadB">
         <div class="box boxB" v-if="startingBoxB">
           <div class="title">B路始端箱</div>
-          <div class="info" v-for="(item,index) in startingBoxB[btns[chosenBtn].paramBus]" :key="index">
-            <div>{{btns[chosenBtn].unitName}}{{letters[index]}}</div>
-            <div>{{item.toFixed(btns[chosenBtn].fixNum)}}{{btns[chosenBtn].unit}}</div>
-          </div>
+            <div v-if="chosenBtn==6">
+              <div class="info" v-for="(item,index) in startingBoxBTEM[btns[chosenBtn].paramBus]" :key="index">
+                <div>{{btns[chosenBtn].unitName}}{{letters[index]}}</div>
+                <div>{{item.toFixed(btns[chosenBtn].fixNum)}}{{btns[chosenBtn].unit}}</div>
+              </div>
+            </div>
+            <div v-else-if="chosenBtn!=6">
+              <div class="info" v-for="(item,index) in startingBoxB[btns[chosenBtn].paramBus]" :key="index">
+                <div>{{btns[chosenBtn].unitName}}{{letters[index]}}</div>
+                <div>{{item.toFixed(btns[chosenBtn].fixNum)}}{{btns[chosenBtn].unit}}</div>
+              </div>
+            </div>
         </div>
         <div class="box-empty boxB" v-else></div>
         <div class="line"></div>
         <div class="boxList">
-          <div class="boxItem" v-for="(box, index) in pluginBoxB" :key="index">
-            <div class="box">
+          <div class="boxItem" v-for="(box, index) in pluginBoxB.filter(item=>item.data !== undefined)" :key="index">
+            <div v-if="box && box.data">
+            <div class="box" v-if="box.data.box_data.box_cfg.box_type==0">
               <div class="title">B{{(index + 1)}}#插接箱</div>
-              <template v-if="box && box.data">
+              
+              <template v-if="chosenBtn!=6">
                 <div class="info" v-for="(item, i) in box.data.box_data.line_item_list[btns[chosenBtn].paramBox]" :key="i">
                   <div>{{btns[chosenBtn].unitName}}{{letters[i]}}</div>
                   <div>{{item.toFixed(btns[chosenBtn].fixNum)}}{{btns[chosenBtn].unit}}</div>
                 </div>
               </template>
+              <template v-else>
+                <div class="info" v-for="(item, i) in box.data.env_item_list[btns[chosenBtn].paramBox]" :key="i">
+                  <div>{{btns[chosenBtn].unitName}}{{letters[i]}}</div>
+                  <div>{{item.toFixed(btns[chosenBtn].fixNum)}}{{btns[chosenBtn].unit}}</div>
+                </div>
+              </template>
             </div>
-            <div class="stage"></div>
+          </div>
+            <div class="boxconnect" v-if="box.data.box_data.box_cfg.box_type==1">
+              <div class="title">B{{(index + 1)}}#连接器</div>
+              <template v-if="chosenBtn==6">
+                <div class="info" v-for="(item, i) in box.data.env_item_list[btns[chosenBtn].paramBox]" :key="i">
+                  <div>{{btns[chosenBtn].unitName}}{{letters[i]}}</div>
+                  <div>{{item.toFixed(btns[chosenBtn].fixNum)}}{{btns[chosenBtn].unit}}</div>
+                </div>
+              </template>
+            </div>
+            <div class="stage" v-if="box.data.box_data.box_cfg.box_type==0"></div>
             <div class="layer"></div>
           </div>
           <div class="tip">B路</div>
@@ -170,6 +221,9 @@ const pluginBoxB = ref([])
 const startingBoxA = ref([])
 const startingBoxB = ref({})
 
+const startingBoxATEM = ref([])
+const startingBoxBTEM = ref({})
+
 const switchBtn = (value) => {
   chosenBtn.value = value
 }
@@ -201,13 +255,21 @@ const getBusData = async() => {
   if (res.length > 0) {
     startingBoxA.value = res[0].busData ? res[0].busData.bus_data.line_item_list : null
     startingBoxB.value = res[1].busData ? res[1].busData.bus_data.line_item_list : null
-    pluginBoxA.value = res[0].boxDataList.filter(item=>item.type==0)
-    pluginBoxB.value = res[1].boxDataList.filter(item=>item.type==0)
+
+    startingBoxATEM.value = res[0].busData ? res[0].busData.env_item_list : null
+    startingBoxBTEM.value = res[1].busData ? res[1].busData.env_item_list : null
+    // pluginBoxA.value = res[0].boxDataList.filter(item=>item.data.box_data.box_cfg.box_type==0)
+
+    pluginBoxA.value = res[0].boxDataList
+    pluginBoxB.value = res[1].boxDataList
+    
     // console.log('btns[chosenBtn.value]', btns[chosenBtn.value], startingBoxA.value)
     // console.log('startingBoxA.value', startingBoxA.value, startingBoxA.value[(btns[chosenBtn.value].paramBox)], pluginBoxA.value[0])
   } else {
     startingBoxA.value = []
     startingBoxB.value = []
+    startingBoxATEM.value = []
+    startingBoxBTEM.value = []
     pluginBoxA.value = []
     pluginBoxB.value = []
   }
@@ -249,7 +311,7 @@ getNavList()
     display: flex;
     .box {
       width: 100px;
-      height: 127px;
+      height: 150px;
       // height: fit-content;
       border: 1px solid #ddd;
       background-color: #fff;
@@ -269,7 +331,7 @@ getNavList()
       }
     }
     .box-empty {
-      height: 127px;
+      height: 150px;
     }
     .line {
       flex-shrink: 0;
@@ -318,7 +380,7 @@ getNavList()
       margin-top: 100px;
     }
     .line {
-      margin-top: 150px;
+      margin-top: 175px;
       background-color: green;
     }
     .boxList {
@@ -337,7 +399,7 @@ getNavList()
         }
       }
       .tip {
-        top: 170px;
+        top: 195px;
         color: green;
       }
     }
@@ -352,4 +414,25 @@ getNavList()
 :deep(.topForm .el-form-item) {
   margin-right: 0px
 }
+.boxconnect {
+      width: 100px;
+      height: 150px;
+      // height: fit-content;
+      // border: 1px solid #ddd;
+      background-color: #fff;
+      flex-shrink: 0;
+      .title {
+        padding: 15px 13px;
+        font-size: 13px;
+        font-weight: bold;
+        color: #0051ff;
+      }
+      .info {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding: 0 10px;
+        font-size: 12px;
+      }
+    }
 </style>

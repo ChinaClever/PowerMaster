@@ -1,9 +1,9 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU能耗趋势" placeholder="如:192.168.1.96-0">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU能耗统计" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
         <br/>    <br/> 
         <div class="nav_data">
-          <div class="carousel-container">
+          <!-- <div class="carousel-container">
             <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
               <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
                 <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
@@ -17,7 +17,26 @@
               <el-descriptions-item label="最近一月" ><span >{{ lastMonthTotalData }} 条</span></el-descriptions-item>
             </el-descriptions>
           </div>
+        </div> -->
+        <div class="descriptions-container" style="font-size: 14px;">
+          <div class="description-item">
+            <span class="label">最近一天 :</span>
+            <span class="value">{{ lastDayTotalData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">最近一周 :</span>
+            <span class="value">{{ lastWeekTotalData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">最近一月 :</span>
+            <span class="value">{{ lastMonthTotalData }}条</span>
+          </div>    <br/>
+          <div ><span>全部PDU新增能耗记录</span>
+            <div class="line" style="margin-top: 10px;"></div>
+          </div>
         </div>
+        
+      </div>
     </template>
     <template #ActionBar>
       <el-form
@@ -72,15 +91,16 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" >
         <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="80px">
           <template #default="{ $index }">
             {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
-          </template>
+          </template>   
         </el-table-column>
        <!-- 遍历其他列 -->
-      <template v-for="column in tableColumns" :key="column.label">
+      <template
+       v-for="column in tableColumns" :key="column.label">
         <el-table-column
           v-if="!column.children && column.istrue"
           :key="column.prop"
@@ -95,6 +115,8 @@
           </template>
         </el-table-column>
         
+
+
         <el-table-column
           v-else-if="column.istrue"
           :label="column.label"
@@ -102,13 +124,12 @@
         >
           <template v-for="child in column.children" :key="child.prop">
             <el-table-column
-              :key="child.prop"
+            v-if="child.istrue"
               :label="child.label"
               :align="child.align"
               :prop="child.prop"
               :formatter="child.formatter"
               :width="child.width"
-              v-if="child.istrue"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
                 <el-button link type="primary" @click="toDetails(row.pdu_id, row.address)">详情</el-button>
@@ -116,6 +137,8 @@
             </el-table-column>
           </template>
         </el-table-column>
+
+
       </template>
       <!-- 超过一万条数据提示信息 -->
       <template v-if="shouldShowDataExceedMessage" #append>
@@ -282,17 +305,17 @@ watch(() => queryParams.granularity, () => {
 });
 
 const tableColumns = ref([
-  { label: '位置', align: 'center', prop: 'address' , istrue:true, width: '180px'},
+  { label: '所在位置', align: 'center', prop: 'address' , istrue:true, width: '300%'},
   { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '150px'},
   { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '150px' , istrue:true},
-  { label: '开始', align: 'center', istrue: true, children: [
-      { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime1, width: '150px' , istrue:true},
-      { label: '电能(kWh)', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
+  { label: '开始电能', align: 'center', istrue: true, children: [
+      { label: '开始电能(kWh)', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
+      { label: '开始时间', align: 'center', prop: 'start_time' , formatter: formatTime1, width: '150px' , istrue:true},
     ]
   },
-  { label: '结束', align: 'center', istrue: true, children: [
-      { label: '日期', align: 'center', prop: 'end_time' , formatter: formatTime1, width: '150px' , istrue:true},
-      { label: '电能(kWh)', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle},
+  { label: '结束电能', align: 'center', istrue: true, children: [
+      { label: '结束电能(kWh)', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle},
+      { label: '结束时间', align: 'center', prop: 'end_time' , formatter: formatTime1, width: '150px' , istrue:true},
     ]
   },
   { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' ,istrue: true,formatter: formatEle },
@@ -315,7 +338,7 @@ const getList = async () => {
     if(selectTimeRange.value == null){
       queryParams.timeRange = undefined
     }
-    const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
+    const data = await EnergyConsumptionApi.getEQDataPage(queryParams);
     eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
     list.value = data.list
     realTotel.value = data.total
@@ -372,6 +395,7 @@ function formatTime1(_row: any, _column: any, cellValue: number): string {
 
 // 格式化电能列数据，保留1位小数（不用传参）
 function formatEle(_row: any, _column: any, cellValue: number): string {
+  
   return Number(cellValue).toFixed(1);
 }
 
@@ -482,7 +506,7 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnergyConsumptionApi.exportEQPageData(queryParams, axiosConfig)
-    await download.excel(data, 'PDU能耗趋势.xlsx')
+    await download.excel(data, 'PDU能耗统计.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -516,7 +540,7 @@ onMounted(() => {
   width: 170px;
 }
 .nav_content span{
-  font-size: 18px;
+  font-size: 14px;
 }
 .carousel-container {
   width: 100%;
@@ -528,4 +552,31 @@ onMounted(() => {
   height: 100%;
   object-fit: cover; 
 }
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+}
+
+.description-item {
+  display: flex;
+  align-items: center;
+}
+
+.label {
+  text-align: right; /* 文本右对齐 */
+  margin-right: 10px; /* 控制冒号后的间距 */
+  text-align: left;
+}
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
+
+}
+  .line {
+    height: 1px;
+    margin-top: 28px;
+
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
+
 </style>

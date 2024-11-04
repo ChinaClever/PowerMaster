@@ -4,6 +4,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.cabinet.controller.admin.energyconsumption.VO.CabinetEnergyConsumptionPageReqVO;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 public interface CabinetEnergyConsumptionService {
@@ -53,4 +54,9 @@ public interface CabinetEnergyConsumptionService {
      */
     PageResult<Object> getSubBillDetails(CabinetEnergyConsumptionPageReqVO reqVO) throws IOException;
 
+    List<Object> getNewEqList(List<Object> list);
+
+    List<Object>  getNewDetailsList(List<Object> list);
+
+    List<Object> getNewRealtimeList(List<Object> list);
 }

@@ -88,11 +88,15 @@ public class BusHistoryDataController {
                                        HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = busHistoryDataService.getBoxHistoryDataPage(pageReqVO).getList();
+
         // 导出 Excel
         if (Objects.equals(pageReqVO.getGranularity(), "realtime")){
+            //处理list
+            busHistoryDataService.getNewBoxHistoryList(list);
             ExcelUtils.write(response, "母线插接箱历史数据.xlsx", "数据", BoxRealtimePageRespVO.class,
                     BeanUtils.toBean(list, BoxRealtimePageRespVO.class));
         }else{
+            busHistoryDataService.getNewBoxHistoryList1(list);
             ExcelUtils.write(response, "母线插接箱历史数据.xlsx", "数据", BoxHourAndDayPageRespVO.class,
                     BeanUtils.toBean(list, BoxHourAndDayPageRespVO.class));
         }
@@ -108,11 +112,14 @@ public class BusHistoryDataController {
 
         pageReqVO.setPageSize(10000);
         List<Object> list = busHistoryDataService.getBusHistoryDataPage(pageReqVO).getList();
+
         // 导出 Excel
         if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+            busHistoryDataService.getNewHistoryList(list);
             ExcelUtils.write(response, "母线始端箱历史数据.xlsx", "数据", BusRealtimePageRespVO.class,
                     BeanUtils.toBean(list, BusRealtimePageRespVO.class));
         } else {
+            busHistoryDataService.getNewHistoryList1(list);
             ExcelUtils.write(response, "母线始端箱历史数据.xlsx", "数据", BusHourAndDayPageRespVO.class,
                     BeanUtils.toBean(list, BusHourAndDayPageRespVO.class));
         }
@@ -147,6 +154,7 @@ public class BusHistoryDataController {
                                           HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = busHistoryDataService.getBusEnvDataPage(pageReqVO).getList();
+        busHistoryDataService.getNewEnvHistoryList(list);
         // 导出 Excel
         if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
             ExcelUtils.write(response, "始端箱环境历史数据.xlsx", "数据", BusEnvRealtimePageRespVO.class,
@@ -186,6 +194,7 @@ public class BusHistoryDataController {
                                              HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = busHistoryDataService.getBoxEnvDataPage(pageReqVO).getList();
+        busHistoryDataService.getNewEnvHistoryList(list);
         // 导出 Excel
         if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
             ExcelUtils.write(response, "插接箱环境历史数据.xlsx", "数据", BoxEnvRealtimePageRespVO.class,
@@ -193,6 +202,132 @@ public class BusHistoryDataController {
         } else {
             ExcelUtils.write(response, "插接箱环境历史数据.xlsx", "数据", BoxEnvHourAndDayPageRespVO.class,
                     BeanUtils.toBean(list, BoxEnvHourAndDayPageRespVO.class));
+        }
+    }
+
+    @GetMapping("/bus-tem-export-excel")
+    @Operation(summary = "导出母线始端箱温度分析环境历史数据 Excel")
+//    @PreAuthorize("@ss.hasPermission('pdu:env-history-data:export')")
+    @OperateLog(type = EXPORT)
+    public void exportBusTemHistoryDataExcel(BusHistoryDataDetailsReqVO pageReqVO,
+                                             HttpServletResponse response) throws IOException {
+        pageReqVO.setPageSize(10000);
+        List<Object> list = busHistoryDataService.getBusEnvDataDetails(pageReqVO).getList();
+
+        busHistoryDataService.getNewTemHistoryList(list);
+        // 导出 Excel
+        if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+            ExcelUtils.write(response, "始端箱温度分析.xlsx", "数据", BusTemHistoryDataVO.class,
+                    BeanUtils.toBean(list, BusTemHistoryDataVO.class));
+        } else {
+            ExcelUtils.write(response, "始端箱温度分析.xlsx", "数据", BusHourAndDayTemHistoryDataVO.class,
+                    BeanUtils.toBean(list, BusHourAndDayTemHistoryDataVO.class));
+        }
+    }
+
+    @GetMapping("/box-tem-export-excel")
+    @Operation(summary = "导出母线插接箱温度分析环境历史数据 Excel")
+//    @PreAuthorize("@ss.hasPermission('pdu:env-history-data:export')")
+    @OperateLog(type = EXPORT)
+    public void exportBoxTemHistoryDataExcel(BusHistoryDataDetailsReqVO pageReqVO,
+                                             HttpServletResponse response) throws IOException {
+        pageReqVO.setPageSize(10000);
+        List<Object> list = busHistoryDataService.getBoxEnvDataDetails(pageReqVO).getList();
+
+        busHistoryDataService.getNewTemHistoryList(list);
+        // 导出 Excel
+        if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+            ExcelUtils.write(response, "插接箱温度分析.xlsx", "数据", BusTemHistoryDataVO.class,
+                    BeanUtils.toBean(list, BusTemHistoryDataVO.class));
+        } else {
+            ExcelUtils.write(response, "插接箱温度分析.xlsx", "数据", BusHourAndDayTemHistoryDataVO.class,
+                    BeanUtils.toBean(list, BusHourAndDayTemHistoryDataVO.class));
+        }
+    }
+
+
+
+
+
+    @GetMapping("/bus-export-detail-excel")
+    @Operation(summary = "导出母线始端箱电力分析 Excel")
+//    @PreAuthorize("@ss.hasPermission('母线:history-data:export')")
+    @OperateLog(type = EXPORT)
+    public void exportBusDetailHistoryDataExcel(BusHistoryDataDetailsReqVO pageReqVO,
+                                          HttpServletResponse response) throws IOException {
+
+        pageReqVO.setPageSize(10000);
+        List<Object> list = busHistoryDataService.getBusHistoryDataDetails(pageReqVO).getList();
+
+        busHistoryDataService.getNewDetailHistoryList(list);
+       if(((Map)list.get(0)).containsKey("line_id")){
+           // 导出 Excel
+           if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+               ExcelUtils.write(response, "母线始端箱电力分析.xlsx", "数据", BusExportLineDetailVO.class,
+                       BeanUtils.toBean(list, BusExportLineDetailVO.class));
+           } else {
+               ExcelUtils.write(response, "母线始端箱电力分析.xlsx", "数据", BusHourAndDayLineExportDetailVO.class,
+                       BeanUtils.toBean(list, BusHourAndDayLineExportDetailVO.class));
+           }
+       }
+       else{
+           // 导出 Excel
+           if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+               ExcelUtils.write(response, "母线始端箱电力分析.xlsx", "数据", BusExportDetailVO.class,
+                       BeanUtils.toBean(list, BusExportDetailVO.class));
+           } else {
+               ExcelUtils.write(response, "母线始端箱电力分析.xlsx", "数据", BusHourAndDayExportDetailVO.class,
+                       BeanUtils.toBean(list, BusHourAndDayExportDetailVO.class));
+           }
+       }
+    }
+    @GetMapping("/box-export-detail-excel")
+    @Operation(summary = "导出母线插接箱电力分析 Excel")
+//    @PreAuthorize("@ss.hasPermission('母线:history-data:export')")
+    @OperateLog(type = EXPORT)
+    public void exportBoxDetailHistoryDataExcel(BusHistoryDataDetailsReqVO pageReqVO,
+                                                HttpServletResponse response) throws IOException {
+        pageReqVO.setPageSize(10000);
+        List<Object> list = busHistoryDataService.getBoxHistoryDataDetails(pageReqVO).getList();
+
+        busHistoryDataService.getNewBoxDetailHistoryList(list);
+        if(((Map)list.get(0)).containsKey("line_id")){
+            // 导出 Excel
+            if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+                ExcelUtils.write(response, "母线插接箱电力分析.xlsx", "数据", BoxExportLineDetailVO.class,
+                        BeanUtils.toBean(list, BoxExportLineDetailVO.class));
+            } else {
+                ExcelUtils.write(response, "母线插接箱电力分析.xlsx", "数据", BoxHourAndDayLineExportDetailVO.class,
+                        BeanUtils.toBean(list, BoxHourAndDayLineExportDetailVO.class));
+            }
+        }else if(((Map)list.get(0)).containsKey("loop_id")){
+            // 导出 Excel
+            if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+                ExcelUtils.write(response, "母线插接箱电力分析.xlsx", "数据", BoxExportLoopDetailVO.class,
+                        BeanUtils.toBean(list, BoxExportLoopDetailVO.class));
+            } else {
+                ExcelUtils.write(response, "母线插接箱电力分析.xlsx", "数据", BoxHourAndDayLoopExportDetailVO.class,
+                        BeanUtils.toBean(list, BoxHourAndDayLoopExportDetailVO.class));
+            }
+        } else if(((Map)list.get(0)).containsKey("outlet_id")){
+            // 导出 Excel
+            if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+                ExcelUtils.write(response, "母线插接箱电力分析.xlsx", "数据", BoxExportOutletDetailVO.class,
+                        BeanUtils.toBean(list, BoxExportOutletDetailVO.class));
+            } else {
+                ExcelUtils.write(response, "母线插接箱电力分析.xlsx", "数据", BoxHourAndDayOutletExportDetailVO.class,
+                        BeanUtils.toBean(list, BoxHourAndDayOutletExportDetailVO.class));
+            }
+        }
+        else{
+            // 导出 Excel
+            if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+                ExcelUtils.write(response, "母线插接箱电力分析.xlsx", "数据", BoxExportDetailVO.class,
+                        BeanUtils.toBean(list, BoxExportDetailVO.class));
+            } else {
+                ExcelUtils.write(response, "母线插接箱电力分析.xlsx", "数据", BoxHourAndDayExportDetailVO.class,
+                        BeanUtils.toBean(list, BoxHourAndDayExportDetailVO.class));
+            }
         }
     }
 

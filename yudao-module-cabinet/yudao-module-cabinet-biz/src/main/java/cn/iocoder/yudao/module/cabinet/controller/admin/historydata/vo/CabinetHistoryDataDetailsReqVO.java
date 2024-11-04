@@ -12,6 +12,7 @@ public class CabinetHistoryDataDetailsReqVO extends PageParam {
     private Integer cabinetId;
 
     private String granularity;
+    private String abtotal;
 
     private String[] timeRange;
 

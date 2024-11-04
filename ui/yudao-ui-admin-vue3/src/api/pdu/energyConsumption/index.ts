@@ -16,7 +16,10 @@ export const EnergyConsumptionApi = {
   exportEQPageData: async (params, axiosConfig) => {
     return await request.download({ url: `/pdu/eq-data/export-excel`, params, ...axiosConfig })
   },
-  
+    // 导出pdu能耗排名历史数据 Excel
+    exportOutletsPageData: async (params, axiosConfig) => {
+      return await request.download({ url: `/pdu/eq-data/outlets-details-excel`, params, ...axiosConfig })
+    },
 
    // 查询pdu电量费数据分页
    getBillDataPage: async (params: any) => {

@@ -6,10 +6,7 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.dto.BoxIndexDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.*;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
-import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusActivePowDTO;
-import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusEleChainDTO;
-import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusEqTrendDTO;
-import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusTrendDTO;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.service.boxindex.BoxIndexService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -54,9 +51,16 @@ public class BoxIndexController {
     @DeleteMapping("/delete")
     @Operation(summary = "删除插接箱索引")
     @Parameter(name = "id", description = "编号", required = true)
-
     public CommonResult<Boolean> deleteIndex(@RequestParam("id") Long id) {
         indexService.deleteIndex(id);
+        return success(true);
+    }
+
+    @PutMapping("/restore")
+    @Operation(summary = "恢复插接箱索引")
+    @Parameter(name = "id", description = "编号", required = true)
+    public CommonResult<Boolean> restoreIndex(@RequestParam("id") Long id) {
+        indexService.restoreIndex(id);
         return success(true);
     }
 
@@ -88,6 +92,13 @@ public class BoxIndexController {
         return success(BeanUtils.toBean(pageResult, BoxIndexRes.class));
     }
 
+    @PostMapping("/getDeletedPage")
+    @Operation(summary = "获得已经删除插接箱负荷分页")
+    public CommonResult<PageResult<BoxIndexRes>> getDeletedPage(@RequestBody BoxIndexPageReqVO pageReqVO) {
+        PageResult<BoxIndexRes> pageResult = indexService.getDeletedPage(pageReqVO);
+        return success(BeanUtils.toBean(pageResult, BoxIndexRes.class));
+    }
+
     @PostMapping("/boxpage")
     @Operation(summary = "获得插接箱电力分页")
     public CommonResult<PageResult<BoxRedisDataRes>> getBoxPage(@RequestBody BoxIndexPageReqVO pageReqVO) {
@@ -115,7 +126,7 @@ public class BoxIndexController {
         return success(BeanUtils.toBean(pageResult, BoxPFRes.class));
     }
 
-    @Operation(summary = "插接箱功率因素详情")
+    @Operation(summary = "插接箱功率因数详情")
     @PostMapping("/pf/detail")
     public CommonResult<Map> getBoxPFDetail(@RequestBody BoxIndexPageReqVO pageReqVO) {
         return success(indexService.getBoxPFDetail(pageReqVO));
@@ -154,6 +165,12 @@ public class BoxIndexController {
         return success(pageResult);
     }
 
+    @Operation(summary = "插接箱用能列表分页")
+    @PostMapping("/eq/maxEq")
+    public CommonResult<PageResult<BoxIndexDTO>> getMaxEq(@RequestBody BoxIndexPageReqVO pageReqVO) {
+        PageResult<BoxIndexDTO> pageResult = indexService.getMaxEq(pageReqVO);
+        return success(pageResult);
+    }
     /**
      * 插接箱有功功率趋势
      *

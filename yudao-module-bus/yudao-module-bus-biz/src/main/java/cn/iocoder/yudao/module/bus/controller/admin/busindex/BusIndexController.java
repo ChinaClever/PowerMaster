@@ -2,7 +2,10 @@ package cn.iocoder.yudao.module.bus.controller.admin.busindex;
 
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusTemDetailRes;
+import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailReqVO;
+import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailRespVO;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Update;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -21,6 +24,7 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.service.busindex.BusIndexService;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -55,6 +59,14 @@ public class BusIndexController {
         return success(true);
     }
 
+    @PutMapping("/restore")
+    @Operation(summary = "恢复始端箱索引")
+    @Parameter(name = "id", description = "编号", required = true)
+    public CommonResult<Boolean> restoreIndex(@RequestParam("id") Long id) {
+        indexService.restoreIndex(id);
+        return success(true);
+    }
+
     @GetMapping("/get")
     @Operation(summary = "获得始端箱索引")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
@@ -67,6 +79,13 @@ public class BusIndexController {
     @Operation(summary = "获得始端箱负荷分页")
     public CommonResult<PageResult<BusIndexRes>> getIndexPage(@RequestBody BusIndexPageReqVO pageReqVO) {
         PageResult<BusIndexRes> pageResult = indexService.getIndexPage(pageReqVO);
+        return success(BeanUtils.toBean(pageResult, BusIndexRes.class));
+    }
+
+    @PostMapping("/getDeletedPage")
+    @Operation(summary = "获得已经删除始端箱负荷分页")
+    public CommonResult<PageResult<BusIndexRes>> getDeletedPage(@RequestBody BusIndexPageReqVO pageReqVO) {
+        PageResult<BusIndexRes> pageResult = indexService.getDeletedPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BusIndexRes.class));
     }
 
@@ -148,6 +167,13 @@ public class BusIndexController {
         return success(pageResult);
     }
 
+    @Operation(summary = "始端箱用能列表分页")
+    @PostMapping("/eq/maxEq")
+    public CommonResult<PageResult<BusIndexDTO>> getMaxEq(@RequestBody BusIndexPageReqVO pageReqVO) {
+        PageResult<BusIndexDTO> pageResult = indexService.getMaxEq(pageReqVO);
+        return success(pageResult);
+    }
+
     /**
      * 始端箱有功功率趋势
      *
@@ -225,6 +251,13 @@ public class BusIndexController {
     public CommonResult<PowerRedisDataRes> getBusPowerRedisData(@RequestBody BusIndexPageReqVO pageReqVO) {
         PowerRedisDataRes result = indexService.getBusPowerRedisData(pageReqVO.getDevKey());
         return success(result);
+    }
+
+    @PostMapping("/peakDemand")
+    @Operation(summary = "获得最大需量")
+    public CommonResult<BusPowerLoadDetailRespVO> getPeakDemand(@RequestBody BusIndexPageReqVO pageReqVO) throws IOException {
+        BusPowerLoadDetailRespVO detailRespVO = indexService.getPeakDemand(pageReqVO);
+        return success(BeanUtils.toBean(detailRespVO, BusPowerLoadDetailRespVO.class));
     }
 
     @Operation(summary = "始端箱电力详情负载率图表")

@@ -3,13 +3,31 @@
     <template #NavInfo>
       <br/>    <br/> 
         <div class="nav_data">
-          <div class="nav_content">
+          <!-- <div class="nav_content">
             <el-descriptions title="全部始端箱新增环境记录" direction="vertical" :column="1" width="60px" border >
               <el-descriptions-item label="最近一小时"><span >{{ lastHourTotalData }} 条</span></el-descriptions-item>
               <el-descriptions-item label="最近一天"><span >{{ lastDayTotalData }} 条</span></el-descriptions-item>
               <el-descriptions-item label="最近一周" ><span >{{ lastWeekTotalData }} 条</span></el-descriptions-item>
             </el-descriptions>
+          </div> -->
+          <div class="descriptions-container" style="font-size: 14px;">
+            <div class="description-item">
+                <span class="label">最近一周 :</span>
+                <span class="value">{{ lastWeekTotalData }}条</span>
+            </div>
+            <div class="description-item">
+                <span class="label">最近一天 :</span>
+                <span class="value">{{ lastDayTotalData }}条</span>
+            </div>
+            <div class="description-item">
+                <span class="label">最近一小时 :</span>
+                <span class="value">{{ lastHourTotalData }}条</span>
+            </div>
+            <div ><span>全部始端箱新增环境记录</span>
+              <div class="line" style="margin-top: 10px;"></div>
+            </div>
           </div>
+          
         </div>
     </template>
     <template #ActionBar>
@@ -241,13 +259,15 @@ watch(() => queryParams.granularity, (newValues) => {
       originalArray.value =["tem_a", "tem_b", "tem_c", "tem_n", "dev_key"];
       // 配置表格列
       tableColumns.value =([
-        { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
+        { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '300%'},
         { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
+        { label: '设备名称',align: 'center',prop: 'bus_name', istrue:true, width: '200%'},
+
         { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
-        { label: 'A路温度(℃)', align: 'center', prop: 'tem_a', istrue:true, formatter: formatData},
-        { label: 'B路温度(℃)', align: 'center', prop: 'tem_b', istrue:true, formatter: formatData},
-        { label: 'C路温度(℃)', align: 'center', prop: 'tem_c', istrue:true, formatter: formatData},
-        { label: '中线温度(℃)', align: 'center', prop: 'tem_n', istrue:true, formatter: formatData},
+        { label: 'A路温度(℃)', align: 'center', prop: 'tem_a', istrue:true, formatter: formatData ,width: '110px'},
+        { label: 'B路温度(℃)', align: 'center', prop: 'tem_b', istrue:true, formatter: formatData,width: '110px'},
+        { label: 'C路温度(℃)', align: 'center', prop: 'tem_c', istrue:true, formatter: formatData,width:'110px'},
+        { label: '中线温度(℃)', align: 'center', prop: 'tem_n', istrue:true, formatter: formatData,width: '110px'},
         { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '120px'},
       ]);
       queryParams.pageNo = 1;
@@ -294,33 +314,35 @@ watch(() => queryParams.granularity, (newValues) => {
                           "tem_c_avg_value", "tem_c_max", "tem_c_min", "tem_n_avg_value", "tem_n_max", "tem_n_min", "dev_key",],
       // 配置表格列
       tableColumns.value = [
-        { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '180px'}, 
+        { label: '所在位置', align: 'center', prop: 'location', istrue:true, width: '300%'}, 
         { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
-        { label: '记录时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true},
+      { label: '设备名称',align: 'center',prop: 'bus_name', istrue:true, width: '200%'},
+
+        { label: '记录时间', align: 'center', prop: 'create_time' , width: '230px', istrue:true,formatter: formatTime},
 
         { label: 'A路平均温度(℃)', align: 'center', prop: 'tem_a_avg_value', istrue:true, width: '180px', formatter: formatData },
         { label: 'A路最高温度(℃)', align: 'center', prop: 'tem_a_max_value', istrue:true, width: '180px', formatter: formatData },
-        { label: 'A路最高温度时间', align: 'center', prop: 'tem_a_max_time' , width: '230px', istrue:true},
+        { label: 'A路最高温度时间', align: 'center', prop: 'tem_a_max_time' , width: '230px', istrue:true,formatter: formatTime},
         { label: 'A路最低温度(℃)', align: 'center', prop: 'tem_a_min_value', istrue:true, width: '180px', formatter: formatData },
         { label: 'A路最低温度时间', align: 'center', prop: 'tem_a_min_time' , width: '230px', istrue:true},
 
         { label: 'B路平均温度(℃)', align: 'center', prop: 'tem_b_avg_value', istrue:true, width: '180px', formatter: formatData },
         { label: 'B路最高温度(℃)', align: 'center', prop: 'tem_b_max_value', istrue:true, width: '180px', formatter: formatData },
-        { label: 'B路最高温度时间', align: 'center', prop: 'tem_b_max_time' , width: '230px', istrue:true},
+        { label: 'B路最高温度时间', align: 'center', prop: 'tem_b_max_time' , width: '230px', istrue:true,formatter: formatTime},
         { label: 'B路最低温度(℃)', align: 'center', prop: 'tem_b_min_value', istrue:true, width: '180px', formatter: formatData },
-        { label: 'B路最低温度时间', align: 'center', prop: 'tem_b_min_time' , width: '230px', istrue:true},
+        { label: 'B路最低温度时间', align: 'center', prop: 'tem_b_min_time' , width: '230px', istrue:true,formatter: formatTime},
 
         { label: 'C路平均温度(℃)', align: 'center', prop: 'tem_c_avg_value', istrue:true, width: '180px', formatter: formatData },
         { label: 'C路最高温度(℃)', align: 'center', prop: 'tem_c_max_value', istrue:true, width: '180px', formatter: formatData },
-        { label: 'C路最高温度时间', align: 'center', prop: 'tem_c_max_time' , width: '230px', istrue:true},
+        { label: 'C路最高温度时间', align: 'center', prop: 'tem_c_max_time' , width: '230px', istrue:true,formatter: formatTime},
         { label: 'C路最低温度(℃)', align: 'center', prop: 'tem_c_min_value', istrue:true, width: '180px', formatter: formatData },
-        { label: 'C路最低温度时间', align: 'center', prop: 'tem_c_min_time' , width: '230px', istrue:true},
+        { label: 'C路最低温度时间', align: 'center', prop: 'tem_c_min_time' , width: '230px', istrue:true,formatter: formatTime},
 
         { label: '中线平均温度(℃)', align: 'center', prop: 'tem_n_avg_value', istrue:true, width: '180px', formatter: formatData },
         { label: '中线最高温度(℃)', align: 'center', prop: 'tem_n_max_value', istrue:true, width: '180px', formatter: formatData },
-        { label: '中线最高温度时间', align: 'center', prop: 'tem_n_max_time' , width: '230px', istrue:true},
+        { label: '中线最高温度时间', align: 'center', prop: 'tem_n_max_time' , width: '230px', istrue:true,formatter: formatTime},
         { label: '中线最低温度(℃)', align: 'center', prop: 'tem_n_min_value', istrue:true, width: '180px', formatter: formatData },
-        { label: '中线最低温度时间', align: 'center', prop: 'tem_n_min_time' , width: '230px', istrue:true},
+        { label: '中线最低温度时间', align: 'center', prop: 'tem_n_min_time' , width: '230px', istrue:true,formatter: formatTime},
 
         { label: '操作', align: 'center', slot: 'actions', istrue:true, width: '160px'},
       ] as any;
@@ -331,13 +353,15 @@ watch(() => queryParams.granularity, (newValues) => {
   });
 
 const tableColumns = ref([
-  { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
+  { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '300%'},
   { label: '设备地址', align: 'center', prop: 'dev_key' , istrue:true, width: '250px'},
+  { label: '设备名称',align: 'center',prop: 'bus_name', istrue:true, width: '200%'},
+
   { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
-  { label: 'A路温度(℃)', align: 'center', prop: 'tem_a', istrue:true, formatter: formatData},
-  { label: 'B路温度(℃)', align: 'center', prop: 'tem_b', istrue:true, formatter: formatData},
-  { label: 'C路温度(℃)', align: 'center', prop: 'tem_c', istrue:true, formatter: formatData},
-  { label: '中线温度(℃)', align: 'center', prop: 'tem_n', istrue:true, formatter: formatData},
+  { label: 'A路温度(℃)', align: 'center', prop: 'tem_a', istrue:true, formatter: formatData, width: '110px'},
+  { label: 'B路温度(℃)', align: 'center', prop: 'tem_b', istrue:true, formatter: formatData, width: '110px'},
+  { label: 'C路温度(℃)', align: 'center', prop: 'tem_c', istrue:true, formatter: formatData, width: '110px'},
+  { label: '中线温度(℃)', align: 'center', prop: 'tem_n', istrue:true, formatter: formatData, width: '110px'},
   { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '120px'},
 ]) as any;
 
@@ -366,12 +390,12 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
     return ''
   }
 
-  return dayjs(cellValue).format('YYYY-MM-DD HH:mm:ss.SSS')
+  return dayjs(cellValue).format('YYYY-MM-DD HH:mm')
 }
 
 // 格式化温湿度列数据，保留一位小数
 function formatData(_row: any, _column: any, cellValue: number): string {
-  return Number(cellValue).toFixed(1);
+  return Number(cellValue).toFixed(0);
 }
 
 // 导航栏选择后触发
@@ -478,5 +502,30 @@ onMounted( () => {
   height: 100%;
   object-fit: cover; 
 }
+.description-item {
+  display: flex;
+  align-items: center;
+}
 
+.label {
+  text-align: right; /* 文本右对齐 */
+  margin-right: 10px; /* 控制冒号后的间距 */
+  text-align: left;
+}
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
+
+}
+  .line {
+    height: 1px;
+    margin-top: 28px;
+
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
+  ::v-deep .el-table .el-table__header th {
+    background-color: #F5F7FA;
+    color: #909399;
+}
 </style>

@@ -5,27 +5,19 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
-import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.BillPageRespVO;
-import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.EQPageRespVO;
-import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.EnergyConsumptionPageReqVO;
-import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.RealtimeEQPageRespVO;
-import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataPageReqVO;
-import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HourAndDayPageRespVO;
-import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.RealtimePageRespVO;
+import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.*;
 import cn.iocoder.yudao.module.pdu.service.energyconsumption.EnergyConsumptionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 import static cn.iocoder.yudao.framework.operatelog.core.enums.OperateTypeEnum.EXPORT;
@@ -52,10 +44,19 @@ public class EnergyConsumptionController {
     public void exportEQDataExcel(EnergyConsumptionPageReqVO pageReqVO,
                                        HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
-        List<Object> list = energyConsumptionService.getEQDataPage(pageReqVO).getList();
+        List<Object> list1 = energyConsumptionService.getEQDataPage(pageReqVO).getList();
+        //处理list
+        List<Object>list=energyConsumptionService.getNewList(list1);
         // 导出 Excel
-        ExcelUtils.write(response, "pdu能耗趋势数据.xlsx", "数据", EQPageRespVO.class,
-                BeanUtils.toBean(list, EQPageRespVO.class));
+        if(((Map)list.get(0)).containsKey("outlet_id")){
+            ExcelUtils.write(response, "pdu能耗趋势数据.xlsx", "数据", EQOutletPageRespVO.class,
+                    BeanUtils.toBean(list, EQOutletPageRespVO.class));
+        }
+        else{
+            ExcelUtils.write(response, "pdu能耗趋势数据.xlsx", "数据", EQPageRespVO.class,
+                    BeanUtils.toBean(list, EQPageRespVO.class));
+        }
+
     }
 
     @GetMapping("/bill-page")
@@ -72,10 +73,31 @@ public class EnergyConsumptionController {
     public void exportBillDataExcel(EnergyConsumptionPageReqVO pageReqVO,
                                   HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
-        List<Object> list = energyConsumptionService.getBillDataPage(pageReqVO).getList();
+        List<Object> list1 = energyConsumptionService.getBillDataPage(pageReqVO).getList();
+        List<Object> list=energyConsumptionService.getNewBillList(list1);
+
         // 导出 Excel
-        ExcelUtils.write(response, "pdu电费统计数据.xlsx", "数据", BillPageRespVO.class,
-                BeanUtils.toBean(list, BillPageRespVO.class));
+        if(pageReqVO.getGranularity().equals("day")){
+            if(((Map)list.get(0)).containsKey("outlet_id")){
+                ExcelUtils.write(response, "pdu能耗趋势数据.xlsx", "数据", BillOutletDayPageRespVO.class,
+                        BeanUtils.toBean(list, BillOutletDayPageRespVO.class));
+            }
+            else{
+                ExcelUtils.write(response, "pdu电费统计数据.xlsx", "数据", BillDayPageRespVO.class,
+                        BeanUtils.toBean(list, BillDayPageRespVO.class));
+            }
+        }
+        else{
+            if(((Map)list.get(0)).containsKey("outlet_id")){
+                ExcelUtils.write(response, "pdu能耗趋势数据.xlsx", "数据", BillOutletWeekPageRespVO.class,
+                        BeanUtils.toBean(list, BillOutletWeekPageRespVO.class));
+            }
+            else{
+                ExcelUtils.write(response, "pdu电费统计数据.xlsx", "数据", BillWeekPageRespVO.class,
+                        BeanUtils.toBean(list, BillWeekPageRespVO.class));
+            }
+        }
+
     }
 
     @GetMapping("/details")
@@ -90,6 +112,26 @@ public class EnergyConsumptionController {
     public CommonResult<List<Object>> getOutletsEQData(EnergyConsumptionPageReqVO reqVO) throws IOException {
         List<Object> list = energyConsumptionService.getOutletsEQData(reqVO);
         return success(list);
+    }
+    @GetMapping("/outlets-details-excel")
+    @Operation(summary = "导出pdu电量数据详情")
+    @OperateLog(type = EXPORT)
+    public void exportOutletsDataExcel(EnergyConsumptionPageReqVO reqVO,
+                                    HttpServletResponse response) throws IOException {
+        reqVO.setPageSize(10000);
+        List<Object> list = energyConsumptionService.getEQDataDetails(reqVO).getList();
+
+        if(!list.isEmpty()){
+            List<Object> list1 = energyConsumptionService.getNewOutLetsList(list);
+            // 导出 Excel
+            ExcelUtils.write(response, "PDU能耗趋势.xlsx", "数据", OutLetsPageRespVO.class,
+                    BeanUtils.toBean(list1, OutLetsPageRespVO.class));
+        }
+        else{
+            List<OutLetsPageRespVO>list2=new ArrayList<>();
+            ExcelUtils.write(response, "PDU能耗趋势.xlsx", "数据", OutLetsPageRespVO.class,list2);
+        }
+
     }
 
     @GetMapping("/realtime-page")
@@ -106,10 +148,28 @@ public class EnergyConsumptionController {
     public void exportRealtimeEQDataExcel(EnergyConsumptionPageReqVO pageReqVO,
                                     HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
-        List<Object> list = energyConsumptionService.getRealtimeEQDataPage(pageReqVO).getList();
+        List<Object> list1 = energyConsumptionService.getRealtimeEQDataPage(pageReqVO).getList();
+        List<Object>list=energyConsumptionService.getNewEQList(list1);
         // 导出 Excel
-        ExcelUtils.write(response, "pdu电能记录数据.xlsx", "数据", RealtimeEQPageRespVO.class,
-                BeanUtils.toBean(list, RealtimeEQPageRespVO.class));
+        if(list.stream()
+                .anyMatch(item -> item instanceof Map && ((Map<?, ?>) item).containsKey("line_id"))){
+            ExcelUtils.write(response, "pdu电能记录数据.xlsx", "数据", RealtimeEQLineIdPageRespVO.class,
+                    BeanUtils.toBean(list, RealtimeEQLineIdPageRespVO.class));
+        }
+        else if(list.stream()
+                .anyMatch(item -> item instanceof Map && ((Map<?, ?>) item).containsKey("loop_id"))){
+            ExcelUtils.write(response, "pdu电能记录数据.xlsx", "数据", RealtimeEQLoopIdPageRespVO.class,
+                    BeanUtils.toBean(list, RealtimeEQLoopIdPageRespVO.class));
+        }
+        else if(list.stream()
+                .anyMatch(item -> item instanceof Map && ((Map<?, ?>) item).containsKey("outlet_id"))){
+            ExcelUtils.write(response, "pdu电能记录数据.xlsx", "数据", RealtimeEQOutletIdPageRespVO.class,
+                    BeanUtils.toBean(list, RealtimeEQOutletIdPageRespVO.class));
+        }
+        else{
+            ExcelUtils.write(response, "pdu电能记录数据.xlsx", "数据", RealtimeEQPageRespVO.class,
+                    BeanUtils.toBean(list, RealtimeEQPageRespVO.class));
+        }
     }
 
     @GetMapping("/new-data")
@@ -131,5 +191,12 @@ public class EnergyConsumptionController {
     public CommonResult<PageResult<Object>> getSubBillDetails(EnergyConsumptionPageReqVO reqVO) throws IOException {
         PageResult<Object> pageResult = energyConsumptionService.getSubBillDetails(reqVO);
         return success(pageResult);
+    }
+
+    @PostMapping("ele_total_realtime")
+    @Operation(summary = "获取实时电量")
+    public CommonResult<PageResult<Object>> getEleTotalRealtime(@RequestBody EleTotalRealtimeReqDTO reqDTO) throws IOException {
+        PageResult<Object> list1 = energyConsumptionService.getEleTotalRealtime(reqDTO);
+        return success(list1);
     }
 }

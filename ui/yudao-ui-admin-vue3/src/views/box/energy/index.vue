@@ -2,11 +2,11 @@
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="插接箱用能">
     <template #NavInfo>
       <div class="navInfo">
-        <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div>
-          <div class="name"></div>
+        <!-- <div class="header"> -->
+          <!-- <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div> -->
+          <!-- <div class="name"></div>
           <div></div>
-        </div>
+        </div> -->
         <!-- <div class="line"></div>
         <div class="status">
           <div class="box">
@@ -58,6 +58,23 @@
             </div>
           </div>
         </div> -->
+        <div style="font-size: 14px;margin-top: 45px;margin-left:10px">
+          <div ><span>用能最多</span>
+          </div>
+          <div>
+            <span class="label">昨日用能：</span>
+            <span class="value">{{ boxName1 }}</span>
+          </div>
+          <div >
+            <span class="label">上周用能：</span>
+            <span class="value">{{ boxName2 }}</span>
+          </div>
+          <div >
+            <span class="label">上月用能：</span>
+            <span class="value">{{ boxName3 }}</span>
+          </div>
+          </div>
+        <div class="line"></div>
       </div>
     </template>
     <template #ActionBar>
@@ -67,8 +84,22 @@
         :inline="true"
         label-width="68px"
       >
+        <el-form-item label="用能排序"  label-width="100px">
+          <el-button @click="changeTimeGranularity('yesterday')"
+          >
+            昨日
+          </el-button>
+          <el-button @click="changeTimeGranularity('lastWeek')"
+          >
+            上周
+          </el-button>
+          <el-button @click="changeTimeGranularity('lastMonth')"
+          >
+            上月
+          </el-button>                            
+        </el-form-item>
         <div>
-          <el-form-item label="公司名称" prop="username">
+          <el-form-item label="公司名称" prop="username" style="margin-left:80px">
             <el-input
               v-model="queryParams.company"
               placeholder="请输入公司名称"
@@ -76,9 +107,9 @@
               class="!w-160px"
               height="35"
             />
-          </el-form-item>
-          <el-form-item>
+          <el-form-item style="margin-left: 10px">
             <el-button style="margin-left: 12px" @click="getTableData(true)" ><Icon icon="ep:search" />搜索</el-button>
+          </el-form-item>            
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
@@ -100,30 +131,33 @@
               </div>
             </div>
             <div class="room">{{item.location}}</div>
-            <button class="detail" @click.prevent="toDetail(item.roomId, item.id,item.location)" >详情</button>
+            <div class="name">{{item.boxName}}</div>
+            <button class="detail" @click.prevent="toDetail(item.roomId, item.id,item.location,item.boxName)" >详情</button>
           </div>
         </div>
-        <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" >
-          <el-table-column type="index" width="100" label="序号" align="center" />
+        <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" :border="true">
+          <el-table-column type="index" width="80px" label="序号" align="center" />
           <el-table-column label="位置" min-width="110" align="center" prop="local" />
-          <el-table-column label="昨日用能" min-width="110" align="center" prop="yesterdayEq" >
+          <el-table-column label="设备名称" align="center" prop="boxName" />
+          <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
+          <el-table-column label="昨日用能(kW·h)" min-width="110" align="center" prop="yesterdayEq" >
             <template #default="scope" >
               <el-text line-clamp="2" >
-                {{ scope.row.yesterdayEq }} kW·h
+                {{ scope.row.yesterdayEq }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="上周用能" min-width="110" align="center" prop="lastWeekEq" >
+          <el-table-column label="上周用能(kW·h)" min-width="110" align="center" prop="lastWeekEq" >
             <template #default="scope" >
               <el-text line-clamp="2" >
-                {{ scope.row.lastWeekEq }} kW·h
+                {{ scope.row.lastWeekEq }}
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="上月用能" min-width="110" align="center" prop="lastMonthEq" >
+          <el-table-column label="上月用能(kW·h)" min-width="110" align="center" prop="lastMonthEq" >
             <template #default="scope" >
               <el-text line-clamp="2" >
-                {{ scope.row.lastMonthEq }} kW·h
+                {{ scope.row.lastMonthEq }}
               </el-text>
             </template>
           </el-table-column>
@@ -154,20 +188,39 @@ const navList = ref([]) // 左侧导航栏树结构列表
 const tableData = ref([])as any
 const switchValue = ref(0) // 表格(1) 矩阵(0)切换
 const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
+
+const boxName1 = ref('无数据')
+const boxName2 = ref('无数据')
+const boxName3 = ref('无数据')
+
 const queryParams = reactive({
   company: undefined,
   pageNo: 1,
   pageSize: 24,
   pageTotal: 0,
   boxDevKeyList : [],
+  timeGranularity : ''
 }) as any
+
+const queryParamsAll = reactive({
+  company: undefined,
+  pageNo: 1,
+  pageSize: -1,
+  pageTotal: 0,
+  busDevKeyList : [],
+  isDeleted: 0,
+}) as any
+
 
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await IndexApi.getBoxMenu()
   navList.value = res
 }
-
+const changeTimeGranularity = (value) => {
+  queryParams.timeGranularity = value;
+  getTableData(true);
+}
 // 获取表格数据
 const getTableData = async(reset = false) => {
   console.log('getTableData', queryParams)
@@ -183,6 +236,7 @@ const getTableData = async(reset = false) => {
       pduBox: 0,
       company: queryParams.company,
       boxDevKeyList : queryParams.boxDevKeyList,
+      timeGranularity : queryParams.timeGranularity
     })
     if (res.list) {
       tableData.value = res.list.map(item => {
@@ -193,7 +247,9 @@ const getTableData = async(reset = false) => {
           yesterdayEq: item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0',
           lastWeekEq: item.lastWeekEq ? item.lastWeekEq.toFixed(1) : '0.0',
           lastMonthEq: item.lastMonthEq ? item.lastMonthEq.toFixed(1) : '0.0',
-          status : item.runStatus
+          status : item.runStatus,
+          devKey:item.devKey,
+          boxName : item.boxName,
         }
       })
       queryParams.pageTotal = res.total
@@ -203,6 +259,33 @@ const getTableData = async(reset = false) => {
   }
 }
 
+const getMaxData = async(reset = false) => {
+  try {
+    const res = await IndexApi.getEqMax({
+      pageNo: queryParamsAll.pageNo,
+      pageSize: queryParamsAll.pageSize,
+      cabinetIds: isFirst.value ? null : cabinetIds.value,
+      company: queryParamsAll.company,
+      busDevKeyList : queryParamsAll.busDevKeyList,
+      isDeleted : queryParams.isDeleted
+    })
+    if (res.list) {
+        //借用id值来辅助判断是哪个时间的集合，0为昨日，1为上周，2为上月
+        const dataList = res.list
+        dataList.forEach(item => {
+          if(item.id == 0){
+            boxName1.value = item.boxName
+          }else if (item.id == 1){
+            boxName2.value = item.boxName
+          }else if (item.id == 2){
+            boxName3.value = item.boxName
+          }
+        })
+    }
+  } finally {
+    
+  }
+}
 // 处理切换 表格/阵列 模式
 const handleSwitchModal = (value) => {
   if (switchValue.value == value) return
@@ -240,13 +323,14 @@ const handleCheck = (row) => {
 
 
 // 跳转详情
-const toDetail = (roomId, id,location) => {
-  push({path: '/bus/boxmonitor/boxenergydetail', state: { roomId, id ,location}})
+const toDetail = (roomId, id,location,boxName) => {
+  push({path: '/bus/boxmonitor/boxenergydetail', state: { roomId, id ,location,boxName}})
 }
 
 onBeforeMount(() => {
   getNavList()
   getTableData()
+  getMaxData()
 })
 </script>
 
@@ -396,6 +480,18 @@ onBeforeMount(() => {
       top: 8px;
       font-size: 13px;
     }
+    .name {
+      height: 20px;
+      font-size: 14px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      right: 5px;
+      top: 4px;
+    }
+
     .detail {
       width: 35px;
       height: 20px;
@@ -409,8 +505,15 @@ onBeforeMount(() => {
       background-color: #fff;
       position: absolute;
       right: 5px;
-      top: 4px;
+      bottom: 4px;
     }
+  
   }
+}
+::v-deep .el-table .el-table__header th{
+  background-color: #f5f7fa;
+  color: #909399;
+  height: 80px;
+
 }
 </style>

@@ -1,9 +1,9 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU电费统计" placeholder="如:192.168.1.96-0">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU电费查询" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <div class="carousel-container">
+        <!-- <div class="carousel-container">
           <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
             <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
               <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
@@ -17,6 +17,26 @@
             <el-descriptions-item label="最近一月" ><span >{{ lastMonthTotalData }} 条</span></el-descriptions-item>
           </el-descriptions>
         </div>
+      </div> -->
+
+        <div class="descriptions-container" style="font-size: 14px;">
+          <div class="description-item">
+            <span class="label">最近一天 :</span>
+            <span class="value">{{ lastDayTotalData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">最近一周 :</span>
+            <span class="value">{{ lastWeekTotalData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">最近一月 :</span>
+            <span class="value">{{ lastMonthTotalData }}条</span>
+          </div>
+          <div><span>全部PDU新增电费统计</span>
+                    <div class="line" style="margin-top: 10px;"></div>
+                  </div>
+          </div>
+
       </div>
     </template>
     <template #ActionBar>
@@ -57,8 +77,8 @@
           type="daterange"
           :shortcuts="shortcuts"
           range-separator="-"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
+          start-placeholder="开始时间"
+          end-placeholder="结束时间"
           :disabled-date="disabledDate"
         />
         </el-form-item>
@@ -71,24 +91,36 @@
         </el-form-item>
       </el-form>
     </template>
+
     <template #Content>
-      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true">
         <!-- 添加行号列 -->
-        <el-table-column label="序号" align="center" width="80px">
+        <el-table-column label="序号" align="center" width="80px"  >
           <template #default="{ $index }">
             {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
           </template>
         </el-table-column>
         <!-- 遍历其他列 -->  
-        <template v-for="column in tableColumns">
-          <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue">
+    
+        <template v-for="column in tableColumns" :key="column.label" >
+          <el-table-column
+          v-if="column.istrue&&!column.children"
+          :key="column.prop" 
+          :label="column.label" 
+          :align="column.align" 
+          :prop="column.prop" 
+          :formatter="column.formatter" 
+          :width="column.width" 
+          >
             <template #default="{ row }" v-if="column.slot === 'actions' && queryParams.granularity == 'day'">
+
               <el-button link type="primary" v-if="row.bill_mode_real && row.bill_mode_real == 2 && queryParams.type == 'total'" @click="showDetails(row.pdu_id, row.start_time, row.location, row.end_time)">分段计费</el-button>
               <el-button link type="primary" v-else-if="row.bill_mode_real && row.bill_mode_real == 2 && queryParams.type == 'outlet'" @click="showDetails(row.pdu_id, row.outlet_id, row.start_time, row.location, row.end_time)">分段计费</el-button>
               <div v-else>固定计费</div>
-            </template>
+            </template>  
           </el-table-column>
         </template>
+  
         <!-- 超过一万条数据提示信息 -->
           <template v-if="shouldShowDataExceedMessage" #append>
             <tr>
@@ -120,6 +152,7 @@ import { formatDate, endOfDay, convertDate, addTime} from '@/utils/formatTime'
 import { CabinetApi } from '@/api/cabinet/info'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 import { ElMessage } from 'element-plus'
+import { tryOnBeforeMount } from '@vueuse/core'
 defineOptions({ name: 'BillStatistics' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
@@ -203,43 +236,43 @@ watch(() => [queryParams.granularity, queryParams.type], () => {
   if (queryParams.type === 'outlet'){
     if (queryParams.granularity == 'day'){
       tableColumns.value = [
-        { label: '位置', align: 'center', prop: 'address' , istrue:true},
+        { label: '所在位置', align: 'center', prop: 'address' , istrue:true,width: '300%'},
         { label: '输出位', align: 'center', prop: 'outlet_id' , istrue:true}, 
         { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
-        { label: '日期', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
+        { label: '发生时间', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
-        { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatEle},
+        { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
         { label: '计费方式', align: 'center', slot: 'actions' , istrue:true},
       ]
     }else{
        tableColumns.value = [
-        { label: '位置', align: 'center', prop: 'address' , istrue:true},
+        { label: '所在位置', align: 'center', prop: 'address' , istrue:true,width: '300%'},
         { label: '输出位', align: 'center', prop: 'outlet_id' , istrue:true}, 
         { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
-        { label: '开始日期', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
-        { label: '结束日期', align: 'center', prop: 'end_time', formatter: formatTime, istrue:true},
+        { label: '开始时间', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
+        { label: '结束时间', align: 'center', prop: 'end_time', formatter: formatTime, istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
-        { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatEle},
+        { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
       ]
     }
   }else{
     if (queryParams.granularity == 'day'){
       tableColumns.value = [
-        { label: '位置', align: 'center', prop: 'address' , istrue:true},
+        { label: '所在位置', align: 'center', prop: 'address' , istrue:true,width: '300%'},
         { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
-        { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
+        { label: '发生时间', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
         { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
         { label: '计费方式', align: 'center', slot: 'actions' , istrue:true},
       ]
     }else{
       tableColumns.value = [
-        { label: '位置', align: 'center', prop: 'address' , istrue:true},
+        { label: '所在位置', align: 'center', prop: 'address' , istrue:true,width: '300%'},
         { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
-        { label: '开始日期', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
-        { label: '结束日期', align: 'center', prop: 'end_time', formatter: formatTime, istrue:true},
+        { label: '开始时间', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
+        { label: '结束时间', align: 'center', prop: 'end_time', formatter: formatTime, istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
-        { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatEle},
+        { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
       ]
     }
   }
@@ -247,9 +280,9 @@ watch(() => [queryParams.granularity, queryParams.type], () => {
 });
 
 const tableColumns = ref([
-  { label: '位置', align: 'center', prop: 'address' , istrue:true},
+  { label: '所在位置', align: 'center', prop: 'address' , istrue:true,width: '300%'},
   { label: '网络地址', align: 'center', prop: 'location' , istrue:true},
-  { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
+  { label: '发生时间', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
   { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
   { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
   { label: '计费方式', align: 'center', slot: 'actions' , istrue:true},
@@ -262,7 +295,7 @@ const getList = async () => {
     if ( selectTimeRange.value != undefined){
       // 格式化日期范围 加上23:59:59的时分秒 
       const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
-      // 结束日期的天数多加一天 ，  一天的毫秒数
+      // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
       const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
@@ -303,7 +336,7 @@ function formatEle(_row: any, _column: any, cellValue: number): string {
 
 // 格式化电费列数据
 function formatBill(_row: any, _column: any, cellValue: number): string {
-  return Number(cellValue).toFixed(3);
+  return Number(cellValue).toFixed(2);
 }
 
 // 禁选未来的日期
@@ -428,7 +461,7 @@ const handleExport = async () => {
       timeout: 0 // 设置超时时间为0
     }
     const data = await EnergyConsumptionApi.exportBillPageData(queryParams, axiosConfig)
-    await download.excel(data, 'PDU电费统计.xlsx')
+    await download.excel(data, 'PDU电费查询.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -462,7 +495,7 @@ onMounted(() => {
 }
  
 .nav_content span{
-  font-size: 18px;
+  font-size: 14px;
 }
 .carousel-container {
   width: 100%;
@@ -475,5 +508,32 @@ onMounted(() => {
   object-fit: cover; 
 }
 
+.description-item {
+  display: flex;
+  align-items: center;
+}
+
+.label {
+  text-align: right; /* 文本右对齐 */
+  margin-right: 10px; /* 控制冒号后的间距 */
+  text-align: left;
+}
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
+
+}
+  .line {
+    height: 1px;
+    margin-top: 28px;
+
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
+
+  ::v-deep .el-table .el-table__header th {
+    background-color: #F5F7FA;
+    color: #909399;
+}
 
 </style>

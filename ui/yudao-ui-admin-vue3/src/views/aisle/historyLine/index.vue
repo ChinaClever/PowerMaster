@@ -10,7 +10,7 @@
             </el-carousel-item>
           </el-carousel>
         </div>  -->
-        <div class="nav_header">
+        <!-- <div class="nav_header">
           <span v-if="nowAddress">{{nowAddress}}</span>
           <br/>
           <template v-if="nowAddress && queryParams.timeRange != null">
@@ -31,7 +31,36 @@
             <span v-if="minActivePowDataTimeTemp">{{ minActivePowDataTimeTemp }}</span>
           </el-descriptions-item>
         </el-descriptions>
+        </div> -->
+
+        <div class="nav_header" style="font-size: 14px;">
+          <span v-if="nowAddress">{{nowAddress}}</span>
+          <br/>
+      </div>
+      
+        <div  class="descriptions-container" v-if="maxActivePowDataTimeTemp" style="font-size: 14px;">
+          <div  class="description-item">
+            <span class="label">最大值 :</span>
+            <span >{{ formatNumber(maxActivePowDataTemp, 3) }} kW</span>
+          </div>
+          <div v-if="maxActivePowDataTimeTemp" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ maxActivePowDataTimeTemp }}</span>
+          </div>
+          <br/>
+          <div  class="description-item">
+            <span class="label">最小值 :</span>
+            <span >{{ formatNumber(minActivePowDataTemp, 3) }} kW</span>
+          </div>
+          <div v-if="minActivePowDataTimeTemp" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ minActivePowDataTimeTemp }}</span>
+          </div>
+          <div style="text-align: center">
+              <div class="line" style="margin-top: 10px;"></div>
+            </div>
         </div>
+
       </div>
     </template>
     <template #ActionBar>
@@ -75,6 +104,9 @@
          
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+           <el-button type="success" plain @click="handleExport1" :loading="exportLoading">
+             <Icon icon="ep:download" class="mr-5px" /> 导出
+           </el-button>
          </el-form-item>
        </el-form>
     </template>
@@ -87,13 +119,13 @@
           <el-tab-pane label="数据" name="myData">
             <div style="height: 67vh;">
             <el-table  
-              border
+              :border="true"
+              :stripe="true"
               :data="tableData"
-              style="height: 67vh; width: 99.97%;--el-table-border-color: none;border-right: 1px #143275 solid;border-left: 1px #143275 solid;border-bottom: 1px #143275 solid;"
-              :highlight-current-row="false"
-              :header-cell-style="{ backgroundColor: '#143275', color: '#ffffff', fontSize: '18px', textAlign: 'center', borderLeft: '0.5px #ffffff solid', borderBottom: '1px #ffffff solid' }"
-              :cell-style="{ color: '#000000', fontSize: '16px', textAlign: 'center', borderBottom: '0.5px #143275 solid', borderLeft: '0.5px #143275 solid' }"
-              :row-style="{ color: '#fff', fontSize: '14px', textAlign: 'center', }"
+              style="height: 67vh; width: 99.97%;"
+              :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', borderBottom: '1px #EDEEF2 solid', fontFamily: 'Microsoft YaHei',fontWeight: 'bold'}"
+              :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
+              :row-style="{ fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
               <el-table-column prop="create_time" label="记录时间" />
               <!-- 动态生成表头 -->
@@ -175,12 +207,15 @@ import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { HistoryDataApi } from '@/api/aisle/historydata'
 import { formatDate } from '@/utils/formatTime'
+import download from '@/utils/download'
 import { IndexApi } from '@/api/aisle/aisleindex'
 // import PDUImage from '@/assets/imgs/PDU.jpg'
 /** 柜列历史曲线 */
 defineOptions({ name: 'AisleHistoryLine' })
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const nowAddress = ref('')// 导航栏的位置信息
+const message = useMessage() // 消息弹窗
+const exportLoading = ref(false)
 const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
 const activeName = ref('realtimeTabPane') // tab默认显示
 const activeName1 = ref('myChart')
@@ -190,6 +225,10 @@ const headerData = ref<any[]>([])
 const needFlush = ref(0) // 是否需要刷新图表
 const paramType = ref('total')
 const queryParams = reactive({
+  pageNo: 1,
+  pageSize: 15,
+  abtotal: "total",
+
   aisleId: undefined as number | undefined,
   granularity: 'realtime',
   timeRange: defaultHourTimeRange(1) as any,
@@ -388,59 +427,59 @@ loading.value = true
       totalReactivePowData.value = data.list.map((item) => formatNumber(item.reactive_total, 3));
       aReactivePowData.value = data.list.map((item) => formatNumber(item.reactive_a, 3));
       bReactivePowData.value = data.list.map((item) => formatNumber(item.reactive_b, 3));
-      factorTotalData.value = data.list.map((item) => formatNumber(item.factor_total, 3));
+      factorTotalData.value = data.list.map((item) => formatNumber(item.factor_total, 2));
       factorAData.value = data.list.map((item) => formatNumber(item.factor_a, 2));
       factorBData.value = data.list.map((item) => formatNumber(item.factor_b, 2));
 
       if (activeName.value === 'dayExtremumTabPane'){
         createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
       }else{
-        createTimeData.value = data.list.map((item) => formatDate(item.create_time));
+        createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD HH:mm'));
       }
       totalActivePowAvgValueData.value = data.list.map((item) => formatNumber(item.active_total_avg_value, 3));
       totalActivePowMaxValueData.value = data.list.map((item) => formatNumber(item.active_total_max_value, 3));
-      totalActivePowMaxTimeData.value = data.list.map((item) => formatDate(item.active_total_max_time));
+      totalActivePowMaxTimeData.value = data.list.map((item) => formatDate(item.active_total_max_time, 'YYYY-MM-DD HH:mm'));
       totalActivePowMinValueData.value = data.list.map((item) => formatNumber(item.active_total_min_value, 3));
-      totalActivePowMinTimeData.value = data.list.map((item) => formatDate(item.active_total_min_time));
+      totalActivePowMinTimeData.value = data.list.map((item) => formatDate(item.active_total_min_time, 'YYYY-MM-DD HH:mm'));
 
       aActivePowAvgValueData.value = data.list.map((item) => formatNumber(item.active_a_avg_value, 3));
       aActivePowMaxValueData.value = data.list.map((item) => formatNumber(item.active_a_max_value, 3));
-      aActivePowMaxTimeData.value = data.list.map((item) => formatDate(item.active_a_max_time));
+      aActivePowMaxTimeData.value = data.list.map((item) => formatDate(item.active_a_max_time, 'YYYY-MM-DD HH:mm'));
       aActivePowMinValueData.value = data.list.map((item) => formatNumber(item.active_a_min_value, 3));
-      aActivePowMinTimeData.value = data.list.map((item) => formatDate(item.active_a_min_time));
+      aActivePowMinTimeData.value = data.list.map((item) => formatDate(item.active_a_min_time, 'YYYY-MM-DD HH:mm'));
       
       bActivePowAvgValueData.value = data.list.map((item) => formatNumber(item.active_b_avg_value, 3));
       bActivePowMaxValueData.value = data.list.map((item) => formatNumber(item.active_b_max_value, 3));
-      bActivePowMaxTimeData.value = data.list.map((item) => formatDate(item.active_b_max_time));
+      bActivePowMaxTimeData.value = data.list.map((item) => formatDate(item.active_b_max_time, 'YYYY-MM-DD HH:mm'));
       bActivePowMinValueData.value = data.list.map((item) => formatNumber(item.active_b_min_value, 3));
-      bActivePowMinTimeData.value = data.list.map((item) => formatDate(item.active_b_min_time));
+      bActivePowMinTimeData.value = data.list.map((item) => formatDate(item.active_b_min_time, 'YYYY-MM-DD HH:mm'));
 
       totalReactivePowAvgValueData.value = data.list.map((item) => formatNumber(item.reactive_total_avg_value, 3));
       totalReactivePowMaxValueData.value = data.list.map((item) => formatNumber(item.reactive_total_max_value, 3));
-      totalReactivePowMaxTimeData.value = data.list.map((item) => formatDate(item.reactive_total_max_time));
+      totalReactivePowMaxTimeData.value = data.list.map((item) => formatDate(item.reactive_total_max_time, 'YYYY-MM-DD HH:mm'));
       totalReactivePowMinValueData.value = data.list.map((item) => formatNumber(item.reactive_total_min_value, 3));
-      totalReactivePowMinTimeData.value = data.list.map((item) => formatDate(item.reactive_total_min_time));
+      totalReactivePowMinTimeData.value = data.list.map((item) => formatDate(item.reactive_total_min_time, 'YYYY-MM-DD HH:mm'));
 
       aReactivePowAvgValueData.value = data.list.map((item) => formatNumber(item.reactive_a_avg_value, 3));
       bReactivePowAvgValueData.value = data.list.map((item) => formatNumber(item.reactive_b_avg_value, 3));
 
       totalApparentPowAvgValueData.value = data.list.map((item) => formatNumber(item.apparent_total_avg_value, 3));
       totalApparentPowMaxValueData.value = data.list.map((item) => formatNumber(item.apparent_total_max_value, 3));
-      totalApparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.apparent_total_max_time));
+      totalApparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.apparent_total_max_time, 'YYYY-MM-DD HH:mm'));
       totalApparentPowMinValueData.value = data.list.map((item) => formatNumber(item.apparent_total_min_value, 3));
-      totalApparentPowMinTimeData.value = data.list.map((item) => formatDate(item.apparent_total_min_time));
+      totalApparentPowMinTimeData.value = data.list.map((item) => formatDate(item.apparent_total_min_time, 'YYYY-MM-DD HH:mm'));
 
       aApparentPowAvgValueData.value = data.list.map((item) => formatNumber(item.apparent_a_avg_value, 3));
       aApparentPowMaxValueData.value = data.list.map((item) => formatNumber(item.apparent_a_max_value, 3));
-      aApparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.apparent_a_max_time));
+      aApparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.apparent_a_max_time, 'YYYY-MM-DD HH:mm'));
       aApparentPowMinValueData.value = data.list.map((item) => formatNumber(item.apparent_a_min_value, 3));
-      aApparentPowMinTimeData.value = data.list.map((item) => formatDate(item.apparent_a_min_time));
+      aApparentPowMinTimeData.value = data.list.map((item) => formatDate(item.apparent_a_min_time, 'YYYY-MM-DD HH:mm'));
 
       bApparentPowAvgValueData.value = data.list.map((item) => formatNumber(item.apparent_b_avg_value, 3));
       bApparentPowMaxValueData.value = data.list.map((item) => formatNumber(item.apparent_b_max_value, 3));
-      bApparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.apparent_a_max_time));
+      bApparentPowMaxTimeData.value = data.list.map((item) => formatDate(item.apparent_a_max_time, 'YYYY-MM-DD HH:mm'));
       bApparentPowMinValueData.value = data.list.map((item) => formatNumber(item.apparent_b_min_value, 3));
-      bApparentPowMinTimeData.value = data.list.map((item) => formatDate(item.apparent_a_min_time));
+      bApparentPowMinTimeData.value = data.list.map((item) => formatDate(item.apparent_a_min_time, 'YYYY-MM-DD HH:mm'));
 
       factorTotalAvgValueData.value = data.list.map((item) => formatNumber(item.factor_total_avg_value, 2));
       factorAAvgValueData.value = data.list.map((item) => formatNumber(item.factor_a_avg_value, 2));
@@ -559,6 +598,10 @@ watch( ()=>activeName.value, async(newActiveName)=>{
   }
   needFlush.value ++;
 });
+
+watch(()=>paramType.value,async(abortotal)=>{
+    queryParams.abtotal= abortotal
+})
 
 // 监听参数类型
 watch(() => paramType.value , (newValues) => {
@@ -747,8 +790,10 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
 
 // 表格映射图数据
 const updateTableData = () => {
-  const data: any[] = [];
-  const length = headerData.value[0]?.data?.length || 0;
+  const data: any[] = [];  
+  if(headerData.value!=undefined){
+    const length = headerData.value[0]?.data?.length || 0;
+
   for (let i = 0; i < length; i++) {
     const rowData: { [key: string]: any } = {};
     rowData['create_time'] = createTimeData.value[i];
@@ -774,6 +819,13 @@ const updateTableData = () => {
     data.push(rowData);
   }
   tableData.value = data;
+}  else{
+    ElMessage({
+        message: '暂无数据',
+        type: 'warning',
+      });
+  }
+
 };
 
 // 给折线图提示框的数据加单位
@@ -888,6 +940,27 @@ function defaultMonthTimeRange(month) {
     startDate.toISOString().slice(0, 19).replace('T', ' '), 
     endDate.toISOString().slice(0, 19).replace('T', ' ') 
   ];
+}
+
+//导出Excel
+const handleExport1 = async () => {
+  try {
+    // 导出的二次确认
+    await message.exportConfirm()
+    // 发起导出
+    queryParams.pageNo = 1
+    exportLoading.value = true
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await HistoryDataApi.exportHistorydetailsPageData(queryParams, axiosConfig)
+    await download.excel(data, '柜列电力分析.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
+  } finally {
+    exportLoading.value = false
+  }
 }
 
 // 禁选未来的日期
@@ -1056,4 +1129,26 @@ onMounted( async () => {
   height: 100%;
   object-fit: cover; 
 }
+.description-item {
+  display: flex;
+  align-items: center;
+}
+
+.label {
+  text-align: right; /* 文本右对齐 */
+  margin-right: 10px; /* 控制冒号后的间距 */
+  text-align: left;
+}
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
+
+}
+  .line {
+    height: 1px;
+    margin-top: 28px;
+
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
 </style>

@@ -4,6 +4,8 @@ import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.util.List;
+
 
 @Schema(description = "管理后台 - 始端箱索引 Response VO")
 @Data
@@ -13,19 +15,17 @@ public class BoxPFRes extends BoxResBase{
     @Schema(description = "位置")
     private String location;
 
-    @Schema(description = "A的功率因素")
-    private Double apf;
+    @Schema(description = "回路电压的背景颜色")
+    private List<Double> phasePowFactor;
 
+    @Schema(description = "回路电压的背景颜色")
+    private List<Double> loopPowFactor;
 
-    @Schema(description = "B的功率因素")
-    private Double bpf;
-
-
-    @Schema(description = "C的功率因素")
-    private Double cpf;
+    @Schema(description = "回路电压的背景颜色")
+    private List<Double> outletPowFactor;
 
     @Schema(description = "总的功率因素")
-    private Double totalPf;
+    private Double totalPowFactor;
     
     @Schema(description = "负载率所在范围")
     private Integer color;

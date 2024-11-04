@@ -3,13 +3,13 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <div class="carousel-container">
+        <!-- <div class="carousel-container"> -->
           <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
             <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
               <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
             </el-carousel-item>
           </el-carousel> -->
-        </div>
+        <!-- </div>
         <div class="nav_header">
           <br/>
           <span v-if="queryParams.granularity == 'realtime' ">全部柜列最近一分钟新增记录</span>
@@ -20,7 +20,21 @@
           <el-descriptions title="" direction="vertical" :column="1" border >
             <el-descriptions-item label=""><span >{{ navTotalData }} 条</span></el-descriptions-item>
           </el-descriptions>
-        </div>
+        </div> -->
+        <div class="descriptions-container" style="font-size: 14px;">
+          <div class="description-item">
+            <span class="label">总数据 :</span>
+            <span class="value">{{ navTotalData }}条</span>
+          </div>
+          <div style="text-align: center">
+            <div v-if="queryParams.granularity == 'realtime' " style="text-align: center"><span>全部柜列最近一分钟新增记录</span></div>
+              <div v-if="queryParams.granularity == 'hour' " style="text-align: center"><span>全部柜列最近一小时新增记录</span></div>
+              <div v-if="queryParams.granularity == 'day' " style="text-align: center"><span>全部柜列最近一天新增记录</span></div>
+                <div class="line" style="margin-top: 10px;"></div>
+          </div>
+          </div>
+
+        
       </div>
     </template>
       <template #ActionBar>
@@ -82,7 +96,7 @@
         </el-form>
       </template>
       <template #Content>
-        <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+        <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true">
            <!-- 添加行号列 -->
           <el-table-column label="序号" align="center" width="60px">
             <template #default="{ $index }">
@@ -121,7 +135,7 @@
 </template>
 
 <script setup lang="ts">
-import { dateFormatter } from '@/utils/formatTime'
+import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { HistoryDataApi } from '@/api/aisle/historydata'
 import { IndexApi } from '@/api/aisle/aisleindex'
@@ -311,7 +325,7 @@ watch(() => queryParams.granularity, (newValues) => {
  
       tableColumns.value =[
         { label: '位置', align: 'center', prop: 'location' , width: '230px' , istrue:true},
-        { label: '时间', align: 'center', prop: 'create_time', formatter: dateFormatter, width: '200px' , istrue:true},
+        { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px' , istrue:true},
         { label: '总有功功率(kW)', align: 'center', prop: 'active_total' , istrue:true, width: '180px', formatter: formatPower},
         { label: '总视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, width: '180px', formatter: formatPower},
         { label: '总无功功率(kVA)', align: 'center', prop: 'reactive_total' , istrue:true, width: '180px', formatter: formatPower},
@@ -414,49 +428,49 @@ watch(() => queryParams.granularity, (newValues) => {
 
       tableColumns.value = [
         { label: '位置', align: 'center', prop: 'location' , width: '240px' , istrue:true},
-        { label: '记录时间', align: 'center', prop: 'create_time' , width: '200px', istrue:true},
+        { label: '记录时间', align: 'center', prop: 'create_time' , width: '200px', istrue:true, formatter: formatTime},
         { label: '总平均有功功率(kW)', align: 'center', prop: 'active_total_avg_value', istrue:true, width: '180px', formatter: formatPower},
         { label: '总最大有功功率(kW)', align: 'center', prop: 'active_total_max_value', istrue:false, width: '180px', formatter: formatPower},
-        { label: '总最大有功功率时间', align: 'center', prop: 'active_total_max_time', formatter: dateFormatter, width: '200px', istrue:false},
+        { label: '总最大有功功率时间', align: 'center', prop: 'active_total_max_time', formatter: formatTime, width: '200px', istrue:false},
         { label: '总最小有功功率(kW)', align: 'center', prop: 'active_total_min_value', istrue:false, width: '180px', formatter: formatPower},
-        { label: '总最小有功功率时间', align: 'center', prop: 'active_total_min_time', formatter: dateFormatter, width: '200px', istrue:false},
+        { label: '总最小有功功率时间', align: 'center', prop: 'active_total_min_time', formatter: formatTime, width: '200px', istrue:false},
         { label: '总平均视在功率(kVA)', align: 'center', prop: 'apparent_total_avg_value', istrue:true, width: '180px', formatter: formatPower},
         { label: '总最大视在功率(kVA)', align: 'center', prop: 'apparent_total_max_value', istrue:false, width: '180px', formatter: formatPower},
-        { label: '总最大视在功率时间', align: 'center', prop: 'apparent_total_max_time', formatter: dateFormatter, width: '200px', istrue:false},
+        { label: '总最大视在功率时间', align: 'center', prop: 'apparent_total_max_time', formatter: formatTime, width: '200px', istrue:false},
         { label: '总最小视在功率(kVA)', align: 'center', prop: 'apparent_total_min_value', istrue:false, width: '180px', formatter: formatPower},
-        { label: '总最小视在功率时间', align: 'center', prop: 'apparent_total_min_time', formatter: dateFormatter, width: '200px', istrue:false},
+        { label: '总最小视在功率时间', align: 'center', prop: 'apparent_total_min_time', formatter: formatTime, width: '200px', istrue:false},
 
         { label: '总平均无功功率(kVA)', align: 'center', prop: 'reactive_total_avg_value', istrue:true, width: '180px', formatter: formatPower},
         { label: '总最大无功功率(kVA)', align: 'center', prop: 'reactive_total_max_value', istrue:false, width: '180px', formatter: formatPower},
-        { label: '总最大无功功率时间', align: 'center', prop: 'reactive_total_max_time', formatter: dateFormatter, width: '200px', istrue:false},
+        { label: '总最大无功功率时间', align: 'center', prop: 'reactive_total_max_time', formatter: formatTime, width: '200px', istrue:false},
         { label: '总最小无功功率(kVA)', align: 'center', prop: 'reactive_total_min_value', istrue:false, width: '180px', formatter: formatPower},
-        { label: '总最小无功功率时间', align: 'center', prop: 'reactive_total_min_time', formatter: dateFormatter, width: '200px', istrue:false},
+        { label: '总最小无功功率时间', align: 'center', prop: 'reactive_total_min_time', formatter: formatTime, width: '200px', istrue:false},
         { label: '总平均功率因素', align: 'center', prop: 'factor_total_avg_value', istrue:true, width: '180px', formatter: formatPowerFactor},
 
         { label: 'A路平均有功功率(kW)', align: 'center', prop: 'active_a_avg_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'A路最大有功功率(kW)', align: 'center', prop: 'active_a_max_value', istrue:false, width: '180px', formatter: formatPower},
-        { label: 'A路最大有功功率时间', align: 'center', prop: 'active_a_max_time', formatter: dateFormatter, width: '200px', istrue:false},
+        { label: 'A路最大有功功率时间', align: 'center', prop: 'active_a_max_time', formatter: formatTime, width: '200px', istrue:false},
         { label: 'A路最小有功功率(kW)', align: 'center', prop: 'active_a_min_value', istrue:false, width: '180px', formatter: formatPower},
-        { label: 'A路最小有功功率时间', align: 'center', prop: 'active_a_min_time', formatter: dateFormatter, width: '200px', istrue:false},
+        { label: 'A路最小有功功率时间', align: 'center', prop: 'active_a_min_time', formatter: formatTime, width: '200px', istrue:false},
         { label: 'A路平均视在功率(kVA)', align: 'center', prop: 'apparent_a_avg_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'A路最大视在功率(kVA)', align: 'center', prop: 'apparent_a_max_value', istrue:false, width: '180px', formatter: formatPower},
-        { label: 'A路最大视在功率时间', align: 'center', prop: 'apparent_a_max_time', formatter: dateFormatter, width: '200px', istrue:false},
+        { label: 'A路最大视在功率时间', align: 'center', prop: 'apparent_a_max_time', formatter: formatTime, width: '200px', istrue:false},
         { label: 'A路最小视在功率(kVA)', align: 'center', prop: 'apparent_a_min_value', istrue:false, width: '180px', formatter: formatPower},
-        { label: 'A路最小视在功率时间', align: 'center', prop: 'apparent_a_min_time', formatter: dateFormatter, width: '200px', istrue:false},
+        { label: 'A路最小视在功率时间', align: 'center', prop: 'apparent_a_min_time', formatter: formatTime, width: '200px', istrue:false},
 
         { label: 'A路平均无功功率(kVA)', align: 'center', prop: 'reactive_a_avg_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'A路平均功率因素', align: 'center', prop: 'factor_a_avg_value', istrue:false, width: '180px', formatter: formatPowerFactor},
 
         { label: 'B路平均有功功率(kW)', align: 'center', prop: 'active_b_avg_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'B路最大有功功率(kW)', align: 'center', prop: 'active_b_max_value', istrue:false, width: '180px', formatter: formatPower},
-        { label: 'B路最大有功功率时间', align: 'center', prop: 'active_b_max_time', formatter: dateFormatter, width: '200px', istrue:false},
+        { label: 'B路最大有功功率时间', align: 'center', prop: 'active_b_max_time', formatter: formatTime, width: '200px', istrue:false},
         { label: 'B路最小有功功率(kW)', align: 'center', prop: 'active_b_min_value', istrue:false, width: '180px', formatter: formatPower},
-        { label: 'B路最小有功功率时间', align: 'center', prop: 'active_b_min_time', formatter: dateFormatter, width: '200px', istrue:false},
+        { label: 'B路最小有功功率时间', align: 'center', prop: 'active_b_min_time', formatter: formatTime, width: '200px', istrue:false},
         { label: 'B路平均视在功率(kVA)', align: 'center', prop: 'apparent_b_avg_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'B路最大视在功率(kVA)', align: 'center', prop: 'apparent_b_max_value', istrue:false, width: '180px', formatter: formatPower},
-        { label: 'B路最大视在功率时间', align: 'center', prop: 'apparent_b_max_time', formatter: dateFormatter, width: '200px', istrue:false},
+        { label: 'B路最大视在功率时间', align: 'center', prop: 'apparent_b_max_time', formatter: formatTime, width: '200px', istrue:false},
         { label: 'B路最小视在功率(kVA)', align: 'center', prop: 'apparent_b_min_value', istrue:false, width: '180px', formatter: formatPower},
-        { label: 'B路最小视在功率时间', align: 'center', prop: 'apparent_b_min_time', formatter: dateFormatter, width: '200px', istrue:false},
+        { label: 'B路最小视在功率时间', align: 'center', prop: 'apparent_b_min_time', formatter: formatTime, width: '200px', istrue:false},
 
         { label: 'B路平均无功功率(kVA)', align: 'center', prop: 'reactive_b_avg_value', istrue:false, width: '180px', formatter: formatPower},
         { label: 'B路平均功率因素', align: 'center', prop: 'factor_b_avg_value', istrue:false, width: '180px', formatter: formatPowerFactor},
@@ -471,7 +485,7 @@ watch(() => queryParams.granularity, (newValues) => {
 
 const tableColumns = ref([
   { label: '位置', align: 'center', prop: 'location' , width: '230px' , istrue:true},
-  { label: '时间', align: 'center', prop: 'create_time', formatter: dateFormatter, width: '200px' , istrue:true},
+  { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px' , istrue:true},
   { label: '总有功功率(kW)', align: 'center', prop: 'active_total' , istrue:true, width: '180px', formatter: formatPower},
   { label: '总视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, width: '180px', formatter: formatPower},
   { label: '总无功功率(kVA)', align: 'center', prop: 'reactive_total' , istrue:true, width: '180px', formatter: formatPower},
@@ -586,7 +600,13 @@ const handleExport = async () => {
     exportLoading.value = false
   }
 }
-
+// 格式化日期
+function formatTime(_row: any, _column: any, cellValue: number): string {
+  if (!cellValue) {
+    return ''
+  }
+  return dayjs(cellValue).format('YYYY-MM-DD HH:mm')
+}
 /** 初始化 **/
 onMounted(() => {
   getNavList()
@@ -628,4 +648,30 @@ onMounted(() => {
   height: 100%;
   object-fit: cover; 
 }
+
+.description-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .label {
+    width:100px; /* 控制冒号前的宽度 */
+    text-align: right; /* 文本右对齐 */
+    margin-right: 20px; /* 控制冒号后的间距 */
+  }
+
+  .value {
+    flex: 1; /* 自动扩展以对齐数据 */
+  }
+    .line {
+      height: 1px;
+      margin-top: 28px;
+
+      background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+    }
+
+    ::v-deep .el-table .el-table__header th {
+      background-color: #F5F7FA;
+      color: #909399;
+  }
 </style>

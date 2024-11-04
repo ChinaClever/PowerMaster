@@ -48,6 +48,8 @@ export default {
     delDataMessage: '是否删除数据？',
     delNoData: '请选择需要删除的数据',
     delSuccess: '删除成功',
+    restoreMessage:'是否恢复所选中数据？',
+    restoreSuccess: '恢复成功',
     index: '序号',
     status: '状态',
     createTime: '创建时间',

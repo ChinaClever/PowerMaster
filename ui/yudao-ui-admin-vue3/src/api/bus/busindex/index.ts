@@ -19,6 +19,11 @@ export const IndexApi = {
     return await request.post({ url: `/bus/index/page`, data })
   },
 
+  // 查询已删除的始端箱索引分页
+  getDeletedIndexPage: async (data: any) => {
+    return await request.post({ url: `/bus/index/getDeletedPage`, data })
+  },  
+
   // 查询始端箱索引详情
   getIndex: async (id: number) => {
     return await request.get({ url: `/bus/index/get?id=` + id })
@@ -39,6 +44,11 @@ export const IndexApi = {
     return await request.delete({ url: `/bus/index/delete?id=` + id })
   },
 
+  // 恢复始端箱索引
+  restoreIndex: async (id: number) => {
+    return await request.put({ url: `/bus/index/restore?id=` + id })
+  },  
+
   // 导出始端箱索引 Excel
   exportIndex: async (params) => {
     return await request.download({ url: `/bus/index/export-excel`, params })
@@ -50,6 +60,10 @@ export const IndexApi = {
 
   getEqPage: async (data: any) => {
     return await request.post({ url: `/bus/index/eq/page`, data })
+  },
+
+  getEqMax: async (data: any) => {
+    return await request.post({ url: `/bus/index/eq/maxEq`, data })
   },
 
   getBalancePage: async (data: any) => {
@@ -150,5 +164,9 @@ export const IndexApi = {
 
   getBusRedisByDevKey: async (data) => {
     return await request.post({ url: `/bus/index/redisbydevkey`, data })
+  },
+
+  getPeakDemand: async (data: any) => {
+    return await request.post({ url: `/bus/index/peakDemand` ,  data})
   },
 }

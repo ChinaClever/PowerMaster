@@ -3,20 +3,39 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <div class="carousel-container">
+        <!-- <div class="carousel-container">
           <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
             <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
               <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
             </el-carousel-item>
           </el-carousel>
-        </div>
-        <div class="nav_content">
+        </div> -->
+        <!-- <div class="nav_content">
           <el-descriptions title="全部始端箱新增电费记录" direction="vertical" :column="1" width="60px" border >
             <el-descriptions-item label="最近一天"><span >{{ lastDayTotalData }} 条</span></el-descriptions-item>
             <el-descriptions-item label="最近一周"><span >{{ lastWeekTotalData }} 条</span></el-descriptions-item>
             <el-descriptions-item label="最近一月" ><span >{{ lastMonthTotalData }} 条</span></el-descriptions-item>
           </el-descriptions>
-        </div>
+        </div> -->
+
+        <div class="descriptions-container" style="font-size: 14px;">
+          <div class="description-item">
+            <span class="label">最近一天 :</span>
+            <span class="value">{{ lastDayTotalData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">最近一周 :</span>
+            <span class="value">{{ lastWeekTotalData }}条</span>
+          </div>
+          <div class="description-item">
+            <span class="label">最近一月 :</span>
+            <span class="value">{{ lastMonthTotalData }}条</span>
+          </div>
+          <div ><span>全部始端箱新增电费记录</span>
+                    <div class="line" style="margin-top: 10px;"></div>
+                  </div>
+          </div>
+
       </div>
     </template>
     <template #ActionBar>
@@ -174,6 +193,7 @@ watch(() => queryParams.granularity, () => {
       tableColumns.value = [
         { label: '所在位置', align: 'center', prop: 'location' , istrue:true},
         { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true},
+        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
         { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
         { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
@@ -183,6 +203,7 @@ watch(() => queryParams.granularity, () => {
       tableColumns.value = [
         { label: '所在位置', align: 'center', prop: 'location' , istrue:true},
         { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true},
+        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
         { label: '开始日期', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
         { label: '结束日期', align: 'center', prop: 'end_time', formatter: formatTime, istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
@@ -196,6 +217,7 @@ watch(() => queryParams.granularity, () => {
 const tableColumns = ref([
   { label: '所在位置', align: 'center', prop: 'location' , istrue:true},
   { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true},
+  { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
   { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
   { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
   { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
@@ -377,4 +399,31 @@ onMounted(() => {
   height: 100%;
   object-fit: cover; 
 }
+.description-item {
+  display: flex;
+  align-items: center;
+}
+
+.label {
+  text-align: right; /* 文本右对齐 */
+  margin-right: 10px; /* 控制冒号后的间距 */
+  text-align: left;
+}
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
+
+}
+  .line {
+    height: 1px;
+    margin-top: 28px;
+
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
+::v-deep .el-table .el-table__header th {
+    background-color: #F5F7FA;
+    color: #909399;
+}
+
 </style>

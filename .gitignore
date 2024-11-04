@@ -69,3 +69,6 @@ auto-*.d.ts
 /yudao-module-rack/yudao-module-rack-biz/src/test
 /yudao-module-bus/yudao-module-bus-biz/src/test
 /yudao-module-system/yudao-module-system-biz/src/test
+*.zip
+yudao-module-pdu/yudao-module-pdu-biz/src/main/java/cn/iocoder/yudao/module/pdu/service/pdudevice/PDUDeviceServiceImpl.java
+yudao-module-pdu/yudao-module-pdu-biz/src/main/java/cn/iocoder/yudao/module/pdu/service/pdudevice/PDUDeviceServiceImpl.java

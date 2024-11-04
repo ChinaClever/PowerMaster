@@ -20,3 +20,4 @@ public class RackEnergyConsumptionPageReqVO extends PageParam {
     private String[] rackIds;
 
 }
+

@@ -3,13 +3,13 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <div class="carousel-container">
+        <!-- <div class="carousel-container"> -->
           <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
             <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
               <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
             </el-carousel-item>
           </el-carousel> -->
-        </div> 
+        <!-- </div> 
       <div class="nav_header">
         <span v-if="nowAddress">{{nowAddress}}</span>
         <span v-if="nowIpAddr">( {{nowIpAddr}} ) </span>
@@ -23,16 +23,153 @@
       </div>
       <div class="nav_content" v-if="queryParams.granularity == 'realtime'">
         <el-descriptions title="" direction="vertical" :column="1" border >
-          <el-descriptions-item label="A路最高温度 | 发生时间">
+          <el-descriptions-item label="A路最高温度(℃) | 发生时间">
             <span>{{ formatNumber(maxTemDataTemp, 1) }} kWh</span><br/>
             <span v-if="maxTemDataTimeTemp">{{ maxTemDataTimeTemp }}</span>
           </el-descriptions-item>
-          <el-descriptions-item label="A路最低温度 | 发生时间">
+          <el-descriptions-item label="A路最低温度(℃) | 发生时间">
             <span>{{ formatNumber(minTemDataTemp, 1) }} kWh</span><br/>
             <span v-if="minTemDataTimeTemp">{{ minTemDataTimeTemp }}</span>
           </el-descriptions-item>
         </el-descriptions>
+      </div> -->
+     
+          <!-- <div  class="description-item" v-if="queryParams.granularity != 'day'" >
+            <span class="label">B路最高温度(℃) :</span>
+            <span >{{ maxTemDataTempB}} (℃)</span>
+          </div>
+          <div v-if="maxTemDataTimeTempB &&queryParams.granularity != 'day'" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatTime(maxTemDataTimeTempB) }}</span>
+          </div>
+
+          <div class="description-item" v-if="queryParams.granularity != 'day'">
+              <span class="label">B路最低温度(℃) :</span>
+              <span >{{minTemDataTempB}}(℃) </span>
+          </div>
+          <div v-if="minTemDataTimeTempB &&queryParams.granularity != 'day'" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatTime(minTemDataTimeTempB) }}</span>
+          </div>
+          <div  class="description-item" v-if="queryParams.granularity != 'day'" >
+            <span class="label">C路最高温度(℃) :</span>
+            <span >{{ maxTemDataTempC}} (℃)</span>
+          </div>
+          <div v-if="maxTemDataTimeTempC &&queryParams.granularity != 'day'" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatTime(maxTemDataTimeTempC) }}</span>
+          </div>
+
+          <div class="description-item" v-if="queryParams.granularity != 'day'">
+              <span class="label">C路最低温度(℃) :</span>
+              <span >{{minTemDataTempC}}(℃) </span>
+          </div>
+          <div v-if="minTemDataTimeTempC &&queryParams.granularity != 'day'" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatTime(minTemDataTimeTempC) }}</span>
+          </div> -->
+
+
+          <div class="nav_header" style="font-size: 14px;"  v-if="loading2">
+          <span v-if="nowAddress">{{nowAddress}}</span>
+          <span v-if="nowIpAddr">( {{nowIpAddr}} ) </span>
+          <br/>
       </div>
+    <div class="descriptions-container" v-if="loading2" style="font-size: 14px;">
+          <div  class="description-item" v-if="queryParams.granularity != 'day'" >
+            <span class="label">{{maxTemDataTempName}} :</span>
+            <span >{{ maxTemDataTemp}} </span>
+          </div>
+          <div v-if="maxTemDataTimeTemp &&queryParams.granularity != 'day'" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatTime(maxTemDataTimeTemp) }}</span>
+          </div>
+
+          <div class="description-item" v-if="queryParams.granularity != 'day'">
+              <span class="label">{{minTemDataTempName}} :</span>
+              <span >{{minTemDataTemp}} </span>
+          </div>
+          <div v-if="minTemDataTimeTemp &&queryParams.granularity != 'day'" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatTime(minTemDataTimeTemp) }}</span>
+          </div>
+          
+          <!-- 处理天极值数据的菜单栏 -->
+          <!-- <div  class="description-item" v-if="queryParams.granularity == 'day'" >
+            <span class="label">A路最高温度(℃) :</span>
+            <span >{{ maxTemDataTempA}} (℃)</span>
+          </div>
+          <div v-if="maxTemDataTimeTempA &&queryParams.granularity == 'day'" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatDayTime(maxTemDataTimeTempA) }}</span>
+          </div>
+
+          <div class="description-item" v-if="queryParams.granularity == 'day'">
+              <span class="label">A路最低温度(℃) :</span>
+              <span >{{ minTemDataTempA}}(℃) </span>
+            </div>
+          <div v-if="minTemDataTimeTempA &&queryParams.granularity == 'day'" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatDayTime(minTemDataTimeTempA) }}</span>
+          </div>
+
+          <div  class="description-item" v-if="queryParams.granularity == 'day'" >
+            <span class="label">B路最高温度(℃) :</span>
+            <span >{{ maxTemDataTempB}} (℃)</span>
+          </div>
+          <div v-if="maxTemDataTimeTempB &&queryParams.granularity == 'day'" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatDayTime(maxTemDataTimeTempB) }}</span>
+          </div>
+
+          <div class="description-item" v-if="queryParams.granularity == 'day'">
+              <span class="label">B路最低温度(℃) :</span>
+              <span >{{ minTemDataTempB}}(℃) </span>
+            </div>
+          <div v-if="minTemDataTimeTempB &&queryParams.granularity == 'day'" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatDayTime(minTemDataTimeTempB) }}</span>
+          </div>
+
+          <div  class="description-item" v-if="queryParams.granularity == 'day'" >
+            <span class="label">C路最高温度(℃) :</span>
+            <span >{{ maxTemDataTempC}} (℃)</span>
+          </div>
+          <div v-if="maxTemDataTimeTempC &&queryParams.granularity == 'day'" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatDayTime(maxTemDataTimeTempC) }}</span>
+          </div>
+
+          <div class="description-item" v-if="queryParams.granularity == 'day'">
+              <span class="label">C路最低温度(℃) :</span>
+              <span >{{ minTemDataTempC}}(℃) </span>
+            </div>
+          <div v-if="minTemDataTimeTempC &&queryParams.granularity == 'day'" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatDayTime(minTemDataTimeTempC) }}</span>
+          </div> -->
+          <div class="descriptions-container" v-if="loading2" style="font-size: 14px;">
+          <div  class="description-item" v-if="queryParams.granularity == 'day'" >
+            <span class="label">{{maxTemDataTempName}} :</span>
+            <span >{{ maxTemDataTemp}} </span>
+          </div>
+          <div v-if="maxTemDataTimeTemp &&queryParams.granularity == 'day'" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatTime(maxTemDataTimeTemp) }}</span>
+          </div>
+
+          <div class="description-item" v-if="queryParams.granularity == 'day'">
+              <span class="label">{{minTemDataTempName}} :</span>
+              <span >{{minTemDataTemp}} </span>
+          </div>
+          <div v-if="minTemDataTimeTemp &&queryParams.granularity == 'day'" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatTime(minTemDataTimeTemp) }}</span>
+          </div>
+          <div class="line"></div>
+      </div>
+      
+    </div>
     </div>
     </template>
     <template #ActionBar>
@@ -49,7 +186,6 @@
         :inline="true"
         label-width="70px"
       >
-
       <el-form-item label="时间段" prop="timeRange" >
         <el-date-picker
           value-format="YYYY-MM-DD HH:mm:ss"
@@ -67,63 +203,72 @@
 
         <el-form-item>
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button type="success" plain @click="handleExport1" :loading="exportLoading">
+             <Icon icon="ep:download" class="mr-5px" /> 导出
+           </el-button>
         </el-form-item>
 
       </el-form>
     </template>
     <template #Content>
       <div v-loading="loading">
-        <el-tabs v-model="activeName1">
+        <el-tabs v-model="activeName1" v-if="loading2">
           <el-tab-pane label="图表" name="myChart">
             <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 65vh;"></div>
           </el-tab-pane>
           <el-tab-pane label="数据" name="myData">
             <div style="height: 67vh;">
             <el-table  
-              border
+             :stripe="true" 
+              :border="true"
               :data="tableData"
-              style="height: 67vh; width: 99.97%;--el-table-border-color: none;border-right: 1px #143275 solid;border-left: 1px #143275 solid;border-bottom: 1px #143275 solid;"
-              :highlight-current-row="false"
-              :header-cell-style="{ backgroundColor: '#143275', color: '#ffffff', fontSize: '18px', textAlign: 'center', borderLeft: '0.5px #ffffff solid', borderBottom: '1px #ffffff solid' }"
-              :cell-style="{ color: '#000000', fontSize: '16px', textAlign: 'center', borderBottom: '0.5px #143275 solid', borderLeft: '0.5px #143275 solid' }"
-              :row-style="{ color: '#fff', fontSize: '14px', textAlign: 'center', }"
+             style="height: 100%; width: 99.97%;"
+              :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', fontSize: '14px',borderBottom: '1px #EDEEF2 solid',fontWeight: 'bold' }"
+              :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
+              :row-style="{ fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
+              <!-- 添加行号列 -->
+              <el-table-column label="序号" align="center" width="100px">
+                <template #default="{ $index }">
+                  {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
+                </template>
+              </el-table-column>
               <el-table-column prop="create_time" label="记录时间" />
               <!-- 动态生成表头 -->
               <template v-for="item in headerData" :key="item.name">
-                <el-table-column v-if="item.name === 'A路最高温度'" label="A路温度最高值">
-                  <el-table-column :prop="item.name" label="数值"/>   
-                  <el-table-column prop="aTemMaxTimeData" label="发生时间"/>
+                <el-table-column v-if="item.name === 'A路最高温度(℃)'" label="A路温度最高值(℃)" >
+                  <el-table-column :prop="item.name" label="A路温度最高值(℃)" width="110%"/>   
+                  <el-table-column prop="aTemMaxTimeData" label="发生时间" width="110%"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === 'A路最低温度'" label="A路温度最低值">
-                  <el-table-column :prop="item.name" label="数值"/>   
-                  <el-table-column prop="aTemMinTimeData" label="发生时间"/>
+                <el-table-column v-else-if="item.name === 'A路最低温度(℃)'" label="A路温度最低值(℃)">
+                  <el-table-column :prop="item.name" label="A路温度最低值(℃)" width="110%"/>   
+                  <el-table-column prop="aTemMinTimeData" label="发生时间" width="110%"/>
                 </el-table-column>
-                <el-table-column v-if="item.name === 'B路最高温度'" label="B路温度最高值">
-                  <el-table-column :prop="item.name" label="数值"/>   
-                  <el-table-column prop="bTemMaxTimeData" label="发生时间"/>
+                <el-table-column v-else-if="item.name === 'B路最高温度(℃)'" label="B路温度最高值(℃)">
+                  <el-table-column :prop="item.name" label="B路温度最高值(℃)" width="110%"/>   
+                  <el-table-column prop="bTemMaxTimeData" label="发生时间" width="110%"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === 'B路最低温度'" label="B路温度最低值">
-                  <el-table-column :prop="item.name" label="数值"/>   
-                  <el-table-column prop="bTemMinTimeData" label="发生时间"/>
+                <el-table-column v-else-if="item.name === 'B路最低温度(℃)'" label="B路温度最低值(℃)">
+                  <el-table-column :prop="item.name" label="B路温度最低值(℃)" width="110%"/>   
+                  <el-table-column prop="bTemMinTimeData" label="发生时间" width="110%"/>
                 </el-table-column>
-                <el-table-column v-if="item.name === 'C路最高温度'" label="C路温度最高值">
-                  <el-table-column :prop="item.name" label="数值"/>   
-                  <el-table-column prop="cTemMaxTimeData" label="发生时间"/>
+                <el-table-column v-else-if="item.name === 'C路最高温度(℃)'" label="C路温度最高值(℃)">
+                  <el-table-column :prop="item.name" label="C路温度最高值(℃)" width="110%"/>   
+                  <el-table-column prop="cTemMaxTimeData" label="发生时间" width="110%"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === 'C路最低温度'" label="C路温度最低值">
-                  <el-table-column :prop="item.name" label="数值"/>   
-                  <el-table-column prop="cTemMinTimeData" label="发生时间"/>
+                <el-table-column v-else-if="item.name === 'C路最低温度(℃)'" label="C路温度最低值(℃)">
+                  <el-table-column :prop="item.name" label="C路温度最低值(℃)" width="110%"/>   
+                  <el-table-column prop="cTemMinTimeData" label="发生时间" width="110%"/>
                 </el-table-column>
-                <el-table-column v-if="item.name === '中线最高温度'" label="中线温度最高值">
-                  <el-table-column :prop="item.name" label="数值"/>   
-                  <el-table-column prop="nTemMaxTimeData" label="发生时间"/>
+                <el-table-column v-else-if="item.name === '中线最高温度(℃)'" label="中线温度最高值(℃)">
+                  <el-table-column :prop="item.name" label="中线温度最高值(℃)" width="110%"/>   
+                  <el-table-column prop="nTemMaxTimeData" label="发生时间" width="110%"/>
                 </el-table-column>
-                <el-table-column v-else-if="item.name === '中线最低温度'" label="中线温度最低值">
-                  <el-table-column :prop="item.name" label="数值"/>   
-                  <el-table-column prop="nTemMinTimeData" label="发生时间"/>
+                <el-table-column v-else-if="item.name === '中线最低温度(℃)'" label="中线温度最低值(℃)">
+                  <el-table-column :prop="item.name" label="中线温度最低值(℃)" width="110%"/>   
+                  <el-table-column prop="nTemMinTimeData" label="发生时间" width="110%"/>
                 </el-table-column>
-                <el-table-column v-else :prop="item.name" :label="item.name"/>   
+                <el-table-column v-else :prop="item.name" :label="item.name" width="110%"/>   
               </template>
             </el-table>
             </div>
@@ -141,8 +286,12 @@ import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { EnvDataApi } from '@/api/bus/envData'
 import { formatDate } from '@/utils/formatTime'
+import dayjs from 'dayjs'
+import download from '@/utils/download'
+
 // import PDUImage from '@/assets/imgs/PDU.jpg'
 import { ElMessage } from 'element-plus'
+import { constant } from 'lodash-es';
 defineOptions({ name: 'BusEnvLine' })
 
 const activeName = ref('realtimeTabPane') // tab默认显示
@@ -155,7 +304,11 @@ const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
 const needFlush = ref(0) // 是否需要刷新图表
 const loading = ref(false) //  列表的加载中
+const message = useMessage() // 消息弹窗
+const exportLoading = ref(false)
 const queryParams = reactive({
+  pageNo:1,
+  pageSize: 15,
   busId: undefined as number | undefined,
   granularity: 'realtime',
   devkey: undefined as string | undefined,
@@ -298,11 +451,31 @@ const nTemMaxTimeData = ref<string[]>([]);
 const nTemMinValueData = ref<number[]>([]);
 const nTemMinTimeData = ref<string[]>([]);
 
+const maxTemDataTempName=ref();
+const minTemDataTempName=ref();
 const maxTemDataTemp = ref(0);// 最高温度
 const maxTemDataTimeTemp = ref();// 最高温度的发生时间 
 const minTemDataTemp = ref(0);// 最低温度 
 const minTemDataTimeTemp = ref();// 最低温度的发生时间 
-
+const maxTemDataTempA = ref(0);// A最高温度
+const maxTemDataTimeTempA = ref();// A最高温度的发生时间 
+const minTemDataTempA = ref(0);// A最低温度 
+const minTemDataTimeTempA = ref();// A最低温度的发生时间 
+const maxTemDataTempB = ref(0);// B最高温度
+const maxTemDataTimeTempB = ref();// B最高温度的发生时间 
+const minTemDataTempB = ref(0);// B最低温度 
+const minTemDataTimeTempB = ref();// B最低温度的发生时间 
+const maxTemDataTempC = ref(0);// C最高温度
+const maxTemDataTimeTempC = ref();// C最高温度的发生时间 
+const minTemDataTempC = ref(0);// C最低温度 
+const minTemDataTimeTempC = ref();// C最低温度的发生时间 
+const loading2=ref(false);
+const a=ref(0)
+const b=ref(0)
+const a1=ref(0)
+const b1=ref(0)
+const a2=ref(0)
+const b2=ref(0)
 /** 查询列表 */
 const isHaveData = ref(false);
 const getList = async () => {
@@ -310,62 +483,182 @@ const getList = async () => {
   try {
     const data = await EnvDataApi.getBusEnvDataDetails(queryParams);
     if (data != null && data.total != 0){
+      loading2.value=true
       isHaveData.value = true
-      aTemValueData.value = data.list.map((item) => formatNumber(item.tem_a, 1));
-      bTemValueData.value = data.list.map((item) => formatNumber(item.tem_b, 1));
-      cTemValueData.value = data.list.map((item) => formatNumber(item.tem_c, 1));
-      nTemValueData.value = data.list.map((item) => formatNumber(item.tem_n, 1));
+      aTemValueData.value = data.list.map((item) => formatNumber(item.tem_a, 0));
+      bTemValueData.value = data.list.map((item) => formatNumber(item.tem_b, 0));
+      cTemValueData.value = data.list.map((item) => formatNumber(item.tem_c, 0));
+      nTemValueData.value = data.list.map((item) => formatNumber(item.tem_n, 0));
       if (activeName.value === 'dayExtremumTabPane'){
         createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
       }else{
-        createTimeData.value = data.list.map((item) => formatDate(item.create_time));
+        createTimeData.value = data.list.map((item) => formatDate(item.create_time,'YYYY-MM-DD HH:mm'));
       }
 
-      aTemAvgValueData.value = data.list.map((item) => formatNumber(item.tem_a_avg_value, 1));
-      aTemMaxValueData.value = data.list.map((item) => formatNumber(item.tem_a_max_value, 1));
-      aTemMaxTimeData.value = data.list.map((item) => formatDate(item.tem_a_max_time));
-      aTemMinValueData.value = data.list.map((item) => formatNumber(item.tem_a_min_value, 1));
-      aTemMinTimeData.value = data.list.map((item) => formatDate(item.tem_a_min_time));
+      aTemAvgValueData.value = data.list.map((item) => formatNumber(item.tem_a_avg_value, 0));
+      aTemMaxValueData.value = data.list.map((item) => formatNumber(item.tem_a_max_value, 0));
+      aTemMaxTimeData.value = data.list.map((item) => formatDate(item.tem_a_max_time,'YYYY-MM-DD HH:mm'));
+      aTemMinValueData.value = data.list.map((item) => formatNumber(item.tem_a_min_value, 0));
+      aTemMinTimeData.value = data.list.map((item) => formatDate(item.tem_a_min_time,'YYYY-MM-DD HH:mm'));
 
-      bTemAvgValueData.value = data.list.map((item) => formatNumber(item.tem_b_avg_value, 1));
-      bTemMaxValueData.value = data.list.map((item) => formatNumber(item.tem_b_max_value, 1));
-      bTemMaxTimeData.value = data.list.map((item) => formatDate(item.tem_b_max_time));
-      bTemMinValueData.value = data.list.map((item) => formatNumber(item.tem_b_min_value, 1));
-      bTemMinTimeData.value = data.list.map((item) => formatDate(item.tem_b_min_time));
+      bTemAvgValueData.value = data.list.map((item) => formatNumber(item.tem_b_avg_value, 0));
+      bTemMaxValueData.value = data.list.map((item) => formatNumber(item.tem_b_max_value, 0));
+      bTemMaxTimeData.value = data.list.map((item) => formatDate(item.tem_b_max_time,'YYYY-MM-DD HH:mm'));
+      bTemMinValueData.value = data.list.map((item) => formatNumber(item.tem_b_min_value, 0));
+      bTemMinTimeData.value = data.list.map((item) => formatDate(item.tem_b_min_time,'YYYY-MM-DD HH:mm'));
 
-      cTemAvgValueData.value = data.list.map((item) => formatNumber(item.tem_c_avg_value, 1));
-      cTemMaxValueData.value = data.list.map((item) => formatNumber(item.tem_c_max_value, 1));
-      cTemMaxTimeData.value = data.list.map((item) => formatDate(item.tem_c_max_time));
-      cTemMinValueData.value = data.list.map((item) => formatNumber(item.tem_c_min_value, 1));
-      cTemMinTimeData.value = data.list.map((item) => formatDate(item.tem_c_min_time));
+      cTemAvgValueData.value = data.list.map((item) => formatNumber(item.tem_c_avg_value, 0));
+      cTemMaxValueData.value = data.list.map((item) => formatNumber(item.tem_c_max_value, 0));
+      cTemMaxTimeData.value = data.list.map((item) => formatDate(item.tem_c_max_time,'YYYY-MM-DD HH:mm'));
+      cTemMinValueData.value = data.list.map((item) => formatNumber(item.tem_c_min_value, 0));
+      cTemMinTimeData.value = data.list.map((item) => formatDate(item.tem_c_min_time,'YYYY-MM-DD HH:mm'));
 
-      nTemAvgValueData.value = data.list.map((item) => formatNumber(item.tem_n_avg_value, 1));
-      nTemMaxValueData.value = data.list.map((item) => formatNumber(item.tem_n_max_value, 1));
-      nTemMaxTimeData.value = data.list.map((item) => formatDate(item.tem_n_max_time));
-      nTemMinValueData.value = data.list.map((item) => formatNumber(item.tem_n_min_value, 1));
-      nTemMinTimeData.value = data.list.map((item) => formatDate(item.tem_n_min_time));
+      nTemAvgValueData.value = data.list.map((item) => formatNumber(item.tem_n_avg_value, 0));
+      nTemMaxValueData.value = data.list.map((item) => formatNumber(item.tem_n_max_value, 0));
+      nTemMaxTimeData.value = data.list.map((item) => formatDate(item.tem_n_max_time,'YYYY-MM-DD HH:mm'));
+      nTemMinValueData.value = data.list.map((item) => formatNumber(item.tem_n_min_value, 0));
+      nTemMinTimeData.value = data.list.map((item) => formatDate(item.tem_n_min_time,'YYYY-MM-DD HH:mm'));
 
-      maxTemDataTemp.value = Math.max(...aTemValueData.value);
-      minTemDataTemp.value = Math.min(...aTemValueData.value);
+      //A
+      if(activeName.value == "realtimeTabPane"){
+      maxTemDataTempA.value = Math.max(...aTemValueData.value);
+      minTemDataTempA.value = Math.min(...aTemValueData.value);
       aTemValueData.value.forEach(function(num, index) {
-        if (num == maxTemDataTemp.value){
-          maxTemDataTimeTemp.value = createTimeData.value[index]
+        if (num == maxTemDataTempA.value&&a.value==0){
+          maxTemDataTimeTempA.value = createTimeData.value[index]
+          a.value=1;
         }
-        if (num == minTemDataTemp.value){
-          minTemDataTimeTemp.value = createTimeData.value[index]
+          if (num == minTemDataTempA.value&&b.value==0){
+          minTemDataTimeTempA.value = createTimeData.value[index]
+          b.value=1;
+        }});
+      }
+      else if(activeName.value != "realtimeTabPane"){
+      maxTemDataTempA.value = Math.max(...aTemMaxValueData.value);
+      minTemDataTempA.value = Math.min(...aTemMinValueData.value);
+      aTemMaxValueData.value.forEach(function(num, index) {
+        if (num == maxTemDataTempA.value&&a.value==0){
+          
+          maxTemDataTimeTempA.value = createTimeData.value[index]
+          a.value=1;
+
+        }});
+        aTemMinValueData.value.forEach(function(num, index) {
+          if (num == minTemDataTempA.value&&b.value==0){
+          
+          minTemDataTimeTempA.value = createTimeData.value[index]
+          b.value=1;     
+        }});
+      }
+      //B
+      if(activeName.value == "realtimeTabPane"){
+      maxTemDataTempB.value = Math.max(...bTemValueData.value);
+      minTemDataTempB.value = Math.min(...bTemValueData.value);
+      bTemValueData.value.forEach(function(num, index) {
+        if (num == maxTemDataTempB.value&&a1.value==0){
+          maxTemDataTimeTempB.value = createTimeData.value[index]
+          a1.value=1;
         }
-      });
+          if (num == minTemDataTempB.value&&b1.value==0){
+          minTemDataTimeTempB.value = createTimeData.value[index]
+          b1.value=1;
+        }});
+      }
+      else if(activeName.value != "realtimeTabPane"){
+      maxTemDataTempB.value = Math.max(...bTemMaxValueData.value);
+      minTemDataTempB.value = Math.min(...bTemMinValueData.value);
+      bTemMaxValueData.value.forEach(function(num, index) {
+        if (num == maxTemDataTempB.value&&a1.value==0){
+          
+          maxTemDataTimeTempB.value = createTimeData.value[index]
+          a1.value=1;
+
+        }});
+        bTemMinValueData.value.forEach(function(num, index) {
+          if (num == minTemDataTempB.value&&b1.value==0){
+          
+          minTemDataTimeTempB.value = createTimeData.value[index]
+          b1.value=1;     
+        }});
+      }
+      //C
+      if(activeName.value == "realtimeTabPane"){
+      maxTemDataTempC.value = Math.max(...cTemValueData.value);
+      minTemDataTempC.value = Math.min(...cTemValueData.value);
+      cTemValueData.value.forEach(function(num, index) {
+        if (num == maxTemDataTempC.value&&a2.value==0){
+          maxTemDataTimeTempC.value = createTimeData.value[index]
+          a2.value=1;
+        }
+          if (num == minTemDataTempC.value&&b2.value==0){
+          minTemDataTimeTempC.value = createTimeData.value[index]
+          b2.value=1;
+        }});
+      }
+      else if(activeName.value != "realtimeTabPane"){
+      maxTemDataTempC.value = Math.max(...cTemMaxValueData.value);
+      minTemDataTempC.value = Math.min(...cTemMinValueData.value);
+      cTemMaxValueData.value.forEach(function(num, index) {
+        if (num == maxTemDataTempC.value&&a2.value==0){
+          
+          maxTemDataTimeTempC.value = createTimeData.value[index]
+          a2.value=1;
+
+        }});
+        cTemMinValueData.value.forEach(function(num, index) {
+          if (num == minTemDataTempC.value&&b2.value==0){
+          
+          minTemDataTimeTempC.value = createTimeData.value[index]
+          b2.value=1;     
+        }});
+      }
+      
+    maxTemDataTemp.value=Math.max(maxTemDataTempA.value,maxTemDataTempB.value,maxTemDataTempC.value)
+    minTemDataTemp.value=Math.min(minTemDataTempA.value,minTemDataTempB.value,minTemDataTempC.value)
+    if(maxTemDataTemp.value==maxTemDataTempA.value){
+      maxTemDataTempName.value = 'A路最高温度(℃)'
+      maxTemDataTimeTemp.value = maxTemDataTimeTempA.value
+    }
+    if(maxTemDataTemp.value==maxTemDataTempB.value){
+      maxTemDataTempName.value = 'B路最高温度(℃)'
+      maxTemDataTimeTemp.value = maxTemDataTimeTempB.value
+    }
+    if(maxTemDataTemp.value==maxTemDataTempC.value){
+      maxTemDataTempName.value = 'C路最高温度(℃)'
+      maxTemDataTimeTemp.value = maxTemDataTimeTempC.value
+    }
+    if(minTemDataTemp.value==minTemDataTempA.value){
+      minTemDataTempName.value = 'A路最低温度(℃)'
+      minTemDataTimeTemp.value = minTemDataTimeTempA.value
+    }
+    if(minTemDataTemp.value==minTemDataTempB.value){
+      minTemDataTempName.value = 'B路最低温度(℃)'
+      minTemDataTimeTemp.value = minTemDataTimeTempB.value
+    }
+    if(minTemDataTemp.value==minTemDataTempC.value){
+      minTemDataTempName.value = 'C路最低温度(℃)'
+      minTemDataTimeTemp.value = minTemDataTimeTempC.value
+    }
+
 
       
     }else{
       isHaveData.value = false;
+      loading2.value=false
       ElMessage({
         message: '暂无数据',
         type: 'warning',
       });
+      
     }
   } finally {
     loading.value = false;
+    a.value=0;
+    b.value=0;
+    a1.value=0;
+    b1.value=0;
+    a2.value=0;
+    b2.value=0;
   }
 }
 
@@ -380,16 +673,16 @@ const initChart = () => {
         realtimeChart.setOption({
           title: { text: ''},
           tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-          legend: { data: ['A路温度','B路温度','C路温度','中线温度'], selected: { A路温度: true, B路温度: true, C路温度: true, 中线温度: true}},
+          legend: { data: ['A路温度(℃)','B路温度(℃)','C路温度(℃)','中线温度(℃)'], selected: { "A路温度(℃)": true, "B路温度(℃)": true, "C路温度(℃)": true, "中线温度(℃)": true}},
           grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
           toolbox: {feature: {  restore:{}, saveAsImage: {}}},
           xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
           yAxis: { type: 'value'},
           series: [
-            {name: 'A路温度', type: 'line', symbol: 'none', data: aTemValueData.value},
-            {name: 'B路温度', type: 'line', symbol: 'none', data: bTemValueData.value},
-            {name: 'C路温度', type: 'line', symbol: 'none', data: cTemValueData.value},
-            {name: '中线温度', type: 'line', symbol: 'none', data: nTemValueData.value},
+            {name: 'A路温度(℃)', type: 'line', symbol: 'none', data: aTemValueData.value},
+            {name: 'B路温度(℃)', type: 'line', symbol: 'none', data: bTemValueData.value},
+            {name: 'C路温度(℃)', type: 'line', symbol: 'none', data: cTemValueData.value},
+            {name: '中线温度(℃)', type: 'line', symbol: 'none', data: nTemValueData.value},
           ],
           dataZoom:[{type: "inside"}],
         });
@@ -401,6 +694,7 @@ const initChart = () => {
     // setupLegendListener(realtimeChart);
   }
   // 每次切换图就要动态生成数据表头
+  //debugger
   headerData.value = realtimeChart?.getOption().series as any[];
   updateTableData();
 };
@@ -425,6 +719,7 @@ const updateTableData = () => {
     }
     data.push(rowData);
   }
+  
   tableData.value = data;
 };
 
@@ -468,16 +763,16 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
             realtimeChart.setOption({
             title: { text: ''},
             tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-            legend: { data: ['A路温度','B路温度','C路温度','中线温度'], selected: { A路温度: true, B路温度: true, C路温度: true, 中线温度: true}},
+            legend: { data: ['A路温度(℃)','B路温度(℃)','C路温度(℃)','中线温度(℃)'], selected: { "A路温度(℃)": true, "B路温度(℃)": true, "C路温度(℃)": true, "中线温度(℃)": true}},
             grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
             toolbox: {feature: {  restore:{}, saveAsImage: {}}},
             xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
             yAxis: { type: 'value'},
             series: [
-              {name: 'A路温度', type: 'line', symbol: 'none', data: aTemValueData.value},
-              {name: 'B路温度', type: 'line', symbol: 'none', data: bTemValueData.value},
-              {name: 'C路温度', type: 'line', symbol: 'none', data: cTemValueData.value},
-              {name: '中线温度', type: 'line', symbol: 'none', data: nTemValueData.value},
+              {name: 'A路温度(℃)', type: 'line', symbol: 'none', data: aTemValueData.value},
+              {name: 'B路温度(℃)', type: 'line', symbol: 'none', data: bTemValueData.value},
+              {name: 'C路温度(℃)', type: 'line', symbol: 'none', data: cTemValueData.value},
+              {name: '中线温度(℃)', type: 'line', symbol: 'none', data: nTemValueData.value},
             ],
             dataZoom:[{type: "inside"}],
           });
@@ -486,6 +781,7 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
           // setupLegendListener(realtimeChart);
         } 
         // 每次切换图就要动态生成数据表头
+        //debugger
         headerData.value = realtimeChart?.getOption().series as any[];
         updateTableData();
     }else{
@@ -501,12 +797,12 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
             title: {text: ''},
             tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
             legend: { 
-                      data: ['A路平均温度', 'A路最高温度', 'A路最低温度', 'B路平均温度', 'B路最高温度', 'B路最低温度',
-                              'C路平均温度', 'C路最高温度', 'C路最低温度', '中线平均温度', '中线最高温度', '中线最低温度'],
-                      selected: { A路平均温度: true, A路最高温度: true, A路最低温度: true, 
-                                  B路平均温度: false, B路最高温度: false, B路最低温度: false,
-                                  C路平均温度: false, C路最高温度: false, C路最低温度: false, 
-                                  中线平均温度: false, 中线最高温度: false, 中线最低温度: false,  }
+                      data: ['A路平均温度(℃)', 'A路最高温度(℃)', 'A路最低温度(℃)', 'B路平均温度(℃)', 'B路最高温度(℃)', 'B路最低温度(℃)',
+                              'C路平均温度(℃)', 'C路最高温度(℃)', 'C路最低温度(℃)', '中线平均温度(℃)', '中线最高温度(℃)', '中线最低温度(℃)'],
+                      selected: { "A路平均温度(℃)": true, "A路最高温度(℃)": false,"A路最低温度(℃)": false, 
+                                  "B路平均温度(℃)": true, "B路最高温度(℃)": false, "B路最低温度(℃)": false,
+                                  "C路平均温度(℃)": true, "C路最高温度(℃)": false, "C路最低温度(℃)": false, 
+                                  "中线平均温度(℃)": true, "中线最高温度(℃)": false, "中线最低温度(℃)": false,  }
             },
             grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
             toolbox: {feature: {  restore:{}, saveAsImage: {}}},
@@ -515,18 +811,18 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
             ],
             yAxis: { type: 'value'},
             series: [
-              { name: 'A路平均温度', type: 'line', symbol: 'none', data: aTemAvgValueData.value, },
-              { name: 'A路最高温度', type: 'line', symbol: 'none', data: aTemMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: 'A路最低温度', type: 'line', symbol: 'none', data: aTemMinValueData.value, lineStyle: {type: 'dashed'}},
-              { name: 'B路平均温度', type: 'line', symbol: 'none', data: bTemAvgValueData.value, },
-              { name: 'B路最高温度', type: 'line', symbol: 'none', data: bTemMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: 'B路最低温度', type: 'line', symbol: 'none', data: bTemMinValueData.value, lineStyle: {type: 'dashed'}},
-              { name: 'C路平均温度', type: 'line', symbol: 'none', data: cTemAvgValueData.value, },
-              { name: 'C路最高温度', type: 'line', symbol: 'none', data: cTemMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: 'C路最低温度', type: 'line', symbol: 'none', data: cTemMinValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '中线平均温度', type: 'line', symbol: 'none', data: nTemAvgValueData.value, },
-              { name: '中线最高温度', type: 'line', symbol: 'none', data: nTemMaxValueData.value, lineStyle: {type: 'dashed'}},
-              { name: '中线最低温度', type: 'line', symbol: 'none', data: nTemMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: 'A路平均温度(℃)', type: 'line', symbol: 'none', data: aTemAvgValueData.value, },
+              { name: 'A路最高温度(℃)', type: 'line', symbol: 'none', data: aTemMaxValueData.value, lineStyle: {type: 'dashed'}},
+              { name: 'A路最低温度(℃)', type: 'line', symbol: 'none', data: aTemMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: 'B路平均温度(℃)', type: 'line', symbol: 'none', data: bTemAvgValueData.value, },
+              { name: 'B路最高温度(℃)', type: 'line', symbol: 'none', data: bTemMaxValueData.value, lineStyle: {type: 'dashed'}},
+              { name: 'B路最低温度(℃)', type: 'line', symbol: 'none', data: bTemMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: 'C路平均温度(℃)', type: 'line', symbol: 'none', data: cTemAvgValueData.value, },
+              { name: 'C路最高温度(℃)', type: 'line', symbol: 'none', data: cTemMaxValueData.value, lineStyle: {type: 'dashed'}},
+              { name: 'C路最低温度(℃)', type: 'line', symbol: 'none', data: cTemMinValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '中线平均温度(℃)', type: 'line', symbol: 'none', data: nTemAvgValueData.value, },
+              { name: '中线最高温度(℃)', type: 'line', symbol: 'none', data: nTemMaxValueData.value, lineStyle: {type: 'dashed'}},
+              { name: '中线最低温度(℃)', type: 'line', symbol: 'none', data: nTemMinValueData.value, lineStyle: {type: 'dashed'}},
             ],
             dataZoom:[{type: "inside"}],
           });
@@ -535,6 +831,7 @@ watch(() => [activeName.value, needFlush.value], async (newValues) => {
         setupLegendListener1(realtimeChart);          
       }
       // 每次切换图就要动态生成数据表头
+      //debugger
       headerData.value = realtimeChart?.getOption().series as any[];
       updateTableData();
     }
@@ -576,94 +873,97 @@ function customTooltipFormatter(params: any[]) {
   var tooltipContent = ''; // X 轴数值
   params.forEach(function(item) {
     switch( item.seriesName ){
-      case 'A路温度':
-      case 'B路温度':
-      case 'C路温度':
-      case '中线温度':
-      case 'A路平均温度':
-      case 'B路平均温度':
-      case 'C路平均温度':
-      case '中线平均温度':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' ℃  记录时间: ' +params[0].name + '<br/>';
+      case 'A路平均温度(℃)':
+      case 'B路平均温度(℃)':
+      case 'C路平均温度(℃)':
+      case '中线平均温度(℃)':
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +'记录时间:'  +params[0].name+ '<br/>';
         break;
-      case 'A路最高温度':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' ℃  发生时间: ' +aTemMaxTimeData.value[item.dataIndex] + '<br/>';
-        break;
-      case 'B路最高温度':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' ℃  发生时间: ' +bTemMaxTimeData.value[item.dataIndex] + '<br/>';
-        break;
-      case 'C路最高温度':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' ℃  发生时间: ' +cTemMaxTimeData.value[item.dataIndex] + '<br/>';
-        break;
-      case '中线最高温度':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' ℃  发生时间: ' +nTemMaxTimeData.value[item.dataIndex] + '<br/>';
-        break;
+      case 'A路最高温度(℃)':
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+aTemMaxTimeData.value[item.dataIndex]+'<br/>';
+      break;
+      case 'B路最高温度(℃)':
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+bTemMaxTimeData.value[item.dataIndex]+'<br/>';
+      break;
+      case 'C路最高温度(℃)':
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+cTemMaxTimeData.value[item.dataIndex]+'<br/>';
+      break;
+      case '中线最高温度(℃)':
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+nTemMaxTimeData.value[item.dataIndex]+'<br/>';
+      break;
 
-      case 'A路最低温度':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' ℃  发生时间: ' +aTemMinTimeData.value[item.dataIndex] + '<br/>';
-        break;
-      case 'B路最低温度':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' ℃  发生时间: ' +bTemMinTimeData.value[item.dataIndex] + '<br/>';
-        break;
-      case 'C路最低温度':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' ℃  发生时间: ' +cTemMinTimeData.value[item.dataIndex] + '<br/>';
-        break;
-      case '中线最低温度':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' ℃  发生时间: ' +nTemMinTimeData.value[item.dataIndex] + '<br/>';
-        break;
-
+      case 'A路最低温度(℃)':
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+aTemMinTimeData.value[item.dataIndex]+'<br/>';
+      break;
+      case 'B路最低温度(℃)':
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+bTemMinTimeData.value[item.dataIndex]+'<br/>';
+      break;
+      case 'C路最低温度(℃)':
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+cTemMinTimeData.value[item.dataIndex]+'<br/>';
+      break;
+      case '中线最低温度(℃)':
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+nTemMinTimeData.value[item.dataIndex]+'<br/>';
+      break;
+      case 'A路温度(℃)':
+      case 'B路温度(℃)':
+      case 'C路温度(℃)':
+      case '中线温度(℃)':
+      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +'<br/>'
+      break
     }
-    
-  });
+  })  
+  if(params[0].seriesName == "A路温度(℃)"|| params[0].seriesName == "B路温度(℃)" || params[0].seriesName == "C路温度(℃)"|| params[0].seriesName == "中线温度(℃)"){
+    tooltipContent +='记录时间:'  +params[0].name+ '<br/>'
+  }
   return tooltipContent;
 }
 
 // 小时、天 图例切换函数
 function setupLegendListener1(realtimeChart) {
   realtimeChart?.on('legendselectchanged', function (params) {
-    var legendName = params.name;
+    // var legendName = params.name;
     var optionsToUpdate = {};
-    switch (legendName) {
-      case 'A路平均温度':
-      case 'A路最高温度':
-      case 'A路最低温度':
-        if (params.selected[legendName]){
-          optionsToUpdate = { "A路平均温度": true, "A路最高温度": true, "A路最低温度": true, "B路平均温度": false, "B路最高温度": false, "B路最低温度": false,
-                              "C路平均温度": false, "C路最高温度": false, "C路最低温度": false, "中线平均温度": false, "中线最高温度": false, "中线最低温度": false,};
-        }
-        break;
-      case 'B路平均温度':
-      case 'B路最高温度':
-      case 'B路最低温度':
-        if (params.selected[legendName]){
-          optionsToUpdate = { "B路平均温度": true, "B路最高温度": true, "B路最低温度": true, "A路平均温度": false, "A路最高温度": false, "A路最低温度": false,
-                              "C路平均温度": false, "C路最高温度": false, "C路最低温度": false, "中线平均温度": false, "中线最高温度": false, "中线最低温度": false,};
-        }
-        break;
-      case 'C路平均温度':
-      case 'C路最高温度':
-      case 'C路最低温度':
-        if (params.selected[legendName]){
-          optionsToUpdate = { "C路平均温度": true, "C路最高温度": true, "C路最低温度": true, "A路平均温度": false, "A路最高温度": false, "A路最低温度": false,
-                              "B路平均温度": false, "B路最高温度": false, "B路最低温度": false, "中线平均温度": false, "中线最高温度": false, "中线最低温度": false,};
-        }
-        break;
-      case '中线平均温度':
-      case '中线最高温度':
-      case '中线最低温度':
-        if (params.selected[legendName]){
-          optionsToUpdate = { "中线平均温度": true, "中线最高温度": true, "中线最低温度": true, "A路平均温度": false, "A路最高温度": false, "A路最低温度": false,
-                              "B路平均温度": false, "B路最高温度": false, "B路最低温度": false, "C路平均温度": false, "C路最高温度": false, "C路最低温度": false,};
-        }
-        break;
+    // switch (legendName) {
+    //   case 'A路平均温度(℃)':
+    //   case 'A路最高温度(℃)':
+    //   case 'A路最低温度(℃)':
+    //     if (params.selected[legendName]){
+    //       optionsToUpdate = { "A路平均温度(℃)": true, "A路最高温度(℃)": true, "A路最低温度(℃)": true, "B路平均温度(℃)": false, "B路最高温度(℃)": false, "B路最低温度(℃)": false,
+    //                           "C路平均温度(℃)": false, "C路最高温度(℃)": false, "C路最低温度(℃)": false, "中线平均温度(℃)": false, "中线最高温度(℃)": false, "中线最低温度(℃)": false,};
+    //     }
+    //     break;
+    //   case 'B路平均温度(℃)':
+    //   case 'B路最高温度(℃)':
+    //   case 'B路最低温度(℃)':
+    //     if (params.selected[legendName]){
+    //       optionsToUpdate = { "B路平均温度(℃)": true, "B路最高温度(℃)": true, "B路最低温度(℃)": true, "A路平均温度(℃)": false, "A路最高温度(℃)": false, "A路最低温度(℃)": false,
+    //                           "C路平均温度(℃)": false, "C路最高温度(℃)": false, "C路最低温度(℃)": false, "中线平均温度(℃)": false, "中线最高温度(℃)": false, "中线最低温度(℃)": false,};
+    //     }
+    //     break;
+    //   case 'C路平均温度(℃)':
+    //   case 'C路最高温度(℃)':
+    //   case 'C路最低温度(℃)':
+    //     if (params.selected[legendName]){
+    //       optionsToUpdate = { "C路平均温度(℃)": true, "C路最高温度(℃)": true, "C路最低温度(℃)": true, "A路平均温度(℃)": false, "A路最高温度(℃)": false, "A路最低温度(℃)": false,
+    //                           "B路平均温度(℃)": false, "B路最高温度(℃)": false, "B路最低温度(℃)": false, "中线平均温度(℃)": false, "中线最高温度(℃)": false, "中线最低温度(℃)": false,};
+    //     }
+    //     break;
+    //   case '中线平均温度(℃)':
+    //   case '中线最高温度(℃)':
+    //   case '中线最低温度(℃)':
+    //     if (params.selected[legendName]){
+    //       optionsToUpdate = { "中线平均温度(℃)": true, "中线最高温度(℃)": true, "中线最低温度(℃)": true, "A路平均温度(℃)": false, "A路最高温度(℃)": false, "A路最低温度(℃)": false,
+    //                           "B路平均温度(℃)": false, "B路最高温度(℃)": false, "B路最低温度(℃)": false, "C路平均温度(℃)": false, "C路最高温度(℃)": false, "C路最低温度(℃)": false,};
+    //     }
+    //     break;
 
-      default:
-        break;
-    }
+    //   default:
+    //     break;
+    // }
 
     realtimeChart?.setOption({
       legend: {
-        data: ['A路平均温度', 'A路最高温度', 'A路最低温度','B路平均温度', 'B路最高温度', 'B路最低温度','C路平均温度', 'C路最高温度', 'C路最低温度','中线平均温度', '中线最高温度', '中线最低温度'],
+        data: ['A路平均温度(℃)', 'A路最高温度(℃)', 'A路最低温度(℃)','B路平均温度(℃)', 'B路最高温度(℃)', 'B路最低温度(℃)','C路平均温度(℃)', 'C路最高温度(℃)', 'C路最低温度(℃)','中线平均温度(℃)', '中线最高温度(℃)', '中线最低温度(℃)'],
         selected: optionsToUpdate
       },
     });
@@ -699,7 +999,43 @@ const disabledDate = (date) => {
   // 如果date在今天之后，则禁用
   return date > today;
 }
+// 格式化日期
+function formatTime( cellValue: number): string {
+  if (!cellValue) {
+    return ''
+  }
 
+  return dayjs(cellValue).format('YYYY-MM-DD HH:mm')
+}
+function formatDayTime( cellValue: number): string {
+  if (!cellValue) {
+    return ''
+  }
+
+  return dayjs(cellValue).format('YYYY-MM-DD')
+}
+
+//导出Excel
+const handleExport1 = async () => {
+  try {
+    // 导出的二次确认
+    await message.exportConfirm()
+    // 发起导出
+    queryParams.pageNo = 1
+    exportLoading.value = true
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+  
+    const data = await EnvDataApi.exportBusTemHistoryData(queryParams, axiosConfig)
+    await download.excel(data, '始端箱环境数据分析.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
+  } finally {
+    exportLoading.value = false
+  }
+}
 // 处理实时数据的时间选择不超过xxx范围
 // const handleDayPick = () => {
 //   if (activeName.value=='realtimeTabPane'){
@@ -759,12 +1095,19 @@ const handleClick = async (row) => {
     nowIpAddr.value = ''
     maxTemDataTemp.value = 0
     minTemDataTemp.value = 0
+    maxTemDataTempA.value = 0
+    minTemDataTempA.value = 0
+    maxTemDataTempB.value = 0
+    minTemDataTempB.value = 0
+    maxTemDataTempC.value = 0
+    minTemDataTempC.value = 0
 
     queryParams.devkey = row.unique
     findFullName(navList.value, row.unique, fullName => {
       nowAddress.value = fullName
     });
     let data: any[] = [];
+    
     tableData.value = data;
     handleQuery();
   }
@@ -906,5 +1249,26 @@ onMounted( async () => {
   height: 100%;
   object-fit: cover; 
 }
+.description-item {
+  display: flex;
+  align-items: center;
+}
 
+.label {
+  text-align: right; /* 文本右对齐 */
+  margin-right: 10px; /* 控制冒号后的间距 */
+  text-align: left;
+}
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
+
+}
+  .line {
+    height: 1px;
+    margin-top: 28px;
+
+    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+  }
 </style>

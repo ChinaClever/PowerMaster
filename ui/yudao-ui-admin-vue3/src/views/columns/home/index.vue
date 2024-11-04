@@ -117,10 +117,12 @@ const mainInfo = reactive({})
 const EqInfo = reactive({})
 
 const getMainData = async() => {
+  // //debugger
   const res =  await MachineColumnApi.getMaindata({id: containerInfo.cabinetColumnId})
   Object.assign(mainInfo, res)
   console.log('res', res)
   if (!res.cabinetList) return
+  
   Object.assign(echartsOptionA, {
     title: {
       text: 'A路功率'
@@ -162,6 +164,7 @@ const getMainData = async() => {
       }
     ]
   })
+  
   Object.assign(echartsOptionB, {
     title: {
       text: 'B路功率'

@@ -36,4 +36,5 @@ public interface RackHistoryDataService {
     Map<String, Object> getNavNewData(String granularity) throws IOException;
 
 
+    List<Object> getNewList(List<Object> list);
 }

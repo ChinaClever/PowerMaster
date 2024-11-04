@@ -45,17 +45,39 @@ public class PDUDeviceController {
         PageResult<PDUDeviceDO> pageResult = pDUDeviceService.getPDUDevicePage(pageReqVO);
         return success(pageResult);
     }
-
+    @PostMapping("/getDeletedPage")
+    @Operation(summary = "获得已删除PDU分页")
+    public CommonResult<PageResult<PDUDeviceDO>> getDeletedPDUDevicePage(@RequestBody PDUDevicePageReqVO pageReqVO) {
+        PageResult<PDUDeviceDO> pageResult = pDUDeviceService.getDeletedPDUDevicePage(pageReqVO);
+        return success(pageResult);
+    }
     @PostMapping("/line/page")
     @Operation(summary = "获得PDU需量分页")
     public CommonResult<PageResult<PDULineRes>> getPDULineDevicePage(@RequestBody PDUDevicePageReqVO pageReqVO) {
         return success(pDUDeviceService.getPDULineDevicePage(pageReqVO));
+    }
+    @PostMapping("/line/getMaxLineId")
+    @Operation(summary = "获得PDU相id的最大值")
+    public CommonResult<Integer> getPDUMaxLineId(@RequestBody PDUDevicePageReqVO pageReqVO) {
+        return success(pDUDeviceService.getPDUMaxLineId(pageReqVO));
+    }
+
+    @PostMapping("/line/getMaxCur")
+    @Operation(summary = "获得PDU电流最大值的相数据")
+    public CommonResult<PageResult<PDULineRes>> getPDUMaxCurData(@RequestBody PDUDevicePageReqVO pageReqVO) {
+        return success(pDUDeviceService.getPDUMaxCurData(pageReqVO));
     }
 
     @GetMapping("/displayscreen")
     @Operation(summary = "获得PDU设备详细信息")
     public CommonResult<String> getDisplay(String devKey) {
         return success(pDUDeviceService.getDisplayDataByDevKey(devKey));
+    }
+
+    @GetMapping("/displayscreen/location")
+    @Operation(summary = "获得位置")
+    public CommonResult<String> getLocationByDevKey(String devKey) {
+        return success(pDUDeviceService.getLocationByDevKey(devKey));
     }
 
     @GetMapping("/hisdata")
@@ -118,6 +140,16 @@ public class PDUDeviceController {
         int pduId = pDUDeviceService.deletePDU(devKey);
         if (pduId == -1) {
             return error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "删除失败");
+        }
+        return success(pduId);
+    }
+
+    @GetMapping("/restore")
+    @Operation(summary = "恢复设备")
+    public CommonResult<Integer> restorePDU(@Param("devKey") String devKey) throws Exception  {
+        int pduId = pDUDeviceService.restorePDU(devKey);
+        if (pduId == -1) {
+            return error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "恢复失败");
         }
         return success(pduId);
     }

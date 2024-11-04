@@ -84,4 +84,7 @@ public class BoxIndexPageReqVO extends PageParam {
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;
 
+    @Schema(description = "时间颗粒度")
+    private String timeGranularity;
+
 }
