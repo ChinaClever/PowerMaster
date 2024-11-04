@@ -339,7 +339,7 @@ const getList = async () => {
       queryParams.timeRange = undefined
     }
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
-    eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
+    eqData.value = data.list.map((item) => formatEQ(item.end_ele - item.start_ele, 1));
     list.value = data.list
     realTotel.value = data.total
     if (data.total > 10000){
