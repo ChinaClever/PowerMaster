@@ -715,14 +715,13 @@ const getList = async () => {
   temData.value = await PDUDeviceApi.getTemData(queryParams);
   temList.value = temData.value.lineRes;
   if(temList.value?.series != null && temList.value?.series?.length > 0 ){
-
     temData.value.temMinValue = temData.value.temMinValue?.toFixed(2);
     temData.value.temMaxValue = temData.value.temMaxValue?.toFixed(2);
     visControll.temVis = true;
   }else{
     visControll.temVis = false;
   }
-
+debugger
   var PDU = await PDUDeviceApi.PDUDisplay(queryParams);
   PDU = JSON.parse(PDU)
   var temp = [] as any;
