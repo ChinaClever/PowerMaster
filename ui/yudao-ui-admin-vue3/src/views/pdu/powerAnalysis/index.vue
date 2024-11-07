@@ -494,7 +494,7 @@ const handleCheck = async (node) => {
         arr.push(item.unique);
       }
     });
-    if (ip != null){
+    if (ip.value != null ){
       arr =[ip]
     }
     //没筛选到pdu 不显示任何数据 ipArray参数传0 后端返回空
