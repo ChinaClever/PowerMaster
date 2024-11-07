@@ -123,7 +123,7 @@
       <div v-loading="loading">
         <el-tabs v-model="activeName1">
           <el-tab-pane v-if="loading2" label="图表" name="myChart">
-            <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 65vh;"></div>
+            <div ref="chartContainer" id="chartContainer" class="adaptiveStyle"></div>
           </el-tab-pane>
           <el-tab-pane v-if="loading2" label="数据" name="myData">
             <div style="height: 67vh;">
@@ -131,7 +131,7 @@
               :border="true"
               :stripe="true"
               :data="tableData"
-              style="height: 67vh; width: 99.97%;"
+              style="height: 100%; width: 99.97%;"
               :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', borderBottom: '1px #EDEEF2 solid', fontFamily: 'Microsoft YaHei',fontWeight: 'bold'}"
               :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
               :row-style="{ fontSize: '14px', textAlign: 'center', }"
@@ -1537,4 +1537,25 @@ const handleExport1 = async () => {
 
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
+
+@media (min-width:2048px) {
+  .adaptiveStyle {
+    width: 76vw;
+    height: 65vh;
+  }
+}
+
+@media (max-width:2048px) and (min-width:1600px) {
+  .adaptiveStyle {
+    width: 70vw;
+    height: 65vh;
+  }
+}
+
+@media (max-width:1600px) {
+  .adaptiveStyle {
+    width: 85vw;
+    height: 65vh;
+  }
+}
 </style>

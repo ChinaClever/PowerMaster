@@ -229,7 +229,7 @@
       <el-card style="margin: 10px;">
         <el-row>
           <el-col >
-            <span style="width: 100%">总功率趋势图</span>
+            <span style="width: 100%">趋势图</span>
           </el-col>
           <el-col >
             <div style="float:right;margin-top: 0;">
@@ -242,7 +242,7 @@
           </el-col> 
         </el-row>
         <div style="display: flex; justify-content: center; align-items: center;">
-          <div ref="chartContainer" id="chartContainer" style="width: 90vw; height: 42vh;"></div>
+          <div ref="chartContainer" id="chartContainer" class="adaptiveStyle"></div>
         </div>
         
       </el-card>
@@ -374,7 +374,7 @@
 // import download from '@/utils/download'
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 import * as echarts from 'echarts'
-import { onMounted } from 'vue'
+import { onMounted, onUpdated} from 'vue'
 // import { object } from 'vue-types';
 
 /** PDU设备 列表 */
@@ -740,8 +740,6 @@ const beforeChartUnmount = () => {
   chart?.dispose(); // 销毁图表实例
 };
 
-
-
 // window.addEventListener('resize', function() {
 //   chart?.resize(); 
 // });
@@ -872,6 +870,8 @@ const flashChartData = async () =>{
   });
 }
 
+//在浏览器窗口大小发生变化时触发
+window.addEventListener('resize', flashChartData)
 
 /** 导出按钮操作 */
 // const handleExport = async () => {
@@ -1255,6 +1255,10 @@ onBeforeMount(async () =>{
   flashListTimer.value.chartTimer = setInterval((setNewChartData), 60000);
 })
 
+onBeforeUpdate(async () => {
+  await window.addEventListener('resize', flashChartData)
+})
+
 onBeforeUnmount(()=>{
   if(flashListTimer.value.tableDataTimer && flashListTimer.value.chartTimer){
     clearInterval(flashListTimer.value.tableDataTimer)
@@ -1339,4 +1343,25 @@ queryParams.id = id;
   background-color: white;
 
 }
+@media screen and (max-width:1600px) {
+  .adaptiveStyle {
+    width: 90vw;
+    height: 42vh;
+  }
+}
+
+@media screen and  (max-width:2048px) and (min-width:1600px) {
+  .adaptiveStyle {
+    width: 85vw;
+    height: 42vh;
+  }
+}
+
+@media screen and (min-width:2048px) {
+  .adaptiveStyle {
+    width: 95vw;
+    height: 42vh;
+  }
+}
+
 </style>
