@@ -46,7 +46,7 @@
          :inline="true"
          label-width="auto"
        >
-         <el-form-item label="参数类型" prop="type">
+         <!-- <el-form-item label="参数类型" prop="type">
           <el-cascader
             v-model="typeDefaultSelected"
             collapse-tags
@@ -67,7 +67,7 @@
               <el-option label="周" value="week" />
               <el-option label="月" value="month" />
             </el-select>
-          </el-form-item>
+          </el-form-item> -->
 
          <el-form-item label="时间段" prop="timeRange">
             <el-date-picker
@@ -111,7 +111,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.pdu_id, row.address)">详情</el-button>
+            <el-button link type="primary" @click="toDetails(row.location,row.createTimeMin,row.createTimeMax)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -132,12 +132,12 @@
               :width="child.width"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.pdu_id, row.address)">详情</el-button>
+                <el-button link type="primary" @click="toDetails(row.location,row.createTimeMin,row.createTimeMax)">详情</el-button>
               </template>
             </el-table-column>
           </template>
         </el-table-column>
-
+<!--  -->
 
       </template>
       <!-- 超过一万条数据提示信息 -->
@@ -170,7 +170,7 @@
 import dayjs from 'dayjs'
 import { EnergyConsumptionApi } from '@/api/pdu/energyConsumption'
 import { HistoryDataApi } from '@/api/pdu/historydata'
-import { formatDate, endOfDay, convertDate, addTime } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime, beginOfDay } from '@/utils/formatTime'
 import { CabinetApi } from '@/api/cabinet/info'
 import * as echarts from 'echarts';
 import { ElMessage } from 'element-plus'
@@ -185,12 +185,12 @@ const lastDayTotalData = ref(0)
 const lastWeekTotalData = ref(0)
 const lastMonthTotalData = ref(0)
 const instance = getCurrentInstance();
-const loading = ref(true)
+const loading = ref(false)
 const message = useMessage() // 消息弹窗
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
-const selectTimeRange = ref()
+const selectTimeRange = ref(undefined)
 const carouselItems = ref([
       { imgUrl: PDUImage},
       { imgUrl: PDUImage},
@@ -200,13 +200,13 @@ const carouselItems = ref([
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
-  ipAddr: undefined,
-  cascadeAddr : 0,
-  outletId: undefined,
-  type: 'total',
-  granularity: 'day',
+  // ipAddr: undefined,
+  // cascadeAddr : 0,
+  // outletId: undefined,
+  // type: 'total',
+  // granularity: 'day',
   timeRange: undefined as string[] | undefined,
-  ipArray: undefined as string[] | undefined,
+  ipArray: [],
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
@@ -243,26 +243,26 @@ const shortcuts = [
   },
 ]
 
-// 总/输出位筛选
-const typeDefaultSelected = ref(['total'])
-const typeSelection = ref([]) as any;
-const typeCascaderChange = (selected) => {
-  queryParams.type = selected[0];
-  if (selected[0] === 'outlet'){
-    queryParams.outletId = selected[1];
-    // 检查是否已经存在 label 为 '输出位' 的行
-    const exists = tableColumns.value.some(column => column.label === '输出位');
-    if (!exists) {
-      // 在列表行索引1(位置后面)插入输出位行 
-      const newRow = { label: '输出位', align: 'center', prop: 'outlet_id', istrue: true};
-      tableColumns.value.splice(1, 0, newRow);
-    }
-  }else{
-    // 选择总，移除索引为 1 的位置上的行数据
-    tableColumns.value.splice(1, 1);
-  }
-  handleQuery();
-}
+// // 总/输出位筛选
+// const typeDefaultSelected = ref(['total'])
+// const typeSelection = ref([]) as any;
+// const typeCascaderChange = (selected) => {
+//   queryParams.type = selected[0];
+//   if (selected[0] === 'outlet'){
+//     queryParams.outletId = selected[1];
+//     // 检查是否已经存在 label 为 '输出位' 的行
+//     const exists = tableColumns.value.some(column => column.label === '输出位');
+//     if (!exists) {
+//       // 在列表行索引1(位置后面)插入输出位行 
+//       const newRow = { label: '输出位', align: 'center', prop: 'outlet_id', istrue: true};
+//       tableColumns.value.splice(1, 0, newRow);
+//     }
+//   }else{
+//     // 选择总，移除索引为 1 的位置上的行数据
+//     tableColumns.value.splice(1, 1);
+//   }
+//   handleQuery();
+// }
 
 // 返回当前页的序号数组
 const getPageNumbers = (pageNumber) => {
@@ -301,25 +301,16 @@ window.addEventListener('resize', function() {
   rankChart?.resize(); 
 });
 
-watch(() => queryParams.granularity, () => {
-  handleQuery();
-});
+// watch(() => queryParams.granularity, () => {
+//   handleQuery();
+// });
 
 const tableColumns = ref([
   { label: '所在位置', align: 'center', prop: 'address' , istrue:true, width: '300%'},
   { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '150px'},
-  { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '150px' , istrue:true},
-  { label: '开始电能', align: 'center', istrue: true, children: [
-      { label: '开始电能(kWh)', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
-      { label: '开始时间', align: 'center', prop: 'start_time' , formatter: formatTime1, width: '150px' , istrue:true},
-    ]
-  },
-  { label: '结束电能', align: 'center', istrue: true, children: [
-      { label: '结束电能(kWh)', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle},
-      { label: '结束时间', align: 'center', prop: 'end_time' , formatter: formatTime1, width: '150px' , istrue:true},
-    ]
-  },
-  { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' ,istrue: true,formatter: formatEle },
+  { label: '开始记录日期', align: 'center', prop: 'createTimeMin', formatter: formatTime, width: '200px' , istrue:true},
+  { label: '结束记录日期', align: 'center', prop: 'createTimeMax', formatter: formatTime, width: '200px' , istrue:true},
+  { label: '耗电量(kWh)', align: 'center', prop: 'eleActive' ,istrue: true,formatter: formatEle },
   { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '120px'},
 ]) as any;
 
@@ -329,19 +320,20 @@ const getList = async () => {
   try {
     if ( selectTimeRange.value != undefined){
       // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+      const selectedStartTime = formatDate(beginOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
-      const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+      // const oneDay = 24 * 60 * 60 * 1000;
+      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
     if(selectTimeRange.value == null){
-      queryParams.timeRange = undefined
+      // queryParams.timeRange = undefined
+      alert('请输入时间范围');
+    return;
     }
-      queryParams.timeRange = [start.value, end.value];
-    const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
-    eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
+    const data = await EnergyConsumptionApi.getEleTotalRealtime(queryParams)
+    eqData.value = data.list.map((item) => formatEQ(item.eleActive, 1));
     list.value = data.list
     realTotel.value = data.total
     if (data.total > 10000){
@@ -349,40 +341,6 @@ const getList = async () => {
     }else{
       total.value = data.total
     }
-    
-  } finally {
-    initChart();
-    loading.value = false
-  }
-}
-
-const getList1 = async () => {
-  loading.value = true
-  try {
-    if ( start.value != undefined){
-      // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
-      // 结束时间的天数多加一天 ，  一天的毫秒数
-      const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(end.value), oneDay )))
-      queryParams.timeRange = [selectedStartTime, selectedEndTime];
-    }
-    // 时间段清空后值会变成null 此时搜索不能带上时间段
-    if(start.value == null){
-      queryParams.timeRange = undefined
-    }
-    queryParams.ipArray = [ip.value];
-    	console.log('详情页2', queryParams.ipArray);
-    const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
-    eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
-    list.value = data.list
-    realTotel.value = data.total
-    if (data.total > 10000){
-      total.value = 10000
-    }else{
-      total.value = data.total
-    }
-      
   } finally {
     initChart();
     loading.value = false
@@ -396,12 +354,13 @@ function customTooltipFormatter(params: any[]) {
   // params.forEach(function(item) {
   tooltipContent += '位置：'+list.value[item.dataIndex].location + '  '
   // 添加条件判断
-  if (queryParams.type == 'outlet') {
-      tooltipContent += '输出位：' + list.value[item.dataIndex].outlet_id;
-  }
-  tooltipContent += '<br/>'+ item.marker + item.seriesName + ': ' + item.value + 'kWh 记录日期：'+formatTime(null, null, list.value[item.dataIndex].create_time) + '<br/>'                 
-                    +item.marker + '结束电能：'+list.value[item.dataIndex].end_ele + 'kWh 结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) + '<br/>' 
-                    +item.marker +'开始电能：'+formatEle(null, null, list.value[item.dataIndex].start_ele) + 'kWh 开始日期：'+formatTime(null, null, list.value[item.dataIndex].start_time) + '<br/>'
+  // if (queryParams.type == 'outlet') {
+  //     tooltipContent += '输出位：' + list.value[item.dataIndex].outlet_id;
+  // }
+  tooltipContent += '<br/>'+ item.marker + '电能：'+formatEle(null, null, list.value[item.dataIndex].eleActive) + '<br/>' 
+                     '开始日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMin) + '<br/>'
+                     '结束日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMax) + '<br/>' 
+                    
                     
   // })
   return tooltipContent;
@@ -418,7 +377,7 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
   if (!cellValue) {
     return ''
   }
-  return dayjs(cellValue).format('YYYY-MM-DD')
+  return dayjs(cellValue).format('YYYY-MM-DD HH:mm:ss')
 }
 
 // 格式化日期(表格列的时间去掉时分秒和年)
@@ -443,6 +402,7 @@ function formatEQ(value: number, decimalPlaces: number | undefined){
   }
 }
 
+ 
 // 禁选未来的日期
 const disabledDate = (date) => {
   const today = new Date();
@@ -459,32 +419,30 @@ const handleQuery = () => {
  getList()
 }
 
-
-
 // 获取参数类型最大值 例如lineId=6 表示下拉框为L1~L6
-const getTypeMaxValue = async () => {
-    const data = await HistoryDataApi.getTypeMaxValue()
-    const outletIdMaxValue = data.outlet_id_max_value;
-    const typeSelectionValue  = [
-    {
-      value: "total",
-      label: '总'
-    },
-    {
-      value: "outlet",
-      label: '输出位',
-      children: (() => {
-        const outlets: { value: any; label: string; }[] = [];
-        outlets.push({ value: undefined, label: '全部' },)
-        for (let i = 1; i <= outletIdMaxValue; i++) {
-          outlets.push({ value: `${i}`, label: `${i}` });
-        }
-        return outlets;
-      })(),
-    },
-  ]
-  typeSelection.value = typeSelectionValue;
-}
+// const getTypeMaxValue = async () => {
+//     const data = await HistoryDataApi.getTypeMaxValue()
+//     const outletIdMaxValue = data.outlet_id_max_value;
+//     const typeSelectionValue  = [
+//     {
+//       value: "total",
+//       label: '总'
+//     },
+//     {
+//       value: "outlet",
+//       label: '输出位',
+//       children: (() => {
+//         const outlets: { value: any; label: string; }[] = [];
+//         outlets.push({ value: undefined, label: '全部' },)
+//         for (let i = 1; i <= outletIdMaxValue; i++) {
+//           outlets.push({ value: `${i}`, label: `${i}` });
+//         }
+//         return outlets;
+//       })(),
+//     },
+//   ]
+//   typeSelection.value = typeSelectionValue;
+// }
 
 // 导航栏选择后触发
 const handleCheck = async (node) => {
@@ -494,9 +452,6 @@ const handleCheck = async (node) => {
         arr.push(item.unique);
       }
     });
-    if (ip != null){
-      arr =[ip]
-    }
     //没筛选到pdu 不显示任何数据 ipArray参数传0 后端返回空
     if(arr.length == 0  && node.length != 0){
       arr.push(0)
@@ -530,9 +485,20 @@ const getNavNewData = async() => {
 }
 
 /** 详情操作*/
-const toDetails = (pduId: number, address: string) => {
-  push('/pdu/nenghao/ecdistribution?pduId='+pduId+'&address='+address);
+const toDetails = (location: string,createTimeMin : string,createTimeMax : string) => {
+  push('/pdu/nenghao/powerAnalysis?type=total&granularity=day&start='+createTimeMin+
+  '&end='+createTimeMax+'&ip='+location);
 }
+// const toDetails = (row) => {
+// 	const path = '/pdu/nenghao/powerAnalysis';
+//     const objectAsQueryString = JSON.stringify(row);
+//     	console.log('详情页1', row);
+// 	router.push({ path: path, query: { params: objectAsQueryString } });
+ 
+// };
+
+
+
 
 /** 导出按钮操作 */
 const handleExport = async () => {
@@ -545,8 +511,8 @@ const handleExport = async () => {
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
-    const data = await EnergyConsumptionApi.exportEQPageData(queryParams, axiosConfig)
-    await download.excel(data, 'PDU能耗统计.xlsx')
+    const data = await EnergyConsumptionApi.getEleTotalRealtimeExcel(queryParams, axiosConfig)
+    await download.excel(data, 'PDU实时能耗统计.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -555,36 +521,14 @@ const handleExport = async () => {
   }
 }
 
-const start = ref('')
-const end = ref('')
-const ip =  ref('')
-
 /** 初始化 **/
 onMounted(() => {
   getNavList()
   getNavNewData()
-  getTypeMaxValue();
-  getList();
-
-  start.value = useRoute().query.start as string;
-  end.value = useRoute().query.end as string;
-  ip.value = useRoute().query.ip as string;
-  if (start.value != null){
-  	console.log('详情页', start);
-	console.log('详情页1', ip);
-  getList1();
-  }
+  // getTypeMaxValue();
+  // getList();
 });
-
-/** 清空按钮操作 */
-const clearQuery = () => {
-end.value= '';
-start.value='';
-ip.value='';
-queryParams.timeRange = undefined;
-queryParams.ipArray = undefined;
-}
-
+ 
 </script>
 
 <style scoped>

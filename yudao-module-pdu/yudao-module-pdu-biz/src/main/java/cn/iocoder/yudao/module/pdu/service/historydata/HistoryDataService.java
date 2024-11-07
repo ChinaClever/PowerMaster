@@ -7,6 +7,8 @@ import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.EnvDataPageRe
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataDetailsReqVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataPageReqVO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PduIndex;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 
 import java.io.IOException;
 import java.util.List;
@@ -80,4 +82,10 @@ public interface HistoryDataService {
     List<Object> getNewExcelList(List<Object> list1,String ob);
 
     void getEnvExcelList(List<Object> list);
+
+    PduIndex findPduIndex(int pduId);
+
+    IPage<PduIndex> findPduIndexAll(int pageNo, int pageSize, String[] ipArray);
+
+    List<PduIndex> findPduIndexAllToList(String[] ipArray);
 }

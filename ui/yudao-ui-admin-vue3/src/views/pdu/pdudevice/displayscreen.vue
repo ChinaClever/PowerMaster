@@ -229,7 +229,7 @@
       <el-card style="margin: 10px;">
         <el-row>
           <el-col >
-            <span style="width: 100%">趋势图</span>
+            <span style="width: 100%">总功率趋势图</span>
           </el-col>
           <el-col >
             <div style="float:right;margin-top: 0;">
@@ -242,7 +242,7 @@
           </el-col> 
         </el-row>
         <div style="display: flex; justify-content: center; align-items: center;">
-          <div ref="chartContainer" id="chartContainer" style="width: 70vw; height: 42vh;"></div>
+          <div ref="chartContainer" id="chartContainer" style="width: 90vw; height: 42vh;"></div>
         </div>
         
       </el-card>
