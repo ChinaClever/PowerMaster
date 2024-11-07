@@ -48,12 +48,15 @@ const initializeStyle = () => {
 const toggleStyles = () => {
   if (mediaQueryList.matches) {
     appStore.setCollapse(false)
+    console.log('2048',appStore.getCollapse)
   } else {
     if (maxScreenList.matches) {
       appStore.setCollapse(false)
+      console.log('2048-1600',appStore.getCollapse)
     } else {
         const collapsed = unref(collapse)
         appStore.setCollapse(!collapsed)
+        console.log('1600',appStore.getCollapse)
     }
   }
 }
