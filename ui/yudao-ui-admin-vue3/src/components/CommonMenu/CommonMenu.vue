@@ -36,6 +36,11 @@
 </template>
 
 <script lang="ts" setup>
+import { onMounted } from 'vue'
+import { onBeforeRouteLeave } from 'vue-router'
+
+const mediaQueryList = window.matchMedia('(min-width: 1600px) and (max-width: 2048px)') //检查视口宽度是否小于2048像素和是否大于1600像素
+const maxScreenList =  window.matchMedia('(min-width: 2048px)') //检查视口宽度是否大于2048像素
 const emits = defineEmits(['node-click', 'check'])
 const props = defineProps({
   dataList: Array,
@@ -70,6 +75,16 @@ const props = defineProps({
 const switchNav = ref(false) //false: 导航树 true：微模块展示
 const isCloseNav = ref(false) // 左侧导航是否收起
 
+//组件挂载时候调用
+onMounted(() => {
+  toggleStyles()
+})
+
+//在离开当前路由之前调用
+onBeforeRouteLeave(() => {
+  initializeStyle()
+})
+
 // 处理切换按钮点击事件
 const handleSwitchNav = () => {
   console.log('处理切换按钮点击事件', switchNav.value)
@@ -85,6 +100,32 @@ const handleClick = (data) => {
 const handleCheck = (data) => {
   emits('check', data)
 }
+
+//不同分辨率的页面的初始化显示
+const initializeStyle = () => {  
+  if (maxScreenList.matches) {  
+    isCloseNav.value = false
+  } else if (mediaQueryList.matches) {
+    isCloseNav.value = false
+  } else {
+    isCloseNav.value = true
+  }
+}
+
+//根据页面的分辨率不同进行改变
+const toggleStyles = () => {
+  if (mediaQueryList.matches) {
+    isCloseNav.value = false
+  } else {
+    if (maxScreenList.matches) {
+      isCloseNav.value = false
+    } else {
+      isCloseNav.value =!isCloseNav.value
+    }
+  }
+}
+// 监听媒体查询变化
+mediaQueryList.addEventListener('change', toggleStyles)
 </script>
 
 <style lang="scss" scoped >
