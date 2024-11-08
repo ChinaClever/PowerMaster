@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU能耗统计" placeholder="如:192.168.1.96-0">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU能耗数据" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
         <br/>    <br/> 
         <div class="nav_data">
@@ -339,8 +339,7 @@ const getList = async () => {
     if(selectTimeRange.value == null){
       queryParams.timeRange = undefined
     }
-    queryParams.timeRange = [start.value, end.value];
-    const data = await EnergyConsumptionApi.getEQDataPage(queryParams);
+    const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
     eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
     list.value = data.list
     realTotel.value = data.total
@@ -349,7 +348,7 @@ const getList = async () => {
     }else{
       total.value = data.total
     }
-
+    
   } finally {
     initChart();
     loading.value = false
@@ -360,7 +359,7 @@ const getList1 = async () => {
   loading.value = true
   try {
     if ( start.value != undefined){
-      // 格式化时间范围 加上23:59:59的时分秒
+      // 格式化时间范围 加上23:59:59的时分秒 
       const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
@@ -382,7 +381,7 @@ const getList1 = async () => {
     }else{
       total.value = data.total
     }
-
+      
   } finally {
     initChart();
     loading.value = false
