@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU能耗统计" placeholder="如:192.168.1.96-0">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU实时能耗查询" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
         <br/>    <br/> 
         <div class="nav_data">
@@ -20,19 +20,7 @@
         </div> -->
         <div class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
-            <span class="label">最近一天 :</span>
-            <span class="value">{{ lastDayTotalData }}条</span>
-          </div>
-          <div class="description-item">
-            <span class="label">最近一周 :</span>
-            <span class="value">{{ lastWeekTotalData }}条</span>
-          </div>
-          <div class="description-item">
-            <span class="label">最近一月 :</span>
-            <span class="value">{{ lastMonthTotalData }}条</span>
-          </div>    <br/>
-          <div ><span>全部PDU新增能耗记录</span>
-            <div class="line" style="margin-top: 10px;"></div>
+            <span class="label">选定时间范围查询实时能耗</span>
           </div>
         </div>
         
@@ -181,9 +169,9 @@ const { push } = useRouter()
 defineOptions({ name: 'PowerAnalysis' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
-const lastDayTotalData = ref(0)
-const lastWeekTotalData = ref(0)
-const lastMonthTotalData = ref(0)
+// const lastDayTotalData = ref(0)
+// const lastWeekTotalData = ref(0)
+// const lastMonthTotalData = ref(0)
 const instance = getCurrentInstance();
 const loading = ref(false)
 const message = useMessage() // 消息弹窗
@@ -308,8 +296,16 @@ window.addEventListener('resize', function() {
 const tableColumns = ref([
   { label: '所在位置', align: 'center', prop: 'address' , istrue:true, width: '300%'},
   { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '150px'},
-  { label: '开始记录日期', align: 'center', prop: 'createTimeMin', formatter: formatTime, width: '200px' , istrue:true},
-  { label: '结束记录日期', align: 'center', prop: 'createTimeMax', formatter: formatTime, width: '200px' , istrue:true},
+    { label: '开始电能', align: 'center', istrue: true, children: [
+      { label: '开始电能(kWh)', align: 'center', prop: 'eleActiveStart' , istrue:true, formatter: formatEle},
+      { label: '开始时间', align: 'center', prop: 'createTimeMin' , formatter: formatTime1, width: '150px' , istrue:true},
+    ]
+  },
+    { label: '结束电能', align: 'center', istrue: true, children: [
+      { label: '结束电能(kWh)', align: 'center', prop: 'eleActiveEnd' , istrue:true, formatter: formatEle},
+      { label: '结束时间', align: 'center', prop: 'createTimeMax' , formatter: formatTime1, width: '150px' , istrue:true},
+    ]
+  },
   { label: '耗电量(kWh)', align: 'center', prop: 'eleActive' ,istrue: true,formatter: formatEle },
   { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '120px'},
 ]) as any;
@@ -332,7 +328,7 @@ const getList = async () => {
       alert('请输入时间范围');
     return;
     }
-    const data = await EnergyConsumptionApi.getEleTotalRealtime(queryParams)
+    const data = await EnergyConsumptionApi.getEleTotalRealtime(queryParams);
     eqData.value = data.list.map((item) => formatEQ(item.eleActive, 1));
     list.value = data.list
     realTotel.value = data.total
@@ -351,18 +347,11 @@ const getList = async () => {
 function customTooltipFormatter(params: any[]) {
   var tooltipContent = ''; 
   var item = params[0]; // 获取第一个数据点的信息
-  // params.forEach(function(item) {
-  tooltipContent += '位置：'+list.value[item.dataIndex].location + '  '
-  // 添加条件判断
-  // if (queryParams.type == 'outlet') {
-  //     tooltipContent += '输出位：' + list.value[item.dataIndex].outlet_id;
-  // }
-  tooltipContent += '<br/>'+ item.marker + '电能：'+formatEle(null, null, list.value[item.dataIndex].eleActive) + '<br/>' 
-                     '开始日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMin) + '<br/>'
-                     '结束日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMax) + '<br/>' 
-                    
-                    
-  // })
+  tooltipContent += '所在位置：'+list.value[item.dataIndex].address + '<br/>'
+                    +item.marker +'网络地址：'+list.value[item.dataIndex].location + '<br/>'
+                    +item.marker + '开始电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveStart)  + 'kWh 开始日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMin) + '<br/>' 
+                    +item.marker +'结束电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveEnd) + 'kWh 结束日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMax) + '<br/>'
+                    +item.marker +'耗电量：'+formatEle(null, null, list.value[item.dataIndex].eleActive) + 'kWh';
   return tooltipContent;
 }
 
@@ -385,7 +374,7 @@ function formatTime1(_row: any, _column: any, cellValue: number): string {
   if (!cellValue) {
     return ''
   }
-  return dayjs(cellValue).format('MM-DD')
+  return dayjs(cellValue).format('YYYY-MM-DD')
 }
 
 // 格式化电能列数据，保留1位小数（不用传参）
@@ -477,12 +466,12 @@ const getNavList = async() => {
 }
 
 // 获取导航的数据显示
-const getNavNewData = async() => {
-  const res = await EnergyConsumptionApi.getNavNewData({})
-  lastDayTotalData.value = res.day
-  lastWeekTotalData.value = res.week
-  lastMonthTotalData.value = res.month
-}
+// const getNavNewData = async() => {
+//   const res = await EnergyConsumptionApi.getNavNewData({})
+//   lastDayTotalData.value = res.day
+//   lastWeekTotalData.value = res.week
+//   lastMonthTotalData.value = res.month
+// }
 
 /** 详情操作*/
 const toDetails = (location: string,createTimeMin : string,createTimeMax : string) => {
@@ -511,7 +500,7 @@ const handleExport = async () => {
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
-    const data = await EnergyConsumptionApi.getEleTotalRealtimeExcel(queryParams, axiosConfig)
+    const data = await EnergyConsumptionApi.getEleTotalRealtimeExcel(queryParams, axiosConfig);
     await download.excel(data, 'PDU实时能耗统计.xlsx')
   } catch (error) {
     // 处理异常
@@ -524,7 +513,7 @@ const handleExport = async () => {
 /** 初始化 **/
 onMounted(() => {
   getNavList()
-  getNavNewData()
+  // getNavNewData()
   // getTypeMaxValue();
   // getList();
 });

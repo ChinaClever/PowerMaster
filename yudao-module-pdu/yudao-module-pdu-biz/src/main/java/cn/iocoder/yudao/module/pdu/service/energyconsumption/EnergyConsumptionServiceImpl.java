@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.pdu.service.energyconsumption;
 
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.EleTotalRealtimeReqDTO;
 import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.EleTotalRealtimeRespVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.EnergyConsumptionPageReqVO;
@@ -15,17 +16,17 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.bucket.terms.Terms;
-import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
-import org.elasticsearch.search.aggregations.metrics.*;
+import org.elasticsearch.search.aggregations.metrics.ValueCount;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -618,7 +619,6 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
     public PageResult<EleTotalRealtimeRespVO> getEleTotalRealtime(EleTotalRealtimeReqDTO reqDTO, boolean flag) throws IOException {
         int pageNo = reqDTO.getPageNo();
         int pageSize = reqDTO.getPageSize();
-        int index = (pageNo - 1) * pageSize;
         PageResult<EleTotalRealtimeRespVO> pageResult = null;
         List<EleTotalRealtimeRespVO> mapList = new ArrayList<>();
         List collect =new ArrayList();
@@ -635,16 +635,66 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
             collect = records.stream().map(PduIndex::getId).collect(Collectors.toList());
             collect.stream().map(String::valueOf).collect(Collectors.joining(","));
         }
-        // 构建搜索请求
-        SearchRequest searchRequest = new SearchRequest();
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-        if (reqDTO.getTimeRange() != null && reqDTO.getTimeRange().length != 0) {
-            boolQuery.must(QueryBuilders.rangeQuery("create_time.keyword")
-                    .gte(reqDTO.getTimeRange()[0])
-                    .lte(reqDTO.getTimeRange()[1]));
+        for (PduIndex record : records) {
+            EleTotalRealtimeRespVO respVO = new EleTotalRealtimeRespVO();
+            respVO.setPduId(record.getId()).setLocation(record.getDevKey()).setAddress(historyDataService.getAddressByIpAddr(record.getDevKey()));
+                BoolQueryBuilder boolQuery1 = QueryBuilders.boolQuery();
+                boolQuery1.must(QueryBuilders.rangeQuery("create_time.keyword")
+                        .gte(reqDTO.getTimeRange()[0])
+                        .lte(reqDTO.getTimeRange()[1]));
+                boolQuery1.must(QueryBuilders.termsQuery("pdu_id", String.valueOf(record.getId())));
+                // 搜索源构建对象
+                SearchSourceBuilder searchSourceBuilder1 = new SearchSourceBuilder();
+                searchSourceBuilder1.query(boolQuery1);
+                searchSourceBuilder1.size(1);
+                searchSourceBuilder1.sort("create_time.keyword", SortOrder.DESC);
+                SearchRequest searchRequest1 = new SearchRequest();
+                searchRequest1.indices("pdu_ele_total_realtime");
+                //query条件--正常查询条件
+                searchRequest1.source(searchSourceBuilder1);
+                // 执行搜索,向ES发起http请求
+                SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
+                SearchHits hits = searchResponse1.getHits();
+            for (SearchHit hit : hits) {
+                respVO.setCreateTimeMax((String) hit.getSourceAsMap().get("create_time"));
+                if (Objects.nonNull(respVO.getCreateTimeMax())) {
+                    respVO.setEleActiveEnd((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_active")).orElseGet(() -> 0.0));
+                }
+            }
+                SearchSourceBuilder searchSourceBuilder2 = new SearchSourceBuilder();
+                searchSourceBuilder2.query(boolQuery1);
+                searchSourceBuilder2.size(1);
+                searchSourceBuilder2.sort("create_time.keyword", SortOrder.ASC);
+                SearchRequest searchRequest2 = new SearchRequest();
+                searchRequest2.indices("pdu_ele_total_realtime");
+                //query条件--正常查询条件
+                searchRequest2.source(searchSourceBuilder2);
+                // 执行搜索,向ES发起http请求
+                SearchResponse searchResponse2 = client.search(searchRequest2, RequestOptions.DEFAULT);
+                SearchHits hits2 = searchResponse2.getHits();
+
+            for (SearchHit hit : hits2) {
+                respVO.setCreateTimeMin((String) hit.getSourceAsMap().get("create_time"));
+                if (Objects.nonNull(respVO.getCreateTimeMin())) {
+                    respVO.setEleActiveStart((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_active")).orElseGet(() -> 0.0));
+                    double sub = BigDemicalUtil.sub(respVO.getEleActiveEnd(), respVO.getEleActiveStart());
+                    if (sub<0){
+                        respVO.setEleActive(respVO.getEleActiveEnd());
+                    }
+                    respVO.setEleActive(sub);
+                }
+            }
+            mapList.add(respVO);
         }
-        boolQuery.must(QueryBuilders.termsQuery("pdu_id", collect));
+        pageResult = new PageResult<>();
+        pageResult.setList(mapList)
+                .setTotal(total);
+
+        return pageResult;
+    }
+}
+
+/*        boolQuery.must(QueryBuilders.termsQuery("pdu_id", collect));
 
         sourceBuilder.size(0);
         // 添加分组聚合
@@ -669,59 +719,4 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
         SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
 
         // 解析聚合结果
-        Terms terms = response.getAggregations().get("group_by_" + "pdu_id");
-        for (PduIndex record : records) {
-
-            EleTotalRealtimeRespVO respVO = new EleTotalRealtimeRespVO();
-            respVO.setPduId(record.getId()).setLocation(record.getDevKey()).setEleActive(0.0).setAddress(historyDataService.getAddressByIpAddr(record.getDevKey()));
-            for (Terms.Bucket boxIdBucket : terms.getBuckets()) {
-
-                Object pduId = boxIdBucket.getKey();
-                if (!Objects.equals(pduId.toString(), record.getId().toString())) {
-                    continue;
-                }
-                ParsedSum num = (ParsedSum) boxIdBucket.getAggregations().get("num");
-                respVO.setEleActive(num.getValue());
-                BoolQueryBuilder boolQuery1 = QueryBuilders.boolQuery();
-                boolQuery1.must(QueryBuilders.rangeQuery("create_time.keyword")
-                        .gte(reqDTO.getTimeRange()[0])
-                        .lte(reqDTO.getTimeRange()[1]));
-                boolQuery1.must(QueryBuilders.termsQuery("pdu_id", pduId));
-                // 搜索源构建对象
-                SearchSourceBuilder searchSourceBuilder1 = new SearchSourceBuilder();
-                searchSourceBuilder1.query(boolQuery1);
-                searchSourceBuilder1.size(1);
-                searchSourceBuilder1.sort("create_time.keyword", SortOrder.DESC);
-                SearchRequest searchRequest1 = new SearchRequest();
-                searchRequest1.indices("pdu_ele_total_realtime");
-                //query条件--正常查询条件
-                searchRequest1.source(searchSourceBuilder1);
-                // 执行搜索,向ES发起http请求
-                SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
-                SearchHits hits = searchResponse1.getHits();
-                hits.forEach(hit ->respVO.setCreateTimeMax((String) hit.getSourceAsMap().get("create_time")));
-
-                SearchSourceBuilder searchSourceBuilder2 = new SearchSourceBuilder();
-                searchSourceBuilder2.query(boolQuery1);
-                searchSourceBuilder2.size(1);
-                searchSourceBuilder2.sort("create_time.keyword", SortOrder.ASC);
-                SearchRequest searchRequest2 = new SearchRequest();
-                searchRequest2.indices("pdu_ele_total_realtime");
-                //query条件--正常查询条件
-                searchRequest2.source(searchSourceBuilder2);
-                // 执行搜索,向ES发起http请求
-                SearchResponse searchResponse2 = client.search(searchRequest2, RequestOptions.DEFAULT);
-                SearchHits hits2 = searchResponse2.getHits();
-                hits2.forEach(hit ->respVO.setCreateTimeMin((String) hit.getSourceAsMap().get("create_time")));
-
-            }
-            mapList.add(respVO);
-        }
-        pageResult = new PageResult<>();
-        pageResult.setList(mapList)
-                .setTotal(total);
-
-        return pageResult;
-    }
-}
-
+        Terms terms = response.getAggregations().get("group_by_" + "pdu_id");*/
