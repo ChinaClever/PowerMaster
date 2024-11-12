@@ -229,7 +229,9 @@ export function beginOfDay(param: Date): Date {
 export function endOfDay(param: Date): Date {
   return new Date(param.getFullYear(), param.getMonth(), param.getDate(), 23, 59, 59)
 }
-
+export function endOfDayTwo(param: Date): Date {
+  return new Date(param.getFullYear(), param.getMonth(), param.getDate(), 0, 0, 0)
+}
 /**
  * 计算两个日期间隔天数
  * @param param1 日期1

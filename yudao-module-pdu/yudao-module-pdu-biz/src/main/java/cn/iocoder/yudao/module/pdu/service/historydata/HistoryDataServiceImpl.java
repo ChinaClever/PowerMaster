@@ -313,6 +313,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             queryWrapper.in(PduIndex::getDevKey,ipArray);
         }
         queryWrapper.orderByDesc(PduIndex::getId);
+        queryWrapper.eq(PduIndex::getIsDeleted,0);
         return pduIndexMapper.selectPage(page,queryWrapper);
     }
 
@@ -323,6 +324,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             queryWrapper.in(PduIndex::getDevKey,ipArray);
         }
         queryWrapper.orderByDesc(PduIndex::getId);
+        queryWrapper.eq(PduIndex::getIsDeleted,0);
         return pduIndexMapper.selectList(queryWrapper);
     }
 

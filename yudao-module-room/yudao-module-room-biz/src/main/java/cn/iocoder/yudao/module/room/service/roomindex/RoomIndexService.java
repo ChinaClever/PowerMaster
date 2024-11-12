@@ -1,8 +1,11 @@
 package cn.iocoder.yudao.module.room.service.roomindex;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import javax.validation.*;
+
+import cn.iocoder.yudao.module.room.controller.admin.roomindex.DTO.RoomEleTotalRealtimeReqDTO;
 import cn.iocoder.yudao.module.room.controller.admin.roomindex.vo.*;
 import cn.iocoder.yudao.module.room.dal.dataobject.roomindex.RoomIndexDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
@@ -70,4 +73,6 @@ public interface RoomIndexService {
     RoomEleChainDTO getEleChain(int id);
 
     List<Integer> idList();
+
+    PageResult<RoomEleTotalRealtimeResVO> getRoomEleTotalRealtime(RoomEleTotalRealtimeReqDTO reqVO, boolean flag) throws IOException;
 }
