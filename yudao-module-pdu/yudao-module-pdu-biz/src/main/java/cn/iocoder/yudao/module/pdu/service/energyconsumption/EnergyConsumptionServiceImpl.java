@@ -617,15 +617,14 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
 
     @Override
     public PageResult<EleTotalRealtimeRespVO> getEleTotalRealtime(EleTotalRealtimeReqDTO reqDTO, boolean flag) throws IOException {
-        int pageNo = reqDTO.getPageNo();
-        int pageSize = reqDTO.getPageSize();
+
         PageResult<EleTotalRealtimeRespVO> pageResult = null;
         List<EleTotalRealtimeRespVO> mapList = new ArrayList<>();
         List collect =new ArrayList();
         List<PduIndex> records = null;
         long total = 0;
         if (flag) {
-            IPage<PduIndex> page = historyDataService.findPduIndexAll(pageNo, pageSize, reqDTO.getIpArray());
+            IPage<PduIndex> page = historyDataService.findPduIndexAll(reqDTO.getPageNo(), reqDTO.getPageSize(), reqDTO.getIpArray());
             total = page.getTotal();
             records = page.getRecords();
             collect = records.stream().map(PduIndex::getId).collect(Collectors.toList());
@@ -678,10 +677,10 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
                 if (Objects.nonNull(respVO.getCreateTimeMin())) {
                     respVO.setEleActiveStart((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_active")).orElseGet(() -> 0.0));
                     double sub = BigDemicalUtil.sub(respVO.getEleActiveEnd(), respVO.getEleActiveStart());
+                    respVO.setEleActive(sub);
                     if (sub<0){
                         respVO.setEleActive(respVO.getEleActiveEnd());
                     }
-                    respVO.setEleActive(sub);
                 }
             }
             mapList.add(respVO);

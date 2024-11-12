@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO;
+package cn.iocoder.yudao.module.room.controller.admin.roomindex.vo;
 
 import cn.iocoder.yudao.framework.excel.core.util.DateStringConverter;
 import com.alibaba.excel.annotation.ExcelIgnore;
@@ -14,22 +14,24 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-@Schema(description = "管理后台 - pdu-实时电能出参")
+/**
+ * @author: jiangjinchi
+ * @time: 2024/11/8 12:04
+ */
+@Schema(description = "管理后台 - 机房-实时电能出参")
 @Data
 @ExcelIgnoreUnannotated
 @HeadStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
 @ContentStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
 @ColumnWidth(30)
 @HeadRowHeight(20)
-public class EleTotalRealtimeRespVO {
-    @ExcelProperty("PduId")
+public class RoomEleTotalRealtimeResVO {
+    @ExcelProperty("RoomId")
     @ExcelIgnore
-    private Long pduId;
+    private Integer RoomId;
 
-    @ExcelProperty("网络地址")
-    private String location;
-    @ExcelProperty("所在位置")
-    private String address;
+    @ExcelProperty("机房名称")
+    private String name;
 
     @NumberFormat("0.0")
     @ExcelProperty("开始电能 (kWh)")
@@ -48,6 +50,4 @@ public class EleTotalRealtimeRespVO {
     @NumberFormat("0.0")
     @ExcelProperty("电能 (kWh)")
     private Double eleActive;
-
-
 }

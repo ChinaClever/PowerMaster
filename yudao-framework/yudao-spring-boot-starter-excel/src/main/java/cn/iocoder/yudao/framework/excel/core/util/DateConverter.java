@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.pdu.util.excel;
+package cn.iocoder.yudao.framework.excel.core.util;
 
 import com.alibaba.excel.converters.Converter;
 import com.alibaba.excel.converters.WriteConverterContext;
@@ -7,26 +7,30 @@ import com.alibaba.excel.metadata.data.WriteCellData;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class DateStringConverter implements Converter<String> {
+/**
+ * jiangjinchi
+ * 2024/11/07 14:07
+ * 时间格式设置
+ */
+public class DateConverter  implements Converter<Date> {
 
 
     private static  final String PATTERN_YYYY_MM_DD = "yyyy-MM-dd";
 
 
     @Override
-    public Class<String> supportJavaTypeKey() {
-        return String.class;
+    public Class<Date> supportJavaTypeKey() {
+        return Date.class;
     }
 
 
     @Override
-    public WriteCellData<String> convertToExcelData(WriteConverterContext<String> context) throws Exception {
-        String str = context.getValue();
-        if (str == null) {
+    public WriteCellData<String> convertToExcelData(WriteConverterContext<Date> context) throws Exception {
+        Date date = context.getValue();
+        if (date == null) {
             return null;
         }
         SimpleDateFormat sdf = new SimpleDateFormat(PATTERN_YYYY_MM_DD);
-        Date date = sdf.parse(str);
         return new WriteCellData<>(sdf.format(date));
     }
 }

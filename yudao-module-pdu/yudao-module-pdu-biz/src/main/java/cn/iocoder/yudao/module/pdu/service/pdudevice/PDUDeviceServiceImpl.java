@@ -612,7 +612,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 searchRequest = new SearchRequest("pdu_hda_line_realtime");
             } else if ("twentyfourHour".equals(type)) {
                 pastTime = now.minusHours(25);
-                searchRequest = new SearchRequest("pdu_hda_line_hou");
+                searchRequest = new SearchRequest("pdu_hda_line_hour");
             } else if ("seventytwoHour".equals(type)) {
                 pastTime = now.minusHours(73);
                 searchRequest = new SearchRequest("pdu_hda_line_day");
