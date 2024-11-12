@@ -244,8 +244,28 @@
         <div style="display: flex; justify-content: center; align-items: center;">
           <div ref="chartContainer" id="chartContainer" class="adaptiveStyle"></div>
         </div>
-        
       </el-card>
+
+      <el-card style="margin: 10px;">
+        <el-row>
+          <el-col>
+            <span style="width: 100%">输入相的趋势图</span>
+          </el-col>
+          <el-col>
+            <div style="float:right;margin-top: 0px;">
+              <el-form-item  prop="type">
+                <el-button @click="PDUHdaLineHisdata('oneHour');toggleTime = `oneHour`;toggleValue = 0;" :type="toggleValue === 0 ? 'primary' : ''">最近一小时</el-button>
+                <el-button @click="PDUHdaLineHisdata('twentyfourHour');toggleTime = `twentyfourHour`;toggleValue = 1;" :type="toggleValue === 1 ? 'primary' : ''">过去24小时</el-button>
+                <el-button @click="PDUHdaLineHisdata('seventytwoHour');toggleTime = `seventytwoHour`;toggleValue = 2;" :type="toggleValue === 2 ? 'primary' : ''">过去三天</el-button>
+              </el-form-item>
+            </div>
+          </el-col> 
+        </el-row>
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <div ref="lineidChartContainer" id="lineidChartContainer" class="adaptiveStyle"></div>
+        </div>
+      </el-card>
+
       <el-collapse-item name="1" v-if="controlVis.haveCircle" style="margin: 15px 10px 15px 10px; ">
         <template #title>
           <div style="width: 5%;font-size: 16px;">回路</div>
@@ -375,6 +395,7 @@
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 import * as echarts from 'echarts'
 import { onMounted, onUpdated} from 'vue'
+import { useRoute } from 'vue-router'
 // import { object } from 'vue-types';
 
 /** PDU设备 列表 */
@@ -382,6 +403,8 @@ defineOptions({ name: 'PDUDevice' })
 
 const instance = getCurrentInstance();
 const switchValue = ref(0);
+const toggleValue = ref(0);
+const toggleTime = ref('oneHour');
 const message = useMessage() // 消息弹窗
 
 //折叠列表显示的项
@@ -591,6 +614,9 @@ const BChartContainer = ref<HTMLElement | null>(null);
 let CChart = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
 const CChartContainer = ref<HTMLElement | null>(null);
 
+let lineidChart = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
+const lineidChartContainer = ref<HTMLElement | null>(null);
+
 const initChart = async () => {
 
   var tempParams = { devKey : queryParams.devKey, type : queryParams.powGranularity}
@@ -630,10 +656,10 @@ const initChart = async () => {
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
       xAxis: {type: 'category', axisLabel: { formatter: 
             function (value) {
-              if(queryParams.powGranularity == "oneHour"){
+              if(toggleTime.value == "oneHour"){
                 // 截取字符串的前n位，即yyyy-MM-dd HH:mm:ss
                 return value.substring(11, 19);
-              } else if(queryParams.powGranularity == "twentyfourHour" || queryParams.powGranularity == "seventytwoHour"){
+              } else if(toggleTime.value == "twentyfourHour" ||toggleTime.value == "seventytwoHour"){
                 // 截取字符串的n位，即yyyy-MM-dd HH:mm:ss
                 return value.substring(5, 19);
               } 
@@ -733,6 +759,171 @@ const initChart = async () => {
     // 将 CChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
     instance.appContext.config.globalProperties.CChart = CChart;
   }
+
+  await PDUHdaLineHisdata('oneHour')
+
+  // 设置新的配置对象
+  if (lineidChart.value && instance) {
+    lineidChart.setOption({
+      title: { text: ''},
+      tooltip: { trigger: 'axis',      formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+          if (param.seriesName === 'L1-电压' || param.seriesName === 'L2-电压' || param.seriesName === 'L3-电压') {
+            result += 'V';
+          } else  {
+            result += ' A';
+          }
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }},
+      legend: {
+        data: ['L1-电流', 'L2-电流', 'L3-电流','L1-电压', 'L2-电压', 'L3-电压'], // 图例项
+        selected: { 'L1-电流':true,'L2-电流':true,'L3-电流':true, "L1-电压": false, "L2-电压": false, "L3-电压": false }
+      },
+      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+      xAxis: {
+        type: 'category',axisLabel: { formatter: 
+            function (value) {
+              if(toggleTime.value == "oneHour"){
+                // 截取字符串的前n位，即yyyy-MM-dd HH:mm:ss
+                return value.substring(11, 19);
+              } else if(toggleTime.value == "twentyfourHour" || toggleTime.value == "seventytwoHour"){
+                // 截取字符串的n位，即yyyy-MM-dd HH:mm:ss
+                return value.substring(5, 19);
+              }
+            }
+          },
+        boundaryGap: false,
+        data:lineidDateTimes.value
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          name: 'L1-电压',
+          type: 'line',
+          data: lChartData.value.volValueList,
+          symbol: 'circle',
+          symbolSize: 4
+        },
+        {
+          name: 'L2-电压',
+          type: 'line',
+          data: llChartData.value.volValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        },
+        {
+          name: 'L3-电压',
+          type: 'line',
+          data: lllChartData.value.volValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        },{
+          name: 'L1-电流',
+          type: 'line',
+          data: lChartData.value.curValueList,
+          symbol: 'circle',
+          symbolSize: 4
+        },
+        {
+          name: 'L2-电流',
+          type: 'line',
+          data: llChartData.value.curValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        },
+        {
+          name: 'L3-电流',
+          type: 'line',
+          data: lllChartData.value.curValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        }
+      ]
+    })
+    lineidChart.on('legendselectchanged', function (params) {
+      // 获取当前的 legend.selected 配置
+      var legendName = params.name;
+      var legendSelected = lineidChart.getOption().legend.selected || {};
+
+      // 初始化新的 legend.selected 配置
+      var newLegendSelected = {};
+
+      // 根据选中的图例项设置新的 legend.selected 配置
+      if (legendName.endsWith('-电压')) {
+        if (params.selected[legendName]) {
+          // 如果选中的是电压图例项，则显示所有电压，隐藏所有电流
+          newLegendSelected = {
+            "L1-电压": true,
+            "L2-电压": true,
+            "L3-电压": true,
+            "L1-电流": false,
+            "L2-电流": false,
+            "L3-电流": false
+          };
+        } else {
+          if(legendName === 'L1-电压'){
+            newLegendSelected = {
+              "L1-电压": false,
+            }
+          }else if(legendName === 'L2-电压'){
+            newLegendSelected = {
+              "L2-电压": false,
+            }
+          }else if(legendName === 'L3-电压'){
+            newLegendSelected = {
+              "L3-电压": false,
+            }
+          }
+        }
+      } else if (legendName.endsWith('-电流')) {
+        if (params.selected[legendName]) {
+          // 如果选中的是电流图例项，则显示所有电流，隐藏所有电压
+          newLegendSelected = {
+            "L1-电压": false,
+            "L2-电压": false,
+            "L3-电压": false,
+            "L1-电流": true,
+            "L2-电流": true,
+            "L3-电流": true
+          };
+        } else {
+          if(legendName === 'L1-电流'){
+            newLegendSelected = {
+              "L1-电流": false,
+            }
+          }else if(legendName === 'L2-电流'){
+            newLegendSelected = {
+              "L2-电流": false,
+            }
+          }else if(legendName === 'L3-电流'){
+            newLegendSelected = {
+              "L3-电流": false
+            }
+          }
+        }
+      }
+ 
+      // 应用新的配置到图表实例
+      lineidChart.setOption({
+        legend: {
+          selected: newLegendSelected
+        }
+      });
+    });
+    instance.appContext.config.globalProperties.lineidChart = lineidChart
+  }
+
 };
 
 // 在组件销毁时手动销毁图表
@@ -764,11 +955,13 @@ const setNewChartData = async () => {
       { data: chartData.value.activeList},
     ],
   });
+
+  await PDUHdaLineHisdata(toggleTime.value)
 }
 
 const flashChartData = async () =>{
 
-  beforeChartUnmount();
+  beforeChartUnmount()
 
   var tempParams = { devKey : queryParams.devKey, type : queryParams.powGranularity}
   chartData.value = await PDUDeviceApi.PDUHis(tempParams);
@@ -781,7 +974,7 @@ const flashChartData = async () =>{
   chartData.value.factorList.forEach((obj,index) => {
     chartData.value.factorList[index] = obj?.toFixed(2);
   });
-
+  
   // 创建新的图表实例
   chart = echarts.init(document.getElementById('chartContainer'));
   // 设置新的配置对象
@@ -824,6 +1017,7 @@ const flashChartData = async () =>{
       ],
     });
   }
+
 //总数据的饼图
   totalChart?.setOption({
     series: [
@@ -870,8 +1064,11 @@ const flashChartData = async () =>{
   });
 }
 
-//在浏览器窗口大小发生变化时触发
-window.addEventListener('resize', flashChartData)
+//在浏览器窗口大小发生变化时触发，暂时还没调试好，存在一个bug当页面缩放到某一个分辨率的时候会不执行css设定的样式
+const updateDimensions = () => {
+  flashChartData()
+  lineidFlashChartData()
+}
 
 /** 导出按钮操作 */
 // const handleExport = async () => {
@@ -889,7 +1086,6 @@ window.addEventListener('resize', flashChartData)
 // }
 
 const getTestData = async()=>{
-
   const data = await PDUDeviceApi.PDUDisplay(queryParams);
   testData.value = JSON.parse(data)
   circleList.value = [];
@@ -1141,6 +1337,174 @@ const getTestData = async()=>{
   controlVis.value.display = true;
 }
 
+watch([() => toggleTime.value],async ()=>{
+    lineidBeforeChartUnmount();
+
+    await PDUHdaLineHisdata(toggleTime.value)
+
+      // 创建新的图表实例
+    lineidChart = echarts.init(document.getElementById('lineidChartContainer'));
+    // 设置新的配置对象
+    if (lineidChart) {
+    lineidChart.setOption({
+      title: { text: ''},
+      tooltip: { trigger: 'axis',      formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+          if (param.seriesName === 'L1-电压' || param.seriesName === 'L2-电压' || param.seriesName === 'L3-电压') {
+            result += 'V';
+          } else  {
+            result += ' A';
+          }
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }},
+      legend: {
+        data: ['L1-电流', 'L2-电流', 'L3-电流','L1-电压', 'L2-电压', 'L3-电压'], // 图例项
+        selected: { 'L1-电流':true,'L2-电流':true,'L3-电流':true, "L1-电压": false, "L2-电压": false, "L3-电压": false }
+      },
+      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+      xAxis: {
+        type: 'category',axisLabel: { formatter: 
+            function (value) {
+              if(toggleTime.value == "oneHour"){
+                // 截取字符串的前n位，即yyyy-MM-dd HH:mm:ss
+                return value.substring(11, 19);
+              } else if(toggleTime.value == "twentyfourHour" || toggleTime.value == "seventytwoHour"){
+                // 截取字符串的n位，即yyyy-MM-dd HH:mm:ss
+                return value.substring(5, 19);
+              }
+            }
+          },
+        boundaryGap: false,
+        data:lineidDateTimes.value
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          name: 'L1-电压',
+          type: 'line',
+          data: lChartData.value.volValueList,
+          symbol: 'circle',
+          symbolSize: 4
+        },
+        {
+          name: 'L2-电压',
+          type: 'line',
+          data: llChartData.value.volValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        },
+        {
+          name: 'L3-电压',
+          type: 'line',
+          data: lllChartData.value.volValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        },{
+          name: 'L1-电流',
+          type: 'line',
+          data: lChartData.value.curValueList,
+          symbol: 'circle',
+          symbolSize: 4
+        },
+        {
+          name: 'L2-电流',
+          type: 'line',
+          data: llChartData.value.curValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        },
+        {
+          name: 'L3-电流',
+          type: 'line',
+          data: lllChartData.value.curValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        }
+      ]
+    })
+    lineidChart.on('legendselectchanged', function (params) {
+      // 获取当前的 legend.selected 配置
+      var legendName = params.name;
+
+      // 初始化新的 legend.selected 配置
+      var newLegendSelected = {};
+
+      // 根据选中的图例项设置新的 legend.selected 配置
+      if (legendName.endsWith('-电压')) {
+        if (params.selected[legendName]) {
+          // 如果选中的是电压图例项，则显示所有电压，隐藏所有电流
+          newLegendSelected = {
+            "L1-电压": true,
+            "L2-电压": true,
+            "L3-电压": true,
+            "L1-电流": false,
+            "L2-电流": false,
+            "L3-电流": false
+          };
+        } else {
+          if(legendName === 'L1-电压'){
+            newLegendSelected = {
+              "L1-电压": false,
+            }
+          }else if(legendName === 'L2-电压'){
+            newLegendSelected = {
+              "L2-电压": false,
+            }
+          }else if(legendName === 'L3-电压'){
+            newLegendSelected = {
+              "L3-电压": false,
+            }
+          }
+        }
+      } else if (legendName.endsWith('-电流')) {
+        if (params.selected[legendName]) {
+          // 如果选中的是电流图例项，则显示所有电流，隐藏所有电压
+          newLegendSelected = {
+            "L1-电压": false,
+            "L2-电压": false,
+            "L3-电压": false,
+            "L1-电流": true,
+            "L2-电流": true,
+            "L3-电流": true
+          };
+        } else {
+          if(legendName === 'L1-电流'){
+            newLegendSelected = {
+              "L1-电流": false,
+            }
+          }else if(legendName === 'L2-电流'){
+            newLegendSelected = {
+              "L2-电流": false,
+            }
+          }else if(legendName === 'L3-电流'){
+            newLegendSelected = {
+              "L3-电流": false
+            }
+          }
+        }
+      }
+ 
+      // 应用新的配置到图表实例
+      lineidChart.setOption({
+        legend: {
+          selected: newLegendSelected
+        }
+      });
+    });
+    }
+})
+
 watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
     // 销毁原有的图表实例
     beforeChartUnmount();
@@ -1158,6 +1522,7 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
     });
     // 创建新的图表实例
     chart = echarts.init(document.getElementById('chartContainer'));
+
     // 设置新的配置对象
     if (chart) {
       chart.setOption({
@@ -1199,6 +1564,7 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
         ],
       });
     }
+
     if(flashListTimer.value.chartTimer){
       var time = 0;
       if(queryParams.powGranularity == "oneHour"){
@@ -1240,23 +1606,259 @@ const getLocation = async () => {
 
 }
 
+//L1,L2,L3的数据
+const lChartData = ref({
+  volValueList : [] as number[], //电压
+  curValueList : [] as number[], //电流
+  createTimes : [] as string[]  //创建日期
+});
+
+const llChartData = ref({
+  volValueList : [] as number[],
+  curValueList : [] as number[],
+  createTimes : [] as string[]
+});
+
+const lllChartData = ref({
+  volValueList : [] as number[],
+  curValueList : [] as number[],
+  createTimes : [] as string[]
+});
+
+const lineidDateTimes = ref([] as string[])
+
+const lineidBeforeChartUnmount = () => {
+lineidChart?.dispose() // 销毁图表实例
+}
+
+//获取最近一个小时的PDU相历史数据，处理L1,L2,L3的数据
+const PDUHdaLineHisdata = async (type) => {
+  const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : '192.168.1.184-0' , type: 'oneHour'})
+  //{ devKey : queryParams.devKey, type : newPowGranularity}
+
+  const lData = result.l
+  const llData = result.ll
+  const lllData = result.lll
+
+  lData.forEach(item => {
+    lChartData.value.volValueList.push(item.vol_value)
+    lChartData.value.curValueList.push(item.cur_value)
+    lChartData.value.createTimes.push(item.create_time)
+  })
+
+  llData.forEach(item => {
+    llChartData.value.volValueList.push(item.vol_value)
+    llChartData.value.curValueList.push(item.cur_value)
+    llChartData.value.createTimes.push(item.create_time)
+  })
+
+  lllData.forEach(item => {
+    lllChartData.value.volValueList.push(item.vol_value)
+    lllChartData.value.curValueList.push(item.cur_value)
+    lllChartData.value.createTimes.push(item.create_time)
+  })
+  if(type === 'oneHour'){
+    lineidDateTimes.value = result.dateTimes
+    console.log('time',lineidDateTimes.value)
+  }else if(type === 'twentyfourHour'){
+    const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : '192.168.1.184-0' , type: 'twentyfourHour'})
+    lineidDateTimes.value = result.dateTimes
+    console.log('time',lineidDateTimes.value)
+  }else if(type === 'seventytwoHour'){
+    const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : '192.168.1.184-0' , type: 'seventytwoHour'})
+    lineidDateTimes.value = result.dateTimes
+    console.log('time',lineidDateTimes.value)
+  }
+}
+
+const lineidFlashChartData = async () =>{
+  lineidBeforeChartUnmount()
+
+  await PDUHdaLineHisdata(toggleTime.value)
+
+  // 创建新的图表实例
+  lineidChart = echarts.init(document.getElementById('lineidChartContainer'));
+  // 设置新的配置对象
+  if (lineidChart) {
+    lineidChart.setOption({
+      title: { text: ''},
+      tooltip: { trigger: 'axis',      formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+          if (param.seriesName === 'L1-电压' || param.seriesName === 'L2-电压' || param.seriesName === 'L3-电压') {
+            result += 'V';
+          } else  {
+            result += ' A';
+          }
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }},
+      legend: {
+        data: ['L1-电流', 'L2-电流', 'L3-电流','L1-电压', 'L2-电压', 'L3-电压'], // 图例项
+        selected: { 'L1-电流':true,'L2-电流':true,'L3-电流':true, "L1-电压": false, "L2-电压": false, "L3-电压": false }
+      },
+      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+      xAxis: {
+        type: 'category',nameLocation: 'end',axisLabel: { formatter: 
+            function (value) {
+              if(toggleTime.value == "oneHour"){
+                // 截取字符串的前n位，即yyyy-MM-dd HH:mm:ss
+                return value.substring(11, 19);
+              } else if(toggleTime.value == "twentyfourHour" || toggleTime.value == "seventytwoHour"){
+                // 截取字符串的n位，即yyyy-MM-dd HH:mm:ss
+                return value.substring(5, 19);
+              }
+            }
+          },
+        boundaryGap: false,
+        data:lineidDateTimes.value
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          name: 'L1-电压',
+          type: 'line',
+          data: lChartData.value.volValueList,
+          symbol: 'circle',
+          symbolSize: 4
+        },
+        {
+          name: 'L2-电压',
+          type: 'line',
+          data: llChartData.value.volValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        },
+        {
+          name: 'L3-电压',
+          type: 'line',
+          data: lllChartData.value.volValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        },{
+          name: 'L1-电流',
+          type: 'line',
+          data: lChartData.value.curValueList,
+          symbol: 'circle',
+          symbolSize: 4
+        },
+        {
+          name: 'L2-电流',
+          type: 'line',
+          data: llChartData.value.curValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        },
+        {
+          name: 'L3-电流',
+          type: 'line',
+          data: lllChartData.value.curValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        }
+      ]
+    })
+    lineidChart.on('legendselectchanged', function (params) {
+      // 获取当前的 legend.selected 配置
+      var legendName = params.name;
+
+      // 初始化新的 legend.selected 配置
+      var newLegendSelected = {};
+
+      // 根据选中的图例项设置新的 legend.selected 配置
+      if (legendName.endsWith('-电压')) {
+        if (params.selected[legendName]) {
+          // 如果选中的是电压图例项，则显示所有电压，隐藏所有电流
+          newLegendSelected = {
+            "L1-电压": true,
+            "L2-电压": true,
+            "L3-电压": true,
+            "L1-电流": false,
+            "L2-电流": false,
+            "L3-电流": false
+          };
+        } else {
+          if(legendName === 'L1-电压'){
+            newLegendSelected = {
+              "L1-电压": false,
+            }
+          }else if(legendName === 'L2-电压'){
+            newLegendSelected = {
+              "L2-电压": false,
+            }
+          }else if(legendName === 'L3-电压'){
+            newLegendSelected = {
+              "L3-电压": false,
+            }
+          }
+        }
+      } else if (legendName.endsWith('-电流')) {
+        if (params.selected[legendName]) {
+          // 如果选中的是电流图例项，则显示所有电流，隐藏所有电压
+          newLegendSelected = {
+            "L1-电压": false,
+            "L2-电压": false,
+            "L3-电压": false,
+            "L1-电流": true,
+            "L2-电流": true,
+            "L3-电流": true
+          };
+        } else {
+          if(legendName === 'L1-电流'){
+            newLegendSelected = {
+              "L1-电流": false,
+            }
+          }else if(legendName === 'L2-电流'){
+            newLegendSelected = {
+              "L2-电流": false,
+            }
+          }else if(legendName === 'L3-电流'){
+            newLegendSelected = {
+              "L3-电流": false
+            }
+          }
+        }
+      }
+ 
+      // 应用新的配置到图表实例
+      lineidChart.setOption({
+        legend: {
+          selected: newLegendSelected
+        }
+      });
+    });
+  }
+}
+
 /** 初始化 **/
 onMounted(async () => {
   //debugger
   //1
   devKeyList.value = await loadAll();
+  await window.addEventListener('resize', updateDimensions)
   // console.log(devKeyList.value)
+  await PDUHdaLineHisdata('oneHour')
+  await lineidFlashChartData()
+})
+
+onUnmounted(async () => {
+  await window.removeEventListener('resize', updateDimensions)
 })
 
 onBeforeMount(async () =>{
   await getTestData();
-  initChart();
+  await initChart();
   flashListTimer.value.tableDataTimer = setInterval((getTestData), 5000);
   flashListTimer.value.chartTimer = setInterval((setNewChartData), 60000);
-})
-
-onBeforeUpdate(async () => {
-  await window.addEventListener('resize', flashChartData)
 })
 
 onBeforeUnmount(()=>{
@@ -1271,6 +1873,7 @@ onBeforeUnmount(()=>{
 onActivated( async () => {
   await getTestData();
   flashChartData();
+  lineidFlashChartData();
   if(!firstTimerCreate.value){
     flashListTimer.value.tableDataTimer = setInterval((getTestData), 5000);
     var time = 0;
@@ -1297,9 +1900,6 @@ onBeforeRouteLeave(()=>{
     firstTimerCreate.value = false;
   }
 })
-
-import { useRoute } from 'vue-router';
-
 
 const route = useRoute();
 const query = route.query;
@@ -1343,7 +1943,7 @@ queryParams.id = id;
   background-color: white;
 
 }
-@media screen and (max-width:1600px) {
+@media screen and (max-width:1599px) {
   .adaptiveStyle {
     width: 90vw;
     height: 42vh;
@@ -1357,7 +1957,7 @@ queryParams.id = id;
   }
 }
 
-@media screen and (min-width:2048px) {
+@media screen and (min-width:2049px) {
   .adaptiveStyle {
     width: 95vw;
     height: 42vh;
