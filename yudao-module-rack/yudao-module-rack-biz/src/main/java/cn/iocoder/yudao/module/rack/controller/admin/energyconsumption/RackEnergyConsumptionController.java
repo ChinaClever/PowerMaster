@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -135,5 +136,21 @@ public class RackEnergyConsumptionController {
         // 导出 Excel
         ExcelUtils.write(response, "机架能耗排名数据.xlsx", "数据", RackEnergyExportPageVO.class,
                 BeanUtils.toBean(list, RackEnergyExportPageVO.class));
+    }
+
+    @PostMapping("rack_total_realtime")
+    @Operation(summary = "获取实时电量")
+    public CommonResult<PageResult<RackTotalRealtimeRespVO>> getRackTotalRealtime(RackTotalRealtimeReqDTO reqDTO) throws IOException {
+        PageResult<RackTotalRealtimeRespVO> list = rackEnergyConsumptionService.getRackTotalRealtime(reqDTO,true);
+        return success(list);
+    }
+
+    @GetMapping("rack_total_realtimeExcel")
+    @Operation(summary = "获取实时电量导出")
+    public void getRackTotalRealtimeExcel(RackTotalRealtimeReqDTO reqDTO, HttpServletResponse response) throws IOException {
+        PageResult<RackTotalRealtimeRespVO> list = rackEnergyConsumptionService.getRackTotalRealtime(reqDTO,false);
+        ExcelUtils.write(response, "机架实时电能记录数据.xlsx", "数据", RackTotalRealtimeRespVO.class,
+                BeanUtils.toBean(list.getList(), RackTotalRealtimeRespVO.class));
+
     }
 }
