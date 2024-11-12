@@ -271,7 +271,7 @@ const initChart = () => {
   if (rankChartContainer.value && instance) {
     rankChart = echarts.init(rankChartContainer.value);
     rankChart.setOption({
-      title: { text: '各PDU耗电量'},
+      title: { text: '各PDU实时耗电量'},
       tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
       legend: { data: []},
       toolbox: {feature: {saveAsImage:{}}},
@@ -280,6 +280,12 @@ const initChart = () => {
       series: [
         {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
       ],
+    });
+    rankChart.on('click', function(params) {
+      // 控制台打印数据的名称
+       toDetails(list.value[params.dataIndex].location,
+        list.value[params.dataIndex].createTimeMin,
+        list.value[params.dataIndex].createTimeMax);
     });
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }
@@ -379,6 +385,9 @@ function formatTime1(_row: any, _column: any, cellValue: number): string {
 
 // 格式化电能列数据，保留1位小数（不用传参）
 function formatEle(_row: any, _column: any, cellValue: number): string {
+  if (cellValue == null) {
+    return '';
+  }
   return Number(cellValue).toFixed(1);
 }
 
@@ -465,28 +474,12 @@ const getNavList = async() => {
   navList.value = arr
 }
 
-// 获取导航的数据显示
-// const getNavNewData = async() => {
-//   const res = await EnergyConsumptionApi.getNavNewData({})
-//   lastDayTotalData.value = res.day
-//   lastWeekTotalData.value = res.week
-//   lastMonthTotalData.value = res.month
-// }
 
 /** 详情操作*/
 const toDetails = (location: string,createTimeMin : string,createTimeMax : string) => {
   push('/pdu/nenghao/powerAnalysis?type=total&granularity=day&start='+createTimeMin+
   '&end='+createTimeMax+'&ip='+location);
 }
-// const toDetails = (row) => {
-// 	const path = '/pdu/nenghao/powerAnalysis';
-//     const objectAsQueryString = JSON.stringify(row);
-//     	console.log('详情页1', row);
-// 	router.push({ path: path, query: { params: objectAsQueryString } });
- 
-// };
-
-
 
 
 /** 导出按钮操作 */
