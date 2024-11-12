@@ -180,7 +180,7 @@ public class RoomIndexController {
     @Operation(summary = "获取实时能耗")
     public void getRoomEleTotalRealtimeExcel(@RequestBody RoomEleTotalRealtimeReqDTO reqVO, HttpServletResponse response) throws IOException {
         PageResult<RoomEleTotalRealtimeResVO> list = indexService.getRoomEleTotalRealtime(reqVO, false);
-        ExcelUtils.write(response, "pdu实时电能记录数据.xlsx", "数据", RoomEleTotalRealtimeResVO.class,
+        ExcelUtils.write(response, "机房实时电能记录数据.xlsx", "数据", RoomEleTotalRealtimeResVO.class,
                 BeanUtils.toBean(list.getList(), RoomEleTotalRealtimeResVO.class));
 
     }

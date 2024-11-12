@@ -1,14 +1,23 @@
 package cn.iocoder.yudao.module.rack.service.energyconsumption;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
+import cn.iocoder.yudao.framework.common.mapper.RackIndexDoMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
+import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.PduIndex;
 import cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO.RackEnergyConsumptionPageReqVO;
+import cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO.RackTotalRealtimeReqDTO;
+import cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO.RackTotalRealtimeRespVO;
+import cn.iocoder.yudao.module.rack.service.RackIndexService;
 import cn.iocoder.yudao.module.rack.service.historydata.RackHistoryDataService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.metrics.ValueCount;
@@ -21,6 +30,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class RackEnergyConsumptionServiceImpl implements RackEnergyConsumptionService {
@@ -30,6 +40,8 @@ public class RackEnergyConsumptionServiceImpl implements RackEnergyConsumptionSe
 
     @Autowired
     private RackHistoryDataService rackHistoryDataService;
+    @Autowired
+    private RackIndexService rackIndexService;
 
     @Override
     public PageResult<Object> getEQDataPage(RackEnergyConsumptionPageReqVO pageReqVO) throws IOException {
@@ -386,6 +398,83 @@ public class RackEnergyConsumptionServiceImpl implements RackEnergyConsumptionSe
 
         }
         return list;
+    }
+
+    @Override
+    public PageResult<RackTotalRealtimeRespVO> getRackTotalRealtime(RackTotalRealtimeReqDTO reqDTO, boolean flag) throws IOException {
+        int pageNo = reqDTO.getPageNo();
+        int pageSize = reqDTO.getPageSize();
+        PageResult<RackTotalRealtimeRespVO> pageResult = null;
+        List<RackTotalRealtimeRespVO> mapList = new ArrayList<>();
+        List collect =new ArrayList();
+        List<RackIndex> records = null;
+        long total = 0;
+        if (flag) {
+            IPage<RackIndex> page = rackIndexService.findRackIndexAll(pageNo, pageSize, reqDTO.getIpArray());
+            total = page.getTotal();
+            records = page.getRecords();
+            collect = records.stream().map(RackIndex::getId).collect(Collectors.toList());
+        }else {
+            records = rackIndexService.findRackIndexToList(reqDTO.getIpArray());
+            collect = records.stream().map(RackIndex::getId).collect(Collectors.toList());
+        }
+        collect.stream().map(String::valueOf).collect(Collectors.joining(","));
+        for (RackIndex record : records) {
+            RackTotalRealtimeRespVO respVO = new RackTotalRealtimeRespVO();
+            respVO.setPduId(Long.valueOf(record.getId()));
+            BoolQueryBuilder boolQuery1 = QueryBuilders.boolQuery();
+            boolQuery1.must(QueryBuilders.rangeQuery("create_time.keyword")
+                    .gte(reqDTO.getTimeRange()[0])
+                    .lte(reqDTO.getTimeRange()[1]));
+            boolQuery1.must(QueryBuilders.termsQuery("rack_id", String.valueOf(record.getId())));
+            // 搜索源构建对象
+            SearchSourceBuilder searchSourceBuilder1 = new SearchSourceBuilder();
+            searchSourceBuilder1.query(boolQuery1);
+            searchSourceBuilder1.size(1);
+            searchSourceBuilder1.sort("create_time.keyword", SortOrder.DESC);
+            SearchRequest searchRequest1 = new SearchRequest();
+            searchRequest1.indices("rack_ele_total_realtime");
+            //query条件--正常查询条件
+            searchRequest1.source(searchSourceBuilder1);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
+            SearchHits hits = searchResponse1.getHits();
+            for (SearchHit hit : hits) {
+                respVO.setCreateTimeMax((String) hit.getSourceAsMap().get("create_time"));
+                if (Objects.nonNull(respVO.getCreateTimeMax())) {
+                    respVO.setEleActiveEnd((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_total")).orElseGet(() -> 0.0));
+                }
+            }
+            SearchSourceBuilder searchSourceBuilder2 = new SearchSourceBuilder();
+            searchSourceBuilder2.query(boolQuery1);
+            searchSourceBuilder2.size(1);
+            searchSourceBuilder2.sort("create_time.keyword", SortOrder.ASC);
+            SearchRequest searchRequest2 = new SearchRequest();
+            searchRequest2.indices("rack_ele_total_realtime");
+            //query条件--正常查询条件
+            searchRequest2.source(searchSourceBuilder2);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse2 = client.search(searchRequest2, RequestOptions.DEFAULT);
+            SearchHits hits2 = searchResponse2.getHits();
+
+            for (SearchHit hit : hits2) {
+                respVO.setCreateTimeMin((String) hit.getSourceAsMap().get("create_time"));
+                if (Objects.nonNull(respVO.getCreateTimeMin())) {
+                    respVO.setEleActiveStart((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_total")).orElseGet(() -> 0.0));
+                    double sub = BigDemicalUtil.sub(respVO.getEleActiveEnd(), respVO.getEleActiveStart());
+                    if (sub<0){
+                        respVO.setEleActive(respVO.getEleActiveEnd());
+                    }
+                    respVO.setEleActive(sub);
+                }
+            }
+            mapList.add(respVO);
+        }
+        pageResult = new PageResult<>();
+        pageResult.setList(mapList)
+                .setTotal(total);
+
+        return pageResult;
     }
 
 }
