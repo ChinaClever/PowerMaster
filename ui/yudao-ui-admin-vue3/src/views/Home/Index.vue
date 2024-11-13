@@ -275,7 +275,6 @@ import { useWatermark } from '@/hooks/web/useWatermark'
 import { MachineHomeApi } from '@/api/cabinet/home'
 
 import { defineComponent } from 'vue'
-import { Vue3SeamlessScroll } from 'vue3-seamless-scroll'
 
 defineOptions({ name: 'Home' })
 
