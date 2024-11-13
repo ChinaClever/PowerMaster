@@ -2,6 +2,8 @@ package cn.iocoder.yudao.module.rack.service.energyconsumption;
 
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO.RackEnergyConsumptionPageReqVO;
+import cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO.RackTotalRealtimeReqDTO;
+import cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO.RackTotalRealtimeRespVO;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -62,4 +64,6 @@ public interface RackEnergyConsumptionService {
     List<Object> getNewBillList(List<Object> list);
 
     List<Object>  getNewRealTimeList(List<Object> list);
+
+    PageResult<RackTotalRealtimeRespVO> getRackTotalRealtime(RackTotalRealtimeReqDTO reqDTO, boolean flag) throws IOException;
 }

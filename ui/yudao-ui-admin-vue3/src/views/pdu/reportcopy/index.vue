@@ -1,8 +1,13 @@
 <template>
-  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="false"  :lazy="true" :load="loadNode" navTitle="PDU报表">
+  <CommonMenu :dataList="navList" @node-click="handleClick"  navTitle="PDU报表" :showCheckbox="false" >
     <template #NavInfo>
-      <div >
         <br/>
+      <div class="nav_data">
+         <div class="nav_header">      
+          <span v-if="nowAddress">{{nowAddress}}</span>
+          <span v-if="nowLocation">( {{nowLocation}} ) </span>
+        </div>
+
         <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
         </div>
@@ -323,11 +328,14 @@ import { remove } from 'nprogress';
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
+const navList = ref([]) as any // 左侧导航栏树结构列表
 const outletList = ref() as any;
 const temList = ref() as any;
 const eleList = ref() as any;
 const totalLineList = ref() as any;
 const pfLineList = ref() as any;
+const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
+const nowLocationTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
 const now = ref()
 const switchValue = ref(1);
 const ipList = ref([])// 初始化 ipList 为一个空数组
@@ -490,12 +498,49 @@ const loadNode = async (node: Node, resolve: (data: Tree[]) => void) => {
   } 
 }
 
-const handleClick = (row) => {
-  if(row.type != null  && row.type == 4){
+// const handleClick = (row) => {
+//   if(row.type != null  && row.type == 4){
+//     queryParams.ipAddr = row.ip
+//     queryParams.cascadeAddr = row?.unique?.split("-")[1];
+//     handleQuery();getNavList
+//   }
+// }
+
+// 导航栏选择后触发
+const handleClick = async (row) => {
+   if(row.type != null  && row.type == 4){
+    queryParams.pduId = undefined
     queryParams.ipAddr = row.ip
     queryParams.cascadeAddr = row?.unique?.split("-")[1];
+    findFullName(navList.value, row.unique, fullName => {
+      nowAddressTemp.value = fullName
+      nowLocationTemp.value = row.unique
+    });
     handleQuery();
   }
+}
+
+// 得到位置全名
+function findFullName(data, targetUnique, callback, fullName = '') {
+  for (let item of data) {
+    const newFullName = fullName === '' ? item.name : fullName + '-' + item.name;
+    if (item.unique === targetUnique) {
+      callback(newFullName);
+    }
+    if (item.children && item.children.length > 0) {
+      findFullName(item.children, targetUnique, callback, newFullName);
+    }
+  }
+}
+// 接口获取机房导航列表
+const getNavList = async() => {
+  const res = await CabinetApi.getRoomList({})
+  let arr = [] as any
+  for (let i=0; i<res.length;i++){
+  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  arr = arr.concat(temp);
+  }
+  navList.value = arr
 }
 
 //折线图数据
@@ -1104,6 +1149,7 @@ const formRef = ref()
 
 /** 初始化 **/
 onMounted( async () =>  {
+    getNavList()
   // getList();
   // initChart();
   ipList.value = await loadAll();

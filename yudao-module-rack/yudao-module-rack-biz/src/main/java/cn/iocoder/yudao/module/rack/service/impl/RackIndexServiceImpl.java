@@ -14,6 +14,7 @@ import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
+import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.PduIndex;
 import cn.iocoder.yudao.module.rack.dto.RackEqTrendDTO;
 import cn.iocoder.yudao.module.rack.dto.RackIndexDTO;
 import cn.iocoder.yudao.module.rack.dto.RackPowDTO;
@@ -25,6 +26,7 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -763,6 +765,32 @@ public class RackIndexServiceImpl implements RackIndexService {
 
                 }
             });
+    }
+
+    @Override
+    public IPage<RackIndex> findRackIndexAll(int pageNo, int pageSize, String[] ipArray) {
+        Page<RackIndex> page = new Page<RackIndex>(pageNo, pageSize);
+        LambdaQueryWrapper<RackIndex> queryWrapper = new LambdaQueryWrapper<RackIndex>();
+        if (ipArray != null && ipArray.length != 0) {
+            queryWrapper.in(RackIndex::getId,ipArray);
+        }
+        queryWrapper.orderByDesc(RackIndex::getCreateTime);
+        return rackIndexDoMapper.selectPage(page,queryWrapper);
+    }
+
+    @Override
+    public List<RackIndex> findRackIndexToList(String[] ipArray) {
+        LambdaQueryWrapper<RackIndex> queryWrapper = new LambdaQueryWrapper<RackIndex>();
+        if (ipArray != null && ipArray.length != 0) {
+            queryWrapper.in(RackIndex::getId,ipArray);
+        }
+        queryWrapper.orderByDesc(RackIndex::getCreateTime);
+        return rackIndexDoMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public String getAddressById(String devKey) {
+        return null;
     }
 
 }

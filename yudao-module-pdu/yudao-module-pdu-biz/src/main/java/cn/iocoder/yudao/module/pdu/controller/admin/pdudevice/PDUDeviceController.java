@@ -85,6 +85,12 @@ public class PDUDeviceController {
     public CommonResult<Map> getHistoryDataByDevKey(String devKey,String type) {
         return success(pDUDeviceService.getHistoryDataByDevKey(devKey,type));
     }
+//pdu_hda_line_realtime
+    @GetMapping("/pduHdaLineHisdata")
+    @Operation(summary = "获得PDU相历史数据")
+    public CommonResult<Map> getPduHdaLineHisdataKey(String devKey,String type) {
+        return success(pDUDeviceService.getPduHdaLineHisdataKey(devKey,type));
+    }
 
     @GetMapping("/chartNewData")
     @Operation(summary = "获得PDU历史最新数据")

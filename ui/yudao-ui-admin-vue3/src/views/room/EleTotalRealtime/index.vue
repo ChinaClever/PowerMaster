@@ -3,20 +3,20 @@
     <template #NavInfo>
     <br/>    <br/> 
         <div class="nav_data">
-          <div class="carousel-container">
-            <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-              <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-                <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-              </el-carousel-item>
-            </el-carousel> -->
+        <div class="descriptions-container" style="font-size: 14px;">
+          <div class="description-item">
+            <span class="label">最近一天 :</span>
+            <span class="value">{{ lastDayTotalData }}条</span>
           </div>
-          <div class="nav_content">
-          <el-descriptions title="" direction="vertical" :column="1" border >
-              <el-descriptions-item label="最近一天"><span>{{ lastDayTotalData }} 条</span></el-descriptions-item>
-              <el-descriptions-item label="最近一周"><span>{{ lastWeekTotalData }} 条</span></el-descriptions-item>
-              <el-descriptions-item label="最近一月" ><span>{{ lastMonthTotalData }} 条</span></el-descriptions-item>
-            </el-descriptions>
+          <div class="description-item">
+            <span class="label">最近一周 :</span>
+            <span class="value">{{ lastWeekTotalData }}条</span>
           </div>
+          <div class="description-item">
+            <span class="label">最近一月 :</span>
+            <span class="value">{{ lastMonthTotalData }}条</span>
+          </div>    <br/>
+        </div>
         </div>
     </template>
     <template #ActionBar>
@@ -27,17 +27,6 @@
          :inline="true"
          label-width="auto"
        >
-         <el-form-item label="颗粒度" prop="granularity">
-            <el-select
-              v-model="queryParams.granularity"
-              placeholder="请选择天/周/月"
-              class="!w-120px" >
-              <el-option label="天" value="day" />
-              <el-option label="周" value="week" />
-              <el-option label="月" value="month" />
-            </el-select>
-          </el-form-item>
-
          <el-form-item label="时间段" prop="timeRange">
             <el-date-picker
             value-format="YYYY-MM-DD"
@@ -60,6 +49,9 @@
       </el-form> 
     </template>
     <template #Content>
+      <!-- <ContentWrap>
+        <div v-loading="loading" ref="rankChartContainer" id="rankChartContainer" style="height: 65vh"></div>
+      </ContentWrap> -->
       <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
         <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="80px">
@@ -79,7 +71,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.room_id, row.location)">详情</el-button>
+            <el-button link type="primary" @click="toDetails(row.roomId, row.createTimeMin,row.createTimeMax)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -99,7 +91,7 @@
               v-if="child.istrue"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.room_id, row.location)">详情</el-button>
+                <el-button link type="primary" @click="toDetails(row.roomId,row.createTimeMin,row.createTimeMax)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -138,6 +130,7 @@ import { EnergyConsumptionApi } from '@/api/room/energyConsumption'
 import { formatDate, endOfDay, convertDate, addTime } from '@/utils/formatTime'
 import { IndexApi } from '@/api/room/roomindex'
 import * as echarts from 'echarts';
+import { RoomEnergyApi } from '@/api/room/roomenergy'
 const message = useMessage() // 消息弹窗
 // import PDUImage from '@/assets/imgs/PDU.jpg'
 const { push } = useRouter()
@@ -148,7 +141,7 @@ const lastDayTotalData = ref(0)
 const lastWeekTotalData = ref(0)
 const lastMonthTotalData = ref(0)
 const instance = getCurrentInstance();
-const loading = ref(true)
+const loading = ref(false)
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
@@ -158,7 +151,7 @@ const queryParams = reactive({
   pageSize: 15,
   granularity: 'day',
   timeRange: undefined as string[] | undefined,
-  roomIds:[] as number[]
+  roomIds:[]
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
@@ -229,6 +222,13 @@ const initChart = () => {
         {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
       ],
     });
+    rankChart.on('click', function(params) {
+      // 控制台打印数据的名称
+      toDetails(list.value[params.dataIndex].roomId,
+      list.value[params.dataIndex].name,
+      list.value[params.dataIndex].createTimeMin,
+      list.value[params.dataIndex].createTimeMax);
+    });
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }
 };
@@ -242,19 +242,18 @@ watch(() => queryParams.granularity, () => {
 });
 
 const tableColumns = ref([
-  { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
-  { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px' , istrue:true},
-  { label: '开始', align: 'center', istrue: true, children: [
-      { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime1, width: '150px' , istrue:true},
-      { label: '电能(kWh)', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
+  { label: '位置', align: 'center', prop: 'name' , istrue:true, width: '180px'},
+{ label: '开始电能', align: 'center', istrue: true, children: [
+      { label: '开始电能(kWh)', align: 'center', prop: 'eleActiveStart' , istrue:true, formatter: formatEle},
+      { label: '开始时间', align: 'center', prop: 'createTimeMin' , formatter: formatTime1, width: '150px' , istrue:true},
     ]
   },
-  { label: '结束', align: 'center', istrue: true, children: [
-      { label: '日期', align: 'center', prop: 'end_time' , formatter: formatTime1, width: '150px' , istrue:true},
-      { label: '电能(kWh)', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle},
+    { label: '结束电能', align: 'center', istrue: true, children: [
+      { label: '结束电能(kWh)', align: 'center', prop: 'eleActiveEnd' , istrue:true, formatter: formatEle},
+      { label: '结束时间', align: 'center', prop: 'createTimeMax' , formatter: formatTime1, width: '150px' , istrue:true},
     ]
   },
-  { label: '耗电量\n(kWh)', align: 'center', prop: 'eq_value' ,istrue: true,formatter: formatEle },
+  { label: '耗电量(kWh)', align: 'center', prop: 'eleActive' ,istrue: true,formatter: formatEle },
   { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '120px'},
 ]) as any;
 
@@ -274,42 +273,13 @@ const getList = async () => {
     if(selectTimeRange.value == null){
       queryParams.timeRange = undefined
     }
-    const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
-    eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
-    list.value = data.list
-    realTotel.value = data.total
-    if (data.total > 10000){
-      total.value = 10000
-    }else{
-      total.value = data.total
+    if(selectTimeRange.value == null){
+      // queryParams.timeRange = undefined
+      alert('请输入时间范围');
+    return;
     }
-  } finally {
-    initChart();
-    loading.value = false
-  }
-}
-
-const getList1 = async () => {
-  loading.value = true
-  try {
-    if ( start.value != undefined){
-      // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
-      // 结束时间的天数多加一天 ，  一天的毫秒数
-      const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(end.value), oneDay )))
-      queryParams.timeRange = [selectedStartTime, selectedEndTime];
-    }
-    	console.log('入参', queryParams);
-    // 时间段清空后值会变成null 此时搜索不能带上时间段
-    if(start.value == null){
-      queryParams.timeRange = undefined
-    }
-
-queryParams.roomIds =[id.value]
-  
-    const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
-    eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
+    const data = await RoomEnergyApi.getRoomEleTotalRealtime(queryParams)
+    eqData.value = data.list.map((item) => formatEQ(item.eleActive, 1));
     list.value = data.list
     realTotel.value = data.total
     if (data.total > 10000){
@@ -327,10 +297,10 @@ queryParams.roomIds =[id.value]
 function customTooltipFormatter(params: any[]) {
   var tooltipContent = ''; 
   var item = params[0]; // 获取第一个数据点的信息
-  tooltipContent += '位置：'+list.value[item.dataIndex].location + '  '
-  tooltipContent += '<br/>'+ item.marker + item.seriesName + ': ' + item.value + 'kWh 记录日期：'+formatTime(null, null, list.value[item.dataIndex].create_time) + '<br/>'                 
-                    +item.marker + '结束电能：'+list.value[item.dataIndex].end_ele + 'kWh 结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) + '<br/>' 
-                    +item.marker +'开始电能：'+formatEle(null, null, list.value[item.dataIndex].start_ele) + 'kWh 开始日期：'+formatTime(null, null, list.value[item.dataIndex].start_time) + '<br/>'
+  tooltipContent += '位置：'+list.value[item.dataIndex].name + '<br/>'
+                    +item.marker + '开始电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveStart)  + 'kWh 开始日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMin) + '<br/>' 
+                    +item.marker +'结束电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveEnd) + 'kWh 结束日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMax) + '<br/>'
+                    +item.marker +'耗电量：'+formatEle(null, null, list.value[item.dataIndex].eleActive) + 'kWh';
   return tooltipContent;
 }
 
@@ -353,11 +323,14 @@ function formatTime1(_row: any, _column: any, cellValue: number): string {
   if (!cellValue) {
     return ''
   }
-  return dayjs(cellValue).format('MM-DD')
+  return dayjs(cellValue).format('YYYY-MM-DD')
 }
 
 // 格式化电能列数据，保留1位小数
 function formatEle(_row: any, _column: any, cellValue: number): string {
+    if (cellValue == null) {
+    return '';
+  }
   return Number(cellValue).toFixed(1);
 }
 
@@ -389,10 +362,37 @@ const handleQuery = () => {
 
 // 导航栏选择后触发
 const handleCheck = async (node) => {
+   console.log(node)
   let arr = [] as any
-  node.forEach(item => arr.push(item.id));
+    node.forEach(item => { 
+        arr.push(item.id);
+    });
+    
+    if(arr.length == 0  && node.length != 0){
+      arr.push(0)
+      rankChart?.clear()
+      ElMessage({
+        message: '暂无数据',
+        type: 'warning',
+      });
+    }
   queryParams.roomIds = arr
   handleQuery()
+  //  let arr = [] as any
+  //   node.forEach(item => { 
+  //       arr.push(item.unique);
+  //   });
+  //   //没筛选到pdu 不显示任何数据 ipArray参数传0 后端返回空
+  //   if(arr.length == 0  && node.length != 0){
+  //     arr.push(0)
+  //     rankChart?.clear()
+  //     ElMessage({
+  //       message: '暂无数据',
+  //       type: 'warning',
+  //     });
+  //   }
+  //   queryParams.roomIds = arr
+  //   handleQuery()
 }
 
 // 接口获取机房导航列表
@@ -420,7 +420,7 @@ const handleExport = async () => {
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
-    const data = await EnergyConsumptionApi.exportEQPageData(queryParams, axiosConfig)
+    const data = await RoomEnergyApi.getRoomEleTotalRealtimeExcel(queryParams, axiosConfig)
     await download.excel(data, '机房能耗趋势.xlsx')
   } catch (error) {
     // 处理异常
@@ -430,30 +430,38 @@ const handleExport = async () => {
   }
 }
 
+// export function postExcelFile (params, url) {
+//   const form = document.createElement('form')
+//   form.style.display = 'none'
+//   form.enctype = 'application/json;charset=utf-8' // 向后端确定他的请求头
+//   form.action = url
+//   form.method = 'post'
+//   document.body.appendChild(form)
+//   for (const key in params) {
+//     const input = document.createElement('input')
+//     input.type = 'hidden'
+//     input.name = key
+//     input.value = params[key]
+//     form.appendChild(input)
+//   }
+//   form.submit()
+//   form.remove()
+// }
+
+
+
 
 /** 详情操作*/
-const toDetails = (roomId: number, location: string) => {
-  push('/room/energyConsumption/ecdistribution?roomId='+roomId+'&location='+location);
+const toDetails = (roomId: number, createTimeMin : string,createTimeMax : string) => {
+    push('/room/energyConsumption/powerAnalysis?type=total&granularity=day&start='+createTimeMin+
+  '&end='+createTimeMax+'&roomId='+ roomId);
 }
-const start = ref('')
-const end = ref('')
-const id =  ref(0)
 
 /** 初始化 **/
 onMounted(() => {
   getNavList()
   getNavNewData()
-
-  start.value = useRoute().query.start as string;
-  end.value = useRoute().query.end as string;
-  id.value = useRoute().query.roomId as unknown as number;
-  if (start.value != null){
-  	console.log('详情页', start);
-	console.log('详情页1', id);
-  getList1();
-  }else{
-      getList();
-  }
+  // getList();
 });
 
 </script>
@@ -474,7 +482,7 @@ onMounted(() => {
   width: 170px;
 }
 .nav_content span{
-  font-size: 18px;
+  font-size: 14px;
 }
 .carousel-container {
   width: 100%;
