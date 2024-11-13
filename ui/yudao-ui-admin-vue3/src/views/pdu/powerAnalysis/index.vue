@@ -337,9 +337,15 @@ const getList = async () => {
     // 时间段清空后值会变成null 此时搜索不能带上时间段
     if(selectTimeRange.value == null){
       queryParams.timeRange = undefined
-    }
+    }  
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
-    eqData.value = data.list.map((item) => formatEQ(item.end_ele - item.start_ele, 1));
+    //eqData.value = data.list.map((item) => formatEQ(item.end_ele - item.start_ele, 1));
+    eqData.value = data.list.map((item) => {
+    const difference = item.end_ele - item.start_ele;
+    return difference < 0 ? item.end_ele : formatEQ(difference, 1);
+    });
+
+    
     list.value = data.list
     realTotel.value = data.total
     if (data.total > 10000){
@@ -399,7 +405,17 @@ function formatEle(_row: any, _column: any, cellValue: number): string {
 }
 
 function formatPowerEle(_row: any, _column: any, cellValue: number): string {
-   const numberele = _row.end_ele  -  _row.start_ele;
+   let numberele;
+   if(queryParams.granularity == "day"){
+       numberele = _row.end_ele  -  _row.start_ele;
+       console.log(numberele+"---")
+      if(numberele < 0){
+           console.log(numberele+"===")
+          numberele = _row.end_ele;
+      }
+   }else{
+       numberele = _row.end_ele  -  _row.start_ele;
+   }
    return Number(numberele).toFixed(1);
 }
 
