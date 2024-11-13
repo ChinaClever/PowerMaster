@@ -1,6 +1,8 @@
 package cn.iocoder.yudao.module.aisle.service.energyconsumption;
 
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.aisle.controller.admin.energyconsumption.DTO.AisleEleTotalRealtimeReqDTO;
+import cn.iocoder.yudao.module.aisle.controller.admin.energyconsumption.VO.AisleEleTotalRealtimeResVO;
 import cn.iocoder.yudao.module.aisle.controller.admin.energyconsumption.VO.AisleEnergyConsumptionPageReqVO;
 
 import java.io.IOException;
@@ -62,4 +64,6 @@ public interface AisleEnergyConsumptionService {
     List<Object> getBillExcelList(List<Object> list);
 
     List<Object> getRealtimeExcelList(List<Object> list);
+
+    PageResult<AisleEleTotalRealtimeResVO> getAisleEleTotalRealtime(AisleEleTotalRealtimeReqDTO reqVO, boolean flag) throws IOException;
 }

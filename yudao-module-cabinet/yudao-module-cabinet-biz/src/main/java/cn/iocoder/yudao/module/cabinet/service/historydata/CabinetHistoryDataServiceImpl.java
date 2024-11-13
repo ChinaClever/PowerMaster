@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.cabinet.service.historydata;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
+import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.cabinet.controller.admin.historydata.vo.CabinetHistoryDataDetailsReqVO;
 import cn.iocoder.yudao.module.cabinet.controller.admin.historydata.vo.CabinetHistoryDataPageReqVO;
@@ -8,6 +10,8 @@ import cn.iocoder.yudao.module.cabinet.dal.mysql.index.CabIndexMapper;
 import cn.iocoder.yudao.framework.common.mapper.AisleIndexMapper;
 import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
 import cn.iocoder.yudao.module.cabinet.service.energyconsumption.CabinetEnergyConsumptionService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import org.apache.commons.lang3.ObjectUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -25,6 +29,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -276,4 +281,14 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
         return list;
     }
 
+    @Override
+    public Map<Integer, RoomIndex> getRoomById(List<Integer> roomIds) {
+        LambdaQueryWrapper<RoomIndex> queryWrapper = new LambdaQueryWrapper<RoomIndex>().orderByDesc(RoomIndex::getId)
+                .in(RoomIndex::getId,roomIds).eq(RoomIndex::getIsDelete, DelEnums.NO_DEL.getStatus());
+        List<RoomIndex> roomIndexList = roomIndexMapper.selectList(queryWrapper);
+        return roomIndexList.stream().filter(item -> ObjectUtils.isNotEmpty(item.getId()))
+                .collect(Collectors.toMap(RoomIndex::getId, roomIndex -> roomIndex));
+    }
+//        Map<String, DataMenu> collect = list1.stream().filter(item -> ObjectUtils.isNotEmpty(item.getDictionaryValue()))
+//                .collect(Collectors.toMap(DataMenu::getDictionaryValue, x -> x, (oldVal, newVal) -> newVal));
 }
