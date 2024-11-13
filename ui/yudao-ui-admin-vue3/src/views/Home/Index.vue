@@ -47,45 +47,53 @@
         <template #header>
           <div class="h-3 flex justify-between">
             <span>机房状态</span>
-            <el-link type="primary" :underline="false" @click="roomShowType = !roomShowType">切换</el-link>
+            <el-button @click="switchValue = 0;" :type="switchValue === 0 ? 'primary' : ''" style="margin-left:0px;margin-right:-45vw;" size="small">功率</el-button>
+            <el-button @click="switchValue = 1;" :type="switchValue === 1 ? 'primary' : ''" style="margin-left:0px;margin-right:-45vw;" size="small">温度</el-button>
+            <el-button @click="switchValue = 2;" :type="switchValue === 2 ? 'primary' : ''" style="margin-left:0px;margin-right:-45vw;" size="small">图表</el-button>
+            <el-button @click="switchValue = 3;" :type="switchValue === 3 ? 'primary' : ''" style="margin-left:0px;margin-right:-45vw;" size="small">全屏</el-button>
+            <el-link type="primary" :underline="false" @click="roomShowType = !roomShowType" style="margin-bottom:-1vh;">切换</el-link>
           </div>
         </template>
         <el-skeleton :loading="loading" animated>
-          <el-row>
-            <template v-if="roomShowType">
-              <el-col
-                v-for="(item, index) in powInfo.roomDataList"
-                :key="`card-${index}`"
-                :xl="6"
-                :lg="6"
-                :md="6"
-                :sm="24"
-                :xs="24"
-              >
-                <el-card shadow="hover">
-                  <div class="flex items-center h-21px">
-                    <!-- <Icon :icon="item.icon" :size="25" class="mr-8px" /> -->
-                    <span class="text-16px">{{ item.name || '' }}</span>
-                  </div>
-                  <div class="mt-14px text-14px text-gray-400">实时总功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW</div>
-                  <div class="mt-14px flex justify-between text-12px text-gray-400">
-                    <span class="text-14px">实时视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA</span>
-                    <span>{{ formatTime(new Date(), 'HH:mm:ss') }}</span>
-                  </div>
-                </el-card>
-              </el-col>
-            </template>
-            <template v-else>
-              <el-col 
-                :xl="24"
-                :lg="24"
-                :md="24"
-                :sm="24"
-                :xs="24">
-                <Echart :options="powOptionsData" :height="258" />
-              </el-col>
-            </template>
-          </el-row>
+            <el-row>
+              <template v-if="roomShowType">
+                <el-col>
+                  <vue3-seamless-scroll class="scroll-container"
+                    :step="20"
+                    :hover="false"
+                  >
+                    <div 
+                      class="scroll-item"
+                      v-for="(item, index) in powInfo.roomDataList"
+                      :key="`card-${index}`"
+                    >
+                      <el-card shadow="hover">
+                        <div class="flex items-center h-21px">
+                          <!-- <Icon :icon="item.icon" :size="25" class="mr-8px" /> -->
+                          <span class="text-15px">{{ item.name || '' }}</span>
+                          <span style="margin-left:4vw;">PUE：1.5KWh</span>
+                        </div>
+                        <div class="mt-14px text-14px text-gray-400">实时总功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW</div>
+                        <div class="mt-14px flex justify-between text-12px text-gray-400">
+                          <span class="text-14px">实时视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA</span>
+                          <span>{{ formatTime(new Date(), 'HH:mm:ss') }}</span>
+                        </div>
+                      </el-card>
+                    </div>
+                  </vue3-seamless-scroll>
+                </el-col>
+              </template>
+              <template v-else>
+                <el-col 
+                  :xl="24"
+                  :lg="24"
+                  :md="24"
+                  :sm="24"
+                  :xs="24">
+                  <Echart :options="powOptionsData" :height="258" />
+                </el-col>
+              </template>
+            </el-row>
         </el-skeleton>
       </el-card>
 
@@ -131,6 +139,32 @@
       <el-card shadow="never" class="mb-8px">
         <template #header>
           <div class="h-3 flex justify-between">
+            <span>实时功率</span>
+          </div>
+        </template>
+        <el-skeleton :loading="loading" animated>
+          <el-row class="flex justify-between">
+            <el-col :span="10" class="flex justify-center">
+              <el-progress type="circle" :percentage="100">
+                <template #default>
+                  <!--<div class="percentage-value text-28px mt-12px">{{powInfo.totalPowActive ? powInfo.totalPowActive.toFixed(3) : '0.000'}}kW</div>
+                  <div class="percentage-label text-12px mt-12px">总功率</div>-->
+                  <div class="percentage-value text-28px mt-12px">1.5KWh</div>
+                  <div class="percentage-label text-12px mt-12px">PUE</div>
+                </template>
+              </el-progress>
+            </el-col>
+            <el-col :span="12" class="flex flex-col justify-evenly">
+              <div>总有功功率：{{powInfo.totalPowActive ? powInfo.totalPowActive.toFixed(3) : '0.000'}}kW</div>
+              <div>总无功功率：{{powInfo.totalPowReactive ? powInfo.totalPowReactive.toFixed(3) : '0.000'}}kVar</div>
+              <div>总视在功率：{{powInfo.totalPowApparent ? powInfo.totalPowApparent.toFixed(3) : '0.000'}}kVA</div>
+            </el-col>
+          </el-row>
+        </el-skeleton>
+      </el-card>
+      <el-card shadow="never" class="mb-8px">
+        <template #header>
+          <div class="h-3 flex justify-between">
             <span>告警统计</span>
           </div>
         </template>
@@ -148,30 +182,6 @@
               <div>未处理告警数目：{{alarmInfo.untreated}}</div>
               <div>已挂起告警数目：{{alarmInfo.hung}}</div>
               <div>已确认告警数目：{{alarmInfo.confirm}}</div>
-            </el-col>
-          </el-row>
-        </el-skeleton>
-      </el-card>
-      <el-card shadow="never" class="mb-8px">
-        <template #header>
-          <div class="h-3 flex justify-between">
-            <span>实时功率</span>
-          </div>
-        </template>
-        <el-skeleton :loading="loading" animated>
-          <el-row class="flex justify-between">
-            <el-col :span="10" class="flex justify-center">
-              <el-progress type="circle" :percentage="100">
-                <template #default>
-                  <div class="percentage-value text-28px mt-12px">{{powInfo.totalPowActive ? powInfo.totalPowActive.toFixed(3) : '0.000'}}kW</div>
-                  <div class="percentage-label text-12px mt-12px">总功率</div>
-                </template>
-              </el-progress>
-            </el-col>
-            <el-col :span="12" class="flex flex-col justify-evenly">
-              <div>总有功功率：{{powInfo.totalPowActive ? powInfo.totalPowActive.toFixed(3) : '0.000'}}kW</div>
-              <div>总无功功率：{{powInfo.totalPowReactive ? powInfo.totalPowReactive.toFixed(3) : '0.000'}}kVar</div>
-              <div>总视在功率：{{powInfo.totalPowApparent ? powInfo.totalPowApparent.toFixed(3) : '0.000'}}kVA</div>
             </el-col>
           </el-row>
         </el-skeleton>
@@ -203,6 +213,9 @@ import { useUserStore } from '@/store/modules/user'
 import { useWatermark } from '@/hooks/web/useWatermark'
 import { MachineHomeApi } from '@/api/cabinet/home'
 
+import { defineComponent } from 'vue'
+import { Vue3SeamlessScroll } from 'vue3-seamless-scroll'
+
 defineOptions({ name: 'Home' })
 
 const { t } = useI18n()
@@ -216,10 +229,12 @@ const eqOptionsData = reactive<EChartsOption>({}) as EChartsOption
 const powOptionsData = reactive<EChartsOption>({}) as EChartsOption
 const devInfo = reactive({}) // 设备信息
 const powInfo = reactive({}) // 功率数据信息
+const powCopyInfo = reactive({})
 const eqInfo = reactive<any>({}) // 用能信息
 const alarmInfo = reactive({}) // 警告信息
 const tableData = ref([]) // 
 const prePowBtn = ref(0) // 当前所选的功率
+const switchValue = ref(0) //控制按钮的切换
 const powBtns = [ // 功率 当天/当月等切换
   {
     name:'当天',
@@ -283,6 +298,10 @@ const getHomeDevData = async() => {
 const getHomePowData = async() => {
   const res =  await MachineHomeApi.getHomePowData({})
   Object.assign(powInfo, res)
+  Object.assign(powCopyInfo, res)
+
+  powInfo.roomDataList = [...powInfo.roomDataList,...powInfo.roomDataList] //添加了模拟数据
+
   Object.assign(powOptionsData, {
     grid: {
       left: 50,
@@ -461,5 +480,25 @@ const getAllApi = async () => {
 }
 
 getAllApi()
+
+const computedHeightStyle = computed(() => {
+  const isLargeScreen = window.innerWidth >= 2048;
+  return {
+    height: isLargeScreen ? '40vh' : '27vh',
+  }
+})
+
 </script>
 
+<style scoped>
+.scroll-container {
+  height: 25vh;
+  overflow-y:auto;
+}
+ 
+.scroll-item {
+  display: inline-block;
+  height: 14vh;
+  width: 15vw;
+}
+</style>
