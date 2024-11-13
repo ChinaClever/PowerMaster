@@ -67,7 +67,11 @@
                       <el-card shadow="hover">
                         <div class="flex items-center h-21px">
                           <!-- <Icon :icon="item.icon" :size="25" class="mr-8px" /> -->
+<<<<<<< HEAD
                           <span class="text-16px">{{ item.name || '' }}</span>
+=======
+                          <span class="text-15px">{{ item.name || '' }}</span>
+>>>>>>> 80faf69e (测试)
                           <span class="text-15px" style="margin-left:4vw;">PUE：1.5KWh</span>
                         </div>
                         <div class="mt-14px text-14px text-gray-400">实时总功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW</div>
