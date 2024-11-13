@@ -49,19 +49,16 @@
             <span>机房状态</span>
             <el-button @click="switchValue = 0;" :type="switchValue === 0 ? 'primary' : ''" style="margin-left:0px;margin-right:-45vw;" size="small">功率</el-button>
             <el-button @click="switchValue = 1;" :type="switchValue === 1 ? 'primary' : ''" style="margin-left:0px;margin-right:-45vw;" size="small">温度</el-button>
-            <el-button @click="switchValue = 2;" :type="switchValue === 2 ? 'primary' : ''" style="margin-left:0px;margin-right:-45vw;" size="small">图表</el-button>
-            <el-button @click="switchValue = 3;" :type="switchValue === 3 ? 'primary' : ''" style="margin-left:0px;margin-right:-45vw;" size="small">全屏</el-button>
-            <el-link type="primary" :underline="false" @click="roomShowType = !roomShowType" style="margin-bottom:-1vh;">切换</el-link>
+            <!--<el-button @click="switchValue = 2;" :type="switchValue === 2 ? 'primary' : ''" style="margin-left:0px;margin-right:-45vw;" size="small">图表</el-button>-->
+            <el-button @click="switchValue = 2;" :type="switchValue === 2 ? 'primary' : ''" style="margin-left:0px;margin-right:-45vw;" size="small">全屏</el-button>
+            <el-link type="primary" :underline="false" @click="roomShowType = !roomShowType" style="margin-bottom:-1vh;">{{roomShowType?'切换为图表':'切换为表格'}}</el-link>
           </div>
         </template>
-        <el-skeleton :loading="loading" animated>
+        <el-skeleton :loading="loading" animated v-if="switchValue===0">
             <el-row>
               <template v-if="roomShowType">
                 <el-col>
-                  <vue3-seamless-scroll class="scroll-container"
-                    :step="20"
-                    :hover="false"
-                  >
+                  <div ref="scrollableContainer" class="scrollable-container" @scroll="handleScroll">
                     <div 
                       class="scroll-item"
                       v-for="(item, index) in powInfo.roomDataList"
@@ -70,8 +67,8 @@
                       <el-card shadow="hover">
                         <div class="flex items-center h-21px">
                           <!-- <Icon :icon="item.icon" :size="25" class="mr-8px" /> -->
-                          <span class="text-15px">{{ item.name || '' }}</span>
-                          <span style="margin-left:4vw;">PUE：1.5KWh</span>
+                          <span class="text-16px">{{ item.name || '' }}</span>
+                          <span class="text-15px" style="margin-left:4vw;">PUE：1.5KWh</span>
                         </div>
                         <div class="mt-14px text-14px text-gray-400">实时总功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW</div>
                         <div class="mt-14px flex justify-between text-12px text-gray-400">
@@ -80,7 +77,45 @@
                         </div>
                       </el-card>
                     </div>
-                  </vue3-seamless-scroll>
+                  </div>
+                </el-col>
+              </template>
+              <template v-else>
+                <el-col 
+                  :xl="24"
+                  :lg="24"
+                  :md="24"
+                  :sm="24"
+                  :xs="24">
+                  <Echart :options="powOptionsData" :height="258" />
+                </el-col>
+              </template>
+            </el-row>
+        </el-skeleton>
+        <el-skeleton :loading="loading" animated v-else-if="switchValue===1">
+            <el-row>
+              <template v-if="roomShowType">
+                <el-col>
+                  <div ref="scrollableContainer" class="scrollable-container" @scroll="handleScroll">
+                    <div 
+                      class="scroll-item"
+                      v-for="(item, index) in powInfo.roomDataList"
+                      :key="`card-${index}`"
+                    >
+                      <el-card shadow="hover">
+                        <div class="flex items-center h-21px">
+                          <!-- <Icon :icon="item.icon" :size="25" class="mr-8px" /> -->
+                          <span class="text-16px">{{ item.name || '' }}</span>
+                          <span class="text-15px" style="margin-left:4vw;">PUE：1.5KWh</span>
+                        </div>
+                        <div class="mt-14px text-14px text-gray-400">最高温度(近24小时)：{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</div>
+                        <div class="mt-14px flex justify-between text-12px text-gray-400">
+                          <span class="text-14px">平均温度：{{item.powActive ? item.powActive.toFixed(1) : '0.0'}}&deg;C</span>
+                          <span>{{ formatTime(new Date(), 'HH:mm:ss') }}</span>
+                        </div>
+                      </el-card>
+                    </div>
+                  </div>
                 </el-col>
               </template>
               <template v-else>
@@ -125,11 +160,13 @@
               </el-card>
             </el-col>
             <el-col :xl="18" :lg="18" :md="24" :sm="24" :xs="24">
-              <el-card shadow="hover">
-                <el-skeleton :loading="loading" animated>
-                  <Echart :options="eqOptionsData" :height="210" />
-                </el-skeleton>
-              </el-card>
+              <div>
+                <el-card shadow="hover" :style="computedEnInfo">
+                  <el-skeleton :loading="loading" animated>
+                    <Echart :options="eqOptionsData" :height="210" :style="computedEnInfoWidth" />
+                  </el-skeleton>
+                </el-card>
+              </div>
             </el-col>
           </el-row>
         </el-skeleton>
@@ -186,19 +223,39 @@
           </el-row>
         </el-skeleton>
       </el-card>
-      <el-card shadow="never" class="mb-8px">
+      <el-card shadow="never" class="mb-8px" v-if="toggleTable===false">
         <template #header>
           <div class="h-3 flex justify-between">
-            <span>设备统计</span>
+            <span>设备统计/告警统计</span>
+            <el-link @click="toggleTable = !toggleTable" type="primary">切换</el-link>
           </div>
         </template>
         <el-skeleton :loading="loading" animated>
-          <el-table :data="tableData" style="width: 100%" border class="text-12px">
-            <el-table-column prop="name" label=""  />
-            <el-table-column prop="all" label="总数"  />
-            <el-table-column prop="on" label="在线" />
-            <el-table-column prop="off" label="离线" />
-          </el-table>
+          <div ref="scrollableContainerOne" class="scrollable-container-one" @scroll="handleScroll">
+            <el-table :data="tableData" style="width: 100%" border class="text-12px">
+              <el-table-column prop="name" label=""  />
+              <el-table-column prop="all" label="总数"  />
+              <el-table-column prop="on" label="在线" />
+              <el-table-column prop="off" label="离线" />
+            </el-table>
+          </div>
+        </el-skeleton>
+      </el-card>
+      <el-card shadow="never" class="mb-8px" v-else-if="toggleTable===true">
+        <template #header>
+          <div class="h-3 flex justify-between">
+            <span>设备统计/告警统计</span>
+            <el-link @click="toggleTable = !toggleTable" type="primary">切换</el-link>
+          </div>
+        </template>
+        <el-skeleton :loading="loading" animated>
+          <div ref="scrollableContainerOne" class="scrollable-container-one" @scroll="handleScroll">
+            <el-table :data="tableData" style="width: 100%" border class="text-12px">
+              <el-table-column prop="error" label="告警内容"  />
+              <el-table-column prop="box" label="告警设备" />
+              <el-table-column prop="time" label="告警时间" />
+            </el-table>
+          </div>
         </el-skeleton>
       </el-card>
     </el-col>
@@ -235,6 +292,7 @@ const alarmInfo = reactive({}) // 警告信息
 const tableData = ref([]) // 
 const prePowBtn = ref(0) // 当前所选的功率
 const switchValue = ref(0) //控制按钮的切换
+const toggleTable = ref(false) //设备统计和告警统计的切换
 const powBtns = [ // 功率 当天/当月等切换
   {
     name:'当天',
@@ -273,6 +331,9 @@ const getHomeDevData = async() => {
       all: res.pduNum,
       on: res.pduOnLine,
       off: res.pduOffLine,
+      error:'温度超阀值上限',
+      box:'温湿度01',
+      time:'2022-11-07 12:15:46'
     })
   }
   if (res.pduNum > 0) {
@@ -281,6 +342,9 @@ const getHomeDevData = async() => {
       all: res.busNum,
       on: res.busOnLine,
       off: res.busOffLine,
+      error:'制冷压力超阀值上限',
+      box:'精密空调',
+      time:'2022-11-07 12:15:46'
     })
   }
   if (res.pduNum > 0) {
@@ -289,6 +353,75 @@ const getHomeDevData = async() => {
       all: res.boxNum,
       on: res.boxOnLine,
       off: res.boxOffLine,
+      error:'检测到有水',
+      box:'水浸',
+      time:'2022-11-07 12:15:46'
+    })
+  }
+    if (res.pduNum > 0) {
+    arr.push({
+      name: 'PDU-1',
+      all: res.pduNum,
+      on: res.pduOnLine,
+      off: res.pduOffLine,
+      error:'开门时间异常',
+      box:'东门门禁',
+      time:'2022-11-07 12:15:46'
+    })
+  }
+  if (res.pduNum > 0) {
+    arr.push({
+      name: '始端箱-1',
+      all: res.busNum,
+      on: res.busOnLine,
+      off: res.busOffLine,
+      error:'设备离线',
+      box:'摄像机1',
+      time:'2022-11-07 12:15:46'
+    })
+  }
+  if (res.pduNum > 0) {
+    arr.push({
+      name: '插接箱-1',
+      all: res.boxNum,
+      on: res.boxOnLine,
+      off: res.boxOffLine,
+      error:'检测到有人',
+      box:'红外1',
+      time:'2022-11-07 12:15:46'
+    })
+  }
+    if (res.pduNum > 0) {
+    arr.push({
+      name: 'PDU-2',
+      all: res.pduNum,
+      on: res.pduOnLine,
+      off: res.pduOffLine,
+      error:'温度超阀值上限',
+      box:'温湿度02',
+      time:'2022-11-07 12:15:46'
+    })
+  }
+  if (res.pduNum > 0) {
+    arr.push({
+      name: '始端箱-2',
+      all: res.busNum,
+      on: res.busOnLine,
+      off: res.busOffLine,
+      error:'温度超阀值上限',
+      box:'温湿度03',
+      time:'2022-11-07 12:15:46'
+    })
+  }
+  if (res.pduNum > 0) {
+    arr.push({
+      name: '插接箱-2',
+      all: res.boxNum,
+      on: res.boxOnLine,
+      off: res.boxOffLine,
+      error:'温度超阀值上限',
+      box:'温湿度04',
+      time:'2022-11-07 12:15:46'
     })
   }
   tableData.value = arr
@@ -393,10 +526,19 @@ const getHomePowData = async() => {
 // 获取主页面用能
 const getHomeEqData = async() => {
   const res =  await MachineHomeApi.getHomeEqData({})
+
+  const modifiedRoomEqList = res.roomEqList.map(item => ({
+    ...item, // 复制对象的所有属性
+    name: item.name + '1' // 修改name属性，在后面加上'*'号
+  }))
+
+  res.roomEqList = [...res.roomEqList, ...modifiedRoomEqList] //添加了模拟数据
+  //.slice(0, 12)
+  
   Object.assign(eqInfo, res)
   Object.assign(eqOptionsData, {
     grid: {
-      left: 50,
+      left: 30,
       right: 20,
       bottom: 20
     },
@@ -420,7 +562,10 @@ const getHomeEqData = async() => {
     },
     xAxis: {
       type: 'category',
-      data: res.roomEqList ? res.roomEqList.map(item => item.name) : []
+      data: res.roomEqList ? res.roomEqList.map(item => item.name) : [],
+      axisLabel: {
+        interval: 0, // 显示所有标签，不设间隔
+      },
     },
     yAxis: {
       type: 'value',
@@ -481,24 +626,186 @@ const getAllApi = async () => {
 
 getAllApi()
 
-const computedHeightStyle = computed(() => {
-  const isLargeScreen = window.innerWidth >= 2048;
-  return {
-    height: isLargeScreen ? '40vh' : '27vh',
+const computedEnInfo = computed(() => {
+  if(eqInfo.roomEqList.length > 12){
+    return {
+      overflowX:'auto',
+    }
   }
 })
+
+const computedEnInfoWidth = computed(() => {
+  let num = Math.floor(eqInfo.roomEqList.length / 12) + 1
+  num = num * 20 + 45
+  if(eqInfo.roomEqList.length > 12){
+    return {
+      width:num+'vw',
+    }
+  }
+}
+)
+
+const scrollableContainer = ref(null); // 挂载到机房状态
+const scrollableContainerOne = ref(null); // 挂载到设备模块
+ 
+let scrollInterval; // 机房状态的定时器
+let scrollIntervalOne; // 设备模块的定时器
+let scrollTimeout; // 用于检测滚动是否停止的延迟定时器
+let isScrollingManually = false; // 标记是否正在手动滚动
+ 
+const startScrolling = () => {
+  // 检查是否已经有一个定时器在运行
+  if (scrollInterval || scrollIntervalOne || isScrollingManually) return;
+ 
+  scrollInterval = setInterval(() => {
+    // 机房状态的滚动逻辑
+    scrollContainer('scrollableContainer');
+  }, 100);
+ 
+  scrollIntervalOne = setInterval(() => {
+    // 设备模块的滚动逻辑
+    scrollContainer('scrollableContainerOne');
+  }, 100);
+};
+ 
+const scrollContainer = (containerName) => {
+  let containerRef, interval;
+  if (containerName === 'scrollableContainer') {
+    containerRef = scrollableContainer;
+    interval = scrollInterval;
+  } else if (containerName === 'scrollableContainerOne') {
+    containerRef = scrollableContainerOne;
+    interval = scrollIntervalOne;
+  }
+ 
+  const { scrollTop, clientHeight, scrollHeight } = containerRef.value;
+  const scrollStep = 10; // 滚动步长
+  const scrollTolerance = 3; // 停止前的容忍范围
+ 
+  if (scrollTop + clientHeight >= scrollHeight) {
+    // 滚动到顶部
+    //containerRef.value.scrollTop = 0;
+  } else if (scrollTop + scrollStep + scrollTolerance >= scrollHeight - clientHeight) {
+    // 接近底部时停止定时器
+    clearInterval(interval);
+    if (containerName === 'scrollableContainer') {
+      scrollInterval = null;
+    } else {
+      scrollIntervalOne = null;
+    }
+  } else {
+    // 继续滚动
+    containerRef.value.scrollTop += scrollStep;
+  }
+};
+ 
+const stopScrolling = () => {
+  clearInterval(scrollInterval);
+  scrollInterval = null;
+  clearInterval(scrollIntervalOne);
+  scrollIntervalOne = null;
+};
+ 
+const handleScroll = (event, containerName) => {
+  // 停止自动滚动
+  isScrollingManually = true;
+  stopScrolling();
+ 
+  // 设置延迟来判断滚动是否停止
+  clearTimeout(scrollTimeout);
+  scrollTimeout = setTimeout(() => {
+    // 如果在延迟期间没有新的滚动事件，则恢复自动滚动
+    isScrollingManually = false;
+    startScrolling();
+  }, 200); // 延迟时间，单位毫秒，可以根据需要调整
+};
+ 
+onMounted(() => {
+  // 添加滚动事件监听器
+  if (scrollableContainer.value) {
+    scrollableContainer.value.addEventListener('scroll', (event) => handleScroll(event, 'scrollableContainer'));
+  }
+  if (scrollableContainerOne.value) {
+    scrollableContainerOne.value.addEventListener('scroll', (event) => handleScroll(event, 'scrollableContainerOne'));
+  }
+ 
+  // 初始启动自动滚动
+  startScrolling();
+});
+ 
+onUnmounted(() => {
+  // 移除滚动事件监听器
+  if (scrollableContainer.value) {
+    scrollableContainer.value.removeEventListener('scroll', (event) => handleScroll(event, 'scrollableContainer'));
+  }
+  if (scrollableContainerOne.value) {
+    scrollableContainerOne.value.removeEventListener('scroll', (event) => handleScroll(event, 'scrollableContainerOne'));
+  }
+ 
+  // 确保在组件卸载时清除定时器
+  stopScrolling();
+});
 
 </script>
 
 <style scoped>
-.scroll-container {
-  height: 25vh;
-  overflow-y:auto;
+.scroll-contentX{
+  width: 50vw;
+  overflow-x: auto; /* 允许横向滚动 */
+  white-space: nowrap; /* 防止内容换行 */
 }
+
+@media screen and (min-width:2048px){
+  .scrollable-container {
+    height: 36vh;
+    overflow-y:auto;
+  }
  
-.scroll-item {
-  display: inline-block;
-  height: 14vh;
-  width: 15vw;
+  .scroll-item {
+    display: inline-block;
+    height: 14vh;
+    width: 15vw;
+    margin-left: 1vh;
+    margin-bottom: -2vw;
+  }
+}
+
+@media screen and (max-width:2048px) and (min-width:1600px){
+  .scrollable-container {
+    height: 28vh;
+    overflow-y:auto;
+  }
+ 
+  .scroll-item {
+    display: inline-block;
+    height: 14vh;
+    width: 15vw;
+  }
+
+  .scrollable-container-one{
+    height: 20vh;
+    width: 20vw;
+    overflow-y:auto;
+  }
+}
+
+@media screen and (max-width:1600px){
+  .scrollable-container {
+    height: 33vh;
+    overflow-y:auto;
+  }
+ 
+  .scroll-item {
+    display: inline-block;
+    height: 14vh;
+    width: 20vw;
+    margin-left: 2vh;
+  }
+
+  .scrollable-container-one{
+    height: 30vh;
+    width: 20vw;
+    overflow-y: auto;
+  }
 }
 </style>
