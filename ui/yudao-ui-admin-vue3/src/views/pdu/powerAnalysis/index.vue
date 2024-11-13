@@ -408,9 +408,7 @@ function formatPowerEle(_row: any, _column: any, cellValue: number): string {
    let numberele;
    if(queryParams.granularity == "day"){
        numberele = _row.end_ele  -  _row.start_ele;
-       console.log(numberele+"---")
       if(numberele < 0){
-           console.log(numberele+"===")
           numberele = _row.end_ele;
       }
    }else{
