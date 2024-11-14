@@ -50,7 +50,67 @@
             <el-button @click="switchValue = 0;" :type="switchValue === 0 ? 'primary' : ''" style="margin-left:0px;margin-right:-45vw;" size="small">功率</el-button>
             <el-button @click="switchValue = 1;" :type="switchValue === 1 ? 'primary' : ''" style="margin-left:0px;margin-right:-45vw;" size="small">温度</el-button>
             <!--<el-button @click="switchValue = 2;" :type="switchValue === 2 ? 'primary' : ''" style="margin-left:0px;margin-right:-45vw;" size="small">图表</el-button>-->
-            <el-button @click="switchValue = 2;" :type="switchValue === 2 ? 'primary' : ''" style="margin-left:0px;margin-right:-45vw;" size="small">全屏</el-button>
+            <el-button @click="dialogVisible = true" :type="toggleButton ? 'primary' : ''" style="margin-left:0px;margin-right:-45vw;" size="small">全屏</el-button>
+            <el-dialog
+              title="自定义弹窗"
+              v-model="dialogVisible"
+              @close="handleClose"
+            >       
+              <!-- 自定义的头部内容（可选） -->
+              <template #header>
+                <div class="custom-header">
+                  <span>{{switchValue === 0?'功率全屏显示':'温度全屏显示'}}</span>
+                </div>
+              </template>
+
+              <!-- 自定义的主要内容 -->
+              <div class="custom-content">
+                <el-row>
+                  <template v-if="roomShowType">
+                    <el-col>
+                      <div 
+                        class="full-screen-item"
+                        v-for="(item, index) in powInfo.roomDataList"
+                        :key="`card-${index}`"
+                      >
+                        <el-card shadow="hover">
+                          <div class="flex items-center h-21px">
+                            <span class="text-16px">{{ item.name || '' }}</span>
+                            <span class="text-15px" style="margin-left:4vw;">PUE：1.5KWh</span>
+                          </div>
+                          <div class="mt-14px text-14px text-gray-400">最高温度(近24小时)：{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</div>
+                          <div class="mt-14px flex justify-between text-12px text-gray-400">
+                            <span class="text-14px">平均温度：{{item.powActive ? item.powActive.toFixed(1) : '0.0'}}&deg;C</span>
+                            <span>{{ formatTime(new Date(), 'HH:mm:ss') }}</span>
+                          </div>
+                        </el-card>
+                      </div>
+                    </el-col>
+                  </template>
+                  <template v-else>
+                    <el-col>
+                      <div 
+                        class="full-screen-item"
+                        v-for="(item, index) in powInfo.roomDataList"
+                        :key="`card-${index}`"
+                      >
+                        <el-card shadow="hover">
+                          <div class="flex items-center h-21px">
+                            <span class="text-16px">{{ item.name || '' }}</span>
+                            <span class="text-15px" style="margin-left:4vw;">PUE：1.5KWh</span>
+                          </div>
+                          <div class="mt-14px text-14px text-gray-400">最高温度(近24小时)：{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</div>
+                          <div class="mt-14px flex justify-between text-12px text-gray-400">
+                            <span class="text-14px">平均温度：{{item.powActive ? item.powActive.toFixed(1) : '0.0'}}&deg;C</span>
+                            <span>{{ formatTime(new Date(), 'HH:mm:ss') }}</span>
+                          </div>
+                        </el-card>
+                      </div>
+                    </el-col>
+                  </template>
+                </el-row>
+              </div>
+            </el-dialog>
             <el-link type="primary" :underline="false" @click="roomShowType = !roomShowType" style="margin-bottom:-1vh;">{{roomShowType?'切换为图表':'切换为表格'}}</el-link>
           </div>
         </template>
@@ -125,7 +185,7 @@
                   :md="24"
                   :sm="24"
                   :xs="24">
-                  <Echart :options="powOptionsData" :height="258" />
+                  <Echart :options="powOptionsDataOne" :height="258" />
                 </el-col>
               </template>
             </el-row>
@@ -283,6 +343,7 @@ const avatar = userStore.getUser.avatar
 const username = userStore.getUser.nickname
 const eqOptionsData = reactive<EChartsOption>({}) as EChartsOption
 const powOptionsData = reactive<EChartsOption>({}) as EChartsOption
+const powOptionsDataOne = reactive<EChartsOption>({}) as EChartsOption
 const devInfo = reactive({}) // 设备信息
 const powInfo = reactive({}) // 功率数据信息
 const powCopyInfo = reactive({})
@@ -292,6 +353,8 @@ const tableData = ref([]) //
 const prePowBtn = ref(0) // 当前所选的功率
 const switchValue = ref(0) //控制按钮的切换
 const toggleTable = ref(false) //设备统计和告警统计的切换
+const toggleButton = ref(false) //全屏按钮的样式切换
+const dialogVisible = ref(false) //全屏弹窗的显示隐藏
 const powBtns = [ // 功率 当天/当月等切换
   {
     name:'当天',
@@ -432,8 +495,15 @@ const getHomePowData = async() => {
   Object.assign(powInfo, res)
   Object.assign(powCopyInfo, res)
 
-  powInfo.roomDataList = [...powInfo.roomDataList,...powInfo.roomDataList] //添加了模拟数据
+  const modifiedRoomEqList = powInfo.roomDataList.map(item => ({
+    ...item, // 复制对象的所有属性
+    name: item.name + '1' // 修改name属性，在后面加上'*'号
+  }))
 
+  powInfo.roomDataList = [...powInfo.roomDataList,...modifiedRoomEqList] //添加了模拟数据
+
+  console.log('111',powInfo.roomDataList)
+  
   Object.assign(powOptionsData, {
     grid: {
       left: 50,
@@ -472,7 +542,7 @@ const getHomePowData = async() => {
     },
     xAxis: {
       type: 'category',
-      data: res.roomDataList.map(item => item.name)
+      data: powInfo.roomDataList.map(item => item.name)
     },
     yAxis: {
       type: 'value',
@@ -480,7 +550,7 @@ const getHomePowData = async() => {
     series: [
       {
         name: '有功功率',
-        data: res.roomDataList.map(item => item.powActive),
+        data: powInfo.roomDataList.map(item => item.powActive),
         type: 'bar',
         label: {
           show: true,
@@ -490,7 +560,7 @@ const getHomePowData = async() => {
       },
       {
         name: '无功功率',
-        data: res.roomDataList.map(item => item.powReactive),
+        data: powInfo.roomDataList.map(item => item.powReactive),
         type: 'bar',
         label: {
           show: true,
@@ -500,7 +570,7 @@ const getHomePowData = async() => {
       },
       {
         name: '视在功率',
-        data: res.roomDataList.map(item => item.powApparent),
+        data: powInfo.roomDataList.map(item => item.powApparent),
         type: 'bar',
         label: {
           show: true,
@@ -510,12 +580,94 @@ const getHomePowData = async() => {
       },
       {
         name: '功率因素',
-        data: res.roomDataList.map(item => item.powerFactor),
+        data: powInfo.roomDataList.map(item => item.powerFactor),
         type: 'bar',
         label: {
           show: true,
           position: 'top', // 顶部显示
           formatter: '{c}', // 显示数据值
+        },
+      },
+    ]
+  })
+  Object.assign(powOptionsDataOne, {
+    grid: {
+      left: 50,
+      right: 20,
+      bottom: 20
+    },
+    legend: {
+      right: 10,
+      selectedMode: 'single'
+    },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow'
+      },
+      formatter: function (params) {
+        console.log('params', params)
+        let result = '';
+        params.forEach(function (item) {
+          // item 是每一个系列的数据
+          const seriesName = item.seriesName; // 系列名称
+          const value = item.value; // 数据值
+          const marker = item.marker; // 标志图形
+          let unit = ''
+          if (seriesName == '最高温度' || seriesName == '最低温度' || seriesName == '目前温度' || seriesName == '平均温度') {
+            unit = '℃'
+          }
+          result += `${marker}${seriesName}: ${value}${unit}<br/>`;
+        });
+        return result;
+      }
+    },
+    xAxis: {
+      type: 'category',
+      data: powInfo.roomDataList.map(item => item.name)
+    },
+    yAxis: {
+      type: 'value',
+    },
+    series: [
+      {
+        name: '最低温度',
+        data: powInfo.roomDataList.map(item => item.powActive.toFixed(1)),
+        type: 'bar',
+        label: {
+          show: true,
+          position: 'top', // 顶部显示
+          formatter: '{c}℃', // 显示数据值
+        },
+      },
+      {
+        name: '平均温度',
+        data: powInfo.roomDataList.map(item => item.powReactive.toFixed(1)),
+        type: 'bar',
+        label: {
+          show: true,
+          position: 'top', // 顶部显示
+          formatter: '{c}℃', // 显示数据值
+        },
+      },
+      {
+        name: '最高温度',
+        data: powInfo.roomDataList.map(item => item.powApparent.toFixed(1)),
+        type: 'bar',
+        label: {
+          show: true,
+          position: 'top', // 顶部显示
+          formatter: '{c}℃', // 显示数据值
+        },
+      },
+      {
+        name: '目前温度',
+        data: powInfo.roomDataList.map(item => item.powerFactor.toFixed(1)),
+        type: 'bar',
+        label: {
+          show: true,
+          position: 'top', // 顶部显示
+          formatter: '{c}℃', // 显示数据值
         },
       },
     ]
@@ -641,8 +793,24 @@ const computedEnInfoWidth = computed(() => {
       width:num+'vw',
     }
   }
+})
+
+const handleClose = () => {
+  // 弹窗关闭时执行的逻辑
+  console.log('弹窗已关闭');
 }
-)
+
+const handleCancel = () =>  {
+  // 取消按钮点击时执行的逻辑
+  dialogVisible.value = false;
+  console.log('已取消');
+}
+
+const handleConfirm = () => {
+  // 确定按钮点击时执行的逻辑
+  dialogVisible.value = false;
+  console.log('已确定');
+}
 
 const scrollableContainer = ref(null); // 挂载到机房状态
 const scrollableContainerOne = ref(null); // 挂载到设备模块
@@ -659,12 +827,12 @@ const startScrolling = () => {
   scrollInterval = setInterval(() => {
     // 机房状态的滚动逻辑
     scrollContainer('scrollableContainer');
-  }, 100);
+  }, 10);
  
   scrollIntervalOne = setInterval(() => {
     // 设备模块的滚动逻辑
     scrollContainer('scrollableContainerOne');
-  }, 100);
+  }, 10);
 };
  
 const scrollContainer = (containerName) => {
@@ -676,14 +844,19 @@ const scrollContainer = (containerName) => {
     containerRef = scrollableContainerOne;
     interval = scrollIntervalOne;
   }
+
+  // 检查 containerRef.value 是否存在，用来解决控制台报错
+  if (!containerRef?.value) {
+    return; // 可以返回一个特定的值或对象来表示错误
+  }
  
   const { scrollTop, clientHeight, scrollHeight } = containerRef.value;
   const scrollStep = 10; // 滚动步长
-  const scrollTolerance = 3; // 停止前的容忍范围
+  const scrollTolerance = -10; // 停止前的容忍范围
  
   if (scrollTop + clientHeight >= scrollHeight) {
     // 滚动到顶部
-    //containerRef.value.scrollTop = 0;
+    containerRef.value.scrollTop = 0;
   } else if (scrollTop + scrollStep + scrollTolerance >= scrollHeight - clientHeight) {
     // 接近底部时停止定时器
     clearInterval(interval);
@@ -716,9 +889,9 @@ const handleScroll = (event, containerName) => {
     // 如果在延迟期间没有新的滚动事件，则恢复自动滚动
     isScrollingManually = false;
     startScrolling();
-  }, 200); // 延迟时间，单位毫秒，可以根据需要调整
+  }, 1000); // 延迟时间，单位毫秒，可以根据需要调整
 };
- 
+
 onMounted(() => {
   // 添加滚动事件监听器
   if (scrollableContainer.value) {
@@ -752,6 +925,18 @@ onUnmounted(() => {
   width: 50vw;
   overflow-x: auto; /* 允许横向滚动 */
   white-space: nowrap; /* 防止内容换行 */
+}
+
+.full-screen-item{
+  display: inline-block;
+  height: 16vh;
+  width: 19vw;
+}
+
+/deep/ .el-dialog {
+  margin-top: 0;
+  height: 100%;
+  width: 100%;
 }
 
 @media screen and (min-width:2048px){
