@@ -933,7 +933,7 @@ onUnmounted(() => {
   width: 19vw;
 }
 
-/deep/ .el-dialog {
+:deep(.el-dialog) {
   margin-top: 0;
   height: 100%;
   width: 100%;
