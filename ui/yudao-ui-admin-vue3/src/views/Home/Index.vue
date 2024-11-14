@@ -76,7 +76,7 @@
                         <el-card shadow="hover">
                           <div class="flex items-center h-21px">
                             <span class="text-16px">{{ item.name || '' }}</span>
-                            <span class="text-15px" style="margin-left:4vw;">PUE：1.5KWh</span>
+                            <span class="text-15px" style="margin-left:9vw;">PUE：1.5</span>
                           </div>
                           <div class="mt-14px text-14px text-gray-400">最高温度(近24小时)：{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</div>
                           <div class="mt-14px flex justify-between text-12px text-gray-400">
@@ -97,7 +97,7 @@
                         <el-card shadow="hover">
                           <div class="flex items-center h-21px">
                             <span class="text-16px">{{ item.name || '' }}</span>
-                            <span class="text-15px" style="margin-left:4vw;">PUE：1.5KWh</span>
+                            <span class="text-15px" style="margin-left:9vw;">PUE：1.5</span>
                           </div>
                           <div class="mt-14px text-14px text-gray-400">最高温度(近24小时)：{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</div>
                           <div class="mt-14px flex justify-between text-12px text-gray-400">
@@ -128,7 +128,7 @@
                         <div class="flex items-center h-21px">
                           <!-- <Icon :icon="item.icon" :size="25" class="mr-8px" /> -->
                           <span class="text-15px">{{ item.name || '' }}</span>
-                          <span class="text-15px" style="margin-left:4vw;">PUE：1.5KWh</span>
+                          <span class="text-15px" style="margin-left:5vw;">PUE：1.5</span>
                         </div>
                         <div class="mt-14px text-14px text-gray-400">实时总功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW</div>
                         <div class="mt-14px flex justify-between text-12px text-gray-400">
@@ -166,7 +166,7 @@
                         <div class="flex items-center h-21px">
                           <!-- <Icon :icon="item.icon" :size="25" class="mr-8px" /> -->
                           <span class="text-16px">{{ item.name || '' }}</span>
-                          <span class="text-15px" style="margin-left:4vw;">PUE：1.5KWh</span>
+                          <span class="text-15px" style="margin-left:5vw;">PUE：1.5</span>
                         </div>
                         <div class="mt-14px text-14px text-gray-400">最高温度(近24小时)：{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</div>
                         <div class="mt-14px flex justify-between text-12px text-gray-400">
@@ -246,7 +246,7 @@
                 <template #default>
                   <!--<div class="percentage-value text-28px mt-12px">{{powInfo.totalPowActive ? powInfo.totalPowActive.toFixed(3) : '0.000'}}kW</div>
                   <div class="percentage-label text-12px mt-12px">总功率</div>-->
-                  <div class="percentage-value text-28px mt-12px">1.5KWh</div>
+                  <div class="percentage-value text-28px mt-12px">1.5</div>
                   <div class="percentage-label text-12px mt-12px">PUE</div>
                 </template>
               </el-progress>
