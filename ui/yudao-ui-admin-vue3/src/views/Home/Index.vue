@@ -47,10 +47,12 @@
         <template #header>
           <div class="h-3 flex justify-between">
             <span>机房状态</span>
-            <el-button @click="switchValue = 0;" :type="switchValue === 0 ? 'primary' : ''" style="margin-left:0px;margin-right:-45vw;" size="small">功率</el-button>
-            <el-button @click="switchValue = 1;" :type="switchValue === 1 ? 'primary' : ''" style="margin-left:0px;margin-right:-45vw;" size="small">温度</el-button>
+            <el-button @click="switchValue = 0;" :type="switchValue === 0 ? 'primary' : ''" style="margin-left:0px;margin-right:0vw;" size="small">机房功率</el-button>
+            <el-button @click="switchValue = 1;" :type="switchValue === 1 ? 'primary' : ''" style="margin-left:-39vw;margin-right:0vw;" size="small">机房温度</el-button>
+            <el-button type="" @click="roomShowType = !roomShowType" style="margin-left:-39vw;margin-right:-1vw;" size="small">{{roomShowType?'机房对比':'返回'}}</el-button>
+            <el-button @click="switchValue = 2;" :type="switchValue === 2 ? 'primary' : ''" style="margin-left:-38vw;margin-right:0vw;" size="small">实时曲线</el-button>
             <!--<el-button @click="switchValue = 2;" :type="switchValue === 2 ? 'primary' : ''" style="margin-left:0px;margin-right:-45vw;" size="small">图表</el-button>-->
-            <el-button @click="dialogVisible = true" :type="toggleButton ? 'primary' : ''" style="margin-left:0px;margin-right:-45vw;" size="small">全屏</el-button>
+            <el-button @click="dialogVisible = true" :type="toggleButton ? 'primary' : ''" style="margin-left:-39vw;margin-right:0vw;" size="small">全屏</el-button>
             <el-dialog
               title="自定义弹窗"
               v-model="dialogVisible"
@@ -59,59 +61,105 @@
               <!-- 自定义的头部内容（可选） -->
               <template #header>
                 <div class="custom-header">
-                  <span>{{switchValue === 0?'功率全屏显示':'温度全屏显示'}}</span>
+                  <span style="margin-right:70vw;">机房状态全屏显示</span>
+                  <el-button @click="switchValue = 0;" :type="switchValue === 0 ? 'primary' : ''" size="small">机房功率</el-button>
+                  <el-button @click="switchValue = 1;" :type="switchValue === 1 ? 'primary' : ''" size="small">机房温度</el-button>
+                  <el-button type="" @click="roomShowTypeCope = !roomShowTypeCope" size="small">{{roomShowTypeCope?'机房对比':'返回'}}</el-button>
+                  <el-button @click="switchValue = 2;" :type="switchValue === 2 ? 'primary' : ''" size="small">实时曲线</el-button>
                 </div>
               </template>
 
               <!-- 自定义的主要内容 -->
               <div class="custom-content">
                 <el-row>
-                  <template v-if="roomShowType">
+                  <template v-if="switchValue === 0">
                     <el-col>
-                      <div 
-                        class="full-screen-item"
-                        v-for="(item, index) in powInfo.roomDataList"
-                        :key="`card-${index}`"
-                      >
-                        <el-card shadow="hover">
-                          <div class="flex items-center h-21px">
-                            <span class="text-16px">{{ item.name || '' }}</span>
-                            <span class="text-15px" style="margin-left:9vw;">PUE：1.5</span>
-                          </div>
-                          <div class="mt-14px text-14px text-gray-400">最高温度(近24小时)：{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</div>
-                          <div class="mt-14px flex justify-between text-12px text-gray-400">
-                            <span class="text-14px">平均温度：{{item.powActive ? item.powActive.toFixed(1) : '0.0'}}&deg;C</span>
-                            <span>{{ formatTime(new Date(), 'HH:mm:ss') }}</span>
-                          </div>
-                        </el-card>
-                      </div>
+                      <template v-if="roomShowTypeCope">
+                        <div 
+                          class="full-screen-item"
+                          v-for="(item, index) in powInfo.roomDataList"
+                          :key="`card-${index}`"
+                        >
+                          <el-card shadow="hover">
+                            <div class="flex items-center h-21px">
+                              <!-- <Icon :icon="item.icon" :size="25" class="mr-8px" /> -->
+                              <span class="text-15px">{{ item.name || '' }}</span>
+                              <span class="text-15px" style="margin-left:5vw;">PUE：1.5</span>
+                            </div>
+                            <div class="mt-14px text-14px text-gray-400">实时总功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW</div>
+                            <div class="mt-14px flex justify-between text-12px text-gray-400">
+                              <span class="text-14px">实时视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA</span>
+                              <span>{{ formatTime(new Date(), 'HH:mm:ss') }}</span>
+                            </div>
+                          </el-card>
+                        </div>
+                      </template>
+                      <template v-else>
+                        <Echart :options="powOptionsData" :height="600" />
+                      </template>
                     </el-col>
                   </template>
-                  <template v-else>
+                  <template v-else-if="switchValue === 1">
                     <el-col>
-                      <div 
-                        class="full-screen-item"
-                        v-for="(item, index) in powInfo.roomDataList"
-                        :key="`card-${index}`"
-                      >
-                        <el-card shadow="hover">
-                          <div class="flex items-center h-21px">
-                            <span class="text-16px">{{ item.name || '' }}</span>
-                            <span class="text-15px" style="margin-left:9vw;">PUE：1.5</span>
-                          </div>
-                          <div class="mt-14px text-14px text-gray-400">最高温度(近24小时)：{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</div>
-                          <div class="mt-14px flex justify-between text-12px text-gray-400">
-                            <span class="text-14px">平均温度：{{item.powActive ? item.powActive.toFixed(1) : '0.0'}}&deg;C</span>
-                            <span>{{ formatTime(new Date(), 'HH:mm:ss') }}</span>
-                          </div>
-                        </el-card>
-                      </div>
+                      <template v-if="roomShowTypeCope">
+                        <div 
+                          class="full-screen-item"
+                          v-for="(item, index) in powInfo.roomDataList"
+                          :key="`card-${index}`"
+                        >
+                          <el-card shadow="hover">
+                            <div class="flex items-center h-21px">
+                              <!-- <Icon :icon="item.icon" :size="25" class="mr-8px" /> -->
+                              <span class="text-16px">{{ item.name || '' }}</span>
+                              <span class="text-15px" style="margin-left:5vw;">PUE：1.5</span>
+                            </div>
+                            <div class="mt-14px flex justify-between text-12px text-gray-400">
+                              <span style="margin-left:3vw">冷通道</span>
+                              <span style="margin-right:2vw">热通道</span>
+                            </div>
+                            <div class="mt-14px flex justify-between text-12px text-gray-400">
+                              <span class="text-12px">最高温度：{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</span>
+                              <span class="text-12px" style="margin-right:2vw">{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</span>
+                            </div>
+                            <div class="mt-14px flex justify-between text-12px text-gray-400">
+                              <span class="text-12px">平均温度：{{item.powActive ? item.powActive.toFixed(1) : '0.0'}}&deg;C</span>
+                              <span class="text-12px" style="margin-right:2vw">{{item.powActive ? item.powActive.toFixed(1) : '0.0'}}&deg;C</span>
+                            </div>
+                            <div class="mt-14px flex justify-between text-12px text-gray-400">
+                              <span>时间：{{ formatTime(new Date(), 'HH:mm:ss') }}</span>
+                            </div>
+                          </el-card>
+                        </div>
+                      </template>
+                      <template v-else>
+                        <div>暂无数据</div>
+                      </template>
+                    </el-col>
+                  </template>
+                  <template v-if="switchValue === 2">
+                    <el-col>
+                      <template v-if='roomShowTypeCope'>
+                        <div 
+                          class="centerCope"
+                        >
+                          <CabTopology v-show="false" :containerInfo="containerInfo" :isFromHome="true" @back-data="handleBackData" @getroomid="handleGetRoomId" />
+                          <ContentWrap class="CabEchart">
+                            <Echart :options="echartOptionsPower" height="60vh" width="100%" />
+                            <div class="btns">
+                              <el-button class="btn" size="small" :plain="!(radioBtn == 'pow')" type="primary" @click="switchTrend('pow')">功率</el-button>
+                              <el-button class="btn" size="small" :plain="!(radioBtn == 'ele')" type="primary" @click="switchTrend('ele')">用能</el-button>
+                            </div>
+                          </ContentWrap>
+                        </div>
+                      </template>
+                      <template v-else>
+                        <div>暂无数据</div>
+                      </template>
                     </el-col>
                   </template>
                 </el-row>
               </div>
             </el-dialog>
-            <el-link type="primary" :underline="false" @click="roomShowType = !roomShowType" style="margin-bottom:-1vh;">{{roomShowType?'切换为图表':'切换为表格'}}</el-link>
           </div>
         </template>
         <el-skeleton :loading="loading" animated v-if="switchValue===0">
@@ -147,7 +195,7 @@
                   :md="24"
                   :sm="24"
                   :xs="24">
-                  <Echart :options="powOptionsData" :height="258" />
+                  <Echart :options="powOptionsData" :height="400" />
                 </el-col>
               </template>
             </el-row>
@@ -156,7 +204,7 @@
             <el-row>
               <template v-if="roomShowType">
                 <el-col>
-                  <div ref="scrollableContainer" class="scrollable-container" @scroll="handleScroll">
+                  <div ref="scrollableContainer" class="temperature-container" @scroll="handleScroll">
                     <div 
                       class="scroll-item"
                       v-for="(item, index) in powInfo.roomDataList"
@@ -168,10 +216,20 @@
                           <span class="text-16px">{{ item.name || '' }}</span>
                           <span class="text-15px" style="margin-left:5vw;">PUE：1.5</span>
                         </div>
-                        <div class="mt-14px text-14px text-gray-400">最高温度(近24小时)：{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</div>
                         <div class="mt-14px flex justify-between text-12px text-gray-400">
-                          <span class="text-14px">平均温度：{{item.powActive ? item.powActive.toFixed(1) : '0.0'}}&deg;C</span>
-                          <span>{{ formatTime(new Date(), 'HH:mm:ss') }}</span>
+                          <span style="margin-left:3vw">冷通道</span>
+                          <span style="margin-right:2vw">热通道</span>
+                        </div>
+                        <div class="mt-14px flex justify-between text-12px text-gray-400">
+                          <span class="text-12px">最高温度：{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</span>
+                          <span class="text-12px" style="margin-right:2vw">{{item.powApparent ? item.powApparent.toFixed(1) : '0.0'}}&deg;C</span>
+                        </div>
+                        <div class="mt-14px flex justify-between text-12px text-gray-400">
+                          <span class="text-12px">平均温度：{{item.powActive ? item.powActive.toFixed(1) : '0.0'}}&deg;C</span>
+                          <span class="text-12px" style="margin-right:2vw">{{item.powActive ? item.powActive.toFixed(1) : '0.0'}}&deg;C</span>
+                        </div>
+                        <div class="mt-14px flex justify-between text-12px text-gray-400">
+                          <span>时间：{{ formatTime(new Date(), 'HH:mm:ss') }}</span>
                         </div>
                       </el-card>
                     </div>
@@ -179,14 +237,30 @@
                 </el-col>
               </template>
               <template v-else>
-                <el-col 
-                  :xl="24"
-                  :lg="24"
-                  :md="24"
-                  :sm="24"
-                  :xs="24">
-                  <Echart :options="powOptionsDataOne" :height="258" />
+                <div>暂无数据</div>
+              </template>
+            </el-row>
+        </el-skeleton>
+        <el-skeleton :loading="loading" animated v-else-if="switchValue===2">
+            <el-row>
+              <template v-if="roomShowType">
+                <el-col>
+                  <div 
+                    class="center"
+                  >
+                    <CabTopology v-show="false" :containerInfo="containerInfo" :isFromHome="true" @back-data="handleBackData" @getroomid="handleGetRoomId" />
+                    <ContentWrap class="CabEchart">
+                      <Echart :options="echartOptionsPower" height="30vh" width="100%" />
+                      <div class="btns">
+                        <el-button class="btn" size="small" :plain="!(radioBtn == 'pow')" type="primary" @click="switchTrend('pow')">功率</el-button>
+                        <el-button class="btn" size="small" :plain="!(radioBtn == 'ele')" type="primary" @click="switchTrend('ele')">用能</el-button>
+                      </div>
+                    </ContentWrap>
+                  </div>
                 </el-col>
+              </template>
+              <template v-else>
+                <div>暂无数据</div>
               </template>
             </el-row>
         </el-skeleton>
@@ -196,7 +270,6 @@
         <template #header>
           <div class="h-3 flex justify-between">
             <span>用电分布</span>
-            <!-- <el-link type="primary" :underline="false" @click="roomShowType = !roomShowType">切换</el-link> -->
             <div class="flex text-12px">
               <template v-for="(btn, index) in powBtns" :key="index">
                 <div class="flex mr-8px" style="cursor: pointer;" @click="switchPowBtn(index)">
@@ -244,8 +317,6 @@
             <el-col :span="10" class="flex justify-center">
               <el-progress type="circle" :percentage="100">
                 <template #default>
-                  <!--<div class="percentage-value text-28px mt-12px">{{powInfo.totalPowActive ? powInfo.totalPowActive.toFixed(3) : '0.000'}}kW</div>
-                  <div class="percentage-label text-12px mt-12px">总功率</div>-->
                   <div class="percentage-value text-28px mt-12px">1.5</div>
                   <div class="percentage-label text-12px mt-12px">PUE</div>
                 </template>
@@ -332,6 +403,9 @@ import { MachineHomeApi } from '@/api/cabinet/home'
 
 import { defineComponent } from 'vue'
 
+import CabTopology from "@/views/room/topology/index.vue"
+import { MachineRoomApi } from '@/api/cabinet/room'
+
 defineOptions({ name: 'Home' })
 
 const { t } = useI18n()
@@ -339,6 +413,7 @@ const userStore = useUserStore()
 const { setWatermark } = useWatermark()
 const loading = ref(true)
 const roomShowType = ref(true)
+const roomShowTypeCope = ref(true)
 const avatar = userStore.getUser.avatar
 const username = userStore.getUser.nickname
 const eqOptionsData = reactive<EChartsOption>({}) as EChartsOption
@@ -355,6 +430,11 @@ const switchValue = ref(0) //控制按钮的切换
 const toggleTable = ref(false) //设备统计和告警统计的切换
 const toggleButton = ref(false) //全屏按钮的样式切换
 const dialogVisible = ref(false) //全屏弹窗的显示隐藏
+const echartOptionsPower = ref<EChartsOption>({}) //用来存储功率曲线图表的配置选项
+const radioBtn = ref('pow')
+const echartInfo = reactive<any>({}) //配置图表的数据系列
+const roomId = ref<number>(0)
+const screenValue = ref(0) //控制按钮的切换
 const powBtns = [ // 功率 当天/当月等切换
   {
     name:'当天',
@@ -381,6 +461,107 @@ const powBtns = [ // 功率 当天/当月等切换
     totalParam: 'lastMonthEqTotal',
   },
 ]
+
+// 获取机房主页面曲线数据
+const getRoomEchartData = async() => {
+  const res = await MachineRoomApi.getRoomEchartData({id: roomId.value})
+  console.log('***获取机房主页面曲线数据', res)
+  Object.assign(echartInfo, {
+    powList: res.powList || [],
+    eqList: res.eqList || []
+  })
+  switchTrend(radioBtn.value, true)
+  console.log('....', echartInfo)
+}
+
+//配置ECharts图表
+const switchTrend = (type, first = false) => {
+  if (type == radioBtn.value && !first) return
+  radioBtn.value = type
+  if (type == 'pow') {
+    echartOptionsPower.value = {
+      title: {
+        text: '功率曲线'
+      },
+      grid: {
+        left: '0',
+        right: '20',
+        bottom: '0',
+        top: '40',
+        containLabel: true
+      },
+      legend: {},
+      xAxis: {
+        type: 'category',
+        data: echartInfo.powList.map(item => item.dateTime)
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          name: '有功功率',
+          data: echartInfo.powList.map(item => item.activePow ? item.activePow.toFixed(3) : '0.000'),
+          type: 'line',
+          smooth: true,
+          symbol: 'none',
+        },
+        {
+          name: '无功功率',
+          data: echartInfo.powList.map(item => item.reactivePow ? item.reactivePow.toFixed(3) : '0.000'),
+          type: 'line',
+          smooth: true,
+          symbol: 'none',
+        },
+        {
+          name: '视在功率',
+          data: echartInfo.powList.map(item => item.apparentPow ? item.apparentPow.toFixed(3) : '0.000'),
+          type: 'line',
+          smooth: true,
+          symbol: 'none',
+        },
+      ]
+    }
+    console.log('echartOptionsPower', echartOptionsPower.value)
+  } else if (type == 'ele') {
+    echartOptionsPower.value = {
+      title: {
+        text: '用能曲线'
+      },
+      grid: {
+        left: '0',
+        right: '20',
+        bottom: '0',
+        top: '40',
+        containLabel: true
+      },
+      legend: {selectedMode: 'single'},
+      xAxis: {
+        type: 'category',
+        data: echartInfo.eqList.map(item => item.dateTime)
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [//配置图表的数据系列
+        {
+          name: '近一个月用能',
+          data: echartInfo.eqList.map(item => item.eq),
+          type: 'line',
+          smooth: true,
+          symbol: 'none',
+        },
+      ]
+    }
+  }
+}
+
+//获取数据
+const handleGetRoomId = (data) => {
+  roomId.value = data
+  getRoomEchartData()
+  console.log('handleGetRoomId', data)
+}
 
 // 获取主页面设备数据
 const getHomeDevData = async() => {
@@ -747,7 +928,7 @@ const getHomeAlarmData = async() => {
   Object.assign(alarmInfo, res)
   console.log('获取未处理告警数量', res)
 }
-//
+
 const switchPowBtn = (index) => {
   prePowBtn.value = index
   eqOptionsData.series = [{
@@ -770,7 +951,7 @@ const getAllApi = async () => {
     getHomeDevData(),
     getHomePowData(),
     getHomeEqData(),
-    getHomeAlarmData(),
+    getHomeAlarmData()
   ])
   loading.value = false
 }
@@ -920,7 +1101,7 @@ onUnmounted(() => {
 
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .scroll-contentX{
   width: 50vw;
   overflow-x: auto; /* 允许横向滚动 */
@@ -940,6 +1121,11 @@ onUnmounted(() => {
 }
 
 @media screen and (min-width:2048px){
+  .temperature-container{
+    height: 52vh;
+    overflow-y:auto;
+  }
+
   .scrollable-container {
     height: 36vh;
     overflow-y:auto;
@@ -955,6 +1141,11 @@ onUnmounted(() => {
 }
 
 @media screen and (max-width:2048px) and (min-width:1600px){
+  .temperature-container{
+    height: 38vh;
+    overflow-y:auto;
+  }
+
   .scrollable-container {
     height: 28vh;
     overflow-y:auto;
@@ -974,6 +1165,11 @@ onUnmounted(() => {
 }
 
 @media screen and (max-width:1600px){
+  .temperature-container{
+    height: 47vh;
+    overflow-y:auto;
+  }
+
   .scrollable-container {
     height: 33vh;
     overflow-y:auto;
@@ -990,6 +1186,45 @@ onUnmounted(() => {
     height: 30vh;
     width: 20vw;
     overflow-y: auto;
+  }
+}
+
+.center {
+  height: 40vh;
+  width: 100%;
+  .CabEchart{
+    position: relative;
+    .btns {
+      position: absolute;
+      z-index: 9;
+      right: 30px;
+      top: 20px;
+    }
+  }
+}
+
+.centerCope {
+  height: 70vh;
+  width: 100%;
+  .CabEchart{
+    position: relative;
+    .btns {
+      position: absolute;
+      z-index: 9;
+      right: 30px;
+      top: 20px;
+    }
+  }
+}
+
+:deep(.CabEchart) {
+  width: 100%;
+  height: 100%;
+  & > div {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 5 20px;
   }
 }
 </style>
