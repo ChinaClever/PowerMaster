@@ -49,9 +49,9 @@ const echartsOption = ref({
 
 watchEffect(() => {
   // 直接访问即可，watchEffect会自动跟踪变化
-  console.log(prop.list.series)
+  console.log('输出'+prop.list.series)
   series.value = prop.list.series;
-  console.log(series.value)
+  console.log('输出1'+series.value)
   if(  series.value != null && series.value?.length > 0){
     legendList.value =  series.value?.map(item => item.name)
   }
