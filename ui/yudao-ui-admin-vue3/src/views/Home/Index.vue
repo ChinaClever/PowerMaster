@@ -54,7 +54,6 @@
             <!--<el-button @click="switchValue = 2;" :type="switchValue === 2 ? 'primary' : ''" style="margin-left:0px;margin-right:-45vw;" size="small">图表</el-button>-->
             <el-button @click="dialogVisible = true" :type="toggleButton ? 'primary' : ''" style="margin-left:-39vw;margin-right:0vw;" size="small">全屏</el-button>
             <el-dialog
-              title="自定义弹窗"
               v-model="dialogVisible"
               @close="handleClose"
             >       
