@@ -1,33 +1,50 @@
 package cn.iocoder.yudao.module.bus.service.busenergyconsumption;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
-import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
+import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
 import cn.iocoder.yudao.framework.common.mapper.BoxIndexMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
+import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusAisleBarQueryVO;
+import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusEleTotalRealtimeResVO;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.EnergyConsumptionPageReqVO;
-import cn.iocoder.yudao.module.bus.dal.dataobject.boxindex.BoxIndexDO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
+import cn.iocoder.yudao.module.bus.dto.BusEleTotalRealtimeReqDTO;
 import cn.iocoder.yudao.module.bus.service.historydata.BusHistoryDataService;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.commons.lang3.ObjectUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.metrics.ValueCount;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY_AISLE;
+import static cn.iocoder.yudao.module.bus.constant.BusConstants.SPLIT_KEY;
 
 @Service
 public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionService {
@@ -37,13 +54,15 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
 
     @Autowired
     private BusHistoryDataService busHistoryDataService;
-
+    @Autowired
+    private RedisTemplate redisTemplate;
     @Autowired
     private BusIndexMapper busIndexMapper;
 
     @Autowired
     private BoxIndexMapper boxIndexMapper;
-
+    @Autowired
+    private AisleBarMapper aisleBarMapper;
     private Integer[] getBusIdsByDevkeys(String[] devkeys){
         // 创建 QueryWrapper
         QueryWrapper<BusIndexDO> queryWrapper = new QueryWrapper<>();
@@ -768,6 +787,186 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
 
         }
         return list;
+    }
+
+    @Override
+    public PageResult<BusEleTotalRealtimeResVO> getBusEleTotalRealtime(BusEleTotalRealtimeReqDTO reqDTO, boolean flag) throws IOException {
+        PageResult<BusEleTotalRealtimeResVO> pageResult = new PageResult<>();
+        List<BusEleTotalRealtimeResVO> list = new ArrayList<>();
+        List<BusAisleBarQueryVO> records = null;
+        Long total = 0L;
+        ValueOperations ops = redisTemplate.opsForValue();
+
+        if (flag) {
+            IPage<BusAisleBarQueryVO> iPage = busIndexMapper.selectPageList(new Page<>(reqDTO.getPageNo(), reqDTO.getPageSize()),reqDTO.getDevkeys());
+            records = iPage.getRecords();
+            total = iPage.getTotal();
+        } else {
+            records = busIndexMapper.selectPageList(reqDTO.getDevkeys());
+        }
+        Map<String, String> aislePathMap = records.stream().collect(Collectors.toMap(BusAisleBarQueryVO::getBarKey, BusAisleBarQueryVO::getPath));
+        Set<String> redisKeys = records.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toSet());
+        List aisles = ops.multiGet(redisKeys);
+        Map<Integer, String> positonMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(records)){
+            for (Object aisle : aisles) {
+                if (aisle == null) {
+                    continue;
+                }
+                JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
+                String devPosition = json.getString("room_name") + SPLIT_KEY
+                        +  json.getString("aisle_name") + SPLIT_KEY;
+                positonMap.put(json.getInteger("aisle_key"),devPosition);
+            }
+        }
+        Map<String, Integer> keyMap = records.stream().filter(item -> ObjectUtils.isNotEmpty(item.getBarKey()))
+                .collect(Collectors.toMap(BusAisleBarQueryVO::getBarKey, val -> val.getAisleId()));// x -> x, (oldVal, newVal) -> newVal));
+        for (BusAisleBarQueryVO record : records) {
+            BusEleTotalRealtimeResVO resVO = new BusEleTotalRealtimeResVO();
+            Integer aisleId = keyMap.get(record.getDevKey());
+            String localtion = positonMap.get(aisleId);
+            resVO.setId(record.getId()).setLocation(localtion+ aislePathMap.get(record.getDevKey()) + "路")
+                    .setBusName(record.getBusName()).setDevKey(record.getDevKey());
+            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+            boolQuery.must(QueryBuilders.rangeQuery("create_time.keyword")
+                    .gte(reqDTO.getTimeRange()[0])
+                    .lte(reqDTO.getTimeRange()[1]));
+            boolQuery.must(QueryBuilders.termsQuery("bus_id", String.valueOf(record.getId())));
+            // 搜索源构建对象
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(boolQuery);
+            searchSourceBuilder.size(1);
+            searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
+            SearchRequest searchRequest1 = new SearchRequest();
+            searchRequest1.indices("bus_ele_total_realtime");
+            //query条件--正常查询条件
+            searchRequest1.source(searchSourceBuilder);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
+            SearchHits hits = searchResponse1.getHits();
+            for (SearchHit hit : hits) {
+                resVO.setCreateTimeMax((String) hit.getSourceAsMap().get("create_time"));
+                if (Objects.nonNull(resVO.getCreateTimeMax())) {
+                    resVO.setEleActiveEnd((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_active")).orElseGet(() -> 0.0));
+                }
+            }
+            SearchSourceBuilder searchSourceBuilder2 = new SearchSourceBuilder();
+            searchSourceBuilder2.query(boolQuery);
+            searchSourceBuilder2.size(1);
+            searchSourceBuilder2.sort("create_time.keyword", SortOrder.ASC);
+            SearchRequest searchRequest2 = new SearchRequest();
+            searchRequest2.indices("bus_ele_total_realtime");
+            //query条件--正常查询条件
+            searchRequest2.source(searchSourceBuilder2);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse2 = client.search(searchRequest2, RequestOptions.DEFAULT);
+            SearchHits hits2 = searchResponse2.getHits();
+
+            for (SearchHit hit : hits2) {
+                resVO.setCreateTimeMin((String) hit.getSourceAsMap().get("create_time"));
+                if (Objects.nonNull(resVO.getCreateTimeMin())) {
+                    resVO.setEleActiveStart((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_active")).orElseGet(() -> 0.0));
+                    double sub = BigDemicalUtil.sub(resVO.getEleActiveEnd(), resVO.getEleActiveStart(), 1);
+                    resVO.setEleActive(sub);
+                    if (sub < 0) {
+                        resVO.setEleActive(resVO.getEleActiveEnd());
+                    }
+                }
+            }
+            list.add(resVO);
+        }
+        pageResult.setTotal(total).setList(list);
+        return pageResult;
+    }
+
+    @Override
+    public PageResult<BusEleTotalRealtimeResVO> getBoxEleTotalRealtime(BusEleTotalRealtimeReqDTO reqDTO, boolean flag) throws IOException {
+        PageResult<BusEleTotalRealtimeResVO> pageResult = new PageResult<>();
+        List<BusEleTotalRealtimeResVO> list = new ArrayList<>();
+        List<BusAisleBarQueryVO> records = null;
+        Long total = 0L;
+        ValueOperations ops = redisTemplate.opsForValue();
+
+        if (flag) {
+            IPage<BusAisleBarQueryVO> iPage = busIndexMapper.selectBoxPageList(new Page<>(reqDTO.getPageNo(), reqDTO.getPageSize()),reqDTO.getDevkeys());
+            records = iPage.getRecords();
+            total = iPage.getTotal();
+        } else {
+            records = busIndexMapper.selectBoxPageList(reqDTO.getDevkeys());
+        }
+        Map<String, String> aislePathMap = records.stream().collect(Collectors.toMap(BusAisleBarQueryVO::getBarKey, BusAisleBarQueryVO::getPath));
+        Set<String> redisKeys = records.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toSet());
+        List aisles = ops.multiGet(redisKeys);
+        Map<Integer, String> positonMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(records)){
+            for (Object aisle : aisles) {
+                if (aisle == null) {
+                    continue;
+                }
+                JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
+                String devPosition = json.getString("room_name") + SPLIT_KEY
+                        +  json.getString("aisle_name") + SPLIT_KEY;
+                positonMap.put(json.getInteger("aisle_key"),devPosition);
+            }
+        }
+        Map<String, Integer> keyMap = records.stream().filter(item -> ObjectUtils.isNotEmpty(item.getBarKey()))
+                .collect(Collectors.toMap(BusAisleBarQueryVO::getBarKey, val -> val.getAisleId()));// x -> x, (oldVal, newVal) -> newVal));
+        for (BusAisleBarQueryVO record : records) {
+            BusEleTotalRealtimeResVO resVO = new BusEleTotalRealtimeResVO();
+            Integer aisleId = keyMap.get(record.getDevKey());
+            String localtion = positonMap.get(aisleId);
+            resVO.setId(record.getId()).setLocation(localtion+ aislePathMap.get(record.getDevKey()) + "路")
+                    .setBusName(record.getBusName()).setDevKey(record.getDevKey());
+            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+            boolQuery.must(QueryBuilders.rangeQuery("create_time.keyword")
+                    .gte(reqDTO.getTimeRange()[0])
+                    .lte(reqDTO.getTimeRange()[1]));
+            boolQuery.must(QueryBuilders.termsQuery("box_id", String.valueOf(record.getId())));
+            // 搜索源构建对象
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(boolQuery);
+            searchSourceBuilder.size(1);
+            searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
+            SearchRequest searchRequest1 = new SearchRequest();
+            searchRequest1.indices("box_ele_total_realtime");
+            //query条件--正常查询条件
+            searchRequest1.source(searchSourceBuilder);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
+            SearchHits hits = searchResponse1.getHits();
+            for (SearchHit hit : hits) {
+                resVO.setCreateTimeMax((String) hit.getSourceAsMap().get("create_time"));
+                if (Objects.nonNull(resVO.getCreateTimeMax())) {
+                    resVO.setEleActiveEnd((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_active")).orElseGet(() -> 0.0));
+                }
+            }
+            SearchSourceBuilder searchSourceBuilder2 = new SearchSourceBuilder();
+            searchSourceBuilder2.query(boolQuery);
+            searchSourceBuilder2.size(1);
+            searchSourceBuilder2.sort("create_time.keyword", SortOrder.ASC);
+            SearchRequest searchRequest2 = new SearchRequest();
+            searchRequest2.indices("box_ele_total_realtime");
+            //query条件--正常查询条件
+            searchRequest2.source(searchSourceBuilder2);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse2 = client.search(searchRequest2, RequestOptions.DEFAULT);
+            SearchHits hits2 = searchResponse2.getHits();
+
+            for (SearchHit hit : hits2) {
+                resVO.setCreateTimeMin((String) hit.getSourceAsMap().get("create_time"));
+                if (Objects.nonNull(resVO.getCreateTimeMin())) {
+                    resVO.setEleActiveStart((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_active")).orElseGet(() -> 0.0));
+                    double sub = BigDemicalUtil.sub(resVO.getEleActiveEnd(), resVO.getEleActiveStart(), 1);
+                    resVO.setEleActive(sub);
+                    if (sub < 0) {
+                        resVO.setEleActive(resVO.getEleActiveEnd());
+                    }
+                }
+            }
+            list.add(resVO);
+        }
+        pageResult.setTotal(total).setList(list);
+        return pageResult;
     }
 
 

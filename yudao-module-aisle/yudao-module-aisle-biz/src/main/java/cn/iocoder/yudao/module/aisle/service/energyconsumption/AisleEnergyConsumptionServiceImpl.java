@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.aisle.service.energyconsumption;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.mapper.AisleIndexMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
@@ -31,6 +32,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumptionService {
@@ -405,8 +407,8 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
         Long total = 0L;
         LambdaQueryWrapper<AisleIndex> queryWrapper = new LambdaQueryWrapper<AisleIndex>().eq(AisleIndex::getIsDelete, 0)
                 .orderByDesc(AisleIndex::getCreateTime);
-        if (reqDTO.getRoomIds() != null && reqDTO.getRoomIds().length != 0) {
-            queryWrapper.in(AisleIndex::getId, reqDTO.getRoomIds());
+        if (reqDTO.getAisleIds() != null && reqDTO.getAisleIds().length != 0) {
+            queryWrapper.in(AisleIndex::getId, reqDTO.getAisleIds());
         }
         if (flag) {
             IPage<AisleIndex> iPage = aisleIndexMapper.selectPage(new Page<>(reqDTO.getPageNo(), reqDTO.getPageSize()), queryWrapper);
@@ -415,9 +417,16 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
         } else {
             records = aisleIndexMapper.selectList(queryWrapper);
         }
+        List<Integer> roomIds = records.stream().map(AisleIndex::getRoomId).distinct().collect(Collectors.toList());
+        Map<Integer , RoomIndex> map = aisleHistoryDataService.getRoomById(roomIds);
         for (AisleIndex record : records) {
+            RoomIndex roomIndex = map.get(record.getRoomId());
+            String location = null;
+            if (roomIndex != null) {
+                location =  roomIndex.getName() + "-"  + record.getName() ;
+            }
             AisleEleTotalRealtimeResVO resVO = new AisleEleTotalRealtimeResVO();
-            resVO.setRoomId(record.getId()).setName(record.getName());
+            resVO.setId(record.getId()).setLocation(location);
             BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
             boolQuery.must(QueryBuilders.rangeQuery("create_time.keyword")
                     .gte(reqDTO.getTimeRange()[0])

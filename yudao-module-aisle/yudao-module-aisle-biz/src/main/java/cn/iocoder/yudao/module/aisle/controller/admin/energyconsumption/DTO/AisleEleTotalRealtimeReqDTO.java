@@ -14,5 +14,5 @@ public class AisleEleTotalRealtimeReqDTO extends PageParam {
 
     private String[] timeRange;
 
-    private String[] roomIds;
+    private String[] aisleIds;
 }

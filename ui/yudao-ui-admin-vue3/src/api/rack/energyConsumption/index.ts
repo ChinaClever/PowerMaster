@@ -61,4 +61,15 @@ export const EnergyConsumptionApi = {
   getSubBillDetails: async (params: any) => {
     return await request.get({ url: `/rack/eq-data/bill-details`, params})
   },
+
+
+    // 导出机架实时电能记录历史数据 Excel
+    getRackTotalRealtimeExcel: async (data, axiosConfig) => {
+      return await request.downloadPost({ url: `/rack/eq-data/rack_total_realtimeExcel`, data, ...axiosConfig })
+    },
+  
+    // 获取实时电量
+    getRackTotalRealtime: async (data: any) => {
+      return await request.post({ url: `/rack/eq-data/rack_total_realtime`, data})
+    },
 }

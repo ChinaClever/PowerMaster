@@ -5,7 +5,7 @@
         <div class="nav_data">
         <div class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
-            <span class="label">选定时间范围查询实时能耗</span>
+            <span class="label">按时间范围查询实时能耗</span>
           </div>
         </div>
         </div>
@@ -59,7 +59,7 @@
           :width="column.width"
         >
           <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.aisle_id, row.location)">详情</el-button>
+            <el-button link type="primary" @click="toDetails(row.id,row.createTimeMin,row.createTimeMax)">详情</el-button>
           </template>
         </el-table-column>
         
@@ -79,7 +79,7 @@
               v-if="child.istrue"
             >
               <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.aisle_id, row.location)">详情</el-button>
+                <el-button link type="primary" @click="toDetails(row.id,row.createTimeMin,row.createTimeMax)">详情</el-button>
               </template>
             </el-table-column>
           </template>
@@ -115,7 +115,7 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/aisle/energyConsumption'
-import { formatDate, endOfDay, convertDate, addTime } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime, beginOfDay } from '@/utils/formatTime'
 import { IndexApi } from '@/api/aisle/aisleindex'
 import * as echarts from 'echarts';
 const message = useMessage() // 消息弹窗
@@ -128,7 +128,7 @@ const lastDayTotalData = ref(0)
 const lastWeekTotalData = ref(0)
 const lastMonthTotalData = ref(0)
 const instance = getCurrentInstance();
-const loading = ref(true)
+const loading = ref(false)
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
@@ -209,6 +209,12 @@ const initChart = () => {
         {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
       ],
     });
+    rankChart.on('click', function(params) {
+      // 控制台打印数据的名称
+      toDetails(list.value[params.dataIndex].roomId,
+      list.value[params.dataIndex].createTimeMin,
+      list.value[params.dataIndex].createTimeMax);
+    });
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }
 };
@@ -241,20 +247,23 @@ const tableColumns = ref([
 const getList = async () => {
   loading.value = true
   try {
+    if(selectTimeRange.value == null){
+      alert('请输入时间范围');
+    return;
+    }
     if ( selectTimeRange.value != undefined){
       // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+      const selectedStartTime = formatDate(beginOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
-      const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
     if(selectTimeRange.value == null){
       queryParams.timeRange = undefined
     }
-    const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
-    eqData.value = data.list.map((item: { eq_value: any }) => formatEQ(item.eq_value, 1));
+    const data = await EnergyConsumptionApi.getAisleEleTotalRealtime(queryParams)
+    eqData.value = data.list.map((item: { eleActive: any }) => formatEQ(item.eleActive, 1));
     list.value = data.list
     console.log(list.value)
     realTotel.value = data.total
@@ -269,14 +278,15 @@ const getList = async () => {
   }
 }
 
+
 // 自定义图表提示框
 function customTooltipFormatter(params: any[]) {
   var tooltipContent = ''; 
   var item = params[0]; // 获取第一个数据点的信息
-  tooltipContent += '位置：'+list.value[item.dataIndex].location + '  '
-  tooltipContent += '<br/>'+ item.marker + item.seriesName + ': ' + item.value + 'kWh 记录日期：'+formatTime(null, null, list.value[item.dataIndex].create_time) + '<br/>'                 
-                    +item.marker + '结束电能：'+list.value[item.dataIndex].end_ele + 'kWh 结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) + '<br/>' 
-                    +item.marker +'开始电能：'+formatEle(null, null, list.value[item.dataIndex].start_ele) + 'kWh 开始日期：'+formatTime(null, null, list.value[item.dataIndex].start_time) + '<br/>'
+  tooltipContent += '位置：'+list.value[item.dataIndex].location + '<br/>'
+                    +item.marker + '开始电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveStart)  + 'kWh 开始日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMin) + '<br/>' 
+                    +item.marker +'结束电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveEnd) + 'kWh 结束日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMax) + '<br/>'
+                    +item.marker +'耗电量：'+formatEle(null, null, list.value[item.dataIndex].eleActive) + 'kWh';
   return tooltipContent;
 }
 
@@ -299,11 +309,14 @@ function formatTime1(_row: any, _column: any, cellValue: number): string {
   if (!cellValue) {
     return ''
   }
-  return dayjs(cellValue).format('MM-DD')
+  return dayjs(cellValue).format('YYYY-MM-DD')
 }
 
 // 格式化电能列数据，保留1位小数
 function formatEle(_row: any, _column: any, cellValue: number): string {
+  if (cellValue == null) {
+    return '';
+  }
   return Number(cellValue).toFixed(1);
 }
 
@@ -378,8 +391,8 @@ const handleExport = async () => {
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
-    const data = await EnergyConsumptionApi.exportEQPageData(queryParams, axiosConfig)
-    await download.excel(data, '柜列能耗趋势.xlsx')
+    const data = await EnergyConsumptionApi.getAisleEleTotalRealtimeExcel(queryParams, axiosConfig)
+    await download.excel(data, '柜列实时能耗.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -388,17 +401,17 @@ const handleExport = async () => {
   }
 }
 
-
 /** 详情操作*/
-const toDetails = (aisleId: number, location: string) => {
-  push('/aisle/aisleenergyconsumption/ecdistribution?aisleId='+aisleId+'&location='+location);
+const toDetails = (id: number, createTimeMin : string,createTimeMax : string) => {
+  push('/aisle/aisleenergyconsumption/powerAnalysis?start='+createTimeMin+
+  '&end='+createTimeMax+'&id='+ id);
 }
 
 /** 初始化 **/
 onMounted(() => {
   getNavList()
   getNavNewData()
-  getList();
+  // getList();
 });
 
 </script>

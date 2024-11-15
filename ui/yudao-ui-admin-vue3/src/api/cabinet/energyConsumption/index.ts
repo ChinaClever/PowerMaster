@@ -55,4 +55,14 @@ export const EnergyConsumptionApi = {
   getSubBillDetails: async (params: any) => {
     return await request.get({ url: `/cabinet/eq-data/bill-details`, params})
   },
+
+    // 获取分段电能电费
+    getCabinetEleTotalRealtime: async (data: any) => {
+      return await request.post({ url: `/cabinet/eq-data/eleTotalRealtime`, data})
+    },
+
+    // 导出机柜电能记录历史数据 Excel
+    getCabinetEleTotalRealtimeExcel: async (data, axiosConfig) => {
+      return await request.downloadPost({ url: `/cabinet/eq-data/eleTotalRealtimeExcel`, data, ...axiosConfig })
+    },
 }

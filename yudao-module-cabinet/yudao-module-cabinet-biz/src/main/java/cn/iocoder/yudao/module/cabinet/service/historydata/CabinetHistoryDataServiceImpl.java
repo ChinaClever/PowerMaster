@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.cabinet.service.historydata;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
@@ -283,11 +284,20 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
 
     @Override
     public Map<Integer, RoomIndex> getRoomById(List<Integer> roomIds) {
-        LambdaQueryWrapper<RoomIndex> queryWrapper = new LambdaQueryWrapper<RoomIndex>().orderByDesc(RoomIndex::getId)
+        LambdaQueryWrapper<RoomIndex> queryWrapper = new LambdaQueryWrapper<RoomIndex>().orderByDesc(RoomIndex::getCreateTime)
                 .in(RoomIndex::getId,roomIds).eq(RoomIndex::getIsDelete, DelEnums.NO_DEL.getStatus());
         List<RoomIndex> roomIndexList = roomIndexMapper.selectList(queryWrapper);
         return roomIndexList.stream().filter(item -> ObjectUtils.isNotEmpty(item.getId()))
                 .collect(Collectors.toMap(RoomIndex::getId, roomIndex -> roomIndex));
+    }
+
+    @Override
+    public Map<Integer, AisleIndex> getAisleByIds(List<Integer> aisleIds) {
+        LambdaQueryWrapper<AisleIndex> queryWrapper = new LambdaQueryWrapper<AisleIndex>().orderByDesc(AisleIndex::getCreateTime)
+                .in(AisleIndex::getId,aisleIds).eq(AisleIndex::getIsDelete, DelEnums.NO_DEL.getStatus());
+        List<AisleIndex> roomIndexList = aisleIndexMapper.selectList(queryWrapper);
+        return roomIndexList.stream().filter(item -> ObjectUtils.isNotEmpty(item.getId()))
+                .collect(Collectors.toMap(AisleIndex::getId, roomIndex -> roomIndex));
     }
 //        Map<String, DataMenu> collect = list1.stream().filter(item -> ObjectUtils.isNotEmpty(item.getDictionaryValue()))
 //                .collect(Collectors.toMap(DataMenu::getDictionaryValue, x -> x, (oldVal, newVal) -> newVal));

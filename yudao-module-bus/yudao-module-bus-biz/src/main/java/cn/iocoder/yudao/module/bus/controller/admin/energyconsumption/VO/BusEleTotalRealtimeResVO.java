@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.aisle.controller.admin.energyconsumption.VO;
+package cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO;
 
 import cn.iocoder.yudao.framework.excel.core.util.DateStringConverter;
 import com.alibaba.excel.annotation.ExcelIgnore;
@@ -25,13 +25,19 @@ import lombok.Data;
 @ContentStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
 @ColumnWidth(30)
 @HeadRowHeight(20)
-public class AisleEleTotalRealtimeResVO {
-    @ExcelProperty("id")
+public class BusEleTotalRealtimeResVO {
+    @ExcelProperty("RoomId")
     @ExcelIgnore
     private Integer id;
 
-    @ExcelProperty("位置")
+    @ExcelProperty("名称")
+    private String busName;
+
+    @ExcelProperty("机房名称")
     private String location;
+
+    @ExcelProperty("设备识别码")
+    private String devKey;
 
     @NumberFormat("0.0")
     @ExcelProperty("开始电能 (kWh)")

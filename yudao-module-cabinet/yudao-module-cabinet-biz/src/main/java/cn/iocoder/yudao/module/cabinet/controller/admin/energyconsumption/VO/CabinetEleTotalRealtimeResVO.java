@@ -28,10 +28,10 @@ import lombok.Data;
 public class CabinetEleTotalRealtimeResVO {
     @ExcelProperty("RoomId")
     @ExcelIgnore
-    private Integer RoomId;
+    private Integer id;
 
     @ExcelProperty("机房名称")
-    private String name;
+    private String location;
 
     @NumberFormat("0.0")
     @ExcelProperty("开始电能 (kWh)")

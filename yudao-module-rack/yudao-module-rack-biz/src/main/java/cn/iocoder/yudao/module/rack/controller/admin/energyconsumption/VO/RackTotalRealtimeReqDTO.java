@@ -20,5 +20,5 @@ public class RackTotalRealtimeReqDTO extends PageParam {
     @Schema(description = "时间")
     private String[] timeRange;
 
-    private String[] ipArray;
+    private String[] rackIds;
 }

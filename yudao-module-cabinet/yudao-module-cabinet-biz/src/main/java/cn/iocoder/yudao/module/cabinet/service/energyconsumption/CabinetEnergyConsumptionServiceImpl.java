@@ -392,8 +392,8 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
         Long total = 0L;
         LambdaQueryWrapper<IndexDO> queryWrapper = new LambdaQueryWrapper<IndexDO>().eq(IndexDO::getIsDeleted, 0)
                 .orderByDesc(IndexDO::getCreateTime);
-        if (reqDTO.getRoomIds() != null && reqDTO.getRoomIds().length != 0) {
-            queryWrapper.in(IndexDO::getId, reqDTO.getRoomIds());
+        if (reqDTO.getCabinetIds() != null && reqDTO.getCabinetIds().length != 0) {
+            queryWrapper.in(IndexDO::getId, reqDTO.getCabinetIds());
         }
         if (flag) {
             IPage<IndexDO> iPage = cabIndexMapper.selectPage(new Page<>(reqDTO.getPageNo(), reqDTO.getPageSize()), queryWrapper);
@@ -403,10 +403,20 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
             records = cabIndexMapper.selectList(queryWrapper);
         }
         List<Integer> roomIds = records.stream().map(IndexDO::getRoomId).distinct().collect(Collectors.toList());
-        Map<Integer , RoomIndex> map = cabinetHistoryDataService.getRoomById(roomIds);
+        Map<Integer , RoomIndex> mapRoom = cabinetHistoryDataService.getRoomById(roomIds);
+        List<Integer> aisleIds = records.stream().map(IndexDO::getAisleId).distinct().collect(Collectors.toList());
+        Map<Integer , AisleIndex> mapAisle = cabinetHistoryDataService.getAisleByIds(aisleIds);
         for (IndexDO record : records) {
             CabinetEleTotalRealtimeResVO resVO = new CabinetEleTotalRealtimeResVO();
-            resVO.setRoomId(record.getId()).setName(record.getName());
+            String roomName = mapRoom.get(record.getRoomId()).getName();
+            String aisleName = mapAisle.get(record.getAisleId()).getName();
+            String localtion = null;
+            if(record.getAisleId() != 0){
+                localtion = roomName + "-" + aisleName + "-" + record.getName();
+            }else {
+                localtion = roomName + "-"  + record.getName() ;
+            }
+            resVO.setId(record.getId()).setLocation(localtion);
             BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
             boolQuery.must(QueryBuilders.rangeQuery("create_time.keyword")
                     .gte(reqDTO.getTimeRange()[0])
