@@ -1,9 +1,13 @@
 package cn.iocoder.yudao.module.rack.service.energyconsumption;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
+import cn.iocoder.yudao.framework.common.mapper.AisleIndexMapper;
 import cn.iocoder.yudao.framework.common.mapper.RackIndexDoMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
+import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.IndexDO;
 import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.PduIndex;
 import cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO.RackEnergyConsumptionPageReqVO;
 import cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO.RackTotalRealtimeReqDTO;
@@ -37,7 +41,8 @@ public class RackEnergyConsumptionServiceImpl implements RackEnergyConsumptionSe
 
     @Autowired
     private RestHighLevelClient client;
-
+    @Autowired
+    private AisleIndexMapper aisleIndexMapper;
     @Autowired
     private RackHistoryDataService rackHistoryDataService;
     @Autowired
@@ -406,22 +411,32 @@ public class RackEnergyConsumptionServiceImpl implements RackEnergyConsumptionSe
         int pageSize = reqDTO.getPageSize();
         PageResult<RackTotalRealtimeRespVO> pageResult = null;
         List<RackTotalRealtimeRespVO> mapList = new ArrayList<>();
-        List collect =new ArrayList();
+
         List<RackIndex> records = null;
         long total = 0;
         if (flag) {
-            IPage<RackIndex> page = rackIndexService.findRackIndexAll(pageNo, pageSize, reqDTO.getIpArray());
+            IPage<RackIndex> page = rackIndexService.findRackIndexAll(pageNo, pageSize, reqDTO.getRackIds());
             total = page.getTotal();
             records = page.getRecords();
-            collect = records.stream().map(RackIndex::getId).collect(Collectors.toList());
         }else {
-            records = rackIndexService.findRackIndexToList(reqDTO.getIpArray());
-            collect = records.stream().map(RackIndex::getId).collect(Collectors.toList());
+            records = rackIndexService.findRackIndexToList(reqDTO.getRackIds());
         }
-        collect.stream().map(String::valueOf).collect(Collectors.joining(","));
+        List<Integer> roomIds = records.stream().map(RackIndex::getRoomId).distinct().collect(Collectors.toList());
+        Map<Integer , String> mapRoom = rackHistoryDataService.getRoomById(roomIds);
+        List<Integer> cabineIds = records.stream().map(RackIndex::getCabinetId).distinct().collect(Collectors.toList());
+        Map<Integer , IndexDO> mapCabinet = rackHistoryDataService.getCabinetByIds(cabineIds);
+
         for (RackIndex record : records) {
             RackTotalRealtimeRespVO respVO = new RackTotalRealtimeRespVO();
-            respVO.setPduId(Long.valueOf(record.getId()));
+            String roomName = mapRoom.get(record.getRoomId());
+            IndexDO indexDO = mapCabinet.get(record.getCabinetId());
+            if(indexDO.getAisleId() != 0){
+                String aisleName = aisleIndexMapper.selectById(indexDO.getAisleId()).getName();
+                respVO.setLocation(roomName + "-" + aisleName + "-" + indexDO.getName());
+            }else {
+                respVO.setLocation( roomName + "-"  + indexDO.getName()) ;
+            }
+            respVO.setId(Long.valueOf(record.getId())).setRackName(record.getRackName());
             BoolQueryBuilder boolQuery1 = QueryBuilders.boolQuery();
             boolQuery1.must(QueryBuilders.rangeQuery("create_time.keyword")
                     .gte(reqDTO.getTimeRange()[0])

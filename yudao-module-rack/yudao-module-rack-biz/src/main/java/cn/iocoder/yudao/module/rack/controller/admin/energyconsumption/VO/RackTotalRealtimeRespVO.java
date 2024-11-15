@@ -22,14 +22,15 @@ import lombok.Data;
 @ColumnWidth(30)
 @HeadRowHeight(20)
 public class RackTotalRealtimeRespVO {
-    @ExcelProperty("PduId")
+    @ExcelProperty("id")
     @ExcelIgnore
-    private Long pduId;
+    private Long id;
 
     @ExcelProperty("网络地址")
     private String location;
-    @ExcelProperty("所在位置")
-    private String address;
+
+    @ExcelProperty("设备名称")
+    private String rackName;
 
     @NumberFormat("0.0")
     @ExcelProperty("开始电能 (kWh)")

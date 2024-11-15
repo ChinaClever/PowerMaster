@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.module.cabinet.dto;
+package cn.iocoder.yudao.module.bus.dto;
 
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -10,9 +10,9 @@ import lombok.Data;
  */
 @Schema(description = "管理后台 - 机房实时能耗查询入参dto")
 @Data
-public class CabinetEleTotalRealtimeReqDTO extends PageParam {
+public class BusEleTotalRealtimeReqDTO extends PageParam {
 
     private String[] timeRange;
 
-    private String[] cabinetIds;
+    private String[] devkeys;
 }

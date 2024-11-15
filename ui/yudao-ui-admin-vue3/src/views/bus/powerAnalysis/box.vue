@@ -176,7 +176,7 @@ const queryParams = reactive({
   pageSize: 15,
   granularity: 'day',
   timeRange: undefined as string[] | undefined,
-  devkeys: [],
+  devkeys: undefined as string[] | undefined,
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
@@ -294,6 +294,33 @@ const getList = async () => {
     if(selectTimeRange.value == null){
       queryParams.timeRange = undefined
     }
+    const data = await EnergyConsumptionApi.getBoxEQDataPage(queryParams)
+    eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
+    list.value = data.list
+    realTotel.value = data.total
+    if (data.total > 10000){
+      total.value = 10000
+    }else{
+      total.value = data.total
+    }
+  } finally {
+    initChart();
+    loading.value = false
+  }
+}
+
+const getList1 = async () => {
+  loading.value = true
+  try {
+    if ( start.value != undefined){
+      // 格式化时间范围 加上23:59:59的时分秒 
+      const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
+      // 结束时间的天数多加一天 ，  一天的毫秒数
+      const oneDay = 24 * 60 * 60 * 1000;
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(end.value), oneDay )))
+      queryParams.timeRange = [selectedStartTime, selectedEndTime];
+    }
+    queryParams.devkeys = [devKey.value];
     const data = await EnergyConsumptionApi.getBoxEQDataPage(queryParams)
     eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
     list.value = data.list
@@ -434,11 +461,23 @@ const toDetails = (boxId: number, location: string,devkey: string) => {
   push('/bus/nenghao/ecdistribution/box?boxId='+boxId+'&location='+location+'&devKey='+devkey);
 }
 
+const start = ref('')
+const end = ref('')
+const devKey =  ref('')
 /** 初始化 **/
 onMounted(() => {
   getNavList()
   getNavNewData()
-  getList();
+  start.value = useRoute().query.start as string;
+  end.value = useRoute().query.end as string;
+  devKey.value = useRoute().query.devKey as string;
+  if (start.value != null){
+  	console.log('详情页', start);
+	console.log('详情页1', devKey);
+  getList1();
+  }else{
+      getList();
+  }
 });
 
 </script>

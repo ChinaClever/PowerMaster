@@ -20,7 +20,7 @@
         </div> -->
         <div class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
-            <span class="label">选定时间范围查询实时能耗</span>
+            <span class="label">按时间范围查询实时能耗</span>
           </div>
         </div>
         

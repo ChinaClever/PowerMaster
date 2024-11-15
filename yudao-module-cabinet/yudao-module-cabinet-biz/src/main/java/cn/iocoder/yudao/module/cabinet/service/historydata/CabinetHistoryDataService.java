@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.cabinet.service.historydata;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.cabinet.controller.admin.historydata.vo.CabinetHistoryDataDetailsReqVO;
@@ -41,4 +42,6 @@ public interface CabinetHistoryDataService {
     List<Object>  getNewDetailHistoryList(List<Object> list);
 
     Map<Integer, RoomIndex> getRoomById(List<Integer> roomIds);
+
+    Map<Integer, AisleIndex> getAisleByIds(List<Integer> aisleIds);
 }
