@@ -61,4 +61,6 @@ public interface PDUDeviceService {
     String getLocationByDevKey(String devKey);
 
     Map getPduHdaLineHisdataKey(String devKey, String type);
+
+    Map getPduMaxLine(Integer id, String type);
 }

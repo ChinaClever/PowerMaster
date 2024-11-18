@@ -1,40 +1,14 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="母线始端箱能耗趋势">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机架能耗趋势">
     <template #NavInfo>
-    <br/>    <br/> 
+   <br/>    <br/> 
         <div class="nav_data">
-          <!-- <div class="carousel-container">
-            <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-              <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-                <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-              </el-carousel-item>
-            </el-carousel>
-          </div> -->
-          <div class="nav_content">
-          <!-- <el-descriptions title="" direction="vertical" :column="1" border >
-              <el-descriptions-item label="最近一天"><span>{{ lastDayTotalData }} 条</span></el-descriptions-item>
-              <el-descriptions-item label="最近一周"><span>{{ lastWeekTotalData }} 条</span></el-descriptions-item>
-              <el-descriptions-item label="最近一月" ><span>{{ lastMonthTotalData }} 条</span></el-descriptions-item>
-            </el-descriptions> -->
-            
-            <div class="descriptions-container" style="font-size: 14px;">
+        <div class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
-            <span class="label">最近一天 :</span>
-            <span class="value">{{ lastDayTotalData }}条</span>
+            <span class="label">按时间范围查询实时能耗</span>
           </div>
-          <div class="description-item">
-            <span class="label">最近一周 :</span>
-            <span class="value">{{ lastWeekTotalData }}条</span>
-          </div>
-          <div class="description-item">
-            <span class="label">最近一月 :</span>
-            <span class="value">{{ lastMonthTotalData }}条</span>
-          </div>    <br/>
-          <div ><span>母线始端箱新增能耗记录</span>
-              <div class="line" style="margin-top: 10px;"></div>
-            </div>
         </div>
-          </div>
+        
         </div>
     </template>
     <template #ActionBar>
@@ -45,17 +19,6 @@
          :inline="true"
          label-width="auto"
        >
-         <el-form-item label="颗粒度" prop="granularity">
-            <el-select
-              v-model="queryParams.granularity"
-              placeholder="请选择天/周/月"
-              class="!w-120px" >
-              <el-option label="天" value="day" />
-              <el-option label="周" value="week" />
-              <el-option label="月" value="month" />
-            </el-select>
-          </el-form-item>
-
          <el-form-item label="时间段" prop="timeRange">
             <el-date-picker
             value-format="YYYY-MM-DD"
@@ -63,8 +26,8 @@
             type="daterange"
             :shortcuts="shortcuts"
             range-separator="-"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
+            start-placeholder="开始时间"
+            end-placeholder="结束时间"
             :disabled-date="disabledDate"
           />
           </el-form-item>
@@ -75,8 +38,9 @@
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
          </el-form-item>
-      </el-form> 
+      </el-form>
     </template>
+    
     <template #Content>
       <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
         <!-- 添加行号列 -->
@@ -86,43 +50,43 @@
           </template>
         </el-table-column>
         <!-- 遍历其他列 -->  
-      <template v-for="column in tableColumns" :key="column.label">
-        <el-table-column
-          v-if="!column.children && column.istrue"
-          :key="column.prop"
-          :label="column.label"
-          :align="column.align"
-          :prop="column.prop"
-          :formatter="column.formatter"
-          :width="column.width"
-        >
-          <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.bus_id, row.location,row.dev_key)">详情</el-button>
-          </template>
-        </el-table-column>
-        
-        <el-table-column
-          v-else-if="column.istrue"
-          :label="column.label"
-          :align="column.align"
-        >
-          <template v-for="child in column.children" :key="child.prop">
-            <el-table-column
-              :key="child.prop"
-              :label="child.label"
-              :align="child.align"
-              :prop="child.prop"
-              :formatter="child.formatter"
-              :width="child.width"
-              v-if="child.istrue"
-            >
-              <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.bus_id, row.location,row.dev_key)">详情</el-button>
-              </template>
-            </el-table-column>
-          </template>
-        </el-table-column>
-      </template>
+        <template v-for="column in tableColumns" :key="column.label">
+          <el-table-column
+            v-if="!column.children && column.istrue"
+            :key="column.prop"
+            :label="column.label"
+            :align="column.align"
+            :prop="column.prop"
+            :formatter="column.formatter"
+            :width="column.width"
+          >
+            <template #default="{ row }" v-if="column.slot === 'actions'">
+              <el-button link type="primary" @click="toDetails(row.id, row.createTimeMin,row.createTimeMax)">详情</el-button>
+            </template>
+          </el-table-column>
+          
+          <el-table-column
+            v-else-if="column.istrue"
+            :label="column.label"
+            :align="column.align"
+          >
+            <template v-for="child in column.children" :key="child.prop">
+              <el-table-column
+                :key="child.prop"
+                :label="child.label"
+                :align="child.align"
+                :prop="child.prop"
+                :formatter="child.formatter"
+                :width="child.width"
+                v-if="child.istrue"
+              >
+                <template #default="{ row }" v-if="child.slot === 'actions'">
+                   <el-button link type="primary" @click="toDetails(row.id, row.createTimeMin,row.createTimeMax)">详情</el-button>
+                </template>
+              </el-table-column>
+            </template>
+          </el-table-column>
+        </template>
         <!-- 超过一万条数据提示信息 -->
           <template v-if="shouldShowDataExceedMessage" #append>
             <tr>
@@ -141,23 +105,23 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"/>
       <div class="realTotal">共 {{ realTotel }} 条</div>
-      <br/><br/><br/><br/>
-      <ContentWrap>
+       <br/><br/><br/><br/>
+      <ContentWrap >
         <div v-loading="loading" ref="rankChartContainer" id="rankChartContainer" style="height: 65vh"></div>
       </ContentWrap>
     </template>
   </CommonMenu>
+ 
 </template>
 
 <script setup lang="ts">
 import dayjs from 'dayjs'
 import download from '@/utils/download'
-import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption'
-import { formatDate, endOfDay, convertDate, addTime } from '@/utils/formatTime'
-import { IndexApi } from '@/api/bus/busindex'
+import { EnergyConsumptionApi } from '@/api/rack/energyConsumption'
+import { formatDate, endOfDay, convertDate, addTime, beginOfDay } from '@/utils/formatTime'
+import { CabinetApi } from '@/api/cabinet/info'
+import { IndexApi } from '@/api/rack/index'
 import * as echarts from 'echarts';
-const message = useMessage() // 消息弹窗
-import PDUImage from '@/assets/imgs/PDU.jpg'
 const { push } = useRouter()
 defineOptions({ name: 'PowerAnalysis' })
 
@@ -166,27 +130,23 @@ const lastDayTotalData = ref(0)
 const lastWeekTotalData = ref(0)
 const lastMonthTotalData = ref(0)
 const instance = getCurrentInstance();
-const loading = ref(true)
+const loading = ref(false)
+const message = useMessage() // 消息弹窗
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
 const selectTimeRange = ref(undefined)
 const queryParams = reactive({
-  pageNo: 1,
+  pageNo: 1, 
   pageSize: 15,
   granularity: 'day',
   timeRange: undefined as string[] | undefined,
-  devkeys: undefined as string[] | undefined,
+  rackIds:[]
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
 const exportLoading = ref(false)
-const carouselItems = ref([
-      { imgUrl: PDUImage},
-      { imgUrl: PDUImage},
-      { imgUrl: PDUImage},
-      { imgUrl: PDUImage},
-    ]);//侧边栏轮播图图片路径
+
 // 时间段快捷选项
 const shortcuts = [
   {
@@ -237,7 +197,7 @@ const initChart = () => {
   if (rankChartContainer.value && instance) {
     rankChart = echarts.init(rankChartContainer.value);
     rankChart.setOption({
-      title: { text: '各始端箱耗电量'},
+      title: { text: '各机架耗电量'},
       tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
       legend: { data: []},
       toolbox: {feature: {saveAsImage:{}}},
@@ -260,70 +220,44 @@ watch(() => queryParams.granularity, () => {
 });
 
 const tableColumns = ref([
-  { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '300%'},
-  { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true, width: '180px'},
-  { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
-
-  { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '160px' , istrue:true},
-  { label: '开始', align: 'center', istrue: true, children: [
-      { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime1, width: '100px' , istrue:true},
-      { label: '电能(kWh)', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
+  { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
+  { label: '机架名', align: 'center', prop: 'rackName' , istrue:true, width: '100px'},
+{ label: '开始电能', align: 'center', istrue: true, children: [
+      { label: '开始电能(kWh)', align: 'center', prop: 'eleActiveStart' , istrue:true, formatter: formatEle},
+      { label: '开始时间', align: 'center', prop: 'createTimeMin' , formatter: formatTime1, width: '150px' , istrue:true},
     ]
   },
-  { label: '结束', align: 'center', istrue: true, children: [
-      { label: '日期', align: 'center', prop: 'end_time' , formatter: formatTime1, width: '100px' , istrue:true},
-      { label: '电能(kWh)', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle},
+    { label: '结束电能', align: 'center', istrue: true, children: [
+      { label: '结束电能(kWh)', align: 'center', prop: 'eleActiveEnd' , istrue:true, formatter: formatEle},
+      { label: '结束时间', align: 'center', prop: 'createTimeMax' , formatter: formatTime1, width: '150px' , istrue:true},
     ]
   },
-  { label: '耗电量\n(kWh)', align: 'center', prop: 'eq_value' ,istrue: true,formatter: formatEle },
-  { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '120px'},
+  { label: '耗电量(kWh)', align: 'center', prop: 'eleActive' ,istrue: true,formatter: formatEle },
+  { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '100px'},
 ]) as any;
 
 /** 查询列表 */
 const getList = async () => {
   loading.value = true
   try {
+        if(selectTimeRange.value == null){
+      // queryParams.timeRange = undefined
+      alert('请输入时间范围');
+    return;
+    }
     if ( selectTimeRange.value != undefined){
       // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+      const selectedStartTime = formatDate(beginOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
-      const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段
     if(selectTimeRange.value == null){
       queryParams.timeRange = undefined
     }
-    const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
-    eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
-    list.value = data.list
-    realTotel.value = data.total
-    if (data.total > 10000){
-      total.value = 10000
-    }else{
-      total.value = data.total
-    }
-  } finally {
-    initChart();
-    loading.value = false
-  }
-}
-
-const getList1 = async () => {
-  loading.value = true
-  try {
-    if ( start.value != undefined){
-      // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
-      // 结束时间的天数多加一天 ，  一天的毫秒数
-      const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(end.value), oneDay )))
-      queryParams.timeRange = [selectedStartTime, selectedEndTime];
-    }
-    queryParams.devkeys = [devKey.value];
-    const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
-    eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
+    const data = await EnergyConsumptionApi.getRackTotalRealtime(queryParams)
+    eqData.value = data.list.map((item) => formatEQ(item.eleActive, 1));
     list.value = data.list
     realTotel.value = data.total
     if (data.total > 10000){
@@ -341,10 +275,11 @@ const getList1 = async () => {
 function customTooltipFormatter(params: any[]) {
   var tooltipContent = ''; 
   var item = params[0]; // 获取第一个数据点的信息
-  tooltipContent += '位置：'+list.value[item.dataIndex].location + '  '
-  tooltipContent += '<br/>'+ item.marker + item.seriesName + ': ' + item.value + 'kWh 记录日期：'+formatTime(null, null, list.value[item.dataIndex].create_time) + '<br/>'                 
-                    +item.marker + '结束电能：'+list.value[item.dataIndex].end_ele + 'kWh 结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) + '<br/>' 
-                    +item.marker +'开始电能：'+formatEle(null, null, list.value[item.dataIndex].start_ele) + 'kWh 开始日期：'+formatTime(null, null, list.value[item.dataIndex].start_time) + '<br/>'
+  tooltipContent += '位置：'+list.value[item.dataIndex].name + '<br/>'+
+                    item.marker +'机架名：'+list.value[item.dataIndex].rackName + '<br/>'
+                    +item.marker + '开始电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveStart)  + 'kWh 开始日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMin) + '<br/>' 
+                    +item.marker +'结束电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveEnd) + 'kWh 结束日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMax) + '<br/>'
+                    +item.marker +'耗电量：'+formatEle(null, null, list.value[item.dataIndex].eleActive) + 'kWh';
   return tooltipContent;
 }
 
@@ -354,7 +289,7 @@ const shouldShowDataExceedMessage = computed(() => {
   return queryParams.pageNo === lastPageNo && total.value >= 10000;
 });
 
-// 格式化日期(表格列的时间去掉时分秒 不用传参)
+// 格式化日期
 function formatTime(_row: any, _column: any, cellValue: number): string {
   if (!cellValue) {
     return ''
@@ -362,16 +297,20 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
 
   return dayjs(cellValue).format('YYYY-MM-DD')
 }
+
 // 格式化日期(表格列的时间去掉时分秒和年)
 function formatTime1(_row: any, _column: any, cellValue: number): string {
   if (!cellValue) {
     return ''
   }
-  return dayjs(cellValue).format('MM-DD')
+  return dayjs(cellValue).format('YYYY-MM-DD')
 }
 
 // 格式化电能列数据，保留1位小数
 function formatEle(_row: any, _column: any, cellValue: number): string {
+  if (cellValue == null) {
+    return '';
+  }
   return Number(cellValue).toFixed(1);
 }
 
@@ -388,7 +327,7 @@ function formatEQ(value, decimalPlaces){
 const disabledDate = (date) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  // 设置date的日期为0时0分0秒，以便与today进行比较
+  // 设置date的时间为0时0分0秒，以便与today进行比较
   date.setHours(0, 0, 0, 0);
   // 如果date在今天之后，则禁用
   return date > today;
@@ -404,27 +343,32 @@ const handleQuery = () => {
 const handleCheck = async (node) => {
   let arr = [] as any
   node.forEach(item => { 
-    if(item.type == 6){
-      arr.push(item.unique);
+    if(item.type == 5){
+      arr.push(item.id);
     }
   });
   //没筛选到 不显示任何数据 参数传0 后端返回空
   if(arr.length == 0 && node.length != 0){
-    arr.push(0)
-    rankChart?.clear()
-    ElMessage({
-      message: '暂无数据',
-      type: 'warning',
-    });
-  }
-    queryParams.devkeys = arr
-    handleQuery()
+  arr.push(0)
+  rankChart?.clear()
+  ElMessage({
+    message: '暂无数据',
+    type: 'warning',
+  });
+}
+  queryParams.rackIds = arr
+  handleQuery()
 }
 
 // 接口获取机房导航列表
 const getNavList = async() => {
-  const res = await IndexApi.getBusMenu()
-  navList.value = res
+  const res = await CabinetApi.getRoomList({})
+  let arr = [] as any
+  for (let i=0; i<res.length;i++){
+  var temp = await IndexApi.getRackAll({id : res[i].id})
+  arr = arr.concat(temp);
+  }
+  navList.value = arr
 }
 
 // 获取导航的数据显示
@@ -433,6 +377,13 @@ const getNavNewData = async() => {
   lastDayTotalData.value = res.day
   lastWeekTotalData.value = res.week
   lastMonthTotalData.value = res.month
+}
+
+
+/** 详情操作*/
+const toDetails = (id: number, createTimeMin : string,createTimeMax : string) => {
+    push('/u/nenghao/powerAnalysis?type=total&granularity=day&start='+createTimeMin+
+  '&end='+createTimeMax+'&rackId='+ id);
 }
 
 /** 导出按钮操作 */
@@ -446,8 +397,8 @@ const handleExport = async () => {
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
-    const data = await EnergyConsumptionApi.exportEQPageData(queryParams, axiosConfig)
-    await download.excel(data, '始端箱能耗趋势.xlsx')
+    const data = await EnergyConsumptionApi.getRackTotalRealtimeExcel(queryParams, axiosConfig)
+    await download.excel(data, '机架实时能耗趋势.xlsx')
   } catch (error) {
     // 处理异常
     console.error('导出失败：', error)
@@ -456,34 +407,16 @@ const handleExport = async () => {
   }
 }
 
-const start = ref('')
-const end = ref('')
-const devKey =  ref('')
-/** 详情操作*/
-const toDetails = (busId: number,location: string, devKey: string) => {
-  push('/bus/nenghao/ecdistribution/bus?busId='+busId+'&location='+location+'&devKey='+devKey);
-}
-
 /** 初始化 **/
 onMounted(() => {
   getNavList()
   getNavNewData()
-  start.value = useRoute().query.start as string;
-  end.value = useRoute().query.end as string;
-  devKey.value = useRoute().query.devKey as string;
-  if (start.value != null){
-  	console.log('详情页', start);
-	console.log('详情页1', devKey);
-  getList1();
-  }else{
-      getList();
-  }
+  // getList();
 });
 
 </script>
 
 <style scoped>
-
 .realTotal{
   float: right;
   padding-top: 20px;
@@ -498,7 +431,7 @@ onMounted(() => {
   width: 170px;
 }
 .nav_content span{
-  font-size: 14px;
+  font-size: 18px;
 }
 .carousel-container {
   width: 100%;
@@ -510,24 +443,17 @@ onMounted(() => {
   height: 100%;
   object-fit: cover; 
 }
-
 .description-item {
   display: flex;
   align-items: center;
 }
 
 .label {
+  width:100px; /* 控制冒号前的宽度 */
   text-align: right; /* 文本右对齐 */
-  margin-right: 10px; /* 控制冒号后的间距 */
-  text-align: left;
+  margin-right: 5px; /* 控制冒号后的间距 */
 }
-
-.value {
-  flex: 1; /* 自动扩展以对齐数据 */
-  text-align: left;
-
-}
-  .line {
+.line {
     height: 1px;
     margin-top: 28px;
 

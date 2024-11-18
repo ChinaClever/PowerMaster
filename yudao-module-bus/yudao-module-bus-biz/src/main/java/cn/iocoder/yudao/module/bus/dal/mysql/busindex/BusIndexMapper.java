@@ -1,16 +1,18 @@
 package cn.iocoder.yudao.module.bus.dal.mysql.busindex;
 
-import java.util.*;
-
 import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
+import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusAisleBarQueryVO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Mapper;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
-import org.springframework.util.CollectionUtils;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * 始端箱索引 Mapper
@@ -50,4 +52,9 @@ public interface BusIndexMapper extends BaseMapperX<BusIndexDO> {
                 .orderByAsc(BusIndexDO::getId));
     }
 
+    IPage<BusAisleBarQueryVO> selectPageList(@Param("page") Page<Object> page,@Param("devkeys") String[] devkeys);
+    List<BusAisleBarQueryVO> selectPageList(@Param("devkeys") String[] devkeys);
+
+    IPage<BusAisleBarQueryVO> selectBoxPageList(@Param("page") Page<Object> page,@Param("devkeys") String[] devkeys);
+    List<BusAisleBarQueryVO> selectBoxPageList(@Param("devkeys") String[] devkeys);
 }

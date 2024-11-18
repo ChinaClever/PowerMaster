@@ -598,7 +598,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     @Override
     public Map getPduHdaLineHisdataKey(String devKey, String type) {
         HashMap result = new HashMap<>();
-
         PduIndex pduIndex = pDUDeviceMapper.selectOne(new LambdaQueryWrapperX<PduIndex>().eq(PduIndex::getDevKey, devKey));
         if (pduIndex != null) {
             Long id = pduIndex.getId();
@@ -671,15 +670,15 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                                 switch (houResVO.getLineId()) {
                                     case 1:
                                         dayList1.add(houResVO);
-                                        result.put("l", oneHourList1);
+                                        result.put("l", dayList1);
                                         break;
                                     case 2:
                                         dayList2.add(houResVO);
-                                        result.put("ll", oneHourList2);
+                                        result.put("ll", dayList2);
                                         break;
                                     case 3:
                                         dayList3.add(houResVO);
-                                        result.put("lll", oneHourList3);
+                                        result.put("lll", dayList3);
                                         break;
                                     default:
                                 }
@@ -700,6 +699,70 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             return result;
         }
     }
+
+    @Override
+    public Map getPduMaxLine(Integer id, String type) {
+        HashMap result = new HashMap<>();
+        // 构建查询请求
+        SearchRequest searchRequest = null;
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime pastTime = null;
+        if ("hour".equals(type)) {
+            pastTime = now.minusHours(25);
+            searchRequest = new SearchRequest("pdu_hda_line_hour");
+        } else if ("day".equals(type)) {
+            pastTime = now.minusMonths(1);
+            searchRequest = new SearchRequest("pdu_hda_line_day");
+        }
+
+        // 构建查询请求
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        searchSourceBuilder.query(QueryBuilders.termQuery("pdu_id", id));
+        searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                .from(formatter.format(pastTime))
+                .to(formatter.format(now)));
+        searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
+        searchSourceBuilder.size(1000); // 设置返回的最大结果数
+
+        searchRequest.source(searchSourceBuilder);
+        List<PduHdaLineMaxResVO> dayList1 = new ArrayList<>();
+        List<PduHdaLineMaxResVO> dayList2 = new ArrayList<>();
+        List<PduHdaLineMaxResVO> dayList3 = new ArrayList<>();
+        List<String> dateTimes = new ArrayList<>();
+        // 执行查询请求
+        try {
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse != null) {
+                SearchHits hits = searchResponse.getHits();
+                for (SearchHit hit : hits) {
+                    String str = hit.getSourceAsString();
+                    PduHdaLineMaxResVO houResVO = JsonUtils.parseObject(str, PduHdaLineMaxResVO.class);
+                    switch (houResVO.getLineId()) {
+                        case 1:
+                            dayList1.add(houResVO);
+                            break;
+                        case 2:
+                            dayList2.add(houResVO);
+                            break;
+                        case 3:
+                            dayList3.add(houResVO);
+                            break;
+                        default:
+                    }
+                    dateTimes.add(houResVO.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        result.put("l", dayList1);
+        result.put("ll", dayList2);
+        result.put("lll", dayList3);
+        result.put("dateTimes", dateTimes);
+        return result;
+    }
+
 
     @Override
     public Map getChartNewDataByPduDevKey(String devKey, LocalDateTime oldTime, String type) {
@@ -1174,10 +1237,10 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                         }
                     }
 
-                    if (eqValue.size() > 12) {
-                        eqValue = eqValue.subList(eqValue.size() - 12, eqValue.size());
-                        outLetId = outLetId.subList(outLetId.size() - 12, outLetId.size());
-                    }
+//                    if (eqValue.size() > 12) {
+//                        eqValue = eqValue.subList(eqValue.size() - 12, eqValue.size());
+//                        outLetId = outLetId.subList(outLetId.size() - 12, outLetId.size());
+//                    }
 
 
                     BarSeries barSeries = new BarSeries();

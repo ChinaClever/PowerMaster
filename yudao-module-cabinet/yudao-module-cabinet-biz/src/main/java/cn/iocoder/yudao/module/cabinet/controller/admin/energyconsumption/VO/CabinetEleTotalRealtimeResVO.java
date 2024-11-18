@@ -1,6 +1,6 @@
-package cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO;
+package cn.iocoder.yudao.module.cabinet.controller.admin.energyconsumption.VO;
 
-
+import cn.iocoder.yudao.framework.excel.core.util.DateStringConverter;
 import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
@@ -14,28 +14,29 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-@Schema(description = "管理后台 - pdu-实时电能出参")
+/**
+ * @author: jiangjinchi
+ * @time: 2024/11/8 12:04
+ */
+@Schema(description = "管理后台 - 机房-实时电能出参")
 @Data
 @ExcelIgnoreUnannotated
 @HeadStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
 @ContentStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
 @ColumnWidth(30)
 @HeadRowHeight(20)
-public class RackTotalRealtimeRespVO {
-    @ExcelProperty("id")
+public class CabinetEleTotalRealtimeResVO {
+    @ExcelProperty("RoomId")
     @ExcelIgnore
-    private Long id;
+    private Integer id;
 
-    @ExcelProperty("网络地址")
+    @ExcelProperty("机房名称")
     private String location;
-
-    @ExcelProperty("设备名称")
-    private String rackName;
 
     @NumberFormat("0.0")
     @ExcelProperty("开始电能 (kWh)")
     private Double eleActiveStart;
-
+    @ExcelProperty(converter = DateStringConverter.class, value ="开始时间")
     @JsonFormat
     private String createTimeMin;
 
@@ -43,12 +44,10 @@ public class RackTotalRealtimeRespVO {
     @ExcelProperty("结束电能 (kWh)")
     private Double eleActiveEnd;
 
-
+    @ExcelProperty(converter = DateStringConverter.class, value = "结束时间")
     private String createTimeMax;
 
     @NumberFormat("0.0")
     @ExcelProperty("电能 (kWh)")
     private Double eleActive;
-
-
 }

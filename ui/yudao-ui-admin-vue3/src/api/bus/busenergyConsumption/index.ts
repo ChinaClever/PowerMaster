@@ -113,4 +113,23 @@ export const EnergyConsumptionApi = {
     return await request.get({ url: `/bus/eq-data/box/bill-details`, params})
   },
 
+  // 导出实时电能数据 Excel
+  getBusEleTotalRealtimeExcel: async (data, axiosConfig) => {
+    return await request.downloadPost({ url: `/bus/eq-data/bus/eleTotalRealtimeExcel`, data, ...axiosConfig })
+  },
+  
+  // 获取实时电能
+  getBusEleTotalRealtime: async (data: any) => {
+    return await request.post({ url: `/bus/eq-data/bus/eleTotalRealtime`, data})
+  },
+
+    // 导出实时电能数据 Excel
+    getBoxEleTotalRealtimeExcel: async (data, axiosConfig) => {
+      return await request.downloadPost({ url: `/bus/eq-data/box/eleTotalRealtimeExcel`, data, ...axiosConfig })
+    },
+    
+    // 获取实时电能
+    getBoxEleTotalRealtime: async (data: any) => {
+      return await request.post({ url: `/bus/eq-data/box/eleTotalRealtime`, data})
+    },
 }

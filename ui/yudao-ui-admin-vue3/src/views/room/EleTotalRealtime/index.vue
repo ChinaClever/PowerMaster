@@ -3,19 +3,10 @@
     <template #NavInfo>
     <br/>    <br/> 
         <div class="nav_data">
-        <div class="descriptions-container" style="font-size: 14px;">
+<div class="descriptions-container" style="font-size: 14px;">
           <div class="description-item">
-            <span class="label">最近一天 :</span>
-            <span class="value">{{ lastDayTotalData }}条</span>
+            <span class="label">按时间范围查询实时能耗</span>
           </div>
-          <div class="description-item">
-            <span class="label">最近一周 :</span>
-            <span class="value">{{ lastWeekTotalData }}条</span>
-          </div>
-          <div class="description-item">
-            <span class="label">最近一月 :</span>
-            <span class="value">{{ lastMonthTotalData }}条</span>
-          </div>    <br/>
         </div>
         </div>
     </template>
@@ -127,7 +118,7 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/room/energyConsumption'
-import { formatDate, endOfDay, convertDate, addTime } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime, beginOfDay } from '@/utils/formatTime'
 import { IndexApi } from '@/api/room/roomindex'
 import * as echarts from 'echarts';
 import { RoomEnergyApi } from '@/api/room/roomenergy'
@@ -225,7 +216,6 @@ const initChart = () => {
     rankChart.on('click', function(params) {
       // 控制台打印数据的名称
       toDetails(list.value[params.dataIndex].roomId,
-      list.value[params.dataIndex].name,
       list.value[params.dataIndex].createTimeMin,
       list.value[params.dataIndex].createTimeMax);
     });
@@ -263,10 +253,10 @@ const getList = async () => {
   try {
     if ( selectTimeRange.value != undefined){
       // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+      const selectedStartTime = formatDate(beginOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
-      const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+
+      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
     // 时间段清空后值会变成null 此时搜索不能带上时间段

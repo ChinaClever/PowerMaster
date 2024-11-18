@@ -5,6 +5,7 @@ import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDevicePageRe
 
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDULineRes;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.pdudevice.PDUDeviceDO;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
@@ -109,7 +110,11 @@ public class PDUDeviceController {
     public CommonResult<Map> getPDUPFLine(@RequestBody PDUDevicePageReqVO pageReqVO) {
         return success(pDUDeviceService.getPDUPFLine(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
     }
-
+    @PostMapping("/report/pfline")
+    @Operation(summary = "获得PDU电流报表数据")
+    public CommonResult<Map> getPDUPFLine(@RequestBody PDUDevicePageReqVO pageReqVO) {
+        return success(pDUDeviceService.getPDUPFLine(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+    }
     @PostMapping("/report/pow")
     @Operation(summary = "获得PDU报表数据")
     public CommonResult<Map> getReportPowDataByDevKey(@RequestBody PDUDevicePageReqVO pageReqVO) {
@@ -159,6 +164,9 @@ public class PDUDeviceController {
         }
         return success(pduId);
     }
-
-
+    @GetMapping("line/getMaxLine")
+    @Operation(summary = "PDU需量详情数据")
+    public CommonResult<Map> getPduMaxLine(@Parameter(description =  "pdu的id") Integer id,@Parameter(description =  "选择类型24小时：hour/30天 day") String type) {
+        return success(pDUDeviceService.getPduMaxLine(id,type));
+    }
 }

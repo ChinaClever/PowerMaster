@@ -405,6 +405,7 @@ import { defineComponent } from 'vue'
 import CabTopology from "@/views/room/topology/index.vue"
 import { MachineRoomApi } from '@/api/cabinet/room'
 
+
 defineOptions({ name: 'Home' })
 
 const { t } = useI18n()

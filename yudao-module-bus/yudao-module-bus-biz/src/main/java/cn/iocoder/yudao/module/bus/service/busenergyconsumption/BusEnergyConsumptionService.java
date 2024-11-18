@@ -2,7 +2,9 @@ package cn.iocoder.yudao.module.bus.service.busenergyconsumption;
 
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.collection.MapUtils;
+import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusEleTotalRealtimeResVO;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.EnergyConsumptionPageReqVO;
+import cn.iocoder.yudao.module.bus.dto.BusEleTotalRealtimeReqDTO;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -140,4 +142,8 @@ public interface BusEnergyConsumptionService {
     List<Object>  getNewRealtimeList(List<Object> list);
 
     List<Object> getNewList(List<Object> list);
+
+    PageResult<BusEleTotalRealtimeResVO> getBusEleTotalRealtime(BusEleTotalRealtimeReqDTO reqDTO, boolean flag) throws IOException;
+
+    PageResult<BusEleTotalRealtimeResVO> getBoxEleTotalRealtime(BusEleTotalRealtimeReqDTO reqDTO, boolean flag) throws IOException;
 }
