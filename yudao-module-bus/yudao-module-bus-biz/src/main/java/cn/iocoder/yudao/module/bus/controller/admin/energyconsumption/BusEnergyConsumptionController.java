@@ -6,13 +6,12 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.*;
+import cn.iocoder.yudao.module.bus.dto.BusEleTotalRealtimeReqDTO;
 import cn.iocoder.yudao.module.bus.service.busenergyconsumption.BusEnergyConsumptionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -308,6 +307,36 @@ public class BusEnergyConsumptionController {
         return success(pageResult);
     }
 
+    @PostMapping("bus/eleTotalRealtime")
+    @Operation(summary = "获取实时能耗")
+    public CommonResult<PageResult<BusEleTotalRealtimeResVO>> getBusEleTotalRealtime(@RequestBody BusEleTotalRealtimeReqDTO reqDTO) throws IOException {
+        PageResult<BusEleTotalRealtimeResVO> list = busEnergyConsumptionService.getBusEleTotalRealtime(reqDTO, true);
+        return success(list);
+    }
 
+    @PostMapping("bus/eleTotalRealtimeExcel")
+    @Operation(summary = "获取实时能耗")
+    public void getBusEleTotalRealtimeExcel(@RequestBody BusEleTotalRealtimeReqDTO reqDTO, HttpServletResponse response) throws IOException {
+        PageResult<BusEleTotalRealtimeResVO> list = busEnergyConsumptionService.getBusEleTotalRealtime(reqDTO, false);
+        ExcelUtils.write(response, "柜列实时电能记录数据.xlsx", "数据", BusEleTotalRealtimeResVO.class,
+                BeanUtils.toBean(list.getList(), BusEleTotalRealtimeResVO.class));
+    }
+
+
+
+    @PostMapping("box/eleTotalRealtime")
+    @Operation(summary = "box获取实时能耗")
+    public CommonResult<PageResult<BusEleTotalRealtimeResVO>> getBoxEleTotalRealtime(@RequestBody BusEleTotalRealtimeReqDTO reqDTO) throws IOException {
+        PageResult<BusEleTotalRealtimeResVO> list = busEnergyConsumptionService.getBoxEleTotalRealtime(reqDTO, true);
+        return success(list);
+    }
+
+    @PostMapping("box/eleTotalRealtimeExcel")
+    @Operation(summary = "box获取实时能耗")
+    public void getBoxEleTotalRealtimeExcel(@RequestBody BusEleTotalRealtimeReqDTO reqDTO, HttpServletResponse response) throws IOException {
+        PageResult<BusEleTotalRealtimeResVO> list = busEnergyConsumptionService.getBoxEleTotalRealtime(reqDTO, false);
+        ExcelUtils.write(response, "柜列实时电能记录数据.xlsx", "数据", BusEleTotalRealtimeResVO.class,
+                BeanUtils.toBean(list.getList(), BusEleTotalRealtimeResVO.class));
+    }
 
 }

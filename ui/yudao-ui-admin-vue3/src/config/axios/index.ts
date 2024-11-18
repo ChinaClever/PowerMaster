@@ -48,5 +48,9 @@ export default {
     option.headersType = 'multipart/form-data'
     const res = await request({ method: 'POST', ...option })
     return res as unknown as Promise<T>
+  },
+  downloadPost: async <T = any>(option: any) => {
+    const res = await request({ method: 'POST', responseType: 'blob', ...option })
+    return res as unknown as Promise<T>
   }
 }

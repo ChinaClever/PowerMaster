@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.aisle.service.historydata;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.aisle.controller.admin.historydata.vo.AisleHistoryDataDetailsReqVO;
 import cn.iocoder.yudao.module.aisle.controller.admin.historydata.vo.AisleHistoryDataPageReqVO;
@@ -38,4 +39,6 @@ public interface AisleHistoryDataService {
     List<Object> getNewExcelList(List<Object> list);
 
     List<Object> getNewDetailsExcelList(List<Object> list);
+
+    Map<Integer, RoomIndex> getRoomById(List<Integer> roomIds);
 }

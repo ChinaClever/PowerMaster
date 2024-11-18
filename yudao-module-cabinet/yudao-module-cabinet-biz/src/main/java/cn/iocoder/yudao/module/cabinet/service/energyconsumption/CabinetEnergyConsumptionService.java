@@ -1,7 +1,10 @@
 package cn.iocoder.yudao.module.cabinet.service.energyconsumption;
 
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.cabinet.controller.admin.energyconsumption.VO.CabinetEleTotalRealtimeResVO;
 import cn.iocoder.yudao.module.cabinet.controller.admin.energyconsumption.VO.CabinetEnergyConsumptionPageReqVO;
+import cn.iocoder.yudao.module.cabinet.dto.CabinetEleTotalRealtimeReqDTO;
+
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -59,4 +62,6 @@ public interface CabinetEnergyConsumptionService {
     List<Object>  getNewDetailsList(List<Object> list);
 
     List<Object> getNewRealtimeList(List<Object> list);
+
+    PageResult<CabinetEleTotalRealtimeResVO> getCabinetEleTotalRealtime(CabinetEleTotalRealtimeReqDTO reqVO, boolean flag) throws IOException;
 }

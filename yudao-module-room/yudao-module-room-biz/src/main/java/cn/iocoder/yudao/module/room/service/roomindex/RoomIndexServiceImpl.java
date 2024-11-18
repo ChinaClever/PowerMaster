@@ -9,13 +9,19 @@ import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.pow.RoomPowHourDo;
 import cn.iocoder.yudao.framework.common.util.TimeUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
+import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
+import cn.iocoder.yudao.module.room.controller.admin.roomindex.DTO.RoomEleTotalRealtimeReqDTO;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -687,6 +693,79 @@ public class RoomIndexServiceImpl implements RoomIndexService {
     public List<Integer> idList() {
         return roomIndexCopyMapper.selectList().stream().limit(10).collect(Collectors.toList())
                 .stream().map(RoomIndexDO::getId).collect(Collectors.toList());
+    }
+
+    @Override
+    public PageResult<RoomEleTotalRealtimeResVO> getRoomEleTotalRealtime(RoomEleTotalRealtimeReqDTO reqDTO, boolean flag) throws IOException {
+        PageResult<RoomEleTotalRealtimeResVO> pageResult = new PageResult<>();
+        List<RoomEleTotalRealtimeResVO> list = new ArrayList<>();
+        List<RoomIndexDO> records =null;
+        Long total = 0L;
+        LambdaQueryWrapper<RoomIndexDO> queryWrapper = new LambdaQueryWrapper<RoomIndexDO>().eq(RoomIndexDO::getIsDelete, 0)
+                .orderByDesc(RoomIndexDO::getCreateTime);
+            if (reqDTO.getRoomIds() != null && reqDTO.getRoomIds().length != 0) {
+                queryWrapper.in(RoomIndexDO::getId,reqDTO.getRoomIds());
+            }
+        if (flag) {
+            IPage<RoomIndexDO> iPage = roomIndexCopyMapper.selectPage(new Page<>(reqDTO.getPageNo(), reqDTO.getPageSize()), queryWrapper);
+            records = iPage.getRecords();
+            total=iPage.getTotal();
+        }else {
+            records = roomIndexCopyMapper.selectList(queryWrapper);
+        }
+        for (RoomIndexDO record : records) {
+            RoomEleTotalRealtimeResVO resVO = new RoomEleTotalRealtimeResVO();
+            resVO.setRoomId(record.getId()).setName(record.getName());
+            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+            boolQuery.must(QueryBuilders.rangeQuery("create_time.keyword")
+                    .gte(reqDTO.getTimeRange()[0])
+                    .lte(reqDTO.getTimeRange()[1]));
+            boolQuery.must(QueryBuilders.termsQuery("room_id", String.valueOf(record.getId())));
+            // 搜索源构建对象
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(boolQuery);
+            searchSourceBuilder.size(1);
+            searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
+            SearchRequest searchRequest1 = new SearchRequest();
+            searchRequest1.indices("room_ele_total_realtime");
+            //query条件--正常查询条件
+            searchRequest1.source(searchSourceBuilder);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
+            SearchHits hits = searchResponse1.getHits();
+            for (SearchHit hit : hits) {
+                resVO.setCreateTimeMax((String) hit.getSourceAsMap().get("create_time"));
+                if (Objects.nonNull(resVO.getCreateTimeMax())) {
+                    resVO.setEleActiveEnd((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_total")).orElseGet(() -> 0.0));
+                }
+            }
+            SearchSourceBuilder searchSourceBuilder2 = new SearchSourceBuilder();
+            searchSourceBuilder2.query(boolQuery);
+            searchSourceBuilder2.size(1);
+            searchSourceBuilder2.sort("create_time.keyword", SortOrder.ASC);
+            SearchRequest searchRequest2 = new SearchRequest();
+            searchRequest2.indices("room_ele_total_realtime");
+            //query条件--正常查询条件
+            searchRequest2.source(searchSourceBuilder2);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse2 = client.search(searchRequest2, RequestOptions.DEFAULT);
+            SearchHits hits2 = searchResponse2.getHits();
+
+            for (SearchHit hit : hits2) {
+                resVO.setCreateTimeMin((String) hit.getSourceAsMap().get("create_time"));
+                if (Objects.nonNull(resVO.getCreateTimeMin())) {
+                    resVO.setEleActiveStart((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_total")).orElseGet(() -> 0.0));
+                    double sub = BigDemicalUtil.sub(resVO.getEleActiveEnd(), resVO.getEleActiveStart(),1);
+                    resVO.setEleActive(sub);
+                    if (sub<0){
+                        resVO.setEleActive(resVO.getEleActiveEnd());
+                    }
+                }
+            }
+            list.add(resVO);
+        }
+        pageResult.setTotal(total).setList(list);
+        return pageResult;
     }
 
 

@@ -239,59 +239,60 @@
           </el-tab-pane>
           <el-tab-pane label="数据" name="myData">
             <div style="height: 67vh;">
-            <el-table  
-            :stripe="true" 
-              :border="true"
-              :data="tableData"
-              style="height: 100%; width: 99.97%;"
-              :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', fontSize: '14px',borderBottom: '1px #EDEEF2 solid',fontWeight: 'bold' }"
-              :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
-              :row-style="{ fontSize: '14px', textAlign: 'center', }"
-              empty-text="暂无数据" max-height="818">
-              <!-- 添加行号列 -->
-              <el-table-column label="序号" align="center" width="100%">
-                <template #default="{ $index }">
-                  {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
+              <el-table  
+              :stripe="true" 
+                :border="true"
+                :data="tableData"
+                style="height: 100%; width: 99.97%;"
+                :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', fontSize: '14px',borderBottom: '1px #EDEEF2 solid',fontWeight: 'bold' }"
+                :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
+                :row-style="{ fontSize: '14px', textAlign: 'center', }"
+                empty-text="暂无数据" max-height="818"
+                >
+                <!-- 添加行号列 -->
+                <el-table-column label="序号" align="center" width="100%">
+                  <template #default="{ $index }">
+                    {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
+                  </template>
+                </el-table-column>
+                <el-table-column prop="create_time" label="记录时间"/>
+                <!-- 动态生成表头 -->
+                <template v-for="item in headerData" :key="item.name">
+                  <el-table-column v-if="item.name === 'A路最高温度(℃)'" label="A路温度最高值(℃)" >
+                    <el-table-column :prop="item.name" label="A路温度最高值(℃)" width="110%"/>   
+                    <el-table-column prop="aTemMaxTimeData" label="发生时间" width="110%"/>
+                  </el-table-column>
+                  <el-table-column v-else-if="item.name === 'A路最低温度(℃)'" label="A路温度最低值(℃)">
+                    <el-table-column :prop="item.name" label="A路温度最低值(℃)" width="110%"/>   
+                    <el-table-column prop="aTemMinTimeData" label="发生时间" width="110%"/>
+                  </el-table-column>
+                  <el-table-column v-else-if="item.name === 'B路最高温度(℃)'" label="B路温度最高值(℃)">
+                    <el-table-column :prop="item.name" label="B路温度最高值(℃)" width="110%"/>   
+                    <el-table-column prop="bTemMaxTimeData" label="发生时间" width="110%"/>
+                  </el-table-column>
+                  <el-table-column v-else-if="item.name === 'B路最低温度(℃)'" label="B路温度最低值(℃)">
+                    <el-table-column :prop="item.name" label="B路温度最低值(℃)" width="110%"/>   
+                    <el-table-column prop="bTemMinTimeData" label="发生时间" width="110%"/>
+                  </el-table-column>
+                  <el-table-column v-else-if="item.name === 'C路最高温度(℃)'" label="C路温度最高值(℃)">
+                    <el-table-column :prop="item.name" label="C路温度最高值(℃)" width="110%"/>   
+                    <el-table-column prop="cTemMaxTimeData" label="发生时间" width="110%"/>
+                  </el-table-column>
+                  <el-table-column v-else-if="item.name === 'C路最低温度(℃)'" label="C路温度最低值(℃)">
+                    <el-table-column :prop="item.name" label="C路温度最低值(℃)" width="110%"/>   
+                    <el-table-column prop="cTemMinTimeData" label="发生时间" width="110%"/>
+                  </el-table-column>
+                  <el-table-column v-else-if="item.name === '中线最高温度(℃)'" label="中线温度最高值(℃)">
+                    <el-table-column :prop="item.name" label="中线温度最高值(℃)" width="110%"/>   
+                    <el-table-column prop="nTemMaxTimeData" label="发生时间" width="110%"/>
+                  </el-table-column>
+                  <el-table-column v-else-if="item.name === '中线最低温度(℃)'" label="中线温度最低值(℃)">
+                    <el-table-column :prop="item.name" label="中线温度最低值(℃)" width="110%"/>   
+                    <el-table-column prop="nTemMinTimeData" label="发生时间" width="110%"/>
+                  </el-table-column>
+                  <el-table-column v-else :prop="item.name" :label="item.name" width="110%"/>   
                 </template>
-              </el-table-column>
-              <el-table-column prop="create_time" label="记录时间"/>
-              <!-- 动态生成表头 -->
-              <template v-for="item in headerData" :key="item.name">
-                <el-table-column v-if="item.name === 'A路最高温度(℃)'" label="A路温度最高值(℃)" >
-                  <el-table-column :prop="item.name" label="A路温度最高值(℃)" width="110%"/>   
-                  <el-table-column prop="aTemMaxTimeData" label="发生时间" width="110%"/>
-                </el-table-column>
-                <el-table-column v-else-if="item.name === 'A路最低温度(℃)'" label="A路温度最低值(℃)">
-                  <el-table-column :prop="item.name" label="A路温度最低值(℃)" width="110%"/>   
-                  <el-table-column prop="aTemMinTimeData" label="发生时间" width="110%"/>
-                </el-table-column>
-                <el-table-column v-else-if="item.name === 'B路最高温度(℃)'" label="B路温度最高值(℃)">
-                  <el-table-column :prop="item.name" label="B路温度最高值(℃)" width="110%"/>   
-                  <el-table-column prop="bTemMaxTimeData" label="发生时间" width="110%"/>
-                </el-table-column>
-                <el-table-column v-else-if="item.name === 'B路最低温度(℃)'" label="B路温度最低值(℃)">
-                  <el-table-column :prop="item.name" label="B路温度最低值(℃)" width="110%"/>   
-                  <el-table-column prop="bTemMinTimeData" label="发生时间" width="110%"/>
-                </el-table-column>
-                <el-table-column v-else-if="item.name === 'C路最高温度(℃)'" label="C路温度最高值(℃)">
-                  <el-table-column :prop="item.name" label="C路温度最高值(℃)" width="110%"/>   
-                  <el-table-column prop="cTemMaxTimeData" label="发生时间" width="110%"/>
-                </el-table-column>
-                <el-table-column v-else-if="item.name === 'C路最低温度(℃)'" label="C路温度最低值(℃)">
-                  <el-table-column :prop="item.name" label="C路温度最低值(℃)" width="110%"/>   
-                  <el-table-column prop="cTemMinTimeData" label="发生时间" width="110%"/>
-                </el-table-column>
-                <el-table-column v-else-if="item.name === '中线最高温度(℃)'" label="中线温度最高值(℃)">
-                  <el-table-column :prop="item.name" label="中线温度最高值(℃)" width="110%"/>   
-                  <el-table-column prop="nTemMaxTimeData" label="发生时间" width="110%"/>
-                </el-table-column>
-                <el-table-column v-else-if="item.name === '中线最低温度(℃)'" label="中线温度最低值(℃)">
-                  <el-table-column :prop="item.name" label="中线温度最低值(℃)" width="110%"/>   
-                  <el-table-column prop="nTemMinTimeData" label="发生时间" width="110%"/>
-                </el-table-column>
-                <el-table-column v-else :prop="item.name" :label="item.name" width="110%"/>   
-              </template>
-            </el-table>
+              </el-table>
             </div>
           </el-tab-pane>
         </el-tabs>

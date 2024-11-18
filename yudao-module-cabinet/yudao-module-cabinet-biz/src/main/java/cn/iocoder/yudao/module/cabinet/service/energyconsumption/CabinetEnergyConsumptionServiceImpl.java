@@ -1,8 +1,19 @@
 package cn.iocoder.yudao.module.cabinet.service.energyconsumption;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
+import cn.iocoder.yudao.module.cabinet.controller.admin.energyconsumption.VO.CabinetEleTotalRealtimeResVO;
 import cn.iocoder.yudao.module.cabinet.controller.admin.energyconsumption.VO.CabinetEnergyConsumptionPageReqVO;
+import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.IndexDO;
+import cn.iocoder.yudao.module.cabinet.dal.mysql.index.CabIndexMapper;
+import cn.iocoder.yudao.module.cabinet.dto.CabinetEleTotalRealtimeReqDTO;
 import cn.iocoder.yudao.module.cabinet.service.historydata.CabinetHistoryDataService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -10,6 +21,7 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.metrics.ValueCount;
@@ -22,6 +34,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsumptionService {
@@ -29,6 +42,8 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
     @Autowired
     private RestHighLevelClient client;
 
+    @Autowired
+    private CabIndexMapper cabIndexMapper;
     @Autowired
     private CabinetHistoryDataService cabinetHistoryDataService;
 
@@ -367,6 +382,91 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
             mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
         }
         return list;
+    }
+
+    @Override
+    public PageResult<CabinetEleTotalRealtimeResVO> getCabinetEleTotalRealtime(CabinetEleTotalRealtimeReqDTO reqDTO, boolean flag) throws IOException {
+        PageResult<CabinetEleTotalRealtimeResVO> pageResult = new PageResult<>();
+        List<CabinetEleTotalRealtimeResVO> list = new ArrayList<>();
+        List<IndexDO> records = null;
+        Long total = 0L;
+        LambdaQueryWrapper<IndexDO> queryWrapper = new LambdaQueryWrapper<IndexDO>().eq(IndexDO::getIsDeleted, 0)
+                .orderByDesc(IndexDO::getCreateTime);
+        if (reqDTO.getCabinetIds() != null && reqDTO.getCabinetIds().length != 0) {
+            queryWrapper.in(IndexDO::getId, reqDTO.getCabinetIds());
+        }
+        if (flag) {
+            IPage<IndexDO> iPage = cabIndexMapper.selectPage(new Page<>(reqDTO.getPageNo(), reqDTO.getPageSize()), queryWrapper);
+            records = iPage.getRecords();
+            total = iPage.getTotal();
+        } else {
+            records = cabIndexMapper.selectList(queryWrapper);
+        }
+        List<Integer> roomIds = records.stream().map(IndexDO::getRoomId).distinct().collect(Collectors.toList());
+        Map<Integer , RoomIndex> mapRoom = cabinetHistoryDataService.getRoomById(roomIds);
+        List<Integer> aisleIds = records.stream().map(IndexDO::getAisleId).distinct().collect(Collectors.toList());
+        Map<Integer , AisleIndex> mapAisle = cabinetHistoryDataService.getAisleByIds(aisleIds);
+        for (IndexDO record : records) {
+            CabinetEleTotalRealtimeResVO resVO = new CabinetEleTotalRealtimeResVO();
+            String roomName = mapRoom.get(record.getRoomId()).getName();
+            String aisleName = mapAisle.get(record.getAisleId()).getName();
+            String localtion = null;
+            if(record.getAisleId() != 0){
+                localtion = roomName + "-" + aisleName + "-" + record.getName();
+            }else {
+                localtion = roomName + "-"  + record.getName() ;
+            }
+            resVO.setId(record.getId()).setLocation(localtion);
+            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+            boolQuery.must(QueryBuilders.rangeQuery("create_time.keyword")
+                    .gte(reqDTO.getTimeRange()[0])
+                    .lte(reqDTO.getTimeRange()[1]));
+            boolQuery.must(QueryBuilders.termsQuery("cabinet_id", String.valueOf(record.getId())));
+            // 搜索源构建对象
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(boolQuery);
+            searchSourceBuilder.size(1);
+            searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
+            SearchRequest searchRequest1 = new SearchRequest();
+            searchRequest1.indices("cabinet_ele_total_realtime");
+            //query条件--正常查询条件
+            searchRequest1.source(searchSourceBuilder);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
+            SearchHits hits = searchResponse1.getHits();
+            for (SearchHit hit : hits) {
+                resVO.setCreateTimeMax((String) hit.getSourceAsMap().get("create_time"));
+                if (Objects.nonNull(resVO.getCreateTimeMax())) {
+                    resVO.setEleActiveEnd((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_total")).orElseGet(() -> 0.0));
+                }
+            }
+            SearchSourceBuilder searchSourceBuilder2 = new SearchSourceBuilder();
+            searchSourceBuilder2.query(boolQuery);
+            searchSourceBuilder2.size(1);
+            searchSourceBuilder2.sort("create_time.keyword", SortOrder.ASC);
+            SearchRequest searchRequest2 = new SearchRequest();
+            searchRequest2.indices("cabinet_ele_total_realtime");
+            //query条件--正常查询条件
+            searchRequest2.source(searchSourceBuilder2);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse2 = client.search(searchRequest2, RequestOptions.DEFAULT);
+            SearchHits hits2 = searchResponse2.getHits();
+
+            for (SearchHit hit : hits2) {
+                resVO.setCreateTimeMin((String) hit.getSourceAsMap().get("create_time"));
+                if (Objects.nonNull(resVO.getCreateTimeMin())) {
+                    resVO.setEleActiveStart((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_total")).orElseGet(() -> 0.0));
+                    double sub = BigDemicalUtil.sub(resVO.getEleActiveEnd(), resVO.getEleActiveStart(), 1);
+                    resVO.setEleActive(sub);
+                    if (sub < 0) {
+                        resVO.setEleActive(resVO.getEleActiveEnd());
+                    }
+                }
+            }
+            list.add(resVO);
+        }
+        pageResult.setTotal(total).setList(list);
+        return pageResult;
     }
 
 }

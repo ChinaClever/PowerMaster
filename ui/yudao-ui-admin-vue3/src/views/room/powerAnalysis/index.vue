@@ -158,7 +158,7 @@ const queryParams = reactive({
   pageSize: 15,
   granularity: 'day',
   timeRange: undefined as string[] | undefined,
-  roomIds:[]
+  roomIds:[] as number[]
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
@@ -289,6 +289,40 @@ const getList = async () => {
   }
 }
 
+const getList1 = async () => {
+  loading.value = true
+  try {
+    if ( start.value != undefined){
+      // 格式化时间范围 加上23:59:59的时分秒 
+      const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
+      // 结束时间的天数多加一天 ，  一天的毫秒数
+      const oneDay = 24 * 60 * 60 * 1000;
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(end.value), oneDay )))
+      queryParams.timeRange = [selectedStartTime, selectedEndTime];
+    }
+    	console.log('入参', queryParams);
+    // 时间段清空后值会变成null 此时搜索不能带上时间段
+    if(start.value == null){
+      queryParams.timeRange = undefined
+    }
+
+queryParams.roomIds =[id.value]
+  
+    const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
+    eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
+    list.value = data.list
+    realTotel.value = data.total
+    if (data.total > 10000){
+      total.value = 10000
+    }else{
+      total.value = data.total
+    }
+  } finally {
+    initChart();
+    loading.value = false
+  }
+}
+
 // 自定义图表提示框
 function customTooltipFormatter(params: any[]) {
   var tooltipContent = ''; 
@@ -401,12 +435,25 @@ const handleExport = async () => {
 const toDetails = (roomId: number, location: string) => {
   push('/room/energyConsumption/ecdistribution?roomId='+roomId+'&location='+location);
 }
+const start = ref('')
+const end = ref('')
+const id =  ref(0)
 
 /** 初始化 **/
 onMounted(() => {
   getNavList()
   getNavNewData()
-  getList();
+
+  start.value = useRoute().query.start as string;
+  end.value = useRoute().query.end as string;
+  id.value = useRoute().query.roomId as unknown as number;
+  if (start.value != null){
+  	console.log('详情页', start);
+	console.log('详情页1', id);
+  getList1();
+  }else{
+      getList();
+  }
 });
 
 </script>

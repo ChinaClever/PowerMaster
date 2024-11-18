@@ -195,8 +195,17 @@ public class EnergyConsumptionController {
 
     @PostMapping("ele_total_realtime")
     @Operation(summary = "获取实时电量")
-    public CommonResult<PageResult<Object>> getEleTotalRealtime(@RequestBody EleTotalRealtimeReqDTO reqDTO) throws IOException {
-        PageResult<Object> list1 = energyConsumptionService.getEleTotalRealtime(reqDTO);
-        return success(list1);
+    public CommonResult<PageResult<EleTotalRealtimeRespVO>> getEleTotalRealtime( EleTotalRealtimeReqDTO reqDTO) throws IOException {
+        PageResult<EleTotalRealtimeRespVO> list = energyConsumptionService.getEleTotalRealtime(reqDTO,true);
+        return success(list);
+    }
+
+    @GetMapping("ele_total_realtimeExcel")
+    @Operation(summary = "获取实时电量导出")
+    public void getEleTotalRealtimeExcel( EleTotalRealtimeReqDTO reqDTO, HttpServletResponse response) throws IOException {
+        PageResult<EleTotalRealtimeRespVO> list = energyConsumptionService.getEleTotalRealtime(reqDTO,false);
+        ExcelUtils.write(response, "pdu实时电能记录数据.xlsx", "数据", EleTotalRealtimeRespVO.class,
+                BeanUtils.toBean(list.getList(), EleTotalRealtimeRespVO.class));
+
     }
 }

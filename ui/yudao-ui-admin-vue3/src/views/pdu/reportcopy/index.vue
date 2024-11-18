@@ -1,8 +1,13 @@
 <template>
-  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="false"  :lazy="true" :load="loadNode" navTitle="PDU报表">
+  <CommonMenu :dataList="navList" @node-click="handleClick"  navTitle="PDU报表" :showCheckbox="false" >
     <template #NavInfo>
-      <div >
         <br/>
+      <div class="nav_data">
+         <div class="nav_header">      
+          <span v-if="nowAddress">{{nowAddress}}</span>
+          <span v-if="nowLocation">( {{nowLocation}} ) </span>
+        </div>
+
         <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
         </div>
@@ -229,6 +234,18 @@
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kVA， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kVA， 发生时间{{powData.activePowMinTime}}</p>
             <Line class="Container"  width="70vw" height="58vh" :list="totalLineList"/>
           </div>
+          <div class="pageBox" v-if="visControll.volVis">
+            <div class="page-conTitle" >
+              电压曲线
+            </div>
+            <vol width="70vw" height="58vh" :list="volList" />
+          </div>   
+          <div class="pageBox" v-if="visControll.curVis">
+            <div class="page-conTitle" >
+              电流曲线
+            </div>
+            <cur width="70vw" height="58vh" :list="curList" />
+          </div>   
           <div class="pageBox" v-if="visControll.outletVis">
             <div class="page-conTitle" >
               输出位电量排名
@@ -303,6 +320,8 @@ import { CabinetApi } from '@/api/cabinet/info'
 import type Node from 'element-plus/es/components/tree/src/model/node'
 import Line from './component/Line.vue'
 import PFLine from './component/PFLine.vue'
+import vol from './component/vol.vue'
+import cur from './component/cur.vue'
 import Bar from './component/Bar.vue'
 import HorizontalBar from './component/HorizontalBar.vue'
 import EnvTemLine from './component/EnvTemLine.vue'
@@ -323,11 +342,16 @@ import { remove } from 'nprogress';
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
+const navList = ref([]) as any // 左侧导航栏树结构列表
 const outletList = ref() as any;
+const volList = ref() as any;
+const curList = ref() as any;
 const temList = ref() as any;
 const eleList = ref() as any;
 const totalLineList = ref() as any;
 const pfLineList = ref() as any;
+const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
+const nowLocationTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
 const now = ref()
 const switchValue = ref(1);
 const ipList = ref([])// 初始化 ipList 为一个空数组
@@ -337,6 +361,8 @@ const visControll = reactive({
   isSameDay : false,
   eqVis : false,
   powVis : false,
+  volVis : false,
+  curVis : false,
   outletVis : false,
   temVis : false,
   pfVis: false,
@@ -490,12 +516,49 @@ const loadNode = async (node: Node, resolve: (data: Tree[]) => void) => {
   } 
 }
 
-const handleClick = (row) => {
-  if(row.type != null  && row.type == 4){
+// const handleClick = (row) => {
+//   if(row.type != null  && row.type == 4){
+//     queryParams.ipAddr = row.ip
+//     queryParams.cascadeAddr = row?.unique?.split("-")[1];
+//     handleQuery();getNavList
+//   }
+// }
+
+// 导航栏选择后触发
+const handleClick = async (row) => {
+   if(row.type != null  && row.type == 4){
+    queryParams.pduId = undefined
     queryParams.ipAddr = row.ip
     queryParams.cascadeAddr = row?.unique?.split("-")[1];
+    findFullName(navList.value, row.unique, fullName => {
+      nowAddressTemp.value = fullName
+      nowLocationTemp.value = row.unique
+    });
     handleQuery();
   }
+}
+
+// 得到位置全名
+function findFullName(data, targetUnique, callback, fullName = '') {
+  for (let item of data) {
+    const newFullName = fullName === '' ? item.name : fullName + '-' + item.name;
+    if (item.unique === targetUnique) {
+      callback(newFullName);
+    }
+    if (item.children && item.children.length > 0) {
+      findFullName(item.children, targetUnique, callback, newFullName);
+    }
+  }
+}
+// 接口获取机房导航列表
+const getNavList = async() => {
+  const res = await CabinetApi.getRoomList({})
+  let arr = [] as any
+  for (let i=0; i<res.length;i++){
+  var temp = await CabinetApi.getRoomPDUList({id : res[i].id})
+  arr = arr.concat(temp);
+  }
+  navList.value = arr
 }
 
 //折线图数据
@@ -1105,6 +1168,7 @@ const formRef = ref()
 
 /** 初始化 **/
 onMounted( async () =>  {
+    getNavList()
   // getList();
   // initChart();
   ipList.value = await loadAll();
