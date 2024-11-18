@@ -2,6 +2,8 @@ package cn.iocoder.yudao.module.pdu.service.pdudevice;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
+import cn.iocoder.yudao.framework.common.entity.es.box.line.BoxLineHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.env.CabinetEnvHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.pdu.ele.total.PduEqTotalDayDo;
@@ -68,6 +70,8 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -760,6 +764,127 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         result.put("ll", dayList2);
         result.put("lll", dayList3);
         result.put("dateTimes", dateTimes);
+        return result;
+    }
+
+    @Override
+    public PduBalanceDeatilRes getPDUDeviceDetail(String key) {
+        PduBalanceDeatilRes result = new PduBalanceDeatilRes();
+        PDUCurbalanceColorDO PDUCurbalanceColorDO = PDUCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
+        ValueOperations ops = redisTemplate.opsForValue();
+        JSONObject jsonObject = (JSONObject) ops.get(REDIS_KEY_PDU + key);
+        if (jsonObject == null){
+            return result;
+        }
+//        if (jsonObject == null || jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list") == null || jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list").size() <= 0) {
+//            continue;
+//        }
+        JSONObject loopItemList = jsonObject.getJSONObject("pdu_data").getJSONObject("loop_item_list");
+        JSONArray curValue = loopItemList.getJSONArray("cur_value");
+        JSONArray volValue = loopItemList.getJSONArray("vol_value");
+        List<Double> curList = curValue.toList(Double.class);
+        List<Double> volList = volValue.toList(Double.class);
+        curList.sort(Comparator.naturalOrder());
+        volList.sort(Comparator.naturalOrder());
+        Double curAvg = (curList.get(0) + curList.get(1) + curList.get(2))/3;
+        Double volAvg = (volList.get(0) + volList.get(1) + volList.get(2))/3;
+        Double curUnbalance = curAvg == 0 ? 0 : (curList.get(2) - curAvg) / curAvg * 100;
+        Double volUnbalance = volAvg == 0 ? 0 : (volList.get(2) - volList.get(0)) / volAvg * 100;
+        result.setCur_value(curValue.toArray(Float.class));
+        result.setVol_value(volValue.toArray(Float.class));
+        result.setCurUnbalance(new BigDecimal(curUnbalance).setScale(2, RoundingMode.HALF_UP).doubleValue());
+        result.setVolUnbalance(new BigDecimal(volUnbalance).setScale(2, RoundingMode.HALF_UP).doubleValue());
+        JSONArray curAlarmArr = loopItemList.getJSONArray("cur_alarm_max");
+        List<Double> sortAlarmArr = curAlarmArr.toList(Double.class);
+        sortAlarmArr.sort(Collections.reverseOrder());
+        double maxVal = sortAlarmArr.get(0);
+        List<Double> temp = curValue.toList(Double.class);
+        temp.sort(Collections.reverseOrder());
+        double a = temp.get(0) - temp.get(2);
+        int color = 0;
+        if (PDUCurbalanceColorDO == null) {
+            if (a >= maxVal * 0.2) {
+                if (curUnbalance < 15) {
+                    color = 2;
+                } else if (curUnbalance < 30) {
+                    color = 3;
+                } else {
+                    color = 4;
+                }
+            } else {
+                color = 1;
+            }
+        } else {
+            if (a >= maxVal * 0.2) {
+                if (curUnbalance < PDUCurbalanceColorDO.getRangeOne()) {
+                    color = 2;
+                } else if (curUnbalance < PDUCurbalanceColorDO.getRangeFour()) {
+                    color = 3;
+                } else {
+                    color = 4;
+                }
+            } else {
+                color = 1;
+            }
+        }
+        result.setColor(color);
+        return result;
+    }
+
+    @Override
+    public List<PduTrendVO> getPudBalanceTrend(Integer pduId) {
+        List<PduTrendVO> result = new ArrayList<>();
+        try {
+            DateTime end = DateTime.now();
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR_OF_DAY, -24);
+            DateTime start = DateTime.of(calendar.getTime());
+
+            String startTime = DateUtil.formatDateTime(start);
+            String endTime = DateUtil.formatDateTime(end);
+            List<Integer> ids = Arrays.asList(pduId);
+            List<String> data = getData(startTime, endTime, ids, "pdu_hda_line_hour");
+            Map<String,List<BoxLineHourDo>> timeBus = new HashMap<>();
+            data.forEach(str -> {
+                BoxLineHourDo hourDo = JsonUtils.parseObject(str, BoxLineHourDo.class);
+
+                String dateTime  = DateUtil.format(hourDo.getCreateTime(), "yyyy-MM-dd HH") ;
+                List<BoxLineHourDo> lineHourDos = timeBus.get(dateTime);
+                if (CollectionUtils.isEmpty(lineHourDos)) {
+                    lineHourDos = new ArrayList<>();
+                }
+                lineHourDos.add(hourDo);
+                timeBus.put(dateTime,lineHourDos);
+            });
+
+            timeBus.keySet().forEach(dateTime -> {
+                //获取每个时间段数据
+                List<BoxLineHourDo> boxLineHourDos = timeBus.get(dateTime);
+
+                PduTrendVO trendDTO = new PduTrendVO();
+                trendDTO.setDateTime(dateTime);
+                //获取相数据
+                List<Map<String,Object>> cur = new ArrayList<>();
+                List<Map<String,Object>> vol = new ArrayList<>();
+                boxLineHourDos.forEach(hourDo -> {
+                    Map<String,Object> curMap = new HashMap<>();
+                    curMap.put("lineId",hourDo.getLineId());
+                    curMap.put("curValue",hourDo.getCurAvgValue());
+                    Map<String,Object> volMap = new HashMap<>();
+                    volMap.put("lineId",hourDo.getLineId());
+                    volMap.put("volValue",hourDo.getVolAvgValue());
+                    cur.add(curMap);
+                    vol.add(volMap);
+                });
+                trendDTO.setCur(cur);
+                trendDTO.setVol(vol);
+
+                result.add(trendDTO);
+            });
+            return result.stream().sorted(Comparator.comparing(PduTrendVO::getDateTime)).collect(Collectors.toList());
+        } catch (Exception e){
+            log.error("获取数据失败",e);
+        }
         return result;
     }
 
