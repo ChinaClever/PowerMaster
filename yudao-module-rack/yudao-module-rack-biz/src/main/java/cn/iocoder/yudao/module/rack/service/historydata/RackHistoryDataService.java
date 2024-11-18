@@ -1,6 +1,9 @@
 package cn.iocoder.yudao.module.rack.service.historydata;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.IndexDO;
 import cn.iocoder.yudao.module.rack.controller.admin.historydata.vo.RackHistoryDataDetailsReqVO;
 import cn.iocoder.yudao.module.rack.controller.admin.historydata.vo.RackHistoryDataPageReqVO;
 
@@ -37,4 +40,8 @@ public interface RackHistoryDataService {
 
 
     List<Object> getNewList(List<Object> list);
+
+    Map<Integer, String> getRoomById(List<Integer> roomIds);
+
+    Map<Integer, IndexDO> getCabinetByIds(List<Integer> cabineIds);
 }

@@ -234,6 +234,18 @@
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kVA， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kVA， 发生时间{{powData.activePowMinTime}}</p>
             <Line class="Container"  width="70vw" height="58vh" :list="totalLineList"/>
           </div>
+          <div class="pageBox" v-if="visControll.volVis">
+            <div class="page-conTitle" >
+              电压曲线
+            </div>
+            <vol width="70vw" height="58vh" :list="volList" />
+          </div>   
+          <div class="pageBox" v-if="visControll.curVis">
+            <div class="page-conTitle" >
+              电流曲线
+            </div>
+            <cur width="70vw" height="58vh" :list="curList" />
+          </div>   
           <div class="pageBox" v-if="visControll.outletVis">
             <div class="page-conTitle" >
               输出位电量排名
@@ -308,6 +320,8 @@ import { CabinetApi } from '@/api/cabinet/info'
 import type Node from 'element-plus/es/components/tree/src/model/node'
 import Line from './component/Line.vue'
 import PFLine from './component/PFLine.vue'
+import vol from './component/vol.vue'
+import cur from './component/cur.vue'
 import Bar from './component/Bar.vue'
 import HorizontalBar from './component/HorizontalBar.vue'
 import EnvTemLine from './component/EnvTemLine.vue'
@@ -330,6 +344,8 @@ defineOptions({ name: 'PDUDevice' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const outletList = ref() as any;
+const volList = ref() as any;
+const curList = ref() as any;
 const temList = ref() as any;
 const eleList = ref() as any;
 const totalLineList = ref() as any;
@@ -345,6 +361,8 @@ const visControll = reactive({
   isSameDay : false,
   eqVis : false,
   powVis : false,
+  volVis : false,
+  curVis : false,
   outletVis : false,
   temVis : false,
   pfVis: false,

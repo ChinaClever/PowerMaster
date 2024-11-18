@@ -1,76 +1,13 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="机柜能耗排名" :showCheckbox="false">
+  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="机柜实时能耗" :showCheckbox="false">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <!-- <div class="carousel-container">
-          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-            </el-carousel-item>
-          </el-carousel>
-        </div>  -->
-      <!-- <div class="nav_header">
-        <span v-if="nowAddress">{{nowAddress}}</span>
-        <br/>
-        <span>{{selectTimeRange[0]}} </span>
-        <span>至</span> 
-        <span>{{selectTimeRange[1]}}</span>
-        <br/>
-      </div>
-      <div class="nav_content">
-        <el-descriptions title="" direction="vertical" :column="1" border >
-          <el-descriptions-item label="总耗电量">
-            <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="最大耗电量 | 发生时间">
-            <span >{{ formatNumber(maxEqDataTemp, 1) }} kWh</span> <br/>
-            <span  v-if="maxEqDataTimeTemp">{{ maxEqDataTimeTemp }}</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="最小耗电量 | 发生时间">
-            <span >{{ formatNumber(minEqDataTemp, 1) }} kWh</span> <br/>
-            <span  v-if="minEqDataTimeTemp">{{ minEqDataTimeTemp }}</span>
-          </el-descriptions-item>
-        </el-descriptions>
-      </div> -->
-      <div class="nav_header">      
-          <span v-if="nowAddress">{{nowAddress}}</span>
+        <div class="descriptions-container" style="font-size: 14px;">
+          <div class="description-item">
+            <span class="label">按时间范围查询实时能耗</span>
+          </div>
         </div>
-        <br/> 
-        <div class="descriptions-container"  v-if="maxEqDataTimeTemp" style="font-size: 14px;">
-        <div class="description-item" >
-          <span class="label">开始日期 :</span>
-          <span >{{selectTimeRange[0]}}</span>
-        </div>
-        <div class="description-item" >
-          <span class="label">结束日期 :</span>
-          <span >{{selectTimeRange[1]}}</span>
-        </div>
-        <div class="description-item">
-          <span class="label">总耗电量 :</span>
-          <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
-        </div>
-        <div class="description-item">
-          <span class="label">最大耗电量 :</span>
-          <span >{{ formatNumber(maxEqDataTemp, 1) }} kWh</span>
-        </div>
-        <div v-if="maxEqDataTimeTemp" class="description-item">
-          <span class="label">发生时间 :</span>
-          <span class="value">{{ maxEqDataTimeTemp }}</span>
-        </div>
-
-        <div class="description-item">
-          <span class="label">最小耗电量 :</span>
-          <span >{{ formatNumber(minEqDataTemp, 1) }} kWh</span>
-        </div>
-        <div v-if="minEqDataTimeTemp" class="description-item">
-          <span class="label">发生时间 :</span>
-          <span class="value">{{ minEqDataTimeTemp }}</span>
-        </div>
-        <div class="line" style="margin-top: 10px;"></div>
-        </div>
-
-
       </div>
     </template>
     <template #ActionBar>
@@ -157,7 +94,7 @@ import { ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { CabinetApi } from '@/api/cabinet/info'
-import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime, betweenDay, beginOfDay } from '@/utils/formatTime'
 import { EnergyConsumptionApi } from '@/api/cabinet/energyConsumption'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 import download from '@/utils/download'
@@ -319,10 +256,9 @@ const getLineChartData =async () => {
 loading.value = true
  try {
     // 格式化时间范围 加上23:59:59的时分秒 
-    queryParams.timeRange[0] = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+    queryParams.timeRange[0] = formatDate(beginOfDay(convertDate(selectTimeRange.value[0])))
     // 结束时间的天数多加一天 ，  一天的毫秒数
-    const oneDay = 24 * 60 * 60 * 1000;
-    queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+    queryParams.timeRange[1] = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
 
     const data = await EnergyConsumptionApi.getEQDataDetails(queryParams);
     if (data != null && data.total != 0){

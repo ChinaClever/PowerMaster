@@ -102,6 +102,9 @@
         <el-form-item style="margin-left: auto">
           <el-button @click="handleSwitchModal(0)" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />阵列模式</el-button>
           <el-button @click="handleSwitchModal(1)" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
+          
+          <!--          -->
+         
         </el-form-item>
       </el-form>
     </template>

@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU能耗统计" placeholder="如:192.168.1.96-0">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="PDU能耗数据" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
         <br/>    <br/> 
         <div class="nav_data">
@@ -176,6 +176,7 @@ import * as echarts from 'echarts';
 import { ElMessage } from 'element-plus'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 import download from '@/utils/download'
+import router from '@/router'
 const { push } = useRouter()
 defineOptions({ name: 'PowerAnalysis' })
 
@@ -189,7 +190,7 @@ const message = useMessage() // 消息弹窗
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
-const selectTimeRange = ref(undefined)
+const selectTimeRange = ref()
 const carouselItems = ref([
       { imgUrl: PDUImage},
       { imgUrl: PDUImage},
@@ -205,7 +206,7 @@ const queryParams = reactive({
   type: 'total',
   granularity: 'day',
   timeRange: undefined as string[] | undefined,
-  ipArray: [],
+  ipArray: undefined as string[] | undefined,
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
@@ -339,7 +340,8 @@ const getList = async () => {
       queryParams.timeRange = undefined
     }
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
-    eqData.value = data.list.map((item) => formatEQ(item.end_ele - item.start_ele, 1));
+    eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
+
     list.value = data.list
     realTotel.value = data.total
     if (data.total > 10000){
@@ -347,6 +349,40 @@ const getList = async () => {
     }else{
       total.value = data.total
     }
+    
+  } finally {
+    initChart();
+    loading.value = false
+  }
+}
+
+const getList1 = async () => {
+  loading.value = true
+  try {
+    if ( start.value != undefined){
+      // 格式化时间范围 加上23:59:59的时分秒 
+      const selectedStartTime = formatDate(endOfDay(convertDate(start.value)))
+      // 结束时间的天数多加一天 ，  一天的毫秒数
+      const oneDay = 24 * 60 * 60 * 1000;
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(end.value), oneDay )))
+      queryParams.timeRange = [selectedStartTime, selectedEndTime];
+    }
+    // 时间段清空后值会变成null 此时搜索不能带上时间段
+    if(start.value == null){
+      queryParams.timeRange = undefined
+    }
+    queryParams.ipArray = [ip.value];
+    	console.log('详情页2', queryParams.ipArray);
+    const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
+    eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
+    list.value = data.list
+    realTotel.value = data.total
+    if (data.total > 10000){
+      total.value = 10000
+    }else{
+      total.value = data.total
+    }
+      
   } finally {
     initChart();
     loading.value = false
@@ -399,7 +435,15 @@ function formatEle(_row: any, _column: any, cellValue: number): string {
 }
 
 function formatPowerEle(_row: any, _column: any, cellValue: number): string {
-   const numberele = _row.end_ele  -  _row.start_ele;
+   let numberele;
+   if(queryParams.granularity == "day"){
+       numberele = _row.end_ele  -  _row.start_ele;
+      if(numberele < 0){
+          numberele = _row.end_ele;
+      }
+   }else{
+       numberele = _row.end_ele  -  _row.start_ele;
+   }
    return Number(numberele).toFixed(1);
 }
 
@@ -430,6 +474,8 @@ const handleQuery = () => {
  queryParams.pageNo = 1
  getList()
 }
+
+
 
 // 获取参数类型最大值 例如lineId=6 表示下拉框为L1~L6
 const getTypeMaxValue = async () => {
@@ -464,6 +510,9 @@ const handleCheck = async (node) => {
         arr.push(item.unique);
       }
     });
+    if (ip.value != null ){
+      arr =[ip]
+    }
     //没筛选到pdu 不显示任何数据 ipArray参数传0 后端返回空
     if(arr.length == 0  && node.length != 0){
       arr.push(0)
@@ -522,14 +571,36 @@ const handleExport = async () => {
   }
 }
 
+const start = ref('')
+const end = ref('')
+const ip =  ref('')
+
 /** 初始化 **/
 onMounted(() => {
   getNavList()
   getNavNewData()
   getTypeMaxValue();
   getList();
+
+  start.value = useRoute().query.start as string;
+  end.value = useRoute().query.end as string;
+  ip.value = useRoute().query.ip as string;
+  if (start.value != null){
+  	console.log('详情页', start);
+	console.log('详情页1', ip);
+  getList1();
+  }
 });
- 
+
+/** 清空按钮操作 */
+const clearQuery = () => {
+end.value= '';
+start.value='';
+ip.value='';
+queryParams.timeRange = undefined;
+queryParams.ipArray = undefined;
+}
+
 </script>
 
 <style scoped>

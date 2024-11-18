@@ -561,7 +561,7 @@ const router = useRouter();
 const toPDUDisplayScreen = (row: { devKey: string; location: string; id: number }) => {
   const { devKey, location, id } = row;
   router.push({
-    path: '/pdu/pdudisplayscreen',
+    path: '/pdu/pdudevicebalance',
     query: { devKey, id: id.toString(), location }
   });
 };
