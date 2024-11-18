@@ -110,11 +110,7 @@ public class PDUDeviceController {
     public CommonResult<Map> getPDUPFLine(@RequestBody PDUDevicePageReqVO pageReqVO) {
         return success(pDUDeviceService.getPDUPFLine(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
     }
-    @PostMapping("/report/pfline")
-    @Operation(summary = "获得PDU电流报表数据")
-    public CommonResult<Map> getPDUPFLine(@RequestBody PDUDevicePageReqVO pageReqVO) {
-        return success(pDUDeviceService.getPDUPFLine(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
-    }
+
     @PostMapping("/report/pow")
     @Operation(summary = "获得PDU报表数据")
     public CommonResult<Map> getReportPowDataByDevKey(@RequestBody PDUDevicePageReqVO pageReqVO) {
