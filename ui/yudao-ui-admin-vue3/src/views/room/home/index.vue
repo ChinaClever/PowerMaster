@@ -1,17 +1,10 @@
 <template>
    <div class="homeContainer">
     <div class="left">
-      <el-card shadow="never">
-        <template #header>
-          <div>用能</div>
-        </template>
-        <div>当日用能：{{energyInfo.todayEq ? energyInfo.todayEq.toFixed(2) : '0.00'}}kW·h</div>
-        <div>本周用能：{{energyInfo.thisWeekEq ? energyInfo.thisWeekEq.toFixed(2) : '0.00'}}kW·h</div>
-        <div>本月用能：{{energyInfo.thisMonthEq ? energyInfo.thisMonthEq.toFixed(2) : '0.00'}}kW·h</div>
-      </el-card>
       <ContentWrap>
         <div class="progress">
-          <el-progress type="dashboard" :percentage="powerInfo.powApparent && powerInfo.powApparent.toFixed()">
+          <!--<el-progress type="dashboard" :percentage="powerInfo.powApparent && powerInfo.powApparent.toFixed()">-->
+          <el-progress type="dashboard" :percentage="80">
             <template #default="{ percentage }">
               <span class="percentage-value">{{ percentage }}kVA</span>
               <span class="percentage-label">总视在功率</span>
@@ -21,21 +14,30 @@
       </ContentWrap>
       <el-card shadow="never">
         <template #header>
+          <div>用能</div>
+        </template>
+        <div>当日用能：{{energyInfo.todayEq ? energyInfo.todayEq.toFixed(2) : '0.00'}}kW·h</div>
+        <div>本周用能：{{energyInfo.thisWeekEq ? energyInfo.thisWeekEq.toFixed(2) : '0.00'}}kW·h</div>
+        <div>本月用能：{{energyInfo.thisMonthEq ? energyInfo.thisMonthEq.toFixed(2) : '0.00'}}kW·h</div>
+      </el-card>
+      <!--<el-card shadow="never">
+        <template #header>
           <div>空间管理</div>
         </template>
         <div>未用空间：{{spaceInfo.freeSpace}}u</div>
         <div>已用空间：{{spaceInfo.usedSpace}}u</div>
         <div>总空间：{{spaceInfo.totalSpace}}u</div>
         <div>机柜数：{{spaceInfo.cabNum}}</div>
-      </el-card>
+      </el-card>-->
       <el-card shadow="never">
         <template #header>
           <div>环境数据</div>
         </template>
-        <div>当前平均温度：{{envInfo.temAvg}}°C</div>
+        <div ref="environmentChart" id="environmentChart"></div>
+        <!--<div>当前平均温度：{{envInfo.temAvg}}°C</div>
         <div>当前最高温度：{{envInfo.temMax}}°C</div>
         <div>当前最低温度：{{envInfo.temMin}}°C</div>
-        <div>最近更新时间：{{envInfo.updateTime}}</div>
+        <div>最近更新时间：{{envInfo.updateTime}}</div>-->
       </el-card>
     </div>
     <div class="center" id="center">
@@ -50,6 +52,12 @@
     </div>
     <div class="right">
       <el-card shadow="never">
+        <template #header>
+          <div style="margin-left:45%">PUE</div>
+        </template>
+        <div style="margin-left:45%">1.03</div>
+      </el-card>
+      <!--<el-card shadow="never">
         <template #header>
           <div>用能</div>
         </template>
@@ -66,7 +74,7 @@
             </template>
           </el-progress>
         </div>
-      </ContentWrap>
+      </ContentWrap>-->
       <el-card shadow="never">
         <template #header>
           <div>设备数量</div>
@@ -94,7 +102,10 @@ import CabTopology from "../topology/index.vue"
 import { MachineRoomApi } from '@/api/cabinet/room'
 import { EChartsOption } from 'echarts'
 
+import * as echarts from 'echarts'
+
 const echartOptionsPower = ref<EChartsOption>({}) //用来存储功率曲线图表的配置选项
+const environmentOptions = ref<EChartsOption>({}) //用来存储环境图表的配置选项
 const roomId = ref<number>(0)
 const radioBtn = ref('pow')
 const containerInfo = reactive({
@@ -104,8 +115,70 @@ const deviceInfo = reactive({}) // 设备信息
 const energyInfo = reactive({}) // 用能信息
 const powerInfo = reactive({}) // 功率信息
 const spaceInfo = reactive({}) // 空间信息
-const envInfo = reactive({}) // 空间信息
-const echartInfo = reactive<any>({}) //配置图表的数据系列
+const envInfo = reactive({}) // 空间信息const echartInfo = reactive<any>({}) //配置图表的数据系列
+
+let lineidChart = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
+const lineidChartContainer = ref<HTMLElement | null>(null);
+
+const initChart = () => {
+  if (!lineidChart) {
+    lineidChart = echarts.init(document.getElementById('environmentChart'));
+    // 可以在这里设置一个初始的option，或者留空等待数据更新
+    lineidChart.setOption({
+      title: { text: ''},
+      tooltip: { trigger: 'axis',      formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+          if (param.seriesName === '平均温度' || param.seriesName === '最高温度' || param.seriesName === '最低温度') {
+            result += ' ℃';
+          }
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }},
+      legend: {
+        data: ['平均温度', '最高温度', '最低温度'], // 图例项
+        selected: true
+      },
+      grid: {left: '3%', right: '3%', bottom: '3%',containLabel: true},
+      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+      xAxis: {
+        type: 'category',nameLocation: 'end',
+        boundaryGap: false,
+        data:[1,2,3,4,5]
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          name: 'L1-电流',
+          type: 'line',
+          data: lChartData.value.cur_max_value,
+          symbol: 'circle',
+          symbolSize: 4
+        },
+        {
+          name: 'L2-电流',
+          type: 'line',
+          data: llChartData.value.cur_max_value,
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        },
+        {
+          name: 'L3-电流',
+          type: 'line',
+          data: lllChartData.value.cur_max_value,
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        }
+      ]
+    })
+  }
+}
 
 //获取数据
 const handleGetRoomId = (data) => {
@@ -315,6 +388,27 @@ onMounted(() => {
     font-size: 12px;
   }
 }
+ 
+:deep(.progress .el-progress__text::after ){
+  content: '60kW'; /* 要显示的文本 */
+  position: absolute;
+  top: 0; /* 放置在原元素的 */
+  left: 100%;
+  background-color: #333;
+  color: #fff;
+  padding: 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+  transform: translateX(5px); /* 稍微向右边移动一点以避免与进度条重叠 */
+  opacity: 0; /* 默认隐藏 */
+  transition: opacity 0.3s; /* 添加过渡效果 */
+  pointer-events: none; /* 确保提示框不会干扰鼠标事件 */
+}
+ 
+:deep(.progress:hover .el-progress__text::after) {
+  opacity: 1; /* 鼠标悬停时显示 */
+}
+
 :deep(.el-card) {
   margin-bottom: 15px;
 }

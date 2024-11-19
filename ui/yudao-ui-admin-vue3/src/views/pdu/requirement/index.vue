@@ -338,7 +338,7 @@
           </div>          
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->              
           <!-- <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button> -->    
-          <button class="detail" @click="showDialogOne(item.pduId,queryParams.timeType = 0?'hour':'day',flag=0)" >详情</button>
+          <button class="detail" @click="showDialogOne(item.pduId,queryParams.timeType = 0?'hour':'day');flagValue=1">详情</button>
         </div>
       </div>
 
@@ -384,7 +384,7 @@
           </div>          
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->                
           <!--<button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>--> 
-          <button class="detail" @click="showDialog(item.pduId,queryParams.timeType = 0?'hour':'day',flag=1)" >详情</button>
+          <button class="detail" @click="showDialog(item.pduId,queryParams.timeType = 0?'hour':'day');flagValue=0">详情</button>
         </div>
       </div>
 
@@ -394,7 +394,7 @@
       >     
         <!-- 自定义的头部内容（可选） -->
         <template #header>
-          <el-button @click="lineidBeforeChartUnmount()" style="float:right" show-close="false">关闭</el-button>
+          <el-button @click="lineidBeforeChartUnmount()" style="float:right" show-close="false" >关闭</el-button>
           <div><h2>电流详情</h2></div> 
           <div>结果所在时间段</div>
         </template>
@@ -449,7 +449,7 @@ const dialogVisible = ref(false) //全屏弹窗的显示隐藏
 const dialogVisibleOne = ref(false) //全屏弹窗的显示隐藏
 const detailsId = ref(0)
 const linedata = ref([]) as any
-const flag = ref(0)
+const flagValue = ref(0)
 // const statusNumber = reactive({
 //   normal : 0,
 //   warn : 0,
@@ -806,39 +806,16 @@ const lllChartData = ref({
 
 const lineidDateTimes = ref([] as string[])
 
+const instance = getCurrentInstance();
 let lineidChart = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
 const lineidChartContainer = ref<HTMLElement | null>(null);
 let lineidChartOne = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
 const lineidChartContainerOne = ref<HTMLElement | null>(null);
 
-//获取电流信息
-const getLineid = async (id, type, flag) => {
-  const result = await PDUDeviceApi.getMaxLineHisdata({id:id ,type:type})
-  linedata.value = result
-  lineidDateTimes.value = result.dateTimes
-  const lData = result.l
-  const llData = result.ll
-  const lllData = result.lll
-
-  lData.forEach(item => {
-    lChartData.value.cur_max_value.push(item.cur_max_value)
-    lChartData.value.pow_active_max_value.push(item.pow_active_max_value)
-  })
-
-  llData.forEach(item => {
-    llChartData.value.cur_max_value.push(item.cur_max_value)
-    llChartData.value.pow_active_max_value.push(item.pow_active_max_value)
-  })
-
-  lllData.forEach(item => {
-    lllChartData.value.cur_max_value.push(item.cur_max_value)
-    lllChartData.value.pow_active_max_value.push(item.pow_active_max_value)
-  })
-
-  // 创建新的图表实例
-  lineidChart = echarts.init(document.getElementById('lineidChartContainer'));
-  // 设置新的配置对象
-  if (lineidChart) {
+const initChart = () => {
+  if (!lineidChart) {
+    lineidChart = echarts.init(document.getElementById('lineidChartContainer'));
+    // 可以在这里设置一个初始的option，或者留空等待数据更新
     lineidChart.setOption({
       title: { text: ''},
       tooltip: { trigger: 'axis',      formatter: function (params) {
@@ -893,18 +870,72 @@ const getLineid = async (id, type, flag) => {
       ]
     })
   }
-  // 创建新的图表实例
-  lineidChartOne = echarts.init(document.getElementById('lineidChartContainerOne'));
-  // 设置新的配置对象
-  if (lineidChartOne) {
-    lineidChartOne.setOption({
+}
+
+const updateChart = (lChartData,llChartData,lllChartData,lineidDateTimes ) => {
+  if(flagValue.value == 0){
+    return {
       title: { text: ''},
       tooltip: { trigger: 'axis',      formatter: function (params) {
         let result = params[0].name + '<br>';
         params.forEach(param => {
           result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
           if (param.seriesName === 'L1-电流' || param.seriesName === 'L2-电流' || param.seriesName === 'L3-电流') {
-            result += ' KW';
+            result += ' A';
+          }
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }},
+      legend: {
+        data: ['L1-电流', 'L2-电流', 'L3-电流'], // 图例项
+        selected: true
+      },
+      grid: {left: '3%', right: '3%', bottom: '3%',containLabel: true},
+      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+      xAxis: {
+        type: 'category',nameLocation: 'end',
+        boundaryGap: false,
+        data:lineidDateTimes.value
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          name: 'L1-电流',
+          type: 'line',
+          data: lChartData.value.cur_max_value,
+          symbol: 'circle',
+          symbolSize: 4
+        },
+        {
+          name: 'L2-电流',
+          type: 'line',
+          data: llChartData.value.cur_max_value,
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        },
+        {
+          name: 'L3-电流',
+          type: 'line',
+          data: lllChartData.value.cur_max_value,
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        }
+      ]
+    }
+  }else if(flagValue.value == 1){
+    return {
+      title: { text: ''},
+      tooltip: { trigger: 'axis',      formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+          if (param.seriesName === 'L1-电流' || param.seriesName === 'L2-电流' || param.seriesName === 'L3-电流') {
+            result += ' A';
           }
           result += '<br>';
         });
@@ -949,8 +980,40 @@ const getLineid = async (id, type, flag) => {
           lineStyle:{type: 'dashed'}
         }
       ]
-    })
+    }
   }
+}
+
+//获取电流信息
+const getLineid = async (id, type) => {
+  const result = await PDUDeviceApi.getMaxLineHisdata({id:id ,type:type})
+  console.log('111',result)
+  lineidDateTimes.value = result.dateTimes
+  const lData = result.l
+  const llData = result.ll
+  const lllData = result.lll
+
+  lData.forEach(item => {
+    lChartData.value.cur_max_value.push(item.cur_max_value)
+    lChartData.value.pow_active_max_value.push(item.pow_active_max_value)
+  })
+
+  llData.forEach(item => {
+    llChartData.value.cur_max_value.push(item.cur_max_value)
+    llChartData.value.pow_active_max_value.push(item.pow_active_max_value)
+  })
+
+  lllData.forEach(item => {
+    lllChartData.value.cur_max_value.push(item.cur_max_value)
+    lllChartData.value.pow_active_max_value.push(item.pow_active_max_value)
+  })
+
+
+  const option = updateChart(lChartData,llChartData,lllChartData,lineidDateTimes)
+
+  // 创建新的图表实例
+  lineidChart = echarts.init(document.getElementById('lineidChartContainer'));
+  lineidChart.setOption(option,true)
 }
 
 const lineidBeforeChartUnmount = () => {
@@ -963,30 +1026,27 @@ const lineidBeforeChartUnmountOne = () => {
   dialogVisibleOne.value = false
 }
 
-const showDialog = (id, type,flag) => {
-  getLineid(id, type,flag)
+const showDialog = (id, type) => {
+  lineidChart?.dispose()
+  getLineid(id, type)
   dialogVisible.value = true
-  if(!dialogVisible.value){
-    lineidBeforeChartUnmount()
-  }
+  flagValue.value = 0
 }
 
-const showDialogOne = (id, type,flag) => {
-  getLineid(id, type,flag)
+const showDialogOne = (id, type) => {
+  lineidChartOne?.dispose()
+  getLineid(id, type)
   dialogVisibleOne.value = true
-  if(!dialogVisibleOne.value){
-    lineidBeforeChartUnmountOne()
-  }
+  flagValue.value = 1
 }
 
 /** 初始化 **/
 onMounted(() => {
   giveValue()
   getList()
-  getNavList();
+  getNavList()
+  initChart()
 })
-
-
 </script>
 
 <style scoped lang="scss">
@@ -1494,6 +1554,7 @@ onMounted(() => {
 .adaptiveStyle {
   width: 90vw;
   height: 42vh;
+  z-index: 5;
 }
 /* 尝试隐藏关闭按钮，但可能不总是有效 */
 :deep(.el-dialog__headerbtn) {
