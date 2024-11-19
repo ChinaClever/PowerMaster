@@ -1,8 +1,9 @@
 package cn.iocoder.yudao.module.pdu.service.energyconsumption;
 
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.EleTotalRealtimeReqDTO;
+import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.EleTotalRealtimeRespVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.EnergyConsumptionPageReqVO;
-import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataDetailsReqVO;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -71,4 +72,6 @@ public interface EnergyConsumptionService {
     List<Object> getNewEQList(List<Object> list1);
 
     List<Object> getNewOutLetsList(List<Object> list1);
+
+    PageResult<EleTotalRealtimeRespVO> getEleTotalRealtime(EleTotalRealtimeReqDTO reqDTO, boolean flag) throws IOException;
 }

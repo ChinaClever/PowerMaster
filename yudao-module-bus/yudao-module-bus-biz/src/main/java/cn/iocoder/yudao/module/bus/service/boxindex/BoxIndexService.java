@@ -64,6 +64,8 @@ public interface BoxIndexService {
 
     PageResult<BoxIndexDTO> getEqPage(BoxIndexPageReqVO pageReqVO);
 
+    PageResult<BoxIndexDTO> getMaxEq(BoxIndexPageReqVO pageReqVO);
+
     PageResult<BoxBalanceDataRes> getBoxBalancePage(BoxIndexPageReqVO pageReqVO);
 
     PageResult<BoxTemRes> getBoxTemPage(BoxIndexPageReqVO pageReqVO);

@@ -1,13 +1,25 @@
 package cn.iocoder.yudao.module.aisle.service.energyconsumption;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
+import cn.iocoder.yudao.framework.common.mapper.AisleIndexMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
+import cn.iocoder.yudao.module.aisle.controller.admin.energyconsumption.DTO.AisleEleTotalRealtimeReqDTO;
+import cn.iocoder.yudao.module.aisle.controller.admin.energyconsumption.VO.AisleEleTotalRealtimeResVO;
 import cn.iocoder.yudao.module.aisle.controller.admin.energyconsumption.VO.AisleEnergyConsumptionPageReqVO;
+import cn.iocoder.yudao.module.aisle.dal.dataobject.aisleindex.AisleIndexDO;
 import cn.iocoder.yudao.module.aisle.service.historydata.AisleHistoryDataService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.metrics.ValueCount;
@@ -20,13 +32,15 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumptionService {
 
     @Autowired
     private RestHighLevelClient client;
-
+    @Autowired
+    private AisleIndexMapper aisleIndexMapper;
     @Autowired
     private AisleHistoryDataService aisleHistoryDataService;
 
@@ -41,9 +55,9 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
         int index = (pageNo - 1) * pageSize;
         searchSourceBuilder.from(index);
         // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-        if (index + pageSize > 10000){
+        if (index + pageSize > 10000) {
             searchSourceBuilder.size(10000 - index);
-        }else{
+        } else {
             searchSourceBuilder.size(pageSize);
         }
         searchSourceBuilder.trackTotalHits(true);
@@ -55,16 +69,16 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
                     .to(pageReqVO.getTimeRange()[1]));
         }
         String[] aisleIds = pageReqVO.getAisleIds();
-        if (aisleIds != null){
+        if (aisleIds != null) {
             searchSourceBuilder.query(QueryBuilders.termsQuery("aisle_id", aisleIds));
         }
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
-        if ("day".equals(pageReqVO.getGranularity()) ){
+        if ("day".equals(pageReqVO.getGranularity())) {
             searchRequest.indices("aisle_eq_total_day");
-        }else if ("week".equals(pageReqVO.getGranularity()) ){
+        } else if ("week".equals(pageReqVO.getGranularity())) {
             searchRequest.indices("aisle_eq_total_week");
-        }else {
+        } else {
             searchRequest.indices("aisle_eq_total_month");
         }
         searchRequest.source(searchSourceBuilder);
@@ -95,9 +109,9 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
         int index = (pageNo - 1) * pageSize;
         searchSourceBuilder.from(index);
         // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-        if (index + pageSize > 10000){
+        if (index + pageSize > 10000) {
             searchSourceBuilder.size(10000 - index);
-        }else{
+        } else {
             searchSourceBuilder.size(pageSize);
         }
         searchSourceBuilder.trackTotalHits(true);
@@ -109,16 +123,16 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
                     .to(pageReqVO.getTimeRange()[1]));
         }
         String[] aisleIds = pageReqVO.getAisleIds();
-        if (aisleIds != null){
+        if (aisleIds != null) {
             searchSourceBuilder.query(QueryBuilders.termsQuery("aisle_id", aisleIds));
         }
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
-        if ("day".equals(pageReqVO.getGranularity()) ){
+        if ("day".equals(pageReqVO.getGranularity())) {
             searchRequest.indices("aisle_eq_total_day");
-        }else if ("week".equals(pageReqVO.getGranularity()) ){
+        } else if ("week".equals(pageReqVO.getGranularity())) {
             searchRequest.indices("aisle_eq_total_week");
-        }else {
+        } else {
             searchRequest.indices("aisle_eq_total_month");
         }
         searchRequest.source(searchSourceBuilder);
@@ -141,7 +155,7 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
     @Override
     public PageResult<Object> getEQDataDetails(AisleEnergyConsumptionPageReqVO reqVO) throws IOException {
         Integer aisleId = reqVO.getAisleId();
-        if (Objects.equals(aisleId, null)){
+        if (Objects.equals(aisleId, null)) {
             return null;
         }
         // 搜索源构建对象
@@ -149,18 +163,18 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
         searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
         searchSourceBuilder.size(10000);
         searchSourceBuilder.trackTotalHits(true);
-        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0){
+        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0) {
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(reqVO.getTimeRange()[0])
                     .to(reqVO.getTimeRange()[1]));
         }
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
-        if ("day".equals(reqVO.getGranularity()) ){
+        if ("day".equals(reqVO.getGranularity())) {
             searchRequest.indices("aisle_eq_total_day");
-        }else if ("week".equals(reqVO.getGranularity()) ){
+        } else if ("week".equals(reqVO.getGranularity())) {
             searchRequest.indices("aisle_eq_total_week");
-        }else {
+        } else {
             searchRequest.indices("aisle_eq_total_month");
         }
         searchSourceBuilder.query(QueryBuilders.termQuery("aisle_id", aisleId));
@@ -189,9 +203,9 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
         int index = (pageNo - 1) * pageSize;
         searchSourceBuilder.from(index);
         // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-        if (index + pageSize > 10000){
+        if (index + pageSize > 10000) {
             searchSourceBuilder.size(10000 - index);
-        }else{
+        } else {
             searchSourceBuilder.size(pageSize);
         }
         searchSourceBuilder.trackTotalHits(true);
@@ -204,7 +218,7 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
                     .to(pageReqVO.getTimeRange()[1]));
         }
         String[] aisleIds = pageReqVO.getAisleIds();
-        if (aisleIds != null){
+        if (aisleIds != null) {
             searchSourceBuilder.query(QueryBuilders.termsQuery("aisle_id", aisleIds));
         }
         searchRequest.indices("aisle_ele_total_realtime");
@@ -273,7 +287,7 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
     @Override
     public PageResult<Object> getSubBillDetails(AisleEnergyConsumptionPageReqVO reqVO) throws IOException {
         Integer aisleId = reqVO.getAisleId();
-        if (Objects.equals(aisleId, null)){
+        if (Objects.equals(aisleId, null)) {
             return null;
         }
         // 把传来的开始时间(例如"2024-07-25 10:00:00") 的年月日加一天变成 '2024-07-26 00:00:00'和'2024-07-27 00:00:00'
@@ -325,10 +339,10 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
                 mapList.add(map);
             }
         }
-        for(int i=0;i<mapList.size();i++){
-                mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,16));
-                mapList.get(i).put("start_time",mapList.get(i).get("start_time").toString().substring(0,16));
-                mapList.get(i).put("end_time",mapList.get(i).get("end_time").toString().substring(0,16));
+        for (int i = 0; i < mapList.size(); i++) {
+            mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
+            mapList.get(i).put("start_time", mapList.get(i).get("start_time").toString().substring(0, 16));
+            mapList.get(i).put("end_time", mapList.get(i).get("end_time").toString().substring(0, 16));
         }
         return list;
     }
@@ -343,10 +357,10 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
                 mapList.add(map);
             }
         }
-        for(int i=0;i<mapList.size();i++){
-            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,16));
-            mapList.get(i).put("start_time",mapList.get(i).get("start_time").toString().substring(0,16));
-            mapList.get(i).put("end_time",mapList.get(i).get("end_time").toString().substring(0,16));
+        for (int i = 0; i < mapList.size(); i++) {
+            mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
+            mapList.get(i).put("start_time", mapList.get(i).get("start_time").toString().substring(0, 16));
+            mapList.get(i).put("end_time", mapList.get(i).get("end_time").toString().substring(0, 16));
         }
         return list;
     }
@@ -361,10 +375,10 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
                 mapList.add(map);
             }
         }
-        for(int i=0;i<mapList.size();i++){
-            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,16));
-            mapList.get(i).put("start_time",mapList.get(i).get("start_time").toString().substring(0,16));
-            mapList.get(i).put("end_time",mapList.get(i).get("end_time").toString().substring(0,16));
+        for (int i = 0; i < mapList.size(); i++) {
+            mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
+            mapList.get(i).put("start_time", mapList.get(i).get("start_time").toString().substring(0, 16));
+            mapList.get(i).put("end_time", mapList.get(i).get("end_time").toString().substring(0, 16));
         }
         return list;
     }
@@ -379,10 +393,90 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
                 mapList.add(map);
             }
         }
-        for(int i=0;i<mapList.size();i++){
-            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,16));
+        for (int i = 0; i < mapList.size(); i++) {
+            mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
         }
         return list;
+    }
+
+    @Override
+    public PageResult<AisleEleTotalRealtimeResVO> getAisleEleTotalRealtime(AisleEleTotalRealtimeReqDTO reqDTO, boolean flag) throws IOException {
+        PageResult<AisleEleTotalRealtimeResVO> pageResult = new PageResult<>();
+        List<AisleEleTotalRealtimeResVO> list = new ArrayList<>();
+        List<AisleIndex> records = null;
+        Long total = 0L;
+        LambdaQueryWrapper<AisleIndex> queryWrapper = new LambdaQueryWrapper<AisleIndex>().eq(AisleIndex::getIsDelete, 0)
+                .orderByDesc(AisleIndex::getCreateTime);
+        if (reqDTO.getAisleIds() != null && reqDTO.getAisleIds().length != 0) {
+            queryWrapper.in(AisleIndex::getId, reqDTO.getAisleIds());
+        }
+        if (flag) {
+            IPage<AisleIndex> iPage = aisleIndexMapper.selectPage(new Page<>(reqDTO.getPageNo(), reqDTO.getPageSize()), queryWrapper);
+            records = iPage.getRecords();
+            total = iPage.getTotal();
+        } else {
+            records = aisleIndexMapper.selectList(queryWrapper);
+        }
+        List<Integer> roomIds = records.stream().map(AisleIndex::getRoomId).distinct().collect(Collectors.toList());
+        Map<Integer , RoomIndex> map = aisleHistoryDataService.getRoomById(roomIds);
+        for (AisleIndex record : records) {
+            RoomIndex roomIndex = map.get(record.getRoomId());
+            String location = null;
+            if (roomIndex != null) {
+                location =  roomIndex.getName() + "-"  + record.getName() ;
+            }
+            AisleEleTotalRealtimeResVO resVO = new AisleEleTotalRealtimeResVO();
+            resVO.setId(record.getId()).setLocation(location);
+            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+            boolQuery.must(QueryBuilders.rangeQuery("create_time.keyword")
+                    .gte(reqDTO.getTimeRange()[0])
+                    .lte(reqDTO.getTimeRange()[1]));
+            boolQuery.must(QueryBuilders.termsQuery("aisle_id", String.valueOf(record.getId())));
+            // 搜索源构建对象
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(boolQuery);
+            searchSourceBuilder.size(1);
+            searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
+            SearchRequest searchRequest1 = new SearchRequest();
+            searchRequest1.indices("aisle_ele_total_realtime");
+            //query条件--正常查询条件
+            searchRequest1.source(searchSourceBuilder);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
+            SearchHits hits = searchResponse1.getHits();
+            for (SearchHit hit : hits) {
+                resVO.setCreateTimeMax((String) hit.getSourceAsMap().get("create_time"));
+                if (Objects.nonNull(resVO.getCreateTimeMax())) {
+                    resVO.setEleActiveEnd((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_total")).orElseGet(() -> 0.0));
+                }
+            }
+            SearchSourceBuilder searchSourceBuilder2 = new SearchSourceBuilder();
+            searchSourceBuilder2.query(boolQuery);
+            searchSourceBuilder2.size(1);
+            searchSourceBuilder2.sort("create_time.keyword", SortOrder.ASC);
+            SearchRequest searchRequest2 = new SearchRequest();
+            searchRequest2.indices("aisle_ele_total_realtime");
+            //query条件--正常查询条件
+            searchRequest2.source(searchSourceBuilder2);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse2 = client.search(searchRequest2, RequestOptions.DEFAULT);
+            SearchHits hits2 = searchResponse2.getHits();
+
+            for (SearchHit hit : hits2) {
+                resVO.setCreateTimeMin((String) hit.getSourceAsMap().get("create_time"));
+                if (Objects.nonNull(resVO.getCreateTimeMin())) {
+                    resVO.setEleActiveStart((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_total")).orElseGet(() -> 0.0));
+                    double sub = BigDemicalUtil.sub(resVO.getEleActiveEnd(), resVO.getEleActiveStart(), 1);
+                    resVO.setEleActive(sub);
+                    if (sub < 0) {
+                        resVO.setEleActive(resVO.getEleActiveEnd());
+                    }
+                }
+            }
+            list.add(resVO);
+        }
+        pageResult.setTotal(total).setList(list);
+        return pageResult;
     }
 
 }

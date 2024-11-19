@@ -1,5 +1,8 @@
 package cn.iocoder.yudao.module.rack.service.historydata;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
+import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.IndexDO;
 import cn.iocoder.yudao.module.cabinet.dal.mysql.index.CabIndexMapper;
@@ -9,6 +12,8 @@ import cn.iocoder.yudao.framework.common.mapper.RoomIndexMapper;
 import cn.iocoder.yudao.module.rack.controller.admin.historydata.vo.RackHistoryDataDetailsReqVO;
 import cn.iocoder.yudao.module.rack.controller.admin.historydata.vo.RackHistoryDataPageReqVO;
 import cn.iocoder.yudao.module.rack.service.energyconsumption.RackEnergyConsumptionService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import org.apache.commons.lang3.ObjectUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -25,6 +30,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -231,6 +237,23 @@ public class RackHistoryDataServiceImpl implements RackHistoryDataService {
         }
 
         return list;
+    }
+
+    @Override
+    public Map<Integer, String> getRoomById(List<Integer> roomIds) {
+        LambdaQueryWrapper<RoomIndex> queryWrapper = new LambdaQueryWrapper<RoomIndex>().orderByDesc(RoomIndex::getCreateTime)
+                .in(RoomIndex::getId,roomIds).eq(RoomIndex::getIsDelete, DelEnums.NO_DEL.getStatus());
+        List<RoomIndex> roomIndexList = roomIndexMapper.selectList(queryWrapper);
+        return roomIndexList.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getName));
+    }
+
+    @Override
+    public Map<Integer, IndexDO> getCabinetByIds(List<Integer> cabineIds) {
+        LambdaQueryWrapper<IndexDO> queryWrapper = new LambdaQueryWrapper<IndexDO>().orderByDesc(IndexDO::getCreateTime)
+                .in(IndexDO::getId,cabineIds).eq(IndexDO::getIsDeleted, DelEnums.NO_DEL.getStatus());
+        List<IndexDO> indexDOS = cabIndexMapper.selectList(queryWrapper);
+        return indexDOS.stream().filter(item -> ObjectUtils.isNotEmpty(item.getId()))
+                .collect(Collectors.toMap(IndexDO::getId, cabinetIndex -> cabinetIndex));
     }
 
 }

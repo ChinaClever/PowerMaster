@@ -14,5 +14,13 @@ export const RoomEnergyApi = {
   getEleTrend: async (params: any) => {
     return await request.get({ url: `/room/index/eleTrend`, params })
   },
-
+    // 获取机柜实时能耗趋势
+  getRoomEleTotalRealtime: async (data: any) => {
+    return await request.post({ url: `/room/index/eleTotalRealtime`, data })
+  },
+        // 获取实时电量 Excel
+  getRoomEleTotalRealtimeExcel: async (data: any, axiosConfig) => {
+    return await request.downloadPost({ url: `/room/index/eleTotalRealtimeExcel`, data, ...axiosConfig})
+  },
+  
 }

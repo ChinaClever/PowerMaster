@@ -63,6 +63,7 @@
     "steady-xml": "^0.1.0",
     "url": "^0.11.3",
     "video.js": "^7.21.5",
+    "vite": "^5.3.5",
     "vue": "3.4.20",
     "vue-dompurify-html": "^4.1.4",
     "vue-i18n": "9.9.1",

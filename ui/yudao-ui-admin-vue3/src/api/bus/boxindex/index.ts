@@ -62,6 +62,10 @@ export const IndexApi = {
     return await request.post({ url: `/box/index/eq/page`, data })
   },
 
+  getEqMax: async (data: any) => {
+    return await request.post({ url: `/box/index/eq/maxEq`, data })
+  },
+
   getBalancePage: async (data: any) => {
     return await request.post({ url: `/box/index/balance`, data })
   },

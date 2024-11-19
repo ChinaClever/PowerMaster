@@ -1,25 +1,29 @@
 package cn.iocoder.yudao.module.room.controller.admin.roomindex;
 
-import org.apache.ibatis.annotations.Param;
-import org.springframework.web.bind.annotation.*;
-import javax.annotation.Resource;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.security.access.prepost.PreAuthorize;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Operation;
-
-import javax.validation.*;
-import java.util.*;
-
-import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
+import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
-import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
-
+import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
+import cn.iocoder.yudao.module.room.controller.admin.roomindex.DTO.RoomEleTotalRealtimeReqDTO;
 import cn.iocoder.yudao.module.room.controller.admin.roomindex.vo.*;
 import cn.iocoder.yudao.module.room.dal.dataobject.roomindex.RoomIndexDO;
 import cn.iocoder.yudao.module.room.service.roomindex.RoomIndexService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
 @Tag(name = "管理后台 - 机房索引")
 @RestController
@@ -144,25 +148,41 @@ public class RoomIndexController {
     @PostMapping("/report/ele")
     @Operation(summary = "获得机房报表数据")
     public CommonResult<Map> getReportConsumeDataById(@RequestBody RoomIndexPageReqVO pageReqVO) {
-        return success(indexService.getReportConsumeDataById(pageReqVO.getId(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+        return success(indexService.getReportConsumeDataById(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
     }
 
     @PostMapping("/report/pow")
     @Operation(summary = "获得机房报表数据")
-    public CommonResult<Map> getReportPowDataById(@RequestBody RoomIndexPageReqVO pageReqVO)  {
-        return success(indexService.getReportPowDataById(pageReqVO.getId(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+    public CommonResult<Map> getReportPowDataById(@RequestBody RoomIndexPageReqVO pageReqVO) {
+        return success(indexService.getReportPowDataById(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
     }
 
     @PostMapping("/report/pfline")
     @Operation(summary = "获得机房报表数据")
-    public CommonResult<Map> getRoomPFLine(@RequestBody RoomIndexPageReqVO pageReqVO)  {
-        return success(indexService.getRoomPFLine(pageReqVO.getId(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
+    public CommonResult<Map> getRoomPFLine(@RequestBody RoomIndexPageReqVO pageReqVO) {
+        return success(indexService.getRoomPFLine(pageReqVO.getId(), pageReqVO.getTimeType(), pageReqVO.getOldTime(), pageReqVO.getNewTime()));
     }
+
     @GetMapping("/idList")
     @Operation(summary = "获得机房id列表")
     public List<Integer> idList() {
         return indexService.idList();
     }
 
+    @PostMapping("eleTotalRealtime")
+    @Operation(summary = "获取实时能耗")
+    public CommonResult<PageResult<RoomEleTotalRealtimeResVO>> getRoomEleTotalRealtime(@RequestBody RoomEleTotalRealtimeReqDTO reqVO) throws IOException {
+        PageResult<RoomEleTotalRealtimeResVO> list = indexService.getRoomEleTotalRealtime(reqVO, true);
+        return success(list);
+    }
+
+    @PostMapping("eleTotalRealtimeExcel")
+    @Operation(summary = "获取实时能耗")
+    public void getRoomEleTotalRealtimeExcel(@RequestBody RoomEleTotalRealtimeReqDTO reqVO, HttpServletResponse response) throws IOException {
+        PageResult<RoomEleTotalRealtimeResVO> list = indexService.getRoomEleTotalRealtime(reqVO, false);
+        ExcelUtils.write(response, "机房实时电能记录数据.xlsx", "数据", RoomEleTotalRealtimeResVO.class,
+                BeanUtils.toBean(list.getList(), RoomEleTotalRealtimeResVO.class));
+
+    }
 
 }

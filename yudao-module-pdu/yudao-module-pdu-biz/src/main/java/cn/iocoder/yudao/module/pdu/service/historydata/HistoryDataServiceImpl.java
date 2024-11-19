@@ -13,7 +13,10 @@ import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataPa
 import cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PduIndex;
 import cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PduIndexMapper;
 import cn.iocoder.yudao.module.pdu.service.energyconsumption.EnergyConsumptionService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.elasticsearch.action.search.*;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -303,6 +306,29 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     }
 
     @Override
+    public IPage<PduIndex> findPduIndexAll(int pageNo, int pageSize, String[] ipArray) {
+        Page page = new Page<>(pageNo,pageSize);
+        LambdaQueryWrapper<PduIndex> queryWrapper = new LambdaQueryWrapper<>();
+        if (ipArray != null && ipArray.length != 0) {
+            queryWrapper.in(PduIndex::getDevKey,ipArray);
+        }
+        queryWrapper.orderByDesc(PduIndex::getId);
+        queryWrapper.eq(PduIndex::getIsDeleted,0);
+        return pduIndexMapper.selectPage(page,queryWrapper);
+    }
+
+    @Override
+    public List<PduIndex> findPduIndexAllToList(String[] ipArray) {
+        LambdaQueryWrapper<PduIndex> queryWrapper = new LambdaQueryWrapper<>();
+        if (ipArray != null && ipArray.length != 0) {
+            queryWrapper.in(PduIndex::getDevKey,ipArray);
+        }
+        queryWrapper.orderByDesc(PduIndex::getId);
+        queryWrapper.eq(PduIndex::getIsDeleted,0);
+        return pduIndexMapper.selectList(queryWrapper);
+    }
+
+    @Override
     public Map getHistoryDataTypeMaxValue() throws IOException {
         HashMap resultMap = new HashMap<>();
         String[] indexArr = new String[]{"pdu_hda_line_realtime", "pdu_hda_loop_realtime", "pdu_hda_outlet_realtime"};
@@ -512,8 +538,8 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         searchSourceBuilder.trackTotalHits(true);
         if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0){
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(reqVO.getTimeRange()[0])
-                    .to(reqVO.getTimeRange()[1]));
+                    .gte(reqVO.getTimeRange()[0])
+                    .lte(reqVO.getTimeRange()[1]));
         }
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
@@ -1021,5 +1047,10 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             }
             }
         }
+
+    @Override
+    public PduIndex findPduIndex(int pduId) {
+        return pduIndexMapper.selectById( (int)pduId );
+    }
 
 }

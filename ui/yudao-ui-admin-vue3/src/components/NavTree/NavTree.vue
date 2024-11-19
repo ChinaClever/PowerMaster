@@ -76,9 +76,23 @@ const initCheck = (keys) => {
 
 /** 基于名字过滤 */
 const filterNode = (value:string, data) => {
-  if (!value) return true
+//   if (!value) return true
+// console.log('测试1', data)
+//   return data.name.includes(value) || data.unique.includes(value);
+if (!value) return true;
 
-  return data.name.includes(value) || data.unique.includes(value);
+  // 确保 data 是一个对象
+  if (typeof data !== 'object' || data === null) {
+    console.error('Invalid data object');
+    return false;
+  }
+    console.log('测试1', data);
+
+  // 确保 name 和 unique 属性存在且为字符串
+  const name = typeof data.name === 'string' ? data.name : '';
+  const unique = typeof data.unique === 'string' ? data.unique : '';
+
+  return name.includes(value) || unique.includes(value);
 }
 
 /** 处理部门被点击 */

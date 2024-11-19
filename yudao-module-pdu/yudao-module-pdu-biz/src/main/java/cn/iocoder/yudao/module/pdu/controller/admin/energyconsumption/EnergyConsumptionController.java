@@ -10,9 +10,7 @@ import cn.iocoder.yudao.module.pdu.service.energyconsumption.EnergyConsumptionSe
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -193,5 +191,21 @@ public class EnergyConsumptionController {
     public CommonResult<PageResult<Object>> getSubBillDetails(EnergyConsumptionPageReqVO reqVO) throws IOException {
         PageResult<Object> pageResult = energyConsumptionService.getSubBillDetails(reqVO);
         return success(pageResult);
+    }
+
+    @PostMapping("ele_total_realtime")
+    @Operation(summary = "获取实时电量")
+    public CommonResult<PageResult<EleTotalRealtimeRespVO>> getEleTotalRealtime( EleTotalRealtimeReqDTO reqDTO) throws IOException {
+        PageResult<EleTotalRealtimeRespVO> list = energyConsumptionService.getEleTotalRealtime(reqDTO,true);
+        return success(list);
+    }
+
+    @GetMapping("ele_total_realtimeExcel")
+    @Operation(summary = "获取实时电量导出")
+    public void getEleTotalRealtimeExcel( EleTotalRealtimeReqDTO reqDTO, HttpServletResponse response) throws IOException {
+        PageResult<EleTotalRealtimeRespVO> list = energyConsumptionService.getEleTotalRealtime(reqDTO,false);
+        ExcelUtils.write(response, "pdu实时电能记录数据.xlsx", "数据", EleTotalRealtimeRespVO.class,
+                BeanUtils.toBean(list.getList(), EleTotalRealtimeRespVO.class));
+
     }
 }

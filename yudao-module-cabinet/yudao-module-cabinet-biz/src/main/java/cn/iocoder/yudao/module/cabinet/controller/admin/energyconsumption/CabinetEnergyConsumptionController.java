@@ -6,13 +6,12 @@ import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
 import cn.iocoder.yudao.module.cabinet.controller.admin.energyconsumption.VO.*;
+import cn.iocoder.yudao.module.cabinet.dto.CabinetEleTotalRealtimeReqDTO;
 import cn.iocoder.yudao.module.cabinet.service.energyconsumption.CabinetEnergyConsumptionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -137,5 +136,19 @@ public class CabinetEnergyConsumptionController {
         return success(pageResult);
     }
 
+    @PostMapping("eleTotalRealtime")
+    @Operation(summary = "获取实时能耗")
+    public CommonResult<PageResult<CabinetEleTotalRealtimeResVO>> getCabinetEleTotalRealtime(@RequestBody CabinetEleTotalRealtimeReqDTO reqVO) throws IOException {
+        PageResult<CabinetEleTotalRealtimeResVO> list = cabinetEnergyConsumptionService.getCabinetEleTotalRealtime(reqVO, true);
+        return success(list);
+    }
 
+    @PostMapping("eleTotalRealtimeExcel")
+    @Operation(summary = "获取实时能耗")
+    public void getCabinetEleTotalRealtimeExcel(@RequestBody CabinetEleTotalRealtimeReqDTO reqVO, HttpServletResponse response) throws IOException {
+        PageResult<CabinetEleTotalRealtimeResVO> list = cabinetEnergyConsumptionService.getCabinetEleTotalRealtime(reqVO, false);
+        ExcelUtils.write(response, "柜列实时电能记录数据.xlsx", "数据", CabinetEleTotalRealtimeResVO.class,
+                BeanUtils.toBean(list.getList(), CabinetEleTotalRealtimeResVO.class));
+
+    }
 }

@@ -1,8 +1,14 @@
 package cn.iocoder.yudao.module.pdu.service.energyconsumption;
 
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
+import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.EleTotalRealtimeReqDTO;
+import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.EleTotalRealtimeRespVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.EnergyConsumptionPageReqVO;
+import cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PduIndex;
 import cn.iocoder.yudao.module.pdu.service.historydata.HistoryDataService;
+import cn.iocoder.yudao.module.pdu.service.pdudevice.PDUDeviceService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -10,6 +16,7 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.metrics.ValueCount;
@@ -19,18 +26,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
-public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
+public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
 
     @Autowired
     private RestHighLevelClient client;
 
     @Autowired
     private HistoryDataService historyDataService;
+    @Autowired
+    private PDUDeviceService pduDeviceService;
 
     @Override
     public PageResult<Object> getEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
@@ -46,9 +57,9 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
         int index = (pageNo - 1) * pageSize;
         searchSourceBuilder.from(index);
         // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-        if (index + pageSize > 10000){
+        if (index + pageSize > 10000) {
             searchSourceBuilder.size(10000 - index);
-        }else{
+        } else {
             searchSourceBuilder.size(pageSize);
         }
         searchSourceBuilder.trackTotalHits(true);
@@ -61,7 +72,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
         }
         List<String> pduIds = null;
         String[] ipArray = pageReqVO.getIpArray();
-        if (ipArray != null){
+        if (ipArray != null) {
             pduIds = historyDataService.getPduIdsByIps(ipArray);
             searchSourceBuilder.query(QueryBuilders.termsQuery("pdu_id", pduIds));
         }
@@ -88,7 +99,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
                 } else {
                     searchRequest.indices("pdu_eq_outlet_month");
                 }
-                if( pageReqVO.getOutletId() != null){
+                if (pageReqVO.getOutletId() != null) {
                     Integer outletId = pageReqVO.getOutletId();
                     // 创建匹配查询
                     QueryBuilder termQuery = QueryBuilders.termQuery("outlet_id", outletId);
@@ -127,9 +138,9 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
         int index = (pageNo - 1) * pageSize;
         searchSourceBuilder.from(index);
         // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-        if (index + pageSize > 10000){
+        if (index + pageSize > 10000) {
             searchSourceBuilder.size(10000 - index);
-        }else{
+        } else {
             searchSourceBuilder.size(pageSize);
         }
         searchSourceBuilder.trackTotalHits(true);
@@ -142,7 +153,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
         }
         List<String> pduIds = null;
         String[] ipArray = pageReqVO.getIpArray();
-        if (ipArray != null){
+        if (ipArray != null) {
             pduIds = historyDataService.getPduIdsByIps(ipArray);
             searchSourceBuilder.query(QueryBuilders.termsQuery("pdu_id", pduIds));
         }
@@ -169,7 +180,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
                 } else {
                     searchRequest.indices("pdu_eq_outlet_month");
                 }
-                if( pageReqVO.getOutletId() != null){
+                if (pageReqVO.getOutletId() != null) {
                     Integer outletId = pageReqVO.getOutletId();
                     // 创建匹配查询
                     QueryBuilder termQuery = QueryBuilders.termQuery("outlet_id", outletId);
@@ -200,10 +211,10 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
     @Override
     public PageResult<Object> getEQDataDetails(EnergyConsumptionPageReqVO reqVO) throws IOException {
         Integer pduId = reqVO.getPduId();
-        if (Objects.equals(pduId, null)){
+        if (Objects.equals(pduId, null)) {
             pduId = historyDataService.getPduIdByAddr(reqVO.getIpAddr(), reqVO.getCascadeAddr());
-            if (Objects.equals(pduId, null)){
-                PageResult<Object> pageResult=new PageResult<>();
+            if (Objects.equals(pduId, null)) {
+                PageResult<Object> pageResult = new PageResult<>();
                 pageResult.setList(new ArrayList<>())
                         .setTotal(new Long(0));
                 return pageResult;
@@ -216,7 +227,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
         searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
         searchSourceBuilder.size(10000);
         searchSourceBuilder.trackTotalHits(true);
-        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0){
+        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0) {
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(reqVO.getTimeRange()[0])
                     .to(reqVO.getTimeRange()[1]));
@@ -226,22 +237,22 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
         SearchRequest searchRequest = new SearchRequest();
         switch (reqVO.getType()) {
             case "total":
-                if ("day".equals(reqVO.getGranularity()) ){
+                if ("day".equals(reqVO.getGranularity())) {
                     searchRequest.indices("pdu_eq_total_day");
-                }else if ("week".equals(reqVO.getGranularity()) ){
+                } else if ("week".equals(reqVO.getGranularity())) {
                     searchRequest.indices("pdu_eq_total_week");
-                }else {
+                } else {
                     searchRequest.indices("pdu_eq_total_month");
                 }
                 searchSourceBuilder.query(QueryBuilders.termQuery("pdu_id", pduId));
                 break;
 
             case "outlet":
-                if ("day".equals(reqVO.getGranularity()) ){
+                if ("day".equals(reqVO.getGranularity())) {
                     searchRequest.indices("pdu_eq_outlet_day");
-                }else if ("week".equals(reqVO.getGranularity()) ){
+                } else if ("week".equals(reqVO.getGranularity())) {
                     searchRequest.indices("pdu_eq_outlet_week");
-                }else {
+                } else {
                     searchRequest.indices("pdu_eq_outlet_month");
                 }
                 Integer outletId = reqVO.getOutletId();
@@ -277,9 +288,9 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
     @Override
     public List<Object> getOutletsEQData(EnergyConsumptionPageReqVO reqVO) throws IOException {
         Integer pduId = reqVO.getPduId();
-        if (Objects.equals(pduId, null)){
+        if (Objects.equals(pduId, null)) {
             pduId = historyDataService.getPduIdByAddr(reqVO.getIpAddr(), reqVO.getCascadeAddr());
-            if (Objects.equals(pduId, null)){
+            if (Objects.equals(pduId, null)) {
                 return null;
             }
         }
@@ -290,14 +301,14 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
         searchSourceBuilder.trackTotalHits(true);
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
-        if ("day".equals(reqVO.getGranularity()) ){
+        if ("day".equals(reqVO.getGranularity())) {
             searchRequest.indices("pdu_eq_outlet_day");
-        }else if ("week".equals(reqVO.getGranularity()) ){
+        } else if ("week".equals(reqVO.getGranularity())) {
             searchRequest.indices("pdu_eq_outlet_week");
-        }else {
+        } else {
             searchRequest.indices("pdu_eq_outlet_month");
         }
-        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0){
+        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0) {
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(reqVO.getTimeRange()[0])
                     .to(reqVO.getTimeRange()[1]));
@@ -345,9 +356,9 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
         int index = (pageNo - 1) * pageSize;
         searchSourceBuilder.from(index);
         // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-        if (index + pageSize > 10000){
+        if (index + pageSize > 10000) {
             searchSourceBuilder.size(10000 - index);
-        }else{
+        } else {
             searchSourceBuilder.size(pageSize);
         }
         searchSourceBuilder.trackTotalHits(true);
@@ -360,7 +371,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
                     .to(pageReqVO.getTimeRange()[1]));
         }
         String[] ipArray = pageReqVO.getIpArray();
-        if (ipArray != null){
+        if (ipArray != null) {
             List<String> pduIds = historyDataService.getPduIdsByIps(ipArray);
             searchSourceBuilder.query(QueryBuilders.termsQuery("pdu_id", pduIds));
         }
@@ -371,7 +382,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
                 break;
             case "line":
                 searchRequest.indices("pdu_ele_line");
-                if( pageReqVO.getLineId() != null){
+                if (pageReqVO.getLineId() != null) {
                     Integer lineId = pageReqVO.getLineId();
                     // 创建匹配查询
                     QueryBuilder termQuery = QueryBuilders.termQuery("line_id", lineId);
@@ -382,7 +393,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
                 break;
             case "loop":
                 searchRequest.indices("pdu_ele_loop");
-                if( pageReqVO.getLoopId() != null) {
+                if (pageReqVO.getLoopId() != null) {
                     Integer loopId = pageReqVO.getLoopId();
                     // 创建匹配查询
                     QueryBuilder termQuery = QueryBuilders.termQuery("loop_id", loopId);
@@ -393,7 +404,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
                 break;
             case "outlet":
                 searchRequest.indices("pdu_ele_outlet");
-                if( pageReqVO.getOutletId() != null) {
+                if (pageReqVO.getOutletId() != null) {
                     Integer outletId = pageReqVO.getOutletId();
                     // 创建匹配查询
                     QueryBuilder termQuery = QueryBuilders.termQuery("outlet_id", outletId);
@@ -427,13 +438,12 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
         // 添加范围查询 最近24小时
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        for (int i = 0; i < (name.length==4?4:3); i++) {
+        for (int i = 0; i < (name.length == 4 ? 4 : 3); i++) {
             SearchRequest searchRequest;
-            if(name.length==4){
+            if (name.length == 4) {
                 searchRequest = new SearchRequest(indices[i]);
-            }
-            else{
-                searchRequest = new SearchRequest(indices[0],indices[1]);
+            } else {
+                searchRequest = new SearchRequest(indices[0], indices[1]);
             }
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
             searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
@@ -475,7 +485,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
     @Override
     public PageResult<Object> getSubBillDetails(EnergyConsumptionPageReqVO reqVO) throws IOException {
         Integer pduId = reqVO.getPduId();
-        if (Objects.equals(pduId, null)){
+        if (Objects.equals(pduId, null)) {
             return null;
         }
         // 把传来的开始时间(例如"2024-07-25 10:00:00") 的年月日加一天变成 '2024-07-26 00:00:00'和'2024-07-27 00:00:00'
@@ -499,10 +509,10 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
                 .to(endTimeString));
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
-        if ("total".equals(reqVO.getGranularity())){
+        if ("total".equals(reqVO.getGranularity())) {
             searchRequest.indices("pdu_eq_sub_total_day");
             searchSourceBuilder.query(QueryBuilders.termQuery("pdu_id", pduId));
-        }else{
+        } else {
             searchRequest.indices("pdu_eq_sub_outlet_day");
             searchSourceBuilder.query(QueryBuilders.termQuery("pdu_id", pduId));
             BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
@@ -540,10 +550,10 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
             }
         }
 
-        for(int i=0;i<mapList.size();i++){
-            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,16));
-            mapList.get(i).put("start_time",mapList.get(i).get("start_time").toString().substring(0,16));
-            mapList.get(i).put("end_time",mapList.get(i).get("end_time").toString().substring(0,16));
+        for (int i = 0; i < mapList.size(); i++) {
+            mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
+            mapList.get(i).put("start_time", mapList.get(i).get("start_time").toString().substring(0, 16));
+            mapList.get(i).put("end_time", mapList.get(i).get("end_time").toString().substring(0, 16));
         }
         return list;
     }
@@ -560,9 +570,9 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
             }
         }
 
-        for(int i=0;i<mapList.size();i++){
-            mapList.get(i).put("start_time",mapList.get(i).get("start_time").toString().substring(0,10));
-            mapList.get(i).put("end_time",mapList.get(i).get("end_time").toString().substring(0,10));
+        for (int i = 0; i < mapList.size(); i++) {
+            mapList.get(i).put("start_time", mapList.get(i).get("start_time").toString().substring(0, 10));
+            mapList.get(i).put("end_time", mapList.get(i).get("end_time").toString().substring(0, 10));
         }
         return list;
     }
@@ -579,8 +589,8 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
             }
         }
 
-        for(int i=0;i<mapList.size();i++){
-            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,16));
+        for (int i = 0; i < mapList.size(); i++) {
+            mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
         }
         return list;
     }
@@ -597,12 +607,115 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService{
             }
         }
 
-        for(int i=0;i<mapList.size();i++){
-            mapList.get(i).put("start_time",mapList.get(i).get("start_time").toString().substring(0,10));
-            mapList.get(i).put("end_time",mapList.get(i).get("end_time").toString().substring(0,10));
-            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,10));
+        for (int i = 0; i < mapList.size(); i++) {
+            mapList.get(i).put("start_time", mapList.get(i).get("start_time").toString().substring(0, 10));
+            mapList.get(i).put("end_time", mapList.get(i).get("end_time").toString().substring(0, 10));
+            mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 10));
         }
         return list;
     }
 
+    @Override
+    public PageResult<EleTotalRealtimeRespVO> getEleTotalRealtime(EleTotalRealtimeReqDTO reqDTO, boolean flag) throws IOException {
+
+        PageResult<EleTotalRealtimeRespVO> pageResult = null;
+        List<EleTotalRealtimeRespVO> mapList = new ArrayList<>();
+        List collect =new ArrayList();
+        List<PduIndex> records = null;
+        long total = 0;
+        if (flag) {
+            IPage<PduIndex> page = historyDataService.findPduIndexAll(reqDTO.getPageNo(), reqDTO.getPageSize(), reqDTO.getIpArray());
+            total = page.getTotal();
+            records = page.getRecords();
+            collect = records.stream().map(PduIndex::getId).collect(Collectors.toList());
+            collect.stream().map(String::valueOf).collect(Collectors.joining(","));
+        }else {
+            records = historyDataService.findPduIndexAllToList(reqDTO.getIpArray());
+            collect = records.stream().map(PduIndex::getId).collect(Collectors.toList());
+            collect.stream().map(String::valueOf).collect(Collectors.joining(","));
+        }
+        for (PduIndex record : records) {
+            EleTotalRealtimeRespVO respVO = new EleTotalRealtimeRespVO();
+            respVO.setPduId(record.getId()).setLocation(record.getDevKey()).setAddress(historyDataService.getAddressByIpAddr(record.getDevKey()));
+                BoolQueryBuilder boolQuery1 = QueryBuilders.boolQuery();
+                boolQuery1.must(QueryBuilders.rangeQuery("create_time.keyword")
+                        .gte(reqDTO.getTimeRange()[0])
+                        .lte(reqDTO.getTimeRange()[1]));
+                boolQuery1.must(QueryBuilders.termsQuery("pdu_id", String.valueOf(record.getId())));
+                // 搜索源构建对象
+                SearchSourceBuilder searchSourceBuilder1 = new SearchSourceBuilder();
+                searchSourceBuilder1.query(boolQuery1);
+                searchSourceBuilder1.size(1);
+                searchSourceBuilder1.sort("create_time.keyword", SortOrder.DESC);
+                SearchRequest searchRequest1 = new SearchRequest();
+                searchRequest1.indices("pdu_ele_total_realtime");
+                //query条件--正常查询条件
+                searchRequest1.source(searchSourceBuilder1);
+                // 执行搜索,向ES发起http请求
+                SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
+                SearchHits hits = searchResponse1.getHits();
+            for (SearchHit hit : hits) {
+                respVO.setCreateTimeMax((String) hit.getSourceAsMap().get("create_time"));
+                if (Objects.nonNull(respVO.getCreateTimeMax())) {
+                    respVO.setEleActiveEnd((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_active")).orElseGet(() -> 0.0));
+                }
+            }
+                SearchSourceBuilder searchSourceBuilder2 = new SearchSourceBuilder();
+                searchSourceBuilder2.query(boolQuery1);
+                searchSourceBuilder2.size(1);
+                searchSourceBuilder2.sort("create_time.keyword", SortOrder.ASC);
+                SearchRequest searchRequest2 = new SearchRequest();
+                searchRequest2.indices("pdu_ele_total_realtime");
+                //query条件--正常查询条件
+                searchRequest2.source(searchSourceBuilder2);
+                // 执行搜索,向ES发起http请求
+                SearchResponse searchResponse2 = client.search(searchRequest2, RequestOptions.DEFAULT);
+                SearchHits hits2 = searchResponse2.getHits();
+
+            for (SearchHit hit : hits2) {
+                respVO.setCreateTimeMin((String) hit.getSourceAsMap().get("create_time"));
+                if (Objects.nonNull(respVO.getCreateTimeMin())) {
+                    respVO.setEleActiveStart((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_active")).orElseGet(() -> 0.0));
+                    double sub = BigDemicalUtil.sub(respVO.getEleActiveEnd(), respVO.getEleActiveStart());
+                    respVO.setEleActive(sub);
+                    if (sub<0){
+                        respVO.setEleActive(respVO.getEleActiveEnd());
+                    }
+                }
+            }
+            mapList.add(respVO);
+        }
+        pageResult = new PageResult<>();
+        pageResult.setList(mapList)
+                .setTotal(total);
+
+        return pageResult;
+    }
 }
+
+/*        boolQuery.must(QueryBuilders.termsQuery("pdu_id", collect));
+
+        sourceBuilder.size(0);
+        // 添加分组聚合
+        TermsAggregationBuilder termsAggregation = AggregationBuilders.terms("group_by_" + "pdu_id").field("pdu_id")
+                .subAggregation(AggregationBuilders.sum("num").field( "ele_active"));
+
+        // 在每个分组内添加top hits聚合，用于分页
+        TopHitsAggregationBuilder topHitsAggregation = AggregationBuilders.topHits("top_hits")
+//                .size(1000)
+//                .from(index)
+                .sort("create_time.keyword", SortOrder.DESC); // 假设按时间戳降序排列
+
+        termsAggregation.subAggregation(topHitsAggregation);
+        sourceBuilder.aggregation(termsAggregation);
+        sourceBuilder.query(boolQuery);
+        // 设置查询条件（这里假设查询所有文档）
+        //sourceBuilder.query(QueryBuilders.matchAllQuery());
+
+        searchRequest.source(sourceBuilder);
+        searchRequest.indices("pdu_ele_total_realtime");
+        // 执行搜索请求
+        SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        // 解析聚合结果
+        Terms terms = response.getAggregations().get("group_by_" + "pdu_id");*/

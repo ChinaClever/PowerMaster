@@ -43,9 +43,9 @@ const echartsOption = ref({
   yAxis: { type: 'value'},
   toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
   series: [
-    {name: 'A相功率因素', type: 'line', symbol: 'circle', symbolSize: 4, data: powerFactorA},
-    {name: 'B相功率因素', type: 'line', symbol: 'circle', symbolSize: 4, data: powerFactorB},
-    {name: 'C相功率因素', type: 'line', symbol: 'circle', symbolSize: 4, data: powerFactorC},
+    {name: 'A相功率因数', type: 'line', symbol: 'circle', symbolSize: 4, data: powerFactorA},
+    {name: 'B相功率因数', type: 'line', symbol: 'circle', symbolSize: 4, data: powerFactorB},
+    {name: 'C相功率因数', type: 'line', symbol: 'circle', symbolSize: 4, data: powerFactorC},
   ]
 })
 
@@ -58,7 +58,7 @@ watchEffect(() => {
   time.value = prop.list.time;
   if(prop.list.powerFactorAvgValueA?.length > 0){
 
-    legendList.value =  ["A相功率因素","B相功率因素","C相功率因素"]
+    legendList.value =  ["A相功率因数","B相功率因数","C相功率因数"]
   }else {
 
     legendList.value = []

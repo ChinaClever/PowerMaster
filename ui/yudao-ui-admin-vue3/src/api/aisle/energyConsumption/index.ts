@@ -56,5 +56,14 @@ export const EnergyConsumptionApi = {
     return await request.get({ url: `/aisle/eq-data/bill-details`, params})
   },
   
+  // 获取实时能耗
+  getAisleEleTotalRealtime: async (data: any) => {
+    return await request.post({ url: `/aisle/eq-data/eleTotalRealtime`, data})
+  },
+  
 
+      // 导出实时能耗 Excel
+   getAisleEleTotalRealtimeExcel: async (data, axiosConfig) => {
+    return await request.downloadPost({ url: `/aisle/eq-data/eleTotalRealtimeExcel`, data, ...axiosConfig })
+  },
 }

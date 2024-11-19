@@ -68,12 +68,23 @@
         :model="queryParams"
         ref="queryFormRef"
         :inline="true"
-        label-width="68px"                          
+        label-width="68px"
       >
         <el-form-item >
           <el-checkbox-group  v-model="queryParams.status" @change="handleQuery">
             <el-checkbox :label="5" :value="5">在线</el-checkbox>
           </el-checkbox-group>
+        </el-form-item>
+        <el-form-item label="参数类型" prop="type">
+        <el-cascader
+          v-model="defaultSelected"
+          collapse-tags
+          :options="typeSelection"
+          collapse-tags-tooltip
+          :show-all-levels="true"
+          @change="typeCascaderChange"
+          class="!w-130px"
+        />
         </el-form-item>
         <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
@@ -104,11 +115,11 @@
           >
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
-        </el-form-item>          
+        </el-form-item>
         </el-form-item>
         <div style="float:right">
-          <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
-          <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压</el-button>            
+          <el-button v-if= "!shouldShowLabel" @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
+          <el-button v-if= "!shouldShowLabel" @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压</el-button>            
           <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />有功功率</el-button>            
           <el-button @click="valueMode = 3;" :type="valueMode == 3 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />无功功率</el-button>                     
           <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
@@ -122,90 +133,389 @@
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
-        <el-table-column v-if="valueMode == 0" label="A相电流(A)" align="center" prop="acur" width="130px" >
+        <el-table-column v-if="valueMode == 0 && typeText == 'line'" label="A相电流(A)" align="center" prop="acur" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.acur != null" :type=" scope.row.acurStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.acur }}
+            <el-text line-clamp="2" v-if="scope.row.phaseCur != null">
+              {{ scope.row.phaseCur[0] }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="B相电流(A)" align="center" prop="bcur" width="130px" >
+        <el-table-column v-if="valueMode == 0 && typeText == 'line'" label="B相电流(A)" align="center" prop="bcur" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.bcur != null" :type=" scope.row.bcurStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.bcur }}
+            <el-text line-clamp="2" v-if="scope.row.phaseCur != null">
+              {{ scope.row.phaseCur[1] }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="C相电流(A)" align="center" prop="ccur" width="130px" >
+        <el-table-column v-if="valueMode == 0 && typeText == 'line'" label="C相电流(A)" align="center" prop="ccur" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.ccur != null" :type=" scope.row.ccurStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.ccur }}
+            <el-text line-clamp="2" v-if="scope.row.phaseCur != null" >
+              {{ scope.row.phaseCur[2] }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column  v-if="valueMode == 1"  label="A相电压(V)" align="center" prop="avol" width="130px" >
+        <el-table-column  v-if="valueMode == 1 && typeText == 'line'"  label="A相电压(V)" align="center" prop="avol" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.avol" :type=" scope.row.avolStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.avol }}
+            <el-text line-clamp="2" v-if="scope.row.phaseVol">
+              {{ scope.row.phaseVol[0] }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 1" label="B相电压(V)" align="center" prop="bvol" width="130px" >
+        <el-table-column v-if="valueMode == 1 && typeText == 'line'" label="B相电压(V)" align="center" prop="bvol" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.bvol" :type=" scope.row.bvolStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.bvol }}
+            <el-text line-clamp="2" v-if="scope.row.phaseVol">
+              {{ scope.row.phaseVol[1] }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 1" label="C相电压(V)" align="center" prop="cvol" width="130px" >
+        <el-table-column v-if="valueMode == 1 && typeText == 'line'" label="C相电压(V)" align="center" prop="cvol" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.cvol" :type=" scope.row.cvolStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.cvol }}
+            <el-text line-clamp="2" v-if="scope.row.phaseVol">
+              {{ scope.row.phaseVol[2] }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 2" label="A相有功功率(kW)" align="center" prop="aactivePow" width="130px" >
+        <el-table-column v-if="valueMode == 2 && typeText == 'line'" label="A相有功功率(kW)" align="center" prop="aactivePow" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.aactivePow" :type=" scope.row.aactivePowStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.aactivePow }}
+            <el-text line-clamp="2" v-if="scope.row.phaseActivePow">
+              {{ scope.row.phaseActivePow[0] }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 2" label="B相有功功率(kW)" align="center" prop="bactivePow" width="130px" >
+        <el-table-column v-if="valueMode == 2 && typeText == 'line'" label="B相有功功率(kW)" align="center" prop="bactivePow" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.bactivePow" :type=" scope.row.bactivePowStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.bactivePow }}
+            <el-text line-clamp="2" v-if="scope.row.phaseActivePow">
+              {{ scope.row.phaseActivePow[1] }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 2" label="C相有功功率(kW)" align="center" prop="cactivePow" width="130px" >
+        <el-table-column v-if="valueMode == 2 && typeText == 'line'" label="C相有功功率(kW)" align="center" prop="cactivePow" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.cactivePow" :type=" scope.row.cactivePowStatus != 0 ? 'danger' : '' ">
-              {{ scope.row.cactivePow }}
+            <el-text line-clamp="2" v-if="scope.row.phaseActivePow">
+              {{ scope.row.phaseActivePow[2] }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 3" label="A相无功功率(kVar)" align="center" prop="areactivePow" width="130px" >
+        <el-table-column v-if="valueMode == 3 && typeText == 'line'" label="A相无功功率(kVar)" align="center" prop="areactivePow" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.aactivePow">
-              {{ scope.row.aactivePow }}
+            <el-text line-clamp="2" v-if="scope.row.phaseReactivePow">
+              {{ scope.row.phaseReactivePow[0] }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 3" label="B相无功功率(kVar)" align="center" prop="breactivePow" width="130px" >
+        <el-table-column v-if="valueMode == 3 && typeText == 'line'" label="B相无功功率(kVar)" align="center" prop="breactivePow" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.breactivePow">
-              {{ scope.row.breactivePow }}
+            <el-text line-clamp="2" v-if="scope.row.phaseReactivePow">
+              {{ scope.row.phaseReactivePow[1] }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 3" label="C相无功功率(kVar)" align="center" prop="creactivePow" width="130px" >
+        <el-table-column v-if="valueMode == 3 && typeText == 'line'" label="C相无功功率(kVar)" align="center" prop="creactivePow" width="130px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.creactivePow">
-              {{ scope.row.creactivePow }}
+            <el-text line-clamp="2" v-if="scope.row.phaseReactivePow">
+              {{ scope.row.phaseReactivePow[2] }}
             </el-text>
           </template>
         </el-table-column>
+
+        
+        <el-table-column v-if="valueMode == 2 && typeText == 'outlet'" label="输出位1有功功率(kW)" align="center" prop="aactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.outletActivePow">
+              {{ scope.row.outletActivePow[0] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 2 && typeText == 'outlet'" label="输出位2有功功率(kW)" align="center" prop="bactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.outletActivePow">
+              {{ scope.row.outletActivePow[1] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 2 && typeText == 'outlet'" label="输出位3有功功率(kW)" align="center" prop="cactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.outletActivePow">
+              {{ scope.row.outletActivePow[2] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 3 && typeText == 'outlet'" label="输出位1无功功率(kVar)" align="center" prop="areactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.outletReactivePow">
+              {{ scope.row.outletReactivePow[0] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 3 && typeText == 'outlet'" label="输出位2无功功率(kVar)" align="center" prop="breactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.outletReactivePow">
+              {{ scope.row.outletReactivePow[1] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 3 && typeText == 'outlet'" label="输出位3无功功率(kVar)" align="center" prop="creactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.outletReactivePow">
+              {{ scope.row.outletReactivePow[2] }}
+            </el-text>
+          </template>
+        </el-table-column>
+
+        <el-table-column v-if="valueMode == 0 && typeText == 'loop'" label="回路1电流(A)" align="center" prop="acur" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopCur != null">
+              {{ scope.row.loopCur[0] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 0 && typeText == 'loop'" label="回路2电流(A)" align="center" prop="bcur" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopCur != null">
+              {{ scope.row.loopCur[1] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 0 && typeText == 'loop'" label="回路3电流(A)" align="center" prop="ccur" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopCur != null" >
+              {{ scope.row.loopCur[2] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 0 && typeText == 'loop'" label="回路4电流(A)" align="center" prop="acur" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopCur != null">
+              {{ scope.row.loopCur[3] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 0 && typeText == 'loop'" label="回路5电流(A)" align="center" prop="bcur" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopCur != null">
+              {{ scope.row.loopCur[4] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 0 && typeText == 'loop'" label="回路6电流(A)" align="center" prop="ccur" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopCur != null" >
+              {{ scope.row.loopCur[5] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 0 && typeText == 'loop'" label="回路7电流(A)" align="center" prop="acur" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopCur != null">
+              {{ scope.row.loopCur[6] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 0 && typeText == 'loop'" label="回路8电流(A)" align="center" prop="bcur" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopCur != null">
+              {{ scope.row.loopCur[7] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 0 && typeText == 'loop'" label="回路9电流(A)" align="center" prop="ccur" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopCur != null" >
+              {{ scope.row.loopCur[8] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column  v-if="valueMode == 1 && typeText == 'loop'"  label="回路1电压(V)" align="center" prop="avol" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopVol">
+              {{ scope.row.loopVol[0] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 1 && typeText == 'loop'" label="回路2电压(V)" align="center" prop="bvol" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopVol">
+              {{ scope.row.loopVol[1] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 1 && typeText == 'loop'" label="回路3电压(V)" align="center" prop="cvol" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopVol">
+              {{ scope.row.loopVol[2] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column  v-if="valueMode == 1 && typeText == 'loop'"  label="回路4电压(V)" align="center" prop="avol" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopVol">
+              {{ scope.row.loopVol[3] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 1 && typeText == 'loop'" label="回路5电压(V)" align="center" prop="bvol" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopVol">
+              {{ scope.row.loopVol[4] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 1 && typeText == 'loop'" label="回路6电压(V)" align="center" prop="cvol" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopVol">
+              {{ scope.row.loopVol[5] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column  v-if="valueMode == 1 && typeText == 'loop'"  label="回路7电压(V)" align="center" prop="avol" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopVol">
+              {{ scope.row.loopVol[6] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 1 && typeText == 'loop'" label="回路8电压(V)" align="center" prop="bvol" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopVol">
+              {{ scope.row.loopVol[7] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 1 && typeText == 'loop'" label="回路9电压(V)" align="center" prop="cvol" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopVol">
+              {{ scope.row.loopVol[8] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 2 && typeText == 'loop'" label="回路1有功功率(kW)" align="center" prop="aactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopActivePow">
+              {{ scope.row.loopActivePow[0] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 2 && typeText == 'loop'" label="回路2有功功率(kW)" align="center" prop="bactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopActivePow">
+              {{ scope.row.loopActivePow[1] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 2 && typeText == 'loop'" label="回路3有功功率(kW)" align="center" prop="cactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopActivePow">
+              {{ scope.row.loopActivePow[2] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 2 && typeText == 'loop'" label="回路4有功功率(kW)" align="center" prop="aactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopActivePow">
+              {{ scope.row.loopActivePow[3] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 2 && typeText == 'loop'" label="回路5有功功率(kW)" align="center" prop="bactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopActivePow">
+              {{ scope.row.loopActivePow[4] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 2 && typeText == 'loop'" label="回路6有功功率(kW)" align="center" prop="cactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopActivePow">
+              {{ scope.row.loopActivePow[5] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 2 && typeText == 'loop'" label="回路7有功功率(kW)" align="center" prop="aactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopActivePow">
+              {{ scope.row.loopActivePow[6] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 2 && typeText == 'loop'" label="回路8有功功率(kW)" align="center" prop="bactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopActivePow">
+              {{ scope.row.loopActivePow[7] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 2 && typeText == 'loop'" label="回路9有功功率(kW)" align="center" prop="cactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopActivePow">
+              {{ scope.row.loopActivePow[8] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 3 && typeText == 'loop'" label="回路1无功功率(kVar)" align="center" prop="areactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopReactivePow">
+              {{ scope.row.loopReactivePow[0] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 3 && typeText == 'loop'" label="回路2无功功率(kVar)" align="center" prop="breactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopReactivePow">
+              {{ scope.row.loopReactivePow[1] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 3 && typeText == 'loop'" label="回路3无功功率(kVar)" align="center" prop="creactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopReactivePow">
+              {{ scope.row.loopReactivePow[2] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 3 && typeText == 'loop'" label="回路4无功功率(kVar)" align="center" prop="areactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopReactivePow">
+              {{ scope.row.loopReactivePow[3] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 3 && typeText == 'loop'" label="回路5无功功率(kVar)" align="center" prop="breactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopReactivePow">
+              {{ scope.row.loopReactivePow[4] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 3 && typeText == 'loop'" label="回路6无功功率(kVar)" align="center" prop="creactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopReactivePow">
+              {{ scope.row.loopReactivePow[5] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 3 && typeText == 'loop'" label="回路7无功功率(kVar)" align="center" prop="areactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopReactivePow">
+              {{ scope.row.loopReactivePow[6] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 3 && typeText == 'loop'" label="回路8无功功率(kVar)" align="center" prop="breactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopReactivePow">
+              {{ scope.row.loopReactivePow[7] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 3 && typeText == 'loop'" label="回路9无功功率(kVar)" align="center" prop="creactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.loopReactivePow">
+              {{ scope.row.loopReactivePow[8] }}
+            </el-text>
+          </template>
+        </el-table-column>
+
+
         <!-- 数据库查询 -->
         <el-table-column label="操作" align="center">
           <template #default="scope">
@@ -227,109 +537,140 @@
             </el-button>
           </template>
         </el-table-column>
-      </el-table>    
+      </el-table>
 
       <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="icon" >
-              <div v-if="valueMode == 0 && item.acur != null" >
+              <!-- <div v-if="shouldShow('current', 'phaseCur', 'line') || shouldShow('current', 'loopCur', 'loop')">  
                 电流
-              </div>    
-              <div v-if="valueMode == 1 && item.avol != null" >
+              </div> -->
+              <!-- <div v-if="valueMode == 0 && item.phaseCur != null && typeText == 'line'" >
+                电流
+              </div>
+              <div v-else-if="valueMode == 0 && item.loopCur != null && typeText == 'loop'" >
+                电流
+              </div> -->
+              <div v-if="valueMode == 1 && item.phaseVol != null && typeText == 'line'" >
                 电压
-              </div>           
-              <div v-if="valueMode == 2 && item.aactivePow != null" >
+              </div>
+              <div v-else-if="valueMode == 1 && item.loopVol != null && typeText == 'loop'" >
+                电压
+              </div>
+              <div v-if="valueMode == 2 && item.phaseActivePow != null && typeText == 'line'" >
                 有功功率
-              </div> 
-              <div v-if="valueMode == 3 && item.areactivePow != null" >
+              </div>
+              <div v-if="valueMode == 2 && item.loopActivePow != null && typeText == 'loop'" >
+                有功功率
+              </div>
+              <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'outlet'" >
+                有功功率
+              </div>
+              <div v-if="valueMode == 3 && item.phaseReactivePow != null && typeText == 'line'" >
                 无功功率
-              </div> 
-            </div>
-            <div class="info" v-if="valueMode == 0" >                  
-              <div v-if="item.acur != null">
-                <el-text v-if="item.acur != null" :type=" item.acurStatus != 0 ? 'danger' : '' ">
-                  A相：{{item.acur}}A
-                </el-text>
               </div>
-              <div v-if="item.bcur != null">
-                <el-text v-if="item.bcur != null" :type=" item.bcurStatus != 0 ? 'danger' : '' ">
-                  B相：{{item.bcur}}A
-                </el-text>
+              <div v-if="valueMode == 3 && item.loopReactivePow != null && typeText == 'loop'" >
+                无功功率
               </div>
-              <div v-if="item.ccur != null">
-                <el-text v-if="item.ccur != null" :type=" item.ccurStatus != 0 ? 'danger' : '' ">
-                  C相：{{item.ccur}}A
-                </el-text>
+              <div v-if="valueMode == 3 && item.outletReactivePow != null && typeText == 'outlet'" >
+                无功功率
               </div>
             </div>
-            <div class="info" v-if="valueMode == 1">                  
-              <div v-if="item.avol != null">
-                <el-text v-if="item.avol != null" :type=" item.avolStatus != 0 ? 'danger' : '' ">
-                  A相：{{item.avol}}V
-                </el-text>
+            <div class="info" v-if="valueMode == 0" >
+              <div v-if="item.phaseCur != null && typeText == 'line'">
+                <div v-for="(phaseCur,index) in item.phaseCur" :key="index">
+                  <el-text  v-if="item.phaseCur != null">
+                    {{phaseLineText[index]}}{{phaseCur}}A
+                  </el-text>
+                </div>
               </div>
-              <div  v-if="item.bvol != null">
-                <el-text v-if="item.bvol != null" :type=" item.bvolStatus != 0 ? 'danger' : '' ">
-                  B相：{{item.bvol}}V
-                </el-text>
-              </div>
-              <div v-if="item.cvol != null">
-                <el-text v-if="item.cvol != null" :type=" item.cvolStatus != 0 ? 'danger' : '' ">
-                  C相：{{item.cvol}}V
-                </el-text>
-              </div>
-            </div>
-            <div class="info" v-if="valueMode == 2">                  
-              <div  v-if="item.aactivePow != null">
-                <el-text v-if="item.aactivePow != null" :type=" item.aactivePowStatus != 0 ? 'danger' : '' ">
-                  A相：{{item.aactivePow}}kW
-                </el-text>
-              </div>
-              <div  v-if="item.bactivePow != null">
-                <el-text v-if="item.bactivePow != null" :type=" item.bactivePowStatus != 0 ? 'danger' : '' ">
-                  B相：{{item.bactivePow}}kW
-                </el-text>
-              </div>
-              <div  v-if="item.cactivePow != null">
-                <el-text v-if="item.cactivePow != null" :type=" item.cactivePowStatus != 0 ? 'danger' : '' ">
-                  C相：{{item.cactivePow}}kW
-                </el-text>
+              <div v-else-if="item.loopCur != null && typeText == 'loop'">
+                <div v-for="(loopCur,index) in item.loopCur" :key="index">
+                  <el-text  v-if="item.loopCur != null" :type=" item.loopCurStatus == 0 ? 'danger' : '' " >
+                    {{loopLineText[index]}}{{loopCur}}A
+                  </el-text>
+                </div>
               </div>
             </div>
-            <div class="info" v-if="valueMode == 3">                  
-              <div v-if="item.areactivePow != null">
-                <el-text v-if="item.areactivePow != null">
-                  A相：{{item.areactivePow}}kVar
-                </el-text>
+            <div class="info" v-if="valueMode == 1">
+              <div v-if="item.phaseVol != null && typeText == 'line'">
+                <div v-for="(phaseVol,index) in item.phaseVol" :key="index">
+                  <el-text  v-if="item.phaseVol != null">
+                    {{phaseLineText[index]}}{{phaseVol}}V
+                  </el-text>
+                </div>
               </div>
-              <div v-if="item.breactivePow != null">
-                <el-text v-if="item.breactivePow != null">
-                  B相：{{item.breactivePow}}kVar
-                </el-text>
+              <div v-else-if="item.loopVol != null && typeText == 'loop'">
+                <div v-for="(loopVol,index) in item.loopVol" :key="index">
+                  <el-text  v-if="item.loopVol != null" :type=" item.loopVolStatus == 0 ? 'danger' : '' " >
+                    {{loopLineText[index]}}{{loopVol}}V
+                  </el-text>
+                </div>
               </div>
-              <div v-if="item.creactivePow != null">
-                <el-text v-if="item.creactivePow != null">
-                  C相：{{item.creactivePow}}kVar
-                </el-text>
+            </div>
+            <div class="info" v-if="valueMode == 2">
+              <div v-if="item.phaseActivePow != null && typeText == 'line'">
+                <div v-for="(phaseActivePow,index) in item.phaseActivePow" :key="index">
+                  <el-text  v-if="item.phaseActivePow != null">
+                    {{phaseLineText[index]}}{{phaseActivePow}}kW
+                  </el-text>
+                </div>
+              </div>
+              <div v-else-if="item.loopActivePow != null && typeText == 'loop'">
+                <div v-for="(loopActivePow,index) in item.loopActivePow" :key="index">
+                  <el-text  v-if="item.loopActivePow != null" :type=" item.loopActivePowStatus == 0 ? 'danger' : '' " >
+                    {{loopLineText[index]}}{{loopActivePow}}kW
+                  </el-text>
+                </div>
+              </div>
+              <div v-else-if="item.outletActivePow != null && typeText == 'outlet'">
+                <div v-for="(outletActivePow,index) in item.outletActivePow" :key="index">
+                  <el-text  v-if="item.outletActivePow != null">
+                    {{outletLineText[index]}}{{outletActivePow}}kW
+                  </el-text>
+                </div>
+              </div>
+            </div>
+            <div class="info" v-if="valueMode == 3">
+              <div  v-if="item.phaseReactivePow != null && typeText == 'line'">
+                <div v-for="(phaseReactivePow,index) in item.phaseReactivePow" :key="index">
+                  <el-text  v-if="item.phaseReactivePow != null">
+                    {{phaseLineText[index]}}{{phaseReactivePow}}kVar
+                  </el-text>
+                </div>
+              </div>
+              <div  v-else-if="item.loopReactivePow != null && typeText == 'loop'">
+                <div v-for="(loopReactivePow,index) in item.loopReactivePow" :key="index">
+                  <el-text  v-if="item.loopReactivePow != null">
+                    {{loopLineText[index]}}{{loopReactivePow}}kVar
+                  </el-text>
+                </div>
+              </div>
+              <div v-else-if="item.outletReactivePow != null && typeText == 'outlet'">
+                <div v-for="(outletReactivePow,index) in item.outletReactivePow" :key="index">
+                  <el-text  v-if="item.outletReactivePow != null">
+                    {{outletLineText[index]}}{{outletReactivePow}}kVar
+                  </el-text>
+                </div>
               </div>
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" v-if="valueMode == 0">
-            <el-tag type="info" v-if="item.acurStatus == null " >离线</el-tag>
-            <el-tag type="danger" v-else-if="item.acurStatus != 0 || item.bcurStatus != 0  || item.ccurStatus != 0 " >告警</el-tag>
+            <el-tag type="info" v-if="item.loopCurStatus == null " >离线</el-tag>
+            <el-tag type="danger" v-else-if="item.loopCurStatus[0] != 0 || item.loopCurStatus[1] != 0  || item.loopCurStatus[2] != 0 " >告警</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>
           <div class="status" v-if="valueMode == 1">
-            <el-tag type="info" v-if="item.avolStatus == null " >离线</el-tag>
-            <el-tag type="danger" v-else-if="item.avolStatus != 0 || item.bvolStatus != 0 || item.cvolStatus != 0 " >告警</el-tag>
+            <el-tag type="info" v-if="item.loopVolStatus == null " >离线</el-tag>
+            <el-tag type="danger" v-else-if="item.loopVolStatus[0] != 0 || item.loopVolStatus[1] != 0 || item.loopVolStatus[2] != 0 " >告警</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>
           <div class="status" v-if="valueMode == 2">
-            <el-tag type="info" v-if="item.aactivePowStatus == null " >离线</el-tag>
-            <el-tag type="danger" v-else-if="item.aactivePowStatus != 0 || item.bactivePowStatus != 0 || item.cactivePowStatus != 0" >告警</el-tag>
+            <el-tag type="info" v-if="item.loopActivePowStatus == null " >离线</el-tag>
+            <el-tag type="danger" v-else-if="item.loopActivePowStatus[0] != 0 || item.loopActivePowStatus[1] != 0 || item.loopActivePowStatus[2] != 0" >告警</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>
           <div class="status" v-if="valueMode == 3">
@@ -374,6 +715,13 @@ const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(0)
 const valueMode = ref(0)
+
+const phaseLineText = ref(['A相：','B相：','C相：']);
+const loopLineText = ref(['回路1：','回路2：','回路3：','回路4：','回路5：','回路6：','回路7：','回路8：','回路9：']);
+const outletLineText = ref(['输出位1：','输出位2：','输出位3：']);
+
+const phaseText = ref([['A相电流(A)','B相电流(A)','C相电流(A)'],['A相电压(V)','B相电压(V)','C相电压(V)'],
+['A相有功功率(kW)','B相有功功率(kW)','C相有功功率(kW)'],['A相无功功率(kVar)','B相无功功率(kVar)','C相无功功率(kVar)']]);
 
 const devKeyList = ref([])
 const statusNumber = reactive({
@@ -449,7 +797,7 @@ const { t } = useI18n() // 国际化
 
 const loading = ref(false) // 列表的加载中
 const list = ref([
-  { 
+  {
     id:null,
     status:null,
     apparentPow:null,
@@ -467,7 +815,7 @@ const list = ref([
   }
 ]) as any// 列表的数据
 const allList = ref([
-  { 
+  {
     id:null,
     status:null,
     apparentPow:null,
@@ -520,21 +868,34 @@ const getList = async () => {
 
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.acur == null){
+      if(obj?.phaseCur == null){
         return;
+      }
+      for(var i= 0;i < obj.phaseCur.length; i++)
+      {
+        obj.phaseCur[i] = obj.phaseCur[i]?.toFixed(2);
+        obj.phaseVol[i] = obj.phaseVol[i]?.toFixed(2);
+        obj.phaseActivePow[i] = obj.phaseActivePow[i]?.toFixed(3);
+        obj.phaseReactivePow[i] = obj.phaseReactivePow[i]?.toFixed(3);
+        obj.phaseApparentPow[i] = obj.phaseApparentPow[i]?.toFixed(3);
+        obj.phasePowFactor[i] = obj.phasePowFactor[i]?.toFixed(2);
+      }
+      
+      for(var i= 0;i < obj.loopCur.length; i++)
+      {
+        obj.loopCur[i] = obj.loopCur[i]?.toFixed(2);
+        obj.loopVol[i] = obj.loopVol[i]?.toFixed(1);
+        obj.loopActivePow[i] = obj.loopActivePow[i]?.toFixed(3);
+        obj.loopReactivePow[i] = obj.loopReactivePow[i]?.toFixed(3);
       } 
-      obj.acur = obj.acur?.toFixed(2);
-      obj.bcur = obj.bcur?.toFixed(2);
-      obj.ccur = obj.ccur?.toFixed(2);
-      obj.avol = obj.avol?.toFixed(1);
-      obj.bvol = obj.bvol?.toFixed(1);
-      obj.cvol = obj.cvol?.toFixed(1);
-      obj.aactivePow = obj.aactivePow?.toFixed(3);
-      obj.bactivePow = obj.bactivePow?.toFixed(3);
-      obj.cactivePow = obj.cactivePow?.toFixed(3);
-      obj.areactivePow = obj.areactivePow?.toFixed(3);
-      obj.breactivePow = obj.breactivePow?.toFixed(3);
-      obj.creactivePow = obj.creactivePow?.toFixed(3);
+      
+      for(var i= 0;i < obj.outletActivePow.length; i++)
+      {
+        obj.outletActivePow[i] = obj.outletActivePow[i]?.toFixed(3);
+        obj.outletReactivePow[i] = obj.outletReactivePow[i]?.toFixed(3);
+        obj.outletApparentPow[i] = obj.outletApparentPow[i]?.toFixed(3);
+        obj.outletPowFactor[i] = obj.outletPowFactor[i]?.toFixed(2);
+      }
     });
 
     total.value = data.total
@@ -552,18 +913,18 @@ const getListAll = async () => {
     const allData = await IndexApi.getBoxRedisPage(queryParamsAll);
     allList.value = allData.list
     allList.value.forEach((objAll) => {
-      if(objAll?.dataUpdateTime == null && objAll?.acur == null && objAll?.bcur == null && objAll?.ccur == null){
+      if(objAll?.dataUpdateTime == null && objAll?.phaseCur == null){
         objAll.status = 5;
         offline++;
         return;
-      }  
+      }
       if(objAll?.status == 0){
         normal++;
       } else if (objAll?.status == 1){
         warn++;
       } else if (objAll?.status == 2){
         alarm++;
-      }          
+      }
     });
     //设置左边数量
     statusNumber.normal = normal;
@@ -579,25 +940,38 @@ const getListNoLoading = async () => {
   try {
     const data = await IndexApi.getBoxRedisPage(queryParams)
     list.value = data.list
-    var tableIndex = 0;    
+    var tableIndex = 0;
 
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.acur == null){
+      if(obj?.phaseCur == null){
         return;
+      }
+      for(var i= 0;i < obj.phaseCur.length; i++)
+      {
+        obj.phaseCur[i] = obj.phaseCur[i]?.toFixed(2);
+        obj.phaseVol[i] = obj.phaseVol[i]?.toFixed(2);
+        obj.phaseActivePow[i] = obj.phaseActivePow[i]?.toFixed(3);
+        obj.phaseReactivePow[i] = obj.phaseReactivePow[i]?.toFixed(3);
+        obj.phaseApparentPow[i] = obj.phaseApparentPow[i]?.toFixed(3);
+        obj.phasePowFactor[i] = obj.phasePowFactor[i]?.toFixed(2);
+      }
+      
+      for(var i= 0;i < obj.loopCur.length; i++)
+      {
+        obj.loopCur[i] = obj.loopCur[i]?.toFixed(2);
+        obj.loopVol[i] = obj.loopVol[i]?.toFixed(1);
+        obj.loopActivePow[i] = obj.loopActivePow[i]?.toFixed(3);
+        obj.loopReactivePow[i] = obj.loopReactivePow[i]?.toFixed(3);
       } 
-      obj.acur = obj.acur?.toFixed(2);
-      obj.bcur = obj.bcur?.toFixed(2);
-      obj.ccur = obj.ccur?.toFixed(2);
-      obj.avol = obj.avol?.toFixed(1);
-      obj.bvol = obj.bvol?.toFixed(1);
-      obj.cvol = obj.cvol?.toFixed(1);
-      obj.aactivePow = obj.aactivePow?.toFixed(3);
-      obj.bactivePow = obj.bactivePow?.toFixed(3);
-      obj.cactivePow = obj.cactivePow?.toFixed(3);
-      obj.areactivePow = obj.areactivePow?.toFixed(3);
-      obj.breactivePow = obj.breactivePow?.toFixed(3);
-      obj.creactivePow = obj.creactivePow?.toFixed(3);
+      
+      for(var i= 0;i < obj.outletActivePow.length; i++)
+      {
+        obj.outletActivePow[i] = obj.outletActivePow[i]?.toFixed(3);
+        obj.outletReactivePow[i] = obj.outletReactivePow[i]?.toFixed(3);
+        obj.outletApparentPow[i] = obj.outletApparentPow[i]?.toFixed(3);
+        obj.outletPowFactor[i] = obj.outletPowFactor[i]?.toFixed(2);
+      }
     });
 
     total.value = data.total
@@ -628,6 +1002,46 @@ const toDeatil = (row) =>{
   const boxId = row.boxId;
   const location = row.location != null ? row.location : row.devKey
   push({path: '/bus/boxmonitor/boxpowerdetail', state: { devKey, boxId ,location}})
+}
+
+const defaultSelected = ref(['line'])
+const typeSelection = ref([]) as any;
+const shouldShowLabel = ref(false);
+var typeText = ref('line');
+// 参数类型改变触发
+const typeCascaderChange = (selected) => {
+  queryParams.type = selected[0];
+  typeText = selected[0];
+  if(selected[0] == 'outlet'){
+    shouldShowLabel.value = true;
+    if(valueMode.value == 0 || valueMode.value == 1){
+      valueMode.value =2;
+    }
+  }else{
+    shouldShowLabel.value = false;
+  }
+  // 自动搜索
+  handleQuery()
+}
+
+// 参数类型选择框初始化，相固定3相
+const getTypeMaxValue = async () => {
+    const typeSelectionValue  = [
+    {
+      value: "line",
+      label: '相'
+    },
+    {
+    value: "loop",
+    label: '回路'
+    },
+    {
+    value: "outlet",
+    label: '输出位'
+    },
+  ]
+  typeSelection.value = typeSelectionValue;
+  shouldShowLabel.value = false;
 }
 
 
@@ -689,6 +1103,7 @@ onMounted(async () => {
   getList()
   getNavList();
   getListAll();
+  getTypeMaxValue();
   flashListTimer.value = setInterval((getListNoLoading), 5000);
   flashListTimer.value = setInterval((getListAll), 5000);
 })
@@ -864,8 +1279,8 @@ onActivated(() => {
       .info {
         height: 46px;
         display: flex;
-        flex-direction: column;
-        align-items: flex-end;
+        flex-direction: row;
+        align-items: self-end;
         justify-content: space-between;
         font-size: 13px;
         .value {
@@ -996,6 +1411,7 @@ onActivated(() => {
     .content {
       display: flex;
       align-items: center;
+      flex-direction: row;
       .icon {
         width: 74px;
         height: 30px;
@@ -1055,7 +1471,7 @@ onActivated(() => {
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }
-::v-deep .el-table .el-table__header th{
+::v-deep(.el-table .el-table__header th){
   background-color: #f5f7fa;
   color: #909399;
   height: 80px;

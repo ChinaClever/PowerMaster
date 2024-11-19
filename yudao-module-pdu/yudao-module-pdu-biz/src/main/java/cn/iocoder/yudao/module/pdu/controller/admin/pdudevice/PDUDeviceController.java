@@ -4,7 +4,10 @@ import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstant
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDevicePageReqVO;
 
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDULineRes;
+import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PduBalanceDeatilRes;
+import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PduTrendVO;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.pdudevice.PDUDeviceDO;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
@@ -45,6 +48,21 @@ public class PDUDeviceController {
         PageResult<PDUDeviceDO> pageResult = pDUDeviceService.getPDUDevicePage(pageReqVO);
         return success(pageResult);
     }
+
+    @GetMapping("/balance/detail")
+    @Operation(summary = "获得PDU配电分页详情")
+    public CommonResult<PduBalanceDeatilRes> getPDUDeviceDetail(String devKey) {
+        PduBalanceDeatilRes pageResult = pDUDeviceService.getPDUDeviceDetail(devKey);
+        return success(pageResult);
+    }
+
+    @GetMapping("/balance/trend")
+    @Operation(summary = "获得插接箱不平衡度详情图表")
+    public CommonResult<List<PduTrendVO>> getPudBalanceTrend(Integer pduId) {
+        List<PduTrendVO> result = pDUDeviceService.getPudBalanceTrend(pduId);
+        return success(result);
+    }
+
     @PostMapping("/getDeletedPage")
     @Operation(summary = "获得已删除PDU分页")
     public CommonResult<PageResult<PDUDeviceDO>> getDeletedPDUDevicePage(@RequestBody PDUDevicePageReqVO pageReqVO) {
@@ -84,6 +102,12 @@ public class PDUDeviceController {
     @Operation(summary = "获得PDU历史数据")
     public CommonResult<Map> getHistoryDataByDevKey(String devKey,String type) {
         return success(pDUDeviceService.getHistoryDataByDevKey(devKey,type));
+    }
+//pdu_hda_line_realtime
+    @GetMapping("/pduHdaLineHisdata")
+    @Operation(summary = "获得PDU相历史数据")
+    public CommonResult<Map> getPduHdaLineHisdataKey(String devKey,String type) {
+        return success(pDUDeviceService.getPduHdaLineHisdataKey(devKey,type));
     }
 
     @GetMapping("/chartNewData")
@@ -153,6 +177,9 @@ public class PDUDeviceController {
         }
         return success(pduId);
     }
-
-
+    @GetMapping("line/getMaxLine")
+    @Operation(summary = "PDU需量详情数据")
+    public CommonResult<Map> getPduMaxLine(@Parameter(description =  "pdu的id") Integer id,@Parameter(description =  "选择类型24小时：hour/30天 day") String type) {
+        return success(pDUDeviceService.getPduMaxLine(id,type));
+    }
 }

@@ -49,7 +49,7 @@
         :inline="true"
         label-width="auto"
       >
-        <el-form-item label="参数类型" prop="type">
+      <el-form-item label="参数类型" prop="type">
         <el-cascader
           v-model="defaultSelected"
           collapse-tags
@@ -271,7 +271,7 @@ const cascaderChange = (selectedCol) => {
         column.istrue = true;
         break;
       }
-    };     
+    };
     for (const col of notSelectedCol) {
       if (column.prop?.startsWith(col)){
         column.istrue = false;
@@ -355,13 +355,13 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
               { value: "pow_apparent_min", label: '最小视在功率' },
             ]
           },
-             { value: "cur_residual", label: '剩余电流', children: [
+          {value: "cur_residual", label: '剩余电流', children: [
               { value: "cur_residual_avg_value", label: '平均剩余电流'},
               { value: "cur_residual_max", label: '最大剩余电流' },
               { value: "cur_residual_min", label: '最小剩余电流' },
             ]
           },
-             { value: "cur_zero", label: '零线电流', children: [
+          { value: "cur_zero", label: '零线电流', children: [
               { value: "cur_zero_avg_value", label: '平均零线电流'},
               { value: "cur_zero_max", label: '最大零线电流' },
               { value: "cur_zero_min", label: '最小零线电流' },
@@ -559,10 +559,10 @@ watch(() => [queryParams.type, queryParams.granularity], (newValues) => {
     }
   });
 
-const tableColumns = ref([  
+const tableColumns = ref([
     { label: '所在位置', align: 'center', prop: 'location', width: '300%' , istrue:true},
     { label: '设备地址', align: 'center', prop: 'dev_key', width: '190px', istrue:true},
-{ label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
+    { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
 
     { label: '总有功功率(kW)', align: 'center', prop: 'pow_active', istrue:true, width: '150px', formatter: formatPower},
     { label: '总无功功率(kVar)', align: 'center', prop: 'pow_reactive', istrue:true, width: '150px', formatter: formatPower},
@@ -616,7 +616,7 @@ function formatPowerFactor(_row: any, _column: any, cellValue: number): string {
 
 // 格式化相id
 function formatLineId(_row: any, _column: any, cellValue: number): string {
-   return 'L'+cellValue;
+  return 'L'+cellValue;
 }
 
 // 格式化日期

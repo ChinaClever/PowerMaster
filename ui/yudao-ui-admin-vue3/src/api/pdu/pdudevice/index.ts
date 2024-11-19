@@ -49,6 +49,11 @@ export const PDUDeviceApi = {
     return await request.get({ url: `/pdu/PDU-device/restore`, params })
   },
 
+  //获取PDU相历史数据
+  getPDUHdaLineHisdata: async (params: any) => {
+    return await request.get({ url: `pdu/PDU-device/pduHdaLineHisdata`, params})
+  },
+
   // 导出PDU设备 Excel
   exportPDUDevice: async (params) => {
     return await request.download({ url: `/pdu/PDU-device/export-excel`, params })
@@ -105,5 +110,12 @@ export const PDUDeviceApi = {
   ipList: async () => {
     return await request.download({ url: `/pdu/PDU-device/ipList` })
   },
+
+  balanceDetail: async (params: any) => {
+    return await request.get({ url: `/pdu/PDU-device/balance/detail`, params})
+  },
   
+  balanceTrend: async (params: any) => {
+    return await request.get({ url: `/pdu/PDU-device/balance/trend`, params})
+  },
 }
