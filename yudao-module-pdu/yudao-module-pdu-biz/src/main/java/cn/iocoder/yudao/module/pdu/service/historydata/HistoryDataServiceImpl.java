@@ -538,8 +538,8 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         searchSourceBuilder.trackTotalHits(true);
         if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0){
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(reqVO.getTimeRange()[0])
-                    .to(reqVO.getTimeRange()[1]));
+                    .gte(reqVO.getTimeRange()[0])
+                    .lte(reqVO.getTimeRange()[1]));
         }
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();

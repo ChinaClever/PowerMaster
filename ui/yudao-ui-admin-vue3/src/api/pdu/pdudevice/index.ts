@@ -110,5 +110,12 @@ export const PDUDeviceApi = {
   ipList: async () => {
     return await request.download({ url: `/pdu/PDU-device/ipList` })
   },
+
+  balanceDetail: async (params: any) => {
+    return await request.get({ url: `/pdu/PDU-device/balance/detail`, params})
+  },
   
+  balanceTrend: async (params: any) => {
+    return await request.get({ url: `/pdu/PDU-device/balance/trend`, params})
+  },
 }
