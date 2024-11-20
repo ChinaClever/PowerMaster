@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.room.controller.admin.energyconsumption.VO;
 
+import cn.iocoder.yudao.framework.excel.core.util.DateStringConverter;
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,19 +14,19 @@ public class EQPageRespVO {
     @ExcelProperty("位置")
     private String location;
 
-    @ExcelProperty("记录日期")
+    @ExcelProperty(converter = DateStringConverter.class, value = "记录日期")
     private String create_time;
 
-    @ExcelProperty("开始日期")
+    @ExcelProperty(converter = DateStringConverter.class, value = {"开始","开始日期"})
     private String start_time;
 
-    @ExcelProperty("开始电能(kWh)")
+    @ExcelProperty({"开始","开始电能(kWh)"})
     private Double start_ele;
 
-    @ExcelProperty("结束日期")
+    @ExcelProperty(converter = DateStringConverter.class, value = {"结束","结束日期"})
     private String end_time;
 
-    @ExcelProperty("结束电能(kWh)")
+    @ExcelProperty({"结束","结束电能(kWh)"})
     private Double end_ele;
 
     @ExcelProperty("耗电量(kWh)")

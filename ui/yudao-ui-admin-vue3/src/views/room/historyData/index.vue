@@ -15,11 +15,7 @@
           <span v-if="queryParams.granularity == 'realtime' ">全部机房最近一分钟新增记录</span>
           <span v-if="queryParams.granularity == 'hour' ">全部机房最近一小时新增记录</span>
           <span v-if="queryParams.granularity == 'day' ">全部机房最近一天新增记录</span>
-        </div>
-        <div class="nav_content" >
-          <el-descriptions title="" direction="vertical" :column="1" border >
-            <el-descriptions-item label=""><span >{{ navTotalData }} 条</span></el-descriptions-item>
-          </el-descriptions>
+                     <span class="value">{{ navTotalData }} 条</span>
         </div>
       </div>
     </template>
@@ -596,7 +592,7 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: bold;
   }
   .nav_data{

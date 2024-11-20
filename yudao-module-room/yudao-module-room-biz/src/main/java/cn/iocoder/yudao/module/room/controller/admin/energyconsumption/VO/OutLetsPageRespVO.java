@@ -1,6 +1,5 @@
-package cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO;
+package cn.iocoder.yudao.module.room.controller.admin.energyconsumption.VO;
 
-import cn.iocoder.yudao.framework.excel.core.util.DateStringConverter;
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.NumberFormat;
@@ -12,34 +11,29 @@ import com.alibaba.excel.enums.poi.HorizontalAlignmentEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-@Schema(description = "管理后台 - 始端箱电费统计（天周月） 导出数据")
+@Schema(description = "管理后台 - PDU能耗排名 导出数据")
 @Data
 @ExcelIgnoreUnannotated
 @HeadStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
 @ContentStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
 @ColumnWidth(30)
 @HeadRowHeight(20)
-public class BillPageRespVO {
-
-    @ExcelProperty("所在位置")
-    private String location;
-
-    @ExcelProperty("设备地址")
-    private String dev_key;
-    @ExcelProperty("设备名称")
-    private String bus_name;
-    @ExcelProperty(converter = DateStringConverter.class, value ="开始日期")
+public class OutLetsPageRespVO {
+    @ExcelProperty({"开始电能","开始电能(kWh)"})
+    @NumberFormat("0.0")
+    private Double start_ele;
+    @ExcelProperty({"开始电能","开始时间"})
     private String start_time;
-
-    @ExcelProperty(converter = DateStringConverter.class, value ="结束日期")
+    @ExcelProperty({"结束电能","结束电能(kWh)"})
+    @NumberFormat("0.0")
+    private Double end_ele;
+    @ExcelProperty({"结束电能","结束时间"})
     private String end_time;
-
-    @ExcelProperty("耗电量(kWh)")
     @NumberFormat("0.0")
-    private Double eq_value;
-
-    @ExcelProperty("电费(元)")
-    @NumberFormat("0.0")
+    @ExcelProperty({"耗电量","耗电量(kWh)"})
     private Double bill_value;
+    @ExcelProperty({"耗电量","记录时间"})
+    private String create_time;
+
 
 }
