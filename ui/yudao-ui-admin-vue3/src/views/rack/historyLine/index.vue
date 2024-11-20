@@ -116,6 +116,12 @@
               :row-style="{ color: '#fff', fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
               <el-table-column prop="create_time" label="记录时间" />
+              <!-- 添加行号列 -->
+              <el-table-column label="序号" align="center" width="80px">
+                <template #default="{ $index }">
+                  {{ $index + 1 }}
+                </template>  
+              </el-table-column>
               <!-- 动态生成表头 -->
               <template v-for="item in headerData" :key="item.name">
                 <el-table-column v-if="item.name === '最大有功功率'" label="有功功率最大值">
