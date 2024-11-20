@@ -418,6 +418,10 @@ const getNavList = async() => {
 
 /** 搜索按钮操作 */
 const handleQuery = async() => {
+    if(queryParams.roomId ==undefined){
+      ElMessage.error('机房不能为空')
+      return;
+  }
   await getLineChartData();
   // await getRankChartData();
   initLineChart();

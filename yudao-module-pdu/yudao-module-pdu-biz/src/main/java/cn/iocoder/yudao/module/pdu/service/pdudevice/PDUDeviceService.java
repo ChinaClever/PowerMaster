@@ -2,6 +2,8 @@ package cn.iocoder.yudao.module.pdu.service.pdudevice;
 
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDevicePageReqVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDULineRes;
+import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PduBalanceDeatilRes;
+import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PduTrendVO;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.pdudevice.PDUDeviceDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 
@@ -63,4 +65,8 @@ public interface PDUDeviceService {
     Map getPduHdaLineHisdataKey(String devKey, String type);
 
     Map getPduMaxLine(Integer id, String type);
+
+    PduBalanceDeatilRes getPDUDeviceDetail(String key);
+
+    List<PduTrendVO> getPudBalanceTrend(Integer pduId);
 }

@@ -319,7 +319,7 @@ const tableColumns = ref([
       { label: '结束时间', align: 'center', prop: 'end_time' , formatter: formatTime1, width: '150px' , istrue:true},
     ]
   },
-  { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' ,istrue: true,formatter: formatEle },
+  { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' ,istrue: true,formatter: formatPowerEle },
   { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '120px'},
 ]) as any;
 
@@ -341,6 +341,7 @@ const getList = async () => {
     }
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
     eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
+
     list.value = data.list
     realTotel.value = data.total
     if (data.total > 10000){
@@ -432,6 +433,22 @@ function formatTime1(_row: any, _column: any, cellValue: number): string {
 function formatEle(_row: any, _column: any, cellValue: number): string {
   return Number(cellValue).toFixed(1);
 }
+
+function formatPowerEle(_row: any, _column: any, cellValue: number): string {
+   let numberele;
+   if(queryParams.granularity == "day"){
+       numberele = _row.end_ele  -  _row.start_ele;
+      if(numberele < 0){
+          numberele = _row.end_ele;
+      }
+   }else{
+       numberele = _row.end_ele  -  _row.start_ele;
+   }
+   return Number(numberele).toFixed(1);
+}
+
+
+
 
 // 格式化耗电量列数据，保留1位小数
 function formatEQ(value: number, decimalPlaces: number | undefined){

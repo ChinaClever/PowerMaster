@@ -4,6 +4,8 @@ import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstant
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDevicePageReqVO;
 
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDULineRes;
+import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PduBalanceDeatilRes;
+import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PduTrendVO;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.pdudevice.PDUDeviceDO;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.apache.ibatis.annotations.Param;
@@ -46,6 +48,21 @@ public class PDUDeviceController {
         PageResult<PDUDeviceDO> pageResult = pDUDeviceService.getPDUDevicePage(pageReqVO);
         return success(pageResult);
     }
+
+    @GetMapping("/balance/detail")
+    @Operation(summary = "获得PDU配电分页详情")
+    public CommonResult<PduBalanceDeatilRes> getPDUDeviceDetail(String devKey) {
+        PduBalanceDeatilRes pageResult = pDUDeviceService.getPDUDeviceDetail(devKey);
+        return success(pageResult);
+    }
+
+    @GetMapping("/balance/trend")
+    @Operation(summary = "获得插接箱不平衡度详情图表")
+    public CommonResult<List<PduTrendVO>> getPudBalanceTrend(Integer pduId) {
+        List<PduTrendVO> result = pDUDeviceService.getPudBalanceTrend(pduId);
+        return success(result);
+    }
+
     @PostMapping("/getDeletedPage")
     @Operation(summary = "获得已删除PDU分页")
     public CommonResult<PageResult<PDUDeviceDO>> getDeletedPDUDevicePage(@RequestBody PDUDevicePageReqVO pageReqVO) {
@@ -110,11 +127,7 @@ public class PDUDeviceController {
     public CommonResult<Map> getPDUPFLine(@RequestBody PDUDevicePageReqVO pageReqVO) {
         return success(pDUDeviceService.getPDUPFLine(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
     }
-    @PostMapping("/report/pfline")
-    @Operation(summary = "获得PDU电流报表数据")
-    public CommonResult<Map> getPDUPFLine(@RequestBody PDUDevicePageReqVO pageReqVO) {
-        return success(pDUDeviceService.getPDUPFLine(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
-    }
+
     @PostMapping("/report/pow")
     @Operation(summary = "获得PDU报表数据")
     public CommonResult<Map> getReportPowDataByDevKey(@RequestBody PDUDevicePageReqVO pageReqVO) {
