@@ -1628,7 +1628,7 @@ const lllChartData = ref({
 const lineidDateTimes = ref([] as string[])
 
 const lineidBeforeChartUnmount = () => {
-  lineidChart?.dispose() // 销毁图表实例
+lineidChart?.dispose() // 销毁图表实例
 }
 
 //获取最近一个小时的PDU相历史数据，处理L1,L2,L3的数据

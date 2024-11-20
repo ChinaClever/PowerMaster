@@ -54,6 +54,7 @@
             <!--<el-button @click="switchValue = 2;" :type="switchValue === 2 ? 'primary' : ''" style="margin-left:0px;margin-right:-45vw;" size="small">图表</el-button>-->
             <el-button @click="dialogVisible = true" :type="toggleButton ? 'primary' : ''" style="margin-left:-39vw;margin-right:0vw;" size="small">全屏</el-button>
             <el-dialog
+              title="自定义弹窗"
               v-model="dialogVisible"
               @close="handleClose"
             >       
@@ -73,26 +74,24 @@
                 <el-row>
                   <template v-if="switchValue === 0">
                     <el-col>
-                      <template>
-                        <div 
-                          class="full-screen-item"
-                          v-for="(item, index) in powInfo.roomDataList"
-                          :key="`card-${index}`"
-                        >
-                          <el-card shadow="hover">
-                            <div class="flex items-center h-21px">
-                              <!-- <Icon :icon="item.icon" :size="25" class="mr-8px" /> -->
-                              <span class="text-15px">{{ item.name || '' }}</span>
-                              <span class="text-15px" style="margin-left:5vw;">PUE：1.5</span>
-                            </div>
-                            <div class="mt-14px text-14px text-gray-400">实时总功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW</div>
-                            <div class="mt-14px flex justify-between text-12px text-gray-400">
-                              <span class="text-14px">实时视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA</span>
-                              <span>{{ formatTime(new Date(), 'HH:mm:ss') }}</span>
-                            </div>
-                          </el-card>
-                        </div>
-                      </template>
+                      <div 
+                        class="full-screen-item"
+                        v-for="(item, index) in powInfo.roomDataList"
+                        :key="`card-${index}`"
+                      >
+                        <el-card shadow="hover">
+                          <div class="flex items-center h-21px">
+                            <!-- <Icon :icon="item.icon" :size="25" class="mr-8px" /> -->
+                            <span class="text-15px">{{ item.name || '' }}</span>
+                            <span class="text-15px" style="margin-left:5vw;">PUE：1.5</span>
+                          </div>
+                          <div class="mt-14px text-14px text-gray-400">实时总功率：{{item.powActive ? item.powActive.toFixed(3) : '0.000'}}kW</div>
+                          <div class="mt-14px flex justify-between text-12px text-gray-400">
+                            <span class="text-14px">实时视在功率：{{item.powApparent ? item.powApparent.toFixed(3) : '0.000'}}kVA</span>
+                            <span>{{ formatTime(new Date(), 'HH:mm:ss') }}</span>
+                          </div>
+                        </el-card>
+                      </div>
                     </el-col>
                   </template>
                   <template v-else-if="switchValue === 1">

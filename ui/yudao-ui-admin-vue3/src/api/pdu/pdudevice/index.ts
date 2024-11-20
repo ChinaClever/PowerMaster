@@ -54,7 +54,7 @@ export const PDUDeviceApi = {
     return await request.get({ url: `pdu/PDU-device/pduHdaLineHisdata`, params})
   },
 
-  //获取电流需量详情数据
+  //获取PDU需量详细数据
   getMaxLineHisdata: async (params: any) => {
     return await request.get({ url: `pdu/PDU-device/line/getMaxLine`, params})
   },
