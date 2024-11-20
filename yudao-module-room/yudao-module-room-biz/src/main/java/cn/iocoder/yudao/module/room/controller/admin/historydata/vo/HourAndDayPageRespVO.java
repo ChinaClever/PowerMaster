@@ -137,6 +137,4 @@ public class HourAndDayPageRespVO {
 
     @ExcelProperty("B路平均功率因素")
     private Double factor_b_avg_value;
-
-
 }

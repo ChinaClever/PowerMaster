@@ -1878,7 +1878,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             aisleMap = new HashMap<>();
         }
 
-
         result.forEach(pduIndex -> {
             String localtion = null;
             List<CabinetPdu> cabinetPduAList = cabinetPduAMap.get(pduIndex.getDevKey());

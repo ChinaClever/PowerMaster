@@ -318,7 +318,7 @@ public class BusEnergyConsumptionController {
     @Operation(summary = "获取实时能耗")
     public void getBusEleTotalRealtimeExcel(@RequestBody BusEleTotalRealtimeReqDTO reqDTO, HttpServletResponse response) throws IOException {
         PageResult<BusEleTotalRealtimeResVO> list = busEnergyConsumptionService.getBusEleTotalRealtime(reqDTO, false);
-        ExcelUtils.write(response, "柜列实时电能记录数据.xlsx", "数据", BusEleTotalRealtimeResVO.class,
+        ExcelUtils.write(response, "始端箱实时电能记录数据.xlsx", "数据", BusEleTotalRealtimeResVO.class,
                 BeanUtils.toBean(list.getList(), BusEleTotalRealtimeResVO.class));
     }
 
@@ -335,7 +335,7 @@ public class BusEnergyConsumptionController {
     @Operation(summary = "box获取实时能耗")
     public void getBoxEleTotalRealtimeExcel(@RequestBody BusEleTotalRealtimeReqDTO reqDTO, HttpServletResponse response) throws IOException {
         PageResult<BusEleTotalRealtimeResVO> list = busEnergyConsumptionService.getBoxEleTotalRealtime(reqDTO, false);
-        ExcelUtils.write(response, "柜列实时电能记录数据.xlsx", "数据", BusEleTotalRealtimeResVO.class,
+        ExcelUtils.write(response, "插接箱实时电能记录数据.xlsx", "数据", BusEleTotalRealtimeResVO.class,
                 BeanUtils.toBean(list.getList(), BusEleTotalRealtimeResVO.class));
     }
 
