@@ -1,13 +1,34 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="机柜实时能耗" :showCheckbox="false">
+  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="机柜能耗分布" :showCheckbox="false">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <div class="descriptions-container" style="font-size: 14px;">
-          <div class="description-item">
-            <span class="label">按时间范围查询实时能耗</span>
-          </div>
+        <div class="nav_header">      
+          <span>{{nowAddress}}</span>
+          <span>{{selectTimeRange[0]}}至{{selectTimeRange[1]}}</span>
         </div>
+      <div class="nav_content">
+       <div class="description-item">
+          <span class="label">总耗电量 :</span>
+          <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
+        </div>
+        <div class="description-item">
+          <span class="label">最大耗电量 :</span>
+          <span >{{ formatNumber(maxEqDataTemp, 1) }} kWh</span>
+        </div>
+        <div v-if="maxEqDataTimeTemp" class="description-item">
+          <span class="label">发生时间 :</span>
+          <span class="value">{{ maxEqDataTimeTemp }}</span>
+        </div>
+        <div class="description-item">
+          <span class="label">最小耗电量 :</span>
+          <span >{{ formatNumber(minEqDataTemp, 1) }} kWh</span>
+        </div>
+        <div v-if="minEqDataTimeTemp" class="description-item">
+          <span class="label">发生时间 :</span>
+          <span class="value">{{ minEqDataTimeTemp }}</span>
+        </div>
+      </div>
       </div>
     </template>
     <template #ActionBar>
@@ -65,6 +86,12 @@
               :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
               :row-style="{ fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
+              <!-- 添加行号列 -->
+              <el-table-column label="序号" align="center" width="80px">
+                <template #default="{ $index }">
+                  {{ $index + 1 }}
+                </template>  
+              </el-table-column>
               <!-- 动态生成表头 -->
               <template v-for="item in headerData" :key="item.name">
                 <el-table-column  label="开始电能">
@@ -468,7 +495,7 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 16px;
+    font-size: 14px;
     padding-top: 28px;
   }
 .nav_data{
@@ -476,7 +503,7 @@ onMounted(async () => {
   width: 195px;
 }
 .nav_content span{
-  font-size: 18px;
+  font-size: 14px;
 }
 .carousel-container {
   width: 100%;

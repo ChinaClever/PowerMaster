@@ -48,6 +48,6 @@ public class AisleEleTotalRealtimeResVO {
     private String createTimeMax;
 
     @NumberFormat("0.0")
-    @ExcelProperty("电能 (kWh)")
+    @ExcelProperty("耗电量 (kWh)")
     private Double eleActive;
 }

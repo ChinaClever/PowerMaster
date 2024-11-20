@@ -26,7 +26,7 @@ import lombok.Data;
 @ColumnWidth(30)
 @HeadRowHeight(20)
 public class CabinetEleTotalRealtimeResVO {
-    @ExcelProperty("RoomId")
+    @ExcelProperty("id")
     @ExcelIgnore
     private Integer id;
 
@@ -48,6 +48,6 @@ public class CabinetEleTotalRealtimeResVO {
     private String createTimeMax;
 
     @NumberFormat("0.0")
-    @ExcelProperty("电能 (kWh)")
+    @ExcelProperty("耗电量 (kWh)")
     private Double eleActive;
 }
