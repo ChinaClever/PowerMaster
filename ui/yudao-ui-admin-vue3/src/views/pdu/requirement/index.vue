@@ -1502,13 +1502,12 @@ onMounted(() => {
 } 
 
 :deep(.el-dialog) {
-  margin-top: 0;
-  height: 100%;
-  width: 100%;
+  height: 70%;
+  width: 70%;
 }
 
 .adaptiveStyle {
-  width: 90vw;
+  width: 65vw;
   height: 45vh;
   z-index: 5;
 }
