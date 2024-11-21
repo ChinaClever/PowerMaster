@@ -177,18 +177,19 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         if (cabinetPduA != null) {
             int cabinetId = cabinetPduA.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
-            String cabinetName = cabinet.getName();
-            RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
-            String roomName = roomIndex.getName();
+            if (Objects.nonNull(cabinet)) {
+                String cabinetName = cabinet.getName();
+                RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
+                String roomName = roomIndex.getName();
 
-            if (cabinet.getAisleId() != 0) {
-                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
-                address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
-            } else {
-                address = roomName + "-" + cabinetName + "-" + "A路";
+                if (cabinet.getAisleId() != 0) {
+                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+                    address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
+                } else {
+                    address = roomName + "-" + cabinetName + "-" + "A路";
+                }
             }
         }
-
         // B 路
         CabinetPdu cabinetPduB = cabinetPduMapper.selectOne(
                 new LambdaQueryWrapperX<CabinetPdu>()
@@ -199,18 +200,19 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         if (cabinetPduB != null) {
             int cabinetId = cabinetPduB.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
-            String cabinetName = cabinet.getName();
-            RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
-            String roomName = roomIndex.getName();
+            if (Objects.nonNull(cabinet)) {
+                String cabinetName = cabinet.getName();
+                RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
+                String roomName = roomIndex.getName();
 
-            if (cabinet.getAisleId() != 0) {
-                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
-                address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";
-            } else {
-                address = roomName + "-" + cabinetName + "-" + "B路";
+                if (cabinet.getAisleId() != 0) {
+                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+                    address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";
+                } else {
+                    address = roomName + "-" + cabinetName + "-" + "B路";
+                }
             }
         }
-
         return address;
     }
 

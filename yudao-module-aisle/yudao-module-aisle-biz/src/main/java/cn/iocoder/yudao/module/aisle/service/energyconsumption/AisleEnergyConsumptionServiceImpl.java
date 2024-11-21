@@ -268,11 +268,35 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
 
     @Override
     public Map<String, Object> getNewData() throws IOException {
-        String[] indices = new String[]{"aisle_eq_total_day", "aisle_eq_total_week", "aisle_eq_total_month"};
+//        String[] indices = new String[]{"aisle_eq_total_day", "aisle_eq_total_week", "aisle_eq_total_month"};
+        String indices = "aisle_ele_total_realtime";
         String[] name = new String[]{"day", "week", "month"};
         LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1), LocalDateTime.now().minusMonths(1)};
-        Map<String, Object> map = getSumData(indices, name, timeAgo);
-        return map;
+//        Map<String, Object> map = getSumData(indices, name, timeAgo);
+
+        Map<String, Object> resultItem = new HashMap<>();
+        // 添加范围查询 最近24小时
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        for (int i = 0; i < timeAgo.length; i++) {
+            SearchRequest searchRequest = new SearchRequest(indices);
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
+                    .gte(timeAgo[i].format(formatter))
+                    .lte(now.format(formatter)));
+            // 添加计数聚合
+            searchSourceBuilder.aggregation(
+                    AggregationBuilders.count("total_insertions").field("aisle_id")
+            );
+            searchRequest.source(searchSourceBuilder);
+            // 执行搜索请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            // 从聚合结果中获取文档数量
+            ValueCount totalInsertionsAggregation = searchResponse.getAggregations().get("total_insertions");
+            long totalInsertions = totalInsertionsAggregation.getValue();
+            resultItem.put(name[i], totalInsertions);
+        }
+        return resultItem;
     }
 
     @Override

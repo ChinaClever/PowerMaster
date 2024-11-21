@@ -51,6 +51,15 @@ public class RackHistoryDataController {
         return success(pageResult);
     }
 
+    @GetMapping("/detailsExcel")
+    @Operation(summary = "获得机架历史数据详情")
+    public void getHistoryDataDetailsExcel(RackHistoryDataDetailsReqVO reqVO,HttpServletResponse response) throws IOException {
+        PageResult<Object> pageResult = rackHistoryDataService.getHistoryDataDetails(reqVO);
+        //TODO 因为没有数据不知数据结构实体类未写
+        ExcelUtils.write(response, "机架电力分析数据.xlsx", "数据", RealtimePageRespVO.class,
+                BeanUtils.toBean(pageResult.getList(), RealtimePageRespVO.class));
+    }
+
     @GetMapping("/new-data/{granularity}")
     @Operation(summary = "获得机架电力分析导航显示的插入的数据量")
     public CommonResult<Map<String, Object>> getNavNewData(@PathVariable("granularity") String granularity) throws IOException {

@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO;
 
 
+import cn.iocoder.yudao.framework.excel.core.util.DateStringConverter;
 import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
@@ -33,22 +34,21 @@ public class RackTotalRealtimeRespVO {
     private String rackName;
 
     @NumberFormat("0.0")
-    @ExcelProperty("开始电能 (kWh)")
+    @ExcelProperty({"开始电能","开始电能 (kWh)"})
     private Double eleActiveStart;
-
+    @ExcelProperty(converter = DateStringConverter.class, value ={"开始电能","开始时间"})
     @JsonFormat
     private String createTimeMin;
 
     @NumberFormat("0.0")
-    @ExcelProperty("结束电能 (kWh)")
+    @ExcelProperty({"结束电能","结束电能 (kWh)"})
     private Double eleActiveEnd;
 
-
+    @ExcelProperty(converter = DateStringConverter.class, value = {"结束电能","结束时间"})
     private String createTimeMax;
 
     @NumberFormat("0.0")
-    @ExcelProperty("电能 (kWh)")
+    @ExcelProperty("耗电量 (kWh)")
     private Double eleActive;
-
 
 }

@@ -1,10 +1,10 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机架能耗趋势">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机架实时能耗">
     <template #NavInfo>
    <br/>    <br/> 
         <div class="nav_data">
-        <div class="descriptions-container" style="font-size: 14px;">
-          <div class="description-item">
+        <div style="font-size: 14px;">
+          <div>
             <span class="label">按时间范围查询实时能耗</span>
           </div>
         </div>
@@ -168,11 +168,29 @@ const shortcuts = [
     },
   },
   {
+    text: '最近三个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setUTCMonth(start.getUTCMonth() - 3)
+      return [start, end]
+    },
+  },
+  {
     text: '最近六个月',
     value: () => {
       const end = new Date()
       const start = new Date()
       start.setMonth(start.getMonth() - 6)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近一年',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setFullYear(start.getFullYear() - 1)
       return [start, end]
     },
   },
@@ -275,10 +293,10 @@ const getList = async () => {
 function customTooltipFormatter(params: any[]) {
   var tooltipContent = ''; 
   var item = params[0]; // 获取第一个数据点的信息
-  tooltipContent += '位置：'+list.value[item.dataIndex].name + '<br/>'+
+  tooltipContent += '位置：'+list.value[item.dataIndex].location + '<br/>'+
                     item.marker +'机架名：'+list.value[item.dataIndex].rackName + '<br/>'
-                    +item.marker + '开始电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveStart)  + 'kWh 开始日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMin) + '<br/>' 
-                    +item.marker +'结束电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveEnd) + 'kWh 结束日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMax) + '<br/>'
+                    +item.marker +'开始日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMin) +  ' 开始电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveStart)  + 'kWh <br/>' 
+                    +item.marker +'结束日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMax) + ' 结束电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveEnd) +'kWh <br/>'
                     +item.marker +'耗电量：'+formatEle(null, null, list.value[item.dataIndex].eleActive) + 'kWh';
   return tooltipContent;
 }
