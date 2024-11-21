@@ -9,6 +9,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * @author luowei
  * @version 1.0
@@ -20,4 +22,10 @@ public interface CabinetCfgMapper extends BaseMapper<CabinetCfg> {
 
     @InterceptorIgnore(tenantLine = "true")
     Page<CabinetIndexDTO> selectCabList(@Param("page") Page<CabinetIndexDTO> page, @Param("indexVo") CabinetIndexVo indexVo);
+
+    /**
+     * 查询全部的机柜配电状态
+     * @return
+     */
+    List<CabinetIndexDTO> selectRunStatus();
 }

@@ -49,6 +49,15 @@ public class CabinetController {
         return success(pageResult);
     }
 
+
+    @PostMapping("/getDeletedCabinetPage")
+    @Operation(summary = "获得已删除机柜分页")
+    public CommonResult<PageResult<CabinetIndexVo>> getDeletedPDUDevicePage(@RequestBody CabinetIndexVo pageReqVO) {
+        PageResult<CabinetIndexVo> pageResult = cabinetService.getDeletedCabinetPage(pageReqVO);
+        return success(pageResult);
+    }
+
+
     /**
      * 机柜详情
      *

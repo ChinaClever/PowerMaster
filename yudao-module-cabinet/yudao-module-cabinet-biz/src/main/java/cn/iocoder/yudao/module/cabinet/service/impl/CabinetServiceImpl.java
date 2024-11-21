@@ -22,6 +22,7 @@ import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetEnvSensorDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.cabinet.enums.CabinetLoadEnums;
 import cn.iocoder.yudao.module.cabinet.mapper.RackIndexMapper;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
@@ -109,6 +110,12 @@ public class CabinetServiceImpl implements CabinetService {
                 list.add(-1);
                 vo.setCabinetIds(list);
             }
+            Map<String, Object> map = new HashMap<>();
+            //查询全部的机柜配电状态
+            List<CabinetIndexDTO> cabinetCfgs = cabinetCfgMapper.selectRunStatus();
+            System.out.println(cabinetCfgs);
+            System.out.println("-----------------------");
+
             Page<CabinetIndexDTO> indexDTOPage = cabinetCfgMapper.selectCabList(page, vo);
             List<JSONObject> result = new ArrayList<>();
             //获取redis 实时数据
@@ -121,9 +128,7 @@ public class CabinetServiceImpl implements CabinetService {
                         result.add(jsonObject);
                     }
                 });
-
             }
-
             return new PageResult<>(result, indexDTOPage.getTotal());
         } catch (Exception e) {
             log.error("获取数据失败：", e);
@@ -742,6 +747,22 @@ public class CabinetServiceImpl implements CabinetService {
             statusMap.keySet().forEach(key -> map.put(key,statusMap.get(key)));
         }
         return map;
+    }
+
+    /**
+     * 获得已删除机柜分页
+     * @param pageReqVO
+     * @return
+     */
+    @Override
+    public PageResult<CabinetIndexVo> getDeletedCabinetPage(CabinetIndexVo pageReqVO) {
+
+        LambdaQueryWrapper<CabinetIndex> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CabinetIndex::getIsDeleted,0);
+        List<CabinetIndex> cabinetIndices = cabinetIndexMapper.selectList(queryWrapper);
+        System.out.println(cabinetIndices);
+        System.out.println(cabinetIndices.toString());
+        return null;
     }
 
     /**

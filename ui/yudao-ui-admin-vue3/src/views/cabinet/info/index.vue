@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu @check="handleCheck" :showSearch="true" :dataList="navList" navTitle="模块化机房">
+  <CommonMenu @check="handleCheck" :showSearch="true" :dataList="navList" navTitle="机柜配电">
     <template #NavInfo>
       <div class="navInfo">
         <!-- <div class="header">
@@ -100,10 +100,10 @@
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
-          <el-button @click="handleSwitchModal(0)" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />阵列模式</el-button>
-          <el-button @click="handleSwitchModal(1)" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
+          <el-button @click="handleSwitchModal(0)" :type="switchValue == 0? 'primary' : ''" style="width: 100px;"><Icon icon="ep:grid" style="margin-right:3px;"/>阵列模式</el-button>
+          <el-button @click="handleSwitchModal(1)" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:expand"  />表格模式</el-button>
           
-          <el-button @click="handleSwitchModal(2)" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />已删除</el-button>
+          <el-button @click="handleSwitchLogicRemoveModal(2)" :type="switchValue == 2 ? 'primary' : ''"  v-show="switchValue" ><Icon icon="ep:expand"  />已删除</el-button>
           <!--  <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 2;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button> 
   --> 
          
@@ -111,7 +111,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue" style="width: 100%;" v-loading="loading" :data="listPage" @cell-dblclick="handleDbclick">
+      <el-table v-show="switchValue == 1" style="width: 100%;" v-loading="loading" :data="listPage" @cell-dblclick="handleDbclick">
         <el-table-column label="位置" min-width="110" align="center">
           <template #default="scope">
             <div>{{scope.row.roomName}}-{{scope.row.cabinetName}}</div>
@@ -160,6 +160,42 @@
           </template>
         </el-table-column>
       </el-table>
+
+
+   <el-table v-show="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
+         <el-table-column label="位置" min-width="110" align="center">
+          <template #default="scope">
+            <div>{{scope.row.roomName}}-{{scope.row.cabinetName}}</div>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" min-width="110" align="center">
+          <template #default="scope">
+            <div :style="{color: statusList[scope.row.status].color}">{{statusList[scope.row.status] && statusList[scope.row.status].name}}</div>
+          </template>
+        </el-table-column>
+        
+       <el-table-column label="删除日期" min-width="110" align="center">
+          <template #default="scope">
+            <div :style="{color: statusList[scope.row.status].color}">{{statusList[scope.row.status] && statusList[scope.row.status].name}}</div>
+          </template>
+        </el-table-column>
+        
+        
+       <el-table-column label="操作" align="center">
+          <template #default="scope">
+            <el-button
+              link
+              type="danger"
+              @click="handleRestore(scope.row.busId)"
+            >
+              恢复设备
+            </el-button>
+          </template>
+        </el-table-column>
+     </el-table>
+
+
+      
       <div v-show="!switchValue && listPage.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in listPage" :key="item.id" @dblclick="handleArrayDbclick(item.cabinet_key)">
           <div class="content">
@@ -348,6 +384,7 @@ const getTableData = async(reset = false) => {
       runStatus: status.map(item => item.value),
       company: queryParams.company
     })
+    console.log(res)
     if (res.list) {
       const list = res.list.map(item => {
         const tableItem = {
@@ -378,7 +415,7 @@ const getTableData = async(reset = false) => {
       })
       listPage.value = list
       queryParams.pageTotal = res.total
-      console.log('listPage', listPage.value)
+      //console.log('listPage', listPage.value)
     }
   } finally {
     loading.value = false
@@ -398,7 +435,7 @@ const getNavList = async() => {
   //       ids.push(child.id)
   //     }
   //     if(child.children.length > 0) {
-  //       child.children.forEach(son => {
+  //       child.children.forEach(son => {f
   //         ids.push(son.id)
   //       })
   //     }
@@ -423,6 +460,12 @@ const handleSwitchModal = (value) => {
   }
   getTableData(true)
 }
+
+const handleSwitchLogicRemoveModal = (value) =>{
+    switchValue.value = value
+}
+
+
 
 
 //处理表格双击事件
