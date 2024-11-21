@@ -5,10 +5,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
-import cn.iocoder.yudao.module.room.controller.admin.historydata.vo.HourAndDayPageRespVO;
-import cn.iocoder.yudao.module.room.controller.admin.historydata.vo.RealtimePageRespVO;
-import cn.iocoder.yudao.module.room.controller.admin.historydata.vo.RoomHistoryDataDetailsReqVO;
-import cn.iocoder.yudao.module.room.controller.admin.historydata.vo.RoomHistoryDataPageReqVO;
+import cn.iocoder.yudao.module.room.controller.admin.historydata.vo.*;
 import cn.iocoder.yudao.module.room.service.historydata.RoomHistoryDataService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -50,7 +47,19 @@ public class RoomHistoryDataController {
         PageResult<Object> pageResult = roomHistoryDataService.getHistoryDataDetails(reqVO);
         return success(pageResult);
     }
-
+    @GetMapping("/detailsExcel")
+    @Operation(summary = "获得机房电力趋势分析数据详情导出")
+    public void getHistoryDataDetailsExcel(RoomHistoryDataDetailsReqVO reqVO,HttpServletResponse response) throws IOException {
+        PageResult<Object> pageResult = roomHistoryDataService.getHistoryDataDetails(reqVO);
+        List<Object> list = pageResult.getList();
+        if (Objects.equals("hour",reqVO.getGranularity())) {
+            ExcelUtils.write(response, "机房电力趋势分析.xlsx", "数据", HourAndDayPageRespVO.class,
+                    BeanUtils.toBean(list, HourAndDayPageRespVO.class));
+        }else {
+            ExcelUtils.write(response, "机房电力趋势分析.xlsx", "数据", RoomPowerAnalysisResVO.class,
+                    BeanUtils.toBean(list, RoomPowerAnalysisResVO.class));
+        }
+    }
     @GetMapping("/new-data/{granularity}")
     @Operation(summary = "获得机房电力分析导航显示的插入的数据量")
     public CommonResult<Map<String, Object>> getNavNewData(@PathVariable("granularity") String granularity) throws IOException {

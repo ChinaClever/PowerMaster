@@ -1,6 +1,37 @@
 <template>
    <div class="homeContainer">
     <div class="left">
+      <ContentWrap>
+        <div class="progress">
+          <!--<el-progress type="dashboard" :percentage="powerInfo.powApparent && powerInfo.powApparent.toFixed()">-->
+          <el-progress type="dashboard" :percentage="80">
+            <template #default="{ percentage }">
+              <span class="percentage-value">{{ percentage }}kVA</span>
+              <span class="percentage-label">总视在功率</span>
+            </template>
+          </el-progress>
+        </div>
+      </ContentWrap>
+      <!--<el-card shadow="never">
+        <template #header>
+          <div>空间管理</div>
+        </template>
+        <div>未用空间：{{spaceInfo.freeSpace}}u</div>
+        <div>已用空间：{{spaceInfo.usedSpace}}u</div>
+        <div>总空间：{{spaceInfo.totalSpace}}u</div>
+        <div>机柜数：{{spaceInfo.cabNum}}</div>
+      </el-card>-->
+      <el-card shadow="never">
+        <template #header>
+          <div>环境数据</div>
+          <el-link @click="updateChart(); toggleTable = !toggleTable" type="primary" style="margin-left:12vw;">{{toggleTable?'湿度':'温度'}}</el-link>
+        </template>
+        <div ref="lineidChartContainer" id="lineidChartContainer" style="width:14vw;height:25vh;"></div>
+        <!--<div>当前平均温度：{{envInfo.temAvg}}°C</div>
+        <div>当前最高温度：{{envInfo.temMax}}°C</div>
+        <div>当前最低温度：{{envInfo.temMin}}°C</div>
+        <div>最近更新时间：{{envInfo.updateTime}}</div>-->
+      </el-card>
       <el-card shadow="never">
         <template #header>
           <div>用能</div>
@@ -9,39 +40,11 @@
         <div>本周用能：{{energyInfo.thisWeekEq ? energyInfo.thisWeekEq.toFixed(2) : '0.00'}}kW·h</div>
         <div>本月用能：{{energyInfo.thisMonthEq ? energyInfo.thisMonthEq.toFixed(2) : '0.00'}}kW·h</div>
       </el-card>
-      <ContentWrap>
-        <div class="progress">
-          <el-progress type="dashboard" :percentage="powerInfo.powApparent && powerInfo.powApparent.toFixed()">
-            <template #default="{ percentage }">
-              <span class="percentage-value">{{ percentage }}kVA</span>
-              <span class="percentage-label">总视在功率</span>
-            </template>
-          </el-progress>
-        </div>
-      </ContentWrap>
-      <el-card shadow="never">
-        <template #header>
-          <div>空间管理</div>
-        </template>
-        <div>未用空间：{{spaceInfo.freeSpace}}u</div>
-        <div>已用空间：{{spaceInfo.usedSpace}}u</div>
-        <div>总空间：{{spaceInfo.totalSpace}}u</div>
-        <div>机柜数：{{spaceInfo.cabNum}}</div>
-      </el-card>
-      <el-card shadow="never">
-        <template #header>
-          <div>环境数据</div>
-        </template>
-        <div>当前平均温度：{{envInfo.temAvg}}°C</div>
-        <div>当前最高温度：{{envInfo.temMax}}°C</div>
-        <div>当前最低温度：{{envInfo.temMin}}°C</div>
-        <div>最近更新时间：{{envInfo.updateTime}}</div>
-      </el-card>
     </div>
     <div class="center" id="center">
       <CabTopology :containerInfo="containerInfo" :isFromHome="true" @back-data="handleBackData" @getroomid="handleGetRoomId" />
       <ContentWrap class="CabEchart">
-        <Echart :options="echartOptionsPower" height="100%" width="100%" />
+        <Echart :options="echartOptionsPower" height="30vh" width="100%" />
         <div class="btns">
           <el-button class="btn" size="small" :plain="!(radioBtn == 'pow')" type="primary" @click="switchTrend('pow')">功率</el-button>
           <el-button class="btn" size="small" :plain="!(radioBtn == 'ele')" type="primary" @click="switchTrend('ele')">用能</el-button>
@@ -50,6 +53,12 @@
     </div>
     <div class="right">
       <el-card shadow="never">
+        <template #header>
+          <div style="margin-left:45%">PUE</div>
+        </template>
+        <div style="margin-left:45%">1.03</div>
+      </el-card>
+      <!--<el-card shadow="never">
         <template #header>
           <div>用能</div>
         </template>
@@ -66,7 +75,19 @@
             </template>
           </el-progress>
         </div>
-      </ContentWrap>
+      </ContentWrap>-->
+      <el-card shadow="never" class="mb-8px">
+        <template #header>
+          <div class="h-3 flex justify-between">
+            <span>告警统计</span>
+          </div>
+        </template>
+        <el-table :data="tableData" style="width: 15vw;height:25vh" border class="text-12px">
+          <el-table-column prop="error" label="告警内容"  />
+          <el-table-column prop="box" label="告警设备" />
+          <el-table-column prop="time" label="告警时间" />
+        </el-table>
+      </el-card>
       <el-card shadow="never">
         <template #header>
           <div>设备数量</div>
@@ -76,6 +97,19 @@
         <div>离线数量：{{deviceInfo.offLineNum}}</div>
         <div>设备总数：{{deviceInfo.deviceNum}}</div>
       </el-card>
+      <!--<el-card shadow="never" class="mb-8px">
+        <template #header>
+          <div class="h-3 flex justify-between">
+            <span>设备统计</span>
+          </div>
+        </template>
+        <el-table :data="tableData" style="width: 15vw;height:25vh" border class="text-12px">
+          <el-table-column prop="name" label=""  />
+          <el-table-column prop="all" label="总数"  />
+          <el-table-column prop="on" label="在线" />
+          <el-table-column prop="off" label="离线" />
+        </el-table>
+      </el-card>
       <el-card shadow="never">
         <template #header>
           <div>环境数据</div>
@@ -84,7 +118,7 @@
         <div>当前最高湿度：{{envInfo.humMax}}%</div>
         <div>当前最低湿度：{{envInfo.humMin}}%</div>
         <div>最近更新时间：{{envInfo.updateTime}}</div>
-      </el-card>
+      </el-card>-->
     </div>
   </div>
 </template>
@@ -94,7 +128,10 @@ import CabTopology from "../topology/index.vue"
 import { MachineRoomApi } from '@/api/cabinet/room'
 import { EChartsOption } from 'echarts'
 
+import * as echarts from 'echarts'
+
 const echartOptionsPower = ref<EChartsOption>({}) //用来存储功率曲线图表的配置选项
+const environmentOptions = ref<EChartsOption>({}) //用来存储环境图表的配置选项
 const roomId = ref<number>(0)
 const radioBtn = ref('pow')
 const containerInfo = reactive({
@@ -106,6 +143,87 @@ const powerInfo = reactive({}) // 功率信息
 const spaceInfo = reactive({}) // 空间信息
 const envInfo = reactive({}) // 空间信息
 const echartInfo = reactive<any>({}) //配置图表的数据系列
+const toggleTable = ref(false)
+const tableData = [
+  {
+    name: 'PDU',
+    all: 35,
+    on: 15,
+    off: 20,
+    error:'温度超阀值上限',
+    box:'温湿度01',
+    time:'2022-11-07 12:15:46'
+  },{
+    name: '始端箱',
+    all: 35,
+    on: 15,
+    off: 20,
+    error:'制冷压力超阀值上限',
+    box:'精密空调',
+    time:'2022-11-07 12:15:46'
+  },{
+    name: '插接箱',
+    all: 35,
+    on: 15,
+    off: 20,
+    error:'检测到有水',
+    box:'水浸',
+    time:'2022-11-07 12:15:46'
+  },{
+    name: 'PDU-1',
+    all: 35,
+    on: 15,
+    off: 20,
+    error:'开门时间异常',
+    box:'东门门禁',
+    time:'2022-11-07 12:15:46'
+  },{
+    name: '始端箱-1',
+    all: 35,
+    on: 15,
+    off: 20,
+    error:'设备离线',
+    box:'摄像机1',
+    time:'2022-11-07 12:15:46'
+  },{
+    name: '插接箱-1',
+    all: 35,
+    on: 15,
+    off: 20,
+    error:'检测到有人',
+    box:'红外1',
+    time:'2022-11-07 12:15:46'
+  },{
+    name: 'PDU-2',
+    all: 35,
+    on: 15,
+    off: 20,
+    error:'温度超阀值上限',
+    box:'温湿度02',
+    time:'2022-11-07 12:15:46'
+  },{
+    name: '始端箱-2',
+    all: 35,
+    on: 15,
+    off: 20,
+    error:'温度超阀值上限',
+    box:'温湿度03',
+    time:'2022-11-07 12:15:46'
+  },{
+    name: '插接箱-2',
+    all: 35,
+    on: 15,
+    off: 20,
+    error:'温度超阀值上限',
+    box:'温湿度04',
+    time:'2022-11-07 12:15:46'
+  }
+]
+
+console.log('111',tableData)
+
+let lineidChart = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
+const lineidChartContainer = ref<HTMLElement | null>(null);
 
 //获取数据
 const handleGetRoomId = (data) => {
@@ -150,7 +268,7 @@ const getRoomEchartData = async() => {
 const getRoomEnvData = async() => {
   const res = await MachineRoomApi.getRoomEnvData({id: roomId.value})
   Object.assign(envInfo, res)
-  console.log('***获取机房主页面环境数据', res)
+  console.log('***获取机房主页面环境数据', envInfo)
 }
 // 获取机房主页面用能
 const getRoomEqData = async() => {
@@ -163,6 +281,153 @@ const handleBackData = (data) => {
   console.log('***',data)
   Object.assign(spaceInfo, data)
 }
+
+const initChart = () => {
+  lineidChart = echarts.init(document.getElementById('lineidChartContainer'));
+  lineidChart.setOption({
+      title: { text: ''},
+      tooltip: { trigger: 'axis',      formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+          if (param.seriesName === '冷通道平均温度' || param.seriesName === '热通道平均温度') {
+            result += '℃';
+          }else{
+            result += '%'
+          }
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }},
+      legend: {
+        data: ['冷通道平均温度', '热通道平均温度'], // 图例项
+        selected: false
+      },
+      xAxis: {
+        type: 'category',nameLocation: 'end',
+        boundaryGap: false,
+        data:['周一','周二','周三','周四','周五']
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          name: '冷通道平均温度',
+          type: 'line',
+          data: [31,31,31,31,31],
+          symbol: 'circle',
+          symbolSize: 4
+        },
+        {
+          name: '热通道平均温度',
+          type: 'line',
+          data: [33,34,35,36,37],
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        }
+      ]
+  })
+}
+
+const updateChart = () => {
+  lineidChart = echarts.init(document.getElementById('lineidChartContainer'));
+  if(toggleTable.value === true){
+    lineidChart.setOption({
+      title: { text: ''},
+      tooltip: { trigger: 'axis',      formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+          if (param.seriesName === '冷通道平均温度' || param.seriesName === '热通道平均温度') {
+            result += '℃';
+          }else{
+            result += '%'
+          }
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }},
+      legend: {
+        data: ['冷通道平均温度', '热通道平均温度'], // 图例项
+        selected: false
+      },
+      xAxis: {
+        type: 'category',nameLocation: 'end',
+        boundaryGap: false,
+        data:['周一','周二','周三','周四','周五']
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          name: '冷通道平均温度',
+          type: 'line',
+          data: [31,31,31,31,31],
+          symbol: 'circle',
+          symbolSize: 4
+        },
+        {
+          name: '热通道平均温度',
+          type: 'line',
+          data: [33,34,35,36,37],
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        }
+      ]
+  })
+  }else if(toggleTable.value === false){
+    lineidChart.setOption( {
+      title: { text: ''},
+      tooltip: { trigger: 'axis',      formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+          if (param.seriesName === '冷通道平均温度' || param.seriesName === '热通道平均温度') {
+            result += '℃';
+          }else{
+            result += '%'
+          }
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }},
+      legend: {
+        data: ['冷通道平均湿度','热通道平均湿度'], // 图例项
+        selected: false
+      },
+      xAxis: {
+        type: 'category',nameLocation: 'end',
+        boundaryGap: false,
+        data:['周一','周二','周三','周四','周五']
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          name: '冷通道平均湿度',
+          type: 'line',
+          data: [81,81,81,81,81],
+          symbol: 'circle',
+          symbolSize: 4
+        },
+        {
+          name: '热通道平均湿度',
+          type: 'line',
+          data: [82,83,84,85,86],
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        }
+      ]
+  })
+  }
+}
+
 //配置ECharts图表
 const switchTrend = (type, first = false) => {
   if (type == radioBtn.value && !first) return
@@ -249,6 +514,7 @@ onMounted(() => {
   const centerEle = document.getElementById('center')
   containerInfo.width = centerEle?.offsetWidth as number
   console.log('centerEle', containerInfo.width, centerEle?.offsetWidth, centerEle?.offsetHeight)
+  initChart()
 })
 </script>
 
@@ -315,6 +581,26 @@ onMounted(() => {
     font-size: 12px;
   }
 }
+ 
+:deep(.progress .el-progress__text::after ){
+  content: '60kW'; /* 要显示的文本 */
+  position: absolute;
+  top: 0; /* 放置在原元素的 */
+  left: 100%;
+  color: #000;
+  padding: 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+  transform: translateX(5px); /* 稍微向右边移动一点以避免与进度条重叠 */
+  opacity: 0; /* 默认隐藏 */
+  transition: opacity 0.3s; /* 添加过渡效果 */
+  pointer-events: none; /* 确保提示框不会干扰鼠标事件 */
+}
+ 
+:deep(.progress:hover .el-progress__text::after) {
+  opacity: 1; /* 鼠标悬停时显示 */
+}
+
 :deep(.el-card) {
   margin-bottom: 15px;
 }

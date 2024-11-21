@@ -147,7 +147,7 @@ public class CabinetEnergyConsumptionController {
     @Operation(summary = "获取实时能耗")
     public void getCabinetEleTotalRealtimeExcel(@RequestBody CabinetEleTotalRealtimeReqDTO reqVO, HttpServletResponse response) throws IOException {
         PageResult<CabinetEleTotalRealtimeResVO> list = cabinetEnergyConsumptionService.getCabinetEleTotalRealtime(reqVO, false);
-        ExcelUtils.write(response, "柜列实时电能记录数据.xlsx", "数据", CabinetEleTotalRealtimeResVO.class,
+        ExcelUtils.write(response, "机柜实时电能记录数据.xlsx", "数据", CabinetEleTotalRealtimeResVO.class,
                 BeanUtils.toBean(list.getList(), CabinetEleTotalRealtimeResVO.class));
 
     }

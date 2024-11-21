@@ -66,9 +66,9 @@
 
 <script lang="ts" setup>
 import { EChartsOption } from 'echarts'
-import { IndexApi } from '@/api/bus/busindex'
+import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 
-const busId = history?.state?.busId || -1
+const pduId = history?.state?.pduId || -1
 const devKey = history?.state?.devKey || "0"
 const location =  history?.state?.location 
 
@@ -97,7 +97,7 @@ const balanceObj = reactive({
 })
 
 const getBalanceDetail = async() => {
-  const res = await IndexApi.getBusBalanceDetail({devKey:devKey})
+  const res = await PDUDeviceApi.balanceDetail({devKey:devKey})
   console.log('res', res)
   if (res.cur_value) {
     const cur_valueA = res.cur_value
@@ -216,32 +216,10 @@ const getBalanceDetail = async() => {
   balanceObj.colorIndex = res.color - 1
 }
 
-// 获取平衡度
-// const getBalanceDegree = async () => {
-//   const res = await IndexApi.getPDUDevicePage({
-//     pageNo: 1,
-//     pageSize: 24,
-//     busIds : [busId],
-//   })
-//   console.log('res', res)
-//   if (res.list.length > 0) {
-//     const itemA = res.list.find(item => item.location.includes('A路'))
-//     const itemB = res.list.find(item => item.location.includes('B路'))
-//     if (itemA) {
-//       balanceObj.imbalanceValueA = itemA.curUnbalance
-//       balanceObj.colorIndex = itemA.color - 1
-//     }
-//     if (itemB) {
-//       balanceObj.imbalanceValueB = itemB.curUnbalance
-//       balanceObj.colorIndex = itemB.color - 1
-//     }
-//   }
-// }
-
 // 获取pdu电流趋势
 const getBalanceTrend = async () => {
-  const res = await IndexApi.getBusBalanceTrend({
-    busId: busId
+  const res = await PDUDeviceApi.balanceTrend({
+    pduId: pduId
   })
   if (res.length > 0) {
     const timeList = res.map(item => item.dateTime)

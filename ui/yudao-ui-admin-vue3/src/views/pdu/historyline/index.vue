@@ -1334,6 +1334,7 @@ const handleClick = async (row) => {
       nowAddressTemp.value = fullName
       nowLocationTemp.value = row.unique
     });
+    
     handleQuery();
   }
 }
@@ -1364,6 +1365,10 @@ const getNavList = async() => {
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
+  if(queryParams.ipAddr ==undefined){
+      ElMessage.error('IP地址为空,请重新选择IP地址！')
+      return;
+  }
   // IP地址的正则表达式
   const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
   if (queryParams.ipAddr == null || queryParams.ipAddr == '' || ipRegex.test(queryParams.ipAddr)){
@@ -1372,6 +1377,7 @@ const handleQuery = () => {
       queryParams.pduId = undefined;
     }
     needFlush.value++;
+        console.log('ip：', queryParams.ipAddr)
   }else{
     ElMessage.error('IP地址格式有误,请重新输入！')
   }

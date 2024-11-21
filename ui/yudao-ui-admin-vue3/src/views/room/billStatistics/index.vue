@@ -31,9 +31,6 @@
             <span class="label">最近一月 :</span>
             <span class="value">{{ lastMonthTotalData }}条</span>
           </div>
-          <div><span>全部PDU新增电费统计</span>
-                    <div class="line" style="margin-top: 10px;"></div>
-                  </div>
           </div>
 
         
@@ -118,10 +115,10 @@
       <!-- 分段收费详情弹窗 -->
       <el-dialog v-model="dialogVisible" :title=dialogTitle width="600" draggable>
         <span style="font-size: 13px;">{{dialogTimeRange}}</span>
-        <el-table :data="dialogTableData" border show-summary style="width: 100%">
+        <el-table :data="dialogTableData" border show-summary  :summary-method="getSummaries"  style="width: 100%">
           <el-table-column prop="bill_period" label="时间段" />
-          <el-table-column prop="eq_value" label="耗电量(kWh)" />
-          <el-table-column prop="bill_value" label="电费(元)" />
+          <el-table-column prop="eq_value" label="耗电量(kWh)" :formatter="formatEle" />
+          <el-table-column prop="bill_value" label="电费(元)" :formatter="formatEle" />
         </el-table>
       </el-dialog>
     </template>
@@ -188,11 +185,29 @@ const shortcuts = [
     },
   },
   {
+    text: '最近三个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setUTCMonth(start.getUTCMonth() - 3)
+      return [start, end]
+    },
+  },
+  {
     text: '最近六个月',
     value: () => {
       const end = new Date()
       const start = new Date()
       start.setMonth(start.getMonth() - 6)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近一年',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setFullYear(start.getFullYear() - 1)
       return [start, end]
     },
   },
@@ -244,7 +259,33 @@ const showDetails = async (roomId: number, startTime:string, location:string, en
   dialogTimeRange.value = startTime + ' - ' + endTime
   dialogVisible.value = true
 }
+const getSummaries = (param) => {
+  const { columns, data } = param;
+  const sums: (string | number)[] = []; // 明确 sums 数组的类型
+  columns.forEach((column, index) => {
+    if (index === 0) {
+      sums[index] = '合计';
+      return;
+    }
+    const values = data.map(item => Number(item[column.property]));
+    if (!values.every(value => isNaN(value))) {
+      sums[index] = values.reduce((prev, curr) => {
+        const value = Number(curr);
+        if (!isNaN(value)) {
+          return prev + curr;
+        } else {
+          return prev;
+        }
+      }, 0);
+      // 保留两位小数
+      sums[index] = sums[index].toFixed(1);
+    } else {
+      sums[index] = 'N/A';
+    }
+  });
 
+  return sums;
+}
 /** 查询列表 */
 const getList = async () => {
   loading.value = true

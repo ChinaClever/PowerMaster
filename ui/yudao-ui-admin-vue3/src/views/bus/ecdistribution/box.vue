@@ -141,17 +141,6 @@
                   <el-table-column :prop="item.name" label="电量(kWh)"/>   
                   <el-table-column prop="create_time" label="记录日期"/>
                 </el-table-column>
-                     <!-- 创建一个空白列 -->
-                     <el-table-column
-                    fixed
-                    width="50"
-                    :label="''"
-                    align="center"
-                  >
-                    <template #default="">
-                      &nbsp; <!-- 使用空格或任何其他占位符 -->
-                    </template>
-                  </el-table-column>
               </template>
             </el-table>
           </div>

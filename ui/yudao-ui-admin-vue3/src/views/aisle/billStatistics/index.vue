@@ -32,7 +32,7 @@
             <span class="label">最近一月 :</span>
             <span class="value">{{ lastMonthTotalData }}条</span>
           </div>
-          <div style="text-align: center"><span>全部PDU新增电费统计</span>
+          <div style="text-align: center"><span>全部柜列新增电费统计</span>
                     <div class="line" style="margin-top: 10px;"></div>
                   </div>
           </div>
@@ -119,10 +119,10 @@
       <!-- 分段收费详情弹窗 -->
       <el-dialog v-model="dialogVisible" :title=dialogTitle width="600" draggable>
         <span style="font-size: 13px;">{{dialogTimeRange}}</span>
-        <el-table :data="dialogTableData" border show-summary style="width: 100%">
+        <el-table :data="dialogTableData" border show-summary  :summary-method="getSummaries" style="width: 100%">
           <el-table-column prop="bill_period" label="时间段" />
-          <el-table-column prop="eq_value" label="耗电量(kWh)" />
-          <el-table-column prop="bill_value" label="电费(元)" />
+          <el-table-column prop="eq_value" label="耗电量(kWh)" :formatter="formatEle" />
+          <el-table-column prop="bill_value" label="电费(元)" :formatter="formatEle" />
         </el-table>
       </el-dialog>
     </template>
@@ -133,9 +133,11 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/aisle/energyConsumption'
-import { formatDate, endOfDay, convertDate, addTime} from '@/utils/formatTime'
+import { formatDate, endOfDay, convertDate, addTime } from '@/utils/formatTime'
 import { IndexApi } from '@/api/aisle/aisleindex'
-// import PDUImage from '@/assets/imgs/PDU.jpg';
+import { useMessage } from '@/hooks/web/useMessage'
+import { ElMessage } from 'element-plus'
+
 defineOptions({ name: 'BillStatistics' })
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
@@ -143,12 +145,12 @@ const lastDayTotalData = ref(0)
 const lastWeekTotalData = ref(0)
 const lastMonthTotalData = ref(0)
 const dialogVisible = ref(false)
-const dialogTableData = ref<Array<{ }>>([]) as any; 
+const dialogTableData = ref<Array<{}>>([]) as any; 
 const dialogTitle = ref('')
 const dialogTimeRange = ref('')
 const message = useMessage() // 消息弹窗
 const loading = ref(true)
-const list = ref<Array<{ }>>([]) as any; 
+const list = ref<Array<{}>>([]) as any; 
 const total = ref(0)
 const realTotel = ref(0) // 数据的真实总条数
 const selectTimeRange = ref(undefined)
@@ -157,17 +159,12 @@ const queryParams = reactive({
   pageSize: 15,
   granularity: 'day',
   timeRange: undefined as string[] | undefined,
-  aisleIds:[]
+  aisleIds: []
 })
-const pageSizeArr = ref([15,30,50,100])
+const pageSizeArr = ref([15, 30, 50, 100])
 const queryFormRef = ref()
 const exportLoading = ref(false)
-// const carouselItems = ref([
-//       { imgUrl: PDUImage},
-//       { imgUrl: PDUImage},
-//       { imgUrl: PDUImage},
-//       { imgUrl: PDUImage},
-//     ]);//侧边栏轮播图图片路径
+
 // 时间段快捷选项
 const shortcuts = [
   {
@@ -199,56 +196,55 @@ const shortcuts = [
   },
 ]
 
-
 watch(() => queryParams.granularity, () => {
-    if (queryParams.granularity == 'day'){
-      tableColumns.value = [
-        { label: '位置', align: 'center', prop: 'location' , istrue:true},
-        { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
-        { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
-        { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
-        { label: '计费方式', align: 'center', slot: 'actions' , istrue:true},
-      ]
-    }else{
-      tableColumns.value = [
-        { label: '位置', align: 'center', prop: 'location' , istrue:true},
-        { label: '开始日期', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
-        { label: '结束日期', align: 'center', prop: 'end_time', formatter: formatTime, istrue:true},
-        { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
-        { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatEle},
-      ]
-    }
+  if (queryParams.granularity == 'day') {
+    tableColumns.value = [
+      { label: '位置', align: 'center', prop: 'location', istrue: true },
+      { label: '日期', align: 'center', prop: 'start_time', formatter: formatTime, width: '200px', istrue: true },
+      { label: '耗电量(kWh)', align: 'center', prop: 'eq_value', istrue: true, formatter: formatEle },
+      { label: '电费(元)', align: 'center', prop: 'bill_value', istrue: true, formatter: formatBill },
+      { label: '计费方式', align: 'center', slot: 'actions', istrue: true },
+    ]
+  } else {
+    tableColumns.value = [
+      { label: '位置', align: 'center', prop: 'location', istrue: true },
+      { label: '开始日期', align: 'center', prop: 'start_time', formatter: formatTime, istrue: true },
+      { label: '结束日期', align: 'center', prop: 'end_time', formatter: formatTime, istrue: true },
+      { label: '耗电量(kWh)', align: 'center', prop: 'eq_value', istrue: true, formatter: formatEle },
+      { label: '电费(元)', align: 'center', prop: 'bill_value', istrue: true, formatter: formatEle },
+    ]
+  }
 
   handleQuery();
-});
+})
 
 const tableColumns = ref([
-  { label: '位置', align: 'center', prop: 'location' , istrue:true},
-  { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
-  { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
-  { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
-  { label: '计费方式', align: 'center', slot: 'actions' , istrue:true},
+  { label: '位置', align: 'center', prop: 'location', istrue: true },
+  { label: '日期', align: 'center', prop: 'start_time', formatter: formatTime, width: '200px', istrue: true },
+  { label: '耗电量(kWh)', align: 'center', prop: 'eq_value', istrue: true, formatter: formatEle },
+  { label: '电费(元)', align: 'center', prop: 'bill_value', istrue: true, formatter: formatBill },
+  { label: '计费方式', align: 'center', slot: 'actions', istrue: true },
 ]) as any;
 
 /** 查询列表 */
 const getList = async () => {
   loading.value = true
   try {
-    if ( selectTimeRange.value != undefined){
+    if (selectTimeRange.value != undefined) {
       // 格式化时间范围 加上23:59:59的时分秒 
       const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
       // 结束时间的天数多加一天 ，  一天的毫秒数
       const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay)))
       queryParams.timeRange = [selectedStartTime, selectedEndTime];
     }
-  
+
     const data = await EnergyConsumptionApi.getBillDataPage(queryParams)
     list.value = data.list
     realTotel.value = data.total
-    if (data.total > 10000){
+    if (data.total > 10000) {
       total.value = 10000
-    }else{
+    } else {
       total.value = data.total
     }
   } finally {
@@ -293,8 +289,8 @@ const disabledDate = (date) => {
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
- queryParams.pageNo = 1
- getList()
+  queryParams.pageNo = 1
+  getList()
 }
 
 /** 导出按钮操作 */
@@ -319,7 +315,7 @@ const handleExport = async () => {
 }
 
 /** 详情操作*/
-const showDetails = async (aisleId: number, startTime:string, location:string, endTime: string) => {
+const showDetails = async (aisleId: number, startTime: string, location: string, endTime: string) => {
   dialogTableData.value = []
   dialogTitle.value = ''
   dialogTimeRange.value = ''
@@ -332,19 +328,47 @@ const showDetails = async (aisleId: number, startTime:string, location:string, e
   dialogTitle.value = location
   dialogTimeRange.value = startTime + ' - ' + endTime
   dialogVisible.value = true
+}
 
+// 计算表格汇总
+const getSummaries = (param) => {
+  const { columns, data } = param;
+  const sums: (string | number)[] = []; // 明确 sums 数组的类型
+  columns.forEach((column, index) => {
+    if (index === 0) {
+      sums[index] = '合计';
+      return;
+    }
+    const values = data.map(item => Number(item[column.property]));
+    if (!values.every(value => isNaN(value))) {
+      sums[index] = values.reduce((prev, curr) => {
+        const value = Number(curr);
+        if (!isNaN(value)) {
+          return prev + curr;
+        } else {
+          return prev;
+        }
+      }, 0);
+      // 保留两位小数
+      sums[index] = sums[index].toFixed(1);
+    } else {
+      sums[index] = 'N/A';
+    }
+  });
+
+  return sums;
 }
 
 // 导航栏选择后触发
 const handleCheck = async (node) => {
   let arr = [] as any
   node.forEach(item => { 
-    if(item.type == 2){
+    if (item.type == 2) {
       arr.push(item.id);
     }
   });
-  //没筛选到 不显示任何数据 参数传0 后端返回空
-  if(arr.length == 0 && node.length != 0){
+  // 没筛选到 不显示任何数据 参数传0 后端返回空
+  if (arr.length == 0 && node.length != 0) {
     arr.push(0)
     ElMessage({
       message: '暂无数据',
@@ -356,13 +380,13 @@ const handleCheck = async (node) => {
 }
 
 // 接口获取机房导航列表
-const getNavList = async() => {
+const getNavList = async () => {
   const res = await IndexApi.getAisleMenu()
   navList.value = res
 }
 
 // 获取导航的数据显示
-const getNavNewData = async() => {
+const getNavNewData = async () => {
   const res = await EnergyConsumptionApi.getNavNewData({})
   lastDayTotalData.value = res.day
   lastWeekTotalData.value = res.week
@@ -375,7 +399,6 @@ onMounted(() => {
   getNavNewData()
   getList();
 });
-
 </script>
 
 <style scoped>

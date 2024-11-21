@@ -222,9 +222,9 @@ watch(() => queryParams.granularity, () => {
 });
 
 const tableColumns = ref([
-  { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '300%'},
+  { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '250%'},
   { label: '设备地址', align: 'center', prop: 'devKey', istrue:true, width: '180px'},
-  { label: '设备名称', align: 'center', prop: 'busName', istrue:true, width: '300%'},
+  { label: '设备名称', align: 'center', prop: 'busName', istrue:true, width: '100%'},
     { label: '开始电能', align: 'center', istrue: true, children: [
       { label: '开始电能(kWh)', align: 'center', prop: 'eleActiveStart' , istrue:true, formatter: formatEle},
       { label: '开始时间', align: 'center', prop: 'createTimeMin' , formatter: formatTime1, width: '150px' , istrue:true},

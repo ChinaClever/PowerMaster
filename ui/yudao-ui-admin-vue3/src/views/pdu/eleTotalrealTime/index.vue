@@ -355,8 +355,8 @@ function customTooltipFormatter(params: any[]) {
   var item = params[0]; // 获取第一个数据点的信息
   tooltipContent += '所在位置：'+list.value[item.dataIndex].address + '<br/>'
                     +item.marker +'网络地址：'+list.value[item.dataIndex].location + '<br/>'
-                    +item.marker + '开始电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveStart)  + 'kWh 开始日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMin) + '<br/>' 
-                    +item.marker +'结束电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveEnd) + 'kWh 结束日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMax) + '<br/>'
+                    +item.marker +'开始日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMin) + ' 开始电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveStart)  + 'kWh <br/>' 
+                    +item.marker +'结束日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMax) + ' 结束电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveEnd) + 'kWh <br/>'
                     +item.marker +'耗电量：'+formatEle(null, null, list.value[item.dataIndex].eleActive) + 'kWh';
   return tooltipContent;
 }

@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO;
 
+import cn.iocoder.yudao.framework.excel.core.util.DateStringConverter;
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.NumberFormat;
@@ -17,7 +18,7 @@ public class RealtimeEQPageRespVO {
     @ExcelProperty("设备地址")
     private String dev_key;
 
-    @ExcelProperty("记录日期")
+    @ExcelProperty(converter = DateStringConverter.class, value ="记录日期")
     private String create_time;
 
     @ExcelProperty("电能 (kWh)")
