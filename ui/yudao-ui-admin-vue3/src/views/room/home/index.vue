@@ -24,8 +24,9 @@
       <el-card shadow="never">
         <template #header>
           <div>环境数据</div>
+          <el-link @click="updateChart(); toggleTable = !toggleTable" type="primary" style="margin-left:12vw;">{{toggleTable?'湿度':'温度'}}</el-link>
         </template>
-        <div ref="lineidChartContainer" id="lineidChartContainer" style="width:14vw;height:25vh;"></div> 
+        <div ref="lineidChartContainer" id="lineidChartContainer" style="width:14vw;height:25vh;"></div>
         <!--<div>当前平均温度：{{envInfo.temAvg}}°C</div>
         <div>当前最高温度：{{envInfo.temMax}}°C</div>
         <div>当前最低温度：{{envInfo.temMin}}°C</div>
@@ -43,7 +44,7 @@
     <div class="center" id="center">
       <CabTopology :containerInfo="containerInfo" :isFromHome="true" @back-data="handleBackData" @getroomid="handleGetRoomId" />
       <ContentWrap class="CabEchart">
-        <Echart :options="echartOptionsPower" height="100%" width="100%" />
+        <Echart :options="echartOptionsPower" height="30vh" width="100%" />
         <div class="btns">
           <el-button class="btn" size="small" :plain="!(radioBtn == 'pow')" type="primary" @click="switchTrend('pow')">功率</el-button>
           <el-button class="btn" size="small" :plain="!(radioBtn == 'ele')" type="primary" @click="switchTrend('ele')">用能</el-button>
@@ -142,6 +143,7 @@ const powerInfo = reactive({}) // 功率信息
 const spaceInfo = reactive({}) // 空间信息
 const envInfo = reactive({}) // 空间信息
 const echartInfo = reactive<any>({}) //配置图表的数据系列
+const toggleTable = ref(false)
 const tableData = [
   {
     name: 'PDU',
@@ -282,8 +284,7 @@ const handleBackData = (data) => {
 
 const initChart = () => {
   lineidChart = echarts.init(document.getElementById('lineidChartContainer'));
-  lineidChart.setOption(
-    {
+  lineidChart.setOption({
       title: { text: ''},
       tooltip: { trigger: 'axis',      formatter: function (params) {
         let result = params[0].name + '<br>';
@@ -299,7 +300,7 @@ const initChart = () => {
         return result.trimEnd(); // 去除末尾多余的换行符
       }},
       legend: {
-        data: ['冷通道平均温度', '热通道平均温度', '冷通道平均湿度','热通道平均湿度'], // 图例项
+        data: ['冷通道平均温度', '热通道平均温度'], // 图例项
         selected: false
       },
       xAxis: {
@@ -325,7 +326,89 @@ const initChart = () => {
           symbol: 'circle',
           symbolSize: 4,
           lineStyle:{type: 'dashed'}
-        }, {
+        }
+      ]
+  })
+}
+
+const updateChart = () => {
+  lineidChart = echarts.init(document.getElementById('lineidChartContainer'));
+  if(toggleTable.value === true){
+    lineidChart.setOption({
+      title: { text: ''},
+      tooltip: { trigger: 'axis',      formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+          if (param.seriesName === '冷通道平均温度' || param.seriesName === '热通道平均温度') {
+            result += '℃';
+          }else{
+            result += '%'
+          }
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }},
+      legend: {
+        data: ['冷通道平均温度', '热通道平均温度'], // 图例项
+        selected: false
+      },
+      xAxis: {
+        type: 'category',nameLocation: 'end',
+        boundaryGap: false,
+        data:['周一','周二','周三','周四','周五']
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          name: '冷通道平均温度',
+          type: 'line',
+          data: [31,31,31,31,31],
+          symbol: 'circle',
+          symbolSize: 4
+        },
+        {
+          name: '热通道平均温度',
+          type: 'line',
+          data: [33,34,35,36,37],
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        }
+      ]
+  })
+  }else if(toggleTable.value === false){
+    lineidChart.setOption( {
+      title: { text: ''},
+      tooltip: { trigger: 'axis',      formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+          if (param.seriesName === '冷通道平均温度' || param.seriesName === '热通道平均温度') {
+            result += '℃';
+          }else{
+            result += '%'
+          }
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }},
+      legend: {
+        data: ['冷通道平均湿度','热通道平均湿度'], // 图例项
+        selected: false
+      },
+      xAxis: {
+        type: 'category',nameLocation: 'end',
+        boundaryGap: false,
+        data:['周一','周二','周三','周四','周五']
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
           name: '冷通道平均湿度',
           type: 'line',
           data: [81,81,81,81,81],
@@ -341,10 +424,9 @@ const initChart = () => {
           lineStyle:{type: 'dashed'}
         }
       ]
-    }
-  )
+  })
+  }
 }
-
 
 //配置ECharts图表
 const switchTrend = (type, first = false) => {
@@ -429,10 +511,10 @@ const switchTrend = (type, first = false) => {
 }
 
 onMounted(() => {
-  initChart()
   const centerEle = document.getElementById('center')
   containerInfo.width = centerEle?.offsetWidth as number
   console.log('centerEle', containerInfo.width, centerEle?.offsetWidth, centerEle?.offsetHeight)
+  initChart()
 })
 </script>
 
@@ -505,8 +587,7 @@ onMounted(() => {
   position: absolute;
   top: 0; /* 放置在原元素的 */
   left: 100%;
-  background-color: #333;
-  color: #fff;
+  color: #000;
   padding: 5px;
   border-radius: 3px;
   white-space: nowrap;

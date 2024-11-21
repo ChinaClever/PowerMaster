@@ -1633,10 +1633,12 @@ lineidChart?.dispose() // 销毁图表实例
 
 //获取最近一个小时的PDU相历史数据，处理L1,L2,L3的数据
 const PDUHdaLineHisdata = async (type) => {
-  const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : '192.168.1.184-0' , type: 'oneHour'})
-  //{ devKey : queryParams.devKey, type : newPowGranularity}
+  const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : '172.16.0.3-0', type: 'oneHour'})
+  console.log('result',result)
+  //{ devKey : queryParams.devKey, type : newPowGranularity} '192.168.1.184-0'
 
   const lData = result.l
+  console.log('111',lData)
   const llData = result.ll
   const lllData = result.lll
 
@@ -1645,6 +1647,7 @@ const PDUHdaLineHisdata = async (type) => {
     lChartData.value.curValueList.push(item.cur_value)
     lChartData.value.createTimes.push(item.create_time)
   })
+  console.log('lChartDatat',lChartData.value)
 
   llData.forEach(item => {
     llChartData.value.volValueList.push(item.vol_value)
@@ -1661,11 +1664,11 @@ const PDUHdaLineHisdata = async (type) => {
     lineidDateTimes.value = result.dateTimes
     console.log('time',lineidDateTimes.value)
   }else if(type === 'twentyfourHour'){
-    const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : '192.168.1.184-0' , type: 'twentyfourHour'})
+    const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : '172.16.0.3-0' , type: 'twentyfourHour'})
     lineidDateTimes.value = result.dateTimes
     console.log('time',lineidDateTimes.value)
   }else if(type === 'seventytwoHour'){
-    const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : '192.168.1.184-0' , type: 'seventytwoHour'})
+    const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : '172.16.0.3-0' , type: 'seventytwoHour'})
     lineidDateTimes.value = result.dateTimes
     console.log('time',lineidDateTimes.value)
   }

@@ -1001,6 +1001,8 @@ onMounted(() => {
   getList()
   getNavList()
 })
+
+
 </script>
 
 <style scoped lang="scss">
@@ -1507,7 +1509,7 @@ onMounted(() => {
 
 .adaptiveStyle {
   width: 90vw;
-  height: 42vh;
+  height: 45vh;
   z-index: 5;
 }
 /* 尝试隐藏关闭按钮，但可能不总是有效 */

@@ -412,7 +412,7 @@ const powInfo = reactive({}) // 功率数据信息
 const powCopyInfo = reactive({})
 const eqInfo = reactive<any>({}) // 用能信息
 const alarmInfo = reactive({}) // 警告信息
-const tableData = ref([]) // 
+const tableData = ref([]) 
 const prePowBtn = ref(0) // 当前所选的功率
 const switchValue = ref(0) //控制按钮的切换
 const toggleTable = ref(false) //设备统计和告警统计的切换
@@ -1215,4 +1215,5 @@ onUnmounted(() => {
     padding: 5 20px;
   }
 }
+
 </style>
