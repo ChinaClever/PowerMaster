@@ -996,12 +996,12 @@ const startScrolling = () => {
   scrollInterval = setInterval(() => {
     // 机房状态的滚动逻辑
     scrollContainer('scrollableContainer');
-  }, 100);
+  }, 1000);
  
   scrollIntervalOne = setInterval(() => {
     // 设备模块的滚动逻辑
     scrollContainer('scrollableContainerOne');
-  }, 100);
+  }, 1000);
 };
  
 const scrollContainer = (containerName) => {

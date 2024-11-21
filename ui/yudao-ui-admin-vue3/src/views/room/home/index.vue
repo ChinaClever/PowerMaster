@@ -32,13 +32,49 @@
         <div>当前最低温度：{{envInfo.temMin}}°C</div>
         <div>最近更新时间：{{envInfo.updateTime}}</div>-->
       </el-card>
-      <el-card shadow="never">
-        <template #header>
-          <div>用能</div>
-        </template>
-        <div>当日用能：{{energyInfo.todayEq ? energyInfo.todayEq.toFixed(2) : '0.00'}}kW·h</div>
-        <div>本周用能：{{energyInfo.thisWeekEq ? energyInfo.thisWeekEq.toFixed(2) : '0.00'}}kW·h</div>
-        <div>本月用能：{{energyInfo.thisMonthEq ? energyInfo.thisMonthEq.toFixed(2) : '0.00'}}kW·h</div>
+      <el-card shadow="never" style="margin-bottom: 15px">
+        <div style="display: flex; align-items: center; margin-bottom:2vh; margin-top:1vh;">
+          <span>今日用能：</span>
+          <span 
+            @mouseover="showTooltip = true; tooltipText = '150kw'" 
+            @mouseleave="showTooltip = false" 
+            style="display: inline-block; position: relative; width: 5vw;"
+          >
+            <el-progress :text-inside="true" :stroke-width="26" :percentage="38" style="width: 5vw; margin-left: 10px;" />
+            <div v-if="showTooltip" style="position: absolute; bottom: 10%; left: 82%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
+              {{ tooltipText }}
+            </div>
+          </span>
+          <span style="margin-left:1vw;">390kw</span>
+        </div>
+        <div style="display: flex; align-items: center; margin-bottom:2vh; margin-top:1vh;">
+          <span>本周用能：</span>
+          <span 
+            @mouseover="showTooltipWeek = true; tooltipTextWeek = '290kw'" 
+            @mouseleave="showTooltipWeek = false" 
+            style="display: inline-block; position: relative; width: 5vw;"
+          >
+            <el-progress :text-inside="true" :stroke-width="26" :percentage="42" style="width: 5vw; margin-left: 10px;" />
+            <div v-if="showTooltipWeek" style="position: absolute; bottom: 10%; left: 82%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
+              {{ tooltipTextWeek }}
+            </div>
+          </span>
+          <span style="margin-left:1vw;">690kw</span>
+        </div>
+        <div style="display: flex; align-items: center; margin-bottom:2vh; margin-top:1vh;">
+          <span>本月用能：</span>
+          <span 
+            @mouseover="showTooltipYear = true; tooltipTextYear = '759kw'" 
+            @mouseleave="showTooltipYear = false" 
+            style="display: inline-block; position: relative; width: 5vw;"
+          >
+            <el-progress :text-inside="true" :stroke-width="26" :percentage="46" style="width: 5vw; margin-left: 10px;" />
+            <div v-if="showTooltipYear" style="position: absolute; bottom: 10%; left: 82%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
+              {{ tooltipTextYear }}
+            </div>
+          </span>
+          <span style="margin-left:1vw;">1650kw</span>
+        </div>
       </el-card>
     </div>
     <div class="center" id="center">
@@ -129,6 +165,13 @@ import { MachineRoomApi } from '@/api/cabinet/room'
 import { EChartsOption } from 'echarts'
 
 import * as echarts from 'echarts'
+
+const showTooltip = ref(false)
+const tooltipText = ref('')
+const showTooltipWeek = ref(false)
+const tooltipTextWeek = ref('')
+const showTooltipYear = ref(false)
+const tooltipTextYear = ref('')
 
 const echartOptionsPower = ref<EChartsOption>({}) //用来存储功率曲线图表的配置选项
 const environmentOptions = ref<EChartsOption>({}) //用来存储环境图表的配置选项
