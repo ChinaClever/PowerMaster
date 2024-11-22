@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="母线始端箱电力分析" :showCheckbox="false">
+  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="始端箱电力分析" :showCheckbox="false">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
@@ -256,6 +256,7 @@ const queryParams = reactive({
   pageSize: 15,
   busId: undefined as number | undefined,
   lineId: undefined,
+  nowAddress: undefined as string | undefined,
   type: 'total',
   granularity: 'realtime',
   // 进入页面原始数据默认显示最近一小时
@@ -947,46 +948,46 @@ function customTooltipFormatter(params: any[]) {
 
       case '平均有功功率(kW)':
       case '平均无功功率(kVar)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +' 记录时间：'  +params[0].name+ '<br/>';
+        tooltipContent += item.marker +' 记录时间：'  +params[0].name+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
         break;
       case '最大有功功率(kW)':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value+' 发生时间：' +powActiveMaxTimeData.value[item.dataIndex]+ '<br/>';
+        tooltipContent += item.marker +' 发生时间：' +powActiveMaxTimeData.value[item.dataIndex]+  ' ' + item.seriesName + ': ' + item.value+'<br/>';
         break;
       case '最小有功功率(kW)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +' 发生时间：'+powActiveMinTimeData.value[item.dataIndex]+ '<br/>';
+      tooltipContent += item.marker +' 发生时间：'+powActiveMinTimeData.value[item.dataIndex]+  ' ' + item.seriesName + ': ' + item.value +'<br/>';
               break;
       case '最大无功功率(kVar)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +' 发生时间：'+powReactiveMaxTimeData.value[item.dataIndex] + '<br/>';
+      tooltipContent += item.marker +' 发生时间：'+powReactiveMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value +'<br/>';
               break;
       case '最小无功功率(kVar)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value+' 发生时间：'  +powReactiveMaxTimeData.value[item.dataIndex]+ '<br/>';
+      tooltipContent += item.marker +' 发生时间：'  +powReactiveMaxTimeData.value[item.dataIndex]+  ' ' + item.seriesName + ': ' + item.value+'<br/>';
               break;
 
       case '平均视在功率(kVA)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +' 记录时间：'  +params[0].name+ '<br/>';
+      tooltipContent += item.marker +' 记录时间：'  +params[0].name+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
       break;
       case '最大视在功率(kVA)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value+' 发生时间：' +powApparentMaxTimeData.value[item.dataIndex] + '<br/>';
+      tooltipContent += item.marker +' 发生时间：' +powApparentMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value+'<br/>';
               break;
       case '最小视在功率(kVA)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value+' 发生时间：'  +powApparentMaxTimeData.value[item.dataIndex]+ '<br/>';
+      tooltipContent += item.marker +' 发生时间：'  +powApparentMaxTimeData.value[item.dataIndex]+  ' ' + item.seriesName + ': ' + item.value+'<br/>';
               break;
 
       case '电流(A)':
       case '电流三相不平衡': 
       case '平均电流(A)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +' 记录时间：'  +params[0].name+ '<br/>';
+      tooltipContent += item.marker +' 记录时间：'  +params[0].name+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
       break;
       case '最大电流(A)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +' 发生时间：' +curMaxTimeData.value[item.dataIndex]+ '<br/>' ;
+      tooltipContent += item.marker +' 发生时间：' +curMaxTimeData.value[item.dataIndex]+  ' ' + item.seriesName + ': ' + item.value +'<br/>' ;
       break;
       case '最小电流(A)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value+' 发生时间：' +curMinTimeData.value[item.dataIndex] + '<br/>';
+      tooltipContent += item.marker +' 发生时间：' +curMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value+'<br/>';
       break;
 
       case '剩余电流(A)':
       case '平均剩余电流(A)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +' 记录时间：'  +params[0].name+ '<br/>';
+      tooltipContent += item.marker +' 记录时间：'  +params[0].name+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
       break;
       case '最大剩余电流(A)':
       tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value   + '<br/>';
@@ -997,13 +998,13 @@ function customTooltipFormatter(params: any[]) {
 
       case '零线电流(A)':
       case '平均零线电流(A)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +' 记录时间：'  +params[0].name+ '<br/>';
+      tooltipContent += item.marker +' 记录时间：'  +params[0].name+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
       break;
       case '最大零线电流(A)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +' 发生时间：' +curZeroMaxTimeData.value[item.dataIndex]+ '<br/>';
+      tooltipContent += item.marker +' 发生时间：' +curZeroMaxTimeData.value[item.dataIndex]+  ' ' + item.seriesName + ': ' + item.value +'<br/>';
       break;
       case '最小零线电流(A)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value+' 发生时间：' +curZeroMaxTimeData.value[item.dataIndex] + '<br/>';
+      tooltipContent += item.marker +' 发生时间：' +curZeroMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value+'<br/>';
       break;
 
       case '电压(V)':
@@ -1011,25 +1012,25 @@ function customTooltipFormatter(params: any[]) {
       case '电压三相不平衡': 
       case '平均电压(V)':
       case '平均线电压(V)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +' 记录时间：'  +params[0].name+ '<br/>';
+      tooltipContent += item.marker +' 记录时间：'  +params[0].name+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
       break;
       case '最大电压(V)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +' 发生时间：'+volMaxTimeData.value[item.dataIndex] + '<br/>';
+      tooltipContent += item.marker +' 发生时间：'+volMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
       break;
       case '最小电压(V)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +' 发生时间：' +volMinTimeData.value[item.dataIndex] + '<br/>';
+      tooltipContent += item.marker +' 发生时间：' +volMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value +'<br/>';
       break;
 
       case '最大线电压(V)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +' 发生时间：' +volLineMaxTimeData.value[item.dataIndex] + '<br/>';
+      tooltipContent += item.marker +' 发生时间：' +volLineMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value +'<br/>';
       break;
       case '最小线电压(V)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +' 发生时间：' +volLineMaxTimeData.value[item.dataIndex]+ '<br/>';
+      tooltipContent += item.marker +' 发生时间：' +volLineMaxTimeData.value[item.dataIndex]+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
       break;
 
       case '功率因素':
       case '负载率':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +' 记录时间：'  +params[0].name+ '<br/>';
+      tooltipContent += item.marker +' 记录时间：'  +params[0].name+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
       break; 
       case '有功功率(kW)':
       case '无功功率(kVar)':
@@ -1359,6 +1360,7 @@ const handleExport1 = async () => {
     await message.exportConfirm()
     // 发起导出
     queryParams.pageNo = 1
+    queryParams.nowAddress = nowAddress.value
     exportLoading.value = true
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
@@ -1479,7 +1481,7 @@ onMounted( async () => {
   padding-right: 0px;
   padding-top: 0px;
   padding-bottom: 0px;
-  font-size: 12px;
+  font-size: 14px;
   overflow: hidden;
   text-overflow: ellipsis;
 }

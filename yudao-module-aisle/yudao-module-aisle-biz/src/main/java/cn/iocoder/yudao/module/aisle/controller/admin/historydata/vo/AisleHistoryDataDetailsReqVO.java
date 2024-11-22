@@ -16,4 +16,5 @@ public class AisleHistoryDataDetailsReqVO extends PageParam {
 
     private String[] timeRange;
 
+    private String nowAddress;
 }

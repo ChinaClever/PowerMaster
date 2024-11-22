@@ -44,12 +44,12 @@
                 <!-- 处理原始数据和小时极值数据的菜单栏 -->
       <div v-if="queryParams.granularity != 'day'&& queryParams.timeRange != null" class="description-item" > 
             <span class="label">开始时间 :</span>
-            <span class="value">{{   formatTime(parseInt(queryParams.timeRange[0]))  }}</span>
+            <span class="value">{{   formatTime(queryParams.timeRange[0])  }}</span>
           </div>
           
           <div  v-if="queryParams.granularity != 'day'  && queryParams.timeRange != null" class="description-item">
             <span class="label">结束时间 :</span>
-            <span class="value">{{ formatTime(parseInt(queryParams.timeRange[1]))}}</span>
+            <span class="value">{{ formatTime(queryParams.timeRange[1])}}</span>
           </div>
 
 
@@ -176,7 +176,6 @@
                 :row-style="{ fontSize: '14px', textAlign: 'center', }"
                 empty-text="暂无数据" max-height="818"
                 >
-
               <!-- 添加行号列 -->
                 <el-table-column label="序号" align="center" width="100px">
                   <template #default="{ $index }">
@@ -250,6 +249,7 @@ const queryParams = reactive({
   sensorId: undefined as number | undefined,
   channel: undefined as number | undefined,
   position: undefined as number | undefined,
+  nowAddress: undefined as string | undefined,
   granularity: 'realtime',
   // ipAddr: undefined as string | undefined,
   // cascadeAddr: '0',
@@ -667,23 +667,23 @@ function customTooltipFormatter(params: any[]) {
     switch( item.seriesName ){
       case '温度':
       case '平均温度':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' ℃  记录时间: ' +params[0].name + '<br/>';
+        tooltipContent += item.marker +' 记录时间: ' +params[0].name +  ' ' + item.seriesName + ': ' + item.value + '℃  <br/>';
         break;
       case '最高温度':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' ℃  发生时间: ' +temMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +temMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + '℃  <br/>';
         break;
       case '最低温度':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' ℃  发生时间: ' +temMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +temMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + '℃  <br/>';
         break;
       case '湿度':
       case '平均湿度':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' %RH  记录时间: ' +params[0].name + '<br/>';
+        tooltipContent += item.marker +' 记录时间: ' +params[0].name +  ' ' + item.seriesName + ': ' + item.value + '%RH  <br/>';
         break;
       case '最大湿度':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' %RH  发生时间: ' +humMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +humMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + '%RH  <br/>';
         break;
       case '最小湿度':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' %RH  发生时间: ' +humMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +humMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + '%RH  <br/>';
         break;
     }
     
@@ -780,6 +780,7 @@ const handleExport1 = async () => {
     await message.exportConfirm()
     // 发起导出
     queryParams.pageNo = 1
+    queryParams.nowAddress =nowAddress.value
     exportLoading.value = true
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
@@ -980,7 +981,7 @@ onMounted( async () => {
   padding-right: 0px;
   padding-top: 0px;
   padding-bottom: 0px;
-  font-size: 12px;
+  font-size: 14px;
   overflow: hidden;
   text-overflow: ellipsis;
 }

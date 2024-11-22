@@ -263,21 +263,29 @@ public class BusHistoryDataController {
        if(((Map)list.get(0)).containsKey("line_id")){
            // 导出 Excel
            if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+               List<BusExportLineDetailVO> bean = BeanUtils.toBean(list, BusExportLineDetailVO.class);
+               bean.stream().forEach(iter ->{iter.setLocation(pageReqVO.getNowAddress());});
                ExcelUtils.write(response, "母线始端箱电力分析.xlsx", "数据", BusExportLineDetailVO.class,
-                       BeanUtils.toBean(list, BusExportLineDetailVO.class));
+                       bean);
            } else {
+               List<BusHourAndDayLineExportDetailVO> bean = BeanUtils.toBean(list, BusHourAndDayLineExportDetailVO.class);
+               bean.stream().forEach(iter ->{iter.setLocation(pageReqVO.getNowAddress());});
                ExcelUtils.write(response, "母线始端箱电力分析.xlsx", "数据", BusHourAndDayLineExportDetailVO.class,
-                       BeanUtils.toBean(list, BusHourAndDayLineExportDetailVO.class));
+                       bean);
            }
        }
        else{
            // 导出 Excel
            if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+               List<BusExportDetailVO> bean = BeanUtils.toBean(list, BusExportDetailVO.class);
+               bean.stream().forEach(iter ->{iter.setLocation(pageReqVO.getNowAddress());});
                ExcelUtils.write(response, "母线始端箱电力分析.xlsx", "数据", BusExportDetailVO.class,
-                       BeanUtils.toBean(list, BusExportDetailVO.class));
+                       bean);
            } else {
+               List<BusHourAndDayExportDetailVO> bean = BeanUtils.toBean(list, BusHourAndDayExportDetailVO.class);
+               bean.stream().forEach(iter ->{iter.setLocation(pageReqVO.getNowAddress());});
                ExcelUtils.write(response, "母线始端箱电力分析.xlsx", "数据", BusHourAndDayExportDetailVO.class,
-                       BeanUtils.toBean(list, BusHourAndDayExportDetailVO.class));
+                       bean);
            }
        }
     }
@@ -294,39 +302,55 @@ public class BusHistoryDataController {
         if(((Map)list.get(0)).containsKey("line_id")){
             // 导出 Excel
             if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+                List<BoxExportLineDetailVO> bean = BeanUtils.toBean(list, BoxExportLineDetailVO.class);
+                bean.stream().forEach(iter ->{iter.setLocation(pageReqVO.getNowAddress());});
                 ExcelUtils.write(response, "母线插接箱电力分析.xlsx", "数据", BoxExportLineDetailVO.class,
-                        BeanUtils.toBean(list, BoxExportLineDetailVO.class));
+                        bean );
             } else {
+                List<BoxHourAndDayLineExportDetailVO> bean = BeanUtils.toBean(list, BoxHourAndDayLineExportDetailVO.class);
+                bean.stream().forEach(iter ->{iter.setLocation(pageReqVO.getNowAddress());});
                 ExcelUtils.write(response, "母线插接箱电力分析.xlsx", "数据", BoxHourAndDayLineExportDetailVO.class,
-                        BeanUtils.toBean(list, BoxHourAndDayLineExportDetailVO.class));
+                        bean);
             }
         }else if(((Map)list.get(0)).containsKey("loop_id")){
             // 导出 Excel
             if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+                List<BoxExportLoopDetailVO> bean = BeanUtils.toBean(list, BoxExportLoopDetailVO.class);
+                bean.stream().forEach(iter ->{iter.setLocation(pageReqVO.getNowAddress());});
                 ExcelUtils.write(response, "母线插接箱电力分析.xlsx", "数据", BoxExportLoopDetailVO.class,
-                        BeanUtils.toBean(list, BoxExportLoopDetailVO.class));
+                        bean);
             } else {
+                List<BoxHourAndDayLoopExportDetailVO> bean = BeanUtils.toBean(list, BoxHourAndDayLoopExportDetailVO.class);
+                bean.stream().forEach(iter ->{iter.setLocation(pageReqVO.getNowAddress());});
                 ExcelUtils.write(response, "母线插接箱电力分析.xlsx", "数据", BoxHourAndDayLoopExportDetailVO.class,
-                        BeanUtils.toBean(list, BoxHourAndDayLoopExportDetailVO.class));
+                        bean);
             }
         } else if(((Map)list.get(0)).containsKey("outlet_id")){
             // 导出 Excel
             if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+                List<BoxExportOutletDetailVO> bean = BeanUtils.toBean(list, BoxExportOutletDetailVO.class);
+                bean.stream().forEach(iter ->{iter.setLocation(pageReqVO.getNowAddress());});
                 ExcelUtils.write(response, "母线插接箱电力分析.xlsx", "数据", BoxExportOutletDetailVO.class,
-                        BeanUtils.toBean(list, BoxExportOutletDetailVO.class));
+                        bean );
             } else {
+                List<BoxHourAndDayOutletExportDetailVO> bean = BeanUtils.toBean(list, BoxHourAndDayOutletExportDetailVO.class);
+                bean.stream().forEach(iter ->{iter.setLocation(pageReqVO.getNowAddress());});
                 ExcelUtils.write(response, "母线插接箱电力分析.xlsx", "数据", BoxHourAndDayOutletExportDetailVO.class,
-                        BeanUtils.toBean(list, BoxHourAndDayOutletExportDetailVO.class));
+                        bean);
             }
         }
         else{
             // 导出 Excel
             if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+                List<BoxExportDetailVO> bean = BeanUtils.toBean(list, BoxExportDetailVO.class);
+                bean.stream().forEach(iter ->{iter.setLocation(pageReqVO.getNowAddress());});
                 ExcelUtils.write(response, "母线插接箱电力分析.xlsx", "数据", BoxExportDetailVO.class,
-                        BeanUtils.toBean(list, BoxExportDetailVO.class));
+                        bean);
             } else {
+                List<BoxHourAndDayExportDetailVO> bean = BeanUtils.toBean(list, BoxHourAndDayExportDetailVO.class);
+                bean.stream().forEach(iter ->{iter.setLocation(pageReqVO.getNowAddress());});
                 ExcelUtils.write(response, "母线插接箱电力分析.xlsx", "数据", BoxHourAndDayExportDetailVO.class,
-                        BeanUtils.toBean(list, BoxHourAndDayExportDetailVO.class));
+                        bean);
             }
         }
     }
