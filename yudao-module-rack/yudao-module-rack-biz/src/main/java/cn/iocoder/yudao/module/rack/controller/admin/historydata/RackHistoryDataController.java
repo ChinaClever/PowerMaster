@@ -5,10 +5,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
-import cn.iocoder.yudao.module.rack.controller.admin.historydata.vo.HourAndDayPageRespVO;
-import cn.iocoder.yudao.module.rack.controller.admin.historydata.vo.RackHistoryDataDetailsReqVO;
-import cn.iocoder.yudao.module.rack.controller.admin.historydata.vo.RackHistoryDataPageReqVO;
-import cn.iocoder.yudao.module.rack.controller.admin.historydata.vo.RealtimePageRespVO;
+import cn.iocoder.yudao.module.rack.controller.admin.historydata.vo.*;
 import cn.iocoder.yudao.module.rack.service.historydata.RackHistoryDataService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -53,11 +50,19 @@ public class RackHistoryDataController {
 
     @GetMapping("/detailsExcel")
     @Operation(summary = "获得机架历史数据详情")
-    public void getHistoryDataDetailsExcel(RackHistoryDataDetailsReqVO reqVO,HttpServletResponse response) throws IOException {
+    public void getHistoryDataDetailsExcel(RackHistoryDataDetailsReqVO reqVO, HttpServletResponse response) throws IOException {
         PageResult<Object> pageResult = rackHistoryDataService.getHistoryDataDetails(reqVO);
-        //TODO 因为没有数据不知数据结构实体类未写
-        ExcelUtils.write(response, "机架电力分析数据.xlsx", "数据", RealtimePageRespVO.class,
-                BeanUtils.toBean(pageResult.getList(), RealtimePageRespVO.class));
+        if (Objects.equals("realtime", reqVO.getGranularity())) {
+            List<RackDetailsExcelVO> bean = BeanUtils.toBean(pageResult.getList(), RackDetailsExcelVO.class);
+            bean.stream().forEach(item -> {item.setLocation(reqVO.getNowAddress());});
+            ExcelUtils.write(response, "机架电力分析数据.xlsx", "数据", RackDetailsExcelVO.class,
+                    bean);
+        } else {
+            List<HistoryDataDetailsExportDetailsVO> bean = BeanUtils.toBean(pageResult.getList(), HistoryDataDetailsExportDetailsVO.class);
+            bean.stream().forEach(item -> {item.setLocation(reqVO.getNowAddress());});
+            ExcelUtils.write(response, "机架电力分析数据.xlsx", "数据", HistoryDataDetailsExportDetailsVO.class,
+                    bean);
+        }
     }
 
     @GetMapping("/new-data/{granularity}")

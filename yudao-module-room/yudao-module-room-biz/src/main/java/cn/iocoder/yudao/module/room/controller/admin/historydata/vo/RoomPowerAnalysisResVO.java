@@ -23,7 +23,10 @@ import lombok.Data;
 @HeadRowHeight(20)
 public class RoomPowerAnalysisResVO {
 
-    @ExcelProperty(converter = DateStringConverter.class, value ="记录时间")
+    @ExcelProperty("位置")
+    private String location;
+
+    @ExcelProperty(value ="记录时间")
     private String create_time;
 
     @NumberFormat("0.000")

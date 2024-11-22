@@ -20,6 +20,10 @@ import lombok.With;
 @ColumnWidth(30)
 @HeadRowHeight(20)
 public class HistoryDataDetailsLineExportVO {
+
+    @ExcelProperty("位置")
+    private String location;
+
     @ExcelProperty("记录时间")
     private String create_time;
     @ExcelProperty("电压(V)")

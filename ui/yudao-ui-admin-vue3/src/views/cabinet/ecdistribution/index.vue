@@ -144,6 +144,7 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
   cabinetId: undefined as number | undefined,
+  nowAddress: undefined as string | undefined,
   granularity: 'day',
   // 进入页面原始数据默认显示最近2周
   timeRange: ['', ''],
@@ -459,6 +460,7 @@ const handleExport1 = async () => {
     await message.exportConfirm()
     // 发起导出
     queryParams.pageNo = 1
+    queryParams.nowAddress = nowAddress.value
     exportLoading.value = true
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0

@@ -124,8 +124,8 @@
               :data="tableData"
               style="height: 67vh; width: 99.97%;"
               :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', borderBottom: '1px #EDEEF2 solid', fontFamily: 'Microsoft YaHei',fontWeight: 'bold'}"
-              :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
-              :row-style="{ fontSize: '14px', textAlign: 'center', }"
+              :cell-style="{ color: '#606266', fontSize: '16px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
+              :row-style="{ fontSize: '16px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
               <!-- 添加行号列 -->
               <el-table-column label="序号" align="center" width="80px">
@@ -763,25 +763,25 @@ function customTooltipFormatter(params: any[]) {
       case '总平均有功功率':
       case 'A路平均有功功率':
       case 'B路平均有功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  记录时间: ' +params[0].name + '<br/>';
+        tooltipContent += item.marker +' 记录时间: ' +params[0].name +  ' ' + item.seriesName + ': ' + item.value + ' kW  <br/>';
         break;
       case '总最大有功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +totalActivePowMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +totalActivePowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       case '总最小有功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +totalActivePowMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +totalActivePowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       case 'A路最大有功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +aActivePowMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +aActivePowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       case 'A路最小有功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +aActivePowMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +aActivePowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       case 'B路最大有功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +bActivePowMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +bActivePowMaxTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       case 'B路最小有功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +bActivePowMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +bActivePowMinTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       case '总视在功率':
       case 'A路视在功率':
@@ -789,25 +789,25 @@ function customTooltipFormatter(params: any[]) {
       case '总平均视在功率':
       case 'A路平均视在功率':
       case 'B路平均视在功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  记录时间: ' +params[0].name + '<br/>';
+        tooltipContent += item.marker +' 记录时间: ' +params[0].name +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
         break;
      case '总最大视在功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  发生时间: ' +totalApparentPowMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +totalApparentPowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
         break;
       case '总最小视在功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  发生时间: ' +totalApparentPowMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +totalApparentPowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
         break;
       case 'A路最大视在功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  发生时间: ' +aApparentPowMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +aApparentPowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
         break;
       case 'A路最小视在功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  发生时间: ' +aApparentPowMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +aApparentPowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
         break;
       case 'B路最大视在功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  发生时间: ' +bApparentPowMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +bApparentPowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
         break;
       case 'B路最小视在功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  发生时间: ' +bApparentPowMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +bApparentPowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + '<br/>';
         break;
      
     }
@@ -983,7 +983,7 @@ onMounted( async () => {
   padding-right: 0px;
   padding-top: 0px;
   padding-bottom: 0px;
-  font-size: 12px;
+  font-size: 14px;
   overflow: hidden;
   text-overflow: ellipsis;
 }

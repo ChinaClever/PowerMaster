@@ -1221,7 +1221,7 @@ onMounted( async () => {
   padding-right: 0px;
   padding-top: 0px;
   padding-bottom: 0px;
-  font-size: 12px;
+  font-size: 14px;
   overflow: hidden;
   text-overflow: ellipsis;
 }

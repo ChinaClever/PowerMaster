@@ -178,6 +178,7 @@ const loading2 = ref(false)
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
+  nowAddress: undefined as string | undefined,
   devkey: undefined as string | undefined,
   busId: undefined as number | undefined,
   granularity: 'day',
@@ -397,6 +398,7 @@ const handleExport1 = async () => {
     // 发起导出
     queryParams.pageNo = 1
     exportLoading.value = true
+    queryParams.nowAddress = nowAddress.value
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
