@@ -352,10 +352,10 @@
         <el-skeleton :loading="loading" animated>
           <div ref="scrollableContainerOne" class="scrollable-container-one" @scroll="handleScroll">
             <el-table :data="tableData" style="width: 100%" border class="text-12px">
-              <el-table-column prop="name" label=""  />
-              <el-table-column prop="all" label="总数"  />
-              <el-table-column prop="on" label="在线" />
-              <el-table-column prop="off" label="离线" />
+              <el-table-column prop="name" label=""  class="name-column"/>
+              <el-table-column prop="all" label="总数" class="numeric-column"/>
+              <el-table-column prop="on" label="在线" class="numeric-column"/>
+              <el-table-column prop="off" label="离线" class="numeric-column"/>
             </el-table>
           </div>
         </el-skeleton>
@@ -1108,6 +1108,7 @@ onUnmounted(() => {
   width: 100%;
 }
 
+
 @media screen and (min-width:2048px){
   .temperature-container{
     height: 52vh;
@@ -1125,6 +1126,14 @@ onUnmounted(() => {
     width: 15vw;
     margin-left: 1vh;
     margin-bottom: -2vw;
+  }
+
+  .name-column {
+    width: 150px;
+  }
+  
+  .numeric-column {
+    width: 80px;
   }
 }
 
@@ -1149,6 +1158,14 @@ onUnmounted(() => {
     height: 20vh;
     width: 20vw;
     overflow-y:auto;
+  }
+
+  .name-column {
+    width: 127px;
+  }
+  
+  .numeric-column {
+    width: 80px;
   }
 }
 
