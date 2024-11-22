@@ -58,7 +58,7 @@ watchEffect(() => {
   // 直接访问即可，watchEffect会自动跟踪变化
 
   series.value = prop.list.series;
-  series.value[0].data = series.value[0].data.map((item)=>item.toFixed(2))
+  series.value[0].data = series.value[0].data.map((item)=>item.toFixed(3))
   //console.log("series.value",  series.value)
   if(  series.value != null && series.value?.length > 0){
     legendList.value =  series.value?.map(item => item.name)
