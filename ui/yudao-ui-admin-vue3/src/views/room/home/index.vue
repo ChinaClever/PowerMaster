@@ -33,47 +33,47 @@
         <div>最近更新时间：{{envInfo.updateTime}}</div>-->
       </el-card>
       <el-card shadow="never" style="margin-bottom: 15px">
+        <!--<template #header>
+          <div>当前用能</div>
+        </template>
+        <div>今日：{{EqInfo.todayEq && EqInfo.todayEq.toFixed(2)}}kW·h</div>
+        <div>本周：{{EqInfo.thisWeekEq && EqInfo.thisWeekEq.toFixed(2)}}kW·h</div>
+        <div>本月：{{EqInfo.thisMonthEq  && EqInfo.thisMonthEq.toFixed(2)}}kW·h</div>-->
         <div style="display: flex; align-items: center; margin-bottom:2vh; margin-top:1vh;">
           <span>今日用能：</span>
           <span 
-            @mouseover="showTooltip = true; tooltipText = '150kw'" 
-            @mouseleave="showTooltip = false" 
             style="display: inline-block; position: relative; width: 5vw;"
           >
-            <el-progress :text-inside="true" :stroke-width="26" :percentage="38" style="width: 5vw; margin-left: 10px;" />
-            <div v-if="showTooltip" style="position: absolute; bottom: 10%; left: 82%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
-              {{ tooltipText }}
+            <el-progress :stroke-width="26" :format="format"  :percentage="38" style="width: 9vw;" />
+            <div style="position: absolute; bottom: 10%; left: 77%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
+              150kw
             </div>
           </span>
-          <span style="margin-left:1vw;">390kw</span>
+          <span style="margin-left:3vh;">390kw</span>
         </div>
         <div style="display: flex; align-items: center; margin-bottom:2vh; margin-top:1vh;">
           <span>本周用能：</span>
           <span 
-            @mouseover="showTooltipWeek = true; tooltipTextWeek = '290kw'" 
-            @mouseleave="showTooltipWeek = false" 
             style="display: inline-block; position: relative; width: 5vw;"
           >
-            <el-progress :text-inside="true" :stroke-width="26" :percentage="42" style="width: 5vw; margin-left: 10px;" />
-            <div v-if="showTooltipWeek" style="position: absolute; bottom: 10%; left: 82%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
-              {{ tooltipTextWeek }}
+            <el-progress :stroke-width="26" :format="format"  :percentage="42" style="width: 9vw;" />
+            <div style="position: absolute; bottom: 10%; left: 77%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
+              290kw
             </div>
           </span>
-          <span style="margin-left:1vw;">690kw</span>
+          <span style="margin-left:3vh;">690kw</span>
         </div>
         <div style="display: flex; align-items: center; margin-bottom:2vh; margin-top:1vh;">
           <span>本月用能：</span>
           <span 
-            @mouseover="showTooltipYear = true; tooltipTextYear = '759kw'" 
-            @mouseleave="showTooltipYear = false" 
             style="display: inline-block; position: relative; width: 5vw;"
           >
-            <el-progress :text-inside="true" :stroke-width="26" :percentage="46" style="width: 5vw; margin-left: 10px;" />
-            <div v-if="showTooltipYear" style="position: absolute; bottom: 10%; left: 82%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
-              {{ tooltipTextYear }}
+            <el-progress  :stroke-width="26" :format="format" :percentage="46" style="width: 9vw;" />
+            <div style="position: absolute; bottom: 10%; left: 77%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
+              759kw
             </div>
           </span>
-          <span style="margin-left:1vw;">1650kw</span>
+          <span style="margin-left:3vh;">1650kw</span>
         </div>
       </el-card>
     </div>
@@ -118,7 +118,7 @@
             <span>告警统计</span>
           </div>
         </template>
-        <el-table :data="tableData" style="width: 15vw;height:25vh" border class="text-12px">
+        <el-table :data="tableData" style="width: 100%;height:25vh" border class="text-12px">
           <el-table-column prop="error" label="告警内容"  />
           <el-table-column prop="box" label="告警设备" />
           <el-table-column prop="time" label="告警时间" />
@@ -126,12 +126,16 @@
       </el-card>
       <el-card shadow="never">
         <template #header>
-          <div>设备数量</div>
+          <div class="h-3 flex justify-between">
+            <span> 设备统计</span>
+          </div>
         </template>
-        <div>报警数量：{{deviceInfo.alarmNum}}</div>
-        <div>正常数量：{{deviceInfo.normalNum}}</div>
-        <div>离线数量：{{deviceInfo.offLineNum}}</div>
-        <div>设备总数：{{deviceInfo.deviceNum}}</div>
+          <el-table :data="tableData" style="width: 100%;height:25vh" border class="text-12px">
+            <el-table-column prop="name" label=""  width="100" />
+            <el-table-column prop="all" label="总数" width="56" />
+            <el-table-column prop="on" label="在线" width="56" />
+            <el-table-column prop="off" label="离线" width="56" />
+          </el-table>
       </el-card>
       <!--<el-card shadow="never" class="mb-8px">
         <template #header>
@@ -166,12 +170,7 @@ import { EChartsOption } from 'echarts'
 
 import * as echarts from 'echarts'
 
-const showTooltip = ref(false)
-const tooltipText = ref('')
-const showTooltipWeek = ref(false)
-const tooltipTextWeek = ref('')
-const showTooltipYear = ref(false)
-const tooltipTextYear = ref('')
+const format = (percentage) => ( ``)  //用来自定义进度条的内容
 
 const echartOptionsPower = ref<EChartsOption>({}) //用来存储功率曲线图表的配置选项
 const environmentOptions = ref<EChartsOption>({}) //用来存储环境图表的配置选项
@@ -662,5 +661,10 @@ onMounted(() => {
     box-sizing: border-box;
     padding: 5 20px;
   }
+}
+
+.responsive-table {
+  table-layout: fixed;  /* 确保列宽按照设置的宽度显示 */
+  word-wrap: break-word; /* 文本过长时换行 */
 }
 </style>

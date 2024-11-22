@@ -22,44 +22,38 @@
         <div style="display: flex; align-items: center; margin-bottom:2vh; margin-top:1vh;">
           <span>今日用能：</span>
           <span 
-            @mouseover="showTooltip = true; tooltipText = '150kw'" 
-            @mouseleave="showTooltip = false" 
             style="display: inline-block; position: relative; width: 5vw;"
           >
-            <el-progress :text-inside="true" :stroke-width="26" :percentage="38" style="width: 5vw; margin-left: 10px;" />
-            <div v-if="showTooltip" style="position: absolute; bottom: 10%; left: 82%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
-              {{ tooltipText }}
+            <el-progress :stroke-width="26" :format="format"  :percentage="38" style="width: 9vw;" />
+            <div style="position: absolute; bottom: 10%; left: 77%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
+              150kw
             </div>
           </span>
-          <span style="margin-left:1vw;">390kw</span>
+          <span style="margin-left:3vh;">390kw</span>
         </div>
         <div style="display: flex; align-items: center; margin-bottom:2vh; margin-top:1vh;">
           <span>本周用能：</span>
           <span 
-            @mouseover="showTooltipWeek = true; tooltipTextWeek = '290kw'" 
-            @mouseleave="showTooltipWeek = false" 
             style="display: inline-block; position: relative; width: 5vw;"
           >
-            <el-progress :text-inside="true" :stroke-width="26" :percentage="42" style="width: 5vw; margin-left: 10px;" />
-            <div v-if="showTooltipWeek" style="position: absolute; bottom: 10%; left: 82%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
-              {{ tooltipTextWeek }}
+            <el-progress :stroke-width="26" :format="format"  :percentage="42" style="width: 9vw;" />
+            <div style="position: absolute; bottom: 10%; left: 77%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
+              290kw
             </div>
           </span>
-          <span style="margin-left:1vw;">690kw</span>
+          <span style="margin-left:3vh;">690kw</span>
         </div>
         <div style="display: flex; align-items: center; margin-bottom:2vh; margin-top:1vh;">
           <span>本月用能：</span>
           <span 
-            @mouseover="showTooltipYear = true; tooltipTextYear = '759kw'" 
-            @mouseleave="showTooltipYear = false" 
             style="display: inline-block; position: relative; width: 5vw;"
           >
-            <el-progress :text-inside="true" :stroke-width="26" :percentage="46" style="width: 5vw; margin-left: 10px;" />
-            <div v-if="showTooltipYear" style="position: absolute; bottom: 10%; left: 82%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
-              {{ tooltipTextYear }}
+            <el-progress  :stroke-width="26" :format="format" :percentage="46" style="width: 9vw;" />
+            <div style="position: absolute; bottom: 10%; left: 77%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
+              759kw
             </div>
           </span>
-          <span style="margin-left:1vw;">1650kw</span>
+          <span style="margin-left:3vh;">1650kw</span>
         </div>
       </el-card>
       <!--<el-card v-if="pduBar" shadow="never" style="margin-bottom: 15px">
@@ -147,12 +141,7 @@ import { EChartsOption } from 'echarts'
 import { MachineColumnApi } from '@/api/cabinet/column'
 
 
-const showTooltip = ref(false)
-const tooltipText = ref('')
-const showTooltipWeek = ref(false)
-const tooltipTextWeek = ref('')
-const showTooltipYear = ref(false)
-const tooltipTextYear = ref('')
+const format = (percentage) => ( ``)  //用来自定义进度条的内容
 const toggleTable = ref(true)
 
 const {push} = useRouter()
