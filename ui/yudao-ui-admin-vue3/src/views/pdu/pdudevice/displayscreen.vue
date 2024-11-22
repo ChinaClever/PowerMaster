@@ -1627,6 +1627,7 @@ lineidChart?.dispose() // 销毁图表实例
 const PDUHdaLineHisdata = async (type) => {
   const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey, type: 'oneHour'})
   console.log('result',result)
+  console.log('queryParamsdevKey',queryParams.devKey)
   //{ devKey : queryParams.devKey, type : newPowGranularity} '192.168.1.184-0'
 
   const lData = result.l

@@ -222,6 +222,12 @@
           </div>
           <div class="pageBox"  v-if="visControll.pfVis">
             <div class="page-conTitle">
+              相电流（电压）历史曲线趋势图
+            </div>
+            <div ref="lineidChartContainer" id="lineidChartContainer" class="adaptiveStyle"></div>
+          </div>
+          <div class="pageBox"  v-if="visControll.pfVis">
+            <div class="page-conTitle">
               功率因素曲线
             </div>        
             <PFLine class="Container"  width="70vw" height="58vh" :list="pfLineList"/>
@@ -341,6 +347,9 @@ import { remove } from 'nprogress';
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
+
+let lineidChart = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
+const lineidChartContainer = ref<HTMLElement | null>(null);
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const outletList = ref() as any;
@@ -550,6 +559,213 @@ function findFullName(data, targetUnique, callback, fullName = '') {
     }
   }
 }
+
+const lChartData = ref({
+  volValueList : [] as number[], //电压
+  curValueList : [] as number[] //电流
+});
+const llChartData = ref({
+  volValueList : [] as number[],
+  curValueList : [] as number[]
+});
+const lllChartData = ref({
+  volValueList : [] as number[],
+  curValueList : [] as number[]
+});
+
+const lineidDateTimes = ref([] as string[])
+
+const lineidBeforeChartUnmount = () => {
+lineidChart?.dispose() // 销毁图表实例
+}
+
+//获取PDU相历史数据，处理L1,L2,L3的数据
+const PDUHdaLineHisdata = async () => {
+  const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey, type: 'twentyfourHour'})
+  console.log('result',result)
+  //{ devKey : queryParams.devKey, type : newPowGranularity} '192.168.1.184-0'
+
+  const lData = result.l
+  const llData = result.ll
+  const lllData = result.lll
+
+  lData.forEach(item => {
+    lChartData.value.volValueList.push(item.vol_avg_value)
+    lChartData.value.curValueList.push(item.cur_avg_value)
+  })
+
+  llData.forEach(item => {
+    llChartData.value.volValueList.push(item.vol_avg_value)
+    llChartData.value.curValueList.push(item.cur_avg_value)
+  })
+
+  lllData.forEach(item => {
+    lllChartData.value.volValueList.push(item.vol_avg_value)
+    lllChartData.value.curValueList.push(item.cur_avg_value)
+  })
+
+  lineidDateTimes.value = result.dateTimes
+}
+
+
+const lineidFlashChartData = async () =>{
+  lineidBeforeChartUnmount()
+
+  await PDUHdaLineHisdata()
+
+  // 创建新的图表实例
+  lineidChart = echarts.init(document.getElementById('lineidChartContainer'));
+  // 设置新的配置对象
+  if (lineidChart) {
+    lineidChart.setOption({
+      title: { text: ''},
+      tooltip: { trigger: 'axis',      formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+          if (param.seriesName === 'L1-电压' || param.seriesName === 'L2-电压' || param.seriesName === 'L3-电压') {
+            result += 'V';
+          } else  {
+            result += ' A';
+          }
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }},
+      legend: {
+        data: ['L1-电流', 'L2-电流', 'L3-电流','L1-电压', 'L2-电压', 'L3-电压'], // 图例项
+        selected: { 'L1-电流':true,'L2-电流':true,'L3-电流':true, "L1-电压": false, "L2-电压": false, "L3-电压": false }
+      },
+      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+      xAxis: {
+        type: 'category',nameLocation: 'end',axisLabel: { formatter: 
+            function (value) {
+              return value.substring(11, 19);
+            }
+          },
+        boundaryGap: false,
+        data:lineidDateTimes.value
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          name: 'L1-电压',
+          type: 'line',
+          data: lChartData.value.volValueList,
+          symbol: 'circle',
+          symbolSize: 4
+        },
+        {
+          name: 'L2-电压',
+          type: 'line',
+          data: llChartData.value.volValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+        },
+        {
+          name: 'L3-电压',
+          type: 'line',
+          data: lllChartData.value.volValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+        },{
+          name: 'L1-电流',
+          type: 'line',
+          data: lChartData.value.curValueList,
+          symbol: 'circle',
+          symbolSize: 4
+        },
+        {
+          name: 'L2-电流',
+          type: 'line',
+          data: llChartData.value.curValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+        },
+        {
+          name: 'L3-电流',
+          type: 'line',
+          data: lllChartData.value.curValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+        }
+      ]
+    })
+    lineidChart.on('legendselectchanged', function (params) {
+      // 获取当前的 legend.selected 配置
+      var legendName = params.name;
+
+      // 初始化新的 legend.selected 配置
+      var newLegendSelected = {};
+
+      // 根据选中的图例项设置新的 legend.selected 配置
+      if (legendName.endsWith('-电压')) {
+        if (params.selected[legendName]) {
+          // 如果选中的是电压图例项，则显示所有电压，隐藏所有电流
+          newLegendSelected = {
+            "L1-电压": true,
+            "L2-电压": true,
+            "L3-电压": true,
+            "L1-电流": false,
+            "L2-电流": false,
+            "L3-电流": false
+          };
+        } else {
+          if(legendName === 'L1-电压'){
+            newLegendSelected = {
+              "L1-电压": false,
+            }
+          }else if(legendName === 'L2-电压'){
+            newLegendSelected = {
+              "L2-电压": false,
+            }
+          }else if(legendName === 'L3-电压'){
+            newLegendSelected = {
+              "L3-电压": false,
+            }
+          }
+        }
+      } else if (legendName.endsWith('-电流')) {
+        if (params.selected[legendName]) {
+          // 如果选中的是电流图例项，则显示所有电流，隐藏所有电压
+          newLegendSelected = {
+            "L1-电压": false,
+            "L2-电压": false,
+            "L3-电压": false,
+            "L1-电流": true,
+            "L2-电流": true,
+            "L3-电流": true
+          };
+        } else {
+          if(legendName === 'L1-电流'){
+            newLegendSelected = {
+              "L1-电流": false,
+            }
+          }else if(legendName === 'L2-电流'){
+            newLegendSelected = {
+              "L2-电流": false,
+            }
+          }else if(legendName === 'L3-电流'){
+            newLegendSelected = {
+              "L3-电流": false
+            }
+          }
+        }
+      }
+ 
+      // 应用新的配置到图表实例
+      lineidChart.setOption({
+        legend: {
+          selected: newLegendSelected
+        }
+      });
+    });
+  }
+}
+
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await CabinetApi.getRoomList({})
@@ -559,6 +775,7 @@ const getNavList = async() => {
   arr = arr.concat(temp);
   }
   navList.value = arr
+  await PDUHdaLineHisdata()
 }
 
 //折线图数据
@@ -721,7 +938,8 @@ const outletItemStyle = ref({
 });
 const temp1 = ref([]) as any
 const getList = async () => {
-  
+  await PDUHdaLineHisdata()
+
   loading.value = true
   eqData.value = await PDUDeviceApi.getConsumeData(queryParams);
   
@@ -821,7 +1039,7 @@ const getList = async () => {
         max: resultArray[i].powApparent+0.001,
       })
       // console.log(serverData1.value.nameAndMax)
-      serverData.value.curvalue.push(resultArray[i].curValue)
+      serverData.value.curvalue.push(resultArray[i].curValue.toFixed(2))
       serverData.value.powvalue.push(resultArray[i].powValue)
       serverData.value.powapparent.push(resultArray[i].powApparent)
     }
@@ -1020,6 +1238,8 @@ const handleQuery = async () => {
       queryParams.devKey = queryParams.ipAddr +'-' +  queryParams.cascadeAddr;
       await getList();
       initChart();
+      await PDUHdaLineHisdata();
+      await lineidFlashChartData();
       queryParams.devKey = null;
     }
   }
@@ -1168,7 +1388,7 @@ const formRef = ref()
 
 /** 初始化 **/
 onMounted( async () =>  {
-    getNavList()
+  getNavList()
   // getList();
   // initChart();
   ipList.value = await loadAll();
@@ -1440,5 +1660,26 @@ onMounted( async () =>  {
 }
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+
+@media screen and (max-width:1599px) {
+  .adaptiveStyle {
+    width: 90vw;
+    height: 42vh;
+  }
+}
+
+@media screen and  (max-width:2048px) and (min-width:1600px) {
+  .adaptiveStyle {
+    width: 70vw;
+    height: 42vh;
+  }
+}
+
+@media screen and (min-width:2049px) {
+  .adaptiveStyle {
+    width: 95vw;
+    height: 42vh;
+  }
 }
 </style>
