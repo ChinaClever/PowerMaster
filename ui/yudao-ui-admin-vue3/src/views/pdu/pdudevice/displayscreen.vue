@@ -1722,18 +1722,18 @@ const PDUHdaLineHisdata = async (type) => {
   const lllData = result.lll
 
   lData.forEach(item => {
-    lChartData.value.volValueList.push(item.vol_value)
-    lChartData.value.curValueList.push(item.cur_value)
+    lChartData.value.volValueList.push(item.vol_value.toFixed(1))
+    lChartData.value.curValueList.push(item.cur_value.toFixed(2))
   })
 
   llData.forEach(item => {
-    llChartData.value.volValueList.push(item.vol_value)
-    llChartData.value.curValueList.push(item.cur_value)
+    llChartData.value.volValueList.push(item.vol_value.toFixed(1))
+    llChartData.value.curValueList.push(item.cur_value.toFixed(2))
   })
 
   lllData.forEach(item => {
-    lllChartData.value.volValueList.push(item.vol_value)
-    lllChartData.value.curValueList.push(item.cur_value)
+    lllChartData.value.volValueList.push(item.vol_value.toFixed(1))
+    lllChartData.value.curValueList.push(item.cur_value.toFixed(2))
   })
   if(type === 'oneHour'){
     lineidDateTimes.value = result.dateTimes
