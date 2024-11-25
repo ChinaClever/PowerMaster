@@ -958,6 +958,30 @@ const setNewChartData = async () => {
 }
 
 const setNewABCChartData = () => {
+  if (totalChartContainer.value && instance) {
+    totalChart = echarts.init(totalChartContainer.value);
+    totalChart.setOption({
+      // 这里设置 Echarts 的配置项和数据
+      title: { text: ''},
+      tooltip: { trigger: 'item', formatter: function(params) {
+                                      if (params.name === '视在功率') {
+                                          return params.name + ': ' + params.value + 'kVA';
+                                      } else if (params.name === '有功功率') {
+                                          return params.name + ': ' + params.value + 'kW';
+                                      }
+                                  } },
+      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+      series: [
+        { type: 'pie', radius: ['50%', '65%'], avoidLabelOverlap: false,  labelLine: { show: false },
+          data: [{value : totalData.value.pow, name: '有功功率', label: { show: true, position: 'outside', formatter: '{c}kW',fontSize: 13 },itemStyle: { color: '#0A69EE' }  },
+                 {value : totalData.value.powApparent , name : '视在功率' , label: { show: true, position: 'outside', formatter: '{c}kVA',fontSize: 13  }, itemStyle: { color: '#0AD0EE' } }],
+        },
+      ],
+    });
+    // 将 totalChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+    instance.appContext.config.globalProperties.totalChart = totalChart;
+  }
+
   if (AChartContainer.value && instance) {
     AChart = echarts.init(AChartContainer.value);
     var aCurMax =  A.value.cur_alarm_max - A.value.cur_value;
