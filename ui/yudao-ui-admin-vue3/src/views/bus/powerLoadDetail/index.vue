@@ -95,7 +95,7 @@
           </el-row>
           <el-row style="padding-left: 10px;margin-top: 10px;">
             <el-card style="width: 300px; height: 80px;">
-              <span style="font-size: 18px;">{{peakDemand}}</span>              
+              <span style="font-size: 18px;"><!--{{peakDemand}}--></span>              
               <span style="font-size: 14px; float: right; padding-top: 30px;">最大需量</span>
               <p style="font-size: 10px; padding-left: 10px;">kVA</p>
             </el-card>
@@ -182,7 +182,7 @@ const ratedCapacity = ref();
 const reserveMargin = ref();
 const powActive = ref();
 const powReactive = ref();
-const peakDemand = ref();
+//const peakDemand = ref();
 const powActivepPercentage = ref();
 const powReactivepPercentage = ref();
 const loadPercentage = ref();
@@ -470,7 +470,7 @@ const initChart2 = () => {
             }
           }
         },
-                grid: {
+        grid: {
           left: '5%',   // 设置左侧边距
           right: '5%',  // 设置右侧边距
           top: '10%',    // 设置上侧边距
@@ -572,7 +572,7 @@ const getDetailData =async () => {
       reserveMargin.value = formatNumber(data.reserveMargin, 2);
       powActive.value = formatNumber(data.powActive, 2);
       powReactive.value = formatNumber(data.powReactive, 2);
-      peakDemand.value = formatNumber(data.peakDemand, 2);
+      //peakDemand.value = formatNumber(data.peakDemand, 2);
       powActivepPercentage.value = runLoad.value == 0 ? 0 :  ((powActive.value / runLoad.value) * 100).toFixed(2);
       powReactivepPercentage.value = runLoad.value == 0 ? 0 : ((powReactive.value / runLoad.value) * 100 ).toFixed(2)
       loadPercentage.value = ratedCapacity.value == 0 ? 0 :  ((runLoad.value / ratedCapacity.value) * 100).toFixed(2);
@@ -769,7 +769,7 @@ watch( ()=>timeRadio.value, async(value)=>{
   await getLineChartData();
   // 更新数据后重新渲染图表
   if (isHaveData.value == true){
-    console.log(L1Data.value)
+    console.log("L1Data",L1Data.value)
     myChart2?.setOption({
     title: { text: ''},
      tooltip: { trigger: 'axis' ,formatter: function(params) {
@@ -1205,6 +1205,8 @@ const isHaveData = ref(true)
 const getLineChartData =async () => {
  try {
     const data = await BusPowerLoadDetailApi.getLineChartData(lineChartQueryParams);
+    console.log('获取折线图数据',data)
+    console.log('lineChartQueryParams',lineChartQueryParams)
     if (data != null){
       // 查到数据
       allLineData.value = data
@@ -1234,10 +1236,12 @@ const getLineChartData =async () => {
     }else{
     }
  } finally {
+    initChart2()
+    initChart3()
  }
 }
 
-function initData (){
+const initData = () => {
   if(timeRadio.value == '近一小时'){
     switch (typeRadio.value){
       case '电流':
@@ -1447,7 +1451,7 @@ function formatNumber(value, decimalPlaces) {
     if (!isNaN(value)) {
         return value.toFixed(decimalPlaces);
     } else {
-        return null; // 或者其他默认值
+        return []; // 或者其他默认值
     }
 }
 
@@ -1461,17 +1465,21 @@ const handleQuery = async () => {
 
 /** 初始化 **/
 onMounted(async () => {
-  devKeyList.value = await loadAll();
-  await getDetailData();
-  await getLineChartData();
-  initChart();
-  initChart1();
-  initChart2();
-  initChart3();
-  //设置每五秒执行一次 getDetailData 方法
-  intervalId = window.setInterval(() => {
-    getDetailData();
-  }, 5000);
+  try {
+    devKeyList.value = await loadAll();
+    await getDetailData();
+    await getLineChartData();
+    console.log('还是不执行吗'); // 这行代码应该会执行，除非前面的代码抛出了异常
+    initChart();
+    initChart1();
+ 
+    // 设置每五秒执行一次 getDetailData 方法
+    intervalId = window.setInterval(() => {
+      getDetailData();
+    }, 5000);
+  } catch (error) {
+    console.error('onMounted 钩子中的异步操作失败:', error);
+  }
 })
 
 onUnmounted(() => {
