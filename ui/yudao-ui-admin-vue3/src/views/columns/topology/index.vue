@@ -230,7 +230,6 @@ import InitialBox from './component/InitialBox.vue'
 import PluginBox from './component/PluginBox.vue'
 import BoxForm from './component/BoxForm.vue'
 import { EChartsOption } from 'echarts'
-
 const message = useMessage()
 const { push } = useRouter()
 let instance: BrowserJsPlumbInstance | null = null
@@ -239,7 +238,7 @@ const machineList = ref<any>([]) // 机柜列列表
 const queryParams = reactive({
   cabinetColumnId: history?.state?.id,
   cabinetroomId: history?.state?.roomId,
-  roomDownVal:history?.state?.roomValId
+  roomDownValId:history?.state?.roomValId
 })
 const btns = [
   {
@@ -310,6 +309,7 @@ const machineColInfo = reactive<any>({})
 const cabinetList = ref<any>([])
 const busListA = ref<any>([])
 const busListB = ref<any>([])
+const roomDownVal =ref();
 const operateMenu = ref({  // 操作菜单
   left: '0px',
   top: '0px',
@@ -333,7 +333,7 @@ const {containerInfo, isFromHome} = defineProps({
     default: false,
   },
 })
-const emit = defineEmits(['backData', 'idChange', 'getpdubar']) // 定义 success 事件，用于操作成功后的回调
+const emit = defineEmits(['backData', 'idChange', 'getpdubar','sendList']) // 定义 success 事件，用于操作成功后的回调
 
 // 连接初始化准备
 const initConnect = () => {
@@ -1309,6 +1309,8 @@ const getMachineColInfo = async() => {
   const res1 = MachineColumnApi.getAisleDetail({id: queryParams.cabinetColumnId})
   const res2 = MachineColumnApi.getDataDetail({id: queryParams.cabinetColumnId})
   Promise.all([res1, res2]).then((resultList) => {
+    emit('sendList', resultList[0].roomId)
+    //push({path: '/aisle/index', state: { roomDownVal: resultList[0].roomId}})
     Object.assign(machineColInfo, resultList[0])
     handleCabinetList(resultList[0], resultList[1])
     // handleBusInit(resultList[0])
@@ -1416,10 +1418,10 @@ const getNavList = async() => {
 const handleNavList = (cabinetroomId) => {
   let targetRoom = null as any
   if (!queryParams.cabinetroomId) {
-    if(queryParams.roomDownVal == null || queryParams.roomDownVal == ""){
+    if(queryParams.roomDownValId == null || queryParams.roomDownValId  == ""){
         queryParams.cabinetroomId = roomList.value[0].roomId
     }else{
-        queryParams.cabinetroomId = queryParams.roomDownVal
+        queryParams.cabinetroomId = queryParams.roomDownValId 
     }
     targetRoom = roomList.value[0]
   } else {
