@@ -311,7 +311,7 @@
               link
               type="primary"
               @click="toDeatil(scope.row)"
-              v-if="scope.row.status != null && scope.row.status != 5"
+              v-if="scope.row.status != null && scope.row.status != 0"
             >
             设备详情
             </el-button>
@@ -319,7 +319,7 @@
               link
               type="danger"
               @click="handleDelete(scope.row.busId)"
-              v-if="scope.row.status == 5"
+              v-if="scope.row.status == 0"
             >
               删除
             </el-button>
@@ -567,7 +567,7 @@ const statusList = reactive([
   {
     name: '离线',
     selected: true,
-    value: 5,
+    value: 0,
     cssClass: 'btn_offline',
     activeClass: 'btn_offline offline'
   },

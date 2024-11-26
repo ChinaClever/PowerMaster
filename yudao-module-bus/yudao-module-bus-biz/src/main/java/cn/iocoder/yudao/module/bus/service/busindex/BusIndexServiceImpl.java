@@ -392,7 +392,8 @@ public class BusIndexServiceImpl implements BusIndexService {
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
 
-            String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id") + '-' + jsonObject.getString("addr");
+//            String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id") + '-' + jsonObject.getString("addr");
+            String devKey = jsonObject.getString("dev_ip") + '_' + jsonObject.getString("bus_name");
             BusIndexRes busIndexRes = resMap.get(devKey);
             JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
             JSONArray loadRate = lineItemList.getJSONArray("load_rate");
@@ -449,7 +450,8 @@ public class BusIndexServiceImpl implements BusIndexService {
                 continue;
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-            String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id") + '-' + jsonObject.getString("addr");
+//            String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id") + '-' + jsonObject.getString("addr");
+            String devKey = jsonObject.getString("dev_ip") + '_' + jsonObject.getString("bus_name");
             BusRedisDataRes busRedisDataRes = resMap.get(devKey);
             JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
             JSONArray volValue = lineItemList.getJSONArray("vol_value");

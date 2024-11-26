@@ -68,13 +68,13 @@
             <span class="label">发生时间 :</span>
             <span class="value">{{ formatTime(minTemDataTimeTempC) }}</span>
           </div> -->
-
-
-          <div class="nav_header" style="font-size: 14px;"  v-if="loading2">
           <span v-if="nowAddress">{{nowAddress}}</span>
           <span v-if="nowIpAddr">( {{nowIpAddr}} ) </span>
           <br/>
-      </div>
+
+          <!-- <div class="nav_header" style="font-size: 14px;"  v-if="loading2">
+
+      </div> -->
     <div class="descriptions-container" v-if="loading2" style="font-size: 14px;">
           <div  class="description-item" v-if="queryParams.granularity != 'day'" >
             <span class="label">{{maxTemDataTempName}} :</span>
@@ -312,6 +312,7 @@ const queryParams = reactive({
   busId: undefined as number | undefined,
   granularity: 'realtime',
   devkey: undefined as string | undefined,
+  nowAddress: undefined as string | undefined,
   // 进入页面原始数据默认显示最近一小时
   timeRange: defaultHourTimeRange(1) as any
 })
@@ -877,32 +878,32 @@ function customTooltipFormatter(params: any[]) {
       case 'B路平均温度(℃)':
       case 'C路平均温度(℃)':
       case '中线平均温度(℃)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value  +'记录时间:'  +params[0].name+ '<br/>';
+      tooltipContent += item.marker +' 记录时间：'  +params[0].name+  ' ' + item.seriesName + ': ' + item.value  +'<br/>';
         break;
       case 'A路最高温度(℃)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+aTemMaxTimeData.value[item.dataIndex]+'<br/>';
+      tooltipContent += item.marker +" 发生时间："+aTemMaxTimeData.value[item.dataIndex]+ ' ' + item.seriesName + ': ' + item.value +'<br/>';
       break;
       case 'B路最高温度(℃)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+bTemMaxTimeData.value[item.dataIndex]+'<br/>';
+      tooltipContent += item.marker +" 发生时间："+bTemMaxTimeData.value[item.dataIndex]+ ' ' + item.seriesName + ': ' + item.value +'<br/>';
       break;
       case 'C路最高温度(℃)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+cTemMaxTimeData.value[item.dataIndex]+'<br/>';
+      tooltipContent += item.marker +" 发生时间："+cTemMaxTimeData.value[item.dataIndex]+ ' ' + item.seriesName + ': ' + item.value +'<br/>';
       break;
       case '中线最高温度(℃)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+nTemMaxTimeData.value[item.dataIndex]+'<br/>';
+      tooltipContent += item.marker +" 发生时间："+nTemMaxTimeData.value[item.dataIndex]+ ' ' + item.seriesName + ': ' + item.value +'<br/>';
       break;
 
       case 'A路最低温度(℃)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+aTemMinTimeData.value[item.dataIndex]+'<br/>';
+      tooltipContent += item.marker +" 发生时间："+aTemMinTimeData.value[item.dataIndex]+ ' ' + item.seriesName + ': ' + item.value +'<br/>';
       break;
       case 'B路最低温度(℃)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+bTemMinTimeData.value[item.dataIndex]+'<br/>';
+      tooltipContent += item.marker +" 发生时间："+bTemMinTimeData.value[item.dataIndex]+ ' ' + item.seriesName + ': ' + item.value +'<br/>';
       break;
       case 'C路最低温度(℃)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+cTemMinTimeData.value[item.dataIndex]+'<br/>';
+      tooltipContent += item.marker +" 发生时间："+cTemMinTimeData.value[item.dataIndex]+ ' ' + item.seriesName + ': ' + item.value +'<br/>';
       break;
       case '中线最低温度(℃)':
-      tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value +"发生时间："+nTemMinTimeData.value[item.dataIndex]+'<br/>';
+      tooltipContent += item.marker +" 发生时间："+nTemMinTimeData.value[item.dataIndex]+ ' ' + item.seriesName + ': ' + item.value +'<br/>';
       break;
       case 'A路温度(℃)':
       case 'B路温度(℃)':
@@ -1022,6 +1023,7 @@ const handleExport1 = async () => {
     await message.exportConfirm()
     // 发起导出
     queryParams.pageNo = 1
+    queryParams.nowAddress = nowAddress.value
     exportLoading.value = true
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
