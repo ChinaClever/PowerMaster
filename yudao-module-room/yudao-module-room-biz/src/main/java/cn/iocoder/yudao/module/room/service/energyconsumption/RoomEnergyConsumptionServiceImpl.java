@@ -8,6 +8,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.metrics.ValueCount;
@@ -254,11 +255,33 @@ public class RoomEnergyConsumptionServiceImpl implements RoomEnergyConsumptionSe
 
     @Override
     public Map<String, Object> getNewData() throws IOException {
-        String[] indices = new String[]{"room_eq_total_day", "room_eq_total_week", "room_eq_total_month"};
+        String indices = "room_ele_total_realtime";
         String[] name = new String[]{"day", "week", "month"};
         LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1), LocalDateTime.now().minusMonths(1)};
-        Map<String, Object> map = getSumData(indices, name, timeAgo);
-        return map;
+
+        Map<String, Object> resultItem = new HashMap<>();
+        // 添加范围查询 最近24小时
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        for (int i = 0; i < timeAgo.length; i++) {
+            SearchRequest searchRequest = new SearchRequest(indices);
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
+                    .gte(timeAgo[i].format(formatter))
+                    .lte(now.format(formatter)));
+            // 添加计数聚合
+            searchSourceBuilder.aggregation(
+                    AggregationBuilders.count("total_insertions").field("room_id")
+            );
+            searchRequest.source(searchSourceBuilder);
+            // 执行搜索请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            // 从聚合结果中获取文档数量
+            ValueCount totalInsertionsAggregation = searchResponse.getAggregations().get("total_insertions");
+            long totalInsertions = totalInsertionsAggregation.getValue();
+            resultItem.put(name[i], totalInsertions);
+        }
+        return resultItem;
     }
 
     @Override

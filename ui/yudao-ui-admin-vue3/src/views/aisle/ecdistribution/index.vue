@@ -127,6 +127,12 @@
               :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
               :row-style="{ fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
+              <!-- 添加行号列 -->
+              <el-table-column label="序号" align="center" width="80px">
+                <template #default="{ $index }">
+                  {{ $index + 1 }}
+                </template>  
+              </el-table-column>
               <!-- 动态生成表头 -->
               <template v-for="item in headerData" :key="item.name">
                 <el-table-column  label="开始电能">

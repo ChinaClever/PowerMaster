@@ -72,13 +72,13 @@
       >
         <el-form-item label="时间段" prop="createTime" label-width="60px">
           <el-button 
-            @click="queryParams.timeType = 0;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;handleQuery();showSearchBtn = false" 
+            @click="queryParams.timeType = 0;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;handleQuery();showSearchBtn = false;dateSwitch = true"
             :type="queryParams.timeType == 0 ? 'primary' : ''"
           >
             最近24小时
           </el-button>
           <el-button 
-            @click="queryParams.timeType = 1;now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;handleMonthPick();showSearchBtn = false;" 
+            @click="queryParams.timeType = 1;now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;handleMonthPick();showSearchBtn = false;;dateSwitch = false" 
             :type="queryParams.timeType == 1 ? 'primary' : ''"
           >
             月份
@@ -322,8 +322,8 @@
           <div class="content" v-show="item.l3MaxPow !== undefined && item.l3MaxPow !== null">
             <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
             <div class="info">
-              <div >L1最大功率：{{item.l1MaxPow}}kW</div>
-              <div >L2最大功率：{{item.l2MaxPow}}kW</div>
+              <div >L1最大功率：{{ item.l1MaxPow }}kW</div>
+              <div >L2最大功率：{{ item.l2MaxPow }}kW</div>
               <div >L3最大功率：{{ item.l3MaxPow }}kW</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
@@ -337,9 +337,27 @@
             </div>
           </div>          
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->              
-          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <!-- <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button> -->    
+          <button class="detail" @click="onlyDevKey=item.devKey;showDialogOne(item.pduId,dateSwitch?'hour':'day',flagValue=1)">详情</button>
         </div>
       </div>
+
+      <el-dialog
+        v-model="dialogVisibleOne"
+        @close="handleClose"
+      >     
+        <!-- 自定义的头部内容（可选） -->
+        <template #header>
+          <el-button @click="lineidBeforeChartUnmountOne()" style="float:right" show-close="false" >关闭</el-button>
+          <div><h2>功率详情</h2></div> 
+          <div>结果所在位置：{{ onlyDevKey }} 时间段：{{ createTimes }}-{{ endTimes }}</div>
+        </template>
+
+        <!-- 自定义的主要内容 -->
+        <div class="custom-content">
+          <div ref="lineidChartContainerOne" id="lineidChartContainerOne" class="adaptiveStyle"></div>
+        </div>
+      </el-dialog>
 
       <div  v-show="switchValue == 1 && list.length > 0 && valueMode == 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
@@ -348,8 +366,8 @@
             <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
             <div class="info">
               
-              <div >L1最大电流：{{item.l1MaxCur}}A</div>
-              <div >L2最大电流：{{item.l2MaxCur}}A</div>
+              <div >L1最大电流：{{ item.l1MaxCur }}A</div>
+              <div >L2最大电流：{{ item.l2MaxCur }}A</div>
               <div >L3最大电流：{{ item.l3MaxCur }}A</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
@@ -358,16 +376,34 @@
             <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
             <div class="info">
               
-              <div >最大电流：{{item.l1MaxCur}}A</div>
-              <div >发生时间：{{item.l1MaxCurTime}}</div>
+              <div >最大电流：{{ item.l1MaxCur }}A</div>
+              <div >发生时间：{{ item.l1MaxCurTime }}</div>
 
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>          
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->                
-          <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <!--<button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>--> 
+          <button class="detail" @click="onlyDevKey=item.devKey;showDialog(item.pduId,dateSwitch?'hour':'day',flagValue=0)">详情</button>
         </div>
       </div>
+
+      <el-dialog
+        v-model="dialogVisible"
+        @close="handleClose"
+      >     
+        <!-- 自定义的头部内容（可选） -->
+        <template #header>
+          <el-button @click="lineidBeforeChartUnmount()" style="float:right" show-close="false" >关闭</el-button>
+          <div><h2>电流详情</h2></div> 
+          <div>结果所在位置：{{onlyDevKey}} 时间段: {{ createTimes }}-{{ endTimes }}</div>
+        </template>
+
+        <!-- 自定义的主要内容 -->
+        <div class="custom-content">
+          <div ref="lineidChartContainer" id="lineidChartContainer" class="adaptiveStyle"></div>
+        </div>
+      </el-dialog>
 
       <Pagination
         :total="total"
@@ -396,6 +432,8 @@ import Pie from './component/Pie.vue'
 import { ElTree } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
 
+import * as echarts from 'echarts'
+
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 const navList = ref([]) as any // 左侧导航栏树结构列表
@@ -406,6 +444,16 @@ const now = ref()
 const showSearchBtn = ref(false)
 const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(1)
+const dialogVisible = ref(false) //全屏弹窗的显示隐藏
+const dialogVisibleOne = ref(false) //全屏弹窗的显示隐藏
+const detailsId = ref(0)
+const linedata = ref([]) as any
+const flagValue = ref(0)
+let regularTime = null
+const dateSwitch = ref(true)
+const onlyDevKey = ref('')
+const createTimes = ref('')
+const endTimes = ref('')
 // const statusNumber = reactive({
 //   normal : 0,
 //   warn : 0,
@@ -631,6 +679,7 @@ const getList = async () => {
   loading.value = true
   try {
     const data = await PDUDeviceApi.getPDULinePage(queryParams)
+    console.log('dataresult',data)
     list.value = data.list
     var tableIndex = 0;
     list.value.forEach((obj) => {
@@ -737,12 +786,260 @@ const giveValue = async () => {
   MaxLineId.value = await PDUDeviceApi.getPDUMaxLineId(queryParams)
   // console.log(MaxLineId.value)
 }
+
+//L1,L2,L3的数据
+//const lChartData = ref({
+//  cur_max_value : [] as number[], //电流
+//  pow_active_max_value : [] as number[], //功率
+//});
+//
+//const llChartData = ref({
+//  cur_max_value : [] as number[],
+//  pow_active_max_value : [] as number[],
+//});
+//
+//const lllChartData = ref({
+//  cur_max_value : [] as number[],
+//  pow_active_max_value : [] as number[],
+//});
+//
+//const lineidDateTimes = ref([] as string[])
+
+const instance = getCurrentInstance();
+let lineidChart = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
+const lineidChartContainer = ref<HTMLElement | null>(null);
+let lineidChartOne = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
+const lineidChartContainerOne = ref<HTMLElement | null>(null);
+
+const updateChart = (lChartData,llChartData,lllChartData,lineidDateTimes ) => {
+  if(flagValue.value == 0){
+    return {
+      title: { text: ''},
+      tooltip: { trigger: 'axis', formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+          if (param.seriesName === 'L1-电流' || param.seriesName === 'L2-电流' || param.seriesName === 'L3-电流') {
+            result += ' A';
+          }
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }},
+      legend: {
+        data: ['L1-电流', 'L2-电流', 'L3-电流'], // 图例项
+        selected: true
+      },
+      grid: {left: '3%', right: '3%', bottom: '3%',containLabel: true},
+      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+      xAxis: {
+        type: 'category',nameLocation: 'end',
+        boundaryGap: false,
+        //axisLabel:{
+        //  show:true,
+        //  interval:0,
+        //  rotate:-45
+        //},
+        data:lineidDateTimes.value
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          name: 'L1-电流',
+          type: 'line',
+          data: lChartData.value.cur_max_value,
+          symbol: 'circle',
+          symbolSize: 4
+        },
+        {
+          name: 'L2-电流',
+          type: 'line',
+          data: llChartData.value.cur_max_value,
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        },
+        {
+          name: 'L3-电流',
+          type: 'line',
+          data: lllChartData.value.cur_max_value,
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        }
+      ]
+    }
+  }else if(flagValue.value == 1){
+    return {
+      title: { text: ''},
+      tooltip: { trigger: 'axis', formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+          if (param.seriesName === 'A路最大功率' || param.seriesName === 'B路最大功率' || param.seriesName === 'C路最大功率') {
+            result += ' KW';
+          }
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+        }
+      },
+      legend: {
+        data: ['A路最大功率', 'B路最大功率', 'C路最大功率'], // 图例项
+        selected: true
+      },
+      grid: {left: '3%', right: '3%', bottom: '3%',containLabel: true},
+      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+      xAxis: {
+        type: 'category',nameLocation: 'end',
+        boundaryGap: false,
+        //axisLabel:{
+        //  interval:0,
+        //  rotate:-45
+        //},
+        data:lineidDateTimes.value
+      },
+      yAxis: {
+        type: 'value',
+      },
+      series: [
+        {
+          name: 'A路最大功率',
+          type: 'line',
+          data: lChartData.value.pow_active_max_value,
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        },
+        {
+          name: 'B路最大功率',
+          type: 'line',
+          data: llChartData.value.pow_active_max_value,
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        },
+        {
+          name: 'C路最大功率',
+          type: 'line',
+          data: lllChartData.value.pow_active_max_value,
+          symbol: 'circle',
+          symbolSize: 4,
+          lineStyle:{type: 'dashed'}
+        }
+      ]
+    }
+  }
+}
+
+const updateChartData = (chartData, dataArray) => {
+  chartData.value.cur_max_value = dataArray.map(item => item.cur_max_value);
+  chartData.value.pow_active_max_value = dataArray.map(item => item.pow_active_max_value);
+};
+
+//获取电流信息
+const getLineid = async (id, type,flagValue) => {
+  const result = await PDUDeviceApi.getMaxLineHisdata({id:id ,type:type})
+
+  const lChartData = ref({
+    cur_max_value : [] as number[], //电流
+    pow_active_max_value : [] as number[], //功率
+  });
+
+  const llChartData = ref({
+    cur_max_value : [] as number[],
+    pow_active_max_value : [] as number[],
+  });
+
+  const lllChartData = ref({
+    cur_max_value : [] as number[],
+    pow_active_max_value : [] as number[],
+  });
+
+  const lineidDateTimes = ref([] as string[])
+
+  createTimes.value = result.dateTimes[0]
+  endTimes.value = result.dateTimes[result.dateTimes.length-1]
+
+  if(type === 'hour'){
+    lineidDateTimes.value = result.dateTimes.map(dateTimeStr => {
+      // 找到最后一个冒号的位置
+      let lastIndexOfColon = dateTimeStr.lastIndexOf(':');
+      // 截取到最后一个冒号之前的部分
+      return dateTimeStr.substring(0, lastIndexOfColon);
+    })
+  }else if(type === 'day'){
+    lineidDateTimes.value = result.dateTimes.map(dateTimeStr => {
+      return dateTimeStr.substring(0, 10);
+    })
+  }
+
+  //result.dateTimes
+
+  const lData = result.l
+  const llData = result.ll
+  const lllData = result.lll
+
+  // 更新图表数据
+  updateChartData(lChartData, lData);
+  updateChartData(llChartData, llData);
+  updateChartData(lllChartData, lllData);
+ 
+  // 假设 updateChart 函数返回正确的 ECharts 配置对象
+  const option = updateChart(lChartData, llChartData, lllChartData, lineidDateTimes);
+ 
+  // 获取正确的图表容器
+  const chartContainer = flagValue === 0 ? document.getElementById('lineidChartContainer') : document.getElementById('lineidChartContainerOne');
+  if (!chartContainer) {
+    console.error('Chart container not found');
+    return;
+  }
+ 
+  // 检查是否已经存在一个图表实例
+  if (!lineidChart || lineidChart.getDom() !== chartContainer) {
+    // 如果不存在或者容器已更改，则创建新的图表实例
+    if (lineidChart) {
+      // 如果存在旧实例，则销毁它
+      lineidChart.dispose();
+    }
+    lineidChart = echarts.init(chartContainer);
+  }
+ 
+  // 设置图表选项
+  lineidChart.setOption(option, true);
+}
+
+const lineidBeforeChartUnmount = () => {
+  lineidChart?.dispose() // 销毁图表实例
+  dialogVisible.value = false
+}
+
+const lineidBeforeChartUnmountOne = () => {
+  lineidChartOne?.dispose() // 销毁图表实例
+  dialogVisibleOne.value = false
+}
+
+const showDialog = (id, type,flagValue) => {
+  lineidChart?.dispose()
+  getLineid(id, type,flagValue)
+  dialogVisible.value = true
+  flagValue.value = 0
+}
+
+const showDialogOne = (id,type,flagValue) => {
+  lineidChartOne?.dispose()
+  getLineid(id, type,flagValue)
+  dialogVisibleOne.value = true
+  flagValue.value = 1
+}
+
 /** 初始化 **/
 onMounted(() => {
   giveValue()
   getList()
-  getNavList();
-
+  getNavList()
 })
 
 
@@ -1231,16 +1528,31 @@ onMounted(() => {
   flex: 1; /* 自动扩展以对齐数据 */
   
 }
-  .line {
-    height: 1px;
-    margin-top: 28px;
-    margin-bottom: 20px;
-    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
-  }
+.line {
+  height: 1px;
+  margin-top: 28px;
+  margin-bottom: 20px;
+  background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+}
 ::v-deep .el-table .el-table__header th{
   background-color: #f5f7fa;
   color: #909399;
   height: 80px;
 
-}  
+} 
+
+:deep(.el-dialog) {
+  height: 70%;
+  width: 70%;
+}
+
+.adaptiveStyle {
+  width: 65vw;
+  height: 45vh;
+  z-index: 5;
+}
+/* 尝试隐藏关闭按钮，但可能不总是有效 */
+:deep(.el-dialog__headerbtn) {
+  display: none !important; /* 使用 !important 尝试提高优先级 */
+}
 </style>

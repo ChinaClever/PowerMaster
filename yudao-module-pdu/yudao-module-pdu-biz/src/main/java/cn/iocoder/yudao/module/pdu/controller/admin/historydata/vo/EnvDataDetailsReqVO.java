@@ -28,4 +28,6 @@ public class EnvDataDetailsReqVO extends PageParam {
 
     private String[] timeRange;
 
+    private String nowAddress;
+
 }

@@ -3,37 +3,33 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <div class="carousel-container">
-          <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-            </el-carousel-item>
-          </el-carousel> -->
-        </div> 
-      <div class="nav_header">
-        <span v-if="nowAddress">{{nowAddress}}</span>
-        <br/>
-        <span>{{selectTimeRange[0]}} </span>
-        <span>至</span> 
-        <span>{{selectTimeRange[1]}}</span>
-        <br/>
-      </div>
+      <div class="nav_header">      
+          <span>{{nowAddress}}</span>
+          <span>{{selectTimeRange[0]}}至{{selectTimeRange[1]}}</span>
+        </div>
       <div class="nav_content">
-        <el-descriptions title="" direction="vertical" :column="1" border >
-          <el-descriptions-item label="总耗电量">
-            <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="最大耗电量 | 发生时间">
-            <span >{{ formatNumber(maxEqDataTemp, 1) }} kWh</span> <br/>
-            <span  v-if="maxEqDataTimeTemp">{{ maxEqDataTimeTemp }}</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="最小耗电量 | 发生时间">
-            <span >{{ formatNumber(minEqDataTemp, 1) }} kWh</span> <br/>
-            <span  v-if="minEqDataTimeTemp">{{ minEqDataTimeTemp }}</span>
-          </el-descriptions-item>
-        </el-descriptions>
+       <div class="description-item">
+          <span class="label">总耗电量 :</span>
+          <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
+        </div>
+        <div class="description-item">
+          <span class="label">最大耗电量 :</span>
+          <span >{{ formatNumber(maxEqDataTemp, 1) }} kWh</span>
+        </div>
+        <div v-if="maxEqDataTimeTemp" class="description-item">
+          <span class="label">发生时间 :</span>
+          <span class="value">{{ maxEqDataTimeTemp }}</span>
+        </div>
+        <div class="description-item">
+          <span class="label">最小耗电量 :</span>
+          <span >{{ formatNumber(minEqDataTemp, 1) }} kWh</span>
+        </div>
+        <div v-if="minEqDataTimeTemp" class="description-item">
+          <span class="label">发生时间 :</span>
+          <span class="value">{{ minEqDataTimeTemp }}</span>
+        </div>
       </div>
-      </div>
+    </div>
     </template>
     <template #ActionBar>
       <el-tabs v-model="activeName">
@@ -67,6 +63,9 @@
 
         <el-form-item >
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+            <el-button type="success" plain @click="handleExport1" :loading="exportLoading">
+             <Icon icon="ep:download" class="mr-5px" /> 导出
+           </el-button>
         </el-form-item>
       </el-form>
     </template>
@@ -79,29 +78,37 @@
         <el-tab-pane label="数据" name="lineChartData">
           <div style="height: 58vh;">
             <el-table  
-              border
+              :border="true"
+              :stripe="true"
               :data="tableData"
-              style="height: 58vh; width: 99.97%;--el-table-border-color: none;border-right: 1px #143275 solid;border-left: 1px #143275 solid;border-bottom: 1px #143275 solid;"
-              :highlight-current-row="false"
-              :header-cell-style="{ backgroundColor: '#143275', color: '#ffffff', fontSize: '18px', textAlign: 'center', borderLeft: '0.5px #ffffff solid', borderBottom: '1px #ffffff solid' }"
-              :cell-style="{ color: '#000000', fontSize: '16px', textAlign: 'center', borderBottom: '0.5px #143275 solid', borderLeft: '0.5px #143275 solid' }"
-              :row-style="{ color: '#fff', fontSize: '14px', textAlign: 'center', }"
+              style="height: 67vh; width: 99.97%;"
+              :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', borderBottom: '1px #EDEEF2 solid', fontFamily: 'Microsoft YaHei',fontWeight: 'bold'}"
+              :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
+              :row-style="{ fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
+               <!-- 添加行号列 -->
+              <el-table-column label="序号" align="center" width="80px">
+                <template #default="{ $index }">
+                  {{ $index + 1 }}
+                </template>  
+              </el-table-column>
               <!-- 动态生成表头 -->
-              <template v-for="item in headerData" :key="item.name">
+              <template  v-for="item in headerData" :key="item.name">
                 <el-table-column  label="开始电能">
-                  <el-table-column prop="startEleData" label="数值"/>   
-                  <el-table-column prop="startTimeData" label="发生时间"/>
+                  <el-table-column prop="startEleData" label="开始电能(kWh)"/>   
+                  <el-table-column prop="startTimeData" label="开始时间"/>
                 </el-table-column>
                 <el-table-column  label="结束电能">
-                  <el-table-column prop="endEleData" label="数值"/>   
-                  <el-table-column prop="endTimeData" label="发生时间"/>
+                  <el-table-column prop="endEleData" label="结束电能(kWh)"/>   
+                  <el-table-column prop="endTimeData" label="结束时间"/>
                 </el-table-column>
                 <el-table-column v-if="item.name === '耗电量'" label="耗电量">
-                  <el-table-column :prop="item.name" label="数值"/>   
+                  <el-table-column :prop="item.name" label="耗电量(kWh)"/>   
                   <el-table-column prop="create_time" label="记录时间"/>
                 </el-table-column>
               </template>
+
+
             </el-table>
           </div>
         </el-tab-pane>
@@ -118,9 +125,10 @@ import { onMounted } from 'vue'
 import { IndexApi } from '@/api/room/roomindex'
 import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/formatTime'
 import { EnergyConsumptionApi } from '@/api/room/energyConsumption'
-// import PDUImage from '@/assets/imgs/PDU.jpg';
+import download from '@/utils/download';
 defineOptions({ name: 'ECDistribution' })
 
+const exportLoading = ref(false)
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const nowAddress = ref('')// 导航栏的位置信息
 const nowAddressTemp = ref('')// 暂时存储点击导航栏的位置信息 确认有数据再显示
@@ -131,6 +139,7 @@ const headerData = ref<any[]>([]);
 const instance = getCurrentInstance();
 const selectTimeRange = ref(defaultDayTimeRange(7)) as any
 const loading = ref(false) 
+const message = useMessage() // 消息弹窗
 const queryParams = reactive({
   roomId: undefined as number | undefined,
   granularity: 'day',
@@ -289,6 +298,7 @@ loading.value = true
 
       maxEqDataTemp.value = Math.max(...eqData.value);
       minEqDataTemp.value = Math.min(...eqData.value);
+      
       eqData.value.forEach(function(num, index) {
         if (num == maxEqDataTemp.value){
           maxEqDataTimeTemp.value = startTimeData.value[index]
@@ -297,7 +307,9 @@ loading.value = true
           minEqDataTimeTemp.value = startTimeData.value[index]
         }
         totalEqData.value += Number(num);
+             console.log(index)
       });
+ 
       // 图表显示的位置变化
       nowAddress.value = nowAddressTemp.value
     }else{
@@ -441,6 +453,25 @@ onMounted(async () => {
     initLineChart();
   }
 })
+//导出Excel
+const handleExport1 = async () => {
+  try {
+    // 导出的二次确认
+    await message.exportConfirm()
+    // 发起导出
+    exportLoading.value = true
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await EnergyConsumptionApi.getEQDataDetailsExcel(queryParams, axiosConfig)
+    await download.excel(data, '机房能耗排名.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
+  } finally {
+    exportLoading.value = false
+  }
+}
 
 </script>
 
@@ -450,14 +481,14 @@ onMounted(async () => {
     flex-direction: column;
     align-items: center;
     font-size: 16px;
-    padding-top: 28px;
+    padding-top: 20px;
   }
 .nav_data{
   padding-left: 5px;
   width: 195px;
 }
 .nav_content span{
-  font-size: 18px;
+  font-size: 14px;
 }
 .carousel-container {
   width: 100%;

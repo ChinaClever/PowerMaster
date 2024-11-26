@@ -15,4 +15,5 @@ public class RoomHistoryDataDetailsReqVO extends PageParam {
 
     private String[] timeRange;
 
+    private String nowAddress;
 }

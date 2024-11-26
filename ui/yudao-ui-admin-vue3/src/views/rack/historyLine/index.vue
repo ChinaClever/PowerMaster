@@ -3,42 +3,14 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <!-- <div class="carousel-container"> -->
-          <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-            </el-carousel-item>
-          </el-carousel> -->
-        <!-- </div>  -->
-        <!-- <div class="nav_header">
-          <span v-if="nowAddress">{{nowAddress}}</span>
+        <div class="nav_header">
+          <span v-if="nowAddress" style="font-size: 14px">{{nowAddress}}</span>
           <br/>
-          <template v-if="queryParams.granularity == 'realtime' && queryParams.timeRange != null">
+          <template v-if="nowAddress && queryParams.timeRange != null">
             <span>{{queryParams.timeRange[0]}}</span>
             <span>至</span>
             <span>{{queryParams.timeRange[1]}}</span>
           </template>
-          <br/>
-        </div>
-        <div class="nav_content" v-if="queryParams.granularity == 'realtime' ">
-        <el-descriptions title="" direction="vertical" :column="1" border >
-          <el-descriptions-item label="有功功率最大值 | 发生时间">
-            <span>{{ formatNumber(maxActivePowDataTemp, 3) }} kWh</span> <br/>
-            <span v-if="maxActivePowDataTimeTemp">{{ maxActivePowDataTimeTemp }}</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="有功功率最小值 | 发生时间">
-            <span>{{ formatNumber(minActivePowDataTemp, 3) }} kWh</span><br/>
-            <span v-if="minActivePowDataTimeTemp">{{ minActivePowDataTimeTemp }}</span>
-          </el-descriptions-item>
-        </el-descriptions>
-        </div> -->
-        
-        <div class="nav_header" style="font-size: 14px;">
-          <span v-if="nowAddress">{{nowAddress}}</span>
-          <br/>
-      </div>
-      
-        <div  class="descriptions-container" v-if="maxActivePowDataTimeTemp" style="font-size: 14px;">
           <div  class="description-item">
             <span class="label">最大值 :</span>
             <span >{{ formatNumber(maxActivePowDataTemp, 3) }} kW</span>
@@ -59,8 +31,8 @@
           <div style="text-align: center">
               <div class="line" style="margin-top: 10px;"></div>
             </div>
-        </div>
-
+      </div>
+      
       </div>
     </template>
     <template #ActionBar>
@@ -95,6 +67,9 @@
          
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+            <el-button type="success" plain @click="handleExport" :loading="exportLoading">
+             <Icon icon="ep:download" class="mr-5px" /> 导出
+           </el-button>
          </el-form-item>
        </el-form>
     </template>
@@ -107,14 +82,20 @@
           <el-tab-pane label="数据" name="myData">
             <div style="height: 67vh;">
             <el-table  
-              border
+              :border="true"
+              :stripe="true"
               :data="tableData"
-              style="height: 67vh; width: 99.97%;--el-table-border-color: none;border-right: 1px #143275 solid;border-left: 1px #143275 solid;border-bottom: 1px #143275 solid;"
-              :highlight-current-row="false"
-              :header-cell-style="{ backgroundColor: '#143275', color: '#ffffff', fontSize: '18px', textAlign: 'center', borderLeft: '0.5px #ffffff solid', borderBottom: '1px #ffffff solid' }"
-              :cell-style="{ color: '#000000', fontSize: '16px', textAlign: 'center', borderBottom: '0.5px #143275 solid', borderLeft: '0.5px #143275 solid' }"
-              :row-style="{ color: '#fff', fontSize: '14px', textAlign: 'center', }"
+              style="height: 67vh; width: 99.97%;"
+              :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', borderBottom: '1px #EDEEF2 solid', fontFamily: 'Microsoft YaHei',fontWeight: 'bold'}"
+              :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
+              :row-style="{ fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
+              <!-- 添加行号列 -->
+              <el-table-column label="序号" align="center" width="80px">
+                <template #default="{ $index }">
+                  {{ $index + 1 }}
+                </template>  
+              </el-table-column>
               <el-table-column prop="create_time" label="记录时间" />
               <!-- 动态生成表头 -->
               <template v-for="item in headerData" :key="item.name">
@@ -155,6 +136,7 @@ import { HistoryDataApi } from '@/api/rack/historydata'
 import { formatDate } from '@/utils/formatTime'
 import { CabinetApi } from '@/api/cabinet/info'
 import { IndexApi } from '@/api/rack/index'
+import download from '@/utils/download';
 /** 机柜历史曲线 */
 defineOptions({ name: 'CabinetHistoryLine' })
 const navList = ref([]) as any // 左侧导航栏树结构列表
@@ -166,10 +148,13 @@ const instance = getCurrentInstance()
 const tableData = ref<Array<{ }>>([]) // 列表数据
 const headerData = ref<any[]>([])
 const loading2=ref(false);
+const message = useMessage() // 消息弹窗
+const exportLoading = ref(false)
 const needFlush = ref(0) // 是否需要刷新图表
 const queryParams = reactive({
   rackId: undefined as number | undefined,
   granularity: 'realtime',
+  nowAddress: undefined as string | undefined,
   timeRange: defaultHourTimeRange(1) as any,
 })
 const loading = ref(false) // 列表的加载中
@@ -634,6 +619,26 @@ onMounted( async () => {
   }
 })
 
+//导出Excel
+const handleExport = async () => {
+  try {
+    // 导出的二次确认
+    await message.exportConfirm()
+    // 发起导出
+    exportLoading.value = true
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    queryParams.nowAddress = nowAddress.value;
+    const data =  await HistoryDataApi.getHistoryDataDetailsExcel(queryParams, axiosConfig)
+    await download.excel(data, '机架电力分析.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
+  } finally {
+    exportLoading.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -681,7 +686,11 @@ onMounted( async () => {
 :deep( .el-table tbody tr) {
   pointer-events: none;
 }
- 
+.description-item {
+  display: flex;
+  align-items: center;
+}
+
 /* 修改表头样式-加边框 */
 /* ::v-deep .el-table__header-wrapper {
   border: solid 1px #04c2ed;
@@ -700,15 +709,16 @@ onMounted( async () => {
   padding-right: 0px;
   padding-top: 0px;
   padding-bottom: 0px;
-  font-size: 12px;
+  font-size: 14px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 .nav_header {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 14px;
+    font-size: 16px;
   }
 
 .nav_data{
@@ -716,7 +726,7 @@ onMounted( async () => {
   width: 195px;
 }
 .nav_content span{
-  font-size: 18px;
+  font-size: 14px;
 }
 .carousel-container {
   width: 100%;
@@ -727,5 +737,4 @@ onMounted( async () => {
   height: 100%;
   object-fit: cover; 
 }
-
 </style>

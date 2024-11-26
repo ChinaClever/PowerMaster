@@ -27,4 +27,6 @@ public class BusHistoryDataDetailsReqVO extends PageParam {
 
     private String[] timeRange;
 
+    private String nowAddress;
+
 }

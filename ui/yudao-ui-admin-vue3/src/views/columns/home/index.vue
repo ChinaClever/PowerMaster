@@ -1,15 +1,62 @@
 <template>
   <div class="homeContainer">
     <div class="left">
+      <ContentWrap>
+        <div class="progress">
+          <!--<el-progress type="dashboard" :percentage="powerInfo.powApparent && powerInfo.powApparent.toFixed()">-->
+          <el-progress type="dashboard" :percentage="80">
+            <template #default="{ percentage }">
+              <span class="percentage-value">{{ percentage }}kVA</span>
+              <span class="percentage-label">总视在功率</span>
+            </template>
+          </el-progress>
+        </div>
+      </ContentWrap>
       <el-card shadow="never" style="margin-bottom: 15px">
-        <template #header>
+        <!--<template #header>
           <div>当前用能</div>
         </template>
         <div>今日：{{EqInfo.todayEq && EqInfo.todayEq.toFixed(2)}}kW·h</div>
         <div>本周：{{EqInfo.thisWeekEq && EqInfo.thisWeekEq.toFixed(2)}}kW·h</div>
-        <div>本月：{{EqInfo.thisMonthEq  && EqInfo.thisMonthEq.toFixed(2)}}kW·h</div>
+        <div>本月：{{EqInfo.thisMonthEq  && EqInfo.thisMonthEq.toFixed(2)}}kW·h</div>-->
+        <div style="display: flex; align-items: center; margin-bottom:2vh; margin-top:1vh;">
+          <span>今日用能：</span>
+          <span 
+            style="display: inline-block; position: relative; width: 5vw;"
+          >
+            <el-progress :stroke-width="26" :format="format"  :percentage="38" style="width: 9vw;" />
+            <div style="position: absolute; bottom: 10%; left: 77%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
+              150kw
+            </div>
+          </span>
+          <span style="margin-left:3vh;">390kw</span>
+        </div>
+        <div style="display: flex; align-items: center; margin-bottom:2vh; margin-top:1vh;">
+          <span>本周用能：</span>
+          <span 
+            style="display: inline-block; position: relative; width: 5vw;"
+          >
+            <el-progress :stroke-width="26" :format="format"  :percentage="42" style="width: 9vw;" />
+            <div style="position: absolute; bottom: 10%; left: 77%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
+              290kw
+            </div>
+          </span>
+          <span style="margin-left:3vh;">690kw</span>
+        </div>
+        <div style="display: flex; align-items: center; margin-bottom:2vh; margin-top:1vh;">
+          <span>本月用能：</span>
+          <span 
+            style="display: inline-block; position: relative; width: 5vw;"
+          >
+            <el-progress  :stroke-width="26" :format="format" :percentage="46" style="width: 9vw;" />
+            <div style="position: absolute; bottom: 10%; left: 77%; transform: translateX(-50%); color: #000; border-radius: 3px; white-space: nowrap;">
+              759kw
+            </div>
+          </span>
+          <span style="margin-left:3vh;">1650kw</span>
+        </div>
       </el-card>
-      <el-card v-if="pduBar" shadow="never" style="margin-bottom: 15px">
+      <!--<el-card v-if="pduBar" shadow="never" style="margin-bottom: 15px">
         <template #header>
           <div>A路</div>
         </template>
@@ -25,19 +72,13 @@
           </template>
           <span v-else>无</span>
         </div>
-      </el-card>
-      <ContentWrap>
-        <div class="progress">
-          <el-progress type="dashboard" :percentage="mainInfo.powApparent && mainInfo.powApparent.toFixed()">
-            <template #default="{ percentage }">
-              <span class="percentage-value">{{ percentage }}</span>
-              <span class="percentage-label">总视在功率</span>
-            </template>
-          </el-progress>
-        </div>
+      </el-card>-->
+      <ContentWrap v-if="mainInfo.cabinetList && mainInfo.cabinetList.length">
+        <Echart :options="echartsOptionA" height="28vh"/>
       </ContentWrap>
       <ContentWrap v-if="mainInfo.cabinetList && mainInfo.cabinetList.length">
-        <Echart :options="echartsOptionA" :height="300" />
+        <el-link @click="toggleTable = !toggleTable" type="primary" style="margin-left:12vw;">切换</el-link>
+        <Echart :options="toggleTable?echartsOptionC:echartsOptionV" height="28vh"/>
       </ContentWrap>
     </div>
     <div class="center" id="center">
@@ -47,11 +88,11 @@
         </template>
       </Topology>
       <ContentWrap class="CabEchart">
-        <Echart :options="echartsOptionCab" height="100%" width="100%" />
+        <Echart :options="echartsOptionCab" height="40vh" width="100%" />
       </ContentWrap>
       <div class="mask" @click.right.prevent=""></div>
     </div>
-    <div class="right">
+    <!--<div class="right">
       <el-card shadow="never" style="margin-bottom: 15px">
         <template #header>
           <div>历史用能</div>
@@ -90,7 +131,7 @@
       <ContentWrap v-if="mainInfo.cabinetList && mainInfo.cabinetList.length">
         <Echart :options="echartsOptionB" :height="300" />
       </ContentWrap>
-    </div>
+    </div>-->
   </div>
 </template>
 
@@ -98,6 +139,10 @@
 import Topology from '../topology/index.vue'
 import { EChartsOption } from 'echarts'
 import { MachineColumnApi } from '@/api/cabinet/column'
+
+
+const format = (percentage) => ( ``)  //用来自定义进度条的内容
+const toggleTable = ref(true)
 
 const {push} = useRouter()
 const containerInfo = reactive({
@@ -112,6 +157,8 @@ const pduBar = ref(1) // 0:pdu 1:母线
 
 const echartsOptionA = reactive<EChartsOption>({})
 const echartsOptionB = reactive<EChartsOption>({})
+const echartsOptionC = reactive<EChartsOption>({})
+const echartsOptionV = reactive<EChartsOption>({})
 
 const mainInfo = reactive({})
 const EqInfo = reactive({})
@@ -120,93 +167,227 @@ const getMainData = async() => {
   // //debugger
   const res =  await MachineColumnApi.getMaindata({id: containerInfo.cabinetColumnId})
   Object.assign(mainInfo, res)
-  console.log('res', res)
+  console.log('res1111111', res)
   if (!res.cabinetList) return
-  
+
   Object.assign(echartsOptionA, {
     title: {
-      text: 'A路功率'
+      text: '实时功率'
     },
     legend: {
-      data: ['视在功率', '有功功率'],
-      top: 0,
-      right: 0,
+      data: ['A', 'B'] // 换接口的值
     },
-    grid: {
-      bottom: 0,
-      top: 0,
+    grid: {left: '3%', right: '3%', bottom: '3%',containLabel: true},
+    xAxis: {
+      type: 'category',
+      data: ['视在功率', '有功功率', '无功功率'],
     },
-    radar: {
-      indicator: res.cabinetList.map((item, index) => {
-        return {
-          name: '机柜' + (index+1),
-          max: 10
-        }
-      })
+    yAxis: {
+      type: 'value'
     },
     series: [
       {
-        name: 'power',
-        type: 'radar',
-        data: [
-          {
-            value: res.cabinetList.map(item => item.powApparentA),
-            name: '视在功率'
-          },
-          {
-            value: res.cabinetList.map(item => item.powActiveA),
-            name: '有功功率',
-            areaStyle: {
-              color: 'rgba(206, 255, 171, 0.6)'
-            }
-          }
-        ]
+        name: 'A',//legend里的data数据分别渲染上去
+        type: 'bar',
+        barGap: 0,
+        label: { // 在柱状图上面显示
+          show: true,
+          position: 'top'
+        },
+        emphasis: { // 这个属性是强调，突出的
+          focus: 'series'
+        },
+        data: [113, 213, 313]
+      },
+      {
+        name: 'B',//legend里的data数据分别渲染上去
+        type: 'bar',
+        barGap: 0,
+        label: { // 在柱状图上面显示
+          show: true,
+          position: 'top'
+        },
+        emphasis: { // 这个属性是强调，突出的
+          focus: 'series'
+        },
+        data: [212, 211, 213]
+      }
+    ]
+  })
+  Object.assign(echartsOptionC, {
+    title: {
+      text: '电流'
+    },
+    legend: {
+      data: ['A', 'B'] // 换接口的值
+    },
+    grid: {left: '3%', right: '3%', bottom: '3%',containLabel: true},
+    xAxis: {
+      type: 'category',
+      data: ['Ia', 'Ib', 'Ic'],
+    },
+    yAxis: {
+      type: 'value'
+    },
+    series: [
+      {
+        name: 'A',//legend里的data数据分别渲染上去
+        type: 'bar',
+        barGap: 0,
+        label: { // 在柱状图上面显示
+          show: true,
+          position: 'top'
+        },
+        emphasis: { // 这个属性是强调，突出的
+          focus: 'series'
+        },
+        data: [0.5, 0.6, 0.3]
+      },
+      {
+        name: 'B',//legend里的data数据分别渲染上去
+        type: 'bar',
+        barGap: 0,
+        label: { // 在柱状图上面显示
+          show: true,
+          position: 'top'
+        },
+        emphasis: { // 这个属性是强调，突出的
+          focus: 'series'
+        },
+        data: [0.7, 0.5, 0.3]
+      }
+    ]
+  })
+  Object.assign(echartsOptionV, {
+    title: {
+      text: '电压'
+    },
+    legend: {
+      data: ['A', 'B'] // 换接口的值
+    },
+    grid: {left: '3%', right: '3%', bottom: '3%',containLabel: true},
+    xAxis: {
+      type: 'category',
+      data: ['Ua', 'Ub', 'Uc'],
+    },
+    yAxis: {
+      type: 'value'
+    },
+    series: [
+      {
+        name: 'A',//legend里的data数据分别渲染上去
+        type: 'bar',
+        barGap: 0,
+        label: { // 在柱状图上面显示
+          show: true,
+          position: 'top'
+        },
+        emphasis: { // 这个属性是强调，突出的
+          focus: 'series'
+        },
+        data: [1.5, 1.6, 1.3]
+      },
+      {
+        name: 'B',//legend里的data数据分别渲染上去
+        type: 'bar',
+        barGap: 0,
+        label: { // 在柱状图上面显示
+          show: true,
+          position: 'top'
+        },
+        emphasis: { // 这个属性是强调，突出的
+          focus: 'series'
+        },
+        data: [1.7, 1.5, 1.3]
       }
     ]
   })
   
-  Object.assign(echartsOptionB, {
-    title: {
-      text: 'B路功率'
-    },
-    legend: {
-      data: ['视在功率', '有功功率'],
-      top: 0,
-      right: 0,
-    },
-    grid: {
-      bottom: 0,
-      top: 0,
-    },
-    radar: {
-      indicator: res.cabinetList.map((item, index) => {
-        return {
-          name: '机柜' + (index+1),
-          max: 10
-        }
-      })
-    },
-    series: [
-      {
-        name: 'power',
-        type: 'radar',
-        data: [
-          {
-            value: res.cabinetList.map(item => item.powApparentB),
-            name: '视在功率'
-          },
-          {
-            value: res.cabinetList.map(item => item.powActiveB),
-            name: '有功功率',
-            areaStyle: {
-              color: 'rgba(206, 255, 171, 0.6)'
-            }
-          }
-        ]
-      }
-    ]
-  })
+//Object.assign(echartsOptionA, {
+//  title: {
+//    text: '实时功率'
+//  },
+//  legend: {
+//    data: ['视在功率', '有功功率'],
+//    top: 0,
+//    right: 0,
+//  },
+//  grid: {
+//    bottom: 0,
+//    top: 0,
+//  },
+//  radar: {
+//    indicator: res.cabinetList.map((item, index) => {
+//      return {
+//        name: '机柜' + (index+1),
+//        max: 10
+//      }
+//    })
+//  },
+//  series: [
+//    {
+//      name: 'power',
+//      type: 'radar',
+//      data: [
+//        {
+//          value: res.cabinetList.map(item => item.powApparentA),
+//          name: '视在功率'
+//        },
+//        {
+//          value: res.cabinetList.map(item => item.powActiveA),
+//          name: '有功功率',
+//          areaStyle: {
+//            color: 'rgba(206, 255, 171, 0.6)'
+//          }
+//        }
+//      ]
+//    }
+//  ]
+//})
+//
+//Object.assign(echartsOptionB, {
+//  title: {
+//    text: 'B路功率'
+//  },
+//  legend: {
+//    data: ['视在功率', '有功功率'],
+//    top: 0,
+//    right: 0,
+//  },
+//  grid: {
+//    bottom: 0,
+//    top: 0,
+//  },
+//  radar: {
+//    indicator: res.cabinetList.map((item, index) => {
+//      return {
+//        name: '机柜' + (index+1),
+//        max: 10
+//      }
+//    })
+//  },
+//  series: [
+//    {
+//      name: 'power',
+//      type: 'radar',
+//      data: [
+//        {
+//          value: res.cabinetList.map(item => item.powApparentB),
+//          name: '视在功率'
+//        },
+//        {
+//          value: res.cabinetList.map(item => item.powActiveB),
+//          name: '有功功率',
+//          areaStyle: {
+//            color: 'rgba(206, 255, 171, 0.6)'
+//          }
+//        }
+//      ]
+//    }
+//  ]
+//})
 }
+
 const getMainEq = async() => {
   const res =  await MachineColumnApi.getMainEq({id: containerInfo.cabinetColumnId})
   console.log('getMainEq res', res)
@@ -301,7 +482,7 @@ onMounted(() => {
   width: 100%;
   // height: calc(100vh - 120px);
   min-height: 550px;
-  height: calc(100vh - 120px);
+  height: calc(115vh - 120px);
   box-sizing: border-box;
   // background-color: #999;
   display: flex;
@@ -354,6 +535,25 @@ onMounted(() => {
     margin-top: 10px;
     font-size: 12px;
   }
+}
+
+:deep(.progress .el-progress__text::after ){
+  content: '60kW'; /* 要显示的文本 */
+  position: absolute;
+  top: 0; /* 放置在原元素的 */
+  left: 100%;
+  color: #000;
+  padding: 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+  transform: translateX(5px); /* 稍微向右边移动一点以避免与进度条重叠 */
+  opacity: 0; /* 默认隐藏 */
+  transition: opacity 0.3s; /* 添加过渡效果 */
+  pointer-events: none; /* 确保提示框不会干扰鼠标事件 */
+}
+ 
+:deep(.progress:hover .el-progress__text::after) {
+  opacity: 1; /* 鼠标悬停时显示 */
 }
 
 :deep(.el-card__header) {

@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.cabinet.controller.admin.energyconsumption.VO;
 
+import cn.iocoder.yudao.framework.excel.core.util.DateStringConverter;
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.NumberFormat;
@@ -23,17 +24,17 @@ public class DetailsPageRespVO {
     @ExcelProperty({"开始电能","数值"})
     @NumberFormat("0.0")
     private Double start_ele;
-    @ExcelProperty({"开始电能","发生时间"})
+    @ExcelProperty(converter = DateStringConverter.class, value = {"开始电能","发生时间"})
     private String start_time;
     @ExcelProperty({"结束电能","数值"})
     @NumberFormat("0.0")
     private Double end_ele;
-    @ExcelProperty({"结束电能","发生时间"})
+    @ExcelProperty(converter = DateStringConverter.class, value = {"结束电能","发生时间"})
     private String end_time;
     @ExcelProperty({"耗电量","数值"})
     @NumberFormat("0.0")
     private Double eq_value;
-    @ExcelProperty({"耗电量","记录时间"})
+    @ExcelProperty(converter = DateStringConverter.class, value = {"耗电量","记录时间"})
     private String create_time;
 
 }

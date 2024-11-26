@@ -9,6 +9,9 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class RackHistoryDataDetailsReqVO extends PageParam {
+
+    private String nowAddress;
+
     private Integer rackId;
 
     private String granularity;

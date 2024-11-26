@@ -127,6 +127,12 @@
               :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
               :row-style="{ fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
+              <!-- 添加行号列 -->
+              <el-table-column label="序号" align="center" width="80px">
+                <template #default="{ $index }">
+                  {{ $index + 1 }}
+                </template>  
+              </el-table-column>
               <el-table-column prop="create_time" label="记录时间" />
               <!-- 动态生成表头 -->
               <template v-for="item in headerData" :key="item.name">
@@ -228,7 +234,7 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
   abtotal: "total",
-
+  nowAddress: undefined as string | undefined,
   aisleId: undefined as number | undefined,
   granularity: 'realtime',
   timeRange: defaultHourTimeRange(1) as any,
@@ -314,7 +320,7 @@ const shortcuts2 = [
     value: () => {
       const end = new Date()
       const start = new Date()
-      start.setHours(start.getHours() - 24*30)
+      start.setUTCMonth(start.getUTCMonth() - 1)
       return [start, end]
     },
   },
@@ -323,7 +329,7 @@ const shortcuts2 = [
     value: () => {
       const end = new Date()
       const start = new Date()
-      start.setHours(start.getHours() - 24*30*3)
+      start.setUTCMonth(start.getUTCMonth() - 3)
       return [start, end]
     },
   },
@@ -332,7 +338,7 @@ const shortcuts2 = [
     value: () => {
       const end = new Date()
       const start = new Date()
-      start.setHours(start.getHours() - 24*30*6)
+      start.setUTCMonth(start.getUTCMonth() - 6)
       return [start, end]
     },
   },
@@ -845,32 +851,32 @@ function customTooltipFormatter(params: any[]) {
       case '总平均无功功率':
       case 'A路平均无功功率':
       case 'B路平均无功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  记录时间: ' +params[0].name + '<br/>';
+        tooltipContent += item.marker + ' 记录时间: ' +params[0].name + ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       case '总最大有功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +totalActivePowMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +totalActivePowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       case '总最小有功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +totalActivePowMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +totalActivePowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       case 'A路最大有功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +aActivePowMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +aActivePowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       case 'A路最小有功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +aActivePowMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +aActivePowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       case 'B路最大有功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +bActivePowMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +bActivePowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       case 'B路最小有功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +bActivePowMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +bActivePowMinTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       // 
       case '总最大无功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +totalReactivePowMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +totalReactivePowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       case '总最小无功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +totalReactivePowMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +totalReactivePowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       case '总视在功率':
       case 'A路视在功率':
@@ -878,25 +884,25 @@ function customTooltipFormatter(params: any[]) {
       case '总平均视在功率':
       case 'A路平均视在功率':
       case 'B路平均视在功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  记录时间: ' +params[0].name + '<br/>';
+        tooltipContent += item.marker +' 记录时间: ' +params[0].name +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
         break;
      case '总最大视在功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  发生时间: ' +totalApparentPowMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +totalApparentPowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
         break;
       case '总最小视在功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  发生时间: ' +totalApparentPowMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +totalApparentPowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
         break;
       case 'A路最大视在功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  发生时间: ' +aApparentPowMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +aApparentPowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
         break;
       case 'A路最小视在功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  发生时间: ' +aApparentPowMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +aApparentPowMinTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
         break;
       case 'B路最大视在功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  发生时间: ' +bApparentPowMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +bApparentPowMaxTimeData.value[item.dataIndex] +  ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
         break;
       case 'B路最小视在功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  发生时间: ' +bApparentPowMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker +' 发生时间: ' +bApparentPowMinTimeData.value[item.dataIndex] + ' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
         break;
       case '总功率因素':
       case 'A路功率因素':
@@ -904,7 +910,7 @@ function customTooltipFormatter(params: any[]) {
       case '总平均功率因素':
       case 'A路平均功率因素':
       case 'B路平均功率因素':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '  记录时间: ' +params[0].name + '<br/>';
+        tooltipContent += item.marker +' 记录时间: ' +params[0].name +  ' ' + item.seriesName + ': ' + item.value + '<br/>';
         break;
     }
     
@@ -950,6 +956,7 @@ const handleExport1 = async () => {
     // 发起导出
     queryParams.pageNo = 1
     exportLoading.value = true
+    queryParams.nowAddress =nowAddress.value
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
@@ -1101,7 +1108,7 @@ onMounted( async () => {
   padding-right: 0px;
   padding-top: 0px;
   padding-bottom: 0px;
-  font-size: 12px;
+  font-size: 14px;
   overflow: hidden;
   text-overflow: ellipsis;
 }

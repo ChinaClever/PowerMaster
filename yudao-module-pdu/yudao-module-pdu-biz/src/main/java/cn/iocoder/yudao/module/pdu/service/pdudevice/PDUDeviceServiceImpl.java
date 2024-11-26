@@ -674,15 +674,15 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                                 switch (houResVO.getLineId()) {
                                     case 1:
                                         dayList1.add(houResVO);
-                                        result.put("l", dayList1);
+
                                         break;
                                     case 2:
                                         dayList2.add(houResVO);
-                                        result.put("ll", dayList2);
+
                                         break;
                                     case 3:
                                         dayList3.add(houResVO);
-                                        result.put("lll", dayList3);
+
                                         break;
                                     default:
                                 }
@@ -695,7 +695,12 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
+            if (!Objects.equals("oneHour",type)) {
+                result.put("l", dayList1);
+                result.put("ll", dayList2);
+                result.put("lll", dayList3);
+            }
+            dateTimes.stream().distinct().collect(Collectors.toList());
             result.put("dateTimes", dateTimes);
 
             return result;
@@ -1878,7 +1883,6 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             aisleMap = new HashMap<>();
         }
 
-
         result.forEach(pduIndex -> {
             String localtion = null;
             List<CabinetPdu> cabinetPduAList = cabinetPduAMap.get(pduIndex.getDevKey());
@@ -1887,20 +1891,24 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             if (cabinetPduAList != null && !cabinetPduAList.isEmpty()) {
                 CabinetPdu cabinetPduA = cabinetPduAList.get(0); // 假设结果唯一
                 CabinetIndex cabinetIndex = cabinetMap.get(cabinetPduA.getCabinetId());
-                if (cabinetIndex.getAisleId() != 0) {
-                    localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + aisleMap.get(cabinetIndex.getAisleId()) + "-" + cabinetIndex.getName() + "-" + "A路";
-                } else {
-                    localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + cabinetIndex.getName() + "-" + "A路";
+                if (Objects.nonNull(cabinetIndex)) {
+                    if (cabinetIndex.getAisleId() != 0) {
+                        localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + aisleMap.get(cabinetIndex.getAisleId()) + "-" + cabinetIndex.getName() + "-" + "A路";
+                    } else {
+                        localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + cabinetIndex.getName() + "-" + "A路";
+                    }
                 }
             }
 
             if (cabinetPduBList != null && !cabinetPduBList.isEmpty()) {
                 CabinetPdu cabinetPduB = cabinetPduBList.get(0); // 假设结果唯一
                 CabinetIndex cabinetIndex = cabinetMap.get(cabinetPduB.getCabinetId());
-                if (cabinetIndex.getAisleId() != 0) {
-                    localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + aisleMap.get(cabinetIndex.getAisleId()) + "-" + cabinetIndex.getName() + "-" + "B路";
-                } else {
-                    localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + cabinetIndex.getName() + "-" + "B路";
+                if (Objects.nonNull(cabinetIndex)) {
+                    if (cabinetIndex.getAisleId() != 0) {
+                        localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + aisleMap.get(cabinetIndex.getAisleId()) + "-" + cabinetIndex.getName() + "-" + "B路";
+                    } else {
+                        localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + cabinetIndex.getName() + "-" + "B路";
+                    }
                 }
             }
             pduIndex.setLocation(localtion);
