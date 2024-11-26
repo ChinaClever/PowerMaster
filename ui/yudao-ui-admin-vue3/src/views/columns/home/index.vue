@@ -163,6 +163,7 @@ const containerInfo = reactive({
 })
 console.log('containerInfo', containerInfo)
 const scaleVal = ref(1)
+const roomDownVal = ref();
 const echartsOptionCab = ref<EChartsOption>({})
 const pduBar = ref(1) // 0:pdu 1:母线
 
@@ -406,7 +407,7 @@ const getMainEq = async() => {
 }
 // 处理跳转
 const handleJump = () => {
-  push({path: '/aisle/topology', state: { id: containerInfo.cabinetColumnId, roomId: containerInfo.cabinetroomId }})
+  push({path: '/aisle/topology', state: { id: containerInfo.cabinetColumnId, roomId: containerInfo.cabinetroomId,roomValId:roomDownVal.value }})
 }
 // 处理时pdu还是母线的事件
 const handlePduBar = (type) => {
@@ -420,8 +421,8 @@ const handleIdChange = (id) => {
 }
 // 处理柜列实时统计图表
 const handleCabEchart = (result, scale) => {
-  console.log('handleCabEchart', result, typeof result)
   scaleVal.value = scale
+  roomDownVal.value = result[0].roomId;
   echartsOptionCab.value = {
     title: {
       text: '机柜列实时统计'

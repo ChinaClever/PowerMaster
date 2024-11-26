@@ -238,7 +238,8 @@ const roomList = ref<any>([]) // 机房列表
 const machineList = ref<any>([]) // 机柜列列表
 const queryParams = reactive({
   cabinetColumnId: history?.state?.id,
-  cabinetroomId: history?.state?.roomId
+  cabinetroomId: history?.state?.roomId,
+  roomDownVal:history?.state?.roomValId
 })
 const btns = [
   {
@@ -1415,7 +1416,11 @@ const getNavList = async() => {
 const handleNavList = (cabinetroomId) => {
   let targetRoom = null as any
   if (!queryParams.cabinetroomId) {
-    queryParams.cabinetroomId = roomList.value[0].roomId
+    if(queryParams.roomDownVal == null || queryParams.roomDownVal == ""){
+        queryParams.cabinetroomId = roomList.value[0].roomId
+    }else{
+        queryParams.cabinetroomId = queryParams.roomDownVal
+    }
     targetRoom = roomList.value[0]
   } else {
     targetRoom = roomList.value.find(item => item.roomId == queryParams.cabinetroomId)
