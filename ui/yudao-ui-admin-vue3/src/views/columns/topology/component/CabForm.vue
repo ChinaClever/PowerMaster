@@ -593,7 +593,16 @@ const resetForm = () => {
     eleAlarmMonth: 0, // 月用能告警
     eleLimitMonth: 1000, // 月用能限制
   }
-  machineForm.value?.resetFields()
+  machineForm.value?.resetFields();
+  sensorListRight.forEach(item => {
+    item.sensorId = null
+    item.pathPdu = ''
+  })
+  sensorListLeft.forEach(item => {
+    item.sensorId = null
+    item.pathPdu = ''
+  })
+  
 }
 
 // 接口获取机房导航列表
