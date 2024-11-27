@@ -1210,6 +1210,7 @@ const getLineChartData =async () => {
     if (data != null){
       // 查到数据
       allLineData.value = data
+      console.log('allLineData',allLineData.value)
       if (timeRadio.value == '近一小时'){
         createTimeData.value = data.L1.map((item) => formatDate(item.create_time,'YYYY-MM-DD HH:mm'));
       }else if (timeRadio.value == '近一天' || '近三天'){

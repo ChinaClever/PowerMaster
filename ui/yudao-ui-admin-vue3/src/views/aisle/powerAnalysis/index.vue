@@ -30,7 +30,8 @@
             <span class="label">最近一月 :</span>
             <span class="value">{{ lastMonthTotalData }}条</span>
           </div>    <br/>
-          <div style="text-align: center"><span>全部柜列新增能耗记录</span>
+          <div>
+            <span>全部柜列新增能耗记录</span>
             <div class="line" style="margin-top: 10px;"></div>
           </div>
         </div>
@@ -535,14 +536,18 @@ onMounted(() => {
 }
 
 .label {
-  width:100px; /* 控制冒号前的宽度 */
-  text-align: right; /* 文本右对齐 */
+  text-align: left;
   margin-right: 5px; /* 控制冒号后的间距 */
 }
-.line {
-    height: 1px;
-    margin-top: 28px;
 
-    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
-  }
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
+}
+
+.line {
+  height: 1px;
+  margin-top: 28px;
+  background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+}
 </style>
