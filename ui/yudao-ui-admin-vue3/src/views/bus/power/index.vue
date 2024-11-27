@@ -839,15 +839,15 @@ const getListAll = async () => {
     allList.value = allData.list
     allList.value.forEach((objAll) => {
       if(objAll?.dataUpdateTime == null && objAll?.acur == null && objAll?.bcur == null && objAll?.ccur == null){
-        objAll.status = 5;
+        objAll.status = 0;
         offline++;
         return;
       }  
       if(objAll?.status == 1){
         normal++;
-      } else if (objAll?.status == 2){
+      } else if (objAll?.status == 3){
         warn++;
-      } else if (objAll?.status == 0){
+      } else if (objAll?.status == 2){
         alarm++;
       }          
     });
