@@ -340,11 +340,11 @@ onMounted(() => {
   color: #606266
 }
 .nav_data{
-  padding-left: 7px;
-  width: 200px;
+  padding-left: 20px;
+  width: 170px;
 }
 .nav_content span{
-  font-size: 18px;
+  font-size: 14px;
 }
 /* .nav_content1{
   text-align: center;
