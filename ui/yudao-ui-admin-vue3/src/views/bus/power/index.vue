@@ -479,29 +479,29 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" v-if="valueMode == 0">
-            <el-tag type="info" v-if="item.acurStatus == null || item.status == 5 || item.status == null" >离线</el-tag>
+            <el-tag type="info" v-if="item.acurStatus == null || item.status == 0 || item.status == null" >离线</el-tag>
             <el-tag type="danger" v-else-if="item.acurStatus != 0 || item.bcurStatus != 0  || item.ccurStatus != 0 " >告警</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>
           <div class="status" v-if="valueMode == 1">
-            <el-tag type="info" v-if="item.avolStatus == null || item.status == 5 || item.status == null" >离线</el-tag>
+            <el-tag type="info" v-if="item.avolStatus == null || item.status == 0 || item.status == null" >离线</el-tag>
             <el-tag type="danger" v-else-if="item.avolStatus != 0 || item.bvolStatus != 0 || item.cvolStatus != 0 " >告警</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>
           <div class="status" v-if="valueMode == 2">
-            <el-tag type="info" v-if="item.aactivePowStatus == null || item.status == 5 || item.status == null" >离线</el-tag>
+            <el-tag type="info" v-if="item.aactivePowStatus == null || item.status == 0 || item.status == null" >离线</el-tag>
             <el-tag type="danger" v-else-if="item.aactivePowStatus != 0 || item.bactivePowStatus != 0 || item.cactivePowStatus != 0" >告警</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>
           <div class="status" v-if="valueMode == 3">
-            <el-tag type="info" v-if="item.status == null ||  item.status == 5" >离线</el-tag>
+            <el-tag type="info" v-if="item.status == null ||  item.status == 0" >离线</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>
           <div class="status" v-if="valueMode == 4">
-            <el-tag type="info" v-if="item.status == null ||  item.status == 5" >离线</el-tag>
+            <el-tag type="info" v-if="item.status == null ||  item.status == 0" >离线</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>
-          <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 5" >详情</button>
+          <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 0" >详情</button>
         </div>
       </div>
       <Pagination
@@ -743,7 +743,6 @@ const getList = async () => {
   loading.value = true
   try {
     const data = await IndexApi.getBusRedisPage(queryParams)
-
     list.value = data.list
     var tableIndex = 0;
 
@@ -836,6 +835,7 @@ const getListAll = async () => {
     var alarm = 0;
     var warn = 0;
     const allData = await await IndexApi.getBusRedisPage(queryParamsAll)
+    console.log("allData",allData)
     allList.value = allData.list
     allList.value.forEach((objAll) => {
       if(objAll?.dataUpdateTime == null && objAll?.acur == null && objAll?.bcur == null && objAll?.ccur == null){
@@ -845,9 +845,9 @@ const getListAll = async () => {
       }  
       if(objAll?.status == 1){
         normal++;
-      } else if (objAll?.status == 3){
-        warn++;
       } else if (objAll?.status == 2){
+        warn++;
+      } else if (objAll?.status == 0){
         alarm++;
       }          
     });

@@ -29,7 +29,11 @@
     </div>
   </el-card>
   <el-card shadow="never">
-    <div class="dragContainer" v-loading="loading" @click.right="handleRightClick" :style="isFromHome ? `width: fit-content;transform-origin: 0 0;transform: scale(${scaleValue}, ${scaleValue * 0.6});height: ${ContainerHeight}px` : 'height: calc(100vh - 220px)'">
+    <div class="dragContainer" 
+      v-loading="loading" 
+      @click.right="handleRightClick" 
+      @wheel="handleWheel" 
+      :style="isFromHome ? `width: fit-content;transform-origin: 0 0;transform: scale(${scaleValue}, ${scaleValue * 0.6});height: ${ContainerHeight}px` : 'height: calc(100vh - 220px)'">
       <!-- <div class="mask" v-if="!editEnable" @click.prevent=""></div> -->
       <el-table ref="dragTable" class="dragTable" v-if="tableData.length > 0" :show-header="!isFromHome" :style="isFromHome ? '' : {width: '100%',height: '100%'}" :data="tableData" border :row-style="{background: 'revert'}" :span-method="arraySpanMethod" row-class-name="dragRow" >
         <el-table-column v-if="!isFromHome" fixed type="index" width="60" align="center" :resizable="false" />
@@ -532,6 +536,28 @@ const btns = [
 //     R: [],
 //   },
 // ])
+
+const scale = ref(1); // 初始缩放比例
+const minScale = 0.5; // 最小缩放比例
+const maxScale = 2; // 最大缩放比例
+
+const handleWheel = (event) => {
+  event.preventDefault(); // 阻止默认滚动行为
+  const delta = Math.sign(event.deltaY); // 获取滚轮方向
+
+  if (delta > 0 && scale.value > minScale) {
+    // 向上滚动，缩小
+    scale.value -= 0.1;
+  } else if (delta < 0 && scale.value < maxScale) {
+    // 向下滚动，放大
+    scale.value += 0.1;
+  }
+
+  // 应用缩放效果
+  if (dragTable.value) {
+    dragTable.value.$el.style.transform = `scale(${scale.value})`;
+  }
+};
 
 const dialogVisible = ref(false)
 const editEnable = ref(false)
@@ -1122,6 +1148,9 @@ onUnmounted(() => {
 .dragContainer {
   // transform-origin: left right;
   position: relative;
+  .dragTable {
+    transition: transform 0.3s ease; /* 添加平滑过渡效果 */
+  }
   .mask {
     position: absolute;
     left: 0;

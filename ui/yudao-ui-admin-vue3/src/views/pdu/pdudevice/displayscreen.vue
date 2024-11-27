@@ -414,6 +414,7 @@ const activeNames = ref(["1","2","3","4","5"])
 const flashListTimer = ref({
   tableDataTimer : null as any,
   chartTimer : null as any,
+  abcChartTimer: null as any
 });
 const firstTimerCreate = ref(true);
 
@@ -953,6 +954,94 @@ const setNewChartData = async () => {
   });
 
   await PDUHdaLineHisdata(toggleTime.value)
+  lineidFlashChartData()
+}
+
+const setNewABCChartData = () => {
+  if (totalChartContainer.value && instance) {
+    totalChart = echarts.init(totalChartContainer.value);
+    totalChart.setOption({
+      // 这里设置 Echarts 的配置项和数据
+      title: { text: ''},
+      tooltip: { trigger: 'item', formatter: function(params) {
+                                      if (params.name === '视在功率') {
+                                          return params.name + ': ' + params.value + 'kVA';
+                                      } else if (params.name === '有功功率') {
+                                          return params.name + ': ' + params.value + 'kW';
+                                      }
+                                  } },
+      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+      series: [
+        { type: 'pie', radius: ['50%', '65%'], avoidLabelOverlap: false,  labelLine: { show: false },
+          data: [{value : totalData.value.pow, name: '有功功率', label: { show: true, position: 'outside', formatter: '{c}kW',fontSize: 13 },itemStyle: { color: '#0A69EE' }  },
+                 {value : totalData.value.powApparent , name : '视在功率' , label: { show: true, position: 'outside', formatter: '{c}kVA',fontSize: 13  }, itemStyle: { color: '#0AD0EE' } }],
+        },
+      ],
+    });
+    // 将 totalChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+    instance.appContext.config.globalProperties.totalChart = totalChart;
+  }
+
+  if (AChartContainer.value && instance) {
+    AChart = echarts.init(AChartContainer.value);
+    var aCurMax =  A.value.cur_alarm_max - A.value.cur_value;
+    AChart.setOption({
+      // 这里设置 Echarts 的配置项和数据
+      title: { text: ''},
+      // tooltip: { trigger: 'item', formatter: '{b}: {c}A' },
+      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+      series: [
+        { type: 'pie', radius: ['50%', '65%'], avoidLabelOverlap: false,  labelLine: { show: false } , emphasis:{disabled:false,scale:false,scaleSize:0,},
+          data: [
+            {value : A.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13 ,backgroundColor : A.value.curColor },itemStyle: { color: '#0AD0EE' } },
+            {value : aCurMax, itemStyle: { color: '#CCCCCC',shadowBlur:0 } },
+          ],
+        },
+      ],
+    });
+    // 将 AChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+    instance.appContext.config.globalProperties.AChart = AChart;
+  }
+  if (BChartContainer.value && instance) {
+    BChart = echarts.init(BChartContainer.value);
+    var bCurMax =  B.value.cur_alarm_max - B.value.cur_value;
+    BChart.setOption({
+      // 这里设置 Echarts 的配置项和数据
+      title: { text: ''},
+      // tooltip: { trigger: 'item', formatter: '{b}: {c}A' },
+      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+      series: [
+        { type: 'pie', radius: ['50%', '65%'], avoidLabelOverlap: false,  labelLine: { show: false },emphasis:{disabled:false,scale:false,scaleSize:0,},
+          data: [
+            {value : B.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13, backgroundColor : B.value.curColor },itemStyle: { color: '#0AD0EE' }  },
+            {value : bCurMax,itemStyle: { color: '#CCCCCC',shadowBlur:0 } },
+          ],
+        },
+      ],
+    });
+    // 将 BChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+    instance.appContext.config.globalProperties.BChart = BChart;
+  }
+  if (CChartContainer.value && instance) {
+    CChart = echarts.init(CChartContainer.value);
+    var cCurMax =  C.value.cur_alarm_max - C.value.cur_value;
+    CChart.setOption({
+      // 这里设置 Echarts 的配置项和数据
+      title: { text: ''},
+      // tooltip: { trigger: 'item', formatter: '{b}: {c}A' },
+      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+      series: [
+        { type: 'pie', radius: ['50%', '65%'], avoidLabelOverlap: false,  labelLine: { show: false },emphasis:{disabled:false,scale:false,scaleSize:0,},
+          data: [
+            {value : C.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13, backgroundColor : C.value.curColor },itemStyle: { color: '#0AD0EE' }  },
+            {value : cCurMax , itemStyle: { color: '#CCCCCC',shadowBlur:0 } },
+          ],
+        },
+      ],
+    });
+    // 将 CChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+    instance.appContext.config.globalProperties.CChart = CChart;
+  }
 }
 
 const flashChartData = async () =>{
@@ -1083,6 +1172,7 @@ const updateDimensions = () => {
 
 const getTestData = async()=>{
   const data = await PDUDeviceApi.PDUDisplay(queryParams);
+  console.log('data',data)
   testData.value = JSON.parse(data)
   circleList.value = [];
   output.value = [];
@@ -1601,20 +1691,17 @@ const getLocation = async () => {
 //L1,L2,L3的数据
 const lChartData = ref({
   volValueList : [] as number[], //电压
-  curValueList : [] as number[], //电流
-  createTimes : [] as string[]  //创建日期
+  curValueList : [] as number[] //电流
 });
 
 const llChartData = ref({
   volValueList : [] as number[],
-  curValueList : [] as number[],
-  createTimes : [] as string[]
+  curValueList : [] as number[]
 });
 
 const lllChartData = ref({
   volValueList : [] as number[],
-  curValueList : [] as number[],
-  createTimes : [] as string[]
+  curValueList : [] as number[]
 });
 
 const lineidDateTimes = ref([] as string[])
@@ -1631,39 +1718,31 @@ const PDUHdaLineHisdata = async (type) => {
   //{ devKey : queryParams.devKey, type : newPowGranularity} '192.168.1.184-0'
 
   const lData = result.l
-  console.log('111',lData)
   const llData = result.ll
   const lllData = result.lll
 
   lData.forEach(item => {
-    lChartData.value.volValueList.push(item.vol_value)
-    lChartData.value.curValueList.push(item.cur_value)
-    lChartData.value.createTimes.push(item.create_time)
+    lChartData.value.volValueList.push(item.vol_value.toFixed(1))
+    lChartData.value.curValueList.push(item.cur_value.toFixed(2))
   })
-  console.log('lChartDatat',lChartData.value)
 
   llData.forEach(item => {
-    llChartData.value.volValueList.push(item.vol_value)
-    llChartData.value.curValueList.push(item.cur_value)
-    llChartData.value.createTimes.push(item.create_time)
+    llChartData.value.volValueList.push(item.vol_value.toFixed(1))
+    llChartData.value.curValueList.push(item.cur_value.toFixed(2))
   })
 
   lllData.forEach(item => {
-    lllChartData.value.volValueList.push(item.vol_value)
-    lllChartData.value.curValueList.push(item.cur_value)
-    lllChartData.value.createTimes.push(item.create_time)
+    lllChartData.value.volValueList.push(item.vol_value.toFixed(1))
+    lllChartData.value.curValueList.push(item.cur_value.toFixed(2))
   })
   if(type === 'oneHour'){
     lineidDateTimes.value = result.dateTimes
-    console.log('time',lineidDateTimes.value)
   }else if(type === 'twentyfourHour'){
     const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey , type: 'twentyfourHour'})
     lineidDateTimes.value = result.dateTimes
-    console.log('time',lineidDateTimes.value)
   }else if(type === 'seventytwoHour'){
     const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey , type: 'seventytwoHour'})
     lineidDateTimes.value = result.dateTimes
-    console.log('time',lineidDateTimes.value)
   }
 }
 
@@ -1850,6 +1929,7 @@ onBeforeMount(async () =>{
   await getTestData();
   await initChart();
   flashListTimer.value.tableDataTimer = setInterval((getTestData), 5000);
+  flashListTimer.value.abcChartTimer = setInterval((setNewABCChartData), 5000);
   flashListTimer.value.chartTimer = setInterval((setNewChartData), 60000);
 })
 
@@ -1857,7 +1937,9 @@ onBeforeUnmount(()=>{
   if(flashListTimer.value.tableDataTimer && flashListTimer.value.chartTimer){
     clearInterval(flashListTimer.value.tableDataTimer)
     clearInterval(flashListTimer.value.chartTimer)
+    clearInterval(flashListTimer.value.abcChartTimer)
     flashListTimer.value.tableDataTimer = null;
+    flashListTimer.value.abcChartTimer = null;
     flashListTimer.value.chartTimer = null;
   }
 })
@@ -1867,17 +1949,15 @@ onActivated( async () => {
   flashChartData();
   lineidFlashChartData();
   if(!firstTimerCreate.value){
-    flashListTimer.value.tableDataTimer = setInterval((getTestData), 5000);
+    flashListTimer.value.tableDataTimer = setInterval(getTestData, 5000);
+    flashListTimer.value.abcChartTimer = setInterval((setNewABCChartData), 5000);
     var time = 0;
     if(queryParams.powGranularity == "oneHour"){
       time = 60000;
-      // time = 3000;
     } else if(queryParams.powGranularity == "twentyfourHour"){
       time = 3600000;
-      // time = 3000;
     }else if(queryParams.powGranularity == "seventytwoHour"){
-      time = 3600000;
-      // time = 3000;
+      time = 25920000;
     }
     flashListTimer.value.chartTimer = setInterval((setNewChartData), time);
   }
@@ -1887,8 +1967,10 @@ onBeforeRouteLeave(()=>{
   if(flashListTimer.value.tableDataTimer && flashListTimer.value.chartTimer){
     clearInterval(flashListTimer.value.tableDataTimer)
     clearInterval(flashListTimer.value.chartTimer)
+    clearInterval(flashListTimer.value.abcChartTimer)
     flashListTimer.value.tableDataTimer = null;
     flashListTimer.value.chartTimer = null;
+    flashListTimer.value.abcChartTimer = null;
     firstTimerCreate.value = false;
   }
 })

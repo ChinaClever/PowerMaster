@@ -643,7 +643,7 @@ const lineidFlashChartData = async () =>{
         params.forEach(param => {
           result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
           if (param.seriesName === 'L1-电流' || param.seriesName === 'L2-电流' || param.seriesName === 'L3-电流') {
-            result += 'V';
+            result += 'A';
           }
           result += '<br>';
         });
