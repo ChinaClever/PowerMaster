@@ -769,7 +769,6 @@ const handleDelete = () => {
 }
 // 处理点击编辑事件
 const handleEdit = () => {
-  alert(roomDownValId.value)
   if (isFromHome) {
     push({path: '/room/topology', state: { id:roomDownValId.value}})
     return
