@@ -5,6 +5,12 @@ export const CabinetApi = {
   getCabinetInfo: async (data: any) => {
     return await request.post({ url: `/cabinet/page`, data })
   },
+
+  getCabinetInfoStatus: async () => {
+    return await request.post({ url: `/cabinet/runStatus` })
+  },
+
+
   // 获取机柜配置信息
   getCabinetInfoItem: async (params: any) => {
     return await request.get({ url: `/cabinet/detailV2`, params })
