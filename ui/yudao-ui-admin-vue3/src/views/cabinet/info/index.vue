@@ -13,25 +13,25 @@
             <div class="top">
               <div class="tag"></div>正常
             </div>
-            <div class="value"><span class="number">24</span>个</div>
+            <div class="value"><span class="number">{{sumNormal}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag empty"></div>空载
             </div>
-            <div class="value"><span class="number">1</span>个</div>
+            <div class="value"><span class="number">{{sumNoload}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag warn"></div>预警
             </div>
-            <div class="value"><span class="number">1</span>个</div>
+            <div class="value"><span class="number">{{sumEarly}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag error"></div>故障
+              <div class="tag error"></div>告警
             </div>
-            <div class="value"><span class="number">0</span>个</div>
+            <div class="value"><span class="number">{{sumInform}}</span>个</div>
           </div>
         </div>
         <div class="line"></div>
@@ -212,7 +212,7 @@
           <div v-if="item.status == 0" class="status-empty">空载</div>
           <div v-if="item.status == 1" class="status-normal">正常</div>
           <div v-if="item.status == 2" class="status-warn">预警</div>
-          <div v-if="item.status == 3" class="status-error">故障</div>
+          <div v-if="item.status == 3" class="status-error">告警</div>
           <div v-if="item.status == 4" class="status-unbound">未绑定</div>
           <div v-if="item.status == 5" class="status-offline">离线</div>
           <button class="detail" @click.prevent="toMachineDetail(item.cabinet_key)">详情</button>
@@ -255,6 +255,15 @@ const listPage = ref<any>([]) // 表格数据
 const navList = ref([]) // 左侧导航列表数据
 const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
 const defaultOptionsCol = reactive([1, 2, 12, 13, 15, 16])
+
+// 运行状态 0：空载 1：正常 2：预警 3：告警 4:未绑定 5：离线
+const sumNoload = ref();
+const sumNormal = ref();
+const sumEarly = ref();
+const sumInform = ref();
+const sumDidnot = ref();
+const sumOffline = ref();
+
 const optionsCol = reactive([{
   value: 0,
   label: '总',
@@ -344,7 +353,7 @@ const statusList = reactive([
     color: '#ffc402'
   },
   {
-    name: '故障',
+    name: '告警',
     selected: true,
     value: 3,
     cssClass: 'btn_error',
@@ -372,6 +381,12 @@ const props = { multiple: true }
 
 // 接口获取机柜列表
 const getTableData = async(reset = false) => {
+  let ids;
+  if(cabinetIds.value.length == 0){
+    ids = null;
+  } else{
+    ids =cabinetIds.value
+  }
   loading.value = true
   if (reset) queryParams.pageNo = 1
   const status =  statusList.filter(item => item.selected)
@@ -379,12 +394,11 @@ const getTableData = async(reset = false) => {
     const res = await CabinetApi.getCabinetInfo({
       pageNo: queryParams.pageNo,
       pageSize: queryParams.pageSize,
-      cabinetIds: isFirst.value ? null : cabinetIds.value,
+      cabinetIds: isFirst.value ? null : ids,
       // roomId: null,
       runStatus: status.map(item => item.value),
       company: queryParams.company
     })
-    console.log(res)
     if (res.list) {
       const list = res.list.map(item => {
         const tableItem = {
@@ -416,6 +430,7 @@ const getTableData = async(reset = false) => {
       listPage.value = list
       queryParams.pageTotal = res.total
       //console.log('listPage', listPage.value)
+      console.log(res.runStatus);
     }
   } finally {
     loading.value = false
@@ -442,6 +457,11 @@ const getNavList = async() => {
   //   })
   // }
   // cabinetIds.value = ids
+    const resStatus =await CabinetApi.getCabinetInfoStatus();
+    sumNoload.value = resStatus.list[0].sumNoload;
+    sumNormal.value = resStatus.list[0].sumNormal;
+    sumEarly.value = resStatus.list[0].sumEarly;
+    sumInform.value = resStatus.list[0].sumInform;
 }
 
 // 保存机柜修改/删除
@@ -548,8 +568,9 @@ const cascaderChange = (_row) => {
 }
 
 onBeforeMount(() => {
-  getNavList()
-  getTableData(false)
+  getNavList();
+  getTableData(false);
+
 })
 
 </script>
