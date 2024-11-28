@@ -542,6 +542,10 @@ const submitForm = async () => {
     if (!machineForm) return
     const valid = await machineForm.value.validate()
     if (!valid) return
+    if(machineFormData.value.pduIpA == machineFormData.value.pduIpB && machineFormData.value.casIdA == machineFormData.value.casIdB){
+       message.error("PDU-IP地址相同情况下, 级联地址不能相同。");
+       return;
+    }
     // 提交请求
     formLoading.value = true
     const sensorList = [...sensorListLeft, ...sensorListRight]
