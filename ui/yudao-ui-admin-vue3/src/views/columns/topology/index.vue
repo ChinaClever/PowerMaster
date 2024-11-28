@@ -1553,12 +1553,12 @@ onBeforeUnmount(() => {
   .Bus {
     position: relative;
     z-index: 1;
-    width: 66px;
+    width: 86px;
     .startBus {
       font-size: 12px;
       color: #fcfcfce1;
-      width: 66px;
-      height: 66px;
+      width: 86px;
+      height: 76px;
       box-sizing: border-box;
       border: 1px solid #999;
       display: flex;
@@ -1608,7 +1608,7 @@ onBeforeUnmount(() => {
         left: -60px;
       }
       .busList1,.busList2 {
-        padding: 0 40px;
+        padding: 0 19px;
         display: flex;
         justify-content: space-between;
         font-size: 13px;
