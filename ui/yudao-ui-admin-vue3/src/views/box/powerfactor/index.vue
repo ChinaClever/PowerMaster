@@ -273,7 +273,7 @@
             <el-tag v-if="item.phasePowFactor != null" >功率因数</el-tag>
             <el-tag v-else  type="info">离线</el-tag>
           </div>
-          <button class="detail" @click="openPFDetail(item)"  v-if="item.status != null && item.status != 5">详情</button>
+          <button class="detail" @click="openPFDetail(item)"  v-if="item.status != null && item.status != 0">详情</button>
         </div>
       </div>
       <Pagination

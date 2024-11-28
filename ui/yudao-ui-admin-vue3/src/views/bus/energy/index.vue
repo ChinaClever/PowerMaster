@@ -31,22 +31,22 @@
             </div>
           </div>
         </div> -->
-        <div style="font-size: 14px;margin-top: 45px;margin-left:10px">
+        <div style="font-size:14px; margin-top:45px; margin-left:20px">
           <div ><span>用能最多</span>
           </div>
           <div>
-            <span class="label">昨日用能：</span>
-            <span class="value">{{ busName1 }}</span>
+            <span>昨日用能：</span>
+            <span>{{ busName1 }}</span>
           </div>
           <div >
-            <span class="label">上周用能：</span>
-            <span class="value">{{ busName2 }}</span>
+            <span>上周用能：</span>
+            <span>{{ busName2 }}</span>
           </div>
           <div >
-            <span class="label">上月用能：</span>
-            <span class="value">{{ busName3 }}</span>
+            <span>上月用能：</span>
+            <span>{{ busName3 }}</span>
           </div>
-          </div>
+        </div>
         <div class="line"></div>        
       </div>
     </template>
@@ -381,9 +381,11 @@ onBeforeMount(() => {
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }
+
 .navInfo {
   .overview {
     padding: 0 20px;
@@ -487,6 +489,7 @@ onBeforeMount(() => {
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
 }
+
 .matrixContainer {
   height: calc(100vh - 320px);
   overflow: auto;
@@ -549,6 +552,7 @@ onBeforeMount(() => {
     }
   }
 }
+
 ::v-deep .el-table .el-table__header th{
   background-color: #f5f7fa;
   color: #909399;

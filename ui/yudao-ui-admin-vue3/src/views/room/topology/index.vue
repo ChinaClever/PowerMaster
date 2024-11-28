@@ -555,8 +555,8 @@ let mouseUpEventListener = null;
 
 const startDrag = (event) => {
   isDragging.value = true;
-  initialMousePos.x = event.clientX;
-  initialMousePos.y = event.clientY;
+  initialMousePos.x = event.clientX;  //鼠标指针相对于视口的水平位置
+  initialMousePos.y = event.clientY;  //鼠标指针相对于视口的垂直位置
  
   // 获取表格相对于文档的位置
   const rect = tableContainer.value.getBoundingClientRect();
