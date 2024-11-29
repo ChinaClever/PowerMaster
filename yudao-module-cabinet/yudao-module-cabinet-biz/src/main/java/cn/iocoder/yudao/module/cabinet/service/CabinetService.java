@@ -89,4 +89,10 @@ public interface CabinetService {
      * @return
      */
     PageResult<CabinetIndexVo> getDeletedCabinetPage(CabinetIndexVo pageReqVO);
+
+    /**
+     * 机柜配电状态统计
+     * @return
+     */
+    PageResult<JSONObject> getCabinetRunStatus();
 }

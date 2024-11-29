@@ -2,6 +2,7 @@ package cn.iocoder.yudao.framework.common.mapper;
 
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetRunStatusVo;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCfg;
 import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
