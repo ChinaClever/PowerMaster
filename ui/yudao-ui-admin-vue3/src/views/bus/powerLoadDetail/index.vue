@@ -95,7 +95,7 @@
           </el-row>
           <el-row style="padding-left: 10px;margin-top: 10px;">
             <el-card style="width: 300px; height: 80px;">
-              <span style="font-size: 18px;"><!--{{peakDemand}}--></span>              
+              <span style="font-size: 18px;">{{peakDemand}}</span>              
               <span style="font-size: 14px; float: right; padding-top: 30px;">最大需量</span>
               <p style="font-size: 10px; padding-left: 10px;">kVA</p>
             </el-card>
@@ -182,7 +182,7 @@ const ratedCapacity = ref();
 const reserveMargin = ref();
 const powActive = ref();
 const powReactive = ref();
-//const peakDemand = ref();
+const peakDemand = ref();
 const powActivepPercentage = ref();
 const powReactivepPercentage = ref();
 const loadPercentage = ref();
@@ -572,7 +572,7 @@ const getDetailData =async () => {
       reserveMargin.value = formatNumber(data.reserveMargin, 2);
       powActive.value = formatNumber(data.powActive, 2);
       powReactive.value = formatNumber(data.powReactive, 2);
-      //peakDemand.value = formatNumber(data.peakDemand, 2);
+      peakDemand.value = formatNumber(data.peakDemand, 2);
       powActivepPercentage.value = runLoad.value == 0 ? 0 :  ((powActive.value / runLoad.value) * 100).toFixed(2);
       powReactivepPercentage.value = runLoad.value == 0 ? 0 : ((powReactive.value / runLoad.value) * 100 ).toFixed(2)
       loadPercentage.value = ratedCapacity.value == 0 ? 0 :  ((runLoad.value / ratedCapacity.value) * 100).toFixed(2);
@@ -1210,6 +1210,7 @@ const getLineChartData =async () => {
     if (data != null){
       // 查到数据
       allLineData.value = data
+      console.log('allLineData',allLineData.value)
       if (timeRadio.value == '近一小时'){
         createTimeData.value = data.L1.map((item) => formatDate(item.create_time,'YYYY-MM-DD HH:mm'));
       }else if (timeRadio.value == '近一天' || '近三天'){
@@ -1236,8 +1237,6 @@ const getLineChartData =async () => {
     }else{
     }
  } finally {
-    initChart2()
-    initChart3()
  }
 }
 
@@ -1472,7 +1471,8 @@ onMounted(async () => {
     console.log('还是不执行吗'); // 这行代码应该会执行，除非前面的代码抛出了异常
     initChart();
     initChart1();
- 
+    initChart2()
+    initChart3()
     // 设置每五秒执行一次 getDetailData 方法
     intervalId = window.setInterval(() => {
       getDetailData();
