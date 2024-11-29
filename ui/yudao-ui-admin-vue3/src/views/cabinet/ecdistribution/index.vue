@@ -144,6 +144,7 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
   cabinetId: undefined as number | undefined,
+  nowAddress: undefined as string | undefined,
   granularity: 'day',
   // 进入页面原始数据默认显示最近2周
   timeRange: ['', ''],
@@ -459,6 +460,7 @@ const handleExport1 = async () => {
     await message.exportConfirm()
     // 发起导出
     queryParams.pageNo = 1
+    queryParams.nowAddress = nowAddress.value
     exportLoading.value = true
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
@@ -499,8 +501,8 @@ onMounted(async () => {
     padding-top: 28px;
   }
 .nav_data{
-  padding-left: 5px;
-  width: 195px;
+  padding-left: 20px;
+  width: 170px;
 }
 .nav_content span{
   font-size: 14px;
@@ -521,17 +523,15 @@ onMounted(async () => {
 }
 
 .label {
-  width:100px; /* 控制冒号前的宽度 */
-  text-align: right; /* 文本右对齐 */
+  text-align: left;
   margin-right: 10px; /* 控制冒号后的间距 */
 }
-  .line {
-    height: 1px;
-    margin-top: 28px;
-
-    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
-  }
-  .value {
+.line {
+  height: 1px;
+  margin-top: 28px;
+  background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+}
+.value {
   flex: 1; /* 自动扩展以对齐数据 */
 }
 </style>

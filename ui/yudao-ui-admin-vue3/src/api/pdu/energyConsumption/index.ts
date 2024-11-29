@@ -16,13 +16,14 @@ export const EnergyConsumptionApi = {
   exportEQPageData: async (params, axiosConfig) => {
     return await request.download({ url: `/pdu/eq-data/export-excel`, params, ...axiosConfig })
   },
-    // 导出pdu能耗排名历史数据 Excel
-    exportOutletsPageData: async (params, axiosConfig) => {
-      return await request.download({ url: `/pdu/eq-data/outlets-details-excel`, params, ...axiosConfig })
-    },
 
-   // 查询pdu电量费数据分页
-   getBillDataPage: async (params: any) => {
+  // 导出pdu能耗排名历史数据 Excel
+  exportOutletsPageData: async (params, axiosConfig) => {
+    return await request.download({ url: `/pdu/eq-data/outlets-details-excel`, params, ...axiosConfig })
+  },
+
+  // 查询pdu电量费数据分页
+  getBillDataPage: async (params: any) => {
     return await request.get({ url: `/pdu/eq-data/bill-page`, params })
   },
 
@@ -66,13 +67,13 @@ export const EnergyConsumptionApi = {
     return await request.get({ url: `/pdu/eq-data/bill-details`, params})
   },
 
-    // 获取实时电量
-    getEleTotalRealtime: async (params: any) => {
-      return await request.post({ url: `/pdu/eq-data/ele_total_realtime`, params })
-    },
+  // 获取实时电量
+  getEleTotalRealtime: async (params: any) => {
+    return await request.post({ url: `/pdu/eq-data/ele_total_realtime`, params })
+  },
 
-      // 获取实时电量 Excel
-      getEleTotalRealtimeExcel: async (params, axiosConfig) => {
+  // 获取实时电量 Excel
+  getEleTotalRealtimeExcel: async (params, axiosConfig) => {
     return await request.download({ url: `/pdu/eq-data/ele_total_realtimeExcel`, params, ...axiosConfig})
   },
   

@@ -94,13 +94,13 @@
         </el-form-item>
         <el-form-item label="时间段" prop="createTime" label-width="100px">
           <el-button 
-            @click="queryParams.timeType = 0;now = new Date();now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 0;handleDayPick();handleQuery()" 
+            @click="queryParams.timeType = 0;dateTimeName='twentyfourHour';now = new Date();now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 0;handleDayPick();handleQuery()" 
             :type="switchValue == 0 ? 'primary' : ''"
           >
             日报 
           </el-button>
           <el-button 
-            @click="queryParams.timeType = 1;now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 1;handleMonthPick();handleQuery()" 
+            @click="queryParams.timeType = 1;dateTimeName='seventytwoHour';now = new Date();now.setDate(1);now.setHours(0,0,0,0);queryParams.oldTime = getFullTimeByDate(now);queryParams.newTime = null;queryParams.timeArr = null;visControll.visAllReport = false;switchValue = 1;handleMonthPick();handleQuery()" 
             :type="switchValue == 1 ? 'primary' : ''"
           >
             月报
@@ -219,6 +219,18 @@
             <p v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大用电量{{eqData.maxEle}}kWh， 最大负荷发生时间{{eqData.maxEleTime}}</p>
             <p v-if="visControll.isSameDay">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
             <Bar class="Container" width="70vw" height="58vh" :list="eleList"/>
+          </div>
+          <div class="pageBox">
+            <div class="page-conTitle">
+              相电流历史曲线趋势图
+            </div>
+            <div ref="lineidChartContainer" id="lineidChartContainer" class="adaptiveStyle"></div>
+          </div>
+          <div class="pageBox">
+            <div class="page-conTitle">
+              相电压历史曲线趋势图
+            </div>
+            <div ref="lineidChartContainerOne" id="lineidChartContainerOne" class="adaptiveStyle"></div>
           </div>
           <div class="pageBox"  v-if="visControll.pfVis">
             <div class="page-conTitle">
@@ -341,6 +353,12 @@ import { remove } from 'nprogress';
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
+
+let lineidChart = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
+const lineidChartContainer = ref<HTMLElement | null>(null);
+let lineidChartOne = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
+const lineidChartContainerOne = ref<HTMLElement | null>(null);
+const dateTimeName = ref('seventytwoHour')
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const outletList = ref() as any;
@@ -550,6 +568,184 @@ function findFullName(data, targetUnique, callback, fullName = '') {
     }
   }
 }
+
+const lChartData = ref({
+  volValueList : [] as number[], //电压
+  curValueList : [] as number[] //电流
+});
+const llChartData = ref({
+  volValueList : [] as number[],
+  curValueList : [] as number[]
+});
+const lllChartData = ref({
+  volValueList : [] as number[],
+  curValueList : [] as number[]
+});
+
+const lineidDateTimes = ref([] as string[])
+
+const lineidBeforeChartUnmount = () => {
+lineidChart?.dispose() // 销毁图表实例
+}
+
+//处理时间
+const extractTime = (dateTimeString) => {
+  return dateTimeString.substring(0, 16);
+}
+
+//获取PDU相历史数据，处理L1,L2,L3的数据
+const PDUHdaLineHisdata = async () => {
+  const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey, type: dateTimeName.value})
+  console.log('dateTimes',result.dateTimes)
+  //{ devKey : queryParams.devKey, type : newPowGranularity} '192.168.1.184-0'
+
+  const lData = result.l
+  const llData = result.ll
+  const lllData = result.lll
+
+  lData.forEach(item => {
+    lChartData.value.volValueList.push(item.vol_avg_value.toFixed(1))
+    lChartData.value.curValueList.push(item.cur_avg_value.toFixed(2))
+  })
+
+  llData.forEach(item => {
+    llChartData.value.volValueList.push(item.vol_avg_value.toFixed(1))
+    llChartData.value.curValueList.push(item.cur_avg_value.toFixed(2))
+  })
+
+  lllData.forEach(item => {
+    lllChartData.value.volValueList.push(item.vol_avg_value.toFixed(1))
+    lllChartData.value.curValueList.push(item.cur_avg_value.toFixed(2))
+  })
+
+  //if(dateTimeName.value === 'twentyfourHour'){
+  //  lineidDateTimes.value = result.dateTimes.map(extractTime)
+  //}else if(dateTimeName.value === 'seventytwoHour'){
+  //  lineidDateTimes.value = result.dateTimes
+  //}
+  lineidDateTimes.value = result.dateTimes.map(extractTime)
+}
+
+
+const lineidFlashChartData = async () =>{
+  lineidBeforeChartUnmount()
+
+  await PDUHdaLineHisdata()
+
+  // 创建新的图表实例
+  lineidChart = echarts.init(document.getElementById('lineidChartContainer'));
+  // 设置新的配置对象
+  if (lineidChart) {
+    lineidChart.setOption({
+      title: { text: ''},
+      tooltip: { trigger: 'axis',      formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+          if (param.seriesName === 'L1-电流' || param.seriesName === 'L2-电流' || param.seriesName === 'L3-电流') {
+            result += 'A';
+          }
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }},
+      legend: {
+        data: ['L1-电流', 'L2-电流', 'L3-电流'], // 图例项
+        selectedMode: 'multiple'
+      },
+      grid: {left: '3%', right: '4%', bottom: '5%',containLabel: true},
+      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+      xAxis: {
+        type: 'category',nameLocation: 'end',
+        boundaryGap: false,
+        data:lineidDateTimes.value
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          name: 'L1-电流',
+          type: 'line',
+          data: lChartData.value.curValueList,
+          symbol: 'circle',
+          symbolSize: 4
+        },
+        {
+          name: 'L2-电流',
+          type: 'line',
+          data: llChartData.value.curValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+        },
+        {
+          name: 'L3-电流',
+          type: 'line',
+          data: lllChartData.value.curValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+        }
+      ]
+    })
+  }
+
+  lineidChartOne = echarts.init(document.getElementById('lineidChartContainerOne'));
+  // 设置新的配置对象
+  if (lineidChartOne) {
+    lineidChartOne.setOption({
+      title: { text: ''},
+      tooltip: { trigger: 'axis',      formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+          if (param.seriesName === 'L1-电压' || param.seriesName === 'L2-电压' || param.seriesName === 'L3-电压') {
+            result += 'V';
+          } 
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }},
+      legend: {
+        data: ['L1-电压', 'L2-电压', 'L3-电压'], // 图例项
+        selectedMode: 'multiple'
+      },
+      grid: {left: '3%', right: '4%', bottom: '5%',containLabel: true},
+      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+      xAxis: {
+        type: 'category',nameLocation: 'end',
+        boundaryGap: false,
+        data:lineidDateTimes.value
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          name: 'L1-电压',
+          type: 'line',
+          data: lChartData.value.volValueList,
+          symbol: 'circle',
+          symbolSize: 4
+        },
+        {
+          name: 'L2-电压',
+          type: 'line',
+          data: llChartData.value.volValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+        },
+        {
+          name: 'L3-电压',
+          type: 'line',
+          data: lllChartData.value.volValueList,
+          symbol: 'circle',
+          symbolSize: 4,
+        }
+      ]
+    })
+  }
+}
+
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await CabinetApi.getRoomList({})
@@ -559,6 +755,7 @@ const getNavList = async() => {
   arr = arr.concat(temp);
   }
   navList.value = arr
+  await PDUHdaLineHisdata()
 }
 
 //折线图数据
@@ -721,7 +918,8 @@ const outletItemStyle = ref({
 });
 const temp1 = ref([]) as any
 const getList = async () => {
-  
+  await PDUHdaLineHisdata()
+
   loading.value = true
   eqData.value = await PDUDeviceApi.getConsumeData(queryParams);
   
@@ -821,7 +1019,7 @@ const getList = async () => {
         max: resultArray[i].powApparent+0.001,
       })
       // console.log(serverData1.value.nameAndMax)
-      serverData.value.curvalue.push(resultArray[i].curValue)
+      serverData.value.curvalue.push(resultArray[i].curValue.toFixed(2))
       serverData.value.powvalue.push(resultArray[i].powValue)
       serverData.value.powapparent.push(resultArray[i].powApparent)
     }
@@ -1020,6 +1218,8 @@ const handleQuery = async () => {
       queryParams.devKey = queryParams.ipAddr +'-' +  queryParams.cascadeAddr;
       await getList();
       initChart();
+      await PDUHdaLineHisdata();
+      await lineidFlashChartData();
       queryParams.devKey = null;
     }
   }
@@ -1166,9 +1366,13 @@ const formRef = ref()
 //   }
 // }
 
+window.addEventListener('resize', function() {
+  lineidChart.resize();
+  lineidChartOne.resize();
+});
 /** 初始化 **/
 onMounted( async () =>  {
-    getNavList()
+  getNavList()
   // getList();
   // initChart();
   ipList.value = await loadAll();
@@ -1406,6 +1610,10 @@ onMounted( async () =>  {
     color: rgba(0, 0, 0, .8);
 }
 
+.pageBox{
+  margin-top:4vw
+}
+
 .Container{
 
   left: 0px; 
@@ -1440,5 +1648,26 @@ onMounted( async () =>  {
 }
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+
+@media screen and (min-width:2048px) {
+  .adaptiveStyle {
+    width: 75vw;
+    height: 42vh;
+  }
+}
+
+@media screen and  (max-width:2048px) and (min-width:1600px) {
+  .adaptiveStyle {
+    width: 70vw;
+    height: 42vh;
+  }
+}
+
+@media screen and (max-width:1600px) {
+  .adaptiveStyle {
+    width: 85vw;
+    height: 42vh;
+  }
 }
 </style>

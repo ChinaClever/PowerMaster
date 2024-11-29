@@ -24,4 +24,6 @@ public class EnergyConsumptionPageReqVO extends PageParam {
 
     private String devkey;
 
+    private String nowAddress;
+
 }

@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo;
 
+import cn.iocoder.yudao.framework.excel.core.util.DateStringConverter;
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.NumberFormat;
@@ -20,7 +21,10 @@ import javax.persistence.Column;
 @ContentStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
 @ColumnWidth(30)
 @HeadRowHeight(20)public class HistoryDataDetailsExportDetailsVO {
-    @ExcelProperty("记录时间")
+    @ExcelProperty("位置")
+    private String location;
+
+    @ExcelProperty(value = "记录时间",converter = DateStringConverter.class)
     private String create_time;
     @NumberFormat("0.000")
     @ExcelProperty("平均有功功率(kW)")

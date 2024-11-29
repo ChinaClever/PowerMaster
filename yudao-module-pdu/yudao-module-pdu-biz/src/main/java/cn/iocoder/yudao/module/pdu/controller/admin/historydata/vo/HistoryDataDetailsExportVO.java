@@ -19,6 +19,10 @@ import lombok.Data;
 @ColumnWidth(30)
 @HeadRowHeight(20)
 public class HistoryDataDetailsExportVO {
+
+    @ExcelProperty("位置")
+    private String location;
+
     @ExcelProperty("记录时间")
     private String create_time;
     @ExcelProperty("总有功功率(kW)")

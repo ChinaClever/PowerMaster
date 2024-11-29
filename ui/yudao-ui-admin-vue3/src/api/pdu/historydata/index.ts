@@ -24,12 +24,13 @@ export const HistoryDataApi = {
   getNavNewData: async (granularity: string) => {
     return await request.get({ url: `/pdu/history-data/new-data/`+granularity})
   },
-  // 导出pdu电力分析 Excel
-  exportHistorydetailsPageData: async (params, axiosConfig) => {
-    return await request.download({ url: `/pdu/history-data/details-export-excel`, params, ...axiosConfig })
-  },
+
   // 导出pdu环境分析 Excel
   exportEnvHistorydetailsPageData: async (params, axiosConfig) => {
     return await request.download({ url: `/pdu/history-data/export-Env-excel`, params, ...axiosConfig })
   },
+    // 导出pdu电力分析 Excel
+    exportHistorydetailsPageData: async (params, axiosConfig) => {
+      return await request.download({ url: `/pdu/history-data/details-export-excel`, params, ...axiosConfig })
+    },
 }
