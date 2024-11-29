@@ -2,8 +2,32 @@
   <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="需量监测">
     <template #NavInfo>
       <div >
-        <div class="header">
-          <!-- <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div> -->
+        <!-- <div class="header">
+          <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div>
+        </div> -->
+        <div style="font-size:14px; margin-top:45px; margin-left:20px">
+          <div ><span>最大电流需量</span>
+          </div>
+          <div>
+            <span>位置：</span>
+            <span>{{  }}</span>
+          </div>
+          <div >
+            <span>名称：</span>
+            <span>{{  }}</span>
+          </div>
+          <div >
+            <span>相位：</span>
+            <span>{{  }}</span>
+          </div>
+          <div >
+            <span>时间：</span>
+            <span>{{  }}</span>
+          </div>
+          <div >
+            <span>电流：</span>
+            <span>{{  }}</span>
+          </div>
         </div>
         <div class="line"></div>
         <!-- <div class="status">
@@ -270,8 +294,34 @@
 
       <el-dialog v-model="detailVis" :title="queryParams.lineType == 0 ? `电流详情`: `功率详情`"  width="70vw" height="58vh" >
         <div>
-          <el-tag>{{ location }}</el-tag> 结果所在时间段: {{ startTime }}&nbsp;&nbsp;到&nbsp;&nbsp;{{ endTime }}
-          <RequirementLine width="68vw" height="58vh" :list="requirementLine"  />
+          结果所在位置：（<el-tag>{{ location }}</el-tag>） 时间段: {{ startTime }}&nbsp;&nbsp;到&nbsp;&nbsp;{{ endTime }}
+        </div>
+        <div style="margin-left:55vw; margin-top:-4vh;">
+          <el-button 
+            @click="switchChartOrTable = 0" 
+            :type="switchChartOrTable == 0 ?  'primary' : ``"
+          >
+            图表
+          </el-button>
+          <el-button 
+            @click="switchChartOrTable = 1" 
+            :type=" switchChartOrTable == 1 ?  'primary' : ``"
+          >
+            数据
+          </el-button>
+          <el-button type="success" plain @click="handleExport" :loading="exportLoading">
+             <Icon icon="ep:download" class="mr-5px" /> 导出
+           </el-button>
+        </div>
+        <div style="margin-top:3vh;">
+          <RequirementLine v-show="switchChartOrTable == 0" width="68vw" height="58vh" :list="requirementLine"  />
+          <el-table v-show="switchChartOrTable == 1" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" >
+            <el-table-column label="设备识别码" align="center" prop="devKey" />
+            <el-table-column label="时间" align="center" prop="create_time" />
+            <el-table-column label="相" align="center" prop="line" />
+            <el-table-column label="最大电流" align="center" prop="cur_max_value" />
+            <el-table-column label="最大有功功率" align="center" prop="pow_active_max_value" />
+          </el-table>
         </div>
 
       </el-dialog>
@@ -304,6 +354,8 @@ const now = ref()
 const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(0)
 const showSearchBtn = ref(false)
+const switchChartOrTable = ref(0)
+const pfTableList = ref([]) as any
 // const statusNumber = reactive({
 //   normal : 0,
 //   warn : 0,
@@ -556,6 +608,12 @@ const getNavList = async() => {
 
 const openDetail = async (row) =>{
   queryParams.boxId = row.boxId;
+  const tableData = await IndexApi.getBoxLineCurLinePage(queryParams)
+  console.log("tableData",tableData)
+  pfTableList.value = tableData?.list;
+  pfTableList.value.forEach(item => item.cur_max_value = item.cur_max_value.toFixed(2)+'A')
+  pfTableList.value.forEach(item => item.pow_active_max_value = item.pow_active_max_value+'KW')
+
   const lineData = await IndexApi.getBoxLineCurLine(queryParams);
   requirementLine.value = lineData;
   requirementLine.value.formatter = queryParams.lineType == 0 ? '{value} A' : '{value} kW';
@@ -608,10 +666,17 @@ const handleExport = async () => {
     // 导出的二次确认
     await message.exportConfirm()
     // 发起导出
+    queryParams.pageNo = 1
     exportLoading.value = true
-    const data = await IndexApi.exportIndex(queryParams)
-    download.excel(data, 'PDU设备.xls')
-  } catch {
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await IndexApi.getBoxLineCurLineExcel(queryParams, axiosConfig)
+    console.log("data",data)
+    await download.excel(data, '电流详细.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
   } finally {
     exportLoading.value = false
   }

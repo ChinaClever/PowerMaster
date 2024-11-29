@@ -690,6 +690,10 @@ const getList = async () => {
   
   const data = await IndexApi.getBusPFLine(queryParams);
   pfLineList.value = data.pfLineRes;
+  pfLineList.value.series.forEach(item => {
+    item.data = item.data.map(value => parseFloat(value.toFixed(3)));
+  });
+  console.log('data.pfLineRes',data.pfLineRes)
   
   if(pfLineList.value?.time != null && pfLineList.value?.time?.length > 0){
     visControll.pfVis = true;
