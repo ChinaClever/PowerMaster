@@ -161,4 +161,14 @@ export const IndexApi = {
   getBoxRedisByDevKey: async (data) => {
     return await request.post({ url: `/box/index/redisbydevkey`, data })
   },
+
+  //插接箱需量数据图表数据
+  getBoxLineCurLinePage: async (data) => {
+    return await request.post({ url: `/box/index/line/cur/page` , data})
+  },
+
+  //插接箱需量数据图表数据导出
+  getBoxLineCurLineExcel: async ( data, axiosConfig) => {
+    return await request.downloadPost({ url: `/box/index/line/cur/excel` , data, ...axiosConfig })
+  }
 }

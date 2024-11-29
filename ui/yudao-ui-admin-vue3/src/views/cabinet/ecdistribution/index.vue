@@ -296,7 +296,7 @@ loading.value = true
       startTimeData.value = data.list.map((item) => formatDate(item.start_time, 'YYYY-MM-DD'));
       endEleData.value = data.list.map((item) => formatNumber(item.end_ele, 1));
       endTimeData.value = data.list.map((item) => formatDate(item.end_time, 'YYYY-MM-DD'));
-      eqData.value = data.list.map((item) => formatNumber(item.eq_value, 1));
+      eqData.value = data.list.map((item) => formatNumber(item.end_ele-item.start_ele, 1));
       createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
 
       maxEqDataTemp.value = Math.max(...eqData.value);

@@ -2,6 +2,7 @@ package cn.iocoder.yudao.module.cabinet.service.impl;
 
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.iocoder.yudao.framework.common.dto.cabinet.*;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalMonthDo;
 import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalWeekDo;
@@ -19,14 +20,10 @@ import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
-import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetDTO;
-import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetEnvSensorDTO;
-import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.cabinet.enums.CabinetLoadEnums;
 import cn.iocoder.yudao.module.cabinet.mapper.RackIndexMapper;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
-import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
-import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -109,6 +106,7 @@ public class CabinetServiceImpl implements CabinetService {
                 list.add(-1);
                 vo.setCabinetIds(list);
             }
+
             Page<CabinetIndexDTO> indexDTOPage = cabinetCfgMapper.selectCabList(page, vo);
             List<JSONObject> result = new ArrayList<>();
             //获取redis 实时数据
@@ -121,9 +119,7 @@ public class CabinetServiceImpl implements CabinetService {
                         result.add(jsonObject);
                     }
                 });
-
             }
-
             return new PageResult<>(result, indexDTOPage.getTotal());
         } catch (Exception e) {
             log.error("获取数据失败：", e);
@@ -742,6 +738,65 @@ public class CabinetServiceImpl implements CabinetService {
             statusMap.keySet().forEach(key -> map.put(key,statusMap.get(key)));
         }
         return map;
+    }
+
+    /**
+     * 获得已删除机柜分页
+     * @param pageReqVO
+     * @return
+     */
+    @Override
+    public PageResult<CabinetIndexVo> getDeletedCabinetPage(CabinetIndexVo pageReqVO) {
+
+        LambdaQueryWrapper<CabinetIndex> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CabinetIndex::getIsDeleted,0);
+        List<CabinetIndex> cabinetIndices = cabinetIndexMapper.selectList(queryWrapper);
+        System.out.println(cabinetIndices);
+        System.out.println(cabinetIndices.toString());
+        return null;
+    }
+
+    /**
+     * 机柜配电状态统计
+     * @return
+     */
+    @Override
+    public PageResult<JSONObject> getCabinetRunStatus() {
+        Map<String, Integer> statusCounts = new HashMap<>();
+        //查询全部的机柜配电状态
+        List<CabinetIndexDTO> cabinetCfgs = cabinetCfgMapper.selectRunStatus();
+        cabinetCfgs.forEach(dto -> {
+            String key = REDIS_KEY_CABINET + dto.getRoomId() + SPLIT_KEY + dto.getId();
+            JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(redisTemplate.opsForValue().get(key)));
+            if (Objects.nonNull(jsonObject)) {
+                String status = jsonObject.getString("status");
+                statusCounts.put(status, statusCounts.getOrDefault(status, 0) + 1);
+            }
+        });
+        JSONObject jsonObject = new JSONObject();
+        List<JSONObject> result = new ArrayList<>();
+        jsonObject.put("sumNoload", 0);
+        jsonObject.put("sumNormal", 0);
+        jsonObject.put("sumEarly", 0);
+        jsonObject.put("sumInform", 0);
+        statusCounts.forEach((status, count) -> {
+            switch (status) {
+                case "0":
+                    jsonObject.put("sumNoload", count);
+                    break;
+                case "1":
+                    jsonObject.put("sumNormal", count);
+                    break;
+                case "2":
+                    jsonObject.put("sumEarly", count);
+                    break;
+                case "3":
+                    jsonObject.put("sumInform", count);
+                    break;
+            }
+        });
+        result.add(jsonObject);
+        return new PageResult<>(result);
     }
 
     /**

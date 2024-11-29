@@ -194,6 +194,14 @@ const chosenBtn = ref(0)
 const ContainerHeight = ref(100)
 const loading = ref(false)
 const movingInfo = ref<any>({})
+
+const roomDownValId = ref();
+
+const roomsId = reactive({
+  roomDownValIds: history?.state?.id,
+})
+
+
 const rowColInfo = reactive({
   roomName: '', // 机房名
   row: 14, // 行
@@ -664,7 +672,11 @@ const getRoomList = async() => {
     roomList.value = res
     const find = res.find(item => item.id == roomId.value)
     if (!find) {
-      roomId.value = res[0].id
+      if(roomsId.roomDownValIds == null){
+          roomId.value = res[0].id
+      }else{
+          roomId.value = roomsId.roomDownValIds;
+      }
     }
     emit('getroomid', roomId.value)
     getRoomInfo()
@@ -680,6 +692,7 @@ const getRoomInfo = async() => {
     const result2 = MachineRoomApi.getRoomDataDetail({id: roomId.value})
     const results = await Promise.all([result1, result2])
     const res = results[0]
+    roomDownValId.value = res.id;
     console.log('res', res)
     const data = [] as any
     const Obj = {}
@@ -840,7 +853,7 @@ const handleDelete = () => {
 // 处理点击编辑事件
 const handleEdit = () => {
   if (isFromHome) {
-    push('/room/topology')
+    push({path: '/room/topology', state: { id:roomDownValId.value}})
     return
   }
   editEnable.value = true

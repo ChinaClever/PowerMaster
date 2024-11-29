@@ -285,7 +285,7 @@ justauth:
 spring:
   elasticsearch:
     rest:
-      uris: 192.168.1.41:9200
+      uris: 192.168.1.245:9200
 #      uris: 192.168.1.44:9200
       connection-timeout: 5s
       read-timeout: 30s

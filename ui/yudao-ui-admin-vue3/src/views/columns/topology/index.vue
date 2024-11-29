@@ -50,6 +50,8 @@
   </ContentWrap>
   <ContentWrap :class="isFromHome? 'topologyMain' : ''">
     <div ref="topologyContainer" class="topologyContainer" :style="`position: relative;z-index: 1;transform: scale(${scaleValue}, ${scaleValue});height: ${isFromHome ? (ContainerHeight * scaleValue + 'px') : 'auto'}`">
+      <div style="margin-top:-25px"></div>
+      <div style="height:20px;"></div>
       <div class="Container" :style="{alignItems: machineColInfo.pduBar && machineColInfo.barA ? 'unset' : 'center', minHeight: isFromHome ? 'unset' : '600px'}">
         <div v-if="machineColInfo.pduBar && machineColInfo.barA" class="Bus">
           <div class="startBus" :style="{opacity: machineColInfo.barA.direction ? 0 : 1}">
@@ -228,7 +230,6 @@ import InitialBox from './component/InitialBox.vue'
 import PluginBox from './component/PluginBox.vue'
 import BoxForm from './component/BoxForm.vue'
 import { EChartsOption } from 'echarts'
-
 const message = useMessage()
 const { push } = useRouter()
 let instance: BrowserJsPlumbInstance | null = null
@@ -236,7 +237,8 @@ const roomList = ref<any>([]) // 机房列表
 const machineList = ref<any>([]) // 机柜列列表
 const queryParams = reactive({
   cabinetColumnId: history?.state?.id,
-  cabinetroomId: history?.state?.roomId
+  cabinetroomId: history?.state?.roomId,
+  roomDownValId:history?.state?.roomValId
 })
 const btns = [
   {
@@ -307,6 +309,7 @@ const machineColInfo = reactive<any>({})
 const cabinetList = ref<any>([])
 const busListA = ref<any>([])
 const busListB = ref<any>([])
+const roomDownVal =ref();
 const operateMenu = ref({  // 操作菜单
   left: '0px',
   top: '0px',
@@ -330,7 +333,7 @@ const {containerInfo, isFromHome} = defineProps({
     default: false,
   },
 })
-const emit = defineEmits(['backData', 'idChange', 'getpdubar']) // 定义 success 事件，用于操作成功后的回调
+const emit = defineEmits(['backData', 'idChange', 'getpdubar','sendList']) // 定义 success 事件，用于操作成功后的回调
 
 // 连接初始化准备
 const initConnect = () => {
@@ -1306,6 +1309,8 @@ const getMachineColInfo = async() => {
   const res1 = MachineColumnApi.getAisleDetail({id: queryParams.cabinetColumnId})
   const res2 = MachineColumnApi.getDataDetail({id: queryParams.cabinetColumnId})
   Promise.all([res1, res2]).then((resultList) => {
+    emit('sendList', resultList[0].roomId)
+    //push({path: '/aisle/index', state: { roomDownVal: resultList[0].roomId}})
     Object.assign(machineColInfo, resultList[0])
     handleCabinetList(resultList[0], resultList[1])
     // handleBusInit(resultList[0])
@@ -1413,7 +1418,11 @@ const getNavList = async() => {
 const handleNavList = (cabinetroomId) => {
   let targetRoom = null as any
   if (!queryParams.cabinetroomId) {
-    queryParams.cabinetroomId = roomList.value[0].roomId
+    if(queryParams.roomDownValId == null || queryParams.roomDownValId  == ""){
+        queryParams.cabinetroomId = roomList.value[0].roomId
+    }else{
+        queryParams.cabinetroomId = queryParams.roomDownValId 
+    }
     targetRoom = roomList.value[0]
   } else {
     targetRoom = roomList.value.find(item => item.roomId == queryParams.cabinetroomId)
@@ -1544,12 +1553,12 @@ onBeforeUnmount(() => {
   .Bus {
     position: relative;
     z-index: 1;
-    width: 66px;
+    width: 86px;
     .startBus {
       font-size: 12px;
       color: #fcfcfce1;
-      width: 66px;
-      height: 66px;
+      width: 86px;
+      height: 76px;
       box-sizing: border-box;
       border: 1px solid #999;
       display: flex;
@@ -1599,7 +1608,7 @@ onBeforeUnmount(() => {
         left: -60px;
       }
       .busList1,.busList2 {
-        padding: 0 40px;
+        padding: 0 19px;
         display: flex;
         justify-content: space-between;
         font-size: 13px;

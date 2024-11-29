@@ -60,4 +60,13 @@
 
     </select>
 
+    <select id="selectRunStatus" resultType="cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO">
+        select
+        ci.id ,
+        ci.room_id as roomId
+        from cabinet_index ci
+        where CI.is_disabled = 0 and CI.is_deleted = 0
+    </select>
+
+
 </mapper>
