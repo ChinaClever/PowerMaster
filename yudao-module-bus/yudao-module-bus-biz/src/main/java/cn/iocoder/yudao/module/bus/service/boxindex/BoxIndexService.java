@@ -123,7 +123,11 @@ public interface BoxIndexService {
 
     PageResult<BoxIndexRes> getDeletedPage(BoxIndexPageReqVO pageReqVO);
 
-    PageResult<BusCurLinePageResVO> getBusLineCurLinePage(BusIndexPageReqVO pageReqVO) throws IOException;
+    PageResult<BusCurLinePageResVO> getBoxLineCurLinePage(BoxIndexPageReqVO pageReqVO) throws IOException;
 
-    List<BusCurLinePageResVO> getBusLineCurLineExcel(BusIndexPageReqVO pageReqVO) throws IOException;
+    List<BusCurLinePageResVO> getBoxLineCurLineExcel(BoxIndexPageReqVO pageReqVO) throws IOException;
+
+    Map getAvgBoxHdaLineForm(BoxIndexPageReqVO pageReqVO) throws IOException;
+
+    String getDisplayDataByDevKey(String devKey);
 }

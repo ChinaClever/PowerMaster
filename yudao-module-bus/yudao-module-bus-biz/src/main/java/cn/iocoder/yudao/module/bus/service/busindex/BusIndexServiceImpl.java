@@ -567,6 +567,74 @@ public class BusIndexServiceImpl implements BusIndexService {
     }
 
     @Override
+    public Map getAvgBusHdaLineForm(BusIndexPageReqVO pageReqVO) throws IOException {
+        HashMap<String, Object> map = new HashMap<>();
+        BusIndexDO busIndexDO = busIndexMapper.selectOne(new LambdaQueryWrapperX<BusIndexDO>().eq(BusIndexDO::getDevKey, pageReqVO.getDevKey()));
+        if (busIndexDO != null) {
+            Integer Id = busIndexDO.getId();
+            String index = null;
+            if (pageReqVO.getTimeType().equals(0)) {
+                index = "bus_hda_line_hou r";
+            } else {
+                index = "bus_hda_line_day";
+            }
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+
+            builder.trackTotalHits(true);
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
+                    .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(pageReqVO.getOldTime()).lte(pageReqVO.getNewTime()))
+                    .must(QueryBuilders.termQuery("bus_id", busIndexDO.getId()))));
+            builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+
+            List<BusHdaLineAvgResVO> dayList1 = new ArrayList<>();
+            List<BusHdaLineAvgResVO> dayList2 = new ArrayList<>();
+            List<BusHdaLineAvgResVO> dayList3 = new ArrayList<>();
+            List<String> dateTimes = new ArrayList<>();
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            for (SearchHit hit : searchResponse.getHits()) {
+                BusHdaLineAvgResVO houResVO = JsonUtils.parseObject(hit.getSourceAsString(), BusHdaLineAvgResVO.class);
+                    switch (houResVO.getLineId()) {
+                        case 1:
+                            dayList1.add(houResVO);
+                            break;
+                        case 2:
+                            dayList2.add(houResVO);
+                            break;
+                        case 3:
+                            dayList3.add(houResVO);
+                            break;
+                        default:
+                    }
+                    dateTimes.add(houResVO.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+            }
+            dateTimes.stream().distinct().collect(Collectors.toList());
+            map.put("A", dayList1);
+            map.put("B", dayList2);
+            map.put("C", dayList3);
+            map.put("dateTimes", dateTimes);
+        }
+        return map;
+    }
+
+    @Override
+    public String getDisplayDataByDevKey(String devKey) {
+        if (StringUtils.isEmpty(devKey)) {
+            return null;
+        } else {
+            ValueOperations ops = redisTemplate.opsForValue();
+            JSONObject jsonObject = (JSONObject) ops.get("packet:bus:" + devKey);
+            return jsonObject != null ? jsonObject.toJSONString() : null;
+        }
+    }
+
+    @Override
     public PageResult<BusRedisDataRes> getBusRedisPage(BusIndexPageReqVO pageReqVO) {
         PageResult<BusIndexDO> busIndexDOPageResult = busIndexMapper.selectPage2(pageReqVO);
         List<BusIndexDO> list = busIndexDOPageResult.getList();
