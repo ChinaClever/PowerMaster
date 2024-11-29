@@ -130,5 +130,4 @@ public interface BusIndexService {
 
     Map getAvgBusHdaLineForm(BusIndexPageReqVO pageReqVO) throws IOException;
 
-    String getDisplayDataByDevKey(String devKey);
 }

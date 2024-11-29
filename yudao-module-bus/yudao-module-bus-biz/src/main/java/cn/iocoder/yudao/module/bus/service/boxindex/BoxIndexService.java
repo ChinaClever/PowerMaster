@@ -129,5 +129,4 @@ public interface BoxIndexService {
 
     Map getAvgBoxHdaLineForm(BoxIndexPageReqVO pageReqVO) throws IOException;
 
-    String getDisplayDataByDevKey(String devKey);
 }

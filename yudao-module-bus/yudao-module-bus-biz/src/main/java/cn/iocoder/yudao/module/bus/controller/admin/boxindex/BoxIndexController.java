@@ -326,11 +326,6 @@ public class BoxIndexController {
         return success(indexService.getAvgBoxHdaLineForm(pageReqVO));
     }
 
-    @GetMapping("/displayscreen")
-    @Operation(summary = "获得插接箱设备详细信息")
-    public CommonResult<String> getDisplay(String devKey) {
-        return success(indexService.getDisplayDataByDevKey(devKey));
-    }
 
 //    @GetMapping("/export-excel")
 //    @Operation(summary = "导出插接箱索引 Excel")
