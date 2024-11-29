@@ -345,10 +345,4 @@ public class BusIndexController {
     public CommonResult<Map> getAvgBusHdaLineForm(@RequestBody BusIndexPageReqVO pageReqVO) throws IOException {
         return success(indexService.getAvgBusHdaLineForm(pageReqVO));
     }
-    @GetMapping("/displayscreen")
-    @Operation(summary = "获得始端箱设备详细信息")
-    public CommonResult<String> getDisplay(String devKey) {
-        return success(indexService.getDisplayDataByDevKey(devKey));
-    }
-
 }
