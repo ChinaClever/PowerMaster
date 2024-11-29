@@ -1,7 +1,6 @@
 package cn.iocoder.yudao.module.bus.controller.admin.busindex.vo;
 
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
-import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.write.style.ColumnWidth;
 import com.alibaba.excel.annotation.write.style.ContentStyle;
 import com.alibaba.excel.annotation.write.style.HeadRowHeight;
@@ -18,10 +17,24 @@ import lombok.Data;
 @ContentStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
 @ColumnWidth(30)
 @HeadRowHeight(20)
-public class BusIndexRes extends BusResBase {
+public class BusIndexResExcel {
+
+    /**
+     * 设备识别码
+     */
+    @Schema(description = "设备识别码")
+    private String devKey;
+
+    @Schema(description = "始端箱Id")
+    private Integer busId;
 
     @Schema(description = "位置")
     private String location;
+
+    @Schema(description = "始端箱名称")
+    private String busName;
+
+
 
     @Schema(description = "A的负载率")
     private Double aLoadRate;

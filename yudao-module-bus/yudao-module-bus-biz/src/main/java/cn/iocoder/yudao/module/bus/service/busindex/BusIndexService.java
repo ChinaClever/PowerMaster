@@ -121,4 +121,11 @@ public interface BusIndexService {
     BusPowerLoadDetailRespVO getPeakDemand(BusIndexPageReqVO pageReqVO) throws IOException;
 
     PageResult<BusIndexDTO> getMaxEq(BusIndexPageReqVO pageReqVO);
+
+    PageResult<BusCurLinePageResVO> getBusLineCurLinePage(BusIndexPageReqVO pageReqVO) throws IOException;
+
+    List<BusCurLinePageResVO> getBusLineCurLineExcel(BusIndexPageReqVO pageReqVO) throws IOException;
+
+    List<BusIndexRes> getIndexPageExcel(BusIndexPageReqVO pageReqVO);
+
 }

@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.bus.controller.admin.boxindex;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.dto.BoxIndexDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.*;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
@@ -17,8 +18,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -83,6 +86,22 @@ public class BoxIndexController {
     public CommonResult<BusLineResBase> getBoxLineCurLine(@RequestBody BoxIndexPageReqVO pageReqVO) {
         BusLineResBase pageResult = indexService.getBoxLineCurLine(pageReqVO);
         return success(pageResult);
+    }
+
+    @Operation(summary = "插接箱需量数据图表数据")
+    @PostMapping("/line/cur/page")
+    public CommonResult<PageResult<BusCurLinePageResVO>> getBusLineCurLinePage(@RequestBody BusIndexPageReqVO pageReqVO) throws IOException {
+        PageResult<BusCurLinePageResVO> pageResult = indexService.getBusLineCurLinePage(pageReqVO);
+        return success(pageResult);
+    }
+
+    @Operation(summary = "插接箱需量数据图表数据导出")
+    @PostMapping("/line/cur/excel")
+    public void getBusLineCurLineExcel(@RequestBody BusIndexPageReqVO pageReqVO, HttpServletResponse response) throws IOException {
+        List<BusCurLinePageResVO> list = indexService.getBusLineCurLineExcel(pageReqVO);
+        // 导出 Excel
+        ExcelUtils.write(response, "始端箱需量数据图表数据.xlsx", "数据", BusCurLinePageResVO.class,
+                list);
     }
 
     @PostMapping("/page")
