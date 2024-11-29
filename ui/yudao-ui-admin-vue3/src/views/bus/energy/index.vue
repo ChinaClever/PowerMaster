@@ -183,7 +183,7 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
   pageTotal: 0,
-  busDevKeyList : [],
+  busDevKeyList : undefined as string[] | undefined,
   isDeleted: 0,
   timeGranularity:'',
 }) as any
@@ -193,7 +193,7 @@ const queryParamsAll = reactive({
   pageNo: 1,
   pageSize: -1,
   pageTotal: 0,
-  busDevKeyList : [],
+  busDevKeyList : undefined as string[] | undefined,
   isDeleted: 0,
 }) as any
 
@@ -344,12 +344,12 @@ const handleCheck = (row) => {
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
-  queryParams.busDevKeyList = [queryParamsDevKey.value]
+  // queryParams.busDevKeyList = [queryParamsDevKey.value]
   getTableData(true)
 }
 
 const resetQuery = () => {
-  queryParams.busDevKeyList = []
+  queryParams.busDevKeyList = undefined as string[] | undefined
   getTableData(true)
 }
 

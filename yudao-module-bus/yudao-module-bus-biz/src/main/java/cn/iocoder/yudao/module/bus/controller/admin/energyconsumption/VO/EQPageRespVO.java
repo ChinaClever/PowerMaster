@@ -15,13 +15,10 @@ import lombok.Data;
 @Schema(description = "管理后台 - 始端箱能耗趋势（天周月） 导出数据")
 @Data
 @ExcelIgnoreUnannotated
-
-
 @HeadStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
 @ContentStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
 @ColumnWidth(30)
 @HeadRowHeight(20)
-
 public class EQPageRespVO {
 
     @ExcelProperty("所在位置")

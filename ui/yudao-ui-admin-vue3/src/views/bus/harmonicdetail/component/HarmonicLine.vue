@@ -32,7 +32,7 @@ const echartsOption = ref({
     width:1000
   },
   tooltip: { trigger: 'axis' },
-  xAxis: {type: 'category', boundaryGap: false, data : time},
+  xAxis: {type: 'category', boundaryGap: true, data : time},
   yAxis: { type: 'value'},
   toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
   series: series,
