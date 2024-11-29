@@ -20,6 +20,10 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 @HeadStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
 @ContentStyle(horizontalAlignment = HorizontalAlignmentEnum.CENTER)
 public class HistoryDataDetailsOutletExportDetailsVO {
+
+    @ExcelProperty("位置")
+    private String location;
+
     @ExcelProperty("记录时间")
     private String create_time;
     @ExcelProperty("平均电流(A)")

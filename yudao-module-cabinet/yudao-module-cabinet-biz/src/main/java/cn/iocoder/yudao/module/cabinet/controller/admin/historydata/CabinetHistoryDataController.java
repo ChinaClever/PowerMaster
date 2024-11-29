@@ -86,27 +86,39 @@ public class CabinetHistoryDataController {
         // 导出 Excel
         if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
             if(Objects.equals(pageReqVO.getAbtotal(), "a")){
+                List<DetailHistoryDataExcelExportA> bean = BeanUtils.toBean(list, DetailHistoryDataExcelExportA.class);
+                bean.stream().forEach(iter ->{iter.setLocation(pageReqVO.getNowAddress());});
                 ExcelUtils.write(response, "机柜电力历史数据.xlsx", "数据", DetailHistoryDataExcelExportA.class,
-                        BeanUtils.toBean(list, DetailHistoryDataExcelExportA.class));
+                        bean);
             } else if (Objects.equals(pageReqVO.getAbtotal(), "b")) {
+                List<DetailHistoryDataExcelExportB> bean = BeanUtils.toBean(list, DetailHistoryDataExcelExportB.class);
+                bean.stream().forEach(iter ->{iter.setLocation(pageReqVO.getNowAddress());});
                 ExcelUtils.write(response, "机柜电力历史数据.xlsx", "数据", DetailHistoryDataExcelExportB.class,
-                        BeanUtils.toBean(list, DetailHistoryDataExcelExportB.class));
+                        bean);
             }else{
+                List<DetailHistoryDataExcelExport> bean = BeanUtils.toBean(list, DetailHistoryDataExcelExport.class);
+                bean.stream().forEach(iter ->{iter.setLocation(pageReqVO.getNowAddress());});
                 ExcelUtils.write(response, "机柜电力历史数据.xlsx", "数据", DetailHistoryDataExcelExport.class,
-                        BeanUtils.toBean(list, DetailHistoryDataExcelExport.class));
+                        bean );
             }
 
         } else {
             if(Objects.equals(pageReqVO.getAbtotal(), "total")){
+                List<HourAndDayDetailHistoryDataExcelExport> bean = BeanUtils.toBean(list, HourAndDayDetailHistoryDataExcelExport.class);
+                bean.stream().forEach(iter ->{iter.setLocation(pageReqVO.getNowAddress());});
                 ExcelUtils.write(response, "机柜电力历史数据.xlsx", "数据", HourAndDayDetailHistoryDataExcelExport.class,
-                        BeanUtils.toBean(list, HourAndDayDetailHistoryDataExcelExport.class));
+                        bean );
             } else if (Objects.equals(pageReqVO.getAbtotal(), "a")) {
+                List<HourAndDayDetailHistoryDataExcelExportA> bean = BeanUtils.toBean(list, HourAndDayDetailHistoryDataExcelExportA.class);
+                bean.stream().forEach(iter ->{iter.setLocation(pageReqVO.getNowAddress());});
                 ExcelUtils.write(response, "机柜电力历史数据.xlsx", "数据", HourAndDayDetailHistoryDataExcelExportA.class,
-                        BeanUtils.toBean(list, HourAndDayDetailHistoryDataExcelExportA.class));
+                        bean );
             }
             else{
+                List<HourAndDayDetailHistoryDataExcelExportB> bean = BeanUtils.toBean(list, HourAndDayDetailHistoryDataExcelExportB.class);
+                bean.stream().forEach(iter ->{iter.setLocation(pageReqVO.getNowAddress());});
                 ExcelUtils.write(response, "机柜电力历史数据.xlsx", "数据", HourAndDayDetailHistoryDataExcelExportB.class,
-                        BeanUtils.toBean(list, HourAndDayDetailHistoryDataExcelExportB.class));
+                        bean );
             }
 
         }

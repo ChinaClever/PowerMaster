@@ -176,6 +176,13 @@
                   </el-table>
                 </div>
               </el-col>
+              <el-col v-if="serChartContainerWidth == 10" :span="serChartContainerWidth">  
+                
+                <!-- <Radar width="29vw" height="25vh" :list="serverData" /> -->
+                <div >
+                 <div ref="serChartContainer" id="serChartContainer" style="width: 60vh; height: 25vh"></div>
+               </div>
+              </el-col>
             </el-row>
           </div>
           <div class="pageBox" v-if="visControll.eqVis" >
@@ -230,8 +237,7 @@ import Line from './component/Line.vue'
 import PFLine from './component/PFLine.vue'
 import Bar from './component/Bar.vue'
 import EnvTemLine from './component/EnvTemLine.vue'
-
-
+import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
@@ -252,7 +258,170 @@ const visControll = reactive({
   pfVis: false,
 })
 const serChartContainerWidth = ref(0)
+const instance = getCurrentInstance();
+let num=0
 
+interface RadarData{
+  index: number;
+  powApparent: number;
+  powValue : number;
+  curValue : number;
+  name: string;
+}
+
+const result=ref<RadarData>({
+  index : 0,
+  powApparent : 0.000,
+  powValue : 0.000,
+  curValue : 0.00,
+  name: ""
+})
+
+interface ServerData {
+  nameAndMax: object[];
+  curvalue: number[];
+  powvalue: number[];
+  powapparent: number[];
+}
+
+// 获得雷达视在功率数据
+const serverData = ref<ServerData>({
+  nameAndMax : [],
+  curvalue: [],
+  powvalue: [],
+  powapparent: []
+}) as any
+
+const serverData1 = ref<ServerData>({
+  nameAndMax : [],
+  curvalue: [],
+  powvalue: [],
+  powapparent: []
+}) as any
+
+const serChartContainer = ref<HTMLElement | null>(null);
+let serChart = null as echarts.ECharts | null; // 显式声明 serChart 的类型
+
+const indicator =ref<ServerData>({
+  nameAndMax: [],
+  curvalue: [],
+  powvalue: [],
+  powapparent: [],
+})
+indicator.value.nameAndMax=serverData.value.nameAndMax
+
+// 截取前10个元素
+const truncateArrays = (data: ServerData): ServerData => {
+  return {
+    nameAndMax: data.nameAndMax.slice(0, 12),
+    curvalue: data.curvalue.slice(0, 12),
+    powvalue: data.powvalue.slice(0, 12),
+    powapparent: data.powapparent.slice(0, 12)
+  };
+};
+
+const initChart =  () => {
+  if (serChartContainer.value && instance && serverData.value.nameAndMax && serverData.value.nameAndMax.length > 0) {
+    
+    serChart = echarts.init(serChartContainer.value);
+    serChart.setOption({
+      legend: {
+                data: ['电流','视在功率', '有功功率'],
+                selected: { // 默认选择状态
+                  '电流': true, // 默认选中电能
+                  '视在功率': false,
+                  '有功功率': false
+                           },
+                bottom: 0,
+                right: 0,
+              },
+      grid: {
+                bottom: 0,
+                top: 0,
+              },
+      radar: { indicator: indicator.value.nameAndMax},
+      series: [
+
+          { 
+          name: 'PDU输出位电能', 
+          type: 'radar', 
+          label: { show: true, position: 'top' } ,
+          data: 
+          [ { value: serverData.value.curvalue, name: '电流' }, ] },
+        { 
+          name: 'PDU输出位视在功率', 
+          type: 'radar', 
+          label: { show: true, position: 'top' } ,
+          data: [ { value: serverData.value.powapparent, name: '视在功率' }, ] },
+          { 
+          name: 'PDU输出位有功功率', 
+          type: 'radar', 
+          label: { show: true, position: 'top' } ,
+          data: [ { value: serverData.value.powvalue, name: '有功功率' }, ] }
+      ]
+    });
+    
+    serChart.on('legendselectchanged', function (queryParams) {
+      // console.log(indicator.value.nameAndMax)
+      // console.log(serverData.value.nameAndMax)
+      // console.log(serverData1.value.nameAndMax)
+      const selected = queryParams.selected;
+      console.log(selected)
+      console.log(!selected['电流'])
+      if(selected['电流']&&(selected['视在功率']||selected['有功功率'])){
+        num++;
+      }
+      // if(!selected['电流']&&selected['视在功率']&&!selected['有功功率']){
+      //   selected['电流'] = false;
+      //   selected['视在功率'] = true;
+      //   selected['有功功率'] = false;
+      //   indicator.value.nameAndMax=serverData1.value.nameAndMax
+      // }
+      // else if(!selected['电流']&&!selected['视在功率']&&selected['有功功率']){
+      //   selected['电流'] = false;
+      //   selected['视在功率'] = false;
+      //   selected['有功功率'] = true;
+      //   indicator.value.nameAndMax=serverData1.value.nameAndMax
+      // }
+      if(selected['电流']&&!selected['视在功率']&&!selected['有功功率']){
+        selected['电流'] = true;
+        selected['视在功率'] = false;
+        selected['有功功率'] = false;
+        num=0;
+        indicator.value.nameAndMax=serverData.value.nameAndMax
+      }
+      else if(num%2==0){
+        selected['电流'] = true;
+        selected['视在功率'] = false;
+        selected['有功功率'] = false;
+        indicator.value.nameAndMax=serverData.value.nameAndMax
+      }
+      else{
+        selected['电流'] = false;
+        indicator.value.nameAndMax=serverData1.value.nameAndMax
+
+      }
+      
+
+      // 更新图表配置
+      if(serChart){
+        serChart.setOption({legend: {selected: selected},radar: { indicator: indicator.value.nameAndMax}});
+      }
+    });
+        // serverData.value.nameAndMax=[]
+        // serverData.value.curvalue=[]
+        // serverData.value.powapparent=[]
+        // serverData.value.powvalue=[]
+        // serverData1.value.nameAndMax=[]
+    // 将 serChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+    // 使用截取后的数据
+    serverData.value = truncateArrays(serverData.value);
+    serverData1.value = truncateArrays(serverData1.value);
+    instance.appContext.config.globalProperties.serChart = serChart;
+  }
+
+  visControll.visAllReport = true;
+};
 
 const disabledDate = (date) => {
   // 获取今天的日期
@@ -521,6 +690,10 @@ const getList = async () => {
   
   const data = await IndexApi.getBusPFLine(queryParams);
   pfLineList.value = data.pfLineRes;
+  pfLineList.value.series.forEach(item => {
+    item.data = item.data.map(value => parseFloat(value.toFixed(3)));
+  });
+  console.log('data.pfLineRes',data.pfLineRes)
   
   if(pfLineList.value?.time != null && pfLineList.value?.time?.length > 0){
     visControll.pfVis = true;
@@ -558,6 +731,57 @@ const getList = async () => {
     visControll.temVis = true;
   }else{
     visControll.temVis = false;
+  }
+
+  var PDU = await PDUDeviceApi.PDUDisplay(queryParams);
+  PDU = JSON.parse(PDU)
+  var temp = [] as any;
+  var resultArray=[] as any;
+  var baseInfo = await PDUDeviceApi.getPDUDevicePage(queryParams);
+  console.log("baseInfo",baseInfo)
+  console.log("PDU",PDU)
+  // 假设 PDU.pdu_data.output_item_list.pow_value 是一个 double 数组
+  var powApparentValueArray = PDU?.pdu_data?.output_item_list?.pow_apparent;
+  var powValueArray = PDU?.pdu_data?.output_item_list?.pow_value;
+  var curValueArray = PDU?.pdu_data?.output_item_list?.cur_value;
+  
+  // console.log(powValueArray)
+  // 将值与下标保存到对象数组中
+  if(powValueArray && powValueArray.length >= 0){
+    for (var i = 0; i < powValueArray.length; i++) {
+      result.value.index=i + 1
+      result.value.name = "输出位" + (i + 1)
+      result.value.powApparent = powApparentValueArray[i]
+      result.value.curValue = curValueArray[i]
+      result.value.powValue= powValueArray[i]
+      resultArray.push({ ...result.value });
+    }
+    // 按值进行排序
+    resultArray.sort((a, b) => b.curValue - a.curValue);
+    // 只保留前十个元素
+    resultArray = resultArray.slice(0, 12);
+    for(var i=0;i<resultArray.length;i++){
+      serverData.value.nameAndMax.push({
+        name: resultArray[i].name,
+        max: resultArray[i].curValue+0.001,
+      })
+      serverData1.value.nameAndMax.push({
+        name: resultArray[i].name,
+        max: resultArray[i].powApparent+0.001,
+      })
+      // console.log(serverData1.value.nameAndMax)
+      serverData.value.curvalue.push(resultArray[i].curValue.toFixed(2))
+      serverData.value.powvalue.push(resultArray[i].powValue)
+      serverData.value.powapparent.push(resultArray[i].powApparent)
+    }
+    // 根据 resultArray 中的元素生成 nameAndMax 数组和 value 数组
+    serChartContainerWidth.value = 10;
+    // console.log(" serChartContainerWidth.value", serChartContainerWidth.value)
+    if(resultArray.length==0){
+      serChartContainerWidth.value = 0;
+    }
+  }else{
+    serChartContainerWidth.value = 0;
   }
 
   var Bus = await IndexApi.getBusRedisByDevKey(queryParams);
@@ -624,6 +848,7 @@ const handleQuery = async () => {
   if(queryParams.devKey){
     if(queryParams.oldTime && queryParams.newTime){
       await getList();
+      initChart();
     }
   }
   

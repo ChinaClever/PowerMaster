@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.bus.controller.admin.historydata.vo;
 
+import cn.iocoder.yudao.framework.excel.core.util.DateStringConverter;
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.NumberFormat;
@@ -19,7 +20,9 @@ import lombok.Data;
 @ColumnWidth(30)
 @HeadRowHeight(20)
 public class BusTemHistoryDataVO {
-    @ExcelProperty("记录时间")
+    @ExcelProperty("位置")
+    private String location;
+    @ExcelProperty(value = "记录时间",converter = DateStringConverter.class)
     private String create_time;
     @ExcelProperty("A路温度(℃)")
     private Integer tem_a;

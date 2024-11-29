@@ -16,4 +16,6 @@ public class CabinetHistoryDataDetailsReqVO extends PageParam {
 
     private String[] timeRange;
 
+    private String nowAddress;
+
 }

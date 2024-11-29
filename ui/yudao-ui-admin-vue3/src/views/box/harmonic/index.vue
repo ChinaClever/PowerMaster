@@ -160,10 +160,10 @@
             <el-tag v-else >正常</el-tag>
           </div> -->
           <div class="status" v-if="valueMode == 0">
-            <el-tag type="info" v-if="item.status == 5 " >离线</el-tag>
+            <el-tag type="info" v-if="item.status == 0 " >离线</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>          
-          <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 5" >详情</button>
+          <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 0" >详情</button>
         </div>
       </div>
 

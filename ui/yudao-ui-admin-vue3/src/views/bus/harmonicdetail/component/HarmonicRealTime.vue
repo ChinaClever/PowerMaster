@@ -26,7 +26,7 @@ const times = ref()
 const echartsOption = ref({
 
   tooltip: { trigger: 'axis' },
-  xAxis: {type: 'category', boundaryGap: false, data : times},
+  xAxis: {type: 'category', boundaryGap: true, data : times},
   yAxis: { type: 'value'},
   toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
   series: [

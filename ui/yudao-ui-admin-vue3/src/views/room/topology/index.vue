@@ -29,7 +29,16 @@
     </div>
   </el-card>
   <el-card shadow="never">
-    <div class="dragContainer" v-loading="loading" @click.right="handleRightClick" :style="isFromHome ? `width: fit-content;transform-origin: 0 0;transform: scale(${scaleValue}, ${scaleValue * 0.6});height: ${ContainerHeight}px` : 'height: calc(100vh - 220px)'">
+    <div class="dragContainer" 
+      ref="tableContainer"
+      @mousedown="startDrag"
+      @mousemove="onMouseMove"
+      @mouseup="stopDrag"
+      :class="{ crosshair: !isDragging.value }"
+      v-loading="loading" 
+      @click.right="handleRightClick" 
+      @wheel="handleWheel" 
+      :style="isFromHome ? `width: fit-content;transform-origin: 0 0;transform: scale(${scaleValue}, ${scaleValue * 0.6});height: ${ContainerHeight}px` : 'height: calc(100vh - 220px)'">
       <!-- <div class="mask" v-if="!editEnable" @click.prevent=""></div> -->
       <el-table ref="dragTable" class="dragTable" v-if="tableData.length > 0" :show-header="!isFromHome" :style="isFromHome ? '' : {width: '100%',height: '100%'}" :data="tableData" border :row-style="{background: 'revert'}" :span-method="arraySpanMethod" row-class-name="dragRow" >
         <el-table-column v-if="!isFromHome" fixed type="index" width="60" align="center" :resizable="false" />
@@ -185,6 +194,14 @@ const chosenBtn = ref(0)
 const ContainerHeight = ref(100)
 const loading = ref(false)
 const movingInfo = ref<any>({})
+
+const roomDownValId = ref();
+
+const roomsId = reactive({
+  roomDownValIds: history?.state?.id,
+})
+
+
 const rowColInfo = reactive({
   roomName: '', // 机房名
   row: 14, // 行
@@ -533,6 +550,80 @@ const btns = [
 //   },
 // ])
 
+// Vue Composition API 的引用
+const tableContainer = ref(null);
+const tablePosition = reactive({ x: 0, y: 0 });
+const isDragging = ref(false);
+const initialMousePos = reactive({ x: 0, y: 0 });
+const initialTableOffset = reactive({ x: 0, y: 0 }); // 使用偏移量而不是绝对位置来更新表格
+ 
+// 组件挂载时添加全局的鼠标事件监听器用于清理
+let mouseMoveEventListener = null;
+let mouseUpEventListener = null;
+
+const startDrag = (event) => {
+  isDragging.value = true;
+  initialMousePos.x = event.clientX;  //鼠标指针相对于视口的水平位置
+  initialMousePos.y = event.clientY;  //鼠标指针相对于视口的垂直位置
+ 
+  // 获取表格相对于文档的位置
+  const rect = tableContainer.value.getBoundingClientRect();
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+  initialTableOffset.x = rect.left + scrollLeft;
+  initialTableOffset.y = rect.top + scrollTop;
+ 
+  document.addEventListener('mousemove', mouseMoveEventListener);
+  document.addEventListener('mouseup', mouseUpEventListener);
+};
+ 
+const onMouseMove = (event) => {
+  if (isDragging.value) {
+    // 计算新的位置，基于初始偏移量和鼠标移动量
+    tablePosition.x = initialTableOffset.x - (initialMousePos.x - event.clientX);
+    tablePosition.y = initialTableOffset.y - (initialMousePos.y - event.clientY);
+    updateTableStyle();
+  }
+};
+ 
+const stopDrag = () => {
+  isDragging.value = false;
+  document.removeEventListener('mousemove', mouseMoveEventListener);
+  document.removeEventListener('mouseup', mouseUpEventListener);
+  // 这里不需要额外的位置更新，因为onMouseMove已经处理了
+};
+ 
+const updateTableStyle = () => {
+  if (tableContainer.value) {
+    // 使用transform来移动表格，这样不会影响其他布局计算
+    tableContainer.value.style.transform = `translate3d(${tablePosition.x}px, ${tablePosition.y}px, 0)`;
+    // 可选：添加硬件加速来提高性能
+    tableContainer.value.style.willChange = 'transform';
+  }
+};
+
+const scale = ref(1); // 初始缩放比例
+const minScale = 0.5; // 最小缩放比例
+const maxScale = 2; // 最大缩放比例
+
+const handleWheel = (event) => {
+  event.preventDefault(); // 阻止默认滚动行为
+  const delta = Math.sign(event.deltaY); // 获取滚轮方向
+
+  if (delta > 0 && scale.value > minScale) {
+    // 向上滚动，缩小
+    scale.value -= 0.1;
+  } else if (delta < 0 && scale.value < maxScale) {
+    // 向下滚动，放大
+    scale.value += 0.1;
+  }
+
+  // 应用缩放效果
+  if (dragTable.value) {
+    dragTable.value.$el.style.transform = `scale(${scale.value})`;
+  }
+};
+
 const dialogVisible = ref(false)
 const editEnable = ref(false)
 const tableHeight = ref(0)
@@ -581,7 +672,11 @@ const getRoomList = async() => {
     roomList.value = res
     const find = res.find(item => item.id == roomId.value)
     if (!find) {
-      roomId.value = res[0].id
+      if(roomsId.roomDownValIds == null){
+          roomId.value = res[0].id
+      }else{
+          roomId.value = roomsId.roomDownValIds;
+      }
     }
     emit('getroomid', roomId.value)
     getRoomInfo()
@@ -597,6 +692,7 @@ const getRoomInfo = async() => {
     const result2 = MachineRoomApi.getRoomDataDetail({id: roomId.value})
     const results = await Promise.all([result1, result2])
     const res = results[0]
+    roomDownValId.value = res.id;
     console.log('res', res)
     const data = [] as any
     const Obj = {}
@@ -757,7 +853,7 @@ const handleDelete = () => {
 // 处理点击编辑事件
 const handleEdit = () => {
   if (isFromHome) {
-    push('/room/topology')
+    push({path: '/room/topology', state: { id:roomDownValId.value}})
     return
   }
   editEnable.value = true
@@ -1080,6 +1176,8 @@ const formParam = computed(() => {
 
 getRoomList()
 onMounted(() => {
+  mouseMoveEventListener = (event) => onMouseMove(event);
+  mouseUpEventListener = () => stopDrag();
   document.addEventListener('mousedown', (event) => {
     const element = event.target as HTMLElement
     if (event.button == 0 && operateMenu.value.show && element.className != 'menu_item') {
@@ -1090,6 +1188,12 @@ onMounted(() => {
   //   getRoomStatus(false)
   // }, 5000)
 })
+
+onBeforeUnmount(() => {
+  // 组件卸载时移除全局的鼠标事件监听器
+  document.removeEventListener('mousemove', mouseMoveEventListener);
+  document.removeEventListener('mouseup', mouseUpEventListener);
+});
 
 onUnmounted(() => {
   document.removeEventListener('mousedown',() => {})
@@ -1122,6 +1226,9 @@ onUnmounted(() => {
 .dragContainer {
   // transform-origin: left right;
   position: relative;
+  .dragTable {
+    transition: transform 0.3s ease; /* 添加平滑过渡效果 */
+  }
   .mask {
     position: absolute;
     left: 0;
@@ -1273,16 +1380,23 @@ onUnmounted(() => {
     justify-content: center;
   }
 }
+
 :deep(.dragTable .el-table__header .el-table__cell) {
   // background-color: #ddd;
   // box-shadow: 0 1px 0px #ddd;
 }
+
 :deep(.dragTable .el-table__body) {
   height: 100%;
   transform-origin: let top;
 }
+
 :deep(.dragTable .el-table__body .el-table__row .el-table__cell:nth-of-type(1)) {
   // background-color: #ddd;
   // box-shadow: 0 1px 0px #ddd;
+}
+
+.crosshair {
+  cursor: crosshair; /* 当正在拖动时显示十字图标 */
 }
 </style>

@@ -95,6 +95,8 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
                 BusIndexDO busIndex = busIndexMapper.selectById( (int)busId );
                 if (busIndex != null){
                     String dev_key = busIndex.getDevKey();
+
+
 //                    String[] parts = dev_key.split("_");
                     map.put("dev_key", dev_key);
                     map.put("bus_name",busIndex.getBusName());
@@ -943,10 +945,38 @@ public class BusHistoryDataServiceImpl implements BusHistoryDataService {
     @Override
     public Map<String, Object> getBoxEnvNavNewData() throws IOException {
         String[] name = new String[]{"hour", "day", "week"};
-        String[] indices = new String[]{"box_tem_realtime", "box_tem_hour", "box_tem_day"};
+        String indices = "box_tem_realtime";
         LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1)};
-        Map<String, Object> map = getSumData(indices, name, timeAgo, "box_id");
-        return map;
+        //Map<String, Object> map = getSumData(indices, name, timeAgo, "box_id");
+
+        Map<String, Object> resultItem = getStringObjectMap(timeAgo, indices, name);
+        return resultItem;
+    }
+
+    private Map<String, Object> getStringObjectMap(LocalDateTime[] timeAgo, String indices, String[] name) throws IOException {
+        Map<String, Object> resultItem = new HashMap<>();
+        // 添加范围查询 最近24小时
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        for (int i = 0; i < timeAgo.length; i++) {
+            SearchRequest searchRequest = new SearchRequest(indices);
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
+                    .gte(timeAgo[i].format(formatter))
+                    .lte(now.format(formatter)));
+            // 添加计数聚合
+            searchSourceBuilder.aggregation(
+                    AggregationBuilders.count("total_insertions").field("box_id")
+            );
+            searchRequest.source(searchSourceBuilder);
+            // 执行搜索请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            // 从聚合结果中获取文档数量
+            ValueCount totalInsertionsAggregation = searchResponse.getAggregations().get("total_insertions");
+            long totalInsertions = totalInsertionsAggregation.getValue();
+            resultItem.put(name[i], totalInsertions);
+        }
+        return resultItem;
     }
 
     @Override

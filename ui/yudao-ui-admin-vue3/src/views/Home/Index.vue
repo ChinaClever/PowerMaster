@@ -352,10 +352,10 @@
         <el-skeleton :loading="loading" animated>
           <div ref="scrollableContainerOne" class="scrollable-container-one" @scroll="handleScroll">
             <el-table :data="tableData" style="width: 100%" border class="text-12px">
-              <el-table-column prop="name" label=""  />
-              <el-table-column prop="all" label="总数"  />
-              <el-table-column prop="on" label="在线" />
-              <el-table-column prop="off" label="离线" />
+              <el-table-column prop="name" label=""  class="name-column"/>
+              <el-table-column prop="all" label="总数" class="numeric-column"/>
+              <el-table-column prop="on" label="在线" class="numeric-column"/>
+              <el-table-column prop="off" label="离线" class="numeric-column"/>
             </el-table>
           </div>
         </el-skeleton>
@@ -846,7 +846,8 @@ const getHomePowData = async() => {
 // 获取主页面用能
 const getHomeEqData = async() => {
   const res =  await MachineHomeApi.getHomeEqData({})
-  console.log('222', res)
+
+  console.log('222',res)
   const modifiedRoomEqList = res.roomEqList.map(item => ({
     ...item, // 复制对象的所有属性
     name: item.name + '1' // 修改name属性，在后面加上'*'号
@@ -996,12 +997,12 @@ const startScrolling = () => {
   scrollInterval = setInterval(() => {
     // 机房状态的滚动逻辑
     scrollContainer('scrollableContainer');
-  }, 100);
+  }, 1000);
  
   scrollIntervalOne = setInterval(() => {
     // 设备模块的滚动逻辑
     scrollContainer('scrollableContainerOne');
-  }, 100);
+  }, 1000);
 };
  
 const scrollContainer = (containerName) => {
@@ -1108,6 +1109,7 @@ onUnmounted(() => {
   width: 100%;
 }
 
+
 @media screen and (min-width:2048px){
   .temperature-container{
     height: 52vh;
@@ -1125,6 +1127,14 @@ onUnmounted(() => {
     width: 15vw;
     margin-left: 1vh;
     margin-bottom: -2vw;
+  }
+
+  .name-column {
+    width: 150px;
+  }
+  
+  .numeric-column {
+    width: 80px;
   }
 }
 
@@ -1149,6 +1159,14 @@ onUnmounted(() => {
     height: 20vh;
     width: 20vw;
     overflow-y:auto;
+  }
+
+  .name-column {
+    width: 127px;
+  }
+  
+  .numeric-column {
+    width: 80px;
   }
 }
 

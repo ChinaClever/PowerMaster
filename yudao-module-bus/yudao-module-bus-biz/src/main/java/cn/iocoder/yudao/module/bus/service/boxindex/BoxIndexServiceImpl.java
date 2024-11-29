@@ -88,10 +88,13 @@ import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionU
 
 import static cn.iocoder.yudao.module.bus.constant.BoxConstants.*;
 import static cn.iocoder.yudao.module.bus.constant.BoxConstants.DAY;
+import static cn.iocoder.yudao.module.bus.constant.BoxConstants.KEYWORD;
+import static cn.iocoder.yudao.module.bus.constant.BoxConstants.MONTH;
+import static cn.iocoder.yudao.module.bus.constant.BoxConstants.REDIS_KEY_BOX;
+import static cn.iocoder.yudao.module.bus.constant.BoxConstants.SPLIT_KEY;
 import static cn.iocoder.yudao.module.bus.constant.BoxConstants.WEEK;
-import static cn.iocoder.yudao.module.bus.constant.BusConstants.KEYWORD;
-import static cn.iocoder.yudao.module.bus.constant.BusConstants.MONTH;
-import static cn.iocoder.yudao.module.bus.constant.BusConstants.SPLIT_KEY;
+import static cn.iocoder.yudao.module.bus.constant.BusConstants.*;
+import static cn.iocoder.yudao.module.bus.constant.BusConstants.BUS_HDA_LINE_DAY;
 import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.INDEX_NOT_EXISTS;
 import static cn.iocoder.yudao.module.bus.service.busindex.BusIndexServiceImpl.REDIS_KEY_CABINET;
 
@@ -188,6 +191,134 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         }
         getPosition(res);
         return new PageResult<>(res,boxIndexDOPageResult.getTotal());
+    }
+
+    @Override
+    public PageResult<BusCurLinePageResVO> getBusLineCurLinePage(BusIndexPageReqVO pageReqVO) throws IOException {
+        PageResult<BusCurLinePageResVO> page = new PageResult<>();
+        String startTime = null;
+        String endTime = null;
+        String key = null;
+        if (pageReqVO.getTimeType() == 0) {
+            key = BOX_HDA_LINE_HOUR;
+            startTime = localDateTimeToString(LocalDateTime.now().minusHours(24));
+            endTime = localDateTimeToString(LocalDateTime.now());
+        } else {
+            startTime = localDateTimeToString(pageReqVO.getOldTime());
+            endTime = localDateTimeToString(pageReqVO.getNewTime());
+            key = BOX_HDA_LINE_DAY;
+        }
+        BoxIndex boxIndex = boxIndexCopyMapper.selectById(pageReqVO.getBusId());
+        int pageNo = pageReqVO.getPageNo();
+        int pageSize = pageReqVO.getPageSize();
+        int index = (pageNo - 1) * pageSize;
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest = new SearchRequest(key);
+        // 通过QueryBuilders构建ES查询条件，
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder.from(index);
+        // 最后一页请求超过一万，pageSize设置成请求刚好一万条
+        if (index + pageSize > 10000) {
+            builder.size(10000 - index);
+        } else {
+            builder.size(pageSize);
+        }
+        builder.trackTotalHits(true);
+        //获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
+                .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
+                .must(QueryBuilders.termQuery("bus_id", pageReqVO.getBusId()))));
+        builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+        // 设置搜索条件
+        searchRequest.source(builder);
+
+        // 执行ES请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            List<BusCurLinePageResVO> list = new ArrayList<>();
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                BusCurLinePageResVO resVO = JsonUtils.parseObject(hit.getSourceAsString(), BusCurLinePageResVO.class);
+
+                resVO.setBusId(boxIndex.getId()).setDevKey(boxIndex.getDevKey());
+                switch (resVO.getLineId()) {
+                    case 1:
+                        resVO.setLine("A路");
+                        break;
+                    case 2:
+                        resVO.setLine("B路");
+                        break;
+                    case 3:
+                        resVO.setLine("C路");
+                        break;
+                    default:
+                }
+                list.add(resVO);
+            }
+            // 匹配到的总记录数
+            Long totalHits = hits.getTotalHits().value;
+            page.setList(list).setTotal(totalHits);
+            return page;
+        }
+        return null;
+    }
+
+    @Override
+    public List<BusCurLinePageResVO> getBusLineCurLineExcel(BusIndexPageReqVO pageReqVO) throws IOException {
+        String startTime = null;
+        String endTime = null;
+        String key = null;
+        if (pageReqVO.getTimeType() == 0) {
+            key = BOX_HDA_LINE_HOUR;
+            startTime = localDateTimeToString(LocalDateTime.now().minusHours(24));
+            endTime = localDateTimeToString(LocalDateTime.now());
+        } else {
+            startTime = localDateTimeToString(pageReqVO.getOldTime());
+            endTime = localDateTimeToString(pageReqVO.getNewTime());
+            key = BOX_HDA_LINE_DAY;
+        }
+        BoxIndex boxIndex = boxIndexCopyMapper.selectById(pageReqVO.getBusId());
+
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest = new SearchRequest(key);
+        // 通过QueryBuilders构建ES查询条件，
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+
+        builder.trackTotalHits(true);
+        //获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
+                .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
+                .must(QueryBuilders.termQuery("bus_id", pageReqVO.getBusId()))));
+        builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+        // 设置搜索条件
+        searchRequest.source(builder);
+
+        // 执行ES请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (searchResponse != null) {
+            List<BusCurLinePageResVO> list = new ArrayList<>();
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                BusCurLinePageResVO resVO = JsonUtils.parseObject(hit.getSourceAsString(), BusCurLinePageResVO.class);
+
+                resVO.setBusId(boxIndex.getId()).setDevKey(boxIndex.getDevKey());
+                switch (resVO.getLineId()) {
+                    case 1:
+                        resVO.setLine("A路");
+                        break;
+                    case 2:
+                        resVO.setLine("B路");
+                        break;
+                    case 3:
+                        resVO.setLine("C路");
+                        break;
+                    default:
+                }
+                list.add(resVO);
+            }
+            return list;
+        }
+        return null;
     }
 
     private void validateIndexExists(Long id) {
@@ -1589,8 +1720,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     public BusLineResBase getBoxLineCurLine(BoxIndexPageReqVO pageReqVO) {
         BusLineResBase result = new BusLineResBase();
         try {
-            String startTime = localDateTimeToString(pageReqVO.getOldTime());
-            String endTime = localDateTimeToString(pageReqVO.getNewTime());
+            String startTime = null;
+            String endTime = null;
             String index = null;
             if (pageReqVO.getTimeType() == 0){
                 index = BOX_HDA_LINE_HOUR;
@@ -1598,6 +1729,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 endTime = localDateTimeToString(LocalDateTime.now());
             }else {
                 index = BOX_HDA_LINE_DAY;
+                startTime = localDateTimeToString(pageReqVO.getOldTime());
+                endTime = localDateTimeToString(pageReqVO.getNewTime());
             }
             List<Integer> ids = Arrays.asList(pageReqVO.getBoxId());
             List<String> data = getData(startTime,endTime,ids,index);
@@ -2011,7 +2144,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         SearchSourceBuilder builder = new SearchSourceBuilder();
 
         //获取需要处理的数据
-        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
+                .must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
                 .must(QueryBuilders.termQuery(BOX_ID, id))));
         builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
         // 设置搜索条件

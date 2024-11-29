@@ -32,11 +32,11 @@
             <span class="label">最近一月 :</span>
             <span class="value">{{ lastMonthTotalData }}条</span>
           </div>
-          <div><span>全部PDU新增电费统计</span>
-                    <div class="line" style="margin-top: 10px;"></div>
-                  </div>
+          <div>
+            <span>全部PDU新增电费统计</span>
+            <div class="line" style="margin-top: 10px;"></div>
           </div>
-
+        </div>
       </div>
     </template>
     <template #ActionBar>
@@ -514,7 +514,6 @@ onMounted(() => {
 }
 
 .label {
-  text-align: right; /* 文本右对齐 */
   margin-right: 10px; /* 控制冒号后的间距 */
   text-align: left;
 }
@@ -522,7 +521,6 @@ onMounted(() => {
 .value {
   flex: 1; /* 自动扩展以对齐数据 */
   text-align: left;
-
 }
   .line {
     height: 1px;

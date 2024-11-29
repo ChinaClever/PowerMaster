@@ -32,7 +32,7 @@ public interface BoxIndexCopyMapper extends BaseMapperX<BoxIndex> {
                 .eqIfPresent(BoxIndex::getIsDeleted, reqVO.getIsDeleted())
                 .eqIfPresent(BoxIndex::getBoxType,0)
                 .betweenIfPresent(BoxIndex::getCreateTime, reqVO.getCreateTime())
-                .ne(ObjectUtil.isNotEmpty(reqVO.getStatus()), BoxIndex::getRunStatus, 5)
+                .ne(ObjectUtil.isNotEmpty(reqVO.getStatus()), BoxIndex::getRunStatus, 0)
                 .orderByAsc(BoxIndex::getId));
     }
 }
