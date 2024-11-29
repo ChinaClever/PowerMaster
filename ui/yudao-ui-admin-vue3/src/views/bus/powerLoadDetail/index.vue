@@ -1446,12 +1446,13 @@ window.addEventListener('resize', function() {
 });
 
 // 处理数据后有几位小数点
-function formatNumber(value, decimalPlaces) {
-    if (!isNaN(value)) {
-        return value.toFixed(decimalPlaces);
-    } else {
-        return []; // 或者其他默认值
-    }
+function formatNumber(value) {
+  if (typeof value === 'number') {
+    return value.toFixed(3); // 或您需要的任何小数位数
+  } else {
+    console.error('尝试对非数字值使用 toFixed 方法', value);
+    return '0.000'; // 或其他适当的默认值
+  }
 }
 
 
