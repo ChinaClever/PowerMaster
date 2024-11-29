@@ -801,6 +801,7 @@ const getList = async () => {
     resultArray.sort((a, b) => b.curValue - a.curValue);
     // 只保留前十个元素
     resultArray = resultArray.slice(0, 12);
+
     for(var i=0;i<resultArray.length;i++){
       serverData.value.nameAndMax.push({
         name: resultArray[i].name,
@@ -859,6 +860,12 @@ const getList = async () => {
 
 watch(filterText, (val) => {
   treeRef.value!.filter(val)
+  serverData.value ={
+    nameAndMax : [],
+    curvalue: [],
+    powvalue: [],
+    powapparent: []
+  }
 })
 
 // 下拉框选项数组
