@@ -340,17 +340,15 @@ public class BusIndexController {
         return success(indexService.getBusRedisByDevKey(pageReqVO.getDevKey()));
     }
 
-//    @GetMapping("/export-excel")
-//    @Operation(summary = "导出始端箱索引 Excel")
-//    @PreAuthorize("@ss.hasPermission('bus:index:export')")
-//    @OperateLog(type = EXPORT)
-//    public void exportIndexExcel(@Valid BusIndexPageReqVO pageReqVO,
-//              HttpServletResponse response) throws IOException {
-//        pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
-//        List<BusIndexDO> list = indexService.getIndexPage(pageReqVO).getList();
-//        // 导出 Excel
-//        ExcelUtils.write(response, "始端箱索引.xls", "数据", BusIndexRespVO.class,
-//                        BeanUtils.toBean(list, BusIndexRespVO.class));
-//    }
+    @PostMapping("/avg/busHdaLine/form")
+    @Operation(summary = "获得始端箱报表平均电流电压详细信息")
+    public CommonResult<Map> getAvgBusHdaLineForm(@RequestBody BusIndexPageReqVO pageReqVO) throws IOException {
+        return success(indexService.getAvgBusHdaLineForm(pageReqVO));
+    }
+    @GetMapping("/displayscreen")
+    @Operation(summary = "获得始端箱设备详细信息")
+    public CommonResult<String> getDisplay(String devKey) {
+        return success(indexService.getDisplayDataByDevKey(devKey));
+    }
 
 }
