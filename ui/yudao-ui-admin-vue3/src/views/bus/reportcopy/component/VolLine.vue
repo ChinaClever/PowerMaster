@@ -13,16 +13,16 @@ const prop = defineProps({
   }
 });
 
-const curvolAData = ref({ curValueList: [] as number[] });
-const curvolBData = ref({ curValueList: [] as number[] });
-const curvolCData = ref({ curValueList: [] as number[] });
+const curvolAData = ref({ volValueList: [] as number[] });
+const curvolBData = ref({ volValueList: [] as number[] });
+const curvolCData = ref({ volValueList: [] as number[] });
 const lineidDateTimes = ref([] as string[]);
 
 const updateChartData = () => {
   lineidDateTimes.value = prop.list.dateTimes;
-  prop.list.A.forEach(item => curvolAData.value.curValueList.push(item.cur_avg_value.toFixed(2)));
-  prop.list.B.forEach(item => curvolBData.value.curValueList.push(item.cur_avg_value.toFixed(2)));
-  prop.list.C.forEach(item => curvolCData.value.curValueList.push(item.cur_avg_value.toFixed(2)));
+  prop.list.A.forEach(item => curvolAData.value.volValueList.push(item.vol_avg_value.toFixed(1)));
+  prop.list.B.forEach(item => curvolBData.value.volValueList.push(item.vol_avg_value.toFixed(1)));
+  prop.list.C.forEach(item => curvolCData.value.volValueList.push(item.vol_avg_value.toFixed(1)));
 };
 
 updateChartData(); // 初始数据填充
@@ -35,8 +35,8 @@ const echartsOptions = computed(() => ({
       let result = params[0].name + '<br>';
       params.forEach(param => {
         result += `${param.marker}${param.seriesName}: &nbsp;&nbsp;&nbsp;&nbsp${param.value}`;
-        if (param.seriesName === 'A电流' || param.seriesName === 'B电流' || param.seriesName === 'C电流') {
-          result += 'A';
+        if (param.seriesName === 'A电压' || param.seriesName === 'B电压' || param.seriesName === 'C电压') {
+          result += 'V';
         }
         result += '<br>';
       });
@@ -44,7 +44,7 @@ const echartsOptions = computed(() => ({
     }
   },
   legend: {
-    data: ['A电流', 'B电流', 'C电流'],
+    data: ['A电压', 'B电压', 'C电压'],
     selectedMode: 'multiple'
   },
   grid: { left: '3%', right: '4%', bottom: '5%', containLabel: true },
@@ -54,26 +54,26 @@ const echartsOptions = computed(() => ({
   },
   yAxis: { type: 'value' },
   series: [
-    { name: 'A电流', type: 'line', data: curvolAData.value.curValueList, symbol: 'circle', symbolSize: 4 },
-    { name: 'B电流', type: 'line', data: curvolBData.value.curValueList, symbol: 'circle', symbolSize: 4 },
-    { name: 'C电流', type: 'line', data: curvolCData.value.curValueList, symbol: 'circle', symbolSize: 4 }
+    { name: 'A电压', type: 'line', data: curvolAData.value.volValueList, symbol: 'circle', symbolSize: 4 },
+    { name: 'B电压', type: 'line', data: curvolBData.value.volValueList, symbol: 'circle', symbolSize: 4 },
+    { name: 'C电压', type: 'line', data: curvolCData.value.volValueList, symbol: 'circle', symbolSize: 4 }
   ]
 }));
 
 watchEffect(() => {
   // 清空 curvolAData 中的数组
   curvolAData.value = {
-    curValueList: []
+    volValueList: []
   };
   
   // 清空 curvolBData 中的数组
   curvolBData.value = {
-    curValueList: []
+    volValueList: []
   };
   
   // 清空 curvolCData 中的数组
   curvolCData.value = {
-    curValueList: []
+    volValueList: []
   };
   
   // 清空 lineidDateTimes 数组

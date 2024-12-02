@@ -296,7 +296,7 @@ loading.value = true
       startTimeData.value = data.list.map((item) => formatDate(item.start_time, 'YYYY-MM-DD'));
       endEleData.value = data.list.map((item) => formatNumber(item.end_ele, 1));
       endTimeData.value = data.list.map((item) => formatDate(item.end_time, 'YYYY-MM-DD'));
-      eqData.value = data.list.map((item) => formatNumber(item.eq_value, 1));
+      eqData.value = data.list.map((item) => formatNumber(item.end_ele-item.start_ele, 1));
       createTimeData.value = data.list.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
 
       maxEqDataTemp.value = Math.max(...eqData.value);
@@ -501,8 +501,8 @@ onMounted(async () => {
     padding-top: 28px;
   }
 .nav_data{
-  padding-left: 5px;
-  width: 195px;
+  padding-left: 20px;
+  width: 170px;
 }
 .nav_content span{
   font-size: 14px;
@@ -523,17 +523,15 @@ onMounted(async () => {
 }
 
 .label {
-  width:100px; /* 控制冒号前的宽度 */
-  text-align: right; /* 文本右对齐 */
+  text-align: left;
   margin-right: 10px; /* 控制冒号后的间距 */
 }
-  .line {
-    height: 1px;
-    margin-top: 28px;
-
-    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
-  }
-  .value {
+.line {
+  height: 1px;
+  margin-top: 28px;
+  background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+}
+.value {
   flex: 1; /* 自动扩展以对齐数据 */
 }
 </style>

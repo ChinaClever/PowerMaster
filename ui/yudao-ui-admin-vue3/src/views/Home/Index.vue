@@ -846,6 +846,7 @@ const getHomePowData = async() => {
 // 获取主页面用能
 const getHomeEqData = async() => {
   const res =  await MachineHomeApi.getHomeEqData({})
+
   console.log('222',res)
   const modifiedRoomEqList = res.roomEqList.map(item => ({
     ...item, // 复制对象的所有属性

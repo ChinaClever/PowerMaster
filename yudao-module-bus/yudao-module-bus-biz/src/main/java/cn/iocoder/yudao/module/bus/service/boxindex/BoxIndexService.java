@@ -11,6 +11,7 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusTrendDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -121,4 +122,11 @@ public interface BoxIndexService {
     void restoreIndex(Long id);
 
     PageResult<BoxIndexRes> getDeletedPage(BoxIndexPageReqVO pageReqVO);
+
+    PageResult<BusCurLinePageResVO> getBoxLineCurLinePage(BoxIndexPageReqVO pageReqVO) throws IOException;
+
+    List<BusCurLinePageResVO> getBoxLineCurLineExcel(BoxIndexPageReqVO pageReqVO) throws IOException;
+
+    Map getAvgBoxHdaLineForm(BoxIndexPageReqVO pageReqVO) throws IOException;
+
 }

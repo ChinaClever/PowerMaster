@@ -1,4 +1,6 @@
-package cn.iocoder.yudao.framework.excel.core.util;
+package cn.iocoder.yudao.framework.excel.core.annotations;
+
+import cn.iocoder.yudao.framework.excel.core.util.SymbolConstant;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

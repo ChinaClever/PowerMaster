@@ -470,7 +470,7 @@ const initChart2 = () => {
             }
           }
         },
-                grid: {
+        grid: {
           left: '5%',   // 设置左侧边距
           right: '5%',  // 设置右侧边距
           top: '10%',    // 设置上侧边距
@@ -769,7 +769,7 @@ watch( ()=>timeRadio.value, async(value)=>{
   await getLineChartData();
   // 更新数据后重新渲染图表
   if (isHaveData.value == true){
-    console.log(L1Data.value)
+    console.log("L1Data",L1Data.value)
     myChart2?.setOption({
     title: { text: ''},
      tooltip: { trigger: 'axis' ,formatter: function(params) {
@@ -1205,9 +1205,12 @@ const isHaveData = ref(true)
 const getLineChartData =async () => {
  try {
     const data = await BusPowerLoadDetailApi.getLineChartData(lineChartQueryParams);
+    console.log('获取折线图数据',data)
+    console.log('lineChartQueryParams',lineChartQueryParams)
     if (data != null){
       // 查到数据
       allLineData.value = data
+      console.log('allLineData',allLineData.value)
       if (timeRadio.value == '近一小时'){
         createTimeData.value = data.L1.map((item) => formatDate(item.create_time,'YYYY-MM-DD HH:mm'));
       }else if (timeRadio.value == '近一天' || '近三天'){
@@ -1237,7 +1240,7 @@ const getLineChartData =async () => {
  }
 }
 
-function initData (){
+const initData = () => {
   if(timeRadio.value == '近一小时'){
     switch (typeRadio.value){
       case '电流':
@@ -1443,12 +1446,13 @@ window.addEventListener('resize', function() {
 });
 
 // 处理数据后有几位小数点
-function formatNumber(value, decimalPlaces) {
-    if (!isNaN(value)) {
-        return value.toFixed(decimalPlaces);
-    } else {
-        return null; // 或者其他默认值
-    }
+function formatNumber(value) {
+  if (typeof value === 'number') {
+    return value.toFixed(3); // 或您需要的任何小数位数
+  } else {
+    console.error('尝试对非数字值使用 toFixed 方法', value);
+    return '0.000'; // 或其他适当的默认值
+  }
 }
 
 
@@ -1461,17 +1465,22 @@ const handleQuery = async () => {
 
 /** 初始化 **/
 onMounted(async () => {
-  devKeyList.value = await loadAll();
-  await getDetailData();
-  await getLineChartData();
-  initChart();
-  initChart1();
-  initChart2();
-  initChart3();
-  //设置每五秒执行一次 getDetailData 方法
-  intervalId = window.setInterval(() => {
-    getDetailData();
-  }, 5000);
+  try {
+    devKeyList.value = await loadAll();
+    await getDetailData();
+    await getLineChartData();
+    console.log('还是不执行吗'); // 这行代码应该会执行，除非前面的代码抛出了异常
+    initChart();
+    initChart1();
+    initChart2()
+    initChart3()
+    // 设置每五秒执行一次 getDetailData 方法
+    intervalId = window.setInterval(() => {
+      getDetailData();
+    }, 5000);
+  } catch (error) {
+    console.error('onMounted 钩子中的异步操作失败:', error);
+  }
 })
 
 onUnmounted(() => {

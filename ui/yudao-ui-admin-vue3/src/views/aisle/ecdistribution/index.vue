@@ -542,8 +542,8 @@ onMounted(async () => {
     padding-top: 28px;
   }
 .nav_data{
-  padding-left: 5px;
-  width: 195px;
+  padding-left: 20px;
+  width: 170px;
 }
 .nav_content span{
   font-size: 18px;
@@ -564,7 +564,6 @@ onMounted(async () => {
 }
 
 .label {
-  text-align: right; /* 文本右对齐 */
   margin-right: 10px; /* 控制冒号后的间距 */
   text-align: left;
 }
@@ -572,12 +571,11 @@ onMounted(async () => {
 .value {
   flex: 1; /* 自动扩展以对齐数据 */
   text-align: left;
-
 }
-  .line {
-    height: 1px;
-    margin-top: 28px;
 
-    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
-  }
+.line {
+  height: 1px;
+  margin-top: 28px;
+  background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+}
 </style>

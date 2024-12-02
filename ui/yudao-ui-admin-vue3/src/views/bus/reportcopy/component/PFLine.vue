@@ -35,7 +35,7 @@ const echartsOption = ref({
     formatter: function(params) {
       var result = params[0].name + '<br>';
       for (var i = 0; i < params.length; i++) {
-        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value.toFixed(3) ;
+        result +=  params[i].marker + params[i].seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp;' + params[i].value.toFixed(3) ;
         result += '<br>';
       }
       return result;
@@ -78,7 +78,7 @@ watchEffect(() => {
             symbolSize : 10,
             label: {  
               show: true,  
-
+              position: 'top',
               formatter: '{b}: {c}'  
             }    
             // 自定义样式和其他属性  

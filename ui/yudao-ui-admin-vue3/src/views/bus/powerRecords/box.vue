@@ -294,8 +294,8 @@ onMounted(() => {
   color: #606266
 }
 .nav_data{
-  padding-left: 2px;
-  width: 220px;
+  padding-left: 20px;
+  width: 170px;
 }
 .nav_content span{
   font-size: 18px;
@@ -316,7 +316,6 @@ onMounted(() => {
 }
 
 .label {
-  text-align: right; /* 文本右对齐 */
   margin-right: 10px; /* 控制冒号后的间距 */
   text-align: left;
 }
@@ -324,17 +323,16 @@ onMounted(() => {
 .value {
   flex: 1; /* 自动扩展以对齐数据 */
   text-align: left;
-
 }
-  .line {
-    height: 1px;
-    margin-top: 28px;
 
-    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
-  }
+.line {
+  height: 1px;
+  margin-top: 28px;
+  background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+}
 
-  ::v-deep .el-table .el-table__header th {
-    background-color: #F5F7FA;
-    color: #909399;
+::v-deep .el-table .el-table__header th {
+  background-color: #F5F7FA;
+  color: #909399;
 }
 </style>

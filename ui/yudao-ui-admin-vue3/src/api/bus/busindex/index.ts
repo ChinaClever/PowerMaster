@@ -169,4 +169,23 @@ export const IndexApi = {
   getPeakDemand: async (data: any) => {
     return await request.post({ url: `/bus/index/peakDemand` ,  data})
   },
+
+  //始端箱需量数据图表数据
+  getBusLineCurLinePage: async (data) => {
+    return await request.post({ url: `/bus/index/line/cur/page` , data})
+  },
+
+  //始端箱需量数据图表数据导出
+  getBusLineCurLineExcel: async ( data, axiosConfig) => {
+    return await request.downloadPost({ url: `/bus/index/line/cur/excel` , data, ...axiosConfig })
+  },
+
+  //获得始端箱报表平均电流电压详细信息
+  getAvgBusHdaLineForm: async (data: any) => {
+    return await request.post({ url: `/bus/index/avg/busHdaLine/form` ,  data})
+  },
+
+  getBusRedisByDevKey: async (data: any) => {
+    return await request.post({ url: `/bus/index/redisbydevkey` ,  data})
+  }
 }

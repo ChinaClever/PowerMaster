@@ -19,8 +19,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
 
+import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 import static cn.iocoder.yudao.framework.operatelog.core.enums.OperateTypeEnum.EXPORT;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.AUTH_THIRD_LOGIN_NOT_BIND;
+import static cn.iocoder.yudao.module.system.enums.ErrorCodeConstants.EXCEL_NULL;
 
 @Tag(name = "管理后台 - 母线历史数据")
 @RestController
@@ -212,16 +215,23 @@ public class BusHistoryDataController {
     public void exportBusTemHistoryDataExcel(BusHistoryDataDetailsReqVO pageReqVO,
                                              HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
-        List<Object> list = busHistoryDataService.getBusEnvDataDetails(pageReqVO).getList();
-
+        PageResult<Object> busEnvDataDetails = busHistoryDataService.getBusEnvDataDetails(pageReqVO);
+        if (Objects.isNull(busEnvDataDetails)){
+            throw exception(EXCEL_NULL);
+        }
+        List<Object> list = busEnvDataDetails.getList();
         busHistoryDataService.getNewTemHistoryList(list);
         // 导出 Excel
         if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+            List<BusTemHistoryDataVO> bean = BeanUtils.toBean(list, BusTemHistoryDataVO.class);
+            bean.stream().forEach(iter ->{iter.setLocation(pageReqVO.getNowAddress());});
             ExcelUtils.write(response, "始端箱温度分析.xlsx", "数据", BusTemHistoryDataVO.class,
-                    BeanUtils.toBean(list, BusTemHistoryDataVO.class));
+                    bean);
         } else {
+            List<BusHourAndDayTemHistoryDataVO> bean = BeanUtils.toBean(list, BusHourAndDayTemHistoryDataVO.class);
+            bean.stream().forEach(iter ->{iter.setLocation(pageReqVO.getNowAddress());});
             ExcelUtils.write(response, "始端箱温度分析.xlsx", "数据", BusHourAndDayTemHistoryDataVO.class,
-                    BeanUtils.toBean(list, BusHourAndDayTemHistoryDataVO.class));
+                    bean);
         }
     }
 
@@ -237,11 +247,15 @@ public class BusHistoryDataController {
         busHistoryDataService.getNewTemHistoryList(list);
         // 导出 Excel
         if (Objects.equals(pageReqVO.getGranularity(), "realtime")) {
+            List<BusTemHistoryDataVO> bean = BeanUtils.toBean(list, BusTemHistoryDataVO.class);
+            bean.stream().forEach(iter ->{iter.setLocation(pageReqVO.getNowAddress());});
             ExcelUtils.write(response, "插接箱温度分析.xlsx", "数据", BusTemHistoryDataVO.class,
-                    BeanUtils.toBean(list, BusTemHistoryDataVO.class));
+                    bean);
         } else {
+            List<BusHourAndDayTemHistoryDataVO> bean = BeanUtils.toBean(list, BusHourAndDayTemHistoryDataVO.class);
+            bean.stream().forEach(iter ->{iter.setLocation(pageReqVO.getNowAddress());});
             ExcelUtils.write(response, "插接箱温度分析.xlsx", "数据", BusHourAndDayTemHistoryDataVO.class,
-                    BeanUtils.toBean(list, BusHourAndDayTemHistoryDataVO.class));
+                    bean);
         }
     }
 

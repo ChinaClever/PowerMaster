@@ -467,14 +467,13 @@ onMounted(() => {
 }
 
 .label {
-  width:100px; /* 控制冒号前的宽度 */
-  text-align: right; /* 文本右对齐 */
+  text-align: left;
   margin-right: 5px; /* 控制冒号后的间距 */
 }
-.line {
-    height: 1px;
-    margin-top: 28px;
 
-    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
-  }
+.line {
+  height: 1px;
+  margin-top: 28px;
+  background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+}
 </style>

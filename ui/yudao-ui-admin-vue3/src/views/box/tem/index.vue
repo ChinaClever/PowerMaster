@@ -154,7 +154,7 @@
             <el-tag type="danger" v-else-if="item.atemStatus != 0 || item.btemStatus != 0  || item.ctemStatus != 0 " >告警</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>
-          <button class="detail" @click="openTemDetail(item)" v-if="item.status != null && item.status != 5"  >详情</button>
+          <button class="detail" @click="openTemDetail(item)" v-if="item.status != null && item.status != 0"  >详情</button>
         </div>
       </div>
       <Pagination

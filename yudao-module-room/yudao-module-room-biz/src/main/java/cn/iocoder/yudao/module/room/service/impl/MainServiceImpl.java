@@ -25,6 +25,7 @@ import cn.iocoder.yudao.module.room.dto.RoomPowDataDTO;
 import cn.iocoder.yudao.module.room.dto.main.DevDataDTO;
 import cn.iocoder.yudao.module.room.dto.main.EqDataDTO;
 import cn.iocoder.yudao.module.room.dto.main.PowDataDTO;
+import cn.iocoder.yudao.module.room.enums.BusTypeEnum;
 import cn.iocoder.yudao.module.room.enums.CabinetLoadEnums;
 import cn.iocoder.yudao.module.room.enums.DeviceAlarmStatusEnum;
 import cn.iocoder.yudao.module.room.service.MainService;
@@ -214,7 +215,7 @@ public class MainServiceImpl implements MainService {
             devDataDTO.setBoxNum(boxIndexList.size());
 
             int offLine = (int) boxIndexList.stream()
-                    .filter(boxIndex -> boxIndex.getRunStatus() == DeviceAlarmStatusEnum.OFF_LINE.getStatus())
+                    .filter(boxIndex -> boxIndex.getRunStatus() == BusTypeEnum.OFF_LINE.getStatus())
                     .distinct().count();
             devDataDTO.setBoxOnLine(boxIndexList.size()-offLine);
             devDataDTO.setBoxOffLine(offLine);
