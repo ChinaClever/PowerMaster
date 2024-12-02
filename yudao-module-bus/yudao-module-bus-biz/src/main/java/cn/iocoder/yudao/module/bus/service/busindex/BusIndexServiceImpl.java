@@ -21,6 +21,7 @@ import cn.iocoder.yudao.framework.common.mapper.CabinetBusMapper;
 import cn.iocoder.yudao.framework.common.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
+import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.bus.constant.BusConstants;
@@ -69,6 +70,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
@@ -1136,17 +1138,17 @@ public class BusIndexServiceImpl implements BusIndexService {
             JSONArray curThd = lineItemList.getJSONArray("cur_thd");
             JSONArray volThd = lineItemList.getJSONArray("vol_thd");
             for (int i = 0; i < 3; i++) {
-                double curThdValue = curThd.getDoubleValue(i);
-                double volThdValue = volThd.getDoubleValue(i);
+                BigDecimal curThdValue = BigDemicalUtil.safeDivide(curThd.getDoubleValue(i), 100);
+                BigDecimal volThdValue = BigDemicalUtil.safeDivide(volThd.getDoubleValue(i), 100);
                 if (i == 0) {
-                    busHarmonicRes.setAcurThd(curThdValue);
-                    busHarmonicRes.setAvolThd(volThdValue);
+                    busHarmonicRes.setAcurThd(curThdValue.doubleValue());
+                    busHarmonicRes.setAvolThd(volThdValue.doubleValue());
                 } else if (i == 1) {
-                    busHarmonicRes.setBcurThd(curThdValue);
-                    busHarmonicRes.setBvolThd(volThdValue);
+                    busHarmonicRes.setBcurThd(curThdValue.doubleValue());
+                    busHarmonicRes.setBvolThd(volThdValue.doubleValue());
                 } else if (i == 2) {
-                    busHarmonicRes.setCcurThd(curThdValue);
-                    busHarmonicRes.setCvolThd(volThdValue);
+                    busHarmonicRes.setCcurThd(curThdValue.doubleValue());
+                    busHarmonicRes.setCvolThd(volThdValue.doubleValue());
                 }
             }
         }
@@ -1656,8 +1658,6 @@ public class BusIndexServiceImpl implements BusIndexService {
             result.setTemAvgTime(new ArrayList<>());
 
             List<BusTemTableRes> tableList = new ArrayList<>();
-
-
             strList.forEach(busTemHourDo -> {
                 BusTemTableRes busTemTableRes = new BusTemTableRes();
                 busTemTableRes.setTemAvgValueA(busTemHourDo.getTemAAvgValue());

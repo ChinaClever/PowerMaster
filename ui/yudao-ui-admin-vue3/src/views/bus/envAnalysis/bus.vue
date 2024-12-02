@@ -480,6 +480,10 @@ const b2=ref(0)
 /** 查询列表 */
 const isHaveData = ref(false);
 const getList = async () => {
+      if (queryParams.devkey == undefined){
+      message.warning('请先选择设备！')
+      return
+    }
   loading.value = true;
   try {
     const data = await EnvDataApi.getBusEnvDataDetails(queryParams);

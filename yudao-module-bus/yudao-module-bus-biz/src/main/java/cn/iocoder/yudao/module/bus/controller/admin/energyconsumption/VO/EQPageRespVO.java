@@ -34,17 +34,18 @@ public class EQPageRespVO {
 
 
     @NumberFormat("0.0")
-    @ExcelProperty({"开始电能","开始电能(kWh)"})
+    @ExcelProperty({"开始","电能(kWh)"})
     private Double start_ele;
-    @ExcelProperty(converter = DateStringConverter.class, value ={"开始电能","开始时间"})
+
+    @ExcelProperty(converter = DateStringConverter.class, value ={"开始","日期"})
     private String start_time;
 
 
-    @ExcelProperty({"结束电能","结束电能(kWh)"})
+    @ExcelProperty({"结束","电能(kWh)"})
     @NumberFormat("0.0")
     private Double end_ele;
 
-    @ExcelProperty(converter = DateStringConverter.class, value ={"结束电能","结束时间"})
+    @ExcelProperty(converter = DateStringConverter.class, value ={"结束","日期"})
     private String end_time;
 
 

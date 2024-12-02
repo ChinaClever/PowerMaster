@@ -137,6 +137,13 @@ public class BoxIndexController {
     public CommonResult<Map> getBoxTemDetail(@RequestBody BoxIndexPageReqVO pageReqVO) {
         return success(indexService.getBoxTemDetail(pageReqVO));
     }
+    @Operation(summary = "插接箱温度详情-导出")
+    @PostMapping("/tem/detailExcel")
+    public void getBoxTemDetailExcel(@RequestBody BoxIndexPageReqVO pageReqVO,HttpServletResponse response) throws IOException {
+        Map busTemDetail = indexService.getBoxTemDetail(pageReqVO);
+        List<BusTemTableRes> tableList  = (List<BusTemTableRes>) busTemDetail.get("table");
+        ExcelUtils.write(response, "插接箱温度详情.xlsx", "数据", BusTemTableRes.class,tableList);
+    }
 
     @PostMapping("/boxpfpage")
     @Operation(summary = "获得插接箱功率因素分页")
@@ -149,6 +156,14 @@ public class BoxIndexController {
     @PostMapping("/pf/detail")
     public CommonResult<Map> getBoxPFDetail(@RequestBody BoxIndexPageReqVO pageReqVO) {
         return success(indexService.getBoxPFDetail(pageReqVO));
+    }
+
+    @Operation(summary = "插接箱功率因数详情-导出")
+    @PostMapping("/pf/detailExcel")
+    public void getBoxPFDetailExcel(@RequestBody BoxIndexPageReqVO pageReqVO,HttpServletResponse response) throws IOException {
+        Map boxPFDetail = indexService.getBoxPFDetail(pageReqVO);
+        List<BusPFTableRes> tableList = (List<BusPFTableRes>) boxPFDetail.get("table");
+        ExcelUtils.write(response, "插接箱功率因数详情.xlsx", "数据", BusPFTableRes.class,tableList);
     }
 
     @PostMapping("/boxharmonicpage")

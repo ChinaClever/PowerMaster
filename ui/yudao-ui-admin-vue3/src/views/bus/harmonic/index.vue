@@ -92,43 +92,44 @@
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="218px"/>
+        <el-table-column label="设备名称" align="center" prop="busName" />   
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>     
-        <el-table-column v-if="valueMode == 0" label="Ia" align="center" prop="acurThd" width="130px" >
+        <el-table-column v-if="valueMode == 0" label="Ia" align="center" prop="acurThd" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.acurThd != null">
               {{ scope.row.acurThd }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="Ib" align="center" prop="bcurThd" width="130px" >
+        <el-table-column v-if="valueMode == 0" label="Ib" align="center" prop="bcurThd" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.bcurThd != null">
               {{ scope.row.bcurThd }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="Ic" align="center" prop="ccurThd" width="130px" >
+        <el-table-column v-if="valueMode == 0" label="Ic" align="center" prop="ccurThd" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.ccurThd != null">
               {{ scope.row.ccurThd }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="Ua" align="center" prop="avolThd" width="130px" >
+        <el-table-column v-if="valueMode == 0" label="Ua" align="center" prop="avolThd" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.avolThd != null">
               {{ scope.row.avolThd }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="Ub" align="center" prop="bvolThd" width="130px" >
+        <el-table-column v-if="valueMode == 0" label="Ub" align="center" prop="bvolThd" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.bvolThd != null">
               {{ scope.row.bvolThd }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="Uc" align="center" prop="cvolThd" width="130px" >
+        <el-table-column v-if="valueMode == 0" label="Uc" align="center" prop="cvolThd" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.cvolThd != null">
               {{ scope.row.cvolThd }}

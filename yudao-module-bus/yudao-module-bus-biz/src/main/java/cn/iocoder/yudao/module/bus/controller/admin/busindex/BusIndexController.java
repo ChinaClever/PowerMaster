@@ -151,6 +151,14 @@ public class BusIndexController {
         return success(indexService.getBusTemDetail(pageReqVO));
     }
 
+    @Operation(summary = "始端箱温度详情-导出")
+    @PostMapping("/tem/detailExcel")
+    public void getBusTemDetailExcel(@RequestBody BusIndexPageReqVO pageReqVO,HttpServletResponse response) throws IOException {
+        Map busTemDetail = indexService.getBusTemDetail(pageReqVO);
+        List<BusTemTableRes> tableList  = (List<BusTemTableRes>) busTemDetail.get("table");
+        ExcelUtils.write(response, "始端箱温度详情.xlsx", "数据", BusTemTableRes.class,tableList);
+    }
+
     @PostMapping("/buspfpage")
     @Operation(summary = "获得始端箱功率因素分页")
     public CommonResult<PageResult<BusPFRes>> getBusPFPage(@RequestBody BusIndexPageReqVO pageReqVO) {
@@ -162,6 +170,14 @@ public class BusIndexController {
     @PostMapping("/pf/detail")
     public CommonResult<Map> getBusPFDetail(@RequestBody BusIndexPageReqVO pageReqVO) {
         return success(indexService.getBusPFDetail(pageReqVO));
+    }
+
+    @Operation(summary = "始端箱功率因素详情-导出")
+    @PostMapping("/pf/detailExcel")
+    public void getBusPFDetailExcel(@RequestBody BusIndexPageReqVO pageReqVO,HttpServletResponse response) throws IOException {
+        Map busPFDetail = indexService.getBusPFDetail(pageReqVO);
+        List<BusPFTableRes> tableList = (List<BusPFTableRes>) busPFDetail.get("table");
+        ExcelUtils.write(response, "始端箱功率因素详情.xlsx", "数据", BusPFTableRes.class,tableList);
     }
     @PostMapping("/busharmonicpage")
     @Operation(summary = "获得始端箱谐波监测分页")

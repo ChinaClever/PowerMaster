@@ -104,7 +104,8 @@
       <el-table v-show="visMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" width="218px"/>    
+        <el-table-column label="所在位置" align="center" prop="location" width="218px"/>
+        <el-table-column label="设备名称" align="center" prop="busName" />    
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>      
         <el-table-column label="运行状态" align="center" prop="color" v-if="switchValue == 0">
           <template #default="scope" >
@@ -114,7 +115,7 @@
               <el-tag type="danger" v-if="scope.row.color == 4">大电流不平衡</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="不平衡度(%)" align="center" prop="curUnbalance" width="130px" v-if="switchValue == 0">
+        <el-table-column label="不平衡度(%)" align="center" prop="curUnbalance" width="80px" v-if="switchValue == 0">
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.curUnbalance != null" >
               {{ scope.row.curUnbalance }}

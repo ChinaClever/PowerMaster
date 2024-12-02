@@ -172,11 +172,29 @@ const shortcuts = [
     },
   },
   {
+    text: '最近三个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setMonth(start.getMonth() - 3)
+      return [start, end]
+    },
+  },
+  {
     text: '最近六个月',
     value: () => {
       const end = new Date()
       const start = new Date()
       start.setMonth(start.getMonth() - 6)
+      return [start, end]
+    },
+  },
+  {    
+    text: '最近一年',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setFullYear(start.getFullYear() - 1)
       return [start, end]
     },
   },
@@ -283,8 +301,8 @@ function customTooltipFormatter(params: any[]) {
   tooltipContent += '位置：'+list.value[item.dataIndex].location + '<br/>'+
                     item.marker +'设备地址：'+list.value[item.dataIndex].devKey+'<br/>'+
                     item.marker +'设备名称：'+list.value[item.dataIndex].busName+'<br/>'
-                    +item.marker + '开始电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveStart)  + 'kWh 开始日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMin) + '<br/>' 
-                    +item.marker +'结束电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveEnd) + 'kWh 结束日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMax) + '<br/>'
+                    +item.marker +'开始日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMin) +  '开始电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveStart)  + 'kWh <br/>' 
+                    +item.marker +'结束日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMax) + '结束电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveEnd) + 'kWh <br/>'
                     +item.marker +'耗电量：'+formatEle(null, null, list.value[item.dataIndex].eleActive) + 'kWh';
   return tooltipContent;
 }
