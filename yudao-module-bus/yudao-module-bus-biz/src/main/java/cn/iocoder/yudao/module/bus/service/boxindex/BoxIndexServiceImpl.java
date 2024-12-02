@@ -24,6 +24,7 @@ import cn.iocoder.yudao.framework.common.mapper.CabinetBusMapper;
 import cn.iocoder.yudao.framework.common.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
+import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.bus.constant.BoxConstants;
@@ -73,6 +74,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
@@ -1562,13 +1564,14 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");
             JSONArray curThd = lineItemList.getJSONArray("cur_thd");
             for (int i = 0; i < 3; i++) {
-                double curThdValue = curThd.getDoubleValue(i);
+
+                BigDecimal curThdValue = BigDemicalUtil.safeDivide(curThd.getDoubleValue(i), 100);
                 if (i == 0) {
-                    boxHarmonicRes.setAcurThd(curThdValue);
+                    boxHarmonicRes.setAcurThd(curThdValue.doubleValue());
                 } else if (i == 1) {
-                    boxHarmonicRes.setBcurThd(curThdValue);
+                    boxHarmonicRes.setBcurThd(curThdValue.doubleValue());
                 } else if (i == 2) {
-                    boxHarmonicRes.setCcurThd(curThdValue);
+                    boxHarmonicRes.setCcurThd(curThdValue.doubleValue());
                 }
             }
         }
@@ -2021,15 +2024,22 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 BoxTotalHourDo totalMinActive = JsonUtils.parseObject(activeTotalMinValue, BoxTotalHourDo.class);
 
                 result.put("totalLineRes", totalLineRes);
-
-                result.put("apparentPowMaxValue", totalMaxApparent.getPowApparentMaxValue());
-                result.put("apparentPowMaxTime", totalMaxApparent.getPowApparentMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("apparentPowMinValue", totalMinApparent.getPowApparentMinValue());
-                result.put("apparentPowMinTime", totalMinApparent.getPowApparentMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("activePowMaxValue", totalMaxActive.getPowActiveMaxValue());
-                result.put("activePowMaxTime", totalMaxActive.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("activePowMinValue", totalMinActive.getPowActiveMinValue());
-                result.put("activePowMinTime", totalMinActive.getPowActiveMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                if (Objects.nonNull(totalMaxApparent)) {
+                    result.put("apparentPowMaxValue", totalMaxApparent.getPowApparentMaxValue());
+                    result.put("apparentPowMaxTime", totalMaxApparent.getPowApparentMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                if (Objects.nonNull(totalMinApparent)) {
+                    result.put("apparentPowMinValue", totalMinApparent.getPowApparentMinValue());
+                    result.put("apparentPowMinTime", totalMinApparent.getPowApparentMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                if (Objects.nonNull(totalMaxActive)) {
+                    result.put("activePowMaxValue", totalMaxActive.getPowActiveMaxValue());
+                    result.put("activePowMaxTime", totalMaxActive.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                if (Objects.nonNull(totalMinActive)) {
+                    result.put("activePowMinValue", totalMinActive.getPowActiveMinValue());
+                    result.put("activePowMinTime", totalMinActive.getPowActiveMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
 
             }
         } catch (Exception e) {

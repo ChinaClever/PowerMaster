@@ -172,6 +172,7 @@ import download from '@/utils/download'
 // import PDUImage from '@/assets/imgs/PDU.jpg'
 import { ElMessage } from 'element-plus'
 import { max } from 'lodash-es';
+import { error } from 'console';
 defineOptions({ name: 'BoxEnvLine' })
 const message = useMessage() // 消息弹窗
 const exportLoading = ref(false)
@@ -362,7 +363,10 @@ const isHaveData = ref(false);
 const getList = async () => {
   loading.value = true;
   try {
-    
+    if (queryParams.devkey == undefined){
+      message.warning('请先选择设备！')
+      return
+    }
     const data = await EnvDataApi.getBoxEnvDataDetails(queryParams);
     if (data != null && data.total != 0){
       loading2.value=true
@@ -1074,8 +1078,6 @@ const getNavList = async() => {
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
-    // queryParams.busId = undefined;
-    console.log('地址',nowAddress)
     needFlush.value++;
 }
 
