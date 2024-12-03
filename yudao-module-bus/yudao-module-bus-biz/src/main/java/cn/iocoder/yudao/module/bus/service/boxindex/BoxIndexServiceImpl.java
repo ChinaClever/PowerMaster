@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.bus.service.boxindex;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEleTotalDo;
@@ -34,9 +35,12 @@ import cn.iocoder.yudao.module.bus.controller.admin.boxindex.dto.MaxValueAndCrea
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
+import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusAisleBarQueryVO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.boxcurbalancecolor.BoxCurbalanceColorDO;
+import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxcurbalancecolor.BoxCurbalanceColorMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxindex.BoxIndexCopyMapper;
+import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 import cn.iocoder.yudao.module.bus.util.TimeUtil;
 import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson2.JSON;
@@ -45,6 +49,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -90,6 +95,7 @@ import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TI
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY_AISLE;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.bus.constant.BoxConstants.*;
+import static cn.iocoder.yudao.module.bus.constant.BusConstants.SPLIT_KEY;
 import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.INDEX_NOT_EXISTS;
 import static cn.iocoder.yudao.module.bus.service.busindex.BusIndexServiceImpl.REDIS_KEY_CABINET;
 
@@ -373,6 +379,108 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         return map;
     }
 
+    @Override
+    public LineBoxMaxResVO getBoxLineMax(BusIndexPageReqVO pageReqVO) throws IOException {
+        ValueOperations ops = redisTemplate.opsForValue();
+
+        if (pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
+            pageReqVO.setNewTime(LocalDateTime.now());
+            pageReqVO.setOldTime(LocalDateTime.now().minusHours(24));
+        } else {
+            pageReqVO.setNewTime(pageReqVO.getNewTime().plusDays(1));
+            pageReqVO.setOldTime(pageReqVO.getOldTime().plusDays(1));
+        }
+
+        String index;
+        if (pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
+            index = "box_hda_line_hour";
+        } else {
+            index = "box_hda_line_day";
+        }
+        String startTime = localDateTimeToString(pageReqVO.getOldTime());
+        String endTime = localDateTimeToString(pageReqVO.getNewTime());
+
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件，
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder.size(1);
+        //获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword")
+                .gte(startTime).lt(endTime))));
+        builder.sort( "cur_max_value", SortOrder.DESC);
+//        builder.aggregation(AggregationBuilders.max("max_date").field("cur_max_value"));
+        // 设置搜索条件
+        searchRequest.source(builder);
+        // 执行ES请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        LineBoxMaxResVO resVO = JsonUtils.parseObject(searchResponse.getHits().getAt(0).getSourceAsString(), LineBoxMaxResVO.class);
+        if (Objects.nonNull(resVO)){
+            BoxIndex boxIndex = boxIndexCopyMapper.selectById(resVO.getBusId());
+            resVO.setDevKey(boxIndex.getDevKey());
+            resVO.setBusName(boxIndex.getBoxName());
+            switch (resVO.getLineId()){
+                case 1: resVO.setLineName("A相");
+                    break;
+                case 2: resVO.setLineName("B相");
+                    break;
+                case 3: resVO.setLineName("C相");
+                    break;
+                default:
+            }
+
+            List<BusAisleBarQueryVO> records = busIndexMapper.selectBoxPageList(boxIndex.getDevKey().split(","));
+            if (CollectionUtil.isNotEmpty(records)) {
+                Map<String, BusAisleBarQueryVO> aislePathMap = records.stream().collect(Collectors.toMap(BusAisleBarQueryVO::getDevKey, x -> x));
+                Set<String> redisKeys = records.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toSet());
+                List aisles = ops.multiGet(redisKeys);
+                Map<Integer, String> positonMap = new HashMap<>();
+                if (!CollectionUtils.isEmpty(records)){
+                    for (Object aisle : aisles) {
+                        if (aisle == null) {
+                            continue;
+                        }
+                        JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
+                        String devPosition = json.getString("room_name") + SPLIT_KEY
+                                +  json.getString("aisle_name") + SPLIT_KEY;
+                        positonMap.put(json.getInteger("aisle_key"),devPosition);
+                    }
+                }
+                Map<String, Integer> keyMap = records.stream().filter(item -> ObjectUtils.isNotEmpty(item.getBarKey()))
+                        .collect(Collectors.toMap(BusAisleBarQueryVO::getBarKey, val -> val.getAisleId()));// x -> x, (oldVal, newVal) -> newVal));
+                Integer aisleId = keyMap.get(boxIndex.getDevKey());
+                String localtion = positonMap.get(aisleId);
+                if (Objects.nonNull(aislePathMap.get(boxIndex.getDevKey()).getPath())) {
+                    resVO.setLocation(localtion + aislePathMap.get(boxIndex.getDevKey()).getPath() + "路");
+                } else {
+                    resVO.setLocation(localtion + "路");
+                }
+            }
+        }
+        return resVO;
+    }
+    @Autowired
+    private BusIndexMapper busIndexMapper;
+    /*records = busIndexMapper.selectBoxPageList(reqDTO.getDevkeys());
+        }
+        Map<String, BusAisleBarQueryVO> aislePathMap = records.stream().collect(Collectors.toMap(BusAisleBarQueryVO::getDevKey, x -> x));
+        Set<String> redisKeys = records.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toSet());
+        List aisles = ops.multiGet(redisKeys);
+        Map<Integer, String> positonMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(records)){
+            for (Object aisle : aisles) {
+                if (aisle == null) {
+                    continue;
+                }
+                JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
+                String devPosition = json.getString("room_name") + SPLIT_KEY
+                        +  json.getString("aisle_name") + SPLIT_KEY;
+                positonMap.put(json.getInteger("aisle_key"),devPosition);
+            }
+        }
+        Map<String, Integer> keyMap = records.stream().filter(item -> ObjectUtils.isNotEmpty(item.getBarKey()))
+                .collect(Collectors.toMap(BusAisleBarQueryVO::getBarKey, val -> val.getAisleId()));// x -> x, (oldVal, newVal) -> newVal));*/
     private void validateIndexExists(Long id) {
         if (boxIndexCopyMapper.selectById(id) == null) {
             throw exception(INDEX_NOT_EXISTS);

@@ -80,7 +80,11 @@ public class BoxIndexController {
     public CommonResult<PageResult<BoxLineRes>> getBoxLineDevicePage(@RequestBody BoxIndexPageReqVO pageReqVO) {
         return success(indexService.getBoxLineDevicePage(pageReqVO));
     }
-
+    @PostMapping("/line/max")
+    @Operation(summary = "获得始端箱需量最大")
+    public CommonResult<LineBoxMaxResVO> getBoxLineMax(@RequestBody BusIndexPageReqVO pageReqVO) throws IOException {
+        return success(indexService.getBoxLineMax(pageReqVO));
+    }
     @Operation(summary = "插接箱需量ES数据图表")
     @PostMapping("/line/cur")
     public CommonResult<BusLineResBase> getBoxLineCurLine(@RequestBody BoxIndexPageReqVO pageReqVO) {
