@@ -245,12 +245,12 @@ const tableColumns = ref([
   { label: '设备名称', align: 'center', prop: 'busName', istrue:true, width: '100%'},
     { label: '开始电能', align: 'center', istrue: true, children: [
       { label: '开始电能(kWh)', align: 'center', prop: 'eleActiveStart' , istrue:true, formatter: formatEle},
-      { label: '开始时间', align: 'center', prop: 'createTimeMin' , formatter: formatTime1, width: '150px' , istrue:true},
+      { label: '开始时间', align: 'center', prop: 'createTimeMin' , formatter: formatTime1, width: '110px' , istrue:true},
     ]
   },
     { label: '结束电能', align: 'center', istrue: true, children: [
       { label: '结束电能(kWh)', align: 'center', prop: 'eleActiveEnd' , istrue:true, formatter: formatEle},
-      { label: '结束时间', align: 'center', prop: 'createTimeMax' , formatter: formatTime1, width: '150px' , istrue:true},
+      { label: '结束时间', align: 'center', prop: 'createTimeMax' , formatter: formatTime1, width: '110px' , istrue:true},
     ]
   },
   { label: '耗电量(kWh)', align: 'center', prop: 'eleActive' ,istrue: true,formatter: formatEle },
