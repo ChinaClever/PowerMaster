@@ -108,6 +108,12 @@ public class BusIndexController {
         return success(indexService.getBusLineDevicePage(pageReqVO));
     }
 
+    @PostMapping("/line/max")
+    @Operation(summary = "获得始端箱需量最大")
+    public CommonResult<LineMaxResVO> getBusLineMax(@RequestBody BusIndexPageReqVO pageReqVO) throws IOException {
+        return success(indexService.getBusLineMax(pageReqVO));
+    }
+
     @Operation(summary = "始端箱需量ES数据图表")
     @PostMapping("/line/cur")
     public CommonResult<BusLineResBase> getBusLineCurLine(@RequestBody BusIndexPageReqVO pageReqVO) {

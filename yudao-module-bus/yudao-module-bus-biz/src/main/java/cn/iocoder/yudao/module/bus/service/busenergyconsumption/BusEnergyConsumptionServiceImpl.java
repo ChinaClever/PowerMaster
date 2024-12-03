@@ -830,7 +830,7 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
             if (Objects.nonNull(aislePathMap.get(record.getDevKey()).getPath())) {
                 resVO.setLocation(localtion + aislePathMap.get(record.getDevKey()).getPath() + "路");
             }else {
-                resVO.setLocation(localtion);
+                resVO.setLocation(localtion + "路");
             }
             BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
             boolQuery.must(QueryBuilders.rangeQuery("create_time.keyword")

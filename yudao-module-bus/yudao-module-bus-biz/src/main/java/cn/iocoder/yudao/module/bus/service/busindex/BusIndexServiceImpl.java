@@ -1,8 +1,10 @@
 package cn.iocoder.yudao.module.bus.service.busindex;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.json.JSONUtil;
 import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEleTotalDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalMonthDo;
@@ -29,10 +31,12 @@ import cn.iocoder.yudao.module.bus.controller.admin.boxindex.dto.MaxValueAndCrea
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailRespVO;
+import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusAisleBarQueryVO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.buscurbalancecolor.BusCurbalanceColorDO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.buscurbalancecolor.BusCurbalanceColorMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
+import cn.iocoder.yudao.module.bus.dto.BusEleTotalRealtimeReqDTO;
 import cn.iocoder.yudao.module.bus.util.TimeUtil;
 import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson2.JSON;
@@ -41,6 +45,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -617,6 +622,89 @@ public class BusIndexServiceImpl implements BusIndexService {
             map.put("dateTimes", dateTimes);
         }
         return map;
+    }
+
+    @Override
+    public LineMaxResVO getBusLineMax(BusIndexPageReqVO pageReqVO) throws IOException {
+
+        ValueOperations ops = redisTemplate.opsForValue();
+
+        if (pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
+            pageReqVO.setNewTime(LocalDateTime.now());
+            pageReqVO.setOldTime(LocalDateTime.now().minusHours(24));
+        } else {
+            pageReqVO.setNewTime(pageReqVO.getNewTime().plusDays(1));
+            pageReqVO.setOldTime(pageReqVO.getOldTime().plusDays(1));
+        }
+
+        String index;
+        if (pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
+            index = "bus_hda_line_hour";
+        } else {
+            index = "bus_hda_line_day";
+        }
+        String startTime = localDateTimeToString(pageReqVO.getOldTime());
+        String endTime = localDateTimeToString(pageReqVO.getNewTime());
+
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件，
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder.size(1);
+        //获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword")
+                        .gte(startTime).lt(endTime))));
+        builder.sort( "cur_max_value", SortOrder.DESC);
+//        builder.aggregation(AggregationBuilders.max("max_date").field("cur_max_value"));
+        // 设置搜索条件
+        searchRequest.source(builder);
+        // 执行ES请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        LineMaxResVO resVO = JsonUtils.parseObject(searchResponse.getHits().getAt(0).getSourceAsString(), LineMaxResVO.class);
+        if (Objects.nonNull(resVO)){
+            BusIndexDO busIndexDO = busIndexMapper.selectById(resVO.getBusId());
+            resVO.setDevKey(busIndexDO.getDevKey());
+            resVO.setBusName(busIndexDO.getBusName());
+            switch (resVO.getLineId()){
+                case 1: resVO.setLineName("A相");
+                    break;
+                case 2: resVO.setLineName("B相");
+                    break;
+                case 3: resVO.setLineName("C相");
+                    break;
+                default:
+            }
+
+            List<BusAisleBarQueryVO> records = busIndexMapper.selectPageList(busIndexDO.getDevKey().split(","));
+            if (CollectionUtil.isNotEmpty(records)) {
+                Map<String, BusAisleBarQueryVO> aislePathMap = records.stream().collect(Collectors.toMap(BusAisleBarQueryVO::getDevKey, x -> x));
+                Set<String> redisKeys = records.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toSet());
+                List aisles = ops.multiGet(redisKeys);
+                Map<Integer, String> positonMap = new HashMap<>();
+                if (!CollectionUtils.isEmpty(records)) {
+                    for (Object aisle : aisles) {
+                        if (aisle == null) {
+                            continue;
+                        }
+                        JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
+                        String devPosition = json.getString("room_name") + SPLIT_KEY
+                                + json.getString("aisle_name") + SPLIT_KEY;
+                        positonMap.put(json.getInteger("aisle_key"), devPosition);
+                    }
+                }
+                Map<String, Integer> keyMap = records.stream().filter(item -> ObjectUtils.isNotEmpty(item.getBarKey()))
+                        .collect(Collectors.toMap(BusAisleBarQueryVO::getBarKey, val -> val.getAisleId()));// x -> x, (oldVal, newVal) -> newVal));
+                Integer aisleId = keyMap.get(busIndexDO.getDevKey());
+                String localtion = positonMap.get(aisleId);
+                if (Objects.nonNull(aislePathMap.get(busIndexDO.getDevKey()).getPath())) {
+                    resVO.setLocation(localtion + aislePathMap.get(busIndexDO.getDevKey()).getPath() + "路");
+                } else {
+                    resVO.setLocation(localtion + "路");
+                }
+            }
+        }
+        return resVO;
     }
 
     @Override
@@ -3020,7 +3108,8 @@ public class BusIndexServiceImpl implements BusIndexService {
         SearchSourceBuilder builder = new SearchSourceBuilder();
 
         //获取需要处理的数据
-        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime))
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword")
+                        .gte(startTime).lt(endTime))
                 .must(QueryBuilders.termsQuery("bus_id", ids))));
 
         builder.aggregation(

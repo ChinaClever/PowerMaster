@@ -29,6 +29,11 @@ export const PDUDeviceApi = {
     return await request.get({ url: `/pdu/PDU-device/get?id=` + id })
   },
 
+  // 查询PDU设备统计
+  getPDUDeviceCount: async () => {
+    return await request.get({ url: `/pdu/PDU-device/detailCount` })
+  },
+
   // 新增PDU设备
   createPDUDevice: async (data: PDUDeviceVO) => {
     return await request.post({ url: `/pdu/PDU-device/create`, data })

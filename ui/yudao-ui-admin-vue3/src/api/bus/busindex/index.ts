@@ -114,6 +114,10 @@ export const IndexApi = {
     return await request.post({ url: `/bus/index/line/page`,data})
   },
 
+  getBusLineMax: async (data: any) => {
+    return await request.post({ url: `/bus/index/line/max` ,data})
+  },
+
   getBusLineCurLine: async (data: any) => {
     return await request.post({ url: `/bus/index/line/cur`,data})
   },
