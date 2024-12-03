@@ -588,12 +588,21 @@ const handlePluginDblick = (e, road) => {
   push({path: '/bus/busmonitor/powerLoadDetail', state: { devKey: machineColInfo[`bar${road}`].boxList[index].barKey}})
 }
 // 处理插接箱/连接器菜单点击事件
-const handleBoxOperate = (type, road) => {
+const handleBoxOperate = async(type, road) => {
   const index = operateMenuBox.value.curIndex
   console.log('handleBoxOperate', type, index, machineColInfo)
   if (type == 'edit') {
     const data = machineColInfo[`bar${road}`].boxList[index]
     columnBoxForm.value.open(data)
+  }else{
+    const data = machineColInfo[`bar${road}`].boxList[index]
+    const res = await MachineColumnApi.getDeleteAisleSingleBox({id: data.id})
+    if(res != "1"){
+       message.error('柜列始端箱单个删除失败!')
+    }
+    operateMenuBox.value.show = false;
+    message.success('柜列始端箱单个删除成功!');
+    getMachineColInfo();
   }
 }
 // 跳转机柜
