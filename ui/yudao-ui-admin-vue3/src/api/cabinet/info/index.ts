@@ -6,8 +6,19 @@ export const CabinetApi = {
     return await request.post({ url: `/cabinet/page`, data })
   },
 
+  //机柜配电状态统计
   getCabinetInfoStatus: async () => {
     return await request.post({ url: `/cabinet/runStatus` })
+  },
+
+  //获得已删除机柜分页
+  getDeletedCabinetPage: async (data: any) => {
+    return await request.post({ url: `/cabinet/deletedCabinetPage`, data })
+  },
+
+  //恢复设备
+  getrestorerCabinet: async (params: any) => {
+    return await request.get({ url: `/cabinet/restorerCabinet`,params})
   },
 
 
