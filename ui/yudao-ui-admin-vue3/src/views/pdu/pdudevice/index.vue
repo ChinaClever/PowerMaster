@@ -268,7 +268,7 @@
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status">
             <el-tag  v-if="item.status == 0 && item.apparentPow == 0">空载</el-tag>
-            <el-tag type="success" v-if="item.status == 0 && item.apparentPow != 0">正常</el-tag>
+            <el-tag  v-if="item.status == 0 && item.apparentPow != 0">正常</el-tag>
             <el-tag type="warning" v-if="item.status == 1">预警</el-tag>
 
             <el-popover
@@ -397,7 +397,7 @@ const statusList = reactive([
     selected: true,
     value: 5,
     cssClass: 'btn_offline',
-    activeClass: 'btn_offline offlineGrey'
+    activeClass: 'btn_offline offline'
   },
 ])
 
@@ -664,32 +664,12 @@ const getListNoLoading = async () => {
 
 const getListAll = async () => {
   try {
-    var normal = 0;
-    var offline = 0;
-    var alarm = 0;
-    var warn = 0;
-    const allData = await PDUDeviceApi.getPDUDevicePage(queryParamsAll);
-    console.log('allData',allData)
-    allList.value = allData.list
-    allList.value.forEach((objAll) => {
-      if(objAll?.dataUpdateTime == null && objAll?.pow == null){
-        objAll.status = 5;
-        offline++;
-        return;
-      }  
-      if(objAll?.status == 0){
-        normal++;
-      } else if (objAll?.status == 1){
-        warn++;
-      } else if (objAll?.status == 2){
-        alarm++;
-      }          
-    });
+    const allData = await PDUDeviceApi.getPDUDeviceCount();
     //设置左边数量
-    statusNumber.normal = normal;
-    statusNumber.offline = offline;
-    statusNumber.alarm = alarm;
-    statusNumber.warn = warn;
+    statusNumber.normal = allData.normal;
+    statusNumber.offline = allData.offline;
+    statusNumber.alarm = allData.alarm;
+    statusNumber.warn = allData.warn;
   } catch (error) {
     
   }
@@ -805,8 +785,8 @@ onMounted(async () => {
   getList()
   getNavList();
   getListAll();
-  flashListTimer.value = setInterval((getListNoLoading), 5000);
-  flashListTimer.value = setInterval((getListAll), 5000);
+  flashListTimer.value = setInterval((getListNoLoading), 10000);
+  // flashListTimer.value = setInterval((getListAll), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -828,8 +808,8 @@ onActivated(() => {
   getList();
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getListNoLoading), 5000);
-    flashListTimer.value = setInterval((getListAll), 5000);
+    flashListTimer.value = setInterval((getListNoLoading), 10000);
+    // flashListTimer.value = setInterval((getListAll), 5000);
   }
 })
 </script>
@@ -903,21 +883,11 @@ onActivated(() => {
     color: #7bc25a;
   }
 }
-
 .btn_offline {
   border: 1px solid #aaa;
   background-color: #fff;
   margin-right: 8px;
 }
-
-.offlineGrey {
-  background-color:  #F4F4F5;
-  color: #aaa;
-  &:hover {
-    color: #fff;
-  }
-}
-
 .offline {
   background-color: #aaa;
   color: #fff;
@@ -925,13 +895,11 @@ onActivated(() => {
     color: #fff;
   }
 }
-
 .btn_normal {
   border: 1px solid #3bbb00;
   background-color: #fff;
   margin-right: 8px;
 }
-
 .normal {
   background-color: #3bbb00;
   color: #fff;
@@ -939,13 +907,11 @@ onActivated(() => {
     color: #fff;
   }
 }
-
 .btn_warn {
   border: 1px solid #ffc402;
   background-color: #fff;
   margin-right: 8px;
 }
-
 .warn {
   background-color: #ffc402;
   color: #fff;
@@ -953,13 +919,11 @@ onActivated(() => {
     color: #fff;
   }
 }
-
 .btn_error {
   border: 1px solid #fa3333;
   background-color: #fff;
   margin-right: 8px;
 }
-
 .error {
   background-color: #fa3333;
   color: #fff;

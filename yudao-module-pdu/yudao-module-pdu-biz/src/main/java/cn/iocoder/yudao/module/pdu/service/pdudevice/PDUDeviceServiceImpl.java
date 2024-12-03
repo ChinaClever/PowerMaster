@@ -893,6 +893,12 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         return result;
     }
 
+    @Override
+    public PduDeviceCountResVO getPDUDeviceCount() {
+
+        return pDUDeviceMapper.getPDUDeviceCount();
+    }
+
 
     @Override
     public Map getChartNewDataByPduDevKey(String devKey, LocalDateTime oldTime, String type) {

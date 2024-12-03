@@ -247,7 +247,8 @@ public class MainServiceImpl implements MainService {
         }
         LocalDateTime busTime = LocalDateTime.now();
         if (!CollectionUtils.isEmpty(busIndices)){
-            busTime = busIndices.get(0).getCreateTime();
+            if (Objects.nonNull(busIndices.get(0).getCreateTime()))
+                busTime = busIndices.get(0).getCreateTime();
         }
         if (pduTime.isBefore(busTime)){
             long daysBetween = ChronoUnit.DAYS.between( pduTime,LocalDateTime.now());
