@@ -68,5 +68,23 @@
         where CI.is_disabled = 0 and CI.is_deleted = 0
     </select>
 
+    <!-- 获得已删除机柜分页 -->
+    <select id="selectCabdeleteList" parameterType="cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo"
+            resultType="cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO">
+        select
+        ci.id ,
+        ci.name ,
+        ci.pdu_box as pduBox,
+        ci.run_status as runStatus,
+        ci.update_time as updateTime
+        from cabinet_index ci
+        where ci.is_disabled = 0 and ci.is_deleted = 1
+        ORDER BY  update_time desc
+    </select>
+
+    <!-- 设备恢复 -->
+    <update id="updaterestorerCabinet">
+        update cabinet_index set  is_deleted = '0'  where id=#{id}
+    </update>
 
 </mapper>
