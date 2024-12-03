@@ -1466,15 +1466,14 @@ window.addEventListener('resize', function() {
 });
 
 // 处理数据后有几位小数点
-function formatNumber(value) {
+function formatNumber(value,index) {
   if (typeof value === 'number') {
-    return value.toFixed(3); // 或您需要的任何小数位数
+    return value.toFixed(index); 
   } else {
     console.error('尝试对非数字值使用 toFixed 方法', value);
-    return '0.000'; // 或其他适当的默认值
+    return '0.000'; 
   }
 }
-
 
 /** 搜索按钮操作 */
 const handleQuery = async () => {
