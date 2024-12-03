@@ -185,7 +185,13 @@ export const IndexApi = {
     return await request.post({ url: `/bus/index/avg/busHdaLine/form` ,  data})
   },
 
-  getBusRedisByDevKey: async (data: any) => {
-    return await request.post({ url: `/bus/index/redisbydevkey` ,  data})
-  }
+  //始端箱温度详情导出
+  getBusTemDetailExcel: async ( data: any, axiosConfig) => {
+    return await request.downloadPost({ url: `/bus/index/tem/detailExcel` , data, ...axiosConfig })
+  },
+  
+  //始端相功率因素详情导出
+  getBusPFDetailExcel: async ( data: any, axiosConfig) => {
+    return await request.downloadPost({ url: `/bus/index/pf/detailExcel` , data, ...axiosConfig })
+  },
 }
