@@ -100,10 +100,10 @@
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
-          <el-button @click="handleSwitchModal(0)" :type="switchValue == 0? 'primary' : ''" style="width: 100px;"><Icon icon="ep:grid" style="margin-right:3px;"/>阵列模式</el-button>
-          <el-button @click="handleSwitchModal(1)" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:expand"  />表格模式</el-button>
+          <el-button @click="handleSwitchModal(0);showPagination = 0;" :type="switchValue == 0? 'primary' : ''" style="width: 100px;"><Icon icon="ep:grid" style="margin-right:3px;"/>阵列模式</el-button>
+          <el-button @click="handleSwitchModal(1);showPagination = 0;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:expand"  />表格模式</el-button>
           
-          <el-button @click="handleSwitchLogicRemoveModal(2)" :type="switchValue == 2 ? 'primary' : ''"  v-show="switchValue" ><Icon icon="ep:expand"  />已删除</el-button>
+          <el-button @click="handleSwitchLogicRemoveModal(2,true);showPagination = 1;" :type="switchValue == 2 ? 'primary' : ''"  v-show="switchValue" ><Icon icon="ep:expand"  />已删除</el-button>
           <!--  <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 2;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button> 
   --> 
          
@@ -164,38 +164,41 @@
 
    <el-table v-show="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
          <el-table-column label="位置" min-width="110" align="center">
-          <template #default="scope">
-            <div>{{scope.row.roomName}}-{{scope.row.cabinetName}}</div>
-          </template>
+            <template #default="scope">
+               <div>{{scope.row.name}}</div>
+            </template>
         </el-table-column>
         <el-table-column label="状态" min-width="110" align="center">
-          <template #default="scope">
-            <div :style="{color: statusList[scope.row.status].color}">{{statusList[scope.row.status] && statusList[scope.row.status].name}}</div>
-          </template>
+            <template #default="scope">
+                 <div>{{ scope.row.pduBox === 0 ? 'PDU' : '母线' }}</div>
+            </template>
         </el-table-column>
         
        <el-table-column label="删除日期" min-width="110" align="center">
-          <template #default="scope">
-            <div :style="{color: statusList[scope.row.status].color}">{{statusList[scope.row.status] && statusList[scope.row.status].name}}</div>
-          </template>
+            <template #default="scope">
+               {{ (new Date(scope.row.updateTime)).toISOString().slice(0, 10) }}
+            </template>
         </el-table-column>
-        
         
        <el-table-column label="操作" align="center">
           <template #default="scope">
             <el-button
               link
               type="danger"
-              @click="handleRestore(scope.row.busId)"
+              @click="handleRestore(scope.row.id)"
             >
               恢复设备
             </el-button>
           </template>
         </el-table-column>
      </el-table>
-
-
-      
+      <Pagination
+        v-if="showPagination == 1"
+        :total="queryParams.pageTotal"
+        v-model:page="queryParams.pageNo"
+        v-model:limit="queryParams.pageSize"
+        @pagination="handleSwitchLogicRemoveModal(2,false)"
+      />
       <div v-show="!switchValue && listPage.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in listPage" :key="item.id" @dblclick="handleArrayDbclick(item.cabinet_key)">
           <div class="content">
@@ -219,6 +222,7 @@
         </div>
       </div>
       <Pagination
+        v-if="showPagination == 0"
         :total="queryParams.pageTotal"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
@@ -241,6 +245,7 @@ import { ref } from 'vue';
 import MachineForm from './component/MachineForm.vue'
 import LiquidBall from './component/LiquidBall.vue'
 import { CabinetApi } from '@/api/cabinet/info'
+import { Console } from 'console';
 // import MyButton from '@/components/MyButton/MyButton.vue';
 
 const { push } = useRouter() // 路由跳转
@@ -251,7 +256,9 @@ const loading = ref(false)
 // const isCloseNav = ref(false) // 左侧导航是否收起
 const isFirst = ref(true) // 是否第一次调用getTableData函数
 const switchValue = ref(0) // 0:阵列 1：表格
+const showPagination = ref(0)
 const listPage = ref<any>([]) // 表格数据
+const deletedList = ref<any>([]) //已删除的
 const navList = ref([]) // 左侧导航列表数据
 const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
 const defaultOptionsCol = reactive([1, 2, 12, 13, 15, 16])
@@ -471,21 +478,43 @@ const saveMachine = async() => {
 
 // 处理切换 表格/阵列 模式
 const handleSwitchModal = (value) => {
+  showPagination.value = 0;
   if (switchValue.value == value) return
   switchValue.value = value
   if (value == 0) { // 阵列
     queryParams.pageSize = 24
   } else {
-    queryParams.pageSize = 10
+    queryParams.pageSize = 24
   }
   getTableData(true)
 }
 
-const handleSwitchLogicRemoveModal = (value) =>{
-    switchValue.value = value
+//已删除
+const handleSwitchLogicRemoveModal = async (value, reset = false) =>{
+    showPagination.value = 1;
+    switchValue.value = value;
+    if (reset) queryParams.pageNo = 1
+    const res = await CabinetApi.getDeletedCabinetPage({
+      pageNo: queryParams.pageNo,
+      pageSize: queryParams.pageSize,
+    })
+    deletedList.value = res.list;
+    queryParams.pageTotal = res.total
 }
 
-
+//恢复设备
+const handleRestore = async(id) =>{
+    const res = await CabinetApi.getrestorerCabinet({
+      id: id,
+    });
+    if(res != "1"){
+       message.success('设备恢复失败!')
+    }
+    // 刷新列表
+    await getNavList()
+    handleSwitchLogicRemoveModal(2,true);
+    message.success('设备恢复成功!');
+}
 
 
 //处理表格双击事件
