@@ -542,9 +542,11 @@ const submitForm = async () => {
     if (!machineForm) return
     const valid = await machineForm.value.validate()
     if (!valid) return
-    if(machineFormData.value.pduIpA == machineFormData.value.pduIpB && machineFormData.value.casIdA == machineFormData.value.casIdB){
-       message.error("PDU-IP地址相同情况下, 级联地址不能相同。");
-       return;
+    if(machineFormData.value.pduIpA != "" && machineFormData.value.pduIpB != ""){
+        if(machineFormData.value.pduIpA == machineFormData.value.pduIpB && machineFormData.value.casIdA == machineFormData.value.casIdB){
+           message.error("PDU-IP地址相同情况下, 级联地址不能相同。");
+           return;
+       }
     }
     // 提交请求
     formLoading.value = true
@@ -597,12 +599,12 @@ const resetForm = () => {
     eleAlarmMonth: 0, // 月用能告警
     eleLimitMonth: 1000, // 月用能限制
   }
-  machineForm.value?.resetFields()
-  sensorListLeft.forEach(item => {
+  machineForm.value?.resetFields();
+  sensorListRight.forEach(item => {
     item.sensorId = null
     item.pathPdu = ''
   })
-  sensorListRight.forEach(item => {
+  sensorListLeft.forEach(item => {
     item.sensorId = null
     item.pathPdu = ''
   })
