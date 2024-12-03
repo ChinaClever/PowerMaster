@@ -29,4 +29,12 @@ export const MachineColumnApi = {
   getMainEq: async (params: any) => {
     return await request.get({ url: `aisle/main/eq`, params })
   },
+
+  
+  // 柜列始端箱单个删除
+  getDeleteAisleSingleBox: async (params: any) => {
+    return await request.get({ url: `aisle/box/singleDelete`, params })
+  },
+
+
 }
