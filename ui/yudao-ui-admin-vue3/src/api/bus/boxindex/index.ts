@@ -170,5 +170,20 @@ export const IndexApi = {
   //插接箱需量数据图表数据导出
   getBoxLineCurLineExcel: async ( data, axiosConfig) => {
     return await request.downloadPost({ url: `/box/index/line/cur/excel` , data, ...axiosConfig })
-  }
+  },
+
+  //获得始端箱报表平均电流电压详细信息
+  getAvgBoxHdaLineForm: async (data: any) => {
+    return await request.post({ url: `/box/index/avg/boxHdaLine/form` ,  data})
+  },
+
+  //插接箱温度详情导出
+  getBoxTemDetailExcel: async ( data: any, axiosConfig) => {
+    return await request.downloadPost({ url: `/box/index/tem/detailExcel` , data, ...axiosConfig })
+  },
+  
+  //插接箱功率因素详情导出
+  getBoxPFDetailExcel: async ( data: any, axiosConfig) => {
+    return await request.downloadPost({ url: `/box/index/pf/detailExcel` , data, ...axiosConfig })
+  },
 }

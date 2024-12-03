@@ -229,7 +229,7 @@
       <el-card style="margin: 10px;">
         <el-row>
           <el-col >
-            <span style="width: 100%">趋势图</span>
+            <span style="width: 100%">总功率趋势图</span>
           </el-col>
           <el-col >
             <div style="float:right;margin-top: 0;">

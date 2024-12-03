@@ -669,6 +669,7 @@ const getListAll = async () => {
     var alarm = 0;
     var warn = 0;
     const allData = await PDUDeviceApi.getPDUDevicePage(queryParamsAll);
+    console.log('allData',allData)
     allList.value = allData.list
     allList.value.forEach((objAll) => {
       if(objAll?.dataUpdateTime == null && objAll?.pow == null){

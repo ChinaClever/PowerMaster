@@ -986,7 +986,6 @@ const getList = async () => {
 
   var PDU = await PDUDeviceApi.PDUDisplay(queryParams);
   PDU = JSON.parse(PDU)
-  console.log("PDU11111111",PDU)
   var temp = [] as any;
   var resultArray=[] as any;
   var baseInfo = await PDUDeviceApi.getPDUDevicePage(queryParams);

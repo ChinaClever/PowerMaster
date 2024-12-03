@@ -231,6 +231,42 @@
           </div>
         </div>
 
+        <div class="pageBox"  v-if="temp1 && temp1.length > 0">
+            <div class="page-conTitle">
+              告警信息
+            </div>
+                <el-table
+                  ref="multipleTableRef"
+                  :data="temp1"
+                  highlight-current-row
+                  style="width: 100%"
+                  :stripe="true" 
+                  :border="true"
+                  @current-change="handleCurrentChange"
+                >
+                    <!-- <el-table-column type="selection" width="55" /> -->
+                    <el-table-column type="index" width="80" label="序号" align="center" />
+                    <el-table-column property="devPosition" label="区域" min-width="100" align="center" />
+                    <el-table-column property="devName" label="设备" min-width="100" align="center" />
+                    <el-table-column property="alarmLevelDesc" label="告警等级" min-width="100" align="center" />
+                    <el-table-column property="alarmTypeDesc" label="告警类型" min-width="100" align="center" />
+                    <el-table-column property="alarmDesc" label="描述" min-width="120" align="center">
+                      <template #default="scope">
+                        <el-tooltip  placement="right">
+                          <div class="table-desc">{{scope.row.alarmDesc}}</div>
+                          <template #content>
+                            <div class="tooltip-width">{{scope.row.alarmDesc}}</div>
+                          </template>
+                        </el-tooltip>
+                      </template>
+                    </el-table-column>
+                    <el-table-column property="startTime" label="开始时间" min-width="100" align="center" />
+                    <el-table-column property="endTime" label="结束时间" min-width="100" align="center" />
+                    <el-table-column property="finishReason" label="结束原因" min-width="100" align="center" />
+                    <el-table-column property="confirmReason" label="确认原因" min-width="100" align="center" />
+                </el-table>
+          </div>
+
       </div>
     </template>
   </CommonMenu>
@@ -251,10 +287,12 @@ import CurLine from './component/CurLine.vue'
 import VolLine from './component/VolLine.vue'
 import Bar from './component/Bar.vue'
 import EnvTemLine from './component/EnvTemLine.vue'
-import { PDUDeviceApi } from '@/api/pdu/pdudevice'
+import { AlarmApi } from '@/api/system/notify/alarm'
+//import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
+const temp1 = ref([]) as any
 const curvolList = ref() as any
 const temList = ref() as any
 const eleList = ref() as any
@@ -575,6 +613,7 @@ const PDUTableData = ref([]) as any
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
+  a: 0,
   devKey : undefined,
   id: undefined,
   type: 'total',
@@ -778,9 +817,7 @@ const getList = async () => {
   PDU = JSON.parse(PDU)
   var temp = [] as any;
   var resultArray=[] as any;
-  var baseInfo = await PDUDeviceApi.getPDUDevicePage(queryParams);
-  console.log("baseInfo",baseInfo)
-  console.log("PDU11111111",PDU)
+  //var baseInfo = await PDUDeviceApi.getPDUDevicePage(queryParams);
   // 假设 PDU.pdu_data.output_item_list.pow_value 是一个 double 数组
   var powApparentValueArray = PDU?.bus_data?.line_item_list?.pow_apparent;
   var powValueArray = PDU?.bus_data?.line_item_list?.pow_value;
@@ -855,7 +892,18 @@ const getList = async () => {
   visControll.visAllReport = true;
   //initChart();
   loading.value = false
+  //清除temp1的缓存数据
+  temp1.value=[]
+  //获得告警信息
+  getTableData()
+  //处理告警信息数据
+  // //debugger
+  //处理时间信息
+  const oldDate = new Date(queryParams.oldTime);
+  const newDate = new Date(queryParams.newTime);
 
+  Object.values(tableData.value).forEach((item: any)=>item.devKey== temp[1].baseInfoValue&&newDate>=new Date(item.startTime)&&new Date(item.startTime)>=oldDate?temp1.value.push(item):console.log("no"))
+  console.log('表格的数据',temp1.value)
 }
 
 watch(filterText, (val) => {
@@ -902,11 +950,46 @@ const handleQuery = async () => {
   
 }
 
+const tableLoading = ref(false)
+const preStatus = ref([0])
+const tableData = ref([])
+const targetId = ref('')
+
+// 获取告警信息数据
+const getTableData = async(reset = false) => {
+  tableLoading.value = true
+  try {
+    // //debugger
+    const res = await AlarmApi.getAlarmRecord({
+      pageNo: 1,
+      pageSize: 10,
+      a: 1,
+      status: preStatus.value,
+      likeName: queryParams.search
+    })
+    console.log('res', res)
+    if (res.list) {    
+      tableData.value = res.list
+      queryParams.pageTotal = res.total   
+    }
+  } finally {
+    tableLoading.value = false
+    //queryParams.a.value=0
+  }
+}
+getTableData()
+
 /** 重置按钮操作 */
 // const resetQuery = () => {
 //   queryFormRef.value.resetFields()
 //   handleQuery()
 // }
+
+// 表格行选择处理
+const handleCurrentChange = (val) => {
+  if (!val) return
+  targetId.value = val.id
+}
 
 /** 添加/修改操作 */
 const formRef = ref()
