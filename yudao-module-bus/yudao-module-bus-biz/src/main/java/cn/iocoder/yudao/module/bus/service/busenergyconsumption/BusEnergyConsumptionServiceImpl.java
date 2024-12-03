@@ -804,7 +804,7 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
         } else {
             records = busIndexMapper.selectPageList(reqDTO.getDevkeys());
         }
-        Map<String, String> aislePathMap = records.stream().collect(Collectors.toMap(BusAisleBarQueryVO::getBarKey, BusAisleBarQueryVO::getPath));
+        Map<String, BusAisleBarQueryVO> aislePathMap = records.stream().collect(Collectors.toMap(BusAisleBarQueryVO::getDevKey, x -> x));
         Set<String> redisKeys = records.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toSet());
         List aisles = ops.multiGet(redisKeys);
         Map<Integer, String> positonMap = new HashMap<>();
@@ -825,8 +825,13 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
             BusEleTotalRealtimeResVO resVO = new BusEleTotalRealtimeResVO();
             Integer aisleId = keyMap.get(record.getDevKey());
             String localtion = positonMap.get(aisleId);
-            resVO.setId(record.getId()).setLocation(localtion+ aislePathMap.get(record.getDevKey()) + "路")
+            resVO.setId(record.getId())
                     .setBusName(record.getBusName()).setDevKey(record.getDevKey());
+            if (Objects.nonNull(aislePathMap.get(record.getDevKey()).getPath())) {
+                resVO.setLocation(localtion + aislePathMap.get(record.getDevKey()).getPath() + "路");
+            }else {
+                resVO.setLocation(localtion);
+            }
             BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
             boolQuery.must(QueryBuilders.rangeQuery("create_time.keyword")
                     .gte(reqDTO.getTimeRange()[0])
@@ -894,7 +899,7 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
         } else {
             records = busIndexMapper.selectBoxPageList(reqDTO.getDevkeys());
         }
-        Map<String, String> aislePathMap = records.stream().collect(Collectors.toMap(BusAisleBarQueryVO::getBarKey, BusAisleBarQueryVO::getPath));
+        Map<String, BusAisleBarQueryVO> aislePathMap = records.stream().collect(Collectors.toMap(BusAisleBarQueryVO::getDevKey, x -> x));
         Set<String> redisKeys = records.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toSet());
         List aisles = ops.multiGet(redisKeys);
         Map<Integer, String> positonMap = new HashMap<>();
@@ -915,8 +920,13 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
             BusEleTotalRealtimeResVO resVO = new BusEleTotalRealtimeResVO();
             Integer aisleId = keyMap.get(record.getDevKey());
             String localtion = positonMap.get(aisleId);
-            resVO.setId(record.getId()).setLocation(localtion+ aislePathMap.get(record.getDevKey()) + "路")
+            resVO.setId(record.getId())
                     .setBusName(record.getBusName()).setDevKey(record.getDevKey());
+            if (Objects.nonNull(aislePathMap.get(record.getDevKey()).getPath())) {
+                resVO.setLocation(localtion + aislePathMap.get(record.getDevKey()).getPath() + "路");
+            }else {
+                resVO.setLocation(localtion + "路");
+            }
             BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
             boolQuery.must(QueryBuilders.rangeQuery("create_time.keyword")
                     .gte(reqDTO.getTimeRange()[0])

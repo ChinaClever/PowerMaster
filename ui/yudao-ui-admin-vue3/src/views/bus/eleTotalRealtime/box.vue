@@ -140,7 +140,7 @@ const queryParams = reactive({
   pageSize: 15,
   granularity: 'day',
   timeRange: undefined as string[] | undefined,
-  devkeys: [],
+  devkeys: undefined as string[] | undefined,
 })
 const pageSizeArr = ref([15,30,50,100])
 const queryFormRef = ref()
