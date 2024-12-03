@@ -609,6 +609,9 @@ const getBusIdAndLocation =async () => {
 
 // 监听切换类型
 watch( ()=>typeRadio.value, async(value)=>{
+  //L1Data.value = [];
+  //L2Data.value = [];
+  //L3Data.value = [];
   await initData();
   if ( value == '有效电能'){
      // 选有效电能不能选近一小时
@@ -769,7 +772,9 @@ watch( ()=>timeRadio.value, async(value)=>{
   await getLineChartData();
   // 更新数据后重新渲染图表
   if (isHaveData.value == true){
-    console.log("L1Data",L1Data.value)
+    console.log('更新数据L1Data.value',L1Data.value)
+    console.log('更新数据L2Data.value',L2Data.value)
+    console.log('更新数据L3Data.value',L3Data.value)
     myChart2?.setOption({
     title: { text: ''},
      tooltip: { trigger: 'axis' ,formatter: function(params) {
@@ -1218,6 +1223,9 @@ const getLineChartData =async () => {
       } else{
         createTimeData.value = data.L1.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
       }
+      //L1Data.value = [];
+      //L2Data.value = [];
+      //L3Data.value = [];
       await initData();
       isHaveData.value = true
     }else{
@@ -1232,6 +1240,9 @@ const getLineChartData =async () => {
       } else{
         eqCreateTimeData.value = data2.L1.map((item) => formatDate(item.create_time, 'YYYY-MM-DD'));
       }
+      //L1Data.value = [];
+      //L2Data.value = [];
+      //L3Data.value = [];
       await initData();
       isHaveData.value = true
     }else{
@@ -1305,6 +1316,9 @@ const initData = () => {
         }
         break;             
     }
+    console.log('L1Data.value',L1Data.value)
+    console.log('L2Data.value',L2Data.value)
+    console.log('L3Data.value',L3Data.value)
   }else if(timeRadio.value == '近一天' || timeRadio.value == '近三天'){
     switch (typeRadio.value){
       case '电流':
@@ -1369,8 +1383,11 @@ const initData = () => {
         }
         break;    
       }
+      console.log('L1Data111.value',L1Data.value)
+      console.log('L2Data222.value',L2Data.value)
+      console.log('L3Data333.value',L3Data.value)
   }else{
-        switch (typeRadio.value){
+    switch (typeRadio.value){
       case '电流':
         if(allLineData.value != null){
         L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.cur_avg_value, 2));
@@ -1433,6 +1450,9 @@ const initData = () => {
         }
         break;    
       }
+      console.log('L1Data111111.value',L1Data.value)
+      console.log('L2Data222222.value',L2Data.value)
+      console.log('L3Data333333.value',L3Data.value)
   }
   
 }

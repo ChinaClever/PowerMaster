@@ -562,6 +562,7 @@ const handleCabRightClick = (e) => {
 }
 // 处理插接箱/母线右击事件
 const handlePluginRightClick = (e, type) => {
+  alert(1)
   e.preventDefault()
   if (!editEnable.value) return
   const targetId = e.target.id || e.target.parentNode.id

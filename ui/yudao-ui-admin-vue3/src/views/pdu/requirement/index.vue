@@ -363,7 +363,7 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content" v-show="item.l3MaxCur !== undefined && item.l3MaxCur !== null">
-            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
+            <!--<div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>-->
             <div class="info">
               
               <div >L1最大电流：{{ item.l1MaxCur }}A</div>
@@ -371,9 +371,10 @@
               <div >L3最大电流：{{ item.l3MaxCur }}A</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
+            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
           </div>
           <div class="content" v-show="item.l3MaxCur == undefined || item.l3MaxCur == null">
-            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
+            <!--<div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>-->
             <div class="info">
               
               <div >最大电流：{{ item.l1MaxCur }}A</div>
@@ -381,6 +382,7 @@
 
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
+            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
           </div>          
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->                
           <!--<button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>--> 
@@ -395,8 +397,8 @@
         <!-- 自定义的头部内容（可选） -->
         <template #header>
           <el-button @click="lineidBeforeChartUnmount()" style="float:right" show-close="false" >关闭</el-button>
-          <div><h2>电流详情</h2></div> 
-          <div>结果所在位置：{{onlyDevKey}} 时间段: {{ createTimes }}-{{ endTimes }}</div>
+          <div><h2>需量电流详情</h2></div> 
+          <div>所在位置：{{onlyDevKey}} 网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}} 起始时间：{{ createTimes }} 结束时间：{{ endTimes }}</div>
         </template>
 
         <!-- 自定义的主要内容 -->
@@ -1329,6 +1331,9 @@ onMounted(() => {
           margin: 0 28px;
           text-align: center;
         }
+        .info{
+          padding-left: 1vw;
+        }
       }
       .devKey{
         position: absolute;
@@ -1393,6 +1398,9 @@ onMounted(() => {
           margin: 0 28px;
           text-align: center;
         }
+        .info{
+          padding-left: 1vw;
+        }
       }
       .devKey{
         position: absolute;
@@ -1456,6 +1464,9 @@ onMounted(() => {
           height: 30px;
           margin: 0 28px;
           text-align: center;
+        }
+        .info{
+          padding-left: 1vw;
         }
       }
       .devKey{

@@ -2,10 +2,10 @@
   <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="插接箱温度">
     <template #NavInfo>
       <div>
-        <div class="header">
-          <!-- <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div> -->
+         <!-- <div class="header">
+          <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div>
         </div>
-        <div class="line"></div>
+        <div class="line"></div> -->
         <!-- <div class="status">
           <div class="box">
             <div class="top">
@@ -32,6 +32,32 @@
             <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
           </div>
         </div> -->
+        <div class="status">
+          <div class="box">
+            <div class="top"> <div class="tag"></div>正常 </div>
+            <div class="value"
+              ><span class="number">{{}}</span>个</div
+            >
+          </div>
+          <div class="box">
+            <div class="top"> <div class="tag empty"></div>离线 </div>
+            <div class="value"
+              ><span class="number">{{}}</span>个</div
+            >
+          </div>
+          <div class="box">
+            <div class="top"> <div class="tag error"></div>告警 </div>
+            <div class="value"
+              ><span class="number">{{}}</span>个</div
+            >
+          </div>
+          <div class="box">
+            <div class="top"> <div class="tag empty"></div>总共 </div>
+            <div class="value"
+              ><span class="number">{{}}</span>个</div
+            >
+          </div>
+        </div>
         <div class="line"></div>
 
       </div>
@@ -169,9 +195,9 @@
       </template>
 
       <el-dialog v-model="detailVis" title="温度详情"  width="70vw" height="58vh">
-        <el-row>
-          <el-tag>{{ location }}</el-tag>
-          <div >
+        <el-row class="custom-row">
+          <el-tag style="margin-left: 6vw; margin-top: -130px">{{ location }}</el-tag>
+          <div style="margin-left: -14vw;">
             日期:
             <el-date-picker
               v-model="queryParams.oldTime"
@@ -184,7 +210,8 @@
           </div>
           
           
-          <el-button 
+          <el-button
+            style="margin-left: 1vw;"
             @click="subtractOneDay();handleDayPick()" 
             :type=" 'primary'"
           >
@@ -196,18 +223,23 @@
           >
             &gt;后一日
           </el-button>
-          <el-button 
-            @click="switchChartOrTable = 0" 
-            :type="switchChartOrTable == 0 ?  'primary' : ``"
-          >
-            图表
-          </el-button>
-          <el-button 
-            @click="switchChartOrTable = 1" 
-            :type="switchChartOrTable == 1 ?  'primary' : ``"
-          >
-            数据
-          </el-button>
+          <div class="button-group" style="margin-left: auto">
+            <el-button
+              @click="switchChartOrTable = 0"
+              :type="switchChartOrTable === 0 ? 'primary' : ''"
+            >
+              图表
+            </el-button>
+            <el-button
+              @click="switchChartOrTable = 1"
+              :type="switchChartOrTable === 1 ? 'primary' : ''"
+            >
+              数据
+            </el-button>
+            <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading">
+              <Icon icon="ep:download" class="mr-5px" /> 导出
+            </el-button>
+          </div>
 
         </el-row>
         <br/>
@@ -554,6 +586,27 @@ const handleDelete = async (id: number) => {
   } catch {}
 }
 
+const handleExportXLS = async ()=>{
+  try {
+    // 导出的二次确认
+    await message.exportConfirm()
+    // 发起导出
+    queryParams.pageNo = 1
+    exportLoading.value = true
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await IndexApi.getBoxTemDetailExcel(queryParams, axiosConfig)
+    console.log("data",data)
+    await download.excel(data, '温度详细.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
+  } finally {
+    exportLoading.value = false
+  }
+}
+
 /** 导出按钮操作 */
 const handleExport = async () => {
   try {
@@ -761,6 +814,7 @@ onActivated(() => {
   .status {
     display: flex;
     flex-wrap: wrap;
+    margin-top: 30px;
     .box {
       height: 70px;
       width: 50%;
@@ -932,18 +986,33 @@ onActivated(() => {
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
+
 :deep(.el-form) {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }
+
 ::v-deep .el-table .el-table__header th{
   background-color: #f5f7fa;
   color: #909399;
   height: 80px;
 
+}
+
+.custom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+}
+ 
+.button-group {
+  display: flex;
+  gap: 10px;
 }
 </style>
