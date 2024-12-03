@@ -1739,10 +1739,10 @@ const PDUHdaLineHisdata = async (type) => {
     lineidDateTimes.value = result.dateTimes
   }else if(type === 'twentyfourHour'){
     const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey , type: 'twentyfourHour'})
-    lineidDateTimes.value = result.dateTimes
+    lineidDateTimes.value = result.dateTimes.map(item => item.slice(6, item.length));
   }else if(type === 'seventytwoHour'){
-    const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey , type: 'seventytwoHour'})
-    lineidDateTimes.value = result.dateTimes
+    const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey , type: 'twentyfourHour'})
+    lineidDateTimes.value = result.dateTimes.map(item => item.slice(0, 16));
   }
 }
 
