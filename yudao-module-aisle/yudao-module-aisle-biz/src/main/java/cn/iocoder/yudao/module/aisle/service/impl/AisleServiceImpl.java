@@ -1170,6 +1170,16 @@ public class AisleServiceImpl implements AisleService {
         return eqDataDTO;
     }
 
+    /**
+     * 柜列始端箱单个删除
+     * @param id
+     */
+    @Override
+    public int deleteAisleSingleBox(int id) {
+        int deleteById = aisleBoxMapper.deleteById(id);
+        return deleteById;
+    }
+
 
     /**
      * 获取数据

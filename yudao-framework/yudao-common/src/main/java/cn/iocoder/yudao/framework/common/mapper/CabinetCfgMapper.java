@@ -11,7 +11,6 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author luowei
@@ -26,8 +25,24 @@ public interface CabinetCfgMapper extends BaseMapper<CabinetCfg> {
     Page<CabinetIndexDTO> selectCabList(@Param("page") Page<CabinetIndexDTO> page, @Param("indexVo") CabinetIndexVo indexVo);
 
     /**
+     * 获得已删除机柜分页
+     * @param page
+     * @param
+     * @return
+     */
+    @InterceptorIgnore(tenantLine = "true")
+    Page<CabinetIndexDTO> selectCabdeleteList(@Param("page") Page<CabinetIndexDTO> page, @Param("indexVo") CabinetIndexVo pageReqVO);
+
+    /**
      * 查询全部的机柜配电状态
      * @return
      */
-    Map<String,Integer> selectRunStatus();
+    List<CabinetIndexDTO> selectRunStatus();
+
+    /**
+     * 设备恢复
+     * @param id
+     * @return
+     */
+    int updaterestorerCabinet(@Param("id") Integer id);
 }

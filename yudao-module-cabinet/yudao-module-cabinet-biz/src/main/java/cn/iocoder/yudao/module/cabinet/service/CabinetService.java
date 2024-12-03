@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.cabinet.service;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetDTO;
@@ -83,16 +84,25 @@ public interface CabinetService {
      */
     Map<Integer,Integer>  loadStatusCount();
 
-    /**
-     * 获得已删除机柜分页
-     * @param pageReqVO
-     * @return
-     */
-    PageResult<CabinetIndexVo> getDeletedCabinetPage(CabinetIndexVo pageReqVO);
 
     /**
      * 机柜配电状态统计
      * @return
      */
     PageResult<JSONObject> getCabinetRunStatus();
+
+    /**
+     * 获得已删除机柜分页
+     * @param pageReqVO
+     * @return
+     */
+    PageResult<JSONObject> getDeletedCabinetPage(CabinetIndexVo pageReqVO);
+
+
+
+    /**
+     * 恢复设备
+     * @return
+     */
+    int getrestorerCabinet(Integer id);
 }

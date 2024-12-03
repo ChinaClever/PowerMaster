@@ -751,14 +751,31 @@ public class CabinetServiceImpl implements CabinetService {
      * @return
      */
     @Override
-    public PageResult<CabinetIndexVo> getDeletedCabinetPage(CabinetIndexVo pageReqVO) {
+    public PageResult<JSONObject> getDeletedCabinetPage(CabinetIndexVo pageReqVO) {
+        List<JSONObject> result = new ArrayList<>();
+        try {
+            Page<CabinetIndexDTO> page = new Page<>(pageReqVO.getPageNo(), pageReqVO.getPageSize());
+            Page<CabinetIndexDTO> indexDTOPage = cabinetCfgMapper.selectCabdeleteList(page, pageReqVO);
+            indexDTOPage.getRecords().forEach(dto -> {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("id", dto.getId());
+                jsonObject.put("name", dto.getName());
+                jsonObject.put("pduBox", dto.getPduBox());
+                jsonObject.put("runStatus", dto.getRunStatus());
+                jsonObject.put("updateTime", dto.getUpdateTime());
+                result.add(jsonObject);
+            });
+            return new PageResult<>(result, indexDTOPage.getTotal());
+        } catch (Exception e) {
+            log.error("获取数据失败：", e);
+        }
+        return new PageResult<>(new ArrayList<>(), 0L);
+    }
 
-        LambdaQueryWrapper<CabinetIndex> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CabinetIndex::getIsDeleted,0);
-        List<CabinetIndex> cabinetIndices = cabinetIndexMapper.selectList(queryWrapper);
-        System.out.println(cabinetIndices);
-        System.out.println(cabinetIndices.toString());
-        return null;
+    //设备恢复
+    @Override
+    public int getrestorerCabinet(Integer id) {
+        return cabinetCfgMapper.updaterestorerCabinet(id);
     }
 
     /**
