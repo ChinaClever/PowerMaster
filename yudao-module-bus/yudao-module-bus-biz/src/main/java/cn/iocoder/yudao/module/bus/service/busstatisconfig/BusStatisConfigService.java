@@ -1,11 +1,11 @@
 package cn.iocoder.yudao.module.bus.service.busstatisconfig;
 
-import java.util.*;
-import javax.validation.*;
-import cn.iocoder.yudao.module.bus.controller.admin.busstatisconfig.vo.*;
-import cn.iocoder.yudao.module.bus.dal.dataobject.busstatisconfig.BusStatisConfigDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
+import cn.iocoder.yudao.module.bus.controller.admin.busstatisconfig.vo.BusStatisConfigPageReqVO;
+import cn.iocoder.yudao.module.bus.controller.admin.busstatisconfig.vo.BusStatisConfigSaveReqVO;
+import cn.iocoder.yudao.module.bus.dal.dataobject.busstatisconfig.BusStatisConfigDO;
+
+import javax.validation.Valid;
 
 /**
  * 母线计算服务配置 Service 接口

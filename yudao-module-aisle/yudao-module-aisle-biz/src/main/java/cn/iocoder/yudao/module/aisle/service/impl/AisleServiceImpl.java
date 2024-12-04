@@ -580,11 +580,11 @@ public class AisleServiceImpl implements AisleService {
                 //获取id
                 List<String> boxKeys = aisleBoxList.stream().map(AisleBox::getBarKey).collect(Collectors.toList());
                 List<BoxIndex>  boxIndexList = boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>()
-                        .in(BoxIndex::getDevKey,boxKeys));
+                        .in(BoxIndex::getBoxKey,boxKeys));
                 //获取昨日统计用电
                 if (!CollectionUtils.isEmpty(boxIndexList)){
                     List<Integer> ids = boxIndexList.stream().map(BoxIndex::getId).distinct().collect(Collectors.toList());
-                    boxIdMap = boxIndexList.stream().collect(Collectors.toMap(BoxIndex::getDevKey,BoxIndex::getId));
+                    boxIdMap = boxIndexList.stream().collect(Collectors.toMap(BoxIndex::getBoxKey,BoxIndex::getId));
 
                     String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
                     String endTime =DateUtil.formatDateTime(DateTime.now());

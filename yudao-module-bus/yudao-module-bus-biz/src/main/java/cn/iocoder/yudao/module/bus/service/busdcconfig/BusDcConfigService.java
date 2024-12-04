@@ -1,11 +1,11 @@
 package cn.iocoder.yudao.module.bus.service.busdcconfig;
 
-import java.util.*;
-import javax.validation.*;
-import cn.iocoder.yudao.module.bus.controller.admin.busdcconfig.vo.*;
-import cn.iocoder.yudao.module.bus.dal.dataobject.busdcconfig.BusDcConfigDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
+import cn.iocoder.yudao.module.bus.controller.admin.busdcconfig.vo.BusDcConfigPageReqVO;
+import cn.iocoder.yudao.module.bus.controller.admin.busdcconfig.vo.BusDcConfigSaveReqVO;
+import cn.iocoder.yudao.module.bus.dal.dataobject.busdcconfig.BusDcConfigDO;
+
+import javax.validation.Valid;
 
 /**
  * 母线数据采集配置 Service 接口

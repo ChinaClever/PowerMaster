@@ -1,13 +1,9 @@
 package cn.iocoder.yudao.module.bus.service.impl;
 
-import cn.iocoder.yudao.framework.common.dto.aisle.AisleBoxDTO;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
-import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
-import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
-import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
-import cn.iocoder.yudao.framework.common.enums.DelEnums;
-import cn.iocoder.yudao.framework.common.mapper.*;
+import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
+import cn.iocoder.yudao.framework.common.mapper.AisleBoxMapper;
 import cn.iocoder.yudao.module.bus.dto.BusDataDTO;
 import cn.iocoder.yudao.module.bus.service.BusService;
 import cn.iocoder.yudao.module.bus.vo.BusIndexVo;
@@ -53,15 +49,15 @@ public class BusServiceImpl implements BusService {
     public List<BusDataDTO> getBusData(BusIndexVo vo) {
         List<BusDataDTO> busDataDTOS = new ArrayList<>();
 
-        try{
+        try {
 
             //母线
-            List<AisleBar>  aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
-                    .eq(AisleBar::getAisleId,vo.getId()));
+            List<AisleBar> aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
+                    .eq(AisleBar::getAisleId, vo.getId()));
 
 
             //始端箱数据
-            if (!CollectionUtils.isEmpty(aisleBars)){
+            if (!CollectionUtils.isEmpty(aisleBars)) {
                 ValueOperations ops = redisTemplate.opsForValue();
 
                 //插接箱数据
@@ -75,7 +71,7 @@ public class BusServiceImpl implements BusService {
 
                     //始端箱数据
                     Object object = ops.get(REDIS_KEY_BUS + busIndex.getBarKey());
-                    if (Objects.nonNull(object)){
+                    if (Objects.nonNull(object)) {
                         JSONObject busData = JSON.parseObject(JSON.toJSONString(object));
                         busDataDTO.setBusData(busData);
                     }
@@ -84,19 +80,19 @@ public class BusServiceImpl implements BusService {
                     List<JSONObject> boxDataList = new ArrayList<>();
 
                     List<AisleBox> aisleBoxList = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
-                            .eq(AisleBox::getAisleBarId,busIndex.getId()));
+                            .eq(AisleBox::getAisleBarId, busIndex.getId()));
 
-                    if (!CollectionUtils.isEmpty(aisleBoxList)){
+                    if (!CollectionUtils.isEmpty(aisleBoxList)) {
                         List<AisleBox> boxList = aisleBoxList.stream().sorted(Comparator.comparing(AisleBox::getBoxIndex)).collect(Collectors.toList());
                         for (int i = 0; i < boxList.size(); i++) {
                             //插接箱基础数据
                             Object box = ops.get(REDIS_KEY_BOX + boxList.get(i).getBarKey());
                             JSONObject boxData = JSON.parseObject(JSON.toJSONString(boxList.get(i)));
 
-                            if (Objects.nonNull(box)){
-                                boxData.put("data",JSON.parseObject(JSON.toJSONString(box)));
+                            if (Objects.nonNull(box)) {
+                                boxData.put("data", JSON.parseObject(JSON.toJSONString(box)));
                             }
-                            boxDataList.add(i,boxData);
+                            boxDataList.add(i, boxData);
                         }
                     }
 
@@ -106,8 +102,8 @@ public class BusServiceImpl implements BusService {
 
             }
 
-        }catch (Exception e){
-            log.error("获取数据失败：",e);
+        } catch (Exception e) {
+            log.error("获取数据失败：", e);
         }
         return busDataDTOS;
     }

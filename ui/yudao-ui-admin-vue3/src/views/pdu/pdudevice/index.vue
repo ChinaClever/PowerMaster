@@ -717,6 +717,7 @@ const handleQuery = () => {
   queryDeletedPageParams.pageNo = 1
   getList()
   getDeletedList()
+  getListAll()
 }
 
 /** 重置按钮操作 */
