@@ -1256,63 +1256,63 @@ const initData = () => {
     switch (typeRadio.value){
       case '电流':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.cur_value, 2));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.cur_value, 2));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.cur_value, 2));
+        L1Data.value = allLineData.value.L1.map((item) => item.cur_value.toFixed(2));
+        L2Data.value = allLineData.value.L2.map((item) => item.cur_value.toFixed(2));
+        L3Data.value = allLineData.value.L3.map((item) => item.cur_value.toFixed(2));
         }
         break;
       case '电压':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.vol_value, 1));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.vol_value, 1));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.vol_value, 1));
+        L1Data.value = allLineData.value.L1.map((item) => item.vol_value.toFixed(1));
+        L2Data.value = allLineData.value.L2.map((item) => item.vol_value.toFixed(1));
+        L3Data.value = allLineData.value.L3.map((item) => item.vol_value.toFixed(1));
         }
         break;
       case '有效电能':
         if(allEqData.value != null){
-        eqValue.value = allEqData.value.L1.map((item) => formatNumber(item.eq_value, 3));
+        eqValue.value = allEqData.value.L1.map((item) => item.eq_value.toFixed(3));
         }
         break;
       case '有功功率':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_active, 3));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_active, 3));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_active, 3));
+        L1Data.value = allLineData.value.L1.map((item) => item.pow_active.toFixed(3));
+        L2Data.value = allLineData.value.L2.map((item) => item.pow_active.toFixed(3));
+        L3Data.value = allLineData.value.L3.map((item) => item.pow_active.toFixed(3));
         }
         break;              
       case '无功功率':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_reactive, 3));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_reactive, 3));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_reactive, 3));
+        L1Data.value = allLineData.value.L1.map((item) => item.pow_reactive.toFixed(3));
+        L2Data.value = allLineData.value.L2.map((item) => item.pow_reactive.toFixed(3));
+        L3Data.value = allLineData.value.L3.map((item) => item.pow_reactive.toFixed(3));
         }
        break;
       case '视在功率':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_apparent, 3));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_apparent, 3));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_apparent, 3));
+        L1Data.value = allLineData.value.L1.map((item) => item.pow_apparent.toFixed(3));
+        L2Data.value = allLineData.value.L2.map((item) => item.pow_apparent.toFixed(3));
+        L3Data.value = allLineData.value.L3.map((item) => item.pow_apparent.toFixed(3));
         }
        break;
       case '功率因素':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.power_factor, 2));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.power_factor, 2));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.power_factor, 2));
+        L1Data.value = allLineData.value.L1.map((item) => item.power_factor.toFixed(2));
+        L2Data.value = allLineData.value.L2.map((item) => item.power_factor.toFixed(2));
+        L3Data.value = allLineData.value.L3.map((item) => item.power_factor.toFixed(2));
         }
         break;
       case '线电压':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.vol_line, 1));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.vol_line, 1));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.vol_line, 1));
+        L1Data.value = allLineData.value.L1.map((item) => item.vol_line.toFixed(1));
+        L2Data.value = allLineData.value.L2.map((item) => item.vol_line.toFixed(1));
+        L3Data.value = allLineData.value.L3.map((item) => item.vol_line.toFixed(1));
         }
         break;
       case '负载率':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.load_rate, 1));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.load_rate, 1));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.load_rate, 1));
+        L1Data.value = allLineData.value.L1.map((item) => Math.round(item.load_rate*100));
+        L2Data.value = allLineData.value.L2.map((item) => Math.round(item.load_rate*100));
+        L3Data.value = allLineData.value.L3.map((item) => Math.round(item.load_rate*100));
         }
         break;             
     }
@@ -1323,63 +1323,63 @@ const initData = () => {
     switch (typeRadio.value){
       case '电流':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.cur_avg_value, 2));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.cur_avg_value, 2));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.cur_avg_value, 2));
+        L1Data.value = allLineData.value.L1.map((item) => item.cur_value.toFixed(2));
+        L2Data.value = allLineData.value.L2.map((item) => item.cur_value.toFixed(2));
+        L3Data.value = allLineData.value.L3.map((item) => item.cur_value.toFixed(2));
         }
         break;
       case '电压':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.vol_avg_value, 1));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.vol_avg_value, 1));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.vol_avg_value, 1));
+        L1Data.value = allLineData.value.L1.map((item) => item.vol_value.toFixed(1));
+        L2Data.value = allLineData.value.L2.map((item) => item.vol_value.toFixed(1));
+        L3Data.value = allLineData.value.L3.map((item) => item.vol_value.toFixed(1));
         }
         break;
       case '有效电能':
         if(allEqData.value != null){
-        eqValue.value = allEqData.value.L1.map((item) => formatNumber(item.ele_active, 3));
+        eqValue.value = allEqData.value.L1.map((item) => item.ele_active.toFixed(3));
         }
         break;
       case '有功功率':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_active_avg_value, 3));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_active_avg_value, 3));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_active_avg_value, 3));
+        L1Data.value = allLineData.value.L1.map((item) => item.pow_active_avg_value.toFixed(3));
+        L2Data.value = allLineData.value.L2.map((item) => item.pow_active_avg_value.toFixed(3));
+        L3Data.value = allLineData.value.L3.map((item) => item.pow_active_avg_value.toFixed(3));
         }
         break;              
       case '无功功率':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_reactive_avg_value, 3));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_reactive_avg_value, 3));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_reactive_avg_value, 3));
+        L1Data.value = allLineData.value.L1.map((item) => item.pow_reactive_avg_value.toFixed(3));
+        L2Data.value = allLineData.value.L2.map((item) => item.pow_reactive_avg_value.toFixed(3));
+        L3Data.value = allLineData.value.L3.map((item) => item.pow_reactive_avg_value.toFixed(3));
         }
        break;
       case '视在功率':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_apparent_avg_value, 3));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_apparent_avg_value, 3));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_apparent_avg_value, 3));
+        L1Data.value = allLineData.value.L1.map((item) => item.pow_apparent_avg_value.toFixed(3));
+        L2Data.value = allLineData.value.L2.map((item) => item.pow_apparent_avg_value.toFixed(3));
+        L3Data.value = allLineData.value.L3.map((item) => item.pow_apparent_avg_value.toFixed(3));
         }
        break;
       case '功率因素':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.power_factor_avg_value, 2));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.power_factor_avg_value, 2));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.power_factor_avg_value, 2));
+        L1Data.value = allLineData.value.L1.map((item) => item.power_factor_avg_value.toFixed(2));
+        L2Data.value = allLineData.value.L2.map((item) => item.power_factor_avg_value.toFixed(2));
+        L3Data.value = allLineData.value.L3.map((item) => item.power_factor_avg_value.toFixed(2));
         }
         break;
       case '线电压':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.vol_line_avg_value, 1));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.vol_line_avg_value, 1));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.vol_line_avg_value, 1));
+        L1Data.value = allLineData.value.L1.map((item) => item.vol_line_avg_value.toFixed(1));
+        L2Data.value = allLineData.value.L2.map((item) => item.vol_line_avg_value.toFixed(1));
+        L3Data.value = allLineData.value.L3.map((item) => item.vol_line_avg_value.toFixed(1));
         }
         break;
       case '负载率':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.load_rate, 1));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.load_rate, 1));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.load_rate, 1));
+        L1Data.value = allLineData.value.L1.map((item) => Math.round(item.load_rate*100));
+        L2Data.value = allLineData.value.L2.map((item) => Math.round(item.load_rate*100));
+        L3Data.value = allLineData.value.L3.map((item) => Math.round(item.load_rate*100));
         }
         break;    
       }
@@ -1390,63 +1390,63 @@ const initData = () => {
     switch (typeRadio.value){
       case '电流':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.cur_avg_value, 2));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.cur_avg_value, 2));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.cur_avg_value, 2));
+        L1Data.value = allLineData.value.L1.map((item) => item.cur_value.toFixed(2));
+        L2Data.value = allLineData.value.L2.map((item) => item.cur_value.toFixed(2));
+        L3Data.value = allLineData.value.L3.map((item) => item.cur_value.toFixed(2));
         }
         break;
       case '电压':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.vol_avg_value, 1));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.vol_avg_value, 1));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.vol_avg_value, 1));
+        L1Data.value = allLineData.value.L1.map((item) => item.vol_value.toFixed(1));
+        L2Data.value = allLineData.value.L2.map((item) => item.vol_value.toFixed(1));
+        L3Data.value = allLineData.value.L3.map((item) => item.vol_value.toFixed(1));
         }
         break;
       case '有效电能':
         if(allEqData.value != null){
-        eqValue.value = allEqData.value.L1.map((item) => formatNumber(item.eq_value, 3));
+        eqValue.value = allEqData.value.L1.map((item) => item.eq_value.toFixed(3));
         }
         break;
       case '有功功率':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_active_avg_value, 3));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_active_avg_value, 3));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_active_avg_value, 3));
+        L1Data.value = allLineData.value.L1.map((item) => item.pow_active_avg_value.toFixed(3));
+        L2Data.value = allLineData.value.L2.map((item) => item.pow_active_avg_value.toFixed(3));
+        L3Data.value = allLineData.value.L3.map((item) => item.pow_active_avg_value.toFixed(3));
         }
         break;              
       case '无功功率':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_reactive_avg_value, 3));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_reactive_avg_value, 3));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_reactive_avg_value, 3));
+        L1Data.value = allLineData.value.L1.map((item) => item.pow_reactive_avg_value.toFixed(3));
+        L2Data.value = allLineData.value.L2.map((item) => item.pow_reactive_avg_value.toFixed(3));
+        L3Data.value = allLineData.value.L3.map((item) => item.pow_reactive_avg_value.toFixed(3));
         }
        break;
       case '视在功率':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.pow_apparent_avg_value, 3));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.pow_apparent_avg_value, 3));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.pow_apparent_avg_value, 3));
+        L1Data.value = allLineData.value.L1.map((item) => item.pow_apparent_avg_value.toFixed(3));
+        L2Data.value = allLineData.value.L2.map((item) => item.pow_apparent_avg_value.toFixed(3));
+        L3Data.value = allLineData.value.L3.map((item) => item.pow_apparent_avg_value.toFixed(3));
         }
        break;
       case '功率因素':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.power_factor_avg_value, 2));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.power_factor_avg_value, 2));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.power_factor_avg_value, 2));
+        L1Data.value = allLineData.value.L1.map((item) => item.power_factor_avg_value.toFixed(2));
+        L2Data.value = allLineData.value.L2.map((item) => item.power_factor_avg_value.toFixed(2));
+        L3Data.value = allLineData.value.L3.map((item) => item.power_factor_avg_value.toFixed(2));
         }
         break;
       case '线电压':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.vol_line_avg_value, 1));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.vol_line_avg_value, 1));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.vol_line_avg_value, 1));
+        L1Data.value = allLineData.value.L1.map((item) => item.vol_line_avg_value.toFixed(1));
+        L2Data.value = allLineData.value.L2.map((item) => item.vol_line_avg_value.toFixed(1));
+        L3Data.value = allLineData.value.L3.map((item) => item.vol_line_avg_value.toFixed(1));
         }
         break;
       case '负载率':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => formatNumber(item.load_rate, 1));
-        L2Data.value = allLineData.value.L2.map((item) => formatNumber(item.load_rate, 1));
-        L3Data.value = allLineData.value.L3.map((item) => formatNumber(item.load_rate, 1));
+        L1Data.value = allLineData.value.L1.map((item) => Math.round(item.load_rate*100));
+        L2Data.value = allLineData.value.L2.map((item) => Math.round(item.load_rate*100));
+        L3Data.value = allLineData.value.L3.map((item) => Math.round(item.load_rate*100));
         }
         break;    
       }
@@ -1466,15 +1466,14 @@ window.addEventListener('resize', function() {
 });
 
 // 处理数据后有几位小数点
-function formatNumber(value) {
+function formatNumber(value,index) {
   if (typeof value === 'number') {
-    return value.toFixed(3); // 或您需要的任何小数位数
+    return value.toFixed(index); 
   } else {
     console.error('尝试对非数字值使用 toFixed 方法', value);
-    return '0.000'; // 或其他适当的默认值
+    return '0.000'; 
   }
 }
-
 
 /** 搜索按钮操作 */
 const handleQuery = async () => {
