@@ -28,7 +28,7 @@ public interface BoxIndexCopyMapper extends BaseMapperX<BoxIndex> {
 //                .eqIfPresent(BoxIndex::getCasAddr, reqVO.getDevAddr())
                 .eqIfPresent(BoxIndex::getBoxId, reqVO.getBarId())
                 .eqIfPresent(BoxIndex::getRunStatus, reqVO.getRunStatus())
-                .eqIfPresent(BoxIndex::getNodeIp, reqVO.getNodeIp())
+                .eqIfPresent(BoxIndex::getNodeId, reqVO.getNodeIp())
                 .eqIfPresent(BoxIndex::getIsDeleted, reqVO.getIsDeleted())
                 .eqIfPresent(BoxIndex::getBoxType,0)
                 .betweenIfPresent(BoxIndex::getCreateTime, reqVO.getCreateTime())

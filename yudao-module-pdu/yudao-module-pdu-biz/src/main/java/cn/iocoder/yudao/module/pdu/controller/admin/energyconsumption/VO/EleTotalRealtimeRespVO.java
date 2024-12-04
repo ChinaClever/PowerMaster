@@ -24,7 +24,7 @@ import lombok.Data;
 public class EleTotalRealtimeRespVO {
     @ExcelProperty("PduId")
     @ExcelIgnore
-    private Long pduId;
+    private Integer pduId;
     @ExcelProperty("所在位置")
     private String address;
     @ExcelProperty("网络地址")

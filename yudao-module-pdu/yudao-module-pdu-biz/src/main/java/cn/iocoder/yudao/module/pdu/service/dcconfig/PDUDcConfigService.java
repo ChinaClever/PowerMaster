@@ -1,9 +1,11 @@
 package cn.iocoder.yudao.module.pdu.service.dcconfig;
 
-import javax.validation.*;
-import cn.iocoder.yudao.module.pdu.controller.admin.dcconfig.vo.*;
-import cn.iocoder.yudao.module.pdu.dal.dataobject.dcconfig.DcConfigDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.pdu.controller.admin.dcconfig.vo.DcConfigPageReqVO;
+import cn.iocoder.yudao.module.pdu.controller.admin.dcconfig.vo.DcConfigSaveReqVO;
+import cn.iocoder.yudao.module.pdu.dal.dataobject.dcconfig.DcConfigDO;
+
+import javax.validation.Valid;
 
 /**
  * pdu数据采集配置 Service 接口

@@ -555,7 +555,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                 .inIfPresent(BusIndexDO::getId, reqVO.getBusIds())
                 .eqIfPresent(BusIndexDO::getIpAddr, reqVO.getIpAddr())
                 .eqIfPresent(BusIndexDO::getBusId, reqVO.getBarId())
-                .eqIfPresent(BusIndexDO::getNodeIp, reqVO.getNodeIp())
+                .eqIfPresent(BusIndexDO::getNodeId, reqVO.getNodeIp())
                 .eqIfPresent(BusIndexDO::getIsDeleted, reqVO.getIsDeleted())
                 .betweenIfPresent(BusIndexDO::getCreateTime, reqVO.getCreateTime())
                 .ne(ObjectUtil.isNotEmpty(reqVO.getStatus()), BusIndexDO::getRunStatus, 0)

@@ -1,9 +1,11 @@
 package cn.iocoder.yudao.module.pdu.service.statisconfig;
 
-import javax.validation.*;
-import cn.iocoder.yudao.module.pdu.controller.admin.statisconfig.vo.*;
-import cn.iocoder.yudao.module.pdu.dal.dataobject.statisconfig.StatisConfigDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.pdu.controller.admin.statisconfig.vo.StatisConfigPageReqVO;
+import cn.iocoder.yudao.module.pdu.controller.admin.statisconfig.vo.StatisConfigSaveReqVO;
+import cn.iocoder.yudao.module.pdu.dal.dataobject.statisconfig.StatisConfigDO;
+
+import javax.validation.Valid;
 
 /**
  * pdu计算服务配置 Service 接口

@@ -545,14 +545,14 @@ public class RoomServiceImpl implements RoomService {
                 AisleCabinetDTO cabinetDTO = BeanUtils.toBean(cabinetIndex,AisleCabinetDTO.class);
                 CabinetCfg cfg = cfgMap.get(cabinetIndex.getId());
                 if (Objects.nonNull(cfg)){
-                    cabinetDTO.setCabinetName(cfg.getCabinetName());
-                    cabinetDTO.setCabinetHeight(cfg.getCabinetHeight());
+//                    cabinetDTO.setCabinetName(cfg.getCabinetName());
+//                    cabinetDTO.setCabinetHeight(cfg.getCabinetHeight());
                     cabinetDTO.setCompany(cfg.getCompany());
                     cabinetDTO.setXCoordinate(cfg.getXCoordinate());
                     cabinetDTO.setYCoordinate(cfg.getYCoordinate());
-                    cabinetDTO.setType(cfg.getType());
+//                    cabinetDTO.setType(cfg.getType());
 
-                    totalSpace.addAndGet(cfg.getCabinetHeight());
+//                    totalSpace.addAndGet(cfg.getCabinetHeight());
                 }
 
                 //获取机柜使用空间
@@ -582,10 +582,10 @@ public class RoomServiceImpl implements RoomService {
                     .in(!CollectionUtils.isEmpty(ids),CabinetPdu::getCabinetId,ids));
             if (!CollectionUtils.isEmpty(cabinetPdus)) {
                 cabinetPdus.forEach(cabinetPdu -> {
-                    if (StringUtils.isNotEmpty(cabinetPdu.getPduIpA())){
+                    if (StringUtils.isNotEmpty(cabinetPdu.getPduKeyA())){
                         deviceNum.getAndIncrement();
                     }
-                    if (StringUtils.isNotEmpty(cabinetPdu.getPduIpB())){
+                    if (StringUtils.isNotEmpty(cabinetPdu.getPduKeyB())){
                         deviceNum.getAndIncrement();
                     }
                 });
@@ -657,8 +657,8 @@ public class RoomServiceImpl implements RoomService {
                 RoomCabinetDTO cabinetDTO = BeanUtils.toBean(cabinetIndex,RoomCabinetDTO.class);
                 CabinetCfg cfg = cfgMap.get(cabinetIndex.getId());
                 if (Objects.nonNull(cfg)){
-                    cabinetDTO.setCabinetName(cfg.getCabinetName());
-                    cabinetDTO.setCabinetHeight(cfg.getCabinetHeight());
+//                    cabinetDTO.setCabinetName(cfg.getCabinetName());
+//                    cabinetDTO.setCabinetHeight(cfg.getCabinetHeight());
                     cabinetDTO.setXCoordinate(cfg.getXCoordinate());
                     cabinetDTO.setYCoordinate(cfg.getYCoordinate());
                 }
@@ -758,8 +758,8 @@ public class RoomServiceImpl implements RoomService {
                             RoomCabinetDTO cabinetDTO = BeanUtils.toBean(cabinetIndex, RoomCabinetDTO.class);
                             CabinetCfg cfg = cfgMap.get(cabinetIndex.getId());
                             if (Objects.nonNull(cfg)) {
-                                cabinetDTO.setCabinetName(cfg.getCabinetName());
-                                cabinetDTO.setCabinetHeight(cfg.getCabinetHeight());
+//                                cabinetDTO.setCabinetName(cfg.getCabinetName());
+//                                cabinetDTO.setCabinetHeight(cfg.getCabinetHeight());
                                 cabinetDTO.setXCoordinate(cfg.getXCoordinate());
                                 cabinetDTO.setYCoordinate(cfg.getYCoordinate());
                             }
@@ -895,10 +895,10 @@ public class RoomServiceImpl implements RoomService {
                     .in(!CollectionUtils.isEmpty(ids),CabinetPdu::getCabinetId,ids));
             if (!CollectionUtils.isEmpty(cabinetPdus)) {
                 cabinetPdus.forEach(cabinetPdu -> {
-                    if (StringUtils.isNotEmpty(cabinetPdu.getPduIpA())){
+                    if (StringUtils.isNotEmpty(cabinetPdu.getPduKeyA())){
                         deviceNum.getAndIncrement();
                     }
-                    if (StringUtils.isNotEmpty(cabinetPdu.getPduIpB())){
+                    if (StringUtils.isNotEmpty(cabinetPdu.getPduKeyB())){
                         deviceNum.getAndIncrement();
                     }
                 });
@@ -1034,17 +1034,17 @@ public class RoomServiceImpl implements RoomService {
                     .in(!CollectionUtils.isEmpty(ids),CabinetPdu::getCabinetId,ids));
             if (!CollectionUtils.isEmpty(cabinetPdus)) {
                 cabinetPdus.forEach(cabinetPdu -> {
-                    if (StringUtils.isNotEmpty(cabinetPdu.getPduIpA())){
-                       pduKeys.add(cabinetPdu.getPduIpA() + SPLIT_KEY + cabinetPdu.getCasIdA());
+                    if (StringUtils.isNotEmpty(cabinetPdu.getPduKeyA())){
+                       pduKeys.add(cabinetPdu.getPduKeyA());
                     }
-                    if (StringUtils.isNotEmpty(cabinetPdu.getPduIpB())){
-                        pduKeys.add(cabinetPdu.getPduIpB() + SPLIT_KEY + cabinetPdu.getCasIdB());
+                    if (StringUtils.isNotEmpty(cabinetPdu.getPduKeyB())){
+                        pduKeys.add(cabinetPdu.getPduKeyB());
                     }
                 });
             }
             if (!CollectionUtils.isEmpty(pduKeys)){
                 List<PduIndexDo>  pduIndexDos = pduIndexDoMapper.selectList(new LambdaQueryWrapper<PduIndexDo>()
-                        .in(PduIndexDo::getDevKey,pduKeys));
+                        .in(PduIndexDo::getPduKey,pduKeys));
 
                 if (!CollectionUtils.isEmpty(pduIndexDos)){
                     Calendar calendar = Calendar.getInstance();
@@ -1188,12 +1188,12 @@ public class RoomServiceImpl implements RoomService {
                         CabinetDTO cabinetDTO = BeanUtils.toBean(cabinetIndex,CabinetDTO.class);
                         CabinetCfg cfg = cabinetCfgMap.get(cabinetIndex.getId());
                         if (Objects.nonNull(cfg)){
-                            cabinetDTO.setCabinetName(cfg.getCabinetName());
-                            cabinetDTO.setCabinetHeight(cfg.getCabinetHeight());
+//                            cabinetDTO.setCabinetName(cfg.getCabinetName());
+//                            cabinetDTO.setCabinetHeight(cfg.getCabinetHeight());
                             cabinetDTO.setCompany(cfg.getCompany());
                             cabinetDTO.setXCoordinate(cfg.getXCoordinate());
                             cabinetDTO.setYCoordinate(cfg.getYCoordinate());
-                            cabinetDTO.setType(cfg.getType());
+//                            cabinetDTO.setType(cfg.getType());
                             if ("x".equals(aisleIndex.getDirection())){
                                 //横向
                                 cabinetDTO.setIndex(cfg.getXCoordinate() - aisleIndex.getXCoordinate() + 1);
@@ -1203,7 +1203,7 @@ public class RoomServiceImpl implements RoomService {
                                 cabinetDTO.setIndex(cfg.getYCoordinate() - aisleIndex.getYCoordinate() + 1);
                             }
 
-                            totalSpace.addAndGet(cfg.getCabinetHeight());
+//                            totalSpace.addAndGet(cfg.getCabinetHeight());
                         }
 
                         List<RackIndex> rackIndexList = rackIndexDoMapper.selectList(new LambdaQueryWrapper<RackIndex>()
@@ -1443,10 +1443,10 @@ public class RoomServiceImpl implements RoomService {
     private CabinetCfg convertCfg(CabinetVo vo, CabinetCfg cfg) {
         CabinetCfg cabinetCfg = new CabinetCfg();
         cabinetCfg.setCabinetId(vo.getId());
-        cabinetCfg.setCabinetHeight(vo.getCabinetHeight());
-        cabinetCfg.setCabinetName(vo.getCabinetName());
+//        cabinetCfg.setCabinetHeight(vo.getCabinetHeight());
+//        cabinetCfg.setCabinetName(vo.getCabinetName());
         cabinetCfg.setCompany(vo.getCompany());
-        cabinetCfg.setType(vo.getType());
+//        cabinetCfg.setType(vo.getType());
         cabinetCfg.setXCoordinate(vo.getXCoordinate());
         cabinetCfg.setYCoordinate(vo.getYCoordinate());
         cabinetCfg.setId(cfg.getId());

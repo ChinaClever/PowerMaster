@@ -317,28 +317,28 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                 if (!CollectionUtils.isEmpty(pduList)){
                     pduList.forEach(cabinetPdu -> {
 
-                        if (StringUtils.isNotEmpty(cabinetPdu.getPduIpA())){
+                        if (StringUtils.isNotEmpty(cabinetPdu.getPduKeyA())){
                             RoomPduMenuDTO roomMenuDTOA = new RoomPduMenuDTO();
                             roomMenuDTOA.setChildren(new ArrayList<>());
                             roomMenuDTOA.setType(MenuTypeEnums.PDU.getType());
                             roomMenuDTOA.setName("A路");
 
-                            roomMenuDTOA.setIp(cabinetPdu.getPduIpA());
-                            roomMenuDTOA.setCas(cabinetPdu.getCasIdA());
-                            roomMenuDTOA.setUnique(cabinetPdu.getPduIpA() + SPLIT + cabinetPdu.getCasIdA());
+                            roomMenuDTOA.setIp(cabinetPdu.getPduKeyA());
+//                            roomMenuDTOA.setCas(cabinetPdu.getCasIdA());
+                            roomMenuDTOA.setUnique(cabinetPdu.getPduKeyA());// + SPLIT + cabinetPdu.getCasIdA());
                             //父id设置机柜
                             roomMenuDTOA.setParentId(cabinetPdu.getCabinetId());
                             roomMenuDTOA.setParentType( MenuTypeEnums.CABINET.getType());
                             menuDTOS.add(roomMenuDTOA);
                         }
-                        if (StringUtils.isNotEmpty(cabinetPdu.getPduIpB())){
+                        if (StringUtils.isNotEmpty(cabinetPdu.getPduKeyB())){
                             RoomPduMenuDTO roomMenuDTOB = new RoomPduMenuDTO();
                             roomMenuDTOB.setChildren(new ArrayList<>());
                             roomMenuDTOB.setType(MenuTypeEnums.PDU.getType());
                             roomMenuDTOB.setName("B路");
-                            roomMenuDTOB.setIp(cabinetPdu.getPduIpB());
-                            roomMenuDTOB.setCas(cabinetPdu.getCasIdB());
-                            roomMenuDTOB.setUnique(cabinetPdu.getPduIpB() + SPLIT + cabinetPdu.getCasIdB());
+                            roomMenuDTOB.setIp(cabinetPdu.getPduKeyB());
+//                            roomMenuDTOB.setCas(cabinetPdu.getCasIdB());
+                            roomMenuDTOB.setUnique(cabinetPdu.getPduKeyB());// + SPLIT + cabinetPdu.getCasIdB());
                             //父id设置机柜
                             roomMenuDTOB.setParentId(cabinetPdu.getCabinetId());
                             roomMenuDTOB.setParentType( MenuTypeEnums.CABINET.getType());

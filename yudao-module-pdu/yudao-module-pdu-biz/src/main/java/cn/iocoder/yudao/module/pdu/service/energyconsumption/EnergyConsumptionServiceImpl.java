@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -212,7 +211,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
     public PageResult<Object> getEQDataDetails(EnergyConsumptionPageReqVO reqVO) throws IOException {
         Integer pduId = reqVO.getPduId();
         if (Objects.equals(pduId, null)) {
-            pduId = historyDataService.getPduIdByAddr(reqVO.getIpAddr(), reqVO.getCascadeAddr());
+            pduId = historyDataService.getPduIdByAddr(reqVO.getIpAddr());
             if (Objects.equals(pduId, null)) {
                 PageResult<Object> pageResult = new PageResult<>();
                 pageResult.setList(new ArrayList<>())
@@ -289,7 +288,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
     public List<Object> getOutletsEQData(EnergyConsumptionPageReqVO reqVO) throws IOException {
         Integer pduId = reqVO.getPduId();
         if (Objects.equals(pduId, null)) {
-            pduId = historyDataService.getPduIdByAddr(reqVO.getIpAddr(), reqVO.getCascadeAddr());
+            pduId = historyDataService.getPduIdByAddr(reqVO.getIpAddr());
             if (Objects.equals(pduId, null)) {
                 return null;
             }
@@ -620,7 +619,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
 
         PageResult<EleTotalRealtimeRespVO> pageResult = null;
         List<EleTotalRealtimeRespVO> mapList = new ArrayList<>();
-        List collect =new ArrayList();
+        List collect = new ArrayList();
         List<PduIndex> records = null;
         long total = 0;
         if (flag) {
@@ -629,48 +628,48 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
             records = page.getRecords();
             collect = records.stream().map(PduIndex::getId).collect(Collectors.toList());
             collect.stream().map(String::valueOf).collect(Collectors.joining(","));
-        }else {
+        } else {
             records = historyDataService.findPduIndexAllToList(reqDTO.getIpArray());
             collect = records.stream().map(PduIndex::getId).collect(Collectors.toList());
             collect.stream().map(String::valueOf).collect(Collectors.joining(","));
         }
         for (PduIndex record : records) {
             EleTotalRealtimeRespVO respVO = new EleTotalRealtimeRespVO();
-            respVO.setPduId(record.getId()).setLocation(record.getDevKey()).setAddress(historyDataService.getAddressByIpAddr(record.getDevKey()));
-                BoolQueryBuilder boolQuery1 = QueryBuilders.boolQuery();
-                boolQuery1.must(QueryBuilders.rangeQuery("create_time.keyword")
-                        .gte(reqDTO.getTimeRange()[0])
-                        .lte(reqDTO.getTimeRange()[1]));
-                boolQuery1.must(QueryBuilders.termsQuery("pdu_id", String.valueOf(record.getId())));
-                // 搜索源构建对象
-                SearchSourceBuilder searchSourceBuilder1 = new SearchSourceBuilder();
-                searchSourceBuilder1.query(boolQuery1);
-                searchSourceBuilder1.size(1);
-                searchSourceBuilder1.sort("create_time.keyword", SortOrder.DESC);
-                SearchRequest searchRequest1 = new SearchRequest();
-                searchRequest1.indices("pdu_ele_total_realtime");
-                //query条件--正常查询条件
-                searchRequest1.source(searchSourceBuilder1);
-                // 执行搜索,向ES发起http请求
-                SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
-                SearchHits hits = searchResponse1.getHits();
+            respVO.setPduId(record.getId()).setLocation(record.getPduKey()).setAddress(historyDataService.getAddressByIpAddr(record.getPduKey()));
+            BoolQueryBuilder boolQuery1 = QueryBuilders.boolQuery();
+            boolQuery1.must(QueryBuilders.rangeQuery("create_time.keyword")
+                    .gte(reqDTO.getTimeRange()[0])
+                    .lte(reqDTO.getTimeRange()[1]));
+            boolQuery1.must(QueryBuilders.termsQuery("pdu_id", String.valueOf(record.getId())));
+            // 搜索源构建对象
+            SearchSourceBuilder searchSourceBuilder1 = new SearchSourceBuilder();
+            searchSourceBuilder1.query(boolQuery1);
+            searchSourceBuilder1.size(1);
+            searchSourceBuilder1.sort("create_time.keyword", SortOrder.DESC);
+            SearchRequest searchRequest1 = new SearchRequest();
+            searchRequest1.indices("pdu_ele_total_realtime");
+            //query条件--正常查询条件
+            searchRequest1.source(searchSourceBuilder1);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
+            SearchHits hits = searchResponse1.getHits();
             for (SearchHit hit : hits) {
                 respVO.setCreateTimeMax((String) hit.getSourceAsMap().get("create_time"));
                 if (Objects.nonNull(respVO.getCreateTimeMax())) {
                     respVO.setEleActiveEnd((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_active")).orElseGet(() -> 0.0));
                 }
             }
-                SearchSourceBuilder searchSourceBuilder2 = new SearchSourceBuilder();
-                searchSourceBuilder2.query(boolQuery1);
-                searchSourceBuilder2.size(1);
-                searchSourceBuilder2.sort("create_time.keyword", SortOrder.ASC);
-                SearchRequest searchRequest2 = new SearchRequest();
-                searchRequest2.indices("pdu_ele_total_realtime");
-                //query条件--正常查询条件
-                searchRequest2.source(searchSourceBuilder2);
-                // 执行搜索,向ES发起http请求
-                SearchResponse searchResponse2 = client.search(searchRequest2, RequestOptions.DEFAULT);
-                SearchHits hits2 = searchResponse2.getHits();
+            SearchSourceBuilder searchSourceBuilder2 = new SearchSourceBuilder();
+            searchSourceBuilder2.query(boolQuery1);
+            searchSourceBuilder2.size(1);
+            searchSourceBuilder2.sort("create_time.keyword", SortOrder.ASC);
+            SearchRequest searchRequest2 = new SearchRequest();
+            searchRequest2.indices("pdu_ele_total_realtime");
+            //query条件--正常查询条件
+            searchRequest2.source(searchSourceBuilder2);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse2 = client.search(searchRequest2, RequestOptions.DEFAULT);
+            SearchHits hits2 = searchResponse2.getHits();
 
             for (SearchHit hit : hits2) {
                 respVO.setCreateTimeMin((String) hit.getSourceAsMap().get("create_time"));
@@ -678,7 +677,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
                     respVO.setEleActiveStart((Double) Optional.ofNullable(hit.getSourceAsMap().get("ele_active")).orElseGet(() -> 0.0));
                     double sub = BigDemicalUtil.sub(respVO.getEleActiveEnd(), respVO.getEleActiveStart());
                     respVO.setEleActive(sub);
-                    if (sub<0){
+                    if (sub < 0) {
                         respVO.setEleActive(respVO.getEleActiveEnd());
                     }
                 }

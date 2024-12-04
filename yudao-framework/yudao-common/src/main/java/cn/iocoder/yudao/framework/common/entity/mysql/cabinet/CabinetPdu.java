@@ -19,36 +19,29 @@ public class CabinetPdu implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
-    private int id;
+    private Integer id;
 
     /**
      * 机柜id
      */
-    private int cabinetId;
+    private Integer cabinetId;
     /**
      * A路IP地址
      */
-    private String pduIpA;
-    /**
-     * A路级联编号
-     */
-    private int casIdA;
+    private String pduKeyA;
+
     /**
      * B路IP地址
      */
-    private String pduIpB;
-    /**
-     * B路级联编号
-     */
-    private int casIdB;
+    private String pduKeyB;
+
     /**
      * 更新时间
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+
     /**
      * 创建时间
      */
-    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 }

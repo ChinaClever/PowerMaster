@@ -74,6 +74,6 @@ public class BoxIndex implements Serializable {
     /**
      * 节点ip
      */
-    private Integer nodeIp;
+    private Integer nodeId;
 
 }
