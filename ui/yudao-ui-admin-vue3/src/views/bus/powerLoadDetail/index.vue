@@ -1310,9 +1310,9 @@ const initData = () => {
         break;
       case '负载率':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => Math.round(item.load_rate));
-        L2Data.value = allLineData.value.L2.map((item) => Math.round(item.load_rate));
-        L3Data.value = allLineData.value.L3.map((item) => Math.round(item.load_rate));
+        L1Data.value = allLineData.value.L1.map((item) => Math.round(item.load_rate*100));
+        L2Data.value = allLineData.value.L2.map((item) => Math.round(item.load_rate*100));
+        L3Data.value = allLineData.value.L3.map((item) => Math.round(item.load_rate*100));
         }
         break;             
     }
@@ -1377,9 +1377,9 @@ const initData = () => {
         break;
       case '负载率':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => Math.round(item.load_rate));
-        L2Data.value = allLineData.value.L2.map((item) => Math.round(item.load_rate));
-        L3Data.value = allLineData.value.L3.map((item) => Math.round(item.load_rate));
+        L1Data.value = allLineData.value.L1.map((item) => Math.round(item.load_rate*100));
+        L2Data.value = allLineData.value.L2.map((item) => Math.round(item.load_rate*100));
+        L3Data.value = allLineData.value.L3.map((item) => Math.round(item.load_rate*100));
         }
         break;    
       }
@@ -1444,9 +1444,9 @@ const initData = () => {
         break;
       case '负载率':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => Math.round(item.load_rate));
-        L2Data.value = allLineData.value.L2.map((item) => Math.round(item.load_rate));
-        L3Data.value = allLineData.value.L3.map((item) => Math.round(item.load_rate));
+        L1Data.value = allLineData.value.L1.map((item) => Math.round(item.load_rate*100));
+        L2Data.value = allLineData.value.L2.map((item) => Math.round(item.load_rate*100));
+        L3Data.value = allLineData.value.L3.map((item) => Math.round(item.load_rate*100));
         }
         break;    
       }
