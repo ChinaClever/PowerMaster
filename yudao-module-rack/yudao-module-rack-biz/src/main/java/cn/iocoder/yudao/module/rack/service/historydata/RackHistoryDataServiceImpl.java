@@ -248,12 +248,11 @@ public class RackHistoryDataServiceImpl implements RackHistoryDataService {
     }
 
     @Override
-    public Map<Integer, IndexDO> getCabinetByIds(List<Integer> cabineIds) {
+    public List<IndexDO> getCabinetByIds(List<Integer> cabineIds) {
         LambdaQueryWrapper<IndexDO> queryWrapper = new LambdaQueryWrapper<IndexDO>().orderByDesc(IndexDO::getCreateTime)
                 .in(IndexDO::getId,cabineIds).eq(IndexDO::getIsDeleted, DelEnums.NO_DEL.getStatus());
         List<IndexDO> indexDOS = cabIndexMapper.selectList(queryWrapper);
-        return indexDOS.stream().filter(item -> ObjectUtils.isNotEmpty(item.getId()))
-                .collect(Collectors.toMap(IndexDO::getId, cabinetIndex -> cabinetIndex));
+        return indexDOS;
     }
 
 }

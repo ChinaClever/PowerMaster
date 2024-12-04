@@ -32,15 +32,12 @@ public class RackDO  {
     /**
      * 机房id
      */
-    private Integer roomId;
+//    private Integer roomId;
     /**
      * U位名称
      */
     private String rackName;
-    /**
-     * 是否删除 0未删除 1已删除
-     */
-    private Integer isDelete;
+
     /**
      * A路PDU输出位
      */
@@ -64,16 +61,22 @@ public class RackDO  {
     /**
      * 设备类型
      */
-    private String type;
+    private String rackType;
+
+    /**
+     * 是否删除 0未删除 1已删除
+     */
+    private Boolean isDelete;
     /**
      * 创建时间
      */
-    @TableField(fill = FieldFill.INSERT)
+//    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
     /**
      * 最后更新时间
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
+//    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+
 
 }

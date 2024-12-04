@@ -50,7 +50,7 @@ public class BoxIndexDO {
     /**
      * 节点IP
      */
-    private Integer nodeIp;
+    private Integer nodeId;
     /**
      * 逻辑删除
      */

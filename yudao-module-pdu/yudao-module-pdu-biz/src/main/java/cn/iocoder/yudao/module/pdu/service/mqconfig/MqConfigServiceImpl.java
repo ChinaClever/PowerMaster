@@ -1,24 +1,18 @@
 package cn.iocoder.yudao.module.pdu.service.mqconfig;
 
+import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.module.pdu.controller.admin.mqconfig.vo.MqConfigPageReqVO;
+import cn.iocoder.yudao.module.pdu.controller.admin.mqconfig.vo.MqConfigSaveReqVO;
+import cn.iocoder.yudao.module.pdu.dal.dataobject.mqconfig.MqConfigDO;
+import cn.iocoder.yudao.module.pdu.dal.mysql.mqconfig.MqConfigMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.*;
-import cn.iocoder.yudao.module.pdu.controller.admin.mqconfig.vo.*;
-import cn.iocoder.yudao.module.pdu.dal.dataobject.mqconfig.MqConfigDO;
-import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
-import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
-
-import cn.iocoder.yudao.module.pdu.dal.mysql.mqconfig.MqConfigMapper;
-
-import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 
 
 /**
@@ -47,7 +41,7 @@ public class MqConfigServiceImpl implements MqConfigService {
             mqConfigMapper.insert(mqConfig);
             // 返回
             return mqConfig.getId();
-        }finally {
+        } finally {
             HttpUtil.get(adder);
         }
 
@@ -61,7 +55,7 @@ public class MqConfigServiceImpl implements MqConfigService {
             // 更新
             MqConfigDO updateObj = BeanUtils.toBean(updateReqVO, MqConfigDO.class);
             mqConfigMapper.updateById(updateObj);
-        }finally {
+        } finally {
             HttpUtil.get(adder);
         }
 
@@ -74,7 +68,7 @@ public class MqConfigServiceImpl implements MqConfigService {
             validateMqConfigExists(id);
             // 删除
             mqConfigMapper.deleteById(id);
-        }finally {
+        } finally {
             HttpUtil.get(adder);
         }
 

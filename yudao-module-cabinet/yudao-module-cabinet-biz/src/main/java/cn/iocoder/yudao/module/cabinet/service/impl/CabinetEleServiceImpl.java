@@ -150,16 +150,16 @@ public class CabinetEleServiceImpl implements CabinetEleService {
             String bKey;
 
             if (Objects.nonNull(cabinetPdu)){
-                String aPdu = cabinetPdu.getPduIpA();
-                String bPdu = cabinetPdu.getPduIpB();
+                String aPdu = cabinetPdu.getPduKeyA();
+                String bPdu = cabinetPdu.getPduKeyB();
                 if (StringUtils.isNotEmpty(aPdu)){
-                    aKey = aPdu + SPLIT + cabinetPdu.getCasIdA();
+                    aKey = aPdu;// + SPLIT + cabinetPdu.getCasIdA();
                     keys.add(aKey);
                 } else {
                     aKey = "";
                 }
                 if (StringUtils.isNotEmpty(bPdu)){
-                    bKey = bPdu  + SPLIT + cabinetPdu.getCasIdB();
+                    bKey = bPdu ;// + SPLIT + cabinetPdu.getCasIdB();
                     keys.add(bKey);
                 } else {
                     bKey = "";
@@ -173,11 +173,11 @@ public class CabinetEleServiceImpl implements CabinetEleService {
             Map<Integer,String> keyMap = new HashMap<>();
             if (!CollectionUtils.isEmpty(keys)){
                 List<PduIndexDo> pduIndexDos = pduIndexMapper.selectList(new LambdaQueryWrapper<PduIndexDo>()
-                        .in(PduIndexDo::getDevKey,keys));
+                        .in(PduIndexDo::getPduKey,keys));
                 if (!CollectionUtils.isEmpty(pduIndexDos)){
                     pduIds.addAll(pduIndexDos.stream().map(PduIndexDo::getId).distinct().collect(Collectors.toList()));
                     pduIndexDos.forEach(pduIndexDo -> {
-                        keyMap.put(pduIndexDo.getId(),pduIndexDo.getDevKey());
+                        keyMap.put(pduIndexDo.getId(),pduIndexDo.getPduKey());
                     });
                 }
             }

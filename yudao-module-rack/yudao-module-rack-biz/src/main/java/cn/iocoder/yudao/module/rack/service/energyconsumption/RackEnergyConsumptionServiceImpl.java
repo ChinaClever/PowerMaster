@@ -15,6 +15,7 @@ import cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO.RackTo
 import cn.iocoder.yudao.module.rack.service.RackIndexService;
 import cn.iocoder.yudao.module.rack.service.historydata.RackHistoryDataService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.apache.commons.lang3.ObjectUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -444,15 +445,18 @@ public class RackEnergyConsumptionServiceImpl implements RackEnergyConsumptionSe
         }else {
             records = rackIndexService.findRackIndexToList(reqDTO.getRackIds());
         }
-        List<Integer> roomIds = records.stream().map(RackIndex::getRoomId).distinct().collect(Collectors.toList());
-        Map<Integer , String> mapRoom = rackHistoryDataService.getRoomById(roomIds);
-        List<Integer> cabineIds = records.stream().map(RackIndex::getCabinetId).distinct().collect(Collectors.toList());
-        Map<Integer , IndexDO> mapCabinet = rackHistoryDataService.getCabinetByIds(cabineIds);
 
+
+        List<Integer> cabineIds = records.stream().map(RackIndex::getCabinetId).distinct().collect(Collectors.toList());
+        List<IndexDO> indexDOS = rackHistoryDataService.getCabinetByIds(cabineIds);
+        List<Integer> roomIds = indexDOS.stream().map(IndexDO::getRoomId).distinct().collect(Collectors.toList());
+        Map<Integer, IndexDO> mapCabinet = indexDOS.stream().filter(item -> ObjectUtils.isNotEmpty(item.getId()))
+                .collect(Collectors.toMap(IndexDO::getId, cabinetIndex -> cabinetIndex));
+        Map<Integer , String> mapRoom = rackHistoryDataService.getRoomById(roomIds);
         for (RackIndex record : records) {
             RackTotalRealtimeRespVO respVO = new RackTotalRealtimeRespVO();
-            String roomName = mapRoom.get(record.getRoomId());
             IndexDO indexDO = mapCabinet.get(record.getCabinetId());
+            String roomName = mapRoom.get(indexDO.getRoomId());
             if(indexDO.getAisleId() != 0){
                 String aisleName = aisleIndexMapper.selectById(indexDO.getAisleId()).getName();
                 respVO.setLocation(roomName + "-" + aisleName + "-" + indexDO.getName());
