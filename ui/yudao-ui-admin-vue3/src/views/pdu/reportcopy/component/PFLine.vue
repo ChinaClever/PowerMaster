@@ -48,6 +48,7 @@ const echartsOption = ref({
       return result;
     } 
   },
+  grid:{left:'3%',right:'3%'},
   xAxis: {type: 'category', boundaryGap: true, data : time},
   yAxis: { type: 'value'},
   toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
