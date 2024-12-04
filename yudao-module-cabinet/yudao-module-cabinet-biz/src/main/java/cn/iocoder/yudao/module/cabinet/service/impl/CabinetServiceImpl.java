@@ -246,15 +246,15 @@ public class CabinetServiceImpl implements CabinetService {
                     if (Objects.nonNull(cabinetBus)){
                         if (StringUtils.isNotEmpty(cabinetBus.getDevKeyA())){
                             BoxIndex  boxIndex = boxIndexMapper.selectOne(new LambdaQueryWrapper<BoxIndex>()
-                                    .eq(BoxIndex::getDevKey,cabinetBus.getDevKeyA()));
+                                    .eq(BoxIndex::getBoxKey,cabinetBus.getDevKeyA()));
 
                             if (Objects.nonNull(boxIndex)){
 
                                 dto.setBusIpA(boxIndex.getIpAddr());
-                                dto.setBusNameA(boxIndex.getBusName());
+//                                dto.setBusNameA(boxIndex.getBusName());
                                 dto.setBoxNameA(boxIndex.getBoxName());
-                                dto.setBarIdA(boxIndex.getBarId());
-                                dto.setAddrA(boxIndex.getCasAddr());
+                                dto.setBarIdA(boxIndex.getBoxId());
+//                                dto.setAddrA(boxIndex.getCasAddr());
                                 dto.setBoxOutletIdA(cabinetBus.getOutletIdA());
                             }else {
                                 String[] keys = cabinetBus.getDevKeyA().split(SPLIT_KEY);
@@ -268,14 +268,14 @@ public class CabinetServiceImpl implements CabinetService {
 
                         if (StringUtils.isNotEmpty(cabinetBus.getDevKeyB())){
                             BoxIndex  boxIndex = boxIndexMapper.selectOne(new LambdaQueryWrapper<BoxIndex>()
-                                    .eq(BoxIndex::getDevKey,cabinetBus.getDevKeyA()));
+                                    .eq(BoxIndex::getBoxKey,cabinetBus.getDevKeyA()));
                             if (Objects.nonNull(boxIndex)){
 
                                 dto.setBusIpB(boxIndex.getIpAddr());
-                                dto.setBusNameB(boxIndex.getBusName());
+//                                dto.setBusNameB(boxIndex.getBusName());
                                 dto.setBoxNameB(boxIndex.getBoxName());
-                                dto.setBarIdB(boxIndex.getBarId());
-                                dto.setAddrB(boxIndex.getCasAddr());
+                                dto.setBarIdB(boxIndex.getBoxId());
+//                                dto.setAddrB(boxIndex.getCasAddr());
                                 dto.setBoxOutletIdB(cabinetBus.getOutletIdB());
                             }else {
                                 String[] keys = cabinetBus.getDevKeyB().split(SPLIT_KEY);

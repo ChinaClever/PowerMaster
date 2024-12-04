@@ -367,4 +367,8 @@ public class BusIndexController {
     public CommonResult<Map> getAvgBusHdaLineForm(@RequestBody BusIndexPageReqVO pageReqVO) throws IOException {
         return success(indexService.getAvgBusHdaLineForm(pageReqVO));
     }
+
+//    @GetMapping("busIndex/statistics")
+//    @Operation(summary = "获得始端箱设备统计")
+
 }

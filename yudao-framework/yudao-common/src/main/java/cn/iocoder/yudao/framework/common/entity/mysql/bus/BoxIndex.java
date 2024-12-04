@@ -25,7 +25,7 @@ public class BoxIndex implements Serializable {
     /**
      * 设备识别码
      */
-    private String devKey;
+    private String boxKey;
 
     /**
      * ip地址
@@ -33,18 +33,22 @@ public class BoxIndex implements Serializable {
     private String ipAddr;
 
     /**
-     * 级联
-     */
-    private Integer casAddr;
-
-    /**
      * 母线编号
      */
-    private Integer barId;
+    private Integer busId;
+
+
+    private Integer  boxId;
+
     /**
-     * 节点ip
+     * 插接箱类型0：插接箱；1：温度模块
      */
-    private String nodeIp;
+    private Integer boxType;
+
+    /**
+     * 插接箱名称
+     */
+    private String boxName;
 
     /**
      * 运行状态
@@ -54,22 +58,7 @@ public class BoxIndex implements Serializable {
     /**
      * 是否删除
      */
-    private int isDeleted;
-
-    /**
-     * 母线名
-     */
-    private String busName;
-
-    /**
-     * 插接箱名称
-     */
-    private String boxName;
-
-    /**
-     * 插接箱类型0：插接箱；1：温度模块
-     */
-    private int boxType;
+    private Boolean isDeleted;
 
     /**
      * 更新时间
@@ -81,5 +70,10 @@ public class BoxIndex implements Serializable {
      */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
+
+    /**
+     * 节点ip
+     */
+    private Integer nodeIp;
 
 }
