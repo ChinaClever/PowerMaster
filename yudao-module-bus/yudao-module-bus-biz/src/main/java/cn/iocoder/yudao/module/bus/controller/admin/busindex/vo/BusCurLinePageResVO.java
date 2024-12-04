@@ -39,6 +39,7 @@ public class BusCurLinePageResVO {
 
     @JsonProperty("create_time")
     @ExcelProperty("时间")
+    @Schema(description = "时间")
     private String createTime;
 
     /**

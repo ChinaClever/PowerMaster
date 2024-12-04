@@ -174,7 +174,7 @@ const shortcuts = [
     value: () => {
       const end = new Date()
       const start = new Date()
-      start.setUTCMonth(start.getUTCMonth() - 3)
+      start.setUTCMonth(start.getMonth() - 3)
       return [start, end]
     },
   },

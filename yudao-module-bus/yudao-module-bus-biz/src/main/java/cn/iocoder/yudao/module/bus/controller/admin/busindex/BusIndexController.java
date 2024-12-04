@@ -108,6 +108,12 @@ public class BusIndexController {
         return success(indexService.getBusLineDevicePage(pageReqVO));
     }
 
+    @PostMapping("/line/max")
+    @Operation(summary = "获得始端箱需量最大")
+    public CommonResult<LineMaxResVO> getBusLineMax(@RequestBody BusIndexPageReqVO pageReqVO) throws IOException {
+        return success(indexService.getBusLineMax(pageReqVO));
+    }
+
     @Operation(summary = "始端箱需量ES数据图表")
     @PostMapping("/line/cur")
     public CommonResult<BusLineResBase> getBusLineCurLine(@RequestBody BusIndexPageReqVO pageReqVO) {
@@ -151,6 +157,14 @@ public class BusIndexController {
         return success(indexService.getBusTemDetail(pageReqVO));
     }
 
+    @Operation(summary = "始端箱温度详情-导出")
+    @PostMapping("/tem/detailExcel")
+    public void getBusTemDetailExcel(@RequestBody BusIndexPageReqVO pageReqVO,HttpServletResponse response) throws IOException {
+        Map busTemDetail = indexService.getBusTemDetail(pageReqVO);
+        List<BusTemTableRes> tableList  = (List<BusTemTableRes>) busTemDetail.get("table");
+        ExcelUtils.write(response, "始端箱温度详情.xlsx", "数据", BusTemTableRes.class,tableList);
+    }
+
     @PostMapping("/buspfpage")
     @Operation(summary = "获得始端箱功率因素分页")
     public CommonResult<PageResult<BusPFRes>> getBusPFPage(@RequestBody BusIndexPageReqVO pageReqVO) {
@@ -162,6 +176,14 @@ public class BusIndexController {
     @PostMapping("/pf/detail")
     public CommonResult<Map> getBusPFDetail(@RequestBody BusIndexPageReqVO pageReqVO) {
         return success(indexService.getBusPFDetail(pageReqVO));
+    }
+
+    @Operation(summary = "始端箱功率因素详情-导出")
+    @PostMapping("/pf/detailExcel")
+    public void getBusPFDetailExcel(@RequestBody BusIndexPageReqVO pageReqVO,HttpServletResponse response) throws IOException {
+        Map busPFDetail = indexService.getBusPFDetail(pageReqVO);
+        List<BusPFTableRes> tableList = (List<BusPFTableRes>) busPFDetail.get("table");
+        ExcelUtils.write(response, "始端箱功率因素详情.xlsx", "数据", BusPFTableRes.class,tableList);
     }
     @PostMapping("/busharmonicpage")
     @Operation(summary = "获得始端箱谐波监测分页")
@@ -340,17 +362,9 @@ public class BusIndexController {
         return success(indexService.getBusRedisByDevKey(pageReqVO.getDevKey()));
     }
 
-//    @GetMapping("/export-excel")
-//    @Operation(summary = "导出始端箱索引 Excel")
-//    @PreAuthorize("@ss.hasPermission('bus:index:export')")
-//    @OperateLog(type = EXPORT)
-//    public void exportIndexExcel(@Valid BusIndexPageReqVO pageReqVO,
-//              HttpServletResponse response) throws IOException {
-//        pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
-//        List<BusIndexDO> list = indexService.getIndexPage(pageReqVO).getList();
-//        // 导出 Excel
-//        ExcelUtils.write(response, "始端箱索引.xls", "数据", BusIndexRespVO.class,
-//                        BeanUtils.toBean(list, BusIndexRespVO.class));
-//    }
-
+    @PostMapping("/avg/busHdaLine/form")
+    @Operation(summary = "获得始端箱报表平均电流电压详细信息")
+    public CommonResult<Map> getAvgBusHdaLineForm(@RequestBody BusIndexPageReqVO pageReqVO) throws IOException {
+        return success(indexService.getAvgBusHdaLineForm(pageReqVO));
+    }
 }

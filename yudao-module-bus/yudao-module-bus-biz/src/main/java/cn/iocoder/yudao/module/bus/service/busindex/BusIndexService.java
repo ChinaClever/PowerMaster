@@ -128,4 +128,7 @@ public interface BusIndexService {
 
     List<BusIndexRes> getIndexPageExcel(BusIndexPageReqVO pageReqVO);
 
+    Map getAvgBusHdaLineForm(BusIndexPageReqVO pageReqVO) throws IOException;
+
+    LineMaxResVO getBusLineMax(BusIndexPageReqVO pageReqVO) throws IOException;
 }

@@ -461,7 +461,7 @@ onMounted(() => {
 }
  
 .nav_data{
-  padding-left: 30px;
+  padding-left: 20px;
   width: 170px;
 }
 .nav_content span{

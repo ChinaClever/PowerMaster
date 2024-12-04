@@ -423,6 +423,9 @@ const loading2=ref(false);
 /** 查询列表 */
 const isHaveData = ref(false);
 const getList = async () => {
+  if (queryParams.devkey == null){
+    ElMessage.error('请先选择设备！');
+  }
   loading.value = true;
   try {
     const data = await HistoryDataApi.getBoxHistoryDataDetails(queryParams);

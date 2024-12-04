@@ -189,7 +189,7 @@
             <div class="page-conTitle" >
               电量分布
             </div>
-            <p v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大用电量{{eqData.maxEle}}kWh， 最大负荷发生时间{{eqData.maxEleTime}}</p>
+            <p v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大用电量{{eqData.maxEle}}kWh， 最大电量发生时间在{{eqData.maxEleTime}}</p>
             <p v-if="visControll.isSameDay">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
             <Bar class="Container" width="70vw" height="58vh" :list="eleList"/>
           </div>
@@ -209,6 +209,18 @@
           </div>
           <div class="pageBox" v-if="visControll.temVis">
             <div class="page-conTitle">
+              电流曲线
+            </div>
+            <CurLine class="adaptiveStyle" :list="curvolList"/>
+          </div>
+          <div class="pageBox" v-if="visControll.temVis">
+            <div class="page-conTitle">
+              电压曲线
+            </div>
+            <VolLine class="adaptiveStyle" :list="curvolList"/>
+          </div>
+          <div class="pageBox" v-if="visControll.temVis">
+            <div class="page-conTitle">
               温度曲线
             </div>
             <p v-show="temData.temAMaxValue">本周期内，A相最高温度{{temData.temAMaxValue}}°C， 最高温度发生时间{{temData.temAMaxTime}}&nbsp;&nbsp;最低温度{{temData.temAMinValue}}°C， 最低温度发生时间{{temData.temAMinTime}}</p>        
@@ -218,6 +230,42 @@
             <EnvTemLine  width="70vw" height="58vh" :list="temList"  />
           </div>
         </div>
+
+        <div class="pageBox"  v-if="temp1 && temp1.length > 0">
+            <div class="page-conTitle">
+              告警信息
+            </div>
+                <el-table
+                  ref="multipleTableRef"
+                  :data="temp1"
+                  highlight-current-row
+                  style="width: 100%"
+                  :stripe="true" 
+                  :border="true"
+                  @current-change="handleCurrentChange"
+                >
+                    <!-- <el-table-column type="selection" width="55" /> -->
+                    <el-table-column type="index" width="80" label="序号" align="center" />
+                    <el-table-column property="devPosition" label="区域" min-width="100" align="center" />
+                    <el-table-column property="devName" label="设备" min-width="100" align="center" />
+                    <el-table-column property="alarmLevelDesc" label="告警等级" min-width="100" align="center" />
+                    <el-table-column property="alarmTypeDesc" label="告警类型" min-width="100" align="center" />
+                    <el-table-column property="alarmDesc" label="描述" min-width="120" align="center">
+                      <template #default="scope">
+                        <el-tooltip  placement="right">
+                          <div class="table-desc">{{scope.row.alarmDesc}}</div>
+                          <template #content>
+                            <div class="tooltip-width">{{scope.row.alarmDesc}}</div>
+                          </template>
+                        </el-tooltip>
+                      </template>
+                    </el-table-column>
+                    <el-table-column property="startTime" label="开始时间" min-width="100" align="center" />
+                    <el-table-column property="endTime" label="结束时间" min-width="100" align="center" />
+                    <el-table-column property="finishReason" label="结束原因" min-width="100" align="center" />
+                    <el-table-column property="confirmReason" label="确认原因" min-width="100" align="center" />
+                </el-table>
+          </div>
 
       </div>
     </template>
@@ -235,17 +283,21 @@ import { IndexApi } from '@/api/bus/busindex'
 import type Node from 'element-plus/es/components/tree/src/model/node'
 import Line from './component/Line.vue'
 import PFLine from './component/PFLine.vue'
+import CurLine from './component/CurLine.vue'
+import VolLine from './component/VolLine.vue'
 import Bar from './component/Bar.vue'
 import EnvTemLine from './component/EnvTemLine.vue'
-import { PDUDeviceApi } from '@/api/pdu/pdudevice'
+import { AlarmApi } from '@/api/system/notify/alarm'
+//import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
-
-const temList = ref() as any;
-const eleList = ref() as any;
-const totalLineList = ref() as any;
-const pfLineList = ref() as any;
+const temp1 = ref([]) as any
+const curvolList = ref() as any
+const temList = ref() as any
+const eleList = ref() as any
+const totalLineList = ref() as any
+const pfLineList = ref() as any
 const now = ref()
 const switchValue = ref(1);
 const visControll = reactive({
@@ -320,7 +372,32 @@ const truncateArrays = (data: ServerData): ServerData => {
   };
 };
 
-const initChart =  () => {
+//const lineidBeforeChartUnmount = () => {
+//  // 清空 curvolAData 中的数组
+//  curvolAData.value = {
+//    volValueList: [],
+//    curValueList: []
+//  };
+//  
+//  // 清空 curvolBData 中的数组
+//  curvolBData.value = {
+//    volValueList: [],
+//    curValueList: []
+//  };
+//  
+//  // 清空 curvolCData 中的数组
+//  curvolCData.value = {
+//    volValueList: [],
+//    curValueList: []
+//  };
+//  
+//  // 清空 lineidDateTimes 数组
+//  lineidDateTimes.value = [];
+//  lineidChart?.dispose() // 销毁图表实例
+//  lineidChartOne?.dispose()
+//}
+
+const initChart = async () => {
   if (serChartContainer.value && instance && serverData.value.nameAndMax && serverData.value.nameAndMax.length > 0) {
     
     serChart = echarts.init(serChartContainer.value);
@@ -536,6 +613,7 @@ const PDUTableData = ref([]) as any
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 10,
+  a: 0,
   devKey : undefined,
   id: undefined,
   type: 'total',
@@ -712,6 +790,8 @@ const getList = async () => {
   }else{
     visControll.powVis = false;
   }
+
+  curvolList.value = await IndexApi.getAvgBusHdaLineForm(queryParams);
   
   temData.value = await IndexApi.getTemData(queryParams);
   temList.value = temData.value.lineRes;
@@ -733,17 +813,15 @@ const getList = async () => {
     visControll.temVis = false;
   }
 
-  var PDU = await PDUDeviceApi.PDUDisplay(queryParams);
+  var PDU = await IndexApi.getBusRedisByDevKey(queryParams);
   PDU = JSON.parse(PDU)
   var temp = [] as any;
   var resultArray=[] as any;
-  var baseInfo = await PDUDeviceApi.getPDUDevicePage(queryParams);
-  console.log("baseInfo",baseInfo)
-  console.log("PDU",PDU)
+  //var baseInfo = await PDUDeviceApi.getPDUDevicePage(queryParams);
   // 假设 PDU.pdu_data.output_item_list.pow_value 是一个 double 数组
-  var powApparentValueArray = PDU?.pdu_data?.output_item_list?.pow_apparent;
-  var powValueArray = PDU?.pdu_data?.output_item_list?.pow_value;
-  var curValueArray = PDU?.pdu_data?.output_item_list?.cur_value;
+  var powApparentValueArray = PDU?.bus_data?.line_item_list?.pow_apparent;
+  var powValueArray = PDU?.bus_data?.line_item_list?.pow_value;
+  var curValueArray = PDU?.bus_data?.line_item_list?.cur_value;
   
   // console.log(powValueArray)
   // 将值与下标保存到对象数组中
@@ -760,6 +838,7 @@ const getList = async () => {
     resultArray.sort((a, b) => b.curValue - a.curValue);
     // 只保留前十个元素
     resultArray = resultArray.slice(0, 12);
+
     for(var i=0;i<resultArray.length;i++){
       serverData.value.nameAndMax.push({
         name: resultArray[i].name,
@@ -811,13 +890,30 @@ const getList = async () => {
   PDUTableData.value = temp;
   
   visControll.visAllReport = true;
-  // initChart();
+  //initChart();
   loading.value = false
+  //清除temp1的缓存数据
+  temp1.value=[]
+  //获得告警信息
+  getTableData()
+  //处理告警信息数据
+  // //debugger
+  //处理时间信息
+  const oldDate = new Date(queryParams.oldTime);
+  const newDate = new Date(queryParams.newTime);
 
+  Object.values(tableData.value).forEach((item: any)=>item.devKey== temp[1].baseInfoValue&&newDate>=new Date(item.startTime)&&new Date(item.startTime)>=oldDate?temp1.value.push(item):console.log("no"))
+  console.log('表格的数据',temp1.value)
 }
 
 watch(filterText, (val) => {
   treeRef.value!.filter(val)
+  serverData.value ={
+    nameAndMax : [],
+    curvalue: [],
+    powvalue: [],
+    powapparent: []
+  }
 })
 
 // 下拉框选项数组
@@ -854,11 +950,46 @@ const handleQuery = async () => {
   
 }
 
+const tableLoading = ref(false)
+const preStatus = ref([0])
+const tableData = ref([])
+const targetId = ref('')
+
+// 获取告警信息数据
+const getTableData = async(reset = false) => {
+  tableLoading.value = true
+  try {
+    // //debugger
+    const res = await AlarmApi.getAlarmRecord({
+      pageNo: 1,
+      pageSize: 10,
+      a: 1,
+      status: preStatus.value,
+      likeName: queryParams.search
+    })
+    console.log('res', res)
+    if (res.list) {    
+      tableData.value = res.list
+      queryParams.pageTotal = res.total   
+    }
+  } finally {
+    tableLoading.value = false
+    //queryParams.a.value=0
+  }
+}
+getTableData()
+
 /** 重置按钮操作 */
 // const resetQuery = () => {
 //   queryFormRef.value.resetFields()
 //   handleQuery()
 // }
+
+// 表格行选择处理
+const handleCurrentChange = (val) => {
+  if (!val) return
+  targetId.value = val.id
+}
 
 /** 添加/修改操作 */
 const formRef = ref()
@@ -898,8 +1029,8 @@ const formRef = ref()
 
 /** 初始化 **/
 onMounted( async () =>  {
-  // getList();
-  // initChart();
+  //getList();
+  initChart();
   devKeyList.value = await loadAll();
 })
 </script>
@@ -1162,12 +1293,35 @@ onMounted( async () =>  {
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
+
 :deep(.el-form) {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+
+@media screen and (min-width:2048px) {
+  .adaptiveStyle {
+    width: 75vw;
+    height: 42vh;
+  }
+}
+
+@media screen and  (max-width:2048px) and (min-width:1600px) {
+  .adaptiveStyle {
+    width: 70vw;
+    height: 42vh;
+  }
+}
+
+@media screen and (max-width:1600px) {
+  .adaptiveStyle {
+    width: 85vw;
+    height: 42vh;
+  }
 }
 </style>

@@ -664,31 +664,12 @@ const getListNoLoading = async () => {
 
 const getListAll = async () => {
   try {
-    var normal = 0;
-    var offline = 0;
-    var alarm = 0;
-    var warn = 0;
-    const allData = await PDUDeviceApi.getPDUDevicePage(queryParamsAll);
-    allList.value = allData.list
-    allList.value.forEach((objAll) => {
-      if(objAll?.dataUpdateTime == null && objAll?.pow == null){
-        objAll.status = 5;
-        offline++;
-        return;
-      }  
-      if(objAll?.status == 0){
-        normal++;
-      } else if (objAll?.status == 1){
-        warn++;
-      } else if (objAll?.status == 2){
-        alarm++;
-      }          
-    });
+    const allData = await PDUDeviceApi.getPDUDeviceCount();
     //设置左边数量
-    statusNumber.normal = normal;
-    statusNumber.offline = offline;
-    statusNumber.alarm = alarm;
-    statusNumber.warn = warn;
+    statusNumber.normal = allData.normal;
+    statusNumber.offline = allData.offline;
+    statusNumber.alarm = allData.alarm;
+    statusNumber.warn = allData.warn;
   } catch (error) {
     
   }
@@ -804,8 +785,8 @@ onMounted(async () => {
   getList()
   getNavList();
   getListAll();
-  flashListTimer.value = setInterval((getListNoLoading), 5000);
-  flashListTimer.value = setInterval((getListAll), 5000);
+  flashListTimer.value = setInterval((getListNoLoading), 10000);
+  // flashListTimer.value = setInterval((getListAll), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -827,8 +808,8 @@ onActivated(() => {
   getList();
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getListNoLoading), 5000);
-    flashListTimer.value = setInterval((getListAll), 5000);
+    flashListTimer.value = setInterval((getListNoLoading), 10000);
+    // flashListTimer.value = setInterval((getListAll), 5000);
   }
 })
 </script>

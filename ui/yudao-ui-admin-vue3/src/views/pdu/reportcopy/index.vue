@@ -220,13 +220,13 @@
             <p v-if="visControll.isSameDay">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
             <Bar class="Container" width="70vw" height="58vh" :list="eleList"/>
           </div>
-          <div class="pageBox">
+          <div class="pageBox" v-if="visControll.pfVis">
             <div class="page-conTitle">
               相电流历史曲线趋势图
             </div>
             <div ref="lineidChartContainer" id="lineidChartContainer" class="adaptiveStyle"></div>
           </div>
-          <div class="pageBox">
+          <div class="pageBox" v-if="visControll.pfVis">
             <div class="page-conTitle">
               相电压历史曲线趋势图
             </div>
