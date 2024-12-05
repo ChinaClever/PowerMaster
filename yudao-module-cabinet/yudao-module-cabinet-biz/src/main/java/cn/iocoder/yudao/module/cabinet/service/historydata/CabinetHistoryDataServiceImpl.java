@@ -65,9 +65,9 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
                         String roomName = roomIndexMapper.selectById(indexDO.getRoomId()).getName();
                         if(indexDO.getAisleId() != 0){
                             String aisleName = aisleIndexMapper.selectById(indexDO.getAisleId()).getName();
-                            localtion = roomName + "-" + aisleName + "-" + indexDO.getName();
+                            localtion = roomName + "-" + aisleName + "-" + indexDO.getCabinetName();
                         }else {
-                            localtion = roomName + "-"  + indexDO.getName() ;
+                            localtion = roomName + "-"  + indexDO.getCabinetName() ;
                         }
                         map.put("location", localtion);
                     }else{

@@ -11,16 +11,14 @@ import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.*;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
-import cn.iocoder.yudao.framework.common.enums.DelEnums;
-import cn.iocoder.yudao.framework.common.enums.DisableEnums;
-import cn.iocoder.yudao.framework.common.enums.PduBoxEnums;
+import cn.iocoder.yudao.framework.common.enums.*;
 import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
-import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
+import cn.iocoder.yudao.framework.common.vo.CabineIndexCfgVO;
 import cn.iocoder.yudao.module.cabinet.enums.CabinetLoadEnums;
 import cn.iocoder.yudao.module.cabinet.mapper.RackIndexMapper;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
@@ -150,14 +148,16 @@ public class CabinetServiceImpl implements CabinetService {
 
         try {
             //获取数据库保存数据
-            CabinetIndex index = cabinetIndexMapper.selectById(id);
+            //CabinetIndex index = cabinetIndexMapper.selectById(id);
+
+            CabineIndexCfgVO index = cabinetIndexMapper.selectCabineIndexCfgById(id);
             if (Objects.nonNull(index)) {
 
                 dto.setId(id);
-                dto.setCabinetName(index.getName());
+                dto.setCabinetName(index.getCabinetName());
                 dto.setAisleId(index.getAisleId());
                 dto.setRoomId(index.getRoomId());
-                dto.setPowCapacity(index.getPowCapacity());
+                dto.setPowCapacity(index.getPowerCapacity());
                 dto.setRunStatus(index.getRunStatus());
                 dto.setPduBox(index.getPduBox());
                 dto.setEleAlarmDay(index.getEleAlarmDay());
@@ -182,7 +182,7 @@ public class CabinetServiceImpl implements CabinetService {
                 //配置的数据来源信息
                 ValueOperations ops = redisTemplate.opsForValue();
 
-                if (index.getPduBox() == PduBoxEnums.PDU.getValue()){
+                if (Objects.equals(index.getPduBox(), PduBoxFlagEnums.PDU.getValue())){
                     //来源pdu
                     CabinetPdu pdu = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>()
                             .eq(CabinetPdu::getCabinetId, index.getId()));
@@ -239,7 +239,7 @@ public class CabinetServiceImpl implements CabinetService {
 
                         }
                     }
-                }else if (index.getPduBox() == PduBoxEnums.BUS.getValue()){
+                }else if (Objects.equals(index.getPduBox(), PduBoxFlagEnums.PDU.getValue())){
                     //配置的母线数据
                     CabinetBus cabinetBus = cabinetBusMapper.selectOne(new LambdaQueryWrapper<CabinetBus>()
                             .eq(CabinetBus::getCabinetId, index.getId()));
@@ -344,7 +344,7 @@ public class CabinetServiceImpl implements CabinetService {
         try {
 
             //判断pdu是否已经关联其他机柜
-            if (vo.getPduBox() == PduBoxEnums.PDU.getValue()){
+            if (Objects.equals(vo.getPduBox(),PduBoxFlagEnums.PDU.getValue())){
                 List<CabinetIndex> indexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
                         .eq(CabinetIndex::getIsDeleted, DelEnums.NO_DEL.getStatus())
                         .eq(CabinetIndex::getIsDisabled, DisableEnums.ENABLE.getStatus())
@@ -400,10 +400,11 @@ public class CabinetServiceImpl implements CabinetService {
                 //新增
                 //判断机柜名称是否重复（已删除的或者已禁用的恢复）
                 index = cabinetIndexMapper.selectOne(new LambdaQueryWrapper<CabinetIndex>()
-                        .eq(CabinetIndex::getName, vo.getCabinetName())
+                        .eq(CabinetIndex::getCabinetName, vo.getCabinetName())
                         .eq(CabinetIndex::getRoomId, vo.getRoomId()));
                 if (Objects.nonNull(index)) {
-                    if (index.getIsDeleted() == DelEnums.DELETE.getStatus() || index.getIsDisabled() == DisableEnums.DISABLE.getStatus()) {
+                    if (Objects.equals(index.getIsDeleted(), DelFlagEnums.DELETE.getFlag()) ||
+                            Objects.equals(index.getIsDisabled(),DisableFlagEnums.DISABLE.getStatus())) {
                         //index 索引表
                         //修改
                         cabinetIndexMapper.updateById(convertIndex(vo, index));
@@ -437,7 +438,7 @@ public class CabinetServiceImpl implements CabinetService {
                 cabinetCfgMapper.insert(convertCfg(vo, cfg));
             }
 
-            if (vo.getPduBox() == PduBoxEnums.PDU.getValue()){
+            if (Objects.equals(vo.getPduBox(),PduBoxFlagEnums.PDU.getValue())){
 
                 if (StringUtils.isEmpty(vo.getPduIpA()) && StringUtils.isEmpty(vo.getPduIpB())){
 
@@ -462,7 +463,7 @@ public class CabinetServiceImpl implements CabinetService {
                         cabinetPduMapper.insert(convertPdu(vo, pdu));
                     }
                 }
-            }else if (vo.getPduBox() == PduBoxEnums.BUS.getValue()){
+            }else if (Objects.equals(vo.getPduBox(),PduBoxFlagEnums.BUS.getValue())){
 
                 if (Objects.isNull(vo.getAddrA()) && Objects.isNull(vo.getAddrB())){
                     //删除
@@ -518,7 +519,7 @@ public class CabinetServiceImpl implements CabinetService {
             if (!CollectionUtils.isEmpty(rackIndexList)){
                 throw new RuntimeException("存在未删除机架，不可删除");
             }
-            if (index.getIsDeleted() == DelEnums.DELETE.getStatus()) {
+            if (Objects.equals(index.getIsDeleted(), DelFlagEnums.DELETE.getFlag())) {
                 //已经删除则物理删除
                 cabinetIndexMapper.deleteById(id);
                 //删除pdu关联关系
@@ -809,19 +810,19 @@ public class CabinetServiceImpl implements CabinetService {
     private CabinetIndex convertIndex(CabinetVo vo, CabinetIndex index) {
         CabinetIndex cabinetIndex = new CabinetIndex();
         cabinetIndex.setAisleId(vo.getAisleId());
-        cabinetIndex.setName(vo.getCabinetName());
+        cabinetIndex.setCabinetName(vo.getCabinetName());
         cabinetIndex.setPduBox(vo.getPduBox());
         //未删除
-        cabinetIndex.setIsDeleted(DelEnums.NO_DEL.getStatus());
+        cabinetIndex.setIsDeleted(DelFlagEnums.NO_DEL.getFlag());
         //未禁用
-        cabinetIndex.setIsDisabled(DisableEnums.ENABLE.getStatus());
-        cabinetIndex.setPowCapacity(vo.getPowCapacity());
+        cabinetIndex.setIsDisabled(DisableFlagEnums.ENABLE.getStatus());
+        cabinetIndex.setPowerCapacity(vo.getPowCapacity());
         cabinetIndex.setRoomId(vo.getRoomId());
         cabinetIndex.setId(index.getId());
-        cabinetIndex.setEleAlarmDay(vo.getEleAlarmDay());
-        cabinetIndex.setEleAlarmMonth(vo.getEleAlarmMonth());
-        cabinetIndex.setEleLimitDay(vo.getEleLimitDay());
-        cabinetIndex.setEleLimitMonth(vo.getEleLimitMonth());
+//        cabinetIndex.setEleAlarmDay(vo.getEleAlarmDay());
+//        cabinetIndex.setEleAlarmMonth(vo.getEleAlarmMonth());
+//        cabinetIndex.setEleLimitDay(vo.getEleLimitDay());
+//        cabinetIndex.setEleLimitMonth(vo.getEleLimitMonth());
         return cabinetIndex;
     }
 

@@ -131,7 +131,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                     roomMenuDTO.setChildren(new ArrayList<>());
                     roomMenuDTO.setId(cabinetIndex.getId());
                     roomMenuDTO.setType(MenuTypeEnums.CABINET.getType());
-                    roomMenuDTO.setName(cabinetIndex.getName());
+                    roomMenuDTO.setName(cabinetIndex.getCabinetName());
                     roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.CABINET.getType()) + SPLIT + cabinetIndex.getId());
                     //父id设置通道/机房
                     roomMenuDTO.setParentId(cabinetIndex.getAisleId() == 0 ? cabinetIndex.getRoomId() : cabinetIndex.getAisleId());
@@ -222,7 +222,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                     roomMenuDTO.setChildren(new ArrayList<>());
                     roomMenuDTO.setId(cabinetIndex.getId());
                     roomMenuDTO.setType(MenuTypeEnums.CABINET.getType());
-                    roomMenuDTO.setName(cabinetIndex.getName());
+                    roomMenuDTO.setName(cabinetIndex.getCabinetName());
                     roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.CABINET.getType()) + SPLIT + cabinetIndex.getId());
                     //父id设置通道/机房
                     roomMenuDTO.setParentId(cabinetIndex.getAisleId() == 0 ? cabinetIndex.getRoomId() : cabinetIndex.getAisleId());
@@ -305,7 +305,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                     roomMenuDTO.setChildren(new ArrayList<>());
                     roomMenuDTO.setId(cabinetIndex.getId());
                     roomMenuDTO.setType(MenuTypeEnums.CABINET.getType());
-                    roomMenuDTO.setName(cabinetIndex.getName());
+                    roomMenuDTO.setName(cabinetIndex.getCabinetName());
                     roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.CABINET.getType()) + SPLIT + cabinetIndex.getId());
                     //父id设置通道/机房
                     roomMenuDTO.setParentId(cabinetIndex.getAisleId() == 0 ? cabinetIndex.getRoomId() : cabinetIndex.getAisleId());
@@ -419,7 +419,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                     roomMenuDTO.setChildren(new ArrayList<>());
                     roomMenuDTO.setId(cabinetIndex.getId());
                     roomMenuDTO.setType(MenuTypeEnums.CABINET.getType());
-                    roomMenuDTO.setName(cabinetIndex.getName());
+                    roomMenuDTO.setName(cabinetIndex.getCabinetName());
                     roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.CABINET.getType()) + SPLIT + cabinetIndex.getId());
                     //父id设置通道/机房
                     roomMenuDTO.setParentId(cabinetIndex.getAisleId() == 0 ? cabinetIndex.getRoomId() : cabinetIndex.getAisleId());

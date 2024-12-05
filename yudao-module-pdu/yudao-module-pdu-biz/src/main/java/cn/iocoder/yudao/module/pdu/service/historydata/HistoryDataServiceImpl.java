@@ -181,7 +181,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             int cabinetId = cabinetPduA.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
             if (Objects.nonNull(cabinet)) {
-                String cabinetName = cabinet.getName();
+                String cabinetName = cabinet.getCabinetName();
                 RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
                 String roomName = roomIndex.getName();
 
@@ -204,7 +204,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             int cabinetId = cabinetPduB.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
             if (Objects.nonNull(cabinet)) {
-                String cabinetName = cabinet.getName();
+                String cabinetName = cabinet.getCabinetName();
                 RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
                 String roomName = roomIndex.getName();
 
@@ -233,7 +233,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         if (cabinetPduA != null) {
             int cabinetId = cabinetPduA.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
-            String cabinetName = cabinet.getName();
+            String cabinetName = cabinet.getCabinetName();
             RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
             String roomName = roomIndex.getName();
             if (cabinet.getAisleId() != 0) {
@@ -260,7 +260,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         if (cabinetPduB != null) {
             int cabinetId = cabinetPduB.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
-            String cabinetName = cabinet.getName();
+            String cabinetName = cabinet.getCabinetName();
             RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
             String roomName = roomIndex.getName();
             if (cabinet.getAisleId() != 0) {

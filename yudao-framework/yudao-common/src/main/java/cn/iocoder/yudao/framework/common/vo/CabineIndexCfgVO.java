@@ -1,23 +1,14 @@
-package cn.iocoder.yudao.framework.common.entity.mysql.cabinet;
+package cn.iocoder.yudao.framework.common.vo;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
-import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * @author luowei
- * @version 1.0
- * @description: 机柜索引表
- * @date 2024/4/23 10:40
- */
 @Data
-@TableName(value = "cabinet_index")
-public class CabinetIndex implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
+public class CabineIndexCfgVO {
     /**
      * 主键id
      */
@@ -89,6 +80,40 @@ public class CabinetIndex implements Serializable {
 //    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
-    @TableField(value = "count(*)",insertStrategy = FieldStrategy.NEVER,updateStrategy = FieldStrategy.NEVER,select = false)
-    private  Integer count;
+    /**
+     * 日用电告警开关 0禁用 1启用
+     */
+    private Boolean eleAlarmDay;
+
+    /**
+     * 日用能限制
+     */
+    private BigDecimal eleLimitDay;
+
+    /**
+     * 月用电告警开关 0禁用 1启用
+     */
+    private Boolean eleAlarmMonth;
+
+    /**
+     * 月用能限制
+     */
+    private BigDecimal eleLimitMonth;
+
+    /**
+     * x坐标
+     */
+    @JsonProperty(value = "x_coordinate")
+    private int xCoordinate;
+
+    /**
+     * y坐标
+     */
+    @JsonProperty(value = "y_coordinate")
+    private int yCoordinate;
+
+    /**
+     * 所属于公司
+     */
+    private String company;
 }

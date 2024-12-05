@@ -1087,7 +1087,7 @@ public class AisleServiceImpl implements AisleService {
             cabinetIndexList.forEach(cabinetIndex ->{
                 CabinetMainDataDTO cabDto = new CabinetMainDataDTO();
                 cabDto.setId(cabinetIndex.getId());
-                cabDto.setCabinetName(cabinetIndex.getName());
+                cabDto.setCabinetName(cabinetIndex.getCabinetName());
 
                 String cabKey =  REDIS_KEY_CABINET + cabinetIndex.getRoomId() + SPLIT_KEY + cabinetIndex.getId();
                 Object cabObject = ops.get(cabKey);

@@ -33,13 +33,13 @@ public class CabinetCfg implements Serializable {
     /**
      * x坐标
      */
-    @JsonProperty(value = "xCoordinate")
+    @JsonProperty(value = "x_coordinate")
     private int xCoordinate;
 
     /**
      * y坐标
      */
-    @JsonProperty(value = "yCoordinate")
+    @JsonProperty(value = "y_coordinate")
     private int yCoordinate;
 
     /**
