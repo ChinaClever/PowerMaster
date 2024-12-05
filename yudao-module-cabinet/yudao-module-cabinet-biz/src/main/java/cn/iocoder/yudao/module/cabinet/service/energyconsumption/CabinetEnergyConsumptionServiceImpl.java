@@ -435,9 +435,9 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
             String aisleName = mapAisle.get(record.getAisleId()).getName();
             String localtion = null;
             if(record.getAisleId() != 0){
-                localtion = roomName + "-" + aisleName + "-" + record.getName();
+                localtion = roomName + "-" + aisleName + "-" + record.getCabinetName();
             }else {
-                localtion = roomName + "-"  + record.getName() ;
+                localtion = roomName + "-"  + record.getCabinetName() ;
             }
             resVO.setId(record.getId()).setLocation(localtion);
             BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();

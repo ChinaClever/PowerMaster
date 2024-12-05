@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.framework.common.mapper;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
+import cn.iocoder.yudao.framework.common.vo.CabineIndexCfgVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
@@ -21,4 +22,6 @@ public interface CabinetIndexMapper extends BaseMapper<CabinetIndex> {
     @SelectKey(statement="SELECT LAST_INSERT_ID()",keyProperty="id",before=false,resultType=Integer.class)
     public void addIndex(CabinetIndex index);
 
+
+    CabineIndexCfgVO selectCabineIndexCfgById(int id);
 }

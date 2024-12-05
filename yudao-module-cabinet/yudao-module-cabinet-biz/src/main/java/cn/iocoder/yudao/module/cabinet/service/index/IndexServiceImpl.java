@@ -459,9 +459,9 @@ public class IndexServiceImpl implements IndexService {
             result.add(res);
             String localtion = null;
             if(indexDO.getAisleId() != 0){
-                localtion = roomMap.get(indexDO.getRoomId()) + "-" + aisleMap.get(indexDO.getAisleId()) + "-" + indexDO.getName();
+                localtion = roomMap.get(indexDO.getRoomId()) + "-" + aisleMap.get(indexDO.getAisleId()) + "-" + indexDO.getCabinetName();
             }else {
-                localtion = roomMap.get(indexDO.getRoomId()) + "-"  + indexDO.getName() ;
+                localtion = roomMap.get(indexDO.getRoomId()) + "-"  + indexDO.getCabinetName() ;
             }
             res.setLocation(localtion);
             res.setId(indexDO.getId());

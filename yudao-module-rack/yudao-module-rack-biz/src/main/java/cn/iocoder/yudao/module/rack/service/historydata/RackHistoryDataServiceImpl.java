@@ -66,9 +66,9 @@ public class RackHistoryDataServiceImpl implements RackHistoryDataService {
                         String roomName = roomIndexMapper.selectById(indexDO.getRoomId()).getName();
                         if(indexDO.getAisleId() != 0){
                             String aisleName = aisleIndexMapper.selectById(indexDO.getAisleId()).getName();
-                            location = roomName + "-" + aisleName + "-" + indexDO.getName();
+                            location = roomName + "-" + aisleName + "-" + indexDO.getCabinetName();
                         }else {
-                            location = roomName + "-"  + indexDO.getName() ;
+                            location = roomName + "-"  + indexDO.getCabinetName() ;
                         }
                         Object rackId = map.get("rack_id");
                         String rackName = rackIndexMapper.selectById((Serializable) rackId).getRackName();

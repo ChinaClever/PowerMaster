@@ -39,7 +39,7 @@ public class AisleSaveVo {
      * 数据来源 0：PDU 1：母线
      */
     @Schema(description = "数据来源 0：PDU 1：母线", example = "0")
-    private Integer pduBar;
+    private Boolean pduBar;
 
 
 

@@ -49,13 +49,13 @@ public class CabinetVo {
      * 电力容量
      */
     @Schema(description = "电力容量", example = "5")
-    private float powCapacity;
+    private Double powCapacity;
 
     /**
      * 数据来源
      */
     @Schema(description = "数据来源 0：PDU 1：母线", example = "0")
-    private int pduBox;
+    private Boolean pduBox;
     /**
      * 是否禁用
      */

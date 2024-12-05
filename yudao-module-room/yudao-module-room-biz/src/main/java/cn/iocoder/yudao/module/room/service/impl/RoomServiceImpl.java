@@ -469,7 +469,7 @@ public class RoomServiceImpl implements RoomService {
             if (Objects.isNull(index)) {
                 return -1;
             }
-            if (index.getIsDeleted() == DelEnums.DELETE.getStatus()) {
+            if (Objects.equals(index.getIsDeleted(),DelFlagEnums.DELETE.getFlag())) {
                 //已经删除则物理删除
                 cabinetIndexMapper.deleteById(id);
                 //删除pdu关联关系
@@ -575,7 +575,7 @@ public class RoomServiceImpl implements RoomService {
 
             //获取pdu数量
             List<Integer> ids = cabinetIndexList.stream()
-                    .filter(t->t.getPduBox() == PduBoxEnums.PDU.getValue())
+                    .filter(t->Objects.equals(t.getPduBox(),PduBoxFlagEnums.PDU.getValue()))
                     .map(CabinetIndex::getId).collect(Collectors.toList());
 
             List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>()
@@ -888,7 +888,7 @@ public class RoomServiceImpl implements RoomService {
         if (!CollectionUtils.isEmpty(cabinetIndexList)){
             //获取pdu数量
             List<Integer> ids = cabinetIndexList.stream()
-                    .filter(t->t.getPduBox() == PduBoxEnums.PDU.getValue())
+                    .filter(t->Objects.equals(t.getPduBox(),PduBoxFlagEnums.PDU.getValue()))
                     .map(CabinetIndex::getId).collect(Collectors.toList());
 
             List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>()
@@ -1027,7 +1027,7 @@ public class RoomServiceImpl implements RoomService {
             List<String> pduKeys = new ArrayList<>();
             //获取pdu数量
             List<Integer> ids = cabinetIndexList.stream()
-                    .filter(t->t.getPduBox() == PduBoxEnums.PDU.getValue())
+                    .filter(t->Objects.equals(t.getPduBox(),PduBoxFlagEnums.PDU.getValue()))
                     .map(CabinetIndex::getId).collect(Collectors.toList());
 
             List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>()
@@ -1372,10 +1372,11 @@ public class RoomServiceImpl implements RoomService {
             //新增
             //判断机柜名称是否重复（已删除的或者已禁用的恢复）
             index = cabinetIndexMapper.selectOne(new LambdaQueryWrapper<CabinetIndex>()
-                    .eq(CabinetIndex::getName, vo.getCabinetName())
+                    .eq(CabinetIndex::getCabinetName, vo.getCabinetName())
                     .eq(CabinetIndex::getRoomId, vo.getRoomId()));
             if (Objects.nonNull(index)) {
-                if (index.getIsDeleted() == DelEnums.DELETE.getStatus() || index.getIsDisabled() == DisableEnums.DISABLE.getStatus()) {
+                if (Objects.equals(index.getIsDeleted(),DelFlagEnums.DELETE.getFlag()) ||
+                        Objects.equals(index.getIsDisabled(),DisableFlagEnums.DISABLE.getStatus())) {
                     //index 索引表
                     //修改
                     cabinetIndexMapper.updateById(convertIndex(vo, index));
@@ -1416,19 +1417,19 @@ public class RoomServiceImpl implements RoomService {
     private CabinetIndex convertIndex(CabinetVo vo, CabinetIndex index) {
         CabinetIndex cabinetIndex = new CabinetIndex();
         cabinetIndex.setAisleId(vo.getAisleId());
-        cabinetIndex.setName(vo.getCabinetName());
+        cabinetIndex.setCabinetName(vo.getCabinetName());
         cabinetIndex.setPduBox(vo.getPduBox());
         //未删除
-        cabinetIndex.setIsDeleted(DelEnums.NO_DEL.getStatus());
+        cabinetIndex.setIsDeleted(DelFlagEnums.NO_DEL.getFlag());
         //未禁用
-        cabinetIndex.setIsDisabled(DisableEnums.ENABLE.getStatus());
-        cabinetIndex.setPowCapacity(vo.getPowCapacity());
+        cabinetIndex.setIsDisabled(DisableFlagEnums.ENABLE.getStatus());
+        cabinetIndex.setPowerCapacity(vo.getPowCapacity());
         cabinetIndex.setRoomId(vo.getRoomId());
         cabinetIndex.setId(index.getId());
-        cabinetIndex.setEleAlarmDay(vo.getEleAlarmDay());
-        cabinetIndex.setEleAlarmMonth(vo.getEleAlarmMonth());
-        cabinetIndex.setEleLimitDay(vo.getEleLimitDay());
-        cabinetIndex.setEleLimitMonth(vo.getEleLimitMonth());
+//        cabinetIndex.setEleAlarmDay(vo.getEleAlarmDay());
+//        cabinetIndex.setEleAlarmMonth(vo.getEleAlarmMonth());
+//        cabinetIndex.setEleLimitDay(vo.getEleLimitDay());
+//        cabinetIndex.setEleLimitMonth(vo.getEleLimitMonth());
         return cabinetIndex;
     }
 
