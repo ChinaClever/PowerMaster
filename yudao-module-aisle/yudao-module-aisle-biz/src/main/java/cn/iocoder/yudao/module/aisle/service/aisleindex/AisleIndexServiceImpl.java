@@ -164,7 +164,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         for (AisleIndexDO aisleIndexDO : list) {
             AisleIndexRes aisleIndexRes = new AisleIndexRes();
             aisleIndexRes.setId(aisleIndexDO.getId());
-            aisleIndexRes.setName(aisleIndexDO.getName());
+            aisleIndexRes.setName(aisleIndexDO.getAisleName());
             aisleIndexRes.setRoomId(aisleIndexDO.getRoomId());
             res.add(aisleIndexRes);
         }
@@ -247,7 +247,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         for (AisleIndexDO aisleIndexDO : list) {
             AislePowerRes aislePowerRes = new AislePowerRes();
             aislePowerRes.setId(aisleIndexDO.getId());
-            aislePowerRes.setName(aisleIndexDO.getName());
+            aislePowerRes.setName(aisleIndexDO.getAisleName());
             aislePowerRes.setRoomId(aisleIndexDO.getRoomId());
             res.add(aislePowerRes);
         }
@@ -303,7 +303,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             aisleIndexDOList.forEach(aisleIndexDO -> {
                 AisleEQRes res = new AisleEQRes();
                 res.setId(aisleIndexDO.getId());
-                res.setName(aisleIndexDO.getName());
+                res.setName(aisleIndexDO.getAisleName());
                 res.setRoomId(aisleIndexDO.getRoomId());
                 result.add(res);
             });
@@ -364,7 +364,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         for (AisleIndexDO aisleIndexDO : list) {
             AislePfRes aislePfRes = new AislePfRes();
             aislePfRes.setId(aisleIndexDO.getId());
-            aislePfRes.setName(aisleIndexDO.getName());
+            aislePfRes.setName(aisleIndexDO.getAisleName());
             aislePfRes.setRoomId(aisleIndexDO.getRoomId());
             res.add(aislePfRes);
         }
@@ -508,7 +508,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 AisleLineMaxRes aisleLineMaxRes = new AisleLineMaxRes();
 
                 aisleLineMaxRes.setId(aisleIndexDO.getId());
-                aisleLineMaxRes.setName(aisleIndexDO.getName());
+                aisleLineMaxRes.setName(aisleIndexDO.getAisleName());
                 aisleLineMaxRes.setRoomId(aisleIndexDO.getRoomId());
 
                 MaxValueAndCreateTime powTotal = powTotalMap.get(id);
@@ -704,7 +704,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             AisleBalanceRes aisleBalanceRes = new AisleBalanceRes();
             aisleBalanceRes.setId(aisleIndexDO.getId());
             aisleBalanceRes.setRoomId(aisleIndexDO.getRoomId());
-            aisleBalanceRes.setName(aisleIndexDO.getName());
+            aisleBalanceRes.setName(aisleIndexDO.getAisleName());
             result.add(aisleBalanceRes);
         });
         getPosition(result);
@@ -1094,7 +1094,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             return;
         }
         List<Integer> roomIds = res.stream().map(AisleIndexRespVO::getRoomId).collect(Collectors.toList());
-        Map<Integer, String> roomMap = roomIndexMapper.selectBatchIds(roomIds).stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getName));
+        Map<Integer, String> roomMap = roomIndexMapper.selectBatchIds(roomIds).stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getRoomName));
         res.forEach(aisleIndexRespVO -> {
             aisleIndexRespVO.setLocation(roomMap.get(aisleIndexRespVO.getRoomId()) + SPLIT_KEY +aisleIndexRespVO.getName());
         });

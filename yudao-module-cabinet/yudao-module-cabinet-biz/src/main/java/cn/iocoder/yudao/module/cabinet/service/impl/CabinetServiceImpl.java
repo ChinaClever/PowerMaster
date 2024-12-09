@@ -154,20 +154,20 @@ public class CabinetServiceImpl implements CabinetService {
             if (Objects.nonNull(index)) {
 
                 dto.setId(id);
-                dto.setCabinetName(index.getName());
+                dto.setCabinetName(index.getCabinetName());
                 dto.setAisleId(index.getAisleId());
                 dto.setRoomId(index.getRoomId());
-                dto.setPowCapacity(index.getPowCapacity());
+                dto.setPowCapacity(index.getPowerCapacity());
                 dto.setRunStatus(index.getRunStatus());
                 dto.setPduBox(index.getPduBox());
-                dto.setEleAlarmDay(index.getEleAlarmDay());
-                dto.setEleAlarmMonth(index.getEleAlarmMonth());
-                dto.setEleLimitDay(index.getEleLimitDay());
-                dto.setEleLimitMonth(index.getEleLimitMonth());
+//                dto.setEleAlarmDay(index.getEleAlarmDay());
+//                dto.setEleAlarmMonth(index.getEleAlarmMonth());
+//                dto.setEleLimitDay(index.getEleLimitDay());
+//                dto.setEleLimitMonth(index.getEleLimitMonth());
 
                 //机房信息
                 RoomIndex roomIndex = roomIndexMapper.selectById(index.getRoomId());
-                dto.setRoomName(roomIndex.getName());
+                dto.setRoomName(roomIndex.getRoomName());
 
                 //基本配置信息
                 CabinetCfg cfg = cabinetCfgMapper.selectOne(new LambdaQueryWrapper<CabinetCfg>()
@@ -400,7 +400,7 @@ public class CabinetServiceImpl implements CabinetService {
                 //新增
                 //判断机柜名称是否重复（已删除的或者已禁用的恢复）
                 index = cabinetIndexMapper.selectOne(new LambdaQueryWrapper<CabinetIndex>()
-                        .eq(CabinetIndex::getName, vo.getCabinetName())
+                        .eq(CabinetIndex::getCabinetName, vo.getCabinetName())
                         .eq(CabinetIndex::getRoomId, vo.getRoomId()));
                 if (Objects.nonNull(index)) {
                     if (index.getIsDeleted() == DelEnums.DELETE.getStatus() || index.getIsDisabled() == DisableEnums.DISABLE.getStatus()) {
@@ -587,7 +587,7 @@ public class CabinetServiceImpl implements CabinetService {
                 if (!CollectionUtils.isEmpty(roomIds)){
                     List<RoomIndex> roomIndexList = roomIndexMapper.selectBatchIds(roomIds);
                     if (!CollectionUtils.isEmpty(roomIndexList)){
-                        Map<Integer,String>  map = roomIndexList.stream().collect(Collectors.toMap(RoomIndex::getId,RoomIndex::getName));
+                        Map<Integer,String>  map = roomIndexList.stream().collect(Collectors.toMap(RoomIndex::getId,RoomIndex::getRoomName));
 
                         if (Objects.nonNull(map)){
                             indexDTOPage.getRecords().forEach(dto -> {
@@ -672,7 +672,7 @@ public class CabinetServiceImpl implements CabinetService {
                 if (!CollectionUtils.isEmpty(roomIds)){
                     List<RoomIndex> roomIndexList = roomIndexMapper.selectBatchIds(roomIds);
                     if (!CollectionUtils.isEmpty(roomIndexList)){
-                        Map<Integer,String>  map = roomIndexList.stream().collect(Collectors.toMap(RoomIndex::getId,RoomIndex::getName));
+                        Map<Integer,String>  map = roomIndexList.stream().collect(Collectors.toMap(RoomIndex::getId,RoomIndex::getRoomName));
 
                         if (Objects.nonNull(map)){
                             indexDTOPage.getRecords().forEach(dto -> {
@@ -826,19 +826,19 @@ public class CabinetServiceImpl implements CabinetService {
     private CabinetIndex convertIndex(CabinetVo vo, CabinetIndex index) {
         CabinetIndex cabinetIndex = new CabinetIndex();
         cabinetIndex.setAisleId(vo.getAisleId());
-        cabinetIndex.setName(vo.getCabinetName());
+        cabinetIndex.setCabinetName(vo.getCabinetName());
         cabinetIndex.setPduBox(vo.getPduBox());
         //未删除
         cabinetIndex.setIsDeleted(DelEnums.NO_DEL.getStatus());
         //未禁用
         cabinetIndex.setIsDisabled(DisableEnums.ENABLE.getStatus());
-        cabinetIndex.setPowCapacity(vo.getPowCapacity());
+        cabinetIndex.setPowerCapacity(vo.getPowCapacity());
         cabinetIndex.setRoomId(vo.getRoomId());
         cabinetIndex.setId(index.getId());
-        cabinetIndex.setEleAlarmDay(vo.getEleAlarmDay());
-        cabinetIndex.setEleAlarmMonth(vo.getEleAlarmMonth());
-        cabinetIndex.setEleLimitDay(vo.getEleLimitDay());
-        cabinetIndex.setEleLimitMonth(vo.getEleLimitMonth());
+//        cabinetIndex.setEleAlarmDay(vo.getEleAlarmDay());
+//        cabinetIndex.setEleAlarmMonth(vo.getEleAlarmMonth());
+//        cabinetIndex.setEleLimitDay(vo.getEleLimitDay());
+//        cabinetIndex.setEleLimitMonth(vo.getEleLimitMonth());
         return cabinetIndex;
     }
 

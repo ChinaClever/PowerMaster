@@ -178,12 +178,12 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             int cabinetId = cabinetPduA.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
             if (Objects.nonNull(cabinet)) {
-                String cabinetName = cabinet.getName();
+                String cabinetName = cabinet.getCabinetName();
                 RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
-                String roomName = roomIndex.getName();
+                String roomName = roomIndex.getRoomName();
 
                 if (cabinet.getAisleId() != 0) {
-                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getAisleName();
                     address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
                 } else {
                     address = roomName + "-" + cabinetName + "-" + "A路";
@@ -201,12 +201,12 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             int cabinetId = cabinetPduB.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
             if (Objects.nonNull(cabinet)) {
-                String cabinetName = cabinet.getName();
+                String cabinetName = cabinet.getCabinetName();
                 RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
-                String roomName = roomIndex.getName();
+                String roomName = roomIndex.getRoomName();
 
                 if (cabinet.getAisleId() != 0) {
-                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getAisleName();
                     address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";
                 } else {
                     address = roomName + "-" + cabinetName + "-" + "B路";
@@ -230,11 +230,11 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         if(cabinetPduA != null){
             int cabinetId = cabinetPduA.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
-            String cabinetName = cabinet.getName();
+            String cabinetName = cabinet.getCabinetName();
             RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
-            String roomName = roomIndex.getName();
+            String roomName = roomIndex.getRoomName();
             if(cabinet.getAisleId() != 0){
-                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getAisleName();
 //                address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
                 address = roomName + "-" + aisleName + "-" + cabinetName;
             }else {
@@ -257,11 +257,11 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         if(cabinetPduB != null){
             int cabinetId = cabinetPduB.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
-            String cabinetName = cabinet.getName();
+            String cabinetName = cabinet.getCabinetName();
             RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
-            String roomName = roomIndex.getName();
+            String roomName = roomIndex.getRoomName();
             if(cabinet.getAisleId() != 0){
-                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getAisleName();
 //                address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";
                 address = roomName + "-" + aisleName + "-" + cabinetName ;
             }else {

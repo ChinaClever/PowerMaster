@@ -447,7 +447,7 @@ public class AisleEnergyConsumptionServiceImpl implements AisleEnergyConsumption
             RoomIndex roomIndex = map.get(record.getRoomId());
             String location = null;
             if (roomIndex != null) {
-                location =  roomIndex.getName() + "-"  + record.getName() ;
+                location =  roomIndex.getRoomName() + "-"  + record.getAisleName() ;
             }
             AisleEleTotalRealtimeResVO resVO = new AisleEleTotalRealtimeResVO();
             resVO.setId(record.getId()).setLocation(location);

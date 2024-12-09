@@ -155,7 +155,7 @@ public class MainServiceImpl implements MainService {
                     EqDataDTO eqDataDTO = new EqDataDTO();
                     EqDataDTO.RoomEq roomEq = eqDataDTO.new RoomEq();
                     roomEq.setId(roomIndex.getId());
-                    roomEq.setName(roomIndex.getName());
+                    roomEq.setName(roomIndex.getRoomName());
                     roomEq.setTodayEq(todayEq.getOrDefault(roomIndex.getId(),0.0));
                     roomEq.setLastWeekEq(weekEqMap.getOrDefault(roomIndex.getId(),0.0));
                     roomEq.setLastMonthEq(monthEqMap.getOrDefault(roomIndex.getId(),0.0));
@@ -282,7 +282,7 @@ public class MainServiceImpl implements MainService {
                 keys.add(REDIS_KEY_ROOM + roomIndex.getId());
                 RoomPowDataDTO roomMainDataDTO = new RoomPowDataDTO();
                 roomMainDataDTO.setId(roomIndex.getId());
-                roomMainDataDTO.setName(roomIndex.getName());
+                roomMainDataDTO.setName(roomIndex.getRoomName());
                 dtoMap.put(roomIndex.getId(),roomMainDataDTO);
 
             });

@@ -173,11 +173,11 @@ public class CabinetEleServiceImpl implements CabinetEleService {
             Map<Integer,String> keyMap = new HashMap<>();
             if (!CollectionUtils.isEmpty(keys)){
                 List<PduIndexDo> pduIndexDos = pduIndexMapper.selectList(new LambdaQueryWrapper<PduIndexDo>()
-                        .in(PduIndexDo::getDevKey,keys));
+                        .in(PduIndexDo::getPduKey,keys));
                 if (!CollectionUtils.isEmpty(pduIndexDos)){
                     pduIds.addAll(pduIndexDos.stream().map(PduIndexDo::getId).distinct().collect(Collectors.toList()));
                     pduIndexDos.forEach(pduIndexDo -> {
-                        keyMap.put(pduIndexDo.getId(),pduIndexDo.getDevKey());
+                        keyMap.put(pduIndexDo.getId(),pduIndexDo.getPduKey());
                     });
                 }
             }

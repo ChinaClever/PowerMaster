@@ -5,7 +5,7 @@
       <div style="display: flex;align-items:center">
         机房：
         <el-select :size="isFromHome ? 'small' : ''" v-model="roomId" placeholder="请选择" class="!w-100px" @change="handleChangeRoom">
-          <el-option v-for="item in roomList" :key="item.id" :label="item.name" :value="item.id" />
+          <el-option v-for="item in roomList" :key="item.id" :label="item.roomName" :value="item.id" />
         </el-select>
         <div class="status">
           <template v-for="item in statusInfo" :key="item.value">
@@ -21,6 +21,7 @@
       <div>
         <el-button @click="handleAdd" type="primary">新建机房</el-button>
         <el-button v-if="!editEnable" @click="handleEdit" type="primary">编辑</el-button>
+        <el-button v-if="editEnable" @click="handleCancel" plain type="danger">已删除</el-button>
         <el-button v-if="editEnable" @click="handleCancel" plain type="primary">取消</el-button>
         <el-button v-if="editEnable" @click="openSetting" plain type="primary"><Icon :size="16" icon="ep:setting" style="margin-right: 5px" />配置</el-button>
         <el-button v-if="editEnable" @click="handleSubmit" plain type="primary">保存</el-button>
@@ -31,9 +32,6 @@
   <el-card shadow="never">
     <div class="dragContainer" 
       ref="tableContainer"
-      @mousedown="startDrag"
-      @mousemove="onMouseMove"
-      @mouseup="stopDrag"
       :class="{ crosshair: !isDragging.value }"
       v-loading="loading" 
       @click.right="handleRightClick" 
@@ -141,6 +139,12 @@
       <el-form-item label="列数" label-width="90">
         <el-input-number v-model="rowColInfo.col" :min="1" :max="70" controls-position="right" placeholder="请输入" />
       </el-form-item>
+      <el-form-item label="电力容量" label-width="90">
+         <el-input v-model="rowColInfo.powerCapacity" placeholder="请输入" />
+      </el-form-item>
+      <el-form-item label="空调功率" label-width="90">
+         <el-input v-model="rowColInfo.airPower" placeholder="请输入" />
+      </el-form-item>
       <div class="double-formitem">
         <el-form-item label="日用能告警" label-width="90">
           <el-switch v-model="rowColInfo.eleAlarmDay" :active-value="1" :inactive-value="0" />
@@ -171,6 +175,7 @@ import draggable from "vuedraggable";
 import layoutForm from './component/layoutForm.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { MachineRoomApi } from '@/api/cabinet/room'
+import { Console } from "console";
 
 const { push } = useRouter() // 路由跳转
 const message = useMessage() // 消息弹窗
@@ -206,6 +211,8 @@ const rowColInfo = reactive({
   roomName: '', // 机房名
   row: 14, // 行
   col: 18, // 列
+  powerCapacity:0, //电力容量
+  airPower:0, //空调额定功率
   eleAlarmDay: 0, // 日用能告警
   eleLimitDay: 1000, // 日用能限制
   eleAlarmMonth: 0, // 月用能告警
@@ -624,10 +631,13 @@ const handleWheel = (event) => {
   }
 };
 
-const dialogVisible = ref(false)
-const editEnable = ref(false)
-const tableHeight = ref(0)
-const machineForm = ref()
+const dialogVisible = ref(false);
+const editEnable = ref(false);
+const tableHeight = ref(0);
+const machineForm = ref();
+
+const mainFlag = ref();
+
 const groupMachineFill = {
   name: 'MachineFill',
   pull: () => {
@@ -639,7 +649,7 @@ const groupMachineBlank = {
   name: 'MachineBlank',
   pull: false, //允许拖出,如果设置 字符串'clone' 表示该组拖出的元素会被克隆
   put: (event) => {
-    console.log('event', event.el.id)
+   // console.log('event', event.el.id)
     const moveBox = movingInfo.value
     if (editEnable.value && moveBox.type == 1 && moveBox.amount > 1) {
       if (moveBox.direction == 1) {
@@ -667,7 +677,7 @@ const operateMenu = ref({
 // 接口获取机房导航列表
 const getRoomList = async() => {
   const res = await MachineRoomApi.getRoomList({})
-  console.log('接口获取机房导航列表*****', res, roomId.value)
+  //console.log('接口获取机房导航列表*****', res, roomId.value)
   if (res && res.length) {
     roomList.value = res
     const find = res.find(item => item.id == roomId.value)
@@ -688,18 +698,16 @@ const getRoomInfo = async() => {
   tableData.value = []
   loading.value = true
   try {
-    const result1 = MachineRoomApi.getRoomDetail({id: roomId.value})
-    const result2 = MachineRoomApi.getRoomDataDetail({id: roomId.value})
-    const results = await Promise.all([result1, result2])
-    const res = results[0]
+    const res = await MachineRoomApi.getRoomDetail({id: roomId.value});
     roomDownValId.value = res.id;
-    console.log('res', res)
     const data = [] as any
     const Obj = {}
     Object.assign(rowColInfo, {
       roomName: res.roomName,
       row: res.yLength,
       col: res.xLength,
+      powerCapacity:res.powerCapacity,
+      airPower:res.airPower,
       eleAlarmDay: res.eleAlarmDay,
       eleLimitDay: res.eleLimitDay,
       eleAlarmMonth: res.eleAlarmMonth,
@@ -715,44 +723,11 @@ const getRoomInfo = async() => {
       Obj[getTableColCharCode(i)] = []
     }
     for(let i=0; i < res.yLength; i++) {
-      data.push(JSON.parse(JSON.stringify(Obj)))
+       data.push(JSON.parse(JSON.stringify(Obj)))
     }
-    res.aisleList.forEach(item => {
-      console.log('------', item)
-      for(let i=0; i < item.length; i++) {
-        const dataItem =  {
-          id: item.id,
-          name: item.aisleName,
-          direction: item.direction == 'x' ? 1 : 2,
-          type: 1,
-          amount: item.cabinetList.length,
-          cabinetList: item.cabinetList,
-          first: false,
-          originAmount: item.cabinetList.length,
-          originDirection: item.direction == 'x' ? 1 : 2,
-          eleAlarmDay: item.eleAlarmDay,
-          eleLimitDay: item.eleLimitDay,
-          eleAlarmMonth: item.eleAlarmMonth,
-          eleLimitMonth: item.eleLimitMonth,
-        }
-        if (i == 0) dataItem.first = true
-        // {type: '1', name: '啊大苏打', direction: '1', amount: 1, status: 1,first: true, id: '', originAmount: 1, originDirection: '1'}
-        if (dataItem.direction == 1) {
-          console.log('----dataItem1', dataItem, getTableColCharCode(item.xCoordinate - 1 + i), )
-          data[item.yCoordinate - 1][getTableColCharCode(item.xCoordinate - 1 + i)].splice(0, 1, dataItem)
-        } else {
-          console.log('----dataItem1', dataItem,item.yCoordinate - 1 + i, getTableColCharCode(item.xCoordinate - 1), )
-          data[item.yCoordinate - 1 + i][getTableColCharCode(item.xCoordinate - 1)].splice(0, 1, dataItem)
-        }
-      }
-    })
-    res.cabinetList.forEach(item => {
-      if (item.xCoordinate > 0 && item.yCoordinate > 0)
-      data[item.yCoordinate - 1][getTableColCharCode(item.xCoordinate - 1)].splice(0, 1, {...item, name: item.cabinetName, type: 2})
-    })
-    console.log('data', data)
-    tableData.value = data
-    getRoomStatus(results[1])
+
+    tableData.value = data;
+    getRoomStatus(res)
     handleCssScale()
   } finally {
     loading.value = false
@@ -761,7 +736,7 @@ const getRoomInfo = async() => {
 
 const getRoomStatus = async(res) => {
   if (!res) res = await MachineRoomApi.getRoomDataDetail({id: roomId.value})
-  console.log('getRoomStatus', res)
+  //console.log('getRoomStatus', res)
   if (res.cabinetList && res.cabinetList.length) {
     res.cabinetList.forEach(cab => {
       if (cab.yCoordinate > 0 && cab.xCoordinate > 0)
@@ -774,7 +749,7 @@ const getRoomStatus = async(res) => {
   if (res.aisleList && res.aisleList.length) {
     res.aisleList.forEach(aisle => {
       aisle.cabinetList.forEach((cab, index) => {
-        console.log('tableData.value[aisle.yCoordinate][formParam.value[aisle.xCoordinate - 1]]', tableData.value[aisle.yCoordinate - 1][formParam.value[aisle.xCoordinate - 1]], aisle.yCoordinate, formParam.value[aisle.xCoordinate - 1])
+       // console.log('tableData.value[aisle.yCoordinate][formParam.value[aisle.xCoordinate - 1]]', tableData.value[aisle.yCoordinate - 1][formParam.value[aisle.xCoordinate - 1]], aisle.yCoordinate, formParam.value[aisle.xCoordinate - 1])
         const targetIndex = tableData.value[aisle.yCoordinate - 1][formParam.value[aisle.xCoordinate - 1]][0].cabinetList.findIndex(item => item.id == cab.id)
         tableData.value[aisle.yCoordinate - 1][formParam.value[aisle.xCoordinate - 1]][0].cabinetList[targetIndex] = {
           ...cab,
@@ -783,7 +758,7 @@ const getRoomStatus = async(res) => {
       })
     })
   }
-  console.log('//////////', tableData.value)
+ // console.log('//////////', tableData.value)
 }
 
 // 计算出要缩放的比例
@@ -797,7 +772,7 @@ const handleCssScale = () => {
       scaleValue.value = +((containerInfo?.width/tableWidth).toFixed(2))
       ContainerHeight.value = scaleValue.value * tableHeight
       clearTimeout(timer)
-      console.log('containerInfotargetBody',scaleValue.value, containerInfo?.width, targetBody, targetBody.getBoundingClientRect(), tableWidth, tableHeight)
+    //  console.log('containerInfotargetBody',scaleValue.value, containerInfo?.width, targetBody, targetBody.getBoundingClientRect(), tableWidth, tableHeight)
     }, 10)
   })
 }
@@ -822,14 +797,16 @@ const handleAdd = () => {
   isAddRoom.value = true
   dialogVisible.value = true
   resetForm()
-  console.log('handleAdd')
+  //console.log('handleAdd')
 }
 // 重置表单
 const resetForm = () => {
   Object.assign(rowColInfo, {
     roomName: '', // 机房名
     row: 14, // 行
-    col: 18, // 列
+    col: 18, // 列,
+    powerCapacity:0,
+    airPower:0,
     eleAlarmDay: 0, // 日用能告警
     eleLimitDay: 1000, // 日用能限制
     eleAlarmMonth: 0, // 月用能告警
@@ -876,7 +853,7 @@ const arraySpanMethod = ({
     const td = row[getTableColCharCode(columnIndex - num)]
     const tdData = td[0]
     if (tdData && tdData.type && tdData.type == 1) { // 如果是柜列
-      console.log('===========', td)
+     // console.log('===========', td)
       if (tdData.first) { // 如果是柜列中开头第一个  合并单元格
         if (tdData.direction == 1) { // 横向
           return [1, tdData.amount]
@@ -900,7 +877,7 @@ const handleRightClick = (e) => {
   const offsetX = e.clientX - Math.ceil(rect.left) + 1
   const offsetY = e.clientY - Math.ceil(rect.top) + 1
   const currentId = e.target.id ? e.target.id : (e.target.parentNode.id ? e.target.parentNode.id :  e.target.parentNode.parentNode.id)
-  console.log('handleRightClick', e.target, currentId, offsetX, offsetY)
+  //console.log('handleRightClick', e.target, currentId, offsetX, offsetY)
   const lndexX = currentId.split('-')[1]
   const lndexY = currentId.split('-')[0]
   if (!currentId) return
@@ -913,7 +890,7 @@ const handleRightClick = (e) => {
     maxlndexX: rowColInfo.col - lndexX,
     maxlndexY: rowColInfo.row - lndexY,
   }
-  console.log('operateMenu', operateMenu.value)
+  //console.log('operateMenu', operateMenu.value)
 }
 // 判断是否展示添加菜单项
 const showMenuAdd = computed(() => {
@@ -928,16 +905,16 @@ const onStart = ({from}) => {
   const Y = from.id.split('-')[0]
   const target = tableData.value[Y][formParam.value[X]][0]
   if (target.type == 1) movingInfo.value = target
-  console.log('onStssasrt', target)
+  //console.log('onStssasrt', target)
 }
 // 拖拽结束的事件
 const onEnd = ({from, to}) => {
-  console.log('onsEnd',tableData.value, from, to, from.id, to.id)
+ // console.log('onsEnd',tableData.value, from, to, from.id, to.id)
   if (from.id != to.id) { // 发生移动才处理
     const X = to.id.split('-')[1]
     const Y = to.id.split('-')[0]
     const targetTo = tableData.value[Y][formParam.value[X]][0]
-    console.log('value*******', targetTo)
+   // console.log('value*******', targetTo)
     if (targetTo.type == 1 && targetTo.amount > 1) {
       const X = +from.id.split('-')[1]
       const Y = +from.id.split('-')[0]
@@ -973,7 +950,7 @@ const handleJump = (data) => {
     const X = formParam.value[operateMenu.value.lndexX]
     target = tableData.value[Y][X][0]
   }
-  console.log('target', target)
+ // console.log('target', target)
   if (!target.id) {
     message.error(`该${target.type == 1 ? '柜列' : '机柜'}暂未保存绑定，无法跳转`)
     return
@@ -989,12 +966,12 @@ const deleteMachine = () => {
   const Y = operateMenu.value.lndexY
   const X = formParam.value[operateMenu.value.lndexX]
   const target = JSON.parse(JSON.stringify(tableData.value[Y][X][0])) // 要删除的目标
-  console.log('删除机柜',tableData.value[Y][X], target)
+ // console.log('删除机柜',tableData.value[Y][X], target)
   if (target.type && target.type == 1) {
     for (let i = 0; i < target.originAmount; i++) {
       if (target.direction == 1) {
         // const charCode = X.charCodeAt(0) + i
-        console.log('String.fromCharCode(charCode)', operateMenu.value.lndexX, operateMenu.value.lndexX+i)
+    //    console.log('String.fromCharCode(charCode)', operateMenu.value.lndexX, operateMenu.value.lndexX+i)
         tableData.value[Y][formParam.value[+operateMenu.value.lndexX + i]].splice(0, 1)
       } else {
         tableData.value[+Y + i][X].splice(0, 1)
@@ -1007,89 +984,56 @@ const deleteMachine = () => {
 }
 // 处理增加/编辑机柜
 const handleChange = (data) => {
-  console.log('处理增加/编辑机柜+++++', data)
-  const X = formParam.value[operateMenu.value.lndexX] // 当前机柜/机柜列所处列
+  mainFlag.value = data;
+  const X = "A" // 当前机柜/机柜列所处列
   const Y = operateMenu.value.lndexY // 当前机柜/机柜列所处行
-  console.log('当前机柜/机柜列所处列', X, Y)
+ // console.log('当前机柜/机柜列所处列', X, Y)
   if (data.originDirection && data.originDirection != data.direction) deleteMachine() // 如果方向发生改变则先把原来的删除 再去新增
   tableData.value[Y][X].splice(0, 1, {...data, first: true, originAmount: data.amount, originDirection: data.direction})
-  if (data.type == 1 && data.amount > 1) { // 类型是机柜列并且机柜数量大于1
-    let length = 0
-    if (data.originAmount && (data.originAmount - data.amount) > 0) { // data有origin说明是编辑  并且编辑后的机柜数少于原来的机柜数  则要处理的数量就是原来的机柜树
-      length = data.originAmount
-    } else {
-      length = data.amount
-    }
-    for(let i = 1; i < length; i++ ) {
-      if (data.direction == 1) { // 横向机柜列
-        // const charCode = X.charCodeAt(0) + i
-        if (i >= data.amount) {
-          tableData.value[Y][formParam.value[+operateMenu.value.lndexX + i]] = []
-        } else {
-          tableData.value[Y][formParam.value[+operateMenu.value.lndexX + i]].splice(0, 1, {...data, first: false})
-        }
-      } else { // 纵向机柜列
-        if (i >= data.amount) {
-          tableData.value[+Y + i][X] = []
-        } else {
-          tableData.value[+Y + i][X].splice(0, 1, {...data, first: false})
-        }
-      }
-    }
-  }
+  //alert(JSON.stringify(data))
+  //alert(data.type)
 }
 // 处理设置提交
 const submitSetting = () => {
-  if (isAddRoom.value) { // 如果是添加机房 直接保存
-    handleSubmit()
-    return
-  }
-  const rowNum = rowColInfo.row // 设置的行数
-  const colNum = rowColInfo.col // 设置的列数
-  const data = [] as any
-  // 根据设置的宽高来修改数据
-  const tableDataCopy= tableData.value
-  if (tableDataCopy.length > 0) { // 如果是表格已经有数据了  根据设置的宽高修改数据
-    const keyLength =  formParam.value.length // 原表格的列数
-    if (colNum < keyLength || rowNum < tableDataCopy.length) { // 如果配置的行/列小于原先的行/列  判断要删除的数据中是否存在机柜/柜列  存在的话不允许删除并提示
-      for(let i=0; i < tableDataCopy.length; i++) {
-        for(let j=0; j < keyLength; j++) {
-          if (i >= rowNum || j >= colNum) {
-            if (tableDataCopy[i][getTableColCharCode(j)][0]) {
-              ElMessageBox.alert('所配置的行列会删除原先的数据，请重新配置', '提示', {
-                confirmButtonText: '确认',
-              })
-              rowColInfo.row = tableDataCopy.length
-              rowColInfo.col = keyLength
-              return
-            }
-          }
-        }
-      }
-    }
-    for(let i=0; i < rowNum; i++) {
-      data.push({})
-      for(let j=0; j < colNum; j++) {
-        if (j >= keyLength || i >= tableDataCopy.length) { // 如果设置的行/列大于原先的  则赋空值
-          data[i][getTableColCharCode(j)] = []
-        } else { // 如果没有大于原先的  则赋原本表格相应的值
-          data[i][getTableColCharCode(j)] = tableData.value[i][getTableColCharCode(j)]
-        }
-      }
-    }
-    // console.log('根据设置的宽高来修改数据', data)
-  } else { // 根据设置的宽高来创建数据
-    const Obj = {}
-    for(let i=0; i < colNum; i++) {
-      Obj[getTableColCharCode(i)] = []
-    }
-    for(let i=0; i < rowNum; i++) {
-      data.push(JSON.parse(JSON.stringify(Obj)))
-    }
-  }
-  tableData.value = data
-  dialogVisible.value = false
+   if (isAddRoom.value) { 
+      //新建机房
+      addAndUpdateRoomSubmit(1);
+      return
+   }else{
+      //配置机房/（修改机房）
+      addAndUpdateRoomSubmit(2);
+      return;
+   }
 }
+
+//添加机房/修改机房
+const  addAndUpdateRoomSubmit = async(flag) =>{
+   const res = await MachineRoomApi.saveRoomDetail({
+      id: isAddRoom.value ? '' : roomId.value,
+      roomName: rowColInfo.roomName,
+      xLength: rowColInfo.col,
+      yLength: rowColInfo.row,
+      powerCapacity:rowColInfo.powerCapacity, 
+      airPower:rowColInfo.airPower, 
+      eleAlarmDay: rowColInfo.eleAlarmDay,
+      eleAlarmMonth: rowColInfo.eleAlarmMonth,
+      eleLimitDay: rowColInfo.eleLimitDay,
+      eleLimitMonth: rowColInfo.eleLimitMonth,
+   })
+   getRoomList();
+   if(flag == 1){
+      roomId.value = res;
+      message.success('新建成功！');
+   }else{
+      if(res != null || res != "")
+      message.success('保存成功！');
+   }
+   dialogVisible.value = false;
+   editEnable.value = false;
+   isAddRoom.value = false;
+}
+
+
 // 获取表格列label字符
 const getTableColCharCode = (num):string => {
   if (num < 26) {
@@ -1102,79 +1046,23 @@ const getTableColCharCode = (num):string => {
 }
 // 处理提交保存事件
 const handleSubmit = async() => {
-  const aisleList = [] as any
-  const cabinetList = [] as any
-  if (!isAddRoom.value)
-  for(let i = 0; i < rowColInfo.row; i++) {
-    for(let j = 0; j < rowColInfo.col; j++) {
-      console.log('处理提交保存事件', tableData.value, i, getTableColCharCode(j))
-      const target = tableData.value[i][getTableColCharCode(j)][0]
-      if (target && target.type == 1 && target.first) {
-        console.log('target.......', target)
-        aisleList.push({
-          id: target.id,
-          aisleName: target.name,
-          xCoordinate: j + 1,
-          yCoordinate: i + 1,
-          direction: target.direction == 1 ? 'x' : 'y',
-          length: target.amount,
-          eleAlarmDay: target.eleAlarmDay,
-          eleLimitDay: target.eleLimitDay,
-          eleAlarmMonth: target.eleAlarmMonth,
-          eleLimitMonth: target.eleLimitMonth,
-        })
-      } else if (target && target.type == 2) {
-        cabinetList.push({
-          id: target.id,
-          cabinetName: target.name,
-          cabinetHeight: target.cabinetHeight,
-          xCoordinate: j + 1,
-          yCoordinate: i + 1,
-          eleAlarmDay: target.eleAlarmDay,
-          eleLimitDay: target.eleLimitDay,
-          eleAlarmMonth: target.eleAlarmMonth,
-          eleLimitMonth: target.eleLimitMonth,
-        })
-      }
-    }
-  }
-  try {
-    loading.value = true
-    const res = await MachineRoomApi.saveRoomDetail({
-      id: isAddRoom.value ? '' : roomId.value,
-      roomName: rowColInfo.roomName,
-      xLength: rowColInfo.col,
-      yLength: rowColInfo.row,
-      eleAlarmDay: rowColInfo.eleAlarmDay,
-      eleAlarmMonth: rowColInfo.eleAlarmMonth,
-      eleLimitDay: rowColInfo.eleLimitDay,
-      eleLimitMonth: rowColInfo.eleLimitMonth,
-      aisleList,
-      cabinetList
-    })
-    console.log('aisleList...', res)
-    if (isAddRoom.value) {
-      roomId.value = res
-      getRoomList()
-      message.success('新建成功！')
-      dialogVisible.value = false
-      editEnable.value = false
-      isAddRoom.value = false
-      return
-    }
-    editEnable.value = false
-    message.success('保存成功！')
-  } finally {
-    loading.value = false
-  }
+  const res = await MachineRoomApi.saveRoomAisle({
+      roomId:isAddRoom.value ? '' : roomId.value,
+      aisleName:mainFlag.value.name,
+      aisleLength:mainFlag.value.amount,
+      xCoordinate:1,
+      yCoordinate:2,
+      direction:mainFlag.value.direction
+  }) 
+  alert(JSON.stringify(res));
 }
 
 // const formParam = Object.keys(tableData[0])
 const formParam = computed(() => {
-  return Object.keys(tableData.value[0])
+  return Object.keys(tableData.value[0]);
 })
 
-getRoomList()
+getRoomList();
 onMounted(() => {
   mouseMoveEventListener = (event) => onMouseMove(event);
   mouseUpEventListener = () => stopDrag();

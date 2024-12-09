@@ -9,14 +9,8 @@ import lombok.Data;
 import java.util.List;
 
 
-/**
- * @author luowei
- * @version 1.0
- * @description: 机房详情
- * @date 2024/6/21 15:49
- */
 @Data
-public class RoomDetailDTO {
+public class RoomAndRoomCfgDTO {
 
     /**
      * 机房iD
@@ -39,7 +33,6 @@ public class RoomDetailDTO {
      */
     private float airPower;
 
-
     /**
      * 机房x长度(单位机柜)
      */
@@ -51,15 +44,6 @@ public class RoomDetailDTO {
      */
     @JsonProperty(value="yLength")
     private int yLength;
-
-    //柜列数据
-    List<AisleDetailDTO> aisleList;
-
-
-    /**
-     * 机柜数据
-     */
-    private List<AisleCabinetDTO> cabinetList;
 
     /**
      * 日用能告警开关
@@ -81,32 +65,6 @@ public class RoomDetailDTO {
      */
     private double eleLimitMonth;
 
-    /**
-     * 总空间
-     */
-    private Integer totalSpace;
 
-
-    /**
-     * 已用空间
-     */
-    @Schema(description = "已用空间", example = "1")
-    private int usedSpace;
-
-    /**
-     * 剩余空间
-     */
-    @Schema(description = "剩余空间", example = "1")
-    private int freeSpace;
-
-    /**
-     * 机柜数
-     */
-    private int cabNum;
-
-    /**
-     * 设备数（pdu 母线）
-     */
-    private int deviceNum;
 
 }

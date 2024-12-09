@@ -27,7 +27,7 @@ public class PduIndexDo implements Serializable {
     /**
      * 设备识别码
      */
-    private String devKey;
+    private String pduKey;
 
     /**
      * ip地址

@@ -130,15 +130,15 @@ public class AisleServiceImpl implements AisleService {
         try {
             //柜列信息
             AisleIndex index = new AisleIndex();
-            index.setName(aisleSaveVo.getAisleName());
-            index.setLength(aisleSaveVo.getLength());
+            index.setAisleName(aisleSaveVo.getAisleName());
+            index.setAisleLength(aisleSaveVo.getAisleLength());
             index.setRoomId(aisleSaveVo.getRoomId());
-            index.setType(aisleSaveVo.getType());
+            //index.setType(aisleSaveVo.getType());
             index.setPduBar(aisleSaveVo.getPduBar());
-            index.setEleAlarmDay(aisleSaveVo.getEleAlarmDay());
-            index.setEleAlarmMonth(aisleSaveVo.getEleAlarmMonth());
-            index.setEleLimitDay(aisleSaveVo.getEleLimitDay());
-            index.setEleLimitMonth(aisleSaveVo.getEleLimitMonth());
+//            index.setEleAlarmDay(aisleSaveVo.getEleAlarmDay());
+//            index.setEleAlarmMonth(aisleSaveVo.getEleAlarmMonth());
+//            index.setEleLimitDay(aisleSaveVo.getEleLimitDay());
+//            index.setEleLimitMonth(aisleSaveVo.getEleLimitMonth());
             index.setDirection(aisleSaveVo.getDirection());
             index.setXCoordinate(aisleSaveVo.getXCoordinate());
             index.setYCoordinate(aisleSaveVo.getYCoordinate());
@@ -149,14 +149,14 @@ public class AisleServiceImpl implements AisleService {
                 if (StringUtils.isNotEmpty(aisleSaveVo.getDirection())
                         && "x".equals(aisleSaveVo.getDirection())){
                     //横向
-                    if (aisleSaveVo.getXCoordinate() + aisleSaveVo.getLength()> roomIndex.getXLength() +1){
+                    if (aisleSaveVo.getXCoordinate() + aisleSaveVo.getAisleLength()> roomIndex.getXLength() +1){
                         throw new RuntimeException("柜列长度超出");
                     }
                 }
                 if ( StringUtils.isNotEmpty(aisleSaveVo.getDirection())
                         && "y".equals(aisleSaveVo.getDirection())){
                     //纵向
-                    if (aisleSaveVo.getYCoordinate() + aisleSaveVo.getLength()>roomIndex.getYLength() + 1){
+                    if (aisleSaveVo.getYCoordinate() + aisleSaveVo.getAisleLength()>roomIndex.getYLength() + 1){
                         throw new RuntimeException("柜列长度超出");
                     }
                 }
@@ -516,15 +516,15 @@ public class AisleServiceImpl implements AisleService {
         AisleIndex aisleIndex = aisleIndexMapper.selectById(aisleId);
 
         if (Objects.nonNull(aisleIndex)){
-            detailDTO.setAisleName(aisleIndex.getName());
+            detailDTO.setAisleName(aisleIndex.getAisleName());
             detailDTO.setId(aisleId);
-            detailDTO.setLength(aisleIndex.getLength());
-            detailDTO.setType(aisleIndex.getType());
+            detailDTO.setLength(aisleIndex.getAisleLength());
+            //detailDTO.setType(aisleIndex.getType());
             detailDTO.setPduBar(aisleIndex.getPduBar());
-            detailDTO.setEleAlarmDay(aisleIndex.getEleAlarmDay());
-            detailDTO.setEleAlarmMonth(aisleIndex.getEleAlarmMonth());
-            detailDTO.setEleLimitDay(aisleIndex.getEleLimitDay());
-            detailDTO.setEleLimitMonth(aisleIndex.getEleLimitMonth());
+//            detailDTO.setEleAlarmDay(aisleIndex.getEleAlarmDay());
+//            detailDTO.setEleAlarmMonth(aisleIndex.getEleAlarmMonth());
+//            detailDTO.setEleLimitDay(aisleIndex.getEleLimitDay());
+//            detailDTO.setEleLimitMonth(aisleIndex.getEleLimitMonth());
             detailDTO.setDirection(aisleIndex.getDirection());
             detailDTO.setXCoordinate(aisleIndex.getXCoordinate());
             detailDTO.setYCoordinate(aisleIndex.getYCoordinate());
@@ -532,7 +532,7 @@ public class AisleServiceImpl implements AisleService {
             Integer roomId = aisleIndex.getRoomId();
             RoomIndex roomIndex = roomIndexMapper.selectById(roomId);
             if (Objects.nonNull(roomIndex)){
-                detailDTO.setRoomName(roomIndex.getName());
+                detailDTO.setRoomName(roomIndex.getRoomName());
                 detailDTO.setRoomId(roomId);
             }
 
@@ -713,7 +713,7 @@ public class AisleServiceImpl implements AisleService {
                 if (Objects.nonNull(map.get(roomIndex.getId()))){
                     AisleListDTO aisleListDTO = new AisleListDTO();
                     aisleListDTO.setRoomId(roomIndex.getId());
-                    aisleListDTO.setRoomName(roomIndex.getName());
+                    aisleListDTO.setRoomName(roomIndex.getRoomName());
                     aisleListDTO.setYLength(roomIndex.getYLength());
                     aisleListDTO.setXLength(roomIndex.getXLength());
                     aisleListDTO.setPowerCapacity(roomIndex.getPowerCapacity());
@@ -1087,7 +1087,7 @@ public class AisleServiceImpl implements AisleService {
             cabinetIndexList.forEach(cabinetIndex ->{
                 CabinetMainDataDTO cabDto = new CabinetMainDataDTO();
                 cabDto.setId(cabinetIndex.getId());
-                cabDto.setCabinetName(cabinetIndex.getName());
+                cabDto.setCabinetName(cabinetIndex.getCabinetName());
 
                 String cabKey =  REDIS_KEY_CABINET + cabinetIndex.getRoomId() + SPLIT_KEY + cabinetIndex.getId();
                 Object cabObject = ops.get(cabKey);

@@ -47,8 +47,8 @@ spring:
       primary: master
       datasource:
         master:
-          name: ruoyi-vue-pro
-          url: jdbc:mysql://192.168.1.41:3306/${spring.datasource.dynamic.datasource.master.name}?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+          name: power-master-db
+          url: jdbc:mysql://192.168.1.245:3306/${spring.datasource.dynamic.datasource.master.name}?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
           #          url: jdbc:mysql://127.0.0.1:3306/${spring.datasource.dynamic.datasource.master.name}?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=CTT # MySQL Connector/J 5.X 连接的示例
           #          url: jdbc:postgresql://127.0.0.1:5432/${spring.datasource.dynamic.datasource.master.name} # PostgreSQL 连接的示例
           #          url: jdbc:oracle:thin:@127.0.0.1:1521:xe # Oracle 连接的示例
@@ -61,9 +61,9 @@ spring:
         #          username: SYSDBA # DM 连接的示例
         #          password: SYSDBA # DM 连接的示例
         slave: # 模拟从库，可根据自己需要修改
-          name: ruoyi-vue-pro
+          name: power-master-db
           lazy: true # 开启懒加载，保证启动速度
-          url: jdbc:mysql://192.168.1.41:3306/${spring.datasource.dynamic.datasource.slave.name}?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+          url: jdbc:mysql://192.168.1.245:3306/${spring.datasource.dynamic.datasource.slave.name}?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
           #          url: jdbc:mysql://127.0.0.1:3306/${spring.datasource.dynamic.datasource.slave.name}?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=CTT # MySQL Connector/J 5.X 连接的示例
           #          url: jdbc:postgresql://127.0.0.1:5432/${spring.datasource.dynamic.datasource.slave.name} # PostgreSQL 连接的示例
           #          url: jdbc:oracle:thin:@127.0.0.1:1521:xe # Oracle 连接的示例
@@ -75,7 +75,7 @@ spring:
 
   # Redis 配置。Redisson 默认的配置足够使用，一般不需要进行调优
   redis:
-    host: 192.168.1.41 # 地址
+    host: 192.168.1.245 # 地址
     port: 6379 # 端口
     database: 0 # 数据库索引
 #    password: dev # 密码，建议生产环境开启
@@ -285,7 +285,7 @@ justauth:
 spring:
   elasticsearch:
     rest:
-      uris: 192.168.1.41:9200
+      uris: 192.168.1.245:9200
 #      uris: 192.168.1.44:9200
       connection-timeout: 5s
       read-timeout: 30s
@@ -304,21 +304,21 @@ cron:
 #ES一次性最大写入数据量
 max-deal-count: 2000
 #机柜刷新地址
-cabinet-refresh-url: 127.0.0.1:48082/cabinet/refresh
+cabinet-refresh-url: 192.168.1.245:48082/cabinet/refresh
 #pdu采集配置刷新地址
-pdu-dc-refresh-url: 127.0.0.1:48080/pdu-dc/refresh
+pdu-dc-refresh-url: 192.168.1.245:48080/pdu-dc/refresh
 #pdu计算配置刷新地址
-pdu-cal-refresh-url: 127.0.0.1:48082/pdu-cal/refresh
+pdu-cal-refresh-url: 192.168.1.245:48082/pdu-cal/refresh
 #机架计算配置刷新地址
-rack-cal-refresh-url: 127.0.0.1:48082/rack/refresh
+rack-cal-refresh-url: 192.168.1.245:48082/rack/refresh
 #母线配置刷新地址
-bus-cal-refresh-url: 127.0.0.1:48082/bus-cal/refresh
+bus-cal-refresh-url: 192.168.1.245:48082/bus-cal/refresh
 #母线配置刷新地址
-bus-dc-refresh-url: 127.0.0.1:48080/bus-dc/refresh
+bus-dc-refresh-url: 192.168.1.245:48080/bus-dc/refresh
 #柜列配置刷新地址
-aisle-refresh-url: 127.0.0.1:48082/aisle/refresh
+aisle-refresh-url: 192.168.1.245:48082/aisle/refresh
 #机房配置刷新地址
-room-refresh-url: 127.0.0.1:48082/room/refresh
+room-refresh-url: 192.168.1.245:48082/room/refresh
 
 mybatis-plus:
   configuration:

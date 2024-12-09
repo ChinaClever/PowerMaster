@@ -30,7 +30,7 @@ public class CabinetIndex implements Serializable {
     /**
      * 机柜名称
      */
-    private String name;
+    private String cabinetName;
     /**
      * 通道编号
      */
@@ -39,7 +39,7 @@ public class CabinetIndex implements Serializable {
     /**
      * 电力容量
      */
-    private float powCapacity;
+    private float powerCapacity;
 
     /**
      * 运行状态
@@ -65,25 +65,25 @@ public class CabinetIndex implements Serializable {
      */
     private int isDeleted;
 
-    /**
-     * 日用能告警开关
-     */
-    private  int eleAlarmDay;
-
-    /**
-     * 月用能告警开关
-     */
-    private  int eleAlarmMonth;
-
-    /**
-     * 日用能限制
-     */
-    private double eleLimitDay;
-
-    /**
-     * 月用能限制
-     */
-    private double eleLimitMonth;
+//    /**
+//     * 日用能告警开关
+//     */
+//    private  int eleAlarmDay;
+//
+//    /**
+//     * 月用能告警开关
+//     */
+//    private  int eleAlarmMonth;
+//
+//    /**
+//     * 日用能限制
+//     */
+//    private double eleLimitDay;
+//
+//    /**
+//     * 月用能限制
+//     */
+//    private double eleLimitMonth;
 
     /**
      * 更新时间

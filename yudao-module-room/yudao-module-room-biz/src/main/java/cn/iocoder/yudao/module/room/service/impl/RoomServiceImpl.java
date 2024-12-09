@@ -15,11 +15,14 @@ import cn.iocoder.yudao.framework.common.entity.es.room.pow.RoomPowDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.pow.RoomPowRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.*;
 import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomCfg;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomSavesVo;
 import cn.iocoder.yudao.framework.common.enums.*;
 import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
@@ -88,9 +91,14 @@ public class RoomServiceImpl implements RoomService {
     @Resource
     RoomIndexMapper roomIndexMapper;
 
+    @Autowired
+    RoomCfgMapper roomCfgMapper;
+
     @Resource
     AisleIndexMapper aisleIndexMapper;
 
+    @Autowired
+    AisleCfgMapper aisleCfgMapper;
 
     @Resource
     RedisTemplate redisTemplate;
@@ -140,12 +148,12 @@ public class RoomServiceImpl implements RoomService {
 
         try {
             RoomIndex index = new RoomIndex();
-            index.setName(roomSaveVo.getRoomName());
-            index.setPowerCapacity(roomSaveVo.getPowCapacity());
-            index.setEleAlarmDay(roomSaveVo.getEleAlarmDay());
-            index.setEleLimitDay(roomSaveVo.getEleLimitDay());
-            index.setEleAlarmMonth(roomSaveVo.getEleAlarmMonth());
-            index.setEleLimitMonth(roomSaveVo.getEleLimitMonth());
+            index.setRoomName(roomSaveVo.getRoomName());
+            index.setPowerCapacity(roomSaveVo.getPowerCapacity());
+//            index.setEleAlarmDay(roomSaveVo.getEleAlarmDay());
+//            index.setEleLimitDay(roomSaveVo.getEleLimitDay());
+//            index.setEleAlarmMonth(roomSaveVo.getEleAlarmMonth());
+//            index.setEleLimitMonth(roomSaveVo.getEleLimitMonth());
             index.setYLength(roomSaveVo.getYLength());
             index.setXLength(roomSaveVo.getXLength());
             if (Objects.nonNull(roomSaveVo.getId())){
@@ -505,16 +513,16 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public RoomDetailDTO getDetail(Integer roomId) {
         RoomDetailDTO roomDetailDTO = new RoomDetailDTO();
-
         RoomIndex roomIndex = roomIndexMapper.selectById(roomId);
-
-        roomDetailDTO.setRoomName(roomIndex.getName());
+        RoomCfg roomCfg = roomCfgMapper.selectRoomCfgByRoomId(roomId);
+        roomDetailDTO.setRoomName(roomIndex.getRoomName());
         roomDetailDTO.setId(roomId);
         roomDetailDTO.setPowerCapacity(roomIndex.getPowerCapacity());
-        roomDetailDTO.setEleAlarmDay(roomIndex.getEleAlarmDay());
-        roomDetailDTO.setEleAlarmMonth(roomIndex.getEleAlarmMonth());
-        roomDetailDTO.setEleLimitDay(roomIndex.getEleLimitDay());
-        roomDetailDTO.setEleLimitMonth(roomIndex.getEleLimitMonth());
+        roomDetailDTO.setAirPower(roomIndex.getAirPower());
+        roomDetailDTO.setEleAlarmDay(roomCfg.getEleAlarmDay());
+        roomDetailDTO.setEleAlarmMonth(roomCfg.getEleAlarmMonth());
+        roomDetailDTO.setEleLimitDay(roomCfg.getEleLimitDay());
+        roomDetailDTO.setEleLimitMonth(roomCfg.getEleLimitMonth());
         roomDetailDTO.setXLength(roomIndex.getXLength());
         roomDetailDTO.setYLength(roomIndex.getYLength());
 
@@ -612,7 +620,7 @@ public class RoomServiceImpl implements RoomService {
 
         roomDetailDTO.setCabinetList(aisleCabinetDTOList);
         //柜列
-        roomDetailDTO.setAisleList(getAisleDetail(roomId,roomIndex.getName(),totalSpace,totalUsedSpace));
+        roomDetailDTO.setAisleList(getAisleDetail(roomId,roomIndex.getRoomName(),totalSpace,totalUsedSpace));
         roomDetailDTO.setTotalSpace(totalSpace.get());
         roomDetailDTO.setUsedSpace(totalUsedSpace.get());
         roomDetailDTO.setFreeSpace(totalSpace.get()-totalUsedSpace.get());
@@ -907,9 +915,9 @@ public class RoomServiceImpl implements RoomService {
         }
         //报警数量
         RoomIndex roomIndex = roomIndexMapper.selectById(id);
-        int alarmNum = alarmRecordApi.getAlarmRecordNum(roomIndex.getName(),Arrays.asList(AlarmTypeEnums.ELE.getType(),
+        int alarmNum = alarmRecordApi.getAlarmRecordNum(roomIndex.getRoomName(),Arrays.asList(AlarmTypeEnums.ELE.getType(),
                 AlarmTypeEnums.STATUS.getType()));
-        int offLineNum = alarmRecordApi.getAlarmRecordNum(roomIndex.getName(),Arrays.asList(AlarmTypeEnums.OFF_LINE.getType()));
+        int offLineNum = alarmRecordApi.getAlarmRecordNum(roomIndex.getRoomName(),Arrays.asList(AlarmTypeEnums.OFF_LINE.getType()));
         roomMainDataDTO.setAlarmNum(alarmNum);
         roomMainDataDTO.setOffLineNum(offLineNum);
         int normal = deviceNum.get() - alarmNum -offLineNum;
@@ -1044,7 +1052,7 @@ public class RoomServiceImpl implements RoomService {
             }
             if (!CollectionUtils.isEmpty(pduKeys)){
                 List<PduIndexDo>  pduIndexDos = pduIndexDoMapper.selectList(new LambdaQueryWrapper<PduIndexDo>()
-                        .in(PduIndexDo::getDevKey,pduKeys));
+                        .in(PduIndexDo::getPduKey,pduKeys));
 
                 if (!CollectionUtils.isEmpty(pduIndexDos)){
                     Calendar calendar = Calendar.getInstance();
@@ -1128,6 +1136,132 @@ public class RoomServiceImpl implements RoomService {
 
 
     /**
+     * 新机房新增/编辑
+     * @param vo
+     * @return
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public Integer newSaveRoom(RoomSavesVo vo) {
+        try {
+            RoomIndex index = new RoomIndex();
+            index.setRoomName(vo.getRoomName());
+            index.setPowerCapacity(vo.getPowerCapacity());
+            index.setAirPower(vo.getAirPower());
+            index.setYLength(vo.getYLength());
+            index.setXLength(vo.getXLength());
+            if (Objects.nonNull(vo.getId())){
+                //编辑
+                RoomIndex roomIndex = roomIndexMapper.selectOne(new LambdaQueryWrapper<RoomIndex>()
+                        .eq(RoomIndex::getId,vo.getId()));
+                if (Objects.nonNull(roomIndex)){
+                    index.setId(vo.getId());
+                    int updateById = roomIndexMapper.updateById(index);
+                    if (updateById > 0) {
+                        roomCfgMapper.updateByRoomCfg(vo);
+                    }
+                }
+            }else{
+                //新增
+                int insert = roomIndexMapper.insert(index);
+                if (insert > 0){
+                    //保存配置
+                    RoomCfg cfg = new RoomCfg();
+                    cfg.setRoomId(index.getId());
+                    cfg.setEleAlarmDay(vo.getEleAlarmDay());
+                    cfg.setEleAlarmMonth(vo.getEleAlarmMonth());
+                    cfg.setEleLimitDay(vo.getEleLimitDay());
+                    cfg.setEleLimitMonth(vo.getEleLimitMonth());
+                    roomCfgMapper.insert(cfg);
+                }
+            }
+            return index.getId();
+        }finally {
+            log.info("刷新计算服务缓存 --- " + adder);
+            HttpUtil.get(adder);
+        }
+    }
+
+    /**
+     * 新-机房删除
+     * @param id
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void newDeleteRoom(int id) {
+        try {
+            int affectedRows  = roomIndexMapper.updateByDeleteRoom(id);
+            if (affectedRows > 0){
+                roomCfgMapper.deleteByRoomCfg(id);
+            }
+        }finally {
+            log.info("刷新计算服务缓存 --- " + adder);
+            HttpUtil.get(adder);
+        }
+    }
+
+
+    /**
+     * 机房柜列新增/编辑
+     * @param vo
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Integer roomAisleSave(AisleSaveVo vo) {
+        try {
+            AisleIndex index = new AisleIndex();
+            index.setAisleName(vo.getAisleName());
+            index.setRoomId(vo.getRoomId());
+            index.setAisleLength(vo.getAisleLength());
+            index.setXCoordinate(vo.getXCoordinate());
+            index.setYCoordinate(vo.getYCoordinate());
+            index.setPduBar(vo.getPduBar());
+            index.setDirection(vo.getDirection());
+            int insert = aisleIndexMapper.insert(index);
+            if (insert > 0){
+                //保存配置
+                AisleCfg cfg = new AisleCfg();
+                cfg.setAisleId(index.getId());
+                cfg.setPowerCapacity(vo.getPowerCapacity());
+                cfg.setAisleType("0");
+                cfg.setEleAlarmDay(vo.getEleAlarmDay());
+                cfg.setEleAlarmMonth(vo.getEleAlarmMonth());
+                cfg.setEleLimitDay(vo.getEleLimitDay());
+                cfg.setEleLimitMonth(vo.getEleLimitMonth());
+                aisleCfgMapper.insert(cfg);
+            }
+            return index.getId();
+        }finally {
+            log.info("刷新计算服务缓存 --- " + adder);
+            HttpUtil.get(adder);
+        }
+    }
+
+    /**
+     * 新-机房详情
+     * @param id
+     * @return
+     */
+    @Override
+    public RoomAndRoomCfgDTO getNewRoomDetail(int id) {
+        RoomAndRoomCfgDTO roomAndRoomCfgDTO = new RoomAndRoomCfgDTO();
+        RoomIndex roomIndex = roomIndexMapper.selectById(id);
+        RoomCfg roomCfg = roomCfgMapper.selectRoomCfgByRoomId(id);
+        roomAndRoomCfgDTO.setRoomName(roomIndex.getRoomName());
+        roomAndRoomCfgDTO.setId(id);
+        roomAndRoomCfgDTO.setPowerCapacity(roomIndex.getPowerCapacity());
+        roomAndRoomCfgDTO.setAirPower(roomIndex.getAirPower());
+        roomAndRoomCfgDTO.setEleAlarmDay(roomCfg.getEleAlarmDay());
+        roomAndRoomCfgDTO.setEleAlarmMonth(roomCfg.getEleAlarmMonth());
+        roomAndRoomCfgDTO.setEleLimitDay(roomCfg.getEleLimitDay());
+        roomAndRoomCfgDTO.setEleLimitMonth(roomCfg.getEleLimitMonth());
+        roomAndRoomCfgDTO.setXLength(roomIndex.getXLength());
+        roomAndRoomCfgDTO.setYLength(roomIndex.getYLength());
+        return roomAndRoomCfgDTO;
+    }
+
+    /**
      * 获取柜列详情
      * @param roomId
      * @return
@@ -1163,17 +1297,17 @@ public class RoomServiceImpl implements RoomService {
 
                 AisleDetailDTO detailDTO = new AisleDetailDTO();
 
-                detailDTO.setAisleName(aisleIndex.getName());
+                detailDTO.setAisleName(aisleIndex.getAisleName());
                 detailDTO.setId(aisleIndex.getId());
-                detailDTO.setLength(aisleIndex.getLength());
-                detailDTO.setType(aisleIndex.getType());
+                detailDTO.setLength(aisleIndex.getAisleLength());
+                //detailDTO.setType(aisleIndex.getType());
                 detailDTO.setPduBar(aisleIndex.getPduBar());
                 detailDTO.setRoomName(roomName);
                 detailDTO.setRoomId(roomId);
-                detailDTO.setEleAlarmDay(aisleIndex.getEleAlarmDay());
-                detailDTO.setEleAlarmMonth(aisleIndex.getEleAlarmMonth());
-                detailDTO.setEleLimitDay(aisleIndex.getEleLimitDay());
-                detailDTO.setEleLimitMonth(aisleIndex.getEleLimitMonth());
+//                detailDTO.setEleAlarmDay(aisleIndex.getEleAlarmDay());
+//                detailDTO.setEleAlarmMonth(aisleIndex.getEleAlarmMonth());
+//                detailDTO.setEleLimitDay(aisleIndex.getEleLimitDay());
+//                detailDTO.setEleLimitMonth(aisleIndex.getEleLimitMonth());
                 detailDTO.setDirection(aisleIndex.getDirection());
                 detailDTO.setXCoordinate(aisleIndex.getXCoordinate());
                 detailDTO.setYCoordinate(aisleIndex.getYCoordinate());
@@ -1225,7 +1359,7 @@ public class RoomServiceImpl implements RoomService {
                     });
                 }
 
-                for (int i = 0; i< aisleIndex.getLength();i ++ ){
+                for (int i = 0; i< aisleIndex.getAisleLength();i ++ ){
                     CabinetDTO cabinetDTO = cabMap.get(i+1);
                     if (Objects.isNull(cabinetDTO)){
 
@@ -1252,15 +1386,15 @@ public class RoomServiceImpl implements RoomService {
     private Integer aisleSave(AisleSaveVo aisleSaveVo) {
 
         AisleIndex index = new AisleIndex();
-        index.setName(aisleSaveVo.getAisleName());
-        index.setLength(aisleSaveVo.getLength());
+        index.setAisleName(aisleSaveVo.getAisleName());
+        index.setAisleLength(aisleSaveVo.getAisleLength());
         index.setRoomId(aisleSaveVo.getRoomId());
-        index.setType(aisleSaveVo.getType());
+        //index.setType(aisleSaveVo.getType());
         index.setPduBar(aisleSaveVo.getPduBar());
-        index.setEleAlarmDay(aisleSaveVo.getEleAlarmDay());
-        index.setEleAlarmMonth(aisleSaveVo.getEleAlarmMonth());
-        index.setEleLimitDay(aisleSaveVo.getEleLimitDay());
-        index.setEleLimitMonth(aisleSaveVo.getEleLimitMonth());
+//        index.setEleAlarmDay(aisleSaveVo.getEleAlarmDay());
+//        index.setEleAlarmMonth(aisleSaveVo.getEleAlarmMonth());
+//        index.setEleLimitDay(aisleSaveVo.getEleLimitDay());
+//        index.setEleLimitMonth(aisleSaveVo.getEleLimitMonth());
         index.setDirection(aisleSaveVo.getDirection());
         index.setXCoordinate(aisleSaveVo.getXCoordinate());
         index.setYCoordinate(aisleSaveVo.getYCoordinate());
@@ -1271,14 +1405,14 @@ public class RoomServiceImpl implements RoomService {
             if (StringUtils.isNotEmpty(aisleSaveVo.getDirection())
                     && "x".equals(aisleSaveVo.getDirection())){
                 //横向
-                if (aisleSaveVo.getXCoordinate() + aisleSaveVo.getLength()>roomIndex.getXLength() + 1){
+                if (aisleSaveVo.getXCoordinate() + aisleSaveVo.getAisleLength()>roomIndex.getXLength() + 1){
                     throw new RuntimeException("柜列长度超出");
                 }
             }
             if ( StringUtils.isNotEmpty(aisleSaveVo.getDirection())
                     && "y".equals(aisleSaveVo.getDirection())){
                 //纵向
-                if (aisleSaveVo.getYCoordinate() + aisleSaveVo.getLength()>roomIndex.getYLength() + 1){
+                if (aisleSaveVo.getYCoordinate() + aisleSaveVo.getAisleLength()>roomIndex.getYLength() + 1){
                     throw new RuntimeException("柜列长度超出");
                 }
             }
@@ -1372,7 +1506,7 @@ public class RoomServiceImpl implements RoomService {
             //新增
             //判断机柜名称是否重复（已删除的或者已禁用的恢复）
             index = cabinetIndexMapper.selectOne(new LambdaQueryWrapper<CabinetIndex>()
-                    .eq(CabinetIndex::getName, vo.getCabinetName())
+                    .eq(CabinetIndex::getCabinetName, vo.getCabinetName())
                     .eq(CabinetIndex::getRoomId, vo.getRoomId()));
             if (Objects.nonNull(index)) {
                 if (index.getIsDeleted() == DelEnums.DELETE.getStatus() || index.getIsDisabled() == DisableEnums.DISABLE.getStatus()) {
@@ -1416,19 +1550,19 @@ public class RoomServiceImpl implements RoomService {
     private CabinetIndex convertIndex(CabinetVo vo, CabinetIndex index) {
         CabinetIndex cabinetIndex = new CabinetIndex();
         cabinetIndex.setAisleId(vo.getAisleId());
-        cabinetIndex.setName(vo.getCabinetName());
+        cabinetIndex.setCabinetName(vo.getCabinetName());
         cabinetIndex.setPduBox(vo.getPduBox());
         //未删除
         cabinetIndex.setIsDeleted(DelEnums.NO_DEL.getStatus());
         //未禁用
         cabinetIndex.setIsDisabled(DisableEnums.ENABLE.getStatus());
-        cabinetIndex.setPowCapacity(vo.getPowCapacity());
+        cabinetIndex.setPowerCapacity(vo.getPowCapacity());
         cabinetIndex.setRoomId(vo.getRoomId());
         cabinetIndex.setId(index.getId());
-        cabinetIndex.setEleAlarmDay(vo.getEleAlarmDay());
-        cabinetIndex.setEleAlarmMonth(vo.getEleAlarmMonth());
-        cabinetIndex.setEleLimitDay(vo.getEleLimitDay());
-        cabinetIndex.setEleLimitMonth(vo.getEleLimitMonth());
+//        cabinetIndex.setEleAlarmDay(vo.getEleAlarmDay());
+//        cabinetIndex.setEleAlarmMonth(vo.getEleAlarmMonth());
+//        cabinetIndex.setEleLimitDay(vo.getEleLimitDay());
+//        cabinetIndex.setEleLimitMonth(vo.getEleLimitMonth());
         return cabinetIndex;
     }
 

@@ -1869,13 +1869,13 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         Map<Integer, CabinetIndex> cabinetMap = cabinetIndices.stream().collect(Collectors.toMap(CabinetIndex::getId, Function.identity()));
         List<RoomIndex> roomIndices = roomIndexMapper.selectBatchIds(roomIds);
 
-        Map<Integer, String> roomMap = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getName));
+        Map<Integer, String> roomMap = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getRoomName));
         List<Integer> cabIds = cabinetIndices.stream().filter(dto -> dto.getAisleId() != 0).map(CabinetIndex::getAisleId).collect(Collectors.toList());
         Map<Integer, String> aisleMap;
         if (!CollectionUtils.isEmpty(cabIds)) {
             List<AisleIndex> aisleIndexList = aisleIndexMapper.selectBatchIds(cabIds);
             if (!CollectionUtils.isEmpty(aisleIndexList)) {
-                aisleMap = aisleIndexList.stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getName));
+                aisleMap = aisleIndexList.stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getAisleName));
             } else {
                 aisleMap = new HashMap<>();
             }
@@ -1893,9 +1893,9 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 CabinetIndex cabinetIndex = cabinetMap.get(cabinetPduA.getCabinetId());
                 if (Objects.nonNull(cabinetIndex)) {
                     if (cabinetIndex.getAisleId() != 0) {
-                        localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + aisleMap.get(cabinetIndex.getAisleId()) + "-" + cabinetIndex.getName() + "-" + "A路";
+                        localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + aisleMap.get(cabinetIndex.getAisleId()) + "-" + cabinetIndex.getCabinetName() + "-" + "A路";
                     } else {
-                        localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + cabinetIndex.getName() + "-" + "A路";
+                        localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + cabinetIndex.getCabinetName() + "-" + "A路";
                     }
                 }
             }
@@ -1905,9 +1905,9 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 CabinetIndex cabinetIndex = cabinetMap.get(cabinetPduB.getCabinetId());
                 if (Objects.nonNull(cabinetIndex)) {
                     if (cabinetIndex.getAisleId() != 0) {
-                        localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + aisleMap.get(cabinetIndex.getAisleId()) + "-" + cabinetIndex.getName() + "-" + "B路";
+                        localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + aisleMap.get(cabinetIndex.getAisleId()) + "-" + cabinetIndex.getCabinetName() + "-" + "B路";
                     } else {
-                        localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + cabinetIndex.getName() + "-" + "B路";
+                        localtion = roomMap.get(cabinetIndex.getRoomId()) + "-" + cabinetIndex.getCabinetName() + "-" + "B路";
                     }
                 }
             }

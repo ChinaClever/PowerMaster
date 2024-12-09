@@ -33,7 +33,7 @@ public class AisleIndexDO {
     /**
      * 通道名称
      */
-    private String name;
+    private String aisleName;
     /**
      * 数据来源
      */
@@ -45,7 +45,7 @@ public class AisleIndexDO {
     /**
      * 长度
      */
-    private Integer length;
+    private Integer aisleLength;
     /**
      * 柜列类型
      */

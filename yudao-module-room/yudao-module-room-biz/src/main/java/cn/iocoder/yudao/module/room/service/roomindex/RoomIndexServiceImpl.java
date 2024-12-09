@@ -467,8 +467,8 @@ public class RoomIndexServiceImpl implements RoomIndexService {
         roomIndexDOList.forEach(roomIndexDO -> {
             RoomBalanceRes roomBalanceRes = new RoomBalanceRes();
             roomBalanceRes.setId(roomIndexDO.getId());
-            roomBalanceRes.setName(roomIndexDO.getName());
-            roomBalanceRes.setLocation(roomIndexDO.getName());
+            roomBalanceRes.setName(roomIndexDO.getRoomName());
+            roomBalanceRes.setLocation(roomIndexDO.getRoomName());
             result.add(roomBalanceRes);
         });
         Map<Integer, RoomBalanceRes> resMap = result.stream().collect(Collectors.toMap(RoomBalanceRes::getId, Function.identity()));
@@ -523,8 +523,8 @@ public class RoomIndexServiceImpl implements RoomIndexService {
             roomIndexDOList.forEach(roomIndexDO -> {
                 RoomEQRes res = new RoomEQRes();
                 res.setId(roomIndexDO.getId());
-                res.setName(roomIndexDO.getName());
-                res.setLocation(roomIndexDO.getName());
+                res.setName(roomIndexDO.getRoomName());
+                res.setLocation(roomIndexDO.getRoomName());
                 result.add(res);
             });
             String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
@@ -715,7 +715,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
         }
         for (RoomIndexDO record : records) {
             RoomEleTotalRealtimeResVO resVO = new RoomEleTotalRealtimeResVO();
-            resVO.setRoomId(record.getId()).setName(record.getName());
+            resVO.setRoomId(record.getId()).setName(record.getRoomName());
             BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
             boolQuery.must(QueryBuilders.rangeQuery("create_time.keyword")
                     .gte(reqDTO.getTimeRange()[0])

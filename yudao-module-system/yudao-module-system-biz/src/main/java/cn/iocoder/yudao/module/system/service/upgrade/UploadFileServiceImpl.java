@@ -260,7 +260,7 @@ public class UploadFileServiceImpl implements UploadFileService{
                     UpgradeFileRespVO recordRespVO = BeanUtils.toBean(record, UpgradeFileRespVO.class);
                     recordRespVO.setUpgradeDevMsg(UpgradeDevEnum.getDescByType(record.getUpgradeDev()));
                     if (!CollectionUtils.isEmpty(record.getRoomIds())){
-                        List<String> names = roomIndexMapper.selectBatchIds(record.getRoomIds()).stream().map(RoomIndex::getName).collect(Collectors.toList());
+                        List<String> names = roomIndexMapper.selectBatchIds(record.getRoomIds()).stream().map(RoomIndex::getRoomName).collect(Collectors.toList());
                         recordRespVO.setRoomNames(names);
                     }
                     recordRespVOS.add(recordRespVO);
@@ -478,7 +478,7 @@ public class UploadFileServiceImpl implements UploadFileService{
                                 .eq(PduIndexDo::getIsDeleted,DelEnums.NO_DEL.getStatus())
                                 //非离线状态
                                 .ne(PduIndexDo::getRunStatus,5)
-                                .in(PduIndexDo::getDevKey,keys));
+                                .in(PduIndexDo::getPduKey,keys));
                         if (!CollectionUtils.isEmpty(pduIndexDos)){
                             List<String> ips = pduIndexDos.stream().filter(t -> t.getCascadeAddr().equals("0"))
                                     .map(PduIndexDo::getIpAddr).distinct().collect(Collectors.toList());

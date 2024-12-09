@@ -454,10 +454,10 @@ public class RackEnergyConsumptionServiceImpl implements RackEnergyConsumptionSe
             String roomName = mapRoom.get(record.getRoomId());
             IndexDO indexDO = mapCabinet.get(record.getCabinetId());
             if(indexDO.getAisleId() != 0){
-                String aisleName = aisleIndexMapper.selectById(indexDO.getAisleId()).getName();
-                respVO.setLocation(roomName + "-" + aisleName + "-" + indexDO.getName());
+                String aisleName = aisleIndexMapper.selectById(indexDO.getAisleId()).getAisleName();
+                respVO.setLocation(roomName + "-" + aisleName + "-" + indexDO.getCabinetName());
             }else {
-                respVO.setLocation( roomName + "-"  + indexDO.getName()) ;
+                respVO.setLocation( roomName + "-"  + indexDO.getCabinetName()) ;
             }
             respVO.setId(Long.valueOf(record.getId())).setRackName(record.getRackName());
             BoolQueryBuilder boolQuery1 = QueryBuilders.boolQuery();

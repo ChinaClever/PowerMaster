@@ -33,7 +33,7 @@ public class IndexDO  {
     /**
      * 机柜名称
      */
-    private String name;
+    private String cabinetName;
     /**
      * 通道编号
      */
@@ -41,7 +41,7 @@ public class IndexDO  {
     /**
      * 电力容量
      */
-    private Double powCapacity;
+    private Double powerCapacity;
     /**
      * 数据来源 0：PDU 1：母线
      */

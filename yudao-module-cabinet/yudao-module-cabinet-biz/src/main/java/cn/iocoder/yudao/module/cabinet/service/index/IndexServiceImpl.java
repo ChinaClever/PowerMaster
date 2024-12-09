@@ -423,10 +423,10 @@ public class IndexServiceImpl implements IndexService {
         List<Integer> ids = list.stream().map(IndexDO::getId).collect(Collectors.toList());
 
         List<RoomIndex> roomIndices = roomIndexMapper.selectBatchIds(list.stream().map(IndexDO::getRoomId).collect(Collectors.toList()));
-        Map<Integer, String> roomMap = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getName));
+        Map<Integer, String> roomMap = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getRoomName));
         Map<Integer, String>  aisleMap = aisleIndexMapper.selectBatchIds(list.stream()
 //                .filter(dto -> dto.getAisleId() != 0)
-                    .map(IndexDO::getAisleId).collect(Collectors.toList())).stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getName));
+                    .map(IndexDO::getAisleId).collect(Collectors.toList())).stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getAisleName));
 
         List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().in(CabinetPdu::getCabinetId, ids));
 
@@ -459,9 +459,9 @@ public class IndexServiceImpl implements IndexService {
             result.add(res);
             String localtion = null;
             if(indexDO.getAisleId() != 0){
-                localtion = roomMap.get(indexDO.getRoomId()) + "-" + aisleMap.get(indexDO.getAisleId()) + "-" + indexDO.getName();
+                localtion = roomMap.get(indexDO.getRoomId()) + "-" + aisleMap.get(indexDO.getAisleId()) + "-" + indexDO.getCabinetName();
             }else {
-                localtion = roomMap.get(indexDO.getRoomId()) + "-"  + indexDO.getName() ;
+                localtion = roomMap.get(indexDO.getRoomId()) + "-"  + indexDO.getCabinetName() ;
             }
             res.setLocation(localtion);
             res.setId(indexDO.getId());

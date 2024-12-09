@@ -431,13 +431,13 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
         Map<Integer , AisleIndex> mapAisle = cabinetHistoryDataService.getAisleByIds(aisleIds);
         for (IndexDO record : records) {
             CabinetEleTotalRealtimeResVO resVO = new CabinetEleTotalRealtimeResVO();
-            String roomName = mapRoom.get(record.getRoomId()).getName();
-            String aisleName = mapAisle.get(record.getAisleId()).getName();
+            String roomName = mapRoom.get(record.getRoomId()).getRoomName();
+            String aisleName = mapAisle.get(record.getAisleId()).getAisleName();
             String localtion = null;
             if(record.getAisleId() != 0){
-                localtion = roomName + "-" + aisleName + "-" + record.getName();
+                localtion = roomName + "-" + aisleName + "-" + record.getCabinetName();
             }else {
-                localtion = roomName + "-"  + record.getName() ;
+                localtion = roomName + "-"  + record.getCabinetName() ;
             }
             resVO.setId(record.getId()).setLocation(localtion);
             BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();

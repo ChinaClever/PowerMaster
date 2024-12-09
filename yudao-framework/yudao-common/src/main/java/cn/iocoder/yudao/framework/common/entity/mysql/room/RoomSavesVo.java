@@ -1,9 +1,7 @@
-package cn.iocoder.yudao.module.room.vo;
+package cn.iocoder.yudao.framework.common.entity.mysql.room;
 
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
-import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetEnvSensor;
-import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -18,7 +16,7 @@ import java.util.List;
  */
 @Schema(description = "管理后台 - 机房新增/编辑 Request VO")
 @Data
-public class RoomSaveVo {
+public class RoomSavesVo {
 
     /**
      * 机房id
