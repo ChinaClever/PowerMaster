@@ -1,6 +1,6 @@
 package cn.iocoder.yudao.framework.common.entity.es.pdu.total;
 
-import cn.iocoder.yudao.framework.common.entity.es.pdu.BaseDo;
+import cn.iocoder.yudao.framework.common.entity.es.pdu.PduBaseDo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -10,7 +10,7 @@ import lombok.Data;
  * @Description: pdu总历史数据表（实时）
  */
 @Data
-public class PduHdaTotalRealtimeDo extends BaseDo {
+public class PduHdaTotalRealtimeDo extends PduBaseDo {
 
 
     /**
@@ -29,5 +29,11 @@ public class PduHdaTotalRealtimeDo extends BaseDo {
      * 功率因素
      */
     @JsonProperty("power_factor")
-    private int powerFactor;
+    private float powerFactor;
+
+    /**
+     * 无功功率
+     */
+    @JsonProperty("pow_reactive")
+    private float powReactive;
 }

@@ -18,6 +18,14 @@ public class HistoryDataPageReqVO extends PageParam {
 
     private Integer pageSize;
 
+    private Integer lineId;
+
+    private Integer loopId;
+
+    private Integer outletId;
+
+    private Integer sensorId;
+
     private String type;
 
     private String granularity;
@@ -27,5 +35,7 @@ public class HistoryDataPageReqVO extends PageParam {
     private String cascadeAddr;
 
     private String[] timeRange;
+
+    private String[] ipArray;
 
 }

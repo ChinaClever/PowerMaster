@@ -1,9 +1,9 @@
 package cn.iocoder.yudao.module.pdu.service.pdudevice;
 
-import javax.validation.*;
-
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDevicePageReqVO;
-import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDeviceSaveReqVO;
+import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDULineRes;
+import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PduBalanceDeatilRes;
+import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PduTrendVO;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.pdudevice.PDUDeviceDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 
@@ -27,9 +27,46 @@ public interface PDUDeviceService {
      */
     PageResult<PDUDeviceDO> getPDUDevicePage(PDUDevicePageReqVO pageReqVO);
 
+    PageResult<PDUDeviceDO> getDeletedPDUDevicePage(PDUDevicePageReqVO pageReqVO);
+
     String getDisplayDataByDevKey(String devKey);
 
-    Map getHistoryDataByPduId(Long id,String type);
+    Map getHistoryDataByDevKey(String devKey, String type);
 
-    Map getChartNewDataByPduId(Long id, LocalDateTime oldTime,String type);
+    Map getChartNewDataByPduDevKey(String devKey, LocalDateTime oldTime,String type);
+
+    Map getReportConsumeDataByDevKey(String devKey, Integer timeType,LocalDateTime oldTime, LocalDateTime newTime);
+
+    Map getReportPowDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    Map getReportOutLetDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    Map getReportTemDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    PageResult<PDULineRes> getPDULineDevicePage(PDUDevicePageReqVO pageReqVO);
+
+
+    List<String> getDevKeyList();
+
+    List<String> getIpList();
+
+    Map getPDUPFLine(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
+
+    int deletePDU(String devKey) throws Exception;
+
+    int restorePDU(String devKey) throws Exception;
+
+    Integer getPDUMaxLineId(PDUDevicePageReqVO pageReqVO);
+
+    PageResult<PDULineRes> getPDUMaxCurData(PDUDevicePageReqVO pageReqVO);
+
+    String getLocationByDevKey(String devKey);
+
+    Map getPduHdaLineHisdataKey(String devKey, String type);
+
+    Map getPduMaxLine(Integer id, String type);
+
+    PduBalanceDeatilRes getPDUDeviceDetail(String key);
+
+    List<PduTrendVO> getPudBalanceTrend(Integer pduId);
 }

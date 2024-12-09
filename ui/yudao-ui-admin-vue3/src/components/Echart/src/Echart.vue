@@ -67,7 +67,8 @@ watch(
   () => options.value,
   (options) => {
     if (echartRef) {
-      echartRef?.setOption(options)
+      echartRef?.setOption(options,true)
+      resizeHandler()
     }
   },
   {
@@ -80,6 +81,7 @@ const resizeHandler = debounce(() => {
     echartRef.resize()
   }
 }, 100)
+
 
 const contentResizeHandler = async (e: TransitionEvent) => {
   if (e.propertyName === 'width') {

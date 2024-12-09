@@ -27,7 +27,7 @@ public class PduIndexDo implements Serializable {
     /**
      * 设备识别码
      */
-    private String devKey;
+    private String pduKey;
 
     /**
      * ip地址
@@ -48,6 +48,10 @@ public class PduIndexDo implements Serializable {
      * 是否删除
      */
     private int isDeleted;
+    /**
+     * 运行状态
+     */
+    private int runStatus;
 
     /**
      * 创建时间

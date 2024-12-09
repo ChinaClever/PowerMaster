@@ -1,60 +1,57 @@
 <template>
-   <el-row :gutter="20">
-    <el-col :span="treeWidth" :xs="24">
-      <el-input
-        v-model="filterText"
-        style="width: 190px"
-        placeholder=""
-      />
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜电力数据">
+    <template #NavInfo>
+      <br/>    <br/> 
+      <div class="nav_data">
+        <!-- <div class="carousel-container">
+          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
+            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
+              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
+            </el-carousel-item>
+          </el-carousel>
+        </div>
+        <div class="nav_header">
+          <br/>
+          <span v-if="queryParams.granularity == 'realtime' ">全部机柜最近一分钟新增记录</span>
+          <span v-if="queryParams.granularity == 'hour' ">全部机柜最近一小时新增记录</span>
+          <span v-if="queryParams.granularity == 'day' ">全部机柜最近一天新增记录</span>
+        </div>
+        <div class="nav_content" >
+          <el-descriptions title="" direction="vertical" :column="1" border >
+            <el-descriptions-item label=""><span >{{ navTotalData }} 条</span></el-descriptions-item>
+          </el-descriptions>
+        </div> -->
+        <div class="descriptions-container" style="font-size: 14px;">
+          <div class="description-item">
+            <span class="label">总数据 :</span>
+            <span class="value">{{ navTotalData }}条</span>
+          </div>
 
-      <el-tree
-        ref="treeRef"
-        style="max-width: 600px"
-        class="filter-tree"
-        :data="serverRoomArr"
-        :props="defaultProps"
-        default-expand-all
-        show-checkbox
-        :filter-node-method="filterNode"
-      />
-    </el-col>
-    <el-col :span="24 - treeWidth" :xs="24">
-      <ContentWrap>
-        <!-- 搜索工作栏 -->
+          <div style="text-align: center">
+            <div v-if="queryParams.granularity == 'realtime' " style="text-align: center"><span>全部机柜最近一分钟新增记录</span></div>
+              <div v-if="queryParams.granularity == 'hour' " style="text-align: center"><span>全部机柜最近一小时新增记录</span></div>
+              <div v-if="queryParams.granularity == 'day' " style="text-align: center"><span>全部机柜最近一天新增记录</span></div>
+                <div class="line" style="margin-top: 10px;"></div>
+          </div>
+          </div>
+
+
+        
+      </div>
+    </template>
+      <template #ActionBar>
         <el-form
           class="-mb-15px"
           :model="queryParams"
           ref="queryFormRef"
           :inline="true"
-          label-width="120px"
+          label-width="auto"
         >
-          <el-form-item label="" prop="collaspe">
-            <el-switch 
-              v-model="isCollapsed"  
-              active-color="#409EFF" 
-              inactive-color="#909399"
-              active-text="折叠"  
-              active-value="100"
-              inactive-value="0" 
-              @change="toggleCollapse" />
-          </el-form-item>
-
-          <el-form-item label="时间段" prop="searchTime">
-            <el-date-picker
-              v-model="queryParams.searchTime"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              type="daterange"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
-              :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
-              class="!w-190px"
-            />
-          </el-form-item>
-
           <el-form-item label="颗粒度" prop="type">
             <el-select
               v-model="queryParams.granularity"
               placeholder="请选择分钟/小时/天"
+              @change="granularityChange"
               class="!w-120px" >
               <el-option label="分钟" value="realtime" />
               <el-option label="小时" value="hour" />
@@ -62,7 +59,19 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item label="筛选列" prop="createTime">
+        <el-form-item label="时间段" prop="timeRange">
+            <el-date-picker
+            value-format="YYYY-MM-DD HH:mm:ss"
+            v-model="queryParams.timeRange"
+            type="datetimerange"
+            :shortcuts="shortcuts"
+            range-separator="-"
+            start-placeholder="开始时间"
+            end-placeholder="结束时间"
+          />
+          </el-form-item>
+
+          <el-form-item label="筛选列">
           <el-cascader
             v-model="defaultOptionsCol"
             :options="optionsCol"
@@ -71,22 +80,12 @@
             collapse-tags-tooltip
             :show-all-levels="false"
             @change="cascaderChange"
-            class="!w-220px"
+            class="!w-210px"
           />
           </el-form-item>
 
- 
           <el-form-item >
             <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-            <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
-            <el-button
-              type="primary"
-              plain
-              @click="openForm('create')"
-              v-hasPermi="['pdu:history-data:create']"
-            >
-              <Icon icon="ep:plus" class="mr-5px" /> 新增
-            </el-button>
             <el-button
               type="success"
               plain
@@ -96,401 +95,355 @@
               <Icon icon="ep:download" class="mr-5px" /> 导出
             </el-button>
           </el-form-item>
-
         </el-form>
-
-
-      </ContentWrap>
-      <!-- 列表 -->
-      <ContentWrap>
+      </template>
+      <template #Content>
         <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+           <!-- 添加行号列 -->
+          <el-table-column label="序号" align="center" width="60px">
+            <template #default="{ $index }">
+              {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
+            </template>
+          </el-table-column>
+          <!-- 遍历其他列 -->
           <template v-for="column in tableColumns">
             <el-table-column :key="column.prop" :label="column.label" :align="column.align" :prop="column.prop" :formatter="column.formatter" :width="column.width" v-if="column.istrue" >
               <template #default="{ row }" v-if="column.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.id)">详情</el-button>
-                <el-button link type="danger" @click="handleDelete(row.id)" v-hasPermi="['pdu:history-data:delete']">删除</el-button>
+                <el-button link type="primary" @click="toDetails(row.cabinet_id, row.location)">详情</el-button>
               </template>
             </el-table-column>
           </template>
+          <!-- 超过一万条数据提示信息 -->
+          <template v-if="shouldShowDataExceedMessage" #append>
+            <tr>
+              <td colspan="列数" style="text-align: center; padding: 12px 0;">
+                <span style="margin:0 12px; color: red;">数据量过大，请筛选后查看更多数据。</span>
+              </td>
+            </tr>
+          </template>
         </el-table>
-        <!-- 分页 -->
-        <Pagination
-          :total="total"
-          v-model:page="queryParams.pageNo"
-          v-model:limit="queryParams.pageSize"
-          @pagination="getList"
-        />
-      </ContentWrap>
-
-    </el-col>
-   </el-row>
-
+       <!-- 分页 -->
+          <Pagination
+            :total="total"
+            :page-size-arr="pageSizeArr"
+            layout = "sizes, prev, pager, next, jumper"
+            v-model:page="queryParams.pageNo"
+            v-model:limit="queryParams.pageSize"
+            @pagination="getList"
+          />
+          <div class="realTotal">共 {{ realTotel }} 条</div>
+     </template>
+  </CommonMenu>
 </template>
 
 <script setup lang="ts">
-import { dateFormatter } from '@/utils/formatTime'
+import dayjs from 'dayjs'
 import download from '@/utils/download'
-import { HistoryDataApi } from '@/api/pdu/historydata'
-import { ElTree } from 'element-plus'
+import { HistoryDataApi } from '@/api/cabinet/historydata'
+import { CabinetApi } from '@/api/cabinet/info'
+import PDUImage from '@/assets/imgs/PDU.jpg';
+import { onMounted, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import { ElMessage } from 'element-plus';
+const { push } = useRouter()
+/** 机柜历史数据 列表 */
+defineOptions({ name: 'CabinetHistoryData' })
 
-/** pdu历史数据 列表 */
-defineOptions({ name: 'HistoryData' })
-
-const serverRoomArr =  [
-  {
-    value: '1',
-    label: '机房1',
-    children: [
-      {
-        value: '1-1',
-        label: '柜列1',
-        children: [
-        {
-          value: '1-1-1',
-          label: '机柜1',
-        },
-        {
-          value: '1-1-2',
-          label: '机柜2',
-        },]
-      },
-    ],
-  },
-  {
-    value: '2',
-    label: '机房2',
-    children: [
-      {
-        value: '2-1',
-        label: '柜列1',
-        children: [
-        {
-          value: '2-1-1',
-          label: '机柜1',
-        },
-        {
-          value: '2-1-2',
-          label: '机柜2',
-        },]
-      },
-    ],
-  },
-  {
-    value: '3',
-    label: '机房3',
-    children: [
-      {
-        value: '3-1',
-        label: '柜列1',
-        children: [
-        {
-          value: '3-1-1',
-          label: '机柜1',
-        },
-        {
-          value: '3-1-2',
-          label: '机柜2',
-        },]
-      },
-    ],
-  },
-]
-//折叠功能
-let treeWidth = ref(3)
-let isCollapsed = ref(0);
-const toggleCollapse = () => {
-  treeWidth.value = isCollapsed.value == 0 ? 3 : 0;
-};
-//树型控件
-interface Tree {
-  [key: string]: any
-}
-const filterText = ref('')
-const treeRef = ref<InstanceType<typeof ElTree>>()
-const filterNode = (value: string, data: Tree) => {
-  if (!value) return true
-  return data.label.includes(value)
-}
-const defaultProps = {
-  children: 'children',
-  label: 'label',
-}
-watch(filterText, (val) => {
-  treeRef.value!.filter(val)
-})
-
+const navList = ref([]) as any // 左侧导航栏树结构列表
+const navTotalData = ref(0)
 const message = useMessage() // 消息弹窗
-const { t } = useI18n() // 国际化
-
 const loading = ref(true) // 列表的加载中
-const list = ref<Array<{ 
-      id: number,
-      location: string,
-      cabinetId: number,
-      totalActivePow: number,
-      totalApparentPow: number,
-      aActivePow: number,
-      aApparentPow: number,
-      bActivePow: number,
-      bApparentPow: number,
-      createTime:  string,
-
-      totalApparentPowAvgValue: number,
-      totalApparentPowMaxValue: number,
-      totalApparentPowMaxTime:  string,
-      totalApparentPowMinValue: number,
-      totalApparentPowMinTime:  string,
-
-      aApparentPowAvgValue: number,
-      aApparentPowMaxValue: number,
-      aApparentPowMaxTime:  string,
-      aApparentPowMinValue: number,
-      aApparentPowMinTime:  string,
-     
-      bApparentPowAvgValue: number,
-      bApparentPowMaxValue: number,
-      bApparentPowMaxTime: string,
-      bApparentPowMinValue: number,
-      bApparentPowMinTime:  string,
-
-      totalActivePowAvgValue: number,
-      totalActivePowMaxValue: number,
-      totalActivePowMaxTime: string,
-      totalActivePowMinValue: number,
-      totalActivePowMinTime: string,
-
-      aActivePowAvgValue: number,
-      aActivePowMaxValue: number,
-      aActivePowMaxTime:  string,
-      aActivePowMinValue: number,
-      aActivePowMinTime: string,
-     
-      bActivePowAvgValue: number,
-      bActivePowMaxValue: number,
-      bActivePowMaxTime:  string,
-      bActivePowMinValue: number,
-      bActivePowMinTime: string,
-}>>([]); // 列表数据
-const total = ref(0) // 列表的总页数
+const list = ref<Array<{ }>>([]); // 列表数据
+const total = ref(0) // 数据总条数 超过10000条为10000
+const realTotel = ref(0) // 数据的真实总条数
+const pageSizeArr = ref([15,30,50,100])
 const queryParams = reactive({
   pageNo: 1,
-  pageSize: 10,
+  pageSize: 15,
   granularity: 'realtime',
-  searchTime: undefined,
+  timeRange: undefined,
+  cabinetIds:[]
 })
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
+const carouselItems = ref([
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+      { imgUrl: PDUImage},
+    ]);//侧边栏轮播图图片路径
+// 时间段快捷选项
+const shortcuts = [
+   {
+    text: '最近一小时',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setHours(start.getHours() - 1)
+      return [start, end]
+    },
+  },
+    {
+    text: '最近一天',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setDate(start.getDate() - 1)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近一周',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setDate(start.getDate() - 7)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近一个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setMonth(start.getMonth() - 1)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近六个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setMonth(start.getMonth() - 6)
+      return [start, end]
+    },
+  },
+]
 
 //筛选选项
 const props = { multiple: true}
-const defaultOptionsCol = ref([["total", "totalActivePow"], ["total", "totalApparentPow"], ["a", "aActivePow"], 
-                ["a", "aApparentPow"], ["b", "bActivePow"], ["b", "bApparentPow"]])
+const defaultOptionsCol = ref([["total", "active_total"], ["total", "apparent_total"]])
 const optionsCol = ref([
   {
     value: "total",
     label: '总',
     children: [
-      { value: "totalActivePow", label: '总有功功率' },
-      { value: "totalApparentPow", label: '总视在功率' },
+      { value: "active_total", label: '总有功功率' },
+      { value: "apparent_total", label: '总视在功率' },
     ],
   },
   {
-    value: "a",
-    label: 'a路',
+    value: "A",
+    label: 'A路',
     children: [
-      { value: "aActivePow", label: 'a路有功功率' },
-      { value: "aApparentPow", label: 'a路视在功率' },
+      { value: "active_a", label: 'A路有功功率' },
+      { value: "apparent_a", label: 'A路视在功率' },
     ],
   },
   {
-    value: "b",
-    label: 'b路',
+    value: "B",
+    label: 'B路',
     children: [
-      { value: "bActivePow", label: 'b路有功功率' },
-      { value: "bApparentPow", label: 'b路视在功率' },
+      { value: "active_b", label: 'B路有功功率' },
+      { value: "apparent_b", label: 'B路视在功率' },
     ],
   },
 ])
-const originalArray = ref(["totalActivePow", "totalApparentPow", "aActivePow", "aApparentPow", "bActivePow", "bApparentPow"])
-// 处理选项变化
+const originalArray = ref(["active_total", "apparent_total", "active_a", "apparent_a", "active_b", "apparent_b"])
+
+// 处理筛选列变化
 const cascaderChange = (selectedCol) => {
   let selectedCol1 = selectedCol.map((arr) => arr[arr.length - 1]);
   let notSelectedCol = originalArray.value.filter(item => !selectedCol1.includes(item));
   tableColumns.value.forEach(column => {
-    if ( selectedCol1?.includes(column.prop)) {
+    for (const col of selectedCol1) {
+      if (column.prop?.startsWith(col)){
         column.istrue = true;
+        break;
       }
-    if ( notSelectedCol?.includes(column.prop as string)) {
+    };     
+    for (const col of notSelectedCol) {
+      if (column.prop?.startsWith(col)){
         column.istrue = false;
+        break;
       }
-      
-    });
- 
+    }
+  });
 }
 
-watch(() => queryParams.granularity, (newValues) => {
+// 处理颗粒度筛选变化 有变化重新获取导航栏显示的新增记录
+const granularityChange = () => {
+   getNavNewData()
+}
+
+watch(() => queryParams.granularity, (newValues) => { 
     const newGranularity = newValues;
     if ( newGranularity == 'realtime'){
-      originalArray.value = ["totalActivePow", "totalApparentPow", "aActivePow", "aApparentPow", "bActivePow", "bApparentPow"]        
       defaultOptionsCol.value = [
-        ["total", "totalActivePow"], ["total", "totalApparentPow"], ["a", "aActivePow"], 
-        ["a", "aApparentPow"], ["b", "bActivePow"], ["b", "bApparentPow"]
+        ["total", "active_total"], ["total", "apparent_total"]
       ]
       optionsCol.value = [
         {
         value: "total",
         label: '总',
         children: [
-          { value: "totalActivePow", label: '总有功功率' },
-          { value: "totalApparentPow", label: '总视在功率' },
+          { value: "active_total", label: '总有功功率' },
+          { value: "apparent_total", label: '总视在功率' },
         ],
         },
         {
-          value: "a",
-          label: 'a路',
+          value: "A",
+          label: 'A路',
           children: [
-            { value: "aActivePow", label: 'a路有功功率' },
-            { value: "aApparentPow", label: 'a路视在功率' },
+            { value: "active_a", label: 'A路有功功率' },
+            { value: "apparent_a", label: 'A路视在功率' },
           ],
         },
         {
-          value: "b",
-          label: 'b路',
+          value: "B",
+          label: 'B路',
           children: [
-            { value: "bActivePow", label: 'b路有功功率' },
-            { value: "bApparentPow", label: 'b路视在功率' },
+            { value: "active_b", label: 'B路有功功率' },
+            { value: "apparent_b", label: 'B路视在功率' },
           ],
         },
       ]
-      tableColumns.value = [
-      { label: '编号', align: 'center', prop: 'id' , istrue:true},
-      { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
-      { label: '总有功功率(kVA)', align: 'center', prop: 'totalActivePow' , istrue:true, width: '140px'},
-      { label: '总视在功率(kW)', align: 'center', prop: 'totalApparentPow' , istrue:true, width: '140px'},
-      { label: 'a路有功功率(kVA)', align: 'center', prop: 'aActivePow' , istrue:true, width: '150px'},
-      { label: 'a路视在功率(kW)', align: 'center', prop: 'aApparentPow' , istrue:true, width: '140px'},
-      { label: 'b路有功功率(kVA)', align: 'center', prop: 'bActivePow' , istrue:true, width: '150px'},
-      { label: 'b路视在功率(kW)', align: 'center', prop: 'bApparentPow' , istrue:true, width: '140px'},
-      { label: '时间', align: 'center', prop: 'createTime', formatter: dateFormatter, width: '200px' , istrue:true},
-      { label: '操作', align: 'center', slot: 'actions' , istrue:true},
-      ];
+      originalArray.value = ["active_total", "apparent_total", "active_a", "apparent_a", "active_b", "apparent_b"]        
+ 
+      tableColumns.value =[
+        { label: '位置', align: 'center', prop: 'location' , width: '250px', istrue:true},
+        { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px' , istrue:true},
+        { label: '总有功功率(kW)', align: 'center', prop: 'active_total' , istrue:true, formatter: formatPower},
+        { label: '总视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, formatter: formatPower},
+        { label: 'A路有功功率(kW)', align: 'center', prop: 'active_a' , istrue:false, formatter: formatPower},
+        { label: 'A路视在功率(kVA)', align: 'center', prop: 'apparent_a' , istrue:false, formatter: formatPower},
+        { label: 'B路有功功率(kW)', align: 'center', prop: 'active_b' , istrue:false, formatter: formatPower},
+        { label: 'B路视在功率(kVA)', align: 'center', prop: 'apparent_b' , istrue:false, formatter: formatPower},
+        { label: '操作', align: 'center', slot: 'actions' , istrue:true},
+      ]
+      queryParams.pageNo = 1;
+      queryParams.pageSize = 15;
+      getList();
     }else{
-      originalArray.value = ["totalActivePowAvgValue", "totalActivePowMaxValue", "totalActivePowMinValue", "totalApparentPowAvgValue", "totalApparentPowMaxValue", "totalApparentPowMinValue", 
-                            "aActivePowAvgValue", "aActivePowMaxValue", "aActivePowMinValue", "aApparentPowAvgValue", "aApparentPowMaxValue", "aApparentPowMinValue",
-                            "bActivePowAvgValue", "bActivePowMaxValue", "bActivePowMinValue", "bApparentPowAvgValue", "bApparentPowMaxValue", "bApparentPowMinValue",
-                          ]    
       defaultOptionsCol.value = [
-        ["total", "activePow", "totalActivePowAvgValue"],["total", "apparentPow", "totalApparentPowAvgValue"],["a", "activePow", "aActivePowAvgValue"],
-        ["a", "apparentPow", "aApparentPowAvgValue"],["b", "activePow", "bActivePowAvgValue"],["b", "apparentPow", "bApparentPowAvgValue"],
+        ["total", "active_pow", "active_total_avg_value"], ["total", "active_pow", "active_total_max"], ["total", "active_pow", "active_total_min"],
+        ["total", "apparent_pow", "apparent_total_avg_value"], ["total", "apparent_pow", "apparent_total_max"], ["total", "apparent_pow", "apparent_total_min"]
       ]
       optionsCol.value = [
         {
         value: "total",
         label: '总',
         children: [
-          { value: "activePow", label: '有功功率', children:[
-              { value: "totalActivePowAvgValue", label: '总平均有功功率' },
-              { value: "totalActivePowMaxValue", label: '总最大有功功率' },
-              { value: "totalActivePowMinValue", label: '总最小有功功率' }
+          { value: "active_pow", label: '有功功率', children:[
+              { value: "active_total_avg_value", label: '总平均有功功率' },
+              { value: "active_total_max", label: '总最大有功功率' },
+              { value: "active_total_min", label: '总最小有功功率' }
             ] 
           },
-          { value: "apparentPow", label: '视在功率', children:[
-              { value: "totalApparentPowAvgValue", label: '总平均视在功率' },
-              { value: "totalApparentPowMaxValue", label: '总最大视在功率' },
-              { value: "totalApparentPowMinValue", label: '总最小视在功率' }
+          { value: "apparent_pow", label: '视在功率', children:[
+              { value: "apparent_total_avg_value", label: '总平均视在功率' },
+              { value: "apparent_total_max", label: '总最大视在功率' },
+              { value: "apparent_total_min", label: '总最小视在功率' }
             ] 
            },
           ],
         },
         {
-          value: "a",
-          label: 'a路',
+          value: "A",
+          label: 'A路',
           children: [
-          { value: "activePow", label: '有功功率', children:[
-              { value: "aActivePowAvgValue", label: 'a路平均有功功率' },
-              { value: "aActivePowMaxValue", label: 'a路最大有功功率' },
-              { value: "aActivePowMinValue", label: 'a路最小有功功率' }
+          { value: "active_pow", label: '有功功率', children:[
+              { value: "active_a_avg_value", label: 'A路平均有功功率' },
+              { value: "active_a_max", label: 'A路最大有功功率' },
+              { value: "active_a_min", label: 'A路最小有功功率' }
             ] 
           },
-          { value: "apparentPow", label: '视在功率', children:[
-              { value: "aApparentPowAvgValue", label: 'a路平均视在功率' },
-              { value: "aApparentPowMaxValue", label: 'a路最大视在功率' },
-              { value: "aApparentPowMinValue", label: 'a路最小视在功率' }
+          { value: "apparent_pow", label: '视在功率', children:[
+              { value: "apparent_a_avg_value", label: 'A路平均视在功率' },
+              { value: "apparent_a_max", label: 'A路最大视在功率' },
+              { value: "apparent_a_min", label: 'A路最小视在功率' }
             ] 
            },
           ],
         },
         {
-          value: "b",
-          label: 'b路',
+          value: "B",
+          label: 'B路',
           children: [
-          { value: "activePow", label: '有功功率', children:[
-              { value: "bActivePowAvgValue", label: 'b路平均有功功率' },
-              { value: "bActivePowMaxValue", label: 'b路最大有功功率' },
-              { value: "bActivePowMinValue", label: 'b路最小有功功率' }
+          { value: "active_pow", label: '有功功率', children:[
+              { value: "active_b_avg_value", label: 'B路平均有功功率' },
+              { value: "active_b_max", label: 'B路最大有功功率' },
+              { value: "active_b_min", label: 'B路最小有功功率' }
             ] 
           },
-          { value: "apparentPow", label: '视在功率', children:[
-              { value: "bApparentPowAvgValue", label: 'b路平均视在功率' },
-              { value: "bApparentPowMaxValue", label: 'b路最大视在功率' },
-              { value: "bApparentPowMinValue", label: 'b路最小视在功率' }
+          { value: "apparent_pow", label: '视在功率', children:[
+              { value: "apparent_b_avg_value", label: 'B路平均视在功率' },
+              { value: "apparent_b_max", label: 'B路最大视在功率' },
+              { value: "apparent_b_min", label: 'B路最小视在功率' }
             ] 
            },
           ],
         },
       ] as any;
+      originalArray.value = ["active_total_avg_value", "active_total_max", "active_total_min", "apparent_total_avg_value", "apparent_total_max", "apparent_total_min", 
+                            "active_a_avg_value", "active_a_max", "active_a_min", "apparent_a_avg_value", "apparent_a_max", "apparent_a_min",
+                            "active_b_avg_value", "active_b_max", "active_b_min", "apparent_b_avg_value", "apparent_b_max", "apparent_b_min",
+                          ]    
+
       tableColumns.value = [
-        { label: '编号', align: 'center', prop: 'id', istrue:true},
-        { label: '位置', align: 'center', prop: 'location', istrue:true, width: '180px'},
-        { label: '总平均有功功率(kVA)', align: 'center', prop: 'totalActivePowAvgValue', istrue:true, width: '180px'},
-        { label: '总最大有功功率(kVA)', align: 'center', prop: 'totalActivePowMaxValue', istrue:false, width: '180px'},
-        { label: '总最大有功功率时间', align: 'center', prop: 'totalActivePowMaxTime', formatter: dateFormatter, width: '200px', istrue:false},
-        { label: '总最小有功功率(kVA)', align: 'center', prop: 'totalActivePowMinValue', istrue:false, width: '180px'},
-        { label: '总最小有功功率时间', align: 'center', prop: 'totalActivePowMinTime', formatter: dateFormatter, width: '200px', istrue:false},
-        { label: '总平均视在功率(kW)', align: 'center', prop: 'totalApparentPowAvgValue', istrue:true, width: '180px'},
-        { label: '总最大视在功率(kW)', align: 'center', prop: 'totalApparentPowMaxValue', istrue:false, width: '180px'},
-        { label: '总最大视在功率时间', align: 'center', prop: 'totalApparentPowMaxTime', formatter: dateFormatter, width: '200px', istrue:false},
-        { label: '总最小视在功率(kW)', align: 'center', prop: 'totalApparentPowMinValue', istrue:false, width: '180px'},
-        { label: '总最小视在功率时间', align: 'center', prop: 'totalApparentPowMinTime', formatter: dateFormatter, width: '200px', istrue:false},
+        { label: '位置', align: 'center', prop: 'location' , width: '250px', istrue:true},
+        { label: '记录时间', align: 'center', prop: 'create_time' , width: '200px', formatter: formatTime, istrue:true},
+        { label: '总平均有功功率(kW)', align: 'center', prop: 'active_total_avg_value', istrue:true, width: '180px', formatter: formatPower},
+        { label: '总最大有功功率(kW)', align: 'center', prop: 'active_total_max_value', istrue:true, width: '180px', formatter: formatPower},
+        { label: '总最大有功功率时间', align: 'center', prop: 'active_total_max_time', formatter: formatTime, width: '200px', istrue:true},
+        { label: '总最小有功功率(kW)', align: 'center', prop: 'active_total_min_value', istrue:true, width: '180px', formatter: formatPower},
+        { label: '总最小有功功率时间', align: 'center', prop: 'active_total_min_time', formatter: formatTime, width: '200px', istrue:true},
+        { label: '总平均视在功率(kVA)', align: 'center', prop: 'apparent_total_avg_value', istrue:true, width: '180px', formatter: formatPower},
+        { label: '总最大视在功率(kVA)', align: 'center', prop: 'apparent_total_max_value', istrue:true, width: '180px', formatter: formatPower},
+        { label: '总最大视在功率时间', align: 'center', prop: 'apparent_total_max_time', formatter: formatTime, width: '200px', istrue:true},
+        { label: '总最小视在功率(kVA)', align: 'center', prop: 'apparent_total_min_value', istrue:true, width: '180px', formatter: formatPower},
+        { label: '总最小视在功率时间', align: 'center', prop: 'apparent_total_min_time', formatter: formatTime, width: '200px', istrue:true},
 
-        { label: 'a路平均有功功率(kVA)', align: 'center', prop: 'aActivePowAvgValue', istrue:true, width: '180px'},
-        { label: 'a路最大有功功率(kVA)', align: 'center', prop: 'aActivePowMaxValue', istrue:false, width: '180px'},
-        { label: 'a路最大有功功率时间', align: 'center', prop: 'aActivePowMaxTime', formatter: dateFormatter, width: '200px', istrue:false},
-        { label: 'a路最小有功功率(kVA)', align: 'center', prop: 'aActivePowMinValue', istrue:false, width: '180px'},
-        { label: 'a路最小有功功率时间', align: 'center', prop: 'aActivePowMinTime', formatter: dateFormatter, width: '200px', istrue:false},
-        { label: 'a路平均视在功率(kW)', align: 'center', prop: 'aApparentPowAvgValue', istrue:true, width: '180px'},
-        { label: 'a路最大视在功率(kW)', align: 'center', prop: 'aApparentPowMaxValue', istrue:false, width: '180px'},
-        { label: 'a路最大视在功率时间', align: 'center', prop: 'aApparentPowMaxTime', formatter: dateFormatter, width: '200px', istrue:false},
-        { label: 'a路最小视在功率(kW)', align: 'center', prop: 'aApparentPowMinValue', istrue:false, width: '180px'},
-        { label: 'a路最小视在功率时间', align: 'center', prop: 'aApparentPowMinTime', formatter: dateFormatter, width: '200px', istrue:false},
+        { label: 'A路平均有功功率(kW)', align: 'center', prop: 'active_a_avg_value', istrue:false, width: '180px', formatter: formatPower},
+        { label: 'A路最大有功功率(kW)', align: 'center', prop: 'active_a_max_value', istrue:false, width: '180px', formatter: formatPower},
+        { label: 'A路最大有功功率时间', align: 'center', prop: 'active_a_max_time', formatter: formatTime, width: '200px', istrue:false},
+        { label: 'A路最小有功功率(kW)', align: 'center', prop: 'active_a_min_value', istrue:false, width: '180px', formatter: formatPower},
+        { label: 'A路最小有功功率时间', align: 'center', prop: 'active_a_min_time', formatter: formatTime, width: '200px', istrue:false},
+        { label: 'A路平均视在功率(kVA)', align: 'center', prop: 'apparent_a_avg_value', istrue:false, width: '180px', formatter: formatPower},
+        { label: 'A路最大视在功率(kVA)', align: 'center', prop: 'apparent_a_max_value', istrue:false, width: '180px', formatter: formatPower},
+        { label: 'A路最大视在功率时间', align: 'center', prop: 'apparent_a_max_time', formatter: formatTime, width: '200px', istrue:false},
+        { label: 'A路最小视在功率(kVA)', align: 'center', prop: 'apparent_a_min_value', istrue:false, width: '180px', formatter: formatPower},
+        { label: 'A路最小视在功率时间', align: 'center', prop: 'apparent_a_min_time', formatter: formatTime, width: '200px', istrue:false},
 
-        { label: 'b路平均有功功率(kVA)', align: 'center', prop: 'bActivePowAvgValue', istrue:true, width: '180px'},
-        { label: 'b路最大有功功率(kVA)', align: 'center', prop: 'bActivePowMaxValue', istrue:false, width: '180px'},
-        { label: 'b路最大有功功率时间', align: 'center', prop: 'bActivePowMaxTime', formatter: dateFormatter, width: '200px', istrue:false},
-        { label: 'b路最小有功功率(kVA)', align: 'center', prop: 'bActivePowMinValue', istrue:false, width: '180px'},
-        { label: 'b路最小有功功率时间', align: 'center', prop: 'bActivePowMinTime', formatter: dateFormatter, width: '200px', istrue:false},
-        { label: 'b路平均视在功率(kW)', align: 'center', prop: 'bApparentPowAvgValue', istrue:true, width: '180px'},
-        { label: 'b路最大视在功率(kW)', align: 'center', prop: 'bApparentPowMaxValue', istrue:false, width: '180px'},
-        { label: 'b路最大视在功率时间', align: 'center', prop: 'bApparentPowMaxTime', formatter: dateFormatter, width: '200px', istrue:false},
-        { label: 'b路最小视在功率(kW)', align: 'center', prop: 'bApparentPowMinValue', istrue:false, width: '180px'},
-        { label: 'b路最小视在功率时间', align: 'center', prop: 'bApparentPowMinTime', formatter: dateFormatter, width: '200px', istrue:false},
-        
+        { label: 'B路平均有功功率(kW)', align: 'center', prop: 'active_b_avg_value', istrue:false, width: '180px', formatter: formatPower},
+        { label: 'B路最大有功功率(kW)', align: 'center', prop: 'active_b_max_value', istrue:false, width: '180px', formatter: formatPower},
+        { label: 'B路最大有功功率时间', align: 'center', prop: 'active_b_max_time', formatter: formatTime, width: '200px', istrue:false},
+        { label: 'B路最小有功功率(kW)', align: 'center', prop: 'active_b_min_value', istrue:false, width: '180px', formatter: formatPower},
+        { label: 'B路最小有功功率时间', align: 'center', prop: 'active_b_min_time', formatter: formatTime, width: '200px', istrue:false},
+        { label: 'B路平均视在功率(kVA)', align: 'center', prop: 'apparent_b_avg_value', istrue:false, width: '180px', formatter: formatPower},
+        { label: 'B路最大视在功率(kVA)', align: 'center', prop: 'apparent_b_max_value', istrue:false, width: '180px', formatter: formatPower},
+        { label: 'B路最大视在功率时间', align: 'center', prop: 'apparent_b_max_time', formatter: formatTime, width: '200px', istrue:false},
+        { label: 'B路最小视在功率(kVA)', align: 'center', prop: 'apparent_b_min_value', istrue:false, width: '180px', formatter: formatPower},
+        { label: 'B路最小视在功率时间', align: 'center', prop: 'apparent_b_min_time', formatter: formatTime, width: '200px', istrue:false},
         { label: '操作', align: 'center', slot: 'actions', istrue:true},
       ];
+      queryParams.pageNo = 1;
+      queryParams.pageSize = 15;
+      getList();
     }
     
 });
 
 const tableColumns = ref([
-  { label: '编号', align: 'center', prop: 'id' , istrue:true},
-  { label: '位置', align: 'center', prop: 'location' , istrue:true, width: '180px'},
-  { label: '总有功功率(kVA)', align: 'center', prop: 'totalActivePow' , istrue:true, width: '140px'},
-  { label: '总视在功率(kW)', align: 'center', prop: 'totalApparentPow' , istrue:true, width: '140px'},
-  { label: 'a路有功功率(kVA)', align: 'center', prop: 'aActivePow' , istrue:true, width: '150px'},
-  { label: 'a路视在功率(kW)', align: 'center', prop: 'aApparentPow' , istrue:true, width: '140px'},
-  { label: 'b路有功功率(kVA)', align: 'center', prop: 'bActivePow' , istrue:true, width: '150px'},
-  { label: 'b路视在功率(kW)', align: 'center', prop: 'bApparentPow' , istrue:true, width: '140px'},
-  { label: '时间', align: 'center', prop: 'createTime', formatter: dateFormatter, width: '200px' , istrue:true},
+  { label: '位置', align: 'center', prop: 'location', width: '250px' ,  istrue:true},
+  { label: '时间', align: 'center', prop: 'create_time', formatter: formatTime, width: '200px' , istrue:true},
+  { label: '总有功功率(kW)', align: 'center', prop: 'active_total' , istrue:true, formatter: formatPower},
+  { label: '总视在功率(kVA)', align: 'center', prop: 'apparent_total' , istrue:true, formatter: formatPower},
+  { label: 'A路有功功率(kW)', align: 'center', prop: 'active_a' , istrue:false, formatter: formatPower},
+  { label: 'A路视在功率(kVA)', align: 'center', prop: 'apparent_a' , istrue:false, formatter: formatPower},
+  { label: 'B路有功功率(kW)', align: 'center', prop: 'active_b' , istrue:false, formatter: formatPower},
+  { label: 'B路视在功率(kVA)', align: 'center', prop: 'apparent_b' , istrue:false, formatter: formatPower},
   { label: '操作', align: 'center', slot: 'actions' , istrue:true},
 ]);
 
@@ -499,256 +452,29 @@ const tableColumns = ref([
 const getList = async () => {
   loading.value = true
   try {
- // 生成假数据
-const fakeData = [
-    {
-      id: 1,
-      location: "机房1-机柜1",
-      cabinetId: 123,
-      totalApparentPow: 2000,
-      aApparentPow: 2300,
-      bApparentPow: 2300,
-      totalActivePow: 2000,
-      aActivePow: 2100,
-      bActivePow: 2100,
-      createTime: "2024-03-27 18:00:00",
-
-      totalApparentPowAvgValue: 2300,
-      totalApparentPowMaxValue: 2300,
-      totalApparentPowMaxTime: "2024-03-27 14:00:00",
-      totalApparentPowMinValue: 2200,
-      totalApparentPowMinTime: "2024-03-27 14:00:00",
-
-      aApparentPowAvgValue: 2200,
-      aApparentPowMaxValue: 2400,
-      aApparentPowMaxTime: "2024-03-27 15:00:00",
-      aApparentPowMinValue: 2100,
-      aApparentPowMinTime: "2024-03-27 03:00:00",
-     
-      bApparentPowAvgValue: 2200,
-      bApparentPowMaxValue: 2400,
-      bApparentPowMaxTime: "2024-03-27 15:00:00",
-      bApparentPowMinValue: 2100,
-      bApparentPowMinTime: "2024-03-27 03:00:00",
-
-      totalActivePowAvgValue: 2300,
-      totalActivePowMaxValue: 2300,
-      totalActivePowMaxTime: "2024-03-27 14:00:00",
-      totalActivePowMinValue: 2200,
-      totalActivePowMinTime: "2024-03-27 14:00:00",
-
-      aActivePowAvgValue: 2200,
-      aActivePowMaxValue: 2400,
-      aActivePowMaxTime: "2024-03-27 15:00:00",
-      aActivePowMinValue: 2100,
-      aActivePowMinTime: "2024-03-27 03:00:00",
-     
-      bActivePowAvgValue: 2200,
-      bActivePowMaxValue: 2400,
-      bActivePowMaxTime: "2024-03-27 15:00:00",
-      bActivePowMinValue: 2100,
-      bActivePowMinTime: "2024-03-27 03:00:00",
-    },
-    {
-      id: 2,
-      location: "机房1-机柜1",
-      cabinetId: 123,
-      totalApparentPow: 2000,
-      aApparentPow: 2300,
-      bApparentPow: 2300,
-      totalActivePow: 2000,
-      aActivePow: 2100,
-      bActivePow: 2100,
-      createTime: "2024-03-27 18:00:00",
-
-      totalApparentPowAvgValue: 2300,
-      totalApparentPowMaxValue: 2300,
-      totalApparentPowMaxTime: "2024-03-27 14:00:00",
-      totalApparentPowMinValue: 2200,
-      totalApparentPowMinTime: "2024-03-27 14:00:00",
-
-      aApparentPowAvgValue: 2200,
-      aApparentPowMaxValue: 2400,
-      aApparentPowMaxTime: "2024-03-27 15:00:00",
-      aApparentPowMinValue: 2100,
-      aApparentPowMinTime: "2024-03-27 03:00:00",
-     
-      bApparentPowAvgValue: 2200,
-      bApparentPowMaxValue: 2400,
-      bApparentPowMaxTime: "2024-03-27 15:00:00",
-      bApparentPowMinValue: 2100,
-      bApparentPowMinTime: "2024-03-27 03:00:00",
-
-      totalActivePowAvgValue: 2300,
-      totalActivePowMaxValue: 2300,
-      totalActivePowMaxTime: "2024-03-27 14:00:00",
-      totalActivePowMinValue: 2200,
-      totalActivePowMinTime: "2024-03-27 14:00:00",
-
-      aActivePowAvgValue: 2200,
-      aActivePowMaxValue: 2400,
-      aActivePowMaxTime: "2024-03-27 15:00:00",
-      aActivePowMinValue: 2100,
-      aActivePowMinTime: "2024-03-27 03:00:00",
-     
-      bActivePowAvgValue: 2200,
-      bActivePowMaxValue: 2400,
-      bActivePowMaxTime: "2024-03-27 15:00:00",
-      bActivePowMinValue: 2100,
-      bActivePowMinTime: "2024-03-27 03:00:00",
-    },
-    {
-      id: 3,
-      location: "机房1-机柜1",
-      cabinetId: 123,
-      totalApparentPow: 2000,
-      aApparentPow: 2300,
-      bApparentPow: 2300,
-      totalActivePow: 2000,
-      aActivePow: 2100,
-      bActivePow: 2100,
-      createTime: "2024-03-27 18:00:00",
-
-      totalApparentPowAvgValue: 2300,
-      totalApparentPowMaxValue: 2300,
-      totalApparentPowMaxTime: "2024-03-27 14:00:00",
-      totalApparentPowMinValue: 2200,
-      totalApparentPowMinTime: "2024-03-27 14:00:00",
-
-      aApparentPowAvgValue: 2200,
-      aApparentPowMaxValue: 2400,
-      aApparentPowMaxTime: "2024-03-27 15:00:00",
-      aApparentPowMinValue: 2100,
-      aApparentPowMinTime: "2024-03-27 03:00:00",
-     
-      bApparentPowAvgValue: 2200,
-      bApparentPowMaxValue: 2400,
-      bApparentPowMaxTime: "2024-03-27 15:00:00",
-      bApparentPowMinValue: 2100,
-      bApparentPowMinTime: "2024-03-27 03:00:00",
-
-      totalActivePowAvgValue: 2300,
-      totalActivePowMaxValue: 2300,
-      totalActivePowMaxTime: "2024-03-27 14:00:00",
-      totalActivePowMinValue: 2200,
-      totalActivePowMinTime: "2024-03-27 14:00:00",
-
-      aActivePowAvgValue: 2200,
-      aActivePowMaxValue: 2400,
-      aActivePowMaxTime: "2024-03-27 15:00:00",
-      aActivePowMinValue: 2100,
-      aActivePowMinTime: "2024-03-27 03:00:00",
-     
-      bActivePowAvgValue: 2200,
-      bActivePowMaxValue: 2400,
-      bActivePowMaxTime: "2024-03-27 15:00:00",
-      bActivePowMinValue: 2100,
-      bActivePowMinTime: "2024-03-27 03:00:00",
-    },
-    {
-      id: 4,
-      location: "机房1-机柜1",
-      cabinetId: 123,
-      totalApparentPow: 2000,
-      aApparentPow: 2300,
-      bApparentPow: 2300,
-      totalActivePow: 2000,
-      aActivePow: 2100,
-      bActivePow: 2100,
-      createTime: "2024-03-27 18:00:00",
-
-      totalApparentPowAvgValue: 2300,
-      totalApparentPowMaxValue: 2300,
-      totalApparentPowMaxTime: "2024-03-27 14:00:00",
-      totalApparentPowMinValue: 2200,
-      totalApparentPowMinTime: "2024-03-27 14:00:00",
-
-      aApparentPowAvgValue: 2200,
-      aApparentPowMaxValue: 2400,
-      aApparentPowMaxTime: "2024-03-27 15:00:00",
-      aApparentPowMinValue: 2100,
-      aApparentPowMinTime: "2024-03-27 03:00:00",
-     
-      bApparentPowAvgValue: 2200,
-      bApparentPowMaxValue: 2400,
-      bApparentPowMaxTime: "2024-03-27 15:00:00",
-      bApparentPowMinValue: 2100,
-      bApparentPowMinTime: "2024-03-27 03:00:00",
-
-      totalActivePowAvgValue: 2300,
-      totalActivePowMaxValue: 2300,
-      totalActivePowMaxTime: "2024-03-27 14:00:00",
-      totalActivePowMinValue: 2200,
-      totalActivePowMinTime: "2024-03-27 14:00:00",
-
-      aActivePowAvgValue: 2200,
-      aActivePowMaxValue: 2400,
-      aActivePowMaxTime: "2024-03-27 15:00:00",
-      aActivePowMinValue: 2100,
-      aActivePowMinTime: "2024-03-27 03:00:00",
-     
-      bActivePowAvgValue: 2200,
-      bActivePowMaxValue: 2400,
-      bActivePowMaxTime: "2024-03-27 15:00:00",
-      bActivePowMinValue: 2100,
-      bActivePowMinTime: "2024-03-27 03:00:00",
-    },
-    {
-      id: 5,
-      location: "机房1-机柜1",
-      cabinetId: 123,
-      totalApparentPow: 2000,
-      aApparentPow: 2300,
-      bApparentPow: 2300,
-      totalActivePow: 2000,
-      aActivePow: 2100,
-      bActivePow: 2100,
-      createTime: "2024-03-27 18:00:00",
-
-      totalApparentPowAvgValue: 2300,
-      totalApparentPowMaxValue: 2300,
-      totalApparentPowMaxTime: "2024-03-27 14:00:00",
-      totalApparentPowMinValue: 2200,
-      totalApparentPowMinTime: "2024-03-27 14:00:00",
-
-      aApparentPowAvgValue: 2200,
-      aApparentPowMaxValue: 2400,
-      aApparentPowMaxTime: "2024-03-27 15:00:00",
-      aApparentPowMinValue: 2100,
-      aApparentPowMinTime: "2024-03-27 03:00:00",
-     
-      bApparentPowAvgValue: 2200,
-      bApparentPowMaxValue: 2400,
-      bApparentPowMaxTime: "2024-03-27 15:00:00",
-      bApparentPowMinValue: 2100,
-      bApparentPowMinTime: "2024-03-27 03:00:00",
-
-      totalActivePowAvgValue: 2300,
-      totalActivePowMaxValue: 2300,
-      totalActivePowMaxTime: "2024-03-27 14:00:00",
-      totalActivePowMinValue: 2200,
-      totalActivePowMinTime: "2024-03-27 14:00:00",
-
-      aActivePowAvgValue: 2200,
-      aActivePowMaxValue: 2400,
-      aActivePowMaxTime: "2024-03-27 15:00:00",
-      aActivePowMinValue: 2100,
-      aActivePowMinTime: "2024-03-27 03:00:00",
-     
-      bActivePowAvgValue: 2200,
-      bActivePowMaxValue: 2400,
-      bActivePowMaxTime: "2024-03-27 15:00:00",
-      bActivePowMinValue: 2100,
-      bActivePowMinTime: "2024-03-27 03:00:00",
-    },
-];
-
-    list.value = fakeData
-    total.value = 5
+    const data = await HistoryDataApi.getHistoryDataPage(queryParams)
+    list.value = data.list
+    realTotel.value = data.total
+    if (data.total > 10000){
+      total.value = 10000
+    }else{
+      total.value = data.total
+    }
   } finally {
     loading.value = false
   }
 }
+
+// 格式化功率列数据，保留三位小数
+function formatPower(_row: any, _column: any, cellValue: number): string {
+  return Number(cellValue).toFixed(3);
+}
+
+// 最后一页显示数据量过大的提示
+const shouldShowDataExceedMessage = computed(() => {
+  const lastPageNo = Math.ceil(total.value / queryParams.pageSize);
+  return queryParams.pageNo === lastPageNo && total.value >= 10000;
+});
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
@@ -756,21 +482,41 @@ const handleQuery = () => {
   getList()
 }
 
-/** 重置按钮操作 */
-const resetQuery = () => {
-  queryFormRef.value.resetFields()
+// 导航栏选择后触发
+const handleCheck = async (node) => {
+  let arr = [] as any
+  node.forEach(item => { 
+    if(item.type == 3){
+      arr.push(item.id);
+    }
+  });
+  //没筛选到 不显示任何数据 参数传0 后端返回空
+  if(arr.length == 0 && node.length != 0){
+    arr.push(0)
+    ElMessage({
+      message: '暂无数据',
+      type: 'warning',
+    });
+  }
+  queryParams.cabinetIds = arr
   handleQuery()
 }
 
-/** 添加/修改操作 */
-const formRef = ref()
-const openForm = (type: string, id?: number) => {
-  formRef.value.open(type, id)
+// 接口获取机房导航列表
+const getNavList = async() => {
+  const res = await CabinetApi.getRoomMenuAll({})
+  navList.value = res
+}
+
+// 获取导航的数据显示
+const getNavNewData = async() => {
+  const res = await HistoryDataApi.getNavNewData(queryParams.granularity)
+  navTotalData.value = res.total
 }
 
 /** 详情操作*/
-const toDetails = (id?: number) => {
-  console.log(id)
+const toDetails = (cabinetId: number, location:string) => {
+  push('/cabinet/record/historyLine?cabinetId='+cabinetId+'&location='+location);
 }
 
 /** 导出按钮操作 */
@@ -779,17 +525,92 @@ const handleExport = async () => {
     // 导出的二次确认
     await message.exportConfirm()
     // 发起导出
+    queryParams.pageNo = 1
     exportLoading.value = true
-    const data = await HistoryDataApi.exportHistoryData(queryParams)
-    download.excel(data, '机柜历史数据.xls')
-  } catch {
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await HistoryDataApi.exportHistoryData(queryParams, axiosConfig)
+    await download.excel(data, '机柜电力历史数据.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
   } finally {
     exportLoading.value = false
   }
 }
-
+// 格式化日期
+function formatTime(_row: any, _column: any, cellValue: number): string {
+  if (!cellValue) {
+    return ''
+  }
+  return dayjs(cellValue).format('YYYY-MM-DD HH:mm')
+}
 /** 初始化 **/
 onMounted(() => {
+  getNavList()
+  getNavNewData()
   getList()
 })
 </script>
+
+<style scoped>
+.realTotal{
+  float: right;
+  padding-top: 20px;
+  padding-right: 20px;
+  font-size: 14px;
+  font-weight: 400; 
+  color: #606266
+}
+ .nav_header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 15px;
+    font-weight: bold;
+  }
+  .nav_data{
+  padding-left: 7px;
+  width: 200px;
+}
+.nav_content span{
+  font-size: 18px;
+}
+.carousel-container {
+  width: 100%;
+  max-width: 100%;
+}
+
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+}
+
+.description-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .label {
+    width:100px; /* 控制冒号前的宽度 */
+    text-align: right; /* 文本右对齐 */
+    margin-right: 20px; /* 控制冒号后的间距 */
+  }
+
+  .value {
+    flex: 1; /* 自动扩展以对齐数据 */
+  }
+    .line {
+      height: 1px;
+      margin-top: 28px;
+
+      background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+    }
+
+    ::v-deep .el-table .el-table__header th {
+      background-color: #F5F7FA;
+      color: #909399;
+  }
+</style>

@@ -1,5 +1,10 @@
 package cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import lombok.*;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -31,6 +36,27 @@ public class PDUDevicePageReqVO extends PageParam {
 
     @Schema(description = "级联地址")
     private Integer cascadeNum;
+
+    @Schema(description = "颜色")
+    private List<Integer> color;
+
+    @Schema(description = "机柜ID列表")
+    private List<Integer> cabinetIds;
+
+    @Schema(description = "时间类型")
+    private Integer timeType;
+
+    @Schema(description = "开始时间")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime oldTime;
+
+    @Schema(description = "结束时间")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime newTime;
 
     public String getDevKey(){
         return devKey;

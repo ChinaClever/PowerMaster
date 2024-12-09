@@ -3,7 +3,7 @@
     <!-- 左大侧 -->
     <div class="master-left" :style="`flex: ${leftFlex}`">
       <ContentWrap style="height: calc(100% - 15px)">
-        <div v-if="!switchValue && !isCloseNav" class="nav-left">
+        <div v-if="!isCloseNav" class="nav-left">
           <div class="navBar">微模块机房</div>
           <div class="header">
             <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
@@ -63,7 +63,10 @@
             </div>
           </div>
         </div>
-        <NavTree v-if="!switchValue && !isCloseNav" @node-click="handleClick" @check="handleCheck" :showSearch="true" :dataList="data" />
+        <div v-if="!isCloseNav" class="openNavtree">
+          <button class="btn" @click.prevent="openNavtree">{{isOpenNavtree ? '关闭' : '打开'}}</button>
+        </div>
+        <NavTree v-if="!isCloseNav && isOpenNavtree" @node-click="handleClick" @check="handleCheck" :showSearch="true" :dataList="data" />
         <div v-if="isCloseNav" class="expand" @click.prevent="expandNav"><Icon icon="ep:arrow-right" /><span>展</span><span>开</span></div>
       </ContentWrap>
     </div>
@@ -117,7 +120,7 @@
           </el-table-column>
           <el-table-column label="状态" min-width="110" align="center">
             <template #default="scope">
-              <div>{{statusList[scope.row.status] && statusList[scope.row.status].name}}</div>
+              <div :style="{color: statusList[scope.row.status].color}">{{statusList[scope.row.status] && statusList[scope.row.status].name}}</div>
             </template>
           </el-table-column>
           <el-table-column v-if="queryParams.showCol.includes(12)" label="名称" min-width="110" align="center" prop="mc" />
@@ -206,6 +209,7 @@ const colNode = ref()
 const testData = ref(null)
 const loading = ref(false)
 const isCloseNav = ref(false)
+const isOpenNavtree = ref(false)
 const switchValue = ref(0)
 const leftFlex = ref(8)
 const queryParams = reactive({
@@ -219,32 +223,39 @@ const statusList = reactive([
     name: '空载',
     selected: true,
     value: 0,
-    cssClass: 'btn_normal',
-    activeClass: 'btn_normal normal'
+    cssClass: 'btn_empty',
+    activeClass: 'btn_empty empty',
+    color: '#aaa'
   },
   {
     name: '正常',
     selected: true,
     value: 1,
-    cssClass: 'btn_empty',
-    activeClass: 'btn_empty empty'
+    cssClass: 'btn_normal',
+    activeClass: 'btn_normal normal',
+    color: '#3bbb00'
   },
   {
     name: '预警',
     selected: true,
     value: 2,
     cssClass: 'btn_warn',
-    activeClass: 'btn_warn warn'
+    activeClass: 'btn_warn warn',
+    color: '#ffc402'
   },
   {
     name: '故障',
     selected: true,
     value: 3,
     cssClass: 'btn_error',
-    activeClass: 'btn_error error'
+    activeClass: 'btn_error error',
+    color: '#fa3333'
   },
 ])
 const props = { multiple: true }
+const openNavtree = () => {
+  isOpenNavtree.value = !isOpenNavtree.value
+}
 const closeNav = () => {
   console.log('closeNav')
   leftFlex.value = 1
@@ -876,7 +887,18 @@ const data = reactive([{
     overflow: hidden;
     box-sizing: border-box;
     padding-right: 20px;
-    transition: all 0.3s linear;
+    transition: all 0.2s linear;
+    .openNavtree {
+      width: 100%;
+      padding: 0 20px;
+      box-sizing: border-box;
+      text-align: right;
+      .btn {
+        border: 1px solid #ccc;
+        background-color: #fff;
+        cursor: pointer;
+      }
+    }
     .expand {
       display: flex;
       flex-direction: column;
@@ -907,24 +929,24 @@ const data = reactive([{
   }
 }
 .btn_normal {
-  border: 1px solid #aaa;
+  border: 1px solid #3bbb00;
   background-color: #fff;
   margin-right: 8px;
 }
 .normal {
-  background-color: #aaa;
+  background-color: #3bbb00;
   color: #fff;
   &:hover {
     color: #fff;
   }
 }
 .btn_empty {
-  border: 1px solid #3bbb00;
+  border: 1px solid #aaa;
   background-color: #fff;
   margin-right: 8px;
 }
 .empty {
-  background-color: #3bbb00;
+  background-color: #aaa;
   color: #fff;
   &:hover {
     color: #fff;

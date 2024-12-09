@@ -1,11 +1,13 @@
 package cn.iocoder.yudao.framework.common.pojo;
 
+import com.alibaba.fastjson2.JSONObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Schema(description = "分页结果")
 @Data
@@ -17,7 +19,12 @@ public final class PageResult<T> implements Serializable {
     @Schema(description = "总量", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long total;
 
+
     public PageResult() {
+    }
+
+    public PageResult(List<T> list) {
+        this.list = list;
     }
 
     public PageResult(List<T> list, Long total) {
@@ -29,6 +36,7 @@ public final class PageResult<T> implements Serializable {
         this.list = new ArrayList<>();
         this.total = total;
     }
+
 
     public static <T> PageResult<T> empty() {
         return new PageResult<>(0L);
