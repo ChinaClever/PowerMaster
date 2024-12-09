@@ -11,19 +11,18 @@
 
     <select id="selectCabList" parameterType="cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo"
             resultType="cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO">
-
         select
         ci.id ,
         ci.room_id as roomId,
-        ci.name ,
+        ci.cabinet_name ,
         ci.aisle_id as aisleId,
-        ci.pow_capacity as powCapacity,
+        ci.power_capacity as powCapacity,
         ci.pdu_box as pduBox,
         ci.run_status as runStatus,
         ci.load_status as loadStatus,
         ci.update_time as updateTime,
         ci.create_time as createTime,
-        cf.cabinet_height as cabinetHeight,
+        ci.cabinet_height as cabinetHeight,
         cf.x_coordinate as xCoordinate,
         cf.y_coordinate as yCoordinate,
         cf.company
@@ -57,16 +56,15 @@
         <if test=" indexVo.company != null and indexVo.company != ''">
             and CF.company like "%"#{indexVo.company}"%"
         </if>
-
+        order by ci.run_status asc, ci.create_time desc
     </select>
-
-    <select id="selectRunStatus" resultType="cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO">
+    <select id="selectRunStatus" resultType="java.util.Map">
         select
-        ci.id ,
-        ci.room_id as roomId
-        from cabinet_index ci
-        where CI.is_disabled = 0 and CI.is_deleted = 0
+        sum(case when run_status = 0 then 1 else 0 end) as sumNoload,
+        sum(case when run_status = 1 then 1 else 0 end) as sumNormal,
+        sum(case when run_status = 2 then 1 else 0 end) as sumEarly,
+        sum(case when run_status = 3 then 1 else 0 end) as sumInform
+        from cabinet_index
+        where is_disabled = 0 and is_deleted = 0
     </select>
-
-
 </mapper>

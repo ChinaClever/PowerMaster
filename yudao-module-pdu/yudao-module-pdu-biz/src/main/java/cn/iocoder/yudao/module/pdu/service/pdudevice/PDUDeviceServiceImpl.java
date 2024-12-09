@@ -1875,7 +1875,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         Map<Integer, CabinetIndex> cabinetMap = cabinetIndices.stream().collect(Collectors.toMap(CabinetIndex::getId, Function.identity()));
         List<RoomIndex> roomIndices = roomIndexMapper.selectBatchIds(roomIds);
 
-        Map<Integer, String> roomMap = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getName));
+        Map<Integer, String> roomMap = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getRoomName));
         List<Integer> cabIds = cabinetIndices.stream().filter(dto -> dto.getAisleId() != 0).map(CabinetIndex::getAisleId).collect(Collectors.toList());
         Map<Integer, String> aisleMap;
         if (!CollectionUtils.isEmpty(cabIds)) {

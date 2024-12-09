@@ -430,7 +430,7 @@ const getTableData = async(reset = false) => {
       listPage.value = list
       queryParams.pageTotal = res.total
       //console.log('listPage', listPage.value)
-      console.log(res.runStatus);
+      // console.log(res.runStatus);
     }
   } finally {
     loading.value = false
@@ -440,7 +440,7 @@ const getTableData = async(reset = false) => {
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await CabinetApi.getRoomMenuAll({})
-  console.log('接口获取机房导航列表', res)
+  // console.log('接口获取机房导航列表', res)
   // const ids = [] as number[]
   navList.value = res
   // if (res && res.length > 0) {
@@ -496,25 +496,25 @@ const handleDbclick = (e) => {
 
 // 处理阵列双击事件
 const handleArrayDbclick = (key) => {
-  console.log('处理阵列双击事件', key)
+  // console.log('处理阵列双击事件', key)
   openForm('edit', key)
 }
 
 // 处理状态选择事件
 const handleSelectStatus = (index, event) => {
-  console.log('处理状态选择事件', index, event)
+  // console.log('处理状态选择事件', index, event)
   statusList[index].selected = !statusList[index].selected
   getTableData()
 }
 
 // 跳转详情页
 const toMachineDetail = (key) => {
-  console.log('toMachineDetail!', key.split('-')[1])
+  // console.log('toMachineDetail!', key.split('-')[1])
   push({path: '/cabinet/cab/detail', state: { id: key.split('-')[1] }})
 }
 
 const handleCheck = (row) => {
-  console.log('handleCheck!', row);
+  // console.log('handleCheck!', row);
   isFirst.value = false
   const ids = [] as any
   row.forEach(item => {
@@ -535,7 +535,7 @@ const openForm = async(type: string, key?: string) => {
     try {
       loading.value = true
       const res = await CabinetApi.getCabinetInfoItem({id})
-      console.log('res', res)
+      // console.log('res', res)
       machineForm.value.open(type, res)
     } finally {
       loading.value =false
@@ -557,7 +557,7 @@ const handleDelete = async (key: string) => {
     await getNavList()
     getTableData(true)
   } catch (error) {
-    console.log(error)
+    // console.log(error)
   }
 }
 

@@ -431,7 +431,7 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
         Map<Integer , AisleIndex> mapAisle = cabinetHistoryDataService.getAisleByIds(aisleIds);
         for (IndexDO record : records) {
             CabinetEleTotalRealtimeResVO resVO = new CabinetEleTotalRealtimeResVO();
-            String roomName = mapRoom.get(record.getRoomId()).getName();
+            String roomName = mapRoom.get(record.getRoomId()).getRoomName();
             String aisleName = mapAisle.get(record.getAisleId()).getName();
             String localtion = null;
             if(record.getAisleId() != 0){

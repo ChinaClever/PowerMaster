@@ -260,7 +260,7 @@ public class UploadFileServiceImpl implements UploadFileService{
                     UpgradeFileRespVO recordRespVO = BeanUtils.toBean(record, UpgradeFileRespVO.class);
                     recordRespVO.setUpgradeDevMsg(UpgradeDevEnum.getDescByType(record.getUpgradeDev()));
                     if (!CollectionUtils.isEmpty(record.getRoomIds())){
-                        List<String> names = roomIndexMapper.selectBatchIds(record.getRoomIds()).stream().map(RoomIndex::getName).collect(Collectors.toList());
+                        List<String> names = roomIndexMapper.selectBatchIds(record.getRoomIds()).stream().map(RoomIndex::getRoomName).collect(Collectors.toList());
                         recordRespVO.setRoomNames(names);
                     }
                     recordRespVOS.add(recordRespVO);

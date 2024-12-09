@@ -109,12 +109,18 @@ public class CabinetServiceImpl implements CabinetService {
             List<JSONObject> result = new ArrayList<>();
             //获取redis 实时数据
             if (Objects.nonNull(indexDTOPage) && !CollectionUtils.isEmpty(indexDTOPage.getRecords())) {
-                indexDTOPage.getRecords().forEach(dto -> {
-                    String key = REDIS_KEY_CABINET + dto.getRoomId() + SPLIT_KEY + dto.getId();
-                    JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(redisTemplate.opsForValue().get(key)));
-                    if (Objects.nonNull(jsonObject)) {
-                        jsonObject.put(COMPANY, Objects.nonNull(dto.getCompany()) ? dto.getCompany() : "");
-                        result.add(jsonObject);
+                List<String> collect = indexDTOPage.getRecords().stream().map(dto -> REDIS_KEY_CABINET + dto.getRoomId() + SPLIT_KEY + dto.getId())
+                        .collect(Collectors.toList());
+                Map<String, CabinetIndexDTO> dtoMap = indexDTOPage.getRecords().stream()
+                        .collect(Collectors.toMap(iter -> iter.getRoomId() + SPLIT_KEY + iter.getId(), val -> val));
+                List list = redisTemplate.opsForValue().multiGet(collect);
+                list.stream().forEach(item -> {
+                    if (Objects.nonNull(item)) {
+                        JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(item));
+                        if (Objects.nonNull(jsonObject)) {
+                            dtoMap.get(jsonObject.getString("cabinet_key"));
+                            result.add(jsonObject);
+                        }
                     }
                 });
             }
@@ -128,9 +134,7 @@ public class CabinetServiceImpl implements CabinetService {
 
     @Override
     public JSONObject getCabinetDetail(int id) {
-
         try {
-
             CabinetIndex index = cabinetIndexMapper.selectById(id);
             //获取redis数据
             String key = REDIS_KEY_CABINET + index.getRoomId() + SPLIT_KEY + id;
@@ -167,7 +171,7 @@ public class CabinetServiceImpl implements CabinetService {
 
                 //机房信息
                 RoomIndex roomIndex = roomIndexMapper.selectById(index.getRoomId());
-                dto.setRoomName(roomIndex.getName());
+                dto.setRoomName(roomIndex.getRoomName());
 
                 //基本配置信息
                 CabinetCfg cfg = cabinetCfgMapper.selectOne(new LambdaQueryWrapper<CabinetCfg>()
@@ -588,7 +592,7 @@ public class CabinetServiceImpl implements CabinetService {
                 if (!CollectionUtils.isEmpty(roomIds)){
                     List<RoomIndex> roomIndexList = roomIndexMapper.selectBatchIds(roomIds);
                     if (!CollectionUtils.isEmpty(roomIndexList)){
-                        Map<Integer,String>  map = roomIndexList.stream().collect(Collectors.toMap(RoomIndex::getId,RoomIndex::getName));
+                        Map<Integer,String>  map = roomIndexList.stream().collect(Collectors.toMap(RoomIndex::getId,RoomIndex::getRoomName));
 
                         if (Objects.nonNull(map)){
                             indexDTOPage.getRecords().forEach(dto -> {
@@ -673,7 +677,7 @@ public class CabinetServiceImpl implements CabinetService {
                 if (!CollectionUtils.isEmpty(roomIds)){
                     List<RoomIndex> roomIndexList = roomIndexMapper.selectBatchIds(roomIds);
                     if (!CollectionUtils.isEmpty(roomIndexList)){
-                        Map<Integer,String>  map = roomIndexList.stream().collect(Collectors.toMap(RoomIndex::getId,RoomIndex::getName));
+                        Map<Integer,String>  map = roomIndexList.stream().collect(Collectors.toMap(RoomIndex::getId,RoomIndex::getRoomName));
 
                         if (Objects.nonNull(map)){
                             indexDTOPage.getRecords().forEach(dto -> {
@@ -763,39 +767,25 @@ public class CabinetServiceImpl implements CabinetService {
      */
     @Override
     public PageResult<JSONObject> getCabinetRunStatus() {
-        Map<String, Integer> statusCounts = new HashMap<>();
+        //Map<String, Integer> statusCounts = new HashMap<>();
         //查询全部的机柜配电状态
-        List<CabinetIndexDTO> cabinetCfgs = cabinetCfgMapper.selectRunStatus();
-        cabinetCfgs.forEach(dto -> {
-            String key = REDIS_KEY_CABINET + dto.getRoomId() + SPLIT_KEY + dto.getId();
-            JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(redisTemplate.opsForValue().get(key)));
-            if (Objects.nonNull(jsonObject)) {
-                String status = jsonObject.getString("status");
-                statusCounts.put(status, statusCounts.getOrDefault(status, 0) + 1);
-            }
-        });
+        Map<String,Integer> statusCounts = cabinetCfgMapper.selectRunStatus();
+//        cabinetCfgs.forEach(dto -> {
+//            String key = REDIS_KEY_CABINET + dto.getRoomId() + SPLIT_KEY + dto.getId();
+//            JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(redisTemplate.opsForValue().get(key)));
+//            if (Objects.nonNull(jsonObject)) {
+//                String status = jsonObject.getString("status");
+//                statusCounts.put(status, statusCounts.getOrDefault(status, 0) + 1);
+//            }
+//        });
         JSONObject jsonObject = new JSONObject();
         List<JSONObject> result = new ArrayList<>();
-        jsonObject.put("sumNoload", 0);
-        jsonObject.put("sumNormal", 0);
-        jsonObject.put("sumEarly", 0);
-        jsonObject.put("sumInform", 0);
-        statusCounts.forEach((status, count) -> {
-            switch (status) {
-                case "0":
-                    jsonObject.put("sumNoload", count);
-                    break;
-                case "1":
-                    jsonObject.put("sumNormal", count);
-                    break;
-                case "2":
-                    jsonObject.put("sumEarly", count);
-                    break;
-                case "3":
-                    jsonObject.put("sumInform", count);
-                    break;
-            }
-        });
+        if (Objects.nonNull(statusCounts)) {
+            jsonObject.put("sumNoload", statusCounts.get("sumNoload"));
+            jsonObject.put("sumNormal", statusCounts.get("sumNormal"));
+            jsonObject.put("sumEarly", statusCounts.get("sumEarly"));
+            jsonObject.put("sumInform", statusCounts.get("sumInform"));
+        }
         result.add(jsonObject);
         return new PageResult<>(result);
     }

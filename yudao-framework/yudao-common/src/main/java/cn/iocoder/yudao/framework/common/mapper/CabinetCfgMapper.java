@@ -11,6 +11,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author luowei
@@ -28,5 +29,5 @@ public interface CabinetCfgMapper extends BaseMapper<CabinetCfg> {
      * 查询全部的机柜配电状态
      * @return
      */
-    List<CabinetIndexDTO> selectRunStatus();
+    Map<String,Integer> selectRunStatus();
 }

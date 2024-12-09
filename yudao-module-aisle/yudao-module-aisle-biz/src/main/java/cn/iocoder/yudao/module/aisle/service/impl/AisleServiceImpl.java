@@ -532,7 +532,7 @@ public class AisleServiceImpl implements AisleService {
             Integer roomId = aisleIndex.getRoomId();
             RoomIndex roomIndex = roomIndexMapper.selectById(roomId);
             if (Objects.nonNull(roomIndex)){
-                detailDTO.setRoomName(roomIndex.getName());
+                detailDTO.setRoomName(roomIndex.getRoomName());
                 detailDTO.setRoomId(roomId);
             }
 
@@ -713,7 +713,7 @@ public class AisleServiceImpl implements AisleService {
                 if (Objects.nonNull(map.get(roomIndex.getId()))){
                     AisleListDTO aisleListDTO = new AisleListDTO();
                     aisleListDTO.setRoomId(roomIndex.getId());
-                    aisleListDTO.setRoomName(roomIndex.getName());
+                    aisleListDTO.setRoomName(roomIndex.getRoomName());
                     aisleListDTO.setYLength(roomIndex.getYLength());
                     aisleListDTO.setXLength(roomIndex.getXLength());
                     aisleListDTO.setPowerCapacity(roomIndex.getPowerCapacity());

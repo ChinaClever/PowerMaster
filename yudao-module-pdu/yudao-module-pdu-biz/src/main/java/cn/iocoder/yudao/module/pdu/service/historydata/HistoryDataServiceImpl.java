@@ -183,7 +183,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             if (Objects.nonNull(cabinet)) {
                 String cabinetName = cabinet.getCabinetName();
                 RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
-                String roomName = roomIndex.getName();
+                String roomName = roomIndex.getRoomName();
 
                 if (cabinet.getAisleId() != 0) {
                     String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
@@ -206,7 +206,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             if (Objects.nonNull(cabinet)) {
                 String cabinetName = cabinet.getCabinetName();
                 RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
-                String roomName = roomIndex.getName();
+                String roomName = roomIndex.getRoomName();
 
                 if (cabinet.getAisleId() != 0) {
                     String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
@@ -235,7 +235,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
             String cabinetName = cabinet.getCabinetName();
             RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
-            String roomName = roomIndex.getName();
+            String roomName = roomIndex.getRoomName();
             if (cabinet.getAisleId() != 0) {
                 String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
 //                address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
@@ -262,7 +262,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
             String cabinetName = cabinet.getCabinetName();
             RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
-            String roomName = roomIndex.getName();
+            String roomName = roomIndex.getRoomName();
             if (cabinet.getAisleId() != 0) {
                 String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
 //                address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";
