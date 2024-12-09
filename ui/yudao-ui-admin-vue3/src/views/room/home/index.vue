@@ -78,7 +78,7 @@
       </el-card>
     </div>
     <div class="center" id="center">
-      <CabTopology :containerInfo="containerInfo" :isFromHome="true" @back-data="handleBackData" @getroomid="handleGetRoomId" />
+      <!--<CabTopology :containerInfo="containerInfo" :isFromHome="true" @back-data="handleBackData" @getroomid="handleGetRoomId" />-->
       <!--<CabTopologyLazy :containerInfo="containerInfo" :isFromHome="true" @back-data="handleBackData" @getroomid="handleGetRoomId" />-->
       <ContentWrap class="CabEchart">
         <Echart :options="echartOptionsPower" height="30vh" width="100%" />
