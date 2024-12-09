@@ -648,7 +648,7 @@ const PDUHdaLineHisdata = async () => {
   //  lineidDateTimes.value = result.dateTimes
   //}
   if(dateTimeName.value === 'twentyfourHour'){
-    lineidDateTimes.value = filterTimesFromDate(result.dateTimes,currentDate).map(item => item.substring(0, 16))
+    lineidDateTimes.value = filterTimesFromDate(result.dateTimes,currentDate).map(item => item.substring(11, 16))
   }else if(dateTimeName.value === 'seventytwoHour'){
     lineidDateTimes.value = result.dateTimes.map(item => item.substring(0, 10))
   }
