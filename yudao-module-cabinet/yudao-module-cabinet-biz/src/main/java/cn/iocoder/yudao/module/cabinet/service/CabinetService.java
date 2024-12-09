@@ -82,4 +82,17 @@ public interface CabinetService {
      * @return
      */
     Map<Integer,Integer>  loadStatusCount();
+
+    /**
+     * 获得已删除机柜分页
+     * @param pageReqVO
+     * @return
+     */
+    PageResult<CabinetIndexVo> getDeletedCabinetPage(CabinetIndexVo pageReqVO);
+
+    /**
+     * 机柜配电状态统计
+     * @return
+     */
+    PageResult<JSONObject> getCabinetRunStatus();
 }

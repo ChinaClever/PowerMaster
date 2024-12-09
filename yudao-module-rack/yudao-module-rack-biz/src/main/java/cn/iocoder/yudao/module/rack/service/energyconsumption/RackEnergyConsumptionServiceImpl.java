@@ -15,6 +15,7 @@ import cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO.RackTo
 import cn.iocoder.yudao.module.rack.service.RackIndexService;
 import cn.iocoder.yudao.module.rack.service.historydata.RackHistoryDataService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.apache.commons.lang3.ObjectUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -272,11 +273,34 @@ public class RackEnergyConsumptionServiceImpl implements RackEnergyConsumptionSe
 
     @Override
     public Map<String, Object> getNewData() throws IOException {
-        String[] indices = new String[]{"rack_eq_total_day", "rack_eq_total_week", "rack_eq_total_month"};
+//        String[] indices = new String[]{"rack_eq_total_day", "rack_eq_total_week", "rack_eq_total_month"};
+        String indices = "rack_ele_total_realtime";
         String[] name = new String[]{"day", "week", "month"};
         LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1), LocalDateTime.now().minusMonths(1)};
-        Map<String, Object> map = getSumData(indices, name, timeAgo);
-        return map;
+        //Map<String, Object> map = getSumData(indices, name, timeAgo);
+        Map<String, Object> resultItem = new HashMap<>();
+        // 添加范围查询 最近24小时
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        for (int i = 0; i < timeAgo.length; i++) {
+            SearchRequest searchRequest = new SearchRequest(indices);
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
+                    .gte(timeAgo[i].format(formatter))
+                    .lte(now.format(formatter)));
+            // 添加计数聚合
+            searchSourceBuilder.aggregation(
+                    AggregationBuilders.count("total_insertions").field("rack_id")
+            );
+            searchRequest.source(searchSourceBuilder);
+            // 执行搜索请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            // 从聚合结果中获取文档数量
+            ValueCount totalInsertionsAggregation = searchResponse.getAggregations().get("total_insertions");
+            long totalInsertions = totalInsertionsAggregation.getValue();
+            resultItem.put(name[i], totalInsertions);
+        }
+        return resultItem;
     }
 
     @Override
@@ -421,20 +445,23 @@ public class RackEnergyConsumptionServiceImpl implements RackEnergyConsumptionSe
         }else {
             records = rackIndexService.findRackIndexToList(reqDTO.getRackIds());
         }
-        List<Integer> roomIds = records.stream().map(RackIndex::getRoomId).distinct().collect(Collectors.toList());
-        Map<Integer , String> mapRoom = rackHistoryDataService.getRoomById(roomIds);
-        List<Integer> cabineIds = records.stream().map(RackIndex::getCabinetId).distinct().collect(Collectors.toList());
-        Map<Integer , IndexDO> mapCabinet = rackHistoryDataService.getCabinetByIds(cabineIds);
 
+
+        List<Integer> cabineIds = records.stream().map(RackIndex::getCabinetId).distinct().collect(Collectors.toList());
+        List<IndexDO> indexDOS = rackHistoryDataService.getCabinetByIds(cabineIds);
+        List<Integer> roomIds = indexDOS.stream().map(IndexDO::getRoomId).distinct().collect(Collectors.toList());
+        Map<Integer, IndexDO> mapCabinet = indexDOS.stream().filter(item -> ObjectUtils.isNotEmpty(item.getId()))
+                .collect(Collectors.toMap(IndexDO::getId, cabinetIndex -> cabinetIndex));
+        Map<Integer , String> mapRoom = rackHistoryDataService.getRoomById(roomIds);
         for (RackIndex record : records) {
             RackTotalRealtimeRespVO respVO = new RackTotalRealtimeRespVO();
-            String roomName = mapRoom.get(record.getRoomId());
             IndexDO indexDO = mapCabinet.get(record.getCabinetId());
+            String roomName = mapRoom.get(indexDO.getRoomId());
             if(indexDO.getAisleId() != 0){
                 String aisleName = aisleIndexMapper.selectById(indexDO.getAisleId()).getName();
-                respVO.setLocation(roomName + "-" + aisleName + "-" + indexDO.getName());
+                respVO.setLocation(roomName + "-" + aisleName + "-" + indexDO.getCabinetName());
             }else {
-                respVO.setLocation( roomName + "-"  + indexDO.getName()) ;
+                respVO.setLocation( roomName + "-"  + indexDO.getCabinetName()) ;
             }
             respVO.setId(Long.valueOf(record.getId())).setRackName(record.getRackName());
             BoolQueryBuilder boolQuery1 = QueryBuilders.boolQuery();

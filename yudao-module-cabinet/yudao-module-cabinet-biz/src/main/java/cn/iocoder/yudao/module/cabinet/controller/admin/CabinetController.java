@@ -49,6 +49,23 @@ public class CabinetController {
         return success(pageResult);
     }
 
+
+    @Operation(summary = "机柜配电状态统计")
+    @PostMapping("/cabinet/runStatus")
+    public CommonResult<PageResult<JSONObject>> getCabinetRunStatus() {
+        PageResult<JSONObject> runStatusResult = cabinetService.getCabinetRunStatus();
+        return success(runStatusResult);
+    }
+
+
+    @PostMapping("/getDeletedCabinetPage")
+    @Operation(summary = "获得已删除机柜分页")
+    public CommonResult<PageResult<CabinetIndexVo>> getDeletedPDUDevicePage(@RequestBody CabinetIndexVo pageReqVO) {
+        PageResult<CabinetIndexVo> pageResult = cabinetService.getDeletedCabinetPage(pageReqVO);
+        return success(pageResult);
+    }
+
+
     /**
      * 机柜详情
      *

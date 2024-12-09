@@ -154,12 +154,12 @@
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column label="运行状态" align="center" prop="color" >
           <template #default="scope" >
-            <el-tag type="info"  v-if="scope.row.status == 5">离线</el-tag>
-            <el-tag type="info"  v-if="scope.row.color == 0&&scope.row.status != 5">空载</el-tag>
-            <el-tag type="success"  v-if="scope.row.color == 1&&scope.row.status != 5">&lt;30%</el-tag>
-            <el-tag type="primary"  v-if="scope.row.color == 2&&scope.row.status != 5">30%-60%</el-tag>
-            <el-tag type="warning" v-if="scope.row.color == 3&&scope.row.status != 5">60%-90%</el-tag>
-            <el-tag type="danger" v-if="scope.row.color == 4&&scope.row.status != 5">&gt;90%</el-tag>
+            <el-tag type="info"  v-if="scope.row.status == 0">离线</el-tag>
+            <el-tag type="info"  v-if="scope.row.color == 0&&scope.row.status != 0">空载</el-tag>
+            <el-tag type="success"  v-if="scope.row.color == 1&&scope.row.status != 0">&lt;30%</el-tag>
+            <el-tag type="primary"  v-if="scope.row.color == 2&&scope.row.status != 0">30%-60%</el-tag>
+            <el-tag type="warning" v-if="scope.row.color == 3&&scope.row.status != 0">60%-90%</el-tag>
+            <el-tag type="danger" v-if="scope.row.color == 4&&scope.row.status != 0">&gt;90%</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="A相负载率(%)" align="center" prop="aloadRate" width="130px" >
@@ -242,25 +242,25 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div style="padding: 0 18px;margin-right:30px" v-show="item.status != 5"><Bar :width="80" :height="100" :max="{L1:item.aloadRate,L2:item.bloadRate,L3:item.cloadRate}" /></div>
             <div class="info">                  
-              <div  v-if="item.aloadRate != null && item.status != 5" ><el-text :style="{ color: getColor(item.aloadRate) }">A相：{{item.aloadRate}}%</el-text></div>
-              <div  v-if="item.bloadRate != null && item.status != 5" ><el-text :style="{ color: getColor(item.bloadRate) }">B相：{{item.bloadRate}}%</el-text></div>
-              <div  v-if="item.cloadRate != null && item.status != 5" ><el-text :style="{ color: getColor(item.cloadRate) }">C相：{{item.cloadRate}}%</el-text></div>
+              <div  v-if="item.aloadRate != null && item.status != 0" ><el-text :style="{ color: getColor(item.aloadRate) }">A相：{{Math.round(item.aloadRate*100)}}%</el-text></div>
+              <div  v-if="item.bloadRate != null && item.status != 0" ><el-text :style="{ color: getColor(item.bloadRate) }">B相：{{Math.round(item.bloadRate*100)}}%</el-text></div>
+              <div  v-if="item.cloadRate != null && item.status != 0" ><el-text :style="{ color: getColor(item.cloadRate) }">C相：{{Math.round(item.cloadRate*100)}}%</el-text></div>
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
+            <div style="padding: 0 18px;margin-left:10px" v-show="item.status != 0"><Bar :width="130" :height="100" :max="{L1:item.aloadRate,L2:item.bloadRate,L3:item.cloadRate}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
-            <el-tag type="info"  v-if="item.color == 0&& item.status != 5">空载</el-tag>
-            <el-tag type="info"  v-if="item.status == 5">离线</el-tag>
-            <el-tag type="success"  v-if="item.color == 1&& item.status != 5">&lt;30%</el-tag>
-            <el-tag type="primary"  v-if="item.color == 2&& item.status != 5">30%-60%</el-tag>
-            <el-tag type="warning" v-if="item.color == 3&& item.status != 5">60%-90%</el-tag>
-            <el-tag type="danger" v-if="item.color == 4&& item.status != 5">&gt;90%</el-tag>
+            <el-tag type="info"  v-if="item.color == 0&& item.status != 0">空载</el-tag>
+            <el-tag type="info"  v-if="item.status == 0">离线</el-tag>
+            <el-tag type="success"  v-if="item.color == 1&& item.status != 0">&lt;30%</el-tag>
+            <el-tag type="primary"  v-if="item.color == 2&& item.status != 0">30%-60%</el-tag>
+            <el-tag type="warning" v-if="item.color == 3&& item.status != 0">60%-90%</el-tag>
+            <el-tag type="danger" v-if="item.color == 4&& item.status != 0">&gt;90%</el-tag>
           </div>
-          <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 5" >详情</button>
+          <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 0" >详情</button>
         </div>
       </div>
       <Pagination
@@ -1018,6 +1018,9 @@ onActivated(() => {
         margin: 0 28px;
         font-size: large;
         text-align: center;
+      }
+      .info{
+        margin-left: 20px;
       }
     }
     .devKey{

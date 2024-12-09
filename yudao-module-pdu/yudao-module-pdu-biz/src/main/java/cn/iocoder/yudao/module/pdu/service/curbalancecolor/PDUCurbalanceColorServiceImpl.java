@@ -1,19 +1,19 @@
 package cn.iocoder.yudao.module.pdu.service.curbalancecolor;
 
-import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
-import org.springframework.stereotype.Service;
-import javax.annotation.Resource;
-import org.springframework.validation.annotation.Validated;
-
-import cn.iocoder.yudao.module.pdu.controller.admin.curbalancecolor.vo.*;
-import cn.iocoder.yudao.module.pdu.dal.dataobject.curbalancecolor.PDUCurbalanceColorDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
-
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
+import cn.iocoder.yudao.module.pdu.controller.admin.curbalancecolor.vo.CurbalanceColorPageReqVO;
+import cn.iocoder.yudao.module.pdu.controller.admin.curbalancecolor.vo.CurbalanceColorSaveReqVO;
+import cn.iocoder.yudao.module.pdu.dal.dataobject.curbalancecolor.PDUCurbalanceColorDO;
 import cn.iocoder.yudao.module.pdu.dal.mysql.curbalancecolor.PDUCurbalanceColorMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
+
+import javax.annotation.Resource;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static cn.iocoder.yudao.module.pdu.enums.ErrorCodeConstants.*;
+import static cn.iocoder.yudao.module.pdu.enums.ErrorCodeConstants.CURBALANCE_COLOR_NOT_EXISTS;
 
 /**
  * PDU不平衡度颜色 Service 实现类
@@ -62,7 +62,7 @@ public class PDUCurbalanceColorServiceImpl implements PDUCurbalanceColorService 
     @Override
     public PDUCurbalanceColorDO getCurbalanceColor() {
         PDUCurbalanceColorDO PDUCurbalanceColorDO = PDUCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
-        if(PDUCurbalanceColorDO == null){
+        if (PDUCurbalanceColorDO == null) {
             PDUCurbalanceColorDO = new PDUCurbalanceColorDO();
             PDUCurbalanceColorDO.setId(1L);
             PDUCurbalanceColorDO.setRangeOne(15);

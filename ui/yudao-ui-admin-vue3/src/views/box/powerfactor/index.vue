@@ -273,7 +273,7 @@
             <el-tag v-if="item.phasePowFactor != null" >功率因数</el-tag>
             <el-tag v-else  type="info">离线</el-tag>
           </div>
-          <button class="detail" @click="openPFDetail(item)"  v-if="item.status != null && item.status != 5">详情</button>
+          <button class="detail" @click="openPFDetail(item)"  v-if="item.status != null && item.status != 0">详情</button>
         </div>
       </div>
       <Pagination
@@ -289,8 +289,8 @@
 
       <el-dialog v-model="detailVis" title="功率因数详情"  width="70vw" height="58vh" >
         <el-row>
-          <el-tag>{{ location }}</el-tag>
-          <div >
+          <el-tag style="margin-left: 6vw; margin-top: -62px">{{ location }}</el-tag>
+          <div style="margin-left: -14vw;">
             日期:
             <el-date-picker
               v-model="queryParams.oldTime"
@@ -304,6 +304,7 @@
           
           
           <el-button 
+            style="margin-left: 1vw;"
             @click="subtractOneDay();handleDayPick()" 
             :type=" 'primary'"
           >
@@ -315,18 +316,23 @@
           >
             &gt;后一日
           </el-button>
-          <el-button 
-            @click="switchChartOrTable = 0" 
-            :type="switchChartOrTable == 0 ? 'primary' : ''"
-          >
-            图表
-          </el-button>
-          <el-button 
-            @click="switchChartOrTable = 1" 
-            :type="switchChartOrTable == 1 ? 'primary' : ''"
-          >
-            数据
-          </el-button>
+          <div class="button-group" style="margin-left: auto">
+            <el-button
+              @click="switchChartOrTable = 0"
+              :type="switchChartOrTable === 0 ? 'primary' : ''"
+            >
+              图表
+            </el-button>
+            <el-button
+              @click="switchChartOrTable = 1"
+              :type="switchChartOrTable === 1 ? 'primary' : ''"
+            >
+              数据
+            </el-button>
+            <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading">
+              <Icon icon="ep:download" class="mr-5px" /> 导出
+            </el-button>
+          </div>
 
         </el-row>
         <br/>
@@ -698,6 +704,27 @@ const handleDelete = async (id: number) => {
     // 刷新列表
     // await getList()
   } catch {}
+}
+
+const handleExportXLS = async ()=>{
+  try {
+    // 导出的二次确认
+    await message.exportConfirm()
+    // 发起导出
+    queryParams.pageNo = 1
+    exportLoading.value = true
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await IndexApi.getBoxPFDetailExcel(queryParams, axiosConfig)
+    console.log("data",data)
+    await download.excel(data, '功率因数详细.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
+  } finally {
+    exportLoading.value = false
+  }
 }
 
 /** 导出按钮操作 */
@@ -1079,18 +1106,33 @@ onActivated(() => {
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
+
 :deep(.el-form) {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }
+
 ::v-deep .el-table .el-table__header th{
   background-color: #f5f7fa;
   color: #909399;
   height: 80px;
 
+}
+
+.custom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+}
+ 
+.button-group {
+  display: flex;
+  gap: 10px;
 }
 </style>

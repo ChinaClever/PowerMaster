@@ -3,43 +3,11 @@
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <!-- <div class="carousel-container"> -->
-          <!-- <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-            </el-carousel-item>
-          </el-carousel> -->
-        <!-- </div> 
-      <div class="nav_header">
-        <span v-if="nowAddress">{{nowAddress}}</span>
-        <br/>
-        <span>{{selectTimeRange[0]}} </span>
-        <span>至</span> 
-        <span>{{selectTimeRange[1]}}</span>
-        <br/>
-      </div>
-      <div class="nav_content">
-        <el-descriptions title="" direction="vertical" :column="1" border >
-          <el-descriptions-item label="总耗电量">
-            <span >{{ formatNumber(totalEqData, 1) }} kWh</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="最大耗电量 | 发生时间">
-            <span >{{ formatNumber(maxEqDataTemp, 1) }} kWh</span> <br/>
-            <span  v-if="maxEqDataTimeTemp">{{ maxEqDataTimeTemp }}</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="最小耗电量 | 发生时间">
-            <span >{{ formatNumber(minEqDataTemp, 1) }} kWh</span> <br/>
-            <span  v-if="minEqDataTimeTemp">{{ minEqDataTimeTemp }}</span>
-          </el-descriptions-item>
-        </el-descriptions>
-      </div> -->
+
 
         <div class="nav_header">      
           <span v-if="nowAddress">{{nowAddress}}</span>
-        </div>
-        <br/> 
-        <div class="descriptions-container"  v-if="maxEqDataTimeTemp" style="font-size: 14px;">
-        <div class="description-item" >
+           <div class="description-item" >
           <span class="label">开始日期 :</span>
           <span >{{selectTimeRange[0]}}</span>
         </div>
@@ -68,9 +36,7 @@
           <span class="label">发生时间 :</span>
           <span class="value">{{ minEqDataTimeTemp }}</span>
         </div>
-        <div class="line" style="margin-top: 10px;"></div>
         </div>
-      
       </div>
     </template>
     <template #ActionBar>
@@ -126,6 +92,12 @@
               :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
               :row-style="{ fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
+              <!-- 添加行号列 -->
+              <el-table-column label="序号" align="center" width="80px">
+                <template #default="{ $index }">
+                  {{ $index + 1 }}
+                </template>  
+              </el-table-column>
               <!-- 动态生成表头 -->
               <template v-for="item in headerData" :key="item.name">
                 <el-table-column  label="开始电能">
@@ -535,6 +507,7 @@ onMounted(async () => {
 .nav_data{
   padding-left: 5px;
   width: 195px;
+  align-items: center;
 }
 .nav_content span{
   font-size: 18px;
@@ -543,7 +516,6 @@ onMounted(async () => {
   width: 100%;
   max-width: 100%;
 }
-
 .carousel-image {
   width: 100%;
   height: 100%;

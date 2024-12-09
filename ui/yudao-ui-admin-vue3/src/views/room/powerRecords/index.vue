@@ -11,9 +11,16 @@
           </el-carousel> -->
         </div>
         <div class="nav_content">
-          <el-descriptions title="全部机房最近一天新增记录" direction="vertical" :column="1" width="80px" border >
-            <el-descriptions-item label="电能"><span>{{ navTotalData }} 条</span></el-descriptions-item>
-          </el-descriptions>
+          <div class="nav_content1" >
+            <span class="label">全部机房最近一天新增记录</span>
+          </div>
+           <div class="description-item">
+            <span class="label">电能 :</span>
+            <span class="value">{{ navTotalData }} 条</span>
+          </div> 
+          <!-- <el-descriptions title="全部机房最近一天新增记录" direction="vertical" :column="1" width="80px" border >
+            <el-descriptions-item label="电能" >{{ navTotalData }}条</el-descriptions-item>
+          </el-descriptions> -->
         </div>
       </div>
     </template>
@@ -153,11 +160,29 @@ const shortcuts = [
     },
   },
   {
+    text: '最近三个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setUTCMonth(start.getUTCMonth() - 3)
+      return [start, end]
+    },
+  },
+  {
     text: '最近六个月',
     value: () => {
       const end = new Date()
       const start = new Date()
       start.setMonth(start.getMonth() - 6)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近一年',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setFullYear(start.getFullYear() - 1)
       return [start, end]
     },
   },
@@ -315,12 +340,19 @@ onMounted(() => {
   color: #606266
 }
 .nav_data{
-  padding-left: 7px;
-  width: 200px;
+  padding-left: 20px;
+  width: 170px;
 }
 .nav_content span{
-  font-size: 18px;
+  font-size: 14px;
 }
+/* .nav_content1{
+  text-align: center;
+} */
+.nav_content1 span{
+  font-size: 14px;
+}
+
 .carousel-container {
   width: 100%;
   max-width: 100%;

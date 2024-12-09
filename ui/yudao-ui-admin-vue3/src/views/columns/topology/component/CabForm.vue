@@ -542,6 +542,10 @@ const submitForm = async () => {
     if (!machineForm) return
     const valid = await machineForm.value.validate()
     if (!valid) return
+    if(machineFormData.value.pduIpA == machineFormData.value.pduIpB && machineFormData.value.casIdA == machineFormData.value.casIdB){
+       message.error("PDU-IP地址相同情况下, 级联地址不能相同。");
+       return;
+    }
     // 提交请求
     formLoading.value = true
     const sensorList = [...sensorListLeft, ...sensorListRight]
@@ -594,6 +598,14 @@ const resetForm = () => {
     eleLimitMonth: 1000, // 月用能限制
   }
   machineForm.value?.resetFields()
+  sensorListLeft.forEach(item => {
+    item.sensorId = null
+    item.pathPdu = ''
+  })
+  sensorListRight.forEach(item => {
+    item.sensorId = null
+    item.pathPdu = ''
+  })
 }
 
 // 接口获取机房导航列表

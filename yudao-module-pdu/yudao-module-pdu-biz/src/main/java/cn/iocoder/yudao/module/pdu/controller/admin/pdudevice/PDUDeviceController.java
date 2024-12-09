@@ -1,11 +1,8 @@
 package cn.iocoder.yudao.module.pdu.controller.admin.pdudevice;
 
 import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
-import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDevicePageReqVO;
+import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.*;
 
-import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDULineRes;
-import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PduBalanceDeatilRes;
-import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PduTrendVO;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.pdudevice.PDUDeviceDO;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.apache.ibatis.annotations.Param;
@@ -54,6 +51,13 @@ public class PDUDeviceController {
     public CommonResult<PduBalanceDeatilRes> getPDUDeviceDetail(String devKey) {
         PduBalanceDeatilRes pageResult = pDUDeviceService.getPDUDeviceDetail(devKey);
         return success(pageResult);
+    }
+
+    @GetMapping("/detailCount")
+    @Operation(summary = "获得PDU配电分汇总统计")
+    public CommonResult<PduDeviceCountResVO> getPDUDeviceCount() {
+        PduDeviceCountResVO resVO = pDUDeviceService.getPDUDeviceCount();
+        return success(resVO);
     }
 
     @GetMapping("/balance/trend")

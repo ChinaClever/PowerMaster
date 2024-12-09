@@ -1,10 +1,13 @@
 package cn.iocoder.yudao.framework.common.entity.mysql.cabinet;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -28,30 +31,15 @@ public class CabinetCfg implements Serializable {
     private int cabinetId;
 
     /**
-     * 机柜名称
-     */
-    private String cabinetName;
-
-    /**
-     * 机柜高度
-     */
-    private int cabinetHeight;
-
-    /**
-     * 机柜类型
-     */
-    private String type;
-
-    /**
      * x坐标
      */
-    @JsonProperty(value="xCoordinate")
+    @JsonProperty(value = "x_coordinate")
     private int xCoordinate;
 
     /**
      * y坐标
      */
-    @JsonProperty(value="yCoordinate")
+    @JsonProperty(value = "y_coordinate")
     private int yCoordinate;
 
     /**
@@ -62,12 +50,32 @@ public class CabinetCfg implements Serializable {
     /**
      * 更新时间
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
+//    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
     /**
      * 创建时间
      */
-    @TableField(fill = FieldFill.INSERT)
+//    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
+    /**
+     * 日用电告警开关 0禁用 1启用
+     */
+    private Boolean eleAlarmDay;
+
+    /**
+     * 日用能限制
+     */
+    private BigDecimal eleLimitDay;
+
+    /**
+     * 月用电告警开关 0禁用 1启用
+     */
+    private Boolean eleAlarmMonth;
+
+    /**
+     * 月用能限制
+     */
+    private BigDecimal eleLimitMonth;
 }
+

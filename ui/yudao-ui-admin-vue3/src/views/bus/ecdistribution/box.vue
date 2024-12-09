@@ -141,17 +141,6 @@
                   <el-table-column :prop="item.name" label="电量(kWh)"/>   
                   <el-table-column prop="create_time" label="记录日期"/>
                 </el-table-column>
-                     <!-- 创建一个空白列 -->
-                     <el-table-column
-                    fixed
-                    width="50"
-                    :label="''"
-                    align="center"
-                  >
-                    <template #default="">
-                      &nbsp; <!-- 使用空格或任何其他占位符 -->
-                    </template>
-                  </el-table-column>
               </template>
             </el-table>
           </div>
@@ -327,6 +316,10 @@ const minEqDataTemp = ref(0);// 最小耗电量
 const minEqDataTimeTemp = ref();// 最小耗电量的发生时间 
 // 获取折线图数据
 const getLineChartData =async () => {
+  if (queryParams.devkey == undefined){
+    message.warning('请先选择设备！')
+    return
+  }
 loading.value = true
  try {
     // 格式化时间范围 加上23:59:59的时分秒 

@@ -60,7 +60,7 @@ public class AisleHistoryDataServiceImpl implements AisleHistoryDataService {
                     Object aisleId = map.get("aisle_id");
                     if (aisleId instanceof Integer) {
                         AisleIndex aisleIndex = aisleIndexMapper.selectById((Serializable) aisleId);
-                        String roomName = roomIndexMapper.selectById(aisleIndex.getRoomId()).getName();
+                        String roomName = roomIndexMapper.selectById(aisleIndex.getRoomId()).getRoomName();
                         String localtion = roomName + "-"  + aisleIndex.getName() ;
 
                         map.put("location", localtion);

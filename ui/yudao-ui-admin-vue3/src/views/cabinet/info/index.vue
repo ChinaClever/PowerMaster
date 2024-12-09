@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu @check="handleCheck" :showSearch="true" :dataList="navList" navTitle="模块化机房">
+  <CommonMenu @check="handleCheck" :showSearch="true" :dataList="navList" navTitle="机柜配电">
     <template #NavInfo>
       <div class="navInfo">
         <!-- <div class="header">
@@ -13,25 +13,25 @@
             <div class="top">
               <div class="tag"></div>正常
             </div>
-            <div class="value"><span class="number">24</span>个</div>
+            <div class="value"><span class="number">{{sumNormal}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag empty"></div>空载
             </div>
-            <div class="value"><span class="number">1</span>个</div>
+            <div class="value"><span class="number">{{sumNoload}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag warn"></div>预警
             </div>
-            <div class="value"><span class="number">1</span>个</div>
+            <div class="value"><span class="number">{{sumEarly}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag error"></div>故障
+              <div class="tag error"></div>告警
             </div>
-            <div class="value"><span class="number">0</span>个</div>
+            <div class="value"><span class="number">{{sumInform}}</span>个</div>
           </div>
         </div>
         <div class="line"></div>
@@ -100,16 +100,18 @@
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
-          <el-button @click="handleSwitchModal(0)" :type="!switchValue ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px;" />阵列模式</el-button>
-          <el-button @click="handleSwitchModal(1)" :type="switchValue ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px;" />表格模式</el-button>
+          <el-button @click="handleSwitchModal(0)" :type="switchValue == 0? 'primary' : ''" style="width: 100px;"><Icon icon="ep:grid" style="margin-right:3px;"/>阵列模式</el-button>
+          <el-button @click="handleSwitchModal(1)" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:expand"  />表格模式</el-button>
           
-          <!--          -->
+          <el-button @click="handleSwitchLogicRemoveModal(2)" :type="switchValue == 2 ? 'primary' : ''"  v-show="switchValue" ><Icon icon="ep:expand"  />已删除</el-button>
+          <!--  <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 2;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button> 
+  --> 
          
         </el-form-item>
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue" style="width: 100%;" v-loading="loading" :data="listPage" @cell-dblclick="handleDbclick">
+      <el-table v-show="switchValue == 1" style="width: 100%;" v-loading="loading" :data="listPage" @cell-dblclick="handleDbclick">
         <el-table-column label="位置" min-width="110" align="center">
           <template #default="scope">
             <div>{{scope.row.roomName}}-{{scope.row.cabinetName}}</div>
@@ -158,6 +160,42 @@
           </template>
         </el-table-column>
       </el-table>
+
+
+   <el-table v-show="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
+         <el-table-column label="位置" min-width="110" align="center">
+          <template #default="scope">
+            <div>{{scope.row.roomName}}-{{scope.row.cabinetName}}</div>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" min-width="110" align="center">
+          <template #default="scope">
+            <div :style="{color: statusList[scope.row.status].color}">{{statusList[scope.row.status] && statusList[scope.row.status].name}}</div>
+          </template>
+        </el-table-column>
+        
+       <el-table-column label="删除日期" min-width="110" align="center">
+          <template #default="scope">
+            <div :style="{color: statusList[scope.row.status].color}">{{statusList[scope.row.status] && statusList[scope.row.status].name}}</div>
+          </template>
+        </el-table-column>
+        
+        
+       <el-table-column label="操作" align="center">
+          <template #default="scope">
+            <el-button
+              link
+              type="danger"
+              @click="handleRestore(scope.row.busId)"
+            >
+              恢复设备
+            </el-button>
+          </template>
+        </el-table-column>
+     </el-table>
+
+
+      
       <div v-show="!switchValue && listPage.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in listPage" :key="item.id" @dblclick="handleArrayDbclick(item.cabinet_key)">
           <div class="content">
@@ -174,7 +212,7 @@
           <div v-if="item.status == 0" class="status-empty">空载</div>
           <div v-if="item.status == 1" class="status-normal">正常</div>
           <div v-if="item.status == 2" class="status-warn">预警</div>
-          <div v-if="item.status == 3" class="status-error">故障</div>
+          <div v-if="item.status == 3" class="status-error">告警</div>
           <div v-if="item.status == 4" class="status-unbound">未绑定</div>
           <div v-if="item.status == 5" class="status-offline">离线</div>
           <button class="detail" @click.prevent="toMachineDetail(item.cabinet_key)">详情</button>
@@ -217,6 +255,15 @@ const listPage = ref<any>([]) // 表格数据
 const navList = ref([]) // 左侧导航列表数据
 const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
 const defaultOptionsCol = reactive([1, 2, 12, 13, 15, 16])
+
+// 运行状态 0：空载 1：正常 2：预警 3：告警 4:未绑定 5：离线
+const sumNoload = ref();
+const sumNormal = ref();
+const sumEarly = ref();
+const sumInform = ref();
+const sumDidnot = ref();
+const sumOffline = ref();
+
 const optionsCol = reactive([{
   value: 0,
   label: '总',
@@ -306,7 +353,7 @@ const statusList = reactive([
     color: '#ffc402'
   },
   {
-    name: '故障',
+    name: '告警',
     selected: true,
     value: 3,
     cssClass: 'btn_error',
@@ -334,6 +381,12 @@ const props = { multiple: true }
 
 // 接口获取机柜列表
 const getTableData = async(reset = false) => {
+  let ids;
+  if(cabinetIds.value.length == 0){
+    ids = null;
+  } else{
+    ids =cabinetIds.value
+  }
   loading.value = true
   if (reset) queryParams.pageNo = 1
   const status =  statusList.filter(item => item.selected)
@@ -341,7 +394,7 @@ const getTableData = async(reset = false) => {
     const res = await CabinetApi.getCabinetInfo({
       pageNo: queryParams.pageNo,
       pageSize: queryParams.pageSize,
-      cabinetIds: isFirst.value ? null : cabinetIds.value,
+      cabinetIds: isFirst.value ? null : ids,
       // roomId: null,
       runStatus: status.map(item => item.value),
       company: queryParams.company
@@ -376,7 +429,8 @@ const getTableData = async(reset = false) => {
       })
       listPage.value = list
       queryParams.pageTotal = res.total
-      console.log('listPage', listPage.value)
+      //console.log('listPage', listPage.value)
+      // console.log(res.runStatus);
     }
   } finally {
     loading.value = false
@@ -386,7 +440,7 @@ const getTableData = async(reset = false) => {
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await CabinetApi.getRoomMenuAll({})
-  console.log('接口获取机房导航列表', res)
+  // console.log('接口获取机房导航列表', res)
   // const ids = [] as number[]
   navList.value = res
   // if (res && res.length > 0) {
@@ -396,13 +450,18 @@ const getNavList = async() => {
   //       ids.push(child.id)
   //     }
   //     if(child.children.length > 0) {
-  //       child.children.forEach(son => {
+  //       child.children.forEach(son => {f
   //         ids.push(son.id)
   //       })
   //     }
   //   })
   // }
   // cabinetIds.value = ids
+    const resStatus =await CabinetApi.getCabinetInfoStatus();
+    sumNoload.value = resStatus.list[0].sumNoload;
+    sumNormal.value = resStatus.list[0].sumNormal;
+    sumEarly.value = resStatus.list[0].sumEarly;
+    sumInform.value = resStatus.list[0].sumInform;
 }
 
 // 保存机柜修改/删除
@@ -422,6 +481,12 @@ const handleSwitchModal = (value) => {
   getTableData(true)
 }
 
+const handleSwitchLogicRemoveModal = (value) =>{
+    switchValue.value = value
+}
+
+
+
 
 //处理表格双击事件
 const handleDbclick = (e) => {
@@ -431,25 +496,25 @@ const handleDbclick = (e) => {
 
 // 处理阵列双击事件
 const handleArrayDbclick = (key) => {
-  console.log('处理阵列双击事件', key)
+  // console.log('处理阵列双击事件', key)
   openForm('edit', key)
 }
 
 // 处理状态选择事件
 const handleSelectStatus = (index, event) => {
-  console.log('处理状态选择事件', index, event)
+  // console.log('处理状态选择事件', index, event)
   statusList[index].selected = !statusList[index].selected
   getTableData()
 }
 
 // 跳转详情页
 const toMachineDetail = (key) => {
-  console.log('toMachineDetail!', key.split('-')[1])
+  // console.log('toMachineDetail!', key.split('-')[1])
   push({path: '/cabinet/cab/detail', state: { id: key.split('-')[1] }})
 }
 
 const handleCheck = (row) => {
-  console.log('handleCheck!', row);
+  // console.log('handleCheck!', row);
   isFirst.value = false
   const ids = [] as any
   row.forEach(item => {
@@ -470,7 +535,7 @@ const openForm = async(type: string, key?: string) => {
     try {
       loading.value = true
       const res = await CabinetApi.getCabinetInfoItem({id})
-      console.log('res', res)
+      // console.log('res', res)
       machineForm.value.open(type, res)
     } finally {
       loading.value =false
@@ -492,7 +557,7 @@ const handleDelete = async (key: string) => {
     await getNavList()
     getTableData(true)
   } catch (error) {
-    console.log(error)
+    // console.log(error)
   }
 }
 
@@ -503,8 +568,9 @@ const cascaderChange = (_row) => {
 }
 
 onBeforeMount(() => {
-  getNavList()
-  getTableData(false)
+  getNavList();
+  getTableData(false);
+
 })
 
 </script>
@@ -728,131 +794,391 @@ onBeforeMount(() => {
     }
   }
 }
-.arrayContainer {
-  height: 600px;
-  overflow: auto;
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  .arrayItem {
-    min-width: 290px;
-    width: 25%;
-    height: 120px;
-    font-size: 13px;
-    box-sizing: border-box;
-    background-color: #eef4fc;
-    border: 5px solid #fff;
-    padding-top: 36px;
-    position: relative;
-    .content {
-      display: flex;
-      align-items: center;
-      line-height: 1.7;
-      .icon {
-        width: 30px;
-        height: 30px;
-        margin: 0 28px;
+
+@media screen and (min-width:2048px){
+  .arrayContainer {
+    //height: 600px;
+    overflow: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    .arrayItem {
+      min-width: 290px;
+      width: 20%;
+      height: 120px;
+      font-size: 13px;
+      box-sizing: border-box;
+      background-color: #eef4fc;
+      border: 5px solid #fff;
+      padding-top: 36px;
+      position: relative;
+      .content {
+        display: flex;
+        align-items: center;
+        line-height: 1.7;
+        .icon {
+          width: 30px;
+          height: 30px;
+          margin: 0 28px;
+        }
       }
-    }
-    .room {
-      position: absolute;
-      left: 8px;
-      top: 8px;
-    }
-    .status-empty {
-      width: 40px;
-      height: 20px;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #ccc;
-      color: #fff;
-      position: absolute;
-      right: 8px;
-      top: 8px;
-    }
-    .status-normal {
-      width: 40px;
-      height: 20px;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #3bbb00;
-      color: #fff;
-      position: absolute;
-      right: 8px;
-      top: 8px;
-    }
-    .status-warn {
-      width: 40px;
-      height: 20px;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #ffc402;
-      color: #fff;
-      position: absolute;
-      right: 8px;
-      top: 8px;
-    }
-    .status-error {
-      width: 40px;
-      height: 20px;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #fa3333;
-      color: #fff;
-      position: absolute;
-      right: 8px;
-      top: 8px;
-    }
-    .status-unbound {
-      width: 40px;
-      height: 20px;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #05ebfc;
-      color: #fff;
-      position: absolute;
-      right: 8px;
-      top: 8px;
-    }
-    .status-offline {
-      width: 40px;
-      height: 20px;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #7700ff;
-      color: #fff;
-      position: absolute;
-      right: 8px;
-      top: 8px;
-    }
-    .detail {
-      width: 40px;
-      height: 25px;
-      cursor: pointer;
-      padding: 0;
-      border: 1px solid #ccc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #fff;
-      position: absolute;
-      right: 8px;
-      bottom: 8px;
+      .room {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .status-empty {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #ccc;
+        color: #fff;
+        position: absolute;
+        right: 8px;
+        top: 8px;
+      }
+      .status-normal {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #3bbb00;
+        color: #fff;
+        position: absolute;
+        right: 8px;
+        top: 8px;
+      }
+      .status-warn {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #ffc402;
+        color: #fff;
+        position: absolute;
+        right: 8px;
+        top: 8px;
+      }
+      .status-error {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fa3333;
+        color: #fff;
+        position: absolute;
+        right: 8px;
+        top: 8px;
+      }
+      .status-unbound {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #05ebfc;
+        color: #fff;
+        position: absolute;
+        right: 8px;
+        top: 8px;
+      }
+      .status-offline {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #7700ff;
+        color: #fff;
+        position: absolute;
+        right: 8px;
+        top: 8px;
+      }
+      .detail {
+        width: 40px;
+        height: 25px;
+        cursor: pointer;
+        padding: 0;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+      }
     }
   }
 }
+
+@media screen and (max-width:2048px) and (min-width:1600px){
+  .arrayContainer {
+    //height: 600px;
+    overflow: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    .arrayItem {
+      min-width: 290px;
+      width: 25%;
+      height: 120px;
+      font-size: 13px;
+      box-sizing: border-box;
+      background-color: #eef4fc;
+      border: 5px solid #fff;
+      padding-top: 36px;
+      position: relative;
+      .content {
+        display: flex;
+        align-items: center;
+        line-height: 1.7;
+        .icon {
+          width: 30px;
+          height: 30px;
+          margin: 0 28px;
+        }
+      }
+      .room {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .status-empty {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #ccc;
+        color: #fff;
+        position: absolute;
+        right: 8px;
+        top: 8px;
+      }
+      .status-normal {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #3bbb00;
+        color: #fff;
+        position: absolute;
+        right: 8px;
+        top: 8px;
+      }
+      .status-warn {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #ffc402;
+        color: #fff;
+        position: absolute;
+        right: 8px;
+        top: 8px;
+      }
+      .status-error {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fa3333;
+        color: #fff;
+        position: absolute;
+        right: 8px;
+        top: 8px;
+      }
+      .status-unbound {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #05ebfc;
+        color: #fff;
+        position: absolute;
+        right: 8px;
+        top: 8px;
+      }
+      .status-offline {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #7700ff;
+        color: #fff;
+        position: absolute;
+        right: 8px;
+        top: 8px;
+      }
+      .detail {
+        width: 40px;
+        height: 25px;
+        cursor: pointer;
+        padding: 0;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+      }
+    }
+  }
+}
+
+@media screen and (max-width:1600px){
+  .arrayContainer {
+    //height: 600px;
+    overflow: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    .arrayItem {
+      min-width: 290px;
+      width: 33.3%;
+      height: 120px;
+      font-size: 13px;
+      box-sizing: border-box;
+      background-color: #eef4fc;
+      border: 5px solid #fff;
+      padding-top: 36px;
+      position: relative;
+      .content {
+        display: flex;
+        align-items: center;
+        line-height: 1.7;
+        .icon {
+          width: 30px;
+          height: 30px;
+          margin: 0 28px;
+        }
+      }
+      .room {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .status-empty {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #ccc;
+        color: #fff;
+        position: absolute;
+        right: 8px;
+        top: 8px;
+      }
+      .status-normal {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #3bbb00;
+        color: #fff;
+        position: absolute;
+        right: 8px;
+        top: 8px;
+      }
+      .status-warn {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #ffc402;
+        color: #fff;
+        position: absolute;
+        right: 8px;
+        top: 8px;
+      }
+      .status-error {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fa3333;
+        color: #fff;
+        position: absolute;
+        right: 8px;
+        top: 8px;
+      }
+      .status-unbound {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #05ebfc;
+        color: #fff;
+        position: absolute;
+        right: 8px;
+        top: 8px;
+      }
+      .status-offline {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #7700ff;
+        color: #fff;
+        position: absolute;
+        right: 8px;
+        top: 8px;
+      }
+      .detail {
+        width: 40px;
+        height: 25px;
+        cursor: pointer;
+        padding: 0;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+      }
+    }
+  }
+}
+
 :deep(.master-left .el-card__body) {
   padding: 0;
 }

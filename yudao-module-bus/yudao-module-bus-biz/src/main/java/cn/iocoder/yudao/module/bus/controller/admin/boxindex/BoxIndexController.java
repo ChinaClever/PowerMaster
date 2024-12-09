@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.bus.controller.admin.boxindex;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.dto.BoxIndexDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.*;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
@@ -17,8 +18,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -77,12 +80,32 @@ public class BoxIndexController {
     public CommonResult<PageResult<BoxLineRes>> getBoxLineDevicePage(@RequestBody BoxIndexPageReqVO pageReqVO) {
         return success(indexService.getBoxLineDevicePage(pageReqVO));
     }
-
+    @PostMapping("/line/max")
+    @Operation(summary = "获得始端箱需量最大")
+    public CommonResult<LineBoxMaxResVO> getBoxLineMax(@RequestBody BusIndexPageReqVO pageReqVO) throws IOException {
+        return success(indexService.getBoxLineMax(pageReqVO));
+    }
     @Operation(summary = "插接箱需量ES数据图表")
     @PostMapping("/line/cur")
     public CommonResult<BusLineResBase> getBoxLineCurLine(@RequestBody BoxIndexPageReqVO pageReqVO) {
         BusLineResBase pageResult = indexService.getBoxLineCurLine(pageReqVO);
         return success(pageResult);
+    }
+
+    @Operation(summary = "插接箱需量数据图表数据")
+    @PostMapping("/line/cur/page")
+    public CommonResult<PageResult<BusCurLinePageResVO>> getBoxLineCurLinePage(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
+        PageResult<BusCurLinePageResVO> pageResult = indexService.getBoxLineCurLinePage(pageReqVO);
+        return success(pageResult);
+    }
+
+    @Operation(summary = "插接箱需量数据图表数据导出")
+    @PostMapping("/line/cur/excel")
+    public void getBoxLineCurLineExcel(@RequestBody BoxIndexPageReqVO pageReqVO, HttpServletResponse response) throws IOException {
+        List<BusCurLinePageResVO> list = indexService.getBoxLineCurLineExcel(pageReqVO);
+        // 导出 Excel
+        ExcelUtils.write(response, "始端箱需量数据图表数据.xlsx", "数据", BusCurLinePageResVO.class,
+                list);
     }
 
     @PostMapping("/page")
@@ -118,6 +141,13 @@ public class BoxIndexController {
     public CommonResult<Map> getBoxTemDetail(@RequestBody BoxIndexPageReqVO pageReqVO) {
         return success(indexService.getBoxTemDetail(pageReqVO));
     }
+    @Operation(summary = "插接箱温度详情-导出")
+    @PostMapping("/tem/detailExcel")
+    public void getBoxTemDetailExcel(@RequestBody BoxIndexPageReqVO pageReqVO,HttpServletResponse response) throws IOException {
+        Map busTemDetail = indexService.getBoxTemDetail(pageReqVO);
+        List<BusTemTableRes> tableList  = (List<BusTemTableRes>) busTemDetail.get("table");
+        ExcelUtils.write(response, "插接箱温度详情.xlsx", "数据", BusTemTableRes.class,tableList);
+    }
 
     @PostMapping("/boxpfpage")
     @Operation(summary = "获得插接箱功率因素分页")
@@ -130,6 +160,14 @@ public class BoxIndexController {
     @PostMapping("/pf/detail")
     public CommonResult<Map> getBoxPFDetail(@RequestBody BoxIndexPageReqVO pageReqVO) {
         return success(indexService.getBoxPFDetail(pageReqVO));
+    }
+
+    @Operation(summary = "插接箱功率因数详情-导出")
+    @PostMapping("/pf/detailExcel")
+    public void getBoxPFDetailExcel(@RequestBody BoxIndexPageReqVO pageReqVO,HttpServletResponse response) throws IOException {
+        Map boxPFDetail = indexService.getBoxPFDetail(pageReqVO);
+        List<BusPFTableRes> tableList = (List<BusPFTableRes>) boxPFDetail.get("table");
+        ExcelUtils.write(response, "插接箱功率因数详情.xlsx", "数据", BusPFTableRes.class,tableList);
     }
 
     @PostMapping("/boxharmonicpage")
@@ -300,6 +338,13 @@ public class BoxIndexController {
     public CommonResult<String> getBoxRedisByDevKey(@RequestBody BoxIndexPageReqVO pageReqVO) {
         return success(indexService.getBoxRedisByDevKey(pageReqVO.getDevKey()));
     }
+
+    @PostMapping("/avg/boxHdaLine/form")
+    @Operation(summary = "获得插接箱报表平均电流电压详细信息")
+    public CommonResult<Map> getAvgBoxHdaLineForm(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
+        return success(indexService.getAvgBoxHdaLineForm(pageReqVO));
+    }
+
 
 //    @GetMapping("/export-excel")
 //    @Operation(summary = "导出插接箱索引 Excel")

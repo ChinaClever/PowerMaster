@@ -5,10 +5,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
 import cn.iocoder.yudao.framework.operatelog.core.annotations.OperateLog;
-import cn.iocoder.yudao.module.room.controller.admin.energyconsumption.VO.RoomEnergyConsumptionPageReqVO;
-import cn.iocoder.yudao.module.room.controller.admin.energyconsumption.VO.BillPageRespVO;
-import cn.iocoder.yudao.module.room.controller.admin.energyconsumption.VO.EQPageRespVO;
-import cn.iocoder.yudao.module.room.controller.admin.energyconsumption.VO.RealtimeEQPageRespVO;
+import cn.iocoder.yudao.module.room.controller.admin.energyconsumption.VO.*;
 import cn.iocoder.yudao.module.room.service.energyconsumption.RoomEnergyConsumptionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -80,6 +77,15 @@ public class RoomEnergyConsumptionController {
     public CommonResult<PageResult<Object>> getEQDataDetails(RoomEnergyConsumptionPageReqVO reqVO) throws IOException {
         PageResult<Object> pageResult = roomEnergyConsumptionService.getEQDataDetails(reqVO);
         return success(pageResult);
+    }
+
+    @GetMapping("/detailsExcel")
+    @Operation(summary = "获得机房电量数据详情")
+    public void getEQDataDetailsExcel(RoomEnergyConsumptionPageReqVO reqVO, HttpServletResponse response) throws IOException {
+        PageResult<Object> pageResult = roomEnergyConsumptionService.getEQDataDetails(reqVO);
+        List<Object> list = pageResult.getList();
+        ExcelUtils.write(response, "机房能耗排名.xlsx", "数据", OutLetsPageRespVO.class,
+                BeanUtils.toBean(list, OutLetsPageRespVO.class));
     }
 
     @GetMapping("/realtime-page")

@@ -25,6 +25,7 @@ import cn.iocoder.yudao.module.room.dto.RoomPowDataDTO;
 import cn.iocoder.yudao.module.room.dto.main.DevDataDTO;
 import cn.iocoder.yudao.module.room.dto.main.EqDataDTO;
 import cn.iocoder.yudao.module.room.dto.main.PowDataDTO;
+import cn.iocoder.yudao.module.room.enums.BusTypeEnum;
 import cn.iocoder.yudao.module.room.enums.CabinetLoadEnums;
 import cn.iocoder.yudao.module.room.enums.DeviceAlarmStatusEnum;
 import cn.iocoder.yudao.module.room.service.MainService;
@@ -154,7 +155,7 @@ public class MainServiceImpl implements MainService {
                     EqDataDTO eqDataDTO = new EqDataDTO();
                     EqDataDTO.RoomEq roomEq = eqDataDTO.new RoomEq();
                     roomEq.setId(roomIndex.getId());
-                    roomEq.setName(roomIndex.getName());
+                    roomEq.setName(roomIndex.getRoomName());
                     roomEq.setTodayEq(todayEq.getOrDefault(roomIndex.getId(),0.0));
                     roomEq.setLastWeekEq(weekEqMap.getOrDefault(roomIndex.getId(),0.0));
                     roomEq.setLastMonthEq(monthEqMap.getOrDefault(roomIndex.getId(),0.0));
@@ -214,7 +215,7 @@ public class MainServiceImpl implements MainService {
             devDataDTO.setBoxNum(boxIndexList.size());
 
             int offLine = (int) boxIndexList.stream()
-                    .filter(boxIndex -> boxIndex.getRunStatus() == DeviceAlarmStatusEnum.OFF_LINE.getStatus())
+                    .filter(boxIndex -> boxIndex.getRunStatus() == BusTypeEnum.OFF_LINE.getStatus())
                     .distinct().count();
             devDataDTO.setBoxOnLine(boxIndexList.size()-offLine);
             devDataDTO.setBoxOffLine(offLine);
@@ -246,7 +247,8 @@ public class MainServiceImpl implements MainService {
         }
         LocalDateTime busTime = LocalDateTime.now();
         if (!CollectionUtils.isEmpty(busIndices)){
-            busTime = busIndices.get(0).getCreateTime();
+            if (Objects.nonNull(busIndices.get(0).getCreateTime()))
+                busTime = busIndices.get(0).getCreateTime();
         }
         if (pduTime.isBefore(busTime)){
             long daysBetween = ChronoUnit.DAYS.between( pduTime,LocalDateTime.now());
@@ -281,7 +283,7 @@ public class MainServiceImpl implements MainService {
                 keys.add(REDIS_KEY_ROOM + roomIndex.getId());
                 RoomPowDataDTO roomMainDataDTO = new RoomPowDataDTO();
                 roomMainDataDTO.setId(roomIndex.getId());
-                roomMainDataDTO.setName(roomIndex.getName());
+                roomMainDataDTO.setName(roomIndex.getRoomName());
                 dtoMap.put(roomIndex.getId(),roomMainDataDTO);
 
             });

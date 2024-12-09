@@ -31,7 +31,8 @@
             <span class="label">最近一月 :</span>
             <span class="value">{{ lastMonthTotalData }}条</span>
           </div>
-          <div style="text-align: center"><span>全部PDU新增电费统计</span>
+          <div>
+            <span>全部机架新增电费统计</span>
             <div class="line" style="margin-top: 10px;"></div>
           </div>
           </div>
@@ -405,23 +406,23 @@ onMounted(() => {
 }
 
 .label {
-  width:100px; /* 控制冒号前的宽度 */
-  text-align: right; /* 文本右对齐 */
   margin-right: 5px; /* 控制冒号后的间距 */
+  text-align: left;
 }
 
 .value {
   flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
 }
-  .line {
-    height: 1px;
-    margin-top: 28px;
 
-    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
-  }
+.line {
+  height: 1px;
+  margin-top: 28px;
+  background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+}
 
-  ::v-deep .el-table .el-table__header th {
-    background-color: #F5F7FA;
-    color: #909399;
-  }
+::v-deep .el-table .el-table__header th {
+  background-color: #F5F7FA;
+  color: #909399;
+}
 </style>

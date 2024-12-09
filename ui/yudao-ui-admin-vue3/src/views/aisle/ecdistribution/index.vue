@@ -127,6 +127,12 @@
               :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
               :row-style="{ fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
+              <!-- 添加行号列 -->
+              <el-table-column label="序号" align="center" width="80px">
+                <template #default="{ $index }">
+                  {{ $index + 1 }}
+                </template>  
+              </el-table-column>
               <!-- 动态生成表头 -->
               <template v-for="item in headerData" :key="item.name">
                 <el-table-column  label="开始电能">
@@ -536,8 +542,8 @@ onMounted(async () => {
     padding-top: 28px;
   }
 .nav_data{
-  padding-left: 5px;
-  width: 195px;
+  padding-left: 20px;
+  width: 170px;
 }
 .nav_content span{
   font-size: 18px;
@@ -558,7 +564,6 @@ onMounted(async () => {
 }
 
 .label {
-  text-align: right; /* 文本右对齐 */
   margin-right: 10px; /* 控制冒号后的间距 */
   text-align: left;
 }
@@ -566,12 +571,11 @@ onMounted(async () => {
 .value {
   flex: 1; /* 自动扩展以对齐数据 */
   text-align: left;
-
 }
-  .line {
-    height: 1px;
-    margin-top: 28px;
 
-    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
-  }
+.line {
+  height: 1px;
+  margin-top: 28px;
+  background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+}
 </style>

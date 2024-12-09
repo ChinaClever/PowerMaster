@@ -19,46 +19,46 @@ public class HourAndDayPageRespVO {
     @ExcelProperty("总平均有功功率(kW)")
     private Double active_total_avg_value;
 
-    @ExcelProperty("总最大有功功率时间")
+    @ExcelProperty({"总有功功率最大值","发生时间"})
     private Double active_total_max_time;
 
-    @ExcelProperty("总最大有功功率(kW)")
+    @ExcelProperty({"总有功功率最大值","数值"})
     private Double active_total_max_value;
 
-    @ExcelProperty("总最小有功功率时间")
+    @ExcelProperty({"总有功功率最小值","发生时间"})
     private Double active_total_min_time;
 
-    @ExcelProperty("总最小有功功率(kW)")
+    @ExcelProperty({"总有功功率最小值","数值"})
     private Double active_total_min_value;
 
     @ExcelProperty("总平均视在功率(kVA)")
     private String apparent_total_avg_value;
 
-    @ExcelProperty("总最大视在功率时间")
+    @ExcelProperty({"总最大视在功率最大值","发生时间"})
     private String apparent_total_max_time;
 
-    @ExcelProperty("总最大视在功率(kVA)")
+    @ExcelProperty({"总最大视在功率最大值","数值"})
     private String apparent_total_max_value;
 
-    @ExcelProperty("总最小视在功率时间")
+    @ExcelProperty({"总最小视在功率最小值","发生时间"})
     private String apparent_total_min_time;
 
-    @ExcelProperty("总最小视在功率(kVA)")
+    @ExcelProperty({"总最小视在功率最小值","数值"})
     private String apparent_total_min_value;
 
     @ExcelProperty("总平均无功功率(kW)")
     private Double reactive_total_avg_value;
 
-    @ExcelProperty("总最大无功功率时间")
+    @ExcelProperty({"总无功功率最大值","发生时间"})
     private Double reactive_total_max_time;
 
-    @ExcelProperty("总最大无功功率(kW)")
+    @ExcelProperty({"总无功功率最大值","数值"})
     private Double reactive_total_max_value;
 
-    @ExcelProperty("总最小无功功率时间")
+    @ExcelProperty({"总无功功率最小","发生时间"})
     private Double reactive_total_min_time;
 
-    @ExcelProperty("总最小无功功率(kW)")
+    @ExcelProperty({"总无功功率最小","数值"})
     private Double reactive_total_min_value;
 
     @ExcelProperty("总平均功率因素")
@@ -137,6 +137,4 @@ public class HourAndDayPageRespVO {
 
     @ExcelProperty("B路平均功率因素")
     private Double factor_b_avg_value;
-
-
 }

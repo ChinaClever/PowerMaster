@@ -24,32 +24,31 @@ public interface BusIndexMapper extends BaseMapperX<BusIndexDO> {
 
     default PageResult<BusIndexDO> selectPage(BusIndexPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<BusIndexDO>()
-                .eqIfPresent(BusIndexDO::getDevKey, reqVO.getDevKey())
-                .inIfPresent(BusIndexDO::getDevKey,reqVO.getBusDevKeyList())
+                .eqIfPresent(BusIndexDO::getBusKey, reqVO.getDevKey())
+                .inIfPresent(BusIndexDO::getBusKey,reqVO.getBusDevKeyList())
                 .inIfPresent(BusIndexDO::getId,reqVO.getBusIds())
                 .eqIfPresent(BusIndexDO::getIpAddr, reqVO.getIpAddr())
-                .eqIfPresent(BusIndexDO::getCasAddr, reqVO.getDevAddr())
-                .eqIfPresent(BusIndexDO::getBarId, reqVO.getBarId())
-                .eqIfPresent(BusIndexDO::getNodeIp, reqVO.getNodeIp())
+                .eqIfPresent(BusIndexDO::getBusId, reqVO.getBarId())
+                .eqIfPresent(BusIndexDO::getNodeId, reqVO.getNodeIp())
                 .eqIfPresent(BusIndexDO::getIsDeleted, reqVO.getIsDeleted())
                 .betweenIfPresent(BusIndexDO::getCreateTime, reqVO.getCreateTime())
-                .ne(ObjectUtil.isNotEmpty(reqVO.getStatus()),BusIndexDO::getRunStatus, 5)
+                .ne(ObjectUtil.isNotEmpty(reqVO.getStatus()),BusIndexDO::getRunStatus, 0)
                 .orderByAsc(BusIndexDO::getId));
     }
 
     default PageResult<BusIndexDO> selectPage2(BusIndexPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<BusIndexDO>()
-                .eqIfPresent(BusIndexDO::getDevKey, reqVO.getDevKey())
-                .inIfPresent(BusIndexDO::getDevKey,reqVO.getBusDevKeyList())
+                .eqIfPresent(BusIndexDO::getBusKey, reqVO.getDevKey())
+                .inIfPresent(BusIndexDO::getBusKey,reqVO.getBusDevKeyList())
                 .inIfPresent(BusIndexDO::getId,reqVO.getBusIds())
                 .eqIfPresent(BusIndexDO::getIpAddr, reqVO.getIpAddr())
-                .eqIfPresent(BusIndexDO::getCasAddr, reqVO.getDevAddr())
-                .eqIfPresent(BusIndexDO::getBarId, reqVO.getBarId())
-                .eqIfPresent(BusIndexDO::getNodeIp, reqVO.getNodeIp())
+//                .eqIfPresent(BusIndexDO::getCasAddr, reqVO.getDevAddr())
+                .eqIfPresent(BusIndexDO::getBusId, reqVO.getBarId())
+                .eqIfPresent(BusIndexDO::getNodeId, reqVO.getNodeIp())
                 .eqIfPresent(BusIndexDO::getIsDeleted, reqVO.getIsDeleted())
                 .betweenIfPresent(BusIndexDO::getCreateTime, reqVO.getCreateTime())
                 .in(ObjectUtil.isNotEmpty(reqVO.getStatus()), BusIndexDO::getRunStatus, reqVO.getStatus())
-                .orderByAsc(BusIndexDO::getId));
+                .orderByDesc(BusIndexDO::getId));
     }
 
     IPage<BusAisleBarQueryVO> selectPageList(@Param("page") Page<Object> page,@Param("devkeys") String[] devkeys);

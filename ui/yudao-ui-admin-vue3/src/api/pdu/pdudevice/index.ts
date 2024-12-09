@@ -29,6 +29,11 @@ export const PDUDeviceApi = {
     return await request.get({ url: `/pdu/PDU-device/get?id=` + id })
   },
 
+  // 查询PDU设备统计
+  getPDUDeviceCount: async () => {
+    return await request.get({ url: `/pdu/PDU-device/detailCount` })
+  },
+
   // 新增PDU设备
   createPDUDevice: async (data: PDUDeviceVO) => {
     return await request.post({ url: `/pdu/PDU-device/create`, data })
@@ -52,6 +57,11 @@ export const PDUDeviceApi = {
   //获取PDU相历史数据
   getPDUHdaLineHisdata: async (params: any) => {
     return await request.get({ url: `pdu/PDU-device/pduHdaLineHisdata`, params})
+  },
+
+  //获取PDU需量详细数据
+  getMaxLineHisdata: async (params: any) => {
+    return await request.get({ url: `pdu/PDU-device/line/getMaxLine`, params})
   },
 
   // 导出PDU设备 Excel

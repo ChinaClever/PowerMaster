@@ -532,7 +532,7 @@ public class AisleServiceImpl implements AisleService {
             Integer roomId = aisleIndex.getRoomId();
             RoomIndex roomIndex = roomIndexMapper.selectById(roomId);
             if (Objects.nonNull(roomIndex)){
-                detailDTO.setRoomName(roomIndex.getName());
+                detailDTO.setRoomName(roomIndex.getRoomName());
                 detailDTO.setRoomId(roomId);
             }
 
@@ -580,11 +580,11 @@ public class AisleServiceImpl implements AisleService {
                 //获取id
                 List<String> boxKeys = aisleBoxList.stream().map(AisleBox::getBarKey).collect(Collectors.toList());
                 List<BoxIndex>  boxIndexList = boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>()
-                        .in(BoxIndex::getDevKey,boxKeys));
+                        .in(BoxIndex::getBoxKey,boxKeys));
                 //获取昨日统计用电
                 if (!CollectionUtils.isEmpty(boxIndexList)){
                     List<Integer> ids = boxIndexList.stream().map(BoxIndex::getId).distinct().collect(Collectors.toList());
-                    boxIdMap = boxIndexList.stream().collect(Collectors.toMap(BoxIndex::getDevKey,BoxIndex::getId));
+                    boxIdMap = boxIndexList.stream().collect(Collectors.toMap(BoxIndex::getBoxKey,BoxIndex::getId));
 
                     String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
                     String endTime =DateUtil.formatDateTime(DateTime.now());
@@ -713,7 +713,7 @@ public class AisleServiceImpl implements AisleService {
                 if (Objects.nonNull(map.get(roomIndex.getId()))){
                     AisleListDTO aisleListDTO = new AisleListDTO();
                     aisleListDTO.setRoomId(roomIndex.getId());
-                    aisleListDTO.setRoomName(roomIndex.getName());
+                    aisleListDTO.setRoomName(roomIndex.getRoomName());
                     aisleListDTO.setYLength(roomIndex.getYLength());
                     aisleListDTO.setXLength(roomIndex.getXLength());
                     aisleListDTO.setPowerCapacity(roomIndex.getPowerCapacity());
@@ -1087,7 +1087,7 @@ public class AisleServiceImpl implements AisleService {
             cabinetIndexList.forEach(cabinetIndex ->{
                 CabinetMainDataDTO cabDto = new CabinetMainDataDTO();
                 cabDto.setId(cabinetIndex.getId());
-                cabDto.setCabinetName(cabinetIndex.getName());
+                cabDto.setCabinetName(cabinetIndex.getCabinetName());
 
                 String cabKey =  REDIS_KEY_CABINET + cabinetIndex.getRoomId() + SPLIT_KEY + cabinetIndex.getId();
                 Object cabObject = ops.get(cabKey);

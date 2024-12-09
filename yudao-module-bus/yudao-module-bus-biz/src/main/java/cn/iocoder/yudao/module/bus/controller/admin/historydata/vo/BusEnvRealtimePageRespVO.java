@@ -26,7 +26,7 @@ public class BusEnvRealtimePageRespVO {
     @ExcelProperty("位置")
     private String location;
 
-    @ExcelProperty("IP地址")
+    @ExcelProperty("设备地址")
     private String dev_key;
 
     @ExcelProperty("记录时间")

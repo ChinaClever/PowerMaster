@@ -1,15 +1,9 @@
 <template>
- <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="机房电力分析" :showCheckbox="false">
+ <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="机房趋势分析" :showCheckbox="false">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
-        <!-- <div class="carousel-container">
-          <el-carousel :interval="2500" motion-blur height="150px" arrow="never" trigger="click">
-            <el-carousel-item v-for="(item, index) in carouselItems" :key="index">
-              <img width="auto" height="auto" :src="item.imgUrl" alt="" class="carousel-image" />
-            </el-carousel-item>
-          </el-carousel>
-        </div>  -->
+
         <div class="nav_header">
           <span v-if="nowAddress">{{nowAddress}}</span>
           <br/>
@@ -19,19 +13,25 @@
             <span>{{queryParams.timeRange[1]}}</span>
           </template>
           <br/>
+           <div  class="description-item">
+            <span class="label">最大值 :</span>
+            <span >{{ formatNumber(maxActivePowDataTemp, 3) }} kW</span>
+          </div>
+          <div v-if="maxActivePowDataTimeTemp" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatDate(maxActivePowDataTimeTemp, 'YYYY-MM-DD') }}</span>
+          </div>
+          <div  class="description-item">
+            <span class="label">最小值 :</span>
+            <span >{{ formatNumber(minActivePowDataTemp, 3) }} kW</span>
+          </div>
+          <div v-if="minActivePowDataTimeTemp" class="description-item">
+            <span class="label">发生时间 :</span>
+            <span class="value">{{ formatDate(minActivePowDataTimeTemp, 'YYYY-MM-DD')  }}</span>
+          </div> 
         </div>
-        <div class="nav_content" v-if="queryParams.granularity == 'realtime' && paramType == 'total'">
-        <el-descriptions title="" direction="vertical" :column="1" border >
-          <el-descriptions-item label="有功功率最大值 | 发生时间">
-            <span>{{ formatNumber(maxActivePowDataTemp, 3) }} kWh</span> <br/>
-            <span v-if="maxActivePowDataTimeTemp">{{ maxActivePowDataTimeTemp }}</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="有功功率最小值 | 发生时间">
-            <span>{{ formatNumber(minActivePowDataTemp, 3) }} kWh</span><br/>
-            <span v-if="minActivePowDataTimeTemp">{{ minActivePowDataTimeTemp }}</span>
-          </el-descriptions-item>
-        </el-descriptions>
-        </div>
+
+
       </div>
     </template>
     <template #ActionBar>
@@ -75,6 +75,9 @@
          
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+            <el-button type="success" plain @click="handleExport" :loading="exportLoading">
+             <Icon icon="ep:download" class="mr-5px" /> 导出
+           </el-button>
          </el-form-item>
        </el-form>
     </template>
@@ -87,14 +90,20 @@
           <el-tab-pane label="数据" name="myData">
             <div style="height: 67vh;">
             <el-table  
-              border
+              :border="true"
+              :stripe="true"
               :data="tableData"
-              style="height: 67vh; width: 99.97%;--el-table-border-color: none;border-right: 1px #143275 solid;border-left: 1px #143275 solid;border-bottom: 1px #143275 solid;"
-              :highlight-current-row="false"
-              :header-cell-style="{ backgroundColor: '#143275', color: '#ffffff', fontSize: '18px', textAlign: 'center', borderLeft: '0.5px #ffffff solid', borderBottom: '1px #ffffff solid' }"
-              :cell-style="{ color: '#000000', fontSize: '16px', textAlign: 'center', borderBottom: '0.5px #143275 solid', borderLeft: '0.5px #143275 solid' }"
-              :row-style="{ color: '#fff', fontSize: '14px', textAlign: 'center', }"
+              style="height: 67vh; width: 99.97%;"
+              :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', borderBottom: '1px #EDEEF2 solid', fontFamily: 'Microsoft YaHei',fontWeight: 'bold'}"
+              :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
+              :row-style="{ fontSize: '14px', textAlign: 'center', }"
               empty-text="暂无数据" max-height="818">
+              <!-- 添加行号列 -->
+              <el-table-column label="序号" align="center" width="80px">
+                <template #default="{ $index }">
+                  {{ $index + 1 }}
+                </template>  
+              </el-table-column>
               <el-table-column prop="create_time" label="记录时间" />
               <!-- 动态生成表头 -->
               <template v-for="item in headerData" :key="item.name">
@@ -162,20 +171,20 @@
             </div>
           </el-tab-pane>
         </el-tabs>
-        
-        <!-- <el-empty v-show="!isHaveData" description="暂无数据" /> -->
       </div>
     </template>
   </CommonMenu>
 </template>
 
 <script setup lang="ts">
+import draggable from 'vuedraggable';
 import { ElMessage } from 'element-plus'
 import * as echarts from 'echarts';
 import { onMounted } from 'vue'
 import { HistoryDataApi } from '@/api/room/historydata'
 import { formatDate } from '@/utils/formatTime'
 import { IndexApi } from '@/api/room/roomindex'
+import download from '@/utils/download';
 // import PDUImage from '@/assets/imgs/PDU.jpg'
 /** 机房历史曲线 */
 defineOptions({ name: 'RoomHistoryLine' })
@@ -189,9 +198,12 @@ const tableData = ref<Array<{ }>>([]) // 列表数据
 const headerData = ref<any[]>([])
 const needFlush = ref(0) // 是否需要刷新图表
 const paramType = ref('total')
+const message = useMessage() // 消息弹窗
+const exportLoading = ref(false)
 const queryParams = reactive({
   roomId: undefined as number | undefined,
   granularity: 'realtime',
+  nowAddress: undefined as string | undefined,
   timeRange: defaultHourTimeRange(1) as any,
 })
 const loading = ref(false) // 列表的加载中
@@ -275,7 +287,7 @@ const shortcuts2 = [
     value: () => {
       const end = new Date()
       const start = new Date()
-      start.setHours(start.getHours() - 24*30)
+      start.setUTCMonth(start.getUTCMonth() - 1)
       return [start, end]
     },
   },
@@ -284,7 +296,7 @@ const shortcuts2 = [
     value: () => {
       const end = new Date()
       const start = new Date()
-      start.setHours(start.getHours() - 24*30*3)
+      start.setUTCMonth(start.getUTCMonth() - 3)
       return [start, end]
     },
   },
@@ -293,7 +305,7 @@ const shortcuts2 = [
     value: () => {
       const end = new Date()
       const start = new Date()
-      start.setHours(start.getHours() - 24*30*6)
+      start.setUTCMonth(start.getUTCMonth() - 6)
       return [start, end]
     },
   },
@@ -372,6 +384,10 @@ const minActivePowDataTimeTemp = ref();// 最小有功功率的发生时间
 /** 查询列表 */
 const isHaveData = ref(false);
 const getList = async () => {
+if (queryParams.roomId == null){
+  ElMessage.warning('请选择机房')
+  return
+}
 loading.value = true
  try {
     const data = await HistoryDataApi.getHistoryDataDetails(queryParams);
@@ -763,32 +779,32 @@ function customTooltipFormatter(params: any[]) {
       case '总平均无功功率':
       case 'A路平均无功功率':
       case 'B路平均无功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  记录时间: ' +params[0].name + '<br/>';
+        tooltipContent += item.marker + ' 记录时间: ' +params[0].name +' ' +  item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       case '总最大有功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +totalActivePowMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker + ' 发生时间: ' +totalActivePowMaxTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       case '总最小有功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +totalActivePowMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker + ' 发生时间: ' +totalActivePowMinTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       case 'A路最大有功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +aActivePowMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker + ' 发生时间: ' +aActivePowMaxTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       case 'A路最小有功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +aActivePowMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker + ' 发生时间: ' +aActivePowMinTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       case 'B路最大有功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +bActivePowMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker + ' 发生时间: ' +bActivePowMaxTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       case 'B路最小有功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +bActivePowMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker + ' 发生时间: ' +bActivePowMinTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       // 
       case '总最大无功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +totalReactivePowMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker + ' 发生时间: ' +totalReactivePowMaxTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       case '总最小无功功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kW  发生时间: ' +totalReactivePowMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker + ' 发生时间: ' +totalReactivePowMinTimeData.value[item.dataIndex] +' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
       case '总视在功率':
       case 'A路视在功率':
@@ -796,25 +812,25 @@ function customTooltipFormatter(params: any[]) {
       case '总平均视在功率':
       case 'A路平均视在功率':
       case 'B路平均视在功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  记录时间: ' +params[0].name + '<br/>';
+        tooltipContent += item.marker + ' 记录时间: ' +params[0].name +' ' +  item.seriesName + ': ' + item.value + ' kVA  <br/>';
         break;
      case '总最大视在功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  发生时间: ' +totalApparentPowMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker + ' 发生时间: ' +totalApparentPowMaxTimeData.value[item.dataIndex] +' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
         break;
       case '总最小视在功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  发生时间: ' +totalApparentPowMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker + ' 发生时间: ' +totalApparentPowMinTimeData.value[item.dataIndex] +' ' + item.seriesName + ': ' + item.value + 'kVA  <br/>';
         break;
       case 'A路最大视在功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  发生时间: ' +aApparentPowMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker + ' 发生时间: ' +aApparentPowMaxTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + 'kVA  <br/>';
         break;
       case 'A路最小视在功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  发生时间: ' +aApparentPowMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker + ' 发生时间: ' +aApparentPowMinTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + 'kVA  <br/>';
         break;
       case 'B路最大视在功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  发生时间: ' +bApparentPowMaxTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker + ' 发生时间: ' +bApparentPowMaxTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + 'kVA  <br/>';
         break;
       case 'B路最小视在功率':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + ' kVA  发生时间: ' +bApparentPowMinTimeData.value[item.dataIndex] + '<br/>';
+        tooltipContent += item.marker + ' 发生时间: ' +bApparentPowMinTimeData.value[item.dataIndex] +' ' +  item.seriesName + ': ' + item.value + 'kVA  <br/>';
         break;
       case '总功率因素':
       case 'A路功率因素':
@@ -822,7 +838,7 @@ function customTooltipFormatter(params: any[]) {
       case '总平均功率因素':
       case 'A路平均功率因素':
       case 'B路平均功率因素':
-        tooltipContent += item.marker + ' ' + item.seriesName + ': ' + item.value + '  记录时间: ' +params[0].name + '<br/>';
+        tooltipContent += item.marker + '  记录时间: ' +params[0].name + ' ' + item.seriesName + ': ' + item.value + 'kW  <br/>';
         break;
     }
     
@@ -913,7 +929,26 @@ onMounted( async () => {
     nowAddressTemp.value =queryLocation
   }
 })
-
+//导出Excel
+const handleExport = async () => {
+  try {
+    // 导出的二次确认
+    await message.exportConfirm()
+    // 发起导出
+    exportLoading.value = true
+    queryParams.nowAddress = nowAddress.value;
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data =  await HistoryDataApi.getHistoryDataDetailsExcel(queryParams, axiosConfig)
+    await download.excel(data, '机房电力趋势分析.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
+  } finally {
+    exportLoading.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -961,7 +996,11 @@ onMounted( async () => {
 :deep( .el-table tbody tr) {
   pointer-events: none;
 }
- 
+.description-item {
+  display: flex;
+  align-items: center;
+}
+
 /* 修改表头样式-加边框 */
 /* ::v-deep .el-table__header-wrapper {
   border: solid 1px #04c2ed;
@@ -980,7 +1019,7 @@ onMounted( async () => {
   padding-right: 0px;
   padding-top: 0px;
   padding-bottom: 0px;
-  font-size: 12px;
+  font-size: 14px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -997,7 +1036,7 @@ onMounted( async () => {
   width: 195px;
 }
 .nav_content span{
-  font-size: 18px;
+  font-size: 14px;
 }
 .carousel-container {
   width: 100%;

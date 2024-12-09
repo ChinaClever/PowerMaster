@@ -51,5 +51,9 @@ export const EnergyConsumptionApi = {
   getSubBillDetails: async (params: any) => {
     return await request.get({ url: `/room/eq-data/bill-details`, params})
   },
-
+  
+    // 导出机柜电能记录历史数据 Excel
+    getEQDataDetailsExcel: async (params, axiosConfig) => {
+      return await request.download({ url: `/room/eq-data/detailsExcel`, params, ...axiosConfig })
+    },
 }

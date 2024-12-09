@@ -271,11 +271,34 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
 
     @Override
     public Map<String, Object> getNewData() throws IOException {
-        String[] indices = new String[]{"cabinet_eq_total_day", "cabinet_eq_total_week", "cabinet_eq_total_month"};
+//        String[] indices = new String[]{"cabinet_eq_total_day", "cabinet_eq_total_week", "cabinet_eq_total_month"};
+        String indices = "cabinet_ele_total_realtime";
         String[] name = new String[]{"day", "week", "month"};
         LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1), LocalDateTime.now().minusMonths(1)};
-        Map<String, Object> map = getSumData(indices, name, timeAgo);
-        return map;
+//        Map<String, Object> map = getSumData(indices, name, timeAgo);
+        Map<String, Object> resultItem = new HashMap<>();
+        // 添加范围查询 最近24小时
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        for (int i = 0; i < timeAgo.length; i++) {
+            SearchRequest searchRequest = new SearchRequest(indices);
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
+                    .gte(timeAgo[i].format(formatter))
+                    .lte(now.format(formatter)));
+            // 添加计数聚合
+            searchSourceBuilder.aggregation(
+                    AggregationBuilders.count("total_insertions").field("cabinet_id")
+            );
+            searchRequest.source(searchSourceBuilder);
+            // 执行搜索请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            // 从聚合结果中获取文档数量
+            ValueCount totalInsertionsAggregation = searchResponse.getAggregations().get("total_insertions");
+            long totalInsertions = totalInsertionsAggregation.getValue();
+            resultItem.put(name[i], totalInsertions);
+        }
+        return resultItem;
     }
 
     @Override
@@ -408,13 +431,13 @@ public class CabinetEnergyConsumptionServiceImpl implements CabinetEnergyConsump
         Map<Integer , AisleIndex> mapAisle = cabinetHistoryDataService.getAisleByIds(aisleIds);
         for (IndexDO record : records) {
             CabinetEleTotalRealtimeResVO resVO = new CabinetEleTotalRealtimeResVO();
-            String roomName = mapRoom.get(record.getRoomId()).getName();
+            String roomName = mapRoom.get(record.getRoomId()).getRoomName();
             String aisleName = mapAisle.get(record.getAisleId()).getName();
             String localtion = null;
             if(record.getAisleId() != 0){
-                localtion = roomName + "-" + aisleName + "-" + record.getName();
+                localtion = roomName + "-" + aisleName + "-" + record.getCabinetName();
             }else {
-                localtion = roomName + "-"  + record.getName() ;
+                localtion = roomName + "-"  + record.getCabinetName() ;
             }
             resVO.setId(record.getId()).setLocation(localtion);
             BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();

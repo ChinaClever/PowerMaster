@@ -14,7 +14,6 @@ import cn.iocoder.yudao.module.bus.dto.BusEleTotalRealtimeReqDTO;
 import cn.iocoder.yudao.module.bus.service.historydata.BusHistoryDataService;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -63,11 +62,12 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
     private BoxIndexMapper boxIndexMapper;
     @Autowired
     private AisleBarMapper aisleBarMapper;
-    private Integer[] getBusIdsByDevkeys(String[] devkeys){
+
+    private Integer[] getBusIdsByDevkeys(String[] devkeys) {
         // 创建 QueryWrapper
         QueryWrapper<BusIndexDO> queryWrapper = new QueryWrapper<>();
-        // 设置条件：dev_key 在数组 devkeys 中
-        queryWrapper.in("dev_key", Arrays.asList(devkeys));
+        // 设置条件：bus_key 在数组 devkeys 中
+        queryWrapper.in("bus_key", Arrays.asList(devkeys));
         // 查询指定字段 name
 //        queryWrapper.select("id");
         // 执行查询
@@ -79,11 +79,11 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
 
     }
 
-    private Integer[] getBoxIdsByDevkeys(String[] devkeys){
+    private Integer[] getBoxIdsByDevkeys(String[] devkeys) {
         // 创建 QueryWrapper
         QueryWrapper<BoxIndex> queryWrapper = new QueryWrapper<>();
-        // 设置条件：dev_key 在数组 devkeys 中
-        queryWrapper.in("dev_key", Arrays.asList(devkeys));
+        // 设置条件：box_key 在数组 devkeys 中
+        queryWrapper.in("box_key", Arrays.asList(devkeys));
         // 查询指定字段 name
 //        queryWrapper.select("id");
         // 执行查询
@@ -106,9 +106,9 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
         int index = (pageNo - 1) * pageSize;
         searchSourceBuilder.from(index);
         // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-        if (index + pageSize > 10000){
+        if (index + pageSize > 10000) {
             searchSourceBuilder.size(10000 - index);
-        }else{
+        } else {
             searchSourceBuilder.size(pageSize);
         }
         searchSourceBuilder.trackTotalHits(true);
@@ -120,17 +120,17 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                     .to(pageReqVO.getTimeRange()[1]));
         }
         String[] devkeys = pageReqVO.getDevkeys();
-        if (devkeys != null){
+        if (devkeys != null) {
             Integer[] busIds = getBusIdsByDevkeys(devkeys);
             searchSourceBuilder.query(QueryBuilders.termsQuery("bus_id", busIds));
         }
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
-        if ("day".equals(pageReqVO.getGranularity()) ){
+        if ("day".equals(pageReqVO.getGranularity())) {
             searchRequest.indices("bus_eq_total_day");
-        }else if ("week".equals(pageReqVO.getGranularity()) ){
+        } else if ("week".equals(pageReqVO.getGranularity())) {
             searchRequest.indices("bus_eq_total_week");
-        }else {
+        } else {
             searchRequest.indices("bus_eq_total_month");
         }
         searchRequest.source(searchSourceBuilder);
@@ -161,9 +161,9 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
         int index = (pageNo - 1) * pageSize;
         searchSourceBuilder.from(index);
         // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-        if (index + pageSize > 10000){
+        if (index + pageSize > 10000) {
             searchSourceBuilder.size(10000 - index);
-        }else{
+        } else {
             searchSourceBuilder.size(pageSize);
         }
         searchSourceBuilder.trackTotalHits(true);
@@ -175,17 +175,17 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                     .to(pageReqVO.getTimeRange()[1]));
         }
         String[] devkeys = pageReqVO.getDevkeys();
-        if (devkeys != null){
+        if (devkeys != null) {
             Integer[] busIds = getBusIdsByDevkeys(devkeys);
             searchSourceBuilder.query(QueryBuilders.termsQuery("bus_id", busIds));
         }
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
-        if ("day".equals(pageReqVO.getGranularity()) ){
+        if ("day".equals(pageReqVO.getGranularity())) {
             searchRequest.indices("bus_eq_total_day");
-        }else if ("week".equals(pageReqVO.getGranularity()) ){
+        } else if ("week".equals(pageReqVO.getGranularity())) {
             searchRequest.indices("bus_eq_total_week");
-        }else {
+        } else {
             searchRequest.indices("bus_eq_total_month");
         }
         searchRequest.source(searchSourceBuilder);
@@ -209,18 +209,18 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
     public PageResult<Object> getEQDataDetails(EnergyConsumptionPageReqVO reqVO) throws IOException {
         // 根据导航栏传来的devkey 获取busIds 一定只有一个，如果是跳转到能耗排名界面的就不会传devkey，会直接传一个busId
         Integer busId;
-        if (reqVO.getDevkey() != null){
+        if (reqVO.getDevkey() != null) {
             String[] devkeys = new String[]{reqVO.getDevkey()};
             Integer[] busIds = getBusIdsByDevkeys(devkeys);
-            if (busIds.length == 0){
-                PageResult<Object> pageResult=new PageResult<>();
+            if (busIds.length == 0) {
+                PageResult<Object> pageResult = new PageResult<>();
                 pageResult.setList(new ArrayList<>())
                         .setTotal(new Long(0));
                 return pageResult;
             }
             busId = busIds[0];
-        }else {
-            PageResult<Object> pageResult=new PageResult<>();
+        } else {
+            PageResult<Object> pageResult = new PageResult<>();
             pageResult.setList(new ArrayList<>())
                     .setTotal(new Long(0));
             return pageResult;
@@ -232,18 +232,18 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
         searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
         searchSourceBuilder.size(10000);
         searchSourceBuilder.trackTotalHits(true);
-        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0){
+        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0) {
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(reqVO.getTimeRange()[0])
                     .to(reqVO.getTimeRange()[1]));
         }
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
-        if ("day".equals(reqVO.getGranularity()) ){
+        if ("day".equals(reqVO.getGranularity())) {
             searchRequest.indices("bus_eq_total_day");
-        }else if ("week".equals(reqVO.getGranularity()) ){
+        } else if ("week".equals(reqVO.getGranularity())) {
             searchRequest.indices("bus_eq_total_week");
-        }else {
+        } else {
             searchRequest.indices("bus_eq_total_month");
         }
 
@@ -273,9 +273,9 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
         int index = (pageNo - 1) * pageSize;
         searchSourceBuilder.from(index);
         // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-        if (index + pageSize > 10000){
+        if (index + pageSize > 10000) {
             searchSourceBuilder.size(10000 - index);
-        }else{
+        } else {
             searchSourceBuilder.size(pageSize);
         }
         searchSourceBuilder.trackTotalHits(true);
@@ -288,7 +288,7 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                     .to(pageReqVO.getTimeRange()[1]));
         }
         String[] devkeys = pageReqVO.getDevkeys();
-        if (devkeys != null){
+        if (devkeys != null) {
             Integer[] busIds = getBusIdsByDevkeys(devkeys);
             searchSourceBuilder.query(QueryBuilders.termsQuery("bus_id", busIds));
         }
@@ -316,11 +316,11 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
         // 添加范围查询
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        for (int i = 0; i < (name.length==3?3:1); i++) {
+        for (int i = 0; i < (name.length == 3 ? 3 : 1); i++) {
             SearchRequest searchRequest;
-            if(indices.length==2){
-                 searchRequest = new SearchRequest(indices[0],indices[1]);
-            }else{
+            if (indices.length == 2) {
+                searchRequest = new SearchRequest(indices[0], indices[1]);
+            } else {
                 searchRequest = new SearchRequest(indices[0]);
             }
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
@@ -328,12 +328,11 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                     .from(timeAgo[i].format(formatter))
                     .to(now.format(formatter)));
             // 添加计数聚合
-            if(indices[0]=="bus_eq_total_day"||indices[0]=="bus_ele_total_realtime"){
+            if (indices[0] == "bus_eq_total_day" || indices[0] == "bus_ele_total_realtime") {
                 searchSourceBuilder.aggregation(
-                    AggregationBuilders.count("total_insertions").field("bus_id")
-            );
-            }
-            else{
+                        AggregationBuilders.count("total_insertions").field("bus_id")
+                );
+            } else {
                 searchSourceBuilder.aggregation(
                         AggregationBuilders.count("total_insertions").field("box_id")
                 );
@@ -370,7 +369,7 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
     @Override
     public PageResult<Object> getBusSubBillDetails(EnergyConsumptionPageReqVO reqVO) throws IOException {
         Integer busId = reqVO.getBusId();
-        if (Objects.equals(busId, null)){
+        if (Objects.equals(busId, null)) {
             return null;
         }
         // 把传来的开始时间(例如"2024-07-25 10:00:00") 的年月日加一天变成 '2024-07-26 00:00:00'和'2024-07-27 00:00:00'
@@ -425,9 +424,9 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
         int index = (pageNo - 1) * pageSize;
         searchSourceBuilder.from(index);
         // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-        if (index + pageSize > 10000){
+        if (index + pageSize > 10000) {
             searchSourceBuilder.size(10000 - index);
-        }else{
+        } else {
             searchSourceBuilder.size(pageSize);
         }
         searchSourceBuilder.trackTotalHits(true);
@@ -439,18 +438,18 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                     .to(pageReqVO.getTimeRange()[1]));
         }
         String[] devkeys = pageReqVO.getDevkeys();
-        if (devkeys != null){
+        if (devkeys != null) {
             Integer[] boxIds = getBoxIdsByDevkeys(devkeys);
             System.out.println();
             searchSourceBuilder.query(QueryBuilders.termsQuery("box_id", boxIds));
         }
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
-        if ("day".equals(pageReqVO.getGranularity()) ){
+        if ("day".equals(pageReqVO.getGranularity())) {
             searchRequest.indices("box_eq_total_day");
-        }else if ("week".equals(pageReqVO.getGranularity()) ){
+        } else if ("week".equals(pageReqVO.getGranularity())) {
             searchRequest.indices("box_eq_total_week");
-        }else {
+        } else {
             searchRequest.indices("box_eq_total_month");
         }
         searchRequest.source(searchSourceBuilder);
@@ -481,9 +480,9 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
         int index = (pageNo - 1) * pageSize;
         searchSourceBuilder.from(index);
         // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-        if (index + pageSize > 10000){
+        if (index + pageSize > 10000) {
             searchSourceBuilder.size(10000 - index);
-        }else{
+        } else {
             searchSourceBuilder.size(pageSize);
         }
         searchSourceBuilder.trackTotalHits(true);
@@ -495,17 +494,17 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                     .to(pageReqVO.getTimeRange()[1]));
         }
         String[] devkeys = pageReqVO.getDevkeys();
-        if (devkeys != null){
+        if (devkeys != null) {
             Integer[] boxIds = getBoxIdsByDevkeys(devkeys);
             searchSourceBuilder.query(QueryBuilders.termsQuery("box_id", boxIds));
         }
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
-        if ("day".equals(pageReqVO.getGranularity()) ){
+        if ("day".equals(pageReqVO.getGranularity())) {
             searchRequest.indices("box_eq_total_day");
-        }else if ("week".equals(pageReqVO.getGranularity()) ){
+        } else if ("week".equals(pageReqVO.getGranularity())) {
             searchRequest.indices("box_eq_total_week");
-        }else {
+        } else {
             searchRequest.indices("box_eq_total_month");
         }
         searchRequest.source(searchSourceBuilder);
@@ -529,19 +528,19 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
     public PageResult<Object> getBoxEQDataDetails(EnergyConsumptionPageReqVO reqVO) throws IOException {
         // 根据导航栏传来的devkey 获取boxIds 一定只有一个，如果是跳转到能耗排名界面的就不会传devkey，会直接传一个boxId
         Integer boxId;
-        if (reqVO.getDevkey() != null){
+        if (reqVO.getDevkey() != null) {
             String[] devkeys = new String[]{reqVO.getDevkey()};
             Integer[] boxIds = getBoxIdsByDevkeys(devkeys);
-            if (boxIds.length == 0){
-                PageResult<Object>pageResult=new PageResult<>();
+            if (boxIds.length == 0) {
+                PageResult<Object> pageResult = new PageResult<>();
                 pageResult.setList(new ArrayList<>())
                         .setTotal(new Long(0));
                 return pageResult;
 
             }
             boxId = boxIds[0];
-        }else {
-            PageResult<Object>pageResult=new PageResult<>();
+        } else {
+            PageResult<Object> pageResult = new PageResult<>();
             pageResult.setList(new ArrayList<>())
                     .setTotal(new Long(0));
             return pageResult;
@@ -552,18 +551,18 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
         searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
         searchSourceBuilder.size(10000);
         searchSourceBuilder.trackTotalHits(true);
-        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0){
+        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0) {
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(reqVO.getTimeRange()[0])
                     .to(reqVO.getTimeRange()[1]));
         }
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
-        if ("day".equals(reqVO.getGranularity()) ){
+        if ("day".equals(reqVO.getGranularity())) {
             searchRequest.indices("box_eq_total_day");
-        }else if ("week".equals(reqVO.getGranularity()) ){
+        } else if ("week".equals(reqVO.getGranularity())) {
             searchRequest.indices("box_eq_total_week");
-        }else {
+        } else {
             searchRequest.indices("box_eq_total_month");
         }
 
@@ -587,7 +586,7 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
 
     @Override
     public PageResult<Object> getBoxRealtimeEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
-        if (pageReqVO==null){
+        if (pageReqVO == null) {
             PageResult<Object> pageResult = new PageResult<>();
             pageResult.setTotal(new Long(0));
             pageResult.setList(new ArrayList<>());
@@ -600,9 +599,9 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
         int index = (pageNo - 1) * pageSize;
         searchSourceBuilder.from(index);
         // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-        if (index + pageSize > 10000){
+        if (index + pageSize > 10000) {
             searchSourceBuilder.size(10000 - index);
-        }else{
+        } else {
             searchSourceBuilder.size(pageSize);
         }
         searchSourceBuilder.trackTotalHits(true);
@@ -615,7 +614,7 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                     .to(pageReqVO.getTimeRange()[1]));
         }
         String[] devkeys = pageReqVO.getDevkeys();
-        if (devkeys != null){
+        if (devkeys != null) {
             Integer[] boxIds = getBoxIdsByDevkeys(devkeys);
             searchSourceBuilder.query(QueryBuilders.termsQuery("box_id", boxIds));
         }
@@ -639,7 +638,7 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
 
     @Override
     public Map<String, Object> getBoxNewData() throws IOException {
-        String[] indices = new String[]{"box_eq_outlet_day","box_eq_total_day"};
+        String[] indices = new String[]{"box_eq_outlet_day", "box_eq_total_day"};
         String[] name = new String[]{"day", "week", "month"};
         LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1), LocalDateTime.now().minusMonths(1)};
         Map<String, Object> map = getSumData(indices, name, timeAgo);
@@ -658,7 +657,7 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
     @Override
     public PageResult<Object> getBoxSubBillDetails(EnergyConsumptionPageReqVO reqVO) throws IOException {
         Integer boxId = reqVO.getBoxId();
-        if (Objects.equals(boxId, null)){
+        if (Objects.equals(boxId, null)) {
             return null;
         }
         // 把传来的开始时间(例如"2024-07-25 10:00:00") 的年月日加一天变成 '2024-07-26 00:00:00'和'2024-07-27 00:00:00'
@@ -711,10 +710,10 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                 mapList.add(map);
             }
         }
-        for(int i=0;i<mapList.size();i++){
-            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,10));
-            mapList.get(i).put("start_time",mapList.get(i).get("start_time").toString().substring(0,10));
-            mapList.get(i).put("end_time",mapList.get(i).get("end_time").toString().substring(0,10));
+        for (int i = 0; i < mapList.size(); i++) {
+            mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 10));
+            mapList.get(i).put("start_time", mapList.get(i).get("start_time").toString().substring(0, 10));
+            mapList.get(i).put("end_time", mapList.get(i).get("end_time").toString().substring(0, 10));
         }
         return list;
     }
@@ -729,10 +728,10 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                 mapList.add(map);
             }
         }
-        for(int i=0;i<mapList.size();i++){
-            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,16));
-            mapList.get(i).put("start_time",mapList.get(i).get("start_time").toString().substring(0,16));
-            mapList.get(i).put("end_time",mapList.get(i).get("end_time").toString().substring(0,16));
+        for (int i = 0; i < mapList.size(); i++) {
+            mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
+            mapList.get(i).put("start_time", mapList.get(i).get("start_time").toString().substring(0, 16));
+            mapList.get(i).put("end_time", mapList.get(i).get("end_time").toString().substring(0, 16));
         }
         return list;
     }
@@ -747,9 +746,9 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                 mapList.add(map);
             }
         }
-        for(int i=0;i<mapList.size();i++){
-            mapList.get(i).put("start_time",mapList.get(i).get("start_time").toString().substring(0,16));
-            mapList.get(i).put("end_time",mapList.get(i).get("end_time").toString().substring(0,16));
+        for (int i = 0; i < mapList.size(); i++) {
+            mapList.get(i).put("start_time", mapList.get(i).get("start_time").toString().substring(0, 16));
+            mapList.get(i).put("end_time", mapList.get(i).get("end_time").toString().substring(0, 16));
         }
         return list;
     }
@@ -764,8 +763,8 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                 mapList.add(map);
             }
         }
-        for(int i=0;i<mapList.size();i++){
-            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,16));
+        for (int i = 0; i < mapList.size(); i++) {
+            mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
         }
         return list;
     }
@@ -780,10 +779,10 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                 mapList.add(map);
             }
         }
-        for(int i=0;i<mapList.size();i++){
-            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,10));
-            mapList.get(i).put("start_time",mapList.get(i).get("start_time").toString().substring(0,10));
-            mapList.get(i).put("end_time",mapList.get(i).get("end_time").toString().substring(0,10));
+        for (int i = 0; i < mapList.size(); i++) {
+            mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 10));
+            mapList.get(i).put("start_time", mapList.get(i).get("start_time").toString().substring(0, 10));
+            mapList.get(i).put("end_time", mapList.get(i).get("end_time").toString().substring(0, 10));
 
         }
         return list;
@@ -798,25 +797,25 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
         ValueOperations ops = redisTemplate.opsForValue();
 
         if (flag) {
-            IPage<BusAisleBarQueryVO> iPage = busIndexMapper.selectPageList(new Page<>(reqDTO.getPageNo(), reqDTO.getPageSize()),reqDTO.getDevkeys());
+            IPage<BusAisleBarQueryVO> iPage = busIndexMapper.selectPageList(new Page<>(reqDTO.getPageNo(), reqDTO.getPageSize()), reqDTO.getDevkeys());
             records = iPage.getRecords();
             total = iPage.getTotal();
         } else {
             records = busIndexMapper.selectPageList(reqDTO.getDevkeys());
         }
-        Map<String, String> aislePathMap = records.stream().collect(Collectors.toMap(BusAisleBarQueryVO::getBarKey, BusAisleBarQueryVO::getPath));
+        Map<String, BusAisleBarQueryVO> aislePathMap = records.stream().collect(Collectors.toMap(BusAisleBarQueryVO::getDevKey, x -> x));
         Set<String> redisKeys = records.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toSet());
         List aisles = ops.multiGet(redisKeys);
         Map<Integer, String> positonMap = new HashMap<>();
-        if (!CollectionUtils.isEmpty(records)){
+        if (!CollectionUtils.isEmpty(records)) {
             for (Object aisle : aisles) {
                 if (aisle == null) {
                     continue;
                 }
                 JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
                 String devPosition = json.getString("room_name") + SPLIT_KEY
-                        +  json.getString("aisle_name") + SPLIT_KEY;
-                positonMap.put(json.getInteger("aisle_key"),devPosition);
+                        + json.getString("aisle_name") + SPLIT_KEY;
+                positonMap.put(json.getInteger("aisle_key"), devPosition);
             }
         }
         Map<String, Integer> keyMap = records.stream().filter(item -> ObjectUtils.isNotEmpty(item.getBarKey()))
@@ -825,8 +824,13 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
             BusEleTotalRealtimeResVO resVO = new BusEleTotalRealtimeResVO();
             Integer aisleId = keyMap.get(record.getDevKey());
             String localtion = positonMap.get(aisleId);
-            resVO.setId(record.getId()).setLocation(localtion+ aislePathMap.get(record.getDevKey()) + "路")
+            resVO.setId(record.getId())
                     .setBusName(record.getBusName()).setDevKey(record.getDevKey());
+            if (Objects.nonNull(aislePathMap.get(record.getDevKey()).getPath())) {
+                resVO.setLocation(localtion + aislePathMap.get(record.getDevKey()).getPath() + "路");
+            } else {
+                resVO.setLocation(localtion + "路");
+            }
             BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
             boolQuery.must(QueryBuilders.rangeQuery("create_time.keyword")
                     .gte(reqDTO.getTimeRange()[0])
@@ -888,25 +892,25 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
         ValueOperations ops = redisTemplate.opsForValue();
 
         if (flag) {
-            IPage<BusAisleBarQueryVO> iPage = busIndexMapper.selectBoxPageList(new Page<>(reqDTO.getPageNo(), reqDTO.getPageSize()),reqDTO.getDevkeys());
+            IPage<BusAisleBarQueryVO> iPage = busIndexMapper.selectBoxPageList(new Page<>(reqDTO.getPageNo(), reqDTO.getPageSize()), reqDTO.getDevkeys());
             records = iPage.getRecords();
             total = iPage.getTotal();
         } else {
             records = busIndexMapper.selectBoxPageList(reqDTO.getDevkeys());
         }
-        Map<String, String> aislePathMap = records.stream().collect(Collectors.toMap(BusAisleBarQueryVO::getBarKey, BusAisleBarQueryVO::getPath));
+        Map<String, BusAisleBarQueryVO> aislePathMap = records.stream().collect(Collectors.toMap(BusAisleBarQueryVO::getDevKey, x -> x));
         Set<String> redisKeys = records.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toSet());
         List aisles = ops.multiGet(redisKeys);
         Map<Integer, String> positonMap = new HashMap<>();
-        if (!CollectionUtils.isEmpty(records)){
+        if (!CollectionUtils.isEmpty(records)) {
             for (Object aisle : aisles) {
                 if (aisle == null) {
                     continue;
                 }
                 JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
                 String devPosition = json.getString("room_name") + SPLIT_KEY
-                        +  json.getString("aisle_name") + SPLIT_KEY;
-                positonMap.put(json.getInteger("aisle_key"),devPosition);
+                        + json.getString("aisle_name") + SPLIT_KEY;
+                positonMap.put(json.getInteger("aisle_key"), devPosition);
             }
         }
         Map<String, Integer> keyMap = records.stream().filter(item -> ObjectUtils.isNotEmpty(item.getBarKey()))
@@ -915,8 +919,13 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
             BusEleTotalRealtimeResVO resVO = new BusEleTotalRealtimeResVO();
             Integer aisleId = keyMap.get(record.getDevKey());
             String localtion = positonMap.get(aisleId);
-            resVO.setId(record.getId()).setLocation(localtion+ aislePathMap.get(record.getDevKey()) + "路")
+            resVO.setId(record.getId())
                     .setBusName(record.getBusName()).setDevKey(record.getDevKey());
+            if (Objects.nonNull(aislePathMap.get(record.getDevKey()).getPath())) {
+                resVO.setLocation(localtion + aislePathMap.get(record.getDevKey()).getPath() + "路");
+            } else {
+                resVO.setLocation(localtion + "路");
+            }
             BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
             boolQuery.must(QueryBuilders.rangeQuery("create_time.keyword")
                     .gte(reqDTO.getTimeRange()[0])

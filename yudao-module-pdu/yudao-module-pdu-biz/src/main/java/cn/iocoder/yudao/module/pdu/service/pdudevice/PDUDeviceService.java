@@ -1,11 +1,8 @@
 package cn.iocoder.yudao.module.pdu.service.pdudevice;
 
-import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDevicePageReqVO;
-import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDULineRes;
-import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PduBalanceDeatilRes;
-import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PduTrendVO;
-import cn.iocoder.yudao.module.pdu.dal.dataobject.pdudevice.PDUDeviceDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.*;
+import cn.iocoder.yudao.module.pdu.dal.dataobject.pdudevice.PDUDeviceDO;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,9 +30,9 @@ public interface PDUDeviceService {
 
     Map getHistoryDataByDevKey(String devKey, String type);
 
-    Map getChartNewDataByPduDevKey(String devKey, LocalDateTime oldTime,String type);
+    Map getChartNewDataByPduDevKey(String devKey, LocalDateTime oldTime, String type);
 
-    Map getReportConsumeDataByDevKey(String devKey, Integer timeType,LocalDateTime oldTime, LocalDateTime newTime);
+    Map getReportConsumeDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
     Map getReportPowDataByDevKey(String devKey, Integer timeType, LocalDateTime oldTime, LocalDateTime newTime);
 
@@ -69,4 +66,7 @@ public interface PDUDeviceService {
     PduBalanceDeatilRes getPDUDeviceDetail(String key);
 
     List<PduTrendVO> getPudBalanceTrend(Integer pduId);
+
+    PduDeviceCountResVO getPDUDeviceCount();
+
 }

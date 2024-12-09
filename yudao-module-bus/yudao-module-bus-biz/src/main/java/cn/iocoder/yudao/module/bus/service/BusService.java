@@ -12,10 +12,9 @@ import java.util.List;
  * @date 2024/5/30 14:45
  */
 public interface BusService {
-
-
     /**
      * 母线拓扑数据
+     *
      * @param vo
      * @return
      */

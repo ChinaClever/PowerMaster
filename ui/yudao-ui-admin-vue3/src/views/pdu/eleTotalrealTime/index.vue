@@ -221,6 +221,15 @@ const shortcuts = [
     },
   },
   {
+    text: '最近三个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setUTCMonth(start.getUTCMonth() - 3)
+      return [start, end]
+    },
+  },
+  {
     text: '最近六个月',
     value: () => {
       const end = new Date()
@@ -229,28 +238,18 @@ const shortcuts = [
       return [start, end]
     },
   },
+  {
+    text: '最近一年',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setFullYear(start.getFullYear() - 1)
+      return [start, end]
+    },
+  },
 ]
 
-// // 总/输出位筛选
-// const typeDefaultSelected = ref(['total'])
-// const typeSelection = ref([]) as any;
-// const typeCascaderChange = (selected) => {
-//   queryParams.type = selected[0];
-//   if (selected[0] === 'outlet'){
-//     queryParams.outletId = selected[1];
-//     // 检查是否已经存在 label 为 '输出位' 的行
-//     const exists = tableColumns.value.some(column => column.label === '输出位');
-//     if (!exists) {
-//       // 在列表行索引1(位置后面)插入输出位行 
-//       const newRow = { label: '输出位', align: 'center', prop: 'outlet_id', istrue: true};
-//       tableColumns.value.splice(1, 0, newRow);
-//     }
-//   }else{
-//     // 选择总，移除索引为 1 的位置上的行数据
-//     tableColumns.value.splice(1, 1);
-//   }
-//   handleQuery();
-// }
+
 
 // 返回当前页的序号数组
 const getPageNumbers = (pageNumber) => {
@@ -355,8 +354,8 @@ function customTooltipFormatter(params: any[]) {
   var item = params[0]; // 获取第一个数据点的信息
   tooltipContent += '所在位置：'+list.value[item.dataIndex].address + '<br/>'
                     +item.marker +'网络地址：'+list.value[item.dataIndex].location + '<br/>'
-                    +item.marker + '开始电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveStart)  + 'kWh 开始日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMin) + '<br/>' 
-                    +item.marker +'结束电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveEnd) + 'kWh 结束日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMax) + '<br/>'
+                    +item.marker +'开始日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMin) + ' 开始电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveStart)  + 'kWh <br/>' 
+                    +item.marker +'结束日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMax) + ' 结束电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveEnd) + 'kWh <br/>'
                     +item.marker +'耗电量：'+formatEle(null, null, list.value[item.dataIndex].eleActive) + 'kWh';
   return tooltipContent;
 }

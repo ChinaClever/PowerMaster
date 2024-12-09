@@ -39,11 +39,11 @@
             <span class="label">输出位电能 :</span>
             <span class="value">{{ navOutletData }}条</span>
           </div>
-          <div ><span>全部PDU新增电能记录</span>
+          <div >
+            <span>全部PDU新增电能记录</span>
             <div class="line" style="margin-top: 10px;"></div>
           </div>
         </div>
-      
       </div>
     </template>
     <template #ActionBar>
@@ -461,8 +461,8 @@ onMounted(() => {
 }
  
 .nav_data{
-  padding-left: 7px;
-  width: 200px;
+  padding-left: 20px;
+  width: 170px;
 }
 .nav_content span{
   font-size: 14px;

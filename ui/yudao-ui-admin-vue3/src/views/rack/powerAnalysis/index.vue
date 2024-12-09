@@ -31,7 +31,8 @@
             <span class="label">最近一月 :</span>
             <span class="value">{{ lastMonthTotalData }}条</span>
           </div>    <br/>
-          <div style="text-align: center"><span>全部机架新增能耗记录</span>
+          <div>
+            <span>全部机架新增能耗记录</span>
             <div class="line" style="margin-top: 10px;"></div>
           </div>
         </div>
@@ -206,11 +207,29 @@ const shortcuts = [
     },
   },
   {
+    text: '最近三个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setUTCMonth(start.getUTCMonth() - 3)
+      return [start, end]
+    },
+  },
+  {
     text: '最近六个月',
     value: () => {
       const end = new Date()
       const start = new Date()
       start.setMonth(start.getMonth() - 6)
+      return [start, end]
+    },
+  },
+  {
+    text: '最近一年',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setFullYear(start.getFullYear() - 1)
       return [start, end]
     },
   },
@@ -311,9 +330,9 @@ function customTooltipFormatter(params: any[]) {
   var tooltipContent = ''; 
   var item = params[0]; // 获取第一个数据点的信息
   tooltipContent += '位置：'+list.value[item.dataIndex].location + '  '
-  tooltipContent += '<br/>'+ item.marker + item.seriesName + ': ' + item.value + 'kWh 记录时间：'+formatTime(null, null, list.value[item.dataIndex].create_time) + '<br/>'                 
-                    +item.marker + '结束电能：'+list.value[item.dataIndex].end_ele + 'kWh 结束时间：'+formatTime(null, null, list.value[item.dataIndex].end_time) + '<br/>' 
-                    +item.marker +'开始电能：'+formatEle(null, null, list.value[item.dataIndex].start_ele) + 'kWh 开始时间：'+formatTime(null, null, list.value[item.dataIndex].start_time) + '<br/>'
+  tooltipContent += '<br/>'+ item.marker + '记录时间：'+formatTime(null, null, list.value[item.dataIndex].create_time) + ' ' + item.seriesName + ': ' + item.value +'kWh <br/>'                 
+                    +item.marker + '结束时间：'+formatTime(null, null, list.value[item.dataIndex].end_time) +  ' 结束电能：'+list.value[item.dataIndex].end_ele +'kWh <br/>' 
+                    +item.marker + '开始时间：'+formatTime(null, null, list.value[item.dataIndex].start_time) + ' 开始电能：'+formatEle(null, null, list.value[item.dataIndex].start_ele) +'kWh <br/>'
   return tooltipContent;
 }
 
@@ -480,10 +499,15 @@ onMounted(() => {
 }
 
 .label {
-  width:100px; /* 控制冒号前的宽度 */
-  text-align: right; /* 文本右对齐 */
-  margin-right: 5px; /* 控制冒号后的间距 */
+  text-align: left;
+  margin-right: 10px; /* 控制冒号后的间距 */
 }
+
+.value {
+  flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
+}
+
 .line {
     height: 1px;
     margin-top: 28px;

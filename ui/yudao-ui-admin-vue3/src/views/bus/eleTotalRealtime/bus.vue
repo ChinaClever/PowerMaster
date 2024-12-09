@@ -169,12 +169,30 @@ const shortcuts = [
       return [start, end]
     },
   },
+    {
+    text: '最近三个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setMonth(start.getMonth() - 3)
+      return [start, end]
+    },
+  },
   {
     text: '最近六个月',
     value: () => {
       const end = new Date()
       const start = new Date()
       start.setMonth(start.getMonth() - 6)
+      return [start, end]
+    },
+  },
+   {    
+    text: '最近一年',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setFullYear(start.getFullYear() - 1)
       return [start, end]
     },
   },
@@ -222,17 +240,17 @@ watch(() => queryParams.granularity, () => {
 });
 
 const tableColumns = ref([
-  { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '300%'},
+  { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '250%'},
   { label: '设备地址', align: 'center', prop: 'devKey', istrue:true, width: '180px'},
-  { label: '设备名称', align: 'center', prop: 'busName', istrue:true, width: '300%'},
+  { label: '设备名称', align: 'center', prop: 'busName', istrue:true, width: '100%'},
     { label: '开始电能', align: 'center', istrue: true, children: [
       { label: '开始电能(kWh)', align: 'center', prop: 'eleActiveStart' , istrue:true, formatter: formatEle},
-      { label: '开始时间', align: 'center', prop: 'createTimeMin' , formatter: formatTime1, width: '150px' , istrue:true},
+      { label: '开始时间', align: 'center', prop: 'createTimeMin' , formatter: formatTime1, width: '110px' , istrue:true},
     ]
   },
     { label: '结束电能', align: 'center', istrue: true, children: [
       { label: '结束电能(kWh)', align: 'center', prop: 'eleActiveEnd' , istrue:true, formatter: formatEle},
-      { label: '结束时间', align: 'center', prop: 'createTimeMax' , formatter: formatTime1, width: '150px' , istrue:true},
+      { label: '结束时间', align: 'center', prop: 'createTimeMax' , formatter: formatTime1, width: '110px' , istrue:true},
     ]
   },
   { label: '耗电量(kWh)', align: 'center', prop: 'eleActive' ,istrue: true,formatter: formatEle },
@@ -281,8 +299,8 @@ function customTooltipFormatter(params: any[]) {
   tooltipContent += '位置：'+list.value[item.dataIndex].location + '<br/>'+
                     item.marker +'设备地址：'+list.value[item.dataIndex].devKey+'<br/>'+
                     item.marker +'设备名称：'+list.value[item.dataIndex].busName+'<br/>'
-                    +item.marker + '开始电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveStart)  + 'kWh 开始日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMin) + '<br/>' 
-                    +item.marker +'结束电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveEnd) + 'kWh 结束日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMax) + '<br/>'
+                    +item.marker  + '开始日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMin) +  '开始电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveStart)  + 'kWh <br/>' 
+                    +item.marker  + '结束日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMax) + '结束电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveEnd) + 'kWh <br/>'
                     +item.marker +'耗电量：'+formatEle(null, null, list.value[item.dataIndex].eleActive) + 'kWh';
   return tooltipContent;
 }

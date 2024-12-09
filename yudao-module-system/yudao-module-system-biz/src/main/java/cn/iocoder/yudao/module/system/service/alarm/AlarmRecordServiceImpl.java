@@ -14,6 +14,7 @@ import cn.iocoder.yudao.module.system.dal.dataobject.alarm.SystemAlarmRecord;
 import cn.iocoder.yudao.module.system.dal.mysql.alarm.SysAlarmRecordMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,10 +117,11 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
 
     @Override
     public PageResult<AlarmRecordRespVO> getRecordPage(AlarmRecordPageReqVO pageReqVO) {
-        if(pageReqVO.getA().equals("1")){
-            pageReqVO.setPageSize(-1);
-        }
-        PageResult<SystemAlarmRecord> recordPageResult = alarmRecordMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<SystemAlarmRecord>()
+//        if(pageReqVO.getA().equals("1")){
+//            pageReqVO.setPageSize(-1);
+//        }
+        Page page = new Page(pageReqVO.getPageNo(), pageReqVO.getPageSize());
+        Page<SystemAlarmRecord> recordPageResult = alarmRecordMapper.selectPage(page, new LambdaQueryWrapperX<SystemAlarmRecord>()
                 .likeIfPresent(SystemAlarmRecord::getDevKey, pageReqVO.getDevKey())
                 .likeIfPresent(SystemAlarmRecord::getDevName, pageReqVO.getDevName())
                 .likeIfPresent(SystemAlarmRecord::getDevPosition, pageReqVO.getDevPosition())
@@ -136,7 +138,7 @@ public class AlarmRecordServiceImpl implements AlarmRecordService {
                 .orderByDesc(SystemAlarmRecord::getCreateTime));
         List<AlarmRecordRespVO> recordRespVOS = new ArrayList<>();
         if (Objects.nonNull(recordPageResult)){
-              List<SystemAlarmRecord> list = recordPageResult.getList();
+              List<SystemAlarmRecord> list = recordPageResult.getRecords();
               if (!CollectionUtils.isEmpty(list)){
                   list.forEach(record ->{
                       AlarmRecordRespVO recordRespVO = BeanUtils.toBean(record, AlarmRecordRespVO.class);

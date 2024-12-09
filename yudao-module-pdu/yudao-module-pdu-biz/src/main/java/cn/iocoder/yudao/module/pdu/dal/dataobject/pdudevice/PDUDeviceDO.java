@@ -20,7 +20,7 @@ public class PDUDeviceDO extends BaseDO {
      * 编号
      */
     @TableId
-    private Long id;
+    private Integer id;
     /**
      * 设备唯一识别码
      */

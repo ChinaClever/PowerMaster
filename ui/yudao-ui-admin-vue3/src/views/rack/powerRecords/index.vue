@@ -21,7 +21,8 @@
             <span class="label">总电能 :</span>
             <span class="value">{{ navTotalData }}条</span>
           </div>
-          <div style="text-align: center"><span>机架最近一天新增记录</span>
+          <div>
+            <span>机架最近一天新增记录</span>
             <div class="line" style="margin-top: 10px;"></div>
           </div>
           </div>
@@ -295,8 +296,8 @@ onMounted(() => {
   color: #606266
 }
 .nav_data{
-  padding-left: 7px;
-  width: 200px;
+  padding-left: 20px;
+  width: 170px;
 }
 .nav_content span{
   font-size: 18px;
@@ -318,23 +319,23 @@ onMounted(() => {
 }
 
 .label {
-  width:100px; /* 控制冒号前的宽度 */
-  text-align: right; /* 文本右对齐 */
-  margin-right: 20px; /* 控制冒号后的间距 */
+  margin-right: 10px; /* 控制冒号后的间距 */
+  text-align: left;
 }
 
 .value {
   flex: 1; /* 自动扩展以对齐数据 */
+  text-align: left;
 }
-  .line {
-    height: 1px;
-    margin-top: 28px;
 
-    background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
-  }
+.line {
+  height: 1px;
+  margin-top: 28px;
+  background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
+}
 
-  ::v-deep .el-table .el-table__header th {
-    background-color: #F5F7FA;
-    color: #909399;
+::v-deep .el-table .el-table__header th {
+  background-color: #F5F7FA;
+  color: #909399;
 }
 </style>

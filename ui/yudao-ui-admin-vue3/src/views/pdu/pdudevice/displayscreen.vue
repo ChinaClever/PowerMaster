@@ -229,7 +229,7 @@
       <el-card style="margin: 10px;">
         <el-row>
           <el-col >
-            <span style="width: 100%">趋势图</span>
+            <span style="width: 100%">总功率趋势图</span>
           </el-col>
           <el-col >
             <div style="float:right;margin-top: 0;">
@@ -414,6 +414,7 @@ const activeNames = ref(["1","2","3","4","5"])
 const flashListTimer = ref({
   tableDataTimer : null as any,
   chartTimer : null as any,
+  abcChartTimer: null as any
 });
 const firstTimerCreate = ref(true);
 
@@ -630,7 +631,15 @@ const initChart = async () => {
   chartData.value.factorList.forEach((obj,index) => {
     chartData.value.factorList[index] = obj?.toFixed(2);
   });
-  
+
+  if(queryParams.powGranularity === 'oneHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes
+  }else if(queryParams.powGranularity === 'twentyfourHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes.map(item => item.slice(5, item.length));
+  }else if(queryParams.powGranularity === 'seventytwoHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes.map(item => item.slice(0, 16));
+  }
+
   if (chartContainer.value && instance) {
     chart = echarts.init(chartContainer.value);
     chart.setOption({
@@ -817,7 +826,6 @@ const initChart = async () => {
           data: llChartData.value.volValueList,
           symbol: 'circle',
           symbolSize: 4,
-          lineStyle:{type: 'dashed'}
         },
         {
           name: 'L3-电压',
@@ -825,7 +833,6 @@ const initChart = async () => {
           data: lllChartData.value.volValueList,
           symbol: 'circle',
           symbolSize: 4,
-          lineStyle:{type: 'dashed'}
         },{
           name: 'L1-电流',
           type: 'line',
@@ -839,7 +846,6 @@ const initChart = async () => {
           data: llChartData.value.curValueList,
           symbol: 'circle',
           symbolSize: 4,
-          lineStyle:{type: 'dashed'}
         },
         {
           name: 'L3-电流',
@@ -847,7 +853,6 @@ const initChart = async () => {
           data: lllChartData.value.curValueList,
           symbol: 'circle',
           symbolSize: 4,
-          lineStyle:{type: 'dashed'}
         }
       ]
     })
@@ -948,6 +953,14 @@ const setNewChartData = async () => {
   chartData.value.apparentList.push(temp.apparent?.toFixed(3));
   chartData.value.activeList.push(temp.active?.toFixed(3));
 
+  if(queryParams.powGranularity === 'oneHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes
+  }else if(queryParams.powGranularity === 'twentyfourHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes.map(item => item.slice(5, item.length));
+  }else if(queryParams.powGranularity === 'seventytwoHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes.map(item => item.slice(0, 16));
+  }
+
   chart?.setOption({
     xAxis: { data: chartData.value.dateTimes },
     series: [
@@ -957,6 +970,94 @@ const setNewChartData = async () => {
   });
 
   await PDUHdaLineHisdata(toggleTime.value)
+  lineidFlashChartData()
+}
+
+const setNewABCChartData = () => {
+  if (totalChartContainer.value && instance) {
+    totalChart = echarts.init(totalChartContainer.value);
+    totalChart.setOption({
+      // 这里设置 Echarts 的配置项和数据
+      title: { text: ''},
+      tooltip: { trigger: 'item', formatter: function(params) {
+                                      if (params.name === '视在功率') {
+                                          return params.name + ': ' + params.value + 'kVA';
+                                      } else if (params.name === '有功功率') {
+                                          return params.name + ': ' + params.value + 'kW';
+                                      }
+                                  } },
+      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+      series: [
+        { type: 'pie', radius: ['50%', '65%'], avoidLabelOverlap: false,  labelLine: { show: false },
+          data: [{value : totalData.value.pow, name: '有功功率', label: { show: true, position: 'outside', formatter: '{c}kW',fontSize: 13 },itemStyle: { color: '#0A69EE' }  },
+                 {value : totalData.value.powApparent , name : '视在功率' , label: { show: true, position: 'outside', formatter: '{c}kVA',fontSize: 13  }, itemStyle: { color: '#0AD0EE' } }],
+        },
+      ],
+    });
+    // 将 totalChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+    instance.appContext.config.globalProperties.totalChart = totalChart;
+  }
+
+  if (AChartContainer.value && instance) {
+    AChart = echarts.init(AChartContainer.value);
+    var aCurMax =  A.value.cur_alarm_max - A.value.cur_value;
+    AChart.setOption({
+      // 这里设置 Echarts 的配置项和数据
+      title: { text: ''},
+      // tooltip: { trigger: 'item', formatter: '{b}: {c}A' },
+      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+      series: [
+        { type: 'pie', radius: ['50%', '65%'], avoidLabelOverlap: false,  labelLine: { show: false } , emphasis:{disabled:false,scale:false,scaleSize:0,},
+          data: [
+            {value : A.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13 ,backgroundColor : A.value.curColor },itemStyle: { color: '#0AD0EE' } },
+            {value : aCurMax, itemStyle: { color: '#CCCCCC',shadowBlur:0 } },
+          ],
+        },
+      ],
+    });
+    // 将 AChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+    instance.appContext.config.globalProperties.AChart = AChart;
+  }
+  if (BChartContainer.value && instance) {
+    BChart = echarts.init(BChartContainer.value);
+    var bCurMax =  B.value.cur_alarm_max - B.value.cur_value;
+    BChart.setOption({
+      // 这里设置 Echarts 的配置项和数据
+      title: { text: ''},
+      // tooltip: { trigger: 'item', formatter: '{b}: {c}A' },
+      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+      series: [
+        { type: 'pie', radius: ['50%', '65%'], avoidLabelOverlap: false,  labelLine: { show: false },emphasis:{disabled:false,scale:false,scaleSize:0,},
+          data: [
+            {value : B.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13, backgroundColor : B.value.curColor },itemStyle: { color: '#0AD0EE' }  },
+            {value : bCurMax,itemStyle: { color: '#CCCCCC',shadowBlur:0 } },
+          ],
+        },
+      ],
+    });
+    // 将 BChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+    instance.appContext.config.globalProperties.BChart = BChart;
+  }
+  if (CChartContainer.value && instance) {
+    CChart = echarts.init(CChartContainer.value);
+    var cCurMax =  C.value.cur_alarm_max - C.value.cur_value;
+    CChart.setOption({
+      // 这里设置 Echarts 的配置项和数据
+      title: { text: ''},
+      // tooltip: { trigger: 'item', formatter: '{b}: {c}A' },
+      grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
+      series: [
+        { type: 'pie', radius: ['50%', '65%'], avoidLabelOverlap: false,  labelLine: { show: false },emphasis:{disabled:false,scale:false,scaleSize:0,},
+          data: [
+            {value : C.value.cur_value, name: '电流', label: { show: true, position: 'center', formatter: '{c}A',fontSize: 13, backgroundColor : C.value.curColor },itemStyle: { color: '#0AD0EE' }  },
+            {value : cCurMax , itemStyle: { color: '#CCCCCC',shadowBlur:0 } },
+          ],
+        },
+      ],
+    });
+    // 将 CChart 绑定到组件实例，以便在销毁组件时能够正确释放资源
+    instance.appContext.config.globalProperties.CChart = CChart;
+  }
 }
 
 const flashChartData = async () =>{
@@ -974,6 +1075,14 @@ const flashChartData = async () =>{
   chartData.value.factorList.forEach((obj,index) => {
     chartData.value.factorList[index] = obj?.toFixed(2);
   });
+
+  if(queryParams.powGranularity === 'oneHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes
+  }else if(queryParams.powGranularity === 'twentyfourHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes.map(item => item.slice(5, item.length));
+  }else if(queryParams.powGranularity === 'seventytwoHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes.map(item => item.slice(0, 16));
+  }
   
   // 创建新的图表实例
   chart = echarts.init(document.getElementById('chartContainer'));
@@ -1087,6 +1196,7 @@ const updateDimensions = () => {
 
 const getTestData = async()=>{
   const data = await PDUDeviceApi.PDUDisplay(queryParams);
+  console.log('data',data)
   testData.value = JSON.parse(data)
   circleList.value = [];
   output.value = [];
@@ -1399,7 +1509,6 @@ watch([() => toggleTime.value],async ()=>{
           data: llChartData.value.volValueList,
           symbol: 'circle',
           symbolSize: 4,
-          lineStyle:{type: 'dashed'}
         },
         {
           name: 'L3-电压',
@@ -1407,7 +1516,6 @@ watch([() => toggleTime.value],async ()=>{
           data: lllChartData.value.volValueList,
           symbol: 'circle',
           symbolSize: 4,
-          lineStyle:{type: 'dashed'}
         },{
           name: 'L1-电流',
           type: 'line',
@@ -1421,7 +1529,6 @@ watch([() => toggleTime.value],async ()=>{
           data: llChartData.value.curValueList,
           symbol: 'circle',
           symbolSize: 4,
-          lineStyle:{type: 'dashed'}
         },
         {
           name: 'L3-电流',
@@ -1429,7 +1536,6 @@ watch([() => toggleTime.value],async ()=>{
           data: lllChartData.value.curValueList,
           symbol: 'circle',
           symbolSize: 4,
-          lineStyle:{type: 'dashed'}
         }
       ]
     })
@@ -1520,6 +1626,14 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
     chartData.value.factorList.forEach((obj,index) => {
       chartData.value.factorList[index] = obj?.toFixed(2);
     });
+
+  if(queryParams.powGranularity === 'oneHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes
+  }else if(queryParams.powGranularity === 'twentyfourHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes.map(item => item.slice(5, item.length));
+  }else if(queryParams.powGranularity === 'seventytwoHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes.map(item => item.slice(0, 16));
+  }
     // 创建新的图表实例
     chart = echarts.init(document.getElementById('chartContainer'));
 
@@ -1609,20 +1723,17 @@ const getLocation = async () => {
 //L1,L2,L3的数据
 const lChartData = ref({
   volValueList : [] as number[], //电压
-  curValueList : [] as number[], //电流
-  createTimes : [] as string[]  //创建日期
+  curValueList : [] as number[] //电流
 });
 
 const llChartData = ref({
   volValueList : [] as number[],
-  curValueList : [] as number[],
-  createTimes : [] as string[]
+  curValueList : [] as number[]
 });
 
 const lllChartData = ref({
   volValueList : [] as number[],
-  curValueList : [] as number[],
-  createTimes : [] as string[]
+  curValueList : [] as number[]
 });
 
 const lineidDateTimes = ref([] as string[])
@@ -1633,41 +1744,37 @@ lineidChart?.dispose() // 销毁图表实例
 
 //获取最近一个小时的PDU相历史数据，处理L1,L2,L3的数据
 const PDUHdaLineHisdata = async (type) => {
-  const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : '192.168.1.184-0' , type: 'oneHour'})
-  //{ devKey : queryParams.devKey, type : newPowGranularity}
+  const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey, type: 'oneHour'})
+  console.log('result',result)
+  console.log('queryParamsdevKey',queryParams.devKey)
+  //{ devKey : queryParams.devKey, type : newPowGranularity} '192.168.1.184-0'
 
   const lData = result.l
   const llData = result.ll
   const lllData = result.lll
 
   lData.forEach(item => {
-    lChartData.value.volValueList.push(item.vol_value)
-    lChartData.value.curValueList.push(item.cur_value)
-    lChartData.value.createTimes.push(item.create_time)
+    lChartData.value.volValueList.push(item.vol_value.toFixed(1))
+    lChartData.value.curValueList.push(item.cur_value.toFixed(2))
   })
 
   llData.forEach(item => {
-    llChartData.value.volValueList.push(item.vol_value)
-    llChartData.value.curValueList.push(item.cur_value)
-    llChartData.value.createTimes.push(item.create_time)
+    llChartData.value.volValueList.push(item.vol_value.toFixed(1))
+    llChartData.value.curValueList.push(item.cur_value.toFixed(2))
   })
 
   lllData.forEach(item => {
-    lllChartData.value.volValueList.push(item.vol_value)
-    lllChartData.value.curValueList.push(item.cur_value)
-    lllChartData.value.createTimes.push(item.create_time)
+    lllChartData.value.volValueList.push(item.vol_value.toFixed(1))
+    lllChartData.value.curValueList.push(item.cur_value.toFixed(2))
   })
   if(type === 'oneHour'){
     lineidDateTimes.value = result.dateTimes
-    console.log('time',lineidDateTimes.value)
   }else if(type === 'twentyfourHour'){
-    const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : '192.168.1.184-0' , type: 'twentyfourHour'})
-    lineidDateTimes.value = result.dateTimes
-    console.log('time',lineidDateTimes.value)
+    const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey , type: 'twentyfourHour'})
+    lineidDateTimes.value = result.dateTimes.map(item => item.slice(5, item.length));
   }else if(type === 'seventytwoHour'){
-    const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : '192.168.1.184-0' , type: 'seventytwoHour'})
-    lineidDateTimes.value = result.dateTimes
-    console.log('time',lineidDateTimes.value)
+    const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey , type: 'twentyfourHour'})
+    lineidDateTimes.value = result.dateTimes.map(item => item.slice(0, 16));
   }
 }
 
@@ -1733,7 +1840,6 @@ const lineidFlashChartData = async () =>{
           data: llChartData.value.volValueList,
           symbol: 'circle',
           symbolSize: 4,
-          lineStyle:{type: 'dashed'}
         },
         {
           name: 'L3-电压',
@@ -1741,7 +1847,6 @@ const lineidFlashChartData = async () =>{
           data: lllChartData.value.volValueList,
           symbol: 'circle',
           symbolSize: 4,
-          lineStyle:{type: 'dashed'}
         },{
           name: 'L1-电流',
           type: 'line',
@@ -1755,7 +1860,6 @@ const lineidFlashChartData = async () =>{
           data: llChartData.value.curValueList,
           symbol: 'circle',
           symbolSize: 4,
-          lineStyle:{type: 'dashed'}
         },
         {
           name: 'L3-电流',
@@ -1763,7 +1867,6 @@ const lineidFlashChartData = async () =>{
           data: lllChartData.value.curValueList,
           symbol: 'circle',
           symbolSize: 4,
-          lineStyle:{type: 'dashed'}
         }
       ]
     })
@@ -1858,6 +1961,7 @@ onBeforeMount(async () =>{
   await getTestData();
   await initChart();
   flashListTimer.value.tableDataTimer = setInterval((getTestData), 5000);
+  flashListTimer.value.abcChartTimer = setInterval((setNewABCChartData), 5000);
   flashListTimer.value.chartTimer = setInterval((setNewChartData), 60000);
 })
 
@@ -1865,7 +1969,9 @@ onBeforeUnmount(()=>{
   if(flashListTimer.value.tableDataTimer && flashListTimer.value.chartTimer){
     clearInterval(flashListTimer.value.tableDataTimer)
     clearInterval(flashListTimer.value.chartTimer)
+    clearInterval(flashListTimer.value.abcChartTimer)
     flashListTimer.value.tableDataTimer = null;
+    flashListTimer.value.abcChartTimer = null;
     flashListTimer.value.chartTimer = null;
   }
 })
@@ -1875,17 +1981,15 @@ onActivated( async () => {
   flashChartData();
   lineidFlashChartData();
   if(!firstTimerCreate.value){
-    flashListTimer.value.tableDataTimer = setInterval((getTestData), 5000);
+    flashListTimer.value.tableDataTimer = setInterval(getTestData, 5000);
+    flashListTimer.value.abcChartTimer = setInterval((setNewABCChartData), 5000);
     var time = 0;
     if(queryParams.powGranularity == "oneHour"){
       time = 60000;
-      // time = 3000;
     } else if(queryParams.powGranularity == "twentyfourHour"){
       time = 3600000;
-      // time = 3000;
     }else if(queryParams.powGranularity == "seventytwoHour"){
-      time = 3600000;
-      // time = 3000;
+      time = 25920000;
     }
     flashListTimer.value.chartTimer = setInterval((setNewChartData), time);
   }
@@ -1895,8 +1999,10 @@ onBeforeRouteLeave(()=>{
   if(flashListTimer.value.tableDataTimer && flashListTimer.value.chartTimer){
     clearInterval(flashListTimer.value.tableDataTimer)
     clearInterval(flashListTimer.value.chartTimer)
+    clearInterval(flashListTimer.value.abcChartTimer)
     flashListTimer.value.tableDataTimer = null;
     flashListTimer.value.chartTimer = null;
+    flashListTimer.value.abcChartTimer = null;
     firstTimerCreate.value = false;
   }
 })
