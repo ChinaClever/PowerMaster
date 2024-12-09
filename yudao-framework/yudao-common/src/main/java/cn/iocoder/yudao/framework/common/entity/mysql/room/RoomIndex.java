@@ -30,7 +30,7 @@ public class RoomIndex implements Serializable {
      * 机房名
      */
     @Schema(description = "机房名", example = "机房2")
-    private String name;
+    private String roomName;
 
     /**
      * 是否删除

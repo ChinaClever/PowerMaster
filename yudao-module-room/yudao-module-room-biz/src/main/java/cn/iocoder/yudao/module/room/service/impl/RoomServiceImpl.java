@@ -140,7 +140,7 @@ public class RoomServiceImpl implements RoomService {
 
         try {
             RoomIndex index = new RoomIndex();
-            index.setName(roomSaveVo.getRoomName());
+            index.setRoomName(roomSaveVo.getRoomName());
             index.setPowerCapacity(roomSaveVo.getPowCapacity());
             index.setEleAlarmDay(roomSaveVo.getEleAlarmDay());
             index.setEleLimitDay(roomSaveVo.getEleLimitDay());
@@ -508,7 +508,7 @@ public class RoomServiceImpl implements RoomService {
 
         RoomIndex roomIndex = roomIndexMapper.selectById(roomId);
 
-        roomDetailDTO.setRoomName(roomIndex.getName());
+        roomDetailDTO.setRoomName(roomIndex.getRoomName());
         roomDetailDTO.setId(roomId);
         roomDetailDTO.setPowerCapacity(roomIndex.getPowerCapacity());
         roomDetailDTO.setEleAlarmDay(roomIndex.getEleAlarmDay());
@@ -612,7 +612,7 @@ public class RoomServiceImpl implements RoomService {
 
         roomDetailDTO.setCabinetList(aisleCabinetDTOList);
         //柜列
-        roomDetailDTO.setAisleList(getAisleDetail(roomId,roomIndex.getName(),totalSpace,totalUsedSpace));
+        roomDetailDTO.setAisleList(getAisleDetail(roomId,roomIndex.getRoomName(),totalSpace,totalUsedSpace));
         roomDetailDTO.setTotalSpace(totalSpace.get());
         roomDetailDTO.setUsedSpace(totalUsedSpace.get());
         roomDetailDTO.setFreeSpace(totalSpace.get()-totalUsedSpace.get());
@@ -907,9 +907,9 @@ public class RoomServiceImpl implements RoomService {
         }
         //报警数量
         RoomIndex roomIndex = roomIndexMapper.selectById(id);
-        int alarmNum = alarmRecordApi.getAlarmRecordNum(roomIndex.getName(),Arrays.asList(AlarmTypeEnums.ELE.getType(),
+        int alarmNum = alarmRecordApi.getAlarmRecordNum(roomIndex.getRoomName(),Arrays.asList(AlarmTypeEnums.ELE.getType(),
                 AlarmTypeEnums.STATUS.getType()));
-        int offLineNum = alarmRecordApi.getAlarmRecordNum(roomIndex.getName(),Arrays.asList(AlarmTypeEnums.OFF_LINE.getType()));
+        int offLineNum = alarmRecordApi.getAlarmRecordNum(roomIndex.getRoomName(),Arrays.asList(AlarmTypeEnums.OFF_LINE.getType()));
         roomMainDataDTO.setAlarmNum(alarmNum);
         roomMainDataDTO.setOffLineNum(offLineNum);
         int normal = deviceNum.get() - alarmNum -offLineNum;

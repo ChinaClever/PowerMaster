@@ -423,7 +423,7 @@ public class IndexServiceImpl implements IndexService {
         List<Integer> ids = list.stream().map(IndexDO::getId).collect(Collectors.toList());
 
         List<RoomIndex> roomIndices = roomIndexMapper.selectBatchIds(list.stream().map(IndexDO::getRoomId).collect(Collectors.toList()));
-        Map<Integer, String> roomMap = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getName));
+        Map<Integer, String> roomMap = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getRoomName));
         Map<Integer, String>  aisleMap = aisleIndexMapper.selectBatchIds(list.stream()
 //                .filter(dto -> dto.getAisleId() != 0)
                     .map(IndexDO::getAisleId).collect(Collectors.toList())).stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getName));

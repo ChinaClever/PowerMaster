@@ -51,7 +51,7 @@ public class RoomHistoryDataServiceImpl implements RoomHistoryDataService {
                     Object roomId = map.get("room_id");
                     if (roomId instanceof Integer) {
                         RoomIndex roomIndex = roomIndexMapper.selectById((Serializable) roomId);
-                        String localtion = roomIndex.getName() ;
+                        String localtion = roomIndex.getRoomName() ;
 
                         map.put("location", localtion);
                     }else{
