@@ -20,6 +20,7 @@ const prop = defineProps({
 })
 
 const series = ref()
+const processedIndices = new Set();
 const time = ref()
 const legendList = ref()
 
@@ -39,13 +40,21 @@ const echartsOption = ref({
 })
 
 watchEffect(() => {
-  // 直接访问即可，watchEffect会自动跟踪变化
+  const newSeries = [...prop.list.series];
+ 
+  // 遍历新的series数组
+  newSeries.forEach((item, index) => {
+    // 检查这个索引是否已经被处理过
+    if (!processedIndices.has(index)) {
+      // 如果没有，处理这个series项
+      item.data = item.data.map(value => Math.round(value / 100 * 100) / 100);
+      // 将这个索引添加到已处理的集合中
+      processedIndices.add(index);
+    }
+  });
 
-  series.value = prop.list.series;
-  if(  series.value != null && series.value?.length > 0){
-    legendList.value =  series.value?.map(item => item.name)
-  }
-
+  series.value = newSeries;
+  legendList.value = series.value.map(item => item.name);
   time.value = prop.list.time;
 
 });

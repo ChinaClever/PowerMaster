@@ -91,7 +91,8 @@
       <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" width="218px"/>
+        <el-table-column label="所在位置" align="center" prop="location"/>
+        <el-table-column label="设备名称" align="center" prop="busName"/>
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>     
         <el-table-column v-if="valueMode == 0" label="Ia" align="center" prop="acurThd" width="130px" >
           <template #default="scope" >
@@ -362,8 +363,8 @@ const getList = async () => {
   console.log(queryParams)
   try {
     const data = await IndexApi.getBusHarmonicPage(queryParams)
-
     list.value = data.list
+    console.log('list.value',list.value)
     var tableIndex = 0;
 
     list.value.forEach((obj) => {
@@ -390,6 +391,10 @@ const getListNoLoading = async () => {
   try {
     const data = await IndexApi.getBusHarmonicPage(queryParams)
     list.value = data.list
+    //list.value = list.value.map(item => ({
+    //  ...item, // 复制对象
+    //  location: item.devKey.split('-')[0] // 直接计算location属性
+    //}));
     var tableIndex = 0;    
 
     list.value.forEach((obj) => {
