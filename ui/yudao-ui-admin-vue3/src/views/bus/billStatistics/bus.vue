@@ -233,13 +233,13 @@ watch(() => queryParams.granularity, () => {
 });
 
 const tableColumns = ref([
-  { label: '所在位置', align: 'center', prop: 'location' , istrue:true, width: '400%'},
-  { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true, width: '200%'},
-  { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '100%'},
+  { label: '所在位置', align: 'center', prop: 'location' , istrue:true,width: '250px'},
+  { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true},
+  { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '200px'},
   { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '150px' , istrue:true},
-  { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
-  { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
-  { label: '计费方式', align: 'center', slot: 'actions' , istrue:true},
+  { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true,width: '150px',formatter: formatEle},
+  { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true,width: '100px', formatter: formatBill},
+  { label: '计费方式', align: 'center', slot: 'actions' , istrue:true,width: '100px'},
 ]) as any;
 
 /** 查询列表 */
