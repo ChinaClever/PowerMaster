@@ -55,7 +55,10 @@
         </el-form-item> -->
         
         <el-form-item>  
-          <el-tag size="large">{{ location }}</el-tag>     
+          <span>所处位置：</span>
+          <el-tag size="large">{{ adder }}</el-tag>
+          <span>设备名称：</span>
+          <el-tag size="large" style="margin-right:11vw">{{ location }}</el-tag>
           <el-select
             v-model="queryParams.harmonicType"
             placeholder="请选择"
@@ -78,12 +81,13 @@
             style="width: 240px"
           >
           <el-option label='全选' value='全选' @click='selectAll' />
-            <el-option
-              v-for="item in harmonicMultiple"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
+          <el-option
+            v-for="item in harmonicMultiple"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+            @click="getLabel(item.value)"
+          />
           </el-select>
 
           <el-button 
@@ -117,10 +121,12 @@
     <template #Content>
       <div >
         <div v-if="realTimeVis">
+          <div>{{ labeldata +'谐波柱状图' }}</div>
           <HarmonicRealTime  width="70vw" height="58vh" :list="harmonicRealTime"/>
         </div>
         <br/>
         <div v-if="lineVis">
+          <div>{{ labeldata +'谐波趋势图' }}</div>
           <HarmonicLine  width="70vw" height="58vh" :list="harmonicLine"/>
         </div>
       </div>
@@ -142,6 +148,7 @@ import HarmonicLine from './component/HarmonicLine.vue'
 defineOptions({ name: 'PDUDevice' })
 
 const location = ref(history?.state?.location);
+const adder = location.value.split('-')[0]
 const haveSearch = ref(false);
 const switchValue = ref(1);
 const harmonicRealTime = ref();
@@ -281,6 +288,11 @@ const harmonicMultiple = ref([
 ])
 
 const serverRoomArr =  ref([])
+const labeldata = ref('')
+labeldata.value = harmonicMultiple.value[0].label
+const getLabel = (num) => {
+  labeldata.value = harmonicMultiple.value[num-1].label
+}
 
 const selectAll = () => {
 
@@ -365,7 +377,6 @@ const queryParams = reactive({
   newTime : undefined,
 }) as any
 
-
 const handleClick = async (row) => {
   if(row.type != null  && row.type == 6){
     queryParams.devKey = row.unique
@@ -391,8 +402,10 @@ const getDetail = async () => {
 
   const lineData = await IndexApi.getHarmonicLine(queryParams);
   seriesAndTimeArr.value = lineData;
+  console.log('seriesAndTimeArr.value',seriesAndTimeArr.value)
   if(seriesAndTimeArr.value.time != null && seriesAndTimeArr.value.time?.length > 0){
     const filteredSeries = seriesAndTimeArr.value.series.filter((item,index) => queryParams.harmonicArr.includes(index));
+    console.log('filteredSeries',filteredSeries)
     harmonicLine.value.series = filteredSeries;
     harmonicLine.value.time = seriesAndTimeArr.value.time;
     lineVis.value = true;
