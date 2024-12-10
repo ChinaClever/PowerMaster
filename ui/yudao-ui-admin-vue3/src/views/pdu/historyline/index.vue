@@ -1367,7 +1367,7 @@ const getNavList = async() => {
 /** 搜索按钮操作 */
 const handleQuery = () => {
   if(queryParams.ipAddr ==undefined){
-      ElMessage.error('IP地址为空,请重新选择IP地址！')
+      ElMessage.error('IP地址为空！')
       return;
   }
   // IP地址的正则表达式
