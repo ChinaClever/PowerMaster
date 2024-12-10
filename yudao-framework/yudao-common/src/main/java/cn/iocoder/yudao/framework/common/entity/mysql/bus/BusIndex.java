@@ -25,51 +25,40 @@ public class BusIndex implements Serializable {
     /**
      * 设备识别码
      */
-    private String devKey;
-
+    private String busKey;
     /**
      * ip地址
      */
     private String ipAddr;
 
     /**
-     * 级联地址
-     */
-    private Integer casAddr;
-
-    /**
      * 母线编号
      */
-    private Integer barId;
-    /**
-     * 节点ip
-     */
-    private String nodeIp;
+    private Integer busId;
 
     /**
-     * 运行状态
+     * 节点IP
      */
-    private int runStatus;
+    private String  busName;
 
     /**
-     * 是否删除
+     * 运行状态 0：离线 1：正常  2：告警
      */
-    private int isDeleted;
-
+    private Integer runStatus;
     /**
-     * 母线名
+     * 节点IP
      */
-    private String busName;
-
+    private Integer nodeId;
     /**
-     * 更新时间
+     * 逻辑删除
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updateTime;
+    private Boolean isDeleted;
     /**
      * 创建时间
      */
-    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
-
+    /**
+     * 最后更新时间
+     */
+    private LocalDateTime updateTime;
 }

@@ -1,21 +1,17 @@
 package cn.iocoder.yudao.module.rack.service.energyconsumption;
 
-import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
-import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.mapper.AisleIndexMapper;
-import cn.iocoder.yudao.framework.common.mapper.RackIndexDoMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.IndexDO;
-import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.PduIndex;
 import cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO.RackEnergyConsumptionPageReqVO;
+import cn.iocoder.yudao.framework.common.vo.RackIndexRoomVO;
 import cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO.RackTotalRealtimeReqDTO;
 import cn.iocoder.yudao.module.rack.controller.admin.energyconsumption.VO.RackTotalRealtimeRespVO;
 import cn.iocoder.yudao.module.rack.service.RackIndexService;
 import cn.iocoder.yudao.module.rack.service.historydata.RackHistoryDataService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import org.apache.commons.lang3.ObjectUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -436,29 +432,26 @@ public class RackEnergyConsumptionServiceImpl implements RackEnergyConsumptionSe
         PageResult<RackTotalRealtimeRespVO> pageResult = null;
         List<RackTotalRealtimeRespVO> mapList = new ArrayList<>();
 
-        List<RackIndex> records = null;
+        List<RackIndexRoomVO> records = null;
         long total = 0;
         if (flag) {
-            IPage<RackIndex> page = rackIndexService.findRackIndexAll(pageNo, pageSize, reqDTO.getRackIds());
+            IPage<RackIndexRoomVO> page = rackIndexService.findRackIndexAll(pageNo, pageSize, reqDTO.getRackIds());
             total = page.getTotal();
             records = page.getRecords();
         }else {
             records = rackIndexService.findRackIndexToList(reqDTO.getRackIds());
         }
-
-
-        List<Integer> cabineIds = records.stream().map(RackIndex::getCabinetId).distinct().collect(Collectors.toList());
-        List<IndexDO> indexDOS = rackHistoryDataService.getCabinetByIds(cabineIds);
-        List<Integer> roomIds = indexDOS.stream().map(IndexDO::getRoomId).distinct().collect(Collectors.toList());
-        Map<Integer, IndexDO> mapCabinet = indexDOS.stream().filter(item -> ObjectUtils.isNotEmpty(item.getId()))
-                .collect(Collectors.toMap(IndexDO::getId, cabinetIndex -> cabinetIndex));
+        List<Integer> roomIds = records.stream().map(RackIndexRoomVO::getRoomId).distinct().collect(Collectors.toList());
         Map<Integer , String> mapRoom = rackHistoryDataService.getRoomById(roomIds);
-        for (RackIndex record : records) {
+        List<Integer> cabineIds = records.stream().map(RackIndexRoomVO::getCabinetId).distinct().collect(Collectors.toList());
+        Map<Integer , IndexDO> mapCabinet = rackHistoryDataService.getCabinetByIds(cabineIds);
+
+        for (RackIndexRoomVO record : records) {
             RackTotalRealtimeRespVO respVO = new RackTotalRealtimeRespVO();
+            String roomName = mapRoom.get(record.getRoomId());
             IndexDO indexDO = mapCabinet.get(record.getCabinetId());
-            String roomName = mapRoom.get(indexDO.getRoomId());
             if(indexDO.getAisleId() != 0){
-                String aisleName = aisleIndexMapper.selectById(indexDO.getAisleId()).getName();
+                String aisleName = aisleIndexMapper.selectById(indexDO.getAisleId()).getAisleName();
                 respVO.setLocation(roomName + "-" + aisleName + "-" + indexDO.getCabinetName());
             }else {
                 respVO.setLocation( roomName + "-"  + indexDO.getCabinetName()) ;

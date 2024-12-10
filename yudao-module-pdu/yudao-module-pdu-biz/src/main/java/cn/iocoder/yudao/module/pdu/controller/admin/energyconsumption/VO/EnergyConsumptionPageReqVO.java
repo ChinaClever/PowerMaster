@@ -32,4 +32,5 @@ public class EnergyConsumptionPageReqVO extends PageParam {
 
     private String cascadeAddr;
 
+    private String nowAddress;
 }

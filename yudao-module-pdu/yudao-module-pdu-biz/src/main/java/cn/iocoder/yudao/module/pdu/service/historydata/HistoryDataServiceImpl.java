@@ -5,7 +5,6 @@ import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetPdu;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.mapper.*;
-import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.EnvDataDetailsReqVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.EnvDataPageReqVo;
@@ -18,13 +17,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.*;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.metrics.Max;
@@ -33,6 +29,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import cn.iocoder.yudao.framework.common.pojo.PageResult;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -76,19 +73,19 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     @Override
     public List<Object> getLocationsByPduIds(List<Map<String, Object>> mapList) {
         List<Object> resultList = new ArrayList<>(mapList.size());
-        for (Map<String, Object> map : mapList) {
+        for (Map<String, Object> map : mapList){
             Object pduId = map.get("pdu_id");
             if (pduId instanceof Integer) {
                 // 查询位置
-                PduIndex pduIndex = pduIndexMapper.selectById((int) pduId);
-                if (pduIndex != null) {
+                PduIndex pduIndex = pduIndexMapper.selectById( (int)pduId );
+                if (pduIndex != null){
                     map.put("location", pduIndex.getPduKey());
                     map.put("address", getAddressByIpAddr(pduIndex.getPduKey()));
-                } else {
+                }else{
                     map.put("location", null);
                     map.put("address", null);
                 }
-            } else {
+            }else{
                 map.put("location", null);
                 map.put("address", null);
             }
@@ -101,20 +98,20 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     @Override
     public List<Object> getSensorLocationsByPduIds(List<Map<String, Object>> mapList) {
         List<Object> resultList = new ArrayList<>();
-        for (Map<String, Object> map : mapList) {
+        for (Map<String, Object> map : mapList){
             Object pduId = map.get("pdu_id");
             Integer sensorId = (Integer) map.get("sensor_id");
             if (pduId instanceof Integer) {
                 // 查询位置
-                PduIndex pduIndex = pduIndexMapper.selectById((int) pduId);
-                if (pduIndex != null) {
+                PduIndex pduIndex = pduIndexMapper.selectById( (int)pduId );
+                if (pduIndex != null){
                     map.put("location", pduIndex.getPduKey());
                     map.put("address", getSensorAddressByIpAddr(pduIndex.getPduKey(), sensorId));
-                } else {
+                }else{
                     map.put("location", null);
                     map.put("address", null);
                 }
-            } else {
+            }else{
                 map.put("location", null);
                 map.put("address", null);
             }
@@ -165,7 +162,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         String[] ipParts = location.split("-");
         if (ipParts.length < 2) {
 //            // 如果分割后的数组长度小于 2，则返回 null 或抛出异常
-            ipParts = location.split(":");
+             ipParts = location.split(":");
         }
 
         String address = null;
@@ -173,8 +170,8 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         // A 路
         CabinetPdu cabinetPduA = cabinetPduMapper.selectOne(
                 new LambdaQueryWrapperX<CabinetPdu>()
-                        .eq(CabinetPdu::getPduKeyA, ipParts[0])
-//                        .eq(CabinetPdu::getCasIdA, ipParts[1])
+                        .eq(CabinetPdu::getPduKeyA, ipParts[0]+"-"+ipParts[1])
+//                        .eq(CabinetPdu::getCasIdA, )
         );
 
         if (cabinetPduA != null) {
@@ -186,7 +183,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 String roomName = roomIndex.getRoomName();
 
                 if (cabinet.getAisleId() != 0) {
-                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getAisleName();
                     address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
                 } else {
                     address = roomName + "-" + cabinetName + "-" + "A路";
@@ -196,7 +193,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         // B 路
         CabinetPdu cabinetPduB = cabinetPduMapper.selectOne(
                 new LambdaQueryWrapperX<CabinetPdu>()
-                        .eq(CabinetPdu::getPduKeyB, ipParts[0])
+                        .eq(CabinetPdu::getPduKeyB, ipParts[0]+"-"+ipParts[1])
 //                        .eq(CabinetPdu::getCasIdB, ipParts[1])
         );
 
@@ -209,7 +206,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 String roomName = roomIndex.getRoomName();
 
                 if (cabinet.getAisleId() != 0) {
-                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getAisleName();
                     address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";
                 } else {
                     address = roomName + "-" + cabinetName + "-" + "B路";
@@ -225,61 +222,59 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         String[] ipParts = location.split("-");
         String address = null;
         CabinetPdu cabinetPduA = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
-                .eq(CabinetPdu::getPduKeyA, ipParts[0]));
-//                .eq(CabinetPdu::getCasIdA, ipParts[1]));
+                .eq(CabinetPdu::getPduKeyA, ipParts[0]+"-"+ipParts[1]));//.eq(CabinetPdu::getCasIdA, ipParts[1])
         CabinetPdu cabinetPduB = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
-                .eq(CabinetPdu::getPduKeyB, ipParts[0]));
-//                .eq(CabinetPdu::getCasIdB, ipParts[1]));
-        if (cabinetPduA != null) {
+                .eq(CabinetPdu::getPduKeyB, ipParts[0]+"-"+ipParts[1]));//.eq(CabinetPdu::getCasIdB, ipParts[1])
+        if(cabinetPduA != null){
             int cabinetId = cabinetPduA.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
             String cabinetName = cabinet.getCabinetName();
             RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
             String roomName = roomIndex.getRoomName();
-            if (cabinet.getAisleId() != 0) {
-                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+            if(cabinet.getAisleId() != 0){
+                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getAisleName();
 //                address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
                 address = roomName + "-" + aisleName + "-" + cabinetName;
-            } else {
+            }else {
 //                address = roomName + "-"  + cabinetName +  "-" + "A路";
-                address = roomName + "-" + cabinetName;
+                address = roomName + "-"  + cabinetName ;
             }
             // 查传感器在机柜的前后门上中下位置
             CabinetEnvSensor cabinetEnvSensor = cabinetEnvSensorMapper.selectOne(new LambdaQueryWrapperX<CabinetEnvSensor>()
                     .eq(CabinetEnvSensor::getCabinetId, cabinetId)
                     .eq(CabinetEnvSensor::getPathPdu, 'A')
                     .eq(CabinetEnvSensor::getSensorId, sensorId));
-            if (cabinetEnvSensor != null) {
+            if (cabinetEnvSensor != null){
                 map.put("channel", cabinetEnvSensor.getChannel());
                 map.put("position", cabinetEnvSensor.getPosition());
-            } else {
+            }else{
                 map.put("channel", null);
                 map.put("position", null);
             }
         }
-        if (cabinetPduB != null) {
+        if(cabinetPduB != null){
             int cabinetId = cabinetPduB.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
             String cabinetName = cabinet.getCabinetName();
             RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
             String roomName = roomIndex.getRoomName();
-            if (cabinet.getAisleId() != 0) {
-                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
+            if(cabinet.getAisleId() != 0){
+                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getAisleName();
 //                address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";
-                address = roomName + "-" + aisleName + "-" + cabinetName;
-            } else {
+                address = roomName + "-" + aisleName + "-" + cabinetName ;
+            }else {
 //                address = roomName + "-"  + cabinetName +  "-" + "B路";
-                address = roomName + "-" + cabinetName;
+                address = roomName + "-"  + cabinetName ;
             }
             // 查传感器在机柜的前后门上中下位置
             CabinetEnvSensor cabinetEnvSensor = cabinetEnvSensorMapper.selectOne(new LambdaQueryWrapperX<CabinetEnvSensor>()
                     .eq(CabinetEnvSensor::getCabinetId, cabinetId)
                     .eq(CabinetEnvSensor::getPathPdu, 'B')
                     .eq(CabinetEnvSensor::getSensorId, sensorId));
-            if (cabinetEnvSensor != null) {
+            if (cabinetEnvSensor != null){
                 map.put("channel", cabinetEnvSensor.getChannel());
                 map.put("position", cabinetEnvSensor.getPosition());
-            } else {
+            }else{
                 map.put("channel", null);
                 map.put("position", null);
             }
@@ -290,19 +285,19 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     }
 
     @Override
-    public Integer getPduIdByAddr(String ipAddr) {
-        String devKey = ipAddr ;
+    public Integer getPduIdByAddr(String ipAddr, String cascadeAddr) {
+        String devKey = ipAddr;//+"-"+cascadeAddr;
         QueryWrapper<PduIndex> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("dev_key", devKey); // 指定查询条件：name 字段等于给定的 name 值
+        queryWrapper.eq("pdu_key", devKey); // 指定查询条件：name 字段等于给定的 name 值
         PduIndex pduIndex = pduIndexMapper.selectOne(queryWrapper); // 执行查询，返回匹配的实体对象
-        if (pduIndex != null) {
+        if (pduIndex != null){
             return Math.toIntExact(pduIndex.getId());
         }
         return null;
     }
 
     @Override
-    public List<String> getPduIdsByIps(String[] ips) {
+    public List<String> getPduIdsByIps(String[] ips){
         QueryWrapper<PduIndex> queryWrapper = new QueryWrapper<>();
         queryWrapper.select("id");
         queryWrapper.in("dev_key", ips);
@@ -312,24 +307,24 @@ public class HistoryDataServiceImpl implements HistoryDataService {
 
     @Override
     public IPage<PduIndex> findPduIndexAll(int pageNo, int pageSize, String[] ipArray) {
-        Page page = new Page<>(pageNo, pageSize);
+        Page page = new Page<>(pageNo,pageSize);
         LambdaQueryWrapper<PduIndex> queryWrapper = new LambdaQueryWrapper<>();
         if (ipArray != null && ipArray.length != 0) {
-            queryWrapper.in(PduIndex::getPduKey, ipArray);
+            queryWrapper.in(PduIndex::getPduKey,ipArray);
         }
         queryWrapper.orderByDesc(PduIndex::getId);
-        queryWrapper.eq(PduIndex::getIsDeleted, 0);
-        return pduIndexMapper.selectPage(page, queryWrapper);
+        queryWrapper.eq(PduIndex::getIsDeleted,0);
+        return pduIndexMapper.selectPage(page,queryWrapper);
     }
 
     @Override
     public List<PduIndex> findPduIndexAllToList(String[] ipArray) {
         LambdaQueryWrapper<PduIndex> queryWrapper = new LambdaQueryWrapper<>();
         if (ipArray != null && ipArray.length != 0) {
-            queryWrapper.in(PduIndex::getPduKey, ipArray);
+            queryWrapper.in(PduIndex::getPduKey,ipArray);
         }
         queryWrapper.orderByDesc(PduIndex::getId);
-        queryWrapper.eq(PduIndex::getIsDeleted, 0);
+        queryWrapper.eq(PduIndex::getIsDeleted,0);
         return pduIndexMapper.selectList(queryWrapper);
     }
 
@@ -351,7 +346,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             // 从聚合结果中获取最大值
             Max maxAggregation = searchResponse.getAggregations().get("max_value");
             Integer maxValue = (int) maxAggregation.getValue();
-            resultMap.put(fieldNameArr[i] + "_max_value", maxValue);
+            resultMap.put(fieldNameArr[i]+"_max_value", maxValue);
         }
 
         return resultMap;
@@ -388,26 +383,26 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         int index = (pageNo - 1) * pageSize;
         searchSourceBuilder.from(index);
         // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-        if (index + pageSize > 10000) {
+        if (index + pageSize > 10000){
             searchSourceBuilder.size(10000 - index);
-        } else {
+        }else{
             searchSourceBuilder.size(pageSize);
         }
         searchSourceBuilder.trackTotalHits(true);
         searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
         Integer pduId = null;
-        if (!Objects.equals(pageReqVO.getIpAddr(), "") && !Objects.equals(pageReqVO.getIpAddr(), null)) {
-            pduId = getPduIdByAddr(pageReqVO.getIpAddr());
-            if (pduId != null) {
+        if (!Objects.equals(pageReqVO.getIpAddr(), "") && !Objects.equals(pageReqVO.getIpAddr(), null)){
+            pduId = getPduIdByAddr(pageReqVO.getIpAddr(), pageReqVO.getCascadeAddr());
+            if(pduId != null){
                 searchSourceBuilder.query(QueryBuilders.termQuery("pdu_id", pduId));
-            } else {
+            }else{
                 // 查不到pdu 直接返回空数据
                 pageResult = new PageResult<>();
                 pageResult.setList(null)
                         .setTotal(0L);
                 return pageResult;
             }
-        } else {
+        }else{
             searchSourceBuilder.query(QueryBuilders.matchAllQuery());
         }
         // 搜索请求对象
@@ -419,7 +414,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         }
         List<String> pduIds = null;
         String[] ipArray = pageReqVO.getIpArray();
-        if (ipArray != null) {
+        if (ipArray != null){
             pduIds = getPduIdsByIps(ipArray);
             searchSourceBuilder.query(QueryBuilders.termsQuery("pdu_id", pduIds));
         }
@@ -441,10 +436,10 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 } else {
                     searchRequest.indices("pdu_hda_line_day");
                 }
-                if (pageReqVO.getLineId() != null) {
+                if( pageReqVO.getLineId() != null){
                     Integer lineId = pageReqVO.getLineId();
                     // 创建匹配查询
-                    QueryBuilder termQuery = QueryBuilders.termQuery("line_id", lineId);
+                    QueryBuilder termQuery = QueryBuilders.termQuery ("line_id", lineId);
                     if (pduId != null) {
                         QueryBuilder termQuery1 = QueryBuilders.termQuery("pdu_id", pduId);
                         boolQuery.must(termQuery1);
@@ -468,7 +463,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                             .from(pageReqVO.getTimeRange()[0])
                             .to(pageReqVO.getTimeRange()[1]));
                 }
-                if (pageReqVO.getLoopId() != null) {
+                if( pageReqVO.getLoopId() != null){
                     Integer loopId = pageReqVO.getLoopId();
                     // 创建匹配查询
                     QueryBuilder termQuery = QueryBuilders.termQuery("loop_id", loopId);
@@ -490,7 +485,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 } else {
                     searchRequest.indices("pdu_hda_outlet_day");
                 }
-                if (pageReqVO.getOutletId() != null) {
+                if( pageReqVO.getOutletId() != null){
                     Integer outletId = pageReqVO.getOutletId();
                     // 创建匹配查询
                     QueryBuilder termQuery = QueryBuilders.termQuery("outlet_id", outletId);
@@ -523,12 +518,12 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     }
 
     @Override
-    public PageResult<Object> getHistoryDataDetails(HistoryDataDetailsReqVO reqVO) throws IOException {
+    public PageResult<Object> getHistoryDataDetails(HistoryDataDetailsReqVO reqVO) throws IOException{
         Integer pduId = reqVO.getPduId();
-        if (Objects.equals(pduId, null)) {
-            pduId = getPduIdByAddr(reqVO.getIpAddr());
-            if (Objects.equals(pduId, null)) {
-                PageResult<Object> pageResult = new PageResult<>();
+        if (Objects.equals(pduId, null)){
+            pduId = getPduIdByAddr(reqVO.getIpAddr(), reqVO.getCascadeAddr());
+            if (Objects.equals(pduId, null)){
+                PageResult<Object> pageResult=new PageResult<>();
                 pageResult.setList(new ArrayList<>())
                         .setTotal(new Long(0));
                 return pageResult;
@@ -541,7 +536,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
         searchSourceBuilder.size(10000);
         searchSourceBuilder.trackTotalHits(true);
-        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0) {
+        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0){
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                     .gte(reqVO.getTimeRange()[0])
                     .lte(reqVO.getTimeRange()[1]));
@@ -551,22 +546,22 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         PageResult<Object> pageResult = null;
         switch (reqVO.getType()) {
             case "total":
-                if ("realtime".equals(reqVO.getGranularity())) {
+                if ("realtime".equals(reqVO.getGranularity()) ){
                     searchRequest.indices("pdu_hda_total_realtime");
-                } else if ("hour".equals(reqVO.getGranularity())) {
+                }else if ("hour".equals(reqVO.getGranularity()) ){
                     searchRequest.indices("pdu_hda_total_hour");
-                } else {
+                }else {
                     searchRequest.indices("pdu_hda_total_day");
                 }
                 searchSourceBuilder.query(QueryBuilders.termQuery("pdu_id", pduId));
                 break;
 
             case "line":
-                if ("realtime".equals(reqVO.getGranularity())) {
+                if ("realtime".equals(reqVO.getGranularity()) ){
                     searchRequest.indices("pdu_hda_line_realtime");
-                } else if ("hour".equals(reqVO.getGranularity())) {
+                }else if ("hour".equals(reqVO.getGranularity()) ){
                     searchRequest.indices("pdu_hda_line_hour");
-                } else {
+                }else {
                     searchRequest.indices("pdu_hda_line_day");
                 }
                 Integer lineId = reqVO.getLineId();
@@ -582,11 +577,11 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 break;
 
             case "loop":
-                if ("realtime".equals(reqVO.getGranularity())) {
+                if ("realtime".equals(reqVO.getGranularity()) ){
                     searchRequest.indices("pdu_hda_loop_realtime");
-                } else if ("hour".equals(reqVO.getGranularity())) {
+                }else if ("hour".equals(reqVO.getGranularity()) ){
                     searchRequest.indices("pdu_hda_loop_hour");
-                } else {
+                }else {
                     searchRequest.indices("pdu_hda_loop_day");
                 }
                 Integer loopId = reqVO.getLoopId();
@@ -602,11 +597,11 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 break;
 
             case "outlet":
-                if ("realtime".equals(reqVO.getGranularity())) {
+                if ("realtime".equals(reqVO.getGranularity()) ){
                     searchRequest.indices("pdu_hda_outlet_realtime");
-                } else if ("hour".equals(reqVO.getGranularity())) {
+                }else if ("hour".equals(reqVO.getGranularity()) ){
                     searchRequest.indices("pdu_hda_outlet_hour");
-                } else {
+                }else {
                     searchRequest.indices("pdu_hda_outlet_day");
                 }
                 Integer outletId = reqVO.getOutletId();
@@ -649,9 +644,9 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         int index = (pageNo - 1) * pageSize;
         searchSourceBuilder.from(index);
         // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-        if (index + pageSize > 10000) {
+        if (index + pageSize > 10000){
             searchSourceBuilder.size(10000 - index);
-        } else {
+        }else{
             searchSourceBuilder.size(pageSize);
         }
         searchSourceBuilder.trackTotalHits(true);
@@ -700,13 +695,13 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         Integer position = pageReqVO.getPosition();
 
         // 前端筛选机柜但没筛选探测点触发
-        if (cabinetIds != null && channel == null) {
+        if (cabinetIds != null && channel == null){
             QueryWrapper<CabinetPdu> cabinetPduQueryWrapper = new QueryWrapper<>();
             cabinetPduQueryWrapper.in("cabinet_id", cabinetIds);
             List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(cabinetPduQueryWrapper);
-            for (CabinetPdu cabinetPdu1 : cabinetPduList) {
-                Integer ipA = getPduIdByAddr(cabinetPdu1.getPduKeyA());
-                Integer ipB = getPduIdByAddr(cabinetPdu1.getPduKeyB());
+            for (CabinetPdu cabinetPdu1 : cabinetPduList){
+                Integer ipA = getPduIdByAddr(cabinetPdu1.getPduKeyA(),null );//String.valueOf(cabinetPdu1.getCasIdA())
+                Integer ipB = getPduIdByAddr(cabinetPdu1.getPduKeyB(),null);
                 if (ipA != null) {
                     pduIds.add(String.valueOf(ipA));
                 }
@@ -716,26 +711,26 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             }
             if (!pduIds.isEmpty()) {
                 searchSourceBuilder.query(QueryBuilders.termsQuery("pdu_id", pduIds));
-            } else {
+            }else{
                 // 查不到pdu 直接返回空数据
                 pageResult = new PageResult<>();
                 pageResult.setList(null)
                         .setTotal(0L);
                 return pageResult;
             }
-        } else {
+        }else{
             searchSourceBuilder.query(QueryBuilders.matchAllQuery());
         }
 
         // 前端筛选某个机柜和探测点后触发
-        if (cabinetIds != null && channel != null && position != null) {
+        if (cabinetIds!= null && channel != null && position != null){
             QueryWrapper<CabinetEnvSensor> cabinetEnvSensorQueryWrapper = new QueryWrapper<>();
             cabinetEnvSensorQueryWrapper.eq("cabinet_id", cabinetIds[0])
                     .eq("channel", channel)
                     .eq("position", position);
             CabinetEnvSensor cabinetEnvSensor = cabinetEnvSensorMapper.selectOne(cabinetEnvSensorQueryWrapper);
             // 表示此机柜此位置没有传感器 直接返回
-            if (cabinetEnvSensor == null) {
+            if ( cabinetEnvSensor == null ){
                 pageResult = new PageResult<>();
                 pageResult.setList(null)
                         .setTotal(0L);
@@ -745,11 +740,11 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             cabinetPduQueryWrapper.eq("cabinet_id", cabinetIds[0]);
             CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(cabinetPduQueryWrapper);
             Integer pduId = null;
-            if (cabinetEnvSensor.getPathPdu() == "A") {
-                pduId = getPduIdByAddr(cabinetPdu.getPduKeyA());
+            if (Objects.equals('A', cabinetEnvSensor.getPathPdu())){
+                pduId = getPduIdByAddr(cabinetPdu.getPduKeyA(),null);
             }
-            if (cabinetEnvSensor.getPathPdu() == "B") {
-                pduId = getPduIdByAddr(cabinetPdu.getPduKeyB());
+            if (Objects.equals('B', cabinetEnvSensor.getPathPdu())){
+                pduId = getPduIdByAddr(cabinetPdu.getPduKeyB(), null);
             }
             // 创建范围查询
             if (pduId != null) {
@@ -809,14 +804,14 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         searchSourceBuilder.trackTotalHits(true);
         // 搜索请求对象
         SearchRequest searchRequest = new SearchRequest();
-        if ("realtime".equals(reqVO.getGranularity())) {
+        if ("realtime".equals(reqVO.getGranularity()) ){
             searchRequest.indices("pdu_env_realtime");
-        } else if ("hour".equals(reqVO.getGranularity())) {
+        }else if ("hour".equals(reqVO.getGranularity()) ){
             searchRequest.indices("pdu_env_hour");
-        } else {
+        }else {
             searchRequest.indices("pdu_env_day");
         }
-        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0) {
+        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0){
             searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
                     .from(reqVO.getTimeRange()[0])
                     .to(reqVO.getTimeRange()[1]));
@@ -831,14 +826,14 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         /**
          * 不是跳转到环境分析的情况 此时没有pduId和sensorId 要用cabinetId、channel和position来查
          */
-        if (pduId == null && sensorId == null) {
+        if (pduId == null && sensorId == null){
             QueryWrapper<CabinetEnvSensor> cabinetEnvSensorQueryWrapper = new QueryWrapper<>();
             cabinetEnvSensorQueryWrapper.eq("cabinet_id", cabinetId)
                     .eq("channel", channel)
                     .eq("position", position);
             CabinetEnvSensor cabinetEnvSensor = cabinetEnvSensorMapper.selectOne(cabinetEnvSensorQueryWrapper);
             // 表示此机柜此位置没有传感器 直接返回
-            if (cabinetEnvSensor == null) {
+            if ( cabinetEnvSensor == null ){
                 System.out.println("机柜此位置没有传感器");
                 map.put("list", null);
                 map.put("total", 0);
@@ -849,15 +844,15 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             QueryWrapper<CabinetPdu> cabinetPduQueryWrapper = new QueryWrapper<>();
             cabinetPduQueryWrapper.eq("cabinet_id", cabinetId);
             CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(cabinetPduQueryWrapper);
-            if (cabinetEnvSensor.getPathPdu() == "A") {
-                pduId = getPduIdByAddr(cabinetPdu.getPduKeyA());
+            if (Objects.equals('A', cabinetEnvSensor.getPathPdu())){
+                pduId = getPduIdByAddr(cabinetPdu.getPduKeyA(),null);
                 ipAddr = cabinetPdu.getPduKeyA();
-            } else if (cabinetEnvSensor.getPathPdu() == "B") {
-                pduId = getPduIdByAddr(cabinetPdu.getPduKeyB());
-                ipAddr = cabinetPdu.getPduKeyB() ;
+            } else if (Objects.equals('B', cabinetEnvSensor.getPathPdu())) {
+                pduId = getPduIdByAddr(cabinetPdu.getPduKeyB(),null);
+                ipAddr = cabinetPdu.getPduKeyB();
             }
         }
-        if (pduId == null) {
+        if (pduId == null){
             return map;
         }
 
@@ -892,7 +887,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         String[] key = new String[]{"total", "line", "loop", "outlet"};
         LocalDateTime[] timeAgo = new LocalDateTime[0];
         Map<String, Object> map;
-        switch (granularity) {
+        switch (granularity){
             case "realtime":
                 indices = new String[]{"pdu_hda_total_realtime", "pdu_hda_line_realtime", "pdu_hda_loop_realtime", "pdu_hda_outlet_realtime"};
                 timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1)};
@@ -919,9 +914,8 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         Map<String, Object> map = energyConsumptionService.getSumData(indices, name, timeAgo);
         return map;
     }
-
     @Override
-    public List<Object> getEnExcelList(List<Object> list) {
+    public List<Object> getEnExcelList(List<Object> list){
         List<Map<String, Object>> mapList = new ArrayList<>();
         for (Object obj : list) {
             if (obj instanceof Map && ((Map<?, ?>) obj).keySet().stream().allMatch(key -> key instanceof String)) {
@@ -930,15 +924,15 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 mapList.add(map);
             }
         }
-        for (int i = 0; i < mapList.size(); i++) {
-            Map mp = (Map) mapList.get(i).get("address");
-            mapList.get(i).put("address", mp.get("address"));
-            mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
-            if (mapList.get(i).containsKey("tem_max_time") && mapList.get(i).containsKey("tem_min_time")) {
-                mapList.get(i).put("tem_max_time", mapList.get(i).get("tem_max_time").toString().substring(0, 16));
-                mapList.get(i).put("tem_min_time", mapList.get(i).get("tem_min_time").toString().substring(0, 16));
-                mapList.get(i).put("hum_max_time", mapList.get(i).get("hum_max_time").toString().substring(0, 16));
-                mapList.get(i).put("hum_min_time", mapList.get(i).get("hum_min_time").toString().substring(0, 16));
+        for(int i=0;i<mapList.size();i++){
+            Map mp=(Map)mapList.get(i).get("address");
+            mapList.get(i).put("address",mp.get("address"));
+            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,16));
+            if(mapList.get(i).containsKey("tem_max_time")&&mapList.get(i).containsKey("tem_min_time")){
+                mapList.get(i).put("tem_max_time",mapList.get(i).get("tem_max_time").toString().substring(0,16));
+                mapList.get(i).put("tem_min_time",mapList.get(i).get("tem_min_time").toString().substring(0,16));
+                mapList.get(i).put("hum_max_time",mapList.get(i).get("hum_max_time").toString().substring(0,16));
+                mapList.get(i).put("hum_min_time",mapList.get(i).get("hum_min_time").toString().substring(0,16));
 
             }
         }
@@ -956,18 +950,18 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 mapList.add(map);
             }
         }
-        for (int i = 0; i < mapList.size(); i++) {
-            mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
-        }
-        if (mapList.get(0).containsKey("pow_apparent_max_time")) {
             for (int i = 0; i < mapList.size(); i++) {
-                mapList.get(i).put("pow_apparent_max_time", mapList.get(i).get("pow_apparent_max_time").toString().substring(0, 16));
-                mapList.get(i).put("pow_apparent_min_time", mapList.get(i).get("pow_apparent_min_time").toString().substring(0, 16));
-                mapList.get(i).put("pow_active_max_time", mapList.get(i).get("pow_active_max_time").toString().substring(0, 16));
-                mapList.get(i).put("pow_active_min_time", mapList.get(i).get("pow_active_min_time").toString().substring(0, 16));
+                mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
             }
-        }
-        if (mapList.get(0).containsKey("vol_max_time")) {
+            if(mapList.get(0).containsKey("pow_apparent_max_time")){
+                for (int i = 0; i < mapList.size(); i++) {
+                    mapList.get(i).put("pow_apparent_max_time", mapList.get(i).get("pow_apparent_max_time").toString().substring(0, 16));
+                    mapList.get(i).put("pow_apparent_min_time", mapList.get(i).get("pow_apparent_min_time").toString().substring(0, 16));
+                    mapList.get(i).put("pow_active_max_time", mapList.get(i).get("pow_active_max_time").toString().substring(0, 16));
+                    mapList.get(i).put("pow_active_min_time", mapList.get(i).get("pow_active_min_time").toString().substring(0, 16));
+                }
+            }
+        if(mapList.get(0).containsKey("vol_max_time")){
             for (int i = 0; i < mapList.size(); i++) {
                 mapList.get(i).put("vol_max_time", mapList.get(i).get("vol_max_time").toString().substring(0, 16));
                 mapList.get(i).put("vol_min_time", mapList.get(i).get("vol_min_time").toString().substring(0, 16));
@@ -979,7 +973,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     }
 
     @Override
-    public List<Object> getNewExcelList(List<Object> list, String ob) {
+    public List<Object> getNewExcelList(List<Object> list,String ob) {
         List<Map<String, Object>> mapList = new ArrayList<>();
 
         for (Object obj : list) {
@@ -989,11 +983,12 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 mapList.add(map);
             }
         }
-        if (ob.equals("1")) {
+        if(ob.equals("1")){
             for (int i = 0; i < mapList.size(); i++) {
                 mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
             }
-        } else if (ob.equals("3")) {
+        }
+        else if (ob.equals("3")){
             for (int i = 0; i < mapList.size(); i++) {
                 mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
                 mapList.get(i).put("pow_active_max_time", mapList.get(i).get("pow_active_max_time").toString().substring(0, 16));
@@ -1005,7 +1000,8 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 mapList.get(i).put("vol_max_time", mapList.get(i).get("vol_max_time").toString().substring(0, 16));
                 mapList.get(i).put("vol_min_time", mapList.get(i).get("vol_min_time").toString().substring(0, 16));
             }
-        } else if (ob.equals("4")) {
+        }
+        else if (ob.equals("4")){
             for (int i = 0; i < mapList.size(); i++) {
                 mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
                 mapList.get(i).put("pow_active_max_time", mapList.get(i).get("pow_active_max_time").toString().substring(0, 16));
@@ -1015,7 +1011,8 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 mapList.get(i).put("cur_max_time", mapList.get(i).get("cur_max_time").toString().substring(0, 16));
                 mapList.get(i).put("cur_min_time", mapList.get(i).get("cur_min_time").toString().substring(0, 16));
             }
-        } else {
+        }
+        else {
             for (int i = 0; i < mapList.size(); i++) {
                 mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
                 mapList.get(i).put("pow_active_max_time", mapList.get(i).get("pow_active_max_time").toString().substring(0, 16));
@@ -1039,21 +1036,21 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             }
         }
 
-        for (int i = 0; i < mapList.size(); i++) {
-            mapList.get(i).put("create_time", mapList.get(i).get("create_time").toString().substring(0, 16));
-            if (mapList.get(i).containsKey("tem_max_time") && mapList.get(i).containsKey("tem_min_time")) {
-                mapList.get(i).put("tem_max_time", mapList.get(i).get("tem_max_time").toString().substring(0, 16));
-                mapList.get(i).put("tem_min_time", mapList.get(i).get("tem_min_time").toString().substring(0, 16));
-                mapList.get(i).put("hum_max_time", mapList.get(i).get("hum_max_time").toString().substring(0, 16));
-                mapList.get(i).put("hum_min_time", mapList.get(i).get("hum_min_time").toString().substring(0, 16));
+        for(int i=0;i<mapList.size();i++){
+            mapList.get(i).put("create_time",mapList.get(i).get("create_time").toString().substring(0,16));
+            if(mapList.get(i).containsKey("tem_max_time")&&mapList.get(i).containsKey("tem_min_time")){
+                mapList.get(i).put("tem_max_time",mapList.get(i).get("tem_max_time").toString().substring(0,16));
+                mapList.get(i).put("tem_min_time",mapList.get(i).get("tem_min_time").toString().substring(0,16));
+                mapList.get(i).put("hum_max_time",mapList.get(i).get("hum_max_time").toString().substring(0,16));
+                mapList.get(i).put("hum_min_time",mapList.get(i).get("hum_min_time").toString().substring(0,16));
 
             }
+            }
         }
-    }
 
     @Override
     public PduIndex findPduIndex(int pduId) {
-        return pduIndexMapper.selectById((int) pduId);
+        return pduIndexMapper.selectById( (int)pduId );
     }
 
 }

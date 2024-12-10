@@ -2,8 +2,12 @@ import request from '@/config/axios'
 
 export const MachineRoomApi = {
   // 获取机房详情
+  // getRoomDetail: async (params: any) => {
+  //   return await request.get({ url: `/room/detail`, params })
+  // },
+
   getRoomDetail: async (params: any) => {
-    return await request.get({ url: `/room/detail`, params })
+    return await request.get({ url: `/room/newDetail`, params })
   },
   // 获取机房列表
   getRoomList: async (params: any) => {
@@ -35,10 +39,16 @@ export const MachineRoomApi = {
   },
   // 机房删除
   deleteRoom: async (params: any) => {
-    return await request.get({ url: `/room/delete`, params })
+    return await request.get({ url: `/room/newDelete`, params })
   },
   // 修改机房详情
   saveRoomDetail: async (data: any) => {
-    return await request.post({ url: `/room/save`, data })
+    return await request.post({ url: `/room/newSave`, data })
   },
+
+// 机房柜列新增/编辑
+saveRoomAisle: async (data: any) => {
+  return await request.post({ url: `/room/roomAisleSave`, data })
+},
+
 }

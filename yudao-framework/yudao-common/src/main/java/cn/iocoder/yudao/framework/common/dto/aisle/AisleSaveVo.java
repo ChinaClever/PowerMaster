@@ -42,6 +42,11 @@ public class AisleSaveVo {
     private Boolean pduBar;
 
 
+    /**
+     * 电力容量
+     */
+    @Schema(description = "电力容量", example = "0")
+    private float powerCapacity;
 
     /**
      * 起始x坐标
@@ -68,13 +73,13 @@ public class AisleSaveVo {
      * 长度
      */
     @Schema(description = "长度", example = "0")
-    private Integer length;
+    private Integer aisleLength;
 
     /**
      * 类型
      */
     @Schema(description = "类型", example = "0")
-    private String type;
+    private String aisleType;
 
     /**
      * A路母线

@@ -44,25 +44,32 @@ public class RoomIndex implements Serializable {
     @Schema(description = "电力容量", example = "0")
     private float powerCapacity;
 
-    /**
-     * 日用能告警开关
-     */
-    private  int eleAlarmDay;
 
     /**
-     * 月用能告警开关
+     * 空调额定功率
      */
-    private  int eleAlarmMonth;
+    @Schema(description = "空调额定功率", example = "0")
+    private float airPower;
 
-    /**
-     * 日用能限制
-     */
-    private double eleLimitDay;
-
-    /**
-     * 月用能限制
-     */
-    private double eleLimitMonth;
+//    /**
+//     * 日用能告警开关
+//     */
+//    private  int eleAlarmDay;
+//
+//    /**
+//     * 月用能告警开关
+//     */
+//    private  int eleAlarmMonth;
+//
+//    /**
+//     * 日用能限制
+//     */
+//    private double eleLimitDay;
+//
+//    /**
+//     * 月用能限制
+//     */
+//    private double eleLimitMonth;
 
 
     /**

@@ -129,10 +129,12 @@ public class RackEnergyConsumptionController {
                                           HttpServletResponse response) throws IOException {
         pageReqVO.setPageSize(10000);
         List<Object> list = rackEnergyConsumptionService.getEQDataDetails(pageReqVO).getList();
-        rackEnergyConsumptionService.getNewOutletsList(list);
+//        rackEnergyConsumptionService.getNewOutletsList(list);
+        List<RackEnergyExportPageVO> bean = BeanUtils.toBean(list, RackEnergyExportPageVO.class);
+        bean.stream().forEach(iter ->{iter.setLocation(pageReqVO.getNowAddress());});
         // 导出 Excel
         ExcelUtils.write(response, "机架能耗排名数据.xlsx", "数据", RackEnergyExportPageVO.class,
-                BeanUtils.toBean(list, RackEnergyExportPageVO.class));
+                bean);
     }
 
     @PostMapping("rack_total_realtime")

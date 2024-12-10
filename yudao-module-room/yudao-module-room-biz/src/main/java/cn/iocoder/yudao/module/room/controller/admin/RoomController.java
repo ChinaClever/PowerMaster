@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.room.controller.admin;
 
+import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
+import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomSavesVo;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.module.room.dto.*;
 import cn.iocoder.yudao.module.room.service.RoomService;
@@ -44,6 +46,13 @@ public class RoomController {
         return success(dto);
     }
 
+    @Operation(summary = "新-机房详情")
+    @GetMapping("/room/newDetail")
+    public CommonResult<RoomAndRoomCfgDTO> getNewRoomDetail(@Param("id") int id) {
+        RoomAndRoomCfgDTO dto = roomService.getNewRoomDetail(id);
+        return success(dto);
+    }
+
 
     /**
      * 机房新增/编辑页面
@@ -57,6 +66,12 @@ public class RoomController {
     }
 
 
+    @Operation(summary = "新-机房新增/编辑")
+    @PostMapping("/room/newSave")
+    public CommonResult<Integer> newSaveRoom(@RequestBody RoomSavesVo vo) {
+        return success(roomService.newSaveRoom(vo));
+    }
+
     /**
      * 机房删除
      *
@@ -65,9 +80,18 @@ public class RoomController {
     @Operation(summary = "机房删除")
     @GetMapping("/room/delete")
     public CommonResult<Integer> deleteRoom(@Param("id") int id) {
-       roomService.deleteRoom(id);
+        roomService.deleteRoom(id);
         return success(id);
     }
+
+    @Operation(summary = "新-机房删除")
+    @GetMapping("/room/newDelete")
+    public CommonResult<Integer> newDeleteRoom(@Param("id") int id) {
+        roomService.newDeleteRoom(id);
+        return success(id);
+    }
+
+
 
     /**
      * 机房数据详情
@@ -136,5 +160,14 @@ public class RoomController {
         RoomEnvDataDTO dto = roomService.getMainEnvData(id);
         return success(dto);
     }
+
+
+    @Operation(summary = "机房柜列新增/编辑")
+    @PostMapping("/room/roomAisleSave")
+    public CommonResult<Integer> roomAisleSave(@RequestBody AisleSaveVo vo) {
+        return success(roomService.roomAisleSave(vo));
+    }
+
+
 
 }

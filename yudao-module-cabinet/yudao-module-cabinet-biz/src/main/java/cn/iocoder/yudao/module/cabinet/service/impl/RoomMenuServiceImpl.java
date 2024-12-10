@@ -115,7 +115,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                     roomMenuDTO.setChildren(new ArrayList<>());
                     roomMenuDTO.setId(aisleIndex.getId());
                     roomMenuDTO.setType(MenuTypeEnums.AISLE.getType());
-                    roomMenuDTO.setName(aisleIndex.getName());
+                    roomMenuDTO.setName(aisleIndex.getAisleName());
                     roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.AISLE.getType()) + SPLIT + aisleIndex.getId());
                     //父id设置机房
                     roomMenuDTO.setParentId(aisleIndex.getRoomId());
@@ -206,7 +206,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                     roomMenuDTO.setChildren(new ArrayList<>());
                     roomMenuDTO.setId(aisleIndex.getId());
                     roomMenuDTO.setType(MenuTypeEnums.AISLE.getType());
-                    roomMenuDTO.setName(aisleIndex.getName());
+                    roomMenuDTO.setName(aisleIndex.getAisleName());
                     roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.AISLE.getType()) + SPLIT + aisleIndex.getId());
                     //父id设置机房
                     roomMenuDTO.setParentId(aisleIndex.getRoomId());
@@ -283,7 +283,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                     roomMenuDTO.setChildren(new ArrayList<>());
                     roomMenuDTO.setId(aisleIndex.getId());
                     roomMenuDTO.setType(MenuTypeEnums.AISLE.getType());
-                    roomMenuDTO.setName(aisleIndex.getName());
+                    roomMenuDTO.setName(aisleIndex.getAisleName());
                     roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.AISLE.getType()) + SPLIT + aisleIndex.getId());
                     //父id设置机房
                     roomMenuDTO.setParentId(aisleIndex.getRoomId());
@@ -403,7 +403,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                     roomMenuDTO.setChildren(new ArrayList<>());
                     roomMenuDTO.setId(aisleIndex.getId());
                     roomMenuDTO.setType(MenuTypeEnums.AISLE.getType());
-                    roomMenuDTO.setName(aisleIndex.getName());
+                    roomMenuDTO.setName(aisleIndex.getAisleName());
                     roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.AISLE.getType()) + SPLIT + aisleIndex.getId());
                     //父id设置机房
                     roomMenuDTO.setParentId(aisleIndex.getRoomId());
@@ -490,7 +490,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                     roomMenuDTO.setChildren(new ArrayList<>());
                     roomMenuDTO.setId(aisleIndex.getId());
                     roomMenuDTO.setType(MenuTypeEnums.AISLE.getType());
-                    roomMenuDTO.setName(aisleIndex.getName());
+                    roomMenuDTO.setName(aisleIndex.getAisleName());
                     roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.AISLE.getType()) + SPLIT + aisleIndex.getId());
                     //父id设置机房
                     roomMenuDTO.setParentId(aisleIndex.getRoomId());
@@ -505,12 +505,12 @@ public class RoomMenuServiceImpl implements RoomMenuService {
 
                 if (!CollectionUtils.isEmpty(barList)){
                     barList.forEach(aisleBar -> {
-                        if (StringUtils.isNotEmpty(aisleBar.getBarKey())){
+                        if (StringUtils.isNotEmpty(aisleBar.getBusKey())){
                             RoomMenuDTO roomMenuDTOA = new RoomMenuDTO();
                             roomMenuDTOA.setChildren(new ArrayList<>());
                             roomMenuDTOA.setType(MenuTypeEnums.BUS.getType());
                             roomMenuDTOA.setName(aisleBar.getPath() + "路");
-                            roomMenuDTOA.setUnique(aisleBar.getBarKey());
+                            roomMenuDTOA.setUnique(aisleBar.getBusKey());
                             //父id设置柜列
                             roomMenuDTOA.setParentId(aisleBar.getAisleId());
                             roomMenuDTOA.setParentType( MenuTypeEnums.AISLE.getType());
@@ -568,7 +568,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                     roomMenuDTO.setChildren(new ArrayList<>());
                     roomMenuDTO.setId(aisleIndex.getId());
                     roomMenuDTO.setType(MenuTypeEnums.AISLE.getType());
-                    roomMenuDTO.setName(aisleIndex.getName());
+                    roomMenuDTO.setName(aisleIndex.getAisleName());
                     roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.AISLE.getType()) + SPLIT + aisleIndex.getId());
                     //父id设置机房
                     roomMenuDTO.setParentId(aisleIndex.getRoomId());
@@ -583,12 +583,12 @@ public class RoomMenuServiceImpl implements RoomMenuService {
 
                 if (!CollectionUtils.isEmpty(barList)){
                     barList.forEach(aisleBar -> {
-                        if (StringUtils.isNotEmpty(aisleBar.getBarKey())){
+                        if (StringUtils.isNotEmpty(aisleBar.getBusKey())){
                             RoomMenuDTO roomMenuDTOA = new RoomMenuDTO();
                             roomMenuDTOA.setChildren(new ArrayList<>());
                             roomMenuDTOA.setType(MenuTypeEnums.BUS.getType());
                             roomMenuDTOA.setName(aisleBar.getPath() + "路");
-                            roomMenuDTOA.setUnique(aisleBar.getBarKey());
+                            roomMenuDTOA.setUnique(aisleBar.getBusKey());
                             //父id设置柜列
                             roomMenuDTOA.setParentId(aisleBar.getAisleId());
                             roomMenuDTOA.setParentType( MenuTypeEnums.AISLE.getType());
@@ -601,7 +601,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                     List<Integer> aisleBarIds = barList.stream().map(AisleBar::getId).collect(Collectors.toList());
                     List<AisleBox>boxList = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
                             .in(AisleBox::getAisleBarId,aisleBarIds));
-                    List<String>barKeys=boxList.stream().map(AisleBox::getBarKey).collect(Collectors.toList());
+                    List<String>barKeys=boxList.stream().map(AisleBox::getBoxKey).collect(Collectors.toList());
                     List<BoxIndex>boxIndexlist1=boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>()
                             .in(BoxIndex::getBoxId,barKeys));
                     Collections.sort(boxIndexlist1, Comparator.comparing(BoxIndex::getBoxName));
@@ -614,7 +614,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                                 roomMenuDTOA.setName(aisleBox.getBoxName());
                                 roomMenuDTOA.setUnique(aisleBox.getBoxKey());
                                 //父id设置柜列
-                                roomMenuDTOA.setParentId(aisleBoxMapper.selectOne(new LambdaQueryWrapper<AisleBox>().in(AisleBox::getBarKey,aisleBox.getBoxKey())).getAisleBarId());
+                                roomMenuDTOA.setParentId(aisleBoxMapper.selectOne(new LambdaQueryWrapper<AisleBox>().in(AisleBox::getBoxKey,aisleBox.getBoxKey())).getAisleBarId());
                                 roomMenuDTOA.setParentType(MenuTypeEnums.BUS.getType());
                                 //非插接箱id  绑定ID
                                 roomMenuDTOA.setId(aisleBox.getId());
@@ -670,7 +670,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                     roomMenuDTO.setChildren(new ArrayList<>());
                     roomMenuDTO.setId(aisleIndex.getId());
                     roomMenuDTO.setType(MenuTypeEnums.AISLE.getType());
-                    roomMenuDTO.setName(aisleIndex.getName());
+                    roomMenuDTO.setName(aisleIndex.getAisleName());
                     roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.AISLE.getType()) + SPLIT + aisleIndex.getId());
                     //父id设置机房
                     roomMenuDTO.setParentId(aisleIndex.getRoomId());

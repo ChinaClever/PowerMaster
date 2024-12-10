@@ -64,7 +64,7 @@ public class CabinetHistoryDataServiceImpl implements CabinetHistoryDataService 
                         IndexDO indexDO = cabIndexMapper.selectById((Serializable) cabinetId);
                         String roomName = roomIndexMapper.selectById(indexDO.getRoomId()).getRoomName();
                         if(indexDO.getAisleId() != 0){
-                            String aisleName = aisleIndexMapper.selectById(indexDO.getAisleId()).getName();
+                            String aisleName = aisleIndexMapper.selectById(indexDO.getAisleId()).getAisleName();
                             localtion = roomName + "-" + aisleName + "-" + indexDO.getCabinetName();
                         }else {
                             localtion = roomName + "-"  + indexDO.getCabinetName() ;

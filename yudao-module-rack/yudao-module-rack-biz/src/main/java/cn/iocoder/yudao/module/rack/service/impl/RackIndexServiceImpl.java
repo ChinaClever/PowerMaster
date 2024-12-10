@@ -15,7 +15,7 @@ import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
-import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.PduIndex;
+import cn.iocoder.yudao.framework.common.vo.RackIndexRoomVO;
 import cn.iocoder.yudao.module.rack.dto.RackEqTrendDTO;
 import cn.iocoder.yudao.module.rack.dto.RackIndexDTO;
 import cn.iocoder.yudao.module.rack.dto.RackPowDTO;
@@ -243,7 +243,7 @@ public class RackIndexServiceImpl implements RackIndexService {
             }
             rackIndexList.forEach(rackIndex -> {
                 //已经删除则物理删除
-                if (rackIndex.getIsDelete() == DelFlagEnums.DELETE.getFlag()) {
+                if (rackIndex.getIsDelete() == DelFlagEnums.DELETE.getStatus()) {
                     rackIndexDoMapper.deleteById(rackIndex);
                 } else {
                     //逻辑删除
@@ -769,24 +769,24 @@ public class RackIndexServiceImpl implements RackIndexService {
     }
 
     @Override
-    public IPage<RackIndex> findRackIndexAll(int pageNo, int pageSize, String[] ipArray) {
-        Page<RackIndex> page = new Page<RackIndex>(pageNo, pageSize);
-        LambdaQueryWrapper<RackIndex> queryWrapper = new LambdaQueryWrapper<RackIndex>();
-        if (ipArray != null && ipArray.length != 0) {
-            queryWrapper.in(RackIndex::getId,ipArray);
-        }
-        queryWrapper.orderByDesc(RackIndex::getCreateTime);
-        return rackIndexDoMapper.selectPage(page,queryWrapper);
+    public IPage<RackIndexRoomVO> findRackIndexAll(int pageNo, int pageSize, String[] ipArray) {
+        Page page = new Page<RackIndex>(pageNo, pageSize);
+//        LambdaQueryWrapper<RackIndex> queryWrapper = new LambdaQueryWrapper<RackIndex>();
+//        if (ipArray != null && ipArray.length != 0) {
+//            queryWrapper.in(RackIndex::getId,ipArray);
+//        }
+//        queryWrapper.orderByDesc(RackIndex::getCreateTime);
+        return rackIndexDoMapper.selectQueryPage(page,ipArray);
     }
 
     @Override
-    public List<RackIndex> findRackIndexToList(String[] ipArray) {
-        LambdaQueryWrapper<RackIndex> queryWrapper = new LambdaQueryWrapper<RackIndex>();
-        if (ipArray != null && ipArray.length != 0) {
-            queryWrapper.in(RackIndex::getId,ipArray);
-        }
-        queryWrapper.orderByDesc(RackIndex::getCreateTime);
-        return rackIndexDoMapper.selectList(queryWrapper);
+    public List<RackIndexRoomVO> findRackIndexToList(String[] ipArray) {
+//        LambdaQueryWrapper<RackIndex> queryWrapper = new LambdaQueryWrapper<RackIndex>();
+//        if (ipArray != null && ipArray.length != 0) {
+//            queryWrapper.in(RackIndex::getId,ipArray);
+//        }
+//        queryWrapper.orderByDesc(RackIndex::getCreateTime);
+        return rackIndexDoMapper.selectQueryPage(ipArray);
     }
 
     @Override

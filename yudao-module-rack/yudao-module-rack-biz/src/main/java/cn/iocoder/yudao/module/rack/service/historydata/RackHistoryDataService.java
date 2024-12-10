@@ -43,5 +43,5 @@ public interface RackHistoryDataService {
 
     Map<Integer, String> getRoomById(List<Integer> roomIds);
 
-    List<IndexDO> getCabinetByIds(List<Integer> cabineIds);
+    Map<Integer , IndexDO> getCabinetByIds(List<Integer> cabineIds);
 }

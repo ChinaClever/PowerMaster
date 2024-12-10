@@ -371,12 +371,8 @@ const getRoomInfo = async() => {
   tableData.value = []
   loading.value = true
   try {
-    const result1 = MachineRoomApi.getRoomDetail({id: roomId.value})
-    const result2 = MachineRoomApi.getRoomDataDetail({id: roomId.value})
-    const results = await Promise.all([result1, result2])
-    const res = results[0]
+    const res = await MachineRoomApi.getRoomDetail({id: roomId.value});
     roomDownValId.value = res.id;
-    console.log('res', res)
     const data = [] as any
     const Obj = {}
     Object.assign(rowColInfo, {

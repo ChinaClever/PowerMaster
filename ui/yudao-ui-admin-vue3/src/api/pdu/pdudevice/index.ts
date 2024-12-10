@@ -14,6 +14,10 @@ export const PDUDeviceApi = {
   getPDUDevicePage: async (data: any) => {
     return await request.post({ url: `/pdu/PDU-device/page`, data })
   },
+  getBalancedDistribution: async () => {
+    return await request.get({ url: `/pdu/PDU-device/balancedDistribution`})
+  },
+  
     
   // 获取已删除的PDU设备
   getDeletedPDUDevice: async (data: any) => {

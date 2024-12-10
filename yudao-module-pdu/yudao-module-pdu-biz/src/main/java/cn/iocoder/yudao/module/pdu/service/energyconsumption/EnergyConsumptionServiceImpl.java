@@ -39,6 +39,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
 
     @Autowired
     private HistoryDataService historyDataService;
+
     @Autowired
     private PDUDeviceService pduDeviceService;
 
@@ -211,7 +212,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
     public PageResult<Object> getEQDataDetails(EnergyConsumptionPageReqVO reqVO) throws IOException {
         Integer pduId = reqVO.getPduId();
         if (Objects.equals(pduId, null)) {
-            pduId = historyDataService.getPduIdByAddr(reqVO.getIpAddr());
+            pduId = historyDataService.getPduIdByAddr(reqVO.getIpAddr(), null);
             if (Objects.equals(pduId, null)) {
                 PageResult<Object> pageResult = new PageResult<>();
                 pageResult.setList(new ArrayList<>())
@@ -288,7 +289,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
     public List<Object> getOutletsEQData(EnergyConsumptionPageReqVO reqVO) throws IOException {
         Integer pduId = reqVO.getPduId();
         if (Objects.equals(pduId, null)) {
-            pduId = historyDataService.getPduIdByAddr(reqVO.getIpAddr());
+            pduId = historyDataService.getPduIdByAddr(reqVO.getIpAddr(), null);
             if (Objects.equals(pduId, null)) {
                 return null;
             }
@@ -690,31 +691,5 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
 
         return pageResult;
     }
+
 }
-
-/*        boolQuery.must(QueryBuilders.termsQuery("pdu_id", collect));
-
-        sourceBuilder.size(0);
-        // 添加分组聚合
-        TermsAggregationBuilder termsAggregation = AggregationBuilders.terms("group_by_" + "pdu_id").field("pdu_id")
-                .subAggregation(AggregationBuilders.sum("num").field( "ele_active"));
-
-        // 在每个分组内添加top hits聚合，用于分页
-        TopHitsAggregationBuilder topHitsAggregation = AggregationBuilders.topHits("top_hits")
-//                .size(1000)
-//                .from(index)
-                .sort("create_time.keyword", SortOrder.DESC); // 假设按时间戳降序排列
-
-        termsAggregation.subAggregation(topHitsAggregation);
-        sourceBuilder.aggregation(termsAggregation);
-        sourceBuilder.query(boolQuery);
-        // 设置查询条件（这里假设查询所有文档）
-        //sourceBuilder.query(QueryBuilders.matchAllQuery());
-
-        searchRequest.source(sourceBuilder);
-        searchRequest.indices("pdu_ele_total_realtime");
-        // 执行搜索请求
-        SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
-
-        // 解析聚合结果
-        Terms terms = response.getAggregations().get("group_by_" + "pdu_id");*/

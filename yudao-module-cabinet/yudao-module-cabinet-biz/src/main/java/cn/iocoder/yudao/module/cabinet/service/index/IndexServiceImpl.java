@@ -426,7 +426,7 @@ public class IndexServiceImpl implements IndexService {
         Map<Integer, String> roomMap = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getRoomName));
         Map<Integer, String>  aisleMap = aisleIndexMapper.selectBatchIds(list.stream()
 //                .filter(dto -> dto.getAisleId() != 0)
-                    .map(IndexDO::getAisleId).collect(Collectors.toList())).stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getName));
+                    .map(IndexDO::getAisleId).collect(Collectors.toList())).stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getAisleName));
 
         List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().in(CabinetPdu::getCabinetId, ids));
 

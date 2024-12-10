@@ -3,6 +3,7 @@ package cn.iocoder.yudao.framework.common.mapper;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * @author luowei
@@ -13,4 +14,5 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface RoomIndexMapper extends BaseMapper<RoomIndex> {
 
+    int updateByDeleteRoom(@Param("id") int id);
 }
