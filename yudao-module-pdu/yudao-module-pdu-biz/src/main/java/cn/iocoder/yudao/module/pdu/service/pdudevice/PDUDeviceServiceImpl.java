@@ -176,22 +176,29 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 continue;
             }
             JSONObject pduTgData = jsonObject.getJSONObject("pdu_data").getJSONObject("pdu_total_data");
-            JSONArray curArr = jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list").getJSONArray("cur_value");
-            JSONArray volArr = jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list").getJSONArray("vol_value");
+            List<Double> curArr = jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list").getJSONArray("cur_value").toList(Double.class);
+            List<Double> volArr = jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list").getJSONArray("vol_value").toList(Double.class);
             JSONArray curAlarmArr = jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list").getJSONArray("cur_alarm_max");
+
+            double curAvg = curArr.stream().mapToDouble(i -> i).average().getAsDouble();
+            double volAvg = volArr.stream().mapToDouble(i -> i).average().getAsDouble();
+            Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curArr) - curAvg) / curAvg * 100;
+            Double volUnbalance = volAvg == 0 ? 0 : (Collections.max(volArr) - Collections.min(volArr)) / volAvg * 100;
+
             curAlarmArr.sort(Collections.reverseOrder());
             double maxVal = curAlarmArr.getDouble(0);
-            List<Double> temp = curArr.toList(Double.class);
-            Double curUnbalance = null;
+//            List<Double> temp = curArr.toList(Double.class);
+//            Double curUnbalance = null;
+//            curUnbalance = pduTgData.getDoubleValue("cur_unbalance");
             Double bcur = null;
             Double ccur = null;
-            temp.sort(Collections.reverseOrder());
+            curArr.sort(Collections.reverseOrder());
             int color = 0;
-            if (temp.size() >= 2) {
-                double a = temp.get(0) - temp.get(2);
-                curUnbalance = pduTgData.getDoubleValue("cur_unbalance");
-                bcur = curArr.getDoubleValue(1);
-                ccur = curArr.getDoubleValue(2);
+            if (curArr.size() >= 2) {
+                double a = curArr.get(0) - curArr.get(2);
+
+                bcur = curArr.get(1);
+                ccur = curArr.get(2);
                 if (PDUCurbalanceColorDO == null) {
                     if (a >= maxVal * 0.2) {
                         if (curUnbalance < 15) {
@@ -231,14 +238,19 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             pduDeviceDO.setReactivePow(pduTgData.getDoubleValue("pow_reactive"));
             pduDeviceDO.setDataUpdateTime(jsonObject.getString("sys_time"));
             pduDeviceDO.setPduAlarm(jsonObject.getString("pdu_alarm"));
-            pduDeviceDO.setAcur(new BigDecimal(curArr.getDoubleValue(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            pduDeviceDO.setAcur(new BigDecimal(curArr.get(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
             pduDeviceDO.setBcur(new BigDecimal(bcur).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
             pduDeviceDO.setCcur(new BigDecimal(ccur).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
-            pduDeviceDO.setCurUnbalance(curUnbalance);
-            pduDeviceDO.setAvol(new BigDecimal(volArr.getDoubleValue(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue() );
-            pduDeviceDO.setBvol(new BigDecimal(volArr.size() > 1 ? volArr.getDoubleValue(1) : null).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
-            pduDeviceDO.setCvol(new BigDecimal(volArr.size() > 2 ? volArr.getDoubleValue(2) : null).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
-            pduDeviceDO.setVolUnbalance(pduTgData.getDouble("vol_unbalance") != null ? pduTgData.getDouble("vol_unbalance") : null);
+
+//            pduDeviceDO.setCurUnbalance(curUnbalance);
+            pduDeviceDO.setAvol(new BigDecimal(volArr.get(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue() );
+
+            pduDeviceDO.setBvol(new BigDecimal(volArr.size() > 1 ? volArr.get(1) : 0).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            pduDeviceDO.setCvol(new BigDecimal(volArr.size() > 2 ? volArr.get(2) : 0).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+
+            pduDeviceDO.setCurUnbalance(new BigDecimal(curUnbalance).setScale(2, RoundingMode.HALF_UP).doubleValue());
+            pduDeviceDO.setVolUnbalance(new BigDecimal(volUnbalance).setScale(2, RoundingMode.HALF_UP).doubleValue());
+//            pduDeviceDO.setVolUnbalance(pduTgData.getDouble("vol_unbalance") != null ? pduTgData.getDouble("vol_unbalance") : null);
             pduDeviceDO.setColor(color);
 
         }
@@ -768,7 +780,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         result.put("l", dayList1);
         result.put("ll", dayList2);
         result.put("lll", dayList3);
-        result.put("dateTimes", dateTimes);
+        result.put("dateTimes", dateTimes.stream().distinct());
         return result;
     }
 
@@ -784,28 +796,30 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 //        if (jsonObject == null || jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list") == null || jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list").size() <= 0) {
 //            continue;
 //        }
-        JSONObject loopItemList = jsonObject.getJSONObject("pdu_data").getJSONObject("loop_item_list");
-        JSONArray curValue = loopItemList.getJSONArray("cur_value");
-        JSONArray volValue = loopItemList.getJSONArray("vol_value");
-        List<Double> curList = curValue.toList(Double.class);
-        List<Double> volList = volValue.toList(Double.class);
-        curList.sort(Comparator.naturalOrder());
-        volList.sort(Comparator.naturalOrder());
-        Double curAvg = (curList.get(0) + curList.get(1) + curList.get(2)) / 3;
-        Double volAvg = (volList.get(0) + volList.get(1) + volList.get(2)) / 3;
-        Double curUnbalance = curAvg == 0 ? 0 : (curList.get(2) - curAvg) / curAvg * 100;
-        Double volUnbalance = volAvg == 0 ? 0 : (volList.get(2) - volList.get(0)) / volAvg * 100;
-        result.setCur_value(curValue.toArray(Float.class));
-        result.setVol_value(volValue.toArray(Float.class));
+        JSONObject loopItemList = jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list");
+        List<Double> curList  = loopItemList.getJSONArray("cur_value").toList(Double.class);
+        List<Double> volList  = loopItemList.getJSONArray("vol_value").toList(Double.class);
+//        List<Double> curList = curValue
+//        List<Double> volList = volValue
+//        curList.sort(Comparator.naturalOrder());
+//        volList.sort(Comparator.naturalOrder());
+        Double curAvg = curList.stream().mapToDouble(i->i).average().getAsDouble();
+        Double volAvg = volList.stream().mapToDouble(i->i).average().getAsDouble();
+        Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList) - curAvg) / curAvg * 100;
+        Double volUnbalance = volAvg == 0 ? 0 : (Collections.max(volList) - Collections.min(volList)) / volAvg * 100;
+
+
+        result.setCur_value(curList);
+        result.setVol_value(volList);
         result.setCurUnbalance(new BigDecimal(curUnbalance).setScale(2, RoundingMode.HALF_UP).doubleValue());
         result.setVolUnbalance(new BigDecimal(volUnbalance).setScale(2, RoundingMode.HALF_UP).doubleValue());
         JSONArray curAlarmArr = loopItemList.getJSONArray("cur_alarm_max");
         List<Double> sortAlarmArr = curAlarmArr.toList(Double.class);
         sortAlarmArr.sort(Collections.reverseOrder());
         double maxVal = sortAlarmArr.get(0);
-        List<Double> temp = curValue.toList(Double.class);
-        temp.sort(Collections.reverseOrder());
-        double a = temp.get(0) - temp.get(2);
+//        List<Double> temp = curValue.toList(Double.class);
+        curList.sort(Collections.reverseOrder());
+        double a = curList.get(0) - curList.get(2);
         int color = 0;
         if (PDUCurbalanceColorDO == null) {
             if (a >= maxVal * 0.2) {
