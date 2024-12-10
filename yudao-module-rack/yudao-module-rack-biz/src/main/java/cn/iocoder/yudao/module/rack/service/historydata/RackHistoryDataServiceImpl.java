@@ -65,7 +65,7 @@ public class RackHistoryDataServiceImpl implements RackHistoryDataService {
                         IndexDO indexDO = cabIndexMapper.selectById((Serializable) cabinetId);
                         String roomName = roomIndexMapper.selectById(indexDO.getRoomId()).getRoomName();
                         if(indexDO.getAisleId() != 0){
-                            String aisleName = aisleIndexMapper.selectById(indexDO.getAisleId()).getName();
+                            String aisleName = aisleIndexMapper.selectById(indexDO.getAisleId()).getAisleName();
                             location = roomName + "-" + aisleName + "-" + indexDO.getCabinetName();
                         }else {
                             location = roomName + "-"  + indexDO.getCabinetName() ;
@@ -248,11 +248,12 @@ public class RackHistoryDataServiceImpl implements RackHistoryDataService {
     }
 
     @Override
-    public List<IndexDO> getCabinetByIds(List<Integer> cabineIds) {
+    public Map<Integer, IndexDO> getCabinetByIds(List<Integer> cabineIds) {
         LambdaQueryWrapper<IndexDO> queryWrapper = new LambdaQueryWrapper<IndexDO>().orderByDesc(IndexDO::getCreateTime)
                 .in(IndexDO::getId,cabineIds).eq(IndexDO::getIsDeleted, DelEnums.NO_DEL.getStatus());
         List<IndexDO> indexDOS = cabIndexMapper.selectList(queryWrapper);
-        return indexDOS;
+        return indexDOS.stream().filter(item -> ObjectUtils.isNotEmpty(item.getId()))
+                .collect(Collectors.toMap(IndexDO::getId, cabinetIndex -> cabinetIndex));
     }
 
 }

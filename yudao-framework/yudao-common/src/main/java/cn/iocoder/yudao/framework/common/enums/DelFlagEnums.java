@@ -18,7 +18,7 @@ public enum DelFlagEnums {
     /**
      * 状态值
      */
-    private final Boolean flag;
+    private final Boolean status;
     /**
      * 状态名
      */

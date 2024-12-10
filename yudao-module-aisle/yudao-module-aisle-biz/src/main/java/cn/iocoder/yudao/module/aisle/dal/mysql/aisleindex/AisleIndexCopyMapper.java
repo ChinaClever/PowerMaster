@@ -21,11 +21,11 @@ public interface AisleIndexCopyMapper extends BaseMapperX<AisleIndexDO> {
                 .eqIfPresent(AisleIndexDO::getRoomId, reqVO.getRoomId())
                 .inIfPresent(AisleIndexDO::getId,reqVO.getAisleIds())
                 .eqIfPresent(AisleIndexDO::getId,reqVO.getId())
-                .likeIfPresent(AisleIndexDO::getName, reqVO.getName())
+                .likeIfPresent(AisleIndexDO::getAisleName, reqVO.getName())
                 .eqIfPresent(AisleIndexDO::getPduBar, reqVO.getPduBar())
                 .eqIfPresent(AisleIndexDO::getIsDelete, reqVO.getIsDelete())
                 .betweenIfPresent(AisleIndexDO::getCreateTime, reqVO.getCreateTime())
-                .eqIfPresent(AisleIndexDO::getLength, reqVO.getLength())
+                .eqIfPresent(AisleIndexDO::getAisleLength, reqVO.getLength())
                 .eqIfPresent(AisleIndexDO::getType, reqVO.getType())
                 .orderByAsc(AisleIndexDO::getId));
     }

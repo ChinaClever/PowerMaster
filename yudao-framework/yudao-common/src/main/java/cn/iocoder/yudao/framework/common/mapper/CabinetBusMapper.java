@@ -1,6 +1,6 @@
 package cn.iocoder.yudao.framework.common.mapper;
 
-import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBus;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBox;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -11,5 +11,5 @@ import org.apache.ibatis.annotations.Mapper;
  * @date 2024/5/30 9:21
  */
 @Mapper
-public interface CabinetBusMapper extends BaseMapper<CabinetBus> {
+public interface CabinetBusMapper extends BaseMapper<CabinetBox> {
 }

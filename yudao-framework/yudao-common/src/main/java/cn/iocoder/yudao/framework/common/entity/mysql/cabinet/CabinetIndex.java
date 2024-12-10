@@ -18,76 +18,94 @@ public class CabinetIndex implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 主键id
-     */
-    @TableId
-    private Integer id;
-    /**
-     * 机房id
-     */
-    private Integer roomId;
+    @TableId(value = "id", type = IdType.AUTO)
+    private int id;
+
 
     /**
-     * 通道编号 0不属于任何柜列
+     * 机房编号
      */
-    private Integer  aisleId;
+    private int roomId;
+
+    /**
+     * 机柜名称
+     */
+    private String cabinetName;
+    /**
+     * 通道编号
+     */
+    private int aisleId;
 
     /**
      *  柜列的位置 从1开始 0未被分配
      */
     private Integer  aisleX;
-
     /**
      * 机柜类型
      */
     private String cabinetType;
-    /**
-     * 机柜名称
-     */
-    private String cabinetName;
 
 
-    private String  cabinetHeight;
+    private int  cabinetHeight;
     /**
      * 电力容量
      */
     private Double powerCapacity;
 
     /**
-     * 禁用 0：启用 1：禁用
-     */
-    private Boolean isDisabled;
-
-    /**
      * 运行状态
      */
-    private Integer runStatus;
-
+    private int runStatus;
     /**
      * 负载状态
      */
-    private Integer  loadStatus;
+    private int loadStatus;
 
     /**
-     * 数据来源 0：PDU 1：母线
+     * 数据来源
      */
     private Boolean pduBox;
 
     /**
-     * 是否删除 0未删除 1已删除
+     * 是否禁用
+     */
+    private Boolean isDisabled;
+
+    /**
+     * 是否删除
      */
     private Boolean isDeleted;
+
+//    /**
+//     * 日用能告警开关
+//     */
+//    private  int eleAlarmDay;
+//
+//    /**
+//     * 月用能告警开关
+//     */
+//    private  int eleAlarmMonth;
+//
+//    /**
+//     * 日用能限制
+//     */
+//    private double eleLimitDay;
+//
+//    /**
+//     * 月用能限制
+//     */
+//    private double eleLimitMonth;
+
+    /**
+     * 更新时间
+     */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updateTime;
     /**
      * 创建时间
      */
-//    @TableField(fill = FieldFill.INSERT)
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
-    /**
-     * 最后更新时间
-     */
-//    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updateTime;
 
     @TableField(value = "count(*)",insertStrategy = FieldStrategy.NEVER,updateStrategy = FieldStrategy.NEVER,select = false)
     private  Integer count;

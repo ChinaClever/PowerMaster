@@ -29,7 +29,7 @@ public class RoomIndexDO {
     /**
      * 机房名
      */
-    private String name;
+    private String roomName;
     /**
      * 是否删除
      */

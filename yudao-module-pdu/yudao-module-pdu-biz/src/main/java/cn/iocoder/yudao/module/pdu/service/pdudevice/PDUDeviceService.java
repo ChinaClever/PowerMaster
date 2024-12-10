@@ -69,4 +69,5 @@ public interface PDUDeviceService {
 
     PduDeviceCountResVO getPDUDeviceCount();
 
+    BalancedDistributionStatisticsVO getBalancedDistribution();
 }

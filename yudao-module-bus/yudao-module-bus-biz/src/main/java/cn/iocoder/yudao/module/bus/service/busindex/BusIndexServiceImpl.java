@@ -14,7 +14,7 @@ import cn.iocoder.yudao.framework.common.entity.es.bus.tem.BusTemHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.total.BusTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.total.BusTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
-import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBus;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
@@ -510,7 +510,7 @@ public class BusIndexServiceImpl implements BusIndexService {
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
 
-            String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id") + '-' + jsonObject.getString("addr");
+            String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id");
             //String devKey = jsonObject.getString("dev_ip") + '_' + jsonObject.getString("bus_name");
             BusIndexRes busIndexRes = resMap.get(devKey);
             JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
@@ -728,7 +728,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                 continue;
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-            String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id") + '-' + jsonObject.getString("addr");
+            String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id");
             //String devKey = jsonObject.getString("dev_ip") + '_' + jsonObject.getString("bus_name");
             BusRedisDataRes busRedisDataRes = resMap.get(devKey);
             JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
@@ -917,7 +917,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                 continue;
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-            String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id") + '-' + jsonObject.getString("addr");
+            String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id");
             //String devKey = jsonObject.getString("dev_ip") + '_' + jsonObject.getString("bus_name");
             BusBalanceDataRes busBalanceDataRes = resMap.get(devKey);
             JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
@@ -1117,7 +1117,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                 continue;
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-            String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id") + '-' + jsonObject.getString("addr");
+            String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id");
             BusTemRes busTemRes = resMap.get(devKey);
             JSONObject envItemList = jsonObject.getJSONObject("env_item_list");
             JSONArray temValue = envItemList.getJSONArray("tem_value");
@@ -1177,7 +1177,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                 continue;
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-            String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id") + '-' + jsonObject.getString("addr");
+            String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id");
             BusPFRes busPFRes = resMap.get(devKey);
             JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
             JSONArray pfValue = lineItemList.getJSONArray("power_factor");
@@ -1218,7 +1218,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                 continue;
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-            String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id") + '-' + jsonObject.getString("addr");
+            String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id");
 //            String devKey = jsonObject.getString("dev_ip") + '_' + jsonObject.getString("bus_name");
             BusHarmonicRes busHarmonicRes = resMap.get(devKey);
             JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
@@ -3310,9 +3310,9 @@ public class BusIndexServiceImpl implements BusIndexService {
 
         //柜列
         List<AisleBar> aisleBar = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
-                .in(!CollectionUtils.isEmpty(devKeyList), AisleBar::getBarKey, devKeyList));
-        Map<String, String> aislePathMap = aisleBar.stream().collect(Collectors.toMap(AisleBar::getBarKey, AisleBar::getPath));
-        Map<String, Integer> aisleBarKeyMap = aisleBar.stream().collect(Collectors.toMap(AisleBar::getBarKey, AisleBar::getAisleId));
+                .in(!CollectionUtils.isEmpty(devKeyList), AisleBar::getBusKey, devKeyList));
+        Map<String, String> aislePathMap = aisleBar.stream().collect(Collectors.toMap(AisleBar::getBusKey, AisleBar::getPath));
+        Map<String, Integer> aisleBarKeyMap = aisleBar.stream().collect(Collectors.toMap(AisleBar::getBusKey, AisleBar::getAisleId));
         Map<Integer, String> positonMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(aisleBar)) {
             Set<String> redisKeys = aisleBar.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toSet());
@@ -3341,10 +3341,10 @@ public class BusIndexServiceImpl implements BusIndexService {
             return;
         }
         for (BusResBase busResBase : resNotInAisle) {
-            List<CabinetBus> cabinetBusListA = cabinetBusMapper.selectList(new LambdaQueryWrapper<CabinetBus>()
-                    .like(CabinetBus::getDevKeyA, busResBase.getDevKey()));
+            List<CabinetBox> cabinetBusListA = cabinetBusMapper.selectList(new LambdaQueryWrapper<CabinetBox>()
+                    .like(CabinetBox::getBoxKeyA, busResBase.getDevKey()));
             if (!CollectionUtils.isEmpty(cabinetBusListA)) {
-                CabinetBus cabinetBus = cabinetBusListA.get(0);
+                CabinetBox cabinetBus = cabinetBusListA.get(0);
                 CabinetIndex index = cabinetIndexMapper.selectById(cabinetBus.getCabinetId());
                 String cabKey = index.getRoomId() + SPLIT_KEY + index.getId();
                 String redisKey = REDIS_KEY_CABINET + cabKey;
@@ -3360,10 +3360,10 @@ public class BusIndexServiceImpl implements BusIndexService {
                 continue;
             }
 
-            List<CabinetBus> cabinetBusListB = cabinetBusMapper.selectList(new LambdaQueryWrapper<CabinetBus>()
-                    .like(CabinetBus::getDevKeyB, busResBase.getDevKey()));
+            List<CabinetBox> cabinetBusListB = cabinetBusMapper.selectList(new LambdaQueryWrapper<CabinetBox>()
+                    .like(CabinetBox::getBoxKeyB, busResBase.getDevKey()));
             if (!CollectionUtils.isEmpty(cabinetBusListB)) {
-                CabinetBus cabinetBus = cabinetBusListB.get(0);
+                CabinetBox cabinetBus = cabinetBusListB.get(0);
                 CabinetIndex index = cabinetIndexMapper.selectById(cabinetBus.getCabinetId());
                 String cabKey = index.getRoomId() + SPLIT_KEY + index.getId();
                 String redisKey = REDIS_KEY_CABINET + cabKey;

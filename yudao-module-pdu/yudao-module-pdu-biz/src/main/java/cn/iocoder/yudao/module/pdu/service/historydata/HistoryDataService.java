@@ -30,7 +30,7 @@ public interface HistoryDataService {
 
     Map<String, Object> getSensorAddressByIpAddr(String location, Integer sensorId);
 
-    Integer getPduIdByAddr(String ipAddr);
+    Integer getPduIdByAddr(String ipAddr, String cascadeAddr);
 
     List<String> getPduIdsByIps(String[] ips);
 

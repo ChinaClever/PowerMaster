@@ -16,7 +16,7 @@ import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalDayDo
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
-import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBus;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
@@ -3164,12 +3164,12 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         String devPosition;
         //柜列
         List<AisleBox> aisleBoxList = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
-                .in(AisleBox::getBarKey, devKeyList));
+                .in(AisleBox::getBoxKey, devKeyList));
         if (!CollectionUtils.isEmpty(aisleBoxList)) {
             List<Integer> aisleBarIds = aisleBoxList.stream().map(AisleBox::getAisleBarId).collect(Collectors.toList());
             List<AisleBar> aisleBars = aisleBarMapper.selectBatchIds(aisleBarIds);
             Map<Integer, String> pathMap = aisleBars.stream().collect(Collectors.toMap(AisleBar::getId, AisleBar::getPath));
-            Map<String, AisleBox> aisleBoxKeyMap = aisleBoxList.stream().collect(Collectors.toMap(AisleBox::getBarKey, Function.identity()));
+            Map<String, AisleBox> aisleBoxKeyMap = aisleBoxList.stream().collect(Collectors.toMap(AisleBox::getBoxKey, Function.identity()));
             Map<Integer, String> positionMap = new HashMap<>();
             if (!CollectionUtils.isEmpty(aisleBoxList)) {
                 List<String> redisKeys = aisleBoxList.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toList());
@@ -3197,13 +3197,13 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         }
         List<String> resNotInAisleDevKeys = resNotInAisle.stream().map(BoxResBase::getDevKey).collect(Collectors.toList());
         Map<String, BoxResBase> resNotInAisleMap = resNotInAisle.stream().collect(Collectors.toMap(BoxResBase::getDevKey, Function.identity()));
-        List<CabinetBus> cabinetBus = cabinetBusMapper.selectList(new LambdaQueryWrapperX<CabinetBus>().in(CabinetBus::getDevKeyA, resNotInAisleDevKeys).or().in(CabinetBus::getDevKeyB, resNotInAisleDevKeys));
+        List<CabinetBox> cabinetBus = cabinetBusMapper.selectList(new LambdaQueryWrapperX<CabinetBox>().in(CabinetBox::getBoxKeyA, resNotInAisleDevKeys).or().in(CabinetBox::getBoxKeyB, resNotInAisleDevKeys));
         if (CollectionUtils.isEmpty(cabinetBus)) {
             return;
         }
-        List<Integer> cabinetIds = cabinetBus.stream().map(CabinetBus::getCabinetId).collect(Collectors.toList());
-        Map<Integer, String> cabinetBusMapA = cabinetBus.stream().filter(cabinet -> cabinet.getDevKeyA() != null).collect(Collectors.toMap(CabinetBus::getCabinetId, CabinetBus::getDevKeyA));
-        Map<Integer, String> cabinetBusMapB = cabinetBus.stream().filter(cabinet -> cabinet.getDevKeyB() != null).collect(Collectors.toMap(CabinetBus::getCabinetId, CabinetBus::getDevKeyB));
+        List<Integer> cabinetIds = cabinetBus.stream().map(CabinetBox::getCabinetId).collect(Collectors.toList());
+        Map<Integer, String> cabinetBusMapA = cabinetBus.stream().filter(cabinet -> cabinet.getBoxKeyA() != null).collect(Collectors.toMap(CabinetBox::getCabinetId, CabinetBox::getBoxKeyA));
+        Map<Integer, String> cabinetBusMapB = cabinetBus.stream().filter(cabinet -> cabinet.getBoxKeyB() != null).collect(Collectors.toMap(CabinetBox::getCabinetId, CabinetBox::getBoxKeyB));
 
         List<CabinetIndex> cabinetIndices = cabinetIndexMapper.selectBatchIds(cabinetIds);
         List<String> cabinetRedisKeys = cabinetIndices.stream().map(index -> REDIS_KEY_CABINET + index.getRoomId() + SPLIT_KEY + index.getId()).collect(Collectors.toList());

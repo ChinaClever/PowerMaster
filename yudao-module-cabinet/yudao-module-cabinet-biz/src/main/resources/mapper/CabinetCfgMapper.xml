@@ -14,7 +14,7 @@
         select
         ci.id ,
         ci.room_id as roomId,
-        ci.cabinet_name ,
+        ci.cabinet_name as name,
         ci.aisle_id as aisleId,
         ci.power_capacity as powCapacity,
         ci.pdu_box as pduBox,

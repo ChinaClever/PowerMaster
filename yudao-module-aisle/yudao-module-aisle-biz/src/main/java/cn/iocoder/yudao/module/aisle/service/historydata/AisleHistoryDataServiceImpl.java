@@ -61,7 +61,7 @@ public class AisleHistoryDataServiceImpl implements AisleHistoryDataService {
                     if (aisleId instanceof Integer) {
                         AisleIndex aisleIndex = aisleIndexMapper.selectById((Serializable) aisleId);
                         String roomName = roomIndexMapper.selectById(aisleIndex.getRoomId()).getRoomName();
-                        String localtion = roomName + "-"  + aisleIndex.getName() ;
+                        String localtion = roomName + "-"  + aisleIndex.getAisleName() ;
 
                         map.put("location", localtion);
                     }else{

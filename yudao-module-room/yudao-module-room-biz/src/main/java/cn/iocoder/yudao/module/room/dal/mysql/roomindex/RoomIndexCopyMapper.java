@@ -17,7 +17,7 @@ public interface RoomIndexCopyMapper extends BaseMapperX<RoomIndexDO> {
 
     default PageResult<RoomIndexDO> selectPage(RoomIndexPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<RoomIndexDO>()
-                .likeIfPresent(RoomIndexDO::getName, reqVO.getName())
+                .likeIfPresent(RoomIndexDO::getRoomName, reqVO.getName())
                 .eqIfPresent(RoomIndexDO::getId,reqVO.getId())
                 .inIfPresent(RoomIndexDO::getId,reqVO.getRoomIds())
                 .eqIfPresent(RoomIndexDO::getIsDelete, reqVO.getIsDelete())

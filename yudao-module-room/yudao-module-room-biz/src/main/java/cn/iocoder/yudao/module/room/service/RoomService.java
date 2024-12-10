@@ -1,5 +1,7 @@
 package cn.iocoder.yudao.module.room.service;
 
+import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
+import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomSavesVo;
 import cn.iocoder.yudao.module.room.dto.*;
 import cn.iocoder.yudao.module.room.vo.RoomSaveVo;
 
@@ -74,4 +76,26 @@ public interface RoomService {
      * @return
      */
     RoomEnvDataDTO getMainEnvData(int id) throws IOException;
+
+    Integer newSaveRoom(RoomSavesVo vo);
+
+    /**
+     * 新-机房删除
+     * @param id
+     */
+    void newDeleteRoom(int id);
+
+    /**
+     * 机房柜列新增/编辑
+     * @param vo
+     * @return
+     */
+    Integer roomAisleSave(AisleSaveVo vo);
+
+    /**
+     * 新-机房详情
+     * @param id
+     * @return
+     */
+    RoomAndRoomCfgDTO getNewRoomDetail(int id);
 }

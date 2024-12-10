@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.cabinet.controller.admin.energyconsumption.VO;
 import cn.iocoder.yudao.framework.excel.core.util.DateStringConverter;
 import cn.iocoder.yudao.framework.excel.core.annotations.EnumFiledConvert;
 import cn.iocoder.yudao.framework.excel.core.util.TypeOptionConverter;
+import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.NumberFormat;
@@ -26,10 +27,11 @@ public class BillPageRespVO {
     @ExcelProperty("位置")
     private String location;
 
-    @ExcelProperty(converter = DateStringConverter.class, value = "开始日期")
+    @ExcelProperty(converter = DateStringConverter.class, value = "日期")
     private String start_time;
 
-    @ExcelProperty(converter = DateStringConverter.class, value = "结束日期")
+//    @ExcelProperty(converter = DateStringConverter.class, value = "结束日期")
+    @ExcelIgnore
     private String end_time;
     @NumberFormat("0.0")
     @ExcelProperty("耗电量(kWh)")

@@ -153,10 +153,10 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         List<AisleIndexDO> list = aisleIndexDOPageResult.getList();
         List<Integer> aisleIds = list.stream().map(AisleIndexDO::getId).collect(Collectors.toList());
         List<AisleBar> aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapperX<AisleBar>().inIfPresent(AisleBar::getAisleId, aisleIds));
-        List<String> devKey = aisleBars.stream().map(AisleBar::getBarKey).collect(Collectors.toList());
+        List<String> devKey = aisleBars.stream().map(AisleBar::getBusKey).collect(Collectors.toList());
         Map<String, Map<Integer, String>> aisleBarMap = aisleBars.stream()
                 .collect(Collectors.groupingBy(
-                        AisleBar::getBarKey,
+                        AisleBar::getBusKey,
                         Collectors.toMap(AisleBar::getAisleId, AisleBar::getPath)
                 ));
         List<AisleIndexRes> res = new ArrayList<>();
@@ -164,7 +164,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         for (AisleIndexDO aisleIndexDO : list) {
             AisleIndexRes aisleIndexRes = new AisleIndexRes();
             aisleIndexRes.setId(aisleIndexDO.getId());
-            aisleIndexRes.setName(aisleIndexDO.getName());
+            aisleIndexRes.setName(aisleIndexDO.getAisleName());
             aisleIndexRes.setRoomId(aisleIndexDO.getRoomId());
             res.add(aisleIndexRes);
         }
@@ -175,7 +175,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 continue;
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-            String busDevKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id") + '-' + jsonObject.getString("addr");
+            String busDevKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id");
             JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
             JSONArray loadRate = lineItemList.getJSONArray("load_rate");
             List<Double> rateList = loadRate.toList(Double.class);
@@ -247,7 +247,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         for (AisleIndexDO aisleIndexDO : list) {
             AislePowerRes aislePowerRes = new AislePowerRes();
             aislePowerRes.setId(aisleIndexDO.getId());
-            aislePowerRes.setName(aisleIndexDO.getName());
+            aislePowerRes.setName(aisleIndexDO.getAisleName());
             aislePowerRes.setRoomId(aisleIndexDO.getRoomId());
             res.add(aislePowerRes);
         }
@@ -303,7 +303,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             aisleIndexDOList.forEach(aisleIndexDO -> {
                 AisleEQRes res = new AisleEQRes();
                 res.setId(aisleIndexDO.getId());
-                res.setName(aisleIndexDO.getName());
+                res.setName(aisleIndexDO.getAisleName());
                 res.setRoomId(aisleIndexDO.getRoomId());
                 result.add(res);
             });
@@ -364,7 +364,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         for (AisleIndexDO aisleIndexDO : list) {
             AislePfRes aislePfRes = new AislePfRes();
             aislePfRes.setId(aisleIndexDO.getId());
-            aislePfRes.setName(aisleIndexDO.getName());
+            aislePfRes.setName(aisleIndexDO.getAisleName());
             aislePfRes.setRoomId(aisleIndexDO.getRoomId());
             res.add(aislePfRes);
         }
@@ -508,7 +508,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
                 AisleLineMaxRes aisleLineMaxRes = new AisleLineMaxRes();
 
                 aisleLineMaxRes.setId(aisleIndexDO.getId());
-                aisleLineMaxRes.setName(aisleIndexDO.getName());
+                aisleLineMaxRes.setName(aisleIndexDO.getAisleName());
                 aisleLineMaxRes.setRoomId(aisleIndexDO.getRoomId());
 
                 MaxValueAndCreateTime powTotal = powTotalMap.get(id);
@@ -704,7 +704,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
             AisleBalanceRes aisleBalanceRes = new AisleBalanceRes();
             aisleBalanceRes.setId(aisleIndexDO.getId());
             aisleBalanceRes.setRoomId(aisleIndexDO.getRoomId());
-            aisleBalanceRes.setName(aisleIndexDO.getName());
+            aisleBalanceRes.setName(aisleIndexDO.getAisleName());
             result.add(aisleBalanceRes);
         });
         getPosition(result);
@@ -1871,7 +1871,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         Map<Integer, Map<String, String>> aisleBarMap = aisleBars.stream()
                 .collect(Collectors.groupingBy(
                         AisleBar::getAisleId,
-                        Collectors.toMap(AisleBar::getPath, AisleBar::getBarKey)
+                        Collectors.toMap(AisleBar::getPath, AisleBar::getBusKey)
                 ));
         res.forEach(aisleIndexRespVO -> {
             if(aisleBarMap.get(aisleIndexRespVO.getId()) == null){

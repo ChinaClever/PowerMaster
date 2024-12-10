@@ -231,13 +231,13 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             pduDeviceDO.setReactivePow(pduTgData.getDoubleValue("pow_reactive"));
             pduDeviceDO.setDataUpdateTime(jsonObject.getString("sys_time"));
             pduDeviceDO.setPduAlarm(jsonObject.getString("pdu_alarm"));
-            pduDeviceDO.setAcur(curArr.getDoubleValue(0));
-            pduDeviceDO.setBcur(bcur);
-            pduDeviceDO.setCcur(ccur);
+            pduDeviceDO.setAcur(new BigDecimal(curArr.getDoubleValue(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            pduDeviceDO.setBcur(new BigDecimal(bcur).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            pduDeviceDO.setCcur(new BigDecimal(ccur).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
             pduDeviceDO.setCurUnbalance(curUnbalance);
-            pduDeviceDO.setAvol(volArr.getDoubleValue(0));
-            pduDeviceDO.setBvol(volArr.size() > 1 ? volArr.getDoubleValue(1) : null);
-            pduDeviceDO.setCvol(volArr.size() > 2 ? volArr.getDoubleValue(2) : null);
+            pduDeviceDO.setAvol(new BigDecimal(volArr.getDoubleValue(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue() );
+            pduDeviceDO.setBvol(new BigDecimal(volArr.size() > 1 ? volArr.getDoubleValue(1) : null).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            pduDeviceDO.setCvol(new BigDecimal(volArr.size() > 2 ? volArr.getDoubleValue(2) : null).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
             pduDeviceDO.setVolUnbalance(pduTgData.getDouble("vol_unbalance") != null ? pduTgData.getDouble("vol_unbalance") : null);
             pduDeviceDO.setColor(color);
 
@@ -897,6 +897,58 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     public PduDeviceCountResVO getPDUDeviceCount() {
 
         return pDUDeviceMapper.getPDUDeviceCount();
+    }
+
+    @Override
+    public BalancedDistributionStatisticsVO getBalancedDistribution() {
+        Set<String> keys = redisTemplate.keys("packet:pdu:*");
+        List<Object> list = redisTemplate.opsForValue().multiGet(keys);
+        PDUCurbalanceColorDO PDUCurbalanceColorDO = PDUCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
+        BalancedDistributionStatisticsVO vo = new BalancedDistributionStatisticsVO();
+        for (Object o : list) {
+            JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
+            JSONObject pduTgData = jsonObject.getJSONObject("pdu_data").getJSONObject("pdu_total_data");
+            JSONArray curArr = jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list").getJSONArray("cur_value");
+
+            JSONArray curAlarmArr = jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list").getJSONArray("cur_alarm_max");
+            curAlarmArr.sort(Collections.reverseOrder());
+            double maxVal = curAlarmArr.getDouble(0);
+            List<Double> temp = curArr.toList(Double.class);
+            Double curUnbalance;
+
+            temp.sort(Collections.reverseOrder());
+            if (temp.size() >= 2) {
+                double a = temp.get(0) - temp.get(2);
+                curUnbalance = pduTgData.getDoubleValue("cur_unbalance");
+
+                if (PDUCurbalanceColorDO == null) {
+                    if (a >= maxVal * 0.2) {
+                        if (curUnbalance < 15) {
+                            vo.setLessFifteen(vo.getLessFifteen()+1);
+                        } else if (curUnbalance < 30) {
+                            vo.setGreaterFifteen(vo.getGreaterFifteen()+1);
+                        } else {
+                            vo.setGreaterThirty(vo.getGreaterThirty()+1);
+                        }
+                    } else {
+                        vo.setSmallCurrent(vo.getSmallCurrent() + 1);
+                    }
+                } else {
+                    if (a >= maxVal * 0.2) {
+                        if (curUnbalance < PDUCurbalanceColorDO.getRangeOne()) {
+                            vo.setLessFifteen(vo.getLessFifteen()+1);
+                        } else if (curUnbalance < PDUCurbalanceColorDO.getRangeFour()) {
+                            vo.setGreaterFifteen(vo.getGreaterFifteen()+1);
+                        } else {
+                            vo.setGreaterThirty(vo.getGreaterThirty()+1);
+                        }
+                    } else {
+                        vo.setSmallCurrent(vo.getSmallCurrent() + 1);
+                    }
+                }
+            }
+        }
+        return vo;
     }
 
 
@@ -1881,7 +1933,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         if (!CollectionUtils.isEmpty(cabIds)) {
             List<AisleIndex> aisleIndexList = aisleIndexMapper.selectBatchIds(cabIds);
             if (!CollectionUtils.isEmpty(aisleIndexList)) {
-                aisleMap = aisleIndexList.stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getName));
+                aisleMap = aisleIndexList.stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getAisleName));
             } else {
                 aisleMap = new HashMap<>();
             }

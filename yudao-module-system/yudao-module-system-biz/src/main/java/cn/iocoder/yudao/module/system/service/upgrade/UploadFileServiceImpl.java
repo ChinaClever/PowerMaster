@@ -419,7 +419,7 @@ public class UploadFileServiceImpl implements UploadFileService{
                     //非离线状态
                     .ne(BusIndex::getRunStatus,5));
             if (!CollectionUtils.isEmpty(busIndices)){
-                List<String> ips = busIndices.stream().map(BusIndex::getIpAddr).distinct().collect(Collectors.toList());
+                List<String> ips = busIndices.stream().map(BusIndex::getBusKey).distinct().collect(Collectors.toList());
                 devIps.addAll(ips);
                 ips.forEach(ip -> map.put(ip,getBusPosition(ip)));
             }
@@ -443,14 +443,14 @@ public class UploadFileServiceImpl implements UploadFileService{
                     List<AisleBar> barList = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
                             .in(AisleBar::getAisleId,aisleIds));
                     if (!CollectionUtils.isEmpty(barList)){
-                        List<String> keys = barList.stream().map(AisleBar::getBarKey).collect(Collectors.toList());
+                        List<String> keys = barList.stream().map(AisleBar::getBusKey).collect(Collectors.toList());
                         List<BusIndex> busIndices = busIndexDoMapper.selectList(new LambdaQueryWrapper<BusIndex>()
                                 .eq(BusIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
                                 //非离线状态
                                 .ne(BusIndex::getRunStatus,5)
-                                .in(BusIndex::getDevKey,keys));
+                                .in(BusIndex::getBusKey,keys));
                         if (!CollectionUtils.isEmpty(busIndices)){
-                            List<String> ips = busIndices.stream().map(BusIndex::getIpAddr).distinct().collect(Collectors.toList());
+                            List<String> ips = busIndices.stream().map(BusIndex::getBusKey).distinct().collect(Collectors.toList());
                             devIps.addAll(ips);
                             ips.forEach(ip -> map.put(ip,getBusPosition(ip)));
                         }
@@ -648,7 +648,7 @@ public class UploadFileServiceImpl implements UploadFileService{
         AtomicReference<String> devPosition = new AtomicReference<>("");
         //柜列
         List<AisleBar> aisleBarList  = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
-                .eq(AisleBar::getDevIp,ip));
+                .eq(AisleBar::getBusKey,ip));
         if (!CollectionUtils.isEmpty(aisleBarList)){
             List<Integer>  ids = aisleBarList.stream().map(AisleBar::getAisleId).distinct().collect(Collectors.toList());
 
