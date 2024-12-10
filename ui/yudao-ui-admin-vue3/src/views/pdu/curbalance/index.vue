@@ -147,7 +147,11 @@
         :show-overflow-tooltip="true"
         @cell-dblclick="toPDUDisplayScreen"
       >
-        <el-table-column label="编号" align="center" prop="tableId" width="80px" />
+        <el-table-column label="编号" align="center" prop="tableId" width="80px" >
+          <template #default="{ $index }">
+            {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
+          </template>  
+        </el-table-column>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
         <el-table-column
@@ -169,21 +173,21 @@
           <el-table-column label="A相" align="center" prop="acur" width="95px">
             <template #default="scope">
               <el-text line-clamp="2" v-if="scope.row.acur != null">
-                {{ scope.row.acur }}
+                {{ scope.row.acur.toFixed(2) }}
               </el-text>
             </template>
           </el-table-column>
           <el-table-column label="B相" align="center" prop="bcur" width="95px">
             <template #default="scope">
               <el-text line-clamp="2" v-if="scope.row.bcur != null">
-                {{ scope.row.bcur }}
+                {{ scope.row.bcur.toFixed(2) }}
               </el-text>
             </template>
           </el-table-column>
           <el-table-column label="C相" align="center" prop="ccur" width="95px">
             <template #default="scope">
               <el-text line-clamp="2" v-if="scope.row.ccur != null">
-                {{ scope.row.ccur }}
+                {{ scope.row.ccur.toFixed(2) }}
               </el-text>
             </template>
           </el-table-column>
@@ -199,21 +203,21 @@
           <el-table-column label="A相" align="center" prop="avol" width="95px">
             <template #default="scope">
               <el-text line-clamp="2" v-if="scope.row.avol">
-                {{ scope.row.avol }}
+                {{ scope.row.avol.toFixed(1) }}
               </el-text>
             </template>
           </el-table-column>
           <el-table-column label="B相" align="center" prop="bvol" width="95px">
             <template #default="scope">
               <el-text line-clamp="2" v-if="scope.row.bvol">
-                {{ scope.row.bvol }}
+                {{ scope.row.bvol.toFixed(1) }}
               </el-text>
             </template>
           </el-table-column>
           <el-table-column label="C相" align="center" prop="cvol" width="95px">
             <template #default="scope">
               <el-text line-clamp="2" v-if="scope.row.cvol">
-                {{ scope.row.cvol }}
+                {{ scope.row.cvol.toFixed(1) }}
               </el-text>
             </template>
           </el-table-column>
@@ -254,9 +258,9 @@
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="info">
-              <div v-if="item.acur != null">A相电流：{{ item.acur }}A</div>
-              <div v-if="item.bcur != null">B相电流：{{ item.bcur }}A</div>
-              <div v-if="item.ccur != null">C相电流：{{ item.ccur }}A</div>
+              <div v-if="item.acur != null">A相电流：{{ item.acur.toFixed(2) }}A</div>
+              <div v-if="item.bcur != null">B相电流：{{ item.bcur.toFixed(2) }}A</div>
+              <div v-if="item.ccur != null">C相电流：{{ item.ccur.toFixed(2) }}A</div>
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
@@ -334,9 +338,9 @@
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="info">
-              <div v-if="item.avol != null">A相电压：{{ item.avol }}V</div>
-              <div v-if="item.bvol != null">B相电压：{{ item.bvol }}V</div>
-              <div v-if="item.cvol != null">C相电压：{{ item.cvol }}V</div>
+              <div v-if="item.avol != null">A相电压：{{ item.avol.toFixed(1) }}V</div>
+              <div v-if="item.bvol != null">B相电压：{{ item.bvol.toFixed(1) }}V</div>
+              <div v-if="item.cvol != null">C相电压：{{ item.cvol.toFixed(1) }}V</div>
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
@@ -884,45 +888,45 @@ const getList = async () => {
       statusList[2].name = '>' + range.rangeFour + '%'
     }
 
-    var tableIndex = 0
-    var lessFifteen = 0
-    var greaterFifteen = 0
-    var greaterThirty = 0
-    var smallCurrent = 0
-    data.list.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex
-      if (obj?.dataUpdateTime == null && obj?.pow == null) {
-        return
-      }
-      const splitArray = obj.dataUpdateTime.split(' ')
-      obj.dataUpdateTime = splitArray[1]
+    // var tableIndex = 0
+    // var lessFifteen = 0
+    // var greaterFifteen = 0
+    // var greaterThirty = 0
+    // var smallCurrent = 0
+    // data.list.forEach((obj) => {
+    //   obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex
+    //   if (obj?.dataUpdateTime == null && obj?.pow == null) {
+    //     return
+    //   }
+    //   const splitArray = obj.dataUpdateTime.split(' ')
+    //   obj.dataUpdateTime = splitArray[1]
 
-      obj.apparentPow = obj.apparentPow.toFixed(3)
-      obj.pow = obj.pow.toFixed(3)
-      obj.ele = obj.ele.toFixed(1)
-      obj.pf = obj.pf.toFixed(2)
-      obj.acur = obj.acur?.toFixed(2)
-      obj.bcur = obj.bcur?.toFixed(2)
-      obj.ccur = obj.ccur?.toFixed(2)
-      obj.curUnbalance = obj.curUnbalance?.toFixed(0)
-      obj.avol = obj.avol?.toFixed(1)
-      obj.bvol = obj.bvol?.toFixed(1)
-      obj.cvol = obj.cvol?.toFixed(1)
-      obj.volUnbalance = obj.volUnbalance?.toFixed(0)
-      if (obj.color == 1) {
-        smallCurrent++
-      } else if (obj.color == 2) {
-        lessFifteen++
-      } else if (obj.color == 3) {
-        greaterFifteen++
-      } else if (obj.color == 4) {
-        greaterThirty++
-      }
-    })
-    statusNumber.smallCurrent = smallCurrent
-    statusNumber.lessFifteen = lessFifteen
-    statusNumber.greaterFifteen = greaterFifteen
-    statusNumber.greaterThirty = greaterThirty
+    //   obj.apparentPow = obj.apparentPow.toFixed(3)
+    //   obj.pow = obj.pow.toFixed(3)
+    //   obj.ele = obj.ele.toFixed(1)
+    //   obj.pf = obj.pf.toFixed(2)
+    //   obj.acur = obj.acur?.toFixed(2)
+    //   obj.bcur = obj.bcur?.toFixed(2)
+    //   obj.ccur = obj.ccur?.toFixed(2)
+    //   obj.curUnbalance = obj.curUnbalance?.toFixed(0)
+    //   obj.avol = obj.avol?.toFixed(1)
+    //   obj.bvol = obj.bvol?.toFixed(1)
+    //   obj.cvol = obj.cvol?.toFixed(1)
+    //   obj.volUnbalance = obj.volUnbalance?.toFixed(0)
+    //   if (obj.color == 1) {
+    //     smallCurrent++
+    //   } else if (obj.color == 2) {
+    //     lessFifteen++
+    //   } else if (obj.color == 3) {
+    //     greaterFifteen++
+    //   } else if (obj.color == 4) {
+    //     greaterThirty++
+    //   }
+    // })
+    // statusNumber.smallCurrent = smallCurrent
+    // statusNumber.lessFifteen = lessFifteen
+    // statusNumber.greaterFifteen = greaterFifteen
+    // statusNumber.greaterThirty = greaterThirty
     total.value = data.total
     list.value = data.list
     console.log('111获取数据111', list)
@@ -931,59 +935,66 @@ const getList = async () => {
   }
 }
 
-const getListNoLoading = async () => {
-  try {
-    const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
-    var range = await CurbalanceColorApi.getCurbalanceColor()
-    if (range != null) {
-      statusList[0].name = '<' + range.rangeOne + '%'
-      statusList[1].name = range.rangeTwo + '%-' + range.rangeThree + '%'
-      statusList[2].name = '>' + range.rangeFour + '%'
-    }
-    var tableIndex = 0
-    var lessFifteen = 0
-    var greaterFifteen = 0
-    var greaterThirty = 0
-    var smallCurrent = 0
-    data.list.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex
-      if (obj?.dataUpdateTime == null && obj?.pow == null) {
-        return
-      }
-      const splitArray = obj.dataUpdateTime.split(' ')
-      obj.dataUpdateTime = splitArray[1]
-      obj.apparentPow = obj.apparentPow.toFixed(3)
-      obj.pow = obj.pow.toFixed(3)
-      obj.ele = obj.ele.toFixed(1)
-      obj.pf = obj.pf.toFixed(2)
-      obj.acur = obj.acur?.toFixed(2)
-      obj.bcur = obj.bcur?.toFixed(2)
-      obj.ccur = obj.ccur?.toFixed(2)
-      obj.curUnbalance = obj.curUnbalance?.toFixed(0)
-      obj.avol = obj.avol?.toFixed(1)
-      obj.bvol = obj.bvol?.toFixed(1)
-      obj.cvol = obj.cvol?.toFixed(1)
-      obj.volUnbalance = obj.volUnbalance?.toFixed(0)
-      if (obj.color == 1) {
-        smallCurrent++
-      } else if (obj.color == 2) {
-        lessFifteen++
-      } else if (obj.color == 3) {
-        greaterFifteen++
-      } else if (obj.color == 4) {
-        greaterThirty++
-      }
-    })
+// const getListNoLoading = async () => {
+//   try {
+//     const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
+//     var range = await CurbalanceColorApi.getCurbalanceColor()
+//     if (range != null) {
+//       statusList[0].name = '<' + range.rangeOne + '%'
+//       statusList[1].name = range.rangeTwo + '%-' + range.rangeThree + '%'
+//       statusList[2].name = '>' + range.rangeFour + '%'
+//     }
+//     var tableIndex = 0
+//     var lessFifteen = 0
+//     var greaterFifteen = 0
+//     var greaterThirty = 0
+//     var smallCurrent = 0
+//     data.list.forEach((obj) => {
+//       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex
+//       if (obj?.dataUpdateTime == null && obj?.pow == null) {
+//         return
+//       }
+//       const splitArray = obj.dataUpdateTime.split(' ')
+//       obj.dataUpdateTime = splitArray[1]
+//       obj.apparentPow = obj.apparentPow.toFixed(3)
+//       obj.pow = obj.pow.toFixed(3)
+//       obj.ele = obj.ele.toFixed(1)
+//       obj.pf = obj.pf.toFixed(2)
+//       obj.acur = obj.acur?.toFixed(2)
+//       obj.bcur = obj.bcur?.toFixed(2)
+//       obj.ccur = obj.ccur?.toFixed(2)
+//       obj.curUnbalance = obj.curUnbalance?.toFixed(0)
+//       obj.avol = obj.avol?.toFixed(1)
+//       obj.bvol = obj.bvol?.toFixed(1)
+//       obj.cvol = obj.cvol?.toFixed(1)
+//       obj.volUnbalance = obj.volUnbalance?.toFixed(0)
+//       if (obj.color == 1) {
+//         smallCurrent++
+//       } else if (obj.color == 2) {
+//         lessFifteen++
+//       } else if (obj.color == 3) {
+//         greaterFifteen++
+//       } else if (obj.color == 4) {
+//         greaterThirty++
+//       }
+//     })
 
-    statusNumber.smallCurrent = smallCurrent
-    statusNumber.lessFifteen = lessFifteen
-    statusNumber.greaterFifteen = greaterFifteen
-    statusNumber.greaterThirty = greaterThirty
-    list.value = data.list
-    total.value = data.total
-  } catch (error) {}
+//     statusNumber.smallCurrent = smallCurrent
+//     statusNumber.lessFifteen = lessFifteen
+//     statusNumber.greaterFifteen = greaterFifteen
+//     statusNumber.greaterThirty = greaterThirty
+//     list.value = data.list
+//     total.value = data.total
+//   } catch (error) {}
+// }
+const getNavAList = async() => {
+    const resStatus =await PDUDeviceApi.getBalancedDistribution();
+    console.log(resStatus);
+    statusNumber.smallCurrent = resStatus.smallCurrent;
+    statusNumber.lessFifteen = resStatus.lessFifteen;
+    statusNumber.greaterFifteen = resStatus.greaterFifteen;
+    statusNumber.greaterThirty = resStatus.greaterThirty;
 }
-
 // 接口获取导航列表
 const getNavList = async () => {
   const res = await CabinetApi.getRoomList({})
@@ -1035,7 +1046,8 @@ const handleSelectStatus = (index) => {
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
-  getList()
+  getList();
+  getNavAList();
 }
 
 /** 重置按钮操作 */
@@ -1086,7 +1098,8 @@ onMounted(async () => {
   devKeyList.value = await loadAll()
   getList()
   getNavList()
-  flashListTimer.value = setInterval(getListNoLoading, 5000)
+  getNavAList()
+  flashListTimer.value = setInterval(getList, 5000)
 })
 
 onBeforeUnmount(() => {
@@ -1108,7 +1121,7 @@ onActivated(() => {
   getList()
   getNavList()
   if (!firstTimerCreate.value) {
-    flashListTimer.value = setInterval(getListNoLoading, 5000)
+    flashListTimer.value = setInterval(getList, 5000)
   }
 })
 </script>
