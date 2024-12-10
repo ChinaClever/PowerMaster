@@ -78,7 +78,8 @@
       </el-card>
     </div>
     <div class="center" id="center">
-      <CabTopology :containerInfo="containerInfo" :isFromHome="true" @back-data="handleBackData" @getroomid="handleGetRoomId" />
+      <!--<CabTopology :containerInfo="containerInfo" :isFromHome="true" @back-data="handleBackData" @getroomid="handleGetRoomId" />-->
+      <!--<CabTopologyLazy :containerInfo="containerInfo" :isFromHome="true" @back-data="handleBackData" @getroomid="handleGetRoomId" />-->
       <ContentWrap class="CabEchart">
         <Echart :options="echartOptionsPower" height="30vh" width="100%" />
         <div class="btns">
@@ -169,6 +170,13 @@ import { MachineRoomApi } from '@/api/cabinet/room'
 import { EChartsOption } from 'echarts'
 
 import * as echarts from 'echarts'
+
+import { defineAsyncComponent } from 'vue';
+ 
+// 定义异步组件
+const CabTopologyLazy = defineAsyncComponent(() =>
+  import('../topology/index.vue') // 指定组件的路径
+);
 
 const format = (percentage) => ( ``)  //用来自定义进度条的内容
 

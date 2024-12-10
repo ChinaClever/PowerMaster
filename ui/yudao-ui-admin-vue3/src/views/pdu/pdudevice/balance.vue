@@ -264,7 +264,6 @@ const getBalanceTrend = async () => {
         },
       ]
     }
-    console.log('ALineOption', ALineOption)
     if (res[0].vol && res[0].vol.length == 1) {
       BLineOption.value.xAxis = {
         type: 'category',
