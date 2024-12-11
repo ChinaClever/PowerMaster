@@ -1,10 +1,15 @@
 package cn.iocoder.yudao.module.cabinet.controller.admin;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO;
+import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.module.cabinet.controller.admin.temcolor.vo.TemColorPageReqVO;
+import cn.iocoder.yudao.module.cabinet.controller.admin.temcolor.vo.TemColorRespVO;
+import cn.iocoder.yudao.module.cabinet.dal.dataobject.temcolor.TemColorDO;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
@@ -13,11 +18,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.parameters.P;
+import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.Map;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.error;
@@ -57,14 +61,23 @@ public class CabinetController {
         return success(runStatusResult);
     }
 
-
-    @PostMapping("/getDeletedCabinetPage")
     @Operation(summary = "获得已删除机柜分页")
-    public CommonResult<PageResult<CabinetIndexVo>> getDeletedPDUDevicePage(@RequestBody CabinetIndexVo pageReqVO) {
-        PageResult<CabinetIndexVo> pageResult = cabinetService.getDeletedCabinetPage(pageReqVO);
+    @PostMapping("/cabinet/deletedCabinetPage")
+    public CommonResult<PageResult<JSONObject>> getDeletedCabinetPage(@RequestBody CabinetIndexVo pageReqVO) {
+        PageResult<JSONObject> pageResult = cabinetService.getDeletedCabinetPage(pageReqVO);
         return success(pageResult);
     }
 
+
+    @Operation(summary = "恢复设备")
+    @GetMapping("/cabinet/restorerCabinet")
+    public CommonResult getrestorerCabinet(@Param("id") int id) {
+        int restorerCabinetResult = cabinetService.getrestorerCabinet(id);
+        if (restorerCabinetResult == -1) {
+            return error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "设备恢复失败");
+        }
+        return success(restorerCabinetResult);
+    }
 
     /**
      * 机柜详情

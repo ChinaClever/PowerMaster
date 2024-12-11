@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.bus.service.boxindex;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEleTotalDo;
@@ -15,7 +16,7 @@ import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalDayDo
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
-import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBus;
+import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
@@ -24,6 +25,7 @@ import cn.iocoder.yudao.framework.common.mapper.CabinetBusMapper;
 import cn.iocoder.yudao.framework.common.mapper.CabinetIndexMapper;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
+import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.bus.constant.BoxConstants;
@@ -33,9 +35,11 @@ import cn.iocoder.yudao.module.bus.controller.admin.boxindex.dto.MaxValueAndCrea
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
+import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusAisleBarQueryVO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.boxcurbalancecolor.BoxCurbalanceColorDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxcurbalancecolor.BoxCurbalanceColorMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxindex.BoxIndexCopyMapper;
+import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 import cn.iocoder.yudao.module.bus.util.TimeUtil;
 import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson2.JSON;
@@ -44,6 +48,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -73,6 +78,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
@@ -88,6 +94,7 @@ import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TI
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY_AISLE;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static cn.iocoder.yudao.module.bus.constant.BoxConstants.*;
+import static cn.iocoder.yudao.module.bus.constant.BusConstants.SPLIT_KEY;
 import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.INDEX_NOT_EXISTS;
 import static cn.iocoder.yudao.module.bus.service.busindex.BusIndexServiceImpl.REDIS_KEY_CABINET;
 
@@ -109,6 +116,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    private BusIndexMapper busIndexMapper;
 
     @Autowired
     private RestHighLevelClient client;
@@ -179,7 +189,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             BoxIndexRes boxIndexRes = new BoxIndexRes();
             boxIndexRes.setStatus(boxIndexDO.getRunStatus());
             boxIndexRes.setBoxId(boxIndexDO.getId());
-            boxIndexRes.setDevKey(boxIndexDO.getDevKey());
+            boxIndexRes.setDevKey(boxIndexDO.getBoxKey());
             boxIndexRes.setBoxName(boxIndexDO.getBoxName());
             res.add(boxIndexRes);
         }
@@ -234,7 +244,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             for (SearchHit hit : hits) {
                 BusCurLinePageResVO resVO = JsonUtils.parseObject(hit.getSourceAsString(), BusCurLinePageResVO.class);
 
-                resVO.setBusId(boxIndex.getId()).setDevKey(boxIndex.getDevKey());
+                resVO.setBusId(boxIndex.getId()).setDevKey(boxIndex.getBoxKey());
                 switch (resVO.getLineId()) {
                     case 1:
                         resVO.setLine("A路");
@@ -295,7 +305,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             for (SearchHit hit : hits) {
                 BusCurLinePageResVO resVO = JsonUtils.parseObject(hit.getSourceAsString(), BusCurLinePageResVO.class);
 
-                resVO.setBusId(boxIndex.getId()).setDevKey(boxIndex.getDevKey());
+                resVO.setBusId(boxIndex.getId()).setDevKey(boxIndex.getBoxKey());
                 switch (resVO.getLineId()) {
                     case 1:
                         resVO.setLine("A路");
@@ -318,7 +328,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     @Override
     public Map getAvgBoxHdaLineForm(BoxIndexPageReqVO pageReqVO) throws IOException {
         HashMap<String, Object> map = new HashMap<>();
-        BoxIndex boxIndex = boxIndexCopyMapper.selectOne(new LambdaQueryWrapperX<BoxIndex>().eq(BoxIndex::getDevKey, pageReqVO.getDevKey()));
+        BoxIndex boxIndex = boxIndexCopyMapper.selectOne(new LambdaQueryWrapperX<BoxIndex>().eq(BoxIndex::getBoxKey, pageReqVO.getDevKey()));
         if (boxIndex != null) {
             String index;
             if (pageReqVO.getTimeType().equals(0)) {
@@ -371,6 +381,92 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         return map;
     }
 
+    @Override
+    public LineBoxMaxResVO getBoxLineMax(BusIndexPageReqVO pageReqVO) throws IOException {
+        ValueOperations ops = redisTemplate.opsForValue();
+
+        if (pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
+            pageReqVO.setNewTime(LocalDateTime.now());
+            pageReqVO.setOldTime(LocalDateTime.now().minusHours(24));
+        } else {
+            pageReqVO.setNewTime(pageReqVO.getNewTime().plusDays(1));
+            pageReqVO.setOldTime(pageReqVO.getOldTime().plusDays(1));
+        }
+
+        String index;
+        if (pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
+            index = "box_hda_line_hour";
+        } else {
+            index = "box_hda_line_day";
+        }
+        String startTime = localDateTimeToString(pageReqVO.getOldTime());
+        String endTime = localDateTimeToString(pageReqVO.getNewTime());
+
+        // 创建SearchRequest对象, 设置查询索引名
+        SearchRequest searchRequest = new SearchRequest(index);
+        // 通过QueryBuilders构建ES查询条件，
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder.size(1);
+        //获取需要处理的数据
+        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword")
+                .gte(startTime).lt(endTime))));
+        builder.sort("cur_max_value", SortOrder.DESC);
+//        builder.aggregation(AggregationBuilders.max("max_date").field("cur_max_value"));
+        // 设置搜索条件
+        searchRequest.source(builder);
+        // 执行ES请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        LineBoxMaxResVO resVO = JsonUtils.parseObject(searchResponse.getHits().getAt(0).getSourceAsString(), LineBoxMaxResVO.class);
+        if (Objects.nonNull(resVO)) {
+            BoxIndex boxIndex = boxIndexCopyMapper.selectById(resVO.getBusId());
+            resVO.setDevKey(boxIndex.getBoxKey());
+            resVO.setBusName(boxIndex.getBoxName());
+            switch (resVO.getLineId()) {
+                case 1:
+                    resVO.setLineName("A相");
+                    break;
+                case 2:
+                    resVO.setLineName("B相");
+                    break;
+                case 3:
+                    resVO.setLineName("C相");
+                    break;
+                default:
+            }
+
+            List<BusAisleBarQueryVO> records = busIndexMapper.selectBoxPageList(boxIndex.getBoxKey().split(","));
+            if (CollectionUtil.isNotEmpty(records)) {
+                Map<String, BusAisleBarQueryVO> aislePathMap = records.stream().collect(Collectors.toMap(BusAisleBarQueryVO::getDevKey, x -> x));
+                Set<String> redisKeys = records.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toSet());
+                List aisles = ops.multiGet(redisKeys);
+                Map<Integer, String> positonMap = new HashMap<>();
+                if (!CollectionUtils.isEmpty(records)) {
+                    for (Object aisle : aisles) {
+                        if (aisle == null) {
+                            continue;
+                        }
+                        JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
+                        String devPosition = json.getString("room_name") + SPLIT_KEY
+                                + json.getString("aisle_name") + SPLIT_KEY;
+                        positonMap.put(json.getInteger("aisle_key"), devPosition);
+                    }
+                }
+                Map<String, Integer> keyMap = records.stream().filter(item -> ObjectUtils.isNotEmpty(item.getBarKey()))
+                        .collect(Collectors.toMap(BusAisleBarQueryVO::getBarKey, val -> val.getAisleId()));// x -> x, (oldVal, newVal) -> newVal));
+                Integer aisleId = keyMap.get(boxIndex.getBoxKey());
+                String localtion = positonMap.get(aisleId);
+                if (Objects.nonNull(aislePathMap.get(boxIndex.getBoxKey()).getPath())) {
+                    resVO.setLocation(localtion + aislePathMap.get(boxIndex.getBoxKey()).getPath() + "路");
+                } else {
+                    resVO.setLocation(localtion + "路");
+                }
+            }
+        }
+        return resVO;
+    }
+
+
     private void validateIndexExists(Long id) {
         if (boxIndexCopyMapper.selectById(id) == null) {
             throw exception(INDEX_NOT_EXISTS);
@@ -392,7 +488,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             BoxIndexRes boxIndexRes = new BoxIndexRes();
             boxIndexRes.setStatus(boxIndexDO.getRunStatus());
             boxIndexRes.setBoxId(boxIndexDO.getId());
-            boxIndexRes.setDevKey(boxIndexDO.getDevKey());
+            boxIndexRes.setDevKey(boxIndexDO.getBoxKey());
             boxIndexRes.setBoxName(boxIndexDO.getBoxName());
             res.add(boxIndexRes);
         }
@@ -450,7 +546,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             BoxRedisDataRes boxRedisDataRes = new BoxRedisDataRes();
             boxRedisDataRes.setStatus(boxIndexDO.getRunStatus());
             boxRedisDataRes.setBoxId(boxIndexDO.getId());
-            boxRedisDataRes.setDevKey(boxIndexDO.getDevKey());
+            boxRedisDataRes.setDevKey(boxIndexDO.getBoxKey());
             boxRedisDataRes.setBoxName(boxIndexDO.getBoxName());
             res.add(boxRedisDataRes);
         }
@@ -795,7 +891,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             //昨日
             boxIndexDOList.forEach(boxIndex -> {
                 BoxIndexDTO boxIndexDTO = new BoxIndexDTO().setId(boxIndex.getId()).setRunStatus(boxIndex.getRunStatus());
-                boxIndexDTO.setDevKey(boxIndex.getDevKey());
+                boxIndexDTO.setDevKey(boxIndex.getBoxKey());
                 boxIndexDTO.setBoxName(boxIndex.getBoxName());
                 result.add(boxIndexDTO);
             });
@@ -895,7 +991,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 boxIndexDTO.setYesterdayEq((Double) sourceAsMap.get("eq_value"));
                 boxIndexDTO.setBoxId((Integer) sourceAsMap.get("box_id"));
                 BoxIndex boxIndex = boxIndexCopyMapper.selectOne(BoxIndex::getId, boxIndexDTO.getBoxId());
-                boxIndexDTO.setDevKey(boxIndex.getDevKey());
+                boxIndexDTO.setDevKey(boxIndex.getBoxKey());
                 boxIndexDTO.setBoxName(boxIndex.getBoxName());
                 boxIndexDTO.setId(0);//借用id值来辅助判断是哪个时间的集合，0为昨天，1为上周，2为上月
                 result.add(boxIndexDTO);
@@ -927,7 +1023,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 boxIndexDTO.setLastWeekEq((Double) sourceAsMap.get("eq_value"));
                 boxIndexDTO.setBoxId((Integer) sourceAsMap.get("box_id"));
                 BoxIndex boxIndexDO = boxIndexCopyMapper.selectOne(BoxIndex::getId, boxIndexDTO.getBoxId());
-                boxIndexDTO.setDevKey(boxIndexDO.getDevKey());
+                boxIndexDTO.setDevKey(boxIndexDO.getBoxKey());
                 boxIndexDTO.setBoxName(boxIndexDO.getBoxName());
                 boxIndexDTO.setId(1);//借用id值来辅助判断是哪个时间的集合，0为昨天，1为上周，2为上月
                 result.add(boxIndexDTO);
@@ -959,7 +1055,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 boxIndexDTO.setLastMonthEq((Double) sourceAsMap.get("eq_value"));
                 boxIndexDTO.setBoxId((Integer) sourceAsMap.get("box_id"));
                 BoxIndex boxIndexDO = boxIndexCopyMapper.selectOne(BoxIndex::getId, boxIndexDTO.getBoxId());
-                boxIndexDTO.setDevKey(boxIndexDO.getDevKey());
+                boxIndexDTO.setDevKey(boxIndexDO.getBoxKey());
                 boxIndexDTO.setBoxName(boxIndexDO.getBoxName());
                 boxIndexDTO.setId(2);//借用id值来辅助判断是哪个时间的集合，0为昨天，1为上周，2为上月
                 result.add(boxIndexDTO);
@@ -1100,7 +1196,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             BoxBalanceDataRes boxBalanceDataRes = new BoxBalanceDataRes();
             boxBalanceDataRes.setStatus(boxIndexDO.getRunStatus());
             boxBalanceDataRes.setBoxId(boxIndexDO.getId());
-            boxBalanceDataRes.setDevKey(boxIndexDO.getDevKey());
+            boxBalanceDataRes.setDevKey(boxIndexDO.getBoxKey());
             boxBalanceDataRes.setBoxName(boxIndexDO.getBoxName());
             res.add(boxBalanceDataRes);
         }
@@ -1314,7 +1410,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             BoxTemRes boxTemRes = new BoxTemRes();
             boxTemRes.setStatus(boxIndexDO.getRunStatus());
             boxTemRes.setBoxId(boxIndexDO.getId());
-            boxTemRes.setDevKey(boxIndexDO.getDevKey());
+            boxTemRes.setDevKey(boxIndexDO.getBoxKey());
             boxTemRes.setBoxName(boxIndexDO.getBoxName());
             res.add(boxTemRes);
         }
@@ -1421,7 +1517,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             BoxPFRes boxPFRes = new BoxPFRes();
             boxPFRes.setStatus(boxIndexDO.getRunStatus());
             boxPFRes.setBoxId(boxIndexDO.getId());
-            boxPFRes.setDevKey(boxIndexDO.getDevKey());
+            boxPFRes.setDevKey(boxIndexDO.getBoxKey());
             boxPFRes.setBoxName(boxIndexDO.getBoxName());
             res.add(boxPFRes);
         }
@@ -1543,7 +1639,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             BoxHarmonicRes boxHarmonicRes = new BoxHarmonicRes();
             boxHarmonicRes.setStatus(boxIndexDO.getRunStatus());
             boxHarmonicRes.setBoxId(boxIndexDO.getId());
-            boxHarmonicRes.setDevKey(boxIndexDO.getDevKey());
+            boxHarmonicRes.setDevKey(boxIndexDO.getBoxKey());
             boxHarmonicRes.setBoxName(boxIndexDO.getBoxName());
             res.add(boxHarmonicRes);
         }
@@ -1562,13 +1658,14 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");
             JSONArray curThd = lineItemList.getJSONArray("cur_thd");
             for (int i = 0; i < 3; i++) {
-                double curThdValue = curThd.getDoubleValue(i);
+
+                BigDecimal curThdValue = BigDemicalUtil.safeDivide(curThd.getDoubleValue(i), 100);
                 if (i == 0) {
-                    boxHarmonicRes.setAcurThd(curThdValue);
+                    boxHarmonicRes.setAcurThd(curThdValue.doubleValue());
                 } else if (i == 1) {
-                    boxHarmonicRes.setBcurThd(curThdValue);
+                    boxHarmonicRes.setBcurThd(curThdValue.doubleValue());
                 } else if (i == 2) {
-                    boxHarmonicRes.setCcurThd(curThdValue);
+                    boxHarmonicRes.setCcurThd(curThdValue.doubleValue());
                 }
             }
         }
@@ -1644,7 +1741,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
     @Override
     public Integer getBoxIdByDevKey(String devKey) {
-        BoxIndex boxIndex = boxIndexCopyMapper.selectOne(BoxIndex::getDevKey, devKey);
+        BoxIndex boxIndex = boxIndexCopyMapper.selectOne(BoxIndex::getBoxKey, devKey);
         if (boxIndex == null) {
             return null;
         } else {
@@ -1658,13 +1755,13 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         return boxIndexCopyMapper.selectList().stream()
                 .limit(10)
                 .filter(boxIndex -> boxIndex.getBoxType() == 0)
-                .map(BoxIndex::getDevKey).collect(Collectors.toList());
+                .map(BoxIndex::getBoxKey).collect(Collectors.toList());
     }
 
     @Override
     public PageResult<BoxLineRes> getBoxLineDevicePage(BoxIndexPageReqVO pageReqVO) {
         try {
-            List<BoxIndex> searchList = boxIndexCopyMapper.selectList(new LambdaQueryWrapperX<BoxIndex>().inIfPresent(BoxIndex::getDevKey, pageReqVO.getBoxDevKeyList()));
+            List<BoxIndex> searchList = boxIndexCopyMapper.selectList(new LambdaQueryWrapperX<BoxIndex>().inIfPresent(BoxIndex::getBoxKey, pageReqVO.getBoxDevKeyList()));
             if (CollectionUtils.isEmpty(searchList)) {
                 return new PageResult<>(new ArrayList<>(), 0L);
             }
@@ -1712,7 +1809,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 boxLineRes.setStatus(boxIndex.getRunStatus());
 
                 boxLineRes.setBoxId(boxIndex.getId());
-                boxLineRes.setDevKey(boxIndex.getDevKey());
+                boxLineRes.setDevKey(boxIndex.getBoxKey());
                 boxLineRes.setBoxName(boxIndex.getBoxName());
 
                 MaxValueAndCreateTime curl1 = curMap.get(id).get(1);
@@ -1814,7 +1911,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         BusLineResBase barRes = new BusLineResBase();
         BarSeries barSeries = new BarSeries();
         try {
-            BoxIndex boxIndex = boxIndexCopyMapper.selectOne(new LambdaQueryWrapperX<BoxIndex>().eq(BoxIndex::getDevKey, devKey));
+            BoxIndex boxIndex = boxIndexCopyMapper.selectOne(new LambdaQueryWrapperX<BoxIndex>().eq(BoxIndex::getBoxKey, devKey));
             if (boxIndex != null) {
                 String index;
                 boolean isSameDay;
@@ -1899,7 +1996,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         BusLineResBase totalLineRes = new BusLineResBase();
         result.put("pfLineRes", totalLineRes);
         try {
-            BoxIndex boxIndex = boxIndexCopyMapper.selectOne(new LambdaQueryWrapperX<BoxIndex>().eq(BoxIndex::getDevKey, devKey));
+            BoxIndex boxIndex = boxIndexCopyMapper.selectOne(new LambdaQueryWrapperX<BoxIndex>().eq(BoxIndex::getBoxKey, devKey));
 
             if (boxIndex != null) {
                 String index;
@@ -1963,7 +2060,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         result.put("activePowMinValue", null);
         result.put("activePowMinTime", null);
         try {
-            BoxIndex boxIndex = boxIndexCopyMapper.selectOne(new LambdaQueryWrapperX<BoxIndex>().eq(BoxIndex::getDevKey, devKey));
+            BoxIndex boxIndex = boxIndexCopyMapper.selectOne(new LambdaQueryWrapperX<BoxIndex>().eq(BoxIndex::getBoxKey, devKey));
 
             if (boxIndex != null) {
                 String index;
@@ -2021,15 +2118,22 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 BoxTotalHourDo totalMinActive = JsonUtils.parseObject(activeTotalMinValue, BoxTotalHourDo.class);
 
                 result.put("totalLineRes", totalLineRes);
-
-                result.put("apparentPowMaxValue", totalMaxApparent.getPowApparentMaxValue());
-                result.put("apparentPowMaxTime", totalMaxApparent.getPowApparentMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("apparentPowMinValue", totalMinApparent.getPowApparentMinValue());
-                result.put("apparentPowMinTime", totalMinApparent.getPowApparentMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("activePowMaxValue", totalMaxActive.getPowActiveMaxValue());
-                result.put("activePowMaxTime", totalMaxActive.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
-                result.put("activePowMinValue", totalMinActive.getPowActiveMinValue());
-                result.put("activePowMinTime", totalMinActive.getPowActiveMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                if (Objects.nonNull(totalMaxApparent)) {
+                    result.put("apparentPowMaxValue", totalMaxApparent.getPowApparentMaxValue());
+                    result.put("apparentPowMaxTime", totalMaxApparent.getPowApparentMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                if (Objects.nonNull(totalMinApparent)) {
+                    result.put("apparentPowMinValue", totalMinApparent.getPowApparentMinValue());
+                    result.put("apparentPowMinTime", totalMinApparent.getPowApparentMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                if (Objects.nonNull(totalMaxActive)) {
+                    result.put("activePowMaxValue", totalMaxActive.getPowActiveMaxValue());
+                    result.put("activePowMaxTime", totalMaxActive.getPowActiveMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
+                if (Objects.nonNull(totalMinActive)) {
+                    result.put("activePowMinValue", totalMinActive.getPowActiveMinValue());
+                    result.put("activePowMinTime", totalMinActive.getPowActiveMinTime().toString("yyyy-MM-dd HH:mm:ss"));
+                }
 
             }
         } catch (Exception e) {
@@ -2043,7 +2147,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         Map result = new HashMap<>();
         BusLineResBase lineRes = new BusLineResBase();
         try {
-            BoxIndex boxIndex = boxIndexCopyMapper.selectOne(new LambdaQueryWrapperX<BoxIndex>().eq(BoxIndex::getDevKey, devKey));
+            BoxIndex boxIndex = boxIndexCopyMapper.selectOne(new LambdaQueryWrapperX<BoxIndex>().eq(BoxIndex::getBoxKey, devKey));
             if (boxIndex != null) {
                 Integer Id = boxIndex.getId();
                 String index;
@@ -3060,12 +3164,12 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         String devPosition;
         //柜列
         List<AisleBox> aisleBoxList = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
-                .in(AisleBox::getBarKey, devKeyList));
+                .in(AisleBox::getBoxKey, devKeyList));
         if (!CollectionUtils.isEmpty(aisleBoxList)) {
             List<Integer> aisleBarIds = aisleBoxList.stream().map(AisleBox::getAisleBarId).collect(Collectors.toList());
             List<AisleBar> aisleBars = aisleBarMapper.selectBatchIds(aisleBarIds);
             Map<Integer, String> pathMap = aisleBars.stream().collect(Collectors.toMap(AisleBar::getId, AisleBar::getPath));
-            Map<String, AisleBox> aisleBoxKeyMap = aisleBoxList.stream().collect(Collectors.toMap(AisleBox::getBarKey, Function.identity()));
+            Map<String, AisleBox> aisleBoxKeyMap = aisleBoxList.stream().collect(Collectors.toMap(AisleBox::getBoxKey, Function.identity()));
             Map<Integer, String> positionMap = new HashMap<>();
             if (!CollectionUtils.isEmpty(aisleBoxList)) {
                 List<String> redisKeys = aisleBoxList.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toList());
@@ -3093,13 +3197,13 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         }
         List<String> resNotInAisleDevKeys = resNotInAisle.stream().map(BoxResBase::getDevKey).collect(Collectors.toList());
         Map<String, BoxResBase> resNotInAisleMap = resNotInAisle.stream().collect(Collectors.toMap(BoxResBase::getDevKey, Function.identity()));
-        List<CabinetBus> cabinetBus = cabinetBusMapper.selectList(new LambdaQueryWrapperX<CabinetBus>().in(CabinetBus::getDevKeyA, resNotInAisleDevKeys).or().in(CabinetBus::getDevKeyB, resNotInAisleDevKeys));
+        List<CabinetBox> cabinetBus = cabinetBusMapper.selectList(new LambdaQueryWrapperX<CabinetBox>().in(CabinetBox::getBoxKeyA, resNotInAisleDevKeys).or().in(CabinetBox::getBoxKeyB, resNotInAisleDevKeys));
         if (CollectionUtils.isEmpty(cabinetBus)) {
             return;
         }
-        List<Integer> cabinetIds = cabinetBus.stream().map(CabinetBus::getCabinetId).collect(Collectors.toList());
-        Map<Integer, String> cabinetBusMapA = cabinetBus.stream().filter(cabinet -> cabinet.getDevKeyA() != null).collect(Collectors.toMap(CabinetBus::getCabinetId, CabinetBus::getDevKeyA));
-        Map<Integer, String> cabinetBusMapB = cabinetBus.stream().filter(cabinet -> cabinet.getDevKeyB() != null).collect(Collectors.toMap(CabinetBus::getCabinetId, CabinetBus::getDevKeyB));
+        List<Integer> cabinetIds = cabinetBus.stream().map(CabinetBox::getCabinetId).collect(Collectors.toList());
+        Map<Integer, String> cabinetBusMapA = cabinetBus.stream().filter(cabinet -> cabinet.getBoxKeyA() != null).collect(Collectors.toMap(CabinetBox::getCabinetId, CabinetBox::getBoxKeyA));
+        Map<Integer, String> cabinetBusMapB = cabinetBus.stream().filter(cabinet -> cabinet.getBoxKeyB() != null).collect(Collectors.toMap(CabinetBox::getCabinetId, CabinetBox::getBoxKeyB));
 
         List<CabinetIndex> cabinetIndices = cabinetIndexMapper.selectBatchIds(cabinetIds);
         List<String> cabinetRedisKeys = cabinetIndices.stream().map(index -> REDIS_KEY_CABINET + index.getRoomId() + SPLIT_KEY + index.getId()).collect(Collectors.toList());
@@ -3204,7 +3308,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     }
 
     private List getMutiRedis(List<BoxIndex> list) {
-        List<String> devKeys = list.stream().map(boxIndex -> "packet:box:" + boxIndex.getDevKey()).collect(Collectors.toList());
+        List<String> devKeys = list.stream().map(boxIndex -> "packet:box:" + boxIndex.getBoxKey()).collect(Collectors.toList());
         ValueOperations ops = redisTemplate.opsForValue();
         return ops.multiGet(devKeys);
     }

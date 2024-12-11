@@ -20,12 +20,11 @@ import lombok.Data;
 @ColumnWidth(30)
 @HeadRowHeight(20)
 public class EQPageRespVO {
+    @ExcelProperty("位置")
+    private String location;
 
     @ExcelProperty("机架名")
     private String rack_name;
-
-    @ExcelProperty("位置")
-    private String location;
 
     @ExcelProperty(converter = DateStringConverter.class, value = "记录日期")
     private String create_time;

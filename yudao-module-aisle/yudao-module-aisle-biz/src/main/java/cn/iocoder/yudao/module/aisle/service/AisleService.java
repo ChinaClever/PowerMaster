@@ -84,4 +84,9 @@ public interface AisleService {
      */
     AisleEqDataDTO getMainEq(int aisleId);
 
+    /**
+     * 柜列始端箱单个删除
+     * @param id
+     */
+    int deleteAisleSingleBox(int id);
 }

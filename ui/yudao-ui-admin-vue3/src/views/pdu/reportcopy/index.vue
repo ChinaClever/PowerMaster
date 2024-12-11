@@ -68,7 +68,6 @@
             placeholder="请输入IP地址"
             @keyup.enter="handleQuery"
             @select="handleQuery"
-
           />
         </el-form-item>
 <!-- 
@@ -218,7 +217,7 @@
             </div>
             <p v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大用电量{{eqData.maxEle}}kWh， 最大负荷发生时间{{eqData.maxEleTime}}</p>
             <p v-if="visControll.isSameDay">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
-            <Bar class="Container" width="70vw" height="58vh" :list="eleList"/>
+            <Bar class="Container" :width="computedWidth" height="58vh" :list="eleList"/>
           </div>
           <div class="pageBox" v-if="visControll.pfVis">
             <div class="page-conTitle">
@@ -236,7 +235,7 @@
             <div class="page-conTitle">
               功率因素曲线
             </div>        
-            <PFLine class="Container"  width="70vw" height="58vh" :list="pfLineList"/>
+            <PFLine class="Container" :width="computedWidth" height="58vh" :list="pfLineList"/>
           </div>
           <div class="pageBox"  v-if="visControll.powVis">
             <div class="page-conTitle">
@@ -244,7 +243,7 @@
             </div>
             <p>本周期内，最大视在功率{{powData.apparentPowMaxValue}}kVA， 发生时间{{powData.apparentPowMaxTime}}。最小视在功率{{powData.apparentPowMinValue}}kVA， 发生时间{{powData.apparentPowMinTime}}</p>
             <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最大有功功率{{powData.activePowMaxValue}}kVA， 发生时间{{powData.activePowMaxTime}}。最小有功功率{{powData.activePowMinValue}}kVA， 发生时间{{powData.activePowMinTime}}</p>
-            <Line class="Container"  width="70vw" height="58vh" :list="totalLineList"/>
+            <Line class="Container" :width="computedWidth" height="58vh" :list="totalLineList"/>
           </div>
           <div class="pageBox" v-if="visControll.volVis">
             <div class="page-conTitle" >
@@ -262,7 +261,7 @@
             <div class="page-conTitle" >
               输出位电量排名
             </div>
-            <HorizontalBar width="70vw" height="58vh" :list="outletList" />
+            <HorizontalBar :width="computedWidth" height="58vh" :list="outletList" />
           </div>       
           <div class="pageBox" v-if="visControll.temVis">
             <div class="page-conTitle">
@@ -270,7 +269,7 @@
             </div>
             <p v-show="temData.temMaxValue">本周期内，最高温度{{temData.temMaxValue}}°C， 最高温度发生时间{{temData.temMaxTime}}，由温度传感器{{temData.temMaxSensorId}}采集得到</p>
             <p v-show="temData.temMinValue">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最低温度{{temData.temMinValue}}°C， 最低温度发生时间{{temData.temMinTime}}，由温度传感器{{temData.temMinSensorId}}采集得到</p>
-            <EnvTemLine  width="70vw" height="58vh" :list="temList"  />
+            <EnvTemLine :width="computedWidth" height="58vh" :list="temList"  />
           </div>
 
 
@@ -345,7 +344,24 @@ import { Bottom } from '@element-plus/icons-vue/dist/types';
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { remove } from 'nprogress';
 
+// 创建一个响应式引用来存储窗口宽度
+const windowWidth = ref(window.innerWidth);
+ 
+// 计算属性，根据窗口宽度返回不同的width值
+const computedWidth = computed(() => {
+  if (windowWidth.value >= 2400) {
+    return '90vw';
+  } else if (windowWidth.value >= 1600) {
+    return '70vw';
+  } else {
+    return '80vw';
+  }
+});
 
+// 监听窗口尺寸变化并更新windowWidth的值
+const updateWindowWidth = () => {
+  windowWidth.value = window.innerWidth;
+};
 // import Line from './component/Line.vue'
 // import PFLine from './component/PFLine.vue'
 // import Bar from './component/Bar.vue'
@@ -588,10 +604,18 @@ const lineidBeforeChartUnmount = () => {
 lineidChart?.dispose() // 销毁图表实例
 }
 
-//处理时间
-const extractTime = (dateTimeString) => {
-  return dateTimeString.substring(0, 16);
-}
+const filterTimesFromDate = (dateTimeStrings, targetDate) => {
+  const targetDateObj = new Date(targetDate);
+  const targetDateString = targetDateObj.toISOString().split('T')[0]; // YYYY-MM-DD
+  
+  return dateTimeStrings.filter(dateTimeString => {
+    const [datePart, _] = dateTimeString.split(' ');
+    return datePart >= targetDateString;
+  });
+};
+ 
+// 获取当前日期（或者您可以指定任意日期）
+const currentDate = new Date().toISOString().split('T')[0];
 
 //获取PDU相历史数据，处理L1,L2,L3的数据
 const PDUHdaLineHisdata = async () => {
@@ -623,7 +647,11 @@ const PDUHdaLineHisdata = async () => {
   //}else if(dateTimeName.value === 'seventytwoHour'){
   //  lineidDateTimes.value = result.dateTimes
   //}
-  lineidDateTimes.value = result.dateTimes.map(extractTime)
+  if(dateTimeName.value === 'twentyfourHour'){
+    lineidDateTimes.value = filterTimesFromDate(result.dateTimes,currentDate).map(item => item.substring(11, 16))
+  }else if(dateTimeName.value === 'seventytwoHour'){
+    lineidDateTimes.value = result.dateTimes.map(item => item.substring(0, 10))
+  }
 }
 
 
@@ -985,7 +1013,6 @@ const getList = async () => {
 debugger
   var PDU = await PDUDeviceApi.PDUDisplay(queryParams);
   PDU = JSON.parse(PDU)
-  console.log("PDU11111111",PDU)
   var temp = [] as any;
   var resultArray=[] as any;
   var baseInfo = await PDUDeviceApi.getPDUDevicePage(queryParams);
@@ -993,7 +1020,7 @@ debugger
   var powApparentValueArray = PDU?.pdu_data?.output_item_list?.pow_apparent;
   var powValueArray = PDU?.pdu_data?.output_item_list?.pow_value;
   var curValueArray = PDU?.pdu_data?.output_item_list?.cur_value;
-  
+
   // console.log(powValueArray)
   // 将值与下标保存到对象数组中
   if(powValueArray && powValueArray.length >= 0){
@@ -1007,8 +1034,9 @@ debugger
     }
     // 按值进行排序
     resultArray.sort((a, b) => b.curValue - a.curValue);
-    // 只保留前十个元素
+    // 只保留前十二个元素
     resultArray = resultArray.slice(0, 12);
+    console.log("resultArray",resultArray)
     for(var i=0;i<resultArray.length;i++){
       serverData.value.nameAndMax.push({
         name: resultArray[i].name,
@@ -1101,23 +1129,33 @@ const initChart =  () => {
               },
       radar: { indicator: indicator.value.nameAndMax},
       series: [
-
-          { 
+        { 
           name: 'PDU输出位电能', 
           type: 'radar', 
-          label: { show: true, position: 'top' } ,
-          data: 
-          [ { value: serverData.value.curvalue, name: '电流' }, ] },
+          label: { show: true, position: 'inside' } ,
+          data:  [ { value: serverData.value.curvalue, name: '电流' }, ] ,
+          itemStyle: {
+            color: 'skyblue'
+          }
+        },
         { 
           name: 'PDU输出位视在功率', 
           type: 'radar', 
-          label: { show: true, position: 'top' } ,
-          data: [ { value: serverData.value.powapparent, name: '视在功率' }, ] },
-          { 
+          label: { show: true, position: 'inside' } ,
+          data: [ { value: serverData.value.powapparent, name: '视在功率' }, ],
+          itemStyle: {
+            color: '#90EE90'
+          }
+        },
+        { 
           name: 'PDU输出位有功功率', 
           type: 'radar', 
-          label: { show: true, position: 'top' } ,
-          data: [ { value: serverData.value.powvalue, name: '有功功率' }, ] }
+          label: { show: true, position: 'inside' } ,
+          data: [ { value: serverData.value.powvalue, name: '有功功率' }, ],
+          itemStyle: {
+            color: '#FFB6C1'
+          } 
+        }
       ]
     });
     
@@ -1376,7 +1414,12 @@ onMounted( async () =>  {
   // getList();
   // initChart();
   ipList.value = await loadAll();
+  window.addEventListener('resize', updateWindowWidth);
 })
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateWindowWidth);
+});
 </script>
 <style scoped lang="scss">
 
@@ -1646,8 +1689,17 @@ onMounted( async () =>  {
   justify-content: space-between;
   flex-wrap: wrap;
 }
-:deep(.el-form .el-form-item) {
-  margin-right: 0;
+
+:deep(.el-form .el-form-item:nth-child(1)) {
+  margin-left:-3vw;
+}
+
+:deep(.el-form .el-form-item:nth-child(2)) {
+  margin-left:-1vw;
+}
+
+:deep(.el-form .el-form-item:nth-child(3)) {
+  margin-left: 14vw;
 }
 
 @media screen and (min-width:2048px) {

@@ -1,11 +1,17 @@
 <template>
-  <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="母线温度">
+  <CommonMenu
+    @check="handleCheck"
+    @node-click="handleClick"
+    :showSearch="true"
+    :dataList="serverRoomArr"
+    navTitle="母线温度"
+  >
     <template #NavInfo>
       <div>
         <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
-        </div> -->
-        <div class="line"></div>
+        </div>
+        <div class="line"></div> -->
         <!-- <div class="status">
           <div class="box">
             <div class="top">
@@ -32,8 +38,33 @@
             <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
           </div>
         </div> -->
+        <div class="status">
+          <div class="box">
+            <div class="top"> <div class="tag"></div>正常 </div>
+            <div class="value"
+              ><span class="number">{{}}</span>个</div
+            >
+          </div>
+          <div class="box">
+            <div class="top"> <div class="tag empty"></div>离线 </div>
+            <div class="value"
+              ><span class="number">{{}}</span>个</div
+            >
+          </div>
+          <div class="box">
+            <div class="top"> <div class="tag error"></div>告警 </div>
+            <div class="value"
+              ><span class="number">{{}}</span>个</div
+            >
+          </div>
+          <div class="box">
+            <div class="top"> <div class="tag empty"></div>总共 </div>
+            <div class="value"
+              ><span class="number">{{}}</span>个</div
+            >
+          </div>
+        </div>
         <div class="line"></div>
-
       </div>
     </template>
     <template #ActionBar>
@@ -42,10 +73,19 @@
         :model="queryParams"
         ref="queryFormRef"
         :inline="true"
-        label-width="68px"                          
+        label-width="68px"
       >
-        <el-form-item >
-          <el-checkbox-group  v-model="queryParams.status" @change="handleQuery">
+        <el-form-item v-show="valueMode != 3 && valueMode != 4">
+          <template v-for="(status, index) in statusList" :key="index">
+            <button
+              :class="status.selected ? status.activeClass : status.cssClass"
+              @click.prevent="handleSelectStatus(index)"
+              >{{ status.name }}</button
+            >
+          </template>
+        </el-form-item>
+        <el-form-item>
+          <el-checkbox-group v-model="queryParams.status" @change="handleQuery">
             <el-checkbox :label="5" :value="5">在线</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
@@ -58,57 +98,116 @@
             placeholder="请输入网络地址"
             @select="handleQuery"
           />
-        <el-form-item style="margin-left: 10px">
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
-          <el-button
-            type="primary"
-            plain
-            @click="openForm('create')"
-            v-hasPermi="['pdu:PDU-device:create']"
-          >
-            <Icon icon="ep:plus" class="mr-5px" /> 新增
-          </el-button>
-          <el-button
-            type="success"
-            plain
-            @click="handleExport"
-            :loading="exportLoading"
-            v-hasPermi="['pdu:PDU-device:export']"
-          >
-            <Icon icon="ep:download" class="mr-5px" /> 导出
-          </el-button>
-        </el-form-item>          
+          <el-form-item style="margin-left: 10px">
+            <el-button @click="handleQuery"
+              ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button
+            >
+            <el-button @click="resetQuery"
+              ><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button
+            >
+            <el-button
+              type="primary"
+              plain
+              @click="openForm('create')"
+              v-hasPermi="['pdu:PDU-device:create']"
+            >
+              <Icon icon="ep:plus" class="mr-5px" /> 新增
+            </el-button>
+            <el-button
+              type="success"
+              plain
+              @click="handleExport"
+              :loading="exportLoading"
+              v-hasPermi="['pdu:PDU-device:export']"
+            >
+              <Icon icon="ep:download" class="mr-5px" /> 导出
+            </el-button>
+          </el-form-item>
         </el-form-item>
-        <div style="float:right">
-          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
-          <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
+        <div style="float: right">
+          <el-button
+            @click="
+              pageSizeArr = [24, 36, 48, 96];
+              queryParams.pageSize = 24;
+              switchValue = 0;
+            "
+            :type="switchValue == 0 ? 'primary' : ''"
+            ><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button
+          >
+          <el-button
+            @click="
+              pageSizeArr = [15, 25, 30, 50, 100];
+              queryParams.pageSize = 15;
+              switchValue = 3;
+            "
+            :type="switchValue == 3 ? 'primary' : ''"
+            ><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button
+          >
         </div>
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openTemDetail" :border="true">
-        <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
+      <el-table
+        v-show="switchValue == 3"
+        v-loading="loading"
+        :data="list"
+        :stripe="true"
+        :show-overflow-tooltip="true"
+        @cell-dblclick="openTemDetail"
+        :border="true"
+      >
+        <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
-        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>   
-        <el-table-column v-if="valueMode == 0" label="A相温度(°C)" align="center" prop="atem" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.atem != null" :type=" scope.row.atemStatus != 0 ? 'danger' : '' ">
+        <el-table-column label="设备名称" align="center" prop="busName" />
+        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" />
+        <el-table-column
+          v-if="valueMode == 0"
+          label="A相温度(°C)"
+          align="center"
+          prop="atem"
+          width="130px"
+        >
+          <template #default="scope">
+            <el-text
+              line-clamp="2"
+              v-if="scope.row.atem != null"
+              :type="scope.row.atemStatus != 0 ? 'danger' : ''"
+            >
               {{ scope.row.atem }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="B相温度(°C)" align="center" prop="btem" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.btem != null" :type=" scope.row.btemStatus != 0 ? 'danger' : '' ">
+        <el-table-column
+          v-if="valueMode == 0"
+          label="B相温度(°C)"
+          align="center"
+          prop="btem"
+          width="130px"
+        >
+          <template #default="scope">
+            <el-text
+              line-clamp="2"
+              v-if="scope.row.btem != null"
+              :type="scope.row.btemStatus != 0 ? 'danger' : ''"
+            >
               {{ scope.row.btem }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="C相温度(°C)" align="center" prop="ctem" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.ctem != null" :type=" scope.row.ctemStatus != 0 ? 'danger' : '' ">
+        <el-table-column
+          v-if="valueMode == 0"
+          label="C相温度(°C)"
+          align="center"
+          prop="ctem"
+          width="130px"
+        >
+          <template #default="scope">
+            <el-text
+              line-clamp="2"
+              v-if="scope.row.ctem != null"
+              :type="scope.row.ctemStatus != 0 ? 'danger' : ''"
+            >
               {{ scope.row.ctem }}
             </el-text>
           </template>
@@ -120,9 +219,9 @@
               link
               type="primary"
               @click="openTemDetail(scope.row)"
-              v-if=" scope.row.status != null && scope.row.status != 5"
+              v-if="scope.row.status != null && scope.row.status != 5"
             >
-            设备详情
+              设备详情
             </el-button>
             <el-button
               link
@@ -134,27 +233,44 @@
             </el-button>
           </template>
         </el-table-column>
-      </el-table>    
+      </el-table>
 
-      <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
+      <div v-show="switchValue == 0 && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <img  class="icon"  src="@/assets/imgs/temicon.png" />    
-            <div class="info" >                  
-              <div :style="{backgroundColor : item.atemColor}" v-if="item.atem != null">A:{{item.atem}}°C</div>
-              <div :style="{backgroundColor : item.btemColor}" v-if="item.btem != null">B:{{item.btem}}°C</div>
-              <div :style="{backgroundColor : item.ctemColor}" v-if="item.ctem != null">C:{{item.ctem}}°C</div>
-              <div :style="{backgroundColor : item.ntemColor}" v-if="item.ntem != null">N:{{item.ntem}}°C</div>
-            </div>          
+            <img class="icon" src="@/assets/imgs/temicon.png" />
+            <div class="info">
+              <div :style="{ backgroundColor: item.atemColor }" v-if="item.atem != null"
+                >A:{{ item.atem }}°C</div
+              >
+              <div :style="{ backgroundColor: item.btemColor }" v-if="item.btem != null"
+                >B:{{ item.btem }}°C</div
+              >
+              <div :style="{ backgroundColor: item.ctemColor }" v-if="item.ctem != null"
+                >C:{{ item.ctem }}°C</div
+              >
+              <div :style="{ backgroundColor: item.ntemColor }" v-if="item.ntem != null"
+                >N:{{ item.ntem }}°C</div
+              >
+            </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" v-if="valueMode == 0">
-            <el-tag type="info" v-if="item.atemStatus == null " >离线</el-tag>
-            <el-tag type="danger" v-else-if="item.atemStatus != 0 || item.btemStatus != 0  || item.ctemStatus != 0 " >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
+            <el-tag type="info" v-if="item.atemStatus == null">离线</el-tag>
+            <el-tag
+              type="danger"
+              v-else-if="item.atemStatus != 0 || item.btemStatus != 0 || item.ctemStatus != 0"
+              >告警</el-tag
+            >
+            <el-tag v-else>正常</el-tag>
           </div>
-          <button class="detail" @click="openTemDetail(item)" v-if="item.status != null && item.status != 5"  >详情</button>
+          <button
+            class="detail"
+            @click="openTemDetail(item)"
+            v-if="item.status != null && item.status != 5"
+            >详情</button
+          >
         </div>
       </div>
       <Pagination
@@ -168,10 +284,13 @@
         <el-empty description="暂无数据" :image-size="300" />
       </template>
 
-      <el-dialog v-model="detailVis" title="温度详情"  width="70vw" height="58vh">
-        <el-row>
-          <el-tag>{{ location }}</el-tag>
-          <div >
+      <el-dialog v-model="detailVis" title="温度详情" width="70vw" height="58vh">
+        <el-row class="custom-row">
+          <div style="margin-left: 5vw; margin-top: -130px">
+            <el-tag>{{ location.split('-')[0] }}</el-tag>
+            <span>(名称：<el-tag>{{ location }}</el-tag>)</span>
+          </div>
+          <div style="margin-left: -17vw;">
             日期:
             <el-date-picker
               v-model="queryParams.oldTime"
@@ -182,71 +301,77 @@
               class="!w-160px"
             />
           </div>
-          
-          
-          <el-button 
-            @click="subtractOneDay();handleDayPick()" 
-            :type=" 'primary'"
+
+          <el-button
+            style="margin-left: 1vw;"
+            @click="
+              subtractOneDay();
+              handleDayPick();
+            "
+            :type="'primary'"
           >
             &lt;前一日
           </el-button>
-          <el-button 
-            @click="addtractOneDay();handleDayPick()" 
-            :type=" 'primary'"
+          <el-button
+            @click="
+              addtractOneDay();
+              handleDayPick();
+            "
+            :type="'primary'"
           >
             &gt;后一日
           </el-button>
-          <el-button 
-            @click="switchChartOrTable = 0" 
-            :type="switchChartOrTable == 0 ?  'primary' : ``"
-          >
-            图表
-          </el-button>
-          <el-button 
-            @click="switchChartOrTable = 1" 
-            :type="switchChartOrTable == 1 ?  'primary' : ``"
-          >
-            数据
-          </el-button>
-
+          <div class="button-group" style="margin-left: auto">
+            <el-button
+              @click="switchChartOrTable = 0"
+              :type="switchChartOrTable === 0 ? 'primary' : ''"
+            >
+              图表
+            </el-button>
+            <el-button
+              @click="switchChartOrTable = 1"
+              :type="switchChartOrTable === 1 ? 'primary' : ''"
+            >
+              数据
+            </el-button>
+            <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading">
+              <Icon icon="ep:download" class="mr-5px" /> 导出
+            </el-button>
+          </div>
         </el-row>
-        <br/>
-        <TemDetail v-show="switchChartOrTable == 0" width="68vw" height="58vh"  :list="temESList"  />
-        <el-table v-show="switchChartOrTable == 1" :data="temTableList" :stripe="true" :show-overflow-tooltip="true" >
+        <br />
+        <TemDetail v-show="switchChartOrTable == 0" width="68vw" height="58vh" :list="temESList" />
+        <el-table
+          v-show="switchChartOrTable == 1"
+          :data="temTableList"
+          :stripe="true"
+          :show-overflow-tooltip="true"
+        >
           <el-table-column label="时间" align="center" prop="temAvgTime" />
-          <el-table-column label="A相温度" align="center" prop="temAvgValueA" >
-            <template #default="scope" >
-              <el-text line-clamp="2" >
-                {{ scope.row.temAvgValueA }}°C
-              </el-text>
+          <el-table-column label="A相温度" align="center" prop="temAvgValueA">
+            <template #default="scope">
+              <el-text line-clamp="2"> {{ scope.row.temAvgValueA }}°C </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="B相温度" align="center" prop="temAvgValueB" >
-            <template #default="scope" >
-              <el-text line-clamp="2" >
-                {{ scope.row.temAvgValueB }}°C
-              </el-text>
+          <el-table-column label="B相温度" align="center" prop="temAvgValueB">
+            <template #default="scope">
+              <el-text line-clamp="2"> {{ scope.row.temAvgValueB }}°C </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="C相温度" align="center" prop="temAvgValueC" >
-            <template #default="scope" >
-              <el-text line-clamp="2" >
-                {{ scope.row.temAvgValueC }}°C
-              </el-text>
+          <el-table-column label="C相温度" align="center" prop="temAvgValueC">
+            <template #default="scope">
+              <el-text line-clamp="2"> {{ scope.row.temAvgValueC }}°C </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="N相温度" align="center" prop="temAvgValueN" >
-            <template #default="scope" >
-              <el-text line-clamp="2" >
-                {{ scope.row.temAvgValueN }}°C
-              </el-text>
+          <el-table-column label="N相温度" align="center" prop="temAvgValueN">
+            <template #default="scope">
+              <el-text line-clamp="2"> {{ scope.row.temAvgValueN }}°C </el-text>
             </template>
           </el-table-column>
         </el-table>
       </el-dialog>
     </template>
   </CommonMenu>
-
 
   <!-- 表单弹窗：添加/修改 -->
   <!-- <CurbalanceColorForm ref="curBalanceColorForm" @success="getList" /> -->
@@ -267,27 +392,26 @@ defineOptions({ name: 'PDUDevice' })
 
 // const { push } = useRouter()
 
-const location = ref() as any;
-const detailVis = ref(false);
+const location = ref() as any
+const detailVis = ref(false)
 const curBalanceColorForm = ref()
-const flashListTimer = ref();
-const firstTimerCreate = ref(true);
-const pageSizeArr = ref([24,36,48,96])
+const flashListTimer = ref()
+const firstTimerCreate = ref(true)
+const pageSizeArr = ref([24, 36, 48, 96])
 const switchValue = ref(0)
-const switchChartOrTable = ref(0);
+const switchChartOrTable = ref(0)
 const valueMode = ref(0)
 
 const devKeyList = ref([])
 const loadAll = async () => {
-  var data = await IndexApi.devKeyList();
+  var data = await IndexApi.devKeyList()
   var objectArray = data.map((str) => {
-    return { value: str };
-  });
-  return objectArray;
+    return { value: str }
+  })
+  return objectArray
 }
 
 const querySearch = (queryString: string, cb: any) => {
-
   const results = queryString
     ? devKeyList.value.filter(createFilter(queryString))
     : devKeyList.value
@@ -297,88 +421,86 @@ const querySearch = (queryString: string, cb: any) => {
 
 const createFilter = (queryString: string) => {
   return (devKeyList) => {
-    return (
-      devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
-    )
+    return devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
   }
 }
 
 const handleClick = (row) => {
-  console.log("click",row)
+  console.log('click', row)
 }
 
 const handleCheck = async (row) => {
-  if(row.length == 0){
-    queryParams.busDevKeyList = null;
-    getList();
-    return;
+  if (row.length == 0) {
+    queryParams.busDevKeyList = null
+    getList()
+    return
   }
   const ids = [] as any
-  var haveCabinet = false;
-  row.forEach(item => {
+  var haveCabinet = false
+  row.forEach((item) => {
     if (item.type == 6) {
       ids.push(item.unique)
-      haveCabinet = true;
+      haveCabinet = true
     }
   })
-  if(!haveCabinet ){
+  if (!haveCabinet) {
     queryParams.busDevKeyList = [-1]
-  }else{
+  } else {
     queryParams.busDevKeyList = ids
   }
 
-  getList();
+  getList()
 }
 
-const openTemDetail = async (row) =>{
-  queryParams.busId = row.busId;
-  queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
-  location.value = row.location ? row.location : row.devKey;
-  await getDetail();
-  detailVis.value = true;
+const openTemDetail = async (row) => {
+  queryParams.busId = row.busId
+  queryParams.oldTime = getFullTimeByDate(
+    new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), 0, 0, 0)
+  )
+  location.value = row.location ? row.location : row.devKey
+  await getDetail()
+  detailVis.value = true
 }
 
 const disabledDate = (date) => {
   // 获取今天的日期
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
 
   // 设置date的时间为0时0分0秒，以便与today进行比较
-  date.setHours(0, 0, 0, 0);
+  date.setHours(0, 0, 0, 0)
 
   // 如果date在今天之后，则禁用
-  if(switchValue.value == 0){
-    return date > today;
-  }else {
-    return date >= today;
+  if (switchValue.value == 0) {
+    return date > today
+  } else {
+    return date >= today
   }
-  
 }
 
 const handleDayPick = async () => {
-
-  if(queryParams?.oldTime ){
-    await getDetail();
-  } 
+  if (queryParams?.oldTime) {
+    await getDetail()
+  }
 }
 
 const subtractOneDay = () => {
-  var date = new Date(queryParams.oldTime + "Z"); // 添加 "Z" 表示 UTC 时间
+  var date = new Date(queryParams.oldTime + 'Z') // 添加 "Z" 表示 UTC 时间
 
-  date.setDate(date.getDate() - 1); // 减去一天
+  date.setDate(date.getDate() - 1) // 减去一天
 
-  queryParams.oldTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
-};
+  queryParams.oldTime = date.toISOString().slice(0, 19).replace('T', ' ') // 转换为新的日期字符串
+}
 
 const addtractOneDay = () => {
-  var date = new Date(queryParams.oldTime + "Z"); // 添加 "Z" 表示 UTC 时间
+  var date = new Date(queryParams.oldTime + 'Z') // 添加 "Z" 表示 UTC 时间
 
-  date.setDate(date.getDate() + 1); // 减去一天
+  date.setDate(date.getDate() + 1) // 减去一天
 
-  queryParams.oldTime = date.toISOString().slice(0, 19).replace("T", " "); // 转换为新的日期字符串
-};
+  queryParams.oldTime = date.toISOString().slice(0, 19).replace('T', ' ') // 转换为新的日期字符串
+}
 
-const serverRoomArr =  ref([])
+const serverRoomArr = ref([])
 
 const filterText = ref('')
 const treeRef = ref<InstanceType<typeof ElTree>>()
@@ -387,31 +509,59 @@ watch(filterText, (val) => {
   treeRef.value!.filter(val)
 })
 
-
 const message = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
 
 const loading = ref(false) // 列表的加载中
-const temESList = ref([]) as any;
-const temTableList = ref([]) as any;
-const list = ref([
-  { 
-    id:null,
-    status:null,
-    apparentPow:null,
-    pow:null,
-    ele:null,
-    devKey:null,
-    location:null,
-    dataUpdateTime : "",
-    pduAlarm:"",
-    pf:null,
-    atem : null,
-    btem : null,
-    ctem : null,
-    temUnbalance : null,
+const temESList = ref([]) as any
+const temTableList = ref([]) as any
+const statusNumber = reactive({
+  normal: 0,
+  warn: 0,
+  alarm: 0,
+  offline: 0
+})
+const statusList = reactive([
+  {
+    name: '正常',
+    selected: true,
+    value: 1,
+    cssClass: 'btn_normal',
+    activeClass: 'btn_normal normal'
+  },
+  {
+    name: '告警',
+    selected: true,
+    value: 2,
+    cssClass: 'btn_error',
+    activeClass: 'btn_error error'
+  },
+  {
+    name: '离线',
+    selected: true,
+    value: 0,
+    cssClass: 'btn_offline',
+    activeClass: 'btn_offline offline'
   }
-]) as any// 列表的数据
+])
+const list = ref([
+  {
+    id: null,
+    status: null,
+    apparentPow: null,
+    pow: null,
+    ele: null,
+    devKey: null,
+    location: null,
+    dataUpdateTime: '',
+    pduAlarm: '',
+    pf: null,
+    atem: null,
+    btem: null,
+    ctem: null,
+    temUnbalance: null
+  }
+]) as any // 列表的数据
 const total = ref(0) // 列表的总页数
 const queryParams = reactive({
   pageNo: 1,
@@ -419,37 +569,37 @@ const queryParams = reactive({
   devKey: undefined,
   createTime: [],
   cascadeNum: undefined,
-  serverRoomData:undefined,
-  status:undefined,
-  cabinetIds : [],
-  busId:undefined,
-})as any
+  serverRoomData: undefined,
+  status: undefined,
+  cabinetIds: [],
+  busId: undefined
+}) as any
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
 /** 查询列表 */
 const getDetail = async () => {
-  const data = await IndexApi.getBusTemDetail(queryParams);
-  temESList.value = data?.chart;
+  const data = await IndexApi.getBusTemDetail(queryParams)
+  temESList.value = data?.chart
   temESList.value?.temAvgValueA?.forEach((obj) => {
-    obj = obj?.toFixed(0);
-  });
+    obj = obj?.toFixed(0)
+  })
   temESList.value?.temAvgValueB?.forEach((obj) => {
-    obj = obj?.toFixed(0);
-  });
+    obj = obj?.toFixed(0)
+  })
   temESList.value?.temAvgValueC?.forEach((obj) => {
-    obj = obj?.toFixed(0);
-  });
+    obj = obj?.toFixed(0)
+  })
   temESList.value?.temAvgValueN?.forEach((obj) => {
-    obj = obj?.toFixed(0);
-  });
-  temTableList.value = data?.table;
+    obj = obj?.toFixed(0)
+  })
+  temTableList.value = data?.table
   temTableList.value?.forEach((obj) => {
-    obj.temAvgValueA = obj?.temAvgValueA?.toFixed(0);
-    obj.temAvgValueB = obj?.temAvgValueB?.toFixed(0);
-    obj.temAvgValueC = obj?.temAvgValueC?.toFixed(0);
-    obj.temAvgValueN = obj?.temAvgValueN?.toFixed(0);
-  });
+    obj.temAvgValueA = obj?.temAvgValueA?.toFixed(0)
+    obj.temAvgValueB = obj?.temAvgValueB?.toFixed(0)
+    obj.temAvgValueC = obj?.temAvgValueC?.toFixed(0)
+    obj.temAvgValueN = obj?.temAvgValueN?.toFixed(0)
+  })
 }
 
 const getList = async () => {
@@ -458,18 +608,18 @@ const getList = async () => {
     const data = await IndexApi.getBusTemPage(queryParams)
 
     list.value = data.list
-    var tableIndex = 0;
+    var tableIndex = 0
 
     list.value.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.atem == null){
-        return;
-      } 
-      obj.atem = obj.atem?.toFixed(0);
-      obj.btem = obj.btem?.toFixed(0);
-      obj.ctem = obj.ctem?.toFixed(0);
-      obj.ntem = obj.ntem?.toFixed(0);
-    });
+      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex
+      if (obj?.atem == null) {
+        return
+      }
+      obj.atem = obj.atem?.toFixed(0)
+      obj.btem = obj.btem?.toFixed(0)
+      obj.ctem = obj.ctem?.toFixed(0)
+      obj.ntem = obj.ntem?.toFixed(0)
+    })
 
     total.value = data.total
   } finally {
@@ -481,34 +631,32 @@ const getListNoLoading = async () => {
   try {
     const data = await IndexApi.getBusTemPage(queryParams)
     list.value = data.list
-    var tableIndex = 0;    
+    var tableIndex = 0
 
     list.value.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.atem == null){
-        return;
-      } 
-      obj.atem = obj.atem?.toFixed(0);
-      obj.btem = obj.btem?.toFixed(0);
-      obj.ctem = obj.ctem?.toFixed(0);    
-      obj.ntem = obj.ntem?.toFixed(0);
-    });
+      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex
+      if (obj?.atem == null) {
+        return
+      }
+      obj.atem = obj.atem?.toFixed(0)
+      obj.btem = obj.btem?.toFixed(0)
+      obj.ctem = obj.ctem?.toFixed(0)
+      obj.ntem = obj.ntem?.toFixed(0)
+    })
 
     total.value = data.total
-  } catch (error) {
-    
-  }
+  } catch (error) {}
 }
 
-const getNavList = async() => {
+const getNavList = async () => {
   const res = await IndexApi.getBusMenu()
   serverRoomArr.value = res
   if (res && res.length > 0) {
     const room = res[0]
     const keys = [] as string[]
-    room.children.forEach(child => {
-      if(child.children.length > 0) {
-        child.children.forEach(son => {
+    room.children.forEach((child) => {
+      if (child.children.length > 0) {
+        child.children.forEach((son) => {
           keys.push(son.id + '-' + son.type)
         })
       }
@@ -517,25 +665,38 @@ const getNavList = async() => {
 }
 
 const getFullTimeByDate = (date) => {
-  var year = date.getFullYear();//年
-  var month = date.getMonth();//月
-  var day = date.getDate();//日
-  var hours = date.getHours();//时
-  var min = date.getMinutes();//分
-  var second = date.getSeconds();//秒
-  return year + "-" +
-      ((month + 1) > 9 ? (month + 1) : "0" + (month + 1)) + "-" +
-      (day > 9 ? day : ("0" + day)) + " " +
-      (hours > 9 ? hours : ("0" + hours)) + ":" +
-      (min > 9 ? min : ("0" + min)) + ":" +
-      (second > 9 ? second : ("0" + second));
+  var year = date.getFullYear() //年
+  var month = date.getMonth() //月
+  var day = date.getDate() //日
+  var hours = date.getHours() //时
+  var min = date.getMinutes() //分
+  var second = date.getSeconds() //秒
+  return (
+    year +
+    '-' +
+    (month + 1 > 9 ? month + 1 : '0' + (month + 1)) +
+    '-' +
+    (day > 9 ? day : '0' + day) +
+    ' ' +
+    (hours > 9 ? hours : '0' + hours) +
+    ':' +
+    (min > 9 ? min : '0' + min) +
+    ':' +
+    (second > 9 ? second : '0' + second)
+  )
 }
 
 // const openNewPage = (scope) => {
 //   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
 //   window.open(url, '_blank');
 // }
-
+const handleSelectStatus = (index) => {
+  statusList[index].selected = !statusList[index].selected
+  const status = statusList.filter((item) => item.selected)
+  const statusArr = status.map((item) => item.value)
+  queryParams.status = statusArr
+  handleQuery()
+}
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
@@ -568,6 +729,27 @@ const handleDelete = async (id: number) => {
   } catch {}
 }
 
+const handleExportXLS = async ()=>{
+  try {
+    // 导出的二次确认
+    await message.exportConfirm()
+    // 发起导出
+    queryParams.pageNo = 1
+    exportLoading.value = true
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await IndexApi.getBusTemDetailExcel(queryParams, axiosConfig)
+    console.log("data",data)
+    await download.excel(data, '温度详细.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
+  } finally {
+    exportLoading.value = false
+  }
+}
+
 /** 导出按钮操作 */
 const handleExport = async () => {
   try {
@@ -585,32 +767,32 @@ const handleExport = async () => {
 
 /** 初始化 **/
 onMounted(async () => {
-  devKeyList.value = await loadAll();
+  devKeyList.value = await loadAll()
   getList()
-  getNavList();
-  flashListTimer.value = setInterval((getListNoLoading), 5000);
+  getNavList()
+  flashListTimer.value = setInterval(getListNoLoading, 5000)
 })
 
-onBeforeUnmount(()=>{
-  if(flashListTimer.value){
+onBeforeUnmount(() => {
+  if (flashListTimer.value) {
     clearInterval(flashListTimer.value)
-    flashListTimer.value = null;
+    flashListTimer.value = null
   }
 })
 
-onBeforeRouteLeave(()=>{
-  if(flashListTimer.value){
+onBeforeRouteLeave(() => {
+  if (flashListTimer.value) {
     clearInterval(flashListTimer.value)
-    flashListTimer.value = null;
-    firstTimerCreate.value = false;
+    flashListTimer.value = null
+    firstTimerCreate.value = false
   }
 })
 
 onActivated(() => {
   getList()
-  getNavList();
-  if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getListNoLoading), 5000);
+  getNavList()
+  if (!firstTimerCreate.value) {
+    flashListTimer.value = setInterval(getListNoLoading, 5000)
   }
 })
 </script>
@@ -755,7 +937,7 @@ onActivated(() => {
       align-items: center;
       padding-left: 15px;
       padding-right: 10px;
-      box-shadow: 0 3px 4px 1px rgba(0,0,0,.12);
+      box-shadow: 0 3px 4px 1px rgba(0, 0, 0, 0.12);
       border-radius: 3px;
       border: 1px solid #eee;
       .info {
@@ -775,6 +957,7 @@ onActivated(() => {
   .status {
     display: flex;
     flex-wrap: wrap;
+    margin-top: 30px;
     .box {
       height: 70px;
       width: 50%;
@@ -868,11 +1051,10 @@ onActivated(() => {
       overflow: hidden;
       box-sizing: border-box;
       background-color: var(--el-color-primary);
-
     }
     .right {
       overflow: hidden;
-      background-color:  #f56c6c;
+      background-color: #f56c6c;
     }
   }
 }
@@ -903,7 +1085,7 @@ onActivated(() => {
         text-align: center;
       }
     }
-    .devKey{
+    .devKey {
       position: absolute;
       left: 8px;
       top: 8px;
@@ -946,18 +1128,32 @@ onActivated(() => {
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
+
 :deep(.el-form) {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }
-::v-deep .el-table .el-table__header th{
+
+::v-deep .el-table .el-table__header th {
   background-color: #f5f7fa;
   color: #909399;
   height: 80px;
+}
 
+.custom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+}
+ 
+.button-group {
+  display: flex;
+  gap: 10px;
 }
 </style>

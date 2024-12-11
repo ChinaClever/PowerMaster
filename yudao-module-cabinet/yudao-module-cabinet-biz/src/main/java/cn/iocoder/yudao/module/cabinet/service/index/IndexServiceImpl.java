@@ -423,35 +423,35 @@ public class IndexServiceImpl implements IndexService {
         List<Integer> ids = list.stream().map(IndexDO::getId).collect(Collectors.toList());
 
         List<RoomIndex> roomIndices = roomIndexMapper.selectBatchIds(list.stream().map(IndexDO::getRoomId).collect(Collectors.toList()));
-        Map<Integer, String> roomMap = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getName));
+        Map<Integer, String> roomMap = roomIndices.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getRoomName));
         Map<Integer, String>  aisleMap = aisleIndexMapper.selectBatchIds(list.stream()
 //                .filter(dto -> dto.getAisleId() != 0)
-                    .map(IndexDO::getAisleId).collect(Collectors.toList())).stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getName));
+                    .map(IndexDO::getAisleId).collect(Collectors.toList())).stream().collect(Collectors.toMap(AisleIndex::getId, AisleIndex::getAisleName));
 
         List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().in(CabinetPdu::getCabinetId, ids));
 
         List<String> pduA = cabinetPdus.stream()
-                .filter(pdu -> !StringUtils.isEmpty(pdu.getPduIpA()))
-                .map(pdu -> pdu.getPduIpA() + '-' + pdu.getCasIdA())
+                .filter(pdu -> !StringUtils.isEmpty(pdu.getPduKeyA()))
+                .map(pdu -> pdu.getPduKeyA() )//+ '-' + pdu.getCasIdA()
                 .collect(Collectors.toList());
 
         List<String> pduB = cabinetPdus.stream()
-                .filter(pdu -> !StringUtils.isEmpty(pdu.getPduIpB()))
-                .map(pdu -> pdu.getPduIpB() + '-' + pdu.getCasIdB())
+                .filter(pdu -> !StringUtils.isEmpty(pdu.getPduKeyB()))
+                .map(pdu -> pdu.getPduKeyB() )//+ '-' + pdu.getCasIdB()
                 .collect(Collectors.toList());
 
         Map<String, Integer> pduMap = null;
         if (!CollectionUtil.isEmpty(pduA) || !CollectionUtil.isEmpty(pduB) ){
             pduMap = pduIndexMapper.selectList(new LambdaQueryWrapperX<PduIndex>()
-                    .inIfPresent(PduIndex::getDevKey, pduA)
+                    .inIfPresent(PduIndex::getPduKey, pduA)
                     .or(!CollectionUtil.isEmpty(pduA) && !CollectionUtil.isEmpty(pduB))
-                    .in(!CollectionUtil.isEmpty(pduB),PduIndex::getDevKey, pduB)).stream().collect(Collectors.toMap(PduIndex::getDevKey, PduIndex::getId));
+                    .in(!CollectionUtil.isEmpty(pduB),PduIndex::getPduKey, pduB)).stream().collect(Collectors.toMap(PduIndex::getPduKey, PduIndex::getId));
         }
 
         Map<Integer, CabinetPdu> cabinetPduMap = cabinetPdus.stream().collect(Collectors.toMap(CabinetPdu::getCabinetId, Function.identity()));
         List<CabinetEnvSensor> cabinetEnvSensors = cabinetEnvSensorMapper.selectList(new LambdaQueryWrapperX<CabinetEnvSensor>()
                 .in(CabinetEnvSensor::getCabinetId, ids)
-                .eq(CabinetEnvSensor::getType, 1));
+                .eq(CabinetEnvSensor::getSensorType, 1));
         Map<Integer, List<CabinetEnvSensor>> cabinetEnvMap = cabinetEnvSensors.stream().collect(Collectors.groupingBy(cabinetEnvSensor -> cabinetEnvSensor.getCabinetId()));
 
         for (IndexDO indexDO : list) {
@@ -459,9 +459,9 @@ public class IndexServiceImpl implements IndexService {
             result.add(res);
             String localtion = null;
             if(indexDO.getAisleId() != 0){
-                localtion = roomMap.get(indexDO.getRoomId()) + "-" + aisleMap.get(indexDO.getAisleId()) + "-" + indexDO.getName();
+                localtion = roomMap.get(indexDO.getRoomId()) + "-" + aisleMap.get(indexDO.getAisleId()) + "-" + indexDO.getCabinetName();
             }else {
-                localtion = roomMap.get(indexDO.getRoomId()) + "-"  + indexDO.getName() ;
+                localtion = roomMap.get(indexDO.getRoomId()) + "-"  + indexDO.getCabinetName() ;
             }
             res.setLocation(localtion);
             res.setId(indexDO.getId());
@@ -478,10 +478,10 @@ public class IndexServiceImpl implements IndexService {
             }
             for (CabinetEnvSensor cabinetEnvSensor : envList) {
                 String devKey = null;
-                if(cabinetEnvSensor.getPathPdu() == 'A'){
-                    devKey = cabinetPdu.getPduIpA() + '-' + cabinetPdu.getCasIdA();
+                if(cabinetEnvSensor.getPathPdu() == "A"){
+                    devKey = cabinetPdu.getPduKeyA();// + '-' + cabinetPdu.getCasIdA();
                 }else{
-                    devKey = cabinetPdu.getPduIpB() + '-' + cabinetPdu.getCasIdB();
+                    devKey = cabinetPdu.getPduKeyB();// + '-' + cabinetPdu.getCasIdB();
                 }
 
                 Integer pduId = pduMap.get(devKey);
@@ -604,19 +604,19 @@ public class IndexServiceImpl implements IndexService {
             }
             List<String> devKeyList = new ArrayList<>();
             Map<String,String> pduMap = new HashMap<>();
-            pduMap.put("A",cabinetPdu.getPduIpA() + '-' + cabinetPdu.getCasIdA());
-            pduMap.put("B",cabinetPdu.getPduIpB() + '-' + cabinetPdu.getCasIdB());
-            if (!StringUtils.isEmpty(cabinetPdu.getPduIpA())){
-                devKeyList.add(cabinetPdu.getPduIpA() + '-' + cabinetPdu.getCasIdA());
+            pduMap.put("A",cabinetPdu.getPduKeyA());// + '-' + cabinetPdu.getCasIdA());
+            pduMap.put("B",cabinetPdu.getPduKeyB());// + '-' + cabinetPdu.getCasIdB());
+            if (!StringUtils.isEmpty(cabinetPdu.getPduKeyA())){
+                devKeyList.add(cabinetPdu.getPduKeyA());// + '-' + cabinetPdu.getCasIdA());
             }
-            if (!StringUtils.isEmpty(cabinetPdu.getPduIpB())){
-                devKeyList.add(cabinetPdu.getPduIpB() + '-' + cabinetPdu.getCasIdB());
+            if (!StringUtils.isEmpty(cabinetPdu.getPduKeyB())){
+                devKeyList.add(cabinetPdu.getPduKeyB());// + '-' + cabinetPdu.getCasIdB());
             }
             if(CollectionUtil.isEmpty(devKeyList)){
                 return result;
             }
-            List<PduIndex> pduIndices = pduIndexMapper.selectList(new LambdaQueryWrapperX<PduIndex>().in(PduIndex::getDevKey, devKeyList));
-            Map<String, Integer> pduIdMap = pduIndices.stream().collect(Collectors.toMap(PduIndex::getDevKey, PduIndex::getId));
+            List<PduIndex> pduIndices = pduIndexMapper.selectList(new LambdaQueryWrapperX<PduIndex>().in(PduIndex::getPduKey, devKeyList));
+            Map<String, Integer> pduIdMap = pduIndices.stream().collect(Collectors.toMap(PduIndex::getPduKey, PduIndex::getId));
             String whichIndex = "pdu_env_hour";
             LocalDateTime now = LocalDateTime.now();
             if (timeType == 2){
@@ -630,7 +630,7 @@ public class IndexServiceImpl implements IndexService {
             List<CabinetEnvSensor> cabinetEnvSensors = cabinetEnvSensorMapper.selectList(new LambdaQueryWrapperX<CabinetEnvSensor>()
                     .eq(CabinetEnvSensor::getCabinetId, id)
                     .eq(CabinetEnvSensor::getChannel, 1)
-                    .eq(CabinetEnvSensor::getType, 1)
+                    .eq(CabinetEnvSensor::getSensorType, 1)
                     .orderByAsc(CabinetEnvSensor::getPosition));
             List<Integer> searchIds = cabinetEnvSensors.stream().filter(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu()))) != null ).map(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu())))).collect(Collectors.toList());
             List<Integer> sensorIds = cabinetEnvSensors.stream().map(CabinetEnvSensor::getSensorId).collect(Collectors.toList());
@@ -726,19 +726,19 @@ public class IndexServiceImpl implements IndexService {
             }
             List<String> devKeyList = new ArrayList<>();
             Map<String,String> pduMap = new HashMap<>();
-            pduMap.put("A",cabinetPdu.getPduIpA() + '-' + cabinetPdu.getCasIdA());
-            pduMap.put("B",cabinetPdu.getPduIpB() + '-' + cabinetPdu.getCasIdB());
-            if (!StringUtils.isEmpty(cabinetPdu.getPduIpA())){
-                devKeyList.add(cabinetPdu.getPduIpA() + '-' + cabinetPdu.getCasIdA());
+            pduMap.put("A",cabinetPdu.getPduKeyA());// + '-' + cabinetPdu.getCasIdA());
+            pduMap.put("B",cabinetPdu.getPduKeyB());// + '-' + cabinetPdu.getCasIdB());
+            if (!StringUtils.isEmpty(cabinetPdu.getPduKeyA())){
+                devKeyList.add(cabinetPdu.getPduKeyA());// + '-' + cabinetPdu.getCasIdA());
             }
-            if (!StringUtils.isEmpty(cabinetPdu.getPduIpB())){
-                devKeyList.add(cabinetPdu.getPduIpB() + '-' + cabinetPdu.getCasIdB());
+            if (!StringUtils.isEmpty(cabinetPdu.getPduKeyB())){
+                devKeyList.add(cabinetPdu.getPduKeyB());// + '-' + cabinetPdu.getCasIdB());
             }
             if(CollectionUtil.isEmpty(devKeyList)){
                 return result;
             }
-            List<PduIndex> pduIndices = pduIndexMapper.selectList(new LambdaQueryWrapperX<PduIndex>().in(PduIndex::getDevKey, devKeyList));
-            Map<String, Integer> pduIdMap = pduIndices.stream().collect(Collectors.toMap(PduIndex::getDevKey, PduIndex::getId));
+            List<PduIndex> pduIndices = pduIndexMapper.selectList(new LambdaQueryWrapperX<PduIndex>().in(PduIndex::getPduKey, devKeyList));
+            Map<String, Integer> pduIdMap = pduIndices.stream().collect(Collectors.toMap(PduIndex::getPduKey, PduIndex::getId));
             String whichIndex = "pdu_env_hour";
             LocalDateTime now = LocalDateTime.now();
             if (timeType == 2){
@@ -752,7 +752,7 @@ public class IndexServiceImpl implements IndexService {
             List<CabinetEnvSensor> cabinetEnvSensors = cabinetEnvSensorMapper.selectList(new LambdaQueryWrapperX<CabinetEnvSensor>()
                     .eq(CabinetEnvSensor::getCabinetId, id)
                     .eq(CabinetEnvSensor::getChannel, 2)
-                    .eq(CabinetEnvSensor::getType, 1)
+                    .eq(CabinetEnvSensor::getSensorType, 1)
                     .orderByAsc(CabinetEnvSensor::getPosition));
             List<Integer> searchIds = cabinetEnvSensors.stream().filter(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu()))) != null ).map(env -> pduIdMap.get(pduMap.get(String.valueOf(env.getPathPdu())))).collect(Collectors.toList());
             List<Integer> sensorIds = cabinetEnvSensors.stream().map(CabinetEnvSensor::getSensorId).collect(Collectors.toList());

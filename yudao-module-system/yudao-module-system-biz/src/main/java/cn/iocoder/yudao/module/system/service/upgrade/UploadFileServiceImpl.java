@@ -260,7 +260,7 @@ public class UploadFileServiceImpl implements UploadFileService{
                     UpgradeFileRespVO recordRespVO = BeanUtils.toBean(record, UpgradeFileRespVO.class);
                     recordRespVO.setUpgradeDevMsg(UpgradeDevEnum.getDescByType(record.getUpgradeDev()));
                     if (!CollectionUtils.isEmpty(record.getRoomIds())){
-                        List<String> names = roomIndexMapper.selectBatchIds(record.getRoomIds()).stream().map(RoomIndex::getName).collect(Collectors.toList());
+                        List<String> names = roomIndexMapper.selectBatchIds(record.getRoomIds()).stream().map(RoomIndex::getRoomName).collect(Collectors.toList());
                         recordRespVO.setRoomNames(names);
                     }
                     recordRespVOS.add(recordRespVO);
@@ -403,7 +403,7 @@ public class UploadFileServiceImpl implements UploadFileService{
             //pdu 主ip设备
             List<PduIndexDo> pduIndexDos = pduIndexDoMapper.selectList(new LambdaQueryWrapper<PduIndexDo>()
                     .eq(PduIndexDo::getIsDeleted, DelEnums.NO_DEL.getStatus())
-                    .eq(PduIndexDo::getCascadeAddr,"0")
+//                    .eq(PduIndexDo::getCascadeAddr,"0")
                     //非离线状态
                     .ne(PduIndexDo::getRunStatus,5));
             if (!CollectionUtils.isEmpty(pduIndexDos)){
@@ -419,7 +419,7 @@ public class UploadFileServiceImpl implements UploadFileService{
                     //非离线状态
                     .ne(BusIndex::getRunStatus,5));
             if (!CollectionUtils.isEmpty(busIndices)){
-                List<String> ips = busIndices.stream().map(BusIndex::getIpAddr).distinct().collect(Collectors.toList());
+                List<String> ips = busIndices.stream().map(BusIndex::getBusKey).distinct().collect(Collectors.toList());
                 devIps.addAll(ips);
                 ips.forEach(ip -> map.put(ip,getBusPosition(ip)));
             }
@@ -443,14 +443,14 @@ public class UploadFileServiceImpl implements UploadFileService{
                     List<AisleBar> barList = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
                             .in(AisleBar::getAisleId,aisleIds));
                     if (!CollectionUtils.isEmpty(barList)){
-                        List<String> keys = barList.stream().map(AisleBar::getBarKey).collect(Collectors.toList());
+                        List<String> keys = barList.stream().map(AisleBar::getBusKey).collect(Collectors.toList());
                         List<BusIndex> busIndices = busIndexDoMapper.selectList(new LambdaQueryWrapper<BusIndex>()
                                 .eq(BusIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
                                 //非离线状态
                                 .ne(BusIndex::getRunStatus,5)
-                                .in(BusIndex::getDevKey,keys));
+                                .in(BusIndex::getBusKey,keys));
                         if (!CollectionUtils.isEmpty(busIndices)){
-                            List<String> ips = busIndices.stream().map(BusIndex::getIpAddr).distinct().collect(Collectors.toList());
+                            List<String> ips = busIndices.stream().map(BusIndex::getBusKey).distinct().collect(Collectors.toList());
                             devIps.addAll(ips);
                             ips.forEach(ip -> map.put(ip,getBusPosition(ip)));
                         }
@@ -470,17 +470,17 @@ public class UploadFileServiceImpl implements UploadFileService{
                     if (!CollectionUtils.isEmpty(cabinetPdus)){
                         List<String> keys = new ArrayList<>();
                         cabinetPdus.forEach(pdu ->{
-                            keys.add(pdu.getPduIpA()+SPLIT_KEY + 0);
-                            keys.add(pdu.getPduIpB()+SPLIT_KEY + 0);
+                            keys.add(pdu.getPduKeyA()+SPLIT_KEY + 0);
+                            keys.add(pdu.getPduKeyB()+SPLIT_KEY + 0);
                         });
 
                         List<PduIndexDo> pduIndexDos = pduIndexDoMapper.selectList(new LambdaQueryWrapper<PduIndexDo>()
                                 .eq(PduIndexDo::getIsDeleted,DelEnums.NO_DEL.getStatus())
                                 //非离线状态
                                 .ne(PduIndexDo::getRunStatus,5)
-                                .in(PduIndexDo::getDevKey,keys));
+                                .in(PduIndexDo::getPduKey,keys));
                         if (!CollectionUtils.isEmpty(pduIndexDos)){
-                            List<String> ips = pduIndexDos.stream().filter(t -> t.getCascadeAddr().equals("0"))
+                            List<String> ips = pduIndexDos.stream().filter(t -> t.getCascadeId().equals("0"))
                                     .map(PduIndexDo::getIpAddr).distinct().collect(Collectors.toList());
                             ips.forEach(ip -> map.put(ip,getPduPosition(ip)));
 
@@ -609,12 +609,10 @@ public class UploadFileServiceImpl implements UploadFileService{
         //设备位置
         String devPosition = "";
         CabinetPdu aPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>()
-                .eq(CabinetPdu::getPduIpA,ip)
-                .eq(CabinetPdu::getCasIdA,0));
+                .eq(CabinetPdu::getPduKeyA,ip));
 
         CabinetPdu bPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>()
-                .eq(CabinetPdu::getPduIpB,ip)
-                .eq(CabinetPdu::getCasIdB,0));
+                .eq(CabinetPdu::getPduKeyB,ip));
 
         if (Objects.nonNull(aPdu)){
             CabinetIndex index = cabinetIndexMapper.selectById(aPdu.getCabinetId());
@@ -650,7 +648,7 @@ public class UploadFileServiceImpl implements UploadFileService{
         AtomicReference<String> devPosition = new AtomicReference<>("");
         //柜列
         List<AisleBar> aisleBarList  = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
-                .eq(AisleBar::getDevIp,ip));
+                .eq(AisleBar::getBusKey,ip));
         if (!CollectionUtils.isEmpty(aisleBarList)){
             List<Integer>  ids = aisleBarList.stream().map(AisleBar::getAisleId).distinct().collect(Collectors.toList());
 

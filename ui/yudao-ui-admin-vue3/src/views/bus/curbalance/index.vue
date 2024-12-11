@@ -43,55 +43,71 @@
         :inline="true"
         label-width="68px"                          
       >
-        <el-form-item v-if="switchValue == 0 ">
-          <template v-for="(status, index) in statusList" :key="index">
-            <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
-          </template>
-        </el-form-item>
-        <el-button
-          type="primary"
-          plain
-          @click="openForm('create')"
-          v-if="switchValue == 0 "
+        <div class="form-container">
+          <el-form-item v-if="switchValue == 0" class="inline-form-item">
+      <template v-for="(status, index) in statusList" :key="index">
+        <button
+          :class="status.selected ? status.activeClass : status.cssClass"
+          @click.prevent="handleSelectStatus(index)"
+          class="inline-button"
         >
-          <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
-        </el-button>
-        <el-form-item >
-          <el-checkbox-group  v-model="queryParams.status" @change="handleQuery">
-            <el-checkbox :label="5" :value="5">在线</el-checkbox>
-          </el-checkbox-group>
-        </el-form-item>
-        <el-form-item label="网络地址" prop="devKey">
-          <el-autocomplete
-            v-model="queryParams.devKey"
-            :fetch-suggestions="querySearch"
-            clearable
-            class="!w-200px"
-            placeholder="请输入网络地址"
-            @select="handleQuery"
-          />
-        <el-form-item style="margin-left: 10px">
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+          {{ status.name }}
+        </button>
+      </template>
+          </el-form-item>
           <el-button
             type="primary"
             plain
             @click="openForm('create')"
-            v-hasPermi="['pdu:PDU-device:create']"
+            v-if="switchValue == 0"
+            class="inline-button"
+            style="margin-top:-20px;"
           >
-            <Icon icon="ep:plus" class="mr-5px" /> 新增
+            <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
           </el-button>
-          <el-button
-            type="success"
-            plain
-            @click="handleExport"
-            :loading="exportLoading"
-            v-hasPermi="['pdu:PDU-device:export']"
-          >
-            <Icon icon="ep:download" class="mr-5px" /> 导出
-          </el-button>
-        </el-form-item>          
-        </el-form-item>
+          <el-form-item class="inline-form-item">
+            <el-checkbox-group v-model="queryParams.status" @change="handleQuery" class="inline-checkbox-group">
+        <el-checkbox :label="5" :value="5" class="inline-checkbox">在线</el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
+          <el-form-item label="网络地址" prop="devKey" class="inline-form-item">
+            <el-autocomplete
+              v-model="queryParams.devKey"
+              :fetch-suggestions="querySearch"
+              clearable
+              class="inline-autocomplete !w-200px"
+              placeholder="请输入网络地址"
+              @select="handleQuery"
+            />
+          </el-form-item>
+          <div class="button-group" style="margin-left: 10px">
+            <el-button @click="handleQuery" class="inline-button" style="margin-top:-20px;">
+              <Icon icon="ep:search" class="mr-5px" /> 搜索
+            </el-button>
+            <el-button @click="resetQuery" class="inline-button" style="margin-top:-20px;">
+              <Icon icon="ep:refresh" class="mr-5px" /> 重置
+            </el-button>
+            <el-button
+              type="primary"
+              plain
+              @click="openForm('create')"
+              v-hasPermi="['pdu:PDU-device:create']"
+              class="inline-button"
+            >
+              <Icon icon="ep:plus" class="mr-5px" /> 新增
+            </el-button>
+            <el-button
+              type="success"
+              plain
+              @click="handleExport"
+              :loading="exportLoading"
+              v-hasPermi="['pdu:PDU-device:export']"
+              class="inline-button"
+            >
+              <Icon icon="ep:download" class="mr-5px" /> 导出
+            </el-button>
+          </div>
+        </div>
         <div style="float:right">
           <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
           <el-button @click="statusList.forEach((item) => item.selected = true);pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压</el-button>
@@ -104,7 +120,8 @@
       <el-table v-show="visMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" width="218px"/>    
+        <el-table-column label="所在位置" align="center" prop="location"/>    
+        <el-table-column label="设备名称" align="center" prop="busName"/>  
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>      
         <el-table-column label="运行状态" align="center" prop="color" v-if="switchValue == 0">
           <template #default="scope" >
@@ -114,7 +131,7 @@
               <el-tag type="danger" v-if="scope.row.color == 4">大电流不平衡</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="不平衡度(%)" align="center" prop="curUnbalance" width="130px" v-if="switchValue == 0">
+        <el-table-column label="不平衡度(%)" align="center" prop="curUnbalance" width="80px" v-if="switchValue == 0">
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.curUnbalance != null" >
               {{ scope.row.curUnbalance }}
@@ -971,18 +988,47 @@ onActivated(() => {
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
+
 :deep(.el-form) {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }
+
 ::v-deep .el-table .el-table__header th{
   background-color: #f5f7fa;
   color: #909399;
   height: 80px;
 
+}
+
+.form-container {
+  display: flex;
+  align-items: center;
+}
+ 
+.inline-form-item,
+.inline-button,
+.inline-checkbox-group,
+.inline-autocomplete,
+.button-group {
+  margin-right: 10px; /* Adjust spacing as needed */
+}
+ 
+.inline-checkbox-group {
+  display: flex;
+  align-items: center;
+}
+ 
+.inline-checkbox {
+  margin-right: 5px; /* Adjust spacing between checkboxes if needed */
+}
+ 
+.inline-autocomplete {
+  width: 200px; /* Adjust width as needed */
 }
 </style>

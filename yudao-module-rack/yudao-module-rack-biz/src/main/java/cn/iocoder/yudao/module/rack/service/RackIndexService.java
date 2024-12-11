@@ -2,7 +2,7 @@ package cn.iocoder.yudao.module.rack.service;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.module.cabinet.dal.dataobject.index.PduIndex;
+import cn.iocoder.yudao.framework.common.vo.RackIndexRoomVO;
 import cn.iocoder.yudao.module.rack.dto.RackEqTrendDTO;
 import cn.iocoder.yudao.module.rack.dto.RackIndexDTO;
 import cn.iocoder.yudao.module.rack.dto.RackPowDTO;
@@ -79,9 +79,9 @@ public interface RackIndexService {
 
     void deleteData(String startTime,String endTime);
 
-    IPage<RackIndex> findRackIndexAll(int pageNo, int pageSize, String[] ipArray);
+    IPage<RackIndexRoomVO> findRackIndexAll(int pageNo, int pageSize, String[] ipArray);
 
-    List<RackIndex> findRackIndexToList(String[] ipArray);
+    List<RackIndexRoomVO> findRackIndexToList(String[] ipArray);
 
     String getAddressById(String devKey);
 }

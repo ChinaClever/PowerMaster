@@ -49,13 +49,13 @@ public class CabinetVo {
      * 电力容量
      */
     @Schema(description = "电力容量", example = "5")
-    private float powCapacity;
+    private Double powCapacity;
 
     /**
      * 数据来源
      */
     @Schema(description = "数据来源 0：PDU 1：母线", example = "0")
-    private int pduBox;
+    private Boolean pduBox;
     /**
      * 是否禁用
      */
@@ -136,7 +136,7 @@ public class CabinetVo {
 
 
     @Schema(description = "A路级联地址", example = "1")
-    private Integer addrA;
+    private String addrA;
 
 
     @Schema(description = "A路插接箱输出位id", example = "1")
@@ -151,7 +151,7 @@ public class CabinetVo {
 
 
     @Schema(description = "B路级联地址", example = "1")
-    private Integer addrB;
+    private String addrB;
 
 
     @Schema(description = "B路插接箱输出位id", example = "1")

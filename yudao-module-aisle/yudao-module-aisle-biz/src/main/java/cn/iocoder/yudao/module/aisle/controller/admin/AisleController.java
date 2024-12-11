@@ -108,6 +108,14 @@ public class AisleController {
     }
 
 
+    @Operation(summary = "柜列始端箱单个删除")
+    @GetMapping("/aisle/box/singleDelete")
+    public CommonResult<Integer> deleteAisleSingleBox(@Param("id") int id) {
+        int  deleteAisleSingleBox = aisleService.deleteAisleSingleBox(id);
+        return success(deleteAisleSingleBox);
+    }
+
+
     /**
      * 柜列母线新增/编辑页面
      *
@@ -119,6 +127,7 @@ public class AisleController {
             aisleService.aisleBusSave(vo);
         return CommonResult.success(vo.getAisleId());
     }
+
 
 
     /**

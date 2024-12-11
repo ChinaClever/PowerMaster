@@ -11,16 +11,13 @@ import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.*;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
-import cn.iocoder.yudao.framework.common.enums.DelEnums;
-import cn.iocoder.yudao.framework.common.enums.DisableEnums;
-import cn.iocoder.yudao.framework.common.enums.PduBoxEnums;
+import cn.iocoder.yudao.framework.common.enums.*;
 import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
-import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.cabinet.enums.CabinetLoadEnums;
 import cn.iocoder.yudao.module.cabinet.mapper.RackIndexMapper;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
@@ -117,6 +114,19 @@ public class CabinetServiceImpl implements CabinetService {
                     if (Objects.nonNull(jsonObject)) {
                         jsonObject.put(COMPANY, Objects.nonNull(dto.getCompany()) ? dto.getCompany() : "");
                         result.add(jsonObject);
+                    }else {
+                        Map map = new HashMap();
+                        map.put("cabinet_name",dto.getName());
+                        map.put("status",dto.getRunStatus());
+                        map.put("cabinet_key",dto.getRoomId()+"-"+dto.getId());
+                        map.put("pow_capacity",dto.getPowCapacity());
+                        Map map1 = new HashMap();
+                        map.put("cabinet_power",map1);
+
+                        Map map2 = new HashMap();
+                        map2.put("ele_active",0);map2.put("pow_active",0);map2.put("pow_apparent",0);map2.put("pow_reactive",0);map2.put("power_factor",0);
+                        map1.put("total_data",map2);
+                        result.add(JSON.parseObject(JSON.toJSONString(map)));
                     }
                 });
             }
@@ -154,27 +164,27 @@ public class CabinetServiceImpl implements CabinetService {
             if (Objects.nonNull(index)) {
 
                 dto.setId(id);
-                dto.setCabinetName(index.getName());
+                dto.setCabinetName(index.getCabinetName());
                 dto.setAisleId(index.getAisleId());
                 dto.setRoomId(index.getRoomId());
-                dto.setPowCapacity(index.getPowCapacity());
+                dto.setPowCapacity(index.getPowerCapacity());
                 dto.setRunStatus(index.getRunStatus());
                 dto.setPduBox(index.getPduBox());
-                dto.setEleAlarmDay(index.getEleAlarmDay());
-                dto.setEleAlarmMonth(index.getEleAlarmMonth());
-                dto.setEleLimitDay(index.getEleLimitDay());
-                dto.setEleLimitMonth(index.getEleLimitMonth());
+//                dto.setEleAlarmDay(index.getEleAlarmDay());
+//                dto.setEleAlarmMonth(index.getEleAlarmMonth());
+//                dto.setEleLimitDay(index.getEleLimitDay());
+//                dto.setEleLimitMonth(index.getEleLimitMonth());
 
                 //机房信息
                 RoomIndex roomIndex = roomIndexMapper.selectById(index.getRoomId());
-                dto.setRoomName(roomIndex.getName());
+                dto.setRoomName(roomIndex.getRoomName());
 
                 //基本配置信息
                 CabinetCfg cfg = cabinetCfgMapper.selectOne(new LambdaQueryWrapper<CabinetCfg>()
                         .eq(CabinetCfg::getCabinetId, index.getId()));
                 if (Objects.nonNull(cfg)) {
-                    dto.setCabinetHeight(cfg.getCabinetHeight());
-                    dto.setType(cfg.getType());
+//                    dto.setCabinetHeight(cfg.getCabinetHeight());
+//                    dto.setType(cfg.getType());
                     dto.setXCoordinate(cfg.getXCoordinate());
                     dto.setYCoordinate(cfg.getYCoordinate());
                     dto.setCompany(cfg.getCompany());
@@ -182,23 +192,23 @@ public class CabinetServiceImpl implements CabinetService {
                 //配置的数据来源信息
                 ValueOperations ops = redisTemplate.opsForValue();
 
-                if (index.getPduBox() == PduBoxEnums.PDU.getValue()){
+                if (index.getPduBox() == PduBoxFlagEnums.PDU.getValue()){
                     //来源pdu
                     CabinetPdu pdu = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>()
                             .eq(CabinetPdu::getCabinetId, index.getId()));
 
                     if (Objects.nonNull(pdu)) {
-                        dto.setPduIpA(pdu.getPduIpA());
-                        dto.setPduIpB(pdu.getPduIpB());
-                        dto.setCasIdA(pdu.getCasIdA());
-                        dto.setCasIdB(pdu.getCasIdB());
+                        dto.setPduIpA(pdu.getPduKeyA());
+                        dto.setPduIpB(pdu.getPduKeyB());
+//                        dto.setCasIdA(pdu.getCasIdA());
+//                        dto.setCasIdB(pdu.getCasIdB());
 
                         //获取pdu数据
                         StringBuilder aKey = new StringBuilder();
                         aKey.append(REDIS_KEY_PDU);
-                        aKey.append(pdu.getPduIpA());
-                        aKey.append(SPLIT_KEY);
-                        aKey.append(pdu.getCasIdA());
+                        aKey.append(pdu.getPduKeyA());
+//                        aKey.append(SPLIT_KEY);
+//                        aKey.append(pdu.getCasIdA());
 
                         Object aPdu = ops.get(aKey.toString());
                         if (Objects.nonNull(aPdu)){
@@ -218,9 +228,9 @@ public class CabinetServiceImpl implements CabinetService {
                         }
                         StringBuilder bKey = new StringBuilder();
                         bKey.append(REDIS_KEY_PDU);
-                        bKey.append(pdu.getPduIpB());
-                        bKey.append(SPLIT_KEY);
-                        bKey.append(pdu.getCasIdB());
+                        bKey.append(pdu.getPduKeyB());
+//                        bKey.append(SPLIT_KEY);
+//                        bKey.append(pdu.getCasIdB());
 
                         Object bPdu = ops.get(bKey.toString());
                         if (Objects.nonNull(bPdu)){
@@ -239,25 +249,25 @@ public class CabinetServiceImpl implements CabinetService {
 
                         }
                     }
-                }else if (index.getPduBox() == PduBoxEnums.BUS.getValue()){
+                }else if (index.getPduBox() == PduBoxFlagEnums.BUS.getValue()){
                     //配置的母线数据
-                    CabinetBus cabinetBus = cabinetBusMapper.selectOne(new LambdaQueryWrapper<CabinetBus>()
-                            .eq(CabinetBus::getCabinetId, index.getId()));
+                    CabinetBox cabinetBus = cabinetBusMapper.selectOne(new LambdaQueryWrapper<CabinetBox>()
+                            .eq(CabinetBox::getCabinetId, index.getId()));
                     if (Objects.nonNull(cabinetBus)){
-                        if (StringUtils.isNotEmpty(cabinetBus.getDevKeyA())){
+                        if (StringUtils.isNotEmpty(cabinetBus.getBoxKeyA())){
                             BoxIndex  boxIndex = boxIndexMapper.selectOne(new LambdaQueryWrapper<BoxIndex>()
-                                    .eq(BoxIndex::getDevKey,cabinetBus.getDevKeyA()));
+                                    .eq(BoxIndex::getBoxKey,cabinetBus.getBoxKeyA()));
 
                             if (Objects.nonNull(boxIndex)){
 
                                 dto.setBusIpA(boxIndex.getIpAddr());
-                                dto.setBusNameA(boxIndex.getBusName());
+//                                dto.setBusNameA(boxIndex.getBusName());
                                 dto.setBoxNameA(boxIndex.getBoxName());
-                                dto.setBarIdA(boxIndex.getBarId());
-                                dto.setAddrA(boxIndex.getCasAddr());
+                                dto.setBarIdA(boxIndex.getBusId());
+                                dto.setAddrA(boxIndex.getBoxId());
                                 dto.setBoxOutletIdA(cabinetBus.getOutletIdA());
                             }else {
-                                String[] keys = cabinetBus.getDevKeyA().split(SPLIT_KEY);
+                                String[] keys = cabinetBus.getBoxKeyA().split(SPLIT_KEY);
                                 dto.setBusIpA(keys[0]);
                                 dto.setBarIdA(Integer.valueOf(keys[1]));
                                 dto.setAddrA(Integer.valueOf(keys[2]));
@@ -266,19 +276,19 @@ public class CabinetServiceImpl implements CabinetService {
 
                         }
 
-                        if (StringUtils.isNotEmpty(cabinetBus.getDevKeyB())){
+                        if (StringUtils.isNotEmpty(cabinetBus.getBoxKeyB())){
                             BoxIndex  boxIndex = boxIndexMapper.selectOne(new LambdaQueryWrapper<BoxIndex>()
-                                    .eq(BoxIndex::getDevKey,cabinetBus.getDevKeyA()));
+                                    .eq(BoxIndex::getBoxKey,cabinetBus.getBoxKeyA()));
                             if (Objects.nonNull(boxIndex)){
 
                                 dto.setBusIpB(boxIndex.getIpAddr());
-                                dto.setBusNameB(boxIndex.getBusName());
+//                                dto.setBusNameB(boxIndex.getBusName());
                                 dto.setBoxNameB(boxIndex.getBoxName());
-                                dto.setBarIdB(boxIndex.getBarId());
-                                dto.setAddrB(boxIndex.getCasAddr());
+                                dto.setBarIdB(boxIndex.getBusId());
+                                dto.setAddrB(boxIndex.getBoxId());
                                 dto.setBoxOutletIdB(cabinetBus.getOutletIdB());
                             }else {
-                                String[] keys = cabinetBus.getDevKeyB().split(SPLIT_KEY);
+                                String[] keys = cabinetBus.getBoxKeyB().split(SPLIT_KEY);
                                 dto.setBusIpB(keys[0]);
                                 dto.setBarIdB(Integer.valueOf(keys[1]));
                                 dto.setAddrB(Integer.valueOf(keys[2]));
@@ -286,8 +296,8 @@ public class CabinetServiceImpl implements CabinetService {
                             }
 
                         }
-                        dto.setBoxIndexA(cabinetBus.getBoxIndexA());
-                        dto.setBoxIndexB(cabinetBus.getBoxIndexB());
+//                        dto.setBoxIndexA(cabinetBus.getBoxIndexA());
+//                        dto.setBoxIndexB(cabinetBus.getBoxIndexB());
                     }
                 }
 
@@ -305,7 +315,7 @@ public class CabinetServiceImpl implements CabinetService {
                         sensorDTO.setPosition(env.getPosition());
                         sensorDTO.setPathPdu(String.valueOf(env.getPathPdu()));
                         sensorDTO.setSensorId(env.getSensorId());
-                        sensorDTO.setSensorType(env.getType());
+                        sensorDTO.setSensorType(env.getSensorType());
                         sensorDtos.add(sensorDTO);
                     });
                    dto.setSensorList(sensorDtos);
@@ -344,7 +354,7 @@ public class CabinetServiceImpl implements CabinetService {
         try {
 
             //判断pdu是否已经关联其他机柜
-            if (vo.getPduBox() == PduBoxEnums.PDU.getValue()){
+            if (vo.getPduBox() == PduBoxFlagEnums.PDU.getValue()){
                 List<CabinetIndex> indexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
                         .eq(CabinetIndex::getIsDeleted, DelEnums.NO_DEL.getStatus())
                         .eq(CabinetIndex::getIsDisabled, DisableEnums.ENABLE.getStatus())
@@ -400,10 +410,10 @@ public class CabinetServiceImpl implements CabinetService {
                 //新增
                 //判断机柜名称是否重复（已删除的或者已禁用的恢复）
                 index = cabinetIndexMapper.selectOne(new LambdaQueryWrapper<CabinetIndex>()
-                        .eq(CabinetIndex::getName, vo.getCabinetName())
+                        .eq(CabinetIndex::getCabinetName, vo.getCabinetName())
                         .eq(CabinetIndex::getRoomId, vo.getRoomId()));
                 if (Objects.nonNull(index)) {
-                    if (index.getIsDeleted() == DelEnums.DELETE.getStatus() || index.getIsDisabled() == DisableEnums.DISABLE.getStatus()) {
+                    if (index.getIsDeleted() == DelFlagEnums.DELETE.getStatus() || index.getIsDisabled() == DisableFlagEnums.DISABLE.getStatus()) {
                         //index 索引表
                         //修改
                         cabinetIndexMapper.updateById(convertIndex(vo, index));
@@ -437,7 +447,7 @@ public class CabinetServiceImpl implements CabinetService {
                 cabinetCfgMapper.insert(convertCfg(vo, cfg));
             }
 
-            if (vo.getPduBox() == PduBoxEnums.PDU.getValue()){
+            if (vo.getPduBox() == PduBoxFlagEnums.PDU.getValue()){
 
                 if (StringUtils.isEmpty(vo.getPduIpA()) && StringUtils.isEmpty(vo.getPduIpB())){
 
@@ -462,17 +472,17 @@ public class CabinetServiceImpl implements CabinetService {
                         cabinetPduMapper.insert(convertPdu(vo, pdu));
                     }
                 }
-            }else if (vo.getPduBox() == PduBoxEnums.BUS.getValue()){
+            }else if (vo.getPduBox() == PduBoxFlagEnums.BUS.getValue()){
 
                 if (Objects.isNull(vo.getAddrA()) && Objects.isNull(vo.getAddrB())){
                     //删除
-                    cabinetBusMapper.delete(new LambdaQueryWrapper<CabinetBus>()
-                            .eq(CabinetBus::getCabinetId, vo.getId()));
+                    cabinetBusMapper.delete(new LambdaQueryWrapper<CabinetBox>()
+                            .eq(CabinetBox::getCabinetId, vo.getId()));
                 }
 
                 //母线关联表
-                CabinetBus bus = cabinetBusMapper.selectOne(new LambdaQueryWrapper<CabinetBus>()
-                        .eq(CabinetBus::getCabinetId, vo.getId()));
+                CabinetBox bus = cabinetBusMapper.selectOne(new LambdaQueryWrapper<CabinetBox>()
+                        .eq(CabinetBox::getCabinetId, vo.getId()));
 
 
 
@@ -481,7 +491,7 @@ public class CabinetServiceImpl implements CabinetService {
                     cabinetBusMapper.updateById(convertBus(vo,bus));
                 }else {
                     //新增
-                    bus = new CabinetBus();
+                    bus = new CabinetBox();
                     if (Objects.nonNull(vo.getAddrA()) || Objects.nonNull(vo.getAddrB())){
                         //新增
                         cabinetBusMapper.insert(convertBus(vo, bus));
@@ -518,14 +528,14 @@ public class CabinetServiceImpl implements CabinetService {
             if (!CollectionUtils.isEmpty(rackIndexList)){
                 throw new RuntimeException("存在未删除机架，不可删除");
             }
-            if (index.getIsDeleted() == DelEnums.DELETE.getStatus()) {
+            if (index.getIsDeleted() == DelFlagEnums.DELETE.getStatus()) {
                 //已经删除则物理删除
                 cabinetIndexMapper.deleteById(id);
                 //删除pdu关联关系
                 cabinetPduMapper.delete(new LambdaQueryWrapper<CabinetPdu>()
                         .eq(CabinetPdu::getCabinetId, id));
-                cabinetBusMapper.delete(new LambdaQueryWrapper<CabinetBus>()
-                        .eq(CabinetBus::getCabinetId, id));
+                cabinetBusMapper.delete(new LambdaQueryWrapper<CabinetBox>()
+                        .eq(CabinetBox::getCabinetId, id));
                 //删除配置信息
                 cabinetCfgMapper.delete(new LambdaQueryWrapper<CabinetCfg>()
                         .eq(CabinetCfg::getCabinetId, id));
@@ -540,8 +550,8 @@ public class CabinetServiceImpl implements CabinetService {
                 //删除pdu关联关系
                 cabinetPduMapper.delete(new LambdaQueryWrapper<CabinetPdu>()
                         .eq(CabinetPdu::getCabinetId, id));
-                cabinetBusMapper.delete(new LambdaQueryWrapper<CabinetBus>()
-                        .eq(CabinetBus::getCabinetId, id));
+                cabinetBusMapper.delete(new LambdaQueryWrapper<CabinetBox>()
+                        .eq(CabinetBox::getCabinetId, id));
                 //删除环境信息
                 envSensorMapper.delete(new LambdaQueryWrapper<CabinetEnvSensor>()
                         .eq(CabinetEnvSensor::getCabinetId,id));
@@ -587,7 +597,7 @@ public class CabinetServiceImpl implements CabinetService {
                 if (!CollectionUtils.isEmpty(roomIds)){
                     List<RoomIndex> roomIndexList = roomIndexMapper.selectBatchIds(roomIds);
                     if (!CollectionUtils.isEmpty(roomIndexList)){
-                        Map<Integer,String>  map = roomIndexList.stream().collect(Collectors.toMap(RoomIndex::getId,RoomIndex::getName));
+                        Map<Integer,String>  map = roomIndexList.stream().collect(Collectors.toMap(RoomIndex::getId,RoomIndex::getRoomName));
 
                         if (Objects.nonNull(map)){
                             indexDTOPage.getRecords().forEach(dto -> {
@@ -672,7 +682,7 @@ public class CabinetServiceImpl implements CabinetService {
                 if (!CollectionUtils.isEmpty(roomIds)){
                     List<RoomIndex> roomIndexList = roomIndexMapper.selectBatchIds(roomIds);
                     if (!CollectionUtils.isEmpty(roomIndexList)){
-                        Map<Integer,String>  map = roomIndexList.stream().collect(Collectors.toMap(RoomIndex::getId,RoomIndex::getName));
+                        Map<Integer,String>  map = roomIndexList.stream().collect(Collectors.toMap(RoomIndex::getId,RoomIndex::getRoomName));
 
                         if (Objects.nonNull(map)){
                             indexDTOPage.getRecords().forEach(dto -> {
@@ -746,14 +756,31 @@ public class CabinetServiceImpl implements CabinetService {
      * @return
      */
     @Override
-    public PageResult<CabinetIndexVo> getDeletedCabinetPage(CabinetIndexVo pageReqVO) {
+    public PageResult<JSONObject> getDeletedCabinetPage(CabinetIndexVo pageReqVO) {
+        List<JSONObject> result = new ArrayList<>();
+        try {
+            Page<CabinetIndexDTO> page = new Page<>(pageReqVO.getPageNo(), pageReqVO.getPageSize());
+            Page<CabinetIndexDTO> indexDTOPage = cabinetCfgMapper.selectCabdeleteList(page, pageReqVO);
+            indexDTOPage.getRecords().forEach(dto -> {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("id", dto.getId());
+                jsonObject.put("name", dto.getName());
+                jsonObject.put("pduBox", dto.getPduBox());
+                jsonObject.put("runStatus", dto.getRunStatus());
+                jsonObject.put("updateTime", dto.getUpdateTime());
+                result.add(jsonObject);
+            });
+            return new PageResult<>(result, indexDTOPage.getTotal());
+        } catch (Exception e) {
+            log.error("获取数据失败：", e);
+        }
+        return new PageResult<>(new ArrayList<>(), 0L);
+    }
 
-        LambdaQueryWrapper<CabinetIndex> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CabinetIndex::getIsDeleted,0);
-        List<CabinetIndex> cabinetIndices = cabinetIndexMapper.selectList(queryWrapper);
-        System.out.println(cabinetIndices);
-        System.out.println(cabinetIndices.toString());
-        return null;
+    //设备恢复
+    @Override
+    public int getrestorerCabinet(Integer id) {
+        return cabinetCfgMapper.updaterestorerCabinet(id);
     }
 
     /**
@@ -762,39 +789,18 @@ public class CabinetServiceImpl implements CabinetService {
      */
     @Override
     public PageResult<JSONObject> getCabinetRunStatus() {
-        Map<String, Integer> statusCounts = new HashMap<>();
+
         //查询全部的机柜配电状态
-        List<CabinetIndexDTO> cabinetCfgs = cabinetCfgMapper.selectRunStatus();
-        cabinetCfgs.forEach(dto -> {
-            String key = REDIS_KEY_CABINET + dto.getRoomId() + SPLIT_KEY + dto.getId();
-            JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(redisTemplate.opsForValue().get(key)));
-            if (Objects.nonNull(jsonObject)) {
-                String status = jsonObject.getString("status");
-                statusCounts.put(status, statusCounts.getOrDefault(status, 0) + 1);
-            }
-        });
+        Map<String,Integer> statusCounts = cabinetCfgMapper.selectRunStatus();
+
         JSONObject jsonObject = new JSONObject();
         List<JSONObject> result = new ArrayList<>();
-        jsonObject.put("sumNoload", 0);
-        jsonObject.put("sumNormal", 0);
-        jsonObject.put("sumEarly", 0);
-        jsonObject.put("sumInform", 0);
-        statusCounts.forEach((status, count) -> {
-            switch (status) {
-                case "0":
-                    jsonObject.put("sumNoload", count);
-                    break;
-                case "1":
-                    jsonObject.put("sumNormal", count);
-                    break;
-                case "2":
-                    jsonObject.put("sumEarly", count);
-                    break;
-                case "3":
-                    jsonObject.put("sumInform", count);
-                    break;
-            }
-        });
+        if (Objects.nonNull(statusCounts)) {
+            jsonObject.put("sumNoload", statusCounts.get("sumNoload"));
+            jsonObject.put("sumNormal", statusCounts.get("sumNormal"));
+            jsonObject.put("sumEarly", statusCounts.get("sumEarly"));
+            jsonObject.put("sumInform", statusCounts.get("sumInform"));
+        }
         result.add(jsonObject);
         return new PageResult<>(result);
     }
@@ -809,19 +815,19 @@ public class CabinetServiceImpl implements CabinetService {
     private CabinetIndex convertIndex(CabinetVo vo, CabinetIndex index) {
         CabinetIndex cabinetIndex = new CabinetIndex();
         cabinetIndex.setAisleId(vo.getAisleId());
-        cabinetIndex.setName(vo.getCabinetName());
+        cabinetIndex.setCabinetName(vo.getCabinetName());
         cabinetIndex.setPduBox(vo.getPduBox());
         //未删除
-        cabinetIndex.setIsDeleted(DelEnums.NO_DEL.getStatus());
+        cabinetIndex.setIsDeleted(DelFlagEnums.NO_DEL.getStatus());
         //未禁用
-        cabinetIndex.setIsDisabled(DisableEnums.ENABLE.getStatus());
-        cabinetIndex.setPowCapacity(vo.getPowCapacity());
+        cabinetIndex.setIsDisabled(DisableFlagEnums.ENABLE.getStatus());
+        cabinetIndex.setPowerCapacity(vo.getPowCapacity());
         cabinetIndex.setRoomId(vo.getRoomId());
         cabinetIndex.setId(index.getId());
-        cabinetIndex.setEleAlarmDay(vo.getEleAlarmDay());
-        cabinetIndex.setEleAlarmMonth(vo.getEleAlarmMonth());
-        cabinetIndex.setEleLimitDay(vo.getEleLimitDay());
-        cabinetIndex.setEleLimitMonth(vo.getEleLimitMonth());
+//        cabinetIndex.setEleAlarmDay(vo.getEleAlarmDay());
+//        cabinetIndex.setEleAlarmMonth(vo.getEleAlarmMonth());
+//        cabinetIndex.setEleLimitDay(vo.getEleLimitDay());
+//        cabinetIndex.setEleLimitMonth(vo.getEleLimitMonth());
         return cabinetIndex;
     }
 
@@ -835,10 +841,11 @@ public class CabinetServiceImpl implements CabinetService {
     private CabinetPdu convertPdu(CabinetVo vo, CabinetPdu pdu) {
         CabinetPdu cabinetPdu = new CabinetPdu();
         cabinetPdu.setCabinetId(vo.getId());
-        cabinetPdu.setPduIpA(vo.getPduIpA());
-        cabinetPdu.setPduIpB(vo.getPduIpB());
-        cabinetPdu.setCasIdB(vo.getCasIdB());
-        cabinetPdu.setCasIdA(vo.getCasIdA());
+        //TODO 后期更改
+//        cabinetPdu.setPduIpA(vo.getPduIpA());
+//        cabinetPdu.setPduIpB(vo.getPduIpB());
+//        cabinetPdu.setCasIdB(vo.getCasIdB());
+//        cabinetPdu.setCasIdA(vo.getCasIdA());
         cabinetPdu.setId(pdu.getId());
         return cabinetPdu;
     }
@@ -849,37 +856,37 @@ public class CabinetServiceImpl implements CabinetService {
      * @param bus
      * @return
      */
-    private CabinetBus convertBus(CabinetVo vo, CabinetBus bus) {
-        CabinetBus cabinetBus = new CabinetBus();
+    private CabinetBox convertBus(CabinetVo vo, CabinetBox bus) {
+        CabinetBox cabinetBus = new CabinetBox();
         cabinetBus.setCabinetId(vo.getId());
         if (StringUtils.isNotEmpty(vo.getBusIpA())
                 && Objects.nonNull(vo.getBarIdA())
                 && Objects.nonNull(vo.getAddrA())){
-            cabinetBus.setDevKeyA(vo.getBusIpA()
+            cabinetBus.setBoxKeyA(vo.getBusIpA()
                     .concat(SPLIT_KEY)
                     .concat(String.valueOf(vo.getBarIdA()))
                     .concat(SPLIT_KEY)
                     .concat(String.valueOf(vo.getAddrA())));
         }else {
-            cabinetBus.setDevKeyA("");
+            cabinetBus.setBoxKeyA("");
         }
 
         cabinetBus.setOutletIdA(vo.getBoxOutletIdA());
         if (StringUtils.isNotEmpty(vo.getBusIpB())
                 && Objects.nonNull(vo.getBarIdB())
                 && Objects.nonNull(vo.getAddrB())){
-            cabinetBus.setDevKeyB(vo.getBusIpB()
+            cabinetBus.setBoxKeyB(vo.getBusIpB()
                     .concat(SPLIT_KEY)
                     .concat(String.valueOf(vo.getBarIdB()))
                     .concat(SPLIT_KEY)
                     .concat(String.valueOf(vo.getAddrB())));
         }else {
-            cabinetBus.setDevKeyB("");
+            cabinetBus.setBoxKeyB("");
         }
         cabinetBus.setOutletIdB(vo.getBoxOutletIdB());
         cabinetBus.setId(bus.getId());
-        cabinetBus.setBoxIndexA(vo.getBoxIndexA());
-        cabinetBus.setBoxIndexB(vo.getBoxIndexB());
+//        cabinetBus.setBoxIndexA(vo.getBoxIndexA());
+//        cabinetBus.setBoxIndexB(vo.getBoxIndexB());
         return cabinetBus;
     }
 
@@ -894,10 +901,11 @@ public class CabinetServiceImpl implements CabinetService {
     private CabinetCfg convertCfg(CabinetVo vo, CabinetCfg cfg) {
         CabinetCfg cabinetCfg = new CabinetCfg();
         cabinetCfg.setCabinetId(vo.getId());
-        cabinetCfg.setCabinetHeight(vo.getCabinetHeight());
-        cabinetCfg.setCabinetName(vo.getCabinetName());
+        //TODO  后期更改
+//        cabinetCfg.setCabinetHeight(vo.getCabinetHeight());
+//        cabinetCfg.setCabinetName(vo.getCabinetName());
         cabinetCfg.setCompany(vo.getCompany());
-        cabinetCfg.setType(vo.getType());
+//        cabinetCfg.setType(vo.getType());
         cabinetCfg.setXCoordinate(vo.getXCoordinate());
         cabinetCfg.setYCoordinate(vo.getYCoordinate());
         cabinetCfg.setId(cfg.getId());
@@ -918,10 +926,8 @@ public class CabinetServiceImpl implements CabinetService {
         }
         List<CabinetPdu> pduFlag = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>()
                 .in(CabinetPdu::getCabinetId, ids)
-                .and((wq -> wq.and(qr -> qr.eq(CabinetPdu::getPduIpA, ip)
-                                .eq(CabinetPdu::getCasIdA, cas))
-                        .or(qr -> qr.eq(CabinetPdu::getPduIpB, ip)
-                                .eq(CabinetPdu::getCasIdB, cas)))
+                .and((wq -> wq.and(qr -> qr.eq(CabinetPdu::getPduKeyA, ip+"-"+cas))//.eq(CabinetPdu::getCasIdA, cas)
+                        .or(qr -> qr.eq(CabinetPdu::getPduKeyB, ip+"-"+cas)))//.eq(CabinetPdu::getCasIdB, cas)
                 )
         );
         if (!CollectionUtils.isEmpty(pduFlag)) {

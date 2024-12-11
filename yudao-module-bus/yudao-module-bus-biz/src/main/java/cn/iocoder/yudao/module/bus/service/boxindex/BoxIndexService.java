@@ -1,9 +1,9 @@
 package cn.iocoder.yudao.module.bus.service.boxindex;
 
+import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.dto.BoxIndexDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.*;
-import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusActivePowDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusEleChainDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusEqTrendDTO;
@@ -129,4 +129,5 @@ public interface BoxIndexService {
 
     Map getAvgBoxHdaLineForm(BoxIndexPageReqVO pageReqVO) throws IOException;
 
+    LineBoxMaxResVO getBoxLineMax(BusIndexPageReqVO pageReqVO) throws IOException;
 }

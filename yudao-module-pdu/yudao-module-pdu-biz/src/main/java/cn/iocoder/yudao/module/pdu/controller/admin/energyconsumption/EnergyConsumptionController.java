@@ -9,6 +9,7 @@ import cn.iocoder.yudao.module.pdu.controller.admin.energyconsumption.VO.*;
 import cn.iocoder.yudao.module.pdu.service.energyconsumption.EnergyConsumptionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +28,7 @@ import static cn.iocoder.yudao.framework.operatelog.core.enums.OperateTypeEnum.E
 @RequestMapping("/pdu/eq-data")
 @Validated
 public class EnergyConsumptionController {
-    @Resource
+    @Autowired
     private EnergyConsumptionService energyConsumptionService;
 
     @GetMapping("/page")
@@ -122,10 +123,12 @@ public class EnergyConsumptionController {
         List<Object> list = energyConsumptionService.getEQDataDetails(reqVO).getList();
 
         if(!list.isEmpty()){
-            List<Object> list1 = energyConsumptionService.getNewOutLetsList(list);
+            List<OutLetsPageRespVO> bean = BeanUtils.toBean(list, OutLetsPageRespVO.class);
+            bean.stream().forEach(iter ->{iter.setLocation(reqVO.getNowAddress());});
+//            List<Object> list1 = energyConsumptionService.getNewOutLetsList(list);
             // 导出 Excel
             ExcelUtils.write(response, "PDU能耗趋势.xlsx", "数据", OutLetsPageRespVO.class,
-                    BeanUtils.toBean(list1, OutLetsPageRespVO.class));
+                    bean);
         }
         else{
             List<OutLetsPageRespVO>list2=new ArrayList<>();

@@ -40,7 +40,7 @@ public class AisleDetailDTO {
     /**
      * 数据来源 0：PDU 1：母线
      */
-    private Integer pduBar;
+    private Boolean pduBar;
 
     /**
      * 长度

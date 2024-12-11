@@ -36,7 +36,13 @@ public class RoomSaveVo {
      * 电力容量
      */
     @Schema(description = "电力容量", example = "5")
-    private float powCapacity;
+    private float powerCapacity;
+
+    /**
+     * 空调额定功率
+     */
+    @Schema(description = "空调额定功率", example = "0")
+    private float airPower;
 
 
     /**

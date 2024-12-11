@@ -1,13 +1,12 @@
 package cn.iocoder.yudao.module.bus.service.busindex;
 
-import javax.validation.*;
-
+import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailRespVO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
-import cn.iocoder.yudao.framework.common.pojo.PageResult;
 
+import javax.validation.Valid;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -130,4 +129,5 @@ public interface BusIndexService {
 
     Map getAvgBusHdaLineForm(BusIndexPageReqVO pageReqVO) throws IOException;
 
+    LineMaxResVO getBusLineMax(BusIndexPageReqVO pageReqVO) throws IOException;
 }

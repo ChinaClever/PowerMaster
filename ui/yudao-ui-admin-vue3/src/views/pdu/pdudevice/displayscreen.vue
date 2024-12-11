@@ -229,7 +229,7 @@
       <el-card style="margin: 10px;">
         <el-row>
           <el-col >
-            <span style="width: 100%">趋势图</span>
+            <span style="width: 100%">总功率趋势图</span>
           </el-col>
           <el-col >
             <div style="float:right;margin-top: 0;">
@@ -631,7 +631,15 @@ const initChart = async () => {
   chartData.value.factorList.forEach((obj,index) => {
     chartData.value.factorList[index] = obj?.toFixed(2);
   });
-  
+
+  if(queryParams.powGranularity === 'oneHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes
+  }else if(queryParams.powGranularity === 'twentyfourHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes.map(item => item.slice(5, item.length));
+  }else if(queryParams.powGranularity === 'seventytwoHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes.map(item => item.slice(0, 16));
+  }
+
   if (chartContainer.value && instance) {
     chart = echarts.init(chartContainer.value);
     chart.setOption({
@@ -945,6 +953,14 @@ const setNewChartData = async () => {
   chartData.value.apparentList.push(temp.apparent?.toFixed(3));
   chartData.value.activeList.push(temp.active?.toFixed(3));
 
+  if(queryParams.powGranularity === 'oneHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes
+  }else if(queryParams.powGranularity === 'twentyfourHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes.map(item => item.slice(5, item.length));
+  }else if(queryParams.powGranularity === 'seventytwoHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes.map(item => item.slice(0, 16));
+  }
+
   chart?.setOption({
     xAxis: { data: chartData.value.dateTimes },
     series: [
@@ -1059,6 +1075,14 @@ const flashChartData = async () =>{
   chartData.value.factorList.forEach((obj,index) => {
     chartData.value.factorList[index] = obj?.toFixed(2);
   });
+
+  if(queryParams.powGranularity === 'oneHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes
+  }else if(queryParams.powGranularity === 'twentyfourHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes.map(item => item.slice(5, item.length));
+  }else if(queryParams.powGranularity === 'seventytwoHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes.map(item => item.slice(0, 16));
+  }
   
   // 创建新的图表实例
   chart = echarts.init(document.getElementById('chartContainer'));
@@ -1602,6 +1626,14 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
     chartData.value.factorList.forEach((obj,index) => {
       chartData.value.factorList[index] = obj?.toFixed(2);
     });
+
+  if(queryParams.powGranularity === 'oneHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes
+  }else if(queryParams.powGranularity === 'twentyfourHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes.map(item => item.slice(5, item.length));
+  }else if(queryParams.powGranularity === 'seventytwoHour'){
+    chartData.value.dateTimes = chartData.value.dateTimes.map(item => item.slice(0, 16));
+  }
     // 创建新的图表实例
     chart = echarts.init(document.getElementById('chartContainer'));
 
@@ -1739,10 +1771,10 @@ const PDUHdaLineHisdata = async (type) => {
     lineidDateTimes.value = result.dateTimes
   }else if(type === 'twentyfourHour'){
     const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey , type: 'twentyfourHour'})
-    lineidDateTimes.value = result.dateTimes
+    lineidDateTimes.value = result.dateTimes.map(item => item.slice(5, item.length));
   }else if(type === 'seventytwoHour'){
-    const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey , type: 'seventytwoHour'})
-    lineidDateTimes.value = result.dateTimes
+    const result = await PDUDeviceApi.getPDUHdaLineHisdata({ devKey : queryParams.devKey , type: 'twentyfourHour'})
+    lineidDateTimes.value = result.dateTimes.map(item => item.slice(0, 16));
   }
 }
 

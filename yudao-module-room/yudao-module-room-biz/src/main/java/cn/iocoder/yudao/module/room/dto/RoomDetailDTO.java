@@ -34,6 +34,11 @@ public class RoomDetailDTO {
      */
     private float powerCapacity;
 
+    /**
+     * 空调额定功率
+     */
+    private float airPower;
+
 
     /**
      * 机房x长度(单位机柜)

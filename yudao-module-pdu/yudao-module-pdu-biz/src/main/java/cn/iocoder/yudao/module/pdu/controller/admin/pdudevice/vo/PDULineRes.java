@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class PDULineRes extends PDUDeviceDO {
 
-    private Long pduId;
+    private Integer pduId;
 
     private String devKey;
 

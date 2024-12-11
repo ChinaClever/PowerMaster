@@ -18,9 +18,9 @@ public interface CabIndexMapper extends BaseMapperX<IndexDO> {
     default PageResult<IndexDO> selectPage(IndexPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<IndexDO>()
                 .eqIfPresent(IndexDO::getRoomId, reqVO.getRoomId())
-                .likeIfPresent(IndexDO::getName, reqVO.getName())
+                .likeIfPresent(IndexDO::getCabinetName, reqVO.getName())
                 .eqIfPresent(IndexDO::getAisleId, reqVO.getAisleId())
-                .eqIfPresent(IndexDO::getPowCapacity, reqVO.getPowCapacity())
+                .eqIfPresent(IndexDO::getPowerCapacity, reqVO.getPowCapacity())
                 .eqIfPresent(IndexDO::getPduBox, reqVO.getPduBox())
                 .eqIfPresent(IndexDO::getIsDisabled, reqVO.getIsDisabled())
                 .eqIfPresent(IndexDO::getIsDeleted, reqVO.getIsDeleted())

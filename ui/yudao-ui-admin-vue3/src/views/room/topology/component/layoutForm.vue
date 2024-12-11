@@ -17,9 +17,10 @@
       <el-form-item label="名称" prop="name">
         <el-input v-model="formData.name" placeholder="请输入" />
       </el-form-item>
+      <!--
       <el-form-item v-if="formData.type == 2" label="高度" prop="cabinetHeight">
          <el-input v-model.number="formData.cabinetHeight" :suffixIcon="() => 'U'" />
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item v-if="formData.type == 1" label="方向" prop="direction">
         <el-select v-model="formData.direction" placeholder="请选择活动区域">
           <el-option label="横向" :value="1" />
@@ -29,6 +30,11 @@
       <el-form-item v-if="formData.type == 1" label="数量" prop="amount">
          <el-input-number v-model="formData.amount" :min="minAmount" :max="formData.direction == 1 ? operateInfo.maxlndexX : operateInfo.maxlndexY" />
       </el-form-item>
+
+      <el-form-item label="电力容量">
+        <el-input v-model="formData.powerCapacity" placeholder="请输入" />
+      </el-form-item>
+
       <div style="display: flex;">
         <div style="flex: 1;">
           <el-form-item label="日用能告警" label-width="100">
@@ -78,12 +84,14 @@ const formData = ref({
   eleLimitDay: 1000, // 日用能限制
   eleAlarmMonth: 0, // 月用能告警
   eleLimitMonth: 1000, // 月用能限制
+  powerCapacity:0, //柜列电力容量
   type: 1,
   name: '',
   cabinetHeight: 42,
   direction: 1,
   amount: 12,
   id: '',
+  flag:1,
   cabinetList: [] as any
 })
 const formRules = reactive<FormRules>({
@@ -140,12 +148,11 @@ const submitForm = async () => {
       formData.value.cabinetList.splice(formData.value.amount - 1, -diff)
     }
   }
-  console.log('提交请求', formData.value)
   formLoading.value = true
   try {
     dialogVisible.value = false
     // 发送操作成功的事件
-    emit('success', {...formData.value })
+    emit('success', {...formData.value });
   } catch (error) {
     console.log('error', error)
   } finally {
@@ -160,12 +167,14 @@ const resetForm = () => {
     eleLimitDay: 1000, // 日用能限制
     eleAlarmMonth: 0, // 月用能告警
     eleLimitMonth: 1000, // 月用能限制
+    powerCapacity:0,
     type: 1,
     name: '',
     cabinetHeight: 42,
     direction: 1,
     amount: 12,
     id: '',
+    flag:1,
     cabinetList: []
   }
   minAmount.value = 1

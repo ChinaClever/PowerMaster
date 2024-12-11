@@ -1,9 +1,11 @@
 package cn.iocoder.yudao.module.pdu.service.curbalancecolor;
 
-import javax.validation.*;
-import cn.iocoder.yudao.module.pdu.controller.admin.curbalancecolor.vo.*;
-import cn.iocoder.yudao.module.pdu.dal.dataobject.curbalancecolor.PDUCurbalanceColorDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.pdu.controller.admin.curbalancecolor.vo.CurbalanceColorPageReqVO;
+import cn.iocoder.yudao.module.pdu.controller.admin.curbalancecolor.vo.CurbalanceColorSaveReqVO;
+import cn.iocoder.yudao.module.pdu.dal.dataobject.curbalancecolor.PDUCurbalanceColorDO;
+
+import javax.validation.Valid;
 
 /**
  * PDU不平衡度颜色 Service 接口
@@ -36,7 +38,6 @@ public interface PDUCurbalanceColorService {
 
     /**
      * 获得PDU不平衡度颜色
-     *
      *
      * @return PDU不平衡度颜色
      */

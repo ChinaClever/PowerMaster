@@ -25,7 +25,10 @@ const times = ref()
 // 设置饼图的选项
 const echartsOption = ref({
 
-  tooltip: { trigger: 'axis' },
+  tooltip: { trigger: 'axis', formatter: function (params) {
+      return `电压谐波含量为：${JSON.stringify(params[0].value)}`;
+    }
+  },
   xAxis: {type: 'category', boundaryGap: true, data : times},
   yAxis: { type: 'value'},
   toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
@@ -38,7 +41,7 @@ const echartsOption = ref({
 watchEffect(() => {
   // 直接访问即可，watchEffect会自动跟踪变化
 
-  harmonicRealTime.value = prop.list.harmonicList;
+  harmonicRealTime.value = prop.list.harmonicList.map(item => item / 100);
   times.value = prop.list.times;
 
 });

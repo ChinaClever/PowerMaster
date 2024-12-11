@@ -1,23 +1,32 @@
 <template>
   <el-card class="card" shadow="never"> 
-    
     <template #header>
-      <CardTitle title="电流不平衡" /><el-tag size="large">{{ location }}</el-tag>
+      <div>
+          <div>
+            <span>所在位置：</span>
+            <el-tag size="large">{{ location }}</el-tag><span>(名称：<el-tag size="large">{{ location }}</el-tag>)</span>
+          </div>
+          <div style="margin-top:-30px;float:right">
+            <span>网络地址：</span>
+            <el-tag size="large">{{ adder }}</el-tag>
+          </div>
+      </div>
+      <CardTitle title="电流不平衡" />
     </template>
     <div class="ImbalanceA">
+      <el-card  class="cardChilc" shadow="hover">
+        <div class="IechartBar" :style="{backgroundColor: colorVolList[balanceObj.colorIndex].color}">
+          <Echart :options="ALineOption" :height="300"/>
+        </div>
+      </el-card>
       <el-card  class="cardChilc" style="margin: 0 10px" shadow="hover">
         <div class="IechartBar">
           <Echart :options="ABarOption" :height="300"/>
         </div>
       </el-card>
       <el-card  class="cardChilc" shadow="hover">
-        <div class="IechartBar">
-          <Echart :options="ALineOption" :height="300"/>
-        </div>
-      </el-card>
-      <el-card  class="cardChilc" shadow="hover">
         <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
-          <div class="value">{{balanceObj.imbalanceValueA}}%</div>
+          <div class="value">{{balanceObj.imbalanceValueA.toFixed(2)}}%</div>
           <div class="day" :style="{backgroundColor: colorList[balanceObj.colorIndex].color}">{{colorList[balanceObj.colorIndex].name}}</div>
           <el-tooltip
             class="box-item"
@@ -36,20 +45,20 @@
       <CardTitle title="电压不平衡" />
     </template>
     <div class="ImbalanceA">
+      <el-card  class="cardChilc" shadow="hover">
+        <div class="IechartBar" :style="{backgroundColor: colorVolList[balanceObj.colorIndex].color}">
+          <Echart :options="BLineOption" :height="300"/>
+        </div>
+      </el-card>
       <el-card  class="cardChilc" style="margin: 0 10px" shadow="hover">
         <div class="IechartBar">
           <Echart :options="BBarOption" :height="300"/>
         </div>
       </el-card>
       <el-card  class="cardChilc" shadow="hover">
-        <div class="IechartBar">
-          <Echart :options="BLineOption" :height="300"/>
-        </div>
-      </el-card>
-      <el-card  class="cardChilc" shadow="hover">
-        <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
-          <div class="value">{{balanceObj.imbalanceValueB}}%</div>
-          <div class="day" :style="{backgroundColor: colorList[0].color}">电压不平衡</div>
+        <div class="box" :style="{borderColor: colorVolList[balanceObj.colorIndex].color}">
+          <div class="value">{{balanceObj.imbalanceValueB.toFixed(2)}}%</div>
+          <div class="day" :style="{backgroundColor: colorVolList[balanceObj.colorIndex].color}">{{colorVolList[balanceObj.colorIndex].name}}</div>
           <el-tooltip
             class="box-item"
             effect="dark"
@@ -71,19 +80,34 @@ import { IndexApi } from '@/api/bus/busindex'
 const busId = history?.state?.busId || -1
 const devKey = history?.state?.devKey || "0"
 const location =  history?.state?.location 
+const adder = history?.state?.location.split('-')[0]
 
 const colorList = [{
   name: '小电流不平衡',
-  color: '#aaa',
+  color: '#aaa',  //灰色
 },{
   name: '大电流不平衡',
-  color: '#3bbb00',
+  color: '#3bbb00', //绿色
 },{
   name: '大电流不平衡',
-  color: '#ffc402',
+  color: '#ffc402', //黄色
 },{
   name: '大电流不平衡',
-  color: '#fa3333',
+  color: '#fa3333', //红色
+}]
+
+const colorVolList = [{
+  name: '小电压不平衡',
+  color: '#aaa',  //灰色
+},{
+  name: '大电压不平衡',
+  color: '#3bbb00', //绿色
+},{
+  name: '大电压不平衡',
+  color: '#ffc402', //黄色
+},{
+  name: '大电压不平衡',
+  color: '#fa3333', //红色
 }]
 
 const balanceObj = reactive({
@@ -100,7 +124,7 @@ const getBalanceDetail = async() => {
   const res = await IndexApi.getBusBalanceDetail({devKey:devKey})
   console.log('res', res)
   if (res.cur_value) {
-    const cur_valueA = res.cur_value
+    const cur_valueA = res.cur_value.map(item => item.toFixed(2))
     // const max = Math.max(...cur_valueA) // 最大值
     // // 计算平均值
     // let sum = 0
@@ -119,6 +143,14 @@ const getBalanceDetail = async() => {
         trigger: 'axis',
         axisPointer: {
           type: 'shadow'
+        },formatter: function (params) {
+            // params是一个数组，包含了当前触发tooltip的多个系列的信息
+            let tooltipContent = '';
+            params.forEach(function (item) {
+                // item是单个系列的信息，包括seriesName（系列名称）、name（数据项名称）、value（数据值）等
+                tooltipContent += item.name + ' : ' + item.value + ' A<br/>';
+            });
+            return tooltipContent;
         },
       },
       grid: {
@@ -156,7 +188,7 @@ const getBalanceDetail = async() => {
     }
   }
   if (res.vol_value) {
-    const vol_value = res.vol_value
+    const vol_value = res.vol_value.map(item => item.toFixed(1))
     // const max = Math.max(...vol_value) // 最大值
     // // 计算平均值
     // let sum = 0
@@ -175,6 +207,14 @@ const getBalanceDetail = async() => {
         trigger: 'axis',
         axisPointer: {
           type: 'shadow'
+        },formatter: function (params) {
+            // params是一个数组，包含了当前触发tooltip的多个系列的信息
+            let tooltipContent = '';
+            params.forEach(function (item) {
+                // item是单个系列的信息，包括seriesName（系列名称）、name（数据项名称）、value（数据值）等
+                tooltipContent += item.name + ' : ' + item.value + ' V<br/>';
+            });
+            return tooltipContent;
         },
       },
       grid: {
@@ -198,7 +238,8 @@ const getBalanceDetail = async() => {
           name: '电压',
           axisLabel: {
             formatter: '{value} V'
-          }
+          },
+          max: 276  // 设置Y轴最大值为276
         }
       ],
       series: [
@@ -206,6 +247,9 @@ const getBalanceDetail = async() => {
           type: 'bar',
           barWidth: '20%',
           data: vol_value,
+          itemStyle: {
+            color: 'skyblue'
+          },
         },
       ]
     }
@@ -256,7 +300,7 @@ const getBalanceTrend = async () => {
           name: 'A',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.cur[0].curValue),
+          data: res.map(item => item.cur[0].curValue.toFixed(2)),
         },
       ]
     } else if (res[0].cur && res[0].cur.length == 3) {
@@ -270,19 +314,19 @@ const getBalanceTrend = async () => {
           name: 'A',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.cur[0].curValue),
+          data: res.map(item => item.cur[0].curValue.toFixed(2)),
         },
         {
           name: 'B',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.cur[1].curValue),
+          data: res.map(item => item.cur[1].curValue.toFixed(2)),
         },
         {
           name: 'C',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.cur[2].curValue),
+          data: res.map(item => item.cur[2].curValue.toFixed(2)),
         },
       ]
     }
@@ -298,7 +342,7 @@ const getBalanceTrend = async () => {
           name: 'A',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.vol[0].volValue),
+          data: res.map(item => item.vol[0].volValue.toFixed(1)),
         },
       ]
     } else if(res[0].vol && res[0].vol.length == 3) {
@@ -312,19 +356,19 @@ const getBalanceTrend = async () => {
           name: 'A',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.vol[0].volValue),
+          data: res.map(item => item.vol[0].volValue.toFixed(1)),
         },
         {
           name: 'B',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.vol[1].volValue),
+          data: res.map(item => item.vol[1].volValue.toFixed(1)),
         },
         {
           name: 'C',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.vol[2].volValue),
+          data: res.map(item => item.vol[2].volValue.toFixed(1)),
         },
       ]
     }
@@ -340,7 +384,19 @@ const ALineOption = ref<EChartsOption>({
     left: 'center'
   },
   tooltip: {
-    trigger: 'axis'
+    trigger: 'axis',
+    formatter: function (params) {
+      let tooltipContent = `记录时间: ${params[0].name}<br/>`;
+      // 遍历params数组，构建电压信息
+      const phases = ['A相电流', 'B相电流', 'C相电流'];
+      params.forEach((item, index) => {
+        if (index < phases.length && item.seriesName) {
+          tooltipContent += `${phases[index]}: ${item.value} A<br/>`;
+        }
+      });
+      
+      return tooltipContent;
+    }
   },
   grid: {
     left: '3%',
@@ -365,7 +421,20 @@ const BLineOption = ref<EChartsOption>({
     left: 'center'
   },
   tooltip: {
-    trigger: 'axis'
+    trigger: 'axis',
+    formatter: function (params) {
+      let tooltipContent = `记录时间: ${params[0].name}<br/>`; // 显示记录时间
+      
+      // 遍历params数组，构建电压信息
+      const phases = ['A相电压', 'B相电压', 'C相电压'];
+      params.forEach((item, index) => {
+        if (index < phases.length && item.seriesName) {
+          tooltipContent += `${phases[index]}: ${item.value} V<br/>`;
+        }
+      });
+      
+      return tooltipContent;
+    }
   },
   grid: {
     left: '3%',

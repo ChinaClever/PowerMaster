@@ -63,12 +63,12 @@ public class RackHistoryDataServiceImpl implements RackHistoryDataService {
                     if (cabinetId instanceof Integer) {
                         String location;
                         IndexDO indexDO = cabIndexMapper.selectById((Serializable) cabinetId);
-                        String roomName = roomIndexMapper.selectById(indexDO.getRoomId()).getName();
+                        String roomName = roomIndexMapper.selectById(indexDO.getRoomId()).getRoomName();
                         if(indexDO.getAisleId() != 0){
-                            String aisleName = aisleIndexMapper.selectById(indexDO.getAisleId()).getName();
-                            location = roomName + "-" + aisleName + "-" + indexDO.getName();
+                            String aisleName = aisleIndexMapper.selectById(indexDO.getAisleId()).getAisleName();
+                            location = roomName + "-" + aisleName + "-" + indexDO.getCabinetName();
                         }else {
-                            location = roomName + "-"  + indexDO.getName() ;
+                            location = roomName + "-"  + indexDO.getCabinetName() ;
                         }
                         Object rackId = map.get("rack_id");
                         String rackName = rackIndexMapper.selectById((Serializable) rackId).getRackName();
@@ -244,7 +244,7 @@ public class RackHistoryDataServiceImpl implements RackHistoryDataService {
         LambdaQueryWrapper<RoomIndex> queryWrapper = new LambdaQueryWrapper<RoomIndex>().orderByDesc(RoomIndex::getCreateTime)
                 .in(RoomIndex::getId,roomIds).eq(RoomIndex::getIsDelete, DelEnums.NO_DEL.getStatus());
         List<RoomIndex> roomIndexList = roomIndexMapper.selectList(queryWrapper);
-        return roomIndexList.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getName));
+        return roomIndexList.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getRoomName));
     }
 
     @Override

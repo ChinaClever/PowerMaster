@@ -1,22 +1,19 @@
 package cn.iocoder.yudao.module.bus.service.buscurbalancecolor;
 
-import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
-import org.springframework.stereotype.Service;
-import javax.annotation.Resource;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
-import cn.iocoder.yudao.module.bus.controller.admin.buscurbalancecolor.vo.*;
-import cn.iocoder.yudao.module.bus.dal.dataobject.buscurbalancecolor.BusCurbalanceColorDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
-
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
+import cn.iocoder.yudao.module.bus.controller.admin.buscurbalancecolor.vo.BusCurbalanceColorPageReqVO;
+import cn.iocoder.yudao.module.bus.controller.admin.buscurbalancecolor.vo.BusCurbalanceColorSaveReqVO;
+import cn.iocoder.yudao.module.bus.dal.dataobject.buscurbalancecolor.BusCurbalanceColorDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.buscurbalancecolor.BusCurbalanceColorMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
+
+import javax.annotation.Resource;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.*;
+import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.CURBALANCE_COLOR_NOT_EXISTS;
 
 /**
  * 母线不平衡度颜色 Service 实现类
@@ -64,8 +61,8 @@ public class BusCurbalanceColorServiceImpl implements BusCurbalanceColorService 
 
     @Override
     public BusCurbalanceColorDO getCurbalanceColor() {
-        BusCurbalanceColorDO busCurbalanceColorDO = curbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(),false);
-        if (busCurbalanceColorDO == null){
+        BusCurbalanceColorDO busCurbalanceColorDO = curbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
+        if (busCurbalanceColorDO == null) {
             busCurbalanceColorDO = new BusCurbalanceColorDO();
             busCurbalanceColorDO.setId(1L);
             busCurbalanceColorDO.setRangeOne(15);

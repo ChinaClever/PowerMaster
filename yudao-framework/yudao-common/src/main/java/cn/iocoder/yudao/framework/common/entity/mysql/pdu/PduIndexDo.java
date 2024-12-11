@@ -22,12 +22,12 @@ public class PduIndexDo implements Serializable {
      * pdu_id  唯一标识
      */
     @TableId(value = "id", type = IdType.AUTO)
-    private int id;
+    private Integer id;
 
     /**
      * 设备识别码
      */
-    private String devKey;
+    private String pduKey;
 
     /**
      * ip地址
@@ -37,21 +37,21 @@ public class PduIndexDo implements Serializable {
     /**
      * 级联地址
      */
-    private String cascadeAddr;
+    private Integer cascadeId;
 
     /**
      * 节点ip
      */
-    private String nodeIp;
+    private Integer nodeId;
 
     /**
      * 是否删除
      */
-    private int isDeleted;
+    private Boolean isDeleted;
     /**
      * 运行状态
      */
-    private int runStatus;
+    private Integer runStatus;
 
     /**
      * 创建时间

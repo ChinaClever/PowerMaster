@@ -1,11 +1,11 @@
 package cn.iocoder.yudao.module.pdu.service.eqbillconfig;
 
-import java.util.*;
-import javax.validation.*;
-import cn.iocoder.yudao.module.pdu.controller.admin.eqbillconfig.vo.*;
-import cn.iocoder.yudao.module.pdu.dal.dataobject.eqbillconfig.EqBillConfigDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
+import cn.iocoder.yudao.module.pdu.controller.admin.eqbillconfig.vo.EqBillConfigPageReqVO;
+import cn.iocoder.yudao.module.pdu.controller.admin.eqbillconfig.vo.EqBillConfigSaveReqVO;
+import cn.iocoder.yudao.module.pdu.dal.dataobject.eqbillconfig.EqBillConfigDO;
+
+import javax.validation.Valid;
 
 /**
  * pdu电量计费方式配置 Service 接口
