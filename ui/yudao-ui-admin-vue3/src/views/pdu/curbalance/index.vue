@@ -304,7 +304,7 @@
             </div>
           </el-card>
           <el-card class="cardChilc" shadow="hover">
-            <div class="IechartBar">
+            <div class="IechartBar" :style="{backgroundColor: colorVolList[balanceObj.colorIndex].color}">
               <Echart :options="ALineOption" :height="300" />
             </div>
           </el-card>
@@ -319,7 +319,7 @@
               <el-tooltip
                 class="box-item"
                 effect="dark"
-                content="电流不平衡是指"
+                content="三相电流不平衡： 不平衡度%=（MAX相电流-三相平均电流）/三相平均电流×100%"
                 placement="right"
               >
                 <div @click.prevent="" class="question">?</div>
@@ -375,7 +375,7 @@
             </div>
           </el-card>
           <el-card class="cardChilc" shadow="hover">
-            <div class="IechartBar">
+            <div class="IechartBar" :style="{backgroundColor: colorVolList[balanceObj.colorIndex].color}">
               <Echart :options="BLineOption" :height="300"/>
             </div>
           </el-card>
@@ -386,7 +386,7 @@
               <el-tooltip
                 class="box-item"
                 effect="dark"
-                content="电压不平衡是指"
+                content="三相电压不平衡度=( 最大电压−最小电压)/平均电压×100%"
                 placement="right"
               >
                 <div @click.prevent="" class="question">?</div>
@@ -495,6 +495,20 @@ const colorList = [
     color: '#fa3333'
   }
 ]
+
+const colorVolList = [{
+  name: '小电压不平衡',
+  color: '#aaa',  //灰色
+},{
+  name: '大电压不平衡',
+  color: '#3bbb00', //绿色
+},{
+  name: '大电压不平衡',
+  color: '#ffc402', //黄色
+},{
+  name: '大电压不平衡',
+  color: '#fa3333', //红色
+}]
 
 const balanceObj = reactive({
   pow_apparent_percent: 0,
@@ -1601,6 +1615,7 @@ onActivated(() => {
   height: 100%;
   width: 100%;
 }
+
 .custom-content {
   display: flex;
   justify-content: space-between;

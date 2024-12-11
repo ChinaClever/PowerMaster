@@ -236,9 +236,50 @@
             <el-tag type="warning" v-if="item.color == 3">15%-30%</el-tag>
             <el-tag type="danger" v-if="item.color == 4">&gt;30%</el-tag>
           </div>
-          <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <button class="detail" @click="showDialogCur(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
       </div>
+
+      <el-dialog v-model="dialogVisibleCur" @close="handleClose">
+        <!-- 自定义的头部内容（可选） -->
+        <template #header>
+          <CardTitle title="电流不平衡" />
+          <span style="margin-left: 1vw"
+            ><el-tag size="large">{{ curlocation }}</el-tag></span
+          >
+        </template>
+        <!-- 自定义的主要内容 -->
+        <div class="custom-content">
+          <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
+            <div class="IechartBar">
+              <Echart :options="ABarOption" :height="300" />
+            </div>
+          </el-card>
+          <el-card class="cardChilc" shadow="hover">
+            <div class="IechartBar" :style="{backgroundColor: colorVolList[balanceObj.colorIndex].color}">
+              <Echart :options="ALineOption" :height="300" />
+            </div>
+          </el-card>
+          <el-card class="cardChilc" shadow="hover">
+            <div class="box" :style="{ borderColor: colorList[balanceObj.colorIndex].color }">
+              <div class="value">{{ balanceObj.imbalanceValueA.toFixed(2)}}%</div>
+              <div
+                class="day"
+                :style="{ backgroundColor: colorList[balanceObj.colorIndex].color }"
+                >{{ colorList[balanceObj.colorIndex].name }}</div
+              >
+              <el-tooltip
+                class="box-item"
+                effect="dark"
+                content="三相电流不平衡： 不平衡度%=（MAX相电流-三相平均电流）/三相平均电流×100%"
+                placement="right"
+              >
+                <div @click.prevent="" class="question">?</div>
+              </el-tooltip>
+            </div>
+          </el-card>
+        </div>
+      </el-dialog>
 
       <div v-show="visMode == 0 && switchValue == 1  && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
@@ -263,9 +304,47 @@
             <el-tag type="info"  v-if="item.status == 5">离线</el-tag>
             <el-tag type="info" v-else >电压不平衡</el-tag>
           </div>
-          <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <button class="detail" @click="showDialogVol(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
       </div>
+
+      <el-dialog v-model="dialogVisibleVol" @close="handleClose">
+        <!-- 自定义的头部内容（可选） -->
+        <template #header>
+          <CardTitle title="电压不平衡" />
+          <span style="margin-left: 1vw"
+            ><el-tag size="large">{{ vollocation }}</el-tag></span
+          >
+        </template>
+        <!-- 自定义的主要内容 -->
+        <div class="custom-content">
+          <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
+            <div class="IechartBar">
+              <Echart :options="BBarOption" :height="300"/>
+            </div>
+          </el-card>
+          <el-card class="cardChilc" shadow="hover">
+            <div class="IechartBar"  :style="{backgroundColor: colorVolList[balanceObj.colorIndex].color}">
+              <Echart :options="BLineOption" :height="300"/>
+            </div>
+          </el-card>
+          <el-card  class="cardChilc" shadow="hover">
+            <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
+              <div class="value">{{balanceObj.imbalanceValueB.toFixed(2)}}%</div>
+              <div class="day" :style="{backgroundColor: colorList[0].color}">电压不平衡</div>
+              <el-tooltip
+                class="box-item"
+                effect="dark"
+                content="三相电压不平衡度=( 最大电压−最小电压)/平均电压×100%"
+                placement="right"
+              >
+                <div @click.prevent="" class="question">?</div>
+              </el-tooltip>
+            </div>
+          </el-card>
+        </div>
+      </el-dialog>
+
       <Pagination
         :total="total"
         :page-size-arr="pageSizeArr"
@@ -290,14 +369,17 @@ import download from '@/utils/download'
 import { IndexApi } from '@/api/bus/busindex'
 import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
-
+import { CabinetApi } from '@/api/cabinet/info'
 import { CurbalanceColorApi } from '@/api/bus/buscurbalancecolor'
+import { EChartsOption } from 'echarts'
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
-const { push } = useRouter()
 
+const dialogVisibleCur = ref(false) //全屏弹窗的显示隐藏
+const dialogVisibleVol = ref(false) //全屏弹窗的显示隐藏
+const { push } = useRouter()
 const visMode = ref(0);
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
@@ -341,6 +423,364 @@ const statusList = reactive([
     activeClass: 'btn_offline offline'
   },
 ])
+
+const curlocation = ref()
+const vollocation = ref()
+
+const colorList = [
+  {
+    name: '小电流不平衡',
+    color: '#aaa'
+  },
+  {
+    name: '大电流不平衡',
+    color: '#3bbb00'
+  },
+  {
+    name: '大电流不平衡',
+    color: '#ffc402'
+  },
+  {
+    name: '大电流不平衡',
+    color: '#fa3333'
+  }
+]
+
+const colorVolList = [{
+  name: '小电压不平衡',
+  color: '#aaa',  //灰色
+},{
+  name: '大电压不平衡',
+  color: '#3bbb00', //绿色
+},{
+  name: '大电压不平衡',
+  color: '#ffc402', //黄色
+},{
+  name: '大电压不平衡',
+  color: '#fa3333', //红色
+}]
+
+const balanceObj = reactive({
+  pow_apparent_percent: 0,
+  pow_active_percent: 0,
+  cur_valueA: [],
+  vol_value: [],
+  imbalanceValueA: 0,
+  imbalanceValueB: 0,
+  colorIndex: 0
+})
+
+const ABarOption = ref<EChartsOption>({})
+const BBarOption = ref<EChartsOption>({})
+
+const ALineOption = ref<EChartsOption>({
+  title: {
+    text: '电流趋势',
+    left: 'center'
+  },
+  tooltip: {
+    trigger: 'axis',
+    formatter: function (params) {
+      let tooltipContent = `记录时间: ${params[0].name}<br/>`;
+      // 遍历params数组，构建电压信息
+      const phases = ['A相电流', 'B相电流', 'C相电流'];
+      params.forEach((item, index) => {
+        if (index < phases.length && item.seriesName) {
+          tooltipContent += `${phases[index]}: ${item.value} A<br/>`;
+        }
+      });
+      
+      return tooltipContent;
+    }
+  },
+  grid: {
+    left: '3%',
+    right: '4%',
+    bottom: '3%',
+    containLabel: true
+  },
+  yAxis: {
+    type: 'value',
+    name: '电流',
+    axisLabel: {
+      formatter: '{value} A'
+    }
+  },
+  xAxis: {},
+  series: []
+})
+
+const BLineOption = ref<EChartsOption>({
+  title: {
+    text: '电压趋势',
+    left: 'center'
+  },
+  tooltip: {
+    trigger: 'axis',
+    formatter: function (params) {
+      let tooltipContent = `记录时间: ${params[0].name}<br/>`; // 显示记录时间
+      
+      // 遍历params数组，构建电压信息
+      const phases = ['A相电压', 'B相电压', 'C相电压'];
+      params.forEach((item, index) => {
+        if (index < phases.length && item.seriesName) {
+          tooltipContent += `${phases[index]}: ${item.value} V<br/>`;
+        }
+      });
+      
+      return tooltipContent;
+    }
+  },
+  grid: {
+    left: '3%',
+    right: '4%',
+    bottom: '3%',
+    containLabel: true
+  },
+  yAxis: {
+    type: 'value',
+    name: '电压',
+    axisLabel: {
+      formatter: '{value} V'
+    }
+  },
+  xAxis:{},
+  series: []
+})
+
+const getBalanceDetail = async (item) => {
+  const res = await IndexApi.getBusBalanceDetail({ devKey: item.devKey })
+  console.log('res', res)
+  if (res.cur_value) {
+    const cur_valueA = res.cur_value
+    // const max = Math.max(...cur_valueA) // 最大值
+    // // 计算平均值
+    // let sum = 0
+    // cur_valueA.forEach(item => {
+    //   sum = sum + item
+    // })
+    // const average = sum/cur_valueA.length
+    // // 平衡度
+    // balanceObj.imbalanceValueA =  +(((max - average) * 100 / average).toFixed(0))
+    ABarOption.value = {
+      title: {
+        text: '电流柱形图',
+        left: 'center'
+      },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'shadow'
+        },formatter: function (params) {
+            // params是一个数组，包含了当前触发tooltip的多个系列的信息
+            let tooltipContent = '';
+            params.forEach(function (item) {
+                // item是单个系列的信息，包括seriesName（系列名称）、name（数据项名称）、value（数据值）等
+                tooltipContent += item.name + ' : ' + item.value + ' A<br/>';
+            });
+            return tooltipContent;
+        },
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+      },
+      xAxis: [
+        {
+          type: 'category',
+          data: ['A', 'B', 'C'],
+          axisTick: {
+            alignWithLabel: true
+          }
+        }
+      ],
+      yAxis: [
+        {
+          type: 'value',
+          name: '电流',
+          axisLabel: {
+            formatter: '{value} A'
+          }
+        }
+      ],
+      series: [
+        {
+          type: 'bar',
+          barWidth: '20%',
+          data: cur_valueA
+        }
+      ]
+    }
+  }
+  if (res.vol_value) {
+    const vol_value = res.vol_value
+    BBarOption.value = {
+      title: {
+        text: '电压柱形图',
+        left: 'center'
+      },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'shadow'
+        },formatter: function (params) {
+            // params是一个数组，包含了当前触发tooltip的多个系列的信息
+            let tooltipContent = '';
+            params.forEach(function (item) {
+                // item是单个系列的信息，包括seriesName（系列名称）、name（数据项名称）、value（数据值）等
+                tooltipContent += item.name + ' : ' + item.value + ' V<br/>';
+            });
+            return tooltipContent;
+        },
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+      },
+      xAxis: [
+        {
+          type: 'category',
+          data: ["A","B","C"],
+          axisTick: {
+            alignWithLabel: true
+          }
+        }
+      ],
+      yAxis: [
+        {
+          type: 'value',
+          name: '电压',
+          axisLabel: {
+            formatter: '{value} V'
+          }
+        }
+      ],
+      series: [
+        {
+          type: 'bar',
+          barWidth: '20%',
+          data: vol_value,
+        },
+      ]
+    }
+  }
+
+  balanceObj.imbalanceValueA = res.curUnbalance
+  balanceObj.imbalanceValueB = res.volUnbalance
+  balanceObj.colorIndex = res.color - 1
+  console.log('balanceObj',balanceObj)
+}
+
+const getBalanceTrend = async (item) => {
+  const res = await IndexApi.getBusBalanceTrend({
+    busId: item.busId
+  })
+  if (res.length > 0) {
+    const timeList = res.map((item) => item.dateTime)
+    if (res[0].cur && res[0].cur.length == 1) {
+      ALineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      ALineOption.value.series = [
+        {
+          name: 'A',
+          type: 'line',
+          symbol: 'none',
+          data: res.map((item) => item.cur[0].curValue.toFixed(2))
+        }
+      ]
+    } else if (res[0].cur && res[0].cur.length == 3) {
+      ALineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      ALineOption.value.series = [
+        {
+          name: 'A',
+          type: 'line',
+          symbol: 'none',
+          data: res.map((item) => item.cur[0].curValue.toFixed(2))
+        },
+        {
+          name: 'B',
+          type: 'line',
+          symbol: 'none',
+          data: res.map((item) => item.cur[1].curValue.toFixed(2))
+        },
+        {
+          name: 'C',
+          type: 'line',
+          symbol: 'none',
+          data: res.map((item) => item.cur[2].curValue.toFixed(2))
+        }
+      ]
+    }if (res[0].vol && res[0].vol.length == 1) {
+      BLineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      BLineOption.value.series = [
+        {
+          name: 'A',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.vol[0].volValue.toFixed(1)),
+        },
+      ]
+    } else if(res[0].vol && res[0].vol.length == 3) {
+      BLineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      BLineOption.value.series = [
+        {
+          name: 'A',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.vol[0].volValue.toFixed(1)),
+        },
+        {
+          name: 'B',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.vol[1].volValue.toFixed(1)),
+        },
+        {
+          name: 'C',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.vol[2].volValue.toFixed(1)),
+        },
+      ]
+    }
+  }
+  
+  console.log('ALineOption', ALineOption)
+  console.log('item', item)
+}
+
+const showDialogCur = (item) => {
+  dialogVisibleCur .value = true
+  curlocation.value = item.devKey
+  getBalanceDetail(item)
+  getBalanceTrend(item)
+}
+
+const showDialogVol = (item) => {
+  dialogVisibleVol.value = true
+  vollocation.value = item.devKey
+  getBalanceDetail(item)
+  getBalanceTrend(item)
+}
 
 const devKeyList = ref([])
 const loadAll = async () => {
@@ -1172,5 +1612,62 @@ onActivated(() => {
  
 .inline-autocomplete {
   width: 200px; /* Adjust width as needed */
+}
+
+:deep(.el-dialog) {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.custom-content {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+}
+
+.question {
+  width: 12px;
+  height: 12px;
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid;
+  border-radius: 50%;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.cardChilc {
+  flex: 1;
+  margin: 0 10px;
+  box-sizing: border-box;
+  .box {
+    position: relative;
+    height: 121px;
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid #00289e;
+    margin: 72px auto;
+    
+    .value {
+      font-size: 30px;
+      padding: 20px 0;
+    }
+    .day {
+      width: 100%;
+      font-size: 16px;
+      text-align: center;
+      color: #fff;
+      background-color: #00289e;
+      padding: 10px 0;
+    }
+  }
 }
 </style>
