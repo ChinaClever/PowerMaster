@@ -103,7 +103,11 @@
     </template>
     <template #Content>
       <el-table v-show="switchValue == 2" style="width: 100%;" v-loading="loading" :data="listPage" >
-        <el-table-column label="位置" min-width="110" align="center" prop="location" />
+        <el-table-column label="位置" min-width="110" align="center" prop="roomName,cabinetName" >
+          <template #default="scope">
+            {{ scope.row.roomName }}-{{ scope.row.cabinetName }}
+          </template>
+        </el-table-column>
         <el-table-column label="负载率" min-width="80" align="center" prop="loadFactor" />
         <el-table-column label="电力容量(kVA)" min-width="100" align="center" prop="powerCapacity" />
         <el-table-column label="总视在功率(kVA)" min-width="110" align="center" prop="apparentTotal" />
@@ -134,7 +138,7 @@
             </div>
             <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
           </div>
-          <div class="room">{{load.local}}</div>
+          <div class="room">{{load.roomName+'-'+load.cabinetName}}</div>
           <button class="detail" @click.prevent="toMachineDetail">详情</button>
         </div>
       </div>
@@ -254,7 +258,7 @@ const getTableData = async(reset = false) => {
       company: queryParams.company
     })
     console.log('res', res)
-    if (res.list) {
+
       // const list = res.list.map(item => {
       //   const tableItem = {
       //     key: item.cabinet_key,
@@ -275,7 +279,6 @@ const getTableData = async(reset = false) => {
       listPage.value = res.list
       queryParams.pageTotal = res.total
       console.log('listPage', listPage.value)
-    }
   } finally {
     loading.value = false
   }
