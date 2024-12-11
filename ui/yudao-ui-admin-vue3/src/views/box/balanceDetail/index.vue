@@ -16,7 +16,7 @@
       </el-card>
       <el-card  class="cardChilc" shadow="hover">
         <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
-          <div class="value">{{balanceObj.imbalanceValueA}}%</div>
+          <div class="value">{{balanceObj.imbalanceValueA.toFixed(2)}}%</div>
           <div class="day" :style="{backgroundColor: colorList[balanceObj.colorIndex].color}">{{colorList[balanceObj.colorIndex].name}}</div>
           <el-tooltip
             class="box-item"
@@ -47,7 +47,7 @@
       </el-card>
       <el-card  class="cardChilc" shadow="hover">
         <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
-          <div class="value">{{balanceObj.imbalanceValueB}}%</div>
+          <div class="value">{{balanceObj.imbalanceValueB.toFixed(2)}}%</div>
           <div class="day" :style="{backgroundColor: colorList[0].color}">电压不平衡</div>
           <el-tooltip
             class="box-item"
