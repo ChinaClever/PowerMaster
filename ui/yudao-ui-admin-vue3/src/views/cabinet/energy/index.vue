@@ -13,25 +13,25 @@
             <div class="top">
               <div class="tag"></div>正常
             </div>
-            <div class="value"><span class="number">24</span>个</div>
+            <div class="value"><span class="number">{{sumNormal}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag empty"></div>空载
             </div>
-            <div class="value"><span class="number">1</span>个</div>
+            <div class="value"><span class="number">{{sumNoload}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag warn"></div>预警
             </div>
-            <div class="value"><span class="number">1</span>个</div>
+            <div class="value"><span class="number">{{sumEarly}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag error"></div>故障
+              <div class="tag error"></div>告警
             </div>
-            <div class="value"><span class="number">0</span>个</div>
+            <div class="value"><span class="number">{{sumInform}}</span>个</div>
           </div>
         </div>
         <div class="line"></div>
@@ -130,6 +130,13 @@ import { CabinetApi } from '@/api/cabinet/info'
 import { CabinetEnergyApi } from '@/api/cabinet/energy'
 
 const { push } = useRouter() // 路由跳转
+// 运行状态 0：空载 1：正常 2：预警 3：告警 4:未绑定 5：离线
+const sumNoload = ref();
+const sumNormal = ref();
+const sumEarly = ref();
+const sumInform = ref();
+const sumDidnot = ref();
+const sumOffline = ref();
 
 const tableLoading = ref(false) // 
 const isFirst = ref(true) // 是否第一次调用getTableData函数
@@ -148,6 +155,14 @@ const queryParams = reactive({
 const getNavList = async() => {
   const res = await CabinetApi.getRoomMenuAll({})
   navList.value = res
+}
+
+const statistics = async() => {
+  const resStatus =await CabinetApi.getCabinetInfoStatus();
+    sumNoload.value = resStatus.list[0].sumNoload;
+    sumNormal.value = resStatus.list[0].sumNormal;
+    sumEarly.value = resStatus.list[0].sumEarly;
+    sumInform.value = resStatus.list[0].sumInform;
 }
 
 // 获取表格数据
@@ -218,6 +233,7 @@ const toDetail = (roomId, id) => {
 onBeforeMount(() => {
   getNavList()
   getTableData()
+  statistics()
 })
 </script>
 
