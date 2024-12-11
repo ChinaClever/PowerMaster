@@ -1,27 +1,25 @@
 package cn.iocoder.yudao.module.cabinet.controller.admin;
 
-import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetDTO;
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO;
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
 import cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetDTO;
-import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
-import cn.iocoder.yudao.module.cabinet.controller.admin.temcolor.vo.TemColorPageReqVO;
-import cn.iocoder.yudao.module.cabinet.controller.admin.temcolor.vo.TemColorRespVO;
-import cn.iocoder.yudao.module.cabinet.dal.dataobject.temcolor.TemColorDO;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
-import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
-import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
+import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexLoadResVO;
 import com.alibaba.fastjson2.JSONObject;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.parameters.P;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
 import java.util.Map;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.error;
@@ -103,6 +101,12 @@ public class CabinetController {
         return success(dto);
     }
 
+    @PostMapping("/cabinet/loadPage")
+    @Operation(summary = "获得机柜负荷分页")
+    public CommonResult<PageResult<CabinetIndexLoadResVO>> getIndexLoadPage(@RequestBody CabinetIndexVo pageReqVO) {
+        PageResult<CabinetIndexLoadResVO> pageResult = cabinetService.getIndexLoadPage(pageReqVO);
+        return success(pageResult);
+    }
 
     /**
      * 机柜新增/编辑页面
@@ -172,12 +176,11 @@ public class CabinetController {
 
     /**
      * 机柜负载状态统计
-     *
      */
     @Operation(summary = "机柜负载状态统计")
     @GetMapping("/cabinet/load/count")
-    public CommonResult<Map<Integer,Integer>> loadStatusCount() {
-        Map<Integer,Integer> result = cabinetService.loadStatusCount();
+    public CommonResult<Map<Integer, Integer>> loadStatusCount() {
+        Map<Integer, Integer> result = cabinetService.loadStatusCount();
         return success(result);
     }
 }

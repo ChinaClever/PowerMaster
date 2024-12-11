@@ -39,7 +39,7 @@ public class CabineIndexCfgVO {
     private String cabinetName;
 
 
-    private String  cabinetHeight;
+    private Integer  cabinetHeight;
     /**
      * 电力容量
      */

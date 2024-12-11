@@ -1100,7 +1100,15 @@ onMounted(async () => {
   getList()
   getNavList()
   getNavAList()
-  flashListTimer.value = setInterval(getList, 5000)
+  // if (!firstTimerCreate.value) {
+    // flashListTimer.value = setInterval(getList, 5000);
+  // }
+
+    setInterval(() => {
+         setTimeout(() => {
+          getList()
+       }, 0);
+  }, 5000);
 })
 
 onBeforeUnmount(() => {
@@ -1121,9 +1129,15 @@ onBeforeRouteLeave(() => {
 onActivated(() => {
   getList()
   getNavList()
-  if (!firstTimerCreate.value) {
-    flashListTimer.value = setInterval(getList, 5000)
-  }
+  // if (!firstTimerCreate.value) {
+    // flashListTimer.value = setInterval(getList, 5000);
+  // }
+  setInterval(() => {
+         setTimeout(() => {
+          getList()
+       }, 0);
+  }, 5000);
+
 })
 </script>
 

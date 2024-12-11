@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="模块化机房">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜容量">
     <template #ActionBar>
       <el-form
         class="-mb-15px"
