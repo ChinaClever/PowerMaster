@@ -25,8 +25,17 @@ const times = ref()
 // 设置饼图的选项
 const echartsOption = ref({
 
-  tooltip: { trigger: 'axis' },
-  xAxis: {type: 'category', boundaryGap: false, data : times},
+  tooltip: { trigger: 'axis',
+    formatter: function (params) {
+        var result = '';
+        params.forEach(function (item) {
+            result += item.name + '<br/>' +'<span style="display: inline-block; width: 10px; height: 10px; background-color: blue; border-radius: 50%; margin-right: 8px;"></span>'+
+                      item.value + 'A<br/>';
+        });
+        return result;
+    } 
+  },
+  xAxis: {type: 'category', boundaryGap: true, data : times},
   yAxis: { type: 'value'},
   toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
   series: [
