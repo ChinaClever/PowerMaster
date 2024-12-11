@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="模块化机房">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜用能">
     <template #NavInfo>
       <div class="navInfo">
         <!-- <div class="header">
@@ -167,9 +167,10 @@ const getTableData = async(reset = false) => {
     })
     if (res.list) {
       tableData.value = res.list.map(item => {
+        const roomName = item.roomName || ''; // 处理 null 值
         return {
           id: item.id,
-          local: item.roomName + '-' + item.name,
+          local: roomName + '-' + item.cabinetName,
           company: item.company ,
           yesterdayEq: item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0',
           lastWeekEq: item.lastWeekEq ? item.lastWeekEq.toFixed(1) : '0.0',

@@ -103,7 +103,11 @@
     </template>
     <template #Content>
       <el-table v-show="switchValue == 2" style="width: 100%;" v-loading="loading" :data="listPage" >
-        <el-table-column label="位置" min-width="110" align="center" prop="location" />
+        <el-table-column label="位置" min-width="110" align="center" prop="roomName,cabinetName" >
+          <template #default="scope">
+            {{ scope.row.roomName }}-{{ scope.row.cabinetName }}
+          </template>
+        </el-table-column>
         <el-table-column label="负载率" min-width="80" align="center" prop="loadFactor" />
         <el-table-column label="电力容量(kVA)" min-width="100" align="center" prop="powerCapacity" />
         <el-table-column label="总视在功率(kVA)" min-width="110" align="center" prop="apparentTotal" />
@@ -134,7 +138,7 @@
             </div>
             <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
           </div>
-          <div class="room">{{load.local}}</div>
+          <div class="room">{{load.roomName+'-'+load.cabinetName}}</div>
           <button class="detail" @click.prevent="toMachineDetail(load)">详情</button>
         </div>
       </div>
@@ -158,7 +162,6 @@ import { CabinetApi } from '@/api/cabinet/info'
 import LiquidBall from './compoent/LiquidBall.vue'
 
 const loading = ref(false)
-const { push } = useRouter()
 const isFirst = ref(true) // 是否第一次调用getTableData函数
 const navList = ref([])
 const Loadstatus = ref([0,0,0,0,0])
@@ -255,7 +258,7 @@ const getTableData = async(reset = false) => {
       company: queryParams.company
     })
     console.log('res', res)
-    if (res.list) {
+
       // const list = res.list.map(item => {
       //   const tableItem = {
       //     key: item.cabinet_key,
@@ -276,22 +279,7 @@ const getTableData = async(reset = false) => {
       listPage.value = res.list
       queryParams.pageTotal = res.total
       console.log('listPage', listPage.value)
-    }
   } finally {
-    listPage.value = [{
-        key:'75-178',
-        local:'超算机柜-1号柜',
-        load_factor:0,
-        pow_capacity:0,
-        date_time:"2024-12-09 14:12:00",
-        status:4,
-        apparentTotal:"0.000",
-        apparentA:'-',
-        apparentB:'-',
-        activeTotal:"0.000",
-        activeA:'-',
-        activeB:'-'
-      }]
     loading.value = false
   }
 }
@@ -343,15 +331,6 @@ const handleSwitchModal = (value) => {
     queryParams.pageSize = 10
   }
   getTableData(true)
-}
-
-const toMachineDetail = (row) => {
-  const devKey = "172.16.101.2-1";
-  const busId = 6
-  const location = null;
-  const busName = 'iBusbar-1';
-
-  push({path: '/cabinet/cab/cabinetPowerLoadDetail', state: { devKey, busId ,location,busName }})
 }
 
 onBeforeMount(() => {
@@ -416,6 +395,20 @@ onBeforeMount(() => {
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 .navInfo {
   width: 215px;
