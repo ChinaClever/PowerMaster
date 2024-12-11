@@ -31,7 +31,16 @@ const echartsOption = ref({
     orient: 'horizontal', // 设置为 'horizontal' 或 'vertical'
     width:1000
   },
-  tooltip: { trigger: 'axis' },
+  tooltip: { trigger: 'axis',
+    formatter: function (params) {
+        var result = '';
+        params.forEach(function (item) {
+            result += '记录时间：' + item.name + '<br/>' +'<span style="display: inline-block; width: 10px; height: 10px; background-color: blue; border-radius: 50%; margin-right: 8px;"></span>'+
+                      '电流平均谐波：' + item.value + 'A<br/>';
+        });
+        return result;
+    } 
+  },
   xAxis: {type: 'category', boundaryGap: false, data : time},
   yAxis: { type: 'value'},
   toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},

@@ -7,6 +7,7 @@ import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
+import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexLoadResVO;
 import com.alibaba.fastjson2.JSONObject;
 
 import java.util.Map;
@@ -105,4 +106,6 @@ public interface CabinetService {
      * @return
      */
     int getrestorerCabinet(Integer id);
+
+    PageResult<CabinetIndexLoadResVO> getIndexLoadPage(CabinetIndexVo pageReqVO);
 }

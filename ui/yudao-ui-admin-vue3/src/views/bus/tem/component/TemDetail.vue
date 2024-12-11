@@ -32,7 +32,7 @@ const echartsOption = reactive({
   tooltip: { 
     trigger: 'axis',
     formatter: function(params) {
-      var result = params[0].name + '<br>';
+      var result = '记录时间：' + params[0].name + '<br>';
       for (var i = 0; i < params.length; i++) {
         result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value.toFixed(0) + ' °C';
         result += '<br>';

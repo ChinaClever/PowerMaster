@@ -286,8 +286,11 @@
 
       <el-dialog v-model="detailVis" title="温度详情" width="70vw" height="58vh">
         <el-row class="custom-row">
-          <el-tag style="margin-left: 6vw; margin-top: -130px">{{ location }}(名称)</el-tag>
-          <div style="margin-left: -16vw;">
+          <div style="margin-left: 5vw; margin-top: -130px">
+            <el-tag>{{ location.split('-')[0] }}</el-tag>
+            <span>(名称：<el-tag>{{ location }}</el-tag>)</span>
+          </div>
+          <div style="margin-left: -17vw;">
             日期:
             <el-date-picker
               v-model="queryParams.oldTime"
