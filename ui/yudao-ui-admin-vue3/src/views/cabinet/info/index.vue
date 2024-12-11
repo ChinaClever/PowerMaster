@@ -538,8 +538,14 @@ const handleSelectStatus = (index, event) => {
 
 // 跳转详情页
 const toMachineDetail = (key) => {
-  // console.log('toMachineDetail!', key.split('-')[1])
-  push({path: '/cabinet/cab/detail', state: { id: key.split('-')[1] }})
+  
+  const devKey = '172.16.101.2-1';
+  const busId = 6;
+  const location = null;
+  const busName = 'iBusbar-1';
+  push({path: '/cabinet/cab/detail', state: { devKey, busId , location , busName }})
+  //console.log('toMachineDetail!', key.split('-')[1])
+  //push({path: '/cabinet/cab/detail', state: { id: key.split('-')[1] }})
 }
 
 const handleCheck = (row) => {
