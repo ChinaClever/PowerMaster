@@ -135,7 +135,7 @@
             <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
           </div>
           <div class="room">{{load.local}}</div>
-          <button class="detail" @click.prevent="toMachineDetail">详情</button>
+          <button class="detail" @click.prevent="toMachineDetail(load)">详情</button>
         </div>
       </div>
       <Pagination
@@ -158,6 +158,7 @@ import { CabinetApi } from '@/api/cabinet/info'
 import LiquidBall from './compoent/LiquidBall.vue'
 
 const loading = ref(false)
+const { push } = useRouter()
 const isFirst = ref(true) // 是否第一次调用getTableData函数
 const navList = ref([])
 const Loadstatus = ref([0,0,0,0,0])
@@ -266,17 +267,31 @@ const getTableData = async(reset = false) => {
           apparentTotal: item.cabinet_power.total_data.pow_apparent.toFixed(3),
           apparentA: item.cabinet_power.path_a ? item.cabinet_power.path_a.pow_apparent.toFixed(3) : '-',
           apparentB: item.cabinet_power.path_b ? item.cabinet_power.path_b.pow_apparent.toFixed(3) : '-',
-          activeTotal: item.cabinet_power.total_data.pow_active.toFixed(3),
+          activeTotal: item.cabinet_power.total_data.pow_active,
           activeA: item.cabinet_power.path_a ? item.cabinet_power.path_a.pow_active.toFixed(3) : '-',
           activeB: item.cabinet_power.path_b ? item.cabinet_power.path_b.pow_active.toFixed(3) : '-',
         }
         return tableItem
       })
-      listPage.value = list
+      //listPage.value = list
       queryParams.pageTotal = res.total
       console.log('listPage', listPage.value)
     }
   } finally {
+    listPage.value = [{
+        key:'75-178',
+        local:'超算机柜-1号柜',
+        load_factor:0,
+        pow_capacity:0,
+        date_time:"2024-12-09 14:12:00",
+        status:4,
+        apparentTotal:"0.000",
+        apparentA:'-',
+        apparentB:'-',
+        activeTotal:"0.000",
+        activeA:'-',
+        activeB:'-'
+      }]
     loading.value = false
   }
 }
@@ -328,6 +343,15 @@ const handleSwitchModal = (value) => {
     queryParams.pageSize = 10
   }
   getTableData(true)
+}
+
+const toMachineDetail = (row) => {
+  const devKey = "172.16.101.2-1";
+  const busId = 6
+  const location = null;
+  const busName = 'iBusbar-1';
+
+  push({path: '/cabinet/cab/cabinetPowerLoadDetail', state: { devKey, busId ,location,busName }})
 }
 
 onBeforeMount(() => {

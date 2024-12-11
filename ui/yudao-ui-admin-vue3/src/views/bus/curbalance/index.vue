@@ -214,17 +214,18 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="icon" >
-              <div v-if="item.curUnbalance != null" >
-                <span style="font-size: 20px;">{{ item.curUnbalance }}%</span><br/>电流不平衡度
-              </div>              
-            </div>
             <div class="info">                  
               <div v-if="item.acur != null">A相：{{item.acur}}A</div>
               <div v-if="item.bcur != null">B相：{{item.bcur}}A</div>
               <div v-if="item.ccur != null">C相：{{item.ccur}}A</div>
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
+            </div>
+            <div class="icon">
+              <div v-if="item.curUnbalance != null" >
+                <span style="font-size: 20px;margin-left:35px;">{{ item.curUnbalance }}%</span>
+                <div style="width:100px;">电流不平衡度</div>
+              </div>              
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
@@ -243,17 +244,18 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="icon" >
-              <div v-if="item.volUnbalance != null" >
-                <span style="font-size: 20px;">{{ item.volUnbalance }}%</span><br/>电压不平衡度
-              </div>              
-            </div>
             <div class="info">                  
               <div v-if="item.avol != null">A相：{{item.avol}}V</div>
               <div v-if="item.bvol != null">B相：{{item.bvol}}V</div>
               <div v-if="item.cvol != null">C相：{{item.cvol}}V</div>
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
+            </div>
+            <div class="icon" >
+              <div v-if="item.volUnbalance != null" >
+                <span style="font-size: 20px;margin-left:35px;">{{ item.volUnbalance }}%</span>
+                <div style="width:100px;">电压不平衡度</div>
+              </div>              
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
@@ -485,6 +487,7 @@ const getList = async () => {
     statusNumber.greaterFifteen = greaterFifteen;
     statusNumber.greaterThirty = greaterThirty;
     list.value = data.list
+    console.log('list.value',list.value)
     total.value = data.total
   } finally {
     loading.value = false
@@ -923,64 +926,203 @@ onActivated(() => {
   }
 }
 
-.arrayContainer {
-  display: flex;
-  flex-wrap: wrap;
-  .arrayItem {
-    width: 25%;
-    height: 140px;
-    font-size: 13px;
-    box-sizing: border-box;
-    background-color: #eef4fc;
-    border: 5px solid #fff;
-    padding-top: 40px;
-    position: relative;
-    .content {
-      display: flex;
-      align-items: center;
-      .icon {
-        width: 78px;
-        height: 30px;
-        margin: 0 28px;
-        text-align: center;
+@media screen and (min-width: 2048px) {
+  .arrayContainer {
+    display: flex;
+    flex-wrap: wrap;
+    .arrayItem {
+      width: 20%;
+      height: 140px;
+      font-size: 13px;
+      box-sizing: border-box;
+      background-color: #eef4fc;
+      border: 5px solid #fff;
+      padding-top: 40px;
+      position: relative;
+      .content {
+        display: flex;
+        align-items: center;
+        .icon {
+          width: 60px;
+          height: 30px;
+          margin-left:25px;
+          text-align: center;
+        }
+        .info {
+          margin-left: 15px;
+        }
+      }
+      .devKey {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .room {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .status {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        color: #fff;
+        position: absolute;
+        right: 38px;
+        top: 8px;
+      }
+      .detail {
+        width: 40px;
+        height: 25px;
+        padding: 0;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        cursor: pointer;
       }
     }
-    .devKey{
-      position: absolute;
-      left: 8px;
-      top: 8px;
-    }
-    .room {
-      position: absolute;
-      left: 8px;
-      top: 8px;
-    }
-    .status {
-      width: 40px;
-      height: 20px;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+  }
+}
 
-      color: #fff;
-      position: absolute;
-      right: 38px;
-      top: 8px;
+@media screen and (max-width: 2048px) and (min-width: 1600px) {
+  .arrayContainer {
+    display: flex;
+    flex-wrap: wrap;
+    .arrayItem {
+      width: 25%;
+      height: 140px;
+      font-size: 13px;
+      box-sizing: border-box;
+      background-color: #eef4fc;
+      border: 5px solid #fff;
+      padding-top: 40px;
+      position: relative;
+      .content {
+        display: flex;
+        align-items: center;
+        .icon {
+          width: 60px;
+          height: 30px;
+          margin-left:25px;
+          text-align: center;
+        }
+        .info {
+          margin-left: 15px;
+        }
+      }
+      .devKey {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .room {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .status {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        color: #fff;
+        position: absolute;
+        right: 38px;
+        top: 8px;
+      }
+      .detail {
+        width: 40px;
+        height: 25px;
+        padding: 0;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        cursor: pointer;
+      }
     }
-    .detail {
-      width: 40px;
-      height: 25px;
-      padding: 0;
-      border: 1px solid #ccc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #fff;
-      position: absolute;
-      right: 8px;
-      bottom: 8px;
-      cursor: pointer;
+  }
+}
+
+@media screen and (max-width: 1600px) {
+  .arrayContainer {
+    display: flex;
+    flex-wrap: wrap;
+    .arrayItem {
+      width: 33%;
+      height: 140px;
+      font-size: 13px;
+      box-sizing: border-box;
+      background-color: #eef4fc;
+      border: 5px solid #fff;
+      padding-top: 40px;
+      position: relative;
+      .content {
+        display: flex;
+        align-items: center;
+        .icon {
+          width: 60px;
+          height: 30px;
+          margin-left:25px;
+          text-align: center;
+        }
+        .info {
+          margin-left: 15px;
+        }
+      }
+      .devKey {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .room {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .status {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        color: #fff;
+        position: absolute;
+        right: 38px;
+        top: 8px;
+      }
+      .detail {
+        width: 40px;
+        height: 25px;
+        padding: 0;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        cursor: pointer;
+      }
     }
   }
 }

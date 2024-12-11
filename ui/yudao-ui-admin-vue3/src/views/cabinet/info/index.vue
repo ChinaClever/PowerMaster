@@ -445,6 +445,7 @@ const handleSelectStatus = (index, event) => {
 // 跳转详情页
 const toMachineDetail = (key) => {
   console.log('toMachineDetail!', key.split('-')[1])
+  // push({path: '/cabinet/powerLoadDetail', state: { devKey, busId ,location,busName }})
   push({path: '/cabinet/cab/detail', state: { id: key.split('-')[1] }})
 }
 
