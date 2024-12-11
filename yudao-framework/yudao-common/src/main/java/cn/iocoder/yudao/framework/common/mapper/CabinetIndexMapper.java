@@ -1,10 +1,13 @@
 package cn.iocoder.yudao.framework.common.mapper;
 
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.vo.CabineIndexCfgVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.SelectKey;
 
 /**
@@ -24,4 +27,6 @@ public interface CabinetIndexMapper extends BaseMapper<CabinetIndex> {
 
 
     CabineIndexCfgVO selectCabineIndexCfgById(int id);
+
+    Page<CabineIndexCfgVO> selectIndexLoadPage(@Param("page") Page page, @Param("req") CabinetIndexVo req);
 }

@@ -180,10 +180,13 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             List<Double> volArr = jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list").getJSONArray("vol_value").toList(Double.class);
             JSONArray curAlarmArr = jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list").getJSONArray("cur_alarm_max");
 
-            double curAvg = curArr.stream().mapToDouble(i -> i).average().getAsDouble();
-            double volAvg = volArr.stream().mapToDouble(i -> i).average().getAsDouble();
-            Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curArr) - curAvg) / curAvg * 100;
-            Double volUnbalance = volAvg == 0 ? 0 : (Collections.max(volArr) - Collections.min(volArr)) / volAvg * 100;
+//            double curAvg = curArr.stream().mapToDouble(i -> i).average().getAsDouble();
+//            double volAvg = volArr.stream().mapToDouble(i -> i).average().getAsDouble();
+//            Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curArr) - curAvg) / curAvg * 100;
+//            Double volUnbalance = volAvg == 0 ? 0 : (Collections.max(volArr) - Collections.min(volArr)) / volAvg * 100;
+
+            Double curUnbalance = pduTgData.getDoubleValue("cur_unbalance");
+            Double volUnbalance = pduTgData.getDoubleValue("vol_unbalance");
 
             curAlarmArr.sort(Collections.reverseOrder());
             double maxVal = curAlarmArr.getDouble(0);
@@ -242,17 +245,17 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             pduDeviceDO.setBcur(new BigDecimal(bcur).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
             pduDeviceDO.setCcur(new BigDecimal(ccur).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
 
-//            pduDeviceDO.setCurUnbalance(curUnbalance);
+
             pduDeviceDO.setAvol(new BigDecimal(volArr.get(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue() );
 
             pduDeviceDO.setBvol(new BigDecimal(volArr.size() > 1 ? volArr.get(1) : 0).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
             pduDeviceDO.setCvol(new BigDecimal(volArr.size() > 2 ? volArr.get(2) : 0).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
 
+//            pduDeviceDO.setCurUnbalance(new BigDecimal(curUnbalance).setScale(2, RoundingMode.HALF_UP).doubleValue());
+//            pduDeviceDO.setVolUnbalance(new BigDecimal(volUnbalance).setScale(2, RoundingMode.HALF_UP).doubleValue());
             pduDeviceDO.setCurUnbalance(new BigDecimal(curUnbalance).setScale(2, RoundingMode.HALF_UP).doubleValue());
             pduDeviceDO.setVolUnbalance(new BigDecimal(volUnbalance).setScale(2, RoundingMode.HALF_UP).doubleValue());
-//            pduDeviceDO.setVolUnbalance(pduTgData.getDouble("vol_unbalance") != null ? pduTgData.getDouble("vol_unbalance") : null);
             pduDeviceDO.setColor(color);
-
         }
         return new PageResult<PDUDeviceDO>(result, pduIndexPageResult.getTotal());
     }
@@ -793,22 +796,18 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         if (jsonObject == null) {
             return result;
         }
-//        if (jsonObject == null || jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list") == null || jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list").size() <= 0) {
-//            continue;
-//        }
+        JSONObject pduTgData = jsonObject.getJSONObject("pdu_data").getJSONObject("pdu_total_data");
         JSONObject loopItemList = jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list");
         List<Double> curList  = loopItemList.getJSONArray("cur_value").toList(Double.class);
         List<Double> volList  = loopItemList.getJSONArray("vol_value").toList(Double.class);
-//        List<Double> curList = curValue
-//        List<Double> volList = volValue
-//        curList.sort(Comparator.naturalOrder());
-//        volList.sort(Comparator.naturalOrder());
-        Double curAvg = curList.stream().mapToDouble(i->i).average().getAsDouble();
-        Double volAvg = volList.stream().mapToDouble(i->i).average().getAsDouble();
-        Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList) - curAvg) / curAvg * 100;
-        Double volUnbalance = volAvg == 0 ? 0 : (Collections.max(volList) - Collections.min(volList)) / volAvg * 100;
 
+//        Double curAvg = curList.stream().mapToDouble(i->i).average().getAsDouble();
+//        Double volAvg = volList.stream().mapToDouble(i->i).average().getAsDouble();
+//        Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList) - curAvg) / curAvg * 100;
+//        Double volUnbalance = volAvg == 0 ? 0 : (Collections.max(volList) - Collections.min(volList)) / volAvg * 100;
 
+        Double curUnbalance = pduTgData.getDoubleValue("cur_unbalance");
+        Double volUnbalance = pduTgData.getDoubleValue("vol_unbalance");
         result.setCur_value(curList);
         result.setVol_value(volList);
         result.setCurUnbalance(new BigDecimal(curUnbalance).setScale(2, RoundingMode.HALF_UP).doubleValue());
