@@ -139,7 +139,7 @@
             <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
           </div>
           <div class="room">{{load.roomName+'-'+load.cabinetName}}</div>
-          <button class="detail" @click.prevent="toMachineDetail">详情</button>
+          <button class="detail" @click.prevent="toMachineDetail(load)">详情</button>
         </div>
       </div>
       <Pagination
