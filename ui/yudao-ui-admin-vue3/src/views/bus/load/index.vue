@@ -490,6 +490,7 @@ const getList = async () => {
   try {
     const data = await IndexApi.getIndexPage(queryParams)
     list.value = data.list
+    console.log('list',list.value)
     var tableIndex = 0;
     var lessThirty = 0;
     var greaterThirty = 0;

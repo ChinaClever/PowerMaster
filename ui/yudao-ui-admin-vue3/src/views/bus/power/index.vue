@@ -809,6 +809,7 @@ const getListNoLoading = async () => {
   try {
     const data = await IndexApi.getBusRedisPage(queryParams)
     list.value = data.list
+    console.log('list.value',list.value)
     var tableIndex = 0;    
 
     list.value.forEach((obj) => {
@@ -913,7 +914,6 @@ const filterData = () => {
   } else if (offlineFlag.value && !normalFlag.value && !reportFlag.value) {
     list.value = data2; // 仅离线状态
   } else if (normalFlag.value && reportFlag.value) {
-    // 合并正常状态和报告状态的数据
     list.value = [...data0, ...data1];
   } else if (normalFlag.value && offlineFlag.value) {
     list.value = [...data0, ...data2];
