@@ -417,20 +417,6 @@ onBeforeMount(() => {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 .navInfo {
   width: 215px;
   height: 100%;
