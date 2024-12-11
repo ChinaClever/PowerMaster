@@ -42,25 +42,25 @@
           <div class="box">
             <div class="top"> <div class="tag"></div>正常 </div>
             <div class="value"
-              ><span class="number">{{}}</span>个</div
+              ><span class="number">{{statusNumber.normal}}</span>个</div
             >
           </div>
           <div class="box">
             <div class="top"> <div class="tag empty"></div>离线 </div>
             <div class="value"
-              ><span class="number">{{}}</span>个</div
+              ><span class="number">{{statusNumber.offline}}</span>个</div
             >
           </div>
           <div class="box">
             <div class="top"> <div class="tag error"></div>告警 </div>
             <div class="value"
-              ><span class="number">{{}}</span>个</div
+              ><span class="number">{{statusNumber.warn}}</span>个</div
             >
           </div>
           <div class="box">
             <div class="top"> <div class="tag empty"></div>总共 </div>
             <div class="value"
-              ><span class="number">{{}}</span>个</div
+              ><span class="number">{{statusNumber.total}}</span>个</div
             >
           </div>
         </div>
@@ -257,18 +257,18 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" v-if="valueMode == 0">
-            <el-tag type="info" v-if="item.atemStatus == null">离线</el-tag>
+            <el-tag type="info" v-if="item.status == 2">离线</el-tag>
             <el-tag
               type="danger"
-              v-else-if="item.atemStatus != 0 || item.btemStatus != 0 || item.ctemStatus != 0"
+              v-else-if="item.status == 1 "
               >告警</el-tag
             >
             <el-tag v-else>正常</el-tag>
           </div>
           <button
-            class="detail"
+            class="detail" v-if="item.status != null && item.status != 2"
             @click="openTemDetail(item)"
-            v-if="item.status != null && item.status != 5"
+            
             >详情</button
           >
         </div>
@@ -515,28 +515,28 @@ const temTableList = ref([]) as any
 const statusNumber = reactive({
   normal: 0,
   warn: 0,
-  alarm: 0,
-  offline: 0
+  offline: 0,
+  total: 0
 })
 const statusList = reactive([
   {
     name: '正常',
     selected: true,
-    value: 1,
+    value: 0,
     cssClass: 'btn_normal',
     activeClass: 'btn_normal normal'
   },
   {
     name: '告警',
     selected: true,
-    value: 2,
+    value: 1,
     cssClass: 'btn_error',
     activeClass: 'btn_error error'
   },
   {
     name: '离线',
     selected: true,
-    value: 0,
+    value: 2,
     cssClass: 'btn_offline',
     activeClass: 'btn_offline offline'
   }
@@ -606,18 +606,35 @@ const getList = async () => {
 
     list.value = data.list
     var tableIndex = 0
+    var normal = 0
+    var warn = 0
+    var offline = 0
+    var all = 0
 
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex
-      if (obj?.atem == null) {
+      if (obj?.status == null) {
         return
       }
       obj.atem = obj.atem?.toFixed(0)
       obj.btem = obj.btem?.toFixed(0)
       obj.ctem = obj.ctem?.toFixed(0)
       obj.ntem = obj.ntem?.toFixed(0)
+
+      if(obj.status == 0){
+        normal++;
+      } else if (obj.status == 1) {
+        warn++;
+      } else if (obj.status == 2) {
+        offline++;
+      } 
+      all++;
     })
 
+    statusNumber.normal = normal;
+    statusNumber.warn = warn;
+    statusNumber.offline = offline;
+    statusNumber.total = all;
     total.value = data.total
   } finally {
     loading.value = false
