@@ -76,7 +76,7 @@
             <if test="req.roomId !=null and req.roomId !=''">
                 and ci.room_id = #{req.roomId}
             </if>
-            <if test="req.runStatus">
+            <if test="req.runStatus !=null and req.runStatus.size >0">
                 and ci.run_status in
                 <foreach item="item" collection="req.runStatus" separator="," open="(" close=")" index="">
                     #{item}

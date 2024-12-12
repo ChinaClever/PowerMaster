@@ -9,6 +9,7 @@ import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
+import cn.iocoder.yudao.module.cabinet.vo.CabinetEnergyStatisticsResVO;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexLoadResVO;
 import com.alibaba.fastjson2.JSONObject;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.Map;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.error;
@@ -108,6 +110,13 @@ public class CabinetController {
         return success(pageResult);
     }
 
+    @PostMapping("/cabinet/eq/page")
+    @Operation(summary = "获得机柜用能分页")
+    public CommonResult<PageResult<CabinetEnergyStatisticsResVO>> getEnergyStatisticsPage(@RequestBody CabinetIndexVo pageReqVO) throws IOException {
+        PageResult<CabinetEnergyStatisticsResVO> pageResult = cabinetService.getEnergyStatisticsPage(pageReqVO);
+        return success(pageResult);
+    }
+
     /**
      * 机柜新增/编辑页面
      *
@@ -148,19 +157,6 @@ public class CabinetController {
         CommonResult message = cabinetService.saveEnvCabinet(vo);
         return message;
     }
-
-    /**
-     * 机柜用能页面
-     *
-     * @param pageReqVO
-     */
-    @Operation(summary = "机柜用能列表分页")
-    @PostMapping("/cabinet/eq/page")
-    public CommonResult<PageResult<CabinetIndexDTO>> getEqPage(@RequestBody CabinetIndexVo pageReqVO) {
-        PageResult<CabinetIndexDTO> pageResult = cabinetService.getEqPage(pageReqVO);
-        return success(pageResult);
-    }
-
 
     /**
      * 机柜用能页面

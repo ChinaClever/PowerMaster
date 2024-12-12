@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="模块化机房">
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜用能">
     <template #NavInfo>
       <div class="navInfo">
         <!-- <div class="header">
@@ -13,25 +13,25 @@
             <div class="top">
               <div class="tag"></div>正常
             </div>
-            <div class="value"><span class="number">24</span>个</div>
+            <div class="value"><span class="number">{{sumNormal}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag empty"></div>空载
             </div>
-            <div class="value"><span class="number">1</span>个</div>
+            <div class="value"><span class="number">{{sumNoload}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag warn"></div>预警
             </div>
-            <div class="value"><span class="number">1</span>个</div>
+            <div class="value"><span class="number">{{sumEarly}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag error"></div>故障
+              <div class="tag error"></div>告警
             </div>
-            <div class="value"><span class="number">0</span>个</div>
+            <div class="value"><span class="number">{{sumInform}}</span>个</div>
           </div>
         </div>
         <div class="line"></div>
@@ -130,6 +130,13 @@ import { CabinetApi } from '@/api/cabinet/info'
 import { CabinetEnergyApi } from '@/api/cabinet/energy'
 
 const { push } = useRouter() // 路由跳转
+// 运行状态 0：空载 1：正常 2：预警 3：告警 4:未绑定 5：离线
+const sumNoload = ref();
+const sumNormal = ref();
+const sumEarly = ref();
+const sumInform = ref();
+const sumDidnot = ref();
+const sumOffline = ref();
 
 const tableLoading = ref(false) // 
 const isFirst = ref(true) // 是否第一次调用getTableData函数
@@ -150,6 +157,14 @@ const getNavList = async() => {
   navList.value = res
 }
 
+const statistics = async() => {
+  const resStatus =await CabinetApi.getCabinetInfoStatus();
+    sumNoload.value = resStatus.list[0].sumNoload;
+    sumNormal.value = resStatus.list[0].sumNormal;
+    sumEarly.value = resStatus.list[0].sumEarly;
+    sumInform.value = resStatus.list[0].sumInform;
+}
+
 // 获取表格数据
 const getTableData = async(reset = false) => {
   console.log('getTableData', queryParams)
@@ -167,9 +182,10 @@ const getTableData = async(reset = false) => {
     })
     if (res.list) {
       tableData.value = res.list.map(item => {
+        const roomName = item.roomName || ''; // 处理 null 值
         return {
           id: item.id,
-          local: item.roomName + '-' + item.name,
+          local: roomName + '-' + item.cabinetName,
           company: item.company ,
           yesterdayEq: item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0',
           lastWeekEq: item.lastWeekEq ? item.lastWeekEq.toFixed(1) : '0.0',
@@ -217,6 +233,7 @@ const toDetail = (roomId, id) => {
 onBeforeMount(() => {
   getNavList()
   getTableData()
+  statistics()
 })
 </script>
 

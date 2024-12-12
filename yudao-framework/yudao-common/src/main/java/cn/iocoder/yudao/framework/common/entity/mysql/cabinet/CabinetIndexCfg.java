@@ -1,9 +1,11 @@
 package cn.iocoder.yudao.framework.common.entity.mysql.cabinet;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -13,8 +15,7 @@ import java.time.LocalDateTime;
  * @date 2024/4/23 10:40
  */
 @Data
-@TableName(value = "cabinet_index")
-public class CabinetIndex implements Serializable {
+public class CabinetIndexCfg implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -89,4 +90,48 @@ public class CabinetIndex implements Serializable {
 
     @TableField(value = "count(*)",insertStrategy = FieldStrategy.NEVER,updateStrategy = FieldStrategy.NEVER,select = false)
     private  Integer count;
+
+
+
+    /**
+     * 机柜id
+     */
+    private int cabinetId;
+
+    /**
+     * x坐标
+     */
+    @JsonProperty(value = "x_coordinate")
+    private int xCoordinate;
+
+    /**
+     * y坐标
+     */
+    @JsonProperty(value = "y_coordinate")
+    private int yCoordinate;
+
+    /**
+     * 所属于公司
+     */
+    private String company;
+
+    /**
+     * 日用电告警开关 0禁用 1启用
+     */
+    private Boolean eleAlarmDay;
+
+    /**
+     * 日用能限制
+     */
+    private BigDecimal eleLimitDay;
+
+    /**
+     * 月用电告警开关 0禁用 1启用
+     */
+    private Boolean eleAlarmMonth;
+
+    /**
+     * 月用能限制
+     */
+    private BigDecimal eleLimitMonth;
 }

@@ -1,4 +1,4 @@
-package cn.iocoder.yudao.framework.common.dto.cabinet;
+package cn.iocoder.yudao.module.cabinet.dto;
 
 import cn.iocoder.yudao.framework.common.pojo.PageParam;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -14,7 +14,7 @@ import java.util.List;
  */
 @Schema(description = "管理后台 - 机柜列表分页 Request VO")
 @Data
-public class CabinetIndexVo extends PageParam {
+public class CabinetIndeEnergyDTO extends PageParam {
 
 
     /**
@@ -55,4 +55,5 @@ public class CabinetIndexVo extends PageParam {
 
     @Schema(description = "时间颗粒度")
     private String timeGranularity;
+
 }
