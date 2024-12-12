@@ -1,5 +1,9 @@
 <template>
   <ContentWrap>
+      <div class="title">
+        <el-button v-if="!editEnable" @click.prevent="toDetail(cabinetId,roomId)" type="primary">编辑</el-button>
+        <!-- <button class="detail" @click.prevent="toDetail(cabinetId,roomId)">编辑</button> -->
+      </div>
     <div class="screenContiner">
       <div class="deviceList">
         <div v-for="item in deviceRight" :key="item.id" class="device">
@@ -58,14 +62,15 @@
 
 <script lang="ts" setup>
 import { CabinetApi } from '@/api/cabinet/info'
-
+const {push} = useRouter()
 const cabinetInfo = ref({})
 const deviceLeft = ref([])
 const deviceRight = ref([])
 const frameList = ref([])
 const height = ref('0px')
+const roomId = history?.state?.roomId || 1
 const cabinetId = history?.state?.id || 1
-console.log('cabinetId', cabinetId)
+console.log('cabinetId', cabinetId+'-'+roomId)
 
 const getData = async() => {
   const res = await CabinetApi.getCabinetInfoItem({id: cabinetId})
@@ -94,8 +99,15 @@ const getData = async() => {
     }
   }
 }
+const toDetail = (cabinetId,roomId) => {
+  console.log('跳转详情cabinetId', cabinetId)
+  console.log('跳转详情roomId', roomId)
+  // alert('跳转详情')
+  push({path: '/cabinet/cab/frameBinding', state: { cabinetId,roomId }})
+}
 
-getData()
+
+ getData()
 </script>
 
 <style lang="scss" scoped>

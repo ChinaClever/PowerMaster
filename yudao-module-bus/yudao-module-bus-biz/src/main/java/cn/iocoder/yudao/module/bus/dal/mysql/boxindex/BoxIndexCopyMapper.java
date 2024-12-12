@@ -6,6 +6,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxIndexPageReqVO;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusIndexStatisticsResVO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
@@ -35,4 +36,6 @@ public interface BoxIndexCopyMapper extends BaseMapperX<BoxIndex> {
                 .ne(ObjectUtil.isNotEmpty(reqVO.getStatus()), BoxIndex::getRunStatus, 0)
                 .orderByAsc(BoxIndex::getId));
     }
+
+    BusIndexStatisticsResVO getBoxIndexStatistics();
 }

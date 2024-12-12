@@ -19,10 +19,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
-import cn.iocoder.yudao.framework.common.mapper.AisleBarMapper;
-import cn.iocoder.yudao.framework.common.mapper.AisleBoxMapper;
-import cn.iocoder.yudao.framework.common.mapper.CabinetBusMapper;
-import cn.iocoder.yudao.framework.common.mapper.CabinetIndexMapper;
+import cn.iocoder.yudao.framework.common.mapper.*;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
@@ -110,7 +107,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
     @Resource
     private BoxIndexCopyMapper boxIndexCopyMapper;
-
+    @Autowired
+    private BoxIndexMapper boxIndexMapper;
     @Resource
     private BoxCurbalanceColorMapper boxCurbalanceColorMapper;
 
@@ -464,6 +462,11 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             }
         }
         return resVO;
+    }
+
+    @Override
+    public BusIndexStatisticsResVO getBoxIndexStatistics() {
+        return boxIndexCopyMapper.getBoxIndexStatistics();
     }
 
 
