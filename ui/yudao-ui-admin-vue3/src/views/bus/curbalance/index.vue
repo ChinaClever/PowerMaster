@@ -243,10 +243,17 @@
       <el-dialog v-model="dialogVisibleCur" @close="handleClose">
         <!-- 自定义的头部内容（可选） -->
         <template #header>
+          <div>
+            <div>
+              <span>所在位置：</span>
+              <el-tag size="large">{{ curlocation }}</el-tag><span>(名称：<el-tag size="large">{{ curlocation }}</el-tag>)</span>
+            </div>
+            <div style="margin-top:-30px;float:right">
+              <span>网络地址：</span>
+              <el-tag size="large">{{ curlocation.split('-')[0] }}</el-tag>
+            </div>
+          </div>
           <CardTitle title="电流不平衡" />
-          <span style="margin-left: 1vw"
-            ><el-tag size="large">{{ curlocation }}</el-tag></span
-          >
         </template>
         <!-- 自定义的主要内容 -->
         <div class="custom-content">
