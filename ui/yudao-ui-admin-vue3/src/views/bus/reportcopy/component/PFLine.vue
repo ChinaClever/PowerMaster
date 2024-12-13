@@ -49,7 +49,7 @@ const echartsOption = ref({
 
 watchEffect(() => {
   // 直接访问即可，watchEffect会自动跟踪变化
-
+  debugger
   series.value = prop.list.series;
   console.log("series.value",  series.value)
   if(  series.value != null && series.value?.length > 0){

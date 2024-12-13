@@ -10,6 +10,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetEnergyStatisticsResVO;
+import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexEnvResVO;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexLoadResVO;
 import com.alibaba.fastjson2.JSONObject;
 import io.swagger.v3.oas.annotations.Operation;
@@ -168,6 +169,12 @@ public class CabinetController {
     public CommonResult<PageResult<CabinetIndexDTO>> getCapacityPage(@RequestBody CabinetIndexVo pageReqVO) {
         PageResult<CabinetIndexDTO> pageResult = cabinetService.getCapacityPage(pageReqVO);
         return success(pageResult);
+    }
+
+    @Operation(summary = "机柜环境详情")
+    @PostMapping("/cabinet/env")
+    public CommonResult<PageResult<CabinetIndexEnvResVO>> getCabinetEnv(@RequestBody CabinetIndexVo pageReqVO){
+        return success(cabinetService.getCabinetEnv(pageReqVO));
     }
 
     /**

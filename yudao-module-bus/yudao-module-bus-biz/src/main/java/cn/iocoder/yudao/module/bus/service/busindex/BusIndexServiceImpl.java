@@ -707,6 +707,11 @@ public class BusIndexServiceImpl implements BusIndexService {
     }
 
     @Override
+    public BusIndexStatisticsResVO getBusIndexStatistics() {
+        return busIndexMapper.selectBusIndexStatistics();
+    }
+
+    @Override
     public PageResult<BusRedisDataRes> getBusRedisPage(BusIndexPageReqVO pageReqVO) {
         PageResult<BusIndexDO> busIndexDOPageResult = busIndexMapper.selectPage2(pageReqVO);
         List<BusIndexDO> list = busIndexDOPageResult.getList();

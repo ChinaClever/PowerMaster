@@ -8,6 +8,7 @@ import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetEnergyStatisticsResVO;
+import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexEnvResVO;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexLoadResVO;
 import com.alibaba.fastjson2.JSONObject;
 
@@ -109,4 +110,7 @@ public interface CabinetService {
      */
 
     PageResult<CabinetEnergyStatisticsResVO> getEnergyStatisticsPage(CabinetIndexVo pageReqVO) throws IOException;
+
+    PageResult<CabinetIndexEnvResVO> getCabinetEnv(CabinetIndexVo pageReqVO);
+
 }

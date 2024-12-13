@@ -231,7 +231,7 @@
           </div>
         </div>
 
-        <div class="pageBox"  v-if="temp1 && temp1.length > 0">
+        <div class="pageBox"  v-if="visControll.temVis">
             <div class="page-conTitle">
               告警信息
             </div>
@@ -418,23 +418,34 @@ const initChart = async () => {
               },
       radar: { indicator: indicator.value.nameAndMax},
       series: [
-
-          { 
+        { 
           name: 'PDU输出位电能', 
           type: 'radar', 
-          label: { show: true, position: 'top' } ,
+          label: { show: true, position: 'inside' } ,
           data: 
-          [ { value: serverData.value.curvalue, name: '电流' }, ] },
+          [ { value: serverData.value.curvalue, name: '电流' }, ],
+          itemStyle: {
+            color: 'skyblue'
+          }
+        },
         { 
           name: 'PDU输出位视在功率', 
           type: 'radar', 
-          label: { show: true, position: 'top' } ,
-          data: [ { value: serverData.value.powapparent, name: '视在功率' }, ] },
+          label: { show: true, position: 'inside' } ,
+          data: [ { value: serverData.value.powapparent, name: '视在功率' }, ],
+          itemStyle: {
+            color: '#90EE90'
+          }
+          },
           { 
           name: 'PDU输出位有功功率', 
           type: 'radar', 
-          label: { show: true, position: 'top' } ,
-          data: [ { value: serverData.value.powvalue, name: '有功功率' }, ] }
+          label: { show: true, position: 'inside' } ,
+          data: [ { value: serverData.value.powvalue, name: '有功功率' }, ],
+          itemStyle: {
+            color: '#FFB6C1'
+          } 
+          }
       ]
     });
     
@@ -814,6 +825,7 @@ const getList = async () => {
   }
 
   var PDU = await IndexApi.getBusRedisByDevKey(queryParams);
+  console.log('PDU',PDU)
   PDU = JSON.parse(PDU)
   var temp = [] as any;
   var resultArray=[] as any;
@@ -895,15 +907,18 @@ const getList = async () => {
   //清除temp1的缓存数据
   temp1.value=[]
   //获得告警信息
-  getTableData()
+  const temp1Data = await IndexApi.getRecordPage({
+    pageNo: 1,
+    pageSize: 10,
+    devKey: "172.16.101.2-1",
+    devType: 6
+  })
   //处理告警信息数据
   // //debugger
   //处理时间信息
-  const oldDate = new Date(queryParams.oldTime);
-  const newDate = new Date(queryParams.newTime);
-
-  Object.values(tableData.value).forEach((item: any)=>item.devKey== temp[1].baseInfoValue&&newDate>=new Date(item.startTime)&&new Date(item.startTime)>=oldDate?temp1.value.push(item):console.log("no"))
-  console.log('表格的数据',temp1.value)
+  
+  console.log('表格的数据',temp1Data)
+  temp1.value = temp1Data.list
 }
 
 watch(filterText, (val) => {
@@ -952,32 +967,32 @@ const handleQuery = async () => {
 
 const tableLoading = ref(false)
 const preStatus = ref([0])
-const tableData = ref([])
+//const tableData = ref([])
 const targetId = ref('')
 
-// 获取告警信息数据
-const getTableData = async(reset = false) => {
-  tableLoading.value = true
-  try {
-    // //debugger
-    const res = await AlarmApi.getAlarmRecord({
-      pageNo: 1,
-      pageSize: 10,
-      a: 1,
-      status: preStatus.value,
-      likeName: queryParams.search
-    })
-    console.log('res', res)
-    if (res.list) {    
-      tableData.value = res.list
-      queryParams.pageTotal = res.total   
-    }
-  } finally {
-    tableLoading.value = false
-    //queryParams.a.value=0
-  }
-}
-getTableData()
+//// 获取告警信息数据
+//const getTableData = async(reset = false) => {
+//  tableLoading.value = true
+//  try {
+//    // //debugger
+//    const res = await AlarmApi.getAlarmRecord({
+//      pageNo: 1,
+//      pageSize: 10,
+//      a: 1,
+//      status: preStatus.value,
+//      likeName: queryParams.search
+//    })
+//    console.log('res', res)
+//    if (res.list) {    
+//      tableData.value = res.list
+//      queryParams.pageTotal = res.total   
+//    }
+//  } finally {
+//    tableLoading.value = false
+//    //queryParams.a.value=0
+//  }
+//}
+//getTableData()
 
 /** 重置按钮操作 */
 // const resetQuery = () => {

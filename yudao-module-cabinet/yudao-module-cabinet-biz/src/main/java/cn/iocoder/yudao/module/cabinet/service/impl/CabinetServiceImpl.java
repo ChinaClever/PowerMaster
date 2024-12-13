@@ -21,6 +21,7 @@ import cn.iocoder.yudao.module.cabinet.mapper.RackIndexMapper;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetEnergyStatisticsResVO;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetEqTotalDay;
+import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexEnvResVO;
 import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexLoadResVO;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
@@ -812,6 +813,32 @@ public class CabinetServiceImpl implements CabinetService {
             vo.setLocation(joiner.toString());
         }
         return new PageResult<>(list, voPage.getTotal());
+    }
+
+    @Override
+    public PageResult<CabinetIndexEnvResVO> getCabinetEnv(CabinetIndexVo pageReqVO) {
+        Page page = new Page(pageReqVO.getPageNo(), pageReqVO.getPageSize());
+        Page<CabineIndexCfgVO> voPage = cabinetIndexMapper.selectIndexLoadPage(page, pageReqVO);
+        if (!CollectionUtils.isEmpty(voPage.getRecords())) {
+            List<CabineIndexCfgVO> records = voPage.getRecords();
+            List<CabinetIndexEnvResVO> bean = BeanUtils.toBean(records, CabinetIndexEnvResVO.class);
+            Map<String, CabinetIndexEnvResVO> map = bean.stream().collect(Collectors.toMap(vo -> vo.getRoomId() + "-" + vo.getId(), i -> i));
+            Set<String> ids = map.keySet();
+            List list = redisTemplate.opsForValue().multiGet(ids);
+            for (Object obj : list) {
+                if (Objects.isNull(obj)){
+                    continue;
+                }
+                JSONObject jsonObject = JSON.parseObject(JSONObject.toJSONString(obj));
+                String cabinetKey = jsonObject.getString("cabinet_key");
+                CabinetIndexEnvResVO vo = map.get(cabinetKey);
+                vo.setHumValue(jsonObject.getJSONObject("cabinet_env").getString("hum_value"));
+                vo.setTemValue(jsonObject.getJSONObject("cabinet_env").getString("tem_value"));
+                vo.setRoomName(jsonObject.getString("room_name"));
+            }
+            return new PageResult<>(bean, voPage.getTotal());
+        }
+        return null;
     }
 
     private List getDataEs(String startTime, String endTime, List<Integer> ids, String index, Class objClass) throws IOException {

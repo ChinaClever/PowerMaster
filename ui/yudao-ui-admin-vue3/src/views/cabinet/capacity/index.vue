@@ -47,7 +47,7 @@
               </div>
             </div>
             <div class="room">{{item.roomName}}-{{item.name}}</div>
-            <button class="detail" @click.prevent="toDetail(item.id)">详情</button>
+            <button class="detail" @click.prevent="toDetail(item.id,item.roomId)">详情</button>
           </div>
         </div>
         <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" >
@@ -152,9 +152,9 @@ const handleSwitchModal = (value) => {
 }
 
 // 跳转详情
-const toDetail = (id) => {
+const toDetail = (id,roomId) => {
   console.log('跳转详情', id)
-  push({path: '/cabinet/cab/screen', state: { id }})
+  push({path: '/cabinet/cab/screen', state: { id , roomId}})
 }
 
 onBeforeMount(() => {

@@ -1,5 +1,5 @@
 <template>
-<div>
+<div style="height:calc(100vh - 120px);">
   <el-card shadow="never">
     <div class="toolbar">
       <div style="display: flex;align-items:center">
@@ -29,14 +29,14 @@
       </div>
     </div>
   </el-card>
-  <el-card shadow="never">
+  <div style="height:calc(100vh - 200px);">
+    <el-card shadow="never" style="height:100%;">
     <div class="dragContainer" 
       ref="tableContainer"
-      :class="{ crosshair: !isDragging.value }"
       v-loading="loading" 
-      @click.right="handleRightClick" 
-      @wheel="handleWheel" 
-      :style="isFromHome ? `width: fit-content;transform-origin: 0 0;transform: scale(${scaleValue}, ${scaleValue * 0.6});height: ${ContainerHeight}px` : 'height: calc(100vh - 220px)'">
+      @click.right="handleRightClick"
+      :style="isFromHome ? `width: fit-content;transform-origin: 0 0;transform: scale(${scaleValue}, ${scaleValue * 0.6});height: ${ContainerHeight}px` : 'height:calc(100vh - 230px);'"
+    >
       <!-- <div class="mask" v-if="!editEnable" @click.prevent=""></div> -->
       <el-table ref="dragTable" class="dragTable" v-if="tableData.length > 0" :show-header="!isFromHome" :style="isFromHome ? '' : {width: '100%',height: '100%'}" :data="tableData" border :row-style="{background: 'revert'}" :span-method="arraySpanMethod" row-class-name="dragRow" >
         <el-table-column v-if="!isFromHome" fixed type="index" width="60" align="center" :resizable="false" />
@@ -118,7 +118,7 @@
           </el-table-column>
         </template>
       </el-table>
-      <el-empty v-if="loading == false && tableData.length == 0" style="height: 100%" description="机房暂未配置，请先编辑配置" />
+    <!--  <el-empty v-if="loading == false && tableData.length == 0" style="height: calc(100vh - 220px)" description="机房暂未配置，请先编辑配置" /> -->
       <div class="menu" v-if="operateMenu.show" :style="{left: `${operateMenu.left}`, top: `${operateMenu.top}`}">
         <div class="menu_item" v-if="showMenuAdd" @click="addMachine">新增</div>
         <div class="menu_item" v-if="!showMenuAdd" @click="editMachine">编辑</div>
@@ -127,6 +127,7 @@
       </div>
     </div>
   </el-card>
+  </div>
   <layoutForm ref="machineForm" @success="handleChange" />
   <el-dialog v-model="dialogVisible" title="机房配置" width="30%" :before-close="handleDialogCancel">
     <el-form>
@@ -139,12 +140,16 @@
       <el-form-item label="列数" label-width="90">
         <el-input-number v-model="rowColInfo.col" :min="1" :max="70" controls-position="right" placeholder="请输入" />
       </el-form-item>
-      <el-form-item label="电力容量" label-width="90">
-         <el-input v-model="rowColInfo.powerCapacity" placeholder="请输入" />
-      </el-form-item>
-      <el-form-item label="空调功率" label-width="90">
-         <el-input v-model="rowColInfo.airPower" placeholder="请输入" />
-      </el-form-item>
+      
+     <div class="double-formitem">
+         <el-form-item label="电力容量" label-width="90">
+              <el-input v-model="rowColInfo.powerCapacity" placeholder="请输入" />
+         </el-form-item>
+         <el-form-item label="空调功率" label-width="90">
+              <el-input v-model="rowColInfo.airPower" placeholder="请输入" />
+          </el-form-item>
+      </div>
+
       <div class="double-formitem">
         <el-form-item label="日用能告警" label-width="90">
           <el-switch v-model="rowColInfo.eleAlarmDay" :active-value="1" :inactive-value="0" />
@@ -199,7 +204,7 @@ const chosenBtn = ref(0)
 const ContainerHeight = ref(100)
 const loading = ref(false)
 const movingInfo = ref<any>({})
-
+const roomFlag =ref();
 const roomDownValId = ref();
 
 const roomsId = reactive({
@@ -219,7 +224,7 @@ const rowColInfo = reactive({
   eleLimitMonth: 1000, // 月用能限制
 })
 const emit = defineEmits(['backData', 'getroomid']) // 定义 backData 事件，用于操作成功后的回调
-const tableData = ref<any>([])
+const tableData = ref<Record<string, any[]>[]>([]);
 const statusInfo = ref([
   {
     name: '空机柜',
@@ -275,41 +280,10 @@ const btns = [
   },
 ]
 
-// Vue Composition API 的引用
-const tableContainer = ref(null);
-const tablePosition = reactive({ x: 0, y: 0 });
-const isDragging = ref(false);
-const initialMousePos = reactive({ x: 0, y: 0 });
-const initialTableOffset = reactive({ x: 0, y: 0 }); // 使用偏移量而不是绝对位置来更新表格
-
-const scale = ref(1); // 初始缩放比例
-const minScale = 0.5; // 最小缩放比例
-const maxScale = 2; // 最大缩放比例
-
-const handleWheel = (event) => {
-  event.preventDefault(); // 阻止默认滚动行为
-  const delta = Math.sign(event.deltaY); // 获取滚轮方向
-
-  if (delta > 0 && scale.value > minScale) {
-    // 向上滚动，缩小
-    scale.value -= 0.1;
-  } else if (delta < 0 && scale.value < maxScale) {
-    // 向下滚动，放大
-    scale.value += 0.1;
-  }
-
-  // 应用缩放效果
-  if (dragTable.value) {
-    dragTable.value.$el.style.transform = `scale(${scale.value})`;
-  }
-};
-
 const dialogVisible = ref(false);
 const editEnable = ref(false);
 const tableHeight = ref(0);
 const machineForm = ref();
-
-const mainFlag = ref();
 
 const groupMachineFill = {
   name: 'MachineFill',
@@ -361,20 +335,21 @@ const getRoomList = async() => {
           roomId.value = roomsId.roomDownValIds;
       }
     }
-    emit('getroomid', roomId.value)
-    getRoomInfo()
+    emit('getroomid', roomId.value);
+    getRoomInfo();
   }
 }
 
 const getRoomInfo = async() => {
-  resetForm()
-  tableData.value = []
-  loading.value = true
+  resetForm();
+  loading.value = true;
   try {
-    const res = await MachineRoomApi.getRoomDetail({id: roomId.value});
+    const result1 = MachineRoomApi.getRoomDetail({id: roomId.value});
+    const result2 = MachineRoomApi.getRoomDataDetail({id: roomId.value})
+    const results = await Promise.all([result1, result2])
+    const res = results[0]
     roomDownValId.value = res.id;
-    const data = [] as any
-    const Obj = {}
+    const data: Record<string, any[]>[] = [];
     Object.assign(rowColInfo, {
       roomName: res.roomName,
       row: res.yLength,
@@ -392,15 +367,48 @@ const getRoomInfo = async() => {
       freeSpace: res.freeSpace,
       cabNum: res.cabNum,
     })
-    for(let i=0; i < res.xLength; i++) {
-       Obj[getTableColCharCode(i)] = []
-    }
-    for(let i=0; i < res.yLength; i++) {
-       data.push(JSON.parse(JSON.stringify(Obj)))
+    
+    for (let row = 0; row < res.yLength; row++) {
+      const rowData: Record<string, any[]> = {};
+      for (let col = 0; col < res.xLength; col++) {
+        const colKey = getTableColCharCode(col);
+        rowData[colKey] = [];
+      }
+      data.push(rowData);
     }
 
-    tableData.value = data;
-    getRoomStatus(res)
+    res.aisleList.forEach(item => {
+      for(let i=0; i < item.length; i++) {
+        const dataItem =  {
+          id: item.id,
+          name: item.aisleName,
+          direction: item.direction == 'x' ? 1 : 2,
+          type: 1,
+          amount: item.cabinetList.length,
+          cabinetList: item.cabinetList,
+          first: false,
+          originAmount: item.cabinetList.length,
+          originDirection: item.direction == 'x' ? 1 : 2,
+          eleAlarmDay: item.eleAlarmDay,
+          eleLimitDay: item.eleLimitDay,
+          eleAlarmMonth: item.eleAlarmMonth,
+          eleLimitMonth: item.eleLimitMonth,
+        }
+        if (i == 0) dataItem.first = true
+        if (dataItem.direction == 1) {
+          console.log('----dataItem1', dataItem, getTableColCharCode(item.xCoordinate - 1 + i), )
+          data[item.yCoordinate - 1][getTableColCharCode(item.xCoordinate - 1 + i)].splice(0, 1, dataItem)
+        } else {
+          data[item.yCoordinate - 1 + i][getTableColCharCode(item.xCoordinate - 1)].splice(0, 1, dataItem)
+        }
+      }
+    })
+    res.cabinetList.forEach(item => {
+      if (item.xCoordinate > 0 && item.yCoordinate > 0)
+      data[item.yCoordinate - 1][getTableColCharCode(item.xCoordinate - 1)].splice(0, 1, {...item, name: item.cabinetName, type: 2})
+    })
+    tableData.value = data
+    getRoomStatus(results[1])
     handleCssScale()
   } finally {
     loading.value = false
@@ -467,10 +475,9 @@ const handleDialogCancel = () => {
 }
 // 处理点击添加机房事件
 const handleAdd = () => {
-  isAddRoom.value = true
+  roomFlag.value = 1;
   dialogVisible.value = true
   resetForm()
-  //console.log('handleAdd')
 }
 // 重置表单
 const resetForm = () => {
@@ -510,6 +517,7 @@ const handleEdit = () => {
 }
 
 const openSetting = () => {
+  roomFlag.value = 2;
   dialogVisible.value = true
 }
 
@@ -656,33 +664,58 @@ const deleteMachine = () => {
   operateMenu.value.show = false
 }
 // 处理增加/编辑机柜
-const handleChange = (data) => {
-  mainFlag.value = data;
-  const X = "A" // 当前机柜/机柜列所处列
-  const Y = operateMenu.value.lndexY // 当前机柜/机柜列所处行
- // console.log('当前机柜/机柜列所处列', X, Y)
-  if (data.originDirection && data.originDirection != data.direction) deleteMachine() // 如果方向发生改变则先把原来的删除 再去新增
-  tableData.value[Y][X].splice(0, 1, {...data, first: true, originAmount: data.amount, originDirection: data.direction})
-  //alert(JSON.stringify(data))
-  //alert(data.type)
-}
-// 处理设置提交
-const submitSetting = () => {
-   if (isAddRoom.value) { 
-      //新建机房
-      addAndUpdateRoomSubmit(1);
-      return
-   }else{
-      //配置机房/（修改机房）
-      addAndUpdateRoomSubmit(2);
-      return;
-   }
+const handleChange = async(data) => {
+  tableData.value[operateMenu.value.lndexY][formParam.value[operateMenu.value.lndexX]].splice(0, 1, {...data, first: true, originAmount: data.amount, originDirection: data.direction});
+  const X =getColumnCharCodeToNumber(formParam.value[operateMenu.value.lndexX]);
+  const Y = (operateMenu.value.lndexY).toString(); // 当前机柜/机柜列所处行
+  let messageAisleFlag = "保存成功！";
+  if(roomFlag.value == 2){
+      messageAisleFlag = "修改成功！";
+  }
+  if(data.type == 1){
+      const res = await MachineRoomApi.saveRoomAisle({
+          roomId: roomId.value,
+          aisleName:data.name,
+          aisleLength:data.amount,
+          xCoordinate:X+1,
+          yCoordinate:parseInt(Y)+1,
+          direction:data.direction == 1 ? 'x' : 'y',
+          powerCapacity:data.powerCapacity,
+          eleAlarmDay:data.eleAlarmDay,
+          eleAlarmMonth:data.eleAlarmMonth,
+          eleLimitDay:data.eleLimitDay,
+          eleLimitMonth:data.eleLimitMonth
+      }) 
+      if(res != null || res != "")
+      message.success(messageAisleFlag);
+  }
+
 }
 
-//添加机房/修改机房
-const  addAndUpdateRoomSubmit = async(flag) =>{
+const getColumnCharCodeToNumber = (columnId: string): number => {
+  let result = 0;
+  const base = 26; // 因为英文字母有 26 个
+  // 从字符串末尾开始遍历，因为 Excel 列标识符是从左到右递增的 26 进制数
+  for (let i = 0; i < columnId.length; i++) {
+    const charCode = columnId.charCodeAt(i) - 'A'.charCodeAt(0) + 1; // 将字符转换为 1-26 的数字
+    const power = Math.pow(base, columnId.length - 1 - i); // 计算当前位的权重（26 的幂）
+    result += charCode * power; // 将当前位的值加到结果中
+  }
+  return result - 1; // 因为我们的计算是从 1 开始的（A=1），而通常我们希望索引从 0 开始
+};
+
+
+
+// 处理设置提交
+const submitSetting = async() => {
+   let roomFlagId:any = null;
+   let messageRoomFlag = "保存成功！";
+   if(roomFlag.value == 2){
+      roomFlagId = roomId.value; 
+      messageRoomFlag = "修改成功！";
+   }
    const res = await MachineRoomApi.saveRoomDetail({
-      id: isAddRoom.value ? '' : roomId.value,
+      id: roomFlagId,
       roomName: rowColInfo.roomName,
       xLength: rowColInfo.col,
       yLength: rowColInfo.row,
@@ -693,49 +726,103 @@ const  addAndUpdateRoomSubmit = async(flag) =>{
       eleLimitDay: rowColInfo.eleLimitDay,
       eleLimitMonth: rowColInfo.eleLimitMonth,
    })
-   getRoomList();
-   if(flag == 1){
-      roomId.value = res;
-      message.success('新建成功！');
-   }else{
-      if(res != null || res != "")
-      message.success('保存成功！');
-   }
+   if(res != null || res != "")
+   message.success(messageRoomFlag);
    dialogVisible.value = false;
-   editEnable.value = false;
-   isAddRoom.value = false;
+   roomId.value = res;
+   getRoomList();
 }
 
 
 // 获取表格列label字符
-const getTableColCharCode = (num):string => {
+const getTableColCharCode = (num: number): string => {
+  const baseCharCode = 65; // A 的 ASCII 码
   if (num < 26) {
-    return String.fromCharCode(65 + num)
+    return String.fromCharCode(baseCharCode + num);
   } else if (num < 52) {
-    return 'A ' + String.fromCharCode(65 -26 + num)
-  } else {  // 列数最多70
-    return 'B ' + String.fromCharCode(65 -52 + num)
+    return `A ${String.fromCharCode(baseCharCode + (num - 26))}`;
+  } else {
+    return `B ${String.fromCharCode(baseCharCode + (num - 52))}`;
   }
-}
+};
 // 处理提交保存事件
 const handleSubmit = async() => {
-  const res = await MachineRoomApi.saveRoomAisle({
-      roomId:isAddRoom.value ? '' : roomId.value,
-      aisleName:mainFlag.value.name,
-      aisleLength:mainFlag.value.amount,
-      xCoordinate:1,
-      yCoordinate:2,
-      direction:mainFlag.value.direction
-  }) 
-  alert(JSON.stringify(res));
+  const aisleList = [] as any
+  const cabinetList = [] as any
+  if (!isAddRoom.value)
+  console.log(rowColInfo.row)
+  console.log(rowColInfo.row)
+  for(let i = 0; i < rowColInfo.row; i++) {
+    for(let j = 0; j < rowColInfo.col; j++) {
+     // console.log('处理提交保存事件', tableData.value, i, getTableColCharCode(j))
+      const target = tableData.value[i][getTableColCharCode(j)][0]
+      if (target && target.type == 1 && target.first) {
+        console.log('target.......', target)
+        aisleList.push({
+          id: target.id,
+          aisleName: target.name,
+          xCoordinate: j + 1,
+          yCoordinate: i + 1,
+          direction: target.direction == 1 ? 'x' : 'y',
+          length: target.amount,
+          eleAlarmDay: target.eleAlarmDay,
+          eleLimitDay: target.eleLimitDay,
+          eleAlarmMonth: target.eleAlarmMonth,
+          eleLimitMonth: target.eleLimitMonth,
+        })
+      } else if (target && target.type == 2) {
+        cabinetList.push({
+          id: target.id,
+          cabinetName: target.name,
+          cabinetHeight: target.cabinetHeight,
+          xCoordinate: j + 1,
+          yCoordinate: i + 1,
+          eleAlarmDay: target.eleAlarmDay,
+          eleLimitDay: target.eleLimitDay,
+          eleAlarmMonth: target.eleAlarmMonth,
+          eleLimitMonth: target.eleLimitMonth,
+        })
+      }
+    }
+  }
+  try {
+    loading.value = true
+    const res = await MachineRoomApi.saveRoomDetail({
+        id: isAddRoom.value ? '' : roomId.value,
+        roomName: rowColInfo.roomName,
+        xLength: rowColInfo.col,
+        yLength: rowColInfo.row,
+        powerCapacity:rowColInfo.powerCapacity, 
+        airPower:rowColInfo.airPower, 
+        eleAlarmDay: rowColInfo.eleAlarmDay,
+        eleAlarmMonth: rowColInfo.eleAlarmMonth,
+        eleLimitDay: rowColInfo.eleLimitDay,
+        eleLimitMonth: rowColInfo.eleLimitMonth,
+        aisleList,
+        cabinetList
+    })
+    if (isAddRoom.value) {
+          roomId.value = res;
+          getRoomList();
+          message.success('新建成功！');
+          dialogVisible.value = false;
+          editEnable.value = false;
+          isAddRoom.value = false;
+          return;
+    }
+    editEnable.value = false;
+    message.success('保存成功！');
+  } finally {
+    loading.value = false;
+  }
 }
 
 // const formParam = Object.keys(tableData[0])
 const formParam = computed(() => {
-  return Object.keys(tableData.value[0]);
+  return Object.keys(tableData.value[0] || {});
 })
 
-getRoomList();
+getRoomList()
 onMounted(() => {
   document.addEventListener('mousedown', (event) => {
     const element = event.target as HTMLElement
@@ -749,7 +836,6 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  document.removeEventListener('mousedown',() => {})
   window.onresize = null
   clearInterval(timer)
   timer = null
@@ -779,8 +865,10 @@ onUnmounted(() => {
 .dragContainer {
   // transform-origin: left right;
   position: relative;
+  overflow: auto;
   .dragTable {
     transition: transform 0.3s ease; /* 添加平滑过渡效果 */
+    overflow-y: auto;
   }
   .mask {
     position: absolute;
@@ -866,6 +954,7 @@ onUnmounted(() => {
       }
     }
   }
+
   .warnDrag {
     min-height: 40px;
     height: 100%;
@@ -894,6 +983,7 @@ onUnmounted(() => {
     }
   }
 }
+
 .double-formitem {
   display: flex;
   & > div {
@@ -909,15 +999,19 @@ onUnmounted(() => {
   margin-top: -5px;
   margin-bottom: 10px;
 }
+
 :deep(.el-input-number) {
   width: 100%;
 }
+
 :deep(.dragTable .hover-row .el-table__cell td) {
   background-color:unset!important;
 }
+
 :deep(.dragTable .el-table__cell) {
   padding: 0;
 }
+
 :deep(.dragTable .el-table__cell .cell) {
   width: 100%;
   height: 100%;
@@ -949,7 +1043,8 @@ onUnmounted(() => {
   // box-shadow: 0 1px 0px #ddd;
 }
 
-.crosshair {
-  cursor: crosshair; /* 当正在拖动时显示十字图标 */
+::-webkit-scrollbar {
+  	display: none;
 }
+
 </style>
