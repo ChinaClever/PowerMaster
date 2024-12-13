@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="环境数据分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
+  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="PDU环境数据分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
@@ -35,11 +35,12 @@
       </div>
     </div> -->
 
-    <div class="nav_header" style="font-size: 14px;">
+    <!-- <div class="nav_header" style="font-size: 14px;">
           <span v-if="nowAddress">{{nowAddress}}</span>
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
           <br/>
-      </div>
+      </div> -->
+      
     <div class="descriptions-container" v-if="maxTemDataTimeTemp" style="font-size: 14px;">
                 <!-- 处理原始数据和小时极值数据的菜单栏 -->
       <div v-if="queryParams.granularity != 'day'&& queryParams.timeRange != null" class="description-item" > 
@@ -172,8 +173,8 @@
                 :data="tableData"
                 style="height: 100%; width: 99.97%;"
                 :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', fontSize: '14px',borderBottom: '1px #EDEEF2 solid',fontWeight: 'bold' }"
-                :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
-                :row-style="{ fontSize: '14px', textAlign: 'center', }"
+                :cell-style="{ color: '#606266', fontSize: '20px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
+                :row-style="{ fontSize: '20px', textAlign: 'center', }"
                 empty-text="暂无数据" max-height="818"
                 >
               <!-- 添加行号列 -->
