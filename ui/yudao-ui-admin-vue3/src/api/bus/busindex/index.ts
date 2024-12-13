@@ -198,5 +198,10 @@ export const IndexApi = {
   //获得记录分页
   getRecordPage: async (data: any) => {
     return await request.post({ url: `/system/alarm/record/page`, data})
-  }
+  },
+
+  //获得始端箱设备统计
+  getBusIndexStatistics: async () => {
+    return await request.get({ url: `/bus/index/statistics` })
+  },
 }
