@@ -1,7 +1,7 @@
 <template>
 <div style="background-color: #E7E7E7;height:850px">
   <div class="header_app">
-    <div class="header_app_text">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{busName}})</div>
+    <div class="header_app_text"> 机房-机柜所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{busName}})</div>
     <div class="header_app_text_other1">
           <el-col :span="10" >
             <el-form
@@ -48,35 +48,35 @@
             <div  class="div-part1">
               <p  class="middletxt txt1">{{redisData?.fr}}<span >Hz</span></p>
             </div>
-            <p >频率</p>
+            <p >功率因素</p>
           </div>
           <div  class="div-part">
             <div  class="div-part2">
               <p  class="middletxt txt2">{{redisData?.pf}}</p>
             </div>
-            <p >功率因数</p>
+            <p >总功率</p>
           </div>
           <div  class="div-part">
             <div  class="div-part3">
               <p  class="middletxt txt3">{{redisData?.vub}}<span >%</span></p>
             </div>
-            <p >三相电压不平衡度</p>
+            <p >A路功率</p>
           </div>
           <div  class="div-part">
             <div  class="div-part4">
               <p  class="middletxt txt4">{{redisData?.cub}}<span >%</span></p>
             </div>
-            <p >三相电流不平衡度</p>
+            <p >B路功率</p>
           </div>
         </div>
         <div  class="center-bottom-part">
           <div  class="top-part">
             <span >| 负载</span>
-            <span >| 电流</span>
-            <span >| 电压</span>
-            <span >| 线电压</span>
-            <span >| 温度</span>
-            <span >| 总谐波含有率
+            <span >| A路电流</span>
+            <span >| B路电流</span>
+            <span >| A路电压</span>
+            <span >| B路电压</span>
+            <span >| 环境温度
                 <el-button @click="selectedOption = 'current'" :type="selectedOption == 'current' ? 'primary' : ''"  style="width: 50px;height:25px; background-color:#F5F7FA;margin-bottom:3px;color:#606266" >电流</el-button>
             </span>
             <span style="width: 50px;padding:0">
@@ -146,9 +146,9 @@
 
 import { ref } from 'vue'
 import Gauge from '@/views/bus/powerDetail/component/Gauge.vue'
-import MarkLine from '@/views/bus/powerDetail/component/MarkLine.vue'
-import PowReactiveLine from '@/views/bus/powerDetail/component/PowReactiveLine.vue'
-import PowActiveLine from '@/views/bus/powerDetail/component/PowActiveLine.vue'
+import MarkLine from './component/MarkLine.vue'
+import PowReactiveLine from './component/PowReactiveLine.vue'
+import PowActiveLine from './component/PowActiveLine.vue'
 import { IndexApi } from '@/api/bus/busindex'
 import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
 
@@ -229,6 +229,7 @@ const getRedisData = async () => {
 
 const getLoadRateList = async () =>{
     const data = await IndexApi.getBusLoadRateLine(queryParams);//oldtime newtime id
+    console.log('第一个图的data',data)
     loadRateList.value = data;
     if(loadRateList.value?.time != null && loadRateList.value?.time?.length > 0){
         visContro.value.loadRateVis = true;
@@ -239,6 +240,7 @@ const getLoadRateList = async () =>{
 
 const getBusPowActiveList = async () =>{
     const data = await IndexApi.getBusPowActiveLine(queryParams);//oldtime newtime id
+    console.log('第二个图的data',data)
     powActiveList.value = data;
     if(powActiveList.value?.time != null && powActiveList.value?.time?.length > 0){
         visContro.value.powActiveVis = true;
@@ -276,6 +278,7 @@ const getPeakDemand =async () => {
 
 const getBusPowReactiveList = async () =>{
     const data = await IndexApi.getBusPowReactiveLine(queryParams);//oldtime newtime id
+    console.log('第三张图的内容',data)
     powReactiveList.value = data;
     if(powReactiveList.value?.time != null && powReactiveList.value?.time?.length > 0){
         visContro.value.powReactiveVis = true;
