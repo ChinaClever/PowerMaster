@@ -369,8 +369,14 @@ public class BusIndexController {
     }
 
     @GetMapping("/statistics")
-    @Operation(summary = "获得始端箱设备统计")
+    @Operation(summary = "获得始端箱设备状态统计")
     public CommonResult<BusIndexStatisticsResVO> getBusIndexStatistics() {
         return success(indexService.getBusIndexStatistics());
+    }
+
+    @GetMapping("/loadRateStatus")
+    @Operation(summary = "获得始端箱设备负载量状态统计")
+    public CommonResult<LoadRateStatus> getBusIndexLoadRateStatus() {
+        return success(indexService.getBusIndexLoadRateStatus());
     }
 }

@@ -67,7 +67,7 @@ import { newInstance, BezierConnector, BrowserJsPlumbInstance } from '@jsplumb/b
 import draggable from "vuedraggable";
 import { CabinetApi } from '@/api/cabinet/info'
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
-import { BindingFrom } from './component/bindingFrom.vue'
+import  BindingFrom  from './component/bindingFrom.vue'
 import { ElMessageBox } from 'element-plus'
 
 
@@ -348,7 +348,7 @@ const getData = async() => {
   }
   frameListInit.value = [...frames]
   let count = 0
-  if (res.rackIndexList.length > 0) {
+  if (res.rackIndexList && Array.isArray(res.rackIndexList) && res.rackIndexList.length > 0) {
     res.rackIndexList.sort((a,b) => a.uAddress - b.uAddress)
     res.rackIndexList.forEach(item => {
       frames.splice(item.uAddress-1-count, item.uHeight, [{
@@ -376,7 +376,7 @@ const getData = async() => {
 const getPortList=  async() => {
   const cabinetInfoValue = cabinetInfo.value
   if (cabinetInfoValue.pduIpA) {
-    const res = await PDUDeviceApi.PDUDisplay({devKey: cabinetInfoValue.pduIpA + '-' + cabinetInfoValue.casIdA})
+    const res = await PDUDeviceApi.PDUDisplay({devKey: cabinetInfoValue.pduIpA})
     if (res.pdu_data && res.pdu_data.output_item_list) {
       const current = res.pdu_data.output_item_list.cur_value.reverse()
       const state = res.pdu_data.output_item_list.relay_state.reverse()
@@ -387,7 +387,7 @@ const getPortList=  async() => {
     }
   }
   if (cabinetInfoValue.pduIpB) {
-    const res = await PDUDeviceApi.PDUDisplay({devKey: cabinetInfoValue.pduIpB + '-' + cabinetInfoValue.casIdB})
+    const res = await PDUDeviceApi.PDUDisplay({devKey: cabinetInfoValue.pduIpB})
     if (res.pdu_data && res.pdu_data.output_item_list) {
       const current = res.pdu_data.output_item_list.cur_value.reverse()
       const state = res.pdu_data.output_item_list.relay_state.reverse()

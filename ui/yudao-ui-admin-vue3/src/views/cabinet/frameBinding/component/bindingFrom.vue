@@ -52,7 +52,7 @@ const formLoading = ref(false) // 表单的加载中：1）修改时的数据加
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
 const formData = ref({
   rackName: '', // 名称
-  type: '', // 类型
+  rackType: '', // 类型
   company: '', // 公司
   uAddress: 0, // 位置
   uHeight: 0, // 容量高度
@@ -78,7 +78,7 @@ const open = async (type: string, data, Uindex, outletIdALength:number, outletId
   console.log('data', data, Uindex, outletIdALength)
   formData.value = {
     rackName: data.rackName || '',
-    type: data.type || '',
+    rackType: data.type || '',
     company: data.company || '',
     uAddress: data.uAddress || Uindex || 1,
     uHeight: data.uHeight || 1,
@@ -125,7 +125,7 @@ const submitForm = async () => {
 const resetForm = () => {
   formData.value = {
     rackName: '',
-    type: '',
+    rackType: '',
     company: '',
     uAddress: 0,
     uHeight: 0,

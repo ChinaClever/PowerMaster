@@ -14,15 +14,13 @@ import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
+import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.common.vo.CabineIndexCfgVO;
 import cn.iocoder.yudao.module.cabinet.enums.CabinetLoadEnums;
 import cn.iocoder.yudao.module.cabinet.mapper.RackIndexMapper;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
-import cn.iocoder.yudao.module.cabinet.vo.CabinetEnergyStatisticsResVO;
-import cn.iocoder.yudao.module.cabinet.vo.CabinetEqTotalDay;
-import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexEnvResVO;
-import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexLoadResVO;
+import cn.iocoder.yudao.module.cabinet.vo.*;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -190,8 +188,8 @@ public class CabinetServiceImpl implements CabinetService {
                 dto.setYCoordinate(index.getYCoordinate());
                 dto.setCompany(index.getCompany());
                 //机房信息
-                RoomIndex roomIndex = roomIndexMapper.selectById(index.getRoomId());
-                dto.setRoomName(roomIndex.getRoomName());
+//                RoomIndex roomIndex = roomIndexMapper.selectById(index.getRoomId());
+//                dto.setRoomName(roomIndex.getRoomName());
 
                 //配置的数据来源信息
                 ValueOperations ops = redisTemplate.opsForValue();
@@ -365,12 +363,12 @@ public class CabinetServiceImpl implements CabinetService {
                     List<Integer> ids = indexList.stream().map(CabinetIndex::getId).collect(Collectors.toList());
                     if (!CollectionUtils.isEmpty(ids)) {
                         if (isExist(vo.getPduIpA(), vo.getCasIdA(), ids)) {
-                            log.info("---- " + vo.getPduIpA() + vo.getCasIdA());
+//                            log.info("---- " + vo.getPduIpA() + vo.getCasIdA());
                             return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "pdu已关联其他机柜");
                         }
 
                         if (isExist(vo.getPduIpB(), vo.getCasIdB(), ids)) {
-                            log.info("---- " + vo.getPduIpB() + vo.getCasIdB());
+//                            log.info("---- " + vo.getPduIpB() + vo.getCasIdB());
                             return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "pdu已关联其他机柜");
                         }
                     }
@@ -422,7 +420,6 @@ public class CabinetServiceImpl implements CabinetService {
                     } else {
                         return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "机柜名称重复");
                     }
-
                 } else {
                     index = new CabinetIndex();
                     //index 索引表
@@ -433,9 +430,6 @@ public class CabinetServiceImpl implements CabinetService {
                     vo.setId(cabinetIndex.getId());
                 }
             }
-
-            log.info("vo : " + vo);
-
             //配置表
             CabinetCfg cfg = cabinetCfgMapper.selectOne(new LambdaQueryWrapper<CabinetCfg>()
                     .eq(CabinetCfg::getCabinetId, vo.getId()));
@@ -448,7 +442,7 @@ public class CabinetServiceImpl implements CabinetService {
                 //新增
                 cabinetCfgMapper.insert(convertCfg(vo, cfg));
             }
-
+            //机柜与PDU/插接箱的关联
             if (vo.getPduBox() == PduBoxFlagEnums.PDU.getValue()) {
 
                 if (StringUtils.isEmpty(vo.getPduIpA()) && StringUtils.isEmpty(vo.getPduIpB())) {
@@ -841,6 +835,37 @@ public class CabinetServiceImpl implements CabinetService {
         return null;
     }
 
+    @Override
+    public PageResult<CabinetIndexBalanceResVO> getCabinetIndexBalancePage(CabinetIndexVo pageReqVO) {
+        Page<CabineIndexCfgVO> voPage = cabinetIndexMapper.selectIndexLoadPage(new Page(pageReqVO.getPageNo(), pageReqVO.getPageSize()), pageReqVO);
+        List<CabinetIndexBalanceResVO> records = BeanUtils.toBean(voPage.getRecords(), CabinetIndexBalanceResVO.class);
+        Map<String, CabinetIndexBalanceResVO> map = records.stream().collect(Collectors.toMap(vo -> vo.getRoomId() + "-" + vo.getId(), i -> i));
+        List list = redisTemplate.opsForValue().multiGet(map.keySet());
+        for (Object obj : list) {
+            if (Objects.isNull(obj)){
+                continue;
+            }
+            JSONObject jsonObject = JSONObject.parseObject(JSONObject.toJSONString(obj));
+            CabinetIndexBalanceResVO cabinetKey = map.get(jsonObject.getString("cabinet_key"));
+            //a的视在功率
+            BigDecimal aPow = jsonObject.getJSONObject("cabinet_power").getJSONObject("path_a").getBigDecimal("pow_apparent");
+            //b的视在功率
+            BigDecimal bPow =  jsonObject.getJSONObject("cabinet_power").getJSONObject("path_b").getBigDecimal("pow_apparent");
+            //总视在功率
+            BigDecimal totalPow =   jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data").getBigDecimal("pow_apparent");
+
+            cabinetKey.setAPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, aPow, totalPow),100));
+            cabinetKey.setBPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, bPow, totalPow),100));
+            cabinetKey.setACurValue(jsonObject.getJSONObject("cabinet_power").getJSONObject("path_a").getList("cur_value",BigDecimal.class).get(0));
+            cabinetKey.setBCurValue(jsonObject.getJSONObject("cabinet_power").getJSONObject("path_b").getList("cur_value",BigDecimal.class).get(0));
+            cabinetKey.setAVolValue(jsonObject.getJSONObject("cabinet_power").getJSONObject("path_a").getList("vol_value",BigDecimal.class).get(0));
+            cabinetKey.setBVolValue(jsonObject.getJSONObject("cabinet_power").getJSONObject("path_b").getList("vol_value",BigDecimal.class).get(0));
+            cabinetKey.setAPowValue(jsonObject.getJSONObject("cabinet_power").getJSONObject("path_a").getList("pow_value",BigDecimal.class).get(0));
+            cabinetKey.setBPowValue(jsonObject.getJSONObject("cabinet_power").getJSONObject("path_b").getList("pow_value",BigDecimal.class).get(0));
+        }
+        return new PageResult<>(records, voPage.getTotal());
+    }
+
     private List getDataEs(String startTime, String endTime, List<Integer> ids, String index, Class objClass) throws IOException {
         try {
             // 创建SearchRequest对象, 设置查询索引名
@@ -911,12 +936,11 @@ public class CabinetServiceImpl implements CabinetService {
         //未禁用
         cabinetIndex.setIsDisabled(DisableFlagEnums.ENABLE.getStatus());
         cabinetIndex.setPowerCapacity(vo.getPowCapacity());
+        cabinetIndex.setCabinetHeight(vo.getCabinetHeight());
         cabinetIndex.setRoomId(vo.getRoomId());
         cabinetIndex.setId(index.getId());
-//        cabinetIndex.setEleAlarmDay(vo.getEleAlarmDay());
-//        cabinetIndex.setEleAlarmMonth(vo.getEleAlarmMonth());
-//        cabinetIndex.setEleLimitDay(vo.getEleLimitDay());
-//        cabinetIndex.setEleLimitMonth(vo.getEleLimitMonth());
+        cabinetIndex.setCabinetType(vo.getType());
+
         return cabinetIndex;
     }
 
@@ -930,11 +954,8 @@ public class CabinetServiceImpl implements CabinetService {
     private CabinetPdu convertPdu(CabinetVo vo, CabinetPdu pdu) {
         CabinetPdu cabinetPdu = new CabinetPdu();
         cabinetPdu.setCabinetId(vo.getId());
-        //TODO 后期更改
-//        cabinetPdu.setPduIpA(vo.getPduIpA());
-//        cabinetPdu.setPduIpB(vo.getPduIpB());
-//        cabinetPdu.setCasIdB(vo.getCasIdB());
-//        cabinetPdu.setCasIdA(vo.getCasIdA());
+        cabinetPdu.setPduKeyA(vo.getPduIpA()+"-"+vo.getCasIdB());
+        cabinetPdu.setPduKeyB(vo.getPduIpB()+"-"+vo.getCasIdA());
         cabinetPdu.setId(pdu.getId());
         return cabinetPdu;
     }
@@ -992,10 +1013,12 @@ public class CabinetServiceImpl implements CabinetService {
         CabinetCfg cabinetCfg = new CabinetCfg();
         cabinetCfg.setCabinetId(vo.getId());
         //TODO  后期更改
-//        cabinetCfg.setCabinetHeight(vo.getCabinetHeight());
-//        cabinetCfg.setCabinetName(vo.getCabinetName());
+        cabinetCfg.setEleAlarmDay(vo.getEleAlarmDay());
+        cabinetCfg.setEleAlarmMonth(vo.getEleAlarmMonth());
+        cabinetCfg.setEleLimitDay(vo.getEleLimitDay());
+        cabinetCfg.setEleLimitMonth(vo.getEleLimitMonth());
         cabinetCfg.setCompany(vo.getCompany());
-//        cabinetCfg.setType(vo.getType());
+
         cabinetCfg.setXCoordinate(vo.getXCoordinate());
         cabinetCfg.setYCoordinate(vo.getYCoordinate());
         cabinetCfg.setId(cfg.getId());
