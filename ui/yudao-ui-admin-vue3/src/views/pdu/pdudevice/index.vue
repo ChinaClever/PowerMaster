@@ -48,7 +48,7 @@
         v-show="switchValue !== 2"                          
       >
         <el-form-item>
-          <button class="btnnnnnnnn">
+          <button class="btnnnnnnnn" type = "button" @click="toggleAllStatus">
             全部
           </button>
           <template v-for="(status, index) in statusList" :key="index">
@@ -713,6 +713,24 @@ const handleSelectStatus = (index) => {
   handleQuery();
 }
 
+const toggleAllStatus = () => {
+  const allSelected = statusList.every(item => item.selected);
+  
+  if (allSelected) {
+    // 如果所有按钮都已选中，则全部取消选中
+    statusList.forEach(item => item.selected = false);
+  } else {
+    // 如果至少有一个按钮未选中，则全部选中
+    statusList.forEach(item => item.selected = true);
+  }
+
+  // 更新查询参数
+  const status = statusList.filter(item => item.selected);
+  const statusArr = status.map(item => item.value);
+  queryParams.status = statusArr;
+  handleQuery();
+}
+
 
 
 /** 搜索按钮操作 */
@@ -886,14 +904,9 @@ onActivated(() => {
   width: 58px;
   height: 35px;
   cursor: pointer;
-  border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border:none
-  &:hover {
-    color: #7bc25a;
-  }
 }
 
 .btn_offline,
