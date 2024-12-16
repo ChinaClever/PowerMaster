@@ -54,7 +54,9 @@
         label-width="68px"
       >
         <el-form-item v-if="switchValue == 2 || switchValue == 3">
+          <button class="bthnn" type="button" @click="toggleAllStatus">全部</button>
           <template v-for="(status, index) in statusList" :key="index">
+            
             <button
               :class="status.selected ? status.activeClass : status.cssClass"
               @click.prevent="handleSelectStatus(index)"
@@ -67,11 +69,12 @@
           type="primary"
           plain
           @click="openForm('create')"
+          style="margin-left: -131px;" 
         >
           <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
         </el-button>
         <el-form-item>
-          <el-form-item label="网络地址" prop="devKey">
+          <el-form-item label="网络地址" prop="devKey" >
             <el-autocomplete
               v-model="queryParams.devKey"
               :fetch-suggestions="querySearch"
@@ -257,11 +260,6 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="icon">
-              <div v-if="item.curUnbalance != null">
-                <span style="font-size: 20px">{{ item.curUnbalance }}%</span><br />不平衡度
-              </div>
-            </div>
             <div class="info">
               <div v-if="item.acur != null">A相电流：{{ item.acur.toFixed(2) }}A</div>
               <div v-if="item.bcur != null">B相电流：{{ item.bcur.toFixed(2) }}A</div>
@@ -269,6 +267,12 @@
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
+            <div class="icon">
+              <div v-if="item.curUnbalance != null">
+                <span style="font-size: 20px">{{ item.curUnbalance }}%</span><br />不平衡度
+              </div>
+            </div>
+           
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" v-if="item.color != 0">
@@ -1058,6 +1062,30 @@ const handleSelectStatus = (index) => {
   handleQuery()
 }
 
+const toggleAllStatus = () => {
+  const allSelected = statusList.every(item => item.selected);
+  
+  if (allSelected) {
+    // 如果所有按钮都已选中，则全部取消选中
+    statusList.forEach(item => item.selected = false);
+  } else {
+    // 如果至少有一个按钮未选中，则全部选中
+    statusList.forEach(item => item.selected = true);
+  }
+
+  // 更新查询参数
+  const status = statusList.filter(item => item.selected);
+  const statusArr = status.map(item => item.value);
+  if (statusArr.length != statusList.length) {
+    queryParams.color = statusArr
+    queryParams.status = [0, 1, 2, 3, 4]
+  } else {
+    queryParams.color = []
+    queryParams.status = []
+  }
+  handleQuery();
+}
+
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
@@ -1207,6 +1235,18 @@ onActivated(() => {
     flex: 1;
     overflow: hidden;
   }
+}
+
+
+.bthnn {
+  width: 58px;
+  height: 35px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px
+  
 }
 
 .btn_offline,
@@ -1441,6 +1481,7 @@ onActivated(() => {
         }
         .info {
           margin-left: 15px;
+          margin-top: 10px;
         }
       }
       .devKey {
@@ -1508,6 +1549,7 @@ onActivated(() => {
         }
         .info {
           margin-left: 15px;
+          margin-top: 10px;
         }
       }
       .devKey {
@@ -1575,6 +1617,7 @@ onActivated(() => {
         }
         .info {
           margin-left: 15px;
+          margin-top: 10px;
         }
       }
       .devKey {

@@ -42,25 +42,25 @@
           <div class="box">
             <div class="top"> <div class="tag"></div>正常 </div>
             <div class="value"
-              ><span class="number">{{}}</span>个</div
+              ><span class="number">{{leftDataList.normal}}</span>个</div
             >
           </div>
           <div class="box">
             <div class="top"> <div class="tag empty"></div>离线 </div>
             <div class="value"
-              ><span class="number">{{}}</span>个</div
+              ><span class="number">{{leftDataList.offline}}</span>个</div
             >
           </div>
           <div class="box">
             <div class="top"> <div class="tag error"></div>告警 </div>
             <div class="value"
-              ><span class="number">{{}}</span>个</div
+              ><span class="number">{{leftDataList.alarm}}</span>个</div
             >
           </div>
           <div class="box">
             <div class="top"> <div class="tag empty"></div>总共 </div>
             <div class="value"
-              ><span class="number">{{}}</span>个</div
+              ><span class="number">{{leftDataList.total}}</span>个</div
             >
           </div>
         </div>
@@ -76,18 +76,14 @@
         label-width="68px"
       >
         <el-form-item v-show="valueMode != 3 && valueMode != 4">
-          <template v-for="(status, index) in statusList" :key="index">
+          <template v-for="(data) in statusList" :key="data.value">
             <button
-              :class="status.selected ? status.activeClass : status.cssClass"
-              @click.prevent="handleSelectStatus(index)"
-              >{{ status.name }}</button
+              :class="data.selected ? data.activeClass : data.cssClass"
+              @click.prevent="handleSelectStatus(data.value)"
+              >{{ data.name }}</button
             >
           </template>
-        </el-form-item>
-        <el-form-item>
-          <el-checkbox-group v-model="queryParams.status" @change="handleQuery">
-            <el-checkbox :label="5" :value="5">在线</el-checkbox>
-          </el-checkbox-group>
+          <el-button type="primary" style="height:35px;width:58px;" @click="toggleAllSelected()">全部</el-button>
         </el-form-item>
         <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
@@ -236,39 +232,36 @@
       </el-table>
 
       <div v-show="switchValue == 0 && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+        <div class="arrayItem" v-for="item in list" :key="item.devKey" :style="{backgroundColor: item.status === 2?'red':'' }">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <img class="icon" src="@/assets/imgs/temicon.png" />
             <div class="info">
-              <div :style="{ backgroundColor: item.atemColor }" v-if="item.atem != null"
+              <div v-if="item.atem != null"
                 >A:{{ item.atem }}°C</div
               >
-              <div :style="{ backgroundColor: item.btemColor }" v-if="item.btem != null"
+              <div v-if="item.btem != null"
                 >B:{{ item.btem }}°C</div
               >
-              <div :style="{ backgroundColor: item.ctemColor }" v-if="item.ctem != null"
+              <div v-if="item.ctem != null"
                 >C:{{ item.ctem }}°C</div
               >
-              <div :style="{ backgroundColor: item.ntemColor }" v-if="item.ntem != null"
+              <div v-if="item.ntem != null"
                 >N:{{ item.ntem }}°C</div
               >
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" v-if="valueMode == 0">
-            <el-tag type="info" v-if="item.atemStatus == null">离线</el-tag>
-            <el-tag
-              type="danger"
-              v-else-if="item.atemStatus != 0 || item.btemStatus != 0 || item.ctemStatus != 0"
-              >告警</el-tag
+            <el-tag type="info" v-if="item.status === 0">离线</el-tag>
+            <el-tag type="danger" v-else-if="item.status === 2">告警</el-tag
             >
             <el-tag v-else>正常</el-tag>
           </div>
           <button
             class="detail"
             @click="openTemDetail(item)"
-            v-if="item.status != null && item.status != 5"
+            v-if="item.status != null && item.status != 0"
             >详情</button
           >
         </div>
@@ -391,7 +384,7 @@ import TemDetail from './component/TemDetail.vue'
 defineOptions({ name: 'PDUDevice' })
 
 // const { push } = useRouter()
-
+const isChecked = ref(false)
 const location = ref() as any
 const detailVis = ref(false)
 const curBalanceColorForm = ref()
@@ -401,6 +394,7 @@ const pageSizeArr = ref([24, 36, 48, 96])
 const switchValue = ref(0)
 const switchChartOrTable = ref(0)
 const valueMode = ref(0)
+const leftDataList = ref([])
 
 const devKeyList = ref([])
 const loadAll = async () => {
@@ -512,7 +506,7 @@ watch(filterText, (val) => {
 const message = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
 
-const loading = ref(false) // 列表的加载中
+const loading = ref(true) // 列表的加载中
 const temESList = ref([]) as any
 const temTableList = ref([]) as any
 const statusNumber = reactive({
@@ -525,21 +519,24 @@ const statusList = reactive([
   {
     name: '正常',
     selected: true,
-    value: 1,
+    value: 0,
+    status: 1,
     cssClass: 'btn_normal',
     activeClass: 'btn_normal normal'
   },
   {
     name: '告警',
     selected: true,
-    value: 2,
+    value: 1,
+    status: 2,
     cssClass: 'btn_error',
     activeClass: 'btn_error error'
   },
   {
     name: '离线',
     selected: true,
-    value: 0,
+    value: 2,
+    status: 0,
     cssClass: 'btn_offline',
     activeClass: 'btn_offline offline'
   }
@@ -603,33 +600,76 @@ const getDetail = async () => {
 }
 
 const getList = async () => {
-  loading.value = true
+  loading.value = true;
   try {
-    const data = await IndexApi.getBusTemPage(queryParams)
-
-    list.value = data.list
-    var tableIndex = 0
-
-    list.value.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex
-      if (obj?.atem == null) {
-        return
+    const data = await IndexApi.getBusTemPage(queryParams);
+    const res = await IndexApi.getBusIndexStatistics();
+ 
+    // 检查 statusList 中所有项的 selected 是否都为 true
+    const allSelectedTrue = statusList.every(item => item.selected);
+    const allSelectedFalse = statusList.every(item => !item.selected);
+ 
+    // 初始情况下，使用 API 返回的数据
+    let processedList = data.list.map((obj, index) => {
+      const tableId = (queryParams.pageNo - 1) * queryParams.pageSize + index + 1;
+      return {
+        ...obj,
+        tableId,
+        atem: obj.atem?.toFixed(0),
+        btem: obj.btem?.toFixed(0),
+        ctem: obj.ctem?.toFixed(0),
+      };
+    });
+ 
+    if (allSelectedTrue) {
+      // 如果都为 true
+      processedList = processedList;
+      console.log('All selected true, resetting list.value');
+      if (flashListTimer.value) {
+        clearInterval(flashListTimer.value);
+        flashListTimer.value = null;
       }
-      obj.atem = obj.atem?.toFixed(0)
-      obj.btem = obj.btem?.toFixed(0)
-      obj.ctem = obj.ctem?.toFixed(0)
-      obj.ntem = obj.ntem?.toFixed(0)
-    })
+    } else if (allSelectedFalse) {
+      // 如果都为 false
+      processedList = [
+        {
+          id: null,
+          status: null,
+          apparentPow: null,
+          pow: null,
+          ele: null,
+          devKey: null,
+          location: null,
+          dataUpdateTime: '',
+          pduAlarm: '',
+          pf: null,
+          atem: null,
+          btem: null,
+          ctem: null,
+          temUnbalance: null
+        }
+      ];
+      console.log('All selected false, resetting list.value');
+      if (flashListTimer.value) {
+        clearInterval(flashListTimer.value);
+        flashListTimer.value = null;
+      }
+    }
+    list.value = processedList;
+    console.log('Processed list.value', list.value);
 
-    total.value = data.total
+    total.value = data.total;
+    leftDataList.value = res;
+    console.log('左侧显示框的数据', leftDataList.value);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const getListNoLoading = async () => {
   try {
     const data = await IndexApi.getBusTemPage(queryParams)
+    console.log('5s的数据111')
     list.value = data.list
     var tableIndex = 0
 
@@ -665,12 +705,12 @@ const getNavList = async () => {
 }
 
 const getFullTimeByDate = (date) => {
-  var year = date.getFullYear() //年
-  var month = date.getMonth() //月
-  var day = date.getDate() //日
-  var hours = date.getHours() //时
-  var min = date.getMinutes() //分
-  var second = date.getSeconds() //秒
+  var year = date.getFullYear(); //年
+  var month = date.getMonth(); //月
+  var day = date.getDate(); //日
+  var hours = date.getHours(); //时
+  var min = date.getMinutes(); //分
+  var second = date.getSeconds(); //秒
   return (
     year +
     '-' +
@@ -691,39 +731,66 @@ const getFullTimeByDate = (date) => {
 //   window.open(url, '_blank');
 // }
 const handleSelectStatus = (index) => {
-  statusList[index].selected = !statusList[index].selected
-  const status = statusList.filter((item) => item.selected)
-  const statusArr = status.map((item) => item.value)
-  queryParams.status = statusArr
-  handleQuery()
+  statusList[index].selected = !statusList[index].selected;
+  console.log("index",index);
+  const status = statusList.filter((item) => item.selected);
+  const statusArr = status.map((item) => item.status);
+  queryParams.status = statusArr;
+  handleQuery();
 }
+
+const toggleAllSelected = () => {
+ // 提取前三个按钮的状态
+  const [button0Selected, button1Selected, button2Selected] = statusList.slice(0, 3).map(item => item.selected);
+ 
+  // 检查前三个按钮的状态是否都为false或者true
+  if (button0Selected === button1Selected && button1Selected === button2Selected) {
+    // 如果都为false或者true，则切换所有按钮的状态
+    statusList.forEach(item => {
+      item.selected = !item.selected;
+    });
+  } else {
+    // 如果前三个按钮的状态不一致，则检查多数的状态
+    const countSelected = statusList.filter(item => item.selected).length;
+    const majorityState = countSelected > statusList.length / 2;
+ 
+    // 将所有按钮的状态改为多数的状态
+    statusList.forEach(item => {
+      item.selected = majorityState;
+    });
+  }
+  statusList.forEach((item, index) => {
+    console.log(`Button ${index} selected state: ${item.selected}`);
+  });
+  handleQuery();
+};
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
-  queryParams.pageNo = 1
-  getList()
+  queryParams.pageNo = 1;
+  getList();
 }
 
 /** 重置按钮操作 */
 const resetQuery = () => {
-  queryFormRef.value.resetFields()
-  handleQuery()
+  queryFormRef.value.resetFields();
+  handleQuery();
 }
 
 /** 添加/修改操作 */
 
 const openForm = (type: string) => {
-  curBalanceColorForm.value.open(type)
+  curBalanceColorForm.value.open(type);
 }
 
 /** 删除按钮操作 */
 const handleDelete = async (id: number) => {
   try {
     // 删除的二次确认
-    await message.delConfirm()
+    await message.delConfirm();
     // 发起删除
-    await IndexApi.deleteIndex(id)
-    message.success(t('common.delSuccess'))
+    await IndexApi.deleteIndex(id);
+    message.success(t('common.delSuccess'));
     // 刷新列表
     // await getList()
   } catch {}
@@ -732,21 +799,21 @@ const handleDelete = async (id: number) => {
 const handleExportXLS = async ()=>{
   try {
     // 导出的二次确认
-    await message.exportConfirm()
+    await message.exportConfirm();
     // 发起导出
-    queryParams.pageNo = 1
-    exportLoading.value = true
+    queryParams.pageNo = 1;
+    exportLoading.value = true;
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
-    const data = await IndexApi.getBusTemDetailExcel(queryParams, axiosConfig)
-    console.log("data",data)
-    await download.excel(data, '温度详细.xlsx')
+    const data = await IndexApi.getBusTemDetailExcel(queryParams, axiosConfig);
+    console.log("data",data);
+    await download.excel(data, '温度详细.xlsx');
   } catch (error) {
     // 处理异常
-    console.error('导出失败：', error)
+    console.error('导出失败：', error);
   } finally {
-    exportLoading.value = false
+    exportLoading.value = false;
   }
 }
 
@@ -754,37 +821,37 @@ const handleExportXLS = async ()=>{
 const handleExport = async () => {
   try {
     // 导出的二次确认
-    await message.exportConfirm()
+    await message.exportConfirm();
     // 发起导出
-    exportLoading.value = true
-    const data = await IndexApi.exportIndex(queryParams)
-    download.excel(data, 'PDU设备.xls')
+    exportLoading.value = true;
+    const data = await IndexApi.exportIndex(queryParams);
+    download.excel(data, 'PDU设备.xls');
   } catch {
   } finally {
-    exportLoading.value = false
+    exportLoading.value = false;
   }
 }
 
 /** 初始化 **/
 onMounted(async () => {
-  devKeyList.value = await loadAll()
-  getList()
-  getNavList()
-  flashListTimer.value = setInterval(getListNoLoading, 5000)
+  devKeyList.value = await loadAll();
+  getList();
+  getNavList();
+  flashListTimer.value = setInterval(getListNoLoading, 5000);
 })
 
 onBeforeUnmount(() => {
   if (flashListTimer.value) {
-    clearInterval(flashListTimer.value)
-    flashListTimer.value = null
+    clearInterval(flashListTimer.value);
+    flashListTimer.value = null;
   }
 })
 
 onBeforeRouteLeave(() => {
   if (flashListTimer.value) {
-    clearInterval(flashListTimer.value)
-    flashListTimer.value = null
-    firstTimerCreate.value = false
+    clearInterval(flashListTimer.value);
+    flashListTimer.value = null;
+    firstTimerCreate.value = false;
   }
 })
 
@@ -792,7 +859,7 @@ onActivated(() => {
   getList()
   getNavList()
   if (!firstTimerCreate.value) {
-    flashListTimer.value = setInterval(getListNoLoading, 5000)
+    flashListTimer.value = setInterval(getListNoLoading, 5000);
   }
 })
 </script>

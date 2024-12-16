@@ -74,12 +74,12 @@
           <!-- 处理天极值数据的菜单栏 -->
           <div v-if="queryParams.granularity == 'day'&& queryParams.timeRange != null" class="description-item" > 
             <span class="label">开始时间 :</span>
-            <span class="value">{{   formatDayTime(parseInt(queryParams.timeRange[0]))  }}</span>
+            <span class="value">{{   formatTime(queryParams.timeRange[0])  }}</span>
           </div>
           
           <div  v-if="queryParams.granularity == 'day'  && queryParams.timeRange != null" class="description-item">
             <span class="label">结束时间 :</span>
-            <span class="value">{{ formatDayTime(parseInt(queryParams.timeRange[1]))}}</span>
+            <span class="value">{{ formatTime(queryParams.timeRange[1])}}</span>
           </div>
           <div  class="description-item" v-if="queryParams.granularity == 'day'" >
             <span class="label">最高温度 :</span>
@@ -87,7 +87,7 @@
           </div>
           <div v-if="maxTemDataTimeTemp &&queryParams.granularity == 'day'" class="description-item">
             <span class="label">发生时间 :</span>
-            <span class="value">{{ formatDayTime(maxTemDataTimeTemp) }}</span>
+            <span class="value">{{ formatTime(maxTemDataTimeTemp) }}</span>
           </div>
 
           <div class="description-item" v-if="queryParams.granularity == 'day'">
@@ -96,7 +96,7 @@
             </div>
           <div v-if="minTemDataTimeTemp &&queryParams.granularity == 'day'" class="description-item">
             <span class="label">发生时间 :</span>
-            <span class="value">{{ formatDayTime(minTemDataTimeTemp) }}</span>
+            <span class="value">{{ formatTime(minTemDataTimeTemp) }}</span>
           </div>
           
           <div class="line"></div>

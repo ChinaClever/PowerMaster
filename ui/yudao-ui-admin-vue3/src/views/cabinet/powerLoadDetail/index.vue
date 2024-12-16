@@ -124,7 +124,6 @@
       <el-radio-button label="视在功率" value="视在功率" @click="switchChartContainer =0"/>
       <el-radio-button label="功率因素" value="功率因素" @click="switchChartContainer =0"/>
       <el-radio-button label="负载率" value="负载率" :disabled="isLoadRateDisabled" @click="switchChartContainer =0"/>
-      <el-radio-button label="线电压" value="线电压" @click="switchChartContainer =0"/>
     </el-radio-group>
   </el-col>
   <el-col :span="5">
@@ -188,14 +187,16 @@ const powReactivepPercentage = ref();
 const loadPercentage = ref();
 const xAxisLabel = ref('');
 
-const devKeyList = ref([])
+const nameDataList = ref(['L1','L2','L3'])
+
+const devKeyList = ref([]);
 const loadAll = async () => {
   //debugger
   var data = await BusPowerLoadDetailApi.getBusdevKeyList();
   var objectArray = data.map((str) => {
     return { value: str };
   });
-  console.log(objectArray)
+  console.log(objectArray);
   return objectArray;
 }
 
@@ -203,9 +204,9 @@ const querySearch = (queryString: string, cb: any) => {
 
   const results = queryString
     ? devKeyList.value.filter(createFilter(queryString))
-    : devKeyList.value
+    : devKeyList.value;
   // call callback function to return suggestions
-  cb(results)
+  cb(results);
 }
 
 const createFilter = (queryString: string) => {
@@ -427,7 +428,7 @@ const initChart2 = () => {
                                       //判断是否给鼠标悬停上显示符号
                                       if(typeRadio.value === '电流') {
                                         result += ' A';
-                                      }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+                                      }else if (typeRadio.value === '电压') {
                                         result += ' V';
                                       }else if (typeRadio.value === '有功功率') {
                                         result += ' kW';
@@ -452,7 +453,7 @@ const initChart2 = () => {
               // 根据 typeRadio 的值添加单位
               if (typeRadio.value === '电流') {
                 return value + ' A';
-              } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+              } else if (typeRadio.value === '电压') {
                 return value + ' V';
               } else if (typeRadio.value === '有功功率') {
                 return value + ' kW';
@@ -477,9 +478,9 @@ const initChart2 = () => {
           bottom: '10%', // 设置下侧边距
         },
         series: [
-          {name: 'L1', type: 'line', symbol: 'none', data: L1Data.value },
-          {name: 'L2', type: 'line', symbol: 'none', data: L2Data.value},
-          {name: 'L3', type: 'line', symbol: 'none', data: L3Data.value},
+          {name: nameDataList.value[0], type: 'line', symbol: 'none', data: L1Data.value },
+          {name: nameDataList.value[1], type: 'line', symbol: 'none', data: L2Data.value},
+          {name: nameDataList.value[2], type: 'line', symbol: 'none', data: L3Data.value},
         ],
       }
     );
@@ -501,7 +502,7 @@ const initChart3 = () => {
                                       //判断是否给鼠标悬停上显示符号
                                       if(typeRadio.value === '电流') {
                                         result += ' A';
-                                      }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+                                      }else if (typeRadio.value === '电压') {
                                         result += ' V';
                                       }else if (typeRadio.value === '有功功率') {
                                         result += ' kW';
@@ -528,7 +529,7 @@ const initChart3 = () => {
               // 根据 typeRadio 的值添加单位
               if (typeRadio.value === '电流') {
                 return value + ' A';
-              } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+              } else if (typeRadio.value === '电压') {
                 return value + ' V';
               } else if (typeRadio.value === '有功功率') {
                 return value + ' kW';
@@ -566,7 +567,7 @@ const getDetailData =async () => {
  try {
     const data = await BusPowerLoadDetailApi.getDetailData(queryParams);
     if (data != null){
-      hasData.value = true
+      hasData.value = true;
       runLoad.value = formatNumber(data.runLoad, 2);
       ratedCapacity.value = formatNumber(data.ratedCapacity, 2);
       reserveMargin.value = formatNumber(data.reserveMargin, 2);
@@ -595,13 +596,13 @@ const getBusIdAndLocation =async () => {
  try {
     const data = await BusPowerLoadDetailApi.getBusIdAndLocation(queryParams);
     if (data != null){
-      queryParams.id = data.busId
-      lineChartQueryParams.id = data.busId
-      location.value = data.location
-      busName.value = data.busName
+      queryParams.id = data.busId;
+      lineChartQueryParams.id = data.busId;
+      location.value = data.location;
+      busName.value = data.busName;
     }else{
-      location.value = null
-      busName.value = null
+      location.value = null;
+      busName.value = null;
     }
  } finally {
  }
@@ -615,14 +616,14 @@ watch( ()=>typeRadio.value, async(value)=>{
   await initData();
   if ( value == '有效电能'){
      // 选有效电能不能选近一小时
-     isHourDisabled.value = true
+     isHourDisabled.value = true;
   }else{
-    isHourDisabled.value = false
+    isHourDisabled.value = false;
   }
   if (value == '负载率' ){
-    isDayAndMonthDisabled.value = true
+    isDayAndMonthDisabled.value = true;
   }else{
-    isDayAndMonthDisabled.value = false
+    isDayAndMonthDisabled.value = false;
   }
   // 更新数据后重新渲染图表
   myChart2?.setOption({
@@ -633,7 +634,7 @@ watch( ()=>typeRadio.value, async(value)=>{
                                     //判断是否给鼠标悬停上显示符号
                                     if(typeRadio.value === '电流') {
                                       result += ' A';
-                                    }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+                                    }else if (typeRadio.value === '电压') {
                                       result += ' V';
                                     }else if (typeRadio.value === '有功功率') {
                                       result += ' kW';
@@ -657,7 +658,7 @@ watch( ()=>typeRadio.value, async(value)=>{
               // 根据 typeRadio 的值添加单位
               if (typeRadio.value === '电流') {
                 return value + ' A';
-              } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+              } else if (typeRadio.value === '电压') {
                 return value + ' V';
               } else if (typeRadio.value === '有功功率') {
                 return value + ' kW';
@@ -682,9 +683,9 @@ watch( ()=>typeRadio.value, async(value)=>{
           bottom: '10%', // 设置下侧边距
         },
       series: [
-        {name: 'L1', type: 'line', symbol: 'none', data: L1Data.value},
-        {name: 'L2', type: 'line', symbol: 'none', data: L2Data.value},
-        {name: 'L3', type: 'line', symbol: 'none', data: L3Data.value},
+        {name: nameDataList.value[0], type: 'line', symbol: 'none', data: L1Data.value},
+        {name: nameDataList.value[1], type: 'line', symbol: 'none', data: L2Data.value},
+        {name: nameDataList.value[2], type: 'line', symbol: 'none', data: L3Data.value},
       ],
     });
   myChart3?.setOption({
@@ -695,7 +696,7 @@ watch( ()=>typeRadio.value, async(value)=>{
                                     //判断是否给鼠标悬停上显示符号
                                     if(typeRadio.value === '电流') {
                                       result += ' A';
-                                    }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+                                    }else if (typeRadio.value === '电压') {
                                       result += ' V';
                                     }else if (typeRadio.value === '有功功率') {
                                       result += ' kW';
@@ -719,7 +720,7 @@ watch( ()=>typeRadio.value, async(value)=>{
             // 根据 typeRadio 的值添加单位
             if (typeRadio.value === '电流') {
               return value + ' A';
-            } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+            } else if (typeRadio.value === '电压') {
               return value + ' V';
             } else if (typeRadio.value === '有功功率') {
               return value + ' kW';
@@ -784,7 +785,7 @@ watch( ()=>timeRadio.value, async(value)=>{
                             //判断是否给鼠标悬停上显示符号
                             if(typeRadio.value === '电流') {
                               result += ' A';
-                            }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+                            }else if (typeRadio.value === '电压') {
                               result += ' V';
                             }else if (typeRadio.value === '有功功率') {
                               result += ' kW';
@@ -811,7 +812,7 @@ watch( ()=>timeRadio.value, async(value)=>{
               // 根据 typeRadio 的值添加单位
               if (typeRadio.value === '电流') {
                 return value + ' A';
-              } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+              } else if (typeRadio.value === '电压') {
                 return value + ' V';
               } else if (typeRadio.value === '有功功率') {
                 return value + ' kW';
@@ -836,9 +837,9 @@ watch( ()=>timeRadio.value, async(value)=>{
           bottom: '10%', // 设置下侧边距
         },
     series: [
-      {name: 'L1', type: 'line', symbol: 'none', data: L1Data.value},
-      {name: 'L2', type: 'line', symbol: 'none', data: L2Data.value},
-      {name: 'L3', type: 'line', symbol: 'none', data: L3Data.value},
+      {name: nameDataList.value[0], type: 'line', symbol: 'none', data: L1Data.value},
+      {name: nameDataList.value[1], type: 'line', symbol: 'none', data: L2Data.value},
+      {name: nameDataList.value[2], type: 'line', symbol: 'none', data: L3Data.value},
     ],
   }, true);
   }
@@ -854,7 +855,7 @@ watch( ()=>timeRadio.value, async(value)=>{
                                   //判断是否给鼠标悬停上显示符号
                                   if(typeRadio.value === '电流') {
                                     result += ' A';
-                                  }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+                                  }else if (typeRadio.value === '电压') {
                                     result += ' V';
                                   }else if (typeRadio.value === '有功功率') {
                                     result += ' kW';
@@ -881,7 +882,7 @@ watch( ()=>timeRadio.value, async(value)=>{
               // 根据 typeRadio 的值添加单位
               if (typeRadio.value === '电流') {
                 return value + ' A';
-              } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+              } else if (typeRadio.value === '电压') {
                 return value + ' V';
               } else if (typeRadio.value === '有功功率') {
                 return value + ' kW';
@@ -1090,7 +1091,7 @@ const flashChartData = async () =>{
                                     //判断是否给鼠标悬停上显示符号
                                     if(typeRadio.value === '电流') {
                                       result += ' A';
-                                    }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+                                    }else if (typeRadio.value === '电压') {
                                       result += ' V';
                                     }else if (typeRadio.value === '有功功率') {
                                       result += ' kW';
@@ -1114,7 +1115,7 @@ const flashChartData = async () =>{
             // 根据 typeRadio 的值添加单位
             if (typeRadio.value === '电流') {
               return value + ' A';
-            } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+            } else if (typeRadio.value === '电压') {
               return value + ' V';
             } else if (typeRadio.value === '有功功率') {
               return value + ' kW';
@@ -1139,9 +1140,9 @@ const flashChartData = async () =>{
           bottom: '10%', // 设置下侧边距
         },
       series: [
-        {name: 'L1', type: 'line', symbol: 'none', data: L1Data.value},
-        {name: 'L2', type: 'line', symbol: 'none', data: L2Data.value},
-        {name: 'L3', type: 'line', symbol: 'none', data: L3Data.value},
+        {name: nameDataList.value[0], type: 'line', symbol: 'none', data: L1Data.value},
+        {name: nameDataList.value[1], type: 'line', symbol: 'none', data: L2Data.value},
+        {name: nameDataList.value[2], type: 'line', symbol: 'none', data: L3Data.value},
       ],
     });
   myChart3?.setOption({
@@ -1152,7 +1153,7 @@ const flashChartData = async () =>{
                                     //判断是否给鼠标悬停上显示符号
                                     if(typeRadio.value === '电流') {
                                       result += ' A';
-                                    }else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+                                    }else if (typeRadio.value === '电压') {
                                       result += ' V';
                                     }else if (typeRadio.value === '有功功率') {
                                       result += ' kW';
@@ -1176,7 +1177,7 @@ const flashChartData = async () =>{
             // 根据 typeRadio 的值添加单位
             if (typeRadio.value === '电流') {
               return value + ' A';
-            } else if (typeRadio.value === '电压' || typeRadio.value === '线电压') {
+            } else if (typeRadio.value === '电压') {
               return value + ' V';
             } else if (typeRadio.value === '有功功率') {
               return value + ' kW';
@@ -1259,6 +1260,7 @@ const initData = () => {
         L1Data.value = allLineData.value.L1.map((item) => item.cur_value.toFixed(2));
         L2Data.value = allLineData.value.L2.map((item) => item.cur_value.toFixed(2));
         L3Data.value = allLineData.value.L3.map((item) => item.cur_value.toFixed(2));
+        nameDataList.value = ['L1','L2','L3'];
         }
         break;
       case '电压':
@@ -1266,6 +1268,7 @@ const initData = () => {
         L1Data.value = allLineData.value.L1.map((item) => item.vol_value.toFixed(1));
         L2Data.value = allLineData.value.L2.map((item) => item.vol_value.toFixed(1));
         L3Data.value = allLineData.value.L3.map((item) => item.vol_value.toFixed(1));
+        nameDataList.value = ['L1','L2','L3'];
         }
         break;
       case '有效电能':
@@ -1278,6 +1281,7 @@ const initData = () => {
         L1Data.value = allLineData.value.L1.map((item) => item.pow_active.toFixed(3));
         L2Data.value = allLineData.value.L2.map((item) => item.pow_active.toFixed(3));
         L3Data.value = allLineData.value.L3.map((item) => item.pow_active.toFixed(3));
+        nameDataList.value = ['总有功功率','A路有功功率','B路有功功率'];
         }
         break;              
       case '无功功率':
@@ -1285,6 +1289,7 @@ const initData = () => {
         L1Data.value = allLineData.value.L1.map((item) => item.pow_reactive.toFixed(3));
         L2Data.value = allLineData.value.L2.map((item) => item.pow_reactive.toFixed(3));
         L3Data.value = allLineData.value.L3.map((item) => item.pow_reactive.toFixed(3));
+        nameDataList.value = ['L1','L2','L3'];
         }
        break;
       case '视在功率':
@@ -1292,6 +1297,7 @@ const initData = () => {
         L1Data.value = allLineData.value.L1.map((item) => item.pow_apparent.toFixed(3));
         L2Data.value = allLineData.value.L2.map((item) => item.pow_apparent.toFixed(3));
         L3Data.value = allLineData.value.L3.map((item) => item.pow_apparent.toFixed(3));
+        nameDataList.value = ['L1','L2','L3'];
         }
        break;
       case '功率因素':
@@ -1299,13 +1305,7 @@ const initData = () => {
         L1Data.value = allLineData.value.L1.map((item) => item.power_factor.toFixed(2));
         L2Data.value = allLineData.value.L2.map((item) => item.power_factor.toFixed(2));
         L3Data.value = allLineData.value.L3.map((item) => item.power_factor.toFixed(2));
-        }
-        break;
-      case '线电压':
-        if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => item.vol_line.toFixed(1));
-        L2Data.value = allLineData.value.L2.map((item) => item.vol_line.toFixed(1));
-        L3Data.value = allLineData.value.L3.map((item) => item.vol_line.toFixed(1));
+        nameDataList.value = ['L1','L2','L3'];
         }
         break;
       case '负载率':
@@ -1313,6 +1313,7 @@ const initData = () => {
         L1Data.value = allLineData.value.L1.map((item) => item.load_rate);
         L2Data.value = allLineData.value.L2.map((item) => item.load_rate);
         L3Data.value = allLineData.value.L3.map((item) => item.load_rate);
+        nameDataList.value = ['L1','L2','L3'];
         }
         break;             
     }
@@ -1326,6 +1327,7 @@ const initData = () => {
         L1Data.value = allLineData.value.L1.map((item) => item.cur_value.toFixed(2));
         L2Data.value = allLineData.value.L2.map((item) => item.cur_value.toFixed(2));
         L3Data.value = allLineData.value.L3.map((item) => item.cur_value.toFixed(2));
+        nameDataList.value = ['L1','L2','L3'];
         }
         break;
       case '电压':
@@ -1333,6 +1335,7 @@ const initData = () => {
         L1Data.value = allLineData.value.L1.map((item) => item.vol_value.toFixed(1));
         L2Data.value = allLineData.value.L2.map((item) => item.vol_value.toFixed(1));
         L3Data.value = allLineData.value.L3.map((item) => item.vol_value.toFixed(1));
+        nameDataList.value = ['L1','L2','L3'];
         }
         break;
       case '有效电能':
@@ -1345,6 +1348,7 @@ const initData = () => {
         L1Data.value = allLineData.value.L1.map((item) => item.pow_active_avg_value.toFixed(3));
         L2Data.value = allLineData.value.L2.map((item) => item.pow_active_avg_value.toFixed(3));
         L3Data.value = allLineData.value.L3.map((item) => item.pow_active_avg_value.toFixed(3));
+        nameDataList.value = ['总有功功率','A路有功功率','B路有功功率'];
         }
         break;              
       case '无功功率':
@@ -1352,6 +1356,7 @@ const initData = () => {
         L1Data.value = allLineData.value.L1.map((item) => item.pow_reactive_avg_value.toFixed(3));
         L2Data.value = allLineData.value.L2.map((item) => item.pow_reactive_avg_value.toFixed(3));
         L3Data.value = allLineData.value.L3.map((item) => item.pow_reactive_avg_value.toFixed(3));
+        nameDataList.value = ['L1','L2','L3'];
         }
        break;
       case '视在功率':
@@ -1359,6 +1364,7 @@ const initData = () => {
         L1Data.value = allLineData.value.L1.map((item) => item.pow_apparent_avg_value.toFixed(3));
         L2Data.value = allLineData.value.L2.map((item) => item.pow_apparent_avg_value.toFixed(3));
         L3Data.value = allLineData.value.L3.map((item) => item.pow_apparent_avg_value.toFixed(3));
+        nameDataList.value = ['L1','L2','L3'];
         }
        break;
       case '功率因素':
@@ -1366,13 +1372,7 @@ const initData = () => {
         L1Data.value = allLineData.value.L1.map((item) => item.power_factor_avg_value.toFixed(2));
         L2Data.value = allLineData.value.L2.map((item) => item.power_factor_avg_value.toFixed(2));
         L3Data.value = allLineData.value.L3.map((item) => item.power_factor_avg_value.toFixed(2));
-        }
-        break;
-      case '线电压':
-        if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => item.vol_line_avg_value.toFixed(1));
-        L2Data.value = allLineData.value.L2.map((item) => item.vol_line_avg_value.toFixed(1));
-        L3Data.value = allLineData.value.L3.map((item) => item.vol_line_avg_value.toFixed(1));
+        nameDataList.value = ['L1','L2','L3'];
         }
         break;
       case '负载率':
@@ -1380,6 +1380,7 @@ const initData = () => {
         L1Data.value = allLineData.value.L1.map((item) => item.load_rate);
         L2Data.value = allLineData.value.L2.map((item) => item.load_rate);
         L3Data.value = allLineData.value.L3.map((item) => item.load_rate);
+        nameDataList.value = ['L1','L2','L3'];
         }
         break;    
       }
@@ -1394,12 +1395,14 @@ const initData = () => {
         L2Data.value = allLineData.value.L2.map((item) => item.cur_value.toFixed(2));
         L3Data.value = allLineData.value.L3.map((item) => item.cur_value.toFixed(2));
         }
+        nameDataList.value = ['L1','L2','L3'];
         break;
       case '电压':
         if(allLineData.value != null){
         L1Data.value = allLineData.value.L1.map((item) => item.vol_value.toFixed(1));
         L2Data.value = allLineData.value.L2.map((item) => item.vol_value.toFixed(1));
         L3Data.value = allLineData.value.L3.map((item) => item.vol_value.toFixed(1));
+        nameDataList.value = ['L1','L2','L3'];
         }
         break;
       case '有效电能':
@@ -1412,6 +1415,7 @@ const initData = () => {
         L1Data.value = allLineData.value.L1.map((item) => item.pow_active_avg_value.toFixed(3));
         L2Data.value = allLineData.value.L2.map((item) => item.pow_active_avg_value.toFixed(3));
         L3Data.value = allLineData.value.L3.map((item) => item.pow_active_avg_value.toFixed(3));
+        nameDataList.value = ['总有功功率','A路有功功率','B路有功功率'];
         }
         break;              
       case '无功功率':
@@ -1419,6 +1423,7 @@ const initData = () => {
         L1Data.value = allLineData.value.L1.map((item) => item.pow_reactive_avg_value.toFixed(3));
         L2Data.value = allLineData.value.L2.map((item) => item.pow_reactive_avg_value.toFixed(3));
         L3Data.value = allLineData.value.L3.map((item) => item.pow_reactive_avg_value.toFixed(3));
+        nameDataList.value = ['L1','L2','L3'];
         }
        break;
       case '视在功率':
@@ -1426,6 +1431,7 @@ const initData = () => {
         L1Data.value = allLineData.value.L1.map((item) => item.pow_apparent_avg_value.toFixed(3));
         L2Data.value = allLineData.value.L2.map((item) => item.pow_apparent_avg_value.toFixed(3));
         L3Data.value = allLineData.value.L3.map((item) => item.pow_apparent_avg_value.toFixed(3));
+        nameDataList.value = ['L1','L2','L3'];
         }
        break;
       case '功率因素':
@@ -1433,13 +1439,7 @@ const initData = () => {
         L1Data.value = allLineData.value.L1.map((item) => item.power_factor_avg_value.toFixed(2));
         L2Data.value = allLineData.value.L2.map((item) => item.power_factor_avg_value.toFixed(2));
         L3Data.value = allLineData.value.L3.map((item) => item.power_factor_avg_value.toFixed(2));
-        }
-        break;
-      case '线电压':
-        if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => item.vol_line_avg_value.toFixed(1));
-        L2Data.value = allLineData.value.L2.map((item) => item.vol_line_avg_value.toFixed(1));
-        L3Data.value = allLineData.value.L3.map((item) => item.vol_line_avg_value.toFixed(1));
+        nameDataList.value = ['L1','L2','L3'];
         }
         break;
       case '负载率':
@@ -1447,6 +1447,7 @@ const initData = () => {
         L1Data.value = allLineData.value.L1.map((item) => item.load_rate);
         L2Data.value = allLineData.value.L2.map((item) => item.load_rate);
         L3Data.value = allLineData.value.L3.map((item) => item.load_rate);
+        nameDataList.value = ['L1','L2','L3'];
         }
         break;    
       }

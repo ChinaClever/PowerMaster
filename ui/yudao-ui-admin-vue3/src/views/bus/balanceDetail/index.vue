@@ -394,7 +394,6 @@ const ALineOption = ref<EChartsOption>({
           tooltipContent += `${phases[index]}: ${item.value} A<br/>`;
         }
       });
-      
       return tooltipContent;
     }
   },
@@ -432,7 +431,6 @@ const BLineOption = ref<EChartsOption>({
           tooltipContent += `${phases[index]}: ${item.value} V<br/>`;
         }
       });
-      
       return tooltipContent;
     }
   },

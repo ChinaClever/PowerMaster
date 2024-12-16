@@ -198,4 +198,14 @@ export const IndexApi = {
   getBusPFDetailExcel: async ( data: any, axiosConfig) => {
     return await request.downloadPost({ url: `/bus/index/pf/detailExcel` , data, ...axiosConfig })
   },
+
+  //获得记录分页
+  getRecordPage: async (data: any) => {
+    return await request.post({ url: `/system/alarm/record/page`, data})
+  },
+
+  //获得始端箱设备统计
+  getBusIndexStatistics: async () => {
+    return await request.get({ url: `/bus/index/statistics` })
+  },
 }

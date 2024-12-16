@@ -22,73 +22,60 @@ const prop = defineProps({
 const series = ref()
 const time = ref()
 const legendList = ref()
-
+const model = ref()
+const newSeries = prop.list.series.slice(0, 3);
+newSeries[0].name = 'Q'
+newSeries[1].name = 'QA'
+newSeries[2].name = 'QB'
+// 将新数组赋值给 list.series
+model.value = newSeries;
 // 设置饼图的选项
 const echartsOption = ref({
   dataZoom:[{ type:"inside"}],
-  legend: { data: legendList,
+  legend: { data: ['Q','QA','QB'],
     type: 'scroll', // 设置为 'single' 或 'multiple'
     orient: 'horizontal', // 设置为 'horizontal' 或 'vertical'
-    width:1000
+    width:1000,
+    selected: true
   },
   tooltip: { trigger: 'axis',
     formatter: function(params) {
       var result = params[0].name + '<br>';
       for (var i = 0; i < params.length; i++) {
-        result +=  params[i].marker + params[i].seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp;' + params[i].value.toFixed(3) ;
+        result +=  params[i].marker + params[i].seriesName + ': &nbsp&nbsp&nbsp&nbsp' + params[i].value.toFixed(3) + ' kVar' ;
         result += '<br>';
       }
       return result;
     } 
   },
   xAxis: {type: 'category', boundaryGap: false, data : time},
-  yAxis: { type: 'value'},
-  toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-  series: series,
+  yAxis: {
+    type: "value",
+    name: "kVar",
+    axisLine: {
+        show: !1,
+        lineStyle: {
+            color: "#000"
+        }
+    },
+    axisLabel: {
+        show: !0
+    },
+  },
+  toolbox: {feature: {saveAsImage: {}}},
+  series: model,
 })
 
 watchEffect(() => {
   // 直接访问即可，watchEffect会自动跟踪变化
-  debugger
+
   series.value = prop.list.series;
-  console.log("series.value",  series.value)
   if(  series.value != null && series.value?.length > 0){
     legendList.value =  series.value?.map(item => item.name)
   }
-  series.value.forEach(item => {  
-    // 检查 item 是否已经有 markPoint，如果没有则添加  
-    if (!item.markPoint) {  
-      item.markPoint = {  
-        data: [  
-          {  
-            type: 'max',  
-            name: 'Max',
-            symbol : "circle",
-            symbolSize : 10,  
-            label: {  
-              show: true,  
-              position: 'top',  
-              formatter: '{b}: {c}'  
-            }
-          },  
-          {  
-            type: 'min',  
-            name: 'Min',
-            symbol : "circle",
-            symbolSize : 10,
-            label: {  
-              show: true,  
-              position: 'top',
-              formatter: '{b}: {c}'  
-            }    
-            // 自定义样式和其他属性  
-          }  
-        ]  
-      };  
-    }  
-    // 如果 item 已经有 markPoint，但你想更新它（比如样式），可以在这里做  
-  });  
+
   time.value = prop.list.time;
+
 });
 
 

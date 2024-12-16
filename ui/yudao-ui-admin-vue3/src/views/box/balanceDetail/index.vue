@@ -16,12 +16,12 @@
       </el-card>
       <el-card  class="cardChilc" shadow="hover">
         <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
-          <div class="value">{{balanceObj.imbalanceValueA}}%</div>
+          <div class="value">{{balanceObj.imbalanceValueA.toFixed(2)}}%</div>
           <div class="day" :style="{backgroundColor: colorList[balanceObj.colorIndex].color}">{{colorList[balanceObj.colorIndex].name}}</div>
           <el-tooltip
             class="box-item"
             effect="dark"
-            content="小电流不平衡是指"
+            content="三相电流不平衡： 不平衡度%=（MAX相电流-三相平均电流）/三相平均电流×100%"
             placement="right"
           >
             <div @click.prevent="" class="question">?</div>
@@ -46,13 +46,13 @@
         </div>
       </el-card>
       <el-card  class="cardChilc" shadow="hover">
-        <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
-          <div class="value">{{balanceObj.imbalanceValueB}}%</div>
-          <div class="day" :style="{backgroundColor: colorList[0].color}">电压不平衡</div>
+        <div class="box" :style="{borderColor: colorVolList[balanceObj.colorIndex].color}">
+          <div class="value">{{balanceObj.imbalanceValueB.toFixed(2)}}%</div>
+          <div class="day" :style="{backgroundColor: colorVolList[balanceObj.colorIndex].color}">电压不平衡</div>
           <el-tooltip
             class="box-item"
             effect="dark"
-            content="电压不平衡是指"
+            content="三相电压不平衡度=( 最大电压−最小电压)/平均电压×100%"
             placement="right"
           >
             <div @click.prevent="" class="question">?</div>
@@ -84,6 +84,20 @@ const colorList = [{
 },{
   name: '大电流不平衡',
   color: '#fa3333',
+}]
+
+const colorVolList = [{
+  name: '小电压不平衡',
+  color: '#aaa',  //灰色
+},{
+  name: '大电压不平衡',
+  color: '#3bbb00', //绿色
+},{
+  name: '大电压不平衡',
+  color: '#ffc402', //黄色
+},{
+  name: '大电压不平衡',
+  color: '#fa3333', //红色
 }]
 
 const balanceObj = reactive({
@@ -119,6 +133,14 @@ const getBalanceDetail = async() => {
         trigger: 'axis',
         axisPointer: {
           type: 'shadow'
+        },formatter: function (params) {
+            // params是一个数组，包含了当前触发tooltip的多个系列的信息
+            let tooltipContent = '';
+            params.forEach(function (item) {
+                // item是单个系列的信息，包括seriesName（系列名称）、name（数据项名称）、value（数据值）等
+                tooltipContent += item.name + ' : ' + item.value + ' A<br/>';
+            });
+            return tooltipContent;
         },
       },
       grid: {
@@ -175,6 +197,14 @@ const getBalanceDetail = async() => {
         trigger: 'axis',
         axisPointer: {
           type: 'shadow'
+        },formatter: function (params) {
+            // params是一个数组，包含了当前触发tooltip的多个系列的信息
+            let tooltipContent = '';
+            params.forEach(function (item) {
+                // item是单个系列的信息，包括seriesName（系列名称）、name（数据项名称）、value（数据值）等
+                tooltipContent += item.name + ' : ' + item.value + ' V<br/>';
+            });
+            return tooltipContent;
         },
       },
       grid: {
@@ -256,7 +286,7 @@ const getBalanceTrend = async () => {
           name: 'A',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.cur[0].curValue),
+          data: res.map(item => item.cur[0].curValue.toFixed(2)),
         },
       ]
     } else if (res[0].cur && res[0].cur.length == 3) {
@@ -270,19 +300,19 @@ const getBalanceTrend = async () => {
           name: 'A',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.cur[0].curValue),
+          data: res.map(item => item.cur[0].curValue.toFixed(2)),
         },
         {
           name: 'B',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.cur[1].curValue),
+          data: res.map(item => item.cur[1].curValue.toFixed(2)),
         },
         {
           name: 'C',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.cur[2].curValue),
+          data: res.map(item => item.cur[2].curValue.toFixed(2)),
         },
       ]
     }
@@ -298,7 +328,7 @@ const getBalanceTrend = async () => {
           name: 'A',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.vol[0].volValue),
+          data: res.map(item => item.vol[0].volValue.toFixed(1)),
         },
       ]
     } else if(res[0].vol && res[0].vol.length == 3) {
@@ -312,19 +342,19 @@ const getBalanceTrend = async () => {
           name: 'A',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.vol[0].volValue),
+          data: res.map(item => item.vol[0].volValue.toFixed(1)),
         },
         {
           name: 'B',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.vol[1].volValue),
+          data: res.map(item => item.vol[1].volValue.toFixed(1)),
         },
         {
           name: 'C',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.vol[2].volValue),
+          data: res.map(item => item.vol[2].volValue.toFixed(1)),
         },
       ]
     }
@@ -340,7 +370,18 @@ const ALineOption = ref<EChartsOption>({
     left: 'center'
   },
   tooltip: {
-    trigger: 'axis'
+    trigger: 'axis',
+    formatter: function (params) {
+      let tooltipContent = `记录时间: ${params[0].name}<br/>`;
+      // 遍历params数组，构建电压信息
+      const phases = ['A相电流', 'B相电流', 'C相电流'];
+      params.forEach((item, index) => {
+        if (index < phases.length && item.seriesName) {
+          tooltipContent += `${phases[index]}: ${item.value} A<br/>`;
+        }
+      });
+      return tooltipContent;
+    }
   },
   grid: {
     left: '3%',
@@ -365,7 +406,19 @@ const BLineOption = ref<EChartsOption>({
     left: 'center'
   },
   tooltip: {
-    trigger: 'axis'
+    trigger: 'axis',
+    formatter: function (params) {
+      let tooltipContent = `记录时间: ${params[0].name}<br/>`; // 显示记录时间
+      
+      // 遍历params数组，构建电压信息
+      const phases = ['A相电压', 'B相电压', 'C相电压'];
+      params.forEach((item, index) => {
+        if (index < phases.length && item.seriesName) {
+          tooltipContent += `${phases[index]}: ${item.value} V<br/>`;
+        }
+      });
+      return tooltipContent;
+    }
   },
   grid: {
     left: '3%',
