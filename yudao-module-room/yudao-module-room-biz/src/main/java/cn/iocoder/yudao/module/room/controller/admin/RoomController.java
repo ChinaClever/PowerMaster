@@ -1,6 +1,8 @@
 package cn.iocoder.yudao.module.room.controller.admin;
 
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetSaveVo;
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomSavesVo;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.module.room.dto.*;
@@ -162,12 +164,17 @@ public class RoomController {
     }
 
 
-    @Operation(summary = "机房柜列新增/编辑")
+    @Operation(summary = "机房机柜新增/编辑")
     @PostMapping("/room/roomAisleSave")
     public CommonResult<Integer> roomAisleSave(@RequestBody AisleSaveVo vo) {
         return success(roomService.roomAisleSave(vo));
     }
 
+    @Operation(summary = "机房柜列新增/编辑")
+    @PostMapping("/room/roomCabinetSave")
+    public CommonResult<Integer> roomCabinetSave(@RequestBody CabinetSaveVo vo) {
+        return success(roomService.roomCabinetSave(vo));
+    }
 
 
 }

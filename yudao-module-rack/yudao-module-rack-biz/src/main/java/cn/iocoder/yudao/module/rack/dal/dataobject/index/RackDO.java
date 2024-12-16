@@ -29,10 +29,10 @@ public class RackDO  {
      * 机柜id
      */
     private Integer cabinetId;
-    /**
-     * 机房id
-     */
-    private Integer roomId;
+//    /**
+//     * 机房id
+//     */
+//    private Integer roomId;
     /**
      * U位名称
      */
@@ -64,7 +64,7 @@ public class RackDO  {
     /**
      * 设备类型
      */
-    private String type;
+    private String rackType;
     /**
      * 创建时间
      */

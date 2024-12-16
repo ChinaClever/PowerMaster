@@ -3029,12 +3029,12 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         String devPosition = "";
         //柜列
         List<AisleBox> aisleBoxList  = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
-                .in(AisleBox::getBarKey,devKeyList));
+                .in(AisleBox::getBoxKey,devKeyList));
         if (!CollectionUtils.isEmpty(aisleBoxList)){
             List<Integer> aisleBarIds = aisleBoxList.stream().map(AisleBox::getAisleBarId).collect(Collectors.toList());
             List<AisleBar> aisleBars = aisleBarMapper.selectBatchIds(aisleBarIds);
             Map<Integer, String> pathMap = aisleBars.stream().collect(Collectors.toMap(AisleBar::getId, AisleBar::getPath));
-            Map<String, AisleBox> aisleBoxKeyMap = aisleBoxList.stream().collect(Collectors.toMap(AisleBox::getBarKey,Function.identity()));
+            Map<String, AisleBox> aisleBoxKeyMap = aisleBoxList.stream().collect(Collectors.toMap(AisleBox::getBoxKey,Function.identity()));
             Map<Integer, String> positionMap = new HashMap<>();
             if (!CollectionUtils.isEmpty(aisleBoxList)){
                 List<String> redisKeys = aisleBoxList.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toList());

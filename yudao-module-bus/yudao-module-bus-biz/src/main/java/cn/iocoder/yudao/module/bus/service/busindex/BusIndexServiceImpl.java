@@ -3192,9 +3192,9 @@ public class BusIndexServiceImpl implements BusIndexService {
 
         //柜列
         List<AisleBar> aisleBar = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
-                .in(!CollectionUtils.isEmpty(devKeyList), AisleBar::getBarKey, devKeyList));
-        Map<String, String> aislePathMap = aisleBar.stream().collect(Collectors.toMap(AisleBar::getBarKey, AisleBar::getPath));
-        Map<String, Integer> aisleBarKeyMap = aisleBar.stream().collect(Collectors.toMap(AisleBar::getBarKey, AisleBar::getAisleId));
+                .in(!CollectionUtils.isEmpty(devKeyList), AisleBar::getBusKey, devKeyList));
+        Map<String, String> aislePathMap = aisleBar.stream().collect(Collectors.toMap(AisleBar::getBusKey, AisleBar::getPath));
+        Map<String, Integer> aisleBarKeyMap = aisleBar.stream().collect(Collectors.toMap(AisleBar::getBusKey, AisleBar::getAisleId));
         Map<Integer, String> positonMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(aisleBar)) {
             Set<String> redisKeys = aisleBar.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toSet());

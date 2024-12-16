@@ -443,7 +443,7 @@ public class UploadFileServiceImpl implements UploadFileService{
                     List<AisleBar> barList = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
                             .in(AisleBar::getAisleId,aisleIds));
                     if (!CollectionUtils.isEmpty(barList)){
-                        List<String> keys = barList.stream().map(AisleBar::getBarKey).collect(Collectors.toList());
+                        List<String> keys = barList.stream().map(AisleBar::getBusKey).collect(Collectors.toList());
                         List<BusIndex> busIndices = busIndexDoMapper.selectList(new LambdaQueryWrapper<BusIndex>()
                                 .eq(BusIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
                                 //非离线状态
@@ -470,8 +470,8 @@ public class UploadFileServiceImpl implements UploadFileService{
                     if (!CollectionUtils.isEmpty(cabinetPdus)){
                         List<String> keys = new ArrayList<>();
                         cabinetPdus.forEach(pdu ->{
-                            keys.add(pdu.getPduIpA()+SPLIT_KEY + 0);
-                            keys.add(pdu.getPduIpB()+SPLIT_KEY + 0);
+                            keys.add(pdu.getPduKeyA()+SPLIT_KEY + 0);
+                            keys.add(pdu.getPduKeyB()+SPLIT_KEY + 0);
                         });
 
                         List<PduIndexDo> pduIndexDos = pduIndexDoMapper.selectList(new LambdaQueryWrapper<PduIndexDo>()
@@ -609,12 +609,12 @@ public class UploadFileServiceImpl implements UploadFileService{
         //设备位置
         String devPosition = "";
         CabinetPdu aPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>()
-                .eq(CabinetPdu::getPduIpA,ip)
-                .eq(CabinetPdu::getCasIdA,0));
+                .eq(CabinetPdu::getPduKeyA,ip));
+                //.eq(CabinetPdu::getCasIdA,0));
 
         CabinetPdu bPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>()
-                .eq(CabinetPdu::getPduIpB,ip)
-                .eq(CabinetPdu::getCasIdB,0));
+                .eq(CabinetPdu::getPduKeyB,ip));
+                //.eq(CabinetPdu::getCasIdB,0));
 
         if (Objects.nonNull(aPdu)){
             CabinetIndex index = cabinetIndexMapper.selectById(aPdu.getCabinetId());
@@ -650,7 +650,7 @@ public class UploadFileServiceImpl implements UploadFileService{
         AtomicReference<String> devPosition = new AtomicReference<>("");
         //柜列
         List<AisleBar> aisleBarList  = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
-                .eq(AisleBar::getDevIp,ip));
+                .eq(AisleBar::getBusKey,ip));
         if (!CollectionUtils.isEmpty(aisleBarList)){
             List<Integer>  ids = aisleBarList.stream().map(AisleBar::getAisleId).distinct().collect(Collectors.toList());
 

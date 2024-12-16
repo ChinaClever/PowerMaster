@@ -67,14 +67,14 @@ public class BusServiceImpl implements BusService {
                 //插接箱数据
                 aisleBars.forEach(busIndex -> {
                     BusDataDTO busDataDTO = new BusDataDTO();
-                    busDataDTO.setBusName(busIndex.getBusName());
-                    busDataDTO.setDevIp(busIndex.getDevIp());
-                    busDataDTO.setBarKey(busIndex.getBarKey());
+                    //busDataDTO.setBusName(busIndex.getBusName());
+                    //busDataDTO.setDevIp(busIndex.getDevIp());
+                    busDataDTO.setBarKey(busIndex.getBusKey());
                     busDataDTO.setPath(busIndex.getPath());
                     busDataDTO.setDirection(busIndex.getDirection());
 
                     //始端箱数据
-                    Object object = ops.get(REDIS_KEY_BUS + busIndex.getBarKey());
+                    Object object = ops.get(REDIS_KEY_BUS + busIndex.getBusKey());
                     if (Objects.nonNull(object)){
                         JSONObject busData = JSON.parseObject(JSON.toJSONString(object));
                         busDataDTO.setBusData(busData);
@@ -90,7 +90,7 @@ public class BusServiceImpl implements BusService {
                         List<AisleBox> boxList = aisleBoxList.stream().sorted(Comparator.comparing(AisleBox::getBoxIndex)).collect(Collectors.toList());
                         for (int i = 0; i < boxList.size(); i++) {
                             //插接箱基础数据
-                            Object box = ops.get(REDIS_KEY_BOX + boxList.get(i).getBarKey());
+                            Object box = ops.get(REDIS_KEY_BOX + boxList.get(i).getBoxKey());
                             JSONObject boxData = JSON.parseObject(JSON.toJSONString(boxList.get(i)));
 
                             if (Objects.nonNull(box)){
