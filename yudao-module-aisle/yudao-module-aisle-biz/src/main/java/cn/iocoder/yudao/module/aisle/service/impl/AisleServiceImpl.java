@@ -547,14 +547,14 @@ public class AisleServiceImpl implements AisleService {
             //key
             List<String> keys = aisleBars.stream().map(AisleBar::getBusKey).collect(Collectors.toList());
             List<BusIndex>  busIndexList = busIndexDoMapper.selectList(new LambdaQueryWrapper<BusIndex>()
-                    .in(BusIndex::getDevKey,keys));
+                    .in(BusIndex::getBusKey,keys));
             Map<String,Integer>  idMap;
             Map<Integer,Double> yesterdayMap = new HashMap<>();
 
             //获取昨日统计用电
             if (!CollectionUtils.isEmpty(busIndexList)){
                 List<Integer> ids = busIndexList.stream().map(BusIndex::getId).distinct().collect(Collectors.toList());
-                idMap = busIndexList.stream().collect(Collectors.toMap(BusIndex::getDevKey,BusIndex::getId));
+                idMap = busIndexList.stream().collect(Collectors.toMap(BusIndex::getBusKey,BusIndex::getId));
 
                 String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
                 String endTime =DateUtil.formatDateTime(DateTime.now());
@@ -580,11 +580,11 @@ public class AisleServiceImpl implements AisleService {
                 //获取id
                 List<String> boxKeys = aisleBoxList.stream().map(AisleBox::getBoxKey).collect(Collectors.toList());
                 List<BoxIndex>  boxIndexList = boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>()
-                        .in(BoxIndex::getDevKey,boxKeys));
+                        .in(BoxIndex::getBoxKey,boxKeys));
                 //获取昨日统计用电
                 if (!CollectionUtils.isEmpty(boxIndexList)){
                     List<Integer> ids = boxIndexList.stream().map(BoxIndex::getId).distinct().collect(Collectors.toList());
-                    boxIdMap = boxIndexList.stream().collect(Collectors.toMap(BoxIndex::getDevKey,BoxIndex::getId));
+                    boxIdMap = boxIndexList.stream().collect(Collectors.toMap(BoxIndex::getBoxKey,BoxIndex::getId));
 
                     String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
                     String endTime =DateUtil.formatDateTime(DateTime.now());
