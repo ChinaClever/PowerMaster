@@ -257,11 +257,6 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="icon">
-              <div v-if="item.curUnbalance != null">
-                <span style="font-size: 20px">{{ item.curUnbalance }}%</span><br />不平衡度
-              </div>
-            </div>
             <div class="info">
               <div v-if="item.acur != null">A相电流：{{ item.acur.toFixed(2) }}A</div>
               <div v-if="item.bcur != null">B相电流：{{ item.bcur.toFixed(2) }}A</div>
@@ -269,6 +264,12 @@
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
+            <div class="icon">
+              <div v-if="item.curUnbalance != null">
+                <span style="font-size: 20px">{{ item.curUnbalance }}%</span><br />不平衡度
+              </div>
+            </div>
+           
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" v-if="item.color != 0">
@@ -1441,6 +1442,7 @@ onActivated(() => {
         }
         .info {
           margin-left: 15px;
+          margin-top: 10px;
         }
       }
       .devKey {
@@ -1508,6 +1510,7 @@ onActivated(() => {
         }
         .info {
           margin-left: 15px;
+          margin-top: 10px;
         }
       }
       .devKey {
@@ -1575,6 +1578,7 @@ onActivated(() => {
         }
         .info {
           margin-left: 15px;
+          margin-top: 10px;
         }
       }
       .devKey {
