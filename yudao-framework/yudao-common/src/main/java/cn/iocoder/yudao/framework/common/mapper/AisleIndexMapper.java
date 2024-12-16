@@ -1,8 +1,12 @@
 package cn.iocoder.yudao.framework.common.mapper;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndexVo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @author luowei
@@ -12,4 +16,5 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface AisleIndexMapper extends BaseMapper<AisleIndex> {
+    List<AisleIndexVo> selectAisleIndexByCfgList(@Param("roomId") Integer roomId);
 }

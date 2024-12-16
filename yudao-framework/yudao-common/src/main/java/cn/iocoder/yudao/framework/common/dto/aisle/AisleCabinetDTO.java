@@ -33,7 +33,7 @@ public class AisleCabinetDTO {
      * 电力容量
      */
     @Schema(description = "电力容量", example = "2")
-    private float powCapacity;
+    private float powerCapacity;
 
     /**
      * 数据来源

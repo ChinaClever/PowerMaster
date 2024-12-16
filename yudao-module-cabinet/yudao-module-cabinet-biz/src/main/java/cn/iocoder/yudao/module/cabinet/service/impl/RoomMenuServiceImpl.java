@@ -324,8 +324,8 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                             roomMenuDTOA.setName("A路");
 
                             roomMenuDTOA.setIp(cabinetPdu.getPduKeyA());
-//                            roomMenuDTOA.setCas(cabinetPdu.getCasIdA());
-                            roomMenuDTOA.setUnique(cabinetPdu.getPduKeyA());// + SPLIT + cabinetPdu.getCasIdA());
+                            //roomMenuDTOA.setCas(cabinetPdu.getCasIdA());
+                            //roomMenuDTOA.setUnique(cabinetPdu.getPduKeyA() + SPLIT + cabinetPdu.getCasIdA());
                             //父id设置机柜
                             roomMenuDTOA.setParentId(cabinetPdu.getCabinetId());
                             roomMenuDTOA.setParentType( MenuTypeEnums.CABINET.getType());
@@ -337,8 +337,8 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                             roomMenuDTOB.setType(MenuTypeEnums.PDU.getType());
                             roomMenuDTOB.setName("B路");
                             roomMenuDTOB.setIp(cabinetPdu.getPduKeyB());
-//                            roomMenuDTOB.setCas(cabinetPdu.getCasIdB());
-                            roomMenuDTOB.setUnique(cabinetPdu.getPduKeyB());// + SPLIT + cabinetPdu.getCasIdB());
+                            //roomMenuDTOB.setCas(cabinetPdu.getCasIdB());
+                            //roomMenuDTOB.setUnique(cabinetPdu.getPduKeyB() + SPLIT + cabinetPdu.getCasIdB());
                             //父id设置机柜
                             roomMenuDTOB.setParentId(cabinetPdu.getCabinetId());
                             roomMenuDTOB.setParentType( MenuTypeEnums.CABINET.getType());
@@ -603,18 +603,18 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                             .in(AisleBox::getAisleBarId,aisleBarIds));
                     List<String>barKeys=boxList.stream().map(AisleBox::getBoxKey).collect(Collectors.toList());
                     List<BoxIndex>boxIndexlist1=boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>()
-                            .in(BoxIndex::getBoxId,barKeys));
+                            .in(BoxIndex::getDevKey,barKeys));
                     Collections.sort(boxIndexlist1, Comparator.comparing(BoxIndex::getBoxName));
                     if (!CollectionUtils.isEmpty(boxIndexlist1)) {
                         boxIndexlist1.forEach(aisleBox -> {
-                            if (StringUtils.isNotEmpty(aisleBox.getBoxKey())) {
+                            if (StringUtils.isNotEmpty(aisleBox.getDevKey())) {
                                 RoomMenuDTO roomMenuDTOA = new RoomMenuDTO();
                                 roomMenuDTOA.setChildren(new ArrayList<>());
                                 roomMenuDTOA.setType(MenuTypeEnums.BOX.getType());
                                 roomMenuDTOA.setName(aisleBox.getBoxName());
-                                roomMenuDTOA.setUnique(aisleBox.getBoxKey());
+                                roomMenuDTOA.setUnique(aisleBox.getDevKey());
                                 //父id设置柜列
-                                roomMenuDTOA.setParentId(aisleBoxMapper.selectOne(new LambdaQueryWrapper<AisleBox>().in(AisleBox::getBoxKey,aisleBox.getBoxKey())).getAisleBarId());
+                                roomMenuDTOA.setParentId(aisleBoxMapper.selectOne(new LambdaQueryWrapper<AisleBox>().in(AisleBox::getBoxKey,aisleBox.getDevKey())).getAisleBarId());
                                 roomMenuDTOA.setParentType(MenuTypeEnums.BUS.getType());
                                 //非插接箱id  绑定ID
                                 roomMenuDTOA.setId(aisleBox.getId());

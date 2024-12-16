@@ -6,6 +6,7 @@ import cn.iocoder.yudao.framework.common.dto.aisle.AisleCabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleDetailDTO;
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetDTO;
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetSaveVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
 import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalDayDo;
@@ -13,10 +14,7 @@ import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalMonthDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.pow.RoomPowDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.pow.RoomPowRealtimeDo;
-import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
-import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBox;
-import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleCfg;
-import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.aisle.*;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.*;
 import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
@@ -477,7 +475,7 @@ public class RoomServiceImpl implements RoomService {
             if (Objects.isNull(index)) {
                 return -1;
             }
-            if (index.getIsDeleted() == DelFlagEnums.DELETE.getStatus()) {
+            if (index.getIsDeleted() == DelEnums.DELETE.getStatus()) {
                 //已经删除则物理删除
                 cabinetIndexMapper.deleteById(id);
                 //删除pdu关联关系
@@ -553,16 +551,19 @@ public class RoomServiceImpl implements RoomService {
                 AisleCabinetDTO cabinetDTO = BeanUtils.toBean(cabinetIndex,AisleCabinetDTO.class);
                 CabinetCfg cfg = cfgMap.get(cabinetIndex.getId());
                 if (Objects.nonNull(cfg)){
-                    CabinetIndex cabinet = cabinetIndexMapper.selectById(cfg.getCabinetId());
-                    cabinetDTO.setCabinetName(cabinet.getCabinetName());
-                    cabinetDTO.setCabinetHeight(cabinet.getCabinetHeight());
+                    //cabinetDTO.setCabinetName(cfg.getCabinetName());
+                    //cabinetDTO.setCabinetHeight(cfg.getCabinetHeight());
                     cabinetDTO.setCompany(cfg.getCompany());
                     cabinetDTO.setXCoordinate(cfg.getXCoordinate());
                     cabinetDTO.setYCoordinate(cfg.getYCoordinate());
-                    cabinetDTO.setType(cabinet.getCabinetType());
-                    totalSpace.addAndGet(cabinet.getCabinetHeight());
+                    cabinetDTO.setEleAlarmDay(cfg.getEleAlarmDay());
+                    cabinetDTO.setEleAlarmMonth(cfg.getEleAlarmMonth());
+                    cabinetDTO.setEleLimitDay(cfg.getEleLimitDay());
+                    cabinetDTO.setEleLimitMonth(cfg.getEleLimitMonth());
+                    cabinetDTO.setPowerCapacity(cabinetIndex.getPowerCapacity());
+                    //cabinetDTO.setType(cfg.getType());
+                    //totalSpace.addAndGet(cfg.getCabinetHeight());
                 }
-
                 //获取机柜使用空间
                 List<RackIndex> rackIndexList = rackIndexDoMapper.selectList(new LambdaQueryWrapper<RackIndex>()
                         .eq(RackIndex::getCabinetId,cabinetIndex.getId())
@@ -576,14 +577,12 @@ public class RoomServiceImpl implements RoomService {
                 }else {
                     cabinetDTO.setFreeSpace(cabinetDTO.getCabinetHeight());
                 }
-
                 aisleCabinetDTOList.add(cabinetDTO);
-
             });
 
             //获取pdu数量
             List<Integer> ids = cabinetIndexList.stream()
-                    .filter(t->t.getPduBox() == PduBoxFlagEnums.PDU.getValue())
+                    .filter(t->t.getPduBox() == PduBoxEnums.PDU.getValue())
                     .map(CabinetIndex::getId).collect(Collectors.toList());
 
             List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>()
@@ -617,7 +616,6 @@ public class RoomServiceImpl implements RoomService {
 
             deviceNum.addAndGet( CollectionUtils.isEmpty(boxs) ? 0 : boxs.size());
         }
-
         roomDetailDTO.setCabinetList(aisleCabinetDTOList);
         //柜列
         roomDetailDTO.setAisleList(getAisleDetail(roomId,roomIndex.getRoomName(),totalSpace,totalUsedSpace));
@@ -665,9 +663,8 @@ public class RoomServiceImpl implements RoomService {
                 RoomCabinetDTO cabinetDTO = BeanUtils.toBean(cabinetIndex,RoomCabinetDTO.class);
                 CabinetCfg cfg = cfgMap.get(cabinetIndex.getId());
                 if (Objects.nonNull(cfg)){
-                    CabinetIndex cabinet = cabinetIndexMapper.selectById(cfg.getCabinetId());
-                    cabinetDTO.setCabinetName(cabinet.getCabinetName());
-                    cabinetDTO.setCabinetHeight(cabinet.getCabinetHeight());
+                    //cabinetDTO.setCabinetName(cfg.getCabinetName());
+                    //cabinetDTO.setCabinetHeight(cfg.getCabinetHeight());
                     cabinetDTO.setXCoordinate(cfg.getXCoordinate());
                     cabinetDTO.setYCoordinate(cfg.getYCoordinate());
                 }
@@ -767,9 +764,8 @@ public class RoomServiceImpl implements RoomService {
                             RoomCabinetDTO cabinetDTO = BeanUtils.toBean(cabinetIndex, RoomCabinetDTO.class);
                             CabinetCfg cfg = cfgMap.get(cabinetIndex.getId());
                             if (Objects.nonNull(cfg)) {
-                                CabinetIndex cabinet = cabinetIndexMapper.selectById(cfg.getCabinetId());
-                                cabinetDTO.setCabinetName(cabinet.getCabinetName());
-                                cabinetDTO.setCabinetHeight(cabinet.getCabinetHeight());
+                                //cabinetDTO.setCabinetName(cfg.getCabinetName());
+                                //cabinetDTO.setCabinetHeight(cfg.getCabinetHeight());
                                 cabinetDTO.setXCoordinate(cfg.getXCoordinate());
                                 cabinetDTO.setYCoordinate(cfg.getYCoordinate());
                             }
@@ -898,7 +894,7 @@ public class RoomServiceImpl implements RoomService {
         if (!CollectionUtils.isEmpty(cabinetIndexList)){
             //获取pdu数量
             List<Integer> ids = cabinetIndexList.stream()
-                    .filter(t->t.getPduBox() == PduBoxFlagEnums.PDU.getValue())
+                    .filter(t->t.getPduBox() == PduBoxEnums.PDU.getValue())
                     .map(CabinetIndex::getId).collect(Collectors.toList());
 
             List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>()
@@ -1037,18 +1033,24 @@ public class RoomServiceImpl implements RoomService {
             List<String> pduKeys = new ArrayList<>();
             //获取pdu数量
             List<Integer> ids = cabinetIndexList.stream()
-                    .filter(t->t.getPduBox() == PduBoxFlagEnums.PDU.getValue())
+                    .filter(t->t.getPduBox() == PduBoxEnums.PDU.getValue())
                     .map(CabinetIndex::getId).collect(Collectors.toList());
 
             List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>()
                     .in(!CollectionUtils.isEmpty(ids),CabinetPdu::getCabinetId,ids));
             if (!CollectionUtils.isEmpty(cabinetPdus)) {
                 cabinetPdus.forEach(cabinetPdu -> {
+//                    if (StringUtils.isNotEmpty(cabinetPdu.getPduKeyA())){
+//                        pduKeys.add(cabinetPdu.getPduKeyA() + SPLIT_KEY + cabinetPdu.getCasIdA());
+//                    }
+//                    if (StringUtils.isNotEmpty(cabinetPdu.getPduKeyB())){
+//                        pduKeys.add(cabinetPdu.getPduKeyB() + SPLIT_KEY + cabinetPdu.getCasIdB());
+//                    }
                     if (StringUtils.isNotEmpty(cabinetPdu.getPduKeyA())){
-                       pduKeys.add(cabinetPdu.getPduKeyA());// + SPLIT_KEY + cabinetPdu.getCasIdA()
+                       pduKeys.add(cabinetPdu.getPduKeyA() + SPLIT_KEY);
                     }
                     if (StringUtils.isNotEmpty(cabinetPdu.getPduKeyB())){
-                        pduKeys.add(cabinetPdu.getPduKeyB());// + SPLIT_KEY + cabinetPdu.getCasIdB()
+                        pduKeys.add(cabinetPdu.getPduKeyB() + SPLIT_KEY);
                     }
                 });
             }
@@ -1220,18 +1222,31 @@ public class RoomServiceImpl implements RoomService {
             index.setYCoordinate(vo.getYCoordinate());
             index.setPduBar(vo.getPduBar());
             index.setDirection(vo.getDirection());
-            int insert = aisleIndexMapper.insert(index);
-            if (insert > 0){
-                //保存配置
-                AisleCfg cfg = new AisleCfg();
-                cfg.setAisleId(index.getId());
-                cfg.setPowerCapacity(vo.getPowerCapacity());
-                cfg.setAisleType("0");
-                cfg.setEleAlarmDay(vo.getEleAlarmDay());
-                cfg.setEleAlarmMonth(vo.getEleAlarmMonth());
-                cfg.setEleLimitDay(vo.getEleLimitDay());
-                cfg.setEleLimitMonth(vo.getEleLimitMonth());
-                aisleCfgMapper.insert(cfg);
+            if (Objects.nonNull(vo.getId())){
+                //编辑
+                AisleIndex aisleIndex = aisleIndexMapper.selectOne(new LambdaQueryWrapper<AisleIndex>()
+                        .eq(AisleIndex::getId,vo.getId()));
+                if (Objects.nonNull(aisleIndex)){
+                    index.setId(vo.getId());
+                    int updateById = aisleIndexMapper.updateById(index);
+                    if (updateById > 0) {
+                        aisleCfgMapper.updateByAisleCfg(vo);
+                    }
+                }
+            }else {
+                int insert = aisleIndexMapper.insert(index);
+                if (insert > 0) {
+                    //保存配置
+                    AisleCfg cfg = new AisleCfg();
+                    cfg.setAisleId(index.getId());
+                    cfg.setPowerCapacity(vo.getPowerCapacity());
+                    cfg.setAisleType("0");
+                    cfg.setEleAlarmDay(vo.getEleAlarmDay());
+                    cfg.setEleAlarmMonth(vo.getEleAlarmMonth());
+                    cfg.setEleLimitDay(vo.getEleLimitDay());
+                    cfg.setEleLimitMonth(vo.getEleLimitMonth());
+                    aisleCfgMapper.insert(cfg);
+                }
             }
             return index.getId();
         }finally {
@@ -1264,6 +1279,53 @@ public class RoomServiceImpl implements RoomService {
     }
 
     /**
+     * 机房柜列新增/编辑
+     * @param vo
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Integer roomCabinetSave(CabinetSaveVo vo) {
+        try {
+            CabinetIndex index = new CabinetIndex();
+            index.setCabinetName(vo.getCabinetName());
+            index.setRoomId(vo.getRoomId());
+            index.setPowerCapacity(vo.getPowerCapacity());
+            index.setCabinetHeight(vo.getCabinetHeight());
+            if (Objects.nonNull(vo.getId())){
+                //编辑
+                CabinetIndex cabinetIndex = cabinetIndexMapper.selectOne(new LambdaQueryWrapper<CabinetIndex>()
+                        .eq(CabinetIndex::getId,vo.getId()));
+                if (Objects.nonNull(cabinetIndex)){
+                    index.setId(vo.getId());
+                    int updateById = cabinetIndexMapper.updateById(index);
+                    if (updateById > 0) {
+                        cabinetCfgMapper.updateByCabinetCfg(vo);
+                    }
+                }
+            }else {
+                int insert = cabinetIndexMapper.insert(index);
+                if (insert > 0) {
+                    //保存配置
+                    CabinetCfg  cfg = new CabinetCfg();
+                    cfg.setCabinetId(index.getId());
+                    cfg.setXCoordinate(vo.getXCoordinate());
+                    cfg.setYCoordinate(vo.getYCoordinate());
+                    cfg.setEleLimitDay(vo.getEleLimitDay());
+                    cfg.setEleAlarmDay(vo.getEleAlarmDay());
+                    cfg.setEleLimitMonth(vo.getEleLimitMonth());
+                    cfg.setEleAlarmMonth(vo.getEleAlarmMonth());
+                    cabinetCfgMapper.insert(cfg);
+                }
+            }
+            return index.getId();
+        }finally {
+            log.info("刷新计算服务缓存 --- " + adder);
+            HttpUtil.get(adder);
+        }
+    }
+
+    /**
      * 获取柜列详情
      * @param roomId
      * @return
@@ -1271,10 +1333,11 @@ public class RoomServiceImpl implements RoomService {
     public List<AisleDetailDTO> getAisleDetail(Integer roomId,String roomName,AtomicInteger totalSpace, AtomicInteger totalUsedSpace) {
         List<AisleDetailDTO> detailDTOList = new ArrayList<>();
 
-        List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>()
-                .eq(AisleIndex::getRoomId,roomId)
-                .eq(AisleIndex::getIsDelete,DelEnums.NO_DEL.getStatus()));
-
+//        List<AisleIndex> aisleIndexList = aisleIndexMapper.selectList(new LambdaQueryWrapper<AisleIndex>()
+//                .eq(AisleIndex::getRoomId,roomId)
+//                .eq(AisleIndex::getIsDelete,DelEnums.NO_DEL.getStatus()));
+        //查询柜列加柜列配置
+        List<AisleIndexVo> aisleIndexList = aisleIndexMapper.selectAisleIndexByCfgList(roomId);
         //机柜
         List<CabinetIndex> cabinetIndexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
                 .eq(CabinetIndex::getRoomId,roomId)
@@ -1294,11 +1357,8 @@ public class RoomServiceImpl implements RoomService {
 
 
         if (!CollectionUtils.isEmpty(aisleIndexList)){
-
             aisleIndexList.forEach(aisleIndex -> {
-
                 AisleDetailDTO detailDTO = new AisleDetailDTO();
-
                 detailDTO.setAisleName(aisleIndex.getAisleName());
                 detailDTO.setId(aisleIndex.getId());
                 detailDTO.setLength(aisleIndex.getAisleLength());
@@ -1306,31 +1366,28 @@ public class RoomServiceImpl implements RoomService {
                 detailDTO.setPduBar(aisleIndex.getPduBar());
                 detailDTO.setRoomName(roomName);
                 detailDTO.setRoomId(roomId);
-//                detailDTO.setEleAlarmDay(aisleIndex.getEleAlarmDay());
-//                detailDTO.setEleAlarmMonth(aisleIndex.getEleAlarmMonth());
-//                detailDTO.setEleLimitDay(aisleIndex.getEleLimitDay());
-//                detailDTO.setEleLimitMonth(aisleIndex.getEleLimitMonth());
+                detailDTO.setPowerCapacity(aisleIndex.getPowerCapacity());
+                detailDTO.setEleAlarmDay(aisleIndex.getEleAlarmDay());
+                detailDTO.setEleAlarmMonth(aisleIndex.getEleAlarmMonth());
+                detailDTO.setEleLimitDay(aisleIndex.getEleLimitDay());
+                detailDTO.setEleLimitMonth(aisleIndex.getEleLimitMonth());
                 detailDTO.setDirection(aisleIndex.getDirection());
                 detailDTO.setXCoordinate(aisleIndex.getXCoordinate());
                 detailDTO.setYCoordinate(aisleIndex.getYCoordinate());
-
-
                 List<CabinetDTO> aisleCabinetDTOList = new ArrayList<>();
-
-               Map<Integer,CabinetDTO> cabMap = new HashMap<>();
+                Map<Integer,CabinetDTO> cabMap = new HashMap<>();
                 List<CabinetIndex> cabs = cabinetIndexMap.get(aisleIndex.getId());
                 if (!CollectionUtils.isEmpty(cabs)){
                     cabs.forEach(cabinetIndex ->{
                         CabinetDTO cabinetDTO = BeanUtils.toBean(cabinetIndex,CabinetDTO.class);
                         CabinetCfg cfg = cabinetCfgMap.get(cabinetIndex.getId());
                         if (Objects.nonNull(cfg)){
-                            CabinetIndex cabinet = cabinetIndexMapper.selectById(cfg.getCabinetId());
-                            cabinetDTO.setCabinetName(cabinet.getCabinetName());
-                            cabinetDTO.setCabinetHeight(cabinet.getCabinetHeight());
+                            //cabinetDTO.setCabinetName(cfg.getCabinetName());
+                            //cabinetDTO.setCabinetHeight(cfg.getCabinetHeight());
                             cabinetDTO.setCompany(cfg.getCompany());
                             cabinetDTO.setXCoordinate(cfg.getXCoordinate());
                             cabinetDTO.setYCoordinate(cfg.getYCoordinate());
-                            cabinetDTO.setType(cabinet.getCabinetType());
+                            //cabinetDTO.setType(cfg.getType());
                             if ("x".equals(aisleIndex.getDirection())){
                                 //横向
                                 cabinetDTO.setIndex(cfg.getXCoordinate() - aisleIndex.getXCoordinate() + 1);
@@ -1340,7 +1397,7 @@ public class RoomServiceImpl implements RoomService {
                                 cabinetDTO.setIndex(cfg.getYCoordinate() - aisleIndex.getYCoordinate() + 1);
                             }
 
-                            totalSpace.addAndGet(cabinet.getCabinetHeight());
+                            //totalSpace.addAndGet(cfg.getCabinetHeight());
                         }
 
                         List<RackIndex> rackIndexList = rackIndexDoMapper.selectList(new LambdaQueryWrapper<RackIndex>()
@@ -1512,7 +1569,7 @@ public class RoomServiceImpl implements RoomService {
                     .eq(CabinetIndex::getCabinetName, vo.getCabinetName())
                     .eq(CabinetIndex::getRoomId, vo.getRoomId()));
             if (Objects.nonNull(index)) {
-                if (index.getIsDeleted() == DelFlagEnums.DELETE.getStatus() || index.getIsDisabled() == DisableFlagEnums.DISABLE.getStatus()) {
+                if (index.getIsDeleted() == DelEnums.DELETE.getStatus() || index.getIsDisabled() == DisableEnums.DISABLE.getStatus()) {
                     //index 索引表
                     //修改
                     cabinetIndexMapper.updateById(convertIndex(vo, index));
@@ -1556,9 +1613,9 @@ public class RoomServiceImpl implements RoomService {
         cabinetIndex.setCabinetName(vo.getCabinetName());
         cabinetIndex.setPduBox(vo.getPduBox());
         //未删除
-        cabinetIndex.setIsDeleted(DelFlagEnums.NO_DEL.getStatus());
+        cabinetIndex.setIsDeleted(DelEnums.NO_DEL.getStatus());
         //未禁用
-        cabinetIndex.setIsDisabled(DisableFlagEnums.ENABLE.getStatus());
+        cabinetIndex.setIsDisabled(DisableEnums.ENABLE.getStatus());
         cabinetIndex.setPowerCapacity(vo.getPowCapacity());
         cabinetIndex.setRoomId(vo.getRoomId());
         cabinetIndex.setId(index.getId());
@@ -1580,10 +1637,10 @@ public class RoomServiceImpl implements RoomService {
     private CabinetCfg convertCfg(CabinetVo vo, CabinetCfg cfg) {
         CabinetCfg cabinetCfg = new CabinetCfg();
         cabinetCfg.setCabinetId(vo.getId());
-//        cabinetCfg.setCabinetHeight(vo.getCabinetHeight());
-//        cabinetCfg.setCabinetName(vo.getCabinetName());
+        //cabinetCfg.setCabinetHeight(vo.getCabinetHeight());
+        //cabinetCfg.setCabinetName(vo.getCabinetName());
         cabinetCfg.setCompany(vo.getCompany());
-//        cabinetCfg.setType(vo.getType());
+        //cabinetCfg.setType(vo.getType());
         cabinetCfg.setXCoordinate(vo.getXCoordinate());
         cabinetCfg.setYCoordinate(vo.getYCoordinate());
         cabinetCfg.setId(cfg.getId());
