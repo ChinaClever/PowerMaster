@@ -173,8 +173,8 @@ public class CabinetServiceImpl implements CabinetService {
                 CabinetCfg cfg = cabinetCfgMapper.selectOne(new LambdaQueryWrapper<CabinetCfg>()
                         .eq(CabinetCfg::getCabinetId, index.getId()));
                 if (Objects.nonNull(cfg)) {
-                    dto.setCabinetHeight(cfg.getCabinetHeight());
-                    dto.setType(cfg.getType());
+                    //dto.setCabinetHeight(cfg.getCabinetHeight());
+                    //dto.setType(cfg.getType());
                     dto.setXCoordinate(cfg.getXCoordinate());
                     dto.setYCoordinate(cfg.getYCoordinate());
                     dto.setCompany(cfg.getCompany());
@@ -188,17 +188,17 @@ public class CabinetServiceImpl implements CabinetService {
                             .eq(CabinetPdu::getCabinetId, index.getId()));
 
                     if (Objects.nonNull(pdu)) {
-                        dto.setPduIpA(pdu.getPduIpA());
-                        dto.setPduIpB(pdu.getPduIpB());
-                        dto.setCasIdA(pdu.getCasIdA());
-                        dto.setCasIdB(pdu.getCasIdB());
+                        dto.setPduIpA(pdu.getPduKeyA());
+                        dto.setPduIpB(pdu.getPduKeyB());
+                        //dto.setCasIdA(pdu.getCasIdA());
+                        //dto.setCasIdB(pdu.getCasIdB());
 
                         //获取pdu数据
                         StringBuilder aKey = new StringBuilder();
                         aKey.append(REDIS_KEY_PDU);
-                        aKey.append(pdu.getPduIpA());
+                        aKey.append(pdu.getPduKeyA());
                         aKey.append(SPLIT_KEY);
-                        aKey.append(pdu.getCasIdA());
+                        //aKey.append(pdu.getCasIdA());
 
                         Object aPdu = ops.get(aKey.toString());
                         if (Objects.nonNull(aPdu)){
@@ -218,9 +218,9 @@ public class CabinetServiceImpl implements CabinetService {
                         }
                         StringBuilder bKey = new StringBuilder();
                         bKey.append(REDIS_KEY_PDU);
-                        bKey.append(pdu.getPduIpB());
+                        bKey.append(pdu.getPduKeyB());
                         bKey.append(SPLIT_KEY);
-                        bKey.append(pdu.getCasIdB());
+                       // bKey.append(pdu.getCasIdB());
 
                         Object bPdu = ops.get(bKey.toString());
                         if (Objects.nonNull(bPdu)){
@@ -852,10 +852,10 @@ public class CabinetServiceImpl implements CabinetService {
     private CabinetPdu convertPdu(CabinetVo vo, CabinetPdu pdu) {
         CabinetPdu cabinetPdu = new CabinetPdu();
         cabinetPdu.setCabinetId(vo.getId());
-        cabinetPdu.setPduIpA(vo.getPduIpA());
-        cabinetPdu.setPduIpB(vo.getPduIpB());
-        cabinetPdu.setCasIdB(vo.getCasIdB());
-        cabinetPdu.setCasIdA(vo.getCasIdA());
+        cabinetPdu.setPduKeyA(vo.getPduIpA());
+        cabinetPdu.setPduKeyB(vo.getPduIpB());
+        //cabinetPdu.setCasIdB(vo.getCasIdB());
+        //cabinetPdu.setCasIdA(vo.getCasIdA());
         cabinetPdu.setId(pdu.getId());
         return cabinetPdu;
     }
@@ -911,10 +911,10 @@ public class CabinetServiceImpl implements CabinetService {
     private CabinetCfg convertCfg(CabinetVo vo, CabinetCfg cfg) {
         CabinetCfg cabinetCfg = new CabinetCfg();
         cabinetCfg.setCabinetId(vo.getId());
-        cabinetCfg.setCabinetHeight(vo.getCabinetHeight());
-        cabinetCfg.setCabinetName(vo.getCabinetName());
+        //cabinetCfg.setCabinetHeight(vo.getCabinetHeight());
+        //cabinetCfg.setCabinetName(vo.getCabinetName());
         cabinetCfg.setCompany(vo.getCompany());
-        cabinetCfg.setType(vo.getType());
+        //cabinetCfg.setType(vo.getType());
         cabinetCfg.setXCoordinate(vo.getXCoordinate());
         cabinetCfg.setYCoordinate(vo.getYCoordinate());
         cabinetCfg.setId(cfg.getId());
@@ -935,10 +935,10 @@ public class CabinetServiceImpl implements CabinetService {
         }
         List<CabinetPdu> pduFlag = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>()
                 .in(CabinetPdu::getCabinetId, ids)
-                .and((wq -> wq.and(qr -> qr.eq(CabinetPdu::getPduIpA, ip)
-                                .eq(CabinetPdu::getCasIdA, cas))
-                        .or(qr -> qr.eq(CabinetPdu::getPduIpB, ip)
-                                .eq(CabinetPdu::getCasIdB, cas)))
+                .and((wq -> wq.and(qr -> qr.eq(CabinetPdu::getPduKeyA, ip))
+                                //.eq(CabinetPdu::getCasIdA, cas))
+                        .or(qr -> qr.eq(CabinetPdu::getPduKeyB, ip)))
+                                //.eq(CabinetPdu::getCasIdB, cas)))
                 )
         );
         if (!CollectionUtils.isEmpty(pduFlag)) {

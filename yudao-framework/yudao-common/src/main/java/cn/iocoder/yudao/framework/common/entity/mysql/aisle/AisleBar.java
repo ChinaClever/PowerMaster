@@ -34,27 +34,27 @@ public class AisleBar implements Serializable {
     /**
      *  唯一标识
      */
-    private String barKey;
+    private String busKey;
 
-    /**
-     * 始端箱名称
-     */
-    private String busName;
+//    /**
+//     * 始端箱名称
+//     */
+//    private String busName;
 
-    /**
-     * ip地址
-     */
-    private String devIp;
+//    /**
+//     * ip地址
+//     */
+//    private String devIp;
 
-    /**
-     * 级联地址
-     */
-    private Integer casAddr;
+//    /**
+//     * 级联地址
+//     */
+//    private Integer casAddr;
 
-    /**
-     * 母线编号
-     */
-    private Integer barId;
+//    /**
+//     * 母线编号
+//     */
+//    private Integer barId;
 
     /**
      * AB路

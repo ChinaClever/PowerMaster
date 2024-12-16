@@ -431,13 +431,15 @@ public class IndexServiceImpl implements IndexService {
         List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().in(CabinetPdu::getCabinetId, ids));
 
         List<String> pduA = cabinetPdus.stream()
-                .filter(pdu -> !StringUtils.isEmpty(pdu.getPduIpA()))
-                .map(pdu -> pdu.getPduIpA() + '-' + pdu.getCasIdA())
+                .filter(pdu -> !StringUtils.isEmpty(pdu.getPduKeyA()))
+                //.map(pdu -> pdu.getPduKeyA() + '-' + pdu.getCasIdA())
+                .map(pdu -> pdu.getPduKeyA())
                 .collect(Collectors.toList());
 
         List<String> pduB = cabinetPdus.stream()
-                .filter(pdu -> !StringUtils.isEmpty(pdu.getPduIpB()))
-                .map(pdu -> pdu.getPduIpB() + '-' + pdu.getCasIdB())
+                .filter(pdu -> !StringUtils.isEmpty(pdu.getPduKeyB()))
+                //.map(pdu -> pdu.getPduKeyB() + '-' + pdu.getCasIdB())
+                .map(pdu -> pdu.getPduKeyB())
                 .collect(Collectors.toList());
 
         Map<String, Integer> pduMap = null;
@@ -479,9 +481,11 @@ public class IndexServiceImpl implements IndexService {
             for (CabinetEnvSensor cabinetEnvSensor : envList) {
                 String devKey = null;
                 if(cabinetEnvSensor.getPathPdu() == 'A'){
-                    devKey = cabinetPdu.getPduIpA() + '-' + cabinetPdu.getCasIdA();
+                    //devKey = cabinetPdu.getPduKeyA() + '-' + cabinetPdu.getCasIdA();
+                    devKey = cabinetPdu.getPduKeyA();
                 }else{
-                    devKey = cabinetPdu.getPduIpB() + '-' + cabinetPdu.getCasIdB();
+                    //devKey = cabinetPdu.getPduKeyB() + '-' + cabinetPdu.getCasIdB();
+                    devKey = cabinetPdu.getPduKeyB();
                 }
 
                 Integer pduId = pduMap.get(devKey);
@@ -604,13 +608,17 @@ public class IndexServiceImpl implements IndexService {
             }
             List<String> devKeyList = new ArrayList<>();
             Map<String,String> pduMap = new HashMap<>();
-            pduMap.put("A",cabinetPdu.getPduIpA() + '-' + cabinetPdu.getCasIdA());
-            pduMap.put("B",cabinetPdu.getPduIpB() + '-' + cabinetPdu.getCasIdB());
-            if (!StringUtils.isEmpty(cabinetPdu.getPduIpA())){
-                devKeyList.add(cabinetPdu.getPduIpA() + '-' + cabinetPdu.getCasIdA());
+            //pduMap.put("A",cabinetPdu.getPduKeyA() + '-' + cabinetPdu.getCasIdA());
+            pduMap.put("A",cabinetPdu.getPduKeyA());
+            //pduMap.put("B",cabinetPdu.getPduKeyB() + '-' + cabinetPdu.getCasIdB());
+            pduMap.put("B",cabinetPdu.getPduKeyB());
+            if (!StringUtils.isEmpty(cabinetPdu.getPduKeyA())){
+                //devKeyList.add(cabinetPdu.getPduKeyA() + '-' + cabinetPdu.getCasIdA());
+                devKeyList.add(cabinetPdu.getPduKeyA());
             }
-            if (!StringUtils.isEmpty(cabinetPdu.getPduIpB())){
-                devKeyList.add(cabinetPdu.getPduIpB() + '-' + cabinetPdu.getCasIdB());
+            if (!StringUtils.isEmpty(cabinetPdu.getPduKeyB())){
+                //devKeyList.add(cabinetPdu.getPduKeyB() + '-' + cabinetPdu.getCasIdB());
+                devKeyList.add(cabinetPdu.getPduKeyB());
             }
             if(CollectionUtil.isEmpty(devKeyList)){
                 return result;
@@ -726,13 +734,17 @@ public class IndexServiceImpl implements IndexService {
             }
             List<String> devKeyList = new ArrayList<>();
             Map<String,String> pduMap = new HashMap<>();
-            pduMap.put("A",cabinetPdu.getPduIpA() + '-' + cabinetPdu.getCasIdA());
-            pduMap.put("B",cabinetPdu.getPduIpB() + '-' + cabinetPdu.getCasIdB());
-            if (!StringUtils.isEmpty(cabinetPdu.getPduIpA())){
-                devKeyList.add(cabinetPdu.getPduIpA() + '-' + cabinetPdu.getCasIdA());
+            //pduMap.put("A",cabinetPdu.getPduKeyA() + '-' + cabinetPdu.getCasIdA());
+            pduMap.put("A",cabinetPdu.getPduKeyA());
+            //pduMap.put("B",cabinetPdu.getPduKeyB() + '-' + cabinetPdu.getCasIdB());
+            pduMap.put("B",cabinetPdu.getPduKeyB());
+            if (!StringUtils.isEmpty(cabinetPdu.getPduKeyA())){
+                //devKeyList.add(cabinetPdu.getPduKeyA() + '-' + cabinetPdu.getCasIdA());
+                devKeyList.add(cabinetPdu.getPduKeyA());
             }
-            if (!StringUtils.isEmpty(cabinetPdu.getPduIpB())){
-                devKeyList.add(cabinetPdu.getPduIpB() + '-' + cabinetPdu.getCasIdB());
+            if (!StringUtils.isEmpty(cabinetPdu.getPduKeyB())){
+                //devKeyList.add(cabinetPdu.getPduKeyB() + '-' + cabinetPdu.getCasIdB());
+                devKeyList.add(cabinetPdu.getPduKeyB());
             }
             if(CollectionUtil.isEmpty(devKeyList)){
                 return result;

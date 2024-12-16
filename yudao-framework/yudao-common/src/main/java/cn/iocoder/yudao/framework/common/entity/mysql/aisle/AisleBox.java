@@ -30,16 +30,15 @@ public class AisleBox implements Serializable {
     @Schema(description = "柜列id", example = "1")
     private Integer aisleId;
 
-
     /**
-     *  唯一标识
+     *  母线的key 始端箱标识符
      */
-    private String barKey;
+    private String busKey;
 
     /**
      * 插接箱名称
      */
-    private String boxName;
+    private String boxKey;
 
     /**
      * 对应绑定母线id
@@ -49,17 +48,17 @@ public class AisleBox implements Serializable {
     /**
      * 类型 0 插接箱 1 连接单元
      */
-    private Integer type;
+    private Integer boxType;
 
-    /**
-     * 级联地址
-     */
-    private Integer casAddr;
+//    /**
+//     * 级联地址
+//     */
+//    private Integer casAddr;
 
-    /**
-     * 母线编号
-     */
-    private Integer barId;
+//    /**
+//     * 母线编号
+//     */
+//    private Integer barId;
 
     /**
      * 标记位

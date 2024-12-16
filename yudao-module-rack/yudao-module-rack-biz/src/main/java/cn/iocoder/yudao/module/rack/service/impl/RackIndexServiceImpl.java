@@ -112,7 +112,7 @@ public class RackIndexServiceImpl implements RackIndexService {
                     .eq(RackIndex::getIsDelete, DelEnums.NO_DEL.getStatus())
                     .like(StringUtils.isNotEmpty(vo.getRackName()), RackIndex::getRackName, vo.getRackName())
                     .like(StringUtils.isNotEmpty(vo.getCompany()), RackIndex::getCompany, vo.getCompany())
-                    .like(StringUtils.isNotEmpty(vo.getType()), RackIndex::getType, vo.getType())
+                    .like(StringUtils.isNotEmpty(vo.getType()), RackIndex::getRackType, vo.getType())
                     .in(!CollectionUtils.isEmpty(vo.getCabinetIds()), RackIndex::getCabinetId, vo.getRackIds())
                     .in(!CollectionUtils.isEmpty(vo.getRackIds()), RackIndex::getId, vo.getRackIds()));
 
@@ -123,7 +123,7 @@ public class RackIndexServiceImpl implements RackIndexService {
                     String key = REDIS_KEY_RACK + dto.getId();
                     JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(redisTemplate.opsForValue().get(key)));
                     if (Objects.nonNull(jsonObject)) {
-                        jsonObject.put("type", dto.getType());
+                        jsonObject.put("type", dto.getRackType());
                         indexRes.add(jsonObject);
                     } else {
                         indexRes.add(new JSONObject());
@@ -197,7 +197,7 @@ public class RackIndexServiceImpl implements RackIndexService {
                     }
 
                     rackIndex.setCabinetId(vo.getCabinetId());
-                    rackIndex.setRoomId(vo.getRoomId());
+                    rackIndex.setCabinetId(vo.getRoomId());
                     rackIndexDoMapper.insert(rackIndex);
                 });
 
@@ -212,7 +212,7 @@ public class RackIndexServiceImpl implements RackIndexService {
                         throw new ServerException(NAME_REPEAT.getCode(), NAME_REPEAT.getMsg());
                     }
                     rackIndex.setCabinetId(vo.getCabinetId());
-                    rackIndex.setRoomId(vo.getRoomId());
+                    rackIndex.setCabinetId(vo.getRoomId());
                     rackIndexDoMapper.updateById(rackIndex);
 
                 });

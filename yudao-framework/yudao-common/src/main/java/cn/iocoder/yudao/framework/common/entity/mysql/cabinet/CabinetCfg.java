@@ -2,6 +2,7 @@ package cn.iocoder.yudao.framework.common.entity.mysql.cabinet;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -27,20 +28,20 @@ public class CabinetCfg implements Serializable {
      */
     private int cabinetId;
 
-    /**
-     * 机柜名称
-     */
-    private String cabinetName;
+//    /**
+//     * 机柜名称
+//     */
+//    private String cabinetName;
 
-    /**
-     * 机柜高度
-     */
-    private int cabinetHeight;
+//    /**
+//     * 机柜高度
+//     */
+//    private int cabinetHeight;
 
-    /**
-     * 机柜类型
-     */
-    private String type;
+//    /**
+//     * 机柜类型
+//     */
+//    private String type;
 
     /**
      * x坐标
@@ -60,14 +61,35 @@ public class CabinetCfg implements Serializable {
     private String company;
 
     /**
-     * 更新时间
-     */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updateTime;
-    /**
      * 创建时间
      */
-    @TableField(fill = FieldFill.INSERT)
+    @Schema(description = "创建时间")
     private LocalDateTime createTime;
+
+    /**
+     * 更新时间
+     */
+    @Schema(description = "更新时间")
+    private LocalDateTime updateTime;
+
+    /**
+     * 日用能告警开关
+     */
+    private  int eleAlarmDay;
+
+    /**
+     * 月用能告警开关
+     */
+    private  int eleAlarmMonth;
+
+    /**
+     * 日用能限制
+     */
+    private double eleLimitDay;
+
+    /**
+     * 月用能限制
+     */
+    private double eleLimitMonth;
 
 }

@@ -28,19 +28,19 @@ public class CabinetPdu implements Serializable {
     /**
      * A路IP地址
      */
-    private String pduIpA;
-    /**
-     * A路级联编号
-     */
-    private int casIdA;
+    private String pduKeyA;
+//    /**
+//     * A路级联编号
+//     */
+//    private int casIdA;
     /**
      * B路IP地址
      */
-    private String pduIpB;
-    /**
-     * B路级联编号
-     */
-    private int casIdB;
+    private String pduKeyB;
+//    /**
+//     * B路级联编号
+//     */
+//    private int casIdB;
     /**
      * 更新时间
      */

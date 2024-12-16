@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.framework.common.entity.mysql.cabinet;
 
 import com.baomidou.mybatisplus.annotation.*;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -35,6 +36,11 @@ public class CabinetIndex implements Serializable {
      * 通道编号
      */
     private int aisleId;
+
+    /**
+     * 机柜高度
+     */
+    private int cabinetHeight;
 
     /**
      * 电力容量
@@ -88,13 +94,14 @@ public class CabinetIndex implements Serializable {
     /**
      * 更新时间
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
+    @Schema(description = "更新时间", example = "2024-05-07 01:00:00")
     private LocalDateTime updateTime;
     /**
      * 创建时间
      */
-    @TableField(fill = FieldFill.INSERT)
+    @Schema(description = "创建时间", example = "2024-05-07 01:00:00")
     private LocalDateTime createTime;
+
 
     @TableField(value = "count(*)",insertStrategy = FieldStrategy.NEVER,updateStrategy = FieldStrategy.NEVER,select = false)
     private  Integer count;

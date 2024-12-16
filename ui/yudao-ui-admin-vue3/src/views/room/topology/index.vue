@@ -1,5 +1,5 @@
 <template>
-<div>
+<div style="height:calc(100vh - 120px);">
   <el-card shadow="never">
     <div class="toolbar">
       <div style="display: flex;align-items:center">
@@ -21,7 +21,7 @@
       <div>
         <el-button @click="handleAdd" type="primary">新建机房</el-button>
         <el-button v-if="!editEnable" @click="handleEdit" type="primary">编辑</el-button>
-        <el-button v-if="editEnable" @click="handleCancel" plain type="danger">已删除</el-button>
+        <el-button v-if="editEnable" @click="handleStopDelete" plain type="danger">已删除</el-button>
         <el-button v-if="editEnable" @click="handleCancel" plain type="primary">取消</el-button>
         <el-button v-if="editEnable" @click="openSetting" plain type="primary"><Icon :size="16" icon="ep:setting" style="margin-right: 5px" />配置</el-button>
         <el-button v-if="editEnable" @click="handleSubmit" plain type="primary">保存</el-button>
@@ -29,14 +29,14 @@
       </div>
     </div>
   </el-card>
-  <el-card shadow="never">
+  <div style="height:calc(100vh - 200px);">
+    <el-card shadow="never" style="100%">
     <div class="dragContainer" 
       ref="tableContainer"
-      :class="{ crosshair: !isDragging.value }"
       v-loading="loading" 
-      @click.right="handleRightClick" 
-      @wheel="handleWheel" 
-      :style="isFromHome ? `width: fit-content;transform-origin: 0 0;transform: scale(${scaleValue}, ${scaleValue * 0.6});height: ${ContainerHeight}px` : 'height: calc(100vh - 220px)'">
+      style="overflow-x:auto;"
+      @click.right="handleRightClick"
+      :style="isFromHome ? `width: fit-content;transform-origin: 0 0;transform: scale(${scaleValue}, ${scaleValue * 0.6});height: ${ContainerHeight}px` : 'height:calc(100vh - 230px);'">
       <!-- <div class="mask" v-if="!editEnable" @click.prevent=""></div> -->
       <el-table ref="dragTable" class="dragTable" v-if="tableData.length > 0" :show-header="!isFromHome" :style="isFromHome ? '' : {width: '100%',height: '100%'}" :data="tableData" border :row-style="{background: 'revert'}" :span-method="arraySpanMethod" row-class-name="dragRow" >
         <el-table-column v-if="!isFromHome" fixed type="index" width="60" align="center" :resizable="false" />
@@ -118,7 +118,7 @@
           </el-table-column>
         </template>
       </el-table>
-      <el-empty v-if="loading == false && tableData.length == 0" style="height: 100%" description="机房暂未配置，请先编辑配置" />
+    <!--  <el-empty v-if="loading == false && tableData.length == 0" style="height: calc(100vh - 220px)" description="机房暂未配置，请先编辑配置" /> -->
       <div class="menu" v-if="operateMenu.show" :style="{left: `${operateMenu.left}`, top: `${operateMenu.top}`}">
         <div class="menu_item" v-if="showMenuAdd" @click="addMachine">新增</div>
         <div class="menu_item" v-if="!showMenuAdd" @click="editMachine">编辑</div>
@@ -127,6 +127,7 @@
       </div>
     </div>
   </el-card>
+  </div>
   <layoutForm ref="machineForm" @success="handleChange" />
   <el-dialog v-model="dialogVisible" title="机房配置" width="30%" :before-close="handleDialogCancel">
     <el-form>
@@ -139,12 +140,16 @@
       <el-form-item label="列数" label-width="90">
         <el-input-number v-model="rowColInfo.col" :min="1" :max="70" controls-position="right" placeholder="请输入" />
       </el-form-item>
-      <el-form-item label="电力容量" label-width="90">
-         <el-input v-model="rowColInfo.powerCapacity" placeholder="请输入" />
-      </el-form-item>
-      <el-form-item label="空调功率" label-width="90">
-         <el-input v-model="rowColInfo.airPower" placeholder="请输入" />
-      </el-form-item>
+      
+     <div class="double-formitem">
+         <el-form-item label="电力容量" label-width="90">
+              <el-input v-model="rowColInfo.powerCapacity" placeholder="请输入" />
+         </el-form-item>
+         <el-form-item label="空调功率" label-width="90">
+              <el-input v-model="rowColInfo.airPower" placeholder="请输入" />
+          </el-form-item>
+      </div>
+
       <div class="double-formitem">
         <el-form-item label="日用能告警" label-width="90">
           <el-switch v-model="rowColInfo.eleAlarmDay" :active-value="1" :inactive-value="0" />
@@ -167,6 +172,48 @@
       <el-button type="primary" @click="submitSetting">确 定</el-button>
     </template>
   </el-dialog>
+
+  
+  <el-dialog v-model="dialogStopDelete" title="恢复机房" width="40%"  :before-close="handleDialogStopDelete">
+       <el-table v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
+         <el-table-column label="位置" min-width="110" align="center">
+          <template>
+            <div>333</div>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" min-width="110" align="center">
+          <template>
+            <div>44444</div>
+          </template>
+        </el-table-column>
+        
+       <el-table-column label="删除日期" min-width="110" align="center">
+          <template>
+            <div>6666</div>
+          </template>
+        </el-table-column>
+        
+        
+       <el-table-column label="操作" align="center">
+          <template #default="scope">
+            <el-button
+              link
+              type="danger"
+              @click="handleRestore(scope.row.busId)"
+            >
+              恢复设备
+            </el-button>
+          </template>
+        </el-table-column>
+     </el-table>
+     <Pagination
+        :total="queryParams.pageTotal"
+        v-model:page="queryParams.pageNo"
+        v-model:limit="queryParams.pageSize"
+        @pagination="getTableData(false)"
+      />
+      <div style="height:10"></div>
+  </el-dialog>
 </div>
 </template>
 
@@ -179,6 +226,14 @@ import { Console } from "console";
 
 const { push } = useRouter() // 路由跳转
 const message = useMessage() // 消息弹窗
+
+const queryParams = reactive({
+  company: undefined,
+  showCol: [1, 2, 12, 13, 15, 16] as number[],
+  pageNo: 1,
+  pageSize: 24,
+  pageTotal: 0,
+})
 
 const {containerInfo, isFromHome} = defineProps({
   containerInfo: {
@@ -199,9 +254,10 @@ const chosenBtn = ref(0)
 const ContainerHeight = ref(100)
 const loading = ref(false)
 const movingInfo = ref<any>({})
-
+const roomFlag =ref();
+const aisleFlag = ref();
 const roomDownValId = ref();
-
+const updateCfgInfo = ref();
 const roomsId = reactive({
   roomDownValIds: history?.state?.id,
 })
@@ -219,7 +275,7 @@ const rowColInfo = reactive({
   eleLimitMonth: 1000, // 月用能限制
 })
 const emit = defineEmits(['backData', 'getroomid']) // 定义 backData 事件，用于操作成功后的回调
-const tableData = ref<any>([])
+const tableData = ref<Record<string, any[]>[]>([]);
 const statusInfo = ref([
   {
     name: '空机柜',
@@ -274,369 +330,12 @@ const btns = [
     name: '容量',
   },
 ]
-// ([
-//   {
-//     A: [{ name: 'a1', id: 1, status: 1, type: '2'}],
-//     B: [{ name: 'b1', id: 2, status: 1, type: '2'}],
-//     C: [],
-//     D: [{ name: 'd1', id: 3, status: 1, type: '2'}],
-//     E: [],
-//     F: [{ name: 'f1', id: 4, status: 1, type: '2'}],
-//     G: [{ name: 'g1', id: 5, status: 1, type: '2'}],
-//     H: [{ name: 'h1', id: 6, status: 1, type: '2'}],
-//     I: [],
-//     J: [{ name: 'j1', id: 8, status: 1, type: '2'}],
-//     K: [],
-//     L: [],
-//     M: [{ name: 'm1', id: 9, status: 1, type: '2'}],
-//     N: [{ name: 'n1', id: 10, status: 1, type: '2'}],
-//     O: [{ name: 'o1', id: 20, status: 1, type: '2'}],
-//     P: [],
-//     Q: [],
-//     R: [],
-//   },
-//   {
-//     A: [{ name: 'a2', id: 11, status: 1, type: '2'}],
-//     B: [{ name: 'b2', id: 22, status: 1, type: '2'}],
-//     C: [],
-//     D: [{ name: 'd2', id: 23, status: 1, type: '2'}],
-//     E: [],
-//     F: [{ name: 'f2', id: 24, status: 1, type: '2'}],
-//     G: [{ name: 'g2', id: 25, status: 1, type: '2'}],
-//     H: [{ name: 'h2', id: 26, status: 1, type: '2'}],
-//     I: [],
-//     J: [{ name: 'j2', id: 27, status: 1, type: '2'}],
-//     K: [],
-//     L: [],
-//     M: [{ name: 'm2', id: 28, status: 1, type: '2'}],
-//     N: [{ name: 'n2', id: 29, status: 1, type: '2'}],
-//     O: [{ name: 'o2', id: 30, status: 1, type: '2'}],
-//     P: [],
-//     Q: [],
-//     R: [],
-//   },
-//   {
-//     A: [{ name: 'a3', id: 31, status: 1, type: '2'}],
-//     B: [{ name: 'b3', id: 32, status: 1, type: '2'}],
-//     C: [],
-//     D: [{ name: 'd3', id: 33, status: 1, type: '2'}],
-//     E: [],
-//     F: [{ name: 'f3', id: 34, status: 1, type: '2'}],
-//     G: [{ name: 'g3', id: 35, status: 1, type: '2'}],
-//     H: [{ name: 'h3', id: 36, status: 1, type: '2'}],
-//     I: [],
-//     J: [{ name: 'j3', id: 37, status: 1, type: '2'}],
-//     K: [],
-//     L: [],
-//     M: [],
-//     N: [{ name: 'n3', id: 39, status: 1, type: '2'}],
-//     O: [],
-//     P: [],
-//     Q: [],
-//     R: [],
-//   },
-//   {
-//     A: [],
-//     B: [],
-//     C: [],
-//     D: [{ name: 'd4', id: 41, status: 1, type: '2'}],
-//     E: [{ name: 'e4', id: 42, status: 1, type: '2'}],
-//     F: [{ name: 'f4', id: 43, status: 1, type: '2'}],
-//     G: [{ name: 'g4', id: 44, status: 1, type: '2'}],
-//     H: [],
-//     I: [],
-//     J: [],
-//     K: [],
-//     L: [],
-//     M: [],
-//     N: [],
-//     O: [],
-//     P: [],
-//     Q: [],
-//     R: [],
-//   },
-//   {
-//     A: [{ name: 'a5', id: 51, status: 1, type: '2'}],
-//     B: [{ name: 'b5', id: 52, status: 1, type: '2'}],
-//     C: [{ name: 'c5', id: 53, status: 1, type: '2'}],
-//     D: [{ name: 'd5', id: 54, status: 1, type: '2'}],
-//     E: [{ name: 'e5', id: 55, status: 1, type: '2'}],
-//     F: [],
-//     G: [],
-//     H: [],
-//     I: [],
-//     J: [],
-//     K: [],
-//     L: [],
-//     M: [],
-//     N: [],
-//     O: [],
-//     P: [],
-//     Q: [],
-//     R: [],
-//   },
-//   {
-//     A: [],
-//     B: [],
-//     C: [],
-//     D: [],
-//     E: [],
-//     F: [{ name: 'f6', id: 56, status: 1, type: '2'}],
-//     G: [{ name: 'g6', id: 57, status: 1, type: '2'}],
-//     H: [{ name: 'h6', id: 59, status: 1, type: '2'}],
-//     I: [],
-//     J: [],
-//     K: [],
-//     L: [],
-//     M: [],
-//     N: [],
-//     O: [],
-//     P: [],
-//     Q: [],
-//     R: [],
-//   },
-//   {
-//     A: [],
-//     B: [],
-//     C: [],
-//     D: [],
-//     E: [],
-//     F: [],
-//     G: [],
-//     H: [],
-//     I: [],
-//     J: [],
-//     K: [],
-//     L: [],
-//     M: [],
-//     N: [],
-//     O: [],
-//     P: [],
-//     Q: [],
-//     R: [],
-//   },
-//   {
-//     A: [],
-//     B: [],
-//     C: [],
-//     D: [],
-//     E: [],
-//     F: [],
-//     G: [],
-//     H: [],
-//     I: [],
-//     J: [],
-//     K: [],
-//     L: [],
-//     M: [],
-//     N: [],
-//     O: [],
-//     P: [],
-//     Q: [],
-//     R: [],
-//   },
-//   {
-//     A: [],
-//     B: [],
-//     C: [],
-//     D: [],
-//     E: [],
-//     F: [],
-//     G: [],
-//     H: [],
-//     I: [],
-//     J: [],
-//     K: [],
-//     L: [],
-//     M: [],
-//     N: [],
-//     O: [],
-//     P: [],
-//     Q: [],
-//     R: [],
-//   },
-//   {
-//     A: [],
-//     B: [],
-//     C: [],
-//     D: [],
-//     E: [],
-//     F: [],
-//     G: [],
-//     H: [],
-//     I: [],
-//     J: [],
-//     K: [],
-//     L: [],
-//     M: [],
-//     N: [],
-//     O: [],
-//     P: [],
-//     Q: [],
-//     R: [],
-//   },
-//   {
-//     A: [],
-//     B: [],
-//     C: [],
-//     D: [],
-//     E: [],
-//     F: [],
-//     G: [],
-//     H: [],
-//     I: [],
-//     J: [],
-//     K: [],
-//     L: [],
-//     M: [],
-//     N: [],
-//     O: [],
-//     P: [],
-//     Q: [],
-//     R: [],
-//   },
-//   {
-//     A: [],
-//     B: [],
-//     C: [],
-//     D: [],
-//     E: [],
-//     F: [],
-//     G: [],
-//     H: [],
-//     I: [],
-//     J: [],
-//     K: [],
-//     L: [],
-//     M: [],
-//     N: [],
-//     O: [],
-//     P: [],
-//     Q: [],
-//     R: [],
-//   },
-//   {
-//     A: [],
-//     B: [],
-//     C: [],
-//     D: [],
-//     E: [],
-//     F: [],
-//     G: [],
-//     H: [],
-//     I: [],
-//     J: [],
-//     K: [],
-//     L: [],
-//     M: [],
-//     N: [],
-//     O: [],
-//     P: [],
-//     Q: [],
-//     R: [],
-//   },
-//   {
-//     A: [],
-//     B: [],
-//     C: [],
-//     D: [],
-//     E: [],
-//     F: [],
-//     G: [],
-//     H: [],
-//     I: [],
-//     J: [],
-//     K: [],
-//     L: [],
-//     M: [],
-//     N: [],
-//     O: [],
-//     P: [],
-//     Q: [],
-//     R: [],
-//   },
-// ])
-
-// Vue Composition API 的引用
-const tableContainer = ref(null);
-const tablePosition = reactive({ x: 0, y: 0 });
-const isDragging = ref(false);
-const initialMousePos = reactive({ x: 0, y: 0 });
-const initialTableOffset = reactive({ x: 0, y: 0 }); // 使用偏移量而不是绝对位置来更新表格
- 
-// 组件挂载时添加全局的鼠标事件监听器用于清理
-let mouseMoveEventListener = null;
-let mouseUpEventListener = null;
-
-const startDrag = (event) => {
-  isDragging.value = true;
-  initialMousePos.x = event.clientX;  //鼠标指针相对于视口的水平位置
-  initialMousePos.y = event.clientY;  //鼠标指针相对于视口的垂直位置
- 
-  // 获取表格相对于文档的位置
-  const rect = tableContainer.value.getBoundingClientRect();
-  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-  initialTableOffset.x = rect.left + scrollLeft;
-  initialTableOffset.y = rect.top + scrollTop;
- 
-  document.addEventListener('mousemove', mouseMoveEventListener);
-  document.addEventListener('mouseup', mouseUpEventListener);
-};
- 
-const onMouseMove = (event) => {
-  if (isDragging.value) {
-    // 计算新的位置，基于初始偏移量和鼠标移动量
-    tablePosition.x = initialTableOffset.x - (initialMousePos.x - event.clientX);
-    tablePosition.y = initialTableOffset.y - (initialMousePos.y - event.clientY);
-    updateTableStyle();
-  }
-};
- 
-const stopDrag = () => {
-  isDragging.value = false;
-  document.removeEventListener('mousemove', mouseMoveEventListener);
-  document.removeEventListener('mouseup', mouseUpEventListener);
-  // 这里不需要额外的位置更新，因为onMouseMove已经处理了
-};
- 
-const updateTableStyle = () => {
-  if (tableContainer.value) {
-    // 使用transform来移动表格，这样不会影响其他布局计算
-    tableContainer.value.style.transform = `translate3d(${tablePosition.x}px, ${tablePosition.y}px, 0)`;
-    // 可选：添加硬件加速来提高性能
-    tableContainer.value.style.willChange = 'transform';
-  }
-};
-
-const scale = ref(1); // 初始缩放比例
-const minScale = 0.5; // 最小缩放比例
-const maxScale = 2; // 最大缩放比例
-
-const handleWheel = (event) => {
-  event.preventDefault(); // 阻止默认滚动行为
-  const delta = Math.sign(event.deltaY); // 获取滚轮方向
-
-  if (delta > 0 && scale.value > minScale) {
-    // 向上滚动，缩小
-    scale.value -= 0.1;
-  } else if (delta < 0 && scale.value < maxScale) {
-    // 向下滚动，放大
-    scale.value += 0.1;
-  }
-
-  // 应用缩放效果
-  if (dragTable.value) {
-    dragTable.value.$el.style.transform = `scale(${scale.value})`;
-  }
-};
 
 const dialogVisible = ref(false);
+const dialogStopDelete = ref(false);
 const editEnable = ref(false);
 const tableHeight = ref(0);
 const machineForm = ref();
-
-const mainFlag = ref();
 
 const groupMachineFill = {
   name: 'MachineFill',
@@ -688,20 +387,22 @@ const getRoomList = async() => {
           roomId.value = roomsId.roomDownValIds;
       }
     }
-    emit('getroomid', roomId.value)
-    getRoomInfo()
+    emit('getroomid', roomId.value);
+    getRoomInfo();
   }
 }
 
 const getRoomInfo = async() => {
-  resetForm()
-  tableData.value = []
-  loading.value = true
+  resetForm();
+  loading.value = true;
   try {
-    const res = await MachineRoomApi.getRoomDetail({id: roomId.value});
+    const result1 = MachineRoomApi.getRoomDetail({id: roomId.value});
+    const result2 = MachineRoomApi.getRoomDataDetail({id: roomId.value})
+    const results = await Promise.all([result1, result2])
+    const res = results[0];
+    updateCfgInfo.value=res;
     roomDownValId.value = res.id;
-    const data = [] as any
-    const Obj = {}
+    const data: Record<string, any[]>[] = [];
     Object.assign(rowColInfo, {
       roomName: res.roomName,
       row: res.yLength,
@@ -719,15 +420,48 @@ const getRoomInfo = async() => {
       freeSpace: res.freeSpace,
       cabNum: res.cabNum,
     })
-    for(let i=0; i < res.xLength; i++) {
-      Obj[getTableColCharCode(i)] = []
+    
+    for (let row = 0; row < res.yLength; row++) {
+      const rowData: Record<string, any[]> = {};
+      for (let col = 0; col < res.xLength; col++) {
+        const colKey = getTableColCharCode(col);
+        rowData[colKey] = [];
+      }
+      data.push(rowData);
     }
-    for(let i=0; i < res.yLength; i++) {
-       data.push(JSON.parse(JSON.stringify(Obj)))
-    }
-
+    res.aisleList.forEach(item => {
+      for(let i=0; i < item.length; i++) {
+        const dataItem =  {
+          id: item.id,
+          name: item.aisleName,
+          direction: item.direction == 'x' ? 1 : 2,
+          type: 1,
+          amount: item.cabinetList.length,
+          cabinetList: item.cabinetList,
+          first: false,
+          originAmount: item.cabinetList.length,
+          originDirection: item.direction == 'x' ? 1 : 2,
+          powerCapacity:item.powerCapacity,
+          eleAlarmDay: item.eleAlarmDay,
+          eleLimitDay: item.eleLimitDay,
+          eleAlarmMonth: item.eleAlarmMonth,
+          eleLimitMonth: item.eleLimitMonth,
+        }
+        if (i == 0) dataItem.first = true
+        if (dataItem.direction == 1) {
+          console.log('----dataItem1', dataItem )
+          data[item.yCoordinate - 1][getTableColCharCode(item.xCoordinate - 1 + i)].splice(0, 1, dataItem)
+        } else {
+          data[item.yCoordinate - 1 + i][getTableColCharCode(item.xCoordinate - 1)].splice(0, 1, dataItem)
+        }
+      }
+    })
+    res.cabinetList.forEach(item => {
+      if (item.xCoordinate > 0 && item.yCoordinate > 0)
+      data[item.yCoordinate - 1][getTableColCharCode(item.xCoordinate - 1)].splice(0, 1, {...item, name: item.cabinetName, type: 2})
+    })
     tableData.value = data;
-    getRoomStatus(res)
+    getRoomStatus(results[1])
     handleCssScale()
   } finally {
     loading.value = false
@@ -761,6 +495,13 @@ const getRoomStatus = async(res) => {
  // console.log('//////////', tableData.value)
 }
 
+
+const getTableData =() =>{
+  alert(123)
+}
+
+
+
 // 计算出要缩放的比例
 const handleCssScale = () => {
   isFromHome && nextTick(() => {
@@ -782,22 +523,31 @@ const handleChangeRoom = (val) => {
   roomId.value = val
   getRoomInfo()
 }
-
+//取消
 const handleCancel = () => {
-  editEnable.value = false
-  getRoomInfo()
+  editEnable.value = false;
+  getRoomInfo();
 }
+//已删除
+const handleStopDelete = () =>{
+  dialogStopDelete.value =true;
+}
+
+const handleDialogStopDelete =() =>{
+   dialogStopDelete.value =false;
+}
+
+
 // 处理弹窗取消事件
 const handleDialogCancel = () => {
-  dialogVisible.value = false
-  isAddRoom.value = false
+  dialogVisible.value = false;
+  isAddRoom.value = false;
 }
 // 处理点击添加机房事件
 const handleAdd = () => {
-  isAddRoom.value = true
-  dialogVisible.value = true
-  resetForm()
-  //console.log('handleAdd')
+  roomFlag.value = 1;
+  dialogVisible.value = true;
+  resetForm();
 }
 // 重置表单
 const resetForm = () => {
@@ -837,7 +587,19 @@ const handleEdit = () => {
 }
 
 const openSetting = () => {
-  dialogVisible.value = true
+  roomFlag.value = 2;
+  Object.assign(rowColInfo, {
+    roomName: updateCfgInfo.value.roomName,
+    row: updateCfgInfo.value.yLength,
+    col: updateCfgInfo.value.xLength,
+    powerCapacity:updateCfgInfo.value.powerCapacity,
+    airPower:updateCfgInfo.value.airPower,
+    eleAlarmDay: updateCfgInfo.value.eleAlarmDay,
+    eleLimitDay: updateCfgInfo.value.eleLimitDay,
+    eleAlarmMonth: updateCfgInfo.value.eleAlarmMonth,
+    eleLimitMonth: updateCfgInfo.value.eleLimitMonth,
+  })
+  dialogVisible.value = true;
 }
 
 const switchBtn = (value) => {
@@ -930,25 +692,29 @@ const onEnd = ({from, to}) => {
 }
 // 增加机柜弹框
 const addMachine = () => {
+  aisleFlag.value = 1;
   machineForm.value.open('add', null, operateMenu.value)
   operateMenu.value.show = false
 }
 // 编辑机柜弹框
 const editMachine = () => {
-  const Y = operateMenu.value.lndexY
-  const X = formParam.value[operateMenu.value.lndexX]
-  machineForm.value.open('edit', {...tableData.value[Y][X][0]}, operateMenu.value)
-  operateMenu.value.show = false
+  aisleFlag.value = 2;
+  const Y = operateMenu.value.lndexY;
+  const X = formParam.value[operateMenu.value.lndexX];
+  console.log("---")
+  console.log(tableData)
+  machineForm.value.open('edit', {...tableData.value[Y][X][0]}, operateMenu.value);
+  operateMenu.value.show = false;
 }
 // 跳转机柜/柜列
 const handleJump = (data) => {
-  let target = {} as any
+  let target = {} as any;
   if (data) {
-    target = data
+    target = data;
   } else {
-    const Y = operateMenu.value.lndexY
-    const X = formParam.value[operateMenu.value.lndexX]
-    target = tableData.value[Y][X][0]
+    const Y = operateMenu.value.lndexY;
+    const X = formParam.value[operateMenu.value.lndexX];
+    target = tableData.value[Y][X][0];
   }
  // console.log('target', target)
   if (!target.id) {
@@ -983,33 +749,76 @@ const deleteMachine = () => {
   operateMenu.value.show = false
 }
 // 处理增加/编辑机柜
-const handleChange = (data) => {
-  mainFlag.value = data;
-  const X = "A" // 当前机柜/机柜列所处列
-  const Y = operateMenu.value.lndexY // 当前机柜/机柜列所处行
- // console.log('当前机柜/机柜列所处列', X, Y)
-  if (data.originDirection && data.originDirection != data.direction) deleteMachine() // 如果方向发生改变则先把原来的删除 再去新增
-  tableData.value[Y][X].splice(0, 1, {...data, first: true, originAmount: data.amount, originDirection: data.direction})
-  //alert(JSON.stringify(data))
-  //alert(data.type)
-}
-// 处理设置提交
-const submitSetting = () => {
-   if (isAddRoom.value) { 
-      //新建机房
-      addAndUpdateRoomSubmit(1);
-      return
-   }else{
-      //配置机房/（修改机房）
-      addAndUpdateRoomSubmit(2);
-      return;
-   }
+const handleChange = async(data) => {
+  tableData.value[operateMenu.value.lndexY][formParam.value[operateMenu.value.lndexX]].splice(0, 1, {...data, first: true, originAmount: data.amount, originDirection: data.direction});
+  const X =getColumnCharCodeToNumber(formParam.value[operateMenu.value.lndexX]);
+  const Y = (operateMenu.value.lndexY).toString(); // 当前机柜/机柜列所处行
+  let aisleFlagId:any = null;
+  let messageAisleFlag = "保存成功！";
+  if(aisleFlag.value == 2){
+      aisleFlagId = data.id; 
+      messageAisleFlag = "修改成功！";
+  }
+  if(data.type == 1){
+      const aisleRes = await MachineRoomApi.saveRoomAisle({
+          id:aisleFlagId,
+          roomId: roomId.value,
+          aisleName:data.name,
+          aisleLength:data.amount,
+          xCoordinate:X+1,
+          yCoordinate:parseInt(Y)+1,
+          direction:data.direction == 1 ? 'x' : 'y',
+          powerCapacity:data.powerCapacity,
+          eleAlarmDay:data.eleAlarmDay,
+          eleAlarmMonth:data.eleAlarmMonth,
+          eleLimitDay:data.eleLimitDay,
+          eleLimitMonth:data.eleLimitMonth
+      }) 
+      if(aisleRes != null || aisleRes != "")
+      message.success(messageAisleFlag);
+  }else{
+      const cabinetRes = await MachineRoomApi.saveRoomCabinet({
+          id:aisleFlagId,
+          roomId: roomId.value,
+          cabinetName: data.name,
+          cabinetHeight: data.cabinetHeight,
+          xCoordinate:X+1,
+          yCoordinate:parseInt(Y)+1,
+          powerCapacity:data.powerCapacity,
+          eleAlarmDay: data.eleAlarmDay,
+          eleLimitDay: data.eleLimitDay,
+          eleAlarmMonth: data.eleAlarmMonth,
+          eleLimitMonth: data.eleLimitMonth
+      })
+      if(cabinetRes != null || cabinetRes != "")
+      message.success(messageAisleFlag);
+  }
 }
 
-//添加机房/修改机房
-const  addAndUpdateRoomSubmit = async(flag) =>{
+const getColumnCharCodeToNumber = (columnId: string): number => {
+  let result = 0;
+  const base = 26; // 因为英文字母有 26 个
+  // 从字符串末尾开始遍历，因为 Excel 列标识符是从左到右递增的 26 进制数
+  for (let i = 0; i < columnId.length; i++) {
+    const charCode = columnId.charCodeAt(i) - 'A'.charCodeAt(0) + 1; // 将字符转换为 1-26 的数字
+    const power = Math.pow(base, columnId.length - 1 - i); // 计算当前位的权重（26 的幂）
+    result += charCode * power; // 将当前位的值加到结果中
+  }
+  return result - 1; // 因为我们的计算是从 1 开始的（A=1），而通常我们希望索引从 0 开始
+};
+
+
+
+// 处理设置提交
+const submitSetting = async() => {
+   let roomFlagId:any = null;
+   let messageRoomFlag = "保存成功！";
+   if(roomFlag.value == 2){
+      roomFlagId = roomId.value; 
+      messageRoomFlag = "修改成功！";
+   }
    const res = await MachineRoomApi.saveRoomDetail({
-      id: isAddRoom.value ? '' : roomId.value,
+      id: roomFlagId,
       roomName: rowColInfo.roomName,
       xLength: rowColInfo.col,
       yLength: rowColInfo.row,
@@ -1020,52 +829,104 @@ const  addAndUpdateRoomSubmit = async(flag) =>{
       eleLimitDay: rowColInfo.eleLimitDay,
       eleLimitMonth: rowColInfo.eleLimitMonth,
    })
-   getRoomList();
-   if(flag == 1){
-      roomId.value = res;
-      message.success('新建成功！');
-   }else{
-      if(res != null || res != "")
-      message.success('保存成功！');
-   }
+   if(res != null || res != "")
+   message.success(messageRoomFlag);
    dialogVisible.value = false;
-   editEnable.value = false;
-   isAddRoom.value = false;
+   roomId.value = res;
+   getRoomList();
 }
 
 
 // 获取表格列label字符
-const getTableColCharCode = (num):string => {
+const getTableColCharCode = (num: number): string => {
+  const baseCharCode = 65; // A 的 ASCII 码
   if (num < 26) {
-    return String.fromCharCode(65 + num)
+    return String.fromCharCode(baseCharCode + num);
   } else if (num < 52) {
-    return 'A ' + String.fromCharCode(65 -26 + num)
-  } else {  // 列数最多70
-    return 'B ' + String.fromCharCode(65 -52 + num)
+    return `A ${String.fromCharCode(baseCharCode + (num - 26))}`;
+  } else {
+    return `B ${String.fromCharCode(baseCharCode + (num - 52))}`;
   }
-}
+};
 // 处理提交保存事件
 const handleSubmit = async() => {
-  const res = await MachineRoomApi.saveRoomAisle({
-      roomId:isAddRoom.value ? '' : roomId.value,
-      aisleName:mainFlag.value.name,
-      aisleLength:mainFlag.value.amount,
-      xCoordinate:1,
-      yCoordinate:2,
-      direction:mainFlag.value.direction
-  }) 
-  alert(JSON.stringify(res));
+  const aisleList = [] as any
+  const cabinetList = [] as any
+  if (!isAddRoom.value)
+  console.log(rowColInfo.row)
+  console.log(rowColInfo.row)
+  for(let i = 0; i < rowColInfo.row; i++) {
+    for(let j = 0; j < rowColInfo.col; j++) {
+     // console.log('处理提交保存事件', tableData.value, i, getTableColCharCode(j))
+      const target = tableData.value[i][getTableColCharCode(j)][0]
+      if (target && target.type == 1 && target.first) {
+        console.log('target.......', target)
+        aisleList.push({
+          id: target.id,
+          aisleName: target.name,
+          xCoordinate: j + 1,
+          yCoordinate: i + 1,
+          direction: target.direction == 1 ? 'x' : 'y',
+          length: target.amount,
+          eleAlarmDay: target.eleAlarmDay,
+          eleLimitDay: target.eleLimitDay,
+          eleAlarmMonth: target.eleAlarmMonth,
+          eleLimitMonth: target.eleLimitMonth,
+        })
+      } else if (target && target.type == 2) {
+        cabinetList.push({
+          id: target.id,
+          cabinetName: target.name,
+          cabinetHeight: target.cabinetHeight,
+          xCoordinate: j + 1,
+          yCoordinate: i + 1,
+          eleAlarmDay: target.eleAlarmDay,
+          eleLimitDay: target.eleLimitDay,
+          eleAlarmMonth: target.eleAlarmMonth,
+          eleLimitMonth: target.eleLimitMonth,
+        })
+      }
+    }
+  }
+  try {
+    loading.value = true
+    const res = await MachineRoomApi.saveRoomDetail({
+        id: isAddRoom.value ? '' : roomId.value,
+        roomName: rowColInfo.roomName,
+        xLength: rowColInfo.col,
+        yLength: rowColInfo.row,
+        powerCapacity:rowColInfo.powerCapacity, 
+        airPower:rowColInfo.airPower, 
+        eleAlarmDay: rowColInfo.eleAlarmDay,
+        eleAlarmMonth: rowColInfo.eleAlarmMonth,
+        eleLimitDay: rowColInfo.eleLimitDay,
+        eleLimitMonth: rowColInfo.eleLimitMonth,
+        aisleList,
+        cabinetList
+    })
+    if (isAddRoom.value) {
+          roomId.value = res;
+          getRoomList();
+          message.success('新建成功！');
+          dialogVisible.value = false;
+          editEnable.value = false;
+          isAddRoom.value = false;
+          return;
+    }
+    editEnable.value = false;
+    message.success('保存成功！');
+  } finally {
+    loading.value = false;
+  }
 }
 
 // const formParam = Object.keys(tableData[0])
 const formParam = computed(() => {
-  return Object.keys(tableData.value[0]);
+  return Object.keys(tableData.value[0] || {});
 })
 
-getRoomList();
+getRoomList()
 onMounted(() => {
-  mouseMoveEventListener = (event) => onMouseMove(event);
-  mouseUpEventListener = () => stopDrag();
   document.addEventListener('mousedown', (event) => {
     const element = event.target as HTMLElement
     if (event.button == 0 && operateMenu.value.show && element.className != 'menu_item') {
@@ -1077,14 +938,7 @@ onMounted(() => {
   // }, 5000)
 })
 
-onBeforeUnmount(() => {
-  // 组件卸载时移除全局的鼠标事件监听器
-  document.removeEventListener('mousemove', mouseMoveEventListener);
-  document.removeEventListener('mouseup', mouseUpEventListener);
-});
-
 onUnmounted(() => {
-  document.removeEventListener('mousedown',() => {})
   window.onresize = null
   clearInterval(timer)
   timer = null

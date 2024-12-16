@@ -153,10 +153,10 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         List<AisleIndexDO> list = aisleIndexDOPageResult.getList();
         List<Integer> aisleIds = list.stream().map(AisleIndexDO::getId).collect(Collectors.toList());
         List<AisleBar> aisleBars = aisleBarMapper.selectList(new LambdaQueryWrapperX<AisleBar>().inIfPresent(AisleBar::getAisleId, aisleIds));
-        List<String> devKey = aisleBars.stream().map(AisleBar::getBarKey).collect(Collectors.toList());
+        List<String> devKey = aisleBars.stream().map(AisleBar::getBusKey).collect(Collectors.toList());
         Map<String, Map<Integer, String>> aisleBarMap = aisleBars.stream()
                 .collect(Collectors.groupingBy(
-                        AisleBar::getBarKey,
+                        AisleBar::getBusKey,
                         Collectors.toMap(AisleBar::getAisleId, AisleBar::getPath)
                 ));
         List<AisleIndexRes> res = new ArrayList<>();
@@ -1871,7 +1871,7 @@ public class AisleIndexServiceImpl implements AisleIndexService {
         Map<Integer, Map<String, String>> aisleBarMap = aisleBars.stream()
                 .collect(Collectors.groupingBy(
                         AisleBar::getAisleId,
-                        Collectors.toMap(AisleBar::getPath, AisleBar::getBarKey)
+                        Collectors.toMap(AisleBar::getPath, AisleBar::getBusKey)
                 ));
         res.forEach(aisleIndexRespVO -> {
             if(aisleBarMap.get(aisleIndexRespVO.getId()) == null){

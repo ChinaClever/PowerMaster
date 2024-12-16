@@ -444,14 +444,14 @@ public class RackEnergyConsumptionServiceImpl implements RackEnergyConsumptionSe
         }else {
             records = rackIndexService.findRackIndexToList(reqDTO.getRackIds());
         }
-        List<Integer> roomIds = records.stream().map(RackIndex::getRoomId).distinct().collect(Collectors.toList());
+        List<Integer> roomIds = records.stream().map(RackIndex::getCabinetId).distinct().collect(Collectors.toList());
         Map<Integer , String> mapRoom = rackHistoryDataService.getRoomById(roomIds);
         List<Integer> cabineIds = records.stream().map(RackIndex::getCabinetId).distinct().collect(Collectors.toList());
         Map<Integer , IndexDO> mapCabinet = rackHistoryDataService.getCabinetByIds(cabineIds);
 
         for (RackIndex record : records) {
             RackTotalRealtimeRespVO respVO = new RackTotalRealtimeRespVO();
-            String roomName = mapRoom.get(record.getRoomId());
+            String roomName = mapRoom.get(record.getCabinetId());
             IndexDO indexDO = mapCabinet.get(record.getCabinetId());
             if(indexDO.getAisleId() != 0){
                 String aisleName = aisleIndexMapper.selectById(indexDO.getAisleId()).getAisleName();

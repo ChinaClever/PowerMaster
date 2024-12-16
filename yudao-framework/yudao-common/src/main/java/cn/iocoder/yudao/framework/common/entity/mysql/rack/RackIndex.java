@@ -29,10 +29,10 @@ public class RackIndex implements Serializable {
      */
     private Integer cabinetId;
 
-    /**
-     * 机房id
-     */
-    private Integer roomId;
+//    /**
+//     * 机房id
+//     */
+//    private Integer roomId;
 
     /**
      * 机架名称
@@ -76,7 +76,7 @@ public class RackIndex implements Serializable {
     /**
      * 设备类型
      */
-    private String type;
+    private String rackType;
 
     /**
      * 更新时间
