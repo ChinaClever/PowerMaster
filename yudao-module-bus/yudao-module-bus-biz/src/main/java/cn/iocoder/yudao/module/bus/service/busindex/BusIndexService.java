@@ -132,4 +132,8 @@ public interface BusIndexService {
     LineMaxResVO getBusLineMax(BusIndexPageReqVO pageReqVO) throws IOException;
 
     BusIndexStatisticsResVO getBusIndexStatistics();
+
+    LoadRateStatus getBusIndexLoadRateStatus();
+
+
 }

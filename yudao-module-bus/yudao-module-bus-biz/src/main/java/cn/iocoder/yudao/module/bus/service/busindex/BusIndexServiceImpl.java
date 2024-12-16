@@ -524,24 +524,24 @@ public class BusIndexServiceImpl implements BusIndexService {
             } else {
                 busIndexRes.setALoadRate(loadRate.getDouble(0));
             }
-            rateList.sort(Collections.reverseOrder());
-            Double biggest = rateList.get(0);
-            if (biggest == 0) {
-                busIndexRes.setColor(0);
-            } else if (biggest < 30) {
-                busIndexRes.setColor(1);
-            } else if (biggest < 60) {
-                busIndexRes.setColor(2);
-            } else if (biggest < 90) {
-                busIndexRes.setColor(3);
-            } else if (biggest >= 90) {
-                busIndexRes.setColor(4);
-            }
-            if (pageReqVO.getColor() != null) {
-                if (!pageReqVO.getColor().contains(busIndexRes.getColor())) {
-                    res.removeIf(bus -> bus.getBusId().equals(busIndexRes.getBusId()));
-                }
-            }
+//            rateList.sort(Collections.reverseOrder());
+//            Double biggest = rateList.get(0);
+//            if (biggest == 0) {
+//                busIndexRes.setColor(0);
+//            } else if (biggest < 30) {
+//                busIndexRes.setColor(1);
+//            } else if (biggest < 60) {
+//                busIndexRes.setColor(2);
+//            } else if (biggest < 90) {
+//                busIndexRes.setColor(3);
+//            } else if (biggest >= 90) {
+//                busIndexRes.setColor(4);
+//            }
+//            if (pageReqVO.getColor() != null) {
+//                if (!pageReqVO.getColor().contains(busIndexRes.getColor())) {
+//                    res.removeIf(bus -> bus.getBusId().equals(busIndexRes.getBusId()));
+//                }
+//            }
         }
         return res;
     }
@@ -712,6 +712,11 @@ public class BusIndexServiceImpl implements BusIndexService {
     }
 
     @Override
+    public LoadRateStatus getBusIndexLoadRateStatus() {
+        return busIndexMapper.selectBusIndexLoadRateStatus();
+    }
+
+    @Override
     public PageResult<BusRedisDataRes> getBusRedisPage(BusIndexPageReqVO pageReqVO) {
         PageResult<BusIndexDO> busIndexDOPageResult = busIndexMapper.selectPage2(pageReqVO);
         List<BusIndexDO> list = busIndexDOPageResult.getList();
@@ -734,7 +739,6 @@ public class BusIndexServiceImpl implements BusIndexService {
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
             String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id");
-            //String devKey = jsonObject.getString("dev_ip") + '_' + jsonObject.getString("bus_name");
             BusRedisDataRes busRedisDataRes = resMap.get(devKey);
             JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
             JSONArray volValue = lineItemList.getJSONArray("vol_value");
@@ -1115,6 +1119,7 @@ public class BusIndexServiceImpl implements BusIndexService {
             busTemRes.setBusName(busIndexDO.getBusName());
             res.add(busTemRes);
         }
+//        List<BusTemRes> res = BeanUtils.toBean(list, BusTemRes.class);
         Map<String, BusTemRes> resMap = res.stream().collect(Collectors.toMap(BusTemRes::getDevKey, Function.identity()));
         getPosition(res);
         for (Object o : redisList) {

@@ -185,7 +185,7 @@ public class RackIndexServiceImpl implements RackIndexService {
             if (!CollectionUtils.isEmpty(vo.getRacks())) {
                 List<RackIndex> racks = vo.getRacks();
 
-                List<RackIndex> inserts = racks.stream().filter(rackIndex -> rackIndex.getId() == 0).collect(Collectors.toList());
+                List<RackIndex> inserts = racks.stream().filter(rackIndex -> rackIndex.getId() == null).collect(Collectors.toList());
 
                 inserts.forEach(rackIndex -> {
 
