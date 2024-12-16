@@ -251,7 +251,7 @@
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
-            <div style="padding: 0 4px" v-show="item.status != 5"><Bar :width="100" :height="100" :max="{L1:item.aloadRate?.toFixed(2),L2:item.bloadRate?.toFixed(2),L3:item.cloadRate?.toFixed(2)}" /></div>
+            <div style="padding: 0 4px" v-show="item.status != 0"><Bar :width="100" :height="100" :max="{L1:item.aloadRate?.toFixed(2),L2:item.bloadRate?.toFixed(2),L3:item.cloadRate?.toFixed(2)}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
