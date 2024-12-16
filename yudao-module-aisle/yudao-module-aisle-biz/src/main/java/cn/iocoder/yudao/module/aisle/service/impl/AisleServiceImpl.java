@@ -305,14 +305,14 @@ public class AisleServiceImpl implements AisleService {
                         if (Objects.isNull(cabinetVo.getAddrA()) && Objects.nonNull(cabinetVo.getBoxIndexA())){
                             AisleBar bar = aisleBarMapper.selectOne(new LambdaQueryWrapper<AisleBar>()
                                     .eq(AisleBar::getAisleId,index.getId())
-//                                    .eq(AisleBar::getBarId,barIdA)
-                                    .eq(AisleBar::getBusKey,busIpA+"-"+barIdA));
+                                    .eq(AisleBar::getBusKey,barIdA));
+                                    //.eq(AisleBar::getDevIp,busIpA));
                             if (Objects.nonNull(bar)){
                                 AisleBox box = aisleBoxMapper.selectOne(new LambdaQueryWrapper<AisleBox>()
                                         .eq(AisleBox::getAisleBarId,bar.getId())
                                         .eq(AisleBox::getBoxType,0)
                                         .eq(AisleBox::getBoxIndex,cabinetVo.getBoxIndexA()));
-                                cabinetVo.setAddrA(Objects.nonNull(box)?box.getBusKey():null);
+                               // cabinetVo.setAddrA(Objects.nonNull(box)?box.getCasAddr():null);
 
                             }
 
@@ -320,14 +320,14 @@ public class AisleServiceImpl implements AisleService {
                         if (Objects.isNull(cabinetVo.getAddrB()) && Objects.nonNull(cabinetVo.getBoxIndexB())){
                             AisleBar bar = aisleBarMapper.selectOne(new LambdaQueryWrapper<AisleBar>()
                                     .eq(AisleBar::getAisleId,index.getId())
-//                                    .eq(AisleBar::getBarId,barIdB)
-                                    .eq(AisleBar::getBusKey,busIpB+"-"+barIdB));
+                                    .eq(AisleBar::getBusKey,barIdB));
+                                    //.eq(AisleBar::getDevIp,busIpB));
                             if (Objects.nonNull(bar)){
                                 AisleBox box = aisleBoxMapper.selectOne(new LambdaQueryWrapper<AisleBox>()
                                         .eq(AisleBox::getAisleBarId,bar.getId())
                                         .eq(AisleBox::getBoxType,0)
                                         .eq(AisleBox::getBoxIndex,cabinetVo.getBoxIndexB()));
-                                cabinetVo.setAddrB(Objects.nonNull(box)?box.getBusKey():null);
+                                //cabinetVo.setAddrB(Objects.nonNull(box)?box.getCasAddr():null);
 
                             }
 
@@ -410,7 +410,7 @@ public class AisleServiceImpl implements AisleService {
                             AisleBox box = BeanUtils.toBean(boxDTO,AisleBox.class);
                             box.setAisleId(aisleId);
                             box.setAisleBarId(bar.getId());
-//                            box.setBarId(barVo.getBarId());
+                            //box.setBarId(barVo.getBarId());
                             box.setBoxKey(barVo.getDevIp() + SPLIT_KEY + barVo.getBarId()+ SPLIT_KEY + boxDTO.getCasAddr());
                             aisleBoxMapper.insert(box);
                         });
@@ -547,14 +547,14 @@ public class AisleServiceImpl implements AisleService {
             //key
             List<String> keys = aisleBars.stream().map(AisleBar::getBusKey).collect(Collectors.toList());
             List<BusIndex>  busIndexList = busIndexDoMapper.selectList(new LambdaQueryWrapper<BusIndex>()
-                    .in(BusIndex::getBusKey,keys));
+                    .in(BusIndex::getDevKey,keys));
             Map<String,Integer>  idMap;
             Map<Integer,Double> yesterdayMap = new HashMap<>();
 
             //获取昨日统计用电
             if (!CollectionUtils.isEmpty(busIndexList)){
                 List<Integer> ids = busIndexList.stream().map(BusIndex::getId).distinct().collect(Collectors.toList());
-                idMap = busIndexList.stream().collect(Collectors.toMap(BusIndex::getBusKey,BusIndex::getId));
+                idMap = busIndexList.stream().collect(Collectors.toMap(BusIndex::getDevKey,BusIndex::getId));
 
                 String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
                 String endTime =DateUtil.formatDateTime(DateTime.now());
@@ -580,11 +580,11 @@ public class AisleServiceImpl implements AisleService {
                 //获取id
                 List<String> boxKeys = aisleBoxList.stream().map(AisleBox::getBoxKey).collect(Collectors.toList());
                 List<BoxIndex>  boxIndexList = boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>()
-                        .in(BoxIndex::getBoxKey,boxKeys));
+                        .in(BoxIndex::getDevKey,boxKeys));
                 //获取昨日统计用电
                 if (!CollectionUtils.isEmpty(boxIndexList)){
                     List<Integer> ids = boxIndexList.stream().map(BoxIndex::getId).distinct().collect(Collectors.toList());
-                    boxIdMap = boxIndexList.stream().collect(Collectors.toMap(BoxIndex::getBoxKey,BoxIndex::getId));
+                    boxIdMap = boxIndexList.stream().collect(Collectors.toMap(BoxIndex::getDevKey,BoxIndex::getId));
 
                     String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
                     String endTime =DateUtil.formatDateTime(DateTime.now());
