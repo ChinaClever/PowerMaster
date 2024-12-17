@@ -76,35 +76,15 @@ public class CabinetIndex implements Serializable {
      */
     private Boolean isDeleted;
 
-//    /**
-//     * 日用能告警开关
-//     */
-//    private  int eleAlarmDay;
-//
-//    /**
-//     * 月用能告警开关
-//     */
-//    private  int eleAlarmMonth;
-//
-//    /**
-//     * 日用能限制
-//     */
-//    private double eleLimitDay;
-//
-//    /**
-//     * 月用能限制
-//     */
-//    private double eleLimitMonth;
 
     /**
      * 更新时间
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+
     /**
      * 创建时间
      */
-    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     @TableField(value = "count(*)",insertStrategy = FieldStrategy.NEVER,updateStrategy = FieldStrategy.NEVER,select = false)

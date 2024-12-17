@@ -63,4 +63,28 @@
             </if>
         </where>
     </select>
+    <select id="selectBusIndexStatistics"
+            resultType="cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusIndexStatisticsResVO">
+        SELECT count(1) as total,
+        sum(case when bi.run_status = 1 then 1 else 0 end) as normal,
+        sum(case when bi.run_status = 2 then 1 else 0 end) as alarm,
+        sum(case when bi.run_status = 0 then 1 else 0 end) as offline
+        FROM bus_index bi
+        <where>
+            is_deleted = 0
+        </where>
+    </select>
+    <select id="selectBusIndexLoadRateStatus"
+            resultType="cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.LoadRateStatus">
+        SELECT
+        sum(case when bi.load_rate = 0 then 1 else 0 end) as LoadRateZero,
+        sum(case when bi.load_rate = 1 then 1 else 0 end) as LoadRateOne,
+        sum(case when bi.load_rate = 2 then 1 else 0 end) as LoadRateTwo,
+        sum(case when bi.load_rate = 3 then1 else 0 end) as LoadRateThree,
+        sum(case when bi.load_rate = 4 then1 else 0 end) as LoadRateFour,
+        FROM bus_index bi
+        <where>
+            is_deleted = 0
+        </where>
+    </select>
 </mapper>

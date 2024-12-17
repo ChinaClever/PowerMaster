@@ -130,4 +130,10 @@ public interface BusIndexService {
     Map getAvgBusHdaLineForm(BusIndexPageReqVO pageReqVO) throws IOException;
 
     LineMaxResVO getBusLineMax(BusIndexPageReqVO pageReqVO) throws IOException;
+
+    BusIndexStatisticsResVO getBusIndexStatistics();
+
+    LoadRateStatus getBusIndexLoadRateStatus();
+
+
 }

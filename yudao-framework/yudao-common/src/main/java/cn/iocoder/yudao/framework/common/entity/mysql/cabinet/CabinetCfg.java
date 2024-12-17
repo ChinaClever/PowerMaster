@@ -66,7 +66,7 @@ public class CabinetCfg implements Serializable {
     /**
      * 日用能限制
      */
-    private BigDecimal eleLimitDay;
+    private Double eleLimitDay;
 
     /**
      * 月用电告警开关 0禁用 1启用
@@ -76,6 +76,6 @@ public class CabinetCfg implements Serializable {
     /**
      * 月用能限制
      */
-    private BigDecimal eleLimitMonth;
+    private Double eleLimitMonth;
 }
 

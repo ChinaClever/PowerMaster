@@ -1,11 +1,7 @@
 package cn.iocoder.yudao.module.cabinet.service.impl;
 
-import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.iocoder.yudao.framework.common.dto.cabinet.*;
-import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalDayDo;
-import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalMonthDo;
-import cn.iocoder.yudao.framework.common.entity.es.cabinet.ele.CabinetEqTotalWeekDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.*;
@@ -18,9 +14,13 @@ import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
+import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
+import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.framework.common.vo.CabineIndexCfgVO;
 import cn.iocoder.yudao.module.cabinet.enums.CabinetLoadEnums;
 import cn.iocoder.yudao.module.cabinet.mapper.RackIndexMapper;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
+import cn.iocoder.yudao.module.cabinet.vo.*;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -46,6 +46,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -98,7 +102,7 @@ public class CabinetServiceImpl implements CabinetService {
         try {
             Page<CabinetIndexDTO> page = new Page<>(vo.getPageNo(), vo.getPageSize());
             //获取机柜列表
-            if (Objects.nonNull(vo.getCabinetIds()) && CollectionUtils.isEmpty(vo.getCabinetIds())){
+            if (Objects.nonNull(vo.getCabinetIds()) && CollectionUtils.isEmpty(vo.getCabinetIds())) {
                 List<Integer> list = new ArrayList<>();
                 list.add(-1);
                 vo.setCabinetIds(list);
@@ -114,18 +118,22 @@ public class CabinetServiceImpl implements CabinetService {
                     if (Objects.nonNull(jsonObject)) {
                         jsonObject.put(COMPANY, Objects.nonNull(dto.getCompany()) ? dto.getCompany() : "");
                         result.add(jsonObject);
-                    }else {
+                    } else {
                         Map map = new HashMap();
-                        map.put("cabinet_name",dto.getName());
-                        map.put("status",dto.getRunStatus());
-                        map.put("cabinet_key",dto.getRoomId()+"-"+dto.getId());
-                        map.put("pow_capacity",dto.getPowCapacity());
+                        map.put("cabinet_name", dto.getName());
+                        map.put("status", dto.getRunStatus());
+                        map.put("cabinet_key", dto.getRoomId() + "-" + dto.getId());
+                        map.put("pow_capacity", dto.getPowCapacity());
                         Map map1 = new HashMap();
-                        map.put("cabinet_power",map1);
+                        map.put("cabinet_power", map1);
 
                         Map map2 = new HashMap();
-                        map2.put("ele_active",0);map2.put("pow_active",0);map2.put("pow_apparent",0);map2.put("pow_reactive",0);map2.put("power_factor",0);
-                        map1.put("total_data",map2);
+                        map2.put("ele_active", 0);
+                        map2.put("pow_active", 0);
+                        map2.put("pow_apparent", 0);
+                        map2.put("pow_reactive", 0);
+                        map2.put("power_factor", 0);
+                        map1.put("total_data", map2);
                         result.add(JSON.parseObject(JSON.toJSONString(map)));
                     }
                 });
@@ -160,7 +168,7 @@ public class CabinetServiceImpl implements CabinetService {
 
         try {
             //获取数据库保存数据
-            CabinetIndex index = cabinetIndexMapper.selectById(id);
+            CabineIndexCfgVO index = cabinetIndexMapper.selectCabineIndexCfgById(id);
             if (Objects.nonNull(index)) {
 
                 dto.setId(id);
@@ -170,29 +178,23 @@ public class CabinetServiceImpl implements CabinetService {
                 dto.setPowCapacity(index.getPowerCapacity());
                 dto.setRunStatus(index.getRunStatus());
                 dto.setPduBox(index.getPduBox());
-//                dto.setEleAlarmDay(index.getEleAlarmDay());
-//                dto.setEleAlarmMonth(index.getEleAlarmMonth());
-//                dto.setEleLimitDay(index.getEleLimitDay());
-//                dto.setEleLimitMonth(index.getEleLimitMonth());
-
+                dto.setEleAlarmDay(index.getEleAlarmDay());
+                dto.setEleAlarmMonth(index.getEleAlarmMonth());
+                dto.setEleLimitDay(index.getEleLimitDay());
+                dto.setEleLimitMonth(index.getEleLimitMonth());
+                dto.setCabinetHeight(index.getCabinetHeight());
+                dto.setType(index.getCabinetType());
+                dto.setXCoordinate(index.getXCoordinate());
+                dto.setYCoordinate(index.getYCoordinate());
+                dto.setCompany(index.getCompany());
                 //机房信息
-                RoomIndex roomIndex = roomIndexMapper.selectById(index.getRoomId());
-                dto.setRoomName(roomIndex.getRoomName());
+//                RoomIndex roomIndex = roomIndexMapper.selectById(index.getRoomId());
+//                dto.setRoomName(roomIndex.getRoomName());
 
-                //基本配置信息
-                CabinetCfg cfg = cabinetCfgMapper.selectOne(new LambdaQueryWrapper<CabinetCfg>()
-                        .eq(CabinetCfg::getCabinetId, index.getId()));
-                if (Objects.nonNull(cfg)) {
-//                    dto.setCabinetHeight(cfg.getCabinetHeight());
-//                    dto.setType(cfg.getType());
-                    dto.setXCoordinate(cfg.getXCoordinate());
-                    dto.setYCoordinate(cfg.getYCoordinate());
-                    dto.setCompany(cfg.getCompany());
-                }
                 //配置的数据来源信息
                 ValueOperations ops = redisTemplate.opsForValue();
 
-                if (index.getPduBox() == PduBoxFlagEnums.PDU.getValue()){
+                if (index.getPduBox() == PduBoxFlagEnums.PDU.getValue()) {
                     //来源pdu
                     CabinetPdu pdu = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>()
                             .eq(CabinetPdu::getCabinetId, index.getId()));
@@ -211,7 +213,7 @@ public class CabinetServiceImpl implements CabinetService {
 //                        aKey.append(pdu.getCasIdA());
 
                         Object aPdu = ops.get(aKey.toString());
-                        if (Objects.nonNull(aPdu)){
+                        if (Objects.nonNull(aPdu)) {
                             JSONObject aPduJson = JSON.parseObject(JSON.toJSONString(aPdu));
                             if (aPduJson.containsKey(PDU_DATA)) {
                                 JSONObject pduData = aPduJson.getJSONObject(PDU_DATA);
@@ -233,7 +235,7 @@ public class CabinetServiceImpl implements CabinetService {
 //                        bKey.append(pdu.getCasIdB());
 
                         Object bPdu = ops.get(bKey.toString());
-                        if (Objects.nonNull(bPdu)){
+                        if (Objects.nonNull(bPdu)) {
                             JSONObject bPduJson = JSON.parseObject(JSON.toJSONString(bPdu));
                             if (bPduJson.containsKey(PDU_DATA)) {
                                 JSONObject pduData = bPduJson.getJSONObject(PDU_DATA);
@@ -249,16 +251,16 @@ public class CabinetServiceImpl implements CabinetService {
 
                         }
                     }
-                }else if (index.getPduBox() == PduBoxFlagEnums.BUS.getValue()){
+                } else if (index.getPduBox() == PduBoxFlagEnums.BUS.getValue()) {
                     //配置的母线数据
                     CabinetBox cabinetBus = cabinetBusMapper.selectOne(new LambdaQueryWrapper<CabinetBox>()
                             .eq(CabinetBox::getCabinetId, index.getId()));
-                    if (Objects.nonNull(cabinetBus)){
-                        if (StringUtils.isNotEmpty(cabinetBus.getBoxKeyA())){
-                            BoxIndex  boxIndex = boxIndexMapper.selectOne(new LambdaQueryWrapper<BoxIndex>()
-                                    .eq(BoxIndex::getBoxKey,cabinetBus.getBoxKeyA()));
+                    if (Objects.nonNull(cabinetBus)) {
+                        if (StringUtils.isNotEmpty(cabinetBus.getBoxKeyA())) {
+                            BoxIndex boxIndex = boxIndexMapper.selectOne(new LambdaQueryWrapper<BoxIndex>()
+                                    .eq(BoxIndex::getBoxKey, cabinetBus.getBoxKeyA()));
 
-                            if (Objects.nonNull(boxIndex)){
+                            if (Objects.nonNull(boxIndex)) {
 
                                 dto.setBusIpA(boxIndex.getIpAddr());
 //                                dto.setBusNameA(boxIndex.getBusName());
@@ -266,7 +268,7 @@ public class CabinetServiceImpl implements CabinetService {
                                 dto.setBarIdA(boxIndex.getBusId());
                                 dto.setAddrA(boxIndex.getBoxId());
                                 dto.setBoxOutletIdA(cabinetBus.getOutletIdA());
-                            }else {
+                            } else {
                                 String[] keys = cabinetBus.getBoxKeyA().split(SPLIT_KEY);
                                 dto.setBusIpA(keys[0]);
                                 dto.setBarIdA(Integer.valueOf(keys[1]));
@@ -276,10 +278,10 @@ public class CabinetServiceImpl implements CabinetService {
 
                         }
 
-                        if (StringUtils.isNotEmpty(cabinetBus.getBoxKeyB())){
-                            BoxIndex  boxIndex = boxIndexMapper.selectOne(new LambdaQueryWrapper<BoxIndex>()
-                                    .eq(BoxIndex::getBoxKey,cabinetBus.getBoxKeyA()));
-                            if (Objects.nonNull(boxIndex)){
+                        if (StringUtils.isNotEmpty(cabinetBus.getBoxKeyB())) {
+                            BoxIndex boxIndex = boxIndexMapper.selectOne(new LambdaQueryWrapper<BoxIndex>()
+                                    .eq(BoxIndex::getBoxKey, cabinetBus.getBoxKeyA()));
+                            if (Objects.nonNull(boxIndex)) {
 
                                 dto.setBusIpB(boxIndex.getIpAddr());
 //                                dto.setBusNameB(boxIndex.getBusName());
@@ -287,7 +289,7 @@ public class CabinetServiceImpl implements CabinetService {
                                 dto.setBarIdB(boxIndex.getBusId());
                                 dto.setAddrB(boxIndex.getBoxId());
                                 dto.setBoxOutletIdB(cabinetBus.getOutletIdB());
-                            }else {
+                            } else {
                                 String[] keys = cabinetBus.getBoxKeyB().split(SPLIT_KEY);
                                 dto.setBusIpB(keys[0]);
                                 dto.setBarIdB(Integer.valueOf(keys[1]));
@@ -303,8 +305,8 @@ public class CabinetServiceImpl implements CabinetService {
 
 
                 List<CabinetEnvSensor> envSensorList = envSensorMapper.selectList(new LambdaQueryWrapper<CabinetEnvSensor>()
-                        .eq(CabinetEnvSensor::getCabinetId,index.getId()));
-                if (!CollectionUtils.isEmpty(envSensorList)){
+                        .eq(CabinetEnvSensor::getCabinetId, index.getId()));
+                if (!CollectionUtils.isEmpty(envSensorList)) {
 
                     List<CabinetEnvSensorDTO> sensorDtos = new ArrayList<>();
                     envSensorList.forEach(env -> {
@@ -318,22 +320,22 @@ public class CabinetServiceImpl implements CabinetService {
                         sensorDTO.setSensorType(env.getSensorType());
                         sensorDtos.add(sensorDTO);
                     });
-                   dto.setSensorList(sensorDtos);
+                    dto.setSensorList(sensorDtos);
 
                 }
 
                 List<RackIndex> rackIndexList = rackIndexMapper.selectList(new LambdaQueryWrapper<RackIndex>()
-                        .eq(RackIndex::getCabinetId,index.getId())
-                        .eq(RackIndex::getIsDelete,DelEnums.NO_DEL.getStatus()));
-                if (!CollectionUtils.isEmpty(rackIndexList)){
+                        .eq(RackIndex::getCabinetId, index.getId())
+                        .eq(RackIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
+                if (!CollectionUtils.isEmpty(rackIndexList)) {
                     dto.setRackIndexList(rackIndexList);
-                    int usedSpace = rackIndexList.stream().map(RackIndex::getUHeight).reduce(0,Integer::sum);
+                    int usedSpace = rackIndexList.stream().map(RackIndex::getUHeight).reduce(0, Integer::sum);
                     int rackNum = rackIndexList.size();
                     int freeSpace = dto.getCabinetHeight() - usedSpace;
                     dto.setUsedSpace(usedSpace);
                     dto.setRackNum(rackNum);
                     dto.setFreeSpace(freeSpace);
-                }else {
+                } else {
                     dto.setFreeSpace(dto.getCabinetHeight());
                 }
 
@@ -346,15 +348,13 @@ public class CabinetServiceImpl implements CabinetService {
     }
 
 
-
     //保存数据失败全部回滚
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public CommonResult saveCabinet(CabinetVo vo) throws Exception{
+    public CommonResult saveCabinet(CabinetVo vo) throws Exception {
         try {
-
             //判断pdu是否已经关联其他机柜
-            if (vo.getPduBox() == PduBoxFlagEnums.PDU.getValue()){
+            if (vo.getPduBox() == PduBoxFlagEnums.PDU.getValue()) {
                 List<CabinetIndex> indexList = cabinetIndexMapper.selectList(new LambdaQueryWrapper<CabinetIndex>()
                         .eq(CabinetIndex::getIsDeleted, DelEnums.NO_DEL.getStatus())
                         .eq(CabinetIndex::getIsDisabled, DisableEnums.ENABLE.getStatus())
@@ -363,12 +363,12 @@ public class CabinetServiceImpl implements CabinetService {
                     List<Integer> ids = indexList.stream().map(CabinetIndex::getId).collect(Collectors.toList());
                     if (!CollectionUtils.isEmpty(ids)) {
                         if (isExist(vo.getPduIpA(), vo.getCasIdA(), ids)) {
-                            log.info("---- " + vo.getPduIpA() + vo.getCasIdA());
+//                            log.info("---- " + vo.getPduIpA() + vo.getCasIdA());
                             return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "pdu已关联其他机柜");
                         }
 
                         if (isExist(vo.getPduIpB(), vo.getCasIdB(), ids)) {
-                            log.info("---- " + vo.getPduIpB() + vo.getCasIdB());
+//                            log.info("---- " + vo.getPduIpB() + vo.getCasIdB());
                             return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "pdu已关联其他机柜");
                         }
                     }
@@ -382,16 +382,16 @@ public class CabinetServiceImpl implements CabinetService {
                 }
             }
             //计算机柜位置
-            if (Objects.nonNull(vo.getIndex())){
+            if (Objects.nonNull(vo.getIndex())) {
                 AisleIndex aisleIndex = aisleIndexMapper.selectOne(new LambdaQueryWrapper<AisleIndex>()
-                        .eq(AisleIndex::getId,vo.getAisleId()));
+                        .eq(AisleIndex::getId, vo.getAisleId()));
 
-                if (Objects.nonNull(aisleIndex) && "x".equals(aisleIndex.getDirection())){
+                if (Objects.nonNull(aisleIndex) && "x".equals(aisleIndex.getDirection())) {
                     //横向
                     vo.setXCoordinate(aisleIndex.getXCoordinate() + vo.getIndex() - 1);
                     vo.setYCoordinate(aisleIndex.getYCoordinate());
                 }
-                if (Objects.nonNull(aisleIndex) && "y".equals(aisleIndex.getDirection())){
+                if (Objects.nonNull(aisleIndex) && "y".equals(aisleIndex.getDirection())) {
                     //纵向
                     vo.setYCoordinate(aisleIndex.getYCoordinate() + vo.getIndex() - 1);
                     vo.setXCoordinate(aisleIndex.getXCoordinate());
@@ -405,7 +405,7 @@ public class CabinetServiceImpl implements CabinetService {
                 index = cabinetIndexMapper.selectById(vo.getId());
 
                 //修改
-                cabinetIndexMapper.updateById( convertIndex(vo, index));
+                cabinetIndexMapper.updateById(convertIndex(vo, index));
             } else {
                 //新增
                 //判断机柜名称是否重复（已删除的或者已禁用的恢复）
@@ -420,7 +420,6 @@ public class CabinetServiceImpl implements CabinetService {
                     } else {
                         return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "机柜名称重复");
                     }
-
                 } else {
                     index = new CabinetIndex();
                     //index 索引表
@@ -431,9 +430,6 @@ public class CabinetServiceImpl implements CabinetService {
                     vo.setId(cabinetIndex.getId());
                 }
             }
-
-            log.info("vo : " + vo);
-
             //配置表
             CabinetCfg cfg = cabinetCfgMapper.selectOne(new LambdaQueryWrapper<CabinetCfg>()
                     .eq(CabinetCfg::getCabinetId, vo.getId()));
@@ -446,10 +442,10 @@ public class CabinetServiceImpl implements CabinetService {
                 //新增
                 cabinetCfgMapper.insert(convertCfg(vo, cfg));
             }
+            //机柜与PDU/插接箱的关联
+            if (vo.getPduBox() == PduBoxFlagEnums.PDU.getValue()) {
 
-            if (vo.getPduBox() == PduBoxFlagEnums.PDU.getValue()){
-
-                if (StringUtils.isEmpty(vo.getPduIpA()) && StringUtils.isEmpty(vo.getPduIpB())){
+                if (StringUtils.isEmpty(vo.getPduIpA()) && StringUtils.isEmpty(vo.getPduIpB())) {
 
                     //删除
                     cabinetPduMapper.delete(new LambdaQueryWrapper<CabinetPdu>()
@@ -466,15 +462,15 @@ public class CabinetServiceImpl implements CabinetService {
                     cabinetPduMapper.updateById(convertPdu(vo, pdu));
                 } else {
                     pdu = new CabinetPdu();
-                    if (StringUtils.isNotEmpty(vo.getPduIpA()) || StringUtils.isNotEmpty(vo.getPduIpB())){
+                    if (StringUtils.isNotEmpty(vo.getPduIpA()) || StringUtils.isNotEmpty(vo.getPduIpB())) {
 
                         //新增
                         cabinetPduMapper.insert(convertPdu(vo, pdu));
                     }
                 }
-            }else if (vo.getPduBox() == PduBoxFlagEnums.BUS.getValue()){
+            } else if (vo.getPduBox() == PduBoxFlagEnums.BUS.getValue()) {
 
-                if (Objects.isNull(vo.getAddrA()) && Objects.isNull(vo.getAddrB())){
+                if (Objects.isNull(vo.getAddrA()) && Objects.isNull(vo.getAddrB())) {
                     //删除
                     cabinetBusMapper.delete(new LambdaQueryWrapper<CabinetBox>()
                             .eq(CabinetBox::getCabinetId, vo.getId()));
@@ -485,14 +481,13 @@ public class CabinetServiceImpl implements CabinetService {
                         .eq(CabinetBox::getCabinetId, vo.getId()));
 
 
-
-                if (Objects.nonNull(bus)){
+                if (Objects.nonNull(bus)) {
                     //修改
-                    cabinetBusMapper.updateById(convertBus(vo,bus));
-                }else {
+                    cabinetBusMapper.updateById(convertBus(vo, bus));
+                } else {
                     //新增
                     bus = new CabinetBox();
-                    if (Objects.nonNull(vo.getAddrA()) || Objects.nonNull(vo.getAddrB())){
+                    if (Objects.nonNull(vo.getAddrA()) || Objects.nonNull(vo.getAddrB())) {
                         //新增
                         cabinetBusMapper.insert(convertBus(vo, bus));
                     }
@@ -500,7 +495,7 @@ public class CabinetServiceImpl implements CabinetService {
             }
 
             //保存环境数据
-            saveEnvSensor(vo.getId(),vo);
+            saveEnvSensor(vo.getId(), vo);
             //保存U位数据
             saveRack(vo.getId(), vo);
 
@@ -515,7 +510,7 @@ public class CabinetServiceImpl implements CabinetService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int delCabinet(int id) throws Exception{
+    public int delCabinet(int id) throws Exception {
         try {
             CabinetIndex index = cabinetIndexMapper.selectById(id);
             if (Objects.isNull(index)) {
@@ -523,9 +518,9 @@ public class CabinetServiceImpl implements CabinetService {
             }
 
             List<RackIndex> rackIndexList = rackIndexMapper.selectList(new LambdaQueryWrapper<RackIndex>()
-                    .eq(RackIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
-                    .eq(RackIndex::getCabinetId,index.getId()));
-            if (!CollectionUtils.isEmpty(rackIndexList)){
+                    .eq(RackIndex::getIsDelete, DelEnums.NO_DEL.getStatus())
+                    .eq(RackIndex::getCabinetId, index.getId()));
+            if (!CollectionUtils.isEmpty(rackIndexList)) {
                 throw new RuntimeException("存在未删除机架，不可删除");
             }
             if (index.getIsDeleted() == DelFlagEnums.DELETE.getStatus()) {
@@ -541,7 +536,7 @@ public class CabinetServiceImpl implements CabinetService {
                         .eq(CabinetCfg::getCabinetId, id));
                 //删除环境信息
                 envSensorMapper.delete(new LambdaQueryWrapper<CabinetEnvSensor>()
-                        .eq(CabinetEnvSensor::getCabinetId,id));
+                        .eq(CabinetEnvSensor::getCabinetId, id));
             } else {
                 //逻辑删除
                 cabinetIndexMapper.update(new LambdaUpdateWrapper<CabinetIndex>()
@@ -554,7 +549,7 @@ public class CabinetServiceImpl implements CabinetService {
                         .eq(CabinetBox::getCabinetId, id));
                 //删除环境信息
                 envSensorMapper.delete(new LambdaQueryWrapper<CabinetEnvSensor>()
-                        .eq(CabinetEnvSensor::getCabinetId,id));
+                        .eq(CabinetEnvSensor::getCabinetId, id));
             }
 
             //删除key
@@ -574,93 +569,8 @@ public class CabinetServiceImpl implements CabinetService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CommonResult saveEnvCabinet(CabinetVo vo) throws Exception {
-        saveEnvSensor(vo.getId(),vo);
+        saveEnvSensor(vo.getId(), vo);
         return CommonResult.success(vo.getId());
-    }
-
-    @Override
-    public PageResult<CabinetIndexDTO> getEqPage(CabinetIndexVo vo) {
-        try {
-            Page<CabinetIndexDTO> page = new Page<>(vo.getPageNo(), vo.getPageSize());
-            //获取机柜列表
-            if (Objects.nonNull(vo.getCabinetIds()) && CollectionUtils.isEmpty(vo.getCabinetIds())){
-                List<Integer> list = new ArrayList<>();
-                list.add(-1);
-                vo.setCabinetIds(list);
-            }
-            //获取机柜列表
-            Page<CabinetIndexDTO> indexDTOPage = cabinetCfgMapper.selectCabList(page, vo);
-            List<CabinetIndexDTO> result = new ArrayList<>();
-            //获取机房数据
-            if (!CollectionUtils.isEmpty(indexDTOPage.getRecords())){
-                List<Integer> roomIds = indexDTOPage.getRecords().stream().map(CabinetIndexDTO::getRoomId).distinct().collect(Collectors.toList());
-                if (!CollectionUtils.isEmpty(roomIds)){
-                    List<RoomIndex> roomIndexList = roomIndexMapper.selectBatchIds(roomIds);
-                    if (!CollectionUtils.isEmpty(roomIndexList)){
-                        Map<Integer,String>  map = roomIndexList.stream().collect(Collectors.toMap(RoomIndex::getId,RoomIndex::getRoomName));
-
-                        if (Objects.nonNull(map)){
-                            indexDTOPage.getRecords().forEach(dto -> {
-                               dto.setRoomName(map.get(dto.getRoomId()));
-                               result.add(dto);
-                            });
-                        }
-                    }
-                }
-            }
-
-            List<Integer> ids = result.stream().map(CabinetIndexDTO::getId).distinct().collect(Collectors.toList());
-            if (CollectionUtils.isEmpty(ids)){
-                return new PageResult<>(result, indexDTOPage.getTotal());
-            }
-            //昨日
-            String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
-            String endTime =DateUtil.formatDateTime(DateTime.now());
-            List<String>  yesterdayList = getData(startTime,endTime, ids,CABINET_EQ_TOTAL_DAY);
-            Map<Integer,Double> yesterdayMap = new HashMap<>();
-            if (!CollectionUtils.isEmpty(yesterdayList)){
-                yesterdayList.forEach(str -> {
-                    CabinetEqTotalDayDo dayDo = JsonUtils.parseObject(str, CabinetEqTotalDayDo.class);
-                    yesterdayMap.put(dayDo.getCabinetId(),dayDo.getEqValue());
-                });
-            }
-
-            //上周
-            startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
-            endTime =DateUtil.formatDateTime(DateTime.now());
-            List<String>  weekList = getData(startTime,endTime, ids,CABINET_EQ_TOTAL_WEEK);
-            Map<Integer,Double> weekMap = new HashMap<>();
-            if (!CollectionUtils.isEmpty(weekList)){
-                weekList.forEach(str -> {
-                    CabinetEqTotalWeekDo weekDo = JsonUtils.parseObject(str, CabinetEqTotalWeekDo.class);
-                    weekMap.put(weekDo.getCabinetId(),weekDo.getEqValue());
-                });
-            }
-
-            //上月
-            startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
-            endTime =DateUtil.formatDateTime(DateTime.now());
-            List<String>  monthList = getData(startTime,endTime, ids,CABINET_EQ_TOTAL_MONTH);
-            Map<Integer,Double> monthMap = new HashMap<>();
-            if (!CollectionUtils.isEmpty(monthList)){
-                monthList.forEach(str -> {
-                    CabinetEqTotalMonthDo monthDo = JsonUtils.parseObject(str, CabinetEqTotalMonthDo.class);
-                    monthMap.put(monthDo.getCabinetId(),monthDo.getEqValue());
-                });
-            }
-
-            result.forEach(dto -> {
-                dto.setYesterdayEq(yesterdayMap.get(dto.getId()));
-                dto.setLastWeekEq(weekMap.get(dto.getId()));
-                dto.setLastMonthEq(monthMap.get(dto.getId()));
-            });
-
-            return new PageResult<>(result, indexDTOPage.getTotal());
-        } catch (Exception e) {
-            log.error("获取数据失败：", e);
-        }
-        return new PageResult<>(new ArrayList<>(), 0L);
-
     }
 
     @Override
@@ -668,26 +578,27 @@ public class CabinetServiceImpl implements CabinetService {
         try {
             Page<CabinetIndexDTO> page = new Page<>(vo.getPageNo(), vo.getPageSize());
             //获取机柜列表
-            if (Objects.nonNull(vo.getCabinetIds()) && CollectionUtils.isEmpty(vo.getCabinetIds())){
+            if (Objects.nonNull(vo.getCabinetIds()) && CollectionUtils.isEmpty(vo.getCabinetIds())) {
                 List<Integer> list = new ArrayList<>();
                 list.add(-1);
                 vo.setCabinetIds(list);
             }
             //获取机柜列表
             Page<CabinetIndexDTO> indexDTOPage = cabinetCfgMapper.selectCabList(page, vo);
-            List<CabinetIndexDTO> result = new ArrayList<>();
+//            List<CabinetIndexDTO> result = new ArrayList<>();
+            List<CabinetIndexDTO> result = indexDTOPage.getRecords();
             //获取机房数据
-            if (!CollectionUtils.isEmpty(indexDTOPage.getRecords())){
-                List<Integer> roomIds = indexDTOPage.getRecords().stream().map(CabinetIndexDTO::getRoomId).distinct().collect(Collectors.toList());
-                if (!CollectionUtils.isEmpty(roomIds)){
+            if (!CollectionUtils.isEmpty(result)) {
+                List<Integer> roomIds = result.stream().map(CabinetIndexDTO::getRoomId).distinct().collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(roomIds)) {
                     List<RoomIndex> roomIndexList = roomIndexMapper.selectBatchIds(roomIds);
-                    if (!CollectionUtils.isEmpty(roomIndexList)){
-                        Map<Integer,String>  map = roomIndexList.stream().collect(Collectors.toMap(RoomIndex::getId,RoomIndex::getRoomName));
+                    if (!CollectionUtils.isEmpty(roomIndexList)) {
+                        Map<Integer, String> map = roomIndexList.stream().collect(Collectors.toMap(RoomIndex::getId, RoomIndex::getRoomName));
 
-                        if (Objects.nonNull(map)){
-                            indexDTOPage.getRecords().forEach(dto -> {
+                        if (Objects.nonNull(map)) {
+                            result.forEach(dto -> {
                                 dto.setRoomName(map.get(dto.getRoomId()));
-                                result.add(dto);
+//                                result.add(dto);
                             });
                         }
                     }
@@ -695,21 +606,21 @@ public class CabinetServiceImpl implements CabinetService {
             }
 
             List<Integer> ids = result.stream().map(CabinetIndexDTO::getId).distinct().collect(Collectors.toList());
-            if (CollectionUtils.isEmpty(ids)){
+            if (CollectionUtils.isEmpty(ids)) {
                 return new PageResult<>(result, indexDTOPage.getTotal());
             }
             //获取机架列表
             List<RackIndex> rackIndexList = rackIndexMapper.selectList(new LambdaQueryWrapper<RackIndex>()
-                    .eq(RackIndex::getIsDelete,DelEnums.NO_DEL.getStatus())
-                    .in(RackIndex::getCabinetId,ids));
+                    .eq(RackIndex::getIsDelete, DelEnums.NO_DEL.getStatus())
+                    .in(RackIndex::getCabinetId, ids));
 
-            if (!CollectionUtils.isEmpty(rackIndexList)){
-                Map<Integer,List<RackIndex>> cabRacks = rackIndexList.stream().collect(Collectors.groupingBy(RackIndex::getCabinetId));
+            if (!CollectionUtils.isEmpty(rackIndexList)) {
+                Map<Integer, List<RackIndex>> cabRacks = rackIndexList.stream().collect(Collectors.groupingBy(RackIndex::getCabinetId));
 
                 result.forEach(dto -> {
                     List<RackIndex> racks = cabRacks.get(dto.getId());
-                    if (!CollectionUtils.isEmpty(racks)){
-                        int usedSpace = racks.stream().map(RackIndex::getUHeight).reduce(0,Integer::sum);
+                    if (!CollectionUtils.isEmpty(racks)) {
+                        int usedSpace = racks.stream().map(RackIndex::getUHeight).reduce(0, Integer::sum);
                         int rackNum = racks.size();
                         int freeSpace = dto.getCabinetHeight() - usedSpace;
                         dto.setUsedSpace(usedSpace);
@@ -721,9 +632,9 @@ public class CabinetServiceImpl implements CabinetService {
             }
 
             result.forEach(dto -> {
-               if (dto.getUsedSpace() == 0){
-                   dto.setFreeSpace(dto.getCabinetHeight());
-               }
+                if (dto.getUsedSpace() == 0) {
+                    dto.setFreeSpace(dto.getCabinetHeight());
+                }
             });
             return new PageResult<>(result, indexDTOPage.getTotal());
         } catch (Exception e) {
@@ -735,23 +646,24 @@ public class CabinetServiceImpl implements CabinetService {
 
     @Override
     public Map<Integer, Integer> loadStatusCount() {
-        Map<Integer,Integer> map = new HashMap<>();
+        Map<Integer, Integer> map = new HashMap<>();
         for (int i = 0; i < CabinetLoadEnums.values().length; i++) {
-            map.put(CabinetLoadEnums.values()[i].getStatus(),0);
+            map.put(CabinetLoadEnums.values()[i].getStatus(), 0);
         }
         LambdaQueryWrapper<CabinetIndex> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.select(CabinetIndex::getLoadStatus,CabinetIndex::getCount);
+        queryWrapper.select(CabinetIndex::getLoadStatus, CabinetIndex::getCount);
         queryWrapper.groupBy(CabinetIndex::getLoadStatus);
         List<CabinetIndex> list = cabinetIndexMapper.selectList(queryWrapper);
-        if (!CollectionUtils.isEmpty(list)){
-            Map<Integer,Integer>  statusMap = list.stream().collect(Collectors.toMap(CabinetIndex::getLoadStatus,CabinetIndex::getCount));
-            statusMap.keySet().forEach(key -> map.put(key,statusMap.get(key)));
+        if (!CollectionUtils.isEmpty(list)) {
+            Map<Integer, Integer> statusMap = list.stream().collect(Collectors.toMap(CabinetIndex::getLoadStatus, CabinetIndex::getCount));
+            statusMap.keySet().forEach(key -> map.put(key, statusMap.get(key)));
         }
         return map;
     }
 
     /**
      * 获得已删除机柜分页
+     *
      * @param pageReqVO
      * @return
      */
@@ -783,15 +695,217 @@ public class CabinetServiceImpl implements CabinetService {
         return cabinetCfgMapper.updaterestorerCabinet(id);
     }
 
+    @Override
+    public PageResult<CabinetIndexLoadResVO> getIndexLoadPage(CabinetIndexVo req) {
+        Page page = new Page<>(req.getPageNo(), req.getPageSize());
+        Page<CabineIndexCfgVO> page1 = cabinetIndexMapper.selectIndexLoadPage(page, req);
+        if (page1.getRecords() != null && page1.getRecords().size() > 0) {
+            List<CabineIndexCfgVO> records = page1.getRecords();
+            List<CabinetIndexLoadResVO> bean = BeanUtils.toBean(records, CabinetIndexLoadResVO.class);
+            Map<String, CabinetIndexLoadResVO> map = bean.stream().collect(Collectors.toMap(vo -> vo.getRoomId() + "-" + vo.getId(), i -> i));
+            List<String> keys = bean.stream().map(i -> i.getRoomId() + "-" + i.getId()).collect(Collectors.toList());
+            List list = redisTemplate.opsForValue().multiGet(keys);
+            for (Object obj : list) {
+                if (Objects.isNull(obj)) {
+                    continue;
+                }
+                JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
+
+                String cabinetKey = jsonObject.getString("cabinet_key");
+                CabinetIndexLoadResVO vo = map.get(cabinetKey);
+
+                vo.setRoomName(jsonObject.getString("room_name"));
+                StringJoiner joiner = new StringJoiner("-");
+                if (!StringUtils.isEmpty(vo.getRoomName())) {
+                    joiner.add(vo.getRoomName());
+                }
+                joiner.add(vo.getCabinetName());
+                vo.setLocation(joiner.toString());
+                vo.setActiveTotal(jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data").getBigDecimal("pow_active"));
+                vo.setApparentTotal(jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data").getBigDecimal("pow_apparent"));
+                vo.setLoadFactor(jsonObject.getBigDecimal("load_factor").setScale(2, RoundingMode.HALF_UP));
+                vo.setPowActivea(jsonObject.getJSONObject("cabinet_power").getJSONObject("path_a").getBigDecimal("pow_active"));
+                vo.setPowActiveb(jsonObject.getJSONObject("cabinet_power").getJSONObject("path_b").getBigDecimal("pow_active"));
+                vo.setPowApparenta(jsonObject.getJSONObject("cabinet_power").getJSONObject("path_a").getBigDecimal("pow_apparent"));
+                vo.setPowApparentb(jsonObject.getJSONObject("cabinet_power").getJSONObject("path_b").getBigDecimal("pow_apparent"));
+                vo.setDataUpdateTime(jsonObject.getString("date_time"));
+            }
+            return new PageResult<>(bean, page1.getTotal());
+
+        }
+
+        return null;
+    }
+
+    @Override
+    public PageResult<CabinetEnergyStatisticsResVO> getEnergyStatisticsPage(CabinetIndexVo pageReqVO) throws IOException {
+        Page page = new Page<>(pageReqVO.getPageNo(), pageReqVO.getPageSize());
+        Page<CabineIndexCfgVO> voPage = cabinetIndexMapper.selectIndexLoadPage(page, pageReqVO);
+        List<CabinetEnergyStatisticsResVO> list = BeanUtils.toBean(voPage.getRecords(), CabinetEnergyStatisticsResVO.class);
+        List<Integer> ids = list.stream().map(CabinetEnergyStatisticsResVO::getId).collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(ids)) {
+            return new PageResult<>(list, voPage.getTotal());
+        }
+        Map<String, CabinetEnergyStatisticsResVO> map = list.stream().collect(Collectors.toMap(vo -> vo.getRoomId() + "-" + vo.getId(), i -> i));
+        List<String> keys = list.stream().map(i -> i.getRoomId() + "-" + i.getId()).collect(Collectors.toList());
+        List vlues = redisTemplate.opsForValue().multiGet(keys);
+        //昨日
+        String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
+        String endTime = DateUtil.formatDateTime(DateUtil.endOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
+        List<CabinetEqTotalDay> yesterdayList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_day", CabinetEqTotalDay.class);
+        Map<Integer, BigDecimal> yesterdayMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(yesterdayList)) {
+            yesterdayMap = yesterdayList.stream().collect(Collectors.toMap(CabinetEqTotalDay::getCabinetId, CabinetEqTotalDay::getEqValue));
+        }
+
+        //上周
+        startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
+        endTime = DateUtil.formatDateTime(DateUtil.endOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
+        List<CabinetEqTotalDay> weekList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_week", CabinetEqTotalDay.class);
+        Map<Integer, BigDecimal> weekMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(weekList)) {
+            weekMap = weekList.stream().collect(Collectors.toMap(CabinetEqTotalDay::getCabinetId, CabinetEqTotalDay::getEqValue));
+        }
+
+        //上月
+        startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
+        endTime = DateUtil.formatDateTime(DateUtil.endOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
+        List<CabinetEqTotalDay> monthList = getDataEs(startTime, endTime, ids, "cabinet_eq_total_month", CabinetEqTotalDay.class);
+        Map<Integer, BigDecimal> monthMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(monthList)) {
+            monthMap = monthList.stream().collect(Collectors.toMap(CabinetEqTotalDay::getCabinetId, CabinetEqTotalDay::getEqValue));
+        }
+
+        for (CabinetEnergyStatisticsResVO vo : list) {
+            vo.setYesterdayEq(yesterdayMap.get(vo.getId()));
+            vo.setLastWeekEq(weekMap.get(vo.getId()));
+            vo.setLastMonthEq(monthMap.get(vo.getId()));
+        }
+//        if (pageReqVO.getTimeGranularity().equals("yesterday")) {
+//            list.sort(Comparator.comparing(CabinetEnergyStatisticsResVO::getYesterdayEq).reversed());
+//        } else if (pageReqVO.getTimeGranularity().equals("lastWeek")) {
+//            list.sort(Comparator.comparing(CabinetEnergyStatisticsResVO::getLastWeekEq).reversed());
+//        } else if (pageReqVO.getTimeGranularity().equals("lastMonth")) {
+//            list.sort(Comparator.comparing(CabinetEnergyStatisticsResVO::getLastMonthEq).reversed());
+//        }
+        if (Objects.isNull(vlues))
+        for (Object obj : vlues) {
+            if (Objects.isNull(obj)){
+                continue;
+            }
+            JSONObject jsonObject = JSON.parseObject(JSONObject.toJSONString(obj));
+            String cabinetKey = jsonObject.getString("cabinet_key");
+            CabinetEnergyStatisticsResVO vo = map.get(cabinetKey);
+
+            vo.setRoomName(jsonObject.getString("room_name"));
+            StringJoiner joiner = new StringJoiner("-");
+            if (!StringUtils.isEmpty(vo.getRoomName())) {
+                joiner.add(vo.getRoomName());
+            }
+            joiner.add(vo.getCabinetName());
+            vo.setLocation(joiner.toString());
+        }
+        return new PageResult<>(list, voPage.getTotal());
+    }
+
+    @Override
+    public PageResult<CabinetIndexEnvResVO> getCabinetEnv(CabinetIndexVo pageReqVO) {
+        Page page = new Page(pageReqVO.getPageNo(), pageReqVO.getPageSize());
+        Page<CabineIndexCfgVO> voPage = cabinetIndexMapper.selectIndexLoadPage(page, pageReqVO);
+        if (!CollectionUtils.isEmpty(voPage.getRecords())) {
+            List<CabineIndexCfgVO> records = voPage.getRecords();
+            List<CabinetIndexEnvResVO> bean = BeanUtils.toBean(records, CabinetIndexEnvResVO.class);
+            Map<String, CabinetIndexEnvResVO> map = bean.stream().collect(Collectors.toMap(vo -> vo.getRoomId() + "-" + vo.getId(), i -> i));
+            Set<String> ids = map.keySet();
+            List list = redisTemplate.opsForValue().multiGet(ids);
+            for (Object obj : list) {
+                if (Objects.isNull(obj)){
+                    continue;
+                }
+                JSONObject jsonObject = JSON.parseObject(JSONObject.toJSONString(obj));
+                String cabinetKey = jsonObject.getString("cabinet_key");
+                CabinetIndexEnvResVO vo = map.get(cabinetKey);
+                vo.setHumValue(jsonObject.getJSONObject("cabinet_env").getString("hum_value"));
+                vo.setTemValue(jsonObject.getJSONObject("cabinet_env").getString("tem_value"));
+                vo.setRoomName(jsonObject.getString("room_name"));
+            }
+            return new PageResult<>(bean, voPage.getTotal());
+        }
+        return null;
+    }
+
+    @Override
+    public PageResult<CabinetIndexBalanceResVO> getCabinetIndexBalancePage(CabinetIndexVo pageReqVO) {
+        Page<CabineIndexCfgVO> voPage = cabinetIndexMapper.selectIndexLoadPage(new Page(pageReqVO.getPageNo(), pageReqVO.getPageSize()), pageReqVO);
+        List<CabinetIndexBalanceResVO> records = BeanUtils.toBean(voPage.getRecords(), CabinetIndexBalanceResVO.class);
+        Map<String, CabinetIndexBalanceResVO> map = records.stream().collect(Collectors.toMap(vo -> vo.getRoomId() + "-" + vo.getId(), i -> i));
+        List list = redisTemplate.opsForValue().multiGet(map.keySet());
+        for (Object obj : list) {
+            if (Objects.isNull(obj)){
+                continue;
+            }
+            JSONObject jsonObject = JSONObject.parseObject(JSONObject.toJSONString(obj));
+            CabinetIndexBalanceResVO cabinetKey = map.get(jsonObject.getString("cabinet_key"));
+            //a的视在功率
+            BigDecimal aPow = jsonObject.getJSONObject("cabinet_power").getJSONObject("path_a").getBigDecimal("pow_apparent");
+            //b的视在功率
+            BigDecimal bPow =  jsonObject.getJSONObject("cabinet_power").getJSONObject("path_b").getBigDecimal("pow_apparent");
+            //总视在功率
+            BigDecimal totalPow =   jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data").getBigDecimal("pow_apparent");
+
+            cabinetKey.setAPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, aPow, totalPow),100));
+            cabinetKey.setBPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, bPow, totalPow),100));
+            cabinetKey.setACurValue(jsonObject.getJSONObject("cabinet_power").getJSONObject("path_a").getList("cur_value",BigDecimal.class).get(0));
+            cabinetKey.setBCurValue(jsonObject.getJSONObject("cabinet_power").getJSONObject("path_b").getList("cur_value",BigDecimal.class).get(0));
+            cabinetKey.setAVolValue(jsonObject.getJSONObject("cabinet_power").getJSONObject("path_a").getList("vol_value",BigDecimal.class).get(0));
+            cabinetKey.setBVolValue(jsonObject.getJSONObject("cabinet_power").getJSONObject("path_b").getList("vol_value",BigDecimal.class).get(0));
+            cabinetKey.setAPowValue(jsonObject.getJSONObject("cabinet_power").getJSONObject("path_a").getList("pow_value",BigDecimal.class).get(0));
+            cabinetKey.setBPowValue(jsonObject.getJSONObject("cabinet_power").getJSONObject("path_b").getList("pow_value",BigDecimal.class).get(0));
+        }
+        return new PageResult<>(records, voPage.getTotal());
+    }
+
+    private List getDataEs(String startTime, String endTime, List<Integer> ids, String index, Class objClass) throws IOException {
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
+                    .must(QueryBuilders.termsQuery(CABINET_ID, ids))));
+            builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            builder.size(10000);
+
+            List list = new ArrayList<>();
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse != null) {
+                SearchHits hits = searchResponse.getHits();
+                for (SearchHit hit : hits) {
+                    list.add(JsonUtils.parseObject(hit.getSourceAsString(), objClass));
+                }
+            }
+            return list;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     /**
      * 机柜配电状态统计
+     *
      * @return
      */
     @Override
     public PageResult<JSONObject> getCabinetRunStatus() {
 
         //查询全部的机柜配电状态
-        Map<String,Integer> statusCounts = cabinetCfgMapper.selectRunStatus();
+        Map<String, Integer> statusCounts = cabinetCfgMapper.selectRunStatus();
 
         JSONObject jsonObject = new JSONObject();
         List<JSONObject> result = new ArrayList<>();
@@ -822,12 +936,11 @@ public class CabinetServiceImpl implements CabinetService {
         //未禁用
         cabinetIndex.setIsDisabled(DisableFlagEnums.ENABLE.getStatus());
         cabinetIndex.setPowerCapacity(vo.getPowCapacity());
+        cabinetIndex.setCabinetHeight(vo.getCabinetHeight());
         cabinetIndex.setRoomId(vo.getRoomId());
         cabinetIndex.setId(index.getId());
-//        cabinetIndex.setEleAlarmDay(vo.getEleAlarmDay());
-//        cabinetIndex.setEleAlarmMonth(vo.getEleAlarmMonth());
-//        cabinetIndex.setEleLimitDay(vo.getEleLimitDay());
-//        cabinetIndex.setEleLimitMonth(vo.getEleLimitMonth());
+        cabinetIndex.setCabinetType(vo.getType());
+
         return cabinetIndex;
     }
 
@@ -841,14 +954,12 @@ public class CabinetServiceImpl implements CabinetService {
     private CabinetPdu convertPdu(CabinetVo vo, CabinetPdu pdu) {
         CabinetPdu cabinetPdu = new CabinetPdu();
         cabinetPdu.setCabinetId(vo.getId());
-        //TODO 后期更改
-//        cabinetPdu.setPduIpA(vo.getPduIpA());
-//        cabinetPdu.setPduIpB(vo.getPduIpB());
-//        cabinetPdu.setCasIdB(vo.getCasIdB());
-//        cabinetPdu.setCasIdA(vo.getCasIdA());
+        cabinetPdu.setPduKeyA(vo.getPduIpA()+"-"+vo.getCasIdB());
+        cabinetPdu.setPduKeyB(vo.getPduIpB()+"-"+vo.getCasIdA());
         cabinetPdu.setId(pdu.getId());
         return cabinetPdu;
     }
+
     /**
      * 实体转换
      *
@@ -861,26 +972,26 @@ public class CabinetServiceImpl implements CabinetService {
         cabinetBus.setCabinetId(vo.getId());
         if (StringUtils.isNotEmpty(vo.getBusIpA())
                 && Objects.nonNull(vo.getBarIdA())
-                && Objects.nonNull(vo.getAddrA())){
+                && Objects.nonNull(vo.getAddrA())) {
             cabinetBus.setBoxKeyA(vo.getBusIpA()
                     .concat(SPLIT_KEY)
                     .concat(String.valueOf(vo.getBarIdA()))
                     .concat(SPLIT_KEY)
                     .concat(String.valueOf(vo.getAddrA())));
-        }else {
+        } else {
             cabinetBus.setBoxKeyA("");
         }
 
         cabinetBus.setOutletIdA(vo.getBoxOutletIdA());
         if (StringUtils.isNotEmpty(vo.getBusIpB())
                 && Objects.nonNull(vo.getBarIdB())
-                && Objects.nonNull(vo.getAddrB())){
+                && Objects.nonNull(vo.getAddrB())) {
             cabinetBus.setBoxKeyB(vo.getBusIpB()
                     .concat(SPLIT_KEY)
                     .concat(String.valueOf(vo.getBarIdB()))
                     .concat(SPLIT_KEY)
                     .concat(String.valueOf(vo.getAddrB())));
-        }else {
+        } else {
             cabinetBus.setBoxKeyB("");
         }
         cabinetBus.setOutletIdB(vo.getBoxOutletIdB());
@@ -902,10 +1013,12 @@ public class CabinetServiceImpl implements CabinetService {
         CabinetCfg cabinetCfg = new CabinetCfg();
         cabinetCfg.setCabinetId(vo.getId());
         //TODO  后期更改
-//        cabinetCfg.setCabinetHeight(vo.getCabinetHeight());
-//        cabinetCfg.setCabinetName(vo.getCabinetName());
+        cabinetCfg.setEleAlarmDay(vo.getEleAlarmDay());
+        cabinetCfg.setEleAlarmMonth(vo.getEleAlarmMonth());
+        cabinetCfg.setEleLimitDay(vo.getEleLimitDay());
+        cabinetCfg.setEleLimitMonth(vo.getEleLimitMonth());
         cabinetCfg.setCompany(vo.getCompany());
-//        cabinetCfg.setType(vo.getType());
+
         cabinetCfg.setXCoordinate(vo.getXCoordinate());
         cabinetCfg.setYCoordinate(vo.getYCoordinate());
         cabinetCfg.setId(cfg.getId());
@@ -926,8 +1039,8 @@ public class CabinetServiceImpl implements CabinetService {
         }
         List<CabinetPdu> pduFlag = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>()
                 .in(CabinetPdu::getCabinetId, ids)
-                .and((wq -> wq.and(qr -> qr.eq(CabinetPdu::getPduKeyA, ip+"-"+cas))//.eq(CabinetPdu::getCasIdA, cas)
-                        .or(qr -> qr.eq(CabinetPdu::getPduKeyB, ip+"-"+cas)))//.eq(CabinetPdu::getCasIdB, cas)
+                .and((wq -> wq.and(qr -> qr.eq(CabinetPdu::getPduKeyA, ip + "-" + cas))//.eq(CabinetPdu::getCasIdA, cas)
+                        .or(qr -> qr.eq(CabinetPdu::getPduKeyB, ip + "-" + cas)))//.eq(CabinetPdu::getCasIdB, cas)
                 )
         );
         if (!CollectionUtils.isEmpty(pduFlag)) {
@@ -940,16 +1053,16 @@ public class CabinetServiceImpl implements CabinetService {
     /**
      * 保存机柜环境数据
      */
-    private void saveEnvSensor(int cabinetId,CabinetVo vo) throws Exception{
+    private void saveEnvSensor(int cabinetId, CabinetVo vo) throws Exception {
         //环境数据为空，删除数据后返回
-        if (CollectionUtils.isEmpty(vo.getSensorList())){
+        if (CollectionUtils.isEmpty(vo.getSensorList())) {
             envSensorMapper.delete(new LambdaQueryWrapper<CabinetEnvSensor>()
-                    .eq(CabinetEnvSensor::getCabinetId,cabinetId));
+                    .eq(CabinetEnvSensor::getCabinetId, cabinetId));
             return;
         }
         List<CabinetEnvSensor> envSensors = envSensorMapper.selectList(new LambdaQueryWrapper<CabinetEnvSensor>()
-                .eq(CabinetEnvSensor::getCabinetId,cabinetId));
-        if (!CollectionUtils.isEmpty(envSensors)){
+                .eq(CabinetEnvSensor::getCabinetId, cabinetId));
+        if (!CollectionUtils.isEmpty(envSensors)) {
             //先删除再新增
             List<Integer> ids = envSensors.stream().map(CabinetEnvSensor::getId).collect(Collectors.toList());
             envSensorMapper.deleteBatchIds(ids);
@@ -959,7 +1072,7 @@ public class CabinetServiceImpl implements CabinetService {
                 envSensorMapper.insert(cabinetEnvSensor);
             });
 
-        }else {
+        } else {
             //新增
             vo.getSensorList().forEach(cabinetEnvSensor -> {
                 cabinetEnvSensor.setCabinetId(cabinetId);
@@ -971,22 +1084,22 @@ public class CabinetServiceImpl implements CabinetService {
     /**
      * 保存机柜机架数据
      */
-    private void saveRack(int cabinetId,CabinetVo vo) throws Exception{
+    private void saveRack(int cabinetId, CabinetVo vo) throws Exception {
         //数据为空，清空数据
-        if (CollectionUtils.isEmpty(vo.getRackIndexList())){
-           //取消绑定
+        if (CollectionUtils.isEmpty(vo.getRackIndexList())) {
+            //取消绑定
             List<RackIndex> rackIndexList = rackIndexMapper.selectList(new LambdaQueryWrapper<RackIndex>()
-                    .eq(RackIndex::getCabinetId,cabinetId)
-                    .eq(RackIndex::getIsDelete,DelEnums.NO_DEL.getStatus()));
-            if (!CollectionUtils.isEmpty(rackIndexList)){
+                    .eq(RackIndex::getCabinetId, cabinetId)
+                    .eq(RackIndex::getIsDelete, DelEnums.NO_DEL.getStatus()));
+            if (!CollectionUtils.isEmpty(rackIndexList)) {
                 rackIndexMapper.update(new LambdaUpdateWrapper<RackIndex>()
-                        .in(RackIndex::getId,rackIndexList.stream().map(RackIndex::getId).collect(Collectors.toList()))
-                        .set(RackIndex::getCabinetId,0));
+                        .in(RackIndex::getId, rackIndexList.stream().map(RackIndex::getId).collect(Collectors.toList()))
+                        .set(RackIndex::getCabinetId, 0));
             }
 
         }
 
-        if (!CollectionUtils.isEmpty(vo.getRackIndexList())){
+        if (!CollectionUtils.isEmpty(vo.getRackIndexList())) {
             //修改
             vo.getRackIndexList().forEach(rackIndex -> rackIndexMapper.updateById(rackIndex));
 
@@ -997,10 +1110,11 @@ public class CabinetServiceImpl implements CabinetService {
 
     /**
      * 获取数据
+     *
      * @param startTime 开始时间
-     * @param endTime 结束时间
-     * @param ids 机柜id列表
-     * @param index 索引表
+     * @param endTime   结束时间
+     * @param ids       机柜id列表
+     * @param index     索引表
      */
     private List<String> getData(String startTime, String endTime, List<Integer> ids, String index) throws IOException {
         // 创建SearchRequest对象, 设置查询索引名

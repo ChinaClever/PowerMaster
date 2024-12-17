@@ -368,7 +368,15 @@ public class BusIndexController {
         return success(indexService.getAvgBusHdaLineForm(pageReqVO));
     }
 
-//    @GetMapping("busIndex/statistics")
-//    @Operation(summary = "获得始端箱设备统计")
+    @GetMapping("/statistics")
+    @Operation(summary = "获得始端箱设备状态统计")
+    public CommonResult<BusIndexStatisticsResVO> getBusIndexStatistics() {
+        return success(indexService.getBusIndexStatistics());
+    }
 
+    @GetMapping("/loadRateStatus")
+    @Operation(summary = "获得始端箱设备负载量状态统计")
+    public CommonResult<LoadRateStatus> getBusIndexLoadRateStatus() {
+        return success(indexService.getBusIndexLoadRateStatus());
+    }
 }

@@ -6,6 +6,13 @@ export const CabinetApi = {
     return await request.post({ url: `/cabinet/page`, data })
   },
 
+  getCabinetBalance: async (data: any) => {
+    return await request.post({ url: `/cabinet/balance/page`, data })
+  },
+  //获得机柜负荷分页
+  getIndexLoadPage: async (data: any) => {
+    return await request.post({ url: `/cabinet/loadPage`, data })
+  },
   //机柜配电状态统计
   getCabinetInfoStatus: async () => {
     return await request.post({ url: `/cabinet/runStatus` })

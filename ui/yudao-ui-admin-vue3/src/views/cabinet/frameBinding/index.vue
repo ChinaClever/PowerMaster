@@ -67,7 +67,7 @@ import { newInstance, BezierConnector, BrowserJsPlumbInstance } from '@jsplumb/b
 import draggable from "vuedraggable";
 import { CabinetApi } from '@/api/cabinet/info'
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
-import BindingFrom from './component/bindingFrom.vue'
+import  BindingFrom  from './component/bindingFrom.vue'
 import { ElMessageBox } from 'element-plus'
 
 
@@ -80,6 +80,9 @@ const portRight = ref<any[]>([]) // 右侧端口
 const frameList = ref([]) // 实际设备列表
 const frameListInit = ref<any>([]) // 初始空的设备列表
 const cabinetInfo = ref<any>({}) // 设备信息
+const cabinetId = history?.state?.cabinetId || 1
+const roomId = history?.state?.roomId || 1
+console.log('测试', cabinetId+'-'+roomId)
 const groupFrameFill = { // 有填入的群组
   name: 'FrameFill',
   pull: true, //拖出
@@ -136,10 +139,10 @@ const toCreatConnect = () => {
     outlineWidth: 13,
     outlineStroke: 'rgba(0, 0, 0, 0)'
   }
-  const hoverPaintStyleConfig = {
-    ...paintStyleConfig,
-    stroke: '#000',
-  }
+  // const hoverPaintStyleConfig = {
+  //   ...paintStyleConfig,
+  //   stroke: '#000',
+  // }
   // 左侧端口创建连接点
   portLeft.value.forEach(port => {
     const portElement = document.getElementById(`portLeft${port.id}`) as Element
@@ -320,7 +323,7 @@ const handleRightClick = (e) => {
 
 // 获取数据
 const getData = async() => {  
-  const res = await CabinetApi.getCabinetInfoItem({id: 1})
+  const res = await CabinetApi.getCabinetInfoItem({id: cabinetId})
   console.log('res', res)
   cabinetInfo.value = res
   const leftPort = [] as any
@@ -345,7 +348,7 @@ const getData = async() => {
   }
   frameListInit.value = [...frames]
   let count = 0
-  if (res.rackIndexList.length > 0) {
+  if (res.rackIndexList && Array.isArray(res.rackIndexList) && res.rackIndexList.length > 0) {
     res.rackIndexList.sort((a,b) => a.uAddress - b.uAddress)
     res.rackIndexList.forEach(item => {
       frames.splice(item.uAddress-1-count, item.uHeight, [{
@@ -373,7 +376,7 @@ const getData = async() => {
 const getPortList=  async() => {
   const cabinetInfoValue = cabinetInfo.value
   if (cabinetInfoValue.pduIpA) {
-    const res = await PDUDeviceApi.PDUDisplay({devKey: cabinetInfoValue.pduIpA + '-' + cabinetInfoValue.casIdA})
+    const res = await PDUDeviceApi.PDUDisplay({devKey: cabinetInfoValue.pduIpA})
     if (res.pdu_data && res.pdu_data.output_item_list) {
       const current = res.pdu_data.output_item_list.cur_value.reverse()
       const state = res.pdu_data.output_item_list.relay_state.reverse()
@@ -384,7 +387,7 @@ const getPortList=  async() => {
     }
   }
   if (cabinetInfoValue.pduIpB) {
-    const res = await PDUDeviceApi.PDUDisplay({devKey: cabinetInfoValue.pduIpB + '-' + cabinetInfoValue.casIdB})
+    const res = await PDUDeviceApi.PDUDisplay({devKey: cabinetInfoValue.pduIpB})
     if (res.pdu_data && res.pdu_data.output_item_list) {
       const current = res.pdu_data.output_item_list.cur_value.reverse()
       const state = res.pdu_data.output_item_list.relay_state.reverse()
@@ -430,6 +433,7 @@ const handleDeleteFlame = () => {
 
 // 打开编辑/新增弹窗
 const openBindingFrom = (type) => {
+  console.log('type', type)
   const index = operateMenu.value.curIndex
   const frameListCopy = frameList.value as any
   console.log('openBindingFrom', frameListCopy, index,frameListCopy.length)

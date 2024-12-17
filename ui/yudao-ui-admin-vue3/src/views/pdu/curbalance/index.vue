@@ -54,7 +54,9 @@
         label-width="68px"
       >
         <el-form-item v-if="switchValue == 2 || switchValue == 3">
+          <button class="bthnn" type="button" @click="toggleAllStatus">全部</button>
           <template v-for="(status, index) in statusList" :key="index">
+            
             <button
               :class="status.selected ? status.activeClass : status.cssClass"
               @click.prevent="handleSelectStatus(index)"
@@ -67,6 +69,7 @@
           type="primary"
           plain
           @click="openForm('create')"
+          style="margin-left: -130px;" 
         >
           <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
         </el-button>
@@ -269,6 +272,7 @@
                 <span style="font-size: 20px">{{ item.curUnbalance }}%</span><br />不平衡度
               </div>
             </div>
+           
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" v-if="item.color != 0">
@@ -292,7 +296,7 @@
         </div>
       </div>
 
-      <el-dialog v-model="dialogVisibleCur" @close="handleClose">
+      <el-dialog v-model="dialogVisibleCur"  >
         <!-- 自定义的头部内容（可选） -->
         <template #header>
           <CardTitle title="电流不平衡" />
@@ -308,7 +312,7 @@
             </div>
           </el-card>
           <el-card class="cardChilc" shadow="hover">
-            <div class="IechartBar">
+            <div class="IechartBar" :style="{backgroundColor: colorVolList[balanceObj.colorIndex].color}">
               <Echart :options="ALineOption" :height="300" />
             </div>
           </el-card>
@@ -323,7 +327,7 @@
               <el-tooltip
                 class="box-item"
                 effect="dark"
-                content="电流不平衡是指"
+                content="三相电流不平衡： 不平衡度%=（MAX相电流-三相平均电流）/三相平均电流×100%"
                 placement="right"
               >
                 <div @click.prevent="" class="question">?</div>
@@ -337,6 +341,11 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
+            <div class="icon">
+              <div v-if="item.volUnbalance != null">
+                <span style="font-size: 20px">{{ item.volUnbalance }}%</span><br />不平衡度
+              </div>
+            </div>
             <div class="info">
               <div v-if="item.avol != null">A相电压：{{ item.avol.toFixed(1) }}V</div>
               <div v-if="item.bvol != null">B相电压：{{ item.bvol.toFixed(1) }}V</div>
@@ -344,11 +353,7 @@
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
-            <div class="icon">
-              <div v-if="item.volUnbalance != null">
-                <span style="font-size: 20px">{{ item.volUnbalance }}%</span><br />不平衡度
-              </div>
-            </div>
+
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status">
@@ -363,7 +368,7 @@
         </div>
       </div>
 
-      <el-dialog v-model="dialogVisibleVol" @close="handleClose">
+      <el-dialog v-model="dialogVisibleVol" @close="handleClose" width="70%">
         <!-- 自定义的头部内容（可选） -->
         <template #header>
           <CardTitle title="电压不平衡" />
@@ -379,7 +384,7 @@
             </div>
           </el-card>
           <el-card class="cardChilc" shadow="hover">
-            <div class="IechartBar">
+            <div class="IechartBar" :style="{backgroundColor: colorVolList[balanceObj.colorIndex].color}">
               <Echart :options="BLineOption" :height="300"/>
             </div>
           </el-card>
@@ -390,7 +395,7 @@
               <el-tooltip
                 class="box-item"
                 effect="dark"
-                content="电压不平衡是指"
+                content="三相电压不平衡度=( 最大电压−最小电压)/平均电压×100%"
                 placement="right"
               >
                 <div @click.prevent="" class="question">?</div>
@@ -499,6 +504,20 @@ const colorList = [
     color: '#fa3333'
   }
 ]
+
+const colorVolList = [{
+  name: '小电压不平衡',
+  color: '#aaa',  //灰色
+},{
+  name: '大电压不平衡',
+  color: '#3bbb00', //绿色
+},{
+  name: '大电压不平衡',
+  color: '#ffc402', //黄色
+},{
+  name: '大电压不平衡',
+  color: '#fa3333', //红色
+}]
 
 const balanceObj = reactive({
   pow_apparent_percent: 0,
@@ -1043,6 +1062,30 @@ const handleSelectStatus = (index) => {
   handleQuery()
 }
 
+const toggleAllStatus = () => {
+  const allSelected = statusList.every(item => item.selected);
+  
+  if (allSelected) {
+    // 如果所有按钮都已选中，则全部取消选中
+    statusList.forEach(item => item.selected = false);
+  } else {
+    // 如果至少有一个按钮未选中，则全部选中
+    statusList.forEach(item => item.selected = true);
+  }
+
+  // 更新查询参数
+  const status = statusList.filter(item => item.selected);
+  const statusArr = status.map(item => item.value);
+  if (statusArr.length != statusList.length) {
+    queryParams.color = statusArr
+    queryParams.status = [0, 1, 2, 3, 4]
+  } else {
+    queryParams.color = []
+    queryParams.status = []
+  }
+  handleQuery();
+}
+
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
@@ -1099,7 +1142,15 @@ onMounted(async () => {
   getList()
   getNavList()
   getNavAList()
-  flashListTimer.value = setInterval(getList, 5000)
+  // if (!firstTimerCreate.value) {
+    // flashListTimer.value = setInterval(getList, 5000);
+  // }
+
+    setInterval(() => {
+         setTimeout(() => {
+          getList()
+       }, 0);
+  }, 5000);
 })
 
 onBeforeUnmount(() => {
@@ -1120,9 +1171,15 @@ onBeforeRouteLeave(() => {
 onActivated(() => {
   getList()
   getNavList()
-  if (!firstTimerCreate.value) {
-    flashListTimer.value = setInterval(getList, 5000)
-  }
+  // if (!firstTimerCreate.value) {
+    // flashListTimer.value = setInterval(getList, 5000);
+  // }
+  setInterval(() => {
+         setTimeout(() => {
+          getList()
+       }, 0);
+  }, 5000);
+
 })
 </script>
 
@@ -1178,6 +1235,18 @@ onActivated(() => {
     flex: 1;
     overflow: hidden;
   }
+}
+
+
+.bthnn {
+  width: 58px;
+  height: 35px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px
+  
 }
 
 .btn_offline,
@@ -1412,6 +1481,7 @@ onActivated(() => {
         }
         .info {
           margin-left: 15px;
+          margin-top: 10px;
         }
       }
       .devKey {
@@ -1479,6 +1549,7 @@ onActivated(() => {
         }
         .info {
           margin-left: 15px;
+          margin-top: 10px;
         }
       }
       .devKey {
@@ -1546,6 +1617,7 @@ onActivated(() => {
         }
         .info {
           margin-left: 15px;
+          margin-top: 10px;
         }
       }
       .devKey {
@@ -1609,11 +1681,11 @@ onActivated(() => {
 }
 
 :deep(.el-dialog) {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  width: 100%;
+  top: -10%;
+  width: 90%;
+  height: 80%;
 }
+
 .custom-content {
   display: flex;
   justify-content: space-between;

@@ -38,7 +38,7 @@ public class BusIndexPageReqVO extends PageParam {
     @Schema(description = "母线编号", example = "16770")
     private Integer barId;
 
-    @Schema(description = "运行状态 0：正常 1：预警 2：告警 3: 升级 4：故障 5：离线", example = "2")
+    @Schema(description = "运行状态 0：离线 1：正常 2：告警", example = "2")
     private List<Integer> runStatus;
 
     @Schema(description = "节点IP")
@@ -83,4 +83,7 @@ public class BusIndexPageReqVO extends PageParam {
 
     @Schema(description = "时间颗粒度")
     private String timeGranularity;
+
+    @Schema(description = "负载量状态 0：空载 1：<30%  2: 30~60 3：60~90  4：>90%")
+    private List<Integer> loadRateStatus;
 }

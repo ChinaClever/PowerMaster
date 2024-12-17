@@ -31,7 +31,7 @@
           <el-tooltip
             class="box-item"
             effect="dark"
-            content="小电流不平衡是指"
+            content="三相电流不平衡： 不平衡度%=（MAX相电流-三相平均电流）/三相平均电流×100%"
             placement="right"
           >
             <div @click.prevent="" class="question">?</div>
@@ -62,7 +62,7 @@
           <el-tooltip
             class="box-item"
             effect="dark"
-            content="电压不平衡是指"
+            content="三相电压不平衡度=( 最大电压−最小电压)/平均电压×100%"
             placement="right"
           >
             <div @click.prevent="" class="question">?</div>
@@ -394,7 +394,6 @@ const ALineOption = ref<EChartsOption>({
           tooltipContent += `${phases[index]}: ${item.value} A<br/>`;
         }
       });
-      
       return tooltipContent;
     }
   },
@@ -432,7 +431,6 @@ const BLineOption = ref<EChartsOption>({
           tooltipContent += `${phases[index]}: ${item.value} V<br/>`;
         }
       });
-      
       return tooltipContent;
     }
   },

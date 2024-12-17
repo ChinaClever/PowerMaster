@@ -185,9 +185,89 @@
             <el-tag type="info" v-if="item.status == 5 " >离线</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>          
-          <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <button class="detail" @click="showDialogCur(item)" v-if="item.status != null && item.status != 5">详情</button>
         </div>
       </div>
+
+      <el-dialog v-model="dialogVisibleCur" @close="handleClose">
+        <!-- 自定义的头部内容（可选） -->
+        <template #header>
+          <el-form
+        class="-mb-15px"
+        :model="queryParams"
+        ref="queryFormRef"
+        :inline="true"
+        label-width="120px"
+      >      
+        <el-form-item>  
+          <span>所处位置：</span>
+          <el-tag size="large">{{ adder }}</el-tag>
+          <span>设备名称：</span>
+          <el-tag size="large" style="margin-right:11vw">{{ location }}</el-tag>
+          <el-select
+            v-model="queryParams.harmonicType"
+            placeholder="请选择"
+            style="width: 240px"
+          >
+            <el-option label="A相电压谐波" :value = 0 />
+            <el-option label="B相电压谐波" :value = 1 />
+            <el-option label="C相电压谐波" :value = 2 />
+            <el-option label="A相电流谐波" :value = 3 />
+            <el-option label="B相电流谐波" :value = 4 />
+            <el-option label="C相电流谐波" :value = 5 />
+          </el-select>
+
+          <el-select
+            v-model="queryParams.harmonicArr"
+            multiple
+            placeholder="Select"
+            collapse-tags
+            collapse-tags-tooltip
+            style="width: 240px"
+          >
+          <el-option label='全选' value='全选' @click='selectAll' />
+          <el-option
+            v-for="item in harmonicMultiple"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+            @click="getLabel(item.value)"
+          />
+          </el-select>
+
+          <el-button 
+            @click="subtractOneDay();handleDayPick()" 
+          >
+            &lt;
+          </el-button>
+          <el-date-picker
+            v-model="queryParams.oldTime"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            type="date"
+            :disabled-date="disabledDate"
+            @change="handleDayPick"
+            class="!w-160px"
+          />
+          <el-button 
+            @click="addtractOneDay();handleDayPick()" 
+          >
+            &gt;
+          </el-button>
+        </el-form-item>
+
+        <el-form-item>
+          <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+        </el-form-item>
+        <!-- <el-text size="large">
+          报警次数：{{ pduInfo.alarm }}
+        </el-text> -->
+      </el-form>
+        </template>
+        <!-- 自定义的主要内容 -->
+        <div class="custom-content">
+          
+        </div>
+      </el-dialog>
 
       <div v-show="switchValue == 1  && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
@@ -244,11 +324,15 @@ import { IndexApi } from '@/api/bus/busindex'
 import { ElTree } from 'element-plus'
 // import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
 
+import HarmonicRealTime from '@/views/bus/harmonicdetail/component/HarmonicRealTime.vue'
+import HarmonicLine from '@/views/bus/harmonicdetail/component/HarmonicLine.vue'
+
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
 const { push } = useRouter()
-
+const dialogVisibleCur = ref(false) //全屏弹窗的显示隐藏
+const dialogVisibleVol = ref(false) //全屏弹窗的显示隐藏
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
@@ -284,9 +368,9 @@ const createFilter = (queryString: string) => {
   }
 }
 
-const handleClick = (row) => {
-  console.log("click",row)
-}
+//const handleClick = (row) => {
+//  console.log("click",row)
+//}
 
 const handleCheck = async (row) => {
   if(row.length == 0){
@@ -437,6 +521,14 @@ const toDetail = (row) =>{
   const busId = row.busId
   const location = row.location ? row.location : devKey;
   push({path: '/bus/busmonitor/busharmonicdetail', state: { devKey, busId , location }})
+}
+
+const showDialogCur = () => {
+  dialogVisibleCur.value = true
+}
+
+const showDialogVol = () => {
+  dialogVisibleVol.value = true
 }
 
 // const openNewPage = (scope) => {
@@ -855,18 +947,27 @@ onActivated(() => {
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
+
 :deep(.el-form) {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }
+
 ::v-deep .el-table .el-table__header th{
   background-color: #f5f7fa;
   color: #909399;
   height: 80px;
 
+}
+
+:deep(.el-dialog){
+  margin: 0;
+  width: 100%;
+  height: 100%;
 }
 </style>

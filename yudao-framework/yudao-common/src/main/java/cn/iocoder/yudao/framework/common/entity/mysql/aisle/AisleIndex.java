@@ -76,7 +76,7 @@ public class AisleIndex implements Serializable {
     private String direction;
 
 
-    private Double powerCapacity;
+//    private Double powerCapacity;
 
     /**
      * 更新时间

@@ -345,7 +345,11 @@ public class BoxIndexController {
         return success(indexService.getAvgBoxHdaLineForm(pageReqVO));
     }
 
-
+    @GetMapping("/statistics")
+    @Operation(summary = "获得设备统计")
+    public CommonResult<BusIndexStatisticsResVO> getBoxIndexStatistics() {
+        return success(indexService.getBoxIndexStatistics());
+    }
 //    @GetMapping("/export-excel")
 //    @Operation(summary = "导出插接箱索引 Excel")
 //    @PreAuthorize("@ss.hasPermission('box:index:export')")

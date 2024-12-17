@@ -305,14 +305,14 @@ public class AisleServiceImpl implements AisleService {
                         if (Objects.isNull(cabinetVo.getAddrA()) && Objects.nonNull(cabinetVo.getBoxIndexA())){
                             AisleBar bar = aisleBarMapper.selectOne(new LambdaQueryWrapper<AisleBar>()
                                     .eq(AisleBar::getAisleId,index.getId())
-//                                    .eq(AisleBar::getBarId,barIdA)
-                                    .eq(AisleBar::getBusKey,busIpA+"-"+barIdA));
+                                    .eq(AisleBar::getBusKey,barIdA));
+                                    //.eq(AisleBar::getDevIp,busIpA));
                             if (Objects.nonNull(bar)){
                                 AisleBox box = aisleBoxMapper.selectOne(new LambdaQueryWrapper<AisleBox>()
                                         .eq(AisleBox::getAisleBarId,bar.getId())
                                         .eq(AisleBox::getBoxType,0)
                                         .eq(AisleBox::getBoxIndex,cabinetVo.getBoxIndexA()));
-                                cabinetVo.setAddrA(Objects.nonNull(box)?box.getBusKey():null);
+                               // cabinetVo.setAddrA(Objects.nonNull(box)?box.getCasAddr():null);
 
                             }
 
@@ -320,14 +320,14 @@ public class AisleServiceImpl implements AisleService {
                         if (Objects.isNull(cabinetVo.getAddrB()) && Objects.nonNull(cabinetVo.getBoxIndexB())){
                             AisleBar bar = aisleBarMapper.selectOne(new LambdaQueryWrapper<AisleBar>()
                                     .eq(AisleBar::getAisleId,index.getId())
-//                                    .eq(AisleBar::getBarId,barIdB)
-                                    .eq(AisleBar::getBusKey,busIpB+"-"+barIdB));
+                                    .eq(AisleBar::getBusKey,barIdB));
+                                    //.eq(AisleBar::getDevIp,busIpB));
                             if (Objects.nonNull(bar)){
                                 AisleBox box = aisleBoxMapper.selectOne(new LambdaQueryWrapper<AisleBox>()
                                         .eq(AisleBox::getAisleBarId,bar.getId())
                                         .eq(AisleBox::getBoxType,0)
                                         .eq(AisleBox::getBoxIndex,cabinetVo.getBoxIndexB()));
-                                cabinetVo.setAddrB(Objects.nonNull(box)?box.getBusKey():null);
+                                //cabinetVo.setAddrB(Objects.nonNull(box)?box.getCasAddr():null);
 
                             }
 
@@ -410,7 +410,7 @@ public class AisleServiceImpl implements AisleService {
                             AisleBox box = BeanUtils.toBean(boxDTO,AisleBox.class);
                             box.setAisleId(aisleId);
                             box.setAisleBarId(bar.getId());
-//                            box.setBarId(barVo.getBarId());
+                            //box.setBarId(barVo.getBarId());
                             box.setBoxKey(barVo.getDevIp() + SPLIT_KEY + barVo.getBarId()+ SPLIT_KEY + boxDTO.getCasAddr());
                             aisleBoxMapper.insert(box);
                         });

@@ -10,11 +10,90 @@
      -->
 
     <select id="selectCabineIndexCfgById" resultType="cn.iocoder.yudao.framework.common.vo.CabineIndexCfgVO">
-        SELECT id, room_id, aisle_id, aisle_x, cabinet_type, cabinet_name, cabinet_height,
-        power_capacity, is_disabled, run_status, load_status, pdu_box, is_deleted, create_time,
-        update_time, ele_alarm_day, ele_limit_day, ele_alarm_month, ele_limit_month, x_coordinate, y_coordinate, company
-        FROM cabinet_index ci
+        SELECT
+        ci.id,
+        ci.room_id,
+        ci.aisle_id,
+        ci.aisle_x,
+        ci.cabinet_type,
+        ci.cabinet_name,
+        ci.cabinet_height,
+        ci.power_capacity,
+        ci.is_disabled,
+        ci.run_status,
+        ci.load_status,
+        ci.pdu_box,
+        ci.is_deleted,
+        ci.create_time,
+        ci.update_time,
+        cfg.ele_alarm_day,
+        cfg.ele_limit_day,
+        cfg.ele_alarm_month,
+        cfg.ele_limit_month,
+        cfg.x_coordinate,
+        cfg.y_coordinate,
+        cfg.company
+        FROM
+        cabinet_index ci
         LEFT JOIN cabinet_cfg cfg on cfg.cabinet_id = ci.id
-        WHERE id = #{id}
+        WHERE ci.id = #{id}
+    </select>
+    <select id="selectIndexLoadPage"
+            resultType="cn.iocoder.yudao.framework.common.vo.CabineIndexCfgVO">
+        SELECT
+        ci.id,
+        ci.room_id,
+        ci.aisle_id,
+        ci.aisle_x,
+        ci.cabinet_type,
+        ci.cabinet_name,
+        ci.cabinet_height,
+        ci.power_capacity,
+        ci.is_disabled,
+        ci.run_status,
+        ci.load_status,
+        ci.pdu_box,
+        ci.is_deleted,
+        ci.create_time,
+        ci.update_time,
+        cfg.ele_alarm_day,
+        cfg.ele_limit_day,
+        cfg.ele_alarm_month,
+        cfg.ele_limit_month,
+        cfg.x_coordinate,
+        cfg.y_coordinate,
+        cfg.company
+        FROM
+        cabinet_index ci
+        LEFT JOIN cabinet_cfg cfg on cfg.cabinet_id = ci.id
+        <where>
+            <if test="req.cabinetIds !=null and req.cabinetIds.size >0">
+                and ci.id in
+                <foreach item="item" collection="req.cabinetIds" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="req.roomId !=null and req.roomId !=''">
+                and ci.room_id = #{req.roomId}
+            </if>
+            <if test="req.runStatus !=null and req.runStatus.size >0">
+                and ci.run_status in
+                <foreach item="item" collection="req.runStatus" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="req.loadStatus !=null and req.loadStatus.size >0">
+                and ci.load_status in
+                <foreach item="item" collection="req.loadStatus" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="req.pduBox !=null">
+                and ci.pdu_box = #{req.pduBox}
+            </if>
+            <if test="req.company !=null">
+                and cfg.company like concat('%',#{req.company},'%')
+            </if>
+        </where>
     </select>
 </mapper>

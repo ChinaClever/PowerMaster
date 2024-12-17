@@ -524,24 +524,24 @@ public class BusIndexServiceImpl implements BusIndexService {
             } else {
                 busIndexRes.setALoadRate(loadRate.getDouble(0));
             }
-            rateList.sort(Collections.reverseOrder());
-            Double biggest = rateList.get(0);
-            if (biggest == 0) {
-                busIndexRes.setColor(0);
-            } else if (biggest < 30) {
-                busIndexRes.setColor(1);
-            } else if (biggest < 60) {
-                busIndexRes.setColor(2);
-            } else if (biggest < 90) {
-                busIndexRes.setColor(3);
-            } else if (biggest >= 90) {
-                busIndexRes.setColor(4);
-            }
-            if (pageReqVO.getColor() != null) {
-                if (!pageReqVO.getColor().contains(busIndexRes.getColor())) {
-                    res.removeIf(bus -> bus.getBusId().equals(busIndexRes.getBusId()));
-                }
-            }
+//            rateList.sort(Collections.reverseOrder());
+//            Double biggest = rateList.get(0);
+//            if (biggest == 0) {
+//                busIndexRes.setColor(0);
+//            } else if (biggest < 30) {
+//                busIndexRes.setColor(1);
+//            } else if (biggest < 60) {
+//                busIndexRes.setColor(2);
+//            } else if (biggest < 90) {
+//                busIndexRes.setColor(3);
+//            } else if (biggest >= 90) {
+//                busIndexRes.setColor(4);
+//            }
+//            if (pageReqVO.getColor() != null) {
+//                if (!pageReqVO.getColor().contains(busIndexRes.getColor())) {
+//                    res.removeIf(bus -> bus.getBusId().equals(busIndexRes.getBusId()));
+//                }
+//            }
         }
         return res;
     }
@@ -707,6 +707,16 @@ public class BusIndexServiceImpl implements BusIndexService {
     }
 
     @Override
+    public BusIndexStatisticsResVO getBusIndexStatistics() {
+        return busIndexMapper.selectBusIndexStatistics();
+    }
+
+    @Override
+    public LoadRateStatus getBusIndexLoadRateStatus() {
+        return busIndexMapper.selectBusIndexLoadRateStatus();
+    }
+
+    @Override
     public PageResult<BusRedisDataRes> getBusRedisPage(BusIndexPageReqVO pageReqVO) {
         PageResult<BusIndexDO> busIndexDOPageResult = busIndexMapper.selectPage2(pageReqVO);
         List<BusIndexDO> list = busIndexDOPageResult.getList();
@@ -729,7 +739,6 @@ public class BusIndexServiceImpl implements BusIndexService {
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
             String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id");
-            //String devKey = jsonObject.getString("dev_ip") + '_' + jsonObject.getString("bus_name");
             BusRedisDataRes busRedisDataRes = resMap.get(devKey);
             JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
             JSONArray volValue = lineItemList.getJSONArray("vol_value");
@@ -1110,6 +1119,7 @@ public class BusIndexServiceImpl implements BusIndexService {
             busTemRes.setBusName(busIndexDO.getBusName());
             res.add(busTemRes);
         }
+//        List<BusTemRes> res = BeanUtils.toBean(list, BusTemRes.class);
         Map<String, BusTemRes> resMap = res.stream().collect(Collectors.toMap(BusTemRes::getDevKey, Function.identity()));
         getPosition(res);
         for (Object o : redisList) {
@@ -3042,32 +3052,35 @@ public class BusIndexServiceImpl implements BusIndexService {
      * @param ids       机柜id列表
      * @param index     索引表
      */
-    private List<String> getData(String startTime, String endTime, List<Integer> ids, String index) throws IOException {
-        // 创建SearchRequest对象, 设置查询索引名
-        SearchRequest searchRequest = new SearchRequest(index);
-        // 通过QueryBuilders构建ES查询条件，
-        SearchSourceBuilder builder = new SearchSourceBuilder();
+    private List<String> getData(String startTime, String endTime, List<Integer> ids, String index) {
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
 
-        //获取需要处理的数据
-        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
-                .must(QueryBuilders.termsQuery("bus_id", ids))));
-        builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
-        // 设置搜索条件
-        searchRequest.source(builder);
-        builder.size(2000);
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
+                    .must(QueryBuilders.termsQuery("bus_id", ids))));
+            builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            builder.size(2000);
 
-        List<String> list = new ArrayList<>();
-        // 执行ES请求
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-        if (searchResponse != null) {
-            SearchHits hits = searchResponse.getHits();
-            for (SearchHit hit : hits) {
-                String str = hit.getSourceAsString();
-                list.add(str);
+            List<String> list = new ArrayList<>();
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse != null) {
+                SearchHits hits = searchResponse.getHits();
+                for (SearchHit hit : hits) {
+                    String str = hit.getSourceAsString();
+                    list.add(str);
+                }
             }
+            return list;
+        } catch (Exception e) {
+            return null;
         }
-        return list;
-
     }
 
     private List<String> getBusHarmonicData(String startTime, String endTime, List<Integer> ids, List<Integer> lines, String index) throws IOException {

@@ -32,7 +32,9 @@ public interface BusIndexMapper extends BaseMapperX<BusIndexDO> {
                 .eqIfPresent(BusIndexDO::getNodeId, reqVO.getNodeIp())
                 .eqIfPresent(BusIndexDO::getIsDeleted, reqVO.getIsDeleted())
                 .betweenIfPresent(BusIndexDO::getCreateTime, reqVO.getCreateTime())
-                .ne(ObjectUtil.isNotEmpty(reqVO.getStatus()),BusIndexDO::getRunStatus, 0)
+                .inIfPresent(BusIndexDO::getRunStatus, reqVO.getStatus())
+                        .ne(BusIndexDO::getLoadRateStatus, reqVO.getLoadRateStatus())
+//                .ne(ObjectUtil.isNotEmpty(reqVO.getStatus()),BusIndexDO::getRunStatus, 0)
                 .orderByAsc(BusIndexDO::getId));
     }
 
@@ -56,4 +58,8 @@ public interface BusIndexMapper extends BaseMapperX<BusIndexDO> {
 
     IPage<BusAisleBarQueryVO> selectBoxPageList(@Param("page") Page<Object> page,@Param("devkeys") String[] devkeys);
     List<BusAisleBarQueryVO> selectBoxPageList(@Param("devkeys") String[] devkeys);
+
+    BusIndexStatisticsResVO selectBusIndexStatistics();
+
+    LoadRateStatus selectBusIndexLoadRateStatus();
 }

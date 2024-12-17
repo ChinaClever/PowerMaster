@@ -37,7 +37,7 @@
 
       </div>
     </template>
-    <template #ActionBar>
+    <template #ActionBar > 
       <!-- 搜索工作栏 -->
       <el-form
         class="-mb-15px"
@@ -48,6 +48,9 @@
         v-show="switchValue !== 2"                          
       >
         <el-form-item>
+          <button class="btnnnnnnnn" type = "button" @click="toggleAllStatus">
+            全部
+          </button>
           <template v-for="(status, index) in statusList" :key="index">
             <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
           </template>
@@ -108,7 +111,7 @@
             clearable
             class="!w-200px"
             placeholder="请输入网络地址"
-            @select="handleQuery"                       
+            @select="handleQuery"                      
           />
         </el-form-item>        
       
@@ -139,7 +142,8 @@
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;showPagination = 0;" :type="switchValue === 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 2;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
         </div>
-      </el-form>      
+      </el-form>  
+         
     </template>
     <template #Content>
      <div>
@@ -251,18 +255,17 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
+            <div class="info">
+              <div v-if=" item.pow != null ">有功功率：{{item.pow}}kW</div>
+              <div v-if="item.apparentPow != null">视在功率：{{item.apparentPow}}kVA</div>
+              <!-- <div >网络地址：{{ item.devKey }}</div> -->
+              <!-- <div>AB路占比：{{item.fzb}}</div> -->
+            </div>
             <div class="icon">
               <div v-if="item.pf != null">
                 {{item.pf}}<br/>
                 <span class="text-pf">PF</span>
               </div>                    
-            </div>
-            <div class="info">
-              
-              <div v-if=" item.pow != null ">有功功率：{{item.pow}}kW</div>
-              <div v-if="item.apparentPow != null">视在功率：{{item.apparentPow}}kVA</div>
-              <!-- <div >网络地址：{{ item.devKey }}</div> -->
-              <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
@@ -711,6 +714,26 @@ const handleSelectStatus = (index) => {
   handleQuery();
 }
 
+const toggleAllStatus = () => {
+  const allSelected = statusList.every(item => item.selected);
+  
+  if (allSelected) {
+    // 如果所有按钮都已选中，则全部取消选中
+    statusList.forEach(item => item.selected = false);
+  } else {
+    // 如果至少有一个按钮未选中，则全部选中
+    statusList.forEach(item => item.selected = true);
+  }
+
+  // 更新查询参数
+  const status = statusList.filter(item => item.selected);
+  const statusArr = status.map(item => item.value);
+  queryParams.status = statusArr;
+  handleQuery();
+}
+
+
+
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
@@ -786,7 +809,11 @@ onMounted(async () => {
   getList()
   getNavList();
   getListAll();
-  flashListTimer.value = setInterval((getListNoLoading), 10000);
+  flashListTimer.value = setInterval(() => {
+         setTimeout(() => {
+          getList()
+       }, 0);
+  }, 5000);
   // flashListTimer.value = setInterval((getListAll), 5000);
 })
 
@@ -809,13 +836,18 @@ onActivated(() => {
   getList();
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getListNoLoading), 10000);
+    flashListTimer.value = setInterval(() => {
+         setTimeout(() => {
+          getList()
+       }, 0);
+  }, 5000);
     // flashListTimer.value = setInterval((getListAll), 5000);
   }
 })
 </script>
 
 <style scoped lang="scss">
+
 :deep(.ip:hover) {
   color: blue !important;
   cursor: pointer;
@@ -867,6 +899,16 @@ onActivated(() => {
     flex: 1;
     overflow: hidden;
   }
+}
+
+.btnnnnnnnn {
+  margin-right: 10px;
+  width: 58px;
+  height: 35px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn_offline,
@@ -1101,6 +1143,7 @@ onActivated(() => {
           height: 30px;
           margin: 0 25px 39px;
           text-align: center;
+          padding-left: 5px;
           .text-pf{
             font-size: 16px;
           }
@@ -1108,6 +1151,7 @@ onActivated(() => {
         .info{
           font-size: 16px;
           margin-bottom: 20px;
+          margin-left: 5px;
         }
       }
       .devKey{
@@ -1181,6 +1225,7 @@ onActivated(() => {
         .info{
           font-size: 16px;
           margin-bottom: 20px;
+          margin-left: 5px;
         }
       }
       .devKey{
@@ -1254,6 +1299,7 @@ onActivated(() => {
         .info{
           font-size: 16px;
           margin-bottom: 20px;
+          margin-left: 5px;
         }
       }
       .devKey{
@@ -1313,5 +1359,8 @@ onActivated(() => {
   color: #909399;
   height: 80px;
 
+}
+.-mb-15px {
+  border-color: #000;
 }
 </style>

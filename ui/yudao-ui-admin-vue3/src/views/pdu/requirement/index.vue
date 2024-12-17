@@ -41,7 +41,11 @@
 
     <div v-show="item.location !== null" v-for="item in maxCurAll" :key="item.devKey" style="  margin-top: 15px;margin-left: 10px;">
       <div>{{ item.location}}</div>
-    </div>      
+    </div> 
+    <div v-for="item in maxCurAll" :key="item.devKey" class="description-item">
+      <span>所在位置 :</span>
+      <span>{{ item.devKey}}</span>
+    </div>     
     <div v-for="item in maxCurAll" :key="item.devKey" class="description-item">
       <span>网络地址 :</span>
       <span>{{ item.devKey}}</span>
@@ -392,7 +396,7 @@
 
       <el-dialog
         v-model="dialogVisible"
-        @close="handleClose"
+        
       >     
         <!-- 自定义的头部内容（可选） -->
         <template #header>
@@ -683,20 +687,20 @@ const getList = async () => {
     const data = await PDUDeviceApi.getPDULinePage(queryParams)
     console.log('dataresult',data)
     list.value = data.list
-    var tableIndex = 0;
-    list.value.forEach((obj) => {
+    // var tableIndex = 0;
+    // list.value.forEach((obj) => {
 
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      obj.l1MaxCur = obj.l1MaxCur?.toFixed(1);
-      obj.l1MaxVol = obj.l1MaxVol?.toFixed(1);
-      obj.l1MaxPow = obj.l1MaxPow?.toFixed(3);
-      obj.l2MaxCur = obj.l2MaxCur?.toFixed(1);
-      obj.l2MaxVol = obj.l2MaxVol?.toFixed(1);
-      obj.l2MaxPow = obj.l2MaxPow?.toFixed(3);
-      obj.l3MaxCur = obj.l3MaxCur?.toFixed(1);
-      obj.l3MaxVol = obj.l3MaxVol?.toFixed(1);
-      obj.l3MaxPow = obj.l3MaxPow?.toFixed(3);
-    });
+    //   obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+    //   obj.l1MaxCur = obj.l1MaxCur?.toFixed(1);
+    //   obj.l1MaxVol = obj.l1MaxVol?.toFixed(1);
+    //   obj.l1MaxPow = obj.l1MaxPow?.toFixed(3);
+    //   obj.l2MaxCur = obj.l2MaxCur?.toFixed(1);
+    //   obj.l2MaxVol = obj.l2MaxVol?.toFixed(1);
+    //   obj.l2MaxPow = obj.l2MaxPow?.toFixed(3);
+    //   obj.l3MaxCur = obj.l3MaxCur?.toFixed(1);
+    //   obj.l3MaxVol = obj.l3MaxVol?.toFixed(1);
+    //   obj.l3MaxPow = obj.l3MaxPow?.toFixed(3);
+    // });
     const allData = await PDUDeviceApi.getPDUDeviceMaxCur(queryParams)
     maxCurAll.value = allData.list
     maxCurAll.value.forEach((obj) => {
