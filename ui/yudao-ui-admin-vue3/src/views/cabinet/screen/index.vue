@@ -9,7 +9,7 @@
         <div v-for="item in deviceRight" :key="item.id" class="device">
           <div class="name">设备名称： {{item.rackName}}</div>
           <div class="info">
-            <div>型号：{{item.type}}</div>
+            <div>型号：{{item.rackType}}</div>
             <div>占用：{{item.uHeight}}</div>
           </div>
         </div>
@@ -29,7 +29,7 @@
         <div v-for="item in deviceLeft" :key="item.id" class="device">
           <div class="name">设备名称： {{item.rackName}}</div>
           <div class="info">
-            <div>型号：{{item.type}}</div>
+            <div>型号：{{item.rackType}}</div>
             <div>占用：{{item.uHeight}}</div>
           </div>
         </div>

@@ -1,14 +1,20 @@
 package cn.iocoder.yudao.module.cabinet.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import static cn.iocoder.yudao.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
+import static cn.iocoder.yudao.framework.common.util.date.DateUtils.TIME_ZONE_DEFAULT;
+
 @Data
-public class CabinetIndexBalanceResVO {
+@Schema(description = "机柜负载状态统计")
+public class CabinetIndexBalanceResVO implements Serializable {
 
     /**
      * 机房编号
@@ -32,13 +38,13 @@ public class CabinetIndexBalanceResVO {
      * 通道编号 0不属于任何柜列
      */
     @Schema(description = "通道编号 0不属于任何柜列")
-    private Integer  aisleId;
+    private Integer aisleId;
 
     /**
-     *  柜列的位置 从1开始 0未被分配
+     * 柜列的位置 从1开始 0未被分配
      */
     @Schema(description = "柜列的位置 从1开始 0未被分配")
-    private Integer  aisleX;
+    private Integer aisleX;
 
     /**
      * 机柜类型
@@ -47,7 +53,7 @@ public class CabinetIndexBalanceResVO {
     private String cabinetType;
 
     @Schema(description = "高度")
-    private Integer  cabinetHeight;
+    private Integer cabinetHeight;
     /**
      * 电力容量
      */
@@ -70,7 +76,7 @@ public class CabinetIndexBalanceResVO {
      * 负载状态
      */
     @Schema(description = "负载状态")
-    private Integer  loadStatus;
+    private Integer loadStatus;
 
     /**
      * 数据来源 0：PDU 1：母线
@@ -87,11 +93,13 @@ public class CabinetIndexBalanceResVO {
      * 创建时间
      */
     @Schema(description = "创建时间")
+    @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
     private LocalDateTime createTime;
     /**
      * 最后更新时间
      */
     @Schema(description = "最后更新时间")
+    @JsonFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND, timezone = TIME_ZONE_DEFAULT)
     private LocalDateTime updateTime;
 
     /**
@@ -141,19 +149,27 @@ public class CabinetIndexBalanceResVO {
     @Schema(description = "位置")
     private String location;
 
+    @Schema(description = "A比例", example = "1.00")
     private BigDecimal aPow;
 
+    @Schema(description = "B比例", example = "1.00")
     private BigDecimal bPow;
 
+    @Schema(description = "A相电流", example = "1.00")
     private BigDecimal aCurValue;
 
+    @Schema(description = "B相电流", example = "1.00")
     private BigDecimal bCurValue;
 
+    @Schema(description = "A相电压", example = "1.00")
     private BigDecimal aVolValue;
 
+    @Schema(description = "B相电压", example = "1.00")
     private BigDecimal bVolValue;
 
+    @Schema(description = "A有功功率", example = "1.00")
     private BigDecimal aPowValue;
 
+    @Schema(description = "B有功功率", example = "1.00")
     private BigDecimal bPowValue;
 }
