@@ -28,8 +28,8 @@
       <ContentWrap class="hhh">
         <slot name="ActionBar" ></slot>
       </ContentWrap>
-      <ContentWrap style="min-height: 680px">
-        <slot name="Content"></slot>
+      <ContentWrap style="min-height: 680px" >
+        <slot name="Content" ></slot>
       </ContentWrap>
     </div>
   </div>
@@ -177,7 +177,7 @@ mediaQueryList.addEventListener('change', toggleStyles)
     overflow: hidden;
     width: 100%;
     .hhh {
-      background-color: #E1E2E5;
+      background-color: #f7f7f7;
     }
   }
 }
@@ -187,7 +187,7 @@ mediaQueryList.addEventListener('change', toggleStyles)
   height: 46px;
   line-height: 46px;
   padding-left: 10px;
-  background-color: #E1E2E5;
+  background-color: #f7f7f7;
   font-size: 14px;
 }
 .nav-left {

@@ -201,6 +201,7 @@ import PDUImage from '@/assets/imgs/PDU.jpg'
 import download from '@/utils/download'
 import { size } from 'min-dash';
 import { number } from 'vue-types';
+import { Select } from '@element-plus/icons-vue/dist/types';
 defineOptions({ name: 'PDUHistoryLine' })
 
 const activeName = ref('realtimeTabPane') // tab默认显示
@@ -523,7 +524,7 @@ const initChart = () => {
         realtimeChart.setOption({
           title: { text: ''},
           tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-          legend: { data: ['总有功功率(kW)', '总视在功率(kVA)', '功率因素'] },
+          legend: { data: ['总有功功率(kW)', '总视在功率(kVA)', '功率因素'],selected: {  "总有功功率(kW)": true, "总视在功率(kVA)": true, "功率因素": false,} },
           grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
           toolbox: {feature: {  restore:{}, saveAsImage: {}}},
           xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
@@ -540,6 +541,8 @@ const initChart = () => {
       instance.appContext.config.globalProperties.realtimeChart = realtimeChart;
     }
   }
+  // 图例切换监听
+  totalRealtimeLegendListener(realtimeChart);
   // 每次切换图就要动态生成数据表头
   headerData.value = realtimeChart?.getOption().series as any[];
   updateTableData();
@@ -665,6 +668,7 @@ watch(() => [activeName.value, typeChangeFlushFlag.value, needFlush.value], asyn
             });
           }
         }
+        
         // 每次切换图就要动态生成数据表头
         headerData.value = realtimeChart?.getOption().series as any[];
         updateTableData();
