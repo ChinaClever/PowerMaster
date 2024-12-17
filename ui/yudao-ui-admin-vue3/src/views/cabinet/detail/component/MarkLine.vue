@@ -23,10 +23,10 @@ const series = ref()
 const time = ref()
 const legendList = ref()
 const model = ref()
-const newSeriesObject = {...prop.list.series[0]};
-newSeriesObject.name = '负载率曲线'
-model.value = [newSeriesObject];
-
+//const newSeriesObject = {...prop.list.series[0]};
+//newSeriesObject.name = '负载率曲线'
+//model.value = [newSeriesObject];
+model.value = prop.list.series
 // 设置饼图的选项
 const echartsOption = ref({
   dataZoom:[{ type:"inside"}],
