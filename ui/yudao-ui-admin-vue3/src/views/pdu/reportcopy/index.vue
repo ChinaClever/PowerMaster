@@ -1169,36 +1169,35 @@ const initChart =  () => {
       if(selected['电流']&&(selected['视在功率']||selected['有功功率'])){
         num++;
       }
-      // if(!selected['电流']&&selected['视在功率']&&!selected['有功功率']){
-      //   selected['电流'] = false;
-      //   selected['视在功率'] = true;
-      //   selected['有功功率'] = false;
-      //   indicator.value.nameAndMax=serverData1.value.nameAndMax
-      // }
-      // else if(!selected['电流']&&!selected['视在功率']&&selected['有功功率']){
-      //   selected['电流'] = false;
-      //   selected['视在功率'] = false;
-      //   selected['有功功率'] = true;
-      //   indicator.value.nameAndMax=serverData1.value.nameAndMax
-      // }
-      if(selected['电流']&&!selected['视在功率']&&!selected['有功功率']){
-        selected['电流'] = true;
-        selected['视在功率'] = false;
-        selected['有功功率'] = false;
-        num=0;
-        indicator.value.nameAndMax=serverData.value.nameAndMax
-      }
-      else if(num%2==0){
-        selected['电流'] = true;
-        selected['视在功率'] = false;
-        selected['有功功率'] = false;
-        indicator.value.nameAndMax=serverData.value.nameAndMax
-      }
-      else{
+      if(!selected['电流']&&selected['视在功率']&&!selected['有功功率']){
         selected['电流'] = false;
+        selected['视在功率'] = true;
+        selected['有功功率'] = false;
         indicator.value.nameAndMax=serverData1.value.nameAndMax
-
       }
+      else if(!selected['电流']&&!selected['视在功率']&&selected['有功功率']){
+        selected['电流'] = false;
+        selected['视在功率'] = false;
+        selected['有功功率'] = true;
+        indicator.value.nameAndMax=serverData1.value.nameAndMax
+      }
+      // if(selected['电流']&&!selected['视在功率']&&!selected['有功功率']){
+      //   selected['电流'] = true;
+      //   selected['视在功率'] = false;
+      //   selected['有功功率'] = false;
+      //   num=0;
+      //   indicator.value.nameAndMax=serverData.value.nameAndMax
+      // }
+      // else if(num%2==0){
+      //   selected['电流'] = true;
+      //   selected['视在功率'] = false;
+      //   selected['有功功率'] = false;
+      //   indicator.value.nameAndMax=serverData.value.nameAndMax
+      // }
+      // else{
+      //   selected['电流'] = false;
+      //   indicator.value.nameAndMax=serverData1.value.nameAndMax
+      // }
       
 
       // 更新图表配置

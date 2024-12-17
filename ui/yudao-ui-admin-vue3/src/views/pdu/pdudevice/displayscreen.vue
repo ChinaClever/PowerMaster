@@ -367,16 +367,16 @@
             <el-table-column label="传感器名称" align="center" prop="temName" />
             <el-table-column label="传感器状态" align="center" prop="tem_value" v-if="controlVis.envTableCol.tem_value">
               <template #default="scope">
-                <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.temColor }">
-                  {{ scope.row.tem_value }}°C
+                <el-text line-clamp="2" :style="{ backgroundColor: scope.row.temColor }">
+                  {{ parseFloat(scope.row.tem_value).toFixed(1) }}°C
                 </el-text>
               </template>
             </el-table-column>
             <el-table-column label="传感器名称" align="center" prop="humName" />
             <el-table-column label="传感器状态" align="center" prop="hum_value" v-if="controlVis.envTableCol.hum_value">
               <template #default="scope">
-                <el-text line-clamp="2"  :style="{ backgroundColor: scope.row.humColor }">
-                  {{ scope.row.hum_value }}%
+                <el-text line-clamp="2" :style="{ backgroundColor: scope.row.temColor }">
+                  {{ parseFloat(scope.row.hum_value).toFixed(1) }}%
                 </el-text>
               </template>
             </el-table-column>
