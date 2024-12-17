@@ -37,7 +37,7 @@
 
       </div>
     </template>
-    <template #ActionBar>
+    <template #ActionBar > 
       <!-- 搜索工作栏 -->
       <el-form
         class="-mb-15px"
@@ -111,7 +111,7 @@
             clearable
             class="!w-200px"
             placeholder="请输入网络地址"
-            @select="handleQuery"                       
+            @select="handleQuery"                      
           />
         </el-form-item>        
       
@@ -142,7 +142,8 @@
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;showPagination = 0;" :type="switchValue === 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 2;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
         </div>
-      </el-form>      
+      </el-form>  
+         
     </template>
     <template #Content>
      <div>
@@ -846,6 +847,7 @@ onActivated(() => {
 </script>
 
 <style scoped lang="scss">
+
 :deep(.ip:hover) {
   color: blue !important;
   cursor: pointer;
@@ -1357,5 +1359,8 @@ onActivated(() => {
   color: #909399;
   height: 80px;
 
+}
+.-mb-15px {
+  border-color: #000;
 }
 </style>
