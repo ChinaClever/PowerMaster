@@ -94,12 +94,12 @@
         <div v-if="switchValue == 0 && tableData.length > 0" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
             <div class="content">
-              <div class="power">功率：{{item.yggl}}kW</div>
+              <div class="power">功率：{{item.yggl.toFixed(3)}}kW</div>
               <div class="info">
                 <div>名称：{{item.name}}</div>
                 <div>型号：{{item.xh}}</div>
-                <div>A路电流：{{item.adl}}A</div>
-                <div>B路电流：{{item.bdl}}A</div>
+                <div>A路电流：{{item.adl.toFixed(2)}}A</div>
+                <div>B路电流：{{item.bdl.toFixed(2)}}A</div>
               </div>
             </div>
             <div class="room">{{item.local}}</div>

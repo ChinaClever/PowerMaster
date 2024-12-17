@@ -126,6 +126,7 @@ const onEnd = (e) => {
 }
 
 const toCreatConnect = () => {
+  console.log('测试11',frameList.value);
   // 公共参数配置
   const addEndpointConfig = {
     source: true,
@@ -354,7 +355,7 @@ const getData = async() => {
       frames.splice(item.uAddress-1-count, item.uHeight, [{
         id: item.id,
         rackName: item.rackName,
-        type: item.type,
+        rackType: item.rackType,
         company: item.company,
         uAddress: item.uAddress,
         uHeight: item.uHeight,
@@ -443,7 +444,6 @@ const openBindingFrom = (type) => {
 
 // 处理表单添加/编辑成功
 const handleFormSuccess = (data) => {
-  console.log('handleFormSuccess', data, operateMenu.value, frameList.value, [...frameList.value])
   const curIndex = operateMenu.value.curIndex
   const frames = [...frameList.value] as any
   const value = frames[curIndex][0] as any
@@ -463,9 +463,8 @@ const handleFormSuccess = (data) => {
       frames.splice(curIndex, 1, [{ id, ...data }], ...arr)
     }
   } else {
-    frames.splice(curIndex - (data.uHeight - 1), data.uHeight, [{ ...data, outletIdA: [], outletIdB: [], }])
+    frames.splice(curIndex - (data.uHeight - 1), data.uHeight, [{ undefined, ...data }])
   }
-  console.log('frames', frames, JSON.stringify(frames))
   frameList.value = frames
   instance?.deleteEveryConnection()
   nextTick(toCreatConnect)
