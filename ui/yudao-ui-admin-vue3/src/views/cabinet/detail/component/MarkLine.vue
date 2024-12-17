@@ -30,12 +30,6 @@ model.value = [newSeriesObject];
 // 设置饼图的选项
 const echartsOption = ref({
   dataZoom:[{ type:"inside"}],
-  legend: { data: ['负载率曲线'],
-    type: 'scroll', // 设置为 'single' 或 'multiple'
-    orient: 'horizontal', // 设置为 'horizontal' 或 'vertical'
-    width:1000,
-    selected: true
-  },
   tooltip: { trigger: 'axis' },
   xAxis: {type: 'category', boundaryGap: false, data : time},
   yAxis: {
@@ -53,7 +47,6 @@ const echartsOption = ref({
         show: !0
     },
   },
-  toolbox: {feature: {saveAsImage: {}}},
   series: model,
 })
 const markLine = ref({
