@@ -259,7 +259,7 @@
             <el-tag v-else>正常</el-tag>
           </div>
           <button
-            class="detail" v-if="item.status != null && item.status != 2"
+            class="detail"
             @click="openTemDetail(item)"
             v-if="item.status != null && item.status != 0"
             >详情</button
