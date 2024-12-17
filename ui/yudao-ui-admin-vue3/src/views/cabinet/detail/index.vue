@@ -24,20 +24,21 @@
       </div>
       <div class="right-part">
         <div class="center-top-part">
+            
           <RealTimePower class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
         </div>
         <div class="center-top-right-part">
           <div class="label-container">
-            <span class="bullet">•</span><span>频率:</span><span>{{redisData?.fr}}Hz</span>
+            <span class="bullet">•</span><span style="width:80px;">额定容量:</span><span>{{redisData?.finstalledCapacity}}KVA</span>
           </div>
           <div class="label-container">
-            <span class="bullet">•</span><span>功率因数:</span><span>{{redisData?.pf}}</span>
+            <span class="bullet">•</span><span style="width:80px;">现在功率:</span><span>{{redisData?.s}}KVA</span>
           </div>
           <div class="label-container">
-            <span class="bullet">•</span><span>三相电压不平衡度:</span><span>{{redisData?.vub}}%</span>
+            <span class="bullet">•</span><span style="width:80px;">有功功率:</span><span>{{redisData?.p}}KVA</span>
           </div>
           <div class="label-container">
-            <span class="bullet">•</span><span>三相电流不平衡度:</span><span>{{redisData?.cub}}%</span>
+            <span class="bullet">•</span><span style="width:80px;">无功功率:</span><span>{{redisData?.q}}KVA</span>
           </div>
         </div>
       </div>
@@ -100,7 +101,7 @@
       <div style="display: inline-block;
         width: 50%;
         height: 100%;">
-          <RealTimePower class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+          <PowerFactor class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
         </div>
         <div style="display: inline-block;
             position: absolute;
@@ -204,6 +205,7 @@
 
 import { ref } from 'vue'
 import RealTimePower from './component/RealTimePower.vue'
+import PowerFactor from './component/PowerFactor.vue'
 import Gauge from './component/Gauge.vue'
 import MarkLine from './component/MarkLine.vue'
 import PowReactiveLine from './component/PowReactiveLine.vue'
