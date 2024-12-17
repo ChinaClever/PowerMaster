@@ -172,6 +172,13 @@ public class BusIndexController {
         return success(BeanUtils.toBean(pageResult, BusPFRes.class));
     }
 
+    @GetMapping("/pf/lowest")
+    @Operation(summary = "获得始端箱最低功率因素设备信息")
+    public CommonResult<Map> getBusPFLowest() {
+        Map<String, Object> map = indexService.getBusPFLowest();
+        return success(map);
+    }
+
     @Operation(summary = "始端箱功率因素详情")
     @PostMapping("/pf/detail")
     public CommonResult<Map> getBusPFDetail(@RequestBody BusIndexPageReqVO pageReqVO) {
