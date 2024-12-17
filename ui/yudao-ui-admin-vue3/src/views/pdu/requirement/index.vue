@@ -396,7 +396,7 @@
 
       <el-dialog
         v-model="dialogVisible"
-        @close="handleClose"
+        
       >     
         <!-- 自定义的头部内容（可选） -->
         <template #header>

@@ -69,12 +69,12 @@
           type="primary"
           plain
           @click="openForm('create')"
-          style="margin-left: -131px;" 
+          style="margin-left: -130px;" 
         >
           <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
         </el-button>
         <el-form-item>
-          <el-form-item label="网络地址" prop="devKey" >
+          <el-form-item label="网络地址" prop="devKey">
             <el-autocomplete
               v-model="queryParams.devKey"
               :fetch-suggestions="querySearch"
@@ -296,7 +296,7 @@
         </div>
       </div>
 
-      <el-dialog v-model="dialogVisibleCur" @close="handleClose">
+      <el-dialog v-model="dialogVisibleCur"  >
         <!-- 自定义的头部内容（可选） -->
         <template #header>
           <CardTitle title="电流不平衡" />
@@ -368,7 +368,7 @@
         </div>
       </div>
 
-      <el-dialog v-model="dialogVisibleVol" @close="handleClose">
+      <el-dialog v-model="dialogVisibleVol" @close="handleClose" width="70%">
         <!-- 自定义的头部内容（可选） -->
         <template #header>
           <CardTitle title="电压不平衡" />
@@ -1681,10 +1681,9 @@ onActivated(() => {
 }
 
 :deep(.el-dialog) {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  width: 100%;
+  top: -10%;
+  width: 90%;
+  height: 80%;
 }
 
 .custom-content {
