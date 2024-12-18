@@ -1223,7 +1223,7 @@ public class BusIndexServiceImpl implements BusIndexService {
         List<BusPFRes> res = new ArrayList<>();
         List redisList = getMutiRedis(list);
         Map<String, Object> map = new HashMap<>();
-        double pfInit = 0.0;
+        double pfInit = 1.0;
         map.put("totalPf",pfInit);
 
         for (BusIndexDO busIndexDO : list) {
@@ -1245,11 +1245,10 @@ public class BusIndexServiceImpl implements BusIndexService {
             BusPFRes busPFRes = resMap.get(devKey);
             busPFRes.setTotalPf(jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getDoubleValue("power_factor"));
 
-            if (busPFRes.getTotalPf() > (Double) map.get("totalPf")) {
+            if (busPFRes.getTotalPf() <  (Double) map.get("totalPf") && busPFRes.getTotalPf() != 0 ) {
                 map.put("totalPf",busPFRes.getTotalPf());
-                map.put("devKey",busPFRes.getDevKey());
-                map.put("busName",busPFRes.getBusName());
-                map.put("location",busPFRes.getLocation());
+                map.put("location",busPFRes.getDevKey());
+                map.put("ipAddr",busPFRes.getLocation());
             }
         }
         return map;
