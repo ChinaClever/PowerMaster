@@ -904,6 +904,7 @@ onActivated(() => {
   width: 58px;
   height: 35px;
   cursor: pointer;
+  border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
