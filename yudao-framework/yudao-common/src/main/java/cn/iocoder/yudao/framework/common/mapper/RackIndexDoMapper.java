@@ -2,6 +2,7 @@ package cn.iocoder.yudao.framework.common.mapper;
 
 import cn.iocoder.yudao.framework.common.entity.mysql.rack.RackIndex;
 import cn.iocoder.yudao.framework.common.vo.RackIndexRoomVO;
+import cn.iocoder.yudao.framework.common.vo.RackStatisticsResVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -21,4 +22,6 @@ public interface RackIndexDoMapper extends BaseMapper<RackIndex> {
     IPage<RackIndexRoomVO> selectQueryPage(@Param("page") Page<RackIndex> page, @Param("ipArray") String[] ipArray);
 
     List<RackIndexRoomVO> selectQueryPage(@Param("ipArray") String[] ipArray);
+
+    RackStatisticsResVO getRackStatistics();
 }

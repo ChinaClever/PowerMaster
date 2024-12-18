@@ -7,7 +7,9 @@ import cn.iocoder.yudao.module.rack.dto.RackEqTrendDTO;
 import cn.iocoder.yudao.module.rack.dto.RackIndexDTO;
 import cn.iocoder.yudao.module.rack.dto.RackPowDTO;
 import cn.iocoder.yudao.module.rack.vo.RackIndexVo;
+import cn.iocoder.yudao.module.rack.vo.RackPageResVO;
 import cn.iocoder.yudao.module.rack.vo.RackSaveVo;
+import cn.iocoder.yudao.framework.common.vo.RackStatisticsResVO;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
@@ -27,7 +29,7 @@ public interface RackIndexService {
      *
      * @param vo 搜索参数
      */
-    PageResult<JSONObject> getRackPage(RackIndexVo vo);
+    PageResult<RackPageResVO> getRackPage(RackIndexVo vo);
 
     /**
      * 机架数据详情页面
@@ -83,5 +85,6 @@ public interface RackIndexService {
 
     List<RackIndexRoomVO> findRackIndexToList(String[] ipArray);
 
-    String getAddressById(String devKey);
+    RackStatisticsResVO getRackStatistics();
+
 }

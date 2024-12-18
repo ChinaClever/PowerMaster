@@ -85,6 +85,10 @@ export const CabinetApi = {
   getEleTrend: async (params: any) => {
     return await request.get({ url: `/rack/ele/trend`, params })
   },
+  //机架统计
+  getRackStatistics: async () => {
+    return await request.get({ url: `/rack/pageStatistics` })
+  },
 }
 
 // 机柜温度颜色 VO
