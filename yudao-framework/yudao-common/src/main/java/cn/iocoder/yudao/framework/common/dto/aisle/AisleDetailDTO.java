@@ -97,6 +97,14 @@ public class AisleDetailDTO {
     @Schema(description = "昨日电量", example = "1")
     private Double yesterdayEq;
 
+
+    /**
+     * 电力容量
+     */
+    @Schema(description = "电力容量", example = "5")
+    private float powerCapacity;
+
+
     /**
      * 日用能告警开关
      */

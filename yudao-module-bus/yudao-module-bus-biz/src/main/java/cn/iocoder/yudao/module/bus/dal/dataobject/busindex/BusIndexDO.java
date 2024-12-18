@@ -50,6 +50,11 @@ public class BusIndexDO {
      * 运行状态 0：离线 1：正常  2：告警
      */
     private Integer runStatus;
+
+    /**
+     * 0：空载 1：<30%  2: 30~60 3：60~90  4：>90%
+     */
+    private Integer loadRateStatus;
     /**
      * 节点IP
      */

@@ -34,6 +34,7 @@ public class IndexDO  {
      * 机柜名称
      */
     private String cabinetName;
+
     /**
      * 通道编号
      */

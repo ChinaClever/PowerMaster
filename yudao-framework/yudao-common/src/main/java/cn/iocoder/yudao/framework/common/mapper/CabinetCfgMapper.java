@@ -3,6 +3,7 @@ package cn.iocoder.yudao.framework.common.mapper;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetRunStatusVo;
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetSaveVo;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetCfg;
 import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -46,4 +47,6 @@ public interface CabinetCfgMapper extends BaseMapper<CabinetCfg> {
      * @return
      */
     int updaterestorerCabinet(@Param("id") Integer id);
+
+    void updateByCabinetCfg(@Param("vo") CabinetSaveVo vo);
 }

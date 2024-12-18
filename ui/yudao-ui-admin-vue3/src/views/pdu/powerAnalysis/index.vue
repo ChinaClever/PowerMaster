@@ -306,20 +306,20 @@ watch(() => queryParams.granularity, () => {
 });
 
 const tableColumns = ref([
-  { label: '所在位置', align: 'center', prop: 'address' , istrue:true, width: '300%'},
+  { label: '所在位置', align: 'center', prop: 'address' , istrue:true, width: '150%'},
   { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '150px'},
   { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '150px' , istrue:true},
   { label: '开始电能', align: 'center', istrue: true, children: [
-      { label: '开始电能(kWh)', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle},
-      { label: '开始时间', align: 'center', prop: 'start_time' , formatter: formatTime1, width: '150px' , istrue:true},
+      { label: '开始电能(kWh)', align: 'center', prop: 'start_ele' , istrue:true, formatter: formatEle,width: '130px'},
+      { label: '开始时间', align: 'center', prop: 'start_time' , formatter: formatTime1, width: '130px' , istrue:true},
     ]
   },
   { label: '结束电能', align: 'center', istrue: true, children: [
-      { label: '结束电能(kWh)', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle},
-      { label: '结束时间', align: 'center', prop: 'end_time' , formatter: formatTime1, width: '150px' , istrue:true},
+      { label: '结束电能(kWh)', align: 'center', prop: 'end_ele' , istrue:true, formatter: formatEle,width: '130px'},
+      { label: '结束时间', align: 'center', prop: 'end_time' , formatter: formatTime1, width: '130px' , istrue:true},
     ]
   },
-  { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' ,istrue: true,formatter: formatPowerEle },
+  { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' ,istrue: true,formatter: formatPowerEle ,width: '130px'},
   { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '120px'},
 ]) as any;
 
@@ -404,7 +404,7 @@ function customTooltipFormatter(params: any[]) {
       tooltipContent += '输出位：' + list.value[item.dataIndex].outlet_id;
   }
   tooltipContent += '<br/>'+ item.marker + '记录日期：'+formatTime(null, null, list.value[item.dataIndex].create_time) + ' ' + item.seriesName + ': ' + item.value +'kWh <br/>'                 
-                    +item.marker +'结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) +  ' 结束电能：'+list.value[item.dataIndex].end_ele + 'kWh <br/>' 
+                    +item.marker +'结束日期：'+formatTime(null, null, list.value[item.dataIndex].end_time) +  ' 结束电能：'+formatEle(null, null, list.value[item.dataIndex].end_ele) + 'kWh <br/>' 
                     +item.marker +'开始日期：'+formatTime(null, null, list.value[item.dataIndex].start_time) + ' 开始电能：'+formatEle(null, null, list.value[item.dataIndex].start_ele) + 'kWh <br/>'
   return tooltipContent;
 }

@@ -41,7 +41,11 @@
 
     <div v-show="item.location !== null" v-for="item in maxCurAll" :key="item.devKey" style="  margin-top: 15px;margin-left: 10px;">
       <div>{{ item.location}}</div>
-    </div>      
+    </div> 
+    <div v-for="item in maxCurAll" :key="item.devKey" class="description-item">
+      <span>所在位置 :</span>
+      <span>{{ item.location}}</span>
+    </div>     
     <div v-for="item in maxCurAll" :key="item.devKey" class="description-item">
       <span>网络地址 :</span>
       <span>{{ item.devKey}}</span>

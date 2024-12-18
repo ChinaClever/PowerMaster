@@ -25,11 +25,11 @@
     </div>
     <!-- 右大侧 -->
     <div class="master-right">
-      <ContentWrap>
-        <slot name="ActionBar"></slot>
+      <ContentWrap class="hhh">
+        <slot name="ActionBar" ></slot>
       </ContentWrap>
-      <ContentWrap style="min-height: 680px">
-        <slot name="Content"></slot>
+      <ContentWrap style="min-height: 680px" >
+        <slot name="Content" ></slot>
       </ContentWrap>
     </div>
   </div>
@@ -176,6 +176,9 @@ mediaQueryList.addEventListener('change', toggleStyles)
     flex: 1;
     overflow: hidden;
     width: 100%;
+    .hhh {
+      background-color: #f7f7f7;
+    }
   }
 }
 .navBar {
@@ -184,7 +187,7 @@ mediaQueryList.addEventListener('change', toggleStyles)
   height: 46px;
   line-height: 46px;
   padding-left: 10px;
-  background-color: #eef4fc;
+  background-color: #f7f7f7;
   font-size: 14px;
 }
 .nav-left {

@@ -48,6 +48,13 @@
         v-show="switchValue !== 2"                          
       >
         <el-form-item>
+<<<<<<< Updated upstream
+          <button class="btnnnnnnnn" type = "button" @click="toggleAllStatus">
+=======
+          <button class="btnnnnnnnn">
+>>>>>>> Stashed changes
+            全部
+          </button>
           <template v-for="(status, index) in statusList" :key="index">
             <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
           </template>
@@ -251,18 +258,17 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
+            <div class="info">
+              <div v-if=" item.pow != null ">有功功率：{{item.pow}}kW</div>
+              <div v-if="item.apparentPow != null">视在功率：{{item.apparentPow}}kVA</div>
+              <!-- <div >网络地址：{{ item.devKey }}</div> -->
+              <!-- <div>AB路占比：{{item.fzb}}</div> -->
+            </div>
             <div class="icon">
               <div v-if="item.pf != null">
                 {{item.pf}}<br/>
                 <span class="text-pf">PF</span>
               </div>                    
-            </div>
-            <div class="info">
-              
-              <div v-if=" item.pow != null ">有功功率：{{item.pow}}kW</div>
-              <div v-if="item.apparentPow != null">视在功率：{{item.apparentPow}}kVA</div>
-              <!-- <div >网络地址：{{ item.devKey }}</div> -->
-              <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
@@ -711,6 +717,26 @@ const handleSelectStatus = (index) => {
   handleQuery();
 }
 
+const toggleAllStatus = () => {
+  const allSelected = statusList.every(item => item.selected);
+  
+  if (allSelected) {
+    // 如果所有按钮都已选中，则全部取消选中
+    statusList.forEach(item => item.selected = false);
+  } else {
+    // 如果至少有一个按钮未选中，则全部选中
+    statusList.forEach(item => item.selected = true);
+  }
+
+  // 更新查询参数
+  const status = statusList.filter(item => item.selected);
+  const statusArr = status.map(item => item.value);
+  queryParams.status = statusArr;
+  handleQuery();
+}
+
+
+
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
@@ -875,6 +901,27 @@ onActivated(() => {
     flex: 1;
     overflow: hidden;
   }
+}
+
+.btnnnnnnnn {
+  margin-right: 10px;
+  width: 58px;
+  height: 35px;
+  cursor: pointer;
+<<<<<<< Updated upstream
+  display: flex;
+  align-items: center;
+  justify-content: center;
+=======
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border:none
+  &:hover {
+    color: #7bc25a;
+  }
+>>>>>>> Stashed changes
 }
 
 .btn_offline,
@@ -1109,6 +1156,7 @@ onActivated(() => {
           height: 30px;
           margin: 0 25px 39px;
           text-align: center;
+          padding-left: 5px;
           .text-pf{
             font-size: 16px;
           }
@@ -1116,6 +1164,7 @@ onActivated(() => {
         .info{
           font-size: 16px;
           margin-bottom: 20px;
+          margin-left: 5px;
         }
       }
       .devKey{
@@ -1189,6 +1238,7 @@ onActivated(() => {
         .info{
           font-size: 16px;
           margin-bottom: 20px;
+          margin-left: 5px;
         }
       }
       .devKey{
@@ -1262,6 +1312,7 @@ onActivated(() => {
         .info{
           font-size: 16px;
           margin-bottom: 20px;
+          margin-left: 5px;
         }
       }
       .devKey{

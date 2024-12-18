@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="PDU环境数据分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
+  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="环境数据分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
@@ -35,12 +35,11 @@
       </div>
     </div> -->
 
-    <!-- <div class="nav_header" style="font-size: 14px;">
+    <div class="nav_header" style="font-size: 14px;">
           <span v-if="nowAddress">{{nowAddress}}</span>
           <span v-if="nowLocation">( {{nowLocation}} ) </span>
           <br/>
-      </div> -->
-      
+      </div>
     <div class="descriptions-container" v-if="maxTemDataTimeTemp" style="font-size: 14px;">
                 <!-- 处理原始数据和小时极值数据的菜单栏 -->
       <div v-if="queryParams.granularity != 'day'&& queryParams.timeRange != null" class="description-item" > 
@@ -75,12 +74,12 @@
           <!-- 处理天极值数据的菜单栏 -->
           <div v-if="queryParams.granularity == 'day'&& queryParams.timeRange != null" class="description-item" > 
             <span class="label">开始时间 :</span>
-            <span class="value">{{   formatDayTime(parseInt(queryParams.timeRange[0]))  }}</span>
+            <span class="value">{{   formatTime(queryParams.timeRange[0])  }}</span>
           </div>
           
           <div  v-if="queryParams.granularity == 'day'  && queryParams.timeRange != null" class="description-item">
             <span class="label">结束时间 :</span>
-            <span class="value">{{ formatDayTime(parseInt(queryParams.timeRange[1]))}}</span>
+            <span class="value">{{ formatTime(queryParams.timeRange[1])}}</span>
           </div>
           <div  class="description-item" v-if="queryParams.granularity == 'day'" >
             <span class="label">最高温度 :</span>
@@ -88,7 +87,7 @@
           </div>
           <div v-if="maxTemDataTimeTemp &&queryParams.granularity == 'day'" class="description-item">
             <span class="label">发生时间 :</span>
-            <span class="value">{{ formatDayTime(maxTemDataTimeTemp) }}</span>
+            <span class="value">{{ formatTime(maxTemDataTimeTemp) }}</span>
           </div>
 
           <div class="description-item" v-if="queryParams.granularity == 'day'">
@@ -97,7 +96,7 @@
             </div>
           <div v-if="minTemDataTimeTemp &&queryParams.granularity == 'day'" class="description-item">
             <span class="label">发生时间 :</span>
-            <span class="value">{{ formatDayTime(minTemDataTimeTemp) }}</span>
+            <span class="value">{{ formatTime(minTemDataTimeTemp) }}</span>
           </div>
           
           <div class="line"></div>
@@ -173,8 +172,8 @@
                 :data="tableData"
                 style="height: 100%; width: 99.97%;"
                 :header-cell-style="{ backgroundColor: '#F5F7FA', color: '#909399', textAlign: 'center', borderLeft: '1px #EDEEF2 solid', fontSize: '14px',borderBottom: '1px #EDEEF2 solid',fontWeight: 'bold' }"
-                :cell-style="{ color: '#606266', fontSize: '20px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
-                :row-style="{ fontSize: '20px', textAlign: 'center', }"
+                :cell-style="{ color: '#606266', fontSize: '14px', textAlign: 'center', borderBottom: '0.25px #F5F7FA solid', borderLeft: '0.25px #F5F7FA solid' }"
+                :row-style="{ fontSize: '14px', textAlign: 'center', }"
                 empty-text="暂无数据" max-height="818"
                 >
               <!-- 添加行号列 -->
@@ -909,7 +908,7 @@ onMounted( async () => {
   if (queryParams.pduId != undefined){
     await getList();
     if (queryAddress == null) {
-      nowAddress.value = '';
+      nowAddress.value = '该设备还未绑定机房';
     } else {
       nowAddress.value = queryAddress;
     }

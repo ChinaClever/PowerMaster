@@ -11,8 +11,8 @@
       <el-form-item label="名称" prop="rackName">
         <el-input v-model="formData.rackName" placeholder="请输入" />
       </el-form-item>
-      <el-form-item label="类型" prop="type">
-        <el-input v-model="formData.type" placeholder="请输入" />
+      <el-form-item label="类型" prop="rackType">
+        <el-input v-model="formData.rackType" placeholder="请输入" />
       </el-form-item>
       <el-form-item label="所属公司" prop="company">
         <el-input v-model="formData.company" placeholder="请输入" />
@@ -52,7 +52,7 @@ const formLoading = ref(false) // 表单的加载中：1）修改时的数据加
 const formType = ref('') // 表单的类型：create - 新增；update - 修改
 const formData = ref({
   rackName: '', // 名称
-  type: '', // 类型
+  rackType: '', // 类型
   company: '', // 公司
   uAddress: 0, // 位置
   uHeight: 0, // 容量高度
@@ -63,7 +63,7 @@ const outletIdAOpions = ref<number[]>([])
 const outletIdBOpions = ref<number[]>([])
 const formRules = reactive<FormRules>({
   rackName: [{ required: true, message: '用名称不能为空', trigger: 'blur' }],
-  type: [{ required: true, message: '类型不能为空', trigger: 'blur' }],
+  rackType: [{ required: true, message: '类型不能为空', trigger: 'blur' }],
   uAddress: [{ required: true, message: '所属机房不能为空', trigger: 'blur' }],
   uHeight: [{ required: true, message: 'IP地址不能为空', trigger: 'blur' }],
 })
@@ -75,10 +75,10 @@ const open = async (type: string, data, Uindex, outletIdALength:number, outletId
   dialogTitle.value = type == 'edit' ? '编辑': '添加'
   formType.value = type
   resetForm()
-  console.log('data', data, Uindex, outletIdALength)
+  console.log('data', data, Uindex, outletIdALength,outletIdBLength)
   formData.value = {
     rackName: data.rackName || '',
-    type: data.type || '',
+    rackType: data.rackType || '',
     company: data.company || '',
     uAddress: data.uAddress || Uindex || 1,
     uHeight: data.uHeight || 1,
@@ -104,6 +104,7 @@ const submitForm = async () => {
   if (!valid) return
   // 提交请求
   formLoading.value = true
+  console.log('数据', formData.value)
   try {
     // const data = formData.value as unknown as UserApi.UserVO
     // if (formType.value === 'create') {
@@ -125,7 +126,7 @@ const submitForm = async () => {
 const resetForm = () => {
   formData.value = {
     rackName: '',
-    type: '',
+    rackType: '',
     company: '',
     uAddress: 0,
     uHeight: 0,
