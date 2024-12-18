@@ -904,7 +904,10 @@ onActivated(() => {
   width: 58px;
   height: 35px;
   cursor: pointer;
+<<<<<<< HEAD
+=======
   border-radius: 3px;
+>>>>>>> zhanlinjie
   display: flex;
   align-items: center;
   justify-content: center;
