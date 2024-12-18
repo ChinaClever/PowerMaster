@@ -149,6 +149,7 @@
         :stripe="true"
         :show-overflow-tooltip="true"
         @cell-dblclick="toPDUDisplayScreen"
+        :header-cell-style="{background:'#f7f7f7'}"
       >
         <el-table-column label="编号" align="center" prop="tableId" width="80px" >
           <template #default="{ $index }">
@@ -1675,13 +1676,14 @@ onActivated(() => {
   margin-right: 0;
 }
 
+
 ::v-deep .el-table .el-table__header th {
   background-color: #f5f7fa;
   color: #909399;
 }
 
 :deep(.el-dialog) {
-  top: -10%;
+  top: -5%;
   width: 90%;
   height: 80%;
 }

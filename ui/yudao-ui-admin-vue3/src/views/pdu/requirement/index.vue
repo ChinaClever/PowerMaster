@@ -44,7 +44,7 @@
     </div> 
     <div v-for="item in maxCurAll" :key="item.devKey" class="description-item">
       <span>所在位置 :</span>
-      <span>{{ item.devKey}}</span>
+      <span>{{ item.location}}</span>
     </div>     
     <div v-for="item in maxCurAll" :key="item.devKey" class="description-item">
       <span>网络地址 :</span>
@@ -396,7 +396,7 @@
 
       <el-dialog
         v-model="dialogVisible"
-        
+        @close="handleClose"
       >     
         <!-- 自定义的头部内容（可选） -->
         <template #header>
