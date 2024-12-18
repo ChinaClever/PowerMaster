@@ -810,6 +810,7 @@ const getListNoLoading = async () => {
   try {
     const data = await IndexApi.getBusRedisPage(queryParams)
     list.value = data.list
+    filterData()
     console.log('list.value',list.value)
     var tableIndex = 0;    
 
@@ -901,9 +902,9 @@ const toDeatil = (row) =>{
 //   window.open(url, '_blank');
 // }
 const filterData = () => {
-  const data0 = list.value.filter(item => item.status === 1); // 正常状态数据
+  const data0 = list.value.filter(item => item.status === 1 && item.acurStatus != null); // 正常状态数据
   console.log('data0',data0)
-  const data1 = list.value.filter(item => item.status === 2 || item.acurStatus != 0 || item.bcurStatus != 0  || item.ccurStatus != 0 ); // 告警状态数据
+  const data1 = list.value.filter(item => item.status === 2); // 告警状态数据
   console.log('data1',data1)
   const data2 = list.value.filter(item => item.status === 0 || item.acurStatus == null || item.status == null); // 离线状态数据
   console.log('data2',data2)
@@ -914,11 +915,11 @@ const filterData = () => {
     list.value = data1; // 仅告警状态
   } else if (offlineFlag.value && !normalFlag.value && !reportFlag.value) {
     list.value = data2; // 仅离线状态
-  } else if (normalFlag.value && reportFlag.value) {
+  } else if (normalFlag.value && reportFlag.value && !offlineFlag.value) {
     list.value = [...data0, ...data1];
-  } else if (normalFlag.value && offlineFlag.value) {
+  } else if (normalFlag.value && offlineFlag.value && !reportFlag.value) {
     list.value = [...data0, ...data2];
-  } else if (reportFlag.value && offlineFlag.value) {
+  } else if (reportFlag.value && offlineFlag.value && !normalFlag.value) {
     list.value = [...data1, ...data2];
   } else if (normalFlag.value && reportFlag.value && offlineFlag.value) {
     list.value = [...data0, ...data1, ...data2];

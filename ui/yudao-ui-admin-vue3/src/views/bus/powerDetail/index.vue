@@ -91,9 +91,9 @@
               <p >无功功率<span  class="vale-part BColor">{{redisData?.q}}</span>kVar</p>
             </div>
             <div  class="content-part">
-              <p  >A相 <span  class="vale-part BColor" style="width:30px" :style="{ backgroundColor: getBackgroundColor(redisData?.curStatusA) }">{{redisData?.ia}}</span>A </p>
-              <p  >B相 <span  class="vale-part BColor" style="width:30px" :style="{ backgroundColor: getBackgroundColor(redisData?.curStatusB) }">{{redisData?.ib}}</span>A </p>
-              <p  >C相 <span  class="vale-part BColor" style="width:30px" :style="{ backgroundColor: getBackgroundColor(redisData?.curStatusC) }">{{redisData?.ic}}</span>A </p>
+              <p  >A相 <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.curStatusA) }">{{redisData?.ia}}</span>A </p>
+              <p  >B相 <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.curStatusB) }">{{redisData?.ib}}</span>A </p>
+              <p  >C相 <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.curStatusC) }">{{redisData?.ic}}</span>A </p>
             </div>
             <div  class="content-part">
               <p  >Ua <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.volStatusA) }">{{redisData?.ua}}</span>V </p>
@@ -168,6 +168,9 @@ const visContro = ref({
   powReactiveVis : false,
 })
 
+const flashListTimer = ref();
+const firstTimerCreate = ref(true);
+
 const getFullTimeByDate = (date) => {
   var year = date.getFullYear();//年
   var month = date.getMonth();//月
@@ -240,6 +243,7 @@ const getLoadRateList = async () =>{
 const getBusPowActiveList = async () =>{
     const data = await IndexApi.getBusPowActiveLine(queryParams);//oldtime newtime id
     powActiveList.value = data;
+
     if(powActiveList.value?.time != null && powActiveList.value?.time?.length > 0){
         visContro.value.powActiveVis = true;
     }else {
@@ -337,6 +341,21 @@ const getBackgroundColor = (wornStatus: number) => {
   }
 }
    
+onBeforeUnmount(()=>{
+  if(flashListTimer.value){
+    clearInterval(flashListTimer.value)
+    flashListTimer.value = null;
+  }
+})
+
+onBeforeRouteLeave(()=>{
+  if(flashListTimer.value){
+    clearInterval(flashListTimer.value)
+    flashListTimer.value = null;
+    firstTimerCreate.value = false;
+  }
+})
+
 /** 初始化 **/
 onMounted(async () => {
   // await getDetailData();
@@ -347,12 +366,12 @@ onMounted(async () => {
   await getLoadRateList();
   await getBusPowActiveList();
   await getBusPowReactiveList();
+  flashListTimer.value = setInterval((getRedisData), 5000);
   // initChart1();
   // initChart2();
 
 
 })
-
 
 </script>
 
