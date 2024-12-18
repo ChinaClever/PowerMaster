@@ -5,7 +5,7 @@
         <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
         </div> -->
-        <div class="line"></div>
+        <!-- <div class="line"></div> -->
         <!-- <div class="status">
           <div class="box">
             <div class="top">
@@ -32,6 +32,20 @@
             <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
           </div>
         </div> -->
+        <div style="font-size:14px; margin-top:45px; margin-left:20px">
+          <div>
+            <span>所在位置：</span>
+            <span>{{ lowlLocation }}</span>
+          </div>
+          <div >
+            <span>网络地址：</span>
+            <span>{{ ipAddr }}</span>
+          </div>
+          <div >
+            <span>总功率因数：</span>
+            <span>{{ pfTotal }}</span>
+          </div>
+        </div>
         <div class="line"></div>
 
       </div>
@@ -265,6 +279,9 @@ const switchValue = ref(0)
 const valueMode = ref(0)
 const switchChartOrTable = ref(0)
 const detailVis = ref(false);
+const lowlLocation = ref() as any;
+const ipAddr = ref()
+const pfTotal = ref()
 
 const statusList = reactive([
   {
@@ -495,6 +512,14 @@ const getList = async () => {
 const getListNoLoading = async () => {
   try {
     const data = await IndexApi.getBusPFPage(queryParams)
+
+    const res = await IndexApi.getBusPFLow()
+    if (res && res.length > 0) {
+        lowlLocation.value = res.location;
+        ipAddr.value = res.ipAddr;
+        pfTotal.value = res.totalPf;
+    } 
+
     list.value = data.list
     filterData()
     var tableIndex = 0;    
