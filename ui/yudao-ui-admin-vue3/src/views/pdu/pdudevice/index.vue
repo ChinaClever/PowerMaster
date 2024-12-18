@@ -48,11 +48,7 @@
         v-show="switchValue !== 2"                          
       >
         <el-form-item>
-<<<<<<< Updated upstream
           <button class="btnnnnnnnn" type = "button" @click="toggleAllStatus">
-=======
-          <button class="btnnnnnnnn">
->>>>>>> Stashed changes
             全部
           </button>
           <template v-for="(status, index) in statusList" :key="index">
@@ -908,11 +904,6 @@ onActivated(() => {
   width: 58px;
   height: 35px;
   cursor: pointer;
-<<<<<<< Updated upstream
-  display: flex;
-  align-items: center;
-  justify-content: center;
-=======
   border-radius: 3px;
   display: flex;
   align-items: center;
@@ -921,7 +912,6 @@ onActivated(() => {
   &:hover {
     color: #7bc25a;
   }
->>>>>>> Stashed changes
 }
 
 .btn_offline,
