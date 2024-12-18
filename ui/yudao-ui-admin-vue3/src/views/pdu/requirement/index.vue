@@ -153,6 +153,28 @@
         <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
+        <el-table-column label="运行状态" align="center" prop="status" >
+          <template #default="scope">
+            <el-tag  v-if="scope.row.status == 0 && scope.row.apparentPow == 0">空载</el-tag>
+            <el-tag  v-if="scope.row.status == 0 && scope.row.apparentPow != 0">正常</el-tag>
+            <el-tag type="warning" v-if="scope.row.status == 1">预警</el-tag>
+            <el-popover
+                placement="top-start"
+                title="告警内容"
+                :width="500"
+                trigger="hover"
+                :content="scope.row.pduAlarm"
+                v-if="scope.row.status == 2"
+              >
+                <template #reference>
+                  <el-tag type="danger">告警</el-tag>
+                </template>
+              </el-popover>
+            <el-tag type="info" v-if="scope.row.status == 4">故障</el-tag>
+            <el-tag type="info" v-if="scope.row.status == 5">离线</el-tag>
+          </template>
+        </el-table-column>
+        
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="125px"/>
         <el-table-column label="L1最大电流(kA)" align="center" prop="l1MaxCur" width="100px" >
           <template #default="scope" >
