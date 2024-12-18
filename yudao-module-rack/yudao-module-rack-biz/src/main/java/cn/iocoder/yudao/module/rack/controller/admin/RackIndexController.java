@@ -9,7 +9,9 @@ import cn.iocoder.yudao.module.rack.dto.RackIndexDTO;
 import cn.iocoder.yudao.module.rack.dto.RackPowDTO;
 import cn.iocoder.yudao.module.rack.service.RackIndexService;
 import cn.iocoder.yudao.module.rack.vo.RackIndexVo;
+import cn.iocoder.yudao.module.rack.vo.RackPageResVO;
 import cn.iocoder.yudao.module.rack.vo.RackSaveVo;
+import cn.iocoder.yudao.framework.common.vo.RackStatisticsResVO;
 import com.alibaba.fastjson2.JSONObject;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,7 +36,7 @@ public class RackIndexController {
 
 
     @Autowired
-    RackIndexService rackIndexService;
+   private RackIndexService rackIndexService;
 
     /**
      * 机架主页面
@@ -43,9 +45,15 @@ public class RackIndexController {
      */
     @Operation(summary = "机架列表分页")
     @PostMapping("/rack/data/page")
-    public CommonResult<PageResult<JSONObject>> getRackPage(@RequestBody RackIndexVo pageReqVO) {
-        PageResult<JSONObject> pageResult = rackIndexService.getRackPage(pageReqVO);
+    public CommonResult<PageResult<RackPageResVO>> getRackPage(@RequestBody RackIndexVo pageReqVO) {
+        PageResult<RackPageResVO> pageResult = rackIndexService.getRackPage(pageReqVO);
         return success(pageResult);
+    }
+
+    @Operation(summary = "机架统计")
+    @GetMapping("/rack/pageStatistics")
+    public CommonResult<RackStatisticsResVO> getRackStatistics() {
+        return success(rackIndexService.getRackStatistics());
     }
 
     /**

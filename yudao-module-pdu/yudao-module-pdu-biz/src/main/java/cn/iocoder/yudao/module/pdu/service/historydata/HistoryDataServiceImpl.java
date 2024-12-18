@@ -300,7 +300,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     public List<String> getPduIdsByIps(String[] ips){
         QueryWrapper<PduIndex> queryWrapper = new QueryWrapper<>();
         queryWrapper.select("id");
-        queryWrapper.in("dev_key", ips);
+        queryWrapper.in("pdu_key", ips);
         return pduIndexMapper.selectObjs(queryWrapper);
 
     }

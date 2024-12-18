@@ -70,7 +70,7 @@ const frameList = ref([])
 const height = ref('0px')
 const roomId = history?.state?.roomId || 1
 const cabinetId = history?.state?.id || 1
-console.log('cabinetId', cabinetId+'-'+roomId)
+
 
 const getData = async() => {
   const res = await CabinetApi.getCabinetInfoItem({id: cabinetId})
@@ -87,7 +87,7 @@ const getData = async() => {
       frames.splice(item.uAddress-1, item.uHeight, item)
     })
     frameList.value = frames.reverse()
-    console.log('frames', frames)
+// 根据货架索引列表的长度动态调整高度
     if (res.rackIndexList.length < 11) {
       height.value = '30px'
     } else if (res.rackIndexList.length.length < 16) {
