@@ -290,7 +290,7 @@ const initChart = () => {
       xAxis: {type: 'category', data: getPageNumbers(queryParams.pageNo)},
       yAxis: { type: 'value', name: "kWh"},
       series: [
-        {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
+        {name:"耗电量",  type: 'bar', data: eqData.value.map(num => formatEQ(num,1)), label: { show: true, position: 'top' }, barWidth: 50},
       ],
     });
     instance.appContext.config.globalProperties.rankChart = rankChart;
