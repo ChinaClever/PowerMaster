@@ -908,7 +908,7 @@ onMounted( async () => {
   if (queryParams.pduId != undefined){
     await getList();
     if (queryAddress == null) {
-      nowAddress.value = '';
+      nowAddress.value = '该设备还未绑定机房';
     } else {
       nowAddress.value = queryAddress;
     }

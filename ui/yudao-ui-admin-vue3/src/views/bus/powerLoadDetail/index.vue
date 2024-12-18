@@ -1323,16 +1323,16 @@ const initData = () => {
     switch (typeRadio.value){
       case '电流':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => item.cur_value.toFixed(2));
-        L2Data.value = allLineData.value.L2.map((item) => item.cur_value.toFixed(2));
-        L3Data.value = allLineData.value.L3.map((item) => item.cur_value.toFixed(2));
+        L1Data.value = allLineData.value.L1.map((item) => item.cur_avg_value.toFixed(2));
+        L2Data.value = allLineData.value.L2.map((item) => item.cur_avg_value.toFixed(2));
+        L3Data.value = allLineData.value.L3.map((item) => item.cur_avg_value.toFixed(2));
         }
         break;
       case '电压':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => item.vol_value.toFixed(1));
-        L2Data.value = allLineData.value.L2.map((item) => item.vol_value.toFixed(1));
-        L3Data.value = allLineData.value.L3.map((item) => item.vol_value.toFixed(1));
+        L1Data.value = allLineData.value.L1.map((item) => item.vol_avg_value.toFixed(1));
+        L2Data.value = allLineData.value.L2.map((item) => item.vol_avg_value.toFixed(1));
+        L3Data.value = allLineData.value.L3.map((item) => item.vol_avg_value.toFixed(1));
         }
         break;
       case '有效电能':
@@ -1390,16 +1390,16 @@ const initData = () => {
     switch (typeRadio.value){
       case '电流':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => item.cur_value.toFixed(2));
-        L2Data.value = allLineData.value.L2.map((item) => item.cur_value.toFixed(2));
-        L3Data.value = allLineData.value.L3.map((item) => item.cur_value.toFixed(2));
+        L1Data.value = allLineData.value.L1.map((item) => item.cur_avg_value.toFixed(2));
+        L2Data.value = allLineData.value.L2.map((item) => item.cur_avg_value.toFixed(2));
+        L3Data.value = allLineData.value.L3.map((item) => item.cur_avg_value.toFixed(2));
         }
         break;
       case '电压':
         if(allLineData.value != null){
-        L1Data.value = allLineData.value.L1.map((item) => item.vol_value.toFixed(1));
-        L2Data.value = allLineData.value.L2.map((item) => item.vol_value.toFixed(1));
-        L3Data.value = allLineData.value.L3.map((item) => item.vol_value.toFixed(1));
+        L1Data.value = allLineData.value.L1.map((item) => item.vol_avg_value.toFixed(1));
+        L2Data.value = allLineData.value.L2.map((item) => item.vol_avg_value.toFixed(1));
+        L3Data.value = allLineData.value.L3.map((item) => item.vol_avg_value.toFixed(1));
         }
         break;
       case '有效电能':

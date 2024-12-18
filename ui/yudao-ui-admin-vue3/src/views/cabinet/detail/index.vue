@@ -1,142 +1,201 @@
 <template>
-<div style="background-color: #E7E7E7;height:850px">
-  <div class="header_app">
-    <div class="header_app_text"> 机房-机柜所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{busName}})</div>
-    <div class="header_app_text_other1">
-          <el-col :span="10" >
-            <el-form
-              class="-mb-15px"
-              :model="queryParamsSearch"
-              ref="queryFormRef"
-              :inline="true"
-              label-width="120px"
-            >
-              <el-form-item label="网络地址" prop="devKey" style="margin-top:2px;">
-              <el-autocomplete
-                v-model="queryParamsSearch.devKey"
-                :fetch-suggestions="querySearch"
-                placeholder="请输入网络地址"  
-                clearable
-                class="!w-160px"
-                @select="handleQuery" 
-              />
-              </el-form-item>
-            </el-form>
-          </el-col>
-    </div>
-    <div class="header_app_text_other">
-      <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-      <el-button @click="changeTime ('近一小时');" :type="queryParams.timeGranularity == '近一小时' ? 'primary' : ''" style="margin-left: 65px;">近一小时</el-button>
-      <el-button @click="changeTime ('今天');" :type="queryParams.timeGranularity == '今天' ? 'primary' : ''">今天</el-button>
-      <el-button @click="changeTime('近一天');" :type="queryParams.timeGranularity == '近一天' ? 'primary' : ''">近一天</el-button>
-      <el-button @click="changeTime('近三天');" :type="queryParams.timeGranularity == '近三天' ? 'primary' : ''">近三天</el-button>
-    </div>
-  </div>
+<div style="background-color: #E7E7E7;height:950px">
   <div class="TransformerMonitor">
     <div class="center-part">
       <div class="left-part">
         <!-- <el-tag size="large">{{ location }}</el-tag> -->
-        <div style="height:85%"><Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData.loadFactor" /></div>
-        <div style="height:15%;display:flex;align-items: center;margin-left:5px">              
-            <p style="color:black;">最大需量：<span  class="vale-part BColor" >{{peakDemand}}</span>kVA(发生时间：{{peakDemandTime}})</p>
+        <div style="height:20px;display:flex;align-items: center;margin-left:5px">              
+            <p style="color:black;">负载率</p>
+        </div>
+        <div style="height:20px;display:flex;align-items: center;margin-left:5px">              
+            <span style="color:black;">最大需量：<span  class="vale-part BColor" >{{peakDemand}}</span>kVA</span>
+        </div>
+        <div style="height:20px;display:flex;align-items: center;margin-left:5px">              
+            <span style="color:black;">发生时间：{{peakDemandTime}}</span>
+        </div>
+        <div style="height:200px;">
+            <Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData.loadFactor" />
+        </div>
+        <div style="position: relative; top: -70px; left: 0; width: 100%; text-align: center; padding-top: 10px;"> <!-- 调整 padding-top 以适应需要 -->
+            <div style="color: black;font-size: 30px;">{{redisData?.loadFactor}}</div>
+            <div style="color: black;">负载率（%）</div>
         </div>
         <p v-if="!visContro.gaugeVis" class="noData">暂无数据</p>
       </div>
-      <div  class="right-part">
-        <div  class="center-top-part">
-          <div  class="div-part">
-            <div  class="div-part1">
-              <p  class="middletxt txt1">{{redisData?.fr}}<span >Hz</span></p>
-            </div>
-            <p >功率因素</p>
+      <div class="right-part">
+        <div class="center-top-part">
+            
+          <RealTimePower class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+        </div>
+        <div class="center-top-right-part">
+          <div class="label-container">
+            <span class="bullet">•</span><span style="width:80px;">额定容量:</span><span>{{redisData?.finstalledCapacity}}KVA</span>
           </div>
-          <div  class="div-part">
-            <div  class="div-part2">
-              <p  class="middletxt txt2">{{redisData?.pf}}</p>
-            </div>
-            <p >总功率</p>
+          <div class="label-container">
+            <span class="bullet">•</span><span style="width:80px;">现在功率:</span><span>{{redisData?.s}}KVA</span>
           </div>
-          <div  class="div-part">
-            <div  class="div-part3">
-              <p  class="middletxt txt3">{{redisData?.vub}}<span >%</span></p>
-            </div>
-            <p >A路功率</p>
+          <div class="label-container">
+            <span class="bullet">•</span><span style="width:80px;">有功功率:</span><span>{{redisData?.p}}KVA</span>
           </div>
-          <div  class="div-part">
-            <div  class="div-part4">
-              <p  class="middletxt txt4">{{redisData?.cub}}<span >%</span></p>
-            </div>
-            <p >B路功率</p>
+          <div class="label-container">
+            <span class="bullet">•</span><span style="width:80px;">无功功率:</span><span>{{redisData?.q}}KVA</span>
           </div>
         </div>
-        <div  class="center-bottom-part">
-          <div  class="top-part">
-            <span >| 负载</span>
-            <span >| A路电流</span>
-            <span >| B路电流</span>
-            <span >| A路电压</span>
-            <span >| B路电压</span>
-            <span >| 环境温度
-                <el-button @click="selectedOption = 'current'" :type="selectedOption == 'current' ? 'primary' : ''"  style="width: 50px;height:25px; background-color:#F5F7FA;margin-bottom:3px;color:#606266" >电流</el-button>
-            </span>
-            <span style="width: 50px;padding:0">
-                <el-button @click="selectedOption = 'voltage'" :type="selectedOption == 'voltage' ? 'primary' : ''" style="width: 50px;height:25px; background-color:#F5F7FA;margin-bottom:3px;color:#606266">电压</el-button>
-            </span>
-          </div>
-          <div  class="block-part">
-            <div  class="content-part">
-              <p >额定容量<span  class="vale-part BColor">{{redisData?.finstalledCapacity}}</span>kVA </p>
-              <p >视在功率<span  class="vale-part BColor">{{redisData?.s}}</span>kVA</p>
-              <p >有功功率<span  class="vale-part BColor">{{redisData?.p}}</span>kW</p>
-              <p >无功功率<span  class="vale-part BColor">{{redisData?.q}}</span>kVar</p>
-            </div>
-            <div  class="content-part">
-              <p  >A相 <span  class="vale-part BColor" style="width:30px" :style="{ backgroundColor: getBackgroundColor(redisData?.curStatusA) }">{{redisData?.ia}}</span>A </p>
-              <p  >B相 <span  class="vale-part BColor" style="width:30px" :style="{ backgroundColor: getBackgroundColor(redisData?.curStatusB) }">{{redisData?.ib}}</span>A </p>
-              <p  >C相 <span  class="vale-part BColor" style="width:30px" :style="{ backgroundColor: getBackgroundColor(redisData?.curStatusC) }">{{redisData?.ic}}</span>A </p>
-            </div>
-            <div  class="content-part">
-              <p  >Ua <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.volStatusA) }">{{redisData?.ua}}</span>V </p>
-              <p  >Ub <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.volStatusB) }">{{redisData?.ub}}</span>V </p>
-              <p  >Uc <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.volStatusC) }">{{redisData?.uc}}</span>V </p>
-            </div>
-            <div  class="content-part">
-              <p  >Uab <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.volLineStatusA) }">{{redisData?.uab}}</span>V</p>
-              <p  >Ubc <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.volLineStatusB) }">{{redisData?.ubc}}</span>V</p>
-              <p  >Uca <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.volLineStatusC) }">{{redisData?.uca}}</span>V</p>
-            </div>
-            <div  class="content-part">
-              <p  >A相温度 <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.temStatusA) }">{{redisData?.tempA}}</span>℃</p>
-              <p  >B相温度 <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.temStatusB) }">{{redisData?.tempB}}</span>℃</p>
-              <p  >C相温度 <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.temStatusC) }">{{redisData?.tempC}}</span>℃</p>
-              <p  >N相温度 <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.temStatusN) }">{{redisData?.tempN}}</span>℃</p>
-            </div><!---->
-            <div  class="content-part">
-              <p  v-show="selectedOption === 'current'">A相电流 <span  class="vale-part BColor">{{redisData?.iaTHD}}</span>%</p>
-              <p  v-show="selectedOption === 'current'">B相电流 <span  class="vale-part BColor">{{redisData?.ibTHD}}</span>%</p>
-              <p  v-show="selectedOption === 'current'">C相电流 <span  class="vale-part BColor">{{redisData?.icTHD}}</span>%</p>
-              <p  v-show="selectedOption === 'voltage'">A相电压 <span  class="vale-part BColor">{{redisData?.uaTHD}}</span>%</p>
-              <p  v-show="selectedOption === 'voltage'">B相电压 <span  class="vale-part BColor">{{redisData?.ubTHD}}</span>%</p>
-              <p  v-show="selectedOption === 'voltage'">C相电压 <span  class="vale-part BColor">{{redisData?.ucTHD}}</span>%</p>
-            </div>
-          </div>
-        </div>
+      </div>
+      <div class="right-right-part">
+        <div>负载率曲线</div>
+        <MarkLine v-if="visContro.loadRateVis"  width="100%" height="100%" :list="loadRateList"/>
       </div>
     </div>
-    <div  class="bottom-part">
-      <div  class="bottomLineDiv">
-        <p >| 负载率曲线</p>    
-        <MarkLine v-if="visContro.loadRateVis"  width="100%" height="100%" :list="loadRateList"/>
-        <p v-if="!visContro.loadRateVis" class="noData">暂无数据</p>
-      </div>
-      <div  class="bottomLineDiv">
-        <p >| 有功功率</p>
-        <PowActiveLine v-if="visContro.powActiveVis"  width="100%" height="100%" :list="powActiveList"/>
-      </div>
-      <div  class="bottomLineDiv">
-        <p >| 无功功率</p>
-        <PowReactiveLine v-if="visContro.powReactiveVis"  width="100%" height="100%" :list="powReactiveList"/>
-      </div>
+    <div class="bottom-part">
+      <div style="display: inline-block;
+        width: 50%;
+        height: 100%;">
+          <RealTimePower class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+        </div>
+        <div style="display: inline-block;
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            top: 30%;">
+          <div class="label-container">
+            <span class="bullet">•</span><span>频率:</span><span>{{redisData?.fr}}Hz</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet">•</span><span>功率因数:</span><span>{{redisData?.pf}}</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet">•</span><span>三相电压不平衡度:</span><span>{{redisData?.vub}}%</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet">•</span><span>三相电流不平衡度:</span><span>{{redisData?.cub}}%</span>
+          </div>
+        </div>
+    </div>
+    <div class="bottom-part">
+      <div style="display: inline-block;
+        width: 50%;
+        height: 100%;">
+          <RealTimePower class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+        </div>
+        <div style="display: inline-block;
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            top: 30%;">
+          <div class="label-container">
+            <span class="bullet">•</span><span>频率:</span><span>{{redisData?.fr}}Hz</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet">•</span><span>功率因数:</span><span>{{redisData?.pf}}</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet">•</span><span>三相电压不平衡度:</span><span>{{redisData?.vub}}%</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet">•</span><span>三相电流不平衡度:</span><span>{{redisData?.cub}}%</span>
+          </div>
+        </div>
+    </div>
+    <div class="bottom-part">
+      <div style="display: inline-block;
+        width: 50%;
+        height: 100%;">
+          <PowerFactor class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+        </div>
+        <div style="display: inline-block;
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            top: 30%;">
+          <div class="label-container">
+            <span class="bullet">•</span><span>频率:</span><span>{{redisData?.fr}}Hz</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet">•</span><span>功率因数:</span><span>{{redisData?.pf}}</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet">•</span><span>三相电压不平衡度:</span><span>{{redisData?.vub}}%</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet">•</span><span>三相电流不平衡度:</span><span>{{redisData?.cub}}%</span>
+          </div>
+        </div>
+    </div>
+    <div class="bottom-part">
+      <div style="display: inline-block;
+        width: 50%;
+        height: 100%;">
+          <RealTimePower class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+        </div>
+        <div style="display: inline-block;
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            top: 30%;">
+          <div class="label-container">
+            <span class="bullet">•</span><span>频率:</span><span>{{redisData?.fr}}Hz</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet">•</span><span>功率因数:</span><span>{{redisData?.pf}}</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet">•</span><span>三相电压不平衡度:</span><span>{{redisData?.vub}}%</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet">•</span><span>三相电流不平衡度:</span><span>{{redisData?.cub}}%</span>
+          </div>
+        </div>
+    </div>
+    <div class="bottom-part">
+      <div style="display: inline-block;
+        width: 50%;
+        height: 100%;">
+          <RealTimePower class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+        </div>
+        <div style="display: inline-block;
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            top: 30%;">
+          <div class="label-container">
+            <span class="bullet">•</span><span>频率:</span><span>{{redisData?.fr}}Hz</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet">•</span><span>功率因数:</span><span>{{redisData?.pf}}</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet">•</span><span>三相电压不平衡度:</span><span>{{redisData?.vub}}%</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet">•</span><span>三相电流不平衡度:</span><span>{{redisData?.cub}}%</span>
+          </div>
+        </div>
+    </div>
+    <div class="bottom-part">
+      <div style="display: inline-block;
+        width: 50%;
+        height: 100%;">
+          <RealTimePower class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+        </div>
+        <div style="display: inline-block;
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            top: 30%;">
+          <div class="label-container">
+            <span class="bullet">•</span><span>频率:</span><span>{{redisData?.fr}}Hz</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet">•</span><span>功率因数:</span><span>{{redisData?.pf}}</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet">•</span><span>三相电压不平衡度:</span><span>{{redisData?.vub}}%</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet">•</span><span>三相电流不平衡度:</span><span>{{redisData?.cub}}%</span>
+          </div>
+        </div>
     </div>
   </div>
 </div> 
@@ -145,7 +204,9 @@
 <script setup lang="ts">
 
 import { ref } from 'vue'
-import Gauge from '@/views/bus/powerDetail/component/Gauge.vue'
+import RealTimePower from './component/RealTimePower.vue'
+import PowerFactor from './component/PowerFactor.vue'
+import Gauge from './component/Gauge.vue'
 import MarkLine from './component/MarkLine.vue'
 import PowReactiveLine from './component/PowReactiveLine.vue'
 import PowActiveLine from './component/PowActiveLine.vue'
@@ -229,7 +290,6 @@ const getRedisData = async () => {
 
 const getLoadRateList = async () =>{
     const data = await IndexApi.getBusLoadRateLine(queryParams);//oldtime newtime id
-    console.log('第一个图的data',data)
     loadRateList.value = data;
     if(loadRateList.value?.time != null && loadRateList.value?.time?.length > 0){
         visContro.value.loadRateVis = true;
@@ -240,7 +300,6 @@ const getLoadRateList = async () =>{
 
 const getBusPowActiveList = async () =>{
     const data = await IndexApi.getBusPowActiveLine(queryParams);//oldtime newtime id
-    console.log('第二个图的data',data)
     powActiveList.value = data;
     if(powActiveList.value?.time != null && powActiveList.value?.time?.length > 0){
         visContro.value.powActiveVis = true;
@@ -278,7 +337,6 @@ const getPeakDemand =async () => {
 
 const getBusPowReactiveList = async () =>{
     const data = await IndexApi.getBusPowReactiveLine(queryParams);//oldtime newtime id
-    console.log('第三张图的内容',data)
     powReactiveList.value = data;
     if(powReactiveList.value?.time != null && powReactiveList.value?.time?.length > 0){
         visContro.value.powReactiveVis = true;
@@ -402,16 +460,16 @@ body .TransformerMonitor .topdiv span,body .TransformerMonitor .topdiv span,body
 }
 
 .TransformerMonitor .center-part {
-    height: 350px;
+    height: 40%;
     width: 100%;
     margin-bottom: 5px
 }
 
 .TransformerMonitor .center-part .left-part {
     display: inline-block;
-    width: 25%;
+    width: 32.5%;
     height: 100%;
-    margin-right: 5px
+    margin-right: 15px
 }
 
 body .TransformerMonitor .center-part .left-part,body .TransformerMonitor .center-part .left-part,body .TransformerMonitor .center-part .left-part,body .TransformerMonitor .center-part .left-part {
@@ -443,18 +501,62 @@ body .TransformerMonitor .center-part .left-part {
     height: 100%
 }
 
+.bullet {
+  font-size: 30px; /* 根据需要调整大小 */
+  color: blue; /* 设置颜色 */
+  margin-right: 8px; /* 设置小圆点与后续文本之间的间距 */
+}
+
 .TransformerMonitor .center-part .right-part {
     display: inline-block;
-    width: calc(75% - 5px);
+    width: 32.4%;
     height: 100%;
-    vertical-align: top
+    vertical-align: top;
+    background-color: #fff;
+    position: relative;
+    margin-right:15px;
 }
 
 .TransformerMonitor .center-part .center-top-part {
     display: inline-block;
-    width: 100%;
-    height: calc(50% - 2.5px);
-    margin-bottom: 5px
+    width: 50%;
+    height: 100%;
+    margin-bottom: 5px;
+}
+
+.TransformerMonitor .center-part .center-top-right-part {
+    display: inline-block;
+    width: 50%;
+    height: 100%;
+    top: 30%;
+    margin-bottom: 5px;
+    position: absolute;
+}
+
+.TransformerMonitor .center-part .right-right-part{
+    display: inline-block;
+    width: 32.3%;
+    height: 100%;
+    vertical-align: top;
+    background-color: #fff;
+    margin-right:15px;
+}
+
+.label-container {
+  display: flex; /* 使用 Flexbox 布局 */
+  align-items: center; /* 垂直居中 */
+  color:#000;
+}
+ 
+.label-container span:nth-of-type(2) {
+  display: inline-block;
+  width: 150px;
+  vertical-align: top;
+}
+ 
+.label-container span:last-of-type {
+  display: inline-block;
+  margin-left: 10px;
 }
 
 body .TransformerMonitor .center-part .center-top-part,body .TransformerMonitor .center-part .center-top-part,body .TransformerMonitor .center-part .center-top-part,body .TransformerMonitor .center-part .center-top-part {
@@ -666,8 +768,13 @@ body .TransformerMonitor .center-part .center-bottom-part .block-part .content-p
 }
 
 .TransformerMonitor .bottom-part {
-    height: calc(50% - 10px);
-    width: 100%
+    display: inline-block;
+    height: 30%;
+    width: 32.4%;
+    margin-right: 15px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    position: relative;
 }
 
 body .TransformerMonitor .bottom-part,body .TransformerMonitor .bottom-part,body .TransformerMonitor .bottom-part,body .TransformerMonitor .bottom-part {
@@ -694,31 +801,15 @@ body .TransformerMonitor .bottom-part {
     background-color: #ffffff!important
 }
 
-.TransformerMonitor .bottom-part .bottomLineDiv {
-    display: inline-block;
-    width: 33.33%;
-    height: 100%;
-    vertical-align: top
-}
-
-.TransformerMonitor .bottom-part .bottomLineDiv p {
-    color: #65c5fc;
-    font-weight: 700;
-    padding-left: 8px;
-    border-left: 2px solid;
-    line-height: 36px;
-    margin: 0
-}
-
 .TransformerMonitor .bottom-part .bottomLineDiv #transformLine1,.TransformerMonitor .bottom-part .bottomLineDiv #transformLine2,.TransformerMonitor .bottom-part .bottomLineDiv #transformLine3 {
     width: 100%;
-    height: 100%
+    height: 100%;
 }
 
 .noData {
     color: #fff;
     text-align: center;
-    line-height: 200px
+    line-height: 200px;
 }
 
 @media screen and (max-width: 2160px) {
@@ -848,10 +939,6 @@ body .TransformerMonitor .bottom-part {
 
     .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
         font-size: 13px
-    }
-
-    .TransformerMonitor .bottom-part .bottomLineDiv p {
-        font-size: 14px
     }
 }
 

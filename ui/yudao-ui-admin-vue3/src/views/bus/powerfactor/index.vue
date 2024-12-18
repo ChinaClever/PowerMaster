@@ -43,12 +43,20 @@
         ref="queryFormRef"
         :inline="true"
         label-width="68px"                          
-      >
+      > 
         <el-form-item >
+          <!--<template v-for="(status,index) in statusList" :key="index">
+            <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+          </template>-->
+          <button :class="normalFlag ? 'btn_normal normal': 'btn_normal'" @click.prevent="normalFlag = !normalFlag;handleSelectStatus(1)">正常</button>
+          <button :class="reportFlag ? 'btn_error error':  'btn_error'" @click.prevent="reportFlag = !reportFlag;handleSelectStatus(2)">告警</button>
+          <button :class="offlineFlag ? 'btn_offline offline': 'btn_offline'" @click.prevent="offlineFlag = !offlineFlag;handleSelectStatus(0)">离线</button>
+        </el-form-item>
+        <!-- <el-form-item >
           <el-checkbox-group  v-model="queryParams.status" @change="handleQuery">
             <el-checkbox :label="5" :value="5">在线</el-checkbox>
           </el-checkbox-group>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
             v-model="queryParams.devKey"
@@ -141,23 +149,23 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
+            <div class="info" >                  
+              <div  v-if="item.apf != null">A: {{item.apf}}</div>
+              <div  v-if="item.bpf != null">B: {{item.bpf}}</div>
+              <div  v-if="item.cpf != null">C: {{item.cpf}}</div>
+            </div>
             <div class="icon">
               <div v-if=" item.totalPf != null ">
                 <span style="font-size: 20px;">{{ item.totalPf }}</span><br/>总功率因素
               </div>                    
             </div>
-            <div class="info" >                  
-              <div  v-if="item.apf != null">A:{{item.apf}}</div>
-              <div  v-if="item.bpf != null">B:{{item.bpf}}</div>
-              <div  v-if="item.cpf != null">C:{{item.cpf}}</div>
-            </div>          
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status">
             <el-tag v-if="item.apf != null" >功率因素</el-tag>
             <el-tag v-else type="info">离线</el-tag>
           </div>
-          <button class="detail" @click="openPFDetail(item)" v-if="item.status != null && item.status != 5" >详情</button>
+          <button class="detail" @click="openPFDetail(item)" v-if="item.status != null && item.status != 0" >详情</button>
         </div>
       </div>
       <Pagination
@@ -258,6 +266,32 @@ const valueMode = ref(0)
 const switchChartOrTable = ref(0)
 const detailVis = ref(false);
 
+const statusList = reactive([
+  {
+    name: '离线',
+    selected: true,
+    value: 0,
+    cssClass: 'btn_offline',
+    activeClass: 'btn_offline offline'
+  },
+  {
+    name: '正常',
+    selected: true,
+    value: 1,
+    cssClass: 'btn_normal',
+    activeClass: 'btn_normal normal'
+  },
+  {
+    name: '告警',
+    selected: true,
+    value: 2,
+    cssClass: 'btn_error',
+    activeClass: 'btn_error error'
+  }
+])
+const normalFlag = ref(true)
+const reportFlag = ref(true)
+const offlineFlag = ref(true)
 
 const pfESList = ref({}) as any
 const pfTableList = ref([]) as any
@@ -436,8 +470,9 @@ const getList = async () => {
   loading.value = true
   try {
     const data = await IndexApi.getBusPFPage(queryParams)
-
+    
     list.value = data.list
+    filterData()
     var tableIndex = 0;
 
     list.value.forEach((obj) => {
@@ -461,6 +496,7 @@ const getListNoLoading = async () => {
   try {
     const data = await IndexApi.getBusPFPage(queryParams)
     list.value = data.list
+    filterData()
     var tableIndex = 0;    
 
     list.value.forEach((obj) => {
@@ -496,7 +532,42 @@ const getNavList = async() => {
   }
 }
 
+const filterData = () => {
+  const data0 = list.value.filter(item => item.status === 1); // 正常状态数据
+  console.log('data0',data0)
+  const data1 = list.value.filter(item => item.status === 2 ); // 告警状态数据
+  console.log('data1',data1)
+  const data2 = list.value.filter(item => item.status === 0 || item.status == null); // 离线状态数据
+  console.log('data2',data2)
+ 
+  if (normalFlag.value && !reportFlag.value && !offlineFlag.value) {
+    list.value = data0; // 仅正常状态
+  } else if (reportFlag.value && !normalFlag.value && !offlineFlag.value) {
+    list.value = data1; // 仅告警状态
+  } else if (offlineFlag.value && !normalFlag.value && !reportFlag.value) {
+    list.value = data2; // 仅离线状态
+  } else if (normalFlag.value && reportFlag.value&& !offlineFlag.value) {
+    list.value = [...data0, ...data1];
+  } else if (normalFlag.value && offlineFlag.value && !reportFlag.value) {
+    list.value = [...data0, ...data2];
+  } else if (reportFlag.value && offlineFlag.value && !normalFlag.value) {
+    list.value = [...data1, ...data2];
+  } else if (normalFlag.value && reportFlag.value && offlineFlag.value) {
+    list.value = [...data0, ...data1, ...data2];
+  } else {
+    list.value = list.value;
+  }
 
+  console.log('执行完毕',list.value)
+}
+
+const handleSelectStatus = (index) => {
+  //statusList[index].selected = !statusList[index].selected
+  const status =  statusList.filter(item => item.selected)
+  const statusArr = status.map(item => item.value)
+  queryParams.status = statusArr;
+  handleQuery();
+}
 
 // const openNewPage = (scope) => {
 //   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
@@ -624,7 +695,7 @@ onActivated(() => {
   color: blue !important;
   cursor: pointer;
 }
-
+ 
 .master {
   width: 100%;
   box-sizing: border-box;

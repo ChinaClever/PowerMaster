@@ -110,11 +110,11 @@ public class RackIndexServiceImpl implements RackIndexService {
             Page<RackIndex> page = new Page<>(vo.getPageNo(), vo.getPageSize());
 
             Page<RackIndex> result = rackIndexDoMapper.selectPage(page, new LambdaQueryWrapperX<RackIndex>()
-                    .eq(RackIndex::getIsDelete, DelEnums.NO_DEL.getStatus())
+                    .eqIfPresent(RackIndex::getIsDelete, DelEnums.NO_DEL.getStatus())
                     .like(StringUtils.isNotEmpty(vo.getRackName()), RackIndex::getRackName, vo.getRackName())
                     .like(StringUtils.isNotEmpty(vo.getCompany()), RackIndex::getCompany, vo.getCompany())
                     .like(StringUtils.isNotEmpty(vo.getType()), RackIndex::getRackType, vo.getType())
-                    .in(!CollectionUtils.isEmpty(vo.getCabinetIds()), RackIndex::getCabinetId, vo.getRackIds())
+                    .in(!CollectionUtils.isEmpty(vo.getCabinetIds()), RackIndex::getCabinetId, vo.getCabinetIds())
                     .in(!CollectionUtils.isEmpty(vo.getRackIds()), RackIndex::getId, vo.getRackIds()));
 
             List<JSONObject> indexRes = new ArrayList<>();
