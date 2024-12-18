@@ -51,7 +51,7 @@
           </template>
         <el-form-item >
           <el-checkbox-group  v-model="queryParams.status" @change="handleQuery">
-            <el-checkbox :label="5" :value="5">在线</el-checkbox>
+            <el-checkbox :label="1" :value="1">在线</el-checkbox>
           </el-checkbox-group>
         </el-form-item>          
         </el-form-item>

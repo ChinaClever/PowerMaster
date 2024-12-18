@@ -512,8 +512,8 @@ const temTableList = ref([]) as any
 const statusNumber = reactive({
   normal: 0,
   warn: 0,
-  alarm: 0,
-  offline: 0
+  offline: 0,
+  total: 0
 })
 const statusList = reactive([
   {
