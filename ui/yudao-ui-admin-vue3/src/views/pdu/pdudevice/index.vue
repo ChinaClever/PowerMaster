@@ -146,7 +146,7 @@
     </template>
     <template #Content>
      <div>
-      <el-table  v-show="switchValue == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
+      <el-table  v-show="switchValue == 1" v-loading="loading" :data="list" :stripe="false" :show-overflow-tooltip="true" :border="false" @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -171,7 +171,7 @@
             <el-tag type="info" v-if="scope.row.status == 5">离线</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="总视在功率(kVA)" align="center" prop="apparentPow" width="130px" >
+        <el-table-column label="总视在功率(kVA)" align="center" prop="apparentPow" width="150px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if=" scope.row.apparentPow != null" >
               {{ scope.row.apparentPow }}
@@ -182,6 +182,13 @@
           <template #default="scope" >
             <el-text line-clamp="2" v-if=" scope.row.pow != null" >
               {{ scope.row.pow }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column label="总无功功率(kVar)" align="center" prop="pow" width="150px">
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if=" scope.row.reactivePow != null" >
+              {{ formatEQ(scope.row.reactivePow,3) }}
             </el-text>
           </template>
         </el-table-column>
@@ -257,6 +264,8 @@
             <div class="info">
               <div v-if=" item.pow != null ">有功功率：{{item.pow}}kW</div>
               <div v-if="item.apparentPow != null">视在功率：{{item.apparentPow}}kVA</div>
+              <div v-if=" item.reactivePow != null ">无功功率：{{formatEQ(item.reactivePow,3)}}kVar</div>
+
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
@@ -319,6 +328,14 @@ import { ElTree } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
 import { get } from 'http'
 
+// 格式化耗电量列数据，保留3位小数
+function formatEQ(value: number, decimalPlaces: number | undefined){
+  if (!isNaN(value)) {
+    return Number(value).toFixed(decimalPlaces);
+  } else {
+      return null; // 或者其他默认值
+  }
+}
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
@@ -457,6 +474,7 @@ const list = ref([
     id:null,
     status:null,
     apparentPow:null,
+    reactivePow:null,
     pow:null,
     ele:null,
     devKey:null,
@@ -1362,4 +1380,5 @@ onActivated(() => {
   height: 80px;
 
 }
+
 </style>

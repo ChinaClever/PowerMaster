@@ -297,6 +297,39 @@
         </div>
       </div>
 
+      
+
+      <div v-show="switchValue == 0 && list.length > 0" class="arrayContainer">
+        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
+          <div class="content">
+            <div class="icon">
+              <div v-if="item.volUnbalance != null">
+                <span style="font-size: 20px">{{ item.volUnbalance }}%</span><br />不平衡度
+              </div>
+            </div>
+            <div class="info">
+              <div v-if="item.avol != null">A相电压：{{ item.avol.toFixed(1) }}V</div>
+              <div v-if="item.bvol != null">B相电压：{{ item.bvol.toFixed(1) }}V</div>
+              <div v-if="item.cvol != null">C相电压：{{ item.cvol.toFixed(1) }}V</div>
+              <!-- <div >网络地址：{{ item.devKey }}</div> -->
+              <!-- <div>AB路占比：{{item.fzb}}</div> -->
+            </div>
+
+          </div>
+          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
+          <div class="status">
+            <el-tag type="info">电压不平衡</el-tag>
+          </div>
+          <button
+            v-if="item.status != null && item.status != 5"
+            class="detail"
+            @click="showDialogVol(item)"
+            >详情</button
+          >
+        </div>
+      </div>
+
       <el-dialog v-model="dialogVisibleCur"  >
         <!-- 自定义的头部内容（可选） -->
         <template #header>
@@ -338,38 +371,8 @@
         </div>
       </el-dialog>
 
-      <div v-show="switchValue == 0 && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
-          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
-          <div class="content">
-            <div class="icon">
-              <div v-if="item.volUnbalance != null">
-                <span style="font-size: 20px">{{ item.volUnbalance }}%</span><br />不平衡度
-              </div>
-            </div>
-            <div class="info">
-              <div v-if="item.avol != null">A相电压：{{ item.avol.toFixed(1) }}V</div>
-              <div v-if="item.bvol != null">B相电压：{{ item.bvol.toFixed(1) }}V</div>
-              <div v-if="item.cvol != null">C相电压：{{ item.cvol.toFixed(1) }}V</div>
-              <!-- <div >网络地址：{{ item.devKey }}</div> -->
-              <!-- <div>AB路占比：{{item.fzb}}</div> -->
-            </div>
-
-          </div>
-          <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
-          <div class="status">
-            <el-tag type="info">电压不平衡</el-tag>
-          </div>
-          <button
-            v-if="item.status != null && item.status != 5"
-            class="detail"
-            @click="showDialogVol(item)"
-            >详情</button
-          >
-        </div>
-      </div>
-
       <el-dialog v-model="dialogVisibleVol" @close="handleClose" width="70%">
+        
         <!-- 自定义的头部内容（可选） -->
         <template #header>
           <CardTitle title="电压不平衡" />

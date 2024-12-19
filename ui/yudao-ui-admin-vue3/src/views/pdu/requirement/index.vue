@@ -424,7 +424,11 @@
         <template #header>
           <el-button @click="lineidBeforeChartUnmount()" style="float:right" show-close="false" >关闭</el-button>
           <div><h2>需量电流详情</h2></div> 
-          <div>所在位置：{{onlyDevKey}} 网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}} 起始时间：{{ createTimes }} 结束时间：{{ endTimes }}</div>
+          <div>所在位置：{{onlyDevKey}} 
+            网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}} 
+            <span style="padding-left: 370px;">{{ createTimes }} - {{ endTimes }}</span>
+          </div>
+          
         </template>
 
         <!-- 自定义的主要内容 -->

@@ -25,10 +25,11 @@
     </div>
     <!-- 右大侧 -->
     <div class="master-right">
-      <ContentWrap class="hhh">
+      
+      <ContentWrap style="min-height: 680px" >
+        <ContentWrap class="hhh">
         <slot name="ActionBar" ></slot>
       </ContentWrap>
-      <ContentWrap style="min-height: 680px" >
         <slot name="Content" ></slot>
       </ContentWrap>
     </div>
