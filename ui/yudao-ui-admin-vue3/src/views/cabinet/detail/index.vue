@@ -42,24 +42,24 @@
         <!--<div style="height:20px;display:flex;align-items: center;margin-left:10px">              
             <span style="color:#ccc;font-size:14px;">最大需量：<span  class="vale-part BColor" >{{peakDemand}}</span>kVA</span>
         </div>-->
-        <div style="height:20px;display:flex;align-items: center;margin-left:10px;margin-top:;">              
+        <div style="height:20px;display:flex;align-items: center;margin-left:10px;">              
             <span style="color:#ccc;font-size:14px;">发生时间：{{peakDemandTime}}</span>
         </div>
-        <div style="height:20px;display:flex;align-items: center;margin-left:10px;margin-top:;">              
+        <div style="height:20px;display:flex;align-items: center;margin-left:10px;">              
             <span style="color:#ccc;font-size:14px;border-bottom:1px solid #ccc;width:90%;"></span>
         </div>
-        <div style="height:160px;margin-top:10px;">
+        <div style="height:360px;width:100%;margin-top:-50px;">
             <Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData.loadFactor" />
         </div>
-        <div style="position: relative; top: -80px; left: 0; width: 100%; text-align: center; padding-top: 10px;"> <!-- 调整 padding-top 以适应需要 -->
+        <!--<div style="position: relative; top: -80px; left: 0; width: 100%; text-align: center; padding-top: 10px;">
             <div style="color: black;font-size: 30px;">{{redisData?.loadFactor}}</div>
             <div style="color: black;">负载率（%）</div>
-        </div>
+        </div>-->
         <p v-if="!visContro.gaugeVis" class="noData">暂无数据</p>
       </div>
       <div class="right-part">
         <div class="center-top-part">
-          <div style="color: black;margin:10px 0 0 10px;">实时功率</div>
+          <div style="color: black;margin:10px 0 0 10px;font-weight: bold;">实时功率</div>
           <RealTimePower style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
         </div>
         <div class="center-top-right-part">
@@ -86,8 +86,8 @@
       <div style="display: inline-block;
         width: 50%;
         height: 100%;">
-          <div style="color: black;margin:10px 0 0 10px;">A路电压</div>
-          <AVol style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+          <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">A路电压</div>
+          <AVol style="margin-top:-30px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
         </div>
         <div style="display: inline-block;
             position: absolute;
@@ -109,7 +109,7 @@
       <div style="display: inline-block;
         width: 50%;
         height: 100%;">
-          <div style="color: black;margin:10px 0 0 10px;">A路电流</div>
+          <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">A路电流</div>
           <ACur style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
         </div>
         <div style="display: inline-block;
@@ -131,8 +131,8 @@
     <div class="bottom-part">
       <div style="display: inline-block;
         width: 50%;
-        height: 100%;">
-          <div style="color: black;margin:10px 0 0 10px;">功率因数</div>
+        height: 230px;">
+          <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">功率因数</div>
           <PowerFactor style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
         </div>
         <div style="display: inline-block;
@@ -158,8 +158,8 @@
       <div style="display: inline-block;
         width: 50%;
         height: 100%;">
-          <div style="color: black;margin:10px 0 0 10px;">B路电压</div>
-          <BVol style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+          <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">B路电压</div>
+          <BVol style="margin-top:-30px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
         </div>
         <div style="display: inline-block;
             position: absolute;
@@ -181,7 +181,7 @@
       <div style="display: inline-block;
         width: 50%;
         height: 100%;">
-          <div style="color: black;margin:10px 0 0 10px;">B路电流</div>
+          <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">B路电流</div>
           <BCur style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
         </div>
         <div style="display: inline-block;
@@ -206,7 +206,7 @@
         height: 90%;
         margin-right:-20px;"
       >
-          <div style="color: black;margin:10px 0 0 10px;">AB路功率<span style="margin-left:100px;">A路</span></div>
+          <div style="color: black;margin:10px 0 0 10px;"><span style="font-weight:bold;">AB路功率</span><span style="margin-left:80px;">A路</span></div>
           <Environment style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
         </div>
         <div style="display: inline-block;

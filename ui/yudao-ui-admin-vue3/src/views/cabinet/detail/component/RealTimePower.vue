@@ -23,17 +23,25 @@ console.log('loadFactor',props.loadFactor)
 // 设置饼图的选项
 const echartsOption = reactive({
   tooltip: {
-    trigger: 'item',
-    formatter: (params) => `${params.name}:`+`${params.value}KVA`,
+    trigger: 'item'
   },
   series: [
     {
       type: 'pie',
-      radius: '50%',
+      radius: ['40%', '70%'],
+      avoidLabelOverlap: false,
+      itemStyle: {
+        borderRadius: 10,
+        borderColor: '#fff',
+        borderWidth: 2
+      },
       label: {
         show: true,
-        position: 'inside',
-        formatter: (params) => `${params.value}`+'KVA', // 确保返回数值
+        position: 'inside', // 将标签显示在饼图内部
+        formatter: (params) => {
+          // 返回具体的数值
+          return `${params.value}KVA`;
+        },
         fontSize: 14,
         fontWeight: 'bold'
       },
@@ -60,13 +68,6 @@ const echartsOption = reactive({
           }
         },
       ],
-      emphasis: {
-        itemStyle: {
-          shadowBlur: 10,
-          shadowOffsetX: 0,
-          shadowColor: 'rgba(0, 0, 0, 0.5)'
-        }
-      }
     }
   ]
 });

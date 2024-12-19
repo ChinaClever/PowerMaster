@@ -20,40 +20,58 @@ const props = defineProps({
 
 
 // 设置饼图的选项
-const echartsOption = reactive({
-  tooltip: {
-      trigger: 'item'
-  },
-  series: [{
-      type: 'pie',
-      radius: ['60%', '120%'],
-      center: ['50%', '70%'],
-      label: {
-        show: true,
-        position: 'inside', // 将标签显示在饼图内部
-        formatter: (params) => {
-          // 返回显示的字符串，包括百分比
-          return `${params.percent.toFixed(1)}%`;
-        },
-        fontSize: 14, // 可以调整字体大小
-        fontWeight: 'bold' // 可以设置字体加粗
-      },
-      startAngle: 180,
-      endAngle: 360,
-      data: [{
-          value: props.loadFactor,
-          name:  "负载率(%)",
-          itemStyle: {
-            color: '#E5B849'
-          }
-      },
-      {
-        value: (100 - props.loadFactor).toFixed(2),
-        itemStyle: {
-          color: '#ccc'
+const echartsOption = reactive( {
+  series: [
+    {
+      type: 'gauge',
+      axisLine: {
+        lineStyle: {
+          width: 25,
+          color: [
+            [0.3, '#67e0e3'],
+            [0.7, '#37a2da'],
+            [1, '#fd666d']
+          ]
         }
-      }]
-  }]
+      },
+      pointer: {
+        itemStyle: {
+          color: 'auto'
+        }
+      },
+      axisTick: {
+        distance: -30,
+        length: 8,
+        lineStyle: {
+          color: '#fff',
+          width: 2
+        }
+      },
+      splitLine: {
+        distance: -30,
+        length: 30,
+        lineStyle: {
+          color: '#fff',
+          width: 4
+        }
+      },
+      axisLabel: {
+        color: 'inherit',
+        distance: 40,
+        fontSize: 10,
+      },
+      detail: {
+        valueAnimation: true,
+        formatter: '{value}%',
+        color: 'inherit'
+      },
+      data: [
+        {
+          value: props.loadFactor,
+        }
+      ]
+    }
+  ]
 })
 
 onUnmounted(() => {

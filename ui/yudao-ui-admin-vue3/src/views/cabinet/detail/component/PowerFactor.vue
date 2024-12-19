@@ -22,44 +22,83 @@ console.log('loadFactor',props.loadFactor)
 
 // 设置饼图的选项
 const echartsOption = reactive({
-  tooltip: {
-    trigger: 'item'
-  },
   series: [
     {
-      type: 'pie',
-      radius: '60%',
-      label: {
-        show: true,
-        position: 'inside',
-        formatter: (params) => `${params.value}`, // 确保返回数值
-        fontSize: 14,
-        fontWeight: 'bold'
+      type: 'gauge',
+      startAngle: 180,
+      endAngle: 0,
+      center: ['50%', '75%'],
+      radius: '90%',
+      min: 0,
+      max: 1,
+      splitNumber: 8,
+      axisLine: {
+        lineStyle: {
+          width: 6,
+          color: [
+            [0.25, '#FF6E76'],
+            [0.5, '#FDDD60'],
+            [0.75, '#58D9F9'],
+            [1, '#7CFFB2']
+          ]
+        }
+      },
+      pointer: {
+        icon: 'path://M12.8,0.7l12,40.1H0.7L12.8,0.7z',
+        length: '12%',
+        width: 20,
+        offsetCenter: [0, '-60%'],
+        itemStyle: {
+          color: 'auto'
+        }
+      },
+      axisTick: {
+        length: 12,
+        lineStyle: {
+          color: 'auto',
+          width: 2
+        }
+      },
+      splitLine: {
+        length: 20,
+        lineStyle: {
+          color: 'auto',
+          width: 5
+        }
+      },
+      axisLabel: {
+        color: '#464646',
+        fontSize: 20,
+        distance: -60,
+        rotate: 'tangential',
+        formatter: function (value) {
+          if (value === 0.875) {
+          } else if (value === 0.625) {
+          } else if (value === 0.375) {
+          } else if (value === 0.125) {
+          }
+          return '';
+        }
+      },
+      title: {
+        offsetCenter: [0, '-10%'],
+        fontSize: 20
+      },
+      detail: {
+        fontSize: 30,
+        offsetCenter: [0, '-35%'],
+        valueAnimation: true,
+        formatter: function (value) {
+          return Math.round(value * 100) + '';
+        },
+        color: 'inherit'
       },
       data: [
-        { value: props.loadFactor.finstalledCapacity, name: '频率',itemStyle: {
-            color: '#E5B849'
-          }},
-        { value: props.loadFactor.s, name: '功率因数',
-          itemStyle: {
-            color: '#C8603A'
-          } },
-        { value: props.loadFactor.p, name: '三相电压不平衡度',
-          itemStyle:{
-            color: '#AD3762'
-          } },
-        { value: props.loadFactor.q, name: '三相电流不平衡度',
-          itemStyle:{
-            color: '#B47660'
-          } },
-      ],
-      emphasis: {
-        itemStyle: {
-          shadowBlur: 10,
-          shadowOffsetX: 0,
-          shadowColor: 'rgba(0, 0, 0, 0.5)'
+        {
+          value: props.loadFactor.pf,
+          name: '功率因数'
         }
-      }
+      ]
     }
   ]
 })

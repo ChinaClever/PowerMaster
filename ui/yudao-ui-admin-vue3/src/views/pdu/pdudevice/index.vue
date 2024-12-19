@@ -48,11 +48,7 @@
         v-show="switchValue !== 2"                          
       >
         <el-form-item>
-<<<<<<< Updated upstream
-          <button class="btnnnnnnnn" type = "button" @click="toggleAllStatus">
-=======
           <button class="btnnnnnnnn">
->>>>>>> Stashed changes
             全部
           </button>
           <template v-for="(status, index) in statusList" :key="index">
@@ -149,8 +145,10 @@
       </el-form>      
     </template>
     <template #Content>
-     <div>
-      <el-table  v-show="switchValue == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
+     <div style="height: 700px;
+      overflow:hidden;
+      overflow-y: auto;" v-if="switchValue && list.length > 0">
+      <el-table  v-if="switchValue == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -222,7 +220,7 @@
       </el-table> 
      </div> 
       <!-- 查看已删除PDU设备 -->
-      <el-table  v-show="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true" :border="true">
+      <el-table  v-if="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -910,11 +908,6 @@ onActivated(() => {
   width: 58px;
   height: 35px;
   cursor: pointer;
-<<<<<<< Updated upstream
-  display: flex;
-  align-items: center;
-  justify-content: center;
-=======
   border-radius: 3px;
   display: flex;
   align-items: center;
@@ -923,7 +916,6 @@ onActivated(() => {
   &:hover {
     color: #7bc25a;
   }
->>>>>>> Stashed changes
 }
 
 .btn_offline,
