@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="PDU报表">
+  <CommonMenu :showCheckbox="false" @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="插接箱谐波详情">
     <template #NavInfo>
       <div >
         <div class="header">
@@ -54,7 +54,7 @@
           />
         </el-form-item> -->
         <el-form-item>       
-          <el-tag size="large">{{ location }}</el-tag>  
+          <el-tag size="large">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{boxName}})</el-tag>  
           <el-select
             v-model="queryParams.harmonicType"
             placeholder="请选择"
@@ -82,6 +82,11 @@
             />
           </el-select>
 
+          
+        </el-form-item>
+
+        <el-tag size="large">网络地址：{{ devkey }}</el-tag>  
+        <el-form-item>
           <el-button 
             @click="subtractOneDay();handleDayPick()" 
           >
@@ -100,9 +105,6 @@
           >
             &gt;
           </el-button>
-        </el-form-item>
-
-        <el-form-item>
           <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
         </el-form-item>
         <!-- <el-text size="large">
@@ -112,10 +114,10 @@
     </template>
     <template #Content>
       <div >
-        <div v-if="realTimeVis">
+        <!-- <div v-if="realTimeVis">
           <HarmonicRealTime  width="70vw" height="58vh" :list="harmonicRealTime"/>
         </div>
-        <br/>
+        <br/> -->
         <div v-if="lineVis">
           <HarmonicLine  width="70vw" height="58vh" :list="harmonicLine"/>
         </div>
@@ -137,6 +139,8 @@ import HarmonicLine from './component/HarmonicLine.vue'
 defineOptions({ name: 'PDUDevice' })
 
 const location = ref(history?.state?.location);
+const boxName = ref(history?.state?.name);
+const devkey = ref(history?.state?.devKey);
 const haveSearch = ref(false);
 const switchValue = ref(1);
 const harmonicRealTime = ref();
