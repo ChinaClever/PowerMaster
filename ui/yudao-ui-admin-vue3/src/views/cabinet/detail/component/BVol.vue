@@ -25,7 +25,8 @@ const props = defineProps({
 // 初始化ECharts配置
 const echartsOption = reactive({
   tooltip: {
-    trigger: 'item'
+    trigger: 'item',
+    formatter: (params) => `${params.name}:`+`${params.value}V`,
   },
   series: [
     {
@@ -38,7 +39,7 @@ const echartsOption = reactive({
         formatter: (params) => {
           // 根据params.dataIndex获取对应的数据项，并返回具体数值
           const dataItem = echartsOption.series[0].data[params.dataIndex];
-          return `${dataItem.value}`;
+          return `${dataItem.value}V`;
         },
         fontSize: 14,
         fontWeight: 'bold'

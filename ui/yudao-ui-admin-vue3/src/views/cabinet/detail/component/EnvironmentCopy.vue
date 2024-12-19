@@ -32,8 +32,9 @@ const echartsOption = reactive({
     }
   },
   grid: {
-    left: '-22%',
-    bottom: '-8%',
+    left: '1%',
+    right:'1%',
+    bottom: '-7%',
     containLabel: true
   },
   xAxis: {
@@ -51,14 +52,11 @@ const echartsOption = reactive({
       label: {
         show: true,
         position: 'inside',
-        formatter: (params) => {
-          const num = Math.abs(params.value)
-          return `${num}`+'KVA'
-        }, // 确保返回数值
+        formatter: (params) => `${params.value}`+'KVA', // 确保返回数值
         fontSize: 14,
         fontWeight: 'bold'
       },
-      data: [-props.loadFactor.s, -props.loadFactor.p, -props.loadFactor.q]
+      data: [props.loadFactor.s, props.loadFactor.p, props.loadFactor.q]
     }
   ]
 })

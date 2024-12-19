@@ -23,7 +23,8 @@ console.log('loadFactor',props.loadFactor)
 // 设置饼图的选项
 const echartsOption = reactive({
   tooltip: {
-    trigger: 'item'
+    trigger: 'item',
+    formatter: (params) => `${params.name}:`+`${params.value}KVA`,
   },
   series: [
     {
@@ -32,7 +33,7 @@ const echartsOption = reactive({
       label: {
         show: true,
         position: 'inside',
-        formatter: (params) => `${params.value}`, // 确保返回数值
+        formatter: (params) => `${params.value}`+'KVA', // 确保返回数值
         fontSize: 14,
         fontWeight: 'bold'
       },
