@@ -2,11 +2,6 @@
   <CommonMenu @check="handleCheck" :showSearch="true" :dataList="navList" navTitle="机柜配电">
     <template #NavInfo>
       <div class="navInfo">
-        <!-- <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
-          <div class="name">微模块机房</div>
-          <div>机房202</div>
-        </div> -->
         <div class="line"></div>
         <div class="status">
           <div class="box">
@@ -35,29 +30,6 @@
           </div>
         </div>
         <div class="line"></div>
-        <!-- <div class="overview">
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>总电能</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-        </div> -->
       </div>
     </template>
     <template #ActionBar>
@@ -425,7 +397,7 @@ const getTableData = async(reset = false) => {
           eleB: item.cabinet_power.path_b ? item.cabinet_power.path_b.ele_active.toFixed(1) : '-',
           powerFactorTotal: item.cabinet_power.total_data.power_factor,
           powerReactiveTotal: item.cabinet_power.total_data.pow_reactive.toFixed(3),
-          loadFactor: Math.ceil(item.load_factor),
+          loadFactor: Math.ceil(item.load_factor.toFixed(2)),
           abzb: '-' as number | string
         }
         if (item.cabinet_power.path_a && item.cabinet_power.path_b) {
@@ -447,23 +419,8 @@ const getTableData = async(reset = false) => {
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await CabinetApi.getRoomMenuAll({})
-  // console.log('接口获取机房导航列表', res)
-  // const ids = [] as number[]
   navList.value = res
-  // if (res && res.length > 0) {
-  //   const room = res[0]
-  //   room.children.forEach(child => {
-  //     if (child.type == 3) {
-  //       ids.push(child.id)
-  //     }
-  //     if(child.children.length > 0) {
-  //       child.children.forEach(son => {f
-  //         ids.push(son.id)
-  //       })
-  //     }
-  //   })
-  // }
-  // cabinetIds.value = ids
+
     const resStatus =await CabinetApi.getCabinetInfoStatus();
     sumNoload.value = resStatus.list[0].sumNoload;
     sumNormal.value = resStatus.list[0].sumNormal;

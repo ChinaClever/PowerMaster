@@ -67,6 +67,8 @@ public interface BusIndexService {
 
     PageResult<BusPFRes> getBusPFPage(BusIndexPageReqVO pageReqVO);
 
+    Map<String, Object> getBusPFLowest();
+
     PageResult<BusHarmonicRes> getBusHarmonicPage(BusIndexPageReqVO pageReqVO);
 
     List<String> getDevKeyList();

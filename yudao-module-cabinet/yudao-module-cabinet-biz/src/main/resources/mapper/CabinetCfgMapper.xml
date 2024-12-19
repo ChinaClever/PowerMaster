@@ -56,7 +56,7 @@
         <if test=" indexVo.company != null and indexVo.company != ''">
             and CF.company like "%"#{indexVo.company}"%"
         </if>
-        order by ci.run_status asc, ci.create_time desc
+        order by ci.create_time desc,ci.run_status asc
     </select>
     <select id="selectRunStatus" resultType="java.util.Map">
         select

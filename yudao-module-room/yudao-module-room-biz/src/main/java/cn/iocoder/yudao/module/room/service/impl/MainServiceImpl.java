@@ -122,35 +122,35 @@ public class MainServiceImpl implements MainService {
                 //昨日
                 List<String> yesList = getData(startTime, endTime, ids, ROOM_EQ_TOTAL_DAY);
                 Map<Integer, Double> yesEqMap = new HashMap<>();
-
-                yesList.forEach(str -> {
-                    RoomEqTotalDayDo dayDo = JsonUtils.parseObject(str, RoomEqTotalDayDo.class);
-                    yesEqMap.put(dayDo.getRoomId(), dayDo.getEqValue());
-                });
+                if (Objects.nonNull(yesList)) {
+                    yesList.forEach(str -> {
+                        RoomEqTotalDayDo dayDo = JsonUtils.parseObject(str, RoomEqTotalDayDo.class);
+                        yesEqMap.put(dayDo.getRoomId(), dayDo.getEqValue());
+                    });
+                }
                 //上周
                 startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
 
                 List<String> weekList = getData(startTime, endTime, ids, ROOM_EQ_TOTAL_WEEK);
-
                 Map<Integer, Double> weekEqMap = new HashMap<>();
+                if (Objects.nonNull(weekList)) {
+                    weekList.forEach(str -> {
+                        RoomEqTotalWeekDo weekDo = JsonUtils.parseObject(str, RoomEqTotalWeekDo.class);
+                        weekEqMap.put(weekDo.getRoomId(), weekDo.getEqValue());
 
-                weekList.forEach(str -> {
-                    RoomEqTotalWeekDo weekDo = JsonUtils.parseObject(str, RoomEqTotalWeekDo.class);
-                    weekEqMap.put(weekDo.getRoomId(), weekDo.getEqValue());
-
-                });
+                    });
+                }
                 //上月
                 startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
                 List<String> list = getData(startTime, endTime, ids, AISLE_EQ_TOTAL_MONTH);
-
                 Map<Integer, Double> monthEqMap = new HashMap<>();
+                if (Objects.nonNull(list)) {
+                    list.forEach(str -> {
+                        RoomEqTotalMonthDo monthDo = JsonUtils.parseObject(str, RoomEqTotalMonthDo.class);
+                        monthEqMap.put(monthDo.getRoomId(), monthDo.getEqValue());
 
-                list.forEach(str -> {
-                    RoomEqTotalMonthDo monthDo = JsonUtils.parseObject(str, RoomEqTotalMonthDo.class);
-                    monthEqMap.put(monthDo.getRoomId(), monthDo.getEqValue());
-
-                });
-
+                    });
+                }
                 roomIndexList.forEach(roomIndex -> {
                     EqDataDTO eqDataDTO = new EqDataDTO();
                     EqDataDTO.RoomEq roomEq = eqDataDTO.new RoomEq();
@@ -447,31 +447,35 @@ public class MainServiceImpl implements MainService {
      * @throws IOException
      */
     private List<String> getData(String startTime, String endTime, List<Integer> ids, String index) throws IOException {
-        // 创建SearchRequest对象, 设置查询索引名
-        SearchRequest searchRequest = new SearchRequest(index);
-        // 通过QueryBuilders构建ES查询条件，
-        SearchSourceBuilder builder = new SearchSourceBuilder();
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
 
-        //获取需要处理的数据
-        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
-                .must(QueryBuilders.termsQuery(ROOM_ID, ids))));
-        builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
-        // 设置搜索条件
-        searchRequest.source(builder);
-        builder.size(10000);
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
+                    .must(QueryBuilders.termsQuery(ROOM_ID, ids))));
+            builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            builder.size(10000);
 
-        List<String> list = new ArrayList<>();
-        // 执行ES请求
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-        if (searchResponse != null) {
-            SearchHits hits = searchResponse.getHits();
-            for (SearchHit hit : hits) {
-                String str = hit.getSourceAsString();
-                list.add(str);
+            List<String> list = new ArrayList<>();
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse != null) {
+                SearchHits hits = searchResponse.getHits();
+                for (SearchHit hit : hits) {
+                    String str = hit.getSourceAsString();
+                    list.add(str);
+                }
             }
+            return list;
+        }catch (Exception e){
+            log.error("获取数据异常：", e);
+            return null;
         }
-        return list;
-
     }
 
 }
