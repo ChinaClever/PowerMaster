@@ -24,7 +24,8 @@ console.log('loadFactor',props.loadFactor)
 // 设置饼图的选项
 const echartsOption = reactive({
   tooltip: {
-    trigger: 'item'
+    trigger: 'item',
+    formatter: (params) => `${params.name}:`+`${params.value}A`,
   },
   series: [
     {
@@ -35,7 +36,7 @@ const echartsOption = reactive({
         position: 'inside', // 将标签显示在饼图内部
         formatter: (params) => {
           // 返回具体的数值
-          return `${params.value}`;
+          return `${params.value}A`;
         },
         fontSize: 14, // 可以调整字体大小
         fontWeight: 'bold' // 可以设置字体加粗

@@ -202,10 +202,18 @@
     </div>
     <div class="bottom-part">
       <div style="display: inline-block;
-        width: 100%;
-        height: 100%;">
-          <div style="color: black;margin:10px 0 0 10px;">AB路功率</div>
+        width: 50%;
+        height: 90%;
+        margin-right:-20px;"
+      >
+          <div style="color: black;margin:10px 0 0 10px;">AB路功率<span style="margin-left:100px;">A路</span></div>
           <Environment style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+        </div>
+        <div style="display: inline-block;
+            width: 50%;
+            height: 90%;">
+          <div style="display:inline-block;color:black;"><span style="margin-left:100px;">B路</span></div>
+          <EnvironmentCopy style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
         </div>
     </div>
   </div>
@@ -226,6 +234,7 @@ import AVol from './component/AVol.vue'
 import BVol from './component/BVol.vue'
 import ACur from './component/ACur.vue'
 import BCur from './component/BCur.vue'
+import EnvironmentCopy from './component/EnvironmentCopy.vue'
 import { IndexApi } from '@/api/bus/busindex'
 import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
 
