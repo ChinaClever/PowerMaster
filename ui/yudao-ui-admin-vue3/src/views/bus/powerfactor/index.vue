@@ -514,10 +514,11 @@ const getListNoLoading = async () => {
     const data = await IndexApi.getBusPFPage(queryParams)
 
     const res = await IndexApi.getBusPFLow()
-    if (res && res.length > 0) {
+    
+    if (res) {
         lowlLocation.value = res.location;
         ipAddr.value = res.ipAddr;
-        pfTotal.value = res.totalPf;
+        pfTotal.value = res.totalPf.toFixed(2);
     } 
 
     list.value = data.list
@@ -688,6 +689,7 @@ onMounted(async () => {
   devKeyList.value = await loadAll();
   getList()
   getNavList();
+  getListNoLoading()
   flashListTimer.value = setInterval((getListNoLoading), 5000);
 })
 
