@@ -52,7 +52,7 @@ const echartsOption = reactive({
       label: {
         show: true,
         position: 'inside',
-        formatter: (params) => `${params.value}`+'KVA', // 确保返回数值
+        formatter: (params) => `${params.value}`+'KVA',
         fontSize: 14,
         fontWeight: 'bold'
       },
