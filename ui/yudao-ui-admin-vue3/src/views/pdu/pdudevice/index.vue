@@ -1,7 +1,7 @@
 <template>
   <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="navList" navTitle="PDU配电">
     <template #NavInfo>
-      <div >
+      <div>
         <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
 
@@ -251,9 +251,10 @@
         @pagination="getDeletedList"
         />               
       <!-- 阵列模式分页 --> 
-      <div class="arrayContainer" v-show="!switchValue && list.length > 0"> 
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
-          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
+      <div class="arrayContainer" v-if="!switchValue && list.length > 0"> 
+        <template  v-for="item in list" :key="item.devKey">
+          <div v-if="item.id !== null" class="arrayItem">
+          <div class="devKey">{{ item.devKey }}</div>
           <div class="content">
             <div class="info">
               <div v-if=" item.pow != null ">有功功率：{{item.pow}}kW</div>
@@ -291,7 +292,8 @@
             <el-tag type="info" v-if="item.status == 5">离线</el-tag>
           </div>
           <button v-if="item.status != null && item.status != 5" class="detail" @click="toPDUDisplayScreen(item)">详情</button>
-        </div>      
+        </div>     
+        </template>
       </div>
         <Pagination
         v-if="showPagination == 0"
@@ -1199,6 +1201,10 @@ onActivated(() => {
   .arrayContainer {
     display: flex;
     flex-wrap: wrap;
+    width: 100%;
+    height: 700px;
+    overflow:hidden;
+    overflow-y: auto;
     .arrayItem {
       width: 25%;
       height: 140px;
@@ -1207,6 +1213,7 @@ onActivated(() => {
       background-color: #eef4fc;
       border: 5px solid #fff;
       padding-top: 40px;
+      margin-top: -10px;
       position: relative;
       .content {
         display: flex;
@@ -1362,5 +1369,9 @@ onActivated(() => {
 }
 .-mb-15px {
   border-color: #000;
+}
+
+:deep(.el-card){
+    --el-card-padding:5px;
 }
 </style>

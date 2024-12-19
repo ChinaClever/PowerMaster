@@ -29,11 +29,35 @@ const echartsOption = reactive({
     {
       type: 'pie',
       radius: '50%',
+      label: {
+        show: true,
+        position: 'inside',
+        formatter: (params) => `${params.value}`, // 确保返回数值
+        fontSize: 14,
+        fontWeight: 'bold'
+      },
       data: [
-        { value: props.loadFactor.fr, name: '频率' },
-        { value: props.loadFactor.pf, name: '功率因数' },
-        { value: props.loadFactor.vub, name: '三相电压不平衡度' },
-        { value: props.loadFactor.cub, name: '三相电流不平衡度' },
+        { 
+          value: props.loadFactor.s, 
+          name: '现在功率',
+          itemStyle: {
+            color: '#E5B849'
+          }
+        },
+        { 
+          value: props.loadFactor.p, 
+          name: '有功功率',
+          itemStyle: {
+            color: '#C8603A'
+          }
+        },
+        { 
+          value: props.loadFactor.q,
+          name: '无功功率',
+          itemStyle: {
+            color: '#AD3762'
+          }
+        },
       ],
       emphasis: {
         itemStyle: {
@@ -44,7 +68,7 @@ const echartsOption = reactive({
       }
     }
   ]
-})
+});
 
 onUnmounted(() => {
   console.log('onUnmounted******')

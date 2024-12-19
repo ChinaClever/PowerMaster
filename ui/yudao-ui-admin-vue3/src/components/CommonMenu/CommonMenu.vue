@@ -178,6 +178,7 @@ mediaQueryList.addEventListener('change', toggleStyles)
     width: 100%;
     .hhh {
       background-color: #E1E2E5;
+      margin-bottom: 10px;
     }
   }
 }

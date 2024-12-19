@@ -26,17 +26,32 @@ const echartsOption = reactive({
   },
   series: [{
       type: 'pie',
-      radius: ['40%', '90%'],
+      radius: ['60%', '120%'],
       center: ['50%', '70%'],
+      label: {
+        show: true,
+        position: 'inside', // 将标签显示在饼图内部
+        formatter: (params) => {
+          // 返回显示的字符串，包括百分比
+          return `${params.percent.toFixed(1)}%`;
+        },
+        fontSize: 14, // 可以调整字体大小
+        fontWeight: 'bold' // 可以设置字体加粗
+      },
       startAngle: 180,
       endAngle: 360,
       data: [{
           value: props.loadFactor,
-          name:  "负载率(%)"
+          name:  "负载率(%)",
+          itemStyle: {
+            color: '#E5B849'
+          }
       },
       {
-        value: (100 - props.loadFactor).toFixed(2), // 计算剩余百分比
-        name: "其他(%)" // 剩余部分的标签
+        value: (100 - props.loadFactor).toFixed(2),
+        itemStyle: {
+          color: '#ccc'
+        }
       }]
   }]
 })

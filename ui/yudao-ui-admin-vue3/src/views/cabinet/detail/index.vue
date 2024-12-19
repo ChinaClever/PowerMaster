@@ -1,22 +1,57 @@
 <template>
-<div style="background-color: #E7E7E7;height:950px">
+<div style="background-color: #E7E7E7;" class="centainer-height">
+  <div style="background-color: #E7E7E7;" class="header_app">
+    <div style="background-color: #E7E7E7;" class="header_app_text">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{busName}})</div>
+    <div style="background-color: #E7E7E7;" class="header_app_text_other1">
+          <el-col :span="10" >
+            <el-form
+              class="-mb-15px"
+              :model="queryParamsSearch"
+              ref="queryFormRef"
+              :inline="true"
+              label-width="120px"
+            >
+              <el-form-item label="网络地址" prop="devKey" style="margin-top:2px;">
+              <el-autocomplete
+                v-model="queryParamsSearch.devKey"
+                :fetch-suggestions="querySearch"
+                placeholder="请输入网络地址"  
+                clearable
+                class="!w-160px"
+                @select="handleQuery" 
+              />
+              </el-form-item>
+            </el-form>
+          </el-col>
+    </div>
+    <div style="background-color: #E7E7E7;" class="header_app_text_other">
+      <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+      <el-button @click="changeTime ('近一小时');" :type="queryParams.timeGranularity == '近一小时' ? 'primary' : ''" style="margin-left: 65px;">近一小时</el-button>
+      <el-button @click="changeTime ('今天');" :type="queryParams.timeGranularity == '今天' ? 'primary' : ''">今天</el-button>
+      <el-button @click="changeTime('近一天');" :type="queryParams.timeGranularity == '近一天' ? 'primary' : ''">近一天</el-button>
+      <el-button @click="changeTime('近三天');" :type="queryParams.timeGranularity == '近三天' ? 'primary' : ''">近三天</el-button>
+    </div>
+  </div>
   <div class="TransformerMonitor">
     <div class="center-part">
       <div class="left-part">
         <!-- <el-tag size="large">{{ location }}</el-tag> -->
-        <div style="height:20px;display:flex;align-items: center;margin-left:5px">              
-            <p style="color:black;">负载率</p>
+        <div style="height:20px;display:flex;align-items: center;margin:10px 0 10px 10px;">              
+            <span style="color:black;font-size:26px;">负载率</span>
         </div>
-        <div style="height:20px;display:flex;align-items: center;margin-left:5px">              
-            <span style="color:black;">最大需量：<span  class="vale-part BColor" >{{peakDemand}}</span>kVA</span>
+        <!--<div style="height:20px;display:flex;align-items: center;margin-left:10px">              
+            <span style="color:#ccc;font-size:14px;">最大需量：<span  class="vale-part BColor" >{{peakDemand}}</span>kVA</span>
+        </div>-->
+        <div style="height:20px;display:flex;align-items: center;margin-left:10px;margin-top:;">              
+            <span style="color:#ccc;font-size:14px;">发生时间：{{peakDemandTime}}</span>
         </div>
-        <div style="height:20px;display:flex;align-items: center;margin-left:5px">              
-            <span style="color:black;">发生时间：{{peakDemandTime}}</span>
+        <div style="height:20px;display:flex;align-items: center;margin-left:10px;margin-top:;">              
+            <span style="color:#ccc;font-size:14px;border-bottom:1px solid #ccc;width:90%;"></span>
         </div>
-        <div style="height:200px;">
+        <div style="height:160px;margin-top:10px;">
             <Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData.loadFactor" />
         </div>
-        <div style="position: relative; top: -70px; left: 0; width: 100%; text-align: center; padding-top: 10px;"> <!-- 调整 padding-top 以适应需要 -->
+        <div style="position: relative; top: -80px; left: 0; width: 100%; text-align: center; padding-top: 10px;"> <!-- 调整 padding-top 以适应需要 -->
             <div style="color: black;font-size: 30px;">{{redisData?.loadFactor}}</div>
             <div style="color: black;">负载率（%）</div>
         </div>
@@ -24,51 +59,49 @@
       </div>
       <div class="right-part">
         <div class="center-top-part">
-            
-          <RealTimePower class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+          <div style="color: black;margin:10px 0 0 10px;">实时功率</div>
+          <RealTimePower style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
         </div>
         <div class="center-top-right-part">
           <div class="label-container">
-            <span class="bullet">•</span><span style="width:80px;">额定容量:</span><span>{{redisData?.finstalledCapacity}}KVA</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">额定容量:</span><span style="font-size:16px;">{{redisData?.finstalledCapacity}}KVA</span>
           </div>
           <div class="label-container">
-            <span class="bullet">•</span><span style="width:80px;">现在功率:</span><span>{{redisData?.s}}KVA</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">现在功率:</span><span style="font-size:16px;">{{redisData?.s}}KVA</span>
           </div>
           <div class="label-container">
-            <span class="bullet">•</span><span style="width:80px;">有功功率:</span><span>{{redisData?.p}}KVA</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">有功功率:</span><span style="font-size:16px;">{{redisData?.p}}KVA</span>
           </div>
           <div class="label-container">
-            <span class="bullet">•</span><span style="width:80px;">无功功率:</span><span>{{redisData?.q}}KVA</span>
+            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">无功功率:</span><span style="font-size:16px;">{{redisData?.q}}KVA</span>
           </div>
         </div>
       </div>
       <div class="right-right-part">
-        <div>负载率曲线</div>
-        <MarkLine v-if="visContro.loadRateVis"  width="100%" height="100%" :list="loadRateList"/>
+        <div style="margin:10px;">负载率曲线</div>
+        <MarkLine style="margin-top:-40px;" v-if="visContro.loadRateVis"  width="100%" height="100%" :list="loadRateList"/>
       </div>
     </div>
     <div class="bottom-part">
       <div style="display: inline-block;
         width: 50%;
         height: 100%;">
-          <RealTimePower class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+          <div style="color: black;margin:10px 0 0 10px;">A路电压</div>
+          <AVol style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
         </div>
         <div style="display: inline-block;
             position: absolute;
             width: 50%;
             height: 100%;
-            top: 30%;">
+            top: 50px;">
           <div class="label-container">
-            <span class="bullet">•</span><span>频率:</span><span>{{redisData?.fr}}Hz</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{redisData?.ua}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet">•</span><span>功率因数:</span><span>{{redisData?.pf}}</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{redisData?.ub}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet">•</span><span>三相电压不平衡度:</span><span>{{redisData?.vub}}%</span>
-          </div>
-          <div class="label-container">
-            <span class="bullet">•</span><span>三相电流不平衡度:</span><span>{{redisData?.cub}}%</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{redisData?.uc}}V</span>
           </div>
         </div>
     </div>
@@ -76,24 +109,22 @@
       <div style="display: inline-block;
         width: 50%;
         height: 100%;">
-          <RealTimePower class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+          <div style="color: black;margin:10px 0 0 10px;">A路电流</div>
+          <ACur style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
         </div>
         <div style="display: inline-block;
             position: absolute;
             width: 50%;
             height: 100%;
-            top: 30%;">
+            top: 50px;">
           <div class="label-container">
-            <span class="bullet">•</span><span>频率:</span><span>{{redisData?.fr}}Hz</span>
+            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;">{{redisData?.ia}}A</span>
           </div>
           <div class="label-container">
-            <span class="bullet">•</span><span>功率因数:</span><span>{{redisData?.pf}}</span>
+            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{redisData?.ib}}A</span>
           </div>
           <div class="label-container">
-            <span class="bullet">•</span><span>三相电压不平衡度:</span><span>{{redisData?.vub}}%</span>
-          </div>
-          <div class="label-container">
-            <span class="bullet">•</span><span>三相电流不平衡度:</span><span>{{redisData?.cub}}%</span>
+            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{redisData?.ic}}A</span>
           </div>
         </div>
     </div>
@@ -101,24 +132,25 @@
       <div style="display: inline-block;
         width: 50%;
         height: 100%;">
-          <PowerFactor class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+          <div style="color: black;margin:10px 0 0 10px;">功率因数</div>
+          <PowerFactor style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
         </div>
         <div style="display: inline-block;
             position: absolute;
             width: 50%;
             height: 100%;
-            top: 30%;">
+            top: 20px;">
           <div class="label-container">
-            <span class="bullet">•</span><span>频率:</span><span>{{redisData?.fr}}Hz</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="font-size:14px;">频率:</span><span style="font-size:16px;">{{redisData?.fr}}Hz</span>
           </div>
           <div class="label-container">
-            <span class="bullet">•</span><span>功率因数:</span><span>{{redisData?.pf}}</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.pf}}</span>
           </div>
           <div class="label-container">
-            <span class="bullet">•</span><span>三相电压不平衡度:</span><span>{{redisData?.vub}}%</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="font-size:14px;">三相电压不平衡度:</span><span style="font-size:16px;">{{redisData?.vub}}%</span>
           </div>
           <div class="label-container">
-            <span class="bullet">•</span><span>三相电流不平衡度:</span><span>{{redisData?.cub}}%</span>
+            <span class="bullet" style="color:#B47660;">•</span><span style="font-size:14px;">三相电流不平衡度:</span><span style="font-size:16px;">{{redisData?.cub}}%</span>
           </div>
         </div>
     </div>
@@ -126,24 +158,22 @@
       <div style="display: inline-block;
         width: 50%;
         height: 100%;">
-          <RealTimePower class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+          <div style="color: black;margin:10px 0 0 10px;">B路电压</div>
+          <BVol style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
         </div>
         <div style="display: inline-block;
             position: absolute;
             width: 50%;
             height: 100%;
-            top: 30%;">
+            top: 50px;">
           <div class="label-container">
-            <span class="bullet">•</span><span>频率:</span><span>{{redisData?.fr}}Hz</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{redisData?.ua}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet">•</span><span>功率因数:</span><span>{{redisData?.pf}}</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{redisData?.ub}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet">•</span><span>三相电压不平衡度:</span><span>{{redisData?.vub}}%</span>
-          </div>
-          <div class="label-container">
-            <span class="bullet">•</span><span>三相电流不平衡度:</span><span>{{redisData?.cub}}%</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{redisData?.uc}}V</span>
           </div>
         </div>
     </div>
@@ -151,50 +181,31 @@
       <div style="display: inline-block;
         width: 50%;
         height: 100%;">
-          <RealTimePower class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+          <div style="color: black;margin:10px 0 0 10px;">B路电流</div>
+          <BCur style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
         </div>
         <div style="display: inline-block;
             position: absolute;
             width: 50%;
             height: 100%;
-            top: 30%;">
+            top: 50px;">
           <div class="label-container">
-            <span class="bullet">•</span><span>频率:</span><span>{{redisData?.fr}}Hz</span>
+            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;">{{redisData?.ia}}A</span>
           </div>
           <div class="label-container">
-            <span class="bullet">•</span><span>功率因数:</span><span>{{redisData?.pf}}</span>
+            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{redisData?.ib}}A</span>
           </div>
           <div class="label-container">
-            <span class="bullet">•</span><span>三相电压不平衡度:</span><span>{{redisData?.vub}}%</span>
-          </div>
-          <div class="label-container">
-            <span class="bullet">•</span><span>三相电流不平衡度:</span><span>{{redisData?.cub}}%</span>
+            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{redisData?.ic}}A</span>
           </div>
         </div>
     </div>
     <div class="bottom-part">
       <div style="display: inline-block;
-        width: 50%;
+        width: 100%;
         height: 100%;">
-          <RealTimePower class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
-        </div>
-        <div style="display: inline-block;
-            position: absolute;
-            width: 50%;
-            height: 100%;
-            top: 30%;">
-          <div class="label-container">
-            <span class="bullet">•</span><span>频率:</span><span>{{redisData?.fr}}Hz</span>
-          </div>
-          <div class="label-container">
-            <span class="bullet">•</span><span>功率因数:</span><span>{{redisData?.pf}}</span>
-          </div>
-          <div class="label-container">
-            <span class="bullet">•</span><span>三相电压不平衡度:</span><span>{{redisData?.vub}}%</span>
-          </div>
-          <div class="label-container">
-            <span class="bullet">•</span><span>三相电流不平衡度:</span><span>{{redisData?.cub}}%</span>
-          </div>
+          <div style="color: black;margin:10px 0 0 10px;">AB路功率</div>
+          <Environment style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
         </div>
     </div>
   </div>
@@ -208,8 +219,13 @@ import RealTimePower from './component/RealTimePower.vue'
 import PowerFactor from './component/PowerFactor.vue'
 import Gauge from './component/Gauge.vue'
 import MarkLine from './component/MarkLine.vue'
+import Environment from './component/Environment.vue'
 import PowReactiveLine from './component/PowReactiveLine.vue'
 import PowActiveLine from './component/PowActiveLine.vue'
+import AVol from './component/AVol.vue'
+import BVol from './component/BVol.vue'
+import ACur from './component/ACur.vue'
+import BCur from './component/BCur.vue'
 import { IndexApi } from '@/api/bus/busindex'
 import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
 
@@ -460,16 +476,9 @@ body .TransformerMonitor .topdiv span,body .TransformerMonitor .topdiv span,body
 }
 
 .TransformerMonitor .center-part {
-    height: 40%;
+    height: 35%;
     width: 100%;
     margin-bottom: 5px
-}
-
-.TransformerMonitor .center-part .left-part {
-    display: inline-block;
-    width: 32.5%;
-    height: 100%;
-    margin-right: 15px
 }
 
 body .TransformerMonitor .center-part .left-part,body .TransformerMonitor .center-part .left-part,body .TransformerMonitor .center-part .left-part,body .TransformerMonitor .center-part .left-part {
@@ -502,55 +511,242 @@ body .TransformerMonitor .center-part .left-part {
 }
 
 .bullet {
-  font-size: 30px; /* 根据需要调整大小 */
-  color: blue; /* 设置颜色 */
+  font-size: 34px; /* 根据需要调整大小 */
   margin-right: 8px; /* 设置小圆点与后续文本之间的间距 */
 }
 
-.TransformerMonitor .center-part .right-part {
-    display: inline-block;
-    width: 32.4%;
-    height: 100%;
-    vertical-align: top;
-    background-color: #fff;
-    position: relative;
-    margin-right:15px;
+@media screen and (min-width:2048px) {
+    .centainer-height{
+        height:90vh
+    }
+
+    .TransformerMonitor .center-part .left-part {
+        display: inline-block;
+        width: 32.5%;
+        height: 100%;
+        margin-right: 15px
+    }
+    .TransformerMonitor .center-part .right-part {
+        display: inline-block;
+        width: 32.4%;
+        height: 100%;
+        vertical-align: top;
+        background-color: #fff;
+        position: relative;
+        margin-right:15px;
+    }
+    
+    .TransformerMonitor .center-part .center-top-part {
+        display: inline-block;
+        width: 50%;
+        height: 100%;
+        margin-bottom: 5px;
+    }
+    
+    .TransformerMonitor .center-part .center-top-right-part {
+        display: inline-block;
+        width: 50%;
+        height: 100%;
+        top: 30%;
+        margin-bottom: 5px;
+        position: absolute;
+    }
+    
+    .TransformerMonitor .center-part .right-right-part{
+        display: inline-block;
+        width: 32.3%;
+        height: 100%;
+        vertical-align: top;
+        background-color: #fff;
+        margin-right:15px;
+    }
+
+
+    .TransformerMonitor .bottom-part {
+        display: inline-block;
+        height: 27%;
+        width: 32.4%;
+        margin-right: 15px;
+        margin-top: 5px;
+        margin-bottom: 5px;
+        position: relative;
+    }
+
+    .header_app_text_other{
+      width: 65%;
+      align-content: center;
+      background-color: white;
+      margin-right: 5px;
+    }
+
+    .header_app_text_other1{
+      align-content: center;
+      background-color: white;
+    }
+
+    .label-container {
+      display: flex; /* 使用 Flexbox 布局 */
+      align-items: center; /* 垂直居中 */
+      color:#000;
+    }
 }
 
-.TransformerMonitor .center-part .center-top-part {
-    display: inline-block;
-    width: 50%;
-    height: 100%;
-    margin-bottom: 5px;
+@media screen and (max-width:2048px) and (min-width:1600px) {
+    .centainer-height{
+        height:93vh
+    }
+
+    .TransformerMonitor .center-part .left-part {
+        display: inline-block;
+        width: 32.3%;
+        height: 100%;
+        margin-right: 15px
+    }
+    .TransformerMonitor .center-part .right-part {
+        display: inline-block;
+        width: 32.3%;
+        height: 100%;
+        vertical-align: top;
+        background-color: #fff;
+        position: relative;
+        margin-right:15px;
+    }
+    
+    .TransformerMonitor .center-part .center-top-part {
+        display: inline-block;
+        width: 50%;
+        height: 100%;
+        margin-bottom: 5px;
+    }
+    
+    .TransformerMonitor .center-part .center-top-right-part {
+        display: inline-block;
+        width: 50%;
+        height: 100%;
+        top: 30%;
+        margin-bottom: 5px;
+        position: absolute;
+    }
+    
+    .TransformerMonitor .center-part .right-right-part{
+        display: inline-block;
+        width: 32%;
+        height: 100%;
+        vertical-align: top;
+        background-color: #fff;
+        margin-right:15px;
+    }
+
+    .TransformerMonitor .bottom-part {
+        display: inline-block;
+        height: 27%;
+        width: 32.2%;
+        margin-right: 15px;
+        margin-top: 5px;
+        margin-bottom: 5px;
+        position: relative;
+    }
+
+    .header_app_text_other{
+      width: 65%;
+      align-content: center;
+      background-color: white;
+      margin-right: 5px;
+    }
+
+    .header_app_text_other1{
+      align-content: center;
+      background-color: white;
+    }
+
+    .label-container {
+      display: flex; /* 使用 Flexbox 布局 */
+      align-items: center; /* 垂直居中 */
+      color:#000;
+    }
 }
 
-.TransformerMonitor .center-part .center-top-right-part {
-    display: inline-block;
-    width: 50%;
-    height: 100%;
-    top: 30%;
-    margin-bottom: 5px;
-    position: absolute;
-}
+@media screen and (max-width:1600px) {
+    .centainer-height{
+        height:93vh
+    }
 
-.TransformerMonitor .center-part .right-right-part{
-    display: inline-block;
-    width: 32.3%;
-    height: 100%;
-    vertical-align: top;
-    background-color: #fff;
-    margin-right:15px;
-}
+    .TransformerMonitor .center-part .left-part {
+        display: inline-block;
+        width: 32.3%;
+        height: 100%;
+        margin-right: 15px
+    }
+    .TransformerMonitor .center-part .right-part {
+        display: inline-block;
+        width: 32.3%;
+        height: 100%;
+        vertical-align: top;
+        background-color: #fff;
+        position: relative;
+        margin-right:15px;
+    }
+    
+    .TransformerMonitor .center-part .center-top-part {
+        display: inline-block;
+        width: 50%;
+        height: 100%;
+        margin-bottom: 5px;
+    }
+    
+    .TransformerMonitor .center-part .center-top-right-part {
+        display: inline-block;
+        width: 50%;
+        height: 100%;
+        top: 30%;
+        margin-bottom: 5px;
+        position: absolute;
+    }
+    
+    .TransformerMonitor .center-part .right-right-part{
+        display: inline-block;
+        width: 32%;
+        height: 100%;
+        vertical-align: top;
+        background-color: #fff;
+        margin-right:15px;
+    }
 
-.label-container {
-  display: flex; /* 使用 Flexbox 布局 */
-  align-items: center; /* 垂直居中 */
-  color:#000;
+
+    .TransformerMonitor .bottom-part {
+        display: inline-block;
+        height: 27%;
+        width: 32.2%;
+        margin-right: 15px;
+        margin-top: 5px;
+        margin-bottom: 5px;
+        position: relative;
+    }
+
+    .header_app_text_other{
+      width: 80%;
+      align-content: center;
+      background-color: white;
+      margin-right: 5px;
+    }
+
+    .header_app_text_other1{
+      align-content: center;
+      background-color: white;
+
+    }
+    .label-container {
+      display: flex; /* 使用 Flexbox 布局 */
+      align-items: center; /* 垂直居中 */
+      color:#000;
+      margin-top: -10px;
+      margin-left: -20px;
+    }
 }
  
 .label-container span:nth-of-type(2) {
   display: inline-block;
-  width: 150px;
+  width: 120px;
   vertical-align: top;
 }
  
@@ -767,16 +963,6 @@ body .TransformerMonitor .center-part .center-bottom-part .block-part .content-p
     margin: 0 10px
 }
 
-.TransformerMonitor .bottom-part {
-    display: inline-block;
-    height: 30%;
-    width: 32.4%;
-    margin-right: 15px;
-    margin-top: 5px;
-    margin-bottom: 5px;
-    position: relative;
-}
-
 body .TransformerMonitor .bottom-part,body .TransformerMonitor .bottom-part,body .TransformerMonitor .bottom-part,body .TransformerMonitor .bottom-part {
     color: #000;
     border: 1px solid #e2e2e2;
@@ -812,135 +998,6 @@ body .TransformerMonitor .bottom-part {
     line-height: 200px;
 }
 
-@media screen and (max-width: 2160px) {
-    .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt {
-        font-size:30px
-    }
-
-    .TransformerMonitor .bottom-part .bottomLineDiv p,.TransformerMonitor .center-part .center-bottom-part .block-part .content-part p,.TransformerMonitor .center-part .center-top-part .div-part p {
-        font-size: 22px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .top-part {
-        height: 60px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .top-part span {
-        line-height: 60px;
-        font-size: 25px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
-        margin: 8px 0
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part .vale-part {
-        width: 66px
-    }
-}
-
-@media screen and (max-width: 1920px) {
-    .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt {
-        font-size:28px
-    }
-
-    .TransformerMonitor .bottom-part .bottomLineDiv p,.TransformerMonitor .center-part .center-top-part .div-part p {
-        font-size: 16px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part {
-        padding-top: 0
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
-        font-size: 15px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .top-part {
-        height: 40px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .top-part span {
-        line-height: 40px;
-        font-size: 16px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part .vale-part {
-        width: 48px
-    }
-}
-
-@media screen and (max-width: 1680px) {
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part {
-        padding-top:5px
-    }
-
-    .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt {
-        font-size: 24px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
-        margin: 8px 0
-    }
-}
-
-@media screen and (max-width: 1600px) {
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part {
-        padding-top:0
-    }
-
-    .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt {
-        font-size: 20px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .top-part {
-        height: 32px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .top-part span {
-        line-height: 32px;
-        font-size: 14px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
-        margin: 5px 0;
-        font-size: 14px
-    }
-}
-
-@media screen and (max-width: 1366px) {
-    .TransformerMonitor .center-part .center-top-part .div-part p {
-        margin:10px 0 10px 0
-    }
-
-    .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt {
-        font-size: 20px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part .vale-part {
-        width: 38px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .top-part {
-        height: 25px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .top-part span {
-        line-height: 25px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
-        margin: 4px 0
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .top-part span,.TransformerMonitor .center-part .center-top-part .div-part p {
-        font-size: 14px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
-        font-size: 13px
-    }
-}
 
 body .TransformerMonitor .center-part .center-bottom-part .top-part {
     background: #f5f7fa
@@ -978,15 +1035,4 @@ body .TransformerMonitor .center-part .center-bottom-part .top-part span,body .T
   align-content: center;
   color:#606266;
 }                                                       
-.header_app_text_other{
-  width: 65%;
-  align-content: center;
-  background-color: white;
-  margin-right: 5px;
-}
-.header_app_text_other1{
-  align-content: center;
-  background-color: white;
-
-}
 </style>

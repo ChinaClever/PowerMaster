@@ -28,12 +28,30 @@ const echartsOption = reactive({
   series: [
     {
       type: 'pie',
-      radius: '50%',
+      radius: '60%',
+      label: {
+        show: true,
+        position: 'inside',
+        formatter: (params) => `${params.value}`, // 确保返回数值
+        fontSize: 14,
+        fontWeight: 'bold'
+      },
       data: [
-        { value: props.loadFactor.finstalledCapacity, name: '频率' },
-        { value: props.loadFactor.s, name: '功率因数' },
-        { value: props.loadFactor.p, name: '三相电压不平衡度' },
-        { value: props.loadFactor.q, name: '三相电流不平衡度' },
+        { value: props.loadFactor.finstalledCapacity, name: '频率',itemStyle: {
+            color: '#E5B849'
+          }},
+        { value: props.loadFactor.s, name: '功率因数',
+          itemStyle: {
+            color: '#C8603A'
+          } },
+        { value: props.loadFactor.p, name: '三相电压不平衡度',
+          itemStyle:{
+            color: '#AD3762'
+          } },
+        { value: props.loadFactor.q, name: '三相电流不平衡度',
+          itemStyle:{
+            color: '#B47660'
+          } },
       ],
       emphasis: {
         itemStyle: {
