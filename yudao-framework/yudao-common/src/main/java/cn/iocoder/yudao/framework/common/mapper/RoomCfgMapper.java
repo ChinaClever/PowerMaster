@@ -17,4 +17,6 @@ public interface RoomCfgMapper extends BaseMapper<RoomCfg> {
     void deleteByRoomCfg(@Param("roomId") int id);
 
     void updateByRoomCfg(@Param("vo") RoomSavesVo vo);
+
+    void restoreByRoomCfg(@Param("roomId")int id);
 }

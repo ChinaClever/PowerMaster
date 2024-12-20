@@ -174,23 +174,23 @@
   </el-dialog>
 
   
-  <el-dialog v-model="dialogStopDelete" title="恢复机房" width="40%"  :before-close="handleDialogStopDelete">
+  <el-dialog v-model="dialogStopDelete" title="恢复机房"  :before-close="handleDialogStopDelete">
        <el-table v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
-         <el-table-column label="位置" min-width="110" align="center">
-          <template>
-            <div>333</div>
-          </template>
+         <el-table-column label="编号" min-width="110" align="center">
+            <template #default="scope">
+               <div>{{scope.row.id}}</div>
+            </template>
         </el-table-column>
-        <el-table-column label="状态" min-width="110" align="center">
-          <template>
-            <div>44444</div>
-          </template>
+        <el-table-column label="机房名称" min-width="110" align="center">
+            <template #default="scope">
+               <div>{{scope.row.roomName}}</div>
+            </template>
         </el-table-column>
         
        <el-table-column label="删除日期" min-width="110" align="center">
-          <template>
-            <div>6666</div>
-          </template>
+           <template #default="scope">
+               {{ (new Date(scope.row.updateTime)).toISOString().slice(0, 10) }}
+            </template>
         </el-table-column>
         
         
@@ -199,9 +199,9 @@
             <el-button
               link
               type="danger"
-              @click="handleRestore(scope.row.busId)"
+              @click="handleRestore(scope.row.id)"
             >
-              恢复设备
+              恢复机房
             </el-button>
           </template>
         </el-table-column>
@@ -210,9 +210,9 @@
         :total="queryParams.pageTotal"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
-        @pagination="getTableData(false)"
+        @pagination="handleStopDelete"
       />
-      <div style="height:10"></div>
+      <div style="height:30px"></div>
   </el-dialog>
 </div>
 </template>
@@ -250,6 +250,7 @@ const roomId = ref(0) // 房间id
 const roomList = ref<any[]>([]) // 左侧导航栏树结构列表
 const dragTable = ref() // 可移动编辑表格
 const scaleValue = ref(1) // 缩放比例
+const deletedList = ref<any>([]) //已删除的
 const chosenBtn = ref(0)
 const ContainerHeight = ref(100)
 const loading = ref(false)
@@ -496,11 +497,6 @@ const getRoomStatus = async(res) => {
 }
 
 
-const getTableData =() =>{
-  alert(123)
-}
-
-
 
 // 计算出要缩放的比例
 const handleCssScale = () => {
@@ -529,9 +525,32 @@ const handleCancel = () => {
   getRoomInfo();
 }
 //已删除
-const handleStopDelete = () =>{
+const handleStopDelete = async() =>{
   dialogStopDelete.value =true;
+  const res = await MachineRoomApi.deletedRoomInfo({
+    pageNo: queryParams.pageNo,
+    pageSize: queryParams.pageSize,
+  })
+  deletedList.value = res.list;
+  queryParams.pageTotal = res.total;
 }
+
+//恢复机房
+const handleRestore = async (flagRoomid) => {
+  ElMessageBox.confirm('确认恢复机房吗？', '提示', {
+    confirmButtonText: '确 认',
+    cancelButtonText: '取 消',
+    type: 'warning'
+  }).then(async () => {
+    const res = await MachineRoomApi.restoreRoomInfo({id: flagRoomid});
+    if(res != null || res != "")
+    dialogStopDelete.value =false;
+    message.success('恢复成功')
+    getRoomList()
+  })
+}
+
+
 
 const handleDialogStopDelete =() =>{
    dialogStopDelete.value =false;
@@ -701,8 +720,6 @@ const editMachine = () => {
   aisleFlag.value = 2;
   const Y = operateMenu.value.lndexY;
   const X = formParam.value[operateMenu.value.lndexX];
-  console.log("---")
-  console.log(tableData)
   machineForm.value.open('edit', {...tableData.value[Y][X][0]}, operateMenu.value);
   operateMenu.value.show = false;
 }
