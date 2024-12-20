@@ -96,14 +96,14 @@
               <div class="Bus">
                 <div>
                   <div class="title">A路</div>
-                  <el-form-item label="母线名称：">
-                    <el-input v-model="machineFormData.busNameA" placeholder="请输入" />
-                  </el-form-item>
                   <el-form-item label="母线地址：">
                     <el-input v-model="machineFormData.busIpA" placeholder="请输入" />
                   </el-form-item>
-                  <el-form-item label="插接箱名称：">
-                    <el-input v-model="machineFormData.boxNameA" placeholder="请输入" />
+                  <el-form-item label="母线编号：">
+                    <el-input v-model="machineFormData.barIdA" placeholder="请输入" />
+                  </el-form-item>
+                  <el-form-item label="插接箱编号：">
+                    <el-input v-model="machineFormData.boxIndexA" placeholder="请输入" />
                   </el-form-item>
                   <el-form-item label="插接箱输出位：">
                     <el-input v-model="machineFormData.boxOutletIdA" placeholder="请输入" />
@@ -111,14 +111,14 @@
                 </div>
                 <div>
                   <div class="title">B路</div>
-                  <el-form-item label="母线名称：">
-                    <el-input v-model="machineFormData.busNameB" placeholder="请输入" />
-                  </el-form-item>
                   <el-form-item label="母线地址：">
                     <el-input v-model="machineFormData.busIpB" placeholder="请输入" />
                   </el-form-item>
-                  <el-form-item label="插接箱名称：">
-                    <el-input v-model="machineFormData.boxNameB" placeholder="请输入" />
+                  <el-form-item label="母线编号：">
+                    <el-input v-model="machineFormData.barIdB" placeholder="请输入" />
+                  </el-form-item>
+                  <el-form-item label="插接箱编号：">
+                    <el-input v-model="machineFormData.boxIndexB" placeholder="请输入" />
                   </el-form-item>
                   <el-form-item label="插接箱输出位：">
                     <el-input v-model="machineFormData.boxOutletIdB" placeholder="请输入" />

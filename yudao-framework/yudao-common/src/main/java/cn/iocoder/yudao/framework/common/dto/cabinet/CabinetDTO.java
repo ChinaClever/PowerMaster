@@ -217,14 +217,14 @@ public class CabinetDTO {
     private Double yesterdayEq;
 
     /**
-     * 标记位-名字  前端用
+     * 插接箱ID编号
      */
-    private String boxIndexA;
+    private Integer boxIndexA;
 
     /**
-     * 标记位-名字  前端用
+     * 插接箱ID编号
      */
-    private String boxIndexB;
+    private Integer boxIndexB;
     /**
      * 日用能告警开关
      */

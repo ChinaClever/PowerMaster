@@ -9,19 +9,14 @@ import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
-import cn.iocoder.yudao.module.cabinet.vo.CabinetEnergyStatisticsResVO;
-import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexBalanceResVO;
-import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexEnvResVO;
-import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexLoadResVO;
+import cn.iocoder.yudao.module.cabinet.vo.*;
 import com.alibaba.fastjson2.JSONObject;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.Map;
@@ -48,11 +43,29 @@ public class CabinetController {
      *
      * @param pageReqVO
      */
-    @Operation(summary = "机柜列表分页")
+    @Operation(summary = "机柜配电列表分页")
     @PostMapping("/cabinet/page")
     public CommonResult<PageResult<JSONObject>> getCabinetPage(@RequestBody CabinetIndexVo pageReqVO) {
         PageResult<JSONObject> pageResult = cabinetService.getPageCabinet(pageReqVO);
         return success(pageResult);
+    }
+
+    @Operation(summary = "机柜配电详情")
+    @GetMapping("/cabinet/distributionDetails")
+    public CommonResult<CabinetDistributionDetailsResVO> getCabinetDistributionDetails(
+            @RequestParam(value = "id", required = true) @Parameter(description = "机柜id") int id,
+            @RequestParam(value = "roomId", required = true) @Parameter(description = "机房id") int roomId,
+            @RequestParam(value = "type", required = true) @Parameter(description = "近一小时/近一天 hour,day")  String type) throws IOException {
+        return success(cabinetService.getCabinetdistributionDetails(id,roomId,type));
+    }
+
+    @Operation(summary = "机柜配电详情-负载率")
+    @GetMapping("/cabinet/distributionFactor")
+    public CommonResult<Map> getCabinetDistributionFactor(
+            @RequestParam(value = "id", required = true) @Parameter(description = "机柜id") int id,
+            @RequestParam(value = "roomId", required = true) @Parameter(description = "机房id") int roomId,
+            @RequestParam(value = "type", required = true) @Parameter(description = "近一小时/近一天/今天/近三天 hour,day,today,threeDay")  String type) throws IOException {
+        return success(cabinetService.getCabinetDistributionFactor(id,roomId,type));
     }
 
 
