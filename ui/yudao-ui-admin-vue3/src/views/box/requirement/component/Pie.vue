@@ -20,26 +20,7 @@ const {max} = defineProps({
 })
 console.log("max",max)
 // 设置饼图的选项
-const echartsOption = reactive({
-  series: [
-    {
-      type: 'pie',
-      data: [
-        { name: 'L1', value: max.L1 },
-        { name: 'L2', value: max.L2 },
-        { name: 'L3', value: max.L3 }
-      ],
-      label: {
-        show: false // 设置为false，不显示饼图上的名称
-      },
-      radius: ['40%', '65%'],
-      emphasis:{disabled:false,scale:false,scaleSize:0,},
-      tooltip: {
-        trigger: 'item',
-      }
-    }
-  ]
-})
+
 onUnmounted(() => {
   console.log('onUnmounted******')
 })

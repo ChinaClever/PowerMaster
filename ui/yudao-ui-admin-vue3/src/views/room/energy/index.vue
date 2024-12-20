@@ -210,8 +210,6 @@ const getTableData = async(reset = false) => {
   }
 }
 
-
-
 // 处理切换 表格/阵列 模式
 const handleSwitchModal = (value) => {
   if (switchValue.value == value) return
@@ -420,4 +418,6 @@ onBeforeMount(() => {
     }
   }
 }
+
+
 </style>

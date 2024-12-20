@@ -24,4 +24,8 @@
         where rg.room_id = #{vo.id}
     </update>
 
+    <update id="restoreByRoomCfg">
+        update room_cfg rg set rg.is_delete = 0 where rg.room_id = #{roomId}
+    </update>
+
 </mapper>
