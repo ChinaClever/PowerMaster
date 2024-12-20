@@ -7,6 +7,7 @@ import cn.iocoder.yudao.module.bus.controller.admin.boxharmoniccolor.vo.BoxHarmo
 import cn.iocoder.yudao.module.bus.dal.dataobject.boxharmoniccolor.BoxHarmonicColorDO;
 import org.apache.ibatis.annotations.Mapper;
 
+@Mapper
 public interface BoxHarmonicColorMapper extends BaseMapperX<BoxHarmonicColorDO> {
 
     default PageResult<BoxHarmonicColorDO> selectPage(BoxHarmonicColorPageReqVO reqVO) {
