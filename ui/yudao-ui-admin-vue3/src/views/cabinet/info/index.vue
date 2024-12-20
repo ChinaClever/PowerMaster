@@ -165,7 +165,6 @@
           </template>
         </el-table-column>
      </el-table>
-      </div>
       <Pagination
         v-if="showPagination == 1"
         :total="queryParams.pageTotal"
