@@ -45,7 +45,8 @@
         ref="queryFormRef"
         :inline="true"
         label-width="68px"
-        v-show="switchValue !== 2"                          
+        v-show="switchValue !== 2" 
+        style="margin-left: 10px;"               
       >
         <el-form-item>
           <button class="btnnnnnnnn" type = "button" @click="toggleAllStatus">
@@ -89,8 +90,8 @@
           </el-button>
         </el-form-item>
        </el-form-item> 
-        <div style="float:right">
-          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 0;showPagination = 0;" :type="switchValue === 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
+        <div style="float:right; margin-right:10px">
+          <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 0;showPagination = 0;" :type="switchValue === 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 1px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;showPagination = 0;" :type="switchValue === 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 2;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''" v-show="switchValue ===1"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
         </div>
@@ -137,7 +138,7 @@
           </el-button>
         </el-form-item>
        </el-form-item> 
-        <div style="float:right">
+        <div style="float:right;">
           <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 0;showPagination = 0;" :type="switchValue === 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 8px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 1;showPagination = 0;" :type="switchValue === 1 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />表格模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryDeletedPageParams.pageSize = 15;getDeletedList();switchValue = 2;showPagination = 1;" :type="switchValue ===2 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 8px" />已删除</el-button>
@@ -146,11 +147,16 @@
     </template>
     <template #Content>
      <div>
-      <el-table  v-show="switchValue == 1" v-loading="loading" :data="list" :stripe="false" :show-overflow-tooltip="true" :border="false" @cell-dblclick="toPDUDisplayScreen" >
+      <el-table  v-show="switchValue == 1" v-loading="loading" :data="list" :stripe="false" :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
-        <el-table-column label="运行状态" align="center" prop="status" >
+        <el-table-column label="运行状态" min-width="110" align="center">
+          <template #default="scope">
+            <div :style="{color: statusList[scope.row.status].color}">{{statusList[scope.row.status] && statusList[scope.row.status].name}}</div>
+          </template>
+        </el-table-column>
+        <!-- <el-table-column label="运行状态" align="center" prop="status" >
           <template #default="scope">
             <el-tag  v-if="scope.row.status == 0 && scope.row.apparentPow == 0">空载</el-tag>
             <el-tag  v-if="scope.row.status == 0 && scope.row.apparentPow != 0">正常</el-tag>
@@ -170,7 +176,7 @@
             <el-tag type="info" v-if="scope.row.status == 4">故障</el-tag>
             <el-tag type="info" v-if="scope.row.status == 5">离线</el-tag>
           </template>
-        </el-table-column>
+        </el-table-column> -->
         <el-table-column label="总视在功率(kVA)" align="center" prop="apparentPow" width="150px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if=" scope.row.apparentPow != null" >
@@ -261,7 +267,7 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="info">
+            <div class="info" style="margin-bottom: 30px;margin-top: 20px;margin-left: 10px">
               <div v-if=" item.pow != null ">有功功率：{{item.pow}}kW</div>
               <div v-if="item.apparentPow != null">视在功率：{{item.apparentPow}}kVA</div>
               <div v-if=" item.reactivePow != null ">无功功率：{{formatEQ(item.reactivePow,3)}}kVar</div>
@@ -269,7 +275,9 @@
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
-            <div class="icon">
+            <div class="icon" style="margin-bottom: 1px;height: 70px;width: 50px">
+              <!-- <Bar :max:any = {L1:item.pf}/> -->
+              <!-- <Bar :max="item.pf" /> -->
               <div v-if="item.pf != null">
                 {{item.pf}}<br/>
                 <span class="text-pf">PF</span>
@@ -327,6 +335,7 @@ import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 import { ElTree } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
 import { get } from 'http'
+import Bar from './component/Bar.vue'
 
 // 格式化耗电量列数据，保留3位小数
 function formatEQ(value: number, decimalPlaces: number | undefined){
@@ -388,37 +397,43 @@ const statusList = reactive([
     selected: true,
     value: 0,
     cssClass: 'btn_normal',
-    activeClass: 'btn_normal normal'
+    activeClass: 'btn_normal normal',
+    color: '#3bbb00'
   },
   {
     name: '预警',
     selected: true,
     value: 1,
     cssClass: 'btn_warn',
-    activeClass: 'btn_warn warn'
+    activeClass: 'btn_warn warn',
+    color: '#ffc402'
   },
   {
     name: '告警',
     selected: true,
     value: 2,
     cssClass: 'btn_error',
-    activeClass: 'btn_error error'
+    activeClass: 'btn_error error',
+    color: '#fa3333'
   },
   {
     name: '故障',
     selected: true,
     value: 4,
     cssClass: 'btn_offline',
-    activeClass: 'btn_offline offline'
+    activeClass: 'btn_offline offline',
+    color: '#7700ff'
   },
   {
     name: '离线',
     selected: true,
     value: 5,
     cssClass: 'btn_offline',
-    activeClass: 'btn_offline offline'
+    activeClass: 'btn_offline offline',
+    color: '#7700ff'
   },
 ])
+
 
 const handleClick = (row) => {
   if(row.type != null  && row.type == 3){
@@ -1160,10 +1175,11 @@ onActivated(() => {
         .icon {
           font-size: 20px;
           width: 60px;
-          height: 30px;
+          height: 100px;
           margin: 0 25px 39px;
           text-align: center;
           padding-left: 5px;
+          margin-top: -10px;
           .text-pf{
             font-size: 16px;
           }
@@ -1375,9 +1391,9 @@ onActivated(() => {
   margin-right: 0;
 }
 ::v-deep .el-table .el-table__header th{
-  background-color: #f5f7fa;
+  background-color: #f7f7f7;
   color: #909399;
-  height: 80px;
+  height: 60px;
 
 }
 
