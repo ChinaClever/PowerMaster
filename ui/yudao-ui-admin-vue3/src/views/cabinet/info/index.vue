@@ -39,6 +39,7 @@
         ref="queryFormRef"
         :inline="true"
         label-width="68px"
+        style='height:54px'
       >
         <el-form-item>
           <template v-for="(status, index) in statusList" :key="index">
@@ -83,7 +84,8 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 1" style="width: 100%;" v-loading="loading" :data="listPage" @cell-dblclick="handleDbclick">
+      <div v-show="switchValue && listPage.length > 0" style="height:660px;">
+        <el-table v-if="switchValue == 1" style="width: 100%;" v-loading="loading" :data="listPage" @cell-dblclick="handleDbclick">
         <el-table-column label="位置" min-width="110" align="center">
           <template #default="scope">
             <div>{{scope.row.roomName}}-{{scope.row.cabinetName}}</div>
@@ -134,7 +136,7 @@
       </el-table>
 
 
-   <el-table v-show="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
+   <el-table v-if="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
          <el-table-column label="位置" min-width="110" align="center">
             <template #default="scope">
                <div>{{scope.row.name}}</div>
@@ -164,6 +166,7 @@
           </template>
         </el-table-column>
      </el-table>
+      </div>
       <Pagination
         v-if="showPagination == 1"
         :total="queryParams.pageTotal"
@@ -171,7 +174,7 @@
         v-model:limit="queryParams.pageSize"
         @pagination="handleSwitchLogicRemoveModal(2,false)"
       />
-      <div v-show="!switchValue && listPage.length > 0" class="arrayContainer">
+      <div v-if="!switchValue && listPage.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in listPage" :key="item.id" @dblclick="handleArrayDbclick(item.cabinet_key)">
           <div class="content">
             <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
@@ -921,8 +924,9 @@ onBeforeMount(() => {
 
 @media screen and (max-width:2048px) and (min-width:1600px){
   .arrayContainer {
-    //height: 600px;
-    overflow: auto;
+    height: 660px;
+    overflow: hidden;
+    overflow-y: auto;
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
