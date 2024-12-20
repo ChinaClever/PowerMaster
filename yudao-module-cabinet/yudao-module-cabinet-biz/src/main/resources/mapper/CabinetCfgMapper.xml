@@ -72,7 +72,7 @@
     <select id="selectCabdeleteList" parameterType="cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo"
             resultType="cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO">
         select
-        ci.id,
+        ci.id ,
         ci.cabinet_name ,
         ci.pdu_box as pduBox,
         ci.run_status as runStatus,
