@@ -96,13 +96,13 @@
               <div class="Bus">
                 <div>
                   <div class="title">A路</div>
-                  <el-form-item label="母线编号：">
-                    <el-input v-model="machineFormData.barIdA" :disabled="isBusBind" placeholder="请输入" />
-                  </el-form-item>
                   <el-form-item label="母线地址：">
                     <el-input v-model="machineFormData.busIpA" :disabled="isBusBind" placeholder="请输入" />
                   </el-form-item>
-                  <el-form-item label="插接箱名称：">
+                  <el-form-item label="母线编号：">
+                    <el-input v-model="machineFormData.barIdA" :disabled="isBusBind" placeholder="请输入" />
+                  </el-form-item>
+                  <el-form-item label="插接箱编号：">
                     <el-select v-if="isBusBind" v-model="machineFormData.boxIndexA" placeholder="请选择">
                       <el-option v-for="(box, index) in boxListA" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="index+''" />
                     </el-select>
@@ -117,13 +117,13 @@
                 </div>
                 <div>
                   <div class="title">B路</div>
-                  <el-form-item label="母线编号：">
-                    <el-input v-model="machineFormData.barIdB" :disabled="isBusBind" placeholder="请输入" />
-                  </el-form-item>
                   <el-form-item label="母线地址：">
                     <el-input v-model="machineFormData.busIpB" :disabled="isBusBind" placeholder="请输入" />
                   </el-form-item>
-                  <el-form-item label="插接箱名称：">
+                  <el-form-item label="母线编号：">
+                    <el-input v-model="machineFormData.barIdB" :disabled="isBusBind" placeholder="请输入" />
+                  </el-form-item>
+                  <el-form-item label="插接箱编号：">
                     <el-select v-if="isBusBind" v-model="machineFormData.boxIndexB" placeholder="请选择">
                       <el-option v-for="(box, index) in boxListB" :key="index" :disabled="!!box.type" :label="`${box.type ? '连接器':'插接箱'}${index+1}`" :value="index+''" />
                     </el-select>

@@ -313,7 +313,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             List<PDULineRes> result = new ArrayList<>();
             if (pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
                 List<String> devKeyList = new ArrayList<>();
-                List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().inIfPresent(CabinetPdu::getCabinetId, pageReqVO.getCabinetIds()));
+                List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>()
+                        .inIfPresent(CabinetPdu::getCabinetId, pageReqVO.getCabinetIds()));
                 if (cabinetPduList != null && !cabinetPduList.isEmpty()) {
                     for (CabinetPdu cabinetPdu : cabinetPduList) {
                         if (!StringUtils.isEmpty(cabinetPdu.getPduKeyA())) {
@@ -359,42 +360,49 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             List<Integer> pduIds = (List<Integer>) esTotalPduId.get("ids");
 
             List<PduIndex> pdus = pDUDeviceMapper.selectBatchIds(pduIds);
+
             curMap = getPDULineCurMaxData(startTime, endTime, pduIds, index);
             powMap = getPDULinePowMaxData(startTime, endTime, pduIds, index);
+            Map<Integer, PduIndex> map = pdus.stream().collect(Collectors.toMap(PduIndex::getId, x -> x));
 
-            for (PduIndex pduIndex : pdus) {
-                Integer id = pduIndex.getId().intValue();
-                if (curMap.get(id) == null) {
-                    continue;
-                }
+//            for (PduIndex pduIndex : pdus) {
+            for (Integer pduId : pduIds) {
                 PDULineRes pduLineRes = new PDULineRes();
-                pduLineRes.setStatus(pduIndex.getRunStatus());
-                pduLineRes.setPduId(pduIndex.getId());
-                pduLineRes.setDevKey(pduIndex.getPduKey());
-
-                MaxValueAndCreateTime curl1 = curMap.get(id).get(1);
+                PduIndex pduIndex = map.get(pduId);
+                if (Objects.nonNull(pduIndex)) {
+                    Integer id = pduIndex.getId().intValue();
+                    if (curMap.get(id) == null) {
+                        continue;
+                    }
+                    pduLineRes.setStatus(pduIndex.getRunStatus());
+                    pduLineRes.setPduId(pduIndex.getId());
+                    pduLineRes.setDevKey(pduIndex.getPduKey());
+                }else {
+                    pduLineRes.setPduId(pduId);
+                }
+                MaxValueAndCreateTime curl1 = curMap.get(pduId).get(1);
                 pduLineRes.setL1MaxCur(curl1.getMaxValue().floatValue());
                 pduLineRes.setL1MaxCurTime(curl1.getMaxTime().toString("yyyy-MM-dd HH:mm"));
-                MaxValueAndCreateTime curl2 = curMap.get(id).get(2);
+                MaxValueAndCreateTime curl2 = curMap.get(pduId).get(2);
                 if (curl2 != null) {
                     pduLineRes.setL2MaxCur(curl2.getMaxValue().floatValue());
                     pduLineRes.setL2MaxCurTime(curl2.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                 }
-                MaxValueAndCreateTime curl3 = curMap.get(id).get(3);
+                MaxValueAndCreateTime curl3 = curMap.get(pduId).get(3);
                 if (curl3 != null) {
                     pduLineRes.setL3MaxCur(curl3.getMaxValue().floatValue());
                     pduLineRes.setL3MaxCurTime(curl3.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                 }
 
-                MaxValueAndCreateTime powl1 = powMap.get(id).get(1);
+                MaxValueAndCreateTime powl1 = powMap.get(pduId).get(1);
                 pduLineRes.setL1MaxPow(powl1.getMaxValue().floatValue());
                 pduLineRes.setL1MaxPowTime(powl1.getMaxTime().toString("yyyy-MM-dd HH:mm"));
-                MaxValueAndCreateTime powl2 = powMap.get(id).get(2);
+                MaxValueAndCreateTime powl2 = powMap.get(pduId).get(2);
                 if (powl2 != null) {
                     pduLineRes.setL2MaxPow(powl2.getMaxValue().floatValue());
                     pduLineRes.setL2MaxPowTime(powl2.getMaxTime().toString("yyyy-MM-dd HH:mm"));
                 }
-                MaxValueAndCreateTime powl3 = powMap.get(id).get(3);
+                MaxValueAndCreateTime powl3 = powMap.get(pduId).get(3);
                 if (powl3 != null) {
                     pduLineRes.setL3MaxPow(powl3.getMaxValue().floatValue());
                     pduLineRes.setL3MaxPowTime(powl3.getMaxTime().toString("yyyy-MM-dd HH:mm"));
@@ -437,11 +445,13 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             String startTime = localDateTimeToString(pageReqVO.getOldTime());
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
             MaxCurAndOtherData maxCurAndOtherData = getMaxCurMaxValue(startTime, endTime, index);
-            PduIndex pdu = pDUDeviceMapper.selectById(maxCurAndOtherData.getPdu_id());
+
             result.setPduId(maxCurAndOtherData.getPdu_id());
             result.setL1MaxCur(maxCurAndOtherData.getMaxValue().floatValue());
             result.setL1MaxCurTime(maxCurAndOtherData.getMaxTime().toString("yyyy-MM-dd HH:mm"));
-            result.setDevKey(pdu.getPduKey());
+            PduIndex pdu = pDUDeviceMapper.selectById(maxCurAndOtherData.getPdu_id());
+            if (Objects.nonNull(pdu))
+                result.setDevKey(pdu.getPduKey());
             resultList.add(result);
             List<Integer> pduIds = new ArrayList<>();
             pduIds.add(maxCurAndOtherData.getPdu_id());
@@ -1891,7 +1901,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     }
 
     private void setLocation(List<PduIndex> pduIndices, List<? extends PDUDeviceDO> result) {
-        if (CollectionUtils.isEmpty(result)) {
+        if (CollectionUtils.isEmpty(result)||CollectionUtils.isEmpty(pduIndices)) {
             return;
         }
         Set<String> ipAddrSet = new HashSet<>();
