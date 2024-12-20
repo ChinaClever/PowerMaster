@@ -44,7 +44,7 @@
     </div> 
     <div v-for="item in maxCurAll" :key="item.devKey" class="description-item">
       <span>所在位置 :</span>
-      <span>{{ item.location}}</span>
+      <span>{{ item.devKey}}</span>
     </div>     
     <div v-for="item in maxCurAll" :key="item.devKey" class="description-item">
       <span>网络地址 :</span>
@@ -149,7 +149,7 @@
     </template>
     <template #Content>
     <!-- 三相数据显示 -->
-      <el-table v-show="switchValue == 2 && valueMode == 0 && MaxLineId > 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true"  @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-show="switchValue == 2 && valueMode == 0 && MaxLineId > 1" v-loading="loading" :data="list"  :show-overflow-tooltip="true"   @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
@@ -201,7 +201,7 @@
         </el-table-column>
       </el-table>  
     <!-- 单相数据显示 -->
-      <el-table v-show="switchValue == 2 && valueMode == 0 && !(MaxLineId > 1)" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-show="switchValue == 2 && valueMode == 0 && !(MaxLineId > 1)" v-loading="loading" :data="list"  :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -237,11 +237,11 @@
         </el-table-column>
       </el-table> 
     <!-- 三相有数据显示 -->      
-      <el-table v-show="switchValue == 2 && valueMode == 1 && MaxLineId > 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-show="switchValue == 2 && valueMode == 1 && MaxLineId > 1" v-loading="loading" :data="list"  :show-overflow-tooltip="true"  @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="125px"/>
-        <el-table-column label="L1最大功率(kW)" align="center" prop="l1MaxPow" width="100px" >
+        <el-table-column label="L1最大功率(kW)" align="center" prop="l1MaxPow" width="140px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
               {{ scope.row.l1MaxPow }}
@@ -249,7 +249,7 @@
           </template>
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l1MaxPowTime" />
-        <el-table-column label="L2最大功率(kW)" align="center" prop="l2MaxPow" width="100px" >
+        <el-table-column label="L2最大功率(kW)" align="center" prop="l2MaxPow" width="140px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-show="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
               {{ scope.row.l2MaxPow }}
@@ -257,7 +257,7 @@
           </template>
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l2MaxPowTime" />
-        <el-table-column label="L3最大功率(kW)" align="center" prop="l3MaxPow" width="100px" >
+        <el-table-column label="L3最大功率(kW)" align="center" prop="l3MaxPow" width="140px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-show="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
               {{ scope.row.l3MaxPow }}
@@ -287,7 +287,7 @@
         </el-table-column>
       </el-table>
     <!-- 单相数据显示 -->      
-      <el-table v-show="switchValue == 2 && valueMode == 1 && !(MaxLineId > 1)" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-show="switchValue == 2 && valueMode == 1 && !(MaxLineId > 1)" v-loading="loading" :data="list"  :show-overflow-tooltip="true" @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <el-table-column label="所在位置" align="center" prop="location"  />
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="125px"/>
@@ -324,16 +324,19 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content" v-show="item.l3MaxPow !== undefined && item.l3MaxPow !== null">
-            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
-            <div class="info">
+            <!-- <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div> -->
+            <div class="info" style="margin-bottom: 60px">
               <div >L1最大功率：{{ item.l1MaxPow }}kW</div>
               <div >L2最大功率：{{ item.l2MaxPow }}kW</div>
               <div >L3最大功率：{{ item.l3MaxPow }}kW</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
+            <div style="margin-left: 10px;margin-bottom: 50px; margin-top: -20px; width: 100px;height: 100px" ><Bar :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
           </div>
+          
           <div class="content" v-show="item.l3MaxPow == undefined || item.l3MaxPow == null">
-            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
+
+            <!-- <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div> -->
             <div class="info">
               <div >最大功率：{{item.l1MaxPow}}kW</div>
               <div >发生时间：{{item.l1MaxPowTime}}</div>
@@ -366,16 +369,17 @@
       <div  v-show="switchValue == 1 && list.length > 0 && valueMode == 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
-          <div class="content" v-show="item.l3MaxCur !== undefined && item.l3MaxCur !== null">
+          <div class="content" v-show="item.l3MaxCur !== undefined && item.l3MaxCur !== null" style="width: 500px;height: 100px">
             <!--<div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>-->
-            <div class="info">
+            <div class="info" style="margin-bottom: 20px;">
               
               <div >L1最大电流：{{ item.l1MaxCur }}A</div>
               <div >L2最大电流：{{ item.l2MaxCur }}A</div>
               <div >L3最大电流：{{ item.l3MaxCur }}A</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
-            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
+            <!-- <div  style="height: 50px;background-color: black"></div> -->
+            <div style="margin-left: 10px;margin-bottom: 30px; width: 100px;height: 100px" ><Bar :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
           </div>
           <div class="content" v-show="item.l3MaxCur == undefined || item.l3MaxCur == null">
             <!--<div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>-->
@@ -386,7 +390,7 @@
 
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
-            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
+            <div style="padding: 0 28px"><Pie :width="100" :height="100" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
           </div>          
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->                
           <!--<button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>--> 
@@ -403,8 +407,7 @@
           <el-button @click="lineidBeforeChartUnmount()" style="float:right" show-close="false" >关闭</el-button>
           <div><h2>需量电流详情</h2></div> 
           <div>所在位置：{{onlyDevKey}} 
-            网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}} 
-            <span style="padding-left: 370px;">{{ createTimes }} - {{ endTimes }}</span>
+            网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}} <span style="padding-left: 400px">起始时间：{{ createTimes }} 结束时间：{{ endTimes }}</span>
           </div>
           
         </template>
@@ -443,6 +446,50 @@ import { ElTree } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
 
 import * as echarts from 'echarts'
+import { ref, onMounted, onUnmounted } from 'vue';
+import Bar from './component/Bar.vue'
+// 使用 ref 来获取 DOM 元素
+const chartDom = ref<HTMLDivElement | null>(null);
+let myChart: echarts.ECharts | null = null;
+
+// 图表配置
+const option = {
+  series: [
+    {
+      name: 'Nightingale Chart',
+      type: 'pie',
+      radius: [1, 20],
+      center: ['50%', '50%'],
+      roseType: 'area',
+      itemStyle: {
+        borderRadius: 8
+      },
+      data: [
+        { value: 40, name: 'rose 1' },
+        { value: 38, name: 'rose 2' },
+        { value: 32, name: 'rose 3' }
+      ]
+    }
+  ]
+};
+// 组件挂载时初始化图表
+onMounted(() => {
+  giveValue()
+  getList()
+  getNavList()
+  if (chartDom.value) {
+    myChart = echarts.init(chartDom.value);
+    myChart.setOption(option);
+  }
+});
+
+// 组件卸载时销毁图表
+onUnmounted(() => {
+  if (myChart) {
+    myChart.dispose();
+    myChart = null;
+  }
+});
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -1045,12 +1092,6 @@ const showDialogOne = (id,type,flagValue) => {
   flagValue.value = 1
 }
 
-/** 初始化 **/
-onMounted(() => {
-  giveValue()
-  getList()
-  getNavList()
-})
 
 
 </script>
@@ -1210,6 +1251,7 @@ onMounted(() => {
           font-weight: bold;
         }
       }
+      
     }
   }
   .status {
@@ -1324,7 +1366,6 @@ onMounted(() => {
     .arrayItem {
       width: 20%;
       height: 140px;
-      font-size: 13px;
       box-sizing: border-box;
       background-color: #eef4fc;
       border: 5px solid #fff;
@@ -1341,6 +1382,7 @@ onMounted(() => {
         }
         .info{
           padding-left: 1vw;
+          font-size: 15px;
         }
       }
       .devKey{
@@ -1408,6 +1450,7 @@ onMounted(() => {
         }
         .info{
           padding-left: 1vw;
+          font-size: 15px;
         }
       }
       .devKey{
@@ -1475,6 +1518,7 @@ onMounted(() => {
         }
         .info{
           padding-left: 1vw;
+          font-size: 15px;
         }
       }
       .devKey{
@@ -1574,4 +1618,12 @@ onMounted(() => {
 :deep(.el-dialog__headerbtn) {
   display: none !important; /* 使用 !important 尝试提高优先级 */
 }
+
+::v-deep .el-table .el-table__header th{
+  background-color: #f7f7f7;
+  color: #909399;
+  height: 60px;
+
+}
+
 </style>

@@ -27,8 +27,12 @@
     <div class="master-right">
       
       <ContentWrap style="min-height: 680px" >
-        <ContentWrap class="hhh">
+        <ContentWrap class="hhh" style="position:relative;">
+          <div style="margin:auto;
+                 position:absolute;
+                 top:0;left:0;bottom:0;right:0;margin-top: 15px;">
         <slot name="ActionBar" ></slot>
+      </div>
       </ContentWrap>
         <slot name="Content" ></slot>
       </ContentWrap>
@@ -179,9 +183,11 @@ mediaQueryList.addEventListener('change', toggleStyles)
     width: 100%;
     .hhh {
       background-color: #f7f7f7;
+      height: 60px;
     }
   }
 }
+
 .navBar {
   box-sizing: border-box;
   width: 100%;
