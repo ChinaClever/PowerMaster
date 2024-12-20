@@ -49,7 +49,7 @@
             <span style="color:#ccc;font-size:14px;border-bottom:1px solid #ccc;width:90%;"></span>
         </div>
         <div style="height:360px;width:100%;margin-top:-50px;">
-            <Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData.loadFactor" />
+            <Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData.loadFactor" />
         </div>
         <!--<div style="position: relative; top: -80px; left: 0; width: 100%; text-align: center; padding-top: 10px;">
             <div style="color: black;font-size: 30px;">{{redisData?.loadFactor}}</div>
@@ -60,26 +60,26 @@
       <div class="right-part">
         <div class="center-top-part">
           <div style="color: black;margin:10px 0 0 10px;font-weight: bold;">实时功率</div>
-          <RealTimePower style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+          <RealTimePower style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
         </div>
         <div class="center-top-right-part">
           <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">额定容量:</span><span style="font-size:16px;">{{redisData?.finstalledCapacity}}KVA</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">额定容量:</span><span style="font-size:16px;">0KVA</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">现在功率:</span><span style="font-size:16px;">{{redisData?.s}}KVA</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">总现在功率:</span><span style="font-size:16px;">{{resultData?.powApparentTotal}}KVA</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">有功功率:</span><span style="font-size:16px;">{{redisData?.p}}KVA</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">总有功功率:</span><span style="font-size:16px;">{{resultData?.powActiveTotal}}KVA</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">无功功率:</span><span style="font-size:16px;">{{redisData?.q}}KVA</span>
+            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">总无功功率:</span><span style="font-size:16px;">{{resultData?.powReactiveTotal}}KVA</span>
           </div>
         </div>
       </div>
       <div class="right-right-part">
         <div style="margin:10px;">负载率曲线</div>
-        <MarkLine style="margin-top:-40px;" v-if="visContro.loadRateVis"  width="100%" height="100%" :list="loadRateList"/>
+        <MarkLine style="margin-top:-40px;" v-if="visContro.loadRateVis"  width="100%" height="100%" :list="resultData"/>
       </div>
     </div>
     <div class="bottom-part">
@@ -87,7 +87,7 @@
         width: 50%;
         height: 100%;">
           <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">A路电压</div>
-          <AVol style="margin-top:-30px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+          <AVol style="margin-top:-30px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
         </div>
         <div style="display: inline-block;
             position: absolute;
@@ -95,13 +95,13 @@
             height: 100%;
             top: 50px;">
           <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{redisData?.ua}}V</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{resultData?.volA[0]}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{redisData?.ub}}V</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{resultData?.volA[1]}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{redisData?.uc}}V</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{resultData?.volA[2]}}V</span>
           </div>
         </div>
     </div>
@@ -110,7 +110,7 @@
         width: 50%;
         height: 100%;">
           <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">A路电流</div>
-          <ACur style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+          <ACur style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
         </div>
         <div style="display: inline-block;
             position: absolute;
@@ -118,13 +118,13 @@
             height: 100%;
             top: 50px;">
           <div class="label-container">
-            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;">{{redisData?.ia}}A</span>
+            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;">{{resultData?.curA[0]}}A</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{redisData?.ib}}A</span>
+            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{resultData?.curA[1]}}A</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{redisData?.ic}}A</span>
+            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{resultData?.curA[2]}}A</span>
           </div>
         </div>
     </div>
@@ -133,7 +133,7 @@
         width: 50%;
         height: 230px;">
           <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">功率因数</div>
-          <PowerFactor style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+          <PowerFactor style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
         </div>
         <div style="display: inline-block;
             position: absolute;
@@ -141,16 +141,16 @@
             height: 100%;
             top: 20px;">
           <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="font-size:14px;">频率:</span><span style="font-size:16px;">{{redisData?.fr}}Hz</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="font-size:14px;">频率:</span><span style="font-size:16px;">0Hz</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.pf}}</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="font-size:14px;">功率因数:</span><span style="font-size:16px;">{{resultData?.powerFactor}}</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="font-size:14px;">三相电压不平衡度:</span><span style="font-size:16px;">{{redisData?.vub}}%</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="font-size:14px;">三相电压不平衡度:</span><span style="font-size:16px;">0%</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#B47660;">•</span><span style="font-size:14px;">三相电流不平衡度:</span><span style="font-size:16px;">{{redisData?.cub}}%</span>
+            <span class="bullet" style="color:#B47660;">•</span><span style="font-size:14px;">三相电流不平衡度:</span><span style="font-size:16px;">0%</span>
           </div>
         </div>
     </div>
@@ -159,7 +159,7 @@
         width: 50%;
         height: 100%;">
           <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">B路电压</div>
-          <BVol style="margin-top:-30px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+          <BVol style="margin-top:-30px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
         </div>
         <div style="display: inline-block;
             position: absolute;
@@ -167,13 +167,13 @@
             height: 100%;
             top: 50px;">
           <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{redisData?.ua}}V</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{resultData?.volB[0]}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{redisData?.ub}}V</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{resultData?.volB[1]}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{redisData?.uc}}V</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{resultData?.volB[2]}}V</span>
           </div>
         </div>
     </div>
@@ -182,7 +182,7 @@
         width: 50%;
         height: 100%;">
           <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">B路电流</div>
-          <BCur style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+          <BCur style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
         </div>
         <div style="display: inline-block;
             position: absolute;
@@ -190,13 +190,13 @@
             height: 100%;
             top: 50px;">
           <div class="label-container">
-            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;">{{redisData?.ia}}A</span>
+            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;">{{resultData?.curB[0]}}A</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{redisData?.ib}}A</span>
+            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{resultData?.curB[1]}}A</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{redisData?.ic}}A</span>
+            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{resultData?.curB[2]}}A</span>
           </div>
         </div>
     </div>
@@ -207,13 +207,13 @@
         margin-right:-20px;"
       >
           <div style="color: black;margin:10px 0 0 10px;"><span style="font-weight:bold;">AB路功率</span><span style="margin-left:80px;">A路</span></div>
-          <Environment style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+          <Environment style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
         </div>
         <div style="display: inline-block;
             width: 50%;
             height: 90%;">
           <div style="display:inline-block;color:black;"><span style="margin-left:100px;">B路</span></div>
-          <EnvironmentCopy style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+          <EnvironmentCopy style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
         </div>
     </div>
   </div>
@@ -236,17 +236,19 @@ import ACur from './component/ACur.vue'
 import BCur from './component/BCur.vue'
 import EnvironmentCopy from './component/EnvironmentCopy.vue'
 import { IndexApi } from '@/api/bus/busindex'
+import { CabinetApi } from '@/api/cabinet/detail'
 import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
 
 const peakDemand = ref(0);
-const peakDemandTime = ref('')
-const redisData = ref() as any;
+const peakDemandTime = ref('');
+const resultData = ref() as any;
 const loadRateList = ref() as any;
-const powActiveList = ref() as any;
-const powReactiveList = ref() as any;
 const selectedOption = ref('current')
-const location = ref(history?.state?.location)
-const busName = ref(history?.state?.busName)
+const location = ref(history?.state?.location);
+const busName = ref(history?.state?.busName);
+const id = ref(history?.state?.id);
+const roomId = ref(history?.state?.roomId);
+const type = ref(history?.state.type);
 const visContro = ref({
   gaugeVis : false,
   loadRateVis : false,
@@ -289,47 +291,32 @@ const queryParams = reactive({
 }) as any
 
 const getRedisData = async () => {
-  const data =  await IndexApi.getBusPowerRedisData(queryParams);//devKey
-  let loopItem = {} as any;
-  for (let key in data) {  
-    if (data.hasOwnProperty(key)) {  
-        // 排除null值，但保留updateTime  
-        if (data[key] !== null && key != 'updateTime') { 
-            loopItem[key] = data[key].toFixed(2); // 注意这将转换为字符串  
-        }else if (data[key] == null){
-            loopItem[key] = '/';
-        }
-    }  
-  }
-  loopItem['updateTime'] = data['updateTime'];
-  redisData.value = loopItem;
-  if(redisData.value.loadFactor != null){
+  const result = await CabinetApi.getCabinetdistributionDetails({
+    id:id.value,
+    roomId:roomId.value,
+    type:type.value
+  })
+  location.value = result.roomName;
+  busName.value = result.cabinetName;
+  console.log('result',result);
+  resultData.value = result;
+  
+  if(resultData.value.loadFactor != null){
     visContro.value.gaugeVis = true;
   }
   
-  if(redisData.value.loadFactor >= 100 ){
-    console.log(redisData.value.loadFactor+'负载率爆表了')
-    redisData.value.loadFactor = 100
+  if(resultData.value.loadFactor >= 100 ){
+    resultData.value.loadFactor = 100;
   }
 }
 
 const getLoadRateList = async () =>{
-    const data = await IndexApi.getBusLoadRateLine(queryParams);//oldtime newtime id
+    const data = await IndexApi.getBusLoadRateLine(queryParams);
     loadRateList.value = data;
     if(loadRateList.value?.time != null && loadRateList.value?.time?.length > 0){
         visContro.value.loadRateVis = true;
     }else {
         visContro.value.loadRateVis = false;
-    }
-}
-
-const getBusPowActiveList = async () =>{
-    const data = await IndexApi.getBusPowActiveLine(queryParams);//oldtime newtime id
-    powActiveList.value = data;
-    if(powActiveList.value?.time != null && powActiveList.value?.time?.length > 0){
-        visContro.value.powActiveVis = true;
-    }else {
-        visContro.value.powActiveVis = false;
     }
 }
 
@@ -360,22 +347,11 @@ const getPeakDemand =async () => {
  }
 }
 
-const getBusPowReactiveList = async () =>{
-    const data = await IndexApi.getBusPowReactiveLine(queryParams);//oldtime newtime id
-    powReactiveList.value = data;
-    if(powReactiveList.value?.time != null && powReactiveList.value?.time?.length > 0){
-        visContro.value.powReactiveVis = true;
-    }else {
-        visContro.value.powReactiveVis = false;
-    }
-}
 //刷新数据
 const flashChartData = async () =>{
     await getRedisData();
     await getPeakDemand();
     await getLoadRateList();
-    await getBusPowActiveList();
-    await getBusPowReactiveList();
 }
 
 const handleQuery = async () => {
@@ -431,8 +407,6 @@ onMounted(async () => {
   await getRedisData();
   await getPeakDemand();
   await getLoadRateList();
-  await getBusPowActiveList();
-  await getBusPowReactiveList();
   // initChart1();
   // initChart2();
 

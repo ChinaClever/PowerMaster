@@ -18,7 +18,7 @@ const props = defineProps({
   }
 })
 
-console.log('loadFactor',props.loadFactor)
+console.log('loadFactor1111',props.loadFactor)
 
 
 const echartsOption = reactive({
@@ -56,7 +56,7 @@ const echartsOption = reactive({
         fontSize: 14,
         fontWeight: 'bold'
       },
-      data: [props.loadFactor.s, props.loadFactor.p, props.loadFactor.q]
+      data: [props.loadFactor.powApparentB, props.loadFactor.powActiveB, props.loadFactor.powReactiveB]
     }
   ]
 })

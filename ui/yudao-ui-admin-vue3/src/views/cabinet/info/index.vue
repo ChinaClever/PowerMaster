@@ -190,7 +190,7 @@
           <div v-if="item.status == 3" class="status-error">告警</div>
           <div v-if="item.status == 4" class="status-unbound">未绑定</div>
           <div v-if="item.status == 5" class="status-offline">离线</div>
-          <button class="detail" @click.prevent="toMachineDetail(item.cabinet_key)">详情</button>
+          <button class="detail" @click.prevent="toMachineDetail(item)">详情</button>
         </div>
       </div>
       <Pagination
@@ -378,6 +378,7 @@ const getTableData = async(reset = false) => {
       runStatus: status.map(item => item.value),
       company: queryParams.company
     })
+    console.log('res',res)
     if (res.list) {
       const list = res.list.map(item => {
         const tableItem = {
@@ -495,14 +496,17 @@ const handleSelectStatus = (index, event) => {
 
 // 跳转详情页
 const toMachineDetail = (key) => {
-  
+  console.log('key',key.cabinet_key.split('-')[0]);
+  console.log('key',key.cabinet_key.split('-')[1]);
+  console.log('key',key);
   const devKey = '172.16.101.2-1';
   const busId = 6;
-  const location = null;
-  const busName = 'iBusbar-1';
-  push({path: '/cabinet/cab/detail', state: { devKey, busId , location , busName }})
-  //console.log('toMachineDetail!', key.split('-')[1])
-  //push({path: '/cabinet/cab/detail', state: { id: key.split('-')[1] }})
+  const id = key.cabinet_key.split('-')[1]
+  const roomId = key.cabinet_key.split('-')[0];
+  const type = 'hour';
+  const location = key.roomName;
+  const busName = key.cabinetName;
+  push({path: '/cabinet/cab/detail', state: { devKey, busId , location , busName ,id ,roomId , type}})
 }
 
 const handleCheck = (row) => {

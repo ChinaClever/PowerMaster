@@ -16,6 +16,9 @@ export const CabinetApi = {
   // 获取机架设备详情
   getframeDeviceDetail: async (params: any) => {
     return await request.get({ url: `/cabinet/frameDeviceDetail`, params })
-  }, 
+  },
 
+  getCabinetdistributionDetails: async (params: any) => {
+    return await request.get({ url: `/cabinet/distributionDetails`, params })
+  }
 }
