@@ -289,7 +289,7 @@
 
       <el-dialog v-model="detailVis" title="功率因数详情"  width="70vw" height="58vh" >
         <el-row>
-          <el-tag style="margin-left: 6vw; margin-top: -62px">{{ location }}</el-tag>
+          <el-tag style="margin-left: 7vw; margin-top: -62px">{{ location }}</el-tag>
           <div style="margin-left: -14vw;">
             日期:
             <el-date-picker
