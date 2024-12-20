@@ -146,7 +146,7 @@
     </template>
     <template #Content >
      <div v-if="switchValue && list.length > 0" style="height: 700px;overflow: hidden;overflow-y: auto;">
-      <el-table v-if="switchValue == 1" style="height: 700px;" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-if="switchValue == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -216,7 +216,8 @@
           </template>
         </el-table-column>   
       </el-table>
-      <el-table  v-if="switchValue == 2" style="height: 700px;" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true" :border="true">
+      <!-- 查看已删除PDU设备 -->
+      <el-table  v-if="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -238,9 +239,8 @@
             </el-button>
           </template>
         </el-table-column>
-      </el-table>
-     </div>
-      <!-- 查看已删除PDU设备 -->
+      </el-table> 
+     </div> 
         <Pagination
         v-show="showPagination == 1"
         :total="deletedTotal"
@@ -248,7 +248,7 @@
         v-model:page="queryDeletedPageParams.pageNo"
         v-model:limit="queryDeletedPageParams.pageSize"
         @pagination="getDeletedList"
-        />
+        />               
       <!-- 阵列模式分页 --> 
       <div class="arrayContainer" v-if="!switchValue && list.length > 0"> 
         <template v-for="item in list" :key="item.devKey">
