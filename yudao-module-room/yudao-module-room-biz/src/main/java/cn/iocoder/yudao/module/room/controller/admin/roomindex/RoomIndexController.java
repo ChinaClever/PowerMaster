@@ -94,6 +94,7 @@ public class RoomIndexController {
         return success(pageResult);
     }
 
+
     /**
      * 机房有功功率趋势
      *

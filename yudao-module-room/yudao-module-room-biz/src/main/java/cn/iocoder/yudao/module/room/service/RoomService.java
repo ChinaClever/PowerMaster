@@ -2,9 +2,12 @@ package cn.iocoder.yudao.module.room.service;
 
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetSaveVo;
+import cn.iocoder.yudao.framework.common.dto.room.RoomIndexVo;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomSavesVo;
+import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.room.dto.*;
 import cn.iocoder.yudao.module.room.vo.RoomSaveVo;
+import com.alibaba.fastjson2.JSONObject;
 
 import java.io.IOException;
 
@@ -106,4 +109,10 @@ public interface RoomService {
      * @return
      */
     Integer roomCabinetSave(CabinetSaveVo vo);
+
+
+    PageResult<JSONObject> getDeletedRoomPage(RoomIndexVo pageReqVO);
+
+    //恢复已删除机房
+    void getRestoreRoom(int id);
 }
