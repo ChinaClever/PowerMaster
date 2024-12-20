@@ -20,25 +20,58 @@ const props = defineProps({
 
 
 // 设置饼图的选项
-const echartsOption = reactive({
-  tooltip: {
-      trigger: 'item'
-  },
-  series: [{
-      type: 'pie',
-      radius: ['40%', '90%'],
-      center: ['50%', '70%'],
-      startAngle: 180,
-      endAngle: 360,
-      data: [{
-          value: props.loadFactor,
-          name:  "负载率(%)"
+const echartsOption = reactive( {
+  series: [
+    {
+      type: 'gauge',
+      axisLine: {
+        lineStyle: {
+          width: 25,
+          color: [
+            [0.3, '#67e0e3'],
+            [0.7, '#37a2da'],
+            [1, '#fd666d']
+          ]
+        }
       },
-      {
-        value: (100 - props.loadFactor).toFixed(2), // 计算剩余百分比
-        name: "其他(%)" // 剩余部分的标签
-      }]
-  }]
+      pointer: {
+        itemStyle: {
+          color: 'auto'
+        }
+      },
+      axisTick: {
+        distance: -30,
+        length: 8,
+        lineStyle: {
+          color: '#fff',
+          width: 2
+        }
+      },
+      splitLine: {
+        distance: -30,
+        length: 30,
+        lineStyle: {
+          color: '#fff',
+          width: 4
+        }
+      },
+      axisLabel: {
+        color: 'inherit',
+        distance: 40,
+        fontSize: 10,
+      },
+      detail: {
+        valueAnimation: true,
+        formatter: '{value}%',
+        color: 'inherit'
+      },
+      data: [
+        {
+          value: props.loadFactor,
+        }
+      ]
+    }
+  ]
 })
 
 onUnmounted(() => {

@@ -215,9 +215,9 @@
           <div class="status" >
             <el-tag type="info"  v-if="item.status == 0">离线</el-tag>
             <el-tag type="info"  v-if="item.color == 1">小电流不平衡</el-tag>
-            <el-tag type="success"  v-if="item.color == 2">&lt;15</el-tag>
-            <el-tag type="warning" v-if="item.color == 3">15%-30%</el-tag>
-            <el-tag type="danger" v-if="item.color == 4">&gt;30%</el-tag>
+            <el-tag type="success"  v-if="item.color == 2">{{ statusList[0].name }}</el-tag>
+            <el-tag type="warning" v-if="item.color == 3">{{ statusList[1].name }}</el-tag>
+            <el-tag type="danger" v-if="item.color == 4">{{ statusList[2].name }}</el-tag>
           </div>
           <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 0">详情</button>
         </div>

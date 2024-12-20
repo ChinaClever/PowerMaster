@@ -177,7 +177,8 @@ mediaQueryList.addEventListener('change', toggleStyles)
     overflow: hidden;
     width: 100%;
     .hhh {
-      background-color: #f7f7f7;
+      background-color: #E1E2E5;
+      margin-bottom: 10px;
     }
   }
 }
