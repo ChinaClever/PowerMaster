@@ -1,254 +1,67 @@
 <template>
-<div style="background-color: #E7E7E7;" class="centainer-height">
-  <div style="background-color: #E7E7E7;" class="header_app">
-    <div style="background-color: #E7E7E7;" class="header_app_text">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{busName}})</div>
-    <div style="background-color: #E7E7E7;" class="header_app_text_other1">
-          <el-col :span="10" >
-            <el-form
-              class="-mb-15px"
-              :model="queryParamsSearch"
-              ref="queryFormRef"
-              :inline="true"
-              label-width="120px"
-            >
-              <el-form-item label="网络地址" prop="devKey" style="margin-top:2px;">
-              <el-autocomplete
-                v-model="queryParamsSearch.devKey"
-                :fetch-suggestions="querySearch"
-                placeholder="请输入网络地址"  
-                clearable
-                class="!w-160px"
-                @select="handleQuery" 
-              />
-              </el-form-item>
-            </el-form>
-          </el-col>
-    </div>
-    <div style="background-color: #E7E7E7;" class="header_app_text_other">
-      <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-      <el-button @click="changeTime ('近一小时');" :type="queryParams.timeGranularity == '近一小时' ? 'primary' : ''" style="margin-left: 65px;">近一小时</el-button>
-      <el-button @click="changeTime ('今天');" :type="queryParams.timeGranularity == '今天' ? 'primary' : ''">今天</el-button>
-      <el-button @click="changeTime('近一天');" :type="queryParams.timeGranularity == '近一天' ? 'primary' : ''">近一天</el-button>
-      <el-button @click="changeTime('近三天');" :type="queryParams.timeGranularity == '近三天' ? 'primary' : ''">近三天</el-button>
-    </div>
-  </div>
-  <div class="TransformerMonitor">
-    <div class="center-part">
-      <div class="left-part">
-        <!-- <el-tag size="large">{{ location }}</el-tag> -->
-        <div style="height:20px;display:flex;align-items: center;margin:10px 0 10px 10px;">              
-            <span style="color:black;font-size:26px;">负载率</span>
+    <div class="div-part">
+        <div class="div-part1">
+            <el-card style="width: 480px" >
+            <template>    
+                <TotalData width="100%" height="100%" :list="totalList"/>
+            </template>
+            </el-card>
         </div>
-        <!--<div style="height:20px;display:flex;align-items: center;margin-left:10px">              
-            <span style="color:#ccc;font-size:14px;">最大需量：<span  class="vale-part BColor" >{{peakDemand}}</span>kVA</span>
-        </div>-->
-        <div style="height:20px;display:flex;align-items: center;margin-left:10px;">              
-            <span style="color:#ccc;font-size:14px;">发生时间：{{peakDemandTime}}</span>
+        <div class="div-part1">
+            <el-card style="width: 480px" >
+            <template>
+                    <EnvData width="100%" height="100%" :list="envList"/>
+            </template>
+            </el-card>
         </div>
-        <div style="height:20px;display:flex;align-items: center;margin-left:10px;">              
-            <span style="color:#ccc;font-size:14px;border-bottom:1px solid #ccc;width:90%;"></span>
-        </div>
-        <div style="height:360px;width:100%;margin-top:-50px;">
-            <Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData.loadFactor" />
-        </div>
-        <!--<div style="position: relative; top: -80px; left: 0; width: 100%; text-align: center; padding-top: 10px;">
-            <div style="color: black;font-size: 30px;">{{redisData?.loadFactor}}</div>
-            <div style="color: black;">负载率（%）</div>
-        </div>-->
-        <p v-if="!visContro.gaugeVis" class="noData">暂无数据</p>
-      </div>
-      <div class="right-part">
-        <div class="center-top-part">
-          <div style="color: black;margin:10px 0 0 10px;font-weight: bold;">实时功率</div>
-          <RealTimePower style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
-        </div>
-        <div class="center-top-right-part">
-          <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">额定容量:</span><span style="font-size:16px;">0KVA</span>
-          </div>
-          <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">总现在功率:</span><span style="font-size:16px;">{{resultData?.powApparentTotal}}KVA</span>
-          </div>
-          <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">总有功功率:</span><span style="font-size:16px;">{{resultData?.powActiveTotal}}KVA</span>
-          </div>
-          <div class="label-container">
-            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">总无功功率:</span><span style="font-size:16px;">{{resultData?.powReactiveTotal}}KVA</span>
-          </div>
-        </div>
-      </div>
-      <div class="right-right-part">
-        <div style="margin:10px;">负载率曲线</div>
-        <MarkLine style="margin-top:-40px;" v-if="visContro.loadRateVis"  width="100%" height="100%" :list="resultData"/>
-      </div>
-    </div>
-    <div class="bottom-part">
-      <div style="display: inline-block;
-        width: 50%;
-        height: 100%;">
-          <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">A路电压</div>
-          <AVol style="margin-top:-30px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
-        </div>
-        <div style="display: inline-block;
-            position: absolute;
-            width: 50%;
-            height: 100%;
-            top: 50px;">
-          <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{resultData?.volA[0]}}V</span>
-          </div>
-          <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{resultData?.volA[1]}}V</span>
-          </div>
-          <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{resultData?.volA[2]}}V</span>
-          </div>
+        <div class="div-part1">
+            <p >负载率曲线</p>
+            <MarkLine v-if="visContro.loadRateVis"  width="100%" height="100%" :list="loadRateList"/>
         </div>
     </div>
-    <div class="bottom-part">
-      <div style="display: inline-block;
-        width: 50%;
-        height: 100%;">
-          <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">A路电流</div>
-          <ACur style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
+
+    <div class="div-part">
+        <div class="div-part1">
+            <el-card style="width: 480px" >
+            <template >    
+                <TotalData width="100%" height="100%" :list="phaseList"/>
+            </template>
+            </el-card>
         </div>
-        <div style="display: inline-block;
-            position: absolute;
-            width: 50%;
-            height: 100%;
-            top: 50px;">
-          <div class="label-container">
-            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;">{{resultData?.curA[0]}}A</span>
-          </div>
-          <div class="label-container">
-            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{resultData?.curA[1]}}A</span>
-          </div>
-          <div class="label-container">
-            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{resultData?.curA[2]}}A</span>
-          </div>
+        <div class="div-part1">
+            <el-card style="width: 480px" >
+            <template>
+                    <EnvData width="100%" height="100%" :list="envList"/>
+            </template>
+            </el-card>
+        </div>
+        <div class="div-part1">
+            <p >负载率曲线</p>
+            <MarkLine v-if="visContro.loadRateVis"  width="100%" height="100%" :list="loadRateList"/>
         </div>
     </div>
-    <div class="bottom-part">
-      <div style="display: inline-block;
-        width: 50%;
-        height: 230px;">
-          <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">功率因数</div>
-          <PowerFactor style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
-        </div>
-        <div style="display: inline-block;
-            position: absolute;
-            width: 50%;
-            height: 100%;
-            top: 20px;">
-          <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="font-size:14px;">频率:</span><span style="font-size:16px;">0Hz</span>
-          </div>
-          <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="font-size:14px;">功率因数:</span><span style="font-size:16px;">{{resultData?.powerFactor}}</span>
-          </div>
-          <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="font-size:14px;">三相电压不平衡度:</span><span style="font-size:16px;">0%</span>
-          </div>
-          <div class="label-container">
-            <span class="bullet" style="color:#B47660;">•</span><span style="font-size:14px;">三相电流不平衡度:</span><span style="font-size:16px;">0%</span>
-          </div>
-        </div>
-    </div>
-    <div class="bottom-part">
-      <div style="display: inline-block;
-        width: 50%;
-        height: 100%;">
-          <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">B路电压</div>
-          <BVol style="margin-top:-30px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
-        </div>
-        <div style="display: inline-block;
-            position: absolute;
-            width: 50%;
-            height: 100%;
-            top: 50px;">
-          <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{resultData?.volB[0]}}V</span>
-          </div>
-          <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{resultData?.volB[1]}}V</span>
-          </div>
-          <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{resultData?.volB[2]}}V</span>
-          </div>
-        </div>
-    </div>
-    <div class="bottom-part">
-      <div style="display: inline-block;
-        width: 50%;
-        height: 100%;">
-          <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">B路电流</div>
-          <BCur style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
-        </div>
-        <div style="display: inline-block;
-            position: absolute;
-            width: 50%;
-            height: 100%;
-            top: 50px;">
-          <div class="label-container">
-            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;">{{resultData?.curB[0]}}A</span>
-          </div>
-          <div class="label-container">
-            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{resultData?.curB[1]}}A</span>
-          </div>
-          <div class="label-container">
-            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{resultData?.curB[2]}}A</span>
-          </div>
-        </div>
-    </div>
-    <div class="bottom-part">
-      <div style="display: inline-block;
-        width: 50%;
-        height: 90%;
-        margin-right:-20px;"
-      >
-          <div style="color: black;margin:10px 0 0 10px;"><span style="font-weight:bold;">AB路功率</span><span style="margin-left:80px;">A路</span></div>
-          <Environment style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
-        </div>
-        <div style="display: inline-block;
-            width: 50%;
-            height: 90%;">
-          <div style="display:inline-block;color:black;"><span style="margin-left:100px;">B路</span></div>
-          <EnvironmentCopy style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
-        </div>
-    </div>
-  </div>
-</div> 
 </template>
 
 <script setup lang="ts">
 
 import { ref } from 'vue'
-import RealTimePower from './component/RealTimePower.vue'
-import PowerFactor from './component/PowerFactor.vue'
-import Gauge from './component/Gauge.vue'
-import MarkLine from './component/MarkLine.vue'
-import Environment from './component/Environment.vue'
-import PowReactiveLine from './component/PowReactiveLine.vue'
-import PowActiveLine from './component/PowActiveLine.vue'
-import AVol from './component/AVol.vue'
-import BVol from './component/BVol.vue'
-import ACur from './component/ACur.vue'
-import BCur from './component/BCur.vue'
-import EnvironmentCopy from './component/EnvironmentCopy.vue'
-import { IndexApi } from '@/api/bus/busindex'
-import { CabinetApi } from '@/api/cabinet/detail'
-import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
+import { IndexApi } from '@/api/bus/boxindex'
+import TotalData from './component/TotalData.vue'
+import EnvData from './component/EnvData.vue'
 
-const peakDemand = ref(0);
-const peakDemandTime = ref('');
-const resultData = ref() as any;
+const redisData = ref() as any;
 const loadRateList = ref() as any;
-const selectedOption = ref('current')
-const location = ref(history?.state?.location);
-const busName = ref(history?.state?.busName);
-const id = ref(history?.state?.id);
-const roomId = ref(history?.state?.roomId);
-const type = ref(history?.state.type);
+const powActiveList = ref() as any;
+const powReactiveList = ref() as any;
+
+const totalList = ref() as any;
+const envList = ref() as any;
+const phaseList = ref() as any;
+const phaseAData = ref() as any;
+const phaseBData = ref() as any;
+const phaseCData = ref() as any;
+
+const location = ref(history?.state?.location)
 const visContro = ref({
   gaugeVis : false,
   loadRateVis : false,
@@ -270,14 +83,12 @@ const getFullTimeByDate = (date) => {
       (min > 9 ? min : ("0" + min)) + ":" +
       (second > 9 ? second : ("0" + second));
 }
-const queryParamsSearch = reactive({
-  devKey : history?.state?.devKey as string | undefined,
-})
+
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
   devKey: history?.state?.devKey,
-  busId : history?.state?.busId,
+  boxId : history?.state?.boxId,
   createTime: [],
   cascadeNum: undefined,
   serverRoomData:undefined,
@@ -285,128 +96,47 @@ const queryParams = reactive({
   cabinetIds:[],
   timeType : 0,
   timeArr:[],
-  timeGranularity: '近一小时',
   oldTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0)),
   newTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),23,59,59)),
 }) as any
 
 const getRedisData = async () => {
-  const result = await CabinetApi.getCabinetdistributionDetails({
-    id:id.value,
-    roomId:roomId.value,
-    type:type.value
-  })
-  location.value = result.roomName;
-  busName.value = result.cabinetName;
-  console.log('result',result);
-  resultData.value = result;
-  
-  if(resultData.value.loadFactor != null){
-    visContro.value.gaugeVis = true;
-  }
-  
-  if(resultData.value.loadFactor >= 100 ){
-    resultData.value.loadFactor = 100;
-  }
+//     try{
+//     const data =  await IndexApi.getBoxRedisPage(queryParams);
+//     const phaseA = data.phaseCur;
+
+//         if (phaseA?.phaseA == null) {  
+//             for(var i= 0;i < phaseA.length; i++)
+//             {
+//             if(i == 0){
+//             phaseAData[i] = data.phaseCur[i];
+//             data.phaseVol[i] = 0;
+//             data.phaseActivePow[i] = 0;
+//             data.phaseReactivePow[i] = 0;
+//             data.phaseApparentPow[i] = 0;
+//             data.phasePowFactor[i] = 0;
+//             }else{
+            
+//             obj.phaseCur[i] = obj.phaseCur[i]?.toFixed(2);
+//             obj.phaseVol[i] = obj.phaseVol[i]?.toFixed(2);
+//             obj.phaseActivePow[i] = obj.phaseActivePow[i]?.toFixed(3);
+//             obj.phaseReactivePow[i] = obj.phaseReactivePow[i]?.toFixed(3);
+//             obj.phaseApparentPow[i] = obj.phaseApparentPow[i]?.toFixed(3);
+//             obj.phasePowFactor[i] = obj.phasePowFactor[i]?.toFixed(2);
+//         }  
+//         }  
+//         };
+    
+// } finally {
+//   }
 }
 
-const getLoadRateList = async () =>{
-    const data = await IndexApi.getBusLoadRateLine(queryParams);
-    loadRateList.value = data;
-    if(loadRateList.value?.time != null && loadRateList.value?.time?.length > 0){
-        visContro.value.loadRateVis = true;
-    }else {
-        visContro.value.loadRateVis = false;
-    }
-}
-
-const getBusIdAndLocation =async () => {
- try {
-    const data = await BusPowerLoadDetailApi.getBusIdAndLocation(queryParams);//devKey
-    if (data != null){
-      location.value = data.location
-      queryParams.busId = data.busId
-      busName.value = data.busName
-    }else{
-      location.value = null
-      queryParams.busId = null
-      busName.value = null
-    }
- } finally {
- }
-}
-
-const getPeakDemand =async () => {
- try {
-    const data = await IndexApi.getPeakDemand(queryParams);
-    if (data != null){
-        peakDemand.value = data.peakDemand.toFixed(3);
-        peakDemandTime.value = data.peakDemandTime
-    }
- } finally {
- }
-}
-
-//刷新数据
-const flashChartData = async () =>{
-    await getRedisData();
-    await getPeakDemand();
-    await getLoadRateList();
-}
-
-const handleQuery = async () => {
-  queryParams.devKey = queryParamsSearch.devKey;
-   await getBusIdAndLocation();
-   await flashChartData();
-}
-
-const changeTime = async (data) => {
-    queryParams.timeGranularity = data;   
-    handleQuery();
-}
-
-const devKeyList = ref([])
-const loadAll = async () => {
-  //debugger
-  var data = await BusPowerLoadDetailApi.getBusdevKeyList();
-  var objectArray = data.map((str) => {
-    return { value: str };
-  });
-  console.log(objectArray)
-  return objectArray;
-}
-
-const querySearch = (queryString: string, cb: any) => {
-
-  const results = queryString
-    ? devKeyList.value.filter(createFilter(queryString))
-    : devKeyList.value
-  // call callback function to return suggestions
-  cb(results)
-}
-
-const createFilter = (queryString: string) => {
-  return (devKeyList) => {
-    return (
-      devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
-    )
-  }
-}
-
-const getBackgroundColor = (wornStatus: number) => {
-  if (wornStatus != 0) {
-    return '#fa3333' //红色
-  }
-}
    
 /** 初始化 **/
 onMounted(async () => {
   // await getDetailData();
   // await getLineChartData();
-  devKeyList.value = await loadAll();
   await getRedisData();
-  await getPeakDemand();
-  await getLoadRateList();
   // initChart1();
   // initChart2();
 
@@ -436,7 +166,7 @@ onMounted(async () => {
 
 .TransformerMonitor {
     height: calc(100vh - 84px);
-    padding: 10px 10px;
+    padding: 0 5px
 }
 
 .TransformerMonitor .topdiv {
@@ -459,9 +189,16 @@ body .TransformerMonitor .topdiv span,body .TransformerMonitor .topdiv span,body
 }
 
 .TransformerMonitor .center-part {
-    height: 35%;
+    height: 50%;
     width: 100%;
     margin-bottom: 5px
+}
+
+.TransformerMonitor .center-part .left-part {
+    display: inline-block;
+    width: 25%;
+    height: 100%;
+    margin-right: 5px
 }
 
 body .TransformerMonitor .center-part .left-part,body .TransformerMonitor .center-part .left-part,body .TransformerMonitor .center-part .left-part,body .TransformerMonitor .center-part .left-part {
@@ -493,249 +230,18 @@ body .TransformerMonitor .center-part .left-part {
     height: 100%
 }
 
-.bullet {
-  font-size: 34px; /* 根据需要调整大小 */
-  margin-right: 8px; /* 设置小圆点与后续文本之间的间距 */
+.TransformerMonitor .center-part .right-part {
+    display: inline-block;
+    width: calc(75% - 5px);
+    height: 100%;
+    vertical-align: top
 }
 
-@media screen and (min-width:2048px) {
-    .centainer-height{
-        height:90vh
-    }
-
-    .TransformerMonitor .center-part .left-part {
-        display: inline-block;
-        width: 32.5%;
-        height: 100%;
-        margin-right: 15px
-    }
-    .TransformerMonitor .center-part .right-part {
-        display: inline-block;
-        width: 32.4%;
-        height: 100%;
-        vertical-align: top;
-        background-color: #fff;
-        position: relative;
-        margin-right:15px;
-    }
-    
-    .TransformerMonitor .center-part .center-top-part {
-        display: inline-block;
-        width: 50%;
-        height: 100%;
-        margin-bottom: 5px;
-    }
-    
-    .TransformerMonitor .center-part .center-top-right-part {
-        display: inline-block;
-        width: 50%;
-        height: 100%;
-        top: 30%;
-        margin-bottom: 5px;
-        position: absolute;
-    }
-    
-    .TransformerMonitor .center-part .right-right-part{
-        display: inline-block;
-        width: 32.3%;
-        height: 100%;
-        vertical-align: top;
-        background-color: #fff;
-        margin-right:15px;
-    }
-
-
-    .TransformerMonitor .bottom-part {
-        display: inline-block;
-        height: 27%;
-        width: 32.4%;
-        margin-right: 15px;
-        margin-top: 5px;
-        margin-bottom: 5px;
-        position: relative;
-    }
-
-    .header_app_text_other{
-      width: 65%;
-      align-content: center;
-      background-color: white;
-      margin-right: 5px;
-    }
-
-    .header_app_text_other1{
-      align-content: center;
-      background-color: white;
-    }
-
-    .label-container {
-      display: flex; /* 使用 Flexbox 布局 */
-      align-items: center; /* 垂直居中 */
-      color:#000;
-    }
-}
-
-@media screen and (max-width:2048px) and (min-width:1600px) {
-    .centainer-height{
-        height:93vh
-    }
-
-    .TransformerMonitor .center-part .left-part {
-        display: inline-block;
-        width: 32.3%;
-        height: 100%;
-        margin-right: 15px
-    }
-    .TransformerMonitor .center-part .right-part {
-        display: inline-block;
-        width: 32.3%;
-        height: 100%;
-        vertical-align: top;
-        background-color: #fff;
-        position: relative;
-        margin-right:15px;
-    }
-    
-    .TransformerMonitor .center-part .center-top-part {
-        display: inline-block;
-        width: 50%;
-        height: 100%;
-        margin-bottom: 5px;
-    }
-    
-    .TransformerMonitor .center-part .center-top-right-part {
-        display: inline-block;
-        width: 50%;
-        height: 100%;
-        top: 30%;
-        margin-bottom: 5px;
-        position: absolute;
-    }
-    
-    .TransformerMonitor .center-part .right-right-part{
-        display: inline-block;
-        width: 32%;
-        height: 100%;
-        vertical-align: top;
-        background-color: #fff;
-        margin-right:15px;
-    }
-
-    .TransformerMonitor .bottom-part {
-        display: inline-block;
-        height: 27%;
-        width: 32.2%;
-        margin-right: 15px;
-        margin-top: 5px;
-        margin-bottom: 5px;
-        position: relative;
-    }
-
-    .header_app_text_other{
-      width: 65%;
-      align-content: center;
-      background-color: white;
-      margin-right: 5px;
-    }
-
-    .header_app_text_other1{
-      align-content: center;
-      background-color: white;
-    }
-
-    .label-container {
-      display: flex; /* 使用 Flexbox 布局 */
-      align-items: center; /* 垂直居中 */
-      color:#000;
-    }
-}
-
-@media screen and (max-width:1600px) {
-    .centainer-height{
-        height:93vh
-    }
-
-    .TransformerMonitor .center-part .left-part {
-        display: inline-block;
-        width: 32.3%;
-        height: 100%;
-        margin-right: 15px
-    }
-    .TransformerMonitor .center-part .right-part {
-        display: inline-block;
-        width: 32.3%;
-        height: 100%;
-        vertical-align: top;
-        background-color: #fff;
-        position: relative;
-        margin-right:15px;
-    }
-    
-    .TransformerMonitor .center-part .center-top-part {
-        display: inline-block;
-        width: 50%;
-        height: 100%;
-        margin-bottom: 5px;
-    }
-    
-    .TransformerMonitor .center-part .center-top-right-part {
-        display: inline-block;
-        width: 50%;
-        height: 100%;
-        top: 30%;
-        margin-bottom: 5px;
-        position: absolute;
-    }
-    
-    .TransformerMonitor .center-part .right-right-part{
-        display: inline-block;
-        width: 32%;
-        height: 100%;
-        vertical-align: top;
-        background-color: #fff;
-        margin-right:15px;
-    }
-
-
-    .TransformerMonitor .bottom-part {
-        display: inline-block;
-        height: 27%;
-        width: 32.2%;
-        margin-right: 15px;
-        margin-top: 5px;
-        margin-bottom: 5px;
-        position: relative;
-    }
-
-    .header_app_text_other{
-      width: 80%;
-      align-content: center;
-      background-color: white;
-      margin-right: 5px;
-    }
-
-    .header_app_text_other1{
-      align-content: center;
-      background-color: white;
-
-    }
-    .label-container {
-      display: flex; /* 使用 Flexbox 布局 */
-      align-items: center; /* 垂直居中 */
-      color:#000;
-      margin-top: -10px;
-      margin-left: -20px;
-    }
-}
- 
-.label-container span:nth-of-type(2) {
-  display: inline-block;
-  width: 120px;
-  vertical-align: top;
-}
- 
-.label-container span:last-of-type {
-  display: inline-block;
-  margin-left: 10px;
+.TransformerMonitor .center-part .center-top-part {
+    display: inline-block;
+    width: 100%;
+    height: calc(50% - 2.5px);
+    margin-bottom: 5px
 }
 
 body .TransformerMonitor .center-part .center-top-part,body .TransformerMonitor .center-part .center-top-part,body .TransformerMonitor .center-part .center-top-part,body .TransformerMonitor .center-part .center-top-part {
@@ -780,7 +286,7 @@ body .TransformerMonitor .center-part .center-top-part .div-part p,body .Transfo
 }
 
 body .TransformerMonitor .center-part .center-top-part .div-part p,body .TransformerMonitor .center-part .center-top-part .div-part p,body .TransformerMonitor .center-part .center-top-part .div-part p {
-    color: rgb(131, 131, 133)  
+    color: #1e9fe9  
 }
 
 .TransformerMonitor .center-part .center-top-part .div-part .div-part1,.TransformerMonitor .center-part .center-top-part .div-part .div-part2,.TransformerMonitor .center-part .center-top-part .div-part .div-part3,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 {
@@ -904,7 +410,7 @@ body .TransformerMonitor .center-part .center-bottom-part {
 
 .TransformerMonitor .center-part .center-bottom-part .top-part span {
     display: inline-block;
-    width: 14%;
+    width: 17%;
     line-height: 40px;
     font-size: 16px;
     padding-left: 20px;
@@ -917,7 +423,7 @@ body .TransformerMonitor .center-part .center-bottom-part {
 }
 
 .TransformerMonitor .center-part .center-bottom-part .block-part .content-part {
-    width: 14%;
+    width: 17%;
     height: 100%;
     min-width: 155px;
     padding-left: 20px;
@@ -946,6 +452,11 @@ body .TransformerMonitor .center-part .center-bottom-part .block-part .content-p
     margin: 0 10px
 }
 
+.TransformerMonitor .bottom-part {
+    height: calc(50% - 60px);
+    width: 100%
+}
+
 body .TransformerMonitor .bottom-part,body .TransformerMonitor .bottom-part,body .TransformerMonitor .bottom-part,body .TransformerMonitor .bottom-part {
     color: #000;
     border: 1px solid #e2e2e2;
@@ -970,52 +481,187 @@ body .TransformerMonitor .bottom-part {
     background-color: #ffffff!important
 }
 
+.TransformerMonitor .bottom-part .bottomLineDiv {
+    display: inline-block;
+    width: 33.33%;
+    height: 100%;
+    vertical-align: top
+}
+
+.TransformerMonitor .bottom-part .bottomLineDiv p {
+    color: #65c5fc;
+    font-weight: 700;
+    padding-left: 8px;
+    border-left: 2px solid;
+    line-height: 36px;
+    margin: 0
+}
+
 .TransformerMonitor .bottom-part .bottomLineDiv #transformLine1,.TransformerMonitor .bottom-part .bottomLineDiv #transformLine2,.TransformerMonitor .bottom-part .bottomLineDiv #transformLine3 {
     width: 100%;
-    height: 100%;
+    height: 100%
 }
 
 .noData {
     color: #fff;
     text-align: center;
-    line-height: 200px;
+    line-height: 200px
 }
 
+@media screen and (max-width: 2160px) {
+    .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt {
+        font-size:30px
+    }
+
+    .TransformerMonitor .bottom-part .bottomLineDiv p,.TransformerMonitor .center-part .center-bottom-part .block-part .content-part p,.TransformerMonitor .center-part .center-top-part .div-part p {
+        font-size: 22px
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .top-part {
+        height: 60px
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .top-part span {
+        line-height: 60px;
+        font-size: 25px
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
+        margin: 8px 0
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part .vale-part {
+        width: 66px
+    }
+}
+
+@media screen and (max-width: 1920px) {
+    .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt {
+        font-size:28px
+    }
+
+    .TransformerMonitor .bottom-part .bottomLineDiv p,.TransformerMonitor .center-part .center-top-part .div-part p {
+        font-size: 16px
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part {
+        padding-top: 0
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
+        font-size: 15px
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .top-part {
+        height: 40px
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .top-part span {
+        line-height: 40px;
+        font-size: 16px
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part .vale-part {
+        width: 48px
+    }
+}
+
+@media screen and (max-width: 1680px) {
+    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part {
+        padding-top:5px
+    }
+
+    .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt {
+        font-size: 24px
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
+        margin: 8px 0
+    }
+}
+
+@media screen and (max-width: 1600px) {
+    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part {
+        padding-top:0
+    }
+
+    .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt {
+        font-size: 20px
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .top-part {
+        height: 32px
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .top-part span {
+        line-height: 32px;
+        font-size: 14px
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
+        margin: 5px 0;
+        font-size: 14px
+    }
+}
+
+@media screen and (max-width: 1366px) {
+    .TransformerMonitor .center-part .center-top-part .div-part p {
+        margin:10px 0 10px 0
+    }
+
+    .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt {
+        font-size: 20px
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part .vale-part {
+        width: 38px
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .top-part {
+        height: 25px
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .top-part span {
+        line-height: 25px
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
+        margin: 4px 0
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .top-part span,.TransformerMonitor .center-part .center-top-part .div-part p {
+        font-size: 14px
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
+        font-size: 13px
+    }
+
+    .TransformerMonitor .bottom-part .bottomLineDiv p {
+        font-size: 14px
+    }
+}
 
 body .TransformerMonitor .center-part .center-bottom-part .top-part {
-    background: #f5f7fa
+    background: #fff
 }
 
 body .TransformerMonitor .center-part .center-bottom-part .top-part span {
-    color: #000;
-
+    color: #000
 }
 
 body .TransformerMonitor .bottom-part .bottomLineDiv p,body .TransformerMonitor .bottom-part .bottomLineDiv p {
     border-left: 2px solid #fff;
-    background: #f5f7fa;
-    color: #606266
+    background: #01ada8;
+    color: #fff
 }
 
 body .TransformerMonitor .center-part .center-bottom-part .top-part,body .TransformerMonitor .center-part .center-bottom-part .top-part {
-    //background: #01ada8
+    background: #01ada8
 }
 
 body .TransformerMonitor .center-part .center-bottom-part .top-part span,body .TransformerMonitor .center-part .center-bottom-part .top-part span {
-    color: #606266
+    color: #fff
 }
 
-.header_app{
-  background-color: white;
-  display: flex;
-  height: 50px;
-  padding-left: 10px;
-  box-shadow: 20px;
-}
-.header_app_text{                     
-  background-color: white;
-  width: 100%;
-  align-content: center;
-  color:#606266;
-}                                                       
 </style>

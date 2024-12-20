@@ -90,6 +90,10 @@ export const IndexApi = {
     return await request.post({ url: `/bus/index/buspfpage`, data })
   },
 
+  getBusPFLow: async () => {
+    return await request.get({ url: `/bus/index/pf/lowest`})
+  },
+
   getBusPFDetail: async (data: any) => {
     return await request.post({ url: `/bus/index/pf/detail`, data })
   },

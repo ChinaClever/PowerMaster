@@ -138,6 +138,7 @@ import 'echarts-liquidfill'
 import { CabinetApi } from '@/api/cabinet/info'
 import LiquidBall from './compoent/LiquidBall.vue'
 
+const { push } = useRouter()
 const loading = ref(false)
 const isFirst = ref(true) // 是否第一次调用getTableData函数
 const navList = ref([])
@@ -308,6 +309,15 @@ const handleSwitchModal = (value) => {
     queryParams.pageSize = 10
   }
   getTableData(true)
+}
+
+const toMachineDetail = (row) => {
+  console.log("row",row)
+  const devKey = '172.16.101.2-1';
+  const busId = 6;
+  const location = '172.16.101.2-1';
+  const busName = 'iBusbar-1';
+  push({ path:'/cabinet/cab/cabinetPowerLoadDetail', state: { devKey, busId ,location,busName }})
 }
 
 onBeforeMount(() => {
