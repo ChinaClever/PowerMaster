@@ -116,7 +116,7 @@
             @change="handleDayPick"
             class="!w-190px"
           />
-        <el-form-item v-show="showSearchBtn" style="margin-left: 10px">
+        <el-form-item :style="{marginLeft: '20px'}">
           <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
           <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
           <el-button
@@ -148,8 +148,9 @@
       </el-form>
     </template>
     <template #Content>
+     <div v-if="switchValue && list.length > 0" style="height: 700px;overflow: hidden;overflow-y: auto;">
     <!-- 三相数据显示 -->
-      <el-table v-show="switchValue == 2 && valueMode == 0 && MaxLineId > 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true"  @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-if="switchValue == 2 && valueMode == 0 && MaxLineId > 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true"  @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
@@ -164,7 +165,7 @@
         <el-table-column label="发生时间" align="center" prop="l1MaxCurTime"/>
         <el-table-column label="L2最大电流(A)" align="center" prop="l2MaxCur" width="100px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-show="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
+            <el-text line-clamp="2" v-if="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
               {{ scope.row.l2MaxCur }}
             </el-text>
           </template>
@@ -172,7 +173,7 @@
         <el-table-column label="发生时间" align="center" prop="l2MaxCurTime"  />
         <el-table-column label="L3最大电流(A)" align="center" prop="l3MaxCur" width="100px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-show="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
+            <el-text line-clamp="2" v-if="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
               {{ scope.row.l3MaxCur }}
             </el-text>
           </template>
@@ -201,7 +202,7 @@
         </el-table-column>
       </el-table>  
     <!-- 单相数据显示 -->
-      <el-table v-show="switchValue == 2 && valueMode == 0 && !(MaxLineId > 1)" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-if="switchValue == 2 && valueMode == 0 && !(MaxLineId > 1)" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -237,7 +238,7 @@
         </el-table-column>
       </el-table> 
     <!-- 三相有数据显示 -->      
-      <el-table v-show="switchValue == 2 && valueMode == 1 && MaxLineId > 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-if="switchValue == 2 && valueMode == 1 && MaxLineId > 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="125px"/>
@@ -251,7 +252,7 @@
         <el-table-column label="发生时间" align="center" prop="l1MaxPowTime" />
         <el-table-column label="L2最大功率(kW)" align="center" prop="l2MaxPow" width="100px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-show="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
+            <el-text line-clamp="2" v-if="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
               {{ scope.row.l2MaxPow }}
             </el-text>
           </template>
@@ -259,7 +260,7 @@
         <el-table-column label="发生时间" align="center" prop="l2MaxPowTime" />
         <el-table-column label="L3最大功率(kW)" align="center" prop="l3MaxPow" width="100px" >
           <template #default="scope" >
-            <el-text line-clamp="2" v-show="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
+            <el-text line-clamp="2" v-if="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
               {{ scope.row.l3MaxPow }}
             </el-text>
           </template>
@@ -287,7 +288,7 @@
         </el-table-column>
       </el-table>
     <!-- 单相数据显示 -->      
-      <el-table v-show="switchValue == 2 && valueMode == 1 && !(MaxLineId > 1)" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
+      <el-table v-if="switchValue == 2 && valueMode == 1 && !(MaxLineId > 1)" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <el-table-column label="所在位置" align="center" prop="location"  />
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="125px"/>
@@ -320,10 +321,10 @@
           </template>
         </el-table-column>
       </el-table>     
-      <div  v-show="switchValue == 1 && list.length > 0  && valueMode == 1" class="arrayContainer">
+      <div  v-if="switchValue == 1 && list.length > 0  && valueMode == 1" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
-          <div class="content" v-show="item.l3MaxPow !== undefined && item.l3MaxPow !== null">
+          <div class="content" v-if="item.l3MaxPow !== undefined && item.l3MaxPow !== null">
             <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
             <div class="info">
               <div >L1最大功率：{{ item.l1MaxPow }}kW</div>
@@ -332,7 +333,7 @@
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
           </div>
-          <div class="content" v-show="item.l3MaxPow == undefined || item.l3MaxPow == null">
+          <div class="content" v-if="item.l3MaxPow == undefined || item.l3MaxPow == null">
             <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
             <div class="info">
               <div >最大功率：{{item.l1MaxPow}}kW</div>
@@ -363,10 +364,10 @@
         </div>
       </el-dialog>
 
-      <div  v-show="switchValue == 1 && list.length > 0 && valueMode == 0" class="arrayContainer">
+      <div  v-if="switchValue == 1 && list.length > 0 && valueMode == 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
-          <div class="content" v-show="item.l3MaxCur !== undefined && item.l3MaxCur !== null">
+          <div class="content" v-if="item.l3MaxCur !== undefined && item.l3MaxCur !== null">
             <!--<div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>-->
             <div class="info">
               
@@ -377,7 +378,7 @@
             </div>
             <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
           </div>
-          <div class="content" v-show="item.l3MaxCur == undefined || item.l3MaxCur == null">
+          <div class="content" v-if="item.l3MaxCur == undefined || item.l3MaxCur == null">
             <!--<div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>-->
             <div class="info">
               
@@ -410,7 +411,7 @@
           <div ref="lineidChartContainer" id="lineidChartContainer" class="adaptiveStyle"></div>
         </div>
       </el-dialog>
-
+    </div>
       <Pagination
         :total="total"
         :page-size-arr="pageSizeArr"
@@ -682,25 +683,11 @@ const exportLoading = ref(false) // 导出的加载中
 
 /** 查询列表 */
 const getList = async () => {
-  loading.value = true
+  // loading.value = true
   try {
     const data = await PDUDeviceApi.getPDULinePage(queryParams)
     console.log('dataresult',data)
     list.value = data.list
-    // var tableIndex = 0;
-    // list.value.forEach((obj) => {
-
-    //   obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-    //   obj.l1MaxCur = obj.l1MaxCur?.toFixed(1);
-    //   obj.l1MaxVol = obj.l1MaxVol?.toFixed(1);
-    //   obj.l1MaxPow = obj.l1MaxPow?.toFixed(3);
-    //   obj.l2MaxCur = obj.l2MaxCur?.toFixed(1);
-    //   obj.l2MaxVol = obj.l2MaxVol?.toFixed(1);
-    //   obj.l2MaxPow = obj.l2MaxPow?.toFixed(3);
-    //   obj.l3MaxCur = obj.l3MaxCur?.toFixed(1);
-    //   obj.l3MaxVol = obj.l3MaxVol?.toFixed(1);
-    //   obj.l3MaxPow = obj.l3MaxPow?.toFixed(3);
-    // });
     const allData = await PDUDeviceApi.getPDUDeviceMaxCur(queryParams)
     maxCurAll.value = allData.list
     maxCurAll.value.forEach((obj) => {
