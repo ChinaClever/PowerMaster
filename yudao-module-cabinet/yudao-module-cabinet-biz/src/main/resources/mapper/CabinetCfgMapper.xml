@@ -73,7 +73,7 @@
             resultType="cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO">
         select
         ci.id ,
-        ci.name ,
+        ci.cabinet_name ,
         ci.pdu_box as pduBox,
         ci.run_status as runStatus,
         ci.update_time as updateTime

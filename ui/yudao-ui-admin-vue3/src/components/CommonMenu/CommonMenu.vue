@@ -25,7 +25,7 @@
     </div>
     <!-- 右大侧 -->
     <div class="master-right">
-      <ContentWrap>
+      <ContentWrap style="margin-bottom:5px">
         <slot name="ActionBar"></slot>
       </ContentWrap>
       <ContentWrap style="min-height: 680px">
@@ -137,7 +137,7 @@ mediaQueryList.addEventListener('change', toggleStyles)
     position: relative;
     overflow: hidden;
     box-sizing: border-box;
-    margin-right: 20px;
+    margin-right: 5px;
     transition: all 0.2s linear;
     .openNavtree {
       // width: 100%;
@@ -194,5 +194,4 @@ mediaQueryList.addEventListener('change', toggleStyles)
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
-
 </style>

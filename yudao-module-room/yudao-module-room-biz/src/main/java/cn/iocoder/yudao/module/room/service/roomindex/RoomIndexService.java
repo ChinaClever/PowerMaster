@@ -75,4 +75,5 @@ public interface RoomIndexService {
     List<Integer> idList();
 
     PageResult<RoomEleTotalRealtimeResVO> getRoomEleTotalRealtime(RoomEleTotalRealtimeReqDTO reqVO, boolean flag) throws IOException;
+
 }
