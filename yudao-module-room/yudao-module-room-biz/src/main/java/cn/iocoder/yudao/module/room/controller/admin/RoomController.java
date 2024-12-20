@@ -179,6 +179,7 @@ public class RoomController {
     public CommonResult<Integer> roomCabinetSave(@RequestBody CabinetSaveVo vo) {
         return success(roomService.roomCabinetSave(vo));
     }
+    
 
 
     @Operation(summary = "获得已删除机房分页")
