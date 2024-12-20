@@ -47,9 +47,12 @@
         label-width="68px"
         v-show="switchValue !== 2"                          
       >
-        <el-form-item>
+        <el-form-item style="margin-left: 5px">
+          <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">
+            全部 
+          </button>
           <template v-for="(status, index) in statusList" :key="index">
-            <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
+            <button :class="[onclickColor === index ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
           </template>
         </el-form-item>
       <el-form-item>
@@ -141,9 +144,9 @@
         </div>
       </el-form>      
     </template>
-    <template #Content>
-     <div>
-      <el-table  v-show="switchValue == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
+    <template #Content >
+     <div v-if="switchValue && list.length > 0" style="height: 700px;overflow: hidden;overflow-y: auto;">
+      <el-table v-if="switchValue == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -212,10 +215,9 @@
             </el-button>
           </template>
         </el-table-column>   
-      </el-table> 
-     </div> 
+      </el-table>
       <!-- 查看已删除PDU设备 -->
-      <el-table  v-show="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true" :border="true">
+      <el-table  v-if="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -237,9 +239,10 @@
             </el-button>
           </template>
         </el-table-column>
-      </el-table>
+      </el-table> 
+     </div> 
         <Pagination
-        v-if="showPagination == 1"
+        v-show="showPagination == 1"
         :total="deletedTotal"
         :page-size-arr="pageSizeArr"
         v-model:page="queryDeletedPageParams.pageNo"
@@ -247,8 +250,9 @@
         @pagination="getDeletedList"
         />               
       <!-- 阵列模式分页 --> 
-      <div class="arrayContainer" v-show="!switchValue && list.length > 0"> 
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+      <div class="arrayContainer" v-if="!switchValue && list.length > 0"> 
+        <template v-for="item in list" :key="item.devKey">
+          <div v-if="item.id !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="icon">
@@ -288,10 +292,11 @@
             <el-tag type="info" v-if="item.status == 5">离线</el-tag>
           </div>
           <button v-if="item.status != null && item.status != 5" class="detail" @click="toPDUDisplayScreen(item)">详情</button>
-        </div>      
+        </div>
+        </template>      
       </div>
         <Pagination
-        v-if="showPagination == 0"
+        v-show="showPagination == 0"
         :total="total"
         :page-size-arr="pageSizeArr"
         v-model:page="queryParams.pageNo"
@@ -326,7 +331,12 @@ const flashListTimer = ref();
 const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(0)
-const showPagination = ref(0)
+const showPagination = ref(0);
+
+const butColor = ref(0);
+
+const onclickColor = ref(-1);
+
 const statusNumber = reactive({
   normal : 0,
   warn : 0,
@@ -389,8 +399,8 @@ const statusList = reactive([
     name: '故障',
     selected: true,
     value: 4,
-    cssClass: 'btn_offline',
-    activeClass: 'btn_offline offline'
+    cssClass: 'btn_fault',
+    activeClass: 'btn_fault fault'
   },
   {
     name: '离线',
@@ -525,9 +535,8 @@ const exportLoading = ref(false) // 导出的加载中
 
 /** 查询列表 */
 const getList = async () => {
-  loading.value = true
   try {
-    const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
+    const data = await PDUDeviceApi.getPDUDevicePage(queryParams);
     list.value = data.list
     var tableIndex = 0;
     // var normal = 0;
@@ -580,7 +589,7 @@ const getList = async () => {
     // statusNumber.warn = warn;
     total.value = data.total
   } finally {
-    loading.value = false
+    //loading.value = false
   }
 }
 
@@ -723,19 +732,27 @@ const toPDUDisplayScreen = (row: { devKey: string; location: string; id: number 
 // }
 
 const handleSelectStatus = (index) => {
-  statusList[index].selected = !statusList[index].selected
-  const status =  statusList.filter(item => item.selected)
-  const statusArr = status.map(item => item.value)
-  queryParams.status = statusArr;
+  butColor.value = 1;
+  onclickColor.value = index;
+  queryParams.status = [index];
   handleQuery();
 }
+
+const toggleAllStatus = () => {
+  butColor.value = 0;
+  onclickColor.value = -1;
+  queryParams.status = [];
+  handleQuery();
+}
+
+
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
   queryDeletedPageParams.pageNo = 1
-  getList()
-  getDeletedList()
+  getList();
+  //getListAll();
 }
 
 /** 重置按钮操作 */
@@ -801,11 +818,15 @@ const handleExport = async () => {
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
-  getList()
+  getList();
   getNavList();
   getListAll();
-  flashListTimer.value = setInterval((getListNoLoading), 5000);
-  flashListTimer.value = setInterval((getListAll), 5000);
+  // flashListTimer.value = setInterval(() => {
+  //        setTimeout(() => {
+  //         //getList()
+  //      }, 0);
+  // }, 5000);
+  flashListTimer.value = setInterval((getList), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -827,13 +848,16 @@ onActivated(() => {
   getList();
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getListNoLoading), 5000);
-    flashListTimer.value = setInterval((getListAll), 5000);
+    flashListTimer.value = setInterval(() => {
+        getList();
+  }, 5000);
+    // flashListTimer.value = setInterval((getListAll), 5000);
   }
 })
 </script>
 
 <style scoped lang="scss">
+
 :deep(.ip:hover) {
   color: blue !important;
   cursor: pointer;
@@ -847,7 +871,7 @@ onActivated(() => {
     position: relative;
     overflow: hidden;
     box-sizing: border-box;
-    margin-right: 20px;
+    margin-right: 5px;
     transition: all 0.2s linear;
     .openNavtree {
       box-sizing: border-box;
@@ -887,23 +911,61 @@ onActivated(() => {
   }
 }
 
+.btnallSelected {
+  margin-right: 10px;
+  width: 58px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #409EFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.btnallNotSelected{
+  margin-right: 10px;
+  width: 58px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: #000000;
+  border: 1px solid #409EFF;
+  border-radius: 5px;
+  &:hover {
+    color: #7bc25a;
+  }
+}
+
+.btn_fault,
 .btn_offline,
 .btn_normal,
 .btn_warn,
-.btn_error {
+.btn_error{
   width: 58px;
-  height: 35px;
+  height: 32px;
   cursor: pointer;
   border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 5px;
   &:hover {
     color: #7bc25a;
   }
 }
 .btn_offline {
   border: 1px solid #aaa;
+  background-color: #fff;
+  margin-right: 8px;
+}
+.btn_fault{
+  border: 1px solid orange;
   background-color: #fff;
   margin-right: 8px;
 }
@@ -945,6 +1007,14 @@ onActivated(() => {
 }
 .error {
   background-color: #fa3333;
+  color: #fff;
+  &:hover {
+    color: #fff;
+  }
+}
+
+.fault {
+  background-color: orange;
   color: #fff;
   &:hover {
     color: #fff;
@@ -1173,6 +1243,10 @@ onActivated(() => {
   .arrayContainer {
     display: flex;
     flex-wrap: wrap;
+    height: 700px;
+    overflow: hidden;
+    overflow-y: auto;
+
     .arrayItem {
       width: 25%;
       height: 140px;
@@ -1182,6 +1256,7 @@ onActivated(() => {
       border: 5px solid #fff;
       padding-top: 40px;
       position: relative;
+      border-radius: 7px;
       .content {
         display: flex;
         align-items: center;
@@ -1331,5 +1406,8 @@ onActivated(() => {
   color: #909399;
   height: 80px;
 
+}
+:deep(.el-card){
+  --el-card-padding:5px;
 }
 </style>
