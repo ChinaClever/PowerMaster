@@ -48,12 +48,7 @@
         v-show="switchValue !== 2"                          
       >
         <el-form-item>
-<<<<<<< Updated upstream
           <button class="btnnnnnnnn" type = "button" @click="toggleAllStatus">
-=======
-          <button class="btnnnnnnnn">
->>>>>>> Stashed changes
-            全部
           </button>
           <template v-for="(status, index) in statusList" :key="index">
             <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
@@ -316,12 +311,11 @@
 
 <script setup lang="ts">
 // import { dateFormatter } from '@/utils/formatTime'
-import download from '@/utils/download'
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
+import download from '@/utils/download'
 // import PDUDeviceForm from './PDUDeviceForm.vue'
-import { ElTree } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
-import { get } from 'http'
+import { ElTree } from 'element-plus'
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -692,7 +686,7 @@ const getNavList = async() => {
   navList.value = arr
 }
 
-import { useRouter } from 'vue-router';
+import { useRouter } from 'vue-router'
 
 const router = useRouter();
 
@@ -908,11 +902,6 @@ onActivated(() => {
   width: 58px;
   height: 35px;
   cursor: pointer;
-<<<<<<< Updated upstream
-  display: flex;
-  align-items: center;
-  justify-content: center;
-=======
   border-radius: 3px;
   display: flex;
   align-items: center;
@@ -921,7 +910,6 @@ onActivated(() => {
   &:hover {
     color: #7bc25a;
   }
->>>>>>> Stashed changes
 }
 
 .btn_offline,
