@@ -50,7 +50,7 @@
       >
         <el-form-item>
           <button class="btnnnnnnnn" type = "button" @click="toggleAllStatus">
-            全部
+            全部1
           </button>
           <template v-for="(status, index) in statusList" :key="index">
             <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
