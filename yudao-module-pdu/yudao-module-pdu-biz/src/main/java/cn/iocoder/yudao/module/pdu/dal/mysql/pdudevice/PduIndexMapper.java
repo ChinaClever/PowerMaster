@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
+import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.BalancedDistributionStatisticsVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PDUDevicePageReqVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.PduDeviceCountResVO;
 import cn.iocoder.yudao.module.pdu.dal.dataobject.pdudevice.PDUDeviceDO;
@@ -18,4 +19,6 @@ public interface PduIndexMapper extends BaseMapperX<PduIndex> {
 
 
     PduDeviceCountResVO getPDUDeviceCount();
+
+    BalancedDistributionStatisticsVO getBalancedDistribution();
 }

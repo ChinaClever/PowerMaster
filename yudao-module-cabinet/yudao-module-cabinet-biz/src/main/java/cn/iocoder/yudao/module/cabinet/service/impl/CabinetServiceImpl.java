@@ -927,6 +927,12 @@ public class CabinetServiceImpl implements CabinetService {
             vo.setPowApparentB(bpath.getBigDecimal("pow_apparent").setScale(3, RoundingMode.HALF_DOWN));//视在功率
             vo.setPowReactiveB(bpath.getBigDecimal("pow_reactive").setScale(3, RoundingMode.HALF_DOWN));//无功功率
             vo.setBPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, vo.getPowApparentB(), vo.getPowApparentTotal()),100));
+
+            Map map = getCabinetDistributionFactor(id, roomId, type);
+            vo.setFactorTotal((List<BigDecimal>) map.get("factorTotal"));
+            vo.setFactorA((List<BigDecimal>) map.get("factorA"));
+            vo.setDay((List<String>) map.get("day"));
+            vo.setFactorB((List<BigDecimal>) map.get("factorB"));
         }
 
 
@@ -961,15 +967,29 @@ public class CabinetServiceImpl implements CabinetService {
                 break;
             default:
         }
+
+        Map map = new HashMap();
         //day,today,threeDay
         List<Map<String, Object>> data = getDataEs(startTime, endTime, Collections.singletonList(id),
                 index ,Map.class);
-        List<BigDecimal> factorA = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_a").toString()),100)).collect(Collectors.toList());
-        List<BigDecimal> factorB = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_b").toString()),100)).collect(Collectors.toList());
-        List<BigDecimal> factorTotal = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_total").toString()),100)).collect(Collectors.toList());
-        List<String> createTime = data.stream().map(i -> String.valueOf(i.get("create_time"))).collect(Collectors.toList());
-
-        Map map = new HashMap();
+        List<BigDecimal> factorA = new ArrayList<>();
+        List<BigDecimal> factorB = new ArrayList<>();
+        List<BigDecimal> factorTotal = new ArrayList<>();
+        List<String> createTime = new ArrayList<>();
+                switch (index){
+            case "cabinet_hda_pow_realtime":
+                factorA = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_a").toString()),100)).collect(Collectors.toList());
+                factorB = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_b").toString()),100)).collect(Collectors.toList());
+                factorTotal = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_total").toString()),100)).collect(Collectors.toList());
+                createTime = data.stream().map(i -> String.valueOf(i.get("create_time"))).collect(Collectors.toList());
+                break;
+            case "cabinet_hda_pow_hour":
+                factorA = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_a_avg_value").toString()),100)).collect(Collectors.toList());
+                factorB = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_b_avg_value").toString()),100)).collect(Collectors.toList());
+                factorTotal = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_total_avg_value").toString()),100)).collect(Collectors.toList());
+                createTime = data.stream().map(i -> String.valueOf(i.get("create_time"))).collect(Collectors.toList());
+                break;
+        }
         map.put("factorA",factorA);
         map.put("factorB",factorB);
         map.put("factorTotal",factorTotal);

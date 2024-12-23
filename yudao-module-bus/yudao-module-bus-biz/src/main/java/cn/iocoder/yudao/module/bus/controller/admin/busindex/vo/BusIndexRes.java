@@ -24,13 +24,13 @@ public class BusIndexRes extends BusResBase {
     private String location;
 
     @Schema(description = "A的负载率")
-    private Double aLoadRate;
+    private Integer aLoadRate;
 
     @Schema(description = "B的负载率")
-    private Double bLoadRate;
+    private Integer bLoadRate;
 
     @Schema(description = "C的负载率")
-    private Double cLoadRate;
+    private Integer cLoadRate;
 
     @Schema(description = "负载率所在范围")
     private Integer color;
