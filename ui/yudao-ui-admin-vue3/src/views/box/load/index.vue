@@ -245,13 +245,13 @@
           <div class="content">
             
             <div class="info" style="padding: 0 18px;margin-right:30px">                  
-              <div  v-if="item.aloadRate != null && item.status != 5" ><el-text :style="{ color: getColor(item.aloadRate) }">A相：{{item.aloadRate?.toFixed(2)*100}}%</el-text></div>
-              <div  v-if="item.bloadRate != null && item.status != 5" ><el-text :style="{ color: getColor(item.bloadRate) }">B相：{{item.bloadRate?.toFixed(2)*100}}%</el-text></div>
-              <div  v-if="item.cloadRate != null && item.status != 5" ><el-text :style="{ color: getColor(item.cloadRate) }">C相：{{item.cloadRate?.toFixed(2)*100}}%</el-text></div>
+              <div  v-if="item.aloadRate != null && item.status != 0" ><el-text :style="{ color: getColor(item.aloadRate) }">A相：{{Math.round(item.aloadRate)}}%</el-text></div>
+              <div  v-if="item.bloadRate != null && item.status != 0" ><el-text :style="{ color: getColor(item.bloadRate) }">B相：{{Math.round(item.bloadRate)}}%</el-text></div>
+              <div  v-if="item.cloadRate != null && item.status != 0" ><el-text :style="{ color: getColor(item.cloadRate) }">C相：{{Math.round(item.cloadRate)}}%</el-text></div>
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
-            <div style="padding: 0 4px" v-show="item.status != 0"><Bar :width="100" :height="100" :max="{L1:item.aloadRate?.toFixed(2),L2:item.bloadRate?.toFixed(2),L3:item.cloadRate?.toFixed(2)}" /></div>
+            <div style="padding: 0 4px" v-show="item.status != 0"><Bar :width="100" :height="100" :max="{L1:item.aloadRate,L2:item.bloadRate,L3:item.cloadRate}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
