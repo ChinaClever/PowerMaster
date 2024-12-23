@@ -1,11 +1,11 @@
 <template>
   <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="插接箱谐波">
     <template #NavInfo>
-      <!-- <div> -->
+      <div>
         <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div>
         </div> -->
-        <!-- <div class="line"></div>
+        <div class="line"></div>
         <div class="status">
           <div class="box">
             <div class="top">
@@ -27,7 +27,7 @@
           </div>
         </div>
         <div class="line"></div>
-      </div> -->
+      </div>
       
     </template>
     <template #ActionBar>
@@ -200,6 +200,7 @@ import download from '@/utils/download'
 import { IndexApi } from '@/api/bus/boxindex'
 import { ElTree } from 'element-plus'
 import HarmonicColorForm from './HarmonicColorForm.vue'
+import { BoxHarmonicColorApi } from '@/api/bus/boxharmoniccolor'
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -350,19 +351,19 @@ const getList = async () => {
     list.value = data.list
 
     //获取颜色范围
-    // var range = await BoxCurbalanceColorApi.getBoxCurbalanceColor();
-    // if(range != null){
-    //   statusList[0].name = '<' + range.rangeOne + '%';
-    //   statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
-    //   statusList[2].name = '>' + range.rangeFour + '%';
-    // }
+    var range = await BoxHarmonicColorApi.getBoxHarmonicColor();
+    if(range != null){
+      statusList[0].name = '<' + range.rangeOne + '%';
+      statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
+      statusList[2].name = '>' + range.rangeFour + '%';
+    }
 
     var tableIndex = 0;
 
     //获取颜色范围
-    // var lessFifteen = 0;
-    // var greaterFifteen = 0;
-    // var greaterTwenty = 0;
+    var lessFifteen = 0;
+    var greaterFifteen = 0;
+    var greaterTwenty = 0;
 
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
@@ -374,20 +375,20 @@ const getList = async () => {
       obj.ccurThd = obj.ccurThd?.toFixed(2);
 
       //获取颜色范围
-      // if(obj.color == 1){
-      //   lessFifteen++;
-      // } else if (obj.color == 2) {
-      //   greaterFifteen++;
-      // } else if (obj.color == 3) {
-      //   greaterTwenty++;
-      // }     
+      if(obj.color == 1){
+        lessFifteen++;
+      } else if (obj.color == 2) {
+        greaterFifteen++;
+      } else if (obj.color == 3) {
+        greaterTwenty++;
+      }     
 
     });
 
     //获取颜色范围
-    // statusNumber.lessFifteen = lessFifteen;
-    // statusNumber.greaterFifteen = greaterFifteen;
-    // statusNumber.greaterTwenty = greaterTwenty;
+    statusNumber.lessFifteen = lessFifteen;
+    statusNumber.greaterFifteen = greaterFifteen;
+    statusNumber.greaterTwenty = greaterTwenty;
 
     total.value = data.total
   } finally {
@@ -400,19 +401,19 @@ const getListNoLoading = async () => {
     const data = await IndexApi.getBoxHarmonicPage(queryParams)
     list.value = data.list
     //获取颜色范围
-    // var range = await BoxCurbalanceColorApi.getBoxCurbalanceColor();
-    // if(range != null){
-    //   statusList[0].name = '<' + range.rangeOne + '%';
-    //   statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
-    //   statusList[2].name = '>' + range.rangeFour + '%';
-    // }
+    var range = await BoxHarmonicColorApi.getBoxHarmonicColor();
+    if(range != null){
+      statusList[0].name = '<' + range.rangeOne + '%';
+      statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
+      statusList[2].name = '>' + range.rangeFour + '%';
+    }
 
     var tableIndex = 0;    
 
     //获取颜色范围
-    // var lessFifteen = 0;
-    // var greaterFifteen = 0;
-    // var greaterTwenty = 0;
+    var lessFifteen = 0;
+    var greaterFifteen = 0;
+    var greaterTwenty = 0;
 
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
@@ -424,20 +425,20 @@ const getListNoLoading = async () => {
       obj.ccurThd = obj.ccurThd?.toFixed(2);
 
       //获取颜色范围
-      // if(obj.color == 1){
-      //   lessFifteen++;
-      // } else if (obj.color == 2) {
-      //   greaterFifteen++;
-      // } else if (obj.color == 3) {
-      //   greaterTwenty++;
-      // }   
+      if(obj.color == 1){
+        lessFifteen++;
+      } else if (obj.color == 2) {
+        greaterFifteen++;
+      } else if (obj.color == 3) {
+        greaterTwenty++;
+      }   
 
     });
 
     //获取颜色范围
-    // statusNumber.lessFifteen = lessFifteen;
-    // statusNumber.greaterFifteen = greaterFifteen;
-    // statusNumber.greaterTwenty = greaterTwenty;
+    statusNumber.lessFifteen = lessFifteen;
+    statusNumber.greaterFifteen = greaterFifteen;
+    statusNumber.greaterTwenty = greaterTwenty;
 
     total.value = data.total
   } catch (error) {

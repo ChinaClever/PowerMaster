@@ -67,7 +67,7 @@
           </el-button>
           <el-form-item class="inline-form-item">
             <el-checkbox-group v-model="queryParams.status" @change="handleQuery" class="inline-checkbox-group">
-        <el-checkbox :label="5" :value="5" class="inline-checkbox">在线</el-checkbox>
+        <el-checkbox :label="1" :value="1" class="inline-checkbox">在线</el-checkbox>
             </el-checkbox-group>
           </el-form-item>
           <el-form-item label="网络地址" prop="devKey" class="inline-form-item">
