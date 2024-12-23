@@ -396,18 +396,18 @@ const getTableData = async(reset = false) => {
           cabinetName: item.cabinet_name,
           roomName: item.room_name,
           status: item.status,
-          apparentTotal: item.cabinet_power.total_data.pow_apparent.toFixed(3),
-          apparentA: item.cabinet_power.path_a ? item.cabinet_power.path_a.pow_apparent.toFixed(3) : '-',
-          apparentB: item.cabinet_power.path_b ? item.cabinet_power.path_b.pow_apparent.toFixed(3) : '-',
-          activeTotal: item.cabinet_power.total_data.pow_active.toFixed(3),
-          activeA: item.cabinet_power.path_a ? item.cabinet_power.path_a.pow_active.toFixed(3) : '-',
-          activeB: item.cabinet_power.path_b ? item.cabinet_power.path_b.pow_active.toFixed(3) : '-',
-          eleTotal: item.cabinet_power.total_data.ele_active.toFixed(1),
-          eleA: item.cabinet_power.path_a ? item.cabinet_power.path_a.ele_active.toFixed(1) : '-',
-          eleB: item.cabinet_power.path_b ? item.cabinet_power.path_b.ele_active.toFixed(1) : '-',
+          apparentTotal: formatNumber(item.cabinet_power.total_data.pow_apparent, 3),
+          apparentA: formatNumber(item.cabinet_power.path_a?.pow_apparent, 3),
+          apparentB: formatNumber(item.cabinet_power.path_b?.pow_apparent, 3),
+          activeTotal: formatNumber(item.cabinet_power.total_data.pow_active, 3),
+          activeA: formatNumber(item.cabinet_power.path_a?.pow_active, 3),
+          activeB: formatNumber(item.cabinet_power.path_b?.pow_active, 3),
+          eleTotal: formatNumber(item.cabinet_power.total_data.ele_active, 1),
+          eleA: formatNumber(item.cabinet_power.path_a?.ele_active, 1),
+          eleB: formatNumber(item.cabinet_power.path_b?.ele_active, 1),
           powerFactorTotal: item.cabinet_power.total_data.power_factor,
-          powerReactiveTotal: item.cabinet_power.total_data.pow_reactive.toFixed(3),
-          loadFactor: Math.ceil(item.load_factor.toFixed(2)),
+          powerReactiveTotal: formatNumber(item.cabinet_power.total_data.pow_reactive, 3),
+          loadFactor: formatLoadFactor(item.load_factor),
           abzb: '-' as number | string
         }
         if (item.cabinet_power.path_a && item.cabinet_power.path_b) {
@@ -425,6 +425,20 @@ const getTableData = async(reset = false) => {
     loading.value = false
   }
 }
+
+const formatNumber = (value, precision) => {
+  if (typeof value === 'number' && !isNaN(value)) {
+    return value.toFixed(precision);
+  }
+  return 0;
+};
+
+const formatLoadFactor = (value) => {
+  if (typeof value === 'number' && !isNaN(value)) {
+    return Math.ceil(Number(value.toFixed(2)));
+  }
+  return 0;
+};
 
 // 接口获取机房导航列表
 const getNavList = async() => {
