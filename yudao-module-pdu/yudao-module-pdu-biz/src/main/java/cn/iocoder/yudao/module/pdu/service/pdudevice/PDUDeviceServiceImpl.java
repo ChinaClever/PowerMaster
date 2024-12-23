@@ -445,18 +445,19 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             String startTime = localDateTimeToString(pageReqVO.getOldTime());
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
             MaxCurAndOtherData maxCurAndOtherData = getMaxCurMaxValue(startTime, endTime, index);
-
-            result.setPduId(maxCurAndOtherData.getPdu_id());
-            result.setL1MaxCur(maxCurAndOtherData.getMaxValue().floatValue());
-            result.setL1MaxCurTime(maxCurAndOtherData.getMaxTime().toString("yyyy-MM-dd HH:mm"));
-            PduIndex pdu = pDUDeviceMapper.selectById(maxCurAndOtherData.getPdu_id());
-            if (Objects.nonNull(pdu))
-                result.setDevKey(pdu.getPduKey());
-            resultList.add(result);
-            List<Integer> pduIds = new ArrayList<>();
-            pduIds.add(maxCurAndOtherData.getPdu_id());
-            List<PduIndex> pdus = pDUDeviceMapper.selectBatchIds(pduIds);
-            setLocation(pdus, resultList);
+            if (Objects.nonNull(maxCurAndOtherData)) {
+                result.setPduId(maxCurAndOtherData.getPdu_id());
+                result.setL1MaxCur(maxCurAndOtherData.getMaxValue().floatValue());
+                result.setL1MaxCurTime(maxCurAndOtherData.getMaxTime().toString("yyyy-MM-dd HH:mm"));
+                PduIndex pdu = pDUDeviceMapper.selectById(maxCurAndOtherData.getPdu_id());
+                if (Objects.nonNull(pdu))
+                    result.setDevKey(pdu.getPduKey());
+                resultList.add(result);
+                List<Integer> pduIds = new ArrayList<>();
+                pduIds.add(maxCurAndOtherData.getPdu_id());
+                List<PduIndex> pdus = pDUDeviceMapper.selectBatchIds(pduIds);
+                setLocation(pdus, resultList);
+            }
             return new PageResult<>(resultList, 1L);
         } catch (Exception e) {
             log.error("获取数据失败", e);
@@ -1784,9 +1785,9 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             result.setPdu_id((Integer) sourceAsMap.get("pdu_id"));
 
             return result;
-        } else {
-            throw new RuntimeException("No data found for the specified time range.");
-        }
+        } //else {
+//            throw new RuntimeException("No data found for the specified time range.");
+        return null;
     }
 
     private String getMaxData(String startTime, String endTime, List<Integer> ids, String index, String order) throws IOException {

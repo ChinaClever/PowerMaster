@@ -33,7 +33,7 @@ export const PDUDeviceApi = {
     return await request.get({ url: `/pdu/PDU-device/get?id=` + id })
   },
 
-  // 查询PDU设备统计
+  // 查询PDU配电设备统计
   getPDUDeviceCount: async () => {
     return await request.get({ url: `/pdu/PDU-device/detailCount` })
   },
