@@ -532,6 +532,7 @@ onMounted(() => {
   ::v-deep .el-table .el-table__header th {
     background-color: #f7f7f7;
     color: #909399;
+    height: 60px;
 }
 
 </style>

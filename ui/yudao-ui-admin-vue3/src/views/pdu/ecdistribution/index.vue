@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="PDU能耗趋势" :showCheckbox="false" placeholder="如:192.168.1.96-0">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="PDU能耗趋势" :showCheckbox="false" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
       <br/>   
       <div class="nav_data">
@@ -172,7 +172,7 @@
         <div v-loading="loading1" ref="rankContainer" id="rankContainer" style="width: 70vw; height: 90vh;"></div>
       </div>
     </template>
-  </CommonMenu>
+  </CommonMenu1>
 
 </template>
 
@@ -188,6 +188,7 @@ import PDUImage from '@/assets/imgs/PDU.jpg';
 import { pa } from 'element-plus/es/locale';
 import download from '@/utils/download'
 defineOptions({ name: 'ECDistribution' })
+import  CommonMenu1 from './CommonMenu1.vue'
 
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const nowAddress = ref('')// 导航栏的位置信息
