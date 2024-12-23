@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="PDU电力分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="PDU电力分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
@@ -187,7 +187,7 @@
         <!-- <el-empty v-show="!isHaveData" description="暂无数据" /> -->
       </div>
     </template>
-  </CommonMenu>
+  </CommonMenu1>
 </template>
 
 <script setup lang="ts">
@@ -199,6 +199,7 @@ import { CabinetApi } from '@/api/cabinet/info'
 import { ElMessage } from 'element-plus'
 import PDUImage from '@/assets/imgs/PDU.jpg'
 import download from '@/utils/download'
+import  CommonMenu1 from './CommonMenu1.vue'
 import { size } from 'min-dash';
 import { number } from 'vue-types';
 import { Select } from '@element-plus/icons-vue/dist/types';

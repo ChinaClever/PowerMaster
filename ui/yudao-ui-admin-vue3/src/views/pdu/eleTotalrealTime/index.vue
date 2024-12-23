@@ -81,7 +81,7 @@
     <template #Content>
       <div>
 
-        <el-table  :data="list"  :show-overflow-tooltip="true" :header-cell-style="{background:'#f7f7f7',color:'#606266'}">
+        <el-table  :data="list"  :show-overflow-tooltip="true" :header-cell-style="{background:'#f7f7f7',color:'#606266',height:'30px'}">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location"  />
@@ -125,6 +125,17 @@
               </el-text>
             </template>
           </el-table-column>
+          <el-table-column label="操作" align="center">
+          <template #default="scope">
+            <el-button
+              link
+              type="primary"
+              @click="toDetails(scope.row.location,scope.row.createTimeMin,scope.row.createTimeMax)"
+            >
+            设备详情
+            </el-button>
+          </template>
+        </el-table-column>
       </el-table> 
 
 

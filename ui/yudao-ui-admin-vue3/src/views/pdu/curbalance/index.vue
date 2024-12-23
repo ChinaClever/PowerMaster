@@ -69,7 +69,7 @@
           type="primary"
           plain
           @click="openForm('create')"
-          style="margin-left: -130px;" 
+          style="margin-left: 1px;" 
         >
           <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
         </el-button>
@@ -110,7 +110,7 @@
             </el-form-item>
           </el-form-item>
         </el-form-item>
-        <div style="float: right">
+        <div style="float: left">
           <el-button
             @click="pageSizeArr = [24, 36, 48, 96];queryParams.pageSize = 24;getList();switchValue = 2
             "
@@ -194,7 +194,7 @@
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="不平衡度(%)" align="center" prop="curUnbalance" width="95px">
+          <el-table-column label="不平衡度(%)" align="center" prop="curUnbalance" width="110px">
             <template #default="scope">
               <el-text line-clamp="2" v-if="scope.row.curUnbalance != null">
                 {{ scope.row.curUnbalance }}
@@ -224,7 +224,7 @@
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label="不平衡度(%)" align="center" prop="volUnbalance" width="95px">
+          <el-table-column label="不平衡度(%)" align="center" prop="volUnbalance" width="110px">
             <template #default="scope">
               <el-text line-clamp="2" v-if="scope.row.volUnbalance != null">
                 {{ scope.row.volUnbalance }}
