@@ -243,9 +243,9 @@
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="info">                  
-              <div  v-if="item.aloadRate != null && item.status != 0" ><el-text :style="{ color: getColor(item.aloadRate) }">A相：{{Math.round(item.aloadRate*100)}}%</el-text></div>
-              <div  v-if="item.bloadRate != null && item.status != 0" ><el-text :style="{ color: getColor(item.bloadRate) }">B相：{{Math.round(item.bloadRate*100)}}%</el-text></div>
-              <div  v-if="item.cloadRate != null && item.status != 0" ><el-text :style="{ color: getColor(item.cloadRate) }">C相：{{Math.round(item.cloadRate*100)}}%</el-text></div>
+              <div  v-if="item.aloadRate != null && item.status != 0" ><el-text :style="{ color: getColor(item.aloadRate) }">A相：{{Math.round(item.aloadRate)}}%</el-text></div>
+              <div  v-if="item.bloadRate != null && item.status != 0" ><el-text :style="{ color: getColor(item.bloadRate) }">B相：{{Math.round(item.bloadRate)}}%</el-text></div>
+              <div  v-if="item.cloadRate != null && item.status != 0" ><el-text :style="{ color: getColor(item.cloadRate) }">C相：{{Math.round(item.cloadRate)}}%</el-text></div>
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
