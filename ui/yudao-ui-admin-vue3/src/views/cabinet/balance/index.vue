@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="模块化机房" >
+  <CommonMenu :dataList="navList" @check="handleCheck" navTitle="机柜平衡" >
     <template #NavInfo>
       <div class="navInfo">
         <div class="line"></div>
@@ -81,9 +81,9 @@
                 </div>
               </div>
               <div class="progress" v-else>
-                <div class="left" :style="`flex: 50`">null</div>
+                <div class="left" :style="`flex: ${item.id}`">null</div>
                 <div class="line"></div>
-                <div class="right" :style="`flex: 50`">null</div>
+                <div class="right" :style="`flex:  ${item.abdlzb}`">null</div>
                 <div class="tip">
                   <span>A路</span>
                   <span>B路</span>
@@ -204,7 +204,7 @@ const getTableData = async(reset = false) => {
   tableLoading.value = true
   if (reset) queryParams.pageNo = 1
   try {
-    const res = await CabinetApi.getCabinetInfo({
+    const res = await CabinetApi.getCabinetBalance({
       pageNo: queryParams.pageNo,
       pageSize: queryParams.pageSize,
       cabinetIds: isFirst.value ? null : cabinetIds.value,
@@ -215,53 +215,53 @@ const getTableData = async(reset = false) => {
     })
     console.log('res', res)
     if (res.list) {
-      const list = res.list.map(item => {
-        const tableItem = {} as any
-        tableItem.local = item.room_name + '-' + item.cabinet_name
-        tableItem.id = item.cabinet_key.split('-')[1]
-        const PathA = item.cabinet_power.path_a
-        const PathB = item.cabinet_power.path_b
-        if (PathA && PathA.cur_value.length > 0) { // A路电流
-        console.log('PathA.cur_value', PathA.cur_value)
-          PathA.cur_value.forEach((item, index) => {
-            tableItem['Ia'+index] = item.toFixed(2)
-          })
-        }
-        if (PathA && PathA.vol_value && PathA.vol_value.length > 0) { // A路电压
-          PathA.vol_value.forEach((item, index) => {
-            tableItem['Ua'+index] = item.toFixed(2)
-          })
-        }
-        if (PathA && PathA.pow_value && PathA.pow_value.length > 0) { // A路功率
-          PathA.pow_value.forEach((item, index) => {
-            tableItem['Pa'+index] = item.toFixed(2)
-          })
-        }
-        if (PathB && PathB.cur_value && PathB.cur_value.length > 0) { // B路电流
-          PathB.cur_value.forEach((item, index) => {
-            tableItem['Ib'+index] = item.toFixed(2)
-          })
-        }
-        if (PathB && PathB.vol_value && PathB.vol_value.length > 0) { // B路电压
-          PathB.vol_value.forEach((item, index) => {
-            tableItem['Ub'+index] = item.toFixed(2)
-          })
-        }
-        if (PathB && PathB.pow_value && PathB.pow_value.length > 0) { // B路功率
-          PathB.pow_value.forEach((item, index) => {
-            tableItem['Pb'+index] = item.toFixed(2)
-          })
-        }
-        if (item.cabinet_power.path_a && item.cabinet_power.path_b) {
-          if (item.cabinet_power.path_a.pow_apparent == 0) tableItem.abdlzb = 0
-          else tableItem.abdlzb = Math.floor((item.cabinet_power.path_a.pow_apparent / item.cabinet_power.total_data.pow_apparent as any).toFixed(2) * 100)
-          if (item.cabinet_power.path_a.pow_active == 0) tableItem.abglzb = 0
-          else tableItem.abglzb = Math.floor((item.cabinet_power.path_a.pow_active / item.cabinet_power.total_data.pow_active as any).toFixed(2) * 100)
-        }
-        return tableItem
-      })
-      console.log('list', list)
-      tableData.value = list
+      // const list = res.list.map(item => {
+      //   const tableItem = {} as any
+      //   tableItem.local = item.room_name + '-' + item.cabinet_name
+      //   tableItem.id = item.cabinet_key.split('-')[1]
+      //   const PathA = item.cabinet_power.path_a
+      //   const PathB = item.cabinet_power.path_b
+      //   if (PathA && PathA.cur_value.length > 0) { // A路电流
+      //   console.log('PathA.cur_value', PathA.cur_value)
+      //     PathA.cur_value.forEach((item, index) => {
+      //       tableItem['Ia'+index] = item.toFixed(2)
+      //     })
+      //   }
+      //   if (PathA && PathA.vol_value && PathA.vol_value.length > 0) { // A路电压
+      //     PathA.vol_value.forEach((item, index) => {
+      //       tableItem['Ua'+index] = item.toFixed(2)
+      //     })
+      //   }
+      //   if (PathA && PathA.pow_value && PathA.pow_value.length > 0) { // A路功率
+      //     PathA.pow_value.forEach((item, index) => {
+      //       tableItem['Pa'+index] = item.toFixed(2)
+      //     })
+      //   }
+      //   if (PathB && PathB.cur_value && PathB.cur_value.length > 0) { // B路电流
+      //     PathB.cur_value.forEach((item, index) => {
+      //       tableItem['Ib'+index] = item.toFixed(2)
+      //     })
+      //   }
+      //   if (PathB && PathB.vol_value && PathB.vol_value.length > 0) { // B路电压
+      //     PathB.vol_value.forEach((item, index) => {
+      //       tableItem['Ub'+index] = item.toFixed(2)
+      //     })
+      //   }
+      //   if (PathB && PathB.pow_value && PathB.pow_value.length > 0) { // B路功率
+      //     PathB.pow_value.forEach((item, index) => {
+      //       tableItem['Pb'+index] = item.toFixed(2)
+      //     })
+      //   }
+      //   if (item.cabinet_power.path_a && item.cabinet_power.path_b) {
+      //     if (item.cabinet_power.path_a.pow_apparent == 0) tableItem.abdlzb = 0
+      //     else tableItem.abdlzb = Math.floor((item.cabinet_power.path_a.pow_apparent / item.cabinet_power.total_data.pow_apparent as any).toFixed(2) * 100)
+      //     if (item.cabinet_power.path_a.pow_active == 0) tableItem.abglzb = 0
+      //     else tableItem.abglzb = Math.floor((item.cabinet_power.path_a.pow_active / item.cabinet_power.total_data.pow_active as any).toFixed(2) * 100)
+      //   }
+      //   return tableItem
+      // })
+      console.log('list', res.list)
+      tableData.value = res.list
       queryParams.pageTotal = res.total
     }
   } finally {

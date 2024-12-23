@@ -126,9 +126,9 @@
     <template #Content>
       <el-table v-loading="loading" 
                 :data="list" 
-                :stripe="true" 
+                
                 :show-overflow-tooltip="true" 
-                :border="true"
+                
                 >
           <!-- 添加行号列 -->
         <el-table-column  label="序号" 
@@ -977,7 +977,7 @@ onMounted( () => {
   }
 
     ::v-deep .el-table .el-table__header th {
-      background-color: #F5F7FA;
+      background-color: #f7f7f7;
       color: #909399;
   }
 </style>

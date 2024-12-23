@@ -403,7 +403,7 @@ public class UploadFileServiceImpl implements UploadFileService{
             //pdu 主ip设备
             List<PduIndexDo> pduIndexDos = pduIndexDoMapper.selectList(new LambdaQueryWrapper<PduIndexDo>()
                     .eq(PduIndexDo::getIsDeleted, DelEnums.NO_DEL.getStatus())
-                    .eq(PduIndexDo::getCascadeAddr,"0")
+//                    .eq(PduIndexDo::getCascadeAddr,"0")
                     //非离线状态
                     .ne(PduIndexDo::getRunStatus,5));
             if (!CollectionUtils.isEmpty(pduIndexDos)){
@@ -419,7 +419,7 @@ public class UploadFileServiceImpl implements UploadFileService{
                     //非离线状态
                     .ne(BusIndex::getRunStatus,5));
             if (!CollectionUtils.isEmpty(busIndices)){
-                List<String> ips = busIndices.stream().map(BusIndex::getIpAddr).distinct().collect(Collectors.toList());
+                List<String> ips = busIndices.stream().map(BusIndex::getBusKey).distinct().collect(Collectors.toList());
                 devIps.addAll(ips);
                 ips.forEach(ip -> map.put(ip,getBusPosition(ip)));
             }
@@ -448,9 +448,9 @@ public class UploadFileServiceImpl implements UploadFileService{
                                 .eq(BusIndex::getIsDeleted,DelEnums.NO_DEL.getStatus())
                                 //非离线状态
                                 .ne(BusIndex::getRunStatus,5)
-                                .in(BusIndex::getDevKey,keys));
+                                .in(BusIndex::getBusKey,keys));
                         if (!CollectionUtils.isEmpty(busIndices)){
-                            List<String> ips = busIndices.stream().map(BusIndex::getIpAddr).distinct().collect(Collectors.toList());
+                            List<String> ips = busIndices.stream().map(BusIndex::getBusKey).distinct().collect(Collectors.toList());
                             devIps.addAll(ips);
                             ips.forEach(ip -> map.put(ip,getBusPosition(ip)));
                         }
@@ -480,7 +480,7 @@ public class UploadFileServiceImpl implements UploadFileService{
                                 .ne(PduIndexDo::getRunStatus,5)
                                 .in(PduIndexDo::getPduKey,keys));
                         if (!CollectionUtils.isEmpty(pduIndexDos)){
-                            List<String> ips = pduIndexDos.stream().filter(t -> t.getCascadeAddr().equals("0"))
+                            List<String> ips = pduIndexDos.stream().filter(t -> t.getCascadeId().equals("0"))
                                     .map(PduIndexDo::getIpAddr).distinct().collect(Collectors.toList());
                             ips.forEach(ip -> map.put(ip,getPduPosition(ip)));
 
@@ -610,11 +610,9 @@ public class UploadFileServiceImpl implements UploadFileService{
         String devPosition = "";
         CabinetPdu aPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>()
                 .eq(CabinetPdu::getPduKeyA,ip));
-                //.eq(CabinetPdu::getCasIdA,0));
 
         CabinetPdu bPdu = cabinetPduMapper.selectOne(new LambdaQueryWrapper<CabinetPdu>()
                 .eq(CabinetPdu::getPduKeyB,ip));
-                //.eq(CabinetPdu::getCasIdB,0));
 
         if (Objects.nonNull(aPdu)){
             CabinetIndex index = cabinetIndexMapper.selectById(aPdu.getCabinetId());

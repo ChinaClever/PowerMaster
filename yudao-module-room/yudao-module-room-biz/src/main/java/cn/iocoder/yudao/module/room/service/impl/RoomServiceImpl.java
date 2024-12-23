@@ -481,7 +481,7 @@ public class RoomServiceImpl implements RoomService {
             if (Objects.isNull(index)) {
                 return -1;
             }
-            if (index.getIsDeleted() == DelEnums.DELETE.getStatus()) {
+            if (index.getIsDeleted() == DelFlagEnums.DELETE.getStatus()) {
                 //已经删除则物理删除
                 cabinetIndexMapper.deleteById(id);
                 //删除pdu关联关系
@@ -588,7 +588,7 @@ public class RoomServiceImpl implements RoomService {
 
             //获取pdu数量
             List<Integer> ids = cabinetIndexList.stream()
-                    .filter(t->t.getPduBox() == PduBoxEnums.PDU.getValue())
+                    .filter(t->t.getPduBox() == PduBoxFlagEnums.PDU.getValue())
                     .map(CabinetIndex::getId).collect(Collectors.toList());
 
             List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>()
@@ -900,7 +900,7 @@ public class RoomServiceImpl implements RoomService {
         if (!CollectionUtils.isEmpty(cabinetIndexList)){
             //获取pdu数量
             List<Integer> ids = cabinetIndexList.stream()
-                    .filter(t->t.getPduBox() == PduBoxEnums.PDU.getValue())
+                    .filter(t->t.getPduBox() == PduBoxFlagEnums.PDU.getValue())
                     .map(CabinetIndex::getId).collect(Collectors.toList());
 
             List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>()
@@ -1039,7 +1039,7 @@ public class RoomServiceImpl implements RoomService {
             List<String> pduKeys = new ArrayList<>();
             //获取pdu数量
             List<Integer> ids = cabinetIndexList.stream()
-                    .filter(t->t.getPduBox() == PduBoxEnums.PDU.getValue())
+                    .filter(t->t.getPduBox() == PduBoxFlagEnums.PDU.getValue())
                     .map(CabinetIndex::getId).collect(Collectors.toList());
 
             List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapper<CabinetPdu>()
@@ -1610,7 +1610,7 @@ public class RoomServiceImpl implements RoomService {
                     .eq(CabinetIndex::getCabinetName, vo.getCabinetName())
                     .eq(CabinetIndex::getRoomId, vo.getRoomId()));
             if (Objects.nonNull(index)) {
-                if (index.getIsDeleted() == DelEnums.DELETE.getStatus() || index.getIsDisabled() == DisableEnums.DISABLE.getStatus()) {
+                if (index.getIsDeleted() == DelFlagEnums.DELETE.getStatus() || index.getIsDisabled() == DisableFlagEnums.DISABLE.getStatus()) {
                     //index 索引表
                     //修改
                     cabinetIndexMapper.updateById(convertIndex(vo, index));
@@ -1654,9 +1654,9 @@ public class RoomServiceImpl implements RoomService {
         cabinetIndex.setCabinetName(vo.getCabinetName());
         cabinetIndex.setPduBox(vo.getPduBox());
         //未删除
-        cabinetIndex.setIsDeleted(DelEnums.NO_DEL.getStatus());
+        cabinetIndex.setIsDeleted(DelFlagEnums.NO_DEL.getStatus());
         //未禁用
-        cabinetIndex.setIsDisabled(DisableEnums.ENABLE.getStatus());
+        cabinetIndex.setIsDisabled(DisableFlagEnums.ENABLE.getStatus());
         cabinetIndex.setPowerCapacity(vo.getPowCapacity());
         cabinetIndex.setRoomId(vo.getRoomId());
         cabinetIndex.setId(index.getId());

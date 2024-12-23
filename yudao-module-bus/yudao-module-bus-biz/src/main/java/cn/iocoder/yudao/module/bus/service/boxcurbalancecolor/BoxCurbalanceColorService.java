@@ -1,9 +1,11 @@
 package cn.iocoder.yudao.module.bus.service.boxcurbalancecolor;
 
-import javax.validation.*;
-import cn.iocoder.yudao.module.bus.controller.admin.boxcurbalancecolor.vo.*;
-import cn.iocoder.yudao.module.bus.dal.dataobject.boxcurbalancecolor.BoxCurbalanceColorDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
+import cn.iocoder.yudao.module.bus.controller.admin.boxcurbalancecolor.vo.BoxCurbalanceColorPageReqVO;
+import cn.iocoder.yudao.module.bus.controller.admin.boxcurbalancecolor.vo.BoxCurbalanceColorSaveReqVO;
+import cn.iocoder.yudao.module.bus.dal.dataobject.boxcurbalancecolor.BoxCurbalanceColorDO;
+
+import javax.validation.Valid;
 
 /**
  * 插接箱不平衡度颜色 Service 接口

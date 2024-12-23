@@ -4,6 +4,8 @@ import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.util.List;
+
 
 @Schema(description = "管理后台 - 始端箱索引 Response VO")
 @Data
@@ -23,10 +25,10 @@ public class PduBalanceDeatilRes {
     private Integer busId;
 
     @Schema(description = "A的电流")
-    private Float[] cur_value;
+    private List<Double> cur_value;
 
     @Schema(description = "B的电流")
-    private Float[] vol_value;
+    private List<Double> vol_value;
 
     @Schema(description = "电流不平衡度")
     private Double curUnbalance;

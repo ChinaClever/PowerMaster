@@ -36,24 +36,24 @@ public class AisleBar implements Serializable {
      */
     private String busKey;
 
-//    /**
-//     * 始端箱名称
-//     */
+    /**
+     * 始端箱名称
+     */
 //    private String busName;
 
-//    /**
-//     * ip地址
-//     */
+    /**
+     * ip地址
+     */
 //    private String devIp;
 
-//    /**
-//     * 级联地址
-//     */
+    /**
+     * 级联地址
+     */
 //    private Integer casAddr;
 
-//    /**
-//     * 母线编号
-//     */
+    /**
+     * 母线编号
+     */
 //    private Integer barId;
 
     /**
@@ -64,21 +64,21 @@ public class AisleBar implements Serializable {
     /**
      * 方向  左0 右1
      */
-    private Integer direction;
+    private Boolean direction;
 
 
     /**
      * 创建时间
      */
     @Schema(description = "创建时间")
-    @TableField(fill = FieldFill.INSERT)
+//    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     /**
      * 更新时间
      */
     @Schema(description = "更新时间")
-    @TableField(fill = FieldFill.INSERT_UPDATE)
+//    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
 }

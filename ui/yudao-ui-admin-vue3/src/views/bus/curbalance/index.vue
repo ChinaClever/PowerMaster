@@ -43,55 +43,71 @@
         :inline="true"
         label-width="68px"                          
       >
-        <el-form-item v-if="switchValue == 0 ">
-          <template v-for="(status, index) in statusList" :key="index">
-            <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
-          </template>
-        </el-form-item>
-        <el-button
-          type="primary"
-          plain
-          @click="openForm('create')"
-          v-if="switchValue == 0 "
+        <div class="form-container">
+          <el-form-item v-if="switchValue == 0" class="inline-form-item">
+      <template v-for="(status, index) in statusList" :key="index">
+        <button
+          :class="status.selected ? status.activeClass : status.cssClass"
+          @click.prevent="handleSelectStatus(index)"
+          class="inline-button"
         >
-          <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
-        </el-button>
-        <el-form-item >
-          <el-checkbox-group  v-model="queryParams.status" @change="handleQuery">
-            <el-checkbox :label="5" :value="5">在线</el-checkbox>
-          </el-checkbox-group>
-        </el-form-item>
-        <el-form-item label="网络地址" prop="devKey">
-          <el-autocomplete
-            v-model="queryParams.devKey"
-            :fetch-suggestions="querySearch"
-            clearable
-            class="!w-200px"
-            placeholder="请输入网络地址"
-            @select="handleQuery"
-          />
-        <el-form-item style="margin-left: 10px">
-          <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-          <el-button @click="resetQuery"><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+          {{ status.name }}
+        </button>
+      </template>
+          </el-form-item>
           <el-button
             type="primary"
             plain
             @click="openForm('create')"
-            v-hasPermi="['pdu:PDU-device:create']"
+            v-if="switchValue == 0"
+            class="inline-button"
+            style="margin-top:-20px;"
           >
-            <Icon icon="ep:plus" class="mr-5px" /> 新增
+            <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
           </el-button>
-          <el-button
-            type="success"
-            plain
-            @click="handleExport"
-            :loading="exportLoading"
-            v-hasPermi="['pdu:PDU-device:export']"
-          >
-            <Icon icon="ep:download" class="mr-5px" /> 导出
-          </el-button>
-        </el-form-item>          
-        </el-form-item>
+          <el-form-item class="inline-form-item">
+            <el-checkbox-group v-model="queryParams.status" @change="handleQuery" class="inline-checkbox-group">
+        <el-checkbox :label="1" :value="1" class="inline-checkbox">在线</el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
+          <el-form-item label="网络地址" prop="devKey" class="inline-form-item">
+            <el-autocomplete
+              v-model="queryParams.devKey"
+              :fetch-suggestions="querySearch"
+              clearable
+              class="inline-autocomplete !w-200px"
+              placeholder="请输入网络地址"
+              @select="handleQuery"
+            />
+          </el-form-item>
+          <div class="button-group" style="margin-left: 10px">
+            <el-button @click="handleQuery" class="inline-button" style="margin-top:-20px;">
+              <Icon icon="ep:search" class="mr-5px" /> 搜索
+            </el-button>
+            <el-button @click="resetQuery" class="inline-button" style="margin-top:-20px;">
+              <Icon icon="ep:refresh" class="mr-5px" /> 重置
+            </el-button>
+            <el-button
+              type="primary"
+              plain
+              @click="openForm('create')"
+              v-hasPermi="['pdu:PDU-device:create']"
+              class="inline-button"
+            >
+              <Icon icon="ep:plus" class="mr-5px" /> 新增
+            </el-button>
+            <el-button
+              type="success"
+              plain
+              @click="handleExport"
+              :loading="exportLoading"
+              v-hasPermi="['pdu:PDU-device:export']"
+              class="inline-button"
+            >
+              <Icon icon="ep:download" class="mr-5px" /> 导出
+            </el-button>
+          </div>
+        </div>
         <div style="float:right">
           <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
           <el-button @click="statusList.forEach((item) => item.selected = true);pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;switchValue = 1;" :type="switchValue == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压</el-button>
@@ -104,7 +120,8 @@
       <el-table v-show="visMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" width="218px"/>    
+        <el-table-column label="所在位置" align="center" prop="location"/>    
+        <el-table-column label="设备名称" align="center" prop="busName"/>  
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>      
         <el-table-column label="运行状态" align="center" prop="color" v-if="switchValue == 0">
           <template #default="scope" >
@@ -114,7 +131,7 @@
               <el-tag type="danger" v-if="scope.row.color == 4">大电流不平衡</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="不平衡度(%)" align="center" prop="curUnbalance" width="130px" v-if="switchValue == 0">
+        <el-table-column label="不平衡度(%)" align="center" prop="curUnbalance" width="80px" v-if="switchValue == 0">
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.curUnbalance != null" >
               {{ scope.row.curUnbalance }}
@@ -177,7 +194,7 @@
               link
               type="primary"
               @click="toDeatil(scope.row)"
-              v-if="scope.row.status != null && scope.row.status != 5"
+              v-if="scope.row.status != null && scope.row.status != 0"
             >
             设备详情
             </el-button>
@@ -185,7 +202,7 @@
               link
               type="danger"
               @click="handleDelete(scope.row.busId)"
-              v-if="scope.row.status == 5"
+              v-if="scope.row.status == 0"
             >
               删除
             </el-button>
@@ -197,11 +214,6 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="icon" >
-              <div v-if="item.curUnbalance != null" >
-                <span style="font-size: 20px;">{{ item.curUnbalance }}%</span><br/>电流不平衡度
-              </div>              
-            </div>
             <div class="info">                  
               <div v-if="item.acur != null">A相：{{item.acur}}A</div>
               <div v-if="item.bcur != null">B相：{{item.bcur}}A</div>
@@ -209,28 +221,77 @@
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
+            <div class="icon">
+              <div v-if="item.curUnbalance != null" >
+                <span style="font-size: 20px;margin-left:35px;">{{ item.curUnbalance }}%</span>
+                <div style="width:100px;">电流不平衡度</div>
+              </div>              
+            </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
-            <el-tag type="info"  v-if="item.status == 5">离线</el-tag>
+            <el-tag type="info"  v-if="item.status == 0">离线</el-tag>
             <el-tag type="info"  v-if="item.color == 1">小电流不平衡</el-tag>
-            <el-tag type="success"  v-if="item.color == 2">&lt;15</el-tag>
-            <el-tag type="warning" v-if="item.color == 3">15%-30%</el-tag>
-            <el-tag type="danger" v-if="item.color == 4">&gt;30%</el-tag>
+            <el-tag type="success"  v-if="item.color == 2">{{ statusList[0].name }}</el-tag>
+            <el-tag type="warning" v-if="item.color == 3">{{ statusList[1].name }}</el-tag>
+            <el-tag type="danger" v-if="item.color == 4">{{ statusList[2].name }}</el-tag>
           </div>
-          <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <button class="detail" @click="showDialogCur(item)" v-if="item.status != null && item.status != 0">详情</button>
         </div>
       </div>
+
+      <el-dialog v-model="dialogVisibleCur" @close="handleClose">
+        <!-- 自定义的头部内容（可选） -->
+        <template #header>
+          <div>
+            <div>
+              <span>所在位置：</span>
+              <el-tag size="large">{{ curlocation }}</el-tag><span>(名称：<el-tag size="large">{{ curlocation }}</el-tag>)</span>
+            </div>
+            <div style="margin-top:-30px;float:right">
+              <span>网络地址：</span>
+              <el-tag size="large">{{ curlocation.split('-')[0] }}</el-tag>
+            </div>
+          </div>
+          <CardTitle title="电流不平衡" />
+        </template>
+        <!-- 自定义的主要内容 -->
+        <div class="custom-content">
+          <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
+            <div class="IechartBar">
+              <Echart :options="ABarOption" :height="300" />
+            </div>
+          </el-card>
+          <el-card class="cardChilc" shadow="hover">
+            <div class="IechartBar" :style="{backgroundColor: colorVolList[balanceObj.colorIndex].color}">
+              <Echart :options="ALineOption" :height="300" />
+            </div>
+          </el-card>
+          <el-card class="cardChilc" shadow="hover">
+            <div class="box" :style="{ borderColor: colorList[balanceObj.colorIndex].color }">
+              <div class="value">{{ balanceObj.imbalanceValueA.toFixed(2)}}%</div>
+              <div
+                class="day"
+                :style="{ backgroundColor: colorList[balanceObj.colorIndex].color }"
+                >{{ colorList[balanceObj.colorIndex].name }}</div
+              >
+              <el-tooltip
+                class="box-item"
+                effect="dark"
+                content="三相电流不平衡： 不平衡度%=（MAX相电流-三相平均电流）/三相平均电流×100%"
+                placement="right"
+              >
+                <div @click.prevent="" class="question">?</div>
+              </el-tooltip>
+            </div>
+          </el-card>
+        </div>
+      </el-dialog>
 
       <div v-show="visMode == 0 && switchValue == 1  && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="icon" >
-              <div v-if="item.volUnbalance != null" >
-                <span style="font-size: 20px;">{{ item.volUnbalance }}%</span><br/>电压不平衡度
-              </div>              
-            </div>
             <div class="info">                  
               <div v-if="item.avol != null">A相：{{item.avol}}V</div>
               <div v-if="item.bvol != null">B相：{{item.bvol}}V</div>
@@ -238,15 +299,59 @@
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
+            <div class="icon" >
+              <div v-if="item.volUnbalance != null" >
+                <span style="font-size: 20px;margin-left:35px;">{{ item.volUnbalance }}%</span>
+                <div style="width:100px;">电压不平衡度</div>
+              </div>              
+            </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
-            <el-tag type="info"  v-if="item.status == 5">离线</el-tag>
+            <el-tag type="info"  v-if="item.status == 0">离线</el-tag>
             <el-tag type="info" v-else >电压不平衡</el-tag>
           </div>
-          <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <button class="detail" @click="showDialogVol(item)" v-if="item.status != null && item.status != 0">详情</button>
         </div>
       </div>
+
+      <el-dialog v-model="dialogVisibleVol" @close="handleClose">
+        <!-- 自定义的头部内容（可选） -->
+        <template #header>
+          <CardTitle title="电压不平衡" />
+          <span style="margin-left: 1vw"
+            ><el-tag size="large">{{ vollocation }}</el-tag></span
+          >
+        </template>
+        <!-- 自定义的主要内容 -->
+        <div class="custom-content">
+          <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
+            <div class="IechartBar">
+              <Echart :options="BBarOption" :height="300"/>
+            </div>
+          </el-card>
+          <el-card class="cardChilc" shadow="hover">
+            <div class="IechartBar"  :style="{backgroundColor: colorVolList[balanceObj.colorIndex].color}">
+              <Echart :options="BLineOption" :height="300"/>
+            </div>
+          </el-card>
+          <el-card  class="cardChilc" shadow="hover">
+            <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
+              <div class="value">{{balanceObj.imbalanceValueB.toFixed(2)}}%</div>
+              <div class="day" :style="{backgroundColor: colorList[0].color}">电压不平衡</div>
+              <el-tooltip
+                class="box-item"
+                effect="dark"
+                content="三相电压不平衡度=( 最大电压−最小电压)/平均电压×100%"
+                placement="right"
+              >
+                <div @click.prevent="" class="question">?</div>
+              </el-tooltip>
+            </div>
+          </el-card>
+        </div>
+      </el-dialog>
+
       <Pagination
         :total="total"
         :page-size-arr="pageSizeArr"
@@ -271,14 +376,17 @@ import download from '@/utils/download'
 import { IndexApi } from '@/api/bus/busindex'
 import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
-
+import { CabinetApi } from '@/api/cabinet/info'
 import { CurbalanceColorApi } from '@/api/bus/buscurbalancecolor'
+import { EChartsOption } from 'echarts'
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
-const { push } = useRouter()
 
+const dialogVisibleCur = ref(false) //全屏弹窗的显示隐藏
+const dialogVisibleVol = ref(false) //全屏弹窗的显示隐藏
+const { push } = useRouter()
 const visMode = ref(0);
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
@@ -322,6 +430,364 @@ const statusList = reactive([
     activeClass: 'btn_offline offline'
   },
 ])
+
+const curlocation = ref()
+const vollocation = ref()
+
+const colorList = [
+  {
+    name: '小电流不平衡',
+    color: '#aaa'
+  },
+  {
+    name: '大电流不平衡',
+    color: '#3bbb00'
+  },
+  {
+    name: '大电流不平衡',
+    color: '#ffc402'
+  },
+  {
+    name: '大电流不平衡',
+    color: '#fa3333'
+  }
+]
+
+const colorVolList = [{
+  name: '小电压不平衡',
+  color: '#aaa',  //灰色
+},{
+  name: '大电压不平衡',
+  color: '#3bbb00', //绿色
+},{
+  name: '大电压不平衡',
+  color: '#ffc402', //黄色
+},{
+  name: '大电压不平衡',
+  color: '#fa3333', //红色
+}]
+
+const balanceObj = reactive({
+  pow_apparent_percent: 0,
+  pow_active_percent: 0,
+  cur_valueA: [],
+  vol_value: [],
+  imbalanceValueA: 0,
+  imbalanceValueB: 0,
+  colorIndex: 0
+})
+
+const ABarOption = ref<EChartsOption>({})
+const BBarOption = ref<EChartsOption>({})
+
+const ALineOption = ref<EChartsOption>({
+  title: {
+    text: '电流趋势',
+    left: 'center'
+  },
+  tooltip: {
+    trigger: 'axis',
+    formatter: function (params) {
+      let tooltipContent = `记录时间: ${params[0].name}<br/>`;
+      // 遍历params数组，构建电压信息
+      const phases = ['A相电流', 'B相电流', 'C相电流'];
+      params.forEach((item, index) => {
+        if (index < phases.length && item.seriesName) {
+          tooltipContent += `${phases[index]}: ${item.value} A<br/>`;
+        }
+      });
+      
+      return tooltipContent;
+    }
+  },
+  grid: {
+    left: '3%',
+    right: '4%',
+    bottom: '3%',
+    containLabel: true
+  },
+  yAxis: {
+    type: 'value',
+    name: '电流',
+    axisLabel: {
+      formatter: '{value} A'
+    }
+  },
+  xAxis: {},
+  series: []
+})
+
+const BLineOption = ref<EChartsOption>({
+  title: {
+    text: '电压趋势',
+    left: 'center'
+  },
+  tooltip: {
+    trigger: 'axis',
+    formatter: function (params) {
+      let tooltipContent = `记录时间: ${params[0].name}<br/>`; // 显示记录时间
+      
+      // 遍历params数组，构建电压信息
+      const phases = ['A相电压', 'B相电压', 'C相电压'];
+      params.forEach((item, index) => {
+        if (index < phases.length && item.seriesName) {
+          tooltipContent += `${phases[index]}: ${item.value} V<br/>`;
+        }
+      });
+      
+      return tooltipContent;
+    }
+  },
+  grid: {
+    left: '3%',
+    right: '4%',
+    bottom: '3%',
+    containLabel: true
+  },
+  yAxis: {
+    type: 'value',
+    name: '电压',
+    axisLabel: {
+      formatter: '{value} V'
+    }
+  },
+  xAxis:{},
+  series: []
+})
+
+const getBalanceDetail = async (item) => {
+  const res = await IndexApi.getBusBalanceDetail({ devKey: item.devKey })
+  console.log('res', res)
+  if (res.cur_value) {
+    const cur_valueA = res.cur_value
+    // const max = Math.max(...cur_valueA) // 最大值
+    // // 计算平均值
+    // let sum = 0
+    // cur_valueA.forEach(item => {
+    //   sum = sum + item
+    // })
+    // const average = sum/cur_valueA.length
+    // // 平衡度
+    // balanceObj.imbalanceValueA =  +(((max - average) * 100 / average).toFixed(0))
+    ABarOption.value = {
+      title: {
+        text: '电流柱形图',
+        left: 'center'
+      },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'shadow'
+        },formatter: function (params) {
+            // params是一个数组，包含了当前触发tooltip的多个系列的信息
+            let tooltipContent = '';
+            params.forEach(function (item) {
+                // item是单个系列的信息，包括seriesName（系列名称）、name（数据项名称）、value（数据值）等
+                tooltipContent += item.name + ' : ' + item.value + ' A<br/>';
+            });
+            return tooltipContent;
+        },
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+      },
+      xAxis: [
+        {
+          type: 'category',
+          data: ['A', 'B', 'C'],
+          axisTick: {
+            alignWithLabel: true
+          }
+        }
+      ],
+      yAxis: [
+        {
+          type: 'value',
+          name: '电流',
+          axisLabel: {
+            formatter: '{value} A'
+          }
+        }
+      ],
+      series: [
+        {
+          type: 'bar',
+          barWidth: '20%',
+          data: cur_valueA
+        }
+      ]
+    }
+  }
+  if (res.vol_value) {
+    const vol_value = res.vol_value
+    BBarOption.value = {
+      title: {
+        text: '电压柱形图',
+        left: 'center'
+      },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'shadow'
+        },formatter: function (params) {
+            // params是一个数组，包含了当前触发tooltip的多个系列的信息
+            let tooltipContent = '';
+            params.forEach(function (item) {
+                // item是单个系列的信息，包括seriesName（系列名称）、name（数据项名称）、value（数据值）等
+                tooltipContent += item.name + ' : ' + item.value + ' V<br/>';
+            });
+            return tooltipContent;
+        },
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+      },
+      xAxis: [
+        {
+          type: 'category',
+          data: ["A","B","C"],
+          axisTick: {
+            alignWithLabel: true
+          }
+        }
+      ],
+      yAxis: [
+        {
+          type: 'value',
+          name: '电压',
+          axisLabel: {
+            formatter: '{value} V'
+          }
+        }
+      ],
+      series: [
+        {
+          type: 'bar',
+          barWidth: '20%',
+          data: vol_value,
+        },
+      ]
+    }
+  }
+
+  balanceObj.imbalanceValueA = res.curUnbalance
+  balanceObj.imbalanceValueB = res.volUnbalance
+  balanceObj.colorIndex = res.color - 1
+  console.log('balanceObj',balanceObj)
+}
+
+const getBalanceTrend = async (item) => {
+  const res = await IndexApi.getBusBalanceTrend({
+    busId: item.busId
+  })
+  if (res.length > 0) {
+    const timeList = res.map((item) => item.dateTime)
+    if (res[0].cur && res[0].cur.length == 1) {
+      ALineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      ALineOption.value.series = [
+        {
+          name: 'A',
+          type: 'line',
+          symbol: 'none',
+          data: res.map((item) => item.cur[0].curValue.toFixed(2))
+        }
+      ]
+    } else if (res[0].cur && res[0].cur.length == 3) {
+      ALineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      ALineOption.value.series = [
+        {
+          name: 'A',
+          type: 'line',
+          symbol: 'none',
+          data: res.map((item) => item.cur[0].curValue.toFixed(2))
+        },
+        {
+          name: 'B',
+          type: 'line',
+          symbol: 'none',
+          data: res.map((item) => item.cur[1].curValue.toFixed(2))
+        },
+        {
+          name: 'C',
+          type: 'line',
+          symbol: 'none',
+          data: res.map((item) => item.cur[2].curValue.toFixed(2))
+        }
+      ]
+    }if (res[0].vol && res[0].vol.length == 1) {
+      BLineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      BLineOption.value.series = [
+        {
+          name: 'A',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.vol[0].volValue.toFixed(1)),
+        },
+      ]
+    } else if(res[0].vol && res[0].vol.length == 3) {
+      BLineOption.value.xAxis = {
+        type: 'category',
+        boundaryGap: false,
+        data: timeList
+      }
+      BLineOption.value.series = [
+        {
+          name: 'A',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.vol[0].volValue.toFixed(1)),
+        },
+        {
+          name: 'B',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.vol[1].volValue.toFixed(1)),
+        },
+        {
+          name: 'C',
+          type: 'line',
+          symbol: 'none',
+          data: res.map(item => item.vol[2].volValue.toFixed(1)),
+        },
+      ]
+    }
+  }
+  
+  console.log('ALineOption', ALineOption)
+  console.log('item', item)
+}
+
+const showDialogCur = (item) => {
+  dialogVisibleCur .value = true
+  curlocation.value = item.devKey
+  getBalanceDetail(item)
+  getBalanceTrend(item)
+}
+
+const showDialogVol = (item) => {
+  dialogVisibleVol.value = true
+  vollocation.value = item.devKey
+  getBalanceDetail(item)
+  getBalanceTrend(item)
+}
 
 const devKeyList = ref([])
 const loadAll = async () => {
@@ -468,6 +934,7 @@ const getList = async () => {
     statusNumber.greaterFifteen = greaterFifteen;
     statusNumber.greaterThirty = greaterThirty;
     list.value = data.list
+    console.log('list.value',list.value)
     total.value = data.total
   } finally {
     loading.value = false
@@ -906,64 +1373,203 @@ onActivated(() => {
   }
 }
 
-.arrayContainer {
-  display: flex;
-  flex-wrap: wrap;
-  .arrayItem {
-    width: 25%;
-    height: 140px;
-    font-size: 13px;
-    box-sizing: border-box;
-    background-color: #eef4fc;
-    border: 5px solid #fff;
-    padding-top: 40px;
-    position: relative;
-    .content {
-      display: flex;
-      align-items: center;
-      .icon {
-        width: 78px;
-        height: 30px;
-        margin: 0 28px;
-        text-align: center;
+@media screen and (min-width: 2048px) {
+  .arrayContainer {
+    display: flex;
+    flex-wrap: wrap;
+    .arrayItem {
+      width: 20%;
+      height: 140px;
+      font-size: 13px;
+      box-sizing: border-box;
+      background-color: #eef4fc;
+      border: 5px solid #fff;
+      padding-top: 40px;
+      position: relative;
+      .content {
+        display: flex;
+        align-items: center;
+        .icon {
+          width: 60px;
+          height: 30px;
+          margin-left:25px;
+          text-align: center;
+        }
+        .info {
+          margin-left: 15px;
+        }
+      }
+      .devKey {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .room {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .status {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        color: #fff;
+        position: absolute;
+        right: 38px;
+        top: 8px;
+      }
+      .detail {
+        width: 40px;
+        height: 25px;
+        padding: 0;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        cursor: pointer;
       }
     }
-    .devKey{
-      position: absolute;
-      left: 8px;
-      top: 8px;
-    }
-    .room {
-      position: absolute;
-      left: 8px;
-      top: 8px;
-    }
-    .status {
-      width: 40px;
-      height: 20px;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+  }
+}
 
-      color: #fff;
-      position: absolute;
-      right: 38px;
-      top: 8px;
+@media screen and (max-width: 2048px) and (min-width: 1600px) {
+  .arrayContainer {
+    display: flex;
+    flex-wrap: wrap;
+    .arrayItem {
+      width: 25%;
+      height: 140px;
+      font-size: 13px;
+      box-sizing: border-box;
+      background-color: #eef4fc;
+      border: 5px solid #fff;
+      padding-top: 40px;
+      position: relative;
+      .content {
+        display: flex;
+        align-items: center;
+        .icon {
+          width: 60px;
+          height: 30px;
+          margin-left:25px;
+          text-align: center;
+        }
+        .info {
+          margin-left: 15px;
+        }
+      }
+      .devKey {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .room {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .status {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        color: #fff;
+        position: absolute;
+        right: 38px;
+        top: 8px;
+      }
+      .detail {
+        width: 40px;
+        height: 25px;
+        padding: 0;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        cursor: pointer;
+      }
     }
-    .detail {
-      width: 40px;
-      height: 25px;
-      padding: 0;
-      border: 1px solid #ccc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #fff;
-      position: absolute;
-      right: 8px;
-      bottom: 8px;
-      cursor: pointer;
+  }
+}
+
+@media screen and (max-width: 1600px) {
+  .arrayContainer {
+    display: flex;
+    flex-wrap: wrap;
+    .arrayItem {
+      width: 33%;
+      height: 140px;
+      font-size: 13px;
+      box-sizing: border-box;
+      background-color: #eef4fc;
+      border: 5px solid #fff;
+      padding-top: 40px;
+      position: relative;
+      .content {
+        display: flex;
+        align-items: center;
+        .icon {
+          width: 60px;
+          height: 30px;
+          margin-left:25px;
+          text-align: center;
+        }
+        .info {
+          margin-left: 15px;
+        }
+      }
+      .devKey {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .room {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .status {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        color: #fff;
+        position: absolute;
+        right: 38px;
+        top: 8px;
+      }
+      .detail {
+        width: 40px;
+        height: 25px;
+        padding: 0;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        cursor: pointer;
+      }
     }
   }
 }
@@ -971,18 +1577,104 @@ onActivated(() => {
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
+
 :deep(.el-form) {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }
+
 ::v-deep .el-table .el-table__header th{
   background-color: #f5f7fa;
   color: #909399;
   height: 80px;
 
+}
+
+.form-container {
+  display: flex;
+  align-items: center;
+}
+ 
+.inline-form-item,
+.inline-button,
+.inline-checkbox-group,
+.inline-autocomplete,
+.button-group {
+  margin-right: 10px; /* Adjust spacing as needed */
+}
+ 
+.inline-checkbox-group {
+  display: flex;
+  align-items: center;
+}
+ 
+.inline-checkbox {
+  margin-right: 5px; /* Adjust spacing between checkboxes if needed */
+}
+ 
+.inline-autocomplete {
+  width: 200px; /* Adjust width as needed */
+}
+
+:deep(.el-dialog) {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.custom-content {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+}
+
+.question {
+  width: 12px;
+  height: 12px;
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid;
+  border-radius: 50%;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.cardChilc {
+  flex: 1;
+  margin: 0 10px;
+  box-sizing: border-box;
+  .box {
+    position: relative;
+    height: 121px;
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid #00289e;
+    margin: 72px auto;
+    
+    .value {
+      font-size: 30px;
+      padding: 20px 0;
+    }
+    .day {
+      width: 100%;
+      font-size: 16px;
+      text-align: center;
+      color: #fff;
+      background-color: #00289e;
+      padding: 10px 0;
+    }
+  }
 }
 </style>

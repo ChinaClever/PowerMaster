@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
  *
  * @author clever
  */
-@TableName("bus_index")
+@TableName("box_index")
 @KeySequence("bus_index_seq") // 用于 Oracle、PostgreSQL、Kingbase、DB2、H2 数据库的主键自增。如果是 MySQL 等数据库，可不写。
 @Data
 @ToString(callSuper = true)
@@ -27,31 +27,34 @@ public class BoxIndexDO {
     /**
      * 设备识别码
      */
-    private String devKey;
+    private String busKey;
     /**
      * ip地址
      */
     private String ipAddr;
-    /**
-     * 母线地址
-     */
-    private String casAddr;
+
     /**
      * 母线编号
      */
-    private Integer barId;
+    private Integer busId;
+
     /**
-     * 运行状态 0：正常 1：预警 2：告警 3: 升级 4：故障 5：离线
+     * 节点IP
+     */
+    private String  busName;
+
+    /**
+     * 运行状态 0：离线 1：正常  2：告警
      */
     private Integer runStatus;
     /**
      * 节点IP
      */
-    private String nodeIp;
+    private Integer nodeId;
     /**
      * 逻辑删除
      */
-    private Integer isDeleted;
+    private Boolean isDeleted;
     /**
      * 创建时间
      */

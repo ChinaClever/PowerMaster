@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -50,13 +51,13 @@ public class CabinetDTO {
      * 电力容量
      */
     @Schema(description = "电力容量", example = "2")
-    private float powCapacity;
+    private Double powCapacity;
 
     /**
      * 数据来源
      */
     @Schema(description = "数据来源 0：PDU 1：母线", example = "0")
-    private int pduBox;
+    private Boolean pduBox;
     /**
      * 是否禁用
      */
@@ -216,32 +217,32 @@ public class CabinetDTO {
     private Double yesterdayEq;
 
     /**
-     * 标记位-名字  前端用
+     * 插接箱ID编号
      */
-    private String boxIndexA;
+    private Integer boxIndexA;
 
     /**
-     * 标记位-名字  前端用
+     * 插接箱ID编号
      */
-    private String boxIndexB;
+    private Integer boxIndexB;
     /**
      * 日用能告警开关
      */
-    private  int eleAlarmDay;
+    private  Boolean eleAlarmDay;
 
     /**
      * 月用能告警开关
      */
-    private  int eleAlarmMonth;
+    private  Boolean eleAlarmMonth;
 
     /**
      * 日用能限制
      */
-    private double eleLimitDay;
+    private BigDecimal eleLimitDay;
 
     /**
      * 月用能限制
      */
-    private double eleLimitMonth;
+    private BigDecimal eleLimitMonth;
 
 }

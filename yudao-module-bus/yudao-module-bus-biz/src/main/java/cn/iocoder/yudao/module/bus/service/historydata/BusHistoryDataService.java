@@ -16,8 +16,10 @@ import java.util.Map;
  * @author 芋道源码
  */
 public interface BusHistoryDataService {
-    String[]  getBusIdsbyBusDevkeys(String[] devkeys);
-    String[]  getBoxIdsbyBoxDevkeys(String[] devkeys);
+    String[] getBusIdsbyBusDevkeys(String[] devkeys);
+
+    String[] getBoxIdsbyBoxDevkeys(String[] devkeys);
+
     List<Object> getLocationsAndNameByBusIds(List<Map<String, Object>> mapList);
 
     List<Object> getLocationsAndNameByBoxIds(List<Map<String, Object>> mapList);
@@ -57,7 +59,9 @@ public interface BusHistoryDataService {
     PageResult<Object> getBoxHistoryDataDetails(BusHistoryDataDetailsReqVO reqVO) throws IOException;
 
     Map<String, Object> getSumData(String[] indices, String[] name, LocalDateTime[] timeAgo, String field) throws IOException;
+
     Map<String, Object> getBusNavNewData(String granularity) throws IOException;
+
     Map<String, Object> getBoxNavNewData(String granularity) throws IOException;
 
     PageResult<Object> getBusEnvDataPage(BusHistoryDataPageReqVO pageReqVO) throws IOException;
@@ -84,7 +88,7 @@ public interface BusHistoryDataService {
 
     List<Object> getNewBoxDetailHistoryList(List<Object> list);
 
-    List<Object>  getNewEnvHistoryList(List<Object> list);
+    List<Object> getNewEnvHistoryList(List<Object> list);
 
     List<Object> getNewTemHistoryList(List<Object> list);
 }

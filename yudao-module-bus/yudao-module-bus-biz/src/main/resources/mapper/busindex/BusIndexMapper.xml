@@ -9,14 +9,25 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
     <select id="selectPageList" resultType="cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusAisleBarQueryVO">
-        SELECT bi.id as id, bi.dev_key as devKey, bi.ip_addr as ipAddr, bi.cas_addr as casAddr, bi.bar_id as barId, bi.run_status as runStatus,
-        bi.node_ip as nodeIp, bi.bus_name as busName, bi.is_deleted as isDeleted, bi.create_time as createTime, bi.update_time as updateTime,
-        ab.path as path, ab.aisle_id as aisleId,ab.bar_key as barKey,ab.dev_ip as devIp
-        FROM bus_index  bi LEFT JOIN aisle_bar ab on bi.dev_key = ab.bar_key
+        SELECT
+        bi.id AS id,
+        bi.bus_key AS devKey,
+        bi.ip_addr AS ipAddr,
+        bi.run_status AS runStatus,
+        bi.bus_name AS busName,
+        bi.is_deleted AS isDeleted,
+        bi.create_time AS createTime,
+        bi.update_time AS updateTime,
+        ab.path AS path,
+        ab.aisle_id AS aisleId,
+        ab.bus_key AS barKey
+        FROM
+        bus_index bi
+        LEFT JOIN aisle_bar ab ON bi.bus_key = ab.bus_key
         <where>
-            bi.is_deleted = 0 and ab.bar_key is not null
+            bi.is_deleted = 0 and ab.bus_key is not null
             <if test="devkeys != null and devkeys.length > 0">
-                and bi.dev_key in
+                and bi.bus_key in
                 <foreach item="item" collection="devkeys" separator="," open="(" close=")" index="">
                     #{item}
                 </foreach>
@@ -27,23 +38,21 @@
     <select id="selectBoxPageList" resultType="cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusAisleBarQueryVO">
         SELECT
         bi.id AS id,
-        bi.dev_key AS devKey,
+        bi.box_key AS devKey,
         bi.ip_addr AS ipAddr,
-        bi.cas_addr AS casAddr,
-        bi.bar_id AS barId,
+        bi.box_id AS barId,
         bi.run_status AS runStatus,
-        bi.node_ip AS nodeIp,
-        concat(bi.bus_name,'-',bi.box_name) AS busName,
+        bi.box_name AS busName,
         bi.is_deleted AS isDeleted,
         bi.create_time AS createTime,
         bi.update_time AS updateTime,
         ab.aisle_id AS aisleId,
-        ab.bar_key AS barKey,
+        ab.box_key AS barKey,
         ab1.path AS path
         FROM
         box_index bi
-        LEFT JOIN aisle_box ab ON bi.dev_key = ab.bar_key
-        LEFT JOIN aisle_bar ab1 ON ab1.id = ab.aisle_bar_id
+        LEFT JOIN aisle_box ab ON bi.box_key = ab.box_key
+        LEFT JOIN aisle_bar ab1 ON ab1.id = ab.aisle_id
         <where>
             bi.is_deleted = 0 and ab.bar_key is not null
             <if test="devkeys != null and devkeys.length > 0">
@@ -52,6 +61,30 @@
                     #{item}
                 </foreach>
             </if>
+        </where>
+    </select>
+    <select id="selectBusIndexStatistics"
+            resultType="cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusIndexStatisticsResVO">
+        SELECT count(1) as total,
+        sum(case when bi.run_status = 1 then 1 else 0 end) as normal,
+        sum(case when bi.run_status = 2 then 1 else 0 end) as alarm,
+        sum(case when bi.run_status = 0 then 1 else 0 end) as offline
+        FROM bus_index bi
+        <where>
+            is_deleted = 0
+        </where>
+    </select>
+    <select id="selectBusIndexLoadRateStatus"
+            resultType="cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.LoadRateStatus">
+        SELECT
+        sum(case when bi.load_rate = 0 then 1 else 0 end) as LoadRateZero,
+        sum(case when bi.load_rate = 1 then 1 else 0 end) as LoadRateOne,
+        sum(case when bi.load_rate = 2 then 1 else 0 end) as LoadRateTwo,
+        sum(case when bi.load_rate = 3 then1 else 0 end) as LoadRateThree,
+        sum(case when bi.load_rate = 4 then1 else 0 end) as LoadRateFour,
+        FROM bus_index bi
+        <where>
+            is_deleted = 0
         </where>
     </select>
 </mapper>

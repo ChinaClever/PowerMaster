@@ -6,6 +6,7 @@ import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxIndexPageReqVO;
+import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusIndexStatisticsResVO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
@@ -21,18 +22,20 @@ public interface BoxIndexCopyMapper extends BaseMapperX<BoxIndex> {
 
     default PageResult<BoxIndex> selectPage(BoxIndexPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<BoxIndex>()
-                .eqIfPresent(BoxIndex::getDevKey, reqVO.getDevKey())
-                .inIfPresent(BoxIndex::getDevKey,reqVO.getBoxDevKeyList())
+                .eqIfPresent(BoxIndex::getBoxKey, reqVO.getDevKey())
+                .inIfPresent(BoxIndex::getBoxKey,reqVO.getBoxDevKeyList())
                 .inIfPresent(BoxIndex::getId,reqVO.getBoxIds())
                 .eqIfPresent(BoxIndex::getIpAddr, reqVO.getIpAddr())
-                .eqIfPresent(BoxIndex::getCasAddr, reqVO.getDevAddr())
-                .eqIfPresent(BoxIndex::getBarId, reqVO.getBarId())
+//                .eqIfPresent(BoxIndex::getCasAddr, reqVO.getDevAddr())
+                .eqIfPresent(BoxIndex::getBoxId, reqVO.getBarId())
                 .eqIfPresent(BoxIndex::getRunStatus, reqVO.getRunStatus())
-                .eqIfPresent(BoxIndex::getNodeIp, reqVO.getNodeIp())
+                .eqIfPresent(BoxIndex::getNodeId, reqVO.getNodeIp())
                 .eqIfPresent(BoxIndex::getIsDeleted, reqVO.getIsDeleted())
                 .eqIfPresent(BoxIndex::getBoxType,0)
                 .betweenIfPresent(BoxIndex::getCreateTime, reqVO.getCreateTime())
                 .ne(ObjectUtil.isNotEmpty(reqVO.getStatus()), BoxIndex::getRunStatus, 0)
                 .orderByAsc(BoxIndex::getId));
     }
+
+    BusIndexStatisticsResVO getBoxIndexStatistics();
 }

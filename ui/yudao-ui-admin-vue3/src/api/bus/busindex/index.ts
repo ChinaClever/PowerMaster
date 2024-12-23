@@ -90,6 +90,10 @@ export const IndexApi = {
     return await request.post({ url: `/bus/index/buspfpage`, data })
   },
 
+  getBusPFLow: async () => {
+    return await request.get({ url: `/bus/index/pf/lowest`})
+  },
+
   getBusPFDetail: async (data: any) => {
     return await request.post({ url: `/bus/index/pf/detail`, data })
   },
@@ -112,6 +116,10 @@ export const IndexApi = {
 
   getBusLinePage: async (data: any) => {
     return await request.post({ url: `/bus/index/line/page`,data})
+  },
+
+  getBusLineMax: async (data: any) => {
+    return await request.post({ url: `/bus/index/line/max` ,data})
   },
 
   getBusLineCurLine: async (data: any) => {
@@ -178,5 +186,30 @@ export const IndexApi = {
   //始端箱需量数据图表数据导出
   getBusLineCurLineExcel: async ( data, axiosConfig) => {
     return await request.downloadPost({ url: `/bus/index/line/cur/excel` , data, ...axiosConfig })
-  }
+  },
+
+  //获得始端箱报表平均电流电压详细信息
+  getAvgBusHdaLineForm: async (data: any) => {
+    return await request.post({ url: `/bus/index/avg/busHdaLine/form` ,  data})
+  },
+
+  //始端箱温度详情导出
+  getBusTemDetailExcel: async ( data: any, axiosConfig) => {
+    return await request.downloadPost({ url: `/bus/index/tem/detailExcel` , data, ...axiosConfig })
+  },
+  
+  //始端相功率因素详情导出
+  getBusPFDetailExcel: async ( data: any, axiosConfig) => {
+    return await request.downloadPost({ url: `/bus/index/pf/detailExcel` , data, ...axiosConfig })
+  },
+
+  //获得记录分页
+  getRecordPage: async (data: any) => {
+    return await request.post({ url: `/system/alarm/record/page`, data})
+  },
+
+  //获得始端箱设备统计
+  getBusIndexStatistics: async () => {
+    return await request.get({ url: `/bus/index/statistics` })
+  },
 }

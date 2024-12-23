@@ -36,7 +36,7 @@ const echartsOption = ref({
       return result;
     } 
   },
-  xAxis: {type: 'category', boundaryGap: false, data : time},
+  xAxis: {type: 'category', boundaryGap: true, data : time},
   yAxis: { type: 'value' , name : "kWh"},
   toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
   series: series,

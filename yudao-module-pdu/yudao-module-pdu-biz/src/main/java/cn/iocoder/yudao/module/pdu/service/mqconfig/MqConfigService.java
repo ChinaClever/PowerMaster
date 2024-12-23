@@ -1,11 +1,11 @@
 package cn.iocoder.yudao.module.pdu.service.mqconfig;
 
-import java.util.*;
-import javax.validation.*;
-import cn.iocoder.yudao.module.pdu.controller.admin.mqconfig.vo.*;
-import cn.iocoder.yudao.module.pdu.dal.dataobject.mqconfig.MqConfigDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.pojo.PageParam;
+import cn.iocoder.yudao.module.pdu.controller.admin.mqconfig.vo.MqConfigPageReqVO;
+import cn.iocoder.yudao.module.pdu.controller.admin.mqconfig.vo.MqConfigSaveReqVO;
+import cn.iocoder.yudao.module.pdu.dal.dataobject.mqconfig.MqConfigDO;
+
+import javax.validation.Valid;
 
 /**
  * 消息队列系统配置 Service 接口

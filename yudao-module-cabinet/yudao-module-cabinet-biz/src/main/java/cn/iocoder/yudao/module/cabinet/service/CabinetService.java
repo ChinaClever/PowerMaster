@@ -1,14 +1,15 @@
 package cn.iocoder.yudao.module.cabinet.service;
 
-import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
+import cn.iocoder.yudao.module.cabinet.vo.*;
 import com.alibaba.fastjson2.JSONObject;
 
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -62,15 +63,6 @@ public interface CabinetService {
      */
     CommonResult saveEnvCabinet(CabinetVo vo) throws Exception;
 
-
-
-    /**
-     * 机柜用电列表页面
-     *
-     * @param vo 搜索参数
-     */
-    PageResult<CabinetIndexDTO> getEqPage(CabinetIndexVo vo);
-
     /**
      * 机柜容量列表页面
      *
@@ -105,4 +97,22 @@ public interface CabinetService {
      * @return
      */
     int getrestorerCabinet(Integer id);
+
+    PageResult<CabinetIndexLoadResVO> getIndexLoadPage(CabinetIndexVo pageReqVO);
+
+    /**
+     * 机柜用电列表页面
+     *
+     * @param pageReqVO 搜索参数
+     */
+
+    PageResult<CabinetEnergyStatisticsResVO> getEnergyStatisticsPage(CabinetIndexVo pageReqVO) throws IOException;
+
+    PageResult<CabinetIndexEnvResVO> getCabinetEnv(CabinetIndexVo pageReqVO);
+
+    PageResult<CabinetIndexBalanceResVO> getCabinetIndexBalancePage(CabinetIndexVo pageReqVO);
+
+    CabinetDistributionDetailsResVO getCabinetdistributionDetails(int id, int roomId, String type) throws IOException;
+
+    Map getCabinetDistributionFactor(int id, int roomId, String type) throws IOException;
 }

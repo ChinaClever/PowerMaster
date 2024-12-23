@@ -2,10 +2,10 @@
   <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="插接箱温度">
     <template #NavInfo>
       <div>
-        <div class="header">
-          <!-- <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div> -->
+         <!-- <div class="header">
+          <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div>
         </div>
-        <div class="line"></div>
+        <div class="line"></div> -->
         <!-- <div class="status">
           <div class="box">
             <div class="top">
@@ -32,6 +32,32 @@
             <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
           </div>
         </div> -->
+        <div class="status">
+          <div class="box">
+            <div class="top"> <div class="tag"></div>正常 </div>
+            <div class="value"
+              ><span class="number">{{leftDataList.normal}}</span>个</div
+            >
+          </div>
+          <div class="box">
+            <div class="top"> <div class="tag empty"></div>离线 </div>
+            <div class="value"
+              ><span class="number">{{leftDataList.offline}}</span>个</div
+            >
+          </div>
+          <div class="box">
+            <div class="top"> <div class="tag error"></div>告警 </div>
+            <div class="value"
+              ><span class="number">{{leftDataList.alarm}}</span>个</div
+            >
+          </div>
+          <div class="box">
+            <div class="top"> <div class="tag empty"></div>总共 </div>
+            <div class="value"
+              ><span class="number">{{leftDataList.total}}</span>个</div
+            >
+          </div>
+        </div>
         <div class="line"></div>
 
       </div>
@@ -44,11 +70,22 @@
         :inline="true"
         label-width="68px"                          
       >
-        <el-form-item >
-          <el-checkbox-group  v-model="queryParams.status"  @change="handleQuery">
-            <el-checkbox :label="5" :value="5">在线</el-checkbox>
-          </el-checkbox-group>
+      <el-form-item v-show="valueMode != 3 && valueMode != 4">
+          <template v-for="(data) in statusList" :key="data.value">
+            <button
+              :class="data.selected ? data.activeClass : data.cssClass"
+              @click.prevent="handleSelectStatus(data.value)"
+              >{{ data.name }}</button
+            >
+          </template>
+          <el-button type="primary" style="height:35px;width:58px;" @click="toggleAllSelected()">全部</el-button>
         </el-form-item>
+
+        <!-- <el-form-item >
+          <el-checkbox-group  v-model="queryParams.status"  @change="handleQuery">
+            <el-checkbox :label="1" :value="1">在线</el-checkbox>
+          </el-checkbox-group>
+        </el-form-item> -->
         <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
             v-model="queryParams.devKey"
@@ -120,7 +157,7 @@
               link
               type="primary"
               @click="openTemDetail(scope.row)"
-              v-if=" scope.row.status != null && scope.row.status != 5"
+              v-if=" scope.row.status != null && scope.row.status != 1"
             >
             设备详情
             </el-button>
@@ -128,7 +165,7 @@
               link
               type="danger"
               @click="handleDelete(scope.row.boxId)"
-              v-if="scope.row.status == 5"
+              v-if="scope.row.status == 1"
             >
               删除
             </el-button>
@@ -142,10 +179,10 @@
           <div class="content">
             <img  class="icon"  src="@/assets/imgs/temicon.png" />    
             <div class="info" >                  
-              <div :style="{backgroundColor : item.atemColor}" v-if="item.atem != null">A:{{item.atem}}°C</div>
-              <div :style="{backgroundColor : item.btemColor}" v-if="item.btem != null">B:{{item.btem}}°C</div>
-              <div :style="{backgroundColor : item.ctemColor}" v-if="item.ctem != null">C:{{item.ctem}}°C</div>
-              <div :style="{backgroundColor : item.ntemColor}" v-if="item.ntem != null">N:{{item.ntem}}°C</div>
+              <div :style="{backgroundColor : item.atemColor}" v-if="item.atem != null">A: {{item.atem}}°C</div>
+              <div :style="{backgroundColor : item.btemColor}" v-if="item.btem != null">B: {{item.btem}}°C</div>
+              <div :style="{backgroundColor : item.ctemColor}" v-if="item.ctem != null">C: {{item.ctem}}°C</div>
+              <div :style="{backgroundColor : item.ntemColor}" v-if="item.ntem != null">N: {{item.ntem}}°C</div>
             </div>          
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
@@ -169,9 +206,9 @@
       </template>
 
       <el-dialog v-model="detailVis" title="温度详情"  width="70vw" height="58vh">
-        <el-row>
-          <el-tag>{{ location }}</el-tag>
-          <div >
+        <el-row class="custom-row">
+          <el-tag style="margin-left: 6vw; margin-top: -130px">{{ location }}</el-tag>
+          <div style="margin-left: -14vw;">
             日期:
             <el-date-picker
               v-model="queryParams.oldTime"
@@ -184,7 +221,8 @@
           </div>
           
           
-          <el-button 
+          <el-button
+            style="margin-left: 1vw;"
             @click="subtractOneDay();handleDayPick()" 
             :type=" 'primary'"
           >
@@ -196,18 +234,23 @@
           >
             &gt;后一日
           </el-button>
-          <el-button 
-            @click="switchChartOrTable = 0" 
-            :type="switchChartOrTable == 0 ?  'primary' : ``"
-          >
-            图表
-          </el-button>
-          <el-button 
-            @click="switchChartOrTable = 1" 
-            :type="switchChartOrTable == 1 ?  'primary' : ``"
-          >
-            数据
-          </el-button>
+          <div class="button-group" style="margin-left: auto">
+            <el-button
+              @click="switchChartOrTable = 0"
+              :type="switchChartOrTable === 0 ? 'primary' : ''"
+            >
+              图表
+            </el-button>
+            <el-button
+              @click="switchChartOrTable = 1"
+              :type="switchChartOrTable === 1 ? 'primary' : ''"
+            >
+              数据
+            </el-button>
+            <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading">
+              <Icon icon="ep:download" class="mr-5px" /> 导出
+            </el-button>
+          </div>
 
         </el-row>
         <br/>
@@ -274,6 +317,34 @@ const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(0)
 const switchChartOrTable = ref(0);
 const valueMode = ref(0)
+
+const leftDataList = ref([])
+const statusList = reactive([
+  {
+    name: '正常',
+    selected: true,
+    value: 0,
+    status: 1,
+    cssClass: 'btn_normal',
+    activeClass: 'btn_normal normal'
+  },
+  {
+    name: '告警',
+    selected: true,
+    value: 1,
+    status: 2,
+    cssClass: 'btn_error',
+    activeClass: 'btn_error error'
+  },
+  {
+    name: '离线',
+    selected: true,
+    value: 2,
+    status: 0,
+    cssClass: 'btn_offline',
+    activeClass: 'btn_offline offline'
+  }
+])
 
 const devKeyList = ref([])
 const loadAll = async () => {
@@ -455,22 +526,63 @@ const getList = async () => {
   loading.value = true
   try {
     const data = await IndexApi.getBoxTemPage(queryParams)
+    const res = await IndexApi.getBoxIndexStatistics();
 
-    list.value = data.list
-    var tableIndex = 0;
-
-    list.value.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.atem == null){
-        return;
-      } 
-      obj.atem = obj.atem?.toFixed(0);
-      obj.btem = obj.btem?.toFixed(0);
-      obj.ctem = obj.ctem?.toFixed(0);
-      obj.ntem = obj.ntem?.toFixed(0);
+    // 检查 statusList 中所有项的 selected 是否都为 true
+    const allSelectedTrue = statusList.every(item => item.selected);
+    const allSelectedFalse = statusList.every(item => !item.selected);
+ 
+    // 初始情况下，使用 API 返回的数据
+    let processedList = data.list.map((obj, index) => {
+      const tableId = (queryParams.pageNo - 1) * queryParams.pageSize + index + 1;
+      return {
+        ...obj,
+        tableId,
+        atem: obj.atem?.toFixed(0),
+        btem: obj.btem?.toFixed(0),
+        ctem: obj.ctem?.toFixed(0),
+      };
     });
+ 
+    if (allSelectedTrue) {
+      // 如果都为 true
+      processedList = processedList;
+      console.log('All selected true, resetting list.value');
+      if (flashListTimer.value) {
+        clearInterval(flashListTimer.value);
+        flashListTimer.value = null;
+      }
+    } else if (allSelectedFalse) {
+      // 如果都为 false
+      processedList = [
+        {
+          id: null,
+          status: null,
+          apparentPow: null,
+          pow: null,
+          ele: null,
+          devKey: null,
+          location: null,
+          dataUpdateTime: '',
+          pduAlarm: '',
+          pf: null,
+          atem: null,
+          btem: null,
+          ctem: null,
+          temUnbalance: null
+        }
+      ];
+      console.log('All selected false, resetting list.value');
+      if (flashListTimer.value) {
+        clearInterval(flashListTimer.value);
+        flashListTimer.value = null;
+      }
+    }
+    list.value = processedList;
+    console.log('Processed list.value', list.value);
 
     total.value = data.total
+    leftDataList.value = res;
   } finally {
     loading.value = false
   }
@@ -522,6 +634,41 @@ const getNavList = async() => {
 //   window.open(url, '_blank');
 // }
 
+const handleSelectStatus = (index) => {
+  statusList[index].selected = !statusList[index].selected;
+  console.log("index",index);
+  const status = statusList.filter((item) => item.selected);
+  const statusArr = status.map((item) => item.status);
+  queryParams.status = statusArr;
+  console.log("statusArr",statusArr);
+  handleQuery();
+}
+
+const toggleAllSelected = () => {
+ // 提取前三个按钮的状态
+  const [button0Selected, button1Selected, button2Selected] = statusList.slice(0, 3).map(item => item.selected);
+ 
+  // 检查前三个按钮的状态是否都为false或者true
+  if (button0Selected === button1Selected && button1Selected === button2Selected) {
+    // 如果都为false或者true，则切换所有按钮的状态
+    statusList.forEach(item => {
+      item.selected = !item.selected;
+    });
+  } else {
+    // 如果前三个按钮的状态不一致，则检查多数的状态
+    const countSelected = statusList.filter(item => item.selected).length;
+    const majorityState = countSelected > statusList.length / 2;
+ 
+    // 将所有按钮的状态改为多数的状态
+    statusList.forEach(item => {
+      item.selected = majorityState;
+    });
+  }
+  statusList.forEach((item, index) => {
+    console.log(`Button ${index} selected state: ${item.selected}`);
+  });
+  handleQuery();
+};
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
@@ -552,6 +699,27 @@ const handleDelete = async (id: number) => {
     // 刷新列表
     // await getList()
   } catch {}
+}
+
+const handleExportXLS = async ()=>{
+  try {
+    // 导出的二次确认
+    await message.exportConfirm()
+    // 发起导出
+    queryParams.pageNo = 1
+    exportLoading.value = true
+    const axiosConfig = {
+      timeout: 0 // 设置超时时间为0
+    }
+    const data = await IndexApi.getBoxTemDetailExcel(queryParams, axiosConfig)
+    console.log("data",data)
+    await download.excel(data, '温度详细.xlsx')
+  } catch (error) {
+    // 处理异常
+    console.error('导出失败：', error)
+  } finally {
+    exportLoading.value = false
+  }
 }
 
 /** 导出按钮操作 */
@@ -761,6 +929,7 @@ onActivated(() => {
   .status {
     display: flex;
     flex-wrap: wrap;
+    margin-top: 30px;
     .box {
       height: 70px;
       width: 50%;
@@ -932,18 +1101,33 @@ onActivated(() => {
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
+
 :deep(.el-form) {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }
+
 ::v-deep .el-table .el-table__header th{
   background-color: #f5f7fa;
   color: #909399;
   height: 80px;
 
+}
+
+.custom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+}
+ 
+.button-group {
+  display: flex;
+  gap: 10px;
 }
 </style>

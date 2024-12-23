@@ -1,11 +1,15 @@
 <template>
   <ContentWrap>
+      <div class="title">
+        <el-button v-if="!editEnable" @click.prevent="toDetail(cabinetId,roomId)" type="primary">编辑</el-button>
+        <!-- <button class="detail" @click.prevent="toDetail(cabinetId,roomId)">编辑</button> -->
+      </div>
     <div class="screenContiner">
       <div class="deviceList">
         <div v-for="item in deviceRight" :key="item.id" class="device">
           <div class="name">设备名称： {{item.rackName}}</div>
           <div class="info">
-            <div>型号：{{item.type}}</div>
+            <div>型号：{{item.rackType}}</div>
             <div>占用：{{item.uHeight}}</div>
           </div>
         </div>
@@ -25,7 +29,7 @@
         <div v-for="item in deviceLeft" :key="item.id" class="device">
           <div class="name">设备名称： {{item.rackName}}</div>
           <div class="info">
-            <div>型号：{{item.type}}</div>
+            <div>型号：{{item.rackType}}</div>
             <div>占用：{{item.uHeight}}</div>
           </div>
         </div>
@@ -58,14 +62,15 @@
 
 <script lang="ts" setup>
 import { CabinetApi } from '@/api/cabinet/info'
-
+const {push} = useRouter()
 const cabinetInfo = ref({})
 const deviceLeft = ref([])
 const deviceRight = ref([])
 const frameList = ref([])
 const height = ref('0px')
+const roomId = history?.state?.roomId || 1
 const cabinetId = history?.state?.id || 1
-console.log('cabinetId', cabinetId)
+
 
 const getData = async() => {
   const res = await CabinetApi.getCabinetInfoItem({id: cabinetId})
@@ -82,7 +87,7 @@ const getData = async() => {
       frames.splice(item.uAddress-1, item.uHeight, item)
     })
     frameList.value = frames.reverse()
-    console.log('frames', frames)
+// 根据货架索引列表的长度动态调整高度
     if (res.rackIndexList.length < 11) {
       height.value = '30px'
     } else if (res.rackIndexList.length.length < 16) {
@@ -94,8 +99,15 @@ const getData = async() => {
     }
   }
 }
+const toDetail = (cabinetId,roomId) => {
+  console.log('跳转详情cabinetId', cabinetId)
+  console.log('跳转详情roomId', roomId)
+  // alert('跳转详情')
+  push({path: '/cabinet/cab/frameBinding', state: { cabinetId,roomId }})
+}
 
-getData()
+
+ getData()
 </script>
 
 <style lang="scss" scoped>

@@ -79,8 +79,8 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 // 查询位置
                 PduIndex pduIndex = pduIndexMapper.selectById( (int)pduId );
                 if (pduIndex != null){
-                    map.put("location", pduIndex.getDevKey());
-                    map.put("address", getAddressByIpAddr(pduIndex.getDevKey()));
+                    map.put("location", pduIndex.getPduKey());
+                    map.put("address", getAddressByIpAddr(pduIndex.getPduKey()));
                 }else{
                     map.put("location", null);
                     map.put("address", null);
@@ -105,8 +105,8 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 // 查询位置
                 PduIndex pduIndex = pduIndexMapper.selectById( (int)pduId );
                 if (pduIndex != null){
-                    map.put("location", pduIndex.getDevKey());
-                    map.put("address", getSensorAddressByIpAddr(pduIndex.getDevKey(), sensorId));
+                    map.put("location", pduIndex.getPduKey());
+                    map.put("address", getSensorAddressByIpAddr(pduIndex.getPduKey(), sensorId));
                 }else{
                     map.put("location", null);
                     map.put("address", null);
@@ -170,8 +170,8 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         // A 路
         CabinetPdu cabinetPduA = cabinetPduMapper.selectOne(
                 new LambdaQueryWrapperX<CabinetPdu>()
-                        .eq(CabinetPdu::getPduKeyA, ipParts[0])
-                        //.eq(CabinetPdu::getCasIdA, ipParts[1])
+                        .eq(CabinetPdu::getPduKeyA, ipParts[0]+"-"+ipParts[1])
+//                        .eq(CabinetPdu::getCasIdA, )
         );
 
         if (cabinetPduA != null) {
@@ -193,8 +193,8 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         // B 路
         CabinetPdu cabinetPduB = cabinetPduMapper.selectOne(
                 new LambdaQueryWrapperX<CabinetPdu>()
-                        .eq(CabinetPdu::getPduKeyB, ipParts[0])
-                        //.eq(CabinetPdu::getCasIdB, ipParts[1])
+                        .eq(CabinetPdu::getPduKeyB, ipParts[0]+"-"+ipParts[1])
+//                        .eq(CabinetPdu::getCasIdB, ipParts[1])
         );
 
         if (cabinetPduB != null) {
@@ -222,13 +222,9 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         String[] ipParts = location.split("-");
         String address = null;
         CabinetPdu cabinetPduA = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
-                .eq(CabinetPdu::getPduKeyA, ipParts[0])
-                //.eq(CabinetPdu::getCasIdA, ipParts[1])
-        );
+                .eq(CabinetPdu::getPduKeyA, ipParts[0]+"-"+ipParts[1]));//.eq(CabinetPdu::getCasIdA, ipParts[1])
         CabinetPdu cabinetPduB = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
-                .eq(CabinetPdu::getPduKeyB, ipParts[0])
-                //.eq(CabinetPdu::getCasIdB, ipParts[1])
-        );
+                .eq(CabinetPdu::getPduKeyB, ipParts[0]+"-"+ipParts[1]));//.eq(CabinetPdu::getCasIdB, ipParts[1])
         if(cabinetPduA != null){
             int cabinetId = cabinetPduA.getCabinetId();
             CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
@@ -290,9 +286,9 @@ public class HistoryDataServiceImpl implements HistoryDataService {
 
     @Override
     public Integer getPduIdByAddr(String ipAddr, String cascadeAddr) {
-        String devKey = ipAddr+"-"+cascadeAddr;
+        String devKey = ipAddr;//+"-"+cascadeAddr;
         QueryWrapper<PduIndex> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("dev_key", devKey); // 指定查询条件：name 字段等于给定的 name 值
+        queryWrapper.eq("pdu_key", devKey); // 指定查询条件：name 字段等于给定的 name 值
         PduIndex pduIndex = pduIndexMapper.selectOne(queryWrapper); // 执行查询，返回匹配的实体对象
         if (pduIndex != null){
             return Math.toIntExact(pduIndex.getId());
@@ -304,7 +300,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     public List<String> getPduIdsByIps(String[] ips){
         QueryWrapper<PduIndex> queryWrapper = new QueryWrapper<>();
         queryWrapper.select("id");
-        queryWrapper.in("dev_key", ips);
+        queryWrapper.in("pdu_key", ips);
         return pduIndexMapper.selectObjs(queryWrapper);
 
     }
@@ -314,7 +310,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         Page page = new Page<>(pageNo,pageSize);
         LambdaQueryWrapper<PduIndex> queryWrapper = new LambdaQueryWrapper<>();
         if (ipArray != null && ipArray.length != 0) {
-            queryWrapper.in(PduIndex::getDevKey,ipArray);
+            queryWrapper.in(PduIndex::getPduKey,ipArray);
         }
         queryWrapper.orderByDesc(PduIndex::getId);
         queryWrapper.eq(PduIndex::getIsDeleted,0);
@@ -325,7 +321,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     public List<PduIndex> findPduIndexAllToList(String[] ipArray) {
         LambdaQueryWrapper<PduIndex> queryWrapper = new LambdaQueryWrapper<>();
         if (ipArray != null && ipArray.length != 0) {
-            queryWrapper.in(PduIndex::getDevKey,ipArray);
+            queryWrapper.in(PduIndex::getPduKey,ipArray);
         }
         queryWrapper.orderByDesc(PduIndex::getId);
         queryWrapper.eq(PduIndex::getIsDeleted,0);
@@ -704,10 +700,8 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             cabinetPduQueryWrapper.in("cabinet_id", cabinetIds);
             List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(cabinetPduQueryWrapper);
             for (CabinetPdu cabinetPdu1 : cabinetPduList){
-                //Integer ipA = getPduIdByAddr(cabinetPdu1.getPduKeyA(), String.valueOf(cabinetPdu1.getCasIdA()));
-                Integer ipA = getPduIdByAddr(cabinetPdu1.getPduKeyA(), String.valueOf(""));
-                //Integer ipB = getPduIdByAddr(cabinetPdu1.getPduKeyB(), String.valueOf(cabinetPdu1.getCasIdA()));
-                Integer ipB = getPduIdByAddr(cabinetPdu1.getPduKeyB(), String.valueOf(""));
+                Integer ipA = getPduIdByAddr(cabinetPdu1.getPduKeyA(),null );//String.valueOf(cabinetPdu1.getCasIdA())
+                Integer ipB = getPduIdByAddr(cabinetPdu1.getPduKeyB(),null);
                 if (ipA != null) {
                     pduIds.add(String.valueOf(ipA));
                 }
@@ -746,13 +740,11 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             cabinetPduQueryWrapper.eq("cabinet_id", cabinetIds[0]);
             CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(cabinetPduQueryWrapper);
             Integer pduId = null;
-            if (cabinetEnvSensor.getPathPdu() == 'A'){
-                //pduId = getPduIdByAddr(cabinetPdu.getPduKeyA(), String.valueOf(cabinetPdu.getCasIdA()));
-                pduId = getPduIdByAddr(cabinetPdu.getPduKeyA(), String.valueOf(""));
+            if (Objects.equals('A', cabinetEnvSensor.getPathPdu())){
+                pduId = getPduIdByAddr(cabinetPdu.getPduKeyA(),null);
             }
-            if (cabinetEnvSensor.getPathPdu() == 'B'){
-                //pduId = getPduIdByAddr(cabinetPdu.getPduKeyB(), String.valueOf(cabinetPdu.getCasIdB()));
-                pduId = getPduIdByAddr(cabinetPdu.getPduKeyB(), String.valueOf(""));
+            if (Objects.equals('B', cabinetEnvSensor.getPathPdu())){
+                pduId = getPduIdByAddr(cabinetPdu.getPduKeyB(), null);
             }
             // 创建范围查询
             if (pduId != null) {
@@ -852,15 +844,11 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             QueryWrapper<CabinetPdu> cabinetPduQueryWrapper = new QueryWrapper<>();
             cabinetPduQueryWrapper.eq("cabinet_id", cabinetId);
             CabinetPdu cabinetPdu = cabinetPduMapper.selectOne(cabinetPduQueryWrapper);
-            if (cabinetEnvSensor.getPathPdu() == 'A'){
-                //pduId = getPduIdByAddr(cabinetPdu.getPduKeyA(), String.valueOf(cabinetPdu.getCasIdA()));
-                pduId = getPduIdByAddr(cabinetPdu.getPduKeyA(), String.valueOf(""));
-                //ipAddr = cabinetPdu.getPduKeyA()+'-'+ cabinetPdu.getCasIdA();
+            if (Objects.equals('A', cabinetEnvSensor.getPathPdu())){
+                pduId = getPduIdByAddr(cabinetPdu.getPduKeyA(),null);
                 ipAddr = cabinetPdu.getPduKeyA();
-            } else if (cabinetEnvSensor.getPathPdu() == 'B') {
-                //pduId = getPduIdByAddr(cabinetPdu.getPduKeyB(), String.valueOf(cabinetPdu.getCasIdB()));
-                pduId = getPduIdByAddr(cabinetPdu.getPduKeyB(), String.valueOf(""));
-                //ipAddr = cabinetPdu.getPduKeyB()+'-'+ cabinetPdu.getCasIdB();
+            } else if (Objects.equals('B', cabinetEnvSensor.getPathPdu())) {
+                pduId = getPduIdByAddr(cabinetPdu.getPduKeyB(),null);
                 ipAddr = cabinetPdu.getPduKeyB();
             }
         }

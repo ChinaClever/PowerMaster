@@ -30,16 +30,16 @@ public class AisleBox implements Serializable {
     @Schema(description = "柜列id", example = "1")
     private Integer aisleId;
 
+
     /**
-     *  母线的key 始端箱标识符
+     *  唯一标识
      */
-    private String busKey;
+    private String boxKey;
 
     /**
      * 插接箱名称
      */
-    private String boxKey;
-
+    private String busKey;
     /**
      * 对应绑定母线id
      */
@@ -49,16 +49,6 @@ public class AisleBox implements Serializable {
      * 类型 0 插接箱 1 连接单元
      */
     private Integer boxType;
-
-//    /**
-//     * 级联地址
-//     */
-//    private Integer casAddr;
-
-//    /**
-//     * 母线编号
-//     */
-//    private Integer barId;
 
     /**
      * 标记位
@@ -74,14 +64,14 @@ public class AisleBox implements Serializable {
      * 创建时间
      */
     @Schema(description = "创建时间")
-    @TableField(fill = FieldFill.INSERT)
+//    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     /**
      * 更新时间
      */
     @Schema(description = "更新时间")
-    @TableField(fill = FieldFill.INSERT_UPDATE)
+//    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
 }

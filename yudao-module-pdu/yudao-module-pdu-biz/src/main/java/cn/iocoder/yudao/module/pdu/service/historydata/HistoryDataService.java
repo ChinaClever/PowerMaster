@@ -1,12 +1,11 @@
 package cn.iocoder.yudao.module.pdu.service.historydata;
 
 
-import cn.iocoder.yudao.framework.common.util.collection.MapUtils;
+import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.EnvDataDetailsReqVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.EnvDataPageReqVo;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataDetailsReqVO;
 import cn.iocoder.yudao.module.pdu.controller.admin.historydata.vo.HistoryDataPageReqVO;
-import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PduIndex;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
@@ -79,7 +78,7 @@ public interface HistoryDataService {
 
     List<Object> getNewHistoryDataDetails(List<Object> list);
 
-    List<Object> getNewExcelList(List<Object> list1,String ob);
+    List<Object> getNewExcelList(List<Object> list1, String ob);
 
     void getEnvExcelList(List<Object> list);
 

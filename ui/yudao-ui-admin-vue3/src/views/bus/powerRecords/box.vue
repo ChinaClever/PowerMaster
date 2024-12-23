@@ -159,6 +159,15 @@ const shortcuts = [
       return [start, end]
     },
   },
+   {    
+    text: '最近一年',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setFullYear(start.getFullYear() - 1)
+      return [start, end]
+    },
+  },
 ]
 
 const tableColumns = ref([

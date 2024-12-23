@@ -153,13 +153,13 @@ public class CabinetEleServiceImpl implements CabinetEleService {
                 String aPdu = cabinetPdu.getPduKeyA();
                 String bPdu = cabinetPdu.getPduKeyB();
                 if (StringUtils.isNotEmpty(aPdu)){
-                    aKey = aPdu + SPLIT + cabinetPdu.getPduKeyA();
+                    aKey = aPdu;// + SPLIT + cabinetPdu.getCasIdA();
                     keys.add(aKey);
                 } else {
                     aKey = "";
                 }
                 if (StringUtils.isNotEmpty(bPdu)){
-                    bKey = bPdu  + SPLIT + cabinetPdu.getPduKeyB();
+                    bKey = bPdu ;// + SPLIT + cabinetPdu.getCasIdB();
                     keys.add(bKey);
                 } else {
                     bKey = "";

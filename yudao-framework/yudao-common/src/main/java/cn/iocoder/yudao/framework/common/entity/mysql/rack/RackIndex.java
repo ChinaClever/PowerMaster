@@ -20,29 +20,20 @@ import java.util.List;
 public class RackIndex implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @TableId(value = "id", type = IdType.AUTO)
-    private int id;
-
-
+    @TableId
+    private Integer id;
     /**
      * 机柜id
      */
     private Integer cabinetId;
-
-//    /**
-//     * 机房id
-//     */
-//    private Integer roomId;
-
     /**
-     * 机架名称
+     * 机房id
+     */
+//    private Integer roomId;
+    /**
+     * U位名称
      */
     private String rackName;
-
-    /**
-     * 是否删除 0未删 1 已删
-     */
-    private int isDelete;
 
     /**
      * A路输出位
@@ -55,12 +46,10 @@ public class RackIndex implements Serializable {
      */
     @TableField(typeHandler = JacksonTypeHandler.class)
     private List<Integer> outletIdB;
-
     /**
-     * 公司名称
+     * 所属公司
      */
     private String company;
-
     /**
      * U位位置
      */
@@ -72,21 +61,25 @@ public class RackIndex implements Serializable {
      */
     @JsonProperty(value="uHeight")
     private Integer uHeight;
-
     /**
      * 设备类型
      */
     private String rackType;
 
     /**
-     * 更新时间
+     * 是否删除 0未删除 1已删除
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updateTime;
+    private Boolean isDelete;
     /**
      * 创建时间
      */
-    @TableField(fill = FieldFill.INSERT)
+//    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
+    /**
+     * 最后更新时间
+     */
+//    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updateTime;
+
 
 }

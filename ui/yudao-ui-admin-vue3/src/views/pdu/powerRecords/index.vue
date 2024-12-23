@@ -23,8 +23,11 @@
         </div> -->
 
         <div class="descriptions-container" style="font-size: 14px;">
+          <div >
+            <span>PDU近一天新增电能记录</span>
+          </div>
           <div class="description-item">
-            <span class="label">总电能 :</span>
+            <span class="label">电能 :</span>
             <span class="value">{{ navTotalData }}条</span>
           </div>
           <div class="description-item">
@@ -39,10 +42,7 @@
             <span class="label">输出位电能 :</span>
             <span class="value">{{ navOutletData }}条</span>
           </div>
-          <div >
-            <span>全部PDU新增电能记录</span>
-            <div class="line" style="margin-top: 10px;"></div>
-          </div>
+          <div class="line" style="margin-top: 10px;"></div>
         </div>
       </div>
     </template>
@@ -88,7 +88,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true">
+      <el-table v-loading="loading" :data="list"  :show-overflow-tooltip="true">
         <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="80px">
           <template #default="{ $index }">
@@ -461,7 +461,7 @@ onMounted(() => {
 }
  
 .nav_data{
-  padding-left: 30px;
+  padding-left: 20px;
   width: 170px;
 }
 .nav_content span{
@@ -502,7 +502,7 @@ onMounted(() => {
   }
 
   ::v-deep .el-table .el-table__header th {
-    background-color: #F5F7FA;
+    background-color: #f7f7f7;
     color: #909399;
 }
 </style>

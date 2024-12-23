@@ -4,30 +4,37 @@
       <div >
         <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
-  
+      statusNumber.location = allData.location;
+    statusNumber.devKey = allData.devKey;
+    statusNumber.busName = allData.busName;
+    statusNumber.lineName = allData.lineName;
+    statusNumber.bus_id = allData.bus_id;
+    statusNumber.line_id = allData.line_id;
+    statusNumber.create_time = allData.create_time;
+    statusNumber.cur_max_value = allData.cur_max_value;
         </div> -->
         <div style="font-size:14px; margin-top:45px; margin-left:20px">
           <div ><span>最大电流需量</span>
           </div>
           <div>
             <span>位置：</span>
-            <span>{{  }}</span>
+            <span>{{ statusNumber.devKey }}</span>
           </div>
           <div >
             <span>名称：</span>
-            <span>{{  }}</span>
+            <span>{{ statusNumber.busName  }}</span>
           </div>
           <div >
             <span>相位：</span>
-            <span>{{  }}</span>
+            <span>{{ statusNumber.lineName }}</span>
           </div>
           <div >
             <span>时间：</span>
-            <span>{{  }}</span>
+            <span>{{ statusNumber.create_time }}</span>
           </div>
           <div >
             <span>电流：</span>
-            <span>{{  }}</span>
+            <span>{{ statusNumber.cur_max_value }}</span>
           </div>
         </div>
         <div class="line"></div>
@@ -244,13 +251,13 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
-            <div class="info">
+            <div style="padding: 0 28px" class="info">
               <div >A相：{{item.l1MaxPow}}kW</div>
               <div >B相：{{item.l2MaxPow}}kW</div>
               <div >C相：{{ item.l3MaxPow }}kW</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
+            <div ><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->   
           <div class="status"  >
@@ -263,15 +270,14 @@
       <div  v-show="switchValue == 0 && visMode == 0 && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
-          <div class="content">
-            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
-            <div class="info">
-              
+          <div class="content">            
+            <div style="padding: 0 28px" class="info">              
               <div >A相：{{item.l1MaxCur}}A</div>
               <div >B相：{{item.l2MaxCur}}A</div>
               <div >C相：{{ item.l3MaxCur }}A</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
+            <div ><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->    
           <div class="status"  >
@@ -359,12 +365,16 @@ const switchValue = ref(0)
 const showSearchBtn = ref(false)
 const switchChartOrTable = ref(0)
 const pfTableList = ref([]) as any
-// const statusNumber = reactive({
-//   normal : 0,
-//   warn : 0,
-//   alarm : 0,
-//   offline : 0
-// })
+const statusNumber = reactive({
+    location : null,
+    devKey : null,
+    busName : null,
+    lineName : null,
+    bus_id : null,
+    line_id : null,
+    create_time : null,
+    cur_max_value : null
+})
 // 时间段快捷选项
 const shortcuts = [
   {
@@ -530,6 +540,22 @@ const handleMonthPick = () => {
   }
   handleQuery()
 } 
+const getListAll = async () => {
+  try {
+        const allData = await IndexApi.getBusLineMax(queryParams)
+        console.log('测试'+allData)
+    //设置左边数量
+    statusNumber.location = allData.location;
+    statusNumber.devKey = allData.devKey;
+    statusNumber.busName = allData.busName;
+    statusNumber.lineName = allData.lineName;
+    statusNumber.bus_id = allData.bus_id;
+    statusNumber.line_id = allData.line_id;
+    statusNumber.create_time = allData.create_time;
+    statusNumber.cur_max_value = allData.cur_max_value;
+  } catch (error) {
+  }
+}
 
 const loading = ref(false) // 列表的加载中
 const list = ref([
@@ -633,7 +659,8 @@ const handleQuery = () => {
   if(queryParams.timeType != 0 && queryParams.oldTime == null ){
     return;
   }
-  getList()
+  getList();
+  getListAll();
 }
 
 /** 重置按钮操作 */
@@ -687,9 +714,9 @@ const handleExport = async () => {
 
 /** 初始化 **/
 onMounted(() => {
-  getList()
+  getList();
   getNavList();
-
+  getListAll();
 })
 
 

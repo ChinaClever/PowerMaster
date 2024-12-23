@@ -22,7 +22,7 @@
           <el-tooltip
             class="box-item"
             effect="dark"
-            content="小电流不平衡是指"
+            content="电流不平衡是指"
             placement="right"
           >
             <div @click.prevent="" class="question">?</div>
@@ -264,7 +264,6 @@ const getBalanceTrend = async () => {
         },
       ]
     }
-    console.log('ALineOption', ALineOption)
     if (res[0].vol && res[0].vol.length == 1) {
       BLineOption.value.xAxis = {
         type: 'category',

@@ -1,7 +1,6 @@
 package cn.iocoder.yudao.framework.common.entity.mysql.cabinet;
 
 import com.baomidou.mybatisplus.annotation.*;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -38,14 +37,20 @@ public class CabinetIndex implements Serializable {
     private int aisleId;
 
     /**
-     * 机柜高度
+     *  柜列的位置 从1开始 0未被分配
      */
-    private int cabinetHeight;
+    private Integer  aisleX;
+    /**
+     * 机柜类型
+     */
+    private String cabinetType;
 
+
+    private int  cabinetHeight;
     /**
      * 电力容量
      */
-    private float powerCapacity;
+    private Double powerCapacity;
 
     /**
      * 运行状态
@@ -59,49 +64,28 @@ public class CabinetIndex implements Serializable {
     /**
      * 数据来源
      */
-    private int pduBox;
+    private Boolean pduBox;
 
     /**
      * 是否禁用
      */
-    private int isDisabled;
+    private Boolean isDisabled;
 
     /**
      * 是否删除
      */
-    private int isDeleted;
+    private Boolean isDeleted;
 
-//    /**
-//     * 日用能告警开关
-//     */
-//    private  int eleAlarmDay;
-//
-//    /**
-//     * 月用能告警开关
-//     */
-//    private  int eleAlarmMonth;
-//
-//    /**
-//     * 日用能限制
-//     */
-//    private double eleLimitDay;
-//
-//    /**
-//     * 月用能限制
-//     */
-//    private double eleLimitMonth;
 
     /**
      * 更新时间
      */
-    @Schema(description = "更新时间", example = "2024-05-07 01:00:00")
     private LocalDateTime updateTime;
+
     /**
      * 创建时间
      */
-    @Schema(description = "创建时间", example = "2024-05-07 01:00:00")
     private LocalDateTime createTime;
-
 
     @TableField(value = "count(*)",insertStrategy = FieldStrategy.NEVER,updateStrategy = FieldStrategy.NEVER,select = false)
     private  Integer count;

@@ -78,9 +78,12 @@
         v-show="switchValue !== 4"  
       > <el-form-item>
         <el-form-item v-show="valueMode != 3 && valueMode != 4">
-          <template v-for="(status, index) in statusList" :key="index">
-            <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
-          </template>
+          <!--<template v-for="(status,index) in statusList" :key="index">
+            <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+          </template>-->
+          <button :class="normalFlag ? 'btn_normal normal': 'btn_normal'" @click.prevent="normalFlag = !normalFlag;handleSelectStatus(1)">正常</button>
+          <button :class="reportFlag ? 'btn_error error':  'btn_error'" @click.prevent="reportFlag = !reportFlag;handleSelectStatus(2)">告警</button>
+          <button :class="offlineFlag ? 'btn_offline offline': 'btn_offline'" @click.prevent="offlineFlag = !offlineFlag;handleSelectStatus(0)">离线</button>
         </el-form-item>
         <el-form-item label="网络地址" prop="devKey" style="margin-left:10px">
           <el-autocomplete
@@ -363,35 +366,8 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div style="padding: 0 18px;margin-right:30px;" v-if="valueMode == 0 && item.acur != null"><Bar :width="80" :height="100" :max="{L1:item.acur,L2:item.bcur,L3:item.ccur,L4:item.acurStatus,L5:item.bcurStatus,L6:item.ccurStatus}" /></div>
-            <div style="padding: 0 18px;margin-right:30px;" v-if="valueMode == 1 && item.avol != null"><Bar :width="80" :height="100" :max="{L1:item.avol,L2:item.bvol,L3:item.cvol,L4:item.avolStatus,L5:item.bvolStatus,L6:item.cvolStatus}" /></div>
-            <div class="icon" v-if="valueMode != 0 && valueMode != 1">
-              <!-- <div v-if="valueMode == 0 && item.acur != null" style="font-size:large">
-                电流
-              </div>     -->
-              <!-- <div v-if="valueMode == 1 && item.avol != null" style="font-size:large">
-                电压
-              </div> -->
-              <div v-if="valueMode == 2 && item.aactivePow != null" style="font-size:20px">
-                {{item.powValue}}
-              </div>
-              <div v-if="valueMode == 2 && item.aactivePow != null" >
-                总有功功率(kW)
-              </div>
-              <div v-if="valueMode == 3 && item.areactivePow != null" style="font-size:20px">
-                {{item.powReactive}}
-              </div>
-              <div v-if="valueMode == 3 && item.areactivePow != null" >
-                总无功功率(kVar)
-              </div>
-              <div v-if="valueMode == 4 && item.areactivePow != null" style="font-size:20px">
-                {{item.powApparent}}
-              </div>
-              <div v-if="valueMode == 4 && item.powApparent != null" >
-                总视在功率(kVA)
-              </div> 
-            </div>
-            <div class="info" v-if="valueMode == 0" >                  
+            
+            <div class="info" v-if="valueMode == 0" style="padding: 0 18px;margin-right:30px;">                  
               <div v-if="item.acur != null">
                 <el-text v-if="item.acur != null" :type=" item.acurStatus != 0 ? 'danger' : '' ">
                   A相：{{item.acur}}A
@@ -408,7 +384,7 @@
                 </el-text>
               </div>
             </div>
-            <div class="info" v-if="valueMode == 1" >                  
+            <div class="info" v-if="valueMode == 1" style="padding: 0 18px;margin-right:30px;">                  
               <div v-if="item.avol != null">
                 <el-text v-if="item.avol != null" :type=" item.avolStatus != 0 ? 'danger' : '' ">
                   A相：{{item.avol}}V
@@ -425,7 +401,7 @@
                 </el-text>
               </div>
             </div>
-            <div class="info" v-if="valueMode == 2">                  
+            <div class="info" v-if="valueMode == 2" style="padding: 0 18px;margin-right:30px;">                  
               <div  v-if="item.aactivePow != null">
                 <el-text v-if="item.aactivePow != null" :type=" item.aactivePowStatus != 0 ? 'danger' : '' ">
                   A相：{{item.aactivePow}}kW
@@ -442,7 +418,7 @@
                 </el-text>
               </div>
             </div>
-            <div class="info" v-if="valueMode == 3">                  
+            <div class="info" v-if="valueMode == 3" style="padding: 0 18px;margin-right:30px;">                  
               <div v-if="item.areactivePow != null">
                 <el-text v-if="item.areactivePow != null">
                   A相：{{item.areactivePow}}kVar
@@ -459,7 +435,7 @@
                 </el-text>
               </div>
             </div>
-            <div class="info" v-if="valueMode == 4">                  
+            <div class="info" v-if="valueMode == 4" style="padding: 0 18px;margin-right:30px;">                  
               <div v-if="item.apowApparent != null">
                 <el-text v-if="item.apowApparent != null">
                   A相：{{item.apowApparent}}kVA
@@ -475,6 +451,34 @@
                   C相：{{item.cpowApparent}}kVA
                 </el-text>
               </div>
+            </div>
+            <div style="padding: 0 4px" v-if="valueMode == 0 && item.acur != null"><Bar :width="80" :height="100" :max="{L1:item.acur,L2:item.bcur,L3:item.ccur,L4:item.acurStatus,L5:item.bcurStatus,L6:item.ccurStatus}" /></div>
+            <div style="padding: 0 4px" v-if="valueMode == 1 && item.avol != null"><Bar :width="80" :height="100" :max="{L1:item.avol,L2:item.bvol,L3:item.cvol,L4:item.avolStatus,L5:item.bvolStatus,L6:item.cvolStatus}" /></div>
+            <div class="icon" v-if="valueMode != 0 && valueMode != 1">
+              <!-- <div v-if="valueMode == 0 && item.acur != null" style="font-size:large">
+                电流
+              </div>     -->
+              <!-- <div v-if="valueMode == 1 && item.avol != null" style="font-size:large">
+                电压
+              </div> -->
+              <div v-if="valueMode == 2 && item.aactivePow != null" style="font-size:20px">
+                {{item.powValue?.toFixed(3)}}
+              </div>
+              <div v-if="valueMode == 2 && item.aactivePow != null" >
+                总有功功率(kW)
+              </div>
+              <div v-if="valueMode == 3 && item.areactivePow != null" style="font-size:20px">
+                {{item.powReactive?.toFixed(3)}}
+              </div>
+              <div v-if="valueMode == 3 && item.areactivePow != null" >
+                总无功功率(kVar)
+              </div>
+              <div v-if="valueMode == 4 && item.areactivePow != null" style="font-size:20px">
+                {{item.powApparent?.toFixed(3)}}
+              </div>
+              <div v-if="valueMode == 4 && item.powApparent != null" >
+                总视在功率(kVA)
+              </div> 
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
@@ -549,7 +553,17 @@ const statusNumber = reactive({
   alarm : 0,
   offline : 0
 })
+const normalFlag = ref(true)
+const reportFlag = ref(true)
+const offlineFlag = ref(true)
 const statusList = reactive([
+  {
+    name: '离线',
+    selected: true,
+    value: 0,
+    cssClass: 'btn_offline',
+    activeClass: 'btn_offline offline'
+  },
   {
     name: '正常',
     selected: true,
@@ -563,14 +577,7 @@ const statusList = reactive([
     value: 2,
     cssClass: 'btn_error',
     activeClass: 'btn_error error'
-  },
-  {
-    name: '离线',
-    selected: true,
-    value: 0,
-    cssClass: 'btn_offline',
-    activeClass: 'btn_offline offline'
-  },
+  }
 ])
 const devKeyList = ref([])
 const loadAll = async () => {
@@ -744,6 +751,8 @@ const getList = async () => {
   try {
     const data = await IndexApi.getBusRedisPage(queryParams)
     list.value = data.list
+    filterData()
+    console.log('查询列表的数据',list.value)
     var tableIndex = 0;
 
     list.value.forEach((obj) => {
@@ -801,6 +810,8 @@ const getListNoLoading = async () => {
   try {
     const data = await IndexApi.getBusRedisPage(queryParams)
     list.value = data.list
+    filterData()
+    console.log('list.value',list.value)
     var tableIndex = 0;    
 
     list.value.forEach((obj) => {
@@ -890,9 +901,37 @@ const toDeatil = (row) =>{
 //   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
 //   window.open(url, '_blank');
 // }
+const filterData = () => {
+  const data0 = list.value.filter(item => item.status === 1 && item.acurStatus != null); // 正常状态数据
+  console.log('data0',data0)
+  const data1 = list.value.filter(item => item.status === 2); // 告警状态数据
+  console.log('data1',data1)
+  const data2 = list.value.filter(item => item.status === 0 || item.acurStatus == null || item.status == null); // 离线状态数据
+  console.log('data2',data2)
+ 
+  if (normalFlag.value && !reportFlag.value && !offlineFlag.value) {
+    list.value = data0; // 仅正常状态
+  } else if (reportFlag.value && !normalFlag.value && !offlineFlag.value) {
+    list.value = data1; // 仅告警状态
+  } else if (offlineFlag.value && !normalFlag.value && !reportFlag.value) {
+    list.value = data2; // 仅离线状态
+  } else if (normalFlag.value && reportFlag.value && !offlineFlag.value) {
+    list.value = [...data0, ...data1];
+  } else if (normalFlag.value && offlineFlag.value && !reportFlag.value) {
+    list.value = [...data0, ...data2];
+  } else if (reportFlag.value && offlineFlag.value && !normalFlag.value) {
+    list.value = [...data1, ...data2];
+  } else if (normalFlag.value && reportFlag.value && offlineFlag.value) {
+    list.value = [...data0, ...data1, ...data2];
+  } else {
+    list.value = list.value;
+  }
+
+  console.log('执行完毕')
+}
 
 const handleSelectStatus = (index) => {
-  statusList[index].selected = !statusList[index].selected
+  //statusList[index].selected = !statusList[index].selected
   const status =  statusList.filter(item => item.selected)
   const statusArr = status.map(item => item.value)
   queryParams.status = statusArr;
@@ -1322,14 +1361,17 @@ onActivated(() => {
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
+
 :deep(.el-form) {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }
+
 ::v-deep .el-table .el-table__header th{
   background-color: #f5f7fa;
   color: #909399;

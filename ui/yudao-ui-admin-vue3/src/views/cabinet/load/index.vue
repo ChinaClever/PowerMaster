@@ -41,29 +41,6 @@
           </div>
         </div>
         <div class="line"></div>
-        <!-- <div class="overview">
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>总电能</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-        </div> -->
       </div>
     </template>
     <template #ActionBar>
@@ -103,39 +80,43 @@
     </template>
     <template #Content>
       <el-table v-show="switchValue == 2" style="width: 100%;" v-loading="loading" :data="listPage" >
-        <el-table-column label="位置" min-width="110" align="center" prop="local" />
-        <el-table-column label="负载率" min-width="80" align="center" prop="load_factor" />
-        <el-table-column label="电力容量(kVA)" min-width="100" align="center" prop="pow_capacity" />
+        <el-table-column label="位置" min-width="110" align="center" prop="roomName,cabinetName" >
+          <template #default="scope">
+            {{ scope.row.roomName }}-{{ scope.row.cabinetName }}
+          </template>
+        </el-table-column>
+        <el-table-column label="负载率" min-width="80" align="center" prop="loadFactor" />
+        <el-table-column label="电力容量(kVA)" min-width="100" align="center" prop="powerCapacity" />
         <el-table-column label="总视在功率(kVA)" min-width="110" align="center" prop="apparentTotal" />
-        <el-table-column label="A路视在功率(kVA)" min-width="120" align="center" prop="apparentA" />
-        <el-table-column label="B路视在功率(kVA)" min-width="120" align="center" prop="apparentB" />
+        <el-table-column label="A路视在功率(kVA)" min-width="120" align="center" prop="powApparentb" />
+        <el-table-column label="B路视在功率(kVA)" min-width="120" align="center" prop="powApparenta" />
         <el-table-column label="总有功功率(kW)" min-width="110" align="center" prop="activeTotal" />
-        <el-table-column label="A路有功功率(kW)" min-width="120" align="center" prop="activeA" />
-        <el-table-column label="B路有功功率(kW)" min-width="120" align="center" prop="activeB" />
-        <el-table-column label="更新时间" min-width="110" align="center" prop="date_time" />
+        <el-table-column label="A路有功功率(kW)" min-width="120" align="center" prop="powActivea" />
+        <el-table-column label="B路有功功率(kW)" min-width="120" align="center" prop="powActiveb" />
+        <el-table-column label="更新时间" min-width="110" align="center" prop="dataUpdateTime" />
       </el-table>
       <div v-show="(switchValue == 0 || switchValue == 1) && listPage.length > 0" v-loading="loading" class="loadContainer">
         <div class="loadItem" v-for="load in listPage" :key="load.key">
           <div class="content">
             <div class="info" v-if="switchValue == 0">
               <div>总视在功率：{{load.apparentTotal}}KVA</div>
-              <div>A路视在功率：{{load.apparentA}}KVA</div>
-              <div>B路视在功率：{{load.apparentB}}KVA</div>
+              <div>A路视在功率：{{load.powApparenta}}KVA</div>
+              <div>B路视在功率：{{load.powApparentb}}KVA</div>
               <!-- <div>电力容量：{{load.pow_capacity}}</div> -->
             </div>
             <div class="info" v-else>
               <div>总有功功率：{{load.activeTotal}}kW</div>
-              <div>A路有功功率：{{load.activeA}}kW</div>
-              <div>B路有功功率：{{load.activeB}}kW</div>
+              <div>A路有功功率：{{load.powActivea}}kW</div>
+              <div>B路有功功率：{{load.powActiveb}}kW</div>
               <!-- <div>电力容量：{{load.pow_capacity}}</div> -->
             </div>
             <div class="waterPoloBox">
-              <LiquidBall  :precent="load.load_factor"/>
+              <LiquidBall  :precent="load.loadFactor"/>
             </div>
             <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
           </div>
-          <div class="room">{{load.local}}</div>
-          <button class="detail" @click.prevent="toMachineDetail">详情</button>
+          <div class="room">{{load.roomName+'-'+load.cabinetName}}</div>
+          <button class="detail" @click.prevent="toMachineDetail(load)">详情</button>
         </div>
       </div>
       <Pagination
@@ -157,6 +138,7 @@ import 'echarts-liquidfill'
 import { CabinetApi } from '@/api/cabinet/info'
 import LiquidBall from './compoent/LiquidBall.vue'
 
+const { push } = useRouter()
 const loading = ref(false)
 const isFirst = ref(true) // 是否第一次调用getTableData函数
 const navList = ref([])
@@ -244,7 +226,7 @@ const getTableData = async(reset = false) => {
   if (reset) queryParams.pageNo = 1
   const status =  statusList.filter(item => item.selected)
   try {
-    const res = await CabinetApi.getCabinetInfo({
+    const res = await CabinetApi.getIndexLoadPage({
       pageNo: queryParams.pageNo,
       pageSize: queryParams.pageSize,
       cabinetIds: isFirst.value ? null : cabinetIds.value,
@@ -254,28 +236,27 @@ const getTableData = async(reset = false) => {
       company: queryParams.company
     })
     console.log('res', res)
-    if (res.list) {
-      const list = res.list.map(item => {
-        const tableItem = {
-          key: item.cabinet_key,
-          local: item.room_name + '-' + item.cabinet_name,
-          load_factor: +(item.load_factor.toFixed(0)),
-          pow_capacity: item.pow_capacity,
-          date_time: item.date_time,
-          status: item.status,
-          apparentTotal: item.cabinet_power.total_data.pow_apparent.toFixed(3),
-          apparentA: item.cabinet_power.path_a ? item.cabinet_power.path_a.pow_apparent.toFixed(3) : '-',
-          apparentB: item.cabinet_power.path_b ? item.cabinet_power.path_b.pow_apparent.toFixed(3) : '-',
-          activeTotal: item.cabinet_power.total_data.pow_active.toFixed(3),
-          activeA: item.cabinet_power.path_a ? item.cabinet_power.path_a.pow_active.toFixed(3) : '-',
-          activeB: item.cabinet_power.path_b ? item.cabinet_power.path_b.pow_active.toFixed(3) : '-',
-        }
-        return tableItem
-      })
-      listPage.value = list
+
+      // const list = res.list.map(item => {
+      //   const tableItem = {
+      //     key: item.cabinet_key,
+      //     local: item.room_name + '-' + item.cabinet_name,
+      //     load_factor: +(item.load_factor.toFixed(0)),
+      //     pow_capacity: item.pow_capacity,
+      //     date_time: item.date_time,
+      //     status: item.status,
+      //     apparentTotal: item.cabinet_power.total_data.pow_apparent.toFixed(3),
+      //     apparentA: item.cabinet_power.path_a ? item.cabinet_power.path_a.pow_apparent.toFixed(3) : '-',
+      //     apparentB: item.cabinet_power.path_b ? item.cabinet_power.path_b.pow_apparent.toFixed(3) : '-',
+      //     activeTotal: item.cabinet_power.total_data.pow_active.toFixed(3),
+      //     activeA: item.cabinet_power.path_a ? item.cabinet_power.path_a.pow_active.toFixed(3) : '-',
+      //     activeB: item.cabinet_power.path_b ? item.cabinet_power.path_b.pow_active.toFixed(3) : '-',
+      //   }
+      //   return tableItem
+      // })
+      listPage.value = res.list
       queryParams.pageTotal = res.total
       console.log('listPage', listPage.value)
-    }
   } finally {
     loading.value = false
   }
@@ -328,6 +309,15 @@ const handleSwitchModal = (value) => {
     queryParams.pageSize = 10
   }
   getTableData(true)
+}
+
+const toMachineDetail = (row) => {
+  console.log("row",row)
+  const devKey = '172.16.101.2-1';
+  const busId = 6;
+  const location = '172.16.101.2-1';
+  const busName = 'iBusbar-1';
+  push({ path:'/cabinet/cab/cabinetPowerLoadDetail', state: { devKey, busId ,location,busName }})
 }
 
 onBeforeMount(() => {

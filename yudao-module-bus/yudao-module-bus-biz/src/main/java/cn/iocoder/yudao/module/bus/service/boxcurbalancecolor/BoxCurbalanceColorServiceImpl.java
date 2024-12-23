@@ -1,19 +1,19 @@
 package cn.iocoder.yudao.module.bus.service.boxcurbalancecolor;
 
-import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
-import org.springframework.stereotype.Service;
-import javax.annotation.Resource;
-import org.springframework.validation.annotation.Validated;
-
-import cn.iocoder.yudao.module.bus.controller.admin.boxcurbalancecolor.vo.*;
-import cn.iocoder.yudao.module.bus.dal.dataobject.boxcurbalancecolor.BoxCurbalanceColorDO;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
-
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
+import cn.iocoder.yudao.module.bus.controller.admin.boxcurbalancecolor.vo.BoxCurbalanceColorPageReqVO;
+import cn.iocoder.yudao.module.bus.controller.admin.boxcurbalancecolor.vo.BoxCurbalanceColorSaveReqVO;
+import cn.iocoder.yudao.module.bus.dal.dataobject.boxcurbalancecolor.BoxCurbalanceColorDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxcurbalancecolor.BoxCurbalanceColorMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
+
+import javax.annotation.Resource;
 
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.*;
+import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.BOX_CURBALANCE_COLOR_NOT_EXISTS;
 
 /**
  * 插接箱不平衡度颜色 Service 实现类
@@ -61,8 +61,8 @@ public class BoxCurbalanceColorServiceImpl implements BoxCurbalanceColorService 
 
     @Override
     public BoxCurbalanceColorDO getBoxCurbalanceColor() {
-        BoxCurbalanceColorDO boxCurbalanceColorDO = boxCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(),false);
-        if (boxCurbalanceColorDO == null){
+        BoxCurbalanceColorDO boxCurbalanceColorDO = boxCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
+        if (boxCurbalanceColorDO == null) {
             boxCurbalanceColorDO = new BoxCurbalanceColorDO();
             boxCurbalanceColorDO.setId(1L);
             boxCurbalanceColorDO.setRangeOne(15);

@@ -1,653 +1,1021 @@
 <template>
-  <div class="descriptionContainer">
-    <div class="all-left">
-      <el-card class="card" shadow="hover">
-        <div class="progressBox">
-          <div class="title">总负载率</div>
-          <el-progress type="dashboard" :percentage="detailInfo.load_factor ? Number(detailInfo.load_factor).toFixed(2) : 0"  />
-          <div class="power">电力容量</div>
-          <div>20KW</div>
-          <div class="local">
-            <el-tag size="large" type="primary">{{detailInfo.room_name}}-{{detailInfo.cabinet_name}}</el-tag>
+<div style="background-color: #E7E7E7;" class="centainer-height">
+  <div style="background-color: #E7E7E7;" class="header_app">
+    <div style="background-color: #E7E7E7;" class="header_app_text">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{busName}})</div>
+    <div style="background-color: #E7E7E7;" class="header_app_text_other1">
+          <el-col :span="10" >
+            <el-form
+              class="-mb-15px"
+              :model="queryParamsSearch"
+              ref="queryFormRef"
+              :inline="true"
+              label-width="120px"
+            >
+              <el-form-item label="网络地址" prop="devKey" style="margin-top:2px;">
+              <el-autocomplete
+                v-model="queryParamsSearch.devKey"
+                :fetch-suggestions="querySearch"
+                placeholder="请输入网络地址"  
+                clearable
+                class="!w-160px"
+                @select="handleQuery" 
+              />
+              </el-form-item>
+            </el-form>
+          </el-col>
+    </div>
+    <div style="background-color: #E7E7E7;" class="header_app_text_other">
+      <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+      <el-button @click="changeTime ('近一小时');" :type="queryParams.timeGranularity == '近一小时' ? 'primary' : ''" style="margin-left: 65px;">近一小时</el-button>
+      <el-button @click="changeTime ('今天');" :type="queryParams.timeGranularity == '今天' ? 'primary' : ''">今天</el-button>
+      <el-button @click="changeTime('近一天');" :type="queryParams.timeGranularity == '近一天' ? 'primary' : ''">近一天</el-button>
+      <el-button @click="changeTime('近三天');" :type="queryParams.timeGranularity == '近三天' ? 'primary' : ''">近三天</el-button>
+    </div>
+  </div>
+  <div class="TransformerMonitor">
+    <div class="center-part">
+      <div class="left-part">
+        <!-- <el-tag size="large">{{ location }}</el-tag> -->
+        <div style="height:20px;display:flex;align-items: center;margin:10px 0 10px 10px;">              
+            <span style="color:black;font-size:26px;">负载率</span>
+        </div>
+        <!--<div style="height:20px;display:flex;align-items: center;margin-left:10px">              
+            <span style="color:#ccc;font-size:14px;">最大需量：<span  class="vale-part BColor" >{{peakDemand}}</span>kVA</span>
+        </div>-->
+        <div style="height:20px;display:flex;align-items: center;margin-left:10px;">              
+            <span style="color:#ccc;font-size:14px;">发生时间：{{peakDemandTime}}</span>
+        </div>
+        <div style="height:20px;display:flex;align-items: center;margin-left:10px;">              
+            <span style="color:#ccc;font-size:14px;border-bottom:1px solid #ccc;width:90%;"></span>
+        </div>
+        <div style="height:360px;width:100%;margin-top:-50px;">
+            <Gauge class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData.loadFactor" />
+        </div>
+        <!--<div style="position: relative; top: -80px; left: 0; width: 100%; text-align: center; padding-top: 10px;">
+            <div style="color: black;font-size: 30px;">{{redisData?.loadFactor}}</div>
+            <div style="color: black;">负载率（%）</div>
+        </div>-->
+        <p v-if="!visContro.gaugeVis" class="noData">暂无数据</p>
+      </div>
+      <div class="right-part">
+        <div class="center-top-part">
+          <div style="color: black;margin:10px 0 0 10px;font-weight: bold;">实时功率</div>
+          <RealTimePower style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
+        </div>
+        <div class="center-top-right-part">
+          <div class="label-container">
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">额定容量:</span><span style="font-size:16px;">0KVA</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">总现在功率:</span><span style="font-size:16px;">{{resultData?.powApparentTotal}}KVA</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">总有功功率:</span><span style="font-size:16px;">{{resultData?.powActiveTotal}}KVA</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">总无功功率:</span><span style="font-size:16px;">{{resultData?.powReactiveTotal}}KVA</span>
           </div>
         </div>
-      </el-card>
-    </div>
-    <!-- <div > -->
-      <el-card class="all-right" shadow="hover">
-        <div class="ABTotalData">
-          <el-table border v-if="ABTotalData.length > 0" :data="ABTotalData" max-height="160">
-            <el-table-column prop="name" label="" min-width="100" align="center" />
-            <el-table-column prop="pow_apparent" label="视在功率(kVA)" min-width="100" align="center">
-              <template #default="scope">
-                <div>{{scope.row.pow_apparent ? Number(scope.row.pow_apparent).toFixed(3) : '0.000'}}</div>
-              </template>
-            </el-table-column>
-            <el-table-column prop="pow_active" label="有功功率(kW)" min-width="100" align="center">
-              <template #default="scope">
-                <div>{{scope.row.pow_active ? Number(scope.row.pow_active).toFixed(3) : '0.000'}}</div>
-              </template>
-            </el-table-column>
-            <el-table-column prop="pow_reactive" label="无功功率(kVar)" min-width="100" align="center">
-              <template #default="scope">
-                <div>{{scope.row.pow_reactive ? Number(scope.row.pow_reactive).toFixed(3) : '0.000'}}</div>
-              </template>
-            </el-table-column>
-            <el-table-column prop="power_factor" label="功率因素" min-width="100" align="center">
-              <template #default="scope">
-                <div>{{scope.row.power_factor ? Number(scope.row.power_factor).toFixed(2) : '0.00'}}</div>
-              </template>
-            </el-table-column>
-            <el-table-column prop="zb" label="负载率(%)" min-width="100" align="center">
-              <template #default="scope">
-                <div v-if="scope.row.zb == '-'">-</div>
-                <div v-else>{{scope.row.zb ? Number(scope.row.zb).toFixed(2) : '0.00'}}</div>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-      </el-card>
-    <!-- </div> -->
-  </div>
-  <div class="descriptionContainer">
-    <div class="all-left" v-if="tableDataA.length > 0 || tableDataB.length > 0" >
-      <el-card class="card" shadow="hover">
-        <div class="tableContainer">
-          <el-table v-if="tableDataA.length > 0" :data="tableDataA" max-height="160">
-            <el-table-column label="A路" width="100" align="center" >
-              <template #default="scope">
-                <div>L{{scope.$index + 1}}</div>
-              </template>
-            </el-table-column>
-            <el-table-column prop="V" label="电压" width="100" align="center">
-              <template #default="scope">
-                <div>{{scope.row.V.toFixed(1)}}V</div>
-              </template>
-            </el-table-column>
-            <el-table-column prop="A" label="电流" width="100" align="center">
-              <template #default="scope">
-                <div>{{scope.row.A.toFixed(2)}}A</div>
-              </template>
-            </el-table-column>
-          </el-table>
-          <el-table v-if="tableDataB.length > 0" :data="tableDataB" max-height="160">
-            <el-table-column label="B路" width="100" align="center" >
-              <template #default="scope">
-                <div>L{{scope.$index + 1}}</div>
-              </template>
-            </el-table-column>
-            <el-table-column prop="V" label="电压" width="100" align="center">
-              <template #default="scope">
-                <div>{{scope.row.V.toFixed(1)}}V</div>
-              </template>
-            </el-table-column>
-            <el-table-column prop="A" label="电流" width="100" align="center">
-              <template #default="scope">
-                <div>{{scope.row.A.toFixed(2)}}A</div>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-      </el-card>
-    </div>
-    <el-card class="all-right" shadow="hover">
-      <Echart :options="echartsOption" :height="450" />
-      <div class="btns">
-        <el-button class="btn" size="small" :plain="!(radioBtn == 'HOUR')" type="primary" @click="getPowTrend('HOUR')">最近1小时</el-button>
-        <el-button class="btn" size="small" :plain="!(radioBtn == 'DAY')" type="primary" @click="getPowTrend('DAY')">最近24小时</el-button>
       </div>
-    </el-card>
+      <div class="right-right-part">
+        <div style="margin:10px;">负载率曲线</div>
+        <MarkLine style="margin-top:-40px;" v-if="visContro.loadRateVis"  width="100%" height="100%" :list="resultData"/>
+      </div>
+    </div>
+    <div class="bottom-part">
+      <div style="display: inline-block;
+        width: 50%;
+        height: 100%;">
+          <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">A路电压</div>
+          <AVol style="margin-top:-30px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
+        </div>
+        <div style="display: inline-block;
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            top: 50px;">
+          <div class="label-container">
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{resultData?.volA[0]}}V</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{resultData?.volA[1]}}V</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{resultData?.volA[2]}}V</span>
+          </div>
+        </div>
+    </div>
+    <div class="bottom-part">
+      <div style="display: inline-block;
+        width: 50%;
+        height: 100%;">
+          <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">A路电流</div>
+          <ACur style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
+        </div>
+        <div style="display: inline-block;
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            top: 50px;">
+          <div class="label-container">
+            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;">{{resultData?.curA[0]}}A</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{resultData?.curA[1]}}A</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{resultData?.curA[2]}}A</span>
+          </div>
+        </div>
+    </div>
+    <div class="bottom-part">
+      <div style="display: inline-block;
+        width: 50%;
+        height: 230px;">
+          <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">功率因数</div>
+          <PowerFactor style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
+        </div>
+        <div style="display: inline-block;
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            top: 20px;">
+          <div class="label-container">
+            <span class="bullet" style="color:#E5B849;">•</span><span style="font-size:14px;">频率:</span><span style="font-size:16px;">0Hz</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#C8603A;">•</span><span style="font-size:14px;">功率因数:</span><span style="font-size:16px;">{{resultData?.powerFactor}}</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#AD3762;">•</span><span style="font-size:14px;">三相电压不平衡度:</span><span style="font-size:16px;">0%</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#B47660;">•</span><span style="font-size:14px;">三相电流不平衡度:</span><span style="font-size:16px;">0%</span>
+          </div>
+        </div>
+    </div>
+    <div class="bottom-part">
+      <div style="display: inline-block;
+        width: 50%;
+        height: 100%;">
+          <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">B路电压</div>
+          <BVol style="margin-top:-30px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
+        </div>
+        <div style="display: inline-block;
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            top: 50px;">
+          <div class="label-container">
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{resultData?.volB[0]}}V</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{resultData?.volB[1]}}V</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{resultData?.volB[2]}}V</span>
+          </div>
+        </div>
+    </div>
+    <div class="bottom-part">
+      <div style="display: inline-block;
+        width: 50%;
+        height: 100%;">
+          <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">B路电流</div>
+          <BCur style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
+        </div>
+        <div style="display: inline-block;
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            top: 50px;">
+          <div class="label-container">
+            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;">{{resultData?.curB[0]}}A</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{resultData?.curB[1]}}A</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{resultData?.curB[2]}}A</span>
+          </div>
+        </div>
+    </div>
+    <div class="bottom-part">
+      <div style="display: inline-block;
+        width: 50%;
+        height: 90%;
+        margin-right:-20px;"
+      >
+          <div style="color: black;margin:10px 0 0 10px;"><span style="font-weight:bold;">AB路功率</span><span style="margin-left:80px;">A路</span></div>
+          <Environment style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
+        </div>
+        <div style="display: inline-block;
+            width: 50%;
+            height: 90%;">
+          <div style="display:inline-block;color:black;"><span style="margin-left:100px;">B路</span></div>
+          <EnvironmentCopy style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
+        </div>
+    </div>
   </div>
+</div> 
 </template>
 
-<script lang="ts" setup>
-import TopologyShow from "./component/TopologyShow.vue"
-import { PDUDeviceApi } from '@/api/pdu/pdudevice'
+<script setup lang="ts">
+
+import { ref } from 'vue'
+import RealTimePower from './component/RealTimePower.vue'
+import PowerFactor from './component/PowerFactor.vue'
+import Gauge from './component/Gauge.vue'
+import MarkLine from './component/MarkLine.vue'
+import Environment from './component/Environment.vue'
+import PowReactiveLine from './component/PowReactiveLine.vue'
+import PowActiveLine from './component/PowActiveLine.vue'
+import AVol from './component/AVol.vue'
+import BVol from './component/BVol.vue'
+import ACur from './component/ACur.vue'
+import BCur from './component/BCur.vue'
+import EnvironmentCopy from './component/EnvironmentCopy.vue'
+import { IndexApi } from '@/api/bus/busindex'
 import { CabinetApi } from '@/api/cabinet/detail'
-import { EChartsOption } from 'echarts'
+import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
 
-const radioBtn = ref('')
-const detailInfo = reactive({})
-const ABTotalData = ref({})
-const tableDataA = ref({})
-const tableDataB = ref({})
-// const APDUData = ref<any>([])
-// const APDUTriphase = ref([])
-// const APDUTriphaseMax = ref(0)
-// const APDUParam = ref<string[]>([])
-// const CPDUData = ref([])
-// const CPDUParam = ref<string[]>([])
-// const SPDUData = ref([])
-// const SPDUParam = ref<string[]>([])
-// const {push} = useRouter() // 路由跳转
-// const alarmClass = {
-//   0: 'normal',
-//   1: 'error',
-//   2: 'warn',
-//   4: 'warn',
-//   8: 'error',
-// }
-const cabinetId = history?.state?.id || 1
-
-const echartsOption = ref<EChartsOption>({})
-
-// const triphaseAOption = reactive<EChartsOption>({}) as EChartsOption
-
-// const triphaseBOption = reactive<EChartsOption>({}) as EChartsOption
-
-// const regulateData = (data) => {
-//   const lineKeys = Object.keys(data)
-//   const result = [] as any
-//   if (lineKeys.length > 0) {
-//     for (let i = 0; i < data[lineKeys[0]].length; i++) {
-//       const obj = {}
-//       lineKeys.forEach(key => {
-//         obj[key] = data[key][i]
-//       })
-//       result.push(obj)
-//     }
-//   }
-//   return {
-//     data: result,
-//     keys: lineKeys
-//   }
-// }
-
-const getMachineDetail = async() => {
-  const res = await CabinetApi.getDetail({id:cabinetId})
-  console.log('---------------', res)
-  const tableData = [] as any
-  if (res.cabinet_power && res.cabinet_power.path_a) {
-    res.cabinet_power.path_a.name = 'A路'
-    res.cabinet_power.path_a.zb = Number((res.cabinet_power.path_a.pow_apparent/res.cabinet_power.total_data.pow_apparent).toFixed(2)) * 100
-    tableDataA.value = res.cabinet_power.path_a.cur_value.map((item,index) => {
-      return {
-        A: item,
-        V: res.cabinet_power.path_a.vol_value[index]
-      }
-    })
-    tableData.push(res.cabinet_power.path_a)
-  }
-  if (res.cabinet_power && res.cabinet_power.path_b) {
-    res.cabinet_power.path_b.name = 'B路'
-    res.cabinet_power.path_b.zb = Number((res.cabinet_power.path_b.pow_apparent/res.cabinet_power.total_data.pow_apparent).toFixed(2)) * 100
-    tableData.push(res.cabinet_power.path_b)
-    tableDataB.value = res.cabinet_power.path_b.cur_value.map((item,index) => {
-      return {
-        A: item,
-        V: res.cabinet_power.path_b.vol_value[index]
-      }
-    })
-  }
-  if (res.cabinet_power && res.cabinet_power.total_data) {
-    res.cabinet_power.total_data.name = '统计'
-    res.cabinet_power.total_data.zb = '-'
-    tableData.push(res.cabinet_power.total_data)
-  }
-  ABTotalData.value = tableData
-  Object.assign(detailInfo, res)
-}
-
-const getPowTrend = async(type) => {
-  if (type == radioBtn.value) return
-  radioBtn.value = type
-  const res = await CabinetApi.getPowTrend({id:cabinetId, type})
-  echartsOption.value = {
-    title: {
-      text: '机柜列实时功率走势'
-    },
-    tooltip: {
-      trigger: 'axis'
-    },
-    legend: {
-      top: '2',
-      left: '180',
-      selectedMode: 'single'
-    },
-    grid: {
-      left: '8%',
-      right: '8%',
-      bottom: '35',
-      top: '55'
-    },
-    xAxis: {
-      type: 'category',
-      boundaryGap: false,
-      data: res.map(item => item.dateTime)
-    },
-    yAxis: {
-      type: 'value',
-      // axisLabel: {
-      //   formatter: '{value} '
-      // }
-    },
-    series: [
-      {
-        name: '有功功率',
-        type: 'line',
-        symbol: 'none',
-        data: res.map(item => +item.activePow.toFixed(3)),
-        markPoint: {
-          data: [
-            { type: 'max', name: 'Max' },
-            { type: 'min', name: 'Min' }
-          ]
-        },
-      },
-      {
-        name: '视在功率',
-        type: 'line',
-        symbol: 'none',
-        data: res.map(item => +item.apparentPow.toFixed(3)),
-        markPoint: {
-          // data: [{ name: '周最低', value: -2, xAxis: 1, yAxis: -1.5 }]
-          data: [
-            { type: 'max', name: 'Max' },
-            { type: 'min', name: 'Min' }
-          ]
-        },
-      },
-      {
-        name: '无功功率',
-        type: 'line',
-        symbol: 'none',
-        data: res.map(item => +item.reactivePow.toFixed(3)),
-        markPoint: {
-          // data: [{ name: '周最低', value: -2, xAxis: 1, yAxis: -1.5 }]
-          data: [
-            { type: 'max', name: 'Max' },
-            { type: 'min', name: 'Min' }
-          ]
-        },
-      },
-      {
-        name: '功率因素',
-        type: 'line',
-        symbol: 'none',
-        data: res.map(item => +item.powerFactor),
-        markPoint: {
-          // data: [{ name: '周最低', value: -2, xAxis: 1, yAxis: -1.5 }]
-          data: [
-            { type: 'max', name: 'Max' },
-            { type: 'min', name: 'Min' }
-          ]
-        },
-      },
-      {
-        name: '负载率',
-        type: 'line',
-        symbol: 'none',
-        data: res.map(item => +item.loadRate),
-        markPoint: {
-          // data: [{ name: '周最低', value: -2, xAxis: 1, yAxis: -1.5 }]
-          data: [
-            { type: 'max', name: 'Max' },
-            { type: 'min', name: 'Min' }
-          ]
-        },
-      },
-    ]
-  }
-  console.log('getPowTrend res', res)
-}
-
-const getData =  async() => {
-  const res = await PDUDeviceApi.PDUDisplay({
-    devKey: '192.168.1.93-0'
-  })
-  console.log('res', res)
-  // if (res && res.pdu_data) {
-  //   APDUData.value = regulateData(res.pdu_data.line_item_list || []).data
-  //   APDUParam.value = Object.keys(res.pdu_data.line_item_list || [])
-  //   APDUTriphase.value = APDUData.value.map(item => {
-  //     if (item.cur_alarm_max > APDUTriphaseMax.value) APDUTriphaseMax.value = item.cur_alarm_max
-  //     return item.cur_value
-  //   })
-  //   Object.assign(triphaseAOption, {
-  //     title: [
-  //       {
-  //         text: 'A路电流',
-  //         left: 'center',
-  //         top: 'bottom'
-  //       }
-  //     ],
-  //     polar: {
-  //       radius: [10, '80%']
-  //     },
-  //     radiusAxis: {
-  //       max: APDUTriphaseMax.value,
-  //       // axisLine: false
-  //     },
-  //     angleAxis: {
-  //       type: 'category',
-  //       data: ['a','a', 'a','b', 'b', 'b','c', 'c', 'c'],
-  //       startAngle: 110,
-  //       axisLabel: false,
-  //       axisTick: false
-  //     },
-  //     tooltip: {},
-  //     series: {
-  //       type: 'bar',
-  //       data: ['32.25', , , '20.20', , ,'29.90'],
-  //       coordinateSystem: 'polar',
-  //       label: {
-  //         show: true,
-  //         position: 'middle',
-  //         formatter: '{c}A'
-  //       }
-  //     },
-  //     animation: false
-  //   })
-  //   Object.assign(triphaseBOption, {
-  //     title: [
-  //       {
-  //         text: 'B路电流',
-  //         left: 'center',
-  //         top: 'bottom'
-  //       }
-  //     ],
-  //     polar: {
-  //       radius: [10, '80%']
-  //     },
-  //     radiusAxis: {
-  //       max: APDUTriphaseMax.value,
-  //       // axisLine: false
-  //     },
-  //     angleAxis: {
-  //       type: 'category',
-  //       data: ['a','a', 'a','b', 'b', 'b','c', 'c', 'c'],
-  //       startAngle: 110,
-  //       axisLabel: false,
-  //       axisTick: false
-  //     },
-  //     tooltip: {},
-  //     series: {
-  //       type: 'bar',
-  //       data: ['32.00', , , '22.00', , ,'28.00'],
-  //       coordinateSystem: 'polar',
-  //       label: {
-  //         show: true,
-  //         position: 'middle',
-  //         formatter: '{c}A'
-  //       }
-  //     },
-  //     animation: false
-  //   })
-  //   CPDUData.value = regulateData(res.pdu_data.loop_item_list || []).data
-  //   CPDUParam.value = Object.keys(res.pdu_data.loop_item_list || [])
-  //   SPDUData.value = regulateData(res.pdu_data.output_item_list || []).data
-  //   SPDUParam.value = Object.keys(res.pdu_data.output_item_list || [])
-  // }
-  // console.log('APDUParam', APDUData.value, APDUTriphase.value)
-}
-
-getData()
-getMachineDetail()
-getPowTrend('DAY')
-onMounted(()=> {
+const peakDemand = ref(0);
+const peakDemandTime = ref('');
+const resultData = ref() as any;
+const loadRateList = ref() as any;
+const selectedOption = ref('current')
+const location = ref(history?.state?.location);
+const busName = ref(history?.state?.busName);
+const id = ref(history?.state?.id);
+const roomId = ref(history?.state?.roomId);
+const type = ref(history?.state.type);
+const visContro = ref({
+  gaugeVis : false,
+  loadRateVis : false,
+  powActiveVis : false,
+  powReactiveVis : false,
 })
+
+const getFullTimeByDate = (date) => {
+  var year = date.getFullYear();//年
+  var month = date.getMonth();//月
+  var day = date.getDate();//日
+  var hours = date.getHours();//时
+  var min = date.getMinutes();//分
+  var second = date.getSeconds();//秒
+  return year + "-" +
+      ((month + 1) > 9 ? (month + 1) : "0" + (month + 1)) + "-" +
+      (day > 9 ? day : ("0" + day)) + " " +
+      (hours > 9 ? hours : ("0" + hours)) + ":" +
+      (min > 9 ? min : ("0" + min)) + ":" +
+      (second > 9 ? second : ("0" + second));
+}
+const queryParamsSearch = reactive({
+  devKey : history?.state?.devKey as string | undefined,
+})
+const queryParams = reactive({
+  pageNo: 1,
+  pageSize: 24,
+  devKey: history?.state?.devKey,
+  busId : history?.state?.busId,
+  createTime: [],
+  cascadeNum: undefined,
+  serverRoomData:undefined,
+  status:[],
+  cabinetIds:[],
+  timeType : 0,
+  timeArr:[],
+  timeGranularity: '近一小时',
+  oldTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0)),
+  newTime : getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),23,59,59)),
+}) as any
+
+const getRedisData = async () => {
+  const result = await CabinetApi.getCabinetdistributionDetails({
+    id:id.value,
+    roomId:roomId.value,
+    type:type.value
+  })
+  location.value = result.roomName;
+  busName.value = result.cabinetName;
+  console.log('result',result);
+  resultData.value = result;
+  
+  if(resultData.value.loadFactor != null){
+    visContro.value.gaugeVis = true;
+  }
+  
+  if(resultData.value.loadFactor >= 100 ){
+    resultData.value.loadFactor = 100;
+  }
+}
+
+const getLoadRateList = async () =>{
+    const data = await IndexApi.getBusLoadRateLine(queryParams);
+    loadRateList.value = data;
+    if(loadRateList.value?.time != null && loadRateList.value?.time?.length > 0){
+        visContro.value.loadRateVis = true;
+    }else {
+        visContro.value.loadRateVis = false;
+    }
+}
+
+const getBusIdAndLocation =async () => {
+ try {
+    const data = await BusPowerLoadDetailApi.getBusIdAndLocation(queryParams);//devKey
+    if (data != null){
+      location.value = data.location
+      queryParams.busId = data.busId
+      busName.value = data.busName
+    }else{
+      location.value = null
+      queryParams.busId = null
+      busName.value = null
+    }
+ } finally {
+ }
+}
+
+const getPeakDemand =async () => {
+ try {
+    const data = await IndexApi.getPeakDemand(queryParams);
+    if (data != null){
+        peakDemand.value = data.peakDemand.toFixed(3);
+        peakDemandTime.value = data.peakDemandTime
+    }
+ } finally {
+ }
+}
+
+//刷新数据
+const flashChartData = async () =>{
+    await getRedisData();
+    await getPeakDemand();
+    await getLoadRateList();
+}
+
+const handleQuery = async () => {
+  queryParams.devKey = queryParamsSearch.devKey;
+   await getBusIdAndLocation();
+   await flashChartData();
+}
+
+const changeTime = async (data) => {
+    queryParams.timeGranularity = data;   
+    handleQuery();
+}
+
+const devKeyList = ref([])
+const loadAll = async () => {
+  //debugger
+  var data = await BusPowerLoadDetailApi.getBusdevKeyList();
+  var objectArray = data.map((str) => {
+    return { value: str };
+  });
+  console.log(objectArray)
+  return objectArray;
+}
+
+const querySearch = (queryString: string, cb: any) => {
+
+  const results = queryString
+    ? devKeyList.value.filter(createFilter(queryString))
+    : devKeyList.value
+  // call callback function to return suggestions
+  cb(results)
+}
+
+const createFilter = (queryString: string) => {
+  return (devKeyList) => {
+    return (
+      devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+    )
+  }
+}
+
+const getBackgroundColor = (wornStatus: number) => {
+  if (wornStatus != 0) {
+    return '#fa3333' //红色
+  }
+}
+   
+/** 初始化 **/
+onMounted(async () => {
+  // await getDetailData();
+  // await getLineChartData();
+  devKeyList.value = await loadAll();
+  await getRedisData();
+  await getPeakDemand();
+  await getLoadRateList();
+  // initChart1();
+  // initChart2();
+
+
+})
+
+
 </script>
 
-<style lang="scss" scoped>
 
-.descriptionContainer {
-  // width: 100%;
-  // box-sizing: border-box;
-  display: flex;
-  justify-content: space-between;
-  flex-shrink: 0;
-  margin-bottom: 16px;
-  .all-left {
-    // flex: 3;
-    width: 30%;
-    box-sizing: border-box;
-    flex-shrink: 0;
-    // overflow: hidden;
-    margin-right: 15px;
-    .card {
-      // height: 100%;
+<style scoped lang="scss">
+.selectBtn.el-button--primary {
+    background-color: #eebf29!important
+}
+
+.AColor {
+    color: #ffa700!important
+}
+
+.BColor {
+    color: #8fc31f!important
+}
+
+.CColor {
+    color: #e60012!important
+}
+
+.TransformerMonitor {
+    height: calc(100vh - 84px);
+    padding: 10px 10px;
+}
+
+.TransformerMonitor .topdiv {
+    height: 45px;
+    padding: 5px;
+    margin-bottom: 5px
+}
+
+.TransformerMonitor .topdiv span {
+    line-height: 35px;
+    font-size: 14px
+}
+
+body .TransformerMonitor .topdiv span,body .TransformerMonitor .topdiv span,body .TransformerMonitor .topdiv span,body .TransformerMonitor .topdiv span {
+    color: #000
+}
+
+body .TransformerMonitor .topdiv span,body .TransformerMonitor .topdiv span,body .TransformerMonitor .topdiv span {
+    color: #fff
+}
+
+.TransformerMonitor .center-part {
+    height: 35%;
+    width: 100%;
+    margin-bottom: 5px
+}
+
+body .TransformerMonitor .center-part .left-part,body .TransformerMonitor .center-part .left-part,body .TransformerMonitor .center-part .left-part,body .TransformerMonitor .center-part .left-part {
+    color: #000;
+    border: 1px solid #e2e2e2;
+    background-color: #fff!important
+}
+
+body .TransformerMonitor .center-part .left-part {
+    color: #fff;
+    border: 0;
+    background-color: #238!important
+}
+
+body .TransformerMonitor .center-part .left-part {
+    color: #fff;
+    border: 0;
+    background-color: #1d3666!important
+}
+
+body .TransformerMonitor .center-part .left-part {
+    color: #fff;
+    border: 0;
+    background-color: #ffffff!important
+}
+
+.TransformerMonitor .center-part .left-part #transformChart {
+    width: 100%;
+    height: 100%
+}
+
+.bullet {
+  font-size: 34px; /* 根据需要调整大小 */
+  margin-right: 8px; /* 设置小圆点与后续文本之间的间距 */
+}
+
+@media screen and (min-width:2048px) {
+    .centainer-height{
+        height:90vh
     }
-    .tableContainer {
-      height: 100%;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-around;
-    }
-    .progressBox {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      font-size: 18px;
-      position: relative;
-      .local {
-        position: absolute;
-        top: -10px;
-        left: -10px;
-        // width: auto;
-        // padding: 10px 15px;
-        // background-color: #fff;
-      }
-      .title {
-        // font-size: 16px;
-        margin-bottom: 10px;
-      }
-      .power {
-        margin-top: 15px;
-      }
-    }
-  }
-  .all-right {
-    // margin-left: 16px;
-    height: auto !important;
-    // width: calc(70% - 15px);
-    flex: 1;
-    overflow: hidden;
-    // flex: 1 !important;
-    // flex-shrink: 0 !important;
-    color: #606060;
-    position: relative;
-    box-sizing: border-box;
-      .btns {
-        position: absolute;
-        z-index: 9;
-        right: 30px;
-        top: 20px;
-      }
-    
-    // .card {
-      .ABTotalData {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+
+    .TransformerMonitor .center-part .left-part {
+        display: inline-block;
+        width: 32.5%;
         height: 100%;
-      }
-      height: 100%;
-      box-sizing: border-box;
-      .tabs-container {
-        font-size: 16px;
-        color: #606060;
-        line-height: 30px;
-        position: relative;
-        // font-weight: bold;
-        .title {
-          width: 500px;
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 10px;
-        }
-        .btn-jump {
-          position: absolute;
-          top: 0px;
-          right: 10px;
-        }
-        .normal {
-          color: #0fe24e;
-        }
-        .warn {
-          color: #dadada;
-        }
-        .error {
-          color: #fd0808;
-        }
-      }
-    // }
-  }
-}
-.powerContainer {
-  display: flex;
-  .power {
-    width: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    // padding-left: 50px;
-    margin: 20px 0;
-    .label {
-      font-size: 16px;
-      font-weight: bold;
+        margin-right: 15px
     }
-    .progressContainer {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-left: 30px;
-      .progress {
-        width: 400px;
-        display: flex;
-        align-items: center;
-        font-size: 14px;
-        color: #eee;
-        box-sizing: border-box;
+    .TransformerMonitor .center-part .right-part {
+        display: inline-block;
+        width: 32.4%;
+        height: 100%;
+        vertical-align: top;
+        background-color: #fff;
         position: relative;
-        display: flex;
-        justify-content: center;
-        .line {
-          width: 3px;
-          height: 36px;
-          background-color: #000;
-        }
-        .left {
-          text-align: center;
-          box-sizing: border-box;
-          background-color: #3b8bf5;
-          // border-right: 1px solid #000;
-        }
-        .right {
-          text-align: center;
-          background-color:  #f86f13;
-        }
-      }
+        margin-right:15px;
     }
-  }
+    
+    .TransformerMonitor .center-part .center-top-part {
+        display: inline-block;
+        width: 50%;
+        height: 100%;
+        margin-bottom: 5px;
+    }
+    
+    .TransformerMonitor .center-part .center-top-right-part {
+        display: inline-block;
+        width: 50%;
+        height: 100%;
+        top: 30%;
+        margin-bottom: 5px;
+        position: absolute;
+    }
+    
+    .TransformerMonitor .center-part .right-right-part{
+        display: inline-block;
+        width: 32.3%;
+        height: 100%;
+        vertical-align: top;
+        background-color: #fff;
+        margin-right:15px;
+    }
+
+
+    .TransformerMonitor .bottom-part {
+        display: inline-block;
+        height: 27%;
+        width: 32.4%;
+        margin-right: 15px;
+        margin-top: 5px;
+        margin-bottom: 5px;
+        position: relative;
+    }
+
+    .header_app_text_other{
+      width: 65%;
+      align-content: center;
+      background-color: white;
+      margin-right: 5px;
+    }
+
+    .header_app_text_other1{
+      align-content: center;
+      background-color: white;
+    }
+
+    .label-container {
+      display: flex; /* 使用 Flexbox 布局 */
+      align-items: center; /* 垂直居中 */
+      color:#000;
+    }
 }
-.triphaseContainer {
-  margin-top: 20px;
-  display: flex;
-  div {
-    width: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+
+@media screen and (max-width:2048px) and (min-width:1600px) {
+    .centainer-height{
+        height:93vh
+    }
+
+    .TransformerMonitor .center-part .left-part {
+        display: inline-block;
+        width: 32.3%;
+        height: 100%;
+        margin-right: 15px
+    }
+    .TransformerMonitor .center-part .right-part {
+        display: inline-block;
+        width: 32.3%;
+        height: 100%;
+        vertical-align: top;
+        background-color: #fff;
+        position: relative;
+        margin-right:15px;
+    }
+    
+    .TransformerMonitor .center-part .center-top-part {
+        display: inline-block;
+        width: 50%;
+        height: 100%;
+        margin-bottom: 5px;
+    }
+    
+    .TransformerMonitor .center-part .center-top-right-part {
+        display: inline-block;
+        width: 50%;
+        height: 100%;
+        top: 30%;
+        margin-bottom: 5px;
+        position: absolute;
+    }
+    
+    .TransformerMonitor .center-part .right-right-part{
+        display: inline-block;
+        width: 32%;
+        height: 100%;
+        vertical-align: top;
+        background-color: #fff;
+        margin-right:15px;
+    }
+
+    .TransformerMonitor .bottom-part {
+        display: inline-block;
+        height: 27%;
+        width: 32.2%;
+        margin-right: 15px;
+        margin-top: 5px;
+        margin-bottom: 5px;
+        position: relative;
+    }
+
+    .header_app_text_other{
+      width: 65%;
+      align-content: center;
+      background-color: white;
+      margin-right: 5px;
+    }
+
+    .header_app_text_other1{
+      align-content: center;
+      background-color: white;
+    }
+
+    .label-container {
+      display: flex; /* 使用 Flexbox 布局 */
+      align-items: center; /* 垂直居中 */
+      color:#000;
+    }
 }
-.triphase {
-  width: 350px;
-  height: 350px;
-  position: relative;
-  .commonRound {
-    border-radius: 50%;
-    box-sizing: border-box;
-    border: 1px solid #c6caf7;
-    position: absolute;
+
+@media screen and (max-width:1600px) {
+    .centainer-height{
+        height:93vh
+    }
+
+    .TransformerMonitor .center-part .left-part {
+        display: inline-block;
+        width: 32.3%;
+        height: 100%;
+        margin-right: 15px
+    }
+    .TransformerMonitor .center-part .right-part {
+        display: inline-block;
+        width: 32.3%;
+        height: 100%;
+        vertical-align: top;
+        background-color: #fff;
+        position: relative;
+        margin-right:15px;
+    }
+    
+    .TransformerMonitor .center-part .center-top-part {
+        display: inline-block;
+        width: 50%;
+        height: 100%;
+        margin-bottom: 5px;
+    }
+    
+    .TransformerMonitor .center-part .center-top-right-part {
+        display: inline-block;
+        width: 50%;
+        height: 100%;
+        top: 30%;
+        margin-bottom: 5px;
+        position: absolute;
+    }
+    
+    .TransformerMonitor .center-part .right-right-part{
+        display: inline-block;
+        width: 32%;
+        height: 100%;
+        vertical-align: top;
+        background-color: #fff;
+        margin-right:15px;
+    }
+
+
+    .TransformerMonitor .bottom-part {
+        display: inline-block;
+        height: 27%;
+        width: 32.2%;
+        margin-right: 15px;
+        margin-top: 5px;
+        margin-bottom: 5px;
+        position: relative;
+    }
+
+    .header_app_text_other{
+      width: 80%;
+      align-content: center;
+      background-color: white;
+      margin-right: 5px;
+    }
+
+    .header_app_text_other1{
+      align-content: center;
+      background-color: white;
+
+    }
+    .label-container {
+      display: flex; /* 使用 Flexbox 布局 */
+      align-items: center; /* 垂直居中 */
+      color:#000;
+      margin-top: -10px;
+      margin-left: -20px;
+    }
+}
+ 
+.label-container span:nth-of-type(2) {
+  display: inline-block;
+  width: 120px;
+  vertical-align: top;
+}
+ 
+.label-container span:last-of-type {
+  display: inline-block;
+  margin-left: 10px;
+}
+
+body .TransformerMonitor .center-part .center-top-part,body .TransformerMonitor .center-part .center-top-part,body .TransformerMonitor .center-part .center-top-part,body .TransformerMonitor .center-part .center-top-part {
+    color: #000;
+    border: 1px solid #e2e2e2;
+    background-color: #fff!important
+}
+
+body .TransformerMonitor .center-part .center-top-part {
+    color: #fff;
+    border: 0;
+    background-color: #238!important
+}
+
+body .TransformerMonitor .center-part .center-top-part {
+    color: #fff;
+    border: 0;
+    background-color: #1d3666!important
+}
+
+body .TransformerMonitor .center-part .center-top-part {
+    color: #fff;
+    border: 0;
+    background-color: #ffffff!important
+}
+
+.TransformerMonitor .center-part .center-top-part .div-part {
+    display: inline-block;
+    width: 24%;
+    height: 100%;
+    vertical-align: top
+}
+
+.TransformerMonitor .center-part .center-top-part .div-part p {
+    text-align: center;
+    margin: -5px 0 0 0;
+    font-size: 16px
+}
+
+body .TransformerMonitor .center-part .center-top-part .div-part p,body .TransformerMonitor .center-part .center-top-part .div-part p,body .TransformerMonitor .center-part .center-top-part .div-part p,body .TransformerMonitor .center-part .center-top-part .div-part p {
+    color: #1e9fe9
+}
+
+body .TransformerMonitor .center-part .center-top-part .div-part p,body .TransformerMonitor .center-part .center-top-part .div-part p,body .TransformerMonitor .center-part .center-top-part .div-part p {
+    color: rgb(131, 131, 133)  
+}
+
+.TransformerMonitor .center-part .center-top-part .div-part .div-part1,.TransformerMonitor .center-part .center-top-part .div-part .div-part2,.TransformerMonitor .center-part .center-top-part .div-part .div-part3,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 {
+    text-align: center;
+    vertical-align: middle
+}
+
+body .TransformerMonitor .center-part .center-top-part .div-part .div-part1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 {
+    color: #000
+}
+
+body .TransformerMonitor .center-part .center-top-part .div-part .div-part1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 {
+    color: #fff
+}
+
+.TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt {
+    margin: 0;
+    position: relative;
     top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
-  .round1 {
-    width: 70px;
-    height: 70px;
-  }
-  .round2 {
-    width: 140px;
-    height: 140px;
-  }
-  .round3 {
-    width: 210px;
-    height: 210px;
-  }
-  .round4 {
-    width: 280px;
-    height: 280px;
-  }
-  .round5 {
-    width: 350px;
-    height: 350px;
-  }
-  .commonLine {
-    width: 175px;
-    height: 6px;
-    // border-bottom: 4px solid #c6caf7;
-    background-color: #c6caf7;
-    position: absolute;
-    left: 50%;
-    top: calc(50% - 3px);
-    .icon-right {
-      position: absolute;
-      top: -6px;
-      right: -8px;
-    }
-  }
-  .line1 {
-    transform-origin: 0 2px;
-    transform: rotate(30deg);
-    .lineSon {
-      width: 150px;
-      height: 6px;
-      background-color: #fd0808;
-    }
-  }
-  .line2 {
-    transform-origin: 0 2px;
-    transform: rotate(150deg);
-    .lineSon {
-      width: 120px;
-      height: 6px;
-      background-color: #fd0808;
-    }
-  }
-  .line3 {
-    transform-origin: 0 2px;
-    transform: rotate(-90deg);
-    .lineSon {
-      width: 174px;
-      height: 6px;
-      background-color: #fd0808;
-    }
-  }
+    -webkit-transform: translateY(-50%);
+    transform: translateY(-50%);
+    font-family: YSBTH
 }
-:deep(.el-card__body) {
-  height: 100%;
-  box-sizing: border-box;
+
+body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt1 {
+    color: #000000
 }
-:deep(.el-card) {
-  height: 100%;
-  box-sizing: border-box;
+
+body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt1,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt1 {
+    color: #000000
 }
-// :deep(.el-table__row .el-table__cell) {
-//   border: none;
-// }
-// :deep(.el-table__header-wrapper .el-table__header .el-table__cell) {
-//   border: none;
-// }
-:deep(.el-table) :before {
-  height: 0;
+
+body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt2 {
+    color: #000000
 }
-:deep(.tableContainer .el-table){
-  width: auto;
+
+body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt2,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt2 {
+    color: #000000
 }
+
+body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt3 {
+    color: #000000
+}
+
+body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt3,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt3 {
+    color: #000000
+}
+
+body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt4 {
+    color: #000000
+}
+
+body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt.txt4,body .TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt.txt4 {
+    color: #000000
+}
+
+.TransformerMonitor .center-part .center-top-part .div-part .div-part1 span,.TransformerMonitor .center-part .center-top-part .div-part .div-part2 span,.TransformerMonitor .center-part .center-top-part .div-part .div-part3 span,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 span {
+    font-size: 14px
+}
+
+.TransformerMonitor .center-part .center-top-part .div-part .div-part1 {
+    background: url(../../../assets/imgs/transformMonitor30001.8104cb6f.png) no-repeat 50%;
+    background-size: 45%;
+    height: calc(100% - 30px)
+}
+
+.TransformerMonitor .center-part .center-top-part .div-part .div-part2 {
+    background: url(../../../assets/imgs/transformMonitor30002.e194a426.png) no-repeat 50%;
+    background-size: 45%;
+    height: calc(100% - 30px)
+}
+
+.TransformerMonitor .center-part .center-top-part .div-part .div-part3 {
+    background: url(../../../assets/imgs/transformMonitor30003.8df2d215.png) no-repeat 50%;
+    background-size: 45%;
+    height: calc(100% - 30px)
+}
+
+.TransformerMonitor .center-part .center-top-part .div-part .div-part4 {
+    background: url(../../../assets/imgs/transformMonitor30004.0656ad32.png) no-repeat 50%;
+    background-size: 45%;
+    height: calc(100% - 30px)
+}
+
+.TransformerMonitor .center-part .center-bottom-part {
+    display: inline-block;
+    width: 100%;
+    height: calc(50% - 2.5px)
+}
+
+body .TransformerMonitor .center-part .center-bottom-part,body .TransformerMonitor .center-part .center-bottom-part,body .TransformerMonitor .center-part .center-bottom-part,body .TransformerMonitor .center-part .center-bottom-part {
+    color: #000;
+    border: 1px solid #e2e2e2;
+    background-color: #fff!important
+}
+
+body .TransformerMonitor .center-part .center-bottom-part {
+    color: #fff;
+    border: 0;
+    background-color: #238!important
+}
+
+body .TransformerMonitor .center-part .center-bottom-part {
+    color: #fff;
+    border: 0;
+    background-color: #1d3666!important
+}
+
+body .TransformerMonitor .center-part .center-bottom-part {
+    color: #fff;
+    border: 0;
+    background-color: #ffffff!important
+}
+
+.TransformerMonitor .center-part .center-bottom-part .top-part {
+    display: inline-block;
+    width: 100%;
+    height: 40px;
+    background-color: rgba(60,102,175,.41)
+}
+
+.TransformerMonitor .center-part .center-bottom-part .top-part span {
+    display: inline-block;
+    width: 14%;
+    line-height: 40px;
+    font-size: 16px;
+    padding-left: 20px;
+    color: #65c5fc
+}
+
+.TransformerMonitor .center-part .center-bottom-part .block-part {
+    width: 100%;
+    height: calc(100% - 40px)
+}
+
+.TransformerMonitor .center-part .center-bottom-part .block-part .content-part {
+    width: 14%;
+    height: 100%;
+    min-width: 155px;
+    padding-left: 20px;
+    display: inline-block;
+    vertical-align: top;
+    padding-top: 15px
+}
+
+.TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
+    margin: 8px 0;
+    font-size: 14px
+}
+
+body .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p,body .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p,body .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p,body .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
+    color: #000
+}
+
+body .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p,body .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p,body .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
+    color: #000
+}
+
+.TransformerMonitor .center-part .center-bottom-part .block-part .content-part .vale-part {
+    color: #01ada8;
+    width: 40px;
+    display: inline-block;
+    margin: 0 10px
+}
+
+body .TransformerMonitor .bottom-part,body .TransformerMonitor .bottom-part,body .TransformerMonitor .bottom-part,body .TransformerMonitor .bottom-part {
+    color: #000;
+    border: 1px solid #e2e2e2;
+    background-color: #fff!important
+}
+
+body .TransformerMonitor .bottom-part {
+    color: #fff;
+    border: 0;
+    background-color: #238!important
+}
+
+body .TransformerMonitor .bottom-part {
+    color: #fff;
+    border: 0;
+    background-color: #1d3666!important
+}
+
+body .TransformerMonitor .bottom-part {
+    color: #fff;
+    border: 0;
+    background-color: #ffffff!important
+}
+
+.TransformerMonitor .bottom-part .bottomLineDiv #transformLine1,.TransformerMonitor .bottom-part .bottomLineDiv #transformLine2,.TransformerMonitor .bottom-part .bottomLineDiv #transformLine3 {
+    width: 100%;
+    height: 100%;
+}
+
+.noData {
+    color: #fff;
+    text-align: center;
+    line-height: 200px;
+}
+
+
+body .TransformerMonitor .center-part .center-bottom-part .top-part {
+    background: #f5f7fa
+}
+
+body .TransformerMonitor .center-part .center-bottom-part .top-part span {
+    color: #000;
+
+}
+
+body .TransformerMonitor .bottom-part .bottomLineDiv p,body .TransformerMonitor .bottom-part .bottomLineDiv p {
+    border-left: 2px solid #fff;
+    background: #f5f7fa;
+    color: #606266
+}
+
+body .TransformerMonitor .center-part .center-bottom-part .top-part,body .TransformerMonitor .center-part .center-bottom-part .top-part {
+    //background: #01ada8
+}
+
+body .TransformerMonitor .center-part .center-bottom-part .top-part span,body .TransformerMonitor .center-part .center-bottom-part .top-part span {
+    color: #606266
+}
+
+.header_app{
+  background-color: white;
+  display: flex;
+  height: 50px;
+  padding-left: 10px;
+  box-shadow: 20px;
+}
+.header_app_text{                     
+  background-color: white;
+  width: 100%;
+  align-content: center;
+  color:#606266;
+}                                                       
 </style>

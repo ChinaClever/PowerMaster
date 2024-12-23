@@ -41,7 +41,7 @@ public class AisleIndex implements Serializable {
      * 数据来源 0：PDU 1：母线
      */
     @Schema(description = "数据来源 0：PDU 1：母线", example = "0")
-    private Integer pduBar;
+    private Boolean pduBar;
 
     /**
      * 是否删除
@@ -56,31 +56,7 @@ public class AisleIndex implements Serializable {
     private Integer aisleLength;
 
 
-//    /**
-//     * 类型
-//    */
-//    private String type;
 
-
-//    /**
-//     * 日用能告警开关
-//     */
-//    private  int eleAlarmDay;
-//
-//    /**
-//     * 月用能告警开关
-//     */
-//    private  int eleAlarmMonth;
-//
-//    /**
-//     * 日用能限制
-//     */
-//    private double eleLimitDay;
-//
-//    /**
-//     * 月用能限制
-//     */
-//    private double eleLimitMonth;
 
     /**
      * 起始x坐标
@@ -99,15 +75,20 @@ public class AisleIndex implements Serializable {
      */
     private String direction;
 
+
+//    private Double powerCapacity;
+
     /**
      * 更新时间
      */
     @Schema(description = "更新时间", example = "2024-05-07 01:00:00")
+//    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
     /**
      * 创建时间
      */
     @Schema(description = "创建时间", example = "2024-05-07 01:00:00")
+//    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
 

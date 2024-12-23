@@ -1,7 +1,6 @@
 package cn.iocoder.yudao.module.bus.service.busenergyconsumption;
 
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
-import cn.iocoder.yudao.framework.common.util.collection.MapUtils;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusEleTotalRealtimeResVO;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.EnergyConsumptionPageReqVO;
 import cn.iocoder.yudao.module.bus.dto.BusEleTotalRealtimeReqDTO;
@@ -48,7 +47,7 @@ public interface BusEnergyConsumptionService {
      * 公共方法 获取某段时间某个索引里新增多少条数据
      *
      * @param indices es索引名
-     * @param name 返回数据的key
+     * @param name    返回数据的key
      * @param timeAgo 时间范围
      * @return 新增数据条数
      */
@@ -78,6 +77,7 @@ public interface BusEnergyConsumptionService {
 
 
 //------------------------------------------------------------------------
+
     /**
      * 获得插接箱电量数据分页
      *
@@ -139,7 +139,7 @@ public interface BusEnergyConsumptionService {
 
     List<Object> getNewBillList(List<Object> list);
 
-    List<Object>  getNewRealtimeList(List<Object> list);
+    List<Object> getNewRealtimeList(List<Object> list);
 
     List<Object> getNewList(List<Object> list);
 

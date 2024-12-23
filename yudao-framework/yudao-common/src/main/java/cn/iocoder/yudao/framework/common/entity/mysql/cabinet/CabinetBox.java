@@ -15,8 +15,8 @@ import java.time.LocalDateTime;
  * @date 2024/4/23 10:30
  */
 @Data
-@TableName(value = "cabinet_bus")
-public class CabinetBus implements Serializable {
+@TableName(value = "cabinet_box")
+public class CabinetBox implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -30,7 +30,7 @@ public class CabinetBus implements Serializable {
     /**
      * A路插接箱
      */
-    private String devKeyA;
+    private String boxKeyA;
     /**
      * A路插接箱输出位
      */
@@ -38,7 +38,7 @@ public class CabinetBus implements Serializable {
     /**
      * B路插接箱
      */
-    private String devKeyB;
+    private String boxKeyB;
     /**
      * B路插接箱输出位
      */
@@ -47,12 +47,12 @@ public class CabinetBus implements Serializable {
     /**
      * 标记位-名字  前端用
      */
-    private String boxIndexA;
+//    private String boxIndexA;
 
     /**
      * 标记位-名字  前端用
      */
-    private String boxIndexB;
+//    private String boxIndexB;
 
     /**
      * 更新时间

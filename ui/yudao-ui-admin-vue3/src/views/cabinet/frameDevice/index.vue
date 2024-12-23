@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu @check="handleCheck" :showSearch="true" :dataList="navList" navTitle="模块化机房">
+  <CommonMenu @check="handleCheck" :showSearch="true" :dataList="navList" navTitle="机架设备">
     <template #NavInfo>
       <div class="navInfo">
         <!-- <div class="header">
@@ -11,53 +11,30 @@
         <div class="status">
           <div class="box">
             <div class="top">
-              <div class="tag"></div>正常
+              <div class="tag"></div>未绑定
             </div>
-            <div class="value"><span class="number">24</span>个</div>
+            <div class="value"><span class="number">{{statistics.unbound}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag empty"></div>空载
+              <div class="tag empty"></div>开机
             </div>
-            <div class="value"><span class="number">1</span>个</div>
+            <div class="value"><span class="number">{{statistics.powerOn}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag warn"></div>预警
+              <div class="tag warn"></div>关机
             </div>
-            <div class="value"><span class="number">1</span>个</div>
+            <div class="value"><span class="number">{{statistics.powerOff}}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag error"></div>故障
+              <div class="tag error"></div>总计
             </div>
-            <div class="value"><span class="number">0</span>个</div>
+            <div class="value"><span class="number">{{statistics.totalAll}}</span>个</div>
           </div>
         </div>
         <div class="line"></div>
-        <!-- <div class="overview">
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>总电能</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-        </div> -->
       </div>
     </template>
     <template #ActionBar>
@@ -80,7 +57,7 @@
           </el-form-item>
           <el-form-item>
             <el-button style="margin-left: 12px" @click="getTableData(true)" ><Icon icon="ep:search" />搜索</el-button>
-            <el-button @click="openForm('add')" type="primary" plain><Icon icon="ep:plus" />添加</el-button>
+            <!-- <el-button @click="openForm('add')" type="primary" plain><Icon icon="ep:plus" />添加</el-button> -->
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
@@ -94,16 +71,16 @@
         <div v-if="switchValue == 0 && tableData.length > 0" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
             <div class="content">
-              <div class="power">功率：{{item.yggl}}kW</div>
+              <div class="power">功率：{{item.powActive}}kW</div>
               <div class="info">
-                <div>名称：{{item.name}}</div>
-                <div>型号：{{item.xh}}</div>
-                <div>A路电流：{{item.adl}}A</div>
-                <div>B路电流：{{item.bdl}}A</div>
+                <div>名称：{{item.rackName}}</div>
+                <div>型号：{{item.rackType}}</div>
+                <div>A路电流：{{item.cura}}A</div>
+                <div>B路电流：{{item.curb}}A</div>
               </div>
             </div>
             <div class="room">{{item.local}}</div>
-            <button class="detail" @click.prevent="toFramDeviceDetail(item.bh)">详情</button>
+            <button class="detail" @click.prevent="toFramDeviceDetail(item.id)">详情</button>
           </div>
         </div>
         <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" >
@@ -147,12 +124,27 @@ const queryParams = reactive({
   pageSize: 24,
   pageTotal: 1,
 })
-
+const statistics = reactive({
+  unbound : 0,
+  powerOn : 0,
+  powerOff : 0,
+  totalAll : 0
+})
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await CabinetApi.getRoomMenuAll({})
   navList.value = res
 }
+const getStatistics = async() => {
+  const resStatus =await CabinetApi.getRackStatistics();
+
+    statistics.unbound = resStatus.unbound;
+    statistics.powerOn = resStatus.powerOn;
+    statistics.powerOff = resStatus.powerOff;
+    statistics.totalAll = resStatus.total;
+  console.log('resStatus', statistics)
+}
+
 
 // 获取机架表格数据
 const getTableData = async(reset = false) => {
@@ -169,22 +161,24 @@ const getTableData = async(reset = false) => {
     })
     console.log('res', res)
     if (res.list) {
-      tableData.value = res.list.map(item => {
-        return {
-          bh: item.rack_key,
-          name: item.rack_name,
-          local: item.room_name + '-' + item.cabinet_name,
-          sbm: item.rack_name,
-          sbxh: item.type,
-          adl: item.rack_power.total_data.cur_a,
-          bdl: item.rack_power.total_data.cur_b,
-          yggl: item.rack_power.total_data.pow_active,
-          wggl: item.rack_power.total_data.pow_reactive,
-          glys: item.rack_power.total_data.power_factor
-        }
-      })
+      // tableData.value = res.list.map(item => {
+      //   return {
+      //     bh: item.rack_key,
+      //     name: item.rack_name,
+      //     local: item.room_name + '-' + item.cabinet_name,
+      //     sbm: item.rack_name,
+      //     sbxh: item.type,
+      //     adl: item.rack_power.total_data.cur_a.toFixed(3),
+      //     bdl: item.rack_power.total_data.cur_b.toFixed(3),
+      //     yggl: item.rack_power.total_data.pow_active.toFixed(1),
+      //     wggl: item.rack_power.total_data.pow_reactive,
+      //     glys: item.rack_power.total_data.power_factor
+      //   }
+      // })
+      tableData.value = res.list
       queryParams.pageTotal = res.total
     }
+    getStatistics();
   } finally {
     tableLoading.value = false
   }

@@ -218,6 +218,7 @@ const queryParams = reactive({
   granularity: 'day',
   ipAddr: undefined,
   cascadeAddr: undefined,
+  nowAddress: undefined as string | undefined,
   // 进入页面原始数据默认显示最近2周
   timeRange: ['', ''],
 })
@@ -750,6 +751,7 @@ const handleExport1 = async () => {
     // 导出的二次确认
     await message.exportConfirm()
     // 发起导出
+    queryParams.nowAddress =nowAddress.value
     queryParams.pageNo = 1
     exportLoading.value = true
     const axiosConfig = {

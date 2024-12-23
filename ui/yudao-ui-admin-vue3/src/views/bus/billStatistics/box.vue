@@ -176,11 +176,29 @@ const shortcuts = [
     },
   },
   {
+    text: '最近三个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setMonth(start.getMonth() - 3)
+      return [start, end]
+    },
+  },
+  {
     text: '最近六个月',
     value: () => {
       const end = new Date()
       const start = new Date()
       start.setMonth(start.getMonth() - 6)
+      return [start, end]
+    },
+  },
+   {    
+    text: '最近一年',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setFullYear(start.getFullYear() - 1)
       return [start, end]
     },
   },
@@ -192,7 +210,7 @@ watch(() => queryParams.granularity, () => {
       tableColumns.value = [
         { label: '所在位置', align: 'center', prop: 'location' , istrue:true,width: '300%'},
         { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true,width: '300%'},
-        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
+        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '200%'},
         { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
         { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},
@@ -202,7 +220,7 @@ watch(() => queryParams.granularity, () => {
       tableColumns.value = [
         { label: '所在位置', align: 'center', prop: 'location' , istrue:true,width: '300%'},
         { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true,width: '300%'},
-        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
+        { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '200%'},
         { label: '开始日期', align: 'center', prop: 'start_time', formatter: formatTime, istrue:true},
         { label: '结束日期', align: 'center', prop: 'end_time', formatter: formatTime, istrue:true},
         { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
@@ -216,7 +234,7 @@ watch(() => queryParams.granularity, () => {
 const tableColumns = ref([
   { label: '所在位置', align: 'center', prop: 'location' , istrue:true,width: '300%'},
   { label: '设备地址', align: 'center', prop: 'dev_key', istrue:true,width: '300%'},
-  { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '300%'},
+  { label: '设备名称', align: 'center', prop: 'bus_name', istrue:true, width: '200%'},
   { label: '日期', align: 'center', prop: 'start_time' , formatter: formatTime, width: '200px' , istrue:true},
   { label: '耗电量(kWh)', align: 'center', prop: 'eq_value' , istrue:true, formatter: formatEle},
   { label: '电费(元)', align: 'center', prop: 'bill_value' , istrue:true, formatter: formatBill},

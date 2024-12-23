@@ -30,35 +30,39 @@ public class BusIndexDO {
     /**
      * 设备识别码
      */
-    private String devKey;
+    private String busKey;
     /**
      * ip地址
      */
     private String ipAddr;
-    /**
-     * 母线地址
-     */
-    private String casAddr;
+
     /**
      * 母线编号
      */
-    private Integer barId;
+    private Integer busId;
+
     /**
-     * 运行状态 0：正常 1：预警 2：告警 3: 升级 4：故障 5：离线
+     * 节点IP
+     */
+    private String  busName;
+
+    /**
+     * 运行状态 0：离线 1：正常  2：告警
      */
     private Integer runStatus;
+
+    /**
+     * 0：空载 1：<30%  2: 30~60 3：60~90  4：>90%
+     */
+    private Integer loadRateStatus;
     /**
      * 节点IP
      */
-    private String nodeIp;
-    /**
-     * 节点IP
-     */
-    private String busName;
+    private Integer nodeId;
     /**
      * 逻辑删除
      */
-    private Integer isDeleted;
+    private Boolean isDeleted;
     /**
      * 创建时间
      */

@@ -21,7 +21,6 @@ public class  CabinetEnvSensor implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private int id;
 
-
     /**
      * 机柜id
      */
@@ -40,7 +39,7 @@ public class  CabinetEnvSensor implements Serializable {
     /**
      * pdu
      */
-    private char pathPdu;
+    private String pathPdu;
 
     /**
      * 传感器id
@@ -50,17 +49,17 @@ public class  CabinetEnvSensor implements Serializable {
     /**
      * 传感器类型
      */
-    private int type;
+    private int sensorType;
 
     /**
      * 创建时间
      */
-    @TableField(fill = FieldFill.INSERT)
+//    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     /**
      * 更新时间
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
+//    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 }

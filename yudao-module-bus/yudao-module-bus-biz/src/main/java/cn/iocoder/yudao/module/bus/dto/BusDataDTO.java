@@ -31,7 +31,7 @@ public class BusDataDTO {
     /**
      * 方向  左0 右1
      */
-    private Integer direction;
+    private Boolean direction;
 
 
     @Schema(description = "母线key", example = "")

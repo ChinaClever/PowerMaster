@@ -44,11 +44,16 @@
         :inline="true"
         label-width="68px"                          
       >
-        <el-form-item >
+      <el-form-item >
+          <button :class="normalFlag ? 'btn_normal normal': 'btn_normal'" @click.prevent="normalFlag = !normalFlag;handleSelectStatus(1)">正常</button>
+          <button :class="reportFlag ? 'btn_error error':  'btn_error'" @click.prevent="reportFlag = !reportFlag;handleSelectStatus(2)">告警</button>
+          <button :class="offlineFlag ? 'btn_offline offline': 'btn_offline'" @click.prevent="offlineFlag = !offlineFlag;handleSelectStatus(0)">离线</button>
+        </el-form-item>
+        <!-- <el-form-item >
           <el-checkbox-group  v-model="queryParams.status" @change="handleQuery">
             <el-checkbox :label="5" :value="5">在线</el-checkbox>
           </el-checkbox-group>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
             v-model="queryParams.devKey"
@@ -91,44 +96,45 @@
       <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" width="218px"/>
+        <el-table-column label="所在位置" align="center" prop="location"/>
+        <el-table-column label="设备名称" align="center" prop="busName"/>
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>     
-        <el-table-column v-if="valueMode == 0" label="Ia" align="center" prop="acurThd" width="130px" >
+        <el-table-column v-if="valueMode == 0" label="Ia" align="center" prop="acurThd" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.acurThd != null">
               {{ scope.row.acurThd }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="Ib" align="center" prop="bcurThd" width="130px" >
+        <el-table-column v-if="valueMode == 0" label="Ib" align="center" prop="bcurThd" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.bcurThd != null">
               {{ scope.row.bcurThd }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="Ic" align="center" prop="ccurThd" width="130px" >
+        <el-table-column v-if="valueMode == 0" label="Ic" align="center" prop="ccurThd" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.ccurThd != null">
               {{ scope.row.ccurThd }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="Ua" align="center" prop="avolThd" width="130px" >
+        <el-table-column v-if="valueMode == 0" label="Ua" align="center" prop="avolThd" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.avolThd != null">
               {{ scope.row.avolThd }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="Ub" align="center" prop="bvolThd" width="130px" >
+        <el-table-column v-if="valueMode == 0" label="Ub" align="center" prop="bvolThd" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.bvolThd != null">
               {{ scope.row.bvolThd }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="Uc" align="center" prop="cvolThd" width="130px" >
+        <el-table-column v-if="valueMode == 0" label="Uc" align="center" prop="cvolThd" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.cvolThd != null">
               {{ scope.row.cvolThd }}
@@ -142,7 +148,7 @@
               link
               type="primary"
               @click="toDetail(scope.row)"
-              v-if="scope.row.status != null && scope.row.status != 5"
+              v-if="scope.row.status != null && scope.row.status != 0"
             >
             设备详情
             </el-button>
@@ -150,7 +156,7 @@
               link
               type="danger"
               @click="handleDelete(scope.row.busId)"
-              v-if="scope.row.status == 5"
+              v-if="scope.row.status == 0"
             >
               删除
             </el-button>
@@ -181,12 +187,92 @@
             <el-tag v-else >正常</el-tag>
           </div> -->
           <div class="status" v-if="valueMode == 0">
-            <el-tag type="info" v-if="item.status == 5 " >离线</el-tag>
+            <el-tag type="info" v-if="item.status == 0 " >离线</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>          
-          <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <button class="detail" @click="showDialogCur(item)" v-if="item.status != null && item.status != 0">详情</button>
         </div>
       </div>
+
+      <el-dialog v-model="dialogVisibleCur" @close="handleClose">
+        <!-- 自定义的头部内容（可选） -->
+        <template #header>
+          <el-form
+        class="-mb-15px"
+        :model="queryParams"
+        ref="queryFormRef"
+        :inline="true"
+        label-width="120px"
+      >      
+        <el-form-item>  
+          <span>所处位置：</span>
+          <el-tag size="large">{{ adder }}</el-tag>
+          <span>设备名称：</span>
+          <el-tag size="large" style="margin-right:11vw">{{ location }}</el-tag>
+          <el-select
+            v-model="queryParams.harmonicType"
+            placeholder="请选择"
+            style="width: 240px"
+          >
+            <el-option label="A相电压谐波" :value = 0 />
+            <el-option label="B相电压谐波" :value = 1 />
+            <el-option label="C相电压谐波" :value = 2 />
+            <el-option label="A相电流谐波" :value = 3 />
+            <el-option label="B相电流谐波" :value = 4 />
+            <el-option label="C相电流谐波" :value = 5 />
+          </el-select>
+
+          <el-select
+            v-model="queryParams.harmonicArr"
+            multiple
+            placeholder="Select"
+            collapse-tags
+            collapse-tags-tooltip
+            style="width: 240px"
+          >
+          <el-option label='全选' value='全选' @click='selectAll' />
+          <el-option
+            v-for="item in harmonicMultiple"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+            @click="getLabel(item.value)"
+          />
+          </el-select>
+
+          <el-button 
+            @click="subtractOneDay();handleDayPick()" 
+          >
+            &lt;
+          </el-button>
+          <el-date-picker
+            v-model="queryParams.oldTime"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            type="date"
+            :disabled-date="disabledDate"
+            @change="handleDayPick"
+            class="!w-160px"
+          />
+          <el-button 
+            @click="addtractOneDay();handleDayPick()" 
+          >
+            &gt;
+          </el-button>
+        </el-form-item>
+
+        <el-form-item>
+          <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+        </el-form-item>
+        <!-- <el-text size="large">
+          报警次数：{{ pduInfo.alarm }}
+        </el-text> -->
+      </el-form>
+        </template>
+        <!-- 自定义的主要内容 -->
+        <div class="custom-content">
+          
+        </div>
+      </el-dialog>
 
       <div v-show="switchValue == 1  && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
@@ -211,10 +297,10 @@
             <el-tag v-else >正常</el-tag>
           </div> -->
           <div class="status" v-if="valueMode == 0">
-            <el-tag type="info" v-if="item.status == 5 " >离线</el-tag>
+            <el-tag type="info" v-if="item.status == 0 " >离线</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>          
-          <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 0">详情</button>
         </div>
       </div>
       <Pagination
@@ -243,11 +329,15 @@ import { IndexApi } from '@/api/bus/busindex'
 import { ElTree } from 'element-plus'
 // import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
 
+import HarmonicRealTime from '@/views/bus/harmonicdetail/component/HarmonicRealTime.vue'
+import HarmonicLine from '@/views/bus/harmonicdetail/component/HarmonicLine.vue'
+
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
 const { push } = useRouter()
-
+const dialogVisibleCur = ref(false) //全屏弹窗的显示隐藏
+const dialogVisibleVol = ref(false) //全屏弹窗的显示隐藏
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
@@ -257,6 +347,32 @@ const valueMode = ref(0)
 
 const devKeyList = ref([])
 
+const statusList = reactive([
+  {
+    name: '离线',
+    selected: true,
+    value: 0,
+    cssClass: 'btn_offline',
+    activeClass: 'btn_offline offline'
+  },
+  {
+    name: '正常',
+    selected: true,
+    value: 1,
+    cssClass: 'btn_normal',
+    activeClass: 'btn_normal normal'
+  },
+  {
+    name: '告警',
+    selected: true,
+    value: 2,
+    cssClass: 'btn_error',
+    activeClass: 'btn_error error'
+  }
+])
+const normalFlag = ref(true)
+const reportFlag = ref(true)
+const offlineFlag = ref(true)
 
 const loadAll = async () => {
   var data = await IndexApi.devKeyList();
@@ -283,9 +399,9 @@ const createFilter = (queryString: string) => {
   }
 }
 
-const handleClick = (row) => {
-  console.log("click",row)
-}
+//const handleClick = (row) => {
+//  console.log("click",row)
+//}
 
 const handleCheck = async (row) => {
   if(row.length == 0){
@@ -362,8 +478,9 @@ const getList = async () => {
   console.log(queryParams)
   try {
     const data = await IndexApi.getBusHarmonicPage(queryParams)
-
     list.value = data.list
+    filterData()
+    console.log('list.value',list.value)
     var tableIndex = 0;
 
     list.value.forEach((obj) => {
@@ -390,6 +507,11 @@ const getListNoLoading = async () => {
   try {
     const data = await IndexApi.getBusHarmonicPage(queryParams)
     list.value = data.list
+    filterData()
+    //list.value = list.value.map(item => ({
+    //  ...item, // 复制对象
+    //  location: item.devKey.split('-')[0] // 直接计算location属性
+    //}));
     var tableIndex = 0;    
 
     list.value.forEach((obj) => {
@@ -434,11 +556,55 @@ const toDetail = (row) =>{
   push({path: '/bus/busmonitor/busharmonicdetail', state: { devKey, busId , location }})
 }
 
+const showDialogCur = () => {
+  dialogVisibleCur.value = true
+}
+
+const showDialogVol = () => {
+  dialogVisibleVol.value = true
+}
+
 // const openNewPage = (scope) => {
 //   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
 //   window.open(url, '_blank');
 // }
 
+const filterData = () => {
+  const data0 = list.value.filter(item => item.status === 1); // 正常状态数据
+  console.log('data0',data0)
+  const data1 = list.value.filter(item => item.status === 2 ); // 告警状态数据
+  console.log('data1',data1)
+  const data2 = list.value.filter(item => item.status === 0 || item.status == null); // 离线状态数据
+  console.log('data2',data2)
+ 
+  if (normalFlag.value && !reportFlag.value && !offlineFlag.value) {
+    list.value = data0; // 仅正常状态
+  } else if (reportFlag.value && !normalFlag.value && !offlineFlag.value) {
+    list.value = data1; // 仅告警状态
+  } else if (offlineFlag.value && !normalFlag.value && !reportFlag.value) {
+    list.value = data2; // 仅离线状态
+  } else if (normalFlag.value && reportFlag.value && !offlineFlag.value) {
+    list.value = [...data0, ...data1];
+  } else if (normalFlag.value && offlineFlag.value && !reportFlag.value) {
+    list.value = [...data0, ...data2];
+  } else if (reportFlag.value && offlineFlag.value && !normalFlag.value) {
+    list.value = [...data1, ...data2];
+  } else if (normalFlag.value && reportFlag.value && offlineFlag.value) {
+    list.value = [...data0, ...data1, ...data2];
+  } else {
+    list.value = list.value;
+  }
+
+  console.log('执行完毕',list.value)
+}
+
+const handleSelectStatus = (index) => {
+  //statusList[index].selected = !statusList[index].selected
+  const status =  statusList.filter(item => item.selected)
+  const statusArr = status.map(item => item.value)
+  queryParams.status = statusArr;
+  handleQuery();
+}
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
@@ -850,18 +1016,27 @@ onActivated(() => {
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
+
 :deep(.el-form) {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }
+
 ::v-deep .el-table .el-table__header th{
   background-color: #f5f7fa;
   color: #909399;
   height: 80px;
 
+}
+
+:deep(.el-dialog){
+  margin: 0;
+  width: 100%;
+  height: 100%;
 }
 </style>

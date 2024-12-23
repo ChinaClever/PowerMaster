@@ -53,4 +53,6 @@ public class CabinetIndexVo extends PageParam {
     @Schema(description = "所属于公司", example = "xxxx")
     private String company;
 
+    @Schema(description = "时间颗粒度")
+    private String timeGranularity;
 }

@@ -14,6 +14,10 @@ export const PDUDeviceApi = {
   getPDUDevicePage: async (data: any) => {
     return await request.post({ url: `/pdu/PDU-device/page`, data })
   },
+  getBalancedDistribution: async () => {
+    return await request.get({ url: `/pdu/PDU-device/balancedDistribution`})
+  },
+  
     
   // 获取已删除的PDU设备
   getDeletedPDUDevice: async (data: any) => {
@@ -27,6 +31,11 @@ export const PDUDeviceApi = {
   // 查询PDU设备详情
   getPDUDevice: async (id: number) => {
     return await request.get({ url: `/pdu/PDU-device/get?id=` + id })
+  },
+
+  // 查询PDU设备统计
+  getPDUDeviceCount: async () => {
+    return await request.get({ url: `/pdu/PDU-device/detailCount` })
   },
 
   // 新增PDU设备
