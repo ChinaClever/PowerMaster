@@ -315,11 +315,12 @@
 
 <script setup lang="ts">
 // import { dateFormatter } from '@/utils/formatTime'
-import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 import download from '@/utils/download'
+import { PDUDeviceApi } from '@/api/pdu/pdudevice'
 // import PDUDeviceForm from './PDUDeviceForm.vue'
-import { CabinetApi } from '@/api/cabinet/info'
 import { ElTree } from 'element-plus'
+import { CabinetApi } from '@/api/cabinet/info'
+import { get } from 'http'
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -713,7 +714,7 @@ const getNavList = async() => {
   navList.value = arr
 }
 
-import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router';
 
 const router = useRouter();
 

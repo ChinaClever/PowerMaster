@@ -39,10 +39,14 @@
         ref="queryFormRef"
         :inline="true"
         label-width="68px"
+        style="height:54px;"
       >
-        <el-form-item>
+        <el-form-item style="margin-left: 5px">
+          <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">
+            全部 
+          </button>
           <template v-for="(status, index) in statusList" :key="index">
-            <button type="button" :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index, $event)">{{status.name}}</button>
+            <button type="button" :class="[onclickColor === index ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(index, $event)">{{status.name}}</button>
           </template>
         </el-form-item>
         <div>
@@ -83,7 +87,8 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 1" style="height: 700px;overflow: hidden;overflow-y: auto;" v-loading="loading" :data="listPage" @cell-dblclick="handleDbclick">
+      <div v-show="switchValue && listPage.length > 0" style="height:700px">
+        <el-table v-show="switchValue == 1"  style="height: 700px;overflow: hidden;overflow-y: auto;" v-loading="loading" :data="listPage" @cell-dblclick="handleDbclick">
         <el-table-column label="位置" min-width="110" align="center">
           <template #default="scope">
             <div>{{scope.row.roomName}}-{{scope.row.cabinetName}}</div>
@@ -164,6 +169,7 @@
           </template>
         </el-table-column>
      </el-table>
+      </div>
       <Pagination
         v-if="showPagination == 1"
         :total="queryParams.pageTotal"
@@ -225,6 +231,8 @@ const message = useMessage() // 消息弹窗
 const machineForm = ref() // 机柜表单组件
 const colNode = ref() // 展示列组件
 const loading = ref(false)
+const butColor = ref(0);
+const onclickColor = ref(-1);
 // const isCloseNav = ref(false) // 左侧导航是否收起
 const isFirst = ref(true) // 是否第一次调用getTableData函数
 const switchValue = ref(0) // 0:阵列 1：表格
@@ -305,7 +313,9 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
   pageTotal: 0,
-})
+  runStatus:[]
+}) as any
+
 const statusList = reactive([
   {
     name: '空载',
@@ -368,14 +378,13 @@ const getTableData = async(reset = false) => {
   }
   loading.value = true
   if (reset) queryParams.pageNo = 1
-  const status =  statusList.filter(item => item.selected)
   try {
     const res = await CabinetApi.getCabinetInfo({
       pageNo: queryParams.pageNo,
       pageSize: queryParams.pageSize,
       cabinetIds: isFirst.value ? null : ids,
       // roomId: null,
-      runStatus: status.map(item => item.value),
+      runStatus: queryParams.runStatus,
       company: queryParams.company
     })
     console.log('res',res)
@@ -488,11 +497,25 @@ const handleArrayDbclick = (key) => {
 }
 
 // 处理状态选择事件
-const handleSelectStatus = (index, event) => {
+const handleSelectStatus = (index) => {
   // console.log('处理状态选择事件', index, event)
-  statusList[index].selected = !statusList[index].selected
-  getTableData()
+  //statusList[index].selected = !statusList[index].selected
+  butColor.value = 1;
+  onclickColor.value = index;
+  queryParams.runStatus = [index];
+  getTableData();
 }
+
+const toggleAllStatus = () => {
+  butColor.value = 0;
+  onclickColor.value = -1;
+  queryParams.runStatus = [];
+  getTableData();
+}
+
+
+
+
 
 // 跳转详情页
 const toMachineDetail = (key) => {
@@ -585,7 +608,8 @@ onBeforeMount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 8px;
+  border-radius: 5px;
+  margin-right: 5px;
   &:hover {
     color: #7bc25a;
   }
@@ -924,6 +948,7 @@ onBeforeMount(() => {
     height: 700px;
     overflow: hidden;
     overflow-y: auto;
+    //overflow: auto;
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
@@ -1175,6 +1200,36 @@ onBeforeMount(() => {
     }
   }
 }
+.btnallSelected {
+  margin-right: 5px;
+  width: 55px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #409EFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.btnallNotSelected{
+  margin-right: 5px;
+  width: 55px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: #000000;
+  border: 1px solid #409EFF;
+  border-radius: 5px;
+  &:hover {
+    color: #7bc25a;
+  }
+}
 
 :deep(.master-left .el-card__body) {
   padding: 0;
@@ -1187,7 +1242,6 @@ onBeforeMount(() => {
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }
-
 :deep(.el-card){
   --el-card-padding:5px;
 }
