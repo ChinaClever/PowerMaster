@@ -518,11 +518,11 @@ public class BusIndexServiceImpl implements BusIndexService {
             List<Double> rateList = loadRate.toList(Double.class);
 
             if (rateList.size() > 1) {
-                busIndexRes.setALoadRate(loadRate.getDouble(0));
-                busIndexRes.setBLoadRate(loadRate.getDouble(1));
-                busIndexRes.setCLoadRate(loadRate.getDouble(2));
+                busIndexRes.setALoadRate(loadRate.getInteger(0));
+                busIndexRes.setBLoadRate(loadRate.getInteger(1));
+                busIndexRes.setCLoadRate(loadRate.getInteger(2));
             } else {
-                busIndexRes.setALoadRate(loadRate.getDouble(0));
+                busIndexRes.setALoadRate(loadRate.getInteger(0));
             }
 //            rateList.sort(Collections.reverseOrder());
 //            Double biggest = rateList.get(0);

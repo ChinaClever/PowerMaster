@@ -515,11 +515,11 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             JSONArray loadRate = lineItemList.getJSONArray("load_rate");
             List<Double> rateList = loadRate.toList(Double.class);
             if (rateList.size() > 1) {
-                boxIndexRes.setALoadRate(loadRate.getDouble(0) / 100);
-                boxIndexRes.setBLoadRate(loadRate.getDouble(1) / 100);
-                boxIndexRes.setCLoadRate(loadRate.getDouble(2) / 100);
+                boxIndexRes.setALoadRate(loadRate.getInteger(0));
+                boxIndexRes.setBLoadRate(loadRate.getInteger(1));
+                boxIndexRes.setCLoadRate(loadRate.getInteger(2));
             } else {
-                boxIndexRes.setALoadRate(loadRate.getDouble(0) / 100);
+                boxIndexRes.setALoadRate(loadRate.getInteger(0));
             }
             rateList.sort(Collections.reverseOrder());
             Double biggest = rateList.get(0);
