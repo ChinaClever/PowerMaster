@@ -593,6 +593,10 @@ const toDetail = (row) =>{
   const busId = row.busId
   const location = row.location != null ? row.location : devKey;
   const busName = row.busName;
+  console.log('111111111',devKey)
+  console.log('222222222',busId)
+  console.log('333333333',location)
+  console.log('444444444',busName )
   push({path: '/bus/busmonitor/powerLoadDetail', state: { devKey, busId ,location,busName }})
 }
 

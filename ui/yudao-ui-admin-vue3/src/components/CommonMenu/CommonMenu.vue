@@ -25,11 +25,11 @@
     </div>
     <!-- 右大侧 -->
     <div class="master-right">
-      <ContentWrap class="hhh">
-        <slot name="ActionBar" ></slot>
+      <ContentWrap style="margin-bottom:5px">
+        <slot name="ActionBar"></slot>
       </ContentWrap>
-      <ContentWrap style="min-height: 680px" >
-        <slot name="Content" ></slot>
+      <ContentWrap style="min-height: 680px">
+        <slot name="Content"></slot>
       </ContentWrap>
     </div>
   </div>
@@ -137,7 +137,7 @@ mediaQueryList.addEventListener('change', toggleStyles)
     position: relative;
     overflow: hidden;
     box-sizing: border-box;
-    margin-right: 20px;
+    margin-right: 5px;
     transition: all 0.2s linear;
     .openNavtree {
       // width: 100%;
@@ -176,10 +176,6 @@ mediaQueryList.addEventListener('change', toggleStyles)
     flex: 1;
     overflow: hidden;
     width: 100%;
-    .hhh {
-      background-color: #E1E2E5;
-      margin-bottom: 10px;
-    }
   }
 }
 .navBar {
@@ -188,7 +184,7 @@ mediaQueryList.addEventListener('change', toggleStyles)
   height: 46px;
   line-height: 46px;
   padding-left: 10px;
-  background-color: #f7f7f7;
+  background-color: #eef4fc;
   font-size: 14px;
 }
 .nav-left {
@@ -198,5 +194,4 @@ mediaQueryList.addEventListener('change', toggleStyles)
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
-
 </style>

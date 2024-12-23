@@ -46,21 +46,13 @@ const echartsOption = reactive({
         fontWeight: 'bold'
       },
       data: [
-        { value: props.loadFactor.ia || 0, name: 'Ia', itemStyle: { color: '#075F71' } },
-        { value: props.loadFactor.ib || 0, name: 'Ib', itemStyle: { color: '#119CB5' } },
-        { value: props.loadFactor.ic || 0, name: 'Ic', itemStyle: { color: '#45C0C9' } },
+        { value: props.loadFactor.curA[0], name: 'Ia', itemStyle: { color: '#075F71' } },
+        { value: props.loadFactor.curA[1], name: 'Ib', itemStyle: { color: '#119CB5' } },
+        { value: props.loadFactor.curA[2], name: 'Ic', itemStyle: { color: '#45C0C9' } },
       ]
     }
   ]
 });
-
-watch(() => props.loadFactor, (newVal) => {
-  echartsOption.series[0].data = [
-    { value: newVal.ua, name: 'Ia' },
-    { value: newVal.ub, name: 'Ib' },
-    { value: newVal.uc, name: 'Ic' },
-  ];
-}, { deep: true }); // 添加 deep: true 以深度监听 loadFactor 对象的变化
 
 onUnmounted(() => {
   console.log('onUnmounted******')

@@ -58,7 +58,7 @@ const echartsOption = reactive({
         fontSize: 14,
         fontWeight: 'bold'
       },
-      data: [-props.loadFactor.s, -props.loadFactor.p, -props.loadFactor.q]
+      data: [-(props.loadFactor.powApparentA), -(props.loadFactor.powActiveA), -(props.loadFactor.powReactiveA)]
     }
   ]
 })

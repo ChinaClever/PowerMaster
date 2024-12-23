@@ -65,7 +65,7 @@
           </template>
         </el-form-item>
         <el-button
-          v-show="switchValue == 2 || switchValue == 3"
+          v-if="switchValue == 2 || switchValue == 3"
           type="primary"
           plain
           @click="openForm('create')"
@@ -142,6 +142,7 @@
       </el-form>
     </template>
     <template #Content>
+     <div v-if="switchValue && list.length > 0" style="height: 700px;overflow: hidden;overflow-y: auto;">
       <el-table
         v-show="switchValue == 3"
         v-loading="loading"
@@ -257,7 +258,7 @@
         </el-table-column>
       </el-table>
 
-      <div v-show="switchValue == 2 && list.length > 0" class="arrayContainer">
+      <div v-if="switchValue == 2 && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
@@ -338,7 +339,7 @@
         </div>
       </el-dialog>
 
-      <div v-show="switchValue == 0 && list.length > 0" class="arrayContainer">
+      <div v-if="switchValue == 0 && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
@@ -405,7 +406,7 @@
           </el-card>
         </div>
       </el-dialog>
-
+     </div>
       <Pagination
         :total="total"
         :page-size-arr="pageSizeArr"

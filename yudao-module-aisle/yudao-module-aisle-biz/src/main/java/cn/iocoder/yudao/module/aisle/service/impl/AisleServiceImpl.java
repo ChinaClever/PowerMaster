@@ -1412,6 +1412,7 @@ public class AisleServiceImpl implements AisleService {
      * @throws IOException
      */
     private List<String> getData(String startTime, String endTime, int id, String index) throws IOException {
+        try {
         // 创建SearchRequest对象, 设置查询索引名
         SearchRequest searchRequest = new SearchRequest(index);
         // 通过QueryBuilders构建ES查询条件，
@@ -1436,7 +1437,10 @@ public class AisleServiceImpl implements AisleService {
             }
         }
         return list;
-
+        }catch (Exception e){
+            log.error(e.getMessage());
+        }
+        return null;
     }
 
 }

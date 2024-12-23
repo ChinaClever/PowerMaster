@@ -769,6 +769,7 @@ public class RoomIndexServiceImpl implements RoomIndexService {
     }
 
 
+
     /**
      * 日趋势
      *

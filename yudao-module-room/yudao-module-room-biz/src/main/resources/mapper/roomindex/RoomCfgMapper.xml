@@ -9,7 +9,7 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
-    <select id="selectRoomCfgByRoomId">
+    <select id="selectRoomCfgByRoomId" resultType="cn.iocoder.yudao.framework.common.entity.mysql.room.RoomCfg">
         select
         rg.ele_alarm_day as eleAlarmDay, rg.ele_limit_day as eleLimitDay, rg.ele_alarm_month as eleAlarmMonth, rg.ele_limit_month as eleLimitMonth
         from  room_cfg rg INNER join room_index rx on rg.room_id = rx.id  where rg.room_id=#{roomId}
@@ -22,6 +22,10 @@
     <update id="updateByRoomCfg">
         update room_cfg rg set rg.ele_alarm_day = #{vo.eleAlarmDay}, rg.ele_limit_day = #{vo.eleLimitDay}, rg.ele_alarm_month = #{vo.eleAlarmMonth}, rg.ele_limit_month = #{vo.eleLimitMonth}
         where rg.room_id = #{vo.id}
+    </update>
+
+    <update id="restoreByRoomCfg">
+        update room_cfg rg set rg.is_delete = 0 where rg.room_id = #{roomId}
     </update>
 
 </mapper>
