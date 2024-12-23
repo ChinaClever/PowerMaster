@@ -437,6 +437,7 @@ const formatLoadFactor = (value) => {
   if (typeof value === 'number' && !isNaN(value)) {
     return Math.ceil(Number(value.toFixed(2)));
   }
+
   return 0;
 };
 

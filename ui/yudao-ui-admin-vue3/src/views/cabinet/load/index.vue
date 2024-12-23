@@ -85,33 +85,33 @@
             {{ scope.row.roomName }}-{{ scope.row.cabinetName }}
           </template>
         </el-table-column>
-        <el-table-column label="负载率" min-width="80" align="center" prop="loadFactor" />
-        <el-table-column label="电力容量(kVA)" min-width="100" align="center" prop="powerCapacity" />
-        <el-table-column label="总视在功率(kVA)" min-width="110" align="center" prop="apparentTotal" />
-        <el-table-column label="A路视在功率(kVA)" min-width="120" align="center" prop="powApparentb" />
-        <el-table-column label="B路视在功率(kVA)" min-width="120" align="center" prop="powApparenta" />
-        <el-table-column label="总有功功率(kW)" min-width="110" align="center" prop="activeTotal" />
-        <el-table-column label="A路有功功率(kW)" min-width="120" align="center" prop="powActivea" />
-        <el-table-column label="B路有功功率(kW)" min-width="120" align="center" prop="powActiveb" />
+        <el-table-column label="负载率" min-width="80" align="center" prop="loadFactor" :formatter="formatApparentPower" />
+        <el-table-column label="电力容量(kVA)" min-width="100" align="center" prop="powerCapacity" :formatter="formatApparentPower" />
+        <el-table-column label="总视在功率(kVA)" min-width="110" align="center" prop="apparentTotal" :formatter="formatApparentPower" />
+        <el-table-column label="A路视在功率(kVA)" min-width="120" align="center" prop="powApparentb" :formatter="formatApparentPower" />
+        <el-table-column label="B路视在功率(kVA)" min-width="120" align="center" prop="powApparenta" :formatter="formatApparentPower" />
+        <el-table-column label="总有功功率(kW)" min-width="110" align="center" prop="activeTotal" :formatter="formatApparentPower" />
+        <el-table-column label="A路有功功率(kW)" min-width="120" align="center" prop="powActivea" :formatter="formatApparentPower" />
+        <el-table-column label="B路有功功率(kW)" min-width="120" align="center" prop="powActiveb" :formatter="formatApparentPower" />
         <el-table-column label="更新时间" min-width="110" align="center" prop="dataUpdateTime" />
       </el-table>
       <div v-show="(switchValue == 0 || switchValue == 1) && listPage.length > 0" v-loading="loading" class="loadContainer">
         <div class="loadItem" v-for="load in listPage" :key="load.key">
           <div class="content">
             <div class="info" v-if="switchValue == 0">
-              <div>总视在功率：{{load.apparentTotal}}KVA</div>
-              <div>A路视在功率：{{load.powApparenta}}KVA</div>
-              <div>B路视在功率：{{load.powApparentb}}KVA</div>
+              <div>总视在功率：{{formatNumber(load.apparentTotal,2)}}KVA</div>
+              <div>A路视在功率：{{formatNumber(load.powApparenta,2)}}KVA</div>
+              <div>B路视在功率：{{formatNumber(load.powApparentb,2)}}KVA</div>
               <!-- <div>电力容量：{{load.pow_capacity}}</div> -->
             </div>
             <div class="info" v-else>
-              <div>总有功功率：{{load.activeTotal}}kW</div>
-              <div>A路有功功率：{{load.powActivea}}kW</div>
-              <div>B路有功功率：{{load.powActiveb}}kW</div>
+              <div>总有功功率：{{formatNumber(load.activeTotal,2)}}kW</div>
+              <div>A路有功功率：{{formatNumber(load.powActivea,2)}}kW</div>
+              <div>B路有功功率：{{formatNumber(load.powActiveb,2)}}kW</div>
               <!-- <div>电力容量：{{load.pow_capacity}}</div> -->
             </div>
             <div class="waterPoloBox">
-              <LiquidBall  :precent="load.loadFactor"/>
+              <LiquidBall  :precent="formatLoadFactor(load.loadFactor)"/>
             </div>
             <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
           </div>
@@ -152,6 +152,13 @@ const queryParams = reactive({
   pageSize: 24,
   pageTotal: 0,
 })
+function formatApparentPower(row, column, cellValue ) {
+  // console.log('测试',row+'-'+column+'-'+cellValue+'-'+num)
+  // 假设保留两位小数
+  return parseFloat(cellValue).toFixed(2);
+}
+  
+
 
 const echartsOption = reactive({
   series: [
@@ -236,24 +243,6 @@ const getTableData = async(reset = false) => {
       company: queryParams.company
     })
     console.log('res', res)
-
-      // const list = res.list.map(item => {
-      //   const tableItem = {
-      //     key: item.cabinet_key,
-      //     local: item.room_name + '-' + item.cabinet_name,
-      //     load_factor: +(item.load_factor.toFixed(0)),
-      //     pow_capacity: item.pow_capacity,
-      //     date_time: item.date_time,
-      //     status: item.status,
-      //     apparentTotal: item.cabinet_power.total_data.pow_apparent.toFixed(3),
-      //     apparentA: item.cabinet_power.path_a ? item.cabinet_power.path_a.pow_apparent.toFixed(3) : '-',
-      //     apparentB: item.cabinet_power.path_b ? item.cabinet_power.path_b.pow_apparent.toFixed(3) : '-',
-      //     activeTotal: item.cabinet_power.total_data.pow_active.toFixed(3),
-      //     activeA: item.cabinet_power.path_a ? item.cabinet_power.path_a.pow_active.toFixed(3) : '-',
-      //     activeB: item.cabinet_power.path_b ? item.cabinet_power.path_b.pow_active.toFixed(3) : '-',
-      //   }
-      //   return tableItem
-      // })
       listPage.value = res.list
       queryParams.pageTotal = res.total
       console.log('listPage', listPage.value)
@@ -261,7 +250,19 @@ const getTableData = async(reset = false) => {
     loading.value = false
   }
 }
+const formatNumber = (value, precision) => {
+  if (typeof value === 'number' && !isNaN(value)) {
+    return value.toFixed(precision);
+  }
+  return 0;
+};
 
+const formatLoadFactor = (value) => {
+  if (typeof value === 'number' && !isNaN(value)) {
+    return Math.ceil(Number(value.toFixed(2)));
+  }
+  return 0;
+};
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await CabinetApi.getRoomMenuAll({})

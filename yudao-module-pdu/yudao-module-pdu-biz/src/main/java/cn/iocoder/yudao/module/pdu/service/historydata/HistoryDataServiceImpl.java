@@ -122,42 +122,6 @@ public class HistoryDataServiceImpl implements HistoryDataService {
 
     @Override
     public String getAddressByIpAddr(String location) {
-//        String[] ipParts = location.split("-");
-//        String address = null;
-//        CabinetPdu cabinetPduA = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
-//                .eq(CabinetPdu::getPduIpA, ipParts[0])
-//                .eq(CabinetPdu::getCasIdA, ipParts[1]));
-//        CabinetPdu cabinetPduB = cabinetPduMapper.selectOne(new LambdaQueryWrapperX<CabinetPdu>()
-//                .eq(CabinetPdu::getPduIpB, ipParts[0])
-//                .eq(CabinetPdu::getCasIdB, ipParts[1]));
-//        if(cabinetPduA != null){
-//            int cabinetId = cabinetPduA.getCabinetId();
-//            CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
-//            String cabinetName = cabinet.getName();
-//            RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
-//            String roomName = roomIndex.getName();
-//            if(cabinet.getAisleId() != 0){
-//                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
-//                address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
-//            }else {
-//                address = roomName + "-"  + cabinetName +  "-" + "A路";
-//            }
-//        }
-//        if(cabinetPduB != null){
-//            int cabinetId = cabinetPduB.getCabinetId();
-//            CabinetIndex cabinet = cabinetIndexMapper.selectById(cabinetId);
-//            String cabinetName = cabinet.getName();
-//            RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
-//            String roomName = roomIndex.getName();
-//            if(cabinet.getAisleId() != 0){
-//                String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getName();
-//                address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";
-//            }else {
-//                address = roomName + "-"  + cabinetName +  "-" + "B路";
-//            }
-//        }
-//        return address;
-//    }
         // 分割字符串并检查长度
         String[] ipParts = location.split("-");
         if (ipParts.length < 2) {
@@ -180,13 +144,15 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             if (Objects.nonNull(cabinet)) {
                 String cabinetName = cabinet.getCabinetName();
                 RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
-                String roomName = roomIndex.getRoomName();
+                if (Objects.nonNull(roomIndex)) {
+                    String roomName = roomIndex.getRoomName();
 
-                if (cabinet.getAisleId() != 0) {
-                    String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getAisleName();
-                    address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
-                } else {
-                    address = roomName + "-" + cabinetName + "-" + "A路";
+                    if (cabinet.getAisleId() != 0) {
+                        String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getAisleName();
+                        address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "A路";
+                    } else {
+                        address = roomName + "-" + cabinetName + "-" + "A路";
+                    }
                 }
             }
         }
@@ -203,13 +169,14 @@ public class HistoryDataServiceImpl implements HistoryDataService {
             if (Objects.nonNull(cabinet)) {
                 String cabinetName = cabinet.getCabinetName();
                 RoomIndex roomIndex = roomIndexMapper.selectById(cabinet.getRoomId());
-                String roomName = roomIndex.getRoomName();
-
+                if (Objects.nonNull(roomIndex)) {
+                    String roomName = roomIndex.getRoomName();
                 if (cabinet.getAisleId() != 0) {
                     String aisleName = aisleIndexMapper.selectById(cabinet.getAisleId()).getAisleName();
                     address = roomName + "-" + aisleName + "-" + cabinetName + "-" + "B路";
                 } else {
                     address = roomName + "-" + cabinetName + "-" + "B路";
+                }
                 }
             }
         }
@@ -651,42 +618,6 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         }
         searchSourceBuilder.trackTotalHits(true);
         searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
-
-//        if (!Objects.equals(pageReqVO.getIpAddr(), "") && !Objects.equals(pageReqVO.getIpAddr(), null)){
-//            Integer pduId = getPduIdByAddr(pageReqVO.getIpAddr(), pageReqVO.getCascadeAddr());
-//            if(pduId != null){
-//                if (!Objects.equals(sensorId, 0)){
-//                    // 创建范围查询
-//                    QueryBuilder termQuery = QueryBuilders.termQuery("pdu_id", pduId);
-//                    // 创建匹配查询
-//                    QueryBuilder termQuery1 = QueryBuilders.termQuery("sensor_id", sensorId);
-//                    // 创建BoolQueryBuilder对象
-//                    BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-//                    // 将范围查询和匹配查询添加到布尔查询中
-//                    boolQuery.must(termQuery);
-//                    boolQuery.must(termQuery1);
-//                    // 将布尔查询设置到SearchSourceBuilder中
-//                    searchSourceBuilder.query(boolQuery);
-//                }else{
-//                    searchSourceBuilder.query(QueryBuilders.termQuery("pdu_id", pduId));
-//                }
-//            }else{
-//                // 查不到pdu 直接返回空数据
-//                pageResult = new PageResult<>();
-//                pageResult.setList(null)
-//                        .setTotal(0L);
-//                return pageResult;
-//            }
-//        }else{
-//            if (!Objects.equals(sensorId, 0)){
-//                QueryBuilder termQuery = QueryBuilders.termQuery("sensor_id", sensorId);
-//                BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-//                boolQuery.must(termQuery);
-//                searchSourceBuilder.query(boolQuery);
-//            }else{
-//                searchSourceBuilder.query(QueryBuilders.matchAllQuery());
-//            }
-//        }
 
         // 接收机柜id数组 查出ip数组
         List<String> pduIds = new ArrayList<>();
