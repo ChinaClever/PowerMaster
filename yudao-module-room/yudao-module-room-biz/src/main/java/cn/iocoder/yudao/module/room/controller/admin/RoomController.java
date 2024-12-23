@@ -1,11 +1,17 @@
 package cn.iocoder.yudao.module.room.controller.admin;
 
 import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetSaveVo;
+import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
+import cn.iocoder.yudao.framework.common.dto.room.RoomIndexVo;
+import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomSavesVo;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
+import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.module.room.dto.*;
 import cn.iocoder.yudao.module.room.service.RoomService;
 import cn.iocoder.yudao.module.room.vo.RoomSaveVo;
+import com.alibaba.fastjson2.JSONObject;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.ibatis.annotations.Param;
@@ -162,12 +168,31 @@ public class RoomController {
     }
 
 
-    @Operation(summary = "机房柜列新增/编辑")
+    @Operation(summary = "机房机柜新增/编辑")
     @PostMapping("/room/roomAisleSave")
     public CommonResult<Integer> roomAisleSave(@RequestBody AisleSaveVo vo) {
         return success(roomService.roomAisleSave(vo));
     }
 
+    @Operation(summary = "机房柜列新增/编辑")
+    @PostMapping("/room/roomCabinetSave")
+    public CommonResult<Integer> roomCabinetSave(@RequestBody CabinetSaveVo vo) {
+        return success(roomService.roomCabinetSave(vo));
+    }
 
+
+    @Operation(summary = "获得已删除机房分页")
+    @PostMapping("/room/deletedRoomPage")
+    public CommonResult<PageResult<JSONObject>> getDeletedRoomPage(@RequestBody RoomIndexVo pageReqVO) {
+        PageResult<JSONObject> pageResult = roomService.getDeletedRoomPage(pageReqVO);
+        return success(pageResult);
+    }
+
+    @Operation(summary = "恢复已删除机房")
+    @GetMapping("/room/restoreRoomInfo")
+    public CommonResult<Integer> getRestoreRoom(@Param("id") int id) {
+        roomService.getRestoreRoom(id);
+        return success(id);
+    }
 
 }

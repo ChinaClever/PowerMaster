@@ -175,12 +175,12 @@ public class CabinetVo {
     /**
      * 日用能告警开关
      */
-    private  int eleAlarmDay;
+    private  Boolean eleAlarmDay;
 
     /**
      * 月用能告警开关
      */
-    private  int eleAlarmMonth;
+    private  Boolean eleAlarmMonth;
 
     /**
      * 日用能限制

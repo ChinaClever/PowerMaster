@@ -13,4 +13,19 @@
           update room_index rx set rx.is_delete = 1 where rx.id = #{id}
     </update>
 
+    <select id="selectRoomleteList"  parameterType="cn.iocoder.yudao.framework.common.dto.room.RoomIndexVo"
+            resultType="cn.iocoder.yudao.framework.common.dto.room.RoomIndexDTO">
+        select
+        ci.id ,
+        ci.room_name,
+        ci.update_time
+        from room_index ci
+        where ci.is_delete = 1
+        ORDER BY update_time desc
+    </select>
+
+    <update id="restoreByDeleteRoom">
+        update room_index rx set rx.is_delete = 0 where rx.id = #{id}
+    </update>
+
 </mapper>

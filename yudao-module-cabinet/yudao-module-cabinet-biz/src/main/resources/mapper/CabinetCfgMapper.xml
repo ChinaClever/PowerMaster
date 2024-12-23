@@ -56,7 +56,7 @@
         <if test=" indexVo.company != null and indexVo.company != ''">
             and CF.company like "%"#{indexVo.company}"%"
         </if>
-        order by ci.run_status asc, ci.create_time desc
+        order by ci.create_time desc,ci.run_status asc
     </select>
     <select id="selectRunStatus" resultType="java.util.Map">
         select
@@ -73,7 +73,8 @@
             resultType="cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO">
         select
         ci.id ,
-        ci.name ,
+        ci.cabinet_name ,
+        ci.cabinet_name as name,
         ci.pdu_box as pduBox,
         ci.run_status as runStatus,
         ci.update_time as updateTime
@@ -86,5 +87,12 @@
     <update id="updaterestorerCabinet">
         update cabinet_index set  is_deleted = '0'  where id=#{id}
     </update>
+
+
+    <update id="updateByCabinetCfg">
+        update cabinet_cfg cg set cg.x_coordinate = #{vo.xCoordinate},cg.y_coordinate = #{vo.yCoordinate},cg.ele_alarm_day = #{vo.eleAlarmDay}, cg.ele_limit_day = #{vo.eleLimitDay}, cg.ele_alarm_month = #{vo.eleAlarmMonth}, cg.ele_limit_month = #{vo.eleLimitMonth}
+        where  cg.cabinet_id = #{vo.id}
+    </update>
+
 
 </mapper>

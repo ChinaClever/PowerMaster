@@ -5,6 +5,10 @@ export const CabinetApi = {
   getCabinetInfo: async (data: any) => {
     return await request.post({ url: `/cabinet/page`, data })
   },
+
+  getCabinetBalance: async (data: any) => {
+    return await request.post({ url: `/cabinet/balance/page`, data })
+  },
   //获得机柜负荷分页
   getIndexLoadPage: async (data: any) => {
     return await request.post({ url: `/cabinet/loadPage`, data })
@@ -80,6 +84,10 @@ export const CabinetApi = {
   // 机架用能趋势
   getEleTrend: async (params: any) => {
     return await request.get({ url: `/rack/ele/trend`, params })
+  },
+  //机架统计
+  getRackStatistics: async () => {
+    return await request.get({ url: `/rack/pageStatistics` })
   },
 }
 

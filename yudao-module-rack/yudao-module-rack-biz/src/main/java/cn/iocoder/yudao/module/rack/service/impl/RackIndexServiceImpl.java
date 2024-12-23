@@ -22,7 +22,9 @@ import cn.iocoder.yudao.module.rack.dto.RackPowDTO;
 import cn.iocoder.yudao.framework.common.mapper.RackIndexDoMapper;
 import cn.iocoder.yudao.module.rack.service.RackIndexService;
 import cn.iocoder.yudao.module.rack.vo.RackIndexVo;
+import cn.iocoder.yudao.module.rack.vo.RackPageResVO;
 import cn.iocoder.yudao.module.rack.vo.RackSaveVo;
+import cn.iocoder.yudao.framework.common.vo.RackStatisticsResVO;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -55,6 +57,7 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.util.*;
@@ -93,7 +96,7 @@ public class RackIndexServiceImpl implements RackIndexService {
     public static final String DAY_FORMAT = "dd";
 
     @Override
-    public PageResult<JSONObject> getRackPage(RackIndexVo vo) {
+    public PageResult<RackPageResVO> getRackPage(RackIndexVo vo) {
         try {
             //获取列表
             if (Objects.nonNull(vo.getRackIds()) && CollectionUtils.isEmpty(vo.getRackIds())) {
@@ -110,28 +113,38 @@ public class RackIndexServiceImpl implements RackIndexService {
             Page<RackIndex> page = new Page<>(vo.getPageNo(), vo.getPageSize());
 
             Page<RackIndex> result = rackIndexDoMapper.selectPage(page, new LambdaQueryWrapperX<RackIndex>()
-                    .eq(RackIndex::getIsDelete, DelEnums.NO_DEL.getStatus())
+                    .eqIfPresent(RackIndex::getIsDelete, DelEnums.NO_DEL.getStatus())
                     .like(StringUtils.isNotEmpty(vo.getRackName()), RackIndex::getRackName, vo.getRackName())
                     .like(StringUtils.isNotEmpty(vo.getCompany()), RackIndex::getCompany, vo.getCompany())
                     .like(StringUtils.isNotEmpty(vo.getType()), RackIndex::getRackType, vo.getType())
-                    .in(!CollectionUtils.isEmpty(vo.getCabinetIds()), RackIndex::getCabinetId, vo.getRackIds())
+                    .in(!CollectionUtils.isEmpty(vo.getCabinetIds()), RackIndex::getCabinetId, vo.getCabinetIds())
                     .in(!CollectionUtils.isEmpty(vo.getRackIds()), RackIndex::getId, vo.getRackIds()));
 
             List<JSONObject> indexRes = new ArrayList<>();
 
             if (Objects.nonNull(result) && !CollectionUtils.isEmpty(result.getRecords())) {
-                result.getRecords().forEach(dto -> {
+                List<RackPageResVO> bean = BeanUtils.toBean(result.getRecords(), RackPageResVO.class);
+                bean.forEach(dto -> {
                     String key = REDIS_KEY_RACK + dto.getId();
                     JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(redisTemplate.opsForValue().get(key)));
                     if (Objects.nonNull(jsonObject)) {
-                        jsonObject.put("type", dto.getRackType());
-                        indexRes.add(jsonObject);
-                    } else {
-                        indexRes.add(new JSONObject());
+                        JSONObject total = jsonObject.getJSONObject("rack_power").getJSONObject("total_data");
+                        dto.setRoomName(jsonObject.getString("room_name"));
+                        dto.setCabinetName(jsonObject.getString("cabinet_name"));
+                        StringJoiner joiner = new StringJoiner("-");
+                        joiner.add(dto.getRoomName()).add(dto.getCabinetName());
+                        dto.setLocal(joiner.toString());
+                        if (Objects.nonNull(total)){
+                            dto.setCura(total.getBigDecimal("cur_a").setScale(2, RoundingMode.HALF_UP));
+                            dto.setCurb(total.getBigDecimal("cur_b").setScale(2, RoundingMode.HALF_UP));
+                            dto.setPowReactive(total.getBigDecimal("pow_reactive").setScale(3, RoundingMode.HALF_UP));
+                            dto.setPowActive(total.getBigDecimal("pow_active").setScale(3, RoundingMode.HALF_UP));
+                            dto.setPowerFactor(total.getBigDecimal("power_factor").setScale(2, RoundingMode.HALF_UP));
+                        }
                     }
                 });
+            return new PageResult<>(bean, result.getTotal());
             }
-            return new PageResult<>(indexRes, result.getTotal());
         } catch (Exception e) {
             log.error("获取列表失败：", e);
         }
@@ -185,7 +198,7 @@ public class RackIndexServiceImpl implements RackIndexService {
             if (!CollectionUtils.isEmpty(vo.getRacks())) {
                 List<RackIndex> racks = vo.getRacks();
 
-                List<RackIndex> inserts = racks.stream().filter(rackIndex -> rackIndex.getId() == 0).collect(Collectors.toList());
+                List<RackIndex> inserts = racks.stream().filter(rackIndex -> rackIndex.getId() == null).collect(Collectors.toList());
 
                 inserts.forEach(rackIndex -> {
 
@@ -790,8 +803,8 @@ public class RackIndexServiceImpl implements RackIndexService {
     }
 
     @Override
-    public String getAddressById(String devKey) {
-        return null;
+    public RackStatisticsResVO getRackStatistics() {
+        return rackIndexDoMapper.getRackStatistics();
     }
 
 }

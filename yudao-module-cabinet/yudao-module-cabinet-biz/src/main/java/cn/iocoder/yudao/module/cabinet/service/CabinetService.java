@@ -1,15 +1,12 @@
 package cn.iocoder.yudao.module.cabinet.service;
 
-import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetIndexVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
-import cn.iocoder.yudao.module.cabinet.vo.CabinetEnergyStatisticsResVO;
-import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexEnvResVO;
-import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexLoadResVO;
+import cn.iocoder.yudao.module.cabinet.vo.*;
 import com.alibaba.fastjson2.JSONObject;
 
 import java.io.IOException;
@@ -113,4 +110,9 @@ public interface CabinetService {
 
     PageResult<CabinetIndexEnvResVO> getCabinetEnv(CabinetIndexVo pageReqVO);
 
+    PageResult<CabinetIndexBalanceResVO> getCabinetIndexBalancePage(CabinetIndexVo pageReqVO);
+
+    CabinetDistributionDetailsResVO getCabinetdistributionDetails(int id, int roomId, String type) throws IOException;
+
+    Map getCabinetDistributionFactor(int id, int roomId, String type) throws IOException;
 }

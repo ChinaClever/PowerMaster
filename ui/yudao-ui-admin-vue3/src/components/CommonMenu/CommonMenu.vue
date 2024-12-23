@@ -142,7 +142,7 @@ mediaQueryList.addEventListener('change', toggleStyles)
     position: relative;
     overflow: hidden;
     box-sizing: border-box;
-    margin-right: 20px;
+    margin-right: 5px;
     transition: all 0.2s linear;
     .openNavtree {
       // width: 100%;
@@ -194,7 +194,7 @@ mediaQueryList.addEventListener('change', toggleStyles)
   height: 46px;
   line-height: 46px;
   padding-left: 10px;
-  background-color: #f7f7f7;
+  background-color: #eef4fc;
   font-size: 14px;
 }
 .nav-left {
@@ -204,5 +204,4 @@ mediaQueryList.addEventListener('change', toggleStyles)
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
-
 </style>

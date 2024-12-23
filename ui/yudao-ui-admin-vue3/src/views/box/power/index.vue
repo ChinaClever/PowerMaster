@@ -47,15 +47,15 @@
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag warn"></div>预警
+              <div class="tag warn"></div>告警
             </div>
-            <div class="value"><span class="number">{{ statusNumber.warn }}</span>个</div>
+            <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag error"></div>告警
+              <div class="tag error"></div>总共
             </div>
-            <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
+            <div class="value"><span class="number">{{ statusNumber.total }}</span>个</div>
           </div>
         </div>
         <div class="line"></div>
@@ -726,9 +726,9 @@ const phaseText = ref([['A相电流(A)','B相电流(A)','C相电流(A)'],['A相�
 const devKeyList = ref([])
 const statusNumber = reactive({
   normal : 0,
-  warn : 0,
   alarm : 0,
-  offline : 0
+  offline : 0,
+  total : 0
 })
 const loadAll = async () => {
   var data = await IndexApi.devKeyList();
@@ -909,7 +909,7 @@ const getListAll = async () => {
     var normal = 0;
     var offline = 0;
     var alarm = 0;
-    var warn = 0;
+
     const allData = await IndexApi.getBoxRedisPage(queryParamsAll);
     allList.value = allData.list
     allList.value.forEach((objAll) => {
@@ -920,8 +920,6 @@ const getListAll = async () => {
       }
       if(objAll?.status == 1){
         normal++;
-      } else if (objAll?.status == 3){
-        warn++;
       } else if (objAll?.status == 2){
         alarm++;
       }
@@ -930,7 +928,7 @@ const getListAll = async () => {
     statusNumber.normal = normal;
     statusNumber.offline = offline;
     statusNumber.alarm = alarm;
-    statusNumber.warn = warn;
+    statusNumber.total = allData.total;
   } catch (error) {
     
   }

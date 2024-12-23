@@ -366,35 +366,8 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div style="padding: 0 18px;margin-right:30px;" v-if="valueMode == 0 && item.acur != null"><Bar :width="80" :height="100" :max="{L1:item.acur,L2:item.bcur,L3:item.ccur,L4:item.acurStatus,L5:item.bcurStatus,L6:item.ccurStatus}" /></div>
-            <div style="padding: 0 18px;margin-right:30px;" v-if="valueMode == 1 && item.avol != null"><Bar :width="80" :height="100" :max="{L1:item.avol,L2:item.bvol,L3:item.cvol,L4:item.avolStatus,L5:item.bvolStatus,L6:item.cvolStatus}" /></div>
-            <div class="icon" v-if="valueMode != 0 && valueMode != 1">
-              <!-- <div v-if="valueMode == 0 && item.acur != null" style="font-size:large">
-                电流
-              </div>     -->
-              <!-- <div v-if="valueMode == 1 && item.avol != null" style="font-size:large">
-                电压
-              </div> -->
-              <div v-if="valueMode == 2 && item.aactivePow != null" style="font-size:20px">
-                {{item.powValue}}
-              </div>
-              <div v-if="valueMode == 2 && item.aactivePow != null" >
-                总有功功率(kW)
-              </div>
-              <div v-if="valueMode == 3 && item.areactivePow != null" style="font-size:20px">
-                {{item.powReactive}}
-              </div>
-              <div v-if="valueMode == 3 && item.areactivePow != null" >
-                总无功功率(kVar)
-              </div>
-              <div v-if="valueMode == 4 && item.areactivePow != null" style="font-size:20px">
-                {{item.powApparent}}
-              </div>
-              <div v-if="valueMode == 4 && item.powApparent != null" >
-                总视在功率(kVA)
-              </div> 
-            </div>
-            <div class="info" v-if="valueMode == 0" >                  
+            
+            <div class="info" v-if="valueMode == 0" style="padding: 0 18px;margin-right:30px;">                  
               <div v-if="item.acur != null">
                 <el-text v-if="item.acur != null" :type=" item.acurStatus != 0 ? 'danger' : '' ">
                   A相：{{item.acur}}A
@@ -411,7 +384,7 @@
                 </el-text>
               </div>
             </div>
-            <div class="info" v-if="valueMode == 1" >                  
+            <div class="info" v-if="valueMode == 1" style="padding: 0 18px;margin-right:30px;">                  
               <div v-if="item.avol != null">
                 <el-text v-if="item.avol != null" :type=" item.avolStatus != 0 ? 'danger' : '' ">
                   A相：{{item.avol}}V
@@ -428,7 +401,7 @@
                 </el-text>
               </div>
             </div>
-            <div class="info" v-if="valueMode == 2">                  
+            <div class="info" v-if="valueMode == 2" style="padding: 0 18px;margin-right:30px;">                  
               <div  v-if="item.aactivePow != null">
                 <el-text v-if="item.aactivePow != null" :type=" item.aactivePowStatus != 0 ? 'danger' : '' ">
                   A相：{{item.aactivePow}}kW
@@ -445,7 +418,7 @@
                 </el-text>
               </div>
             </div>
-            <div class="info" v-if="valueMode == 3">                  
+            <div class="info" v-if="valueMode == 3" style="padding: 0 18px;margin-right:30px;">                  
               <div v-if="item.areactivePow != null">
                 <el-text v-if="item.areactivePow != null">
                   A相：{{item.areactivePow}}kVar
@@ -462,7 +435,7 @@
                 </el-text>
               </div>
             </div>
-            <div class="info" v-if="valueMode == 4">                  
+            <div class="info" v-if="valueMode == 4" style="padding: 0 18px;margin-right:30px;">                  
               <div v-if="item.apowApparent != null">
                 <el-text v-if="item.apowApparent != null">
                   A相：{{item.apowApparent}}kVA
@@ -478,6 +451,34 @@
                   C相：{{item.cpowApparent}}kVA
                 </el-text>
               </div>
+            </div>
+            <div style="padding: 0 4px" v-if="valueMode == 0 && item.acur != null"><Bar :width="80" :height="100" :max="{L1:item.acur,L2:item.bcur,L3:item.ccur,L4:item.acurStatus,L5:item.bcurStatus,L6:item.ccurStatus}" /></div>
+            <div style="padding: 0 4px" v-if="valueMode == 1 && item.avol != null"><Bar :width="80" :height="100" :max="{L1:item.avol,L2:item.bvol,L3:item.cvol,L4:item.avolStatus,L5:item.bvolStatus,L6:item.cvolStatus}" /></div>
+            <div class="icon" v-if="valueMode != 0 && valueMode != 1">
+              <!-- <div v-if="valueMode == 0 && item.acur != null" style="font-size:large">
+                电流
+              </div>     -->
+              <!-- <div v-if="valueMode == 1 && item.avol != null" style="font-size:large">
+                电压
+              </div> -->
+              <div v-if="valueMode == 2 && item.aactivePow != null" style="font-size:20px">
+                {{item.powValue?.toFixed(3)}}
+              </div>
+              <div v-if="valueMode == 2 && item.aactivePow != null" >
+                总有功功率(kW)
+              </div>
+              <div v-if="valueMode == 3 && item.areactivePow != null" style="font-size:20px">
+                {{item.powReactive?.toFixed(3)}}
+              </div>
+              <div v-if="valueMode == 3 && item.areactivePow != null" >
+                总无功功率(kVar)
+              </div>
+              <div v-if="valueMode == 4 && item.areactivePow != null" style="font-size:20px">
+                {{item.powApparent?.toFixed(3)}}
+              </div>
+              <div v-if="valueMode == 4 && item.powApparent != null" >
+                总视在功率(kVA)
+              </div> 
             </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
@@ -809,6 +810,7 @@ const getListNoLoading = async () => {
   try {
     const data = await IndexApi.getBusRedisPage(queryParams)
     list.value = data.list
+    filterData()
     console.log('list.value',list.value)
     var tableIndex = 0;    
 
@@ -900,9 +902,9 @@ const toDeatil = (row) =>{
 //   window.open(url, '_blank');
 // }
 const filterData = () => {
-  const data0 = list.value.filter(item => item.status === 1); // 正常状态数据
+  const data0 = list.value.filter(item => item.status === 1 && item.acurStatus != null); // 正常状态数据
   console.log('data0',data0)
-  const data1 = list.value.filter(item => item.status === 2 || item.acurStatus != 0 || item.bcurStatus != 0  || item.ccurStatus != 0 ); // 告警状态数据
+  const data1 = list.value.filter(item => item.status === 2); // 告警状态数据
   console.log('data1',data1)
   const data2 = list.value.filter(item => item.status === 0 || item.acurStatus == null || item.status == null); // 离线状态数据
   console.log('data2',data2)
@@ -913,11 +915,11 @@ const filterData = () => {
     list.value = data1; // 仅告警状态
   } else if (offlineFlag.value && !normalFlag.value && !reportFlag.value) {
     list.value = data2; // 仅离线状态
-  } else if (normalFlag.value && reportFlag.value) {
+  } else if (normalFlag.value && reportFlag.value && !offlineFlag.value) {
     list.value = [...data0, ...data1];
-  } else if (normalFlag.value && offlineFlag.value) {
+  } else if (normalFlag.value && offlineFlag.value && !reportFlag.value) {
     list.value = [...data0, ...data2];
-  } else if (reportFlag.value && offlineFlag.value) {
+  } else if (reportFlag.value && offlineFlag.value && !normalFlag.value) {
     list.value = [...data1, ...data2];
   } else if (normalFlag.value && reportFlag.value && offlineFlag.value) {
     list.value = [...data0, ...data1, ...data2];

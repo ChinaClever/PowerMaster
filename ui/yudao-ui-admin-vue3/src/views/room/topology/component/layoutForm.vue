@@ -17,10 +17,10 @@
       <el-form-item label="名称" prop="name">
         <el-input v-model="formData.name" placeholder="请输入" />
       </el-form-item>
-      <!--
+
       <el-form-item v-if="formData.type == 2" label="高度" prop="cabinetHeight">
          <el-input v-model.number="formData.cabinetHeight" :suffixIcon="() => 'U'" />
-      </el-form-item> -->
+      </el-form-item> 
       <el-form-item v-if="formData.type == 1" label="方向" prop="direction">
         <el-select v-model="formData.direction" placeholder="请选择活动区域">
           <el-option label="横向" :value="1" />
@@ -91,7 +91,6 @@ const formData = ref({
   direction: 1,
   amount: 12,
   id: '',
-  flag:1,
   cabinetList: [] as any
 })
 const formRules = reactive<FormRules>({
@@ -174,7 +173,6 @@ const resetForm = () => {
     direction: 1,
     amount: 12,
     id: '',
-    flag:1,
     cabinetList: []
   }
   minAmount.value = 1

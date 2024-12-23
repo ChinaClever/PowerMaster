@@ -21,7 +21,7 @@
       <div>
         <el-button @click="handleAdd" type="primary">新建机房</el-button>
         <el-button v-if="!editEnable" @click="handleEdit" type="primary">编辑</el-button>
-        <el-button v-if="editEnable" @click="handleCancel" plain type="danger">已删除</el-button>
+        <el-button v-if="editEnable" @click="handleStopDelete" plain type="danger">已删除</el-button>
         <el-button v-if="editEnable" @click="handleCancel" plain type="primary">取消</el-button>
         <el-button v-if="editEnable" @click="openSetting" plain type="primary"><Icon :size="16" icon="ep:setting" style="margin-right: 5px" />配置</el-button>
         <el-button v-if="editEnable" @click="handleSubmit" plain type="primary">保存</el-button>
@@ -30,13 +30,13 @@
     </div>
   </el-card>
   <div style="height:calc(100vh - 200px);">
-    <el-card shadow="never" style="height:100%;">
+    <el-card shadow="never" style="100%">
     <div class="dragContainer" 
       ref="tableContainer"
       v-loading="loading" 
+      style="overflow-x:auto;"
       @click.right="handleRightClick"
-      :style="isFromHome ? `width: fit-content;transform-origin: 0 0;transform: scale(${scaleValue}, ${scaleValue * 0.6});height: ${ContainerHeight}px` : 'height:calc(100vh - 230px);'"
-    >
+      :style="isFromHome ? `width: fit-content;transform-origin: 0 0;transform: scale(${scaleValue}, ${scaleValue * 0.6});height: ${ContainerHeight}px` : 'height:calc(100vh - 230px);'">
       <!-- <div class="mask" v-if="!editEnable" @click.prevent=""></div> -->
       <el-table ref="dragTable" class="dragTable" v-if="tableData.length > 0" :show-header="!isFromHome" :style="isFromHome ? '' : {width: '100%',height: '100%'}" :data="tableData" border :row-style="{background: 'revert'}" :span-method="arraySpanMethod" row-class-name="dragRow" >
         <el-table-column v-if="!isFromHome" fixed type="index" width="60" align="center" :resizable="false" />
@@ -172,6 +172,48 @@
       <el-button type="primary" @click="submitSetting">确 定</el-button>
     </template>
   </el-dialog>
+
+  
+  <el-dialog v-model="dialogStopDelete" title="恢复机房"  :before-close="handleDialogStopDelete">
+       <el-table v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
+         <el-table-column label="编号" min-width="110" align="center">
+            <template #default="scope">
+               <div>{{scope.row.id}}</div>
+            </template>
+        </el-table-column>
+        <el-table-column label="机房名称" min-width="110" align="center">
+            <template #default="scope">
+               <div>{{scope.row.roomName}}</div>
+            </template>
+        </el-table-column>
+        
+       <el-table-column label="删除日期" min-width="110" align="center">
+           <template #default="scope">
+               {{ (new Date(scope.row.updateTime)).toISOString().slice(0, 10) }}
+            </template>
+        </el-table-column>
+        
+        
+       <el-table-column label="操作" align="center">
+          <template #default="scope">
+            <el-button
+              link
+              type="danger"
+              @click="handleRestore(scope.row.id)"
+            >
+              恢复机房
+            </el-button>
+          </template>
+        </el-table-column>
+     </el-table>
+     <Pagination
+        :total="queryParams.pageTotal"
+        v-model:page="queryParams.pageNo"
+        v-model:limit="queryParams.pageSize"
+        @pagination="handleStopDelete"
+      />
+      <div style="height:30px"></div>
+  </el-dialog>
 </div>
 </template>
 
@@ -184,6 +226,14 @@ import { Console } from "console";
 
 const { push } = useRouter() // 路由跳转
 const message = useMessage() // 消息弹窗
+
+const queryParams = reactive({
+  company: undefined,
+  showCol: [1, 2, 12, 13, 15, 16] as number[],
+  pageNo: 1,
+  pageSize: 24,
+  pageTotal: 0,
+})
 
 const {containerInfo, isFromHome} = defineProps({
   containerInfo: {
@@ -200,13 +250,15 @@ const roomId = ref(0) // 房间id
 const roomList = ref<any[]>([]) // 左侧导航栏树结构列表
 const dragTable = ref() // 可移动编辑表格
 const scaleValue = ref(1) // 缩放比例
+const deletedList = ref<any>([]) //已删除的
 const chosenBtn = ref(0)
 const ContainerHeight = ref(100)
 const loading = ref(false)
 const movingInfo = ref<any>({})
 const roomFlag =ref();
+const aisleFlag = ref();
 const roomDownValId = ref();
-
+const updateCfgInfo = ref();
 const roomsId = reactive({
   roomDownValIds: history?.state?.id,
 })
@@ -281,6 +333,7 @@ const btns = [
 ]
 
 const dialogVisible = ref(false);
+const dialogStopDelete = ref(false);
 const editEnable = ref(false);
 const tableHeight = ref(0);
 const machineForm = ref();
@@ -347,7 +400,8 @@ const getRoomInfo = async() => {
     const result1 = MachineRoomApi.getRoomDetail({id: roomId.value});
     const result2 = MachineRoomApi.getRoomDataDetail({id: roomId.value})
     const results = await Promise.all([result1, result2])
-    const res = results[0]
+    const res = results[0];
+    updateCfgInfo.value=res;
     roomDownValId.value = res.id;
     const data: Record<string, any[]>[] = [];
     Object.assign(rowColInfo, {
@@ -376,7 +430,6 @@ const getRoomInfo = async() => {
       }
       data.push(rowData);
     }
-
     res.aisleList.forEach(item => {
       for(let i=0; i < item.length; i++) {
         const dataItem =  {
@@ -389,6 +442,7 @@ const getRoomInfo = async() => {
           first: false,
           originAmount: item.cabinetList.length,
           originDirection: item.direction == 'x' ? 1 : 2,
+          powerCapacity:item.powerCapacity,
           eleAlarmDay: item.eleAlarmDay,
           eleLimitDay: item.eleLimitDay,
           eleAlarmMonth: item.eleAlarmMonth,
@@ -396,7 +450,7 @@ const getRoomInfo = async() => {
         }
         if (i == 0) dataItem.first = true
         if (dataItem.direction == 1) {
-          console.log('----dataItem1', dataItem, getTableColCharCode(item.xCoordinate - 1 + i), )
+          console.log('----dataItem1', dataItem )
           data[item.yCoordinate - 1][getTableColCharCode(item.xCoordinate - 1 + i)].splice(0, 1, dataItem)
         } else {
           data[item.yCoordinate - 1 + i][getTableColCharCode(item.xCoordinate - 1)].splice(0, 1, dataItem)
@@ -407,7 +461,7 @@ const getRoomInfo = async() => {
       if (item.xCoordinate > 0 && item.yCoordinate > 0)
       data[item.yCoordinate - 1][getTableColCharCode(item.xCoordinate - 1)].splice(0, 1, {...item, name: item.cabinetName, type: 2})
     })
-    tableData.value = data
+    tableData.value = data;
     getRoomStatus(results[1])
     handleCssScale()
   } finally {
@@ -442,6 +496,8 @@ const getRoomStatus = async(res) => {
  // console.log('//////////', tableData.value)
 }
 
+
+
 // 计算出要缩放的比例
 const handleCssScale = () => {
   isFromHome && nextTick(() => {
@@ -463,21 +519,54 @@ const handleChangeRoom = (val) => {
   roomId.value = val
   getRoomInfo()
 }
-
+//取消
 const handleCancel = () => {
-  editEnable.value = false
-  getRoomInfo()
+  editEnable.value = false;
+  getRoomInfo();
 }
+//已删除
+const handleStopDelete = async() =>{
+  dialogStopDelete.value =true;
+  const res = await MachineRoomApi.deletedRoomInfo({
+    pageNo: queryParams.pageNo,
+    pageSize: queryParams.pageSize,
+  })
+  deletedList.value = res.list;
+  queryParams.pageTotal = res.total;
+}
+
+//恢复机房
+const handleRestore = async (flagRoomid) => {
+  ElMessageBox.confirm('确认恢复机房吗？', '提示', {
+    confirmButtonText: '确 认',
+    cancelButtonText: '取 消',
+    type: 'warning'
+  }).then(async () => {
+    const res = await MachineRoomApi.restoreRoomInfo({id: flagRoomid});
+    if(res != null || res != "")
+    dialogStopDelete.value =false;
+    message.success('恢复成功')
+    getRoomList()
+  })
+}
+
+
+
+const handleDialogStopDelete =() =>{
+   dialogStopDelete.value =false;
+}
+
+
 // 处理弹窗取消事件
 const handleDialogCancel = () => {
-  dialogVisible.value = false
-  isAddRoom.value = false
+  dialogVisible.value = false;
+  isAddRoom.value = false;
 }
 // 处理点击添加机房事件
 const handleAdd = () => {
   roomFlag.value = 1;
-  dialogVisible.value = true
-  resetForm()
+  dialogVisible.value = true;
+  resetForm();
 }
 // 重置表单
 const resetForm = () => {
@@ -518,7 +607,18 @@ const handleEdit = () => {
 
 const openSetting = () => {
   roomFlag.value = 2;
-  dialogVisible.value = true
+  Object.assign(rowColInfo, {
+    roomName: updateCfgInfo.value.roomName,
+    row: updateCfgInfo.value.yLength,
+    col: updateCfgInfo.value.xLength,
+    powerCapacity:updateCfgInfo.value.powerCapacity,
+    airPower:updateCfgInfo.value.airPower,
+    eleAlarmDay: updateCfgInfo.value.eleAlarmDay,
+    eleLimitDay: updateCfgInfo.value.eleLimitDay,
+    eleAlarmMonth: updateCfgInfo.value.eleAlarmMonth,
+    eleLimitMonth: updateCfgInfo.value.eleLimitMonth,
+  })
+  dialogVisible.value = true;
 }
 
 const switchBtn = (value) => {
@@ -611,25 +711,27 @@ const onEnd = ({from, to}) => {
 }
 // 增加机柜弹框
 const addMachine = () => {
+  aisleFlag.value = 1;
   machineForm.value.open('add', null, operateMenu.value)
   operateMenu.value.show = false
 }
 // 编辑机柜弹框
 const editMachine = () => {
-  const Y = operateMenu.value.lndexY
-  const X = formParam.value[operateMenu.value.lndexX]
-  machineForm.value.open('edit', {...tableData.value[Y][X][0]}, operateMenu.value)
-  operateMenu.value.show = false
+  aisleFlag.value = 2;
+  const Y = operateMenu.value.lndexY;
+  const X = formParam.value[operateMenu.value.lndexX];
+  machineForm.value.open('edit', {...tableData.value[Y][X][0]}, operateMenu.value);
+  operateMenu.value.show = false;
 }
 // 跳转机柜/柜列
 const handleJump = (data) => {
-  let target = {} as any
+  let target = {} as any;
   if (data) {
-    target = data
+    target = data;
   } else {
-    const Y = operateMenu.value.lndexY
-    const X = formParam.value[operateMenu.value.lndexX]
-    target = tableData.value[Y][X][0]
+    const Y = operateMenu.value.lndexY;
+    const X = formParam.value[operateMenu.value.lndexX];
+    target = tableData.value[Y][X][0];
   }
  // console.log('target', target)
   if (!target.id) {
@@ -668,12 +770,15 @@ const handleChange = async(data) => {
   tableData.value[operateMenu.value.lndexY][formParam.value[operateMenu.value.lndexX]].splice(0, 1, {...data, first: true, originAmount: data.amount, originDirection: data.direction});
   const X =getColumnCharCodeToNumber(formParam.value[operateMenu.value.lndexX]);
   const Y = (operateMenu.value.lndexY).toString(); // 当前机柜/机柜列所处行
+  let aisleFlagId:any = null;
   let messageAisleFlag = "保存成功！";
-  if(roomFlag.value == 2){
+  if(aisleFlag.value == 2){
+      aisleFlagId = data.id; 
       messageAisleFlag = "修改成功！";
   }
   if(data.type == 1){
-      const res = await MachineRoomApi.saveRoomAisle({
+      const aisleRes = await MachineRoomApi.saveRoomAisle({
+          id:aisleFlagId,
           roomId: roomId.value,
           aisleName:data.name,
           aisleLength:data.amount,
@@ -686,10 +791,25 @@ const handleChange = async(data) => {
           eleLimitDay:data.eleLimitDay,
           eleLimitMonth:data.eleLimitMonth
       }) 
-      if(res != null || res != "")
+      if(aisleRes != null || aisleRes != "")
+      message.success(messageAisleFlag);
+  }else{
+      const cabinetRes = await MachineRoomApi.saveRoomCabinet({
+          id:aisleFlagId,
+          roomId: roomId.value,
+          cabinetName: data.name,
+          cabinetHeight: data.cabinetHeight,
+          xCoordinate:X+1,
+          yCoordinate:parseInt(Y)+1,
+          powerCapacity:data.powerCapacity,
+          eleAlarmDay: data.eleAlarmDay,
+          eleLimitDay: data.eleLimitDay,
+          eleAlarmMonth: data.eleAlarmMonth,
+          eleLimitMonth: data.eleLimitMonth
+      })
+      if(cabinetRes != null || cabinetRes != "")
       message.success(messageAisleFlag);
   }
-
 }
 
 const getColumnCharCodeToNumber = (columnId: string): number => {
@@ -865,10 +985,8 @@ onUnmounted(() => {
 .dragContainer {
   // transform-origin: left right;
   position: relative;
-  overflow: auto;
   .dragTable {
     transition: transform 0.3s ease; /* 添加平滑过渡效果 */
-    overflow-y: auto;
   }
   .mask {
     position: absolute;
@@ -954,7 +1072,6 @@ onUnmounted(() => {
       }
     }
   }
-
   .warnDrag {
     min-height: 40px;
     height: 100%;
@@ -983,7 +1100,6 @@ onUnmounted(() => {
     }
   }
 }
-
 .double-formitem {
   display: flex;
   & > div {
@@ -999,19 +1115,15 @@ onUnmounted(() => {
   margin-top: -5px;
   margin-bottom: 10px;
 }
-
 :deep(.el-input-number) {
   width: 100%;
 }
-
 :deep(.dragTable .hover-row .el-table__cell td) {
   background-color:unset!important;
 }
-
 :deep(.dragTable .el-table__cell) {
   padding: 0;
 }
-
 :deep(.dragTable .el-table__cell .cell) {
   width: 100%;
   height: 100%;
@@ -1043,8 +1155,7 @@ onUnmounted(() => {
   // box-shadow: 0 1px 0px #ddd;
 }
 
-::-webkit-scrollbar {
-  	display: none;
+.crosshair {
+  cursor: crosshair; /* 当正在拖动时显示十字图标 */
 }
-
 </style>

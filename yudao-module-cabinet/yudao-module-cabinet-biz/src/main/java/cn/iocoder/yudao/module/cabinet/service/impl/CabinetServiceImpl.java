@@ -1,6 +1,7 @@
 package cn.iocoder.yudao.module.cabinet.service.impl;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.iocoder.yudao.framework.common.dto.cabinet.*;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
@@ -14,15 +15,13 @@ import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
+import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.common.vo.CabineIndexCfgVO;
 import cn.iocoder.yudao.module.cabinet.enums.CabinetLoadEnums;
 import cn.iocoder.yudao.module.cabinet.mapper.RackIndexMapper;
 import cn.iocoder.yudao.module.cabinet.service.CabinetService;
-import cn.iocoder.yudao.module.cabinet.vo.CabinetEnergyStatisticsResVO;
-import cn.iocoder.yudao.module.cabinet.vo.CabinetEqTotalDay;
-import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexEnvResVO;
-import cn.iocoder.yudao.module.cabinet.vo.CabinetIndexLoadResVO;
+import cn.iocoder.yudao.module.cabinet.vo.*;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -56,6 +55,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
+import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY_PDU;
 import static cn.iocoder.yudao.module.cabinet.constant.CabConstants.*;
 
 /**
@@ -118,10 +118,14 @@ public class CabinetServiceImpl implements CabinetService {
                     String key = REDIS_KEY_CABINET + dto.getRoomId() + SPLIT_KEY + dto.getId();
                     JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(redisTemplate.opsForValue().get(key)));
                     if (Objects.nonNull(jsonObject)) {
+                        jsonObject.put("id",dto.getId());
+                        jsonObject.put("roomId",dto.getRoomId());
                         jsonObject.put(COMPANY, Objects.nonNull(dto.getCompany()) ? dto.getCompany() : "");
                         result.add(jsonObject);
                     } else {
                         Map map = new HashMap();
+                        map.put("id", dto.getId());
+                        map.put("roomId", dto.getRoomId());
                         map.put("cabinet_name", dto.getName());
                         map.put("status", dto.getRunStatus());
                         map.put("cabinet_key", dto.getRoomId() + "-" + dto.getId());
@@ -172,7 +176,6 @@ public class CabinetServiceImpl implements CabinetService {
             //获取数据库保存数据
             CabineIndexCfgVO index = cabinetIndexMapper.selectCabineIndexCfgById(id);
             if (Objects.nonNull(index)) {
-
                 dto.setId(id);
                 dto.setCabinetName(index.getCabinetName());
                 dto.setAisleId(index.getAisleId());
@@ -191,7 +194,8 @@ public class CabinetServiceImpl implements CabinetService {
                 dto.setCompany(index.getCompany());
                 //机房信息
                 RoomIndex roomIndex = roomIndexMapper.selectById(index.getRoomId());
-                dto.setRoomName(roomIndex.getRoomName());
+                if (Objects.nonNull(roomIndex))
+                    dto.setRoomName(roomIndex.getRoomName());
 
                 //配置的数据来源信息
                 ValueOperations ops = redisTemplate.opsForValue();
@@ -202,17 +206,16 @@ public class CabinetServiceImpl implements CabinetService {
                             .eq(CabinetPdu::getCabinetId, index.getId()));
 
                     if (Objects.nonNull(pdu)) {
-                        dto.setPduIpA(pdu.getPduKeyA());
-                        dto.setPduIpB(pdu.getPduKeyB());
-//                        dto.setCasIdA(pdu.getCasIdA());
-//                        dto.setCasIdB(pdu.getCasIdB());
+                        String[] split = pdu.getPduKeyA().split("-");
+                        dto.setPduIpA(split[0]);
+                        dto.setCasIdA(Integer.parseInt(split[1]));
 
+                        String[] split1 = pdu.getPduKeyB().split("-");
+                        dto.setPduIpB(split1[0]);
+                        dto.setCasIdB(Integer.parseInt(split1[1]));
                         //获取pdu数据
                         StringBuilder aKey = new StringBuilder();
-                        aKey.append(REDIS_KEY_PDU);
-                        aKey.append(pdu.getPduKeyA());
-//                        aKey.append(SPLIT_KEY);
-//                        aKey.append(pdu.getCasIdA());
+                        aKey.append(REDIS_KEY_PDU);aKey.append(pdu.getPduKeyA());
 
                         Object aPdu = ops.get(aKey.toString());
                         if (Objects.nonNull(aPdu)) {
@@ -268,34 +271,33 @@ public class CabinetServiceImpl implements CabinetService {
 //                                dto.setBusNameA(boxIndex.getBusName());
                                 dto.setBoxNameA(boxIndex.getBoxName());
                                 dto.setBarIdA(boxIndex.getBusId());
-                                dto.setAddrA(boxIndex.getBoxId());
+                                dto.setBoxIndexA(boxIndex.getBoxId());
                                 dto.setBoxOutletIdA(cabinetBus.getOutletIdA());
                             } else {
                                 String[] keys = cabinetBus.getBoxKeyA().split(SPLIT_KEY);
                                 dto.setBusIpA(keys[0]);
                                 dto.setBarIdA(Integer.valueOf(keys[1]));
-                                dto.setAddrA(Integer.valueOf(keys[2]));
+                                dto.setBoxIndexA(Integer.valueOf(keys[2]));
                                 dto.setBoxOutletIdA(cabinetBus.getOutletIdA());
                             }
-
                         }
 
                         if (StringUtils.isNotEmpty(cabinetBus.getBoxKeyB())) {
                             BoxIndex boxIndex = boxIndexMapper.selectOne(new LambdaQueryWrapper<BoxIndex>()
-                                    .eq(BoxIndex::getBoxKey, cabinetBus.getBoxKeyA()));
+                                    .eq(BoxIndex::getBoxKey, cabinetBus.getBoxKeyB()));
                             if (Objects.nonNull(boxIndex)) {
 
                                 dto.setBusIpB(boxIndex.getIpAddr());
 //                                dto.setBusNameB(boxIndex.getBusName());
                                 dto.setBoxNameB(boxIndex.getBoxName());
                                 dto.setBarIdB(boxIndex.getBusId());
-                                dto.setAddrB(boxIndex.getBoxId());
+                                dto.setBoxIndexB(boxIndex.getBoxId());
                                 dto.setBoxOutletIdB(cabinetBus.getOutletIdB());
                             } else {
                                 String[] keys = cabinetBus.getBoxKeyB().split(SPLIT_KEY);
                                 dto.setBusIpB(keys[0]);
                                 dto.setBarIdB(Integer.valueOf(keys[1]));
-                                dto.setAddrB(Integer.valueOf(keys[2]));
+                                dto.setBoxIndexB(Integer.valueOf(keys[2]));
                                 dto.setBoxOutletIdB(cabinetBus.getOutletIdB());
                             }
 
@@ -365,12 +367,12 @@ public class CabinetServiceImpl implements CabinetService {
                     List<Integer> ids = indexList.stream().map(CabinetIndex::getId).collect(Collectors.toList());
                     if (!CollectionUtils.isEmpty(ids)) {
                         if (isExist(vo.getPduIpA(), vo.getCasIdA(), ids)) {
-                            log.info("---- " + vo.getPduIpA() + vo.getCasIdA());
+//                            log.info("---- " + vo.getPduIpA() + vo.getCasIdA());
                             return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "pdu已关联其他机柜");
                         }
 
                         if (isExist(vo.getPduIpB(), vo.getCasIdB(), ids)) {
-                            log.info("---- " + vo.getPduIpB() + vo.getCasIdB());
+//                            log.info("---- " + vo.getPduIpB() + vo.getCasIdB());
                             return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "pdu已关联其他机柜");
                         }
                     }
@@ -422,7 +424,6 @@ public class CabinetServiceImpl implements CabinetService {
                     } else {
                         return CommonResult.error(GlobalErrorCodeConstants.UNKNOWN.getCode(), "机柜名称重复");
                     }
-
                 } else {
                     index = new CabinetIndex();
                     //index 索引表
@@ -433,9 +434,6 @@ public class CabinetServiceImpl implements CabinetService {
                     vo.setId(cabinetIndex.getId());
                 }
             }
-
-            log.info("vo : " + vo);
-
             //配置表
             CabinetCfg cfg = cabinetCfgMapper.selectOne(new LambdaQueryWrapper<CabinetCfg>()
                     .eq(CabinetCfg::getCabinetId, vo.getId()));
@@ -448,7 +446,7 @@ public class CabinetServiceImpl implements CabinetService {
                 //新增
                 cabinetCfgMapper.insert(convertCfg(vo, cfg));
             }
-
+            //机柜与PDU/插接箱的关联
             if (vo.getPduBox() == PduBoxFlagEnums.PDU.getValue()) {
 
                 if (StringUtils.isEmpty(vo.getPduIpA()) && StringUtils.isEmpty(vo.getPduIpB())) {
@@ -493,7 +491,7 @@ public class CabinetServiceImpl implements CabinetService {
                 } else {
                     //新增
                     bus = new CabinetBox();
-                    if (Objects.nonNull(vo.getAddrA()) || Objects.nonNull(vo.getAddrB())) {
+                    if (Objects.nonNull(vo.getBusIpA()) || Objects.nonNull(vo.getBusIpB())) {
                         //新增
                         cabinetBusMapper.insert(convertBus(vo, bus));
                     }
@@ -709,7 +707,7 @@ public class CabinetServiceImpl implements CabinetService {
             List<CabineIndexCfgVO> records = page1.getRecords();
             List<CabinetIndexLoadResVO> bean = BeanUtils.toBean(records, CabinetIndexLoadResVO.class);
             Map<String, CabinetIndexLoadResVO> map = bean.stream().collect(Collectors.toMap(vo -> vo.getRoomId() + "-" + vo.getId(), i -> i));
-            List<String> keys = bean.stream().map(i -> i.getRoomId() + "-" + i.getId()).collect(Collectors.toList());
+            List<String> keys = bean.stream().map(i ->REDIS_KEY_CABINET+ i.getRoomId() + "-" + i.getId()).collect(Collectors.toList());
             List list = redisTemplate.opsForValue().multiGet(keys);
             for (Object obj : list) {
                 if (Objects.isNull(obj)) {
@@ -727,13 +725,23 @@ public class CabinetServiceImpl implements CabinetService {
                 }
                 joiner.add(vo.getCabinetName());
                 vo.setLocation(joiner.toString());
-                vo.setActiveTotal(jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data").getBigDecimal("pow_active"));
-                vo.setApparentTotal(jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data").getBigDecimal("pow_apparent"));
+
+                JSONObject apath = jsonObject.getJSONObject("cabinet_power").getJSONObject("path_a");
+                JSONObject bpath = jsonObject.getJSONObject("cabinet_power").getJSONObject("path_b");
+                JSONObject total = jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data");
+                if (Objects.nonNull(total)) {
+                    vo.setActiveTotal(total.getBigDecimal("pow_active"));
+                    vo.setApparentTotal(total.getBigDecimal("pow_apparent"));
+                }
                 vo.setLoadFactor(jsonObject.getBigDecimal("load_factor").setScale(2, RoundingMode.HALF_UP));
-                vo.setPowActivea(jsonObject.getJSONObject("cabinet_power").getJSONObject("path_a").getBigDecimal("pow_active"));
-                vo.setPowActiveb(jsonObject.getJSONObject("cabinet_power").getJSONObject("path_b").getBigDecimal("pow_active"));
-                vo.setPowApparenta(jsonObject.getJSONObject("cabinet_power").getJSONObject("path_a").getBigDecimal("pow_apparent"));
-                vo.setPowApparentb(jsonObject.getJSONObject("cabinet_power").getJSONObject("path_b").getBigDecimal("pow_apparent"));
+                if (Objects.nonNull(apath)){
+                    vo.setPowActivea(apath.getBigDecimal("pow_active"));
+                    vo.setPowApparenta(apath.getBigDecimal("pow_apparent"));
+                }
+                if (Objects.nonNull(bpath)){
+                    vo.setPowActiveb(bpath.getBigDecimal("pow_active"));
+                    vo.setPowApparentb(bpath.getBigDecimal("pow_apparent"));
+                }
                 vo.setDataUpdateTime(jsonObject.getString("date_time"));
             }
             return new PageResult<>(bean, page1.getTotal());
@@ -754,7 +762,7 @@ public class CabinetServiceImpl implements CabinetService {
             return new PageResult<>(list, voPage.getTotal());
         }
         Map<String, CabinetEnergyStatisticsResVO> map = list.stream().collect(Collectors.toMap(vo -> vo.getRoomId() + "-" + vo.getId(), i -> i));
-        List<String> keys = list.stream().map(i -> i.getRoomId() + "-" + i.getId()).collect(Collectors.toList());
+        List<String> keys = list.stream().map(i ->REDIS_KEY_CABINET+ i.getRoomId() + "-" + i.getId()).collect(Collectors.toList());
         List vlues = redisTemplate.opsForValue().multiGet(keys);
         //昨日
         String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
@@ -802,7 +810,7 @@ public class CabinetServiceImpl implements CabinetService {
             }
             JSONObject jsonObject = JSON.parseObject(JSONObject.toJSONString(obj));
             String cabinetKey = jsonObject.getString("cabinet_key");
-            CabinetEnergyStatisticsResVO vo = map.get(cabinetKey);
+            CabinetEnergyStatisticsResVO vo = map.get(REDIS_KEY_CABINET+cabinetKey);
 
             vo.setRoomName(jsonObject.getString("room_name"));
             StringJoiner joiner = new StringJoiner("-");
@@ -822,7 +830,7 @@ public class CabinetServiceImpl implements CabinetService {
         if (!CollectionUtils.isEmpty(voPage.getRecords())) {
             List<CabineIndexCfgVO> records = voPage.getRecords();
             List<CabinetIndexEnvResVO> bean = BeanUtils.toBean(records, CabinetIndexEnvResVO.class);
-            Map<String, CabinetIndexEnvResVO> map = bean.stream().collect(Collectors.toMap(vo -> vo.getRoomId() + "-" + vo.getId(), i -> i));
+            Map<String, CabinetIndexEnvResVO> map = bean.stream().collect(Collectors.toMap(vo ->REDIS_KEY_CABINET+ vo.getRoomId() + "-" + vo.getId(), i -> i));
             Set<String> ids = map.keySet();
             List list = redisTemplate.opsForValue().multiGet(ids);
             for (Object obj : list) {
@@ -831,7 +839,7 @@ public class CabinetServiceImpl implements CabinetService {
                 }
                 JSONObject jsonObject = JSON.parseObject(JSONObject.toJSONString(obj));
                 String cabinetKey = jsonObject.getString("cabinet_key");
-                CabinetIndexEnvResVO vo = map.get(cabinetKey);
+                CabinetIndexEnvResVO vo = map.get(REDIS_KEY_CABINET+cabinetKey);
                 vo.setHumValue(jsonObject.getJSONObject("cabinet_env").getString("hum_value"));
                 vo.setTemValue(jsonObject.getJSONObject("cabinet_env").getString("tem_value"));
                 vo.setRoomName(jsonObject.getString("room_name"));
@@ -839,6 +847,154 @@ public class CabinetServiceImpl implements CabinetService {
             return new PageResult<>(bean, voPage.getTotal());
         }
         return null;
+    }
+
+    @Override
+    public PageResult<CabinetIndexBalanceResVO> getCabinetIndexBalancePage(CabinetIndexVo pageReqVO) {
+        Page<CabineIndexCfgVO> voPage = cabinetIndexMapper.selectIndexLoadPage(new Page(pageReqVO.getPageNo(), pageReqVO.getPageSize()), pageReqVO);
+        List<CabinetIndexBalanceResVO> records = BeanUtils.toBean(voPage.getRecords(), CabinetIndexBalanceResVO.class);
+        Map<String, CabinetIndexBalanceResVO> map = records.stream().collect(Collectors.toMap(vo -> REDIS_KEY_CABINET +  vo.getRoomId() + "-" + vo.getId(), i -> i));
+        List list = redisTemplate.opsForValue().multiGet(map.keySet());
+        for (Object obj : list) {
+            if (Objects.isNull(obj)){
+                continue;
+            }
+            JSONObject jsonObject = JSONObject.parseObject(JSONObject.toJSONString(obj));
+            CabinetIndexBalanceResVO cabinetKey = map.get(REDIS_KEY_CABINET+jsonObject.getString("cabinet_key"));
+            cabinetKey.setRoomName(jsonObject.getString("room_name"));
+            JSONObject aPath = jsonObject.getJSONObject("cabinet_power").getJSONObject("path_a");
+            JSONObject bPath = jsonObject.getJSONObject("cabinet_power").getJSONObject("path_b");
+            JSONObject total = jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data");
+            //总视在功率
+            BigDecimal totalPow =new BigDecimal(0);
+            if (Objects.nonNull(total)){
+                totalPow =  total.getBigDecimal("pow_apparent");
+            }
+            if (Objects.nonNull(aPath)){
+                //a的视在功率
+                BigDecimal aPow = aPath.getBigDecimal("pow_apparent");
+                cabinetKey.setAPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, aPow, totalPow),100));
+                cabinetKey.setACurValue(aPath.getList("cur_value",BigDecimal.class).get(0));
+                cabinetKey.setAVolValue(aPath.getList("vol_value",BigDecimal.class).get(0));
+                cabinetKey.setAPowValue(aPath.getList("pow_value",BigDecimal.class).get(0));
+            }
+            if (Objects.nonNull(bPath)) {
+                //b的视在功率
+                BigDecimal bPow = bPath.getBigDecimal("pow_apparent");
+                cabinetKey.setBPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, bPow, totalPow), 100));
+                cabinetKey.setBCurValue(bPath.getList("cur_value", BigDecimal.class).get(0));
+                cabinetKey.setBVolValue(bPath.getList("vol_value", BigDecimal.class).get(0));
+                cabinetKey.setBPowValue(bPath.getList("pow_value", BigDecimal.class).get(0));
+            }
+        }
+        return new PageResult<>(records, voPage.getTotal());
+    }
+
+    @Override
+    public CabinetDistributionDetailsResVO getCabinetdistributionDetails(int id, int roomId, String type) throws IOException {
+        CabinetDistributionDetailsResVO vo = new CabinetDistributionDetailsResVO();
+        Object obj = redisTemplate.opsForValue().get(REDIS_KEY_CABINET + roomId + "-" + id);
+        if (Objects.isNull(obj)){
+            return null;
+        }
+        JSONObject jsonObject = JSONObject.parseObject(JSONObject.toJSONString(obj));
+        JSONObject apath = jsonObject.getJSONObject("cabinet_power").getJSONObject("path_a");
+        JSONObject bpath = jsonObject.getJSONObject("cabinet_power").getJSONObject("path_b");
+        JSONObject total = jsonObject.getJSONObject("cabinet_power").getJSONObject("total_data");
+
+        vo.setLoadFactor(jsonObject.getBigDecimal("load_factor").setScale(0, RoundingMode.HALF_DOWN));
+        vo.setCabinetName(jsonObject.getString("cabinet_name"));
+        vo.setRoomName(jsonObject.getString("room_name"));
+        vo.setDateTime(LocalDateTimeUtil.parse(jsonObject.getString("date_time"),"yyyy-MM-dd HH:mm:ss"));
+        if (Objects.nonNull(total)){
+            vo.setPowActiveTotal(total.getBigDecimal("pow_active").setScale(1, RoundingMode.HALF_DOWN));//有功功率
+            vo.setPowApparentTotal(total.getBigDecimal("pow_apparent").setScale(3, RoundingMode.HALF_DOWN));//视在功率
+            vo.setPowReactiveTotal(total.getBigDecimal("pow_reactive").setScale(3, RoundingMode.HALF_DOWN));//无功功率
+            vo.setPowerFactor(total.getBigDecimal("power_factor").setScale(2, RoundingMode.HALF_DOWN));//功率因素
+        }
+        if (Objects.nonNull(apath)){
+            vo.setCurA(apath.getList("cur_value",BigDecimal.class).stream().map(i ->i.setScale(2, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
+            vo.setVolA(apath.getList("vol_value",BigDecimal.class).stream().map(i ->i.setScale(1, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
+            vo.setPowActiveA(apath.getBigDecimal("pow_active").setScale(1, RoundingMode.HALF_DOWN));//有功功率
+            vo.setPowApparentA(apath.getBigDecimal("pow_apparent").setScale(3, RoundingMode.HALF_DOWN));//视在功率
+            vo.setPowReactiveA(apath.getBigDecimal("pow_reactive").setScale(3, RoundingMode.HALF_DOWN));//无功功率
+            vo.setAPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, vo.getPowApparentA(), vo.getPowApparentTotal()),100));
+        }
+        if (Objects.nonNull(bpath)){
+            vo.setCurB(bpath.getList("cur_value",BigDecimal.class).stream().map(i ->i.setScale(2, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
+            vo.setVolB(bpath.getList("vol_value",BigDecimal.class).stream().map(i ->i.setScale(1, RoundingMode.HALF_DOWN)).collect(Collectors.toList()));
+            vo.setPowActiveB(bpath.getBigDecimal("pow_active").setScale(1, RoundingMode.HALF_DOWN));//有功功率
+            vo.setPowApparentB(bpath.getBigDecimal("pow_apparent").setScale(3, RoundingMode.HALF_DOWN));//视在功率
+            vo.setPowReactiveB(bpath.getBigDecimal("pow_reactive").setScale(3, RoundingMode.HALF_DOWN));//无功功率
+            vo.setBPow(BigDemicalUtil.safeMultiply(BigDemicalUtil.safeDivideNum(4, vo.getPowApparentB(), vo.getPowApparentTotal()),100));
+
+            Map map = getCabinetDistributionFactor(id, roomId, type);
+            vo.setFactorTotal((List<BigDecimal>) map.get("factorTotal"));
+            vo.setFactorA((List<BigDecimal>) map.get("factorA"));
+            vo.setDay((List<String>) map.get("day"));
+            vo.setFactorB((List<BigDecimal>) map.get("factorB"));
+        }
+
+
+        return vo;
+    }
+
+    @Override
+    public Map getCabinetDistributionFactor(int id, int roomId, String type) throws IOException {
+        String startTime = null;
+        String endTime = null;
+        String index = null;
+        switch (type){
+            case "day":
+                startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusDays(1),"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(LocalDateTime.now(),"yyyy-MM-dd HH:mm:ss");
+                index = "cabinet_hda_pow_hour";
+                break;
+            case "hour":
+                startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusHours(1),"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(LocalDateTime.now(),"yyyy-MM-dd HH:mm:ss");
+                index = "cabinet_hda_pow_realtime";
+                break;
+            case "today":
+                startTime = LocalDateTimeUtil.format(LocalDateTime.MIN,"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(LocalDateTime.now(),"yyyy-MM-dd HH:mm:ss");
+                index = "cabinet_hda_pow_hour";
+                break;
+            case "threeDay":
+                startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusDays(3),"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(LocalDateTime.now(),"yyyy-MM-dd HH:mm:ss");
+                index = "cabinet_hda_pow_hour";
+                break;
+            default:
+        }
+
+        Map map = new HashMap();
+        //day,today,threeDay
+        List<Map<String, Object>> data = getDataEs(startTime, endTime, Collections.singletonList(id),
+                index ,Map.class);
+        List<BigDecimal> factorA = new ArrayList<>();
+        List<BigDecimal> factorB = new ArrayList<>();
+        List<BigDecimal> factorTotal = new ArrayList<>();
+        List<String> createTime = new ArrayList<>();
+                switch (index){
+            case "cabinet_hda_pow_realtime":
+                factorA = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_a").toString()),100)).collect(Collectors.toList());
+                factorB = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_b").toString()),100)).collect(Collectors.toList());
+                factorTotal = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_total").toString()),100)).collect(Collectors.toList());
+                createTime = data.stream().map(i -> String.valueOf(i.get("create_time"))).collect(Collectors.toList());
+                break;
+            case "cabinet_hda_pow_hour":
+                factorA = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_a_avg_value").toString()),100)).collect(Collectors.toList());
+                factorB = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_b_avg_value").toString()),100)).collect(Collectors.toList());
+                factorTotal = data.stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("factor_total_avg_value").toString()),100)).collect(Collectors.toList());
+                createTime = data.stream().map(i -> String.valueOf(i.get("create_time"))).collect(Collectors.toList());
+                break;
+        }
+        map.put("factorA",factorA);
+        map.put("factorB",factorB);
+        map.put("factorTotal",factorTotal);
+        map.put("day",createTime);
+        return map;
     }
 
     private List getDataEs(String startTime, String endTime, List<Integer> ids, String index, Class objClass) throws IOException {
@@ -911,12 +1067,11 @@ public class CabinetServiceImpl implements CabinetService {
         //未禁用
         cabinetIndex.setIsDisabled(DisableFlagEnums.ENABLE.getStatus());
         cabinetIndex.setPowerCapacity(vo.getPowCapacity());
+        cabinetIndex.setCabinetHeight(vo.getCabinetHeight());
         cabinetIndex.setRoomId(vo.getRoomId());
         cabinetIndex.setId(index.getId());
-//        cabinetIndex.setEleAlarmDay(vo.getEleAlarmDay());
-//        cabinetIndex.setEleAlarmMonth(vo.getEleAlarmMonth());
-//        cabinetIndex.setEleLimitDay(vo.getEleLimitDay());
-//        cabinetIndex.setEleLimitMonth(vo.getEleLimitMonth());
+        cabinetIndex.setCabinetType(vo.getType());
+
         return cabinetIndex;
     }
 
@@ -930,11 +1085,8 @@ public class CabinetServiceImpl implements CabinetService {
     private CabinetPdu convertPdu(CabinetVo vo, CabinetPdu pdu) {
         CabinetPdu cabinetPdu = new CabinetPdu();
         cabinetPdu.setCabinetId(vo.getId());
-        //TODO 后期更改
-//        cabinetPdu.setPduIpA(vo.getPduIpA());
-//        cabinetPdu.setPduIpB(vo.getPduIpB());
-//        cabinetPdu.setCasIdB(vo.getCasIdB());
-//        cabinetPdu.setCasIdA(vo.getCasIdA());
+        cabinetPdu.setPduKeyA(vo.getPduIpA()+"-"+vo.getCasIdB());
+        cabinetPdu.setPduKeyB(vo.getPduIpB()+"-"+vo.getCasIdA());
         cabinetPdu.setId(pdu.getId());
         return cabinetPdu;
     }
@@ -951,12 +1103,10 @@ public class CabinetServiceImpl implements CabinetService {
         cabinetBus.setCabinetId(vo.getId());
         if (StringUtils.isNotEmpty(vo.getBusIpA())
                 && Objects.nonNull(vo.getBarIdA())
-                && Objects.nonNull(vo.getAddrA())) {
-            cabinetBus.setBoxKeyA(vo.getBusIpA()
-                    .concat(SPLIT_KEY)
-                    .concat(String.valueOf(vo.getBarIdA()))
-                    .concat(SPLIT_KEY)
-                    .concat(String.valueOf(vo.getAddrA())));
+                && Objects.nonNull(vo.getBoxIndexA())) {
+            StringJoiner boxKeyA = new StringJoiner(SPLIT_KEY);
+            boxKeyA.add(vo.getBusIpA()).add(String.valueOf(vo.getBarIdA())).add(vo.getBoxIndexA());
+            cabinetBus.setBoxKeyA(boxKeyA.toString());
         } else {
             cabinetBus.setBoxKeyA("");
         }
@@ -964,19 +1114,15 @@ public class CabinetServiceImpl implements CabinetService {
         cabinetBus.setOutletIdA(vo.getBoxOutletIdA());
         if (StringUtils.isNotEmpty(vo.getBusIpB())
                 && Objects.nonNull(vo.getBarIdB())
-                && Objects.nonNull(vo.getAddrB())) {
-            cabinetBus.setBoxKeyB(vo.getBusIpB()
-                    .concat(SPLIT_KEY)
-                    .concat(String.valueOf(vo.getBarIdB()))
-                    .concat(SPLIT_KEY)
-                    .concat(String.valueOf(vo.getAddrB())));
+                && Objects.nonNull(vo.getBoxIndexB())) {
+            StringJoiner boxKeyB = new StringJoiner(SPLIT_KEY);
+            boxKeyB.add(vo.getBusIpB()).add(String.valueOf(vo.getBarIdB())).add(vo.getBoxIndexB());
+            cabinetBus.setBoxKeyB(boxKeyB.toString());
         } else {
             cabinetBus.setBoxKeyB("");
         }
         cabinetBus.setOutletIdB(vo.getBoxOutletIdB());
         cabinetBus.setId(bus.getId());
-//        cabinetBus.setBoxIndexA(vo.getBoxIndexA());
-//        cabinetBus.setBoxIndexB(vo.getBoxIndexB());
         return cabinetBus;
     }
 
@@ -992,10 +1138,12 @@ public class CabinetServiceImpl implements CabinetService {
         CabinetCfg cabinetCfg = new CabinetCfg();
         cabinetCfg.setCabinetId(vo.getId());
         //TODO  后期更改
-//        cabinetCfg.setCabinetHeight(vo.getCabinetHeight());
-//        cabinetCfg.setCabinetName(vo.getCabinetName());
+        cabinetCfg.setEleAlarmDay(vo.getEleAlarmDay());
+        cabinetCfg.setEleAlarmMonth(vo.getEleAlarmMonth());
+        cabinetCfg.setEleLimitDay(vo.getEleLimitDay());
+        cabinetCfg.setEleLimitMonth(vo.getEleLimitMonth());
         cabinetCfg.setCompany(vo.getCompany());
-//        cabinetCfg.setType(vo.getType());
+
         cabinetCfg.setXCoordinate(vo.getXCoordinate());
         cabinetCfg.setYCoordinate(vo.getYCoordinate());
         cabinetCfg.setId(cfg.getId());
@@ -1094,6 +1242,7 @@ public class CabinetServiceImpl implements CabinetService {
      * @param index     索引表
      */
     private List<String> getData(String startTime, String endTime, List<Integer> ids, String index) throws IOException {
+        try {
         // 创建SearchRequest对象, 设置查询索引名
         SearchRequest searchRequest = new SearchRequest(index);
         // 通过QueryBuilders构建ES查询条件，
@@ -1119,6 +1268,10 @@ public class CabinetServiceImpl implements CabinetService {
         }
         return list;
 
+        }catch (Exception e){
+            log.error(e.getMessage());
+        }
+        return null;
     }
 
 }

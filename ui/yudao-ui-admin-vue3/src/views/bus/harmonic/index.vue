@@ -44,11 +44,16 @@
         :inline="true"
         label-width="68px"                          
       >
-        <el-form-item >
+      <el-form-item >
+          <button :class="normalFlag ? 'btn_normal normal': 'btn_normal'" @click.prevent="normalFlag = !normalFlag;handleSelectStatus(1)">正常</button>
+          <button :class="reportFlag ? 'btn_error error':  'btn_error'" @click.prevent="reportFlag = !reportFlag;handleSelectStatus(2)">告警</button>
+          <button :class="offlineFlag ? 'btn_offline offline': 'btn_offline'" @click.prevent="offlineFlag = !offlineFlag;handleSelectStatus(0)">离线</button>
+        </el-form-item>
+        <!-- <el-form-item >
           <el-checkbox-group  v-model="queryParams.status" @change="handleQuery">
             <el-checkbox :label="5" :value="5">在线</el-checkbox>
           </el-checkbox-group>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
             v-model="queryParams.devKey"
@@ -143,7 +148,7 @@
               link
               type="primary"
               @click="toDetail(scope.row)"
-              v-if="scope.row.status != null && scope.row.status != 5"
+              v-if="scope.row.status != null && scope.row.status != 0"
             >
             设备详情
             </el-button>
@@ -151,7 +156,7 @@
               link
               type="danger"
               @click="handleDelete(scope.row.busId)"
-              v-if="scope.row.status == 5"
+              v-if="scope.row.status == 0"
             >
               删除
             </el-button>
@@ -182,10 +187,10 @@
             <el-tag v-else >正常</el-tag>
           </div> -->
           <div class="status" v-if="valueMode == 0">
-            <el-tag type="info" v-if="item.status == 5 " >离线</el-tag>
+            <el-tag type="info" v-if="item.status == 0 " >离线</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>          
-          <button class="detail" @click="showDialogCur(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <button class="detail" @click="showDialogCur(item)" v-if="item.status != null && item.status != 0">详情</button>
         </div>
       </div>
 
@@ -292,10 +297,10 @@
             <el-tag v-else >正常</el-tag>
           </div> -->
           <div class="status" v-if="valueMode == 0">
-            <el-tag type="info" v-if="item.status == 5 " >离线</el-tag>
+            <el-tag type="info" v-if="item.status == 0 " >离线</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>          
-          <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 0">详情</button>
         </div>
       </div>
       <Pagination
@@ -342,6 +347,32 @@ const valueMode = ref(0)
 
 const devKeyList = ref([])
 
+const statusList = reactive([
+  {
+    name: '离线',
+    selected: true,
+    value: 0,
+    cssClass: 'btn_offline',
+    activeClass: 'btn_offline offline'
+  },
+  {
+    name: '正常',
+    selected: true,
+    value: 1,
+    cssClass: 'btn_normal',
+    activeClass: 'btn_normal normal'
+  },
+  {
+    name: '告警',
+    selected: true,
+    value: 2,
+    cssClass: 'btn_error',
+    activeClass: 'btn_error error'
+  }
+])
+const normalFlag = ref(true)
+const reportFlag = ref(true)
+const offlineFlag = ref(true)
 
 const loadAll = async () => {
   var data = await IndexApi.devKeyList();
@@ -448,6 +479,7 @@ const getList = async () => {
   try {
     const data = await IndexApi.getBusHarmonicPage(queryParams)
     list.value = data.list
+    filterData()
     console.log('list.value',list.value)
     var tableIndex = 0;
 
@@ -475,6 +507,7 @@ const getListNoLoading = async () => {
   try {
     const data = await IndexApi.getBusHarmonicPage(queryParams)
     list.value = data.list
+    filterData()
     //list.value = list.value.map(item => ({
     //  ...item, // 复制对象
     //  location: item.devKey.split('-')[0] // 直接计算location属性
@@ -536,6 +569,42 @@ const showDialogVol = () => {
 //   window.open(url, '_blank');
 // }
 
+const filterData = () => {
+  const data0 = list.value.filter(item => item.status === 1); // 正常状态数据
+  console.log('data0',data0)
+  const data1 = list.value.filter(item => item.status === 2 ); // 告警状态数据
+  console.log('data1',data1)
+  const data2 = list.value.filter(item => item.status === 0 || item.status == null); // 离线状态数据
+  console.log('data2',data2)
+ 
+  if (normalFlag.value && !reportFlag.value && !offlineFlag.value) {
+    list.value = data0; // 仅正常状态
+  } else if (reportFlag.value && !normalFlag.value && !offlineFlag.value) {
+    list.value = data1; // 仅告警状态
+  } else if (offlineFlag.value && !normalFlag.value && !reportFlag.value) {
+    list.value = data2; // 仅离线状态
+  } else if (normalFlag.value && reportFlag.value && !offlineFlag.value) {
+    list.value = [...data0, ...data1];
+  } else if (normalFlag.value && offlineFlag.value && !reportFlag.value) {
+    list.value = [...data0, ...data2];
+  } else if (reportFlag.value && offlineFlag.value && !normalFlag.value) {
+    list.value = [...data1, ...data2];
+  } else if (normalFlag.value && reportFlag.value && offlineFlag.value) {
+    list.value = [...data0, ...data1, ...data2];
+  } else {
+    list.value = list.value;
+  }
+
+  console.log('执行完毕',list.value)
+}
+
+const handleSelectStatus = (index) => {
+  //statusList[index].selected = !statusList[index].selected
+  const status =  statusList.filter(item => item.selected)
+  const statusArr = status.map(item => item.value)
+  queryParams.status = statusArr;
+  handleQuery();
+}
 
 /** 搜索按钮操作 */
 const handleQuery = () => {

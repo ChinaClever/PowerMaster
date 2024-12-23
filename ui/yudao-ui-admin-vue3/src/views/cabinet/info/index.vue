@@ -2,11 +2,6 @@
   <CommonMenu @check="handleCheck" :showSearch="true" :dataList="navList" navTitle="机柜配电">
     <template #NavInfo>
       <div class="navInfo">
-        <!-- <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/wmk.jpg" /></div>
-          <div class="name">微模块机房</div>
-          <div>机房202</div>
-        </div> -->
         <div class="line"></div>
         <div class="status">
           <div class="box">
@@ -35,29 +30,6 @@
           </div>
         </div>
         <div class="line"></div>
-        <!-- <div class="overview">
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>总电能</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-        </div> -->
       </div>
     </template>
     <template #ActionBar>
@@ -67,10 +39,14 @@
         ref="queryFormRef"
         :inline="true"
         label-width="68px"
+        style="height:54px;"
       >
-        <el-form-item>
+        <el-form-item style="margin-left: 5px">
+          <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">
+            全部 
+          </button>
           <template v-for="(status, index) in statusList" :key="index">
-            <button type="button" :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index, $event)">{{status.name}}</button>
+            <button type="button" :class="[onclickColor === index ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(index, $event)">{{status.name}}</button>
           </template>
         </el-form-item>
         <div>
@@ -111,7 +87,8 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 1" style="width: 100%;" v-loading="loading" :data="listPage" @cell-dblclick="handleDbclick">
+      <div v-show="switchValue && listPage.length > 0" style="height:700px">
+        <el-table v-show="switchValue == 1"  style="height: 700px;overflow: hidden;overflow-y: auto;" v-loading="loading" :data="listPage" @cell-dblclick="handleDbclick">
         <el-table-column label="位置" min-width="110" align="center">
           <template #default="scope">
             <div>{{scope.row.roomName}}-{{scope.row.cabinetName}}</div>
@@ -162,7 +139,7 @@
       </el-table>
 
 
-   <el-table v-show="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
+   <el-table v-if="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
          <el-table-column label="位置" min-width="110" align="center">
             <template #default="scope">
                <div>{{scope.row.name}}</div>
@@ -192,6 +169,7 @@
           </template>
         </el-table-column>
      </el-table>
+      </div>
       <Pagination
         v-if="showPagination == 1"
         :total="queryParams.pageTotal"
@@ -199,7 +177,7 @@
         v-model:limit="queryParams.pageSize"
         @pagination="handleSwitchLogicRemoveModal(2,false)"
       />
-      <div v-show="!switchValue && listPage.length > 0" class="arrayContainer">
+      <div v-if="!switchValue && listPage.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in listPage" :key="item.id" @dblclick="handleArrayDbclick(item.cabinet_key)">
           <div class="content">
             <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
@@ -218,7 +196,7 @@
           <div v-if="item.status == 3" class="status-error">告警</div>
           <div v-if="item.status == 4" class="status-unbound">未绑定</div>
           <div v-if="item.status == 5" class="status-offline">离线</div>
-          <button class="detail" @click.prevent="toMachineDetail(item.cabinet_key)">详情</button>
+          <button class="detail" @click.prevent="toMachineDetail(item)">详情</button>
         </div>
       </div>
       <Pagination
@@ -253,6 +231,8 @@ const message = useMessage() // 消息弹窗
 const machineForm = ref() // 机柜表单组件
 const colNode = ref() // 展示列组件
 const loading = ref(false)
+const butColor = ref(0);
+const onclickColor = ref(-1);
 // const isCloseNav = ref(false) // 左侧导航是否收起
 const isFirst = ref(true) // 是否第一次调用getTableData函数
 const switchValue = ref(0) // 0:阵列 1：表格
@@ -333,7 +313,9 @@ const queryParams = reactive({
   pageNo: 1,
   pageSize: 24,
   pageTotal: 0,
-})
+  runStatus:[]
+}) as any
+
 const statusList = reactive([
   {
     name: '空载',
@@ -396,16 +378,16 @@ const getTableData = async(reset = false) => {
   }
   loading.value = true
   if (reset) queryParams.pageNo = 1
-  const status =  statusList.filter(item => item.selected)
   try {
     const res = await CabinetApi.getCabinetInfo({
       pageNo: queryParams.pageNo,
       pageSize: queryParams.pageSize,
       cabinetIds: isFirst.value ? null : ids,
       // roomId: null,
-      runStatus: status.map(item => item.value),
+      runStatus: queryParams.runStatus,
       company: queryParams.company
     })
+    console.log('res',res)
     if (res.list) {
       const list = res.list.map(item => {
         const tableItem = {
@@ -425,7 +407,7 @@ const getTableData = async(reset = false) => {
           eleB: item.cabinet_power.path_b ? item.cabinet_power.path_b.ele_active.toFixed(1) : '-',
           powerFactorTotal: item.cabinet_power.total_data.power_factor,
           powerReactiveTotal: item.cabinet_power.total_data.pow_reactive.toFixed(3),
-          loadFactor: Math.ceil(item.load_factor),
+          loadFactor: Math.ceil(item.load_factor.toFixed(2)),
           abzb: '-' as number | string
         }
         if (item.cabinet_power.path_a && item.cabinet_power.path_b) {
@@ -447,23 +429,8 @@ const getTableData = async(reset = false) => {
 // 接口获取机房导航列表
 const getNavList = async() => {
   const res = await CabinetApi.getRoomMenuAll({})
-  // console.log('接口获取机房导航列表', res)
-  // const ids = [] as number[]
   navList.value = res
-  // if (res && res.length > 0) {
-  //   const room = res[0]
-  //   room.children.forEach(child => {
-  //     if (child.type == 3) {
-  //       ids.push(child.id)
-  //     }
-  //     if(child.children.length > 0) {
-  //       child.children.forEach(son => {f
-  //         ids.push(son.id)
-  //       })
-  //     }
-  //   })
-  // }
-  // cabinetIds.value = ids
+
     const resStatus =await CabinetApi.getCabinetInfoStatus();
     sumNoload.value = resStatus.list[0].sumNoload;
     sumNormal.value = resStatus.list[0].sumNormal;
@@ -530,22 +497,39 @@ const handleArrayDbclick = (key) => {
 }
 
 // 处理状态选择事件
-const handleSelectStatus = (index, event) => {
+const handleSelectStatus = (index) => {
   // console.log('处理状态选择事件', index, event)
-  statusList[index].selected = !statusList[index].selected
-  getTableData()
+  //statusList[index].selected = !statusList[index].selected
+  butColor.value = 1;
+  onclickColor.value = index;
+  queryParams.runStatus = [index];
+  getTableData();
 }
+
+const toggleAllStatus = () => {
+  butColor.value = 0;
+  onclickColor.value = -1;
+  queryParams.runStatus = [];
+  getTableData();
+}
+
+
+
+
 
 // 跳转详情页
 const toMachineDetail = (key) => {
-  
+  console.log('key',key.cabinet_key.split('-')[0]);
+  console.log('key',key.cabinet_key.split('-')[1]);
+  console.log('key',key);
   const devKey = '172.16.101.2-1';
   const busId = 6;
-  const location = null;
-  const busName = 'iBusbar-1';
-  push({path: '/cabinet/cab/detail', state: { devKey, busId , location , busName }})
-  //console.log('toMachineDetail!', key.split('-')[1])
-  //push({path: '/cabinet/cab/detail', state: { id: key.split('-')[1] }})
+  const id = key.cabinet_key.split('-')[1]
+  const roomId = key.cabinet_key.split('-')[0];
+  const type = 'hour';
+  const location = key.roomName;
+  const busName = key.cabinetName;
+  push({path: '/cabinet/cab/detail', state: { devKey, busId , location , busName ,id ,roomId , type}})
 }
 
 const handleCheck = (row) => {
@@ -624,7 +608,8 @@ onBeforeMount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 8px;
+  border-radius: 5px;
+  margin-right: 5px;
   &:hover {
     color: #7bc25a;
   }
@@ -960,8 +945,10 @@ onBeforeMount(() => {
 
 @media screen and (max-width:2048px) and (min-width:1600px){
   .arrayContainer {
-    //height: 600px;
-    overflow: auto;
+    height: 700px;
+    overflow: hidden;
+    overflow-y: auto;
+    //overflow: auto;
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
@@ -1213,6 +1200,36 @@ onBeforeMount(() => {
     }
   }
 }
+.btnallSelected {
+  margin-right: 5px;
+  width: 55px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #409EFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.btnallNotSelected{
+  margin-right: 5px;
+  width: 55px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: #000000;
+  border: 1px solid #409EFF;
+  border-radius: 5px;
+  &:hover {
+    color: #7bc25a;
+  }
+}
 
 :deep(.master-left .el-card__body) {
   padding: 0;
@@ -1224,5 +1241,8 @@ onBeforeMount(() => {
 }
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+:deep(.el-card){
+  --el-card-padding:5px;
 }
 </style>

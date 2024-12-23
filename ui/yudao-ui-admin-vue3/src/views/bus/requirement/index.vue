@@ -18,7 +18,7 @@
           </div>
           <div>
             <span>位置：</span>
-            <span>{{ statusNumber.location }}</span>
+            <span>{{ statusNumber.devKey }}</span>
           </div>
           <div >
             <span>名称：</span>
@@ -251,13 +251,13 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
-            <div class="info">
+            <div style="padding: 0 28px" class="info">
               <div >A相：{{item.l1MaxPow}}kW</div>
               <div >B相：{{item.l2MaxPow}}kW</div>
               <div >C相：{{ item.l3MaxPow }}kW</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
+            <div ><Pie :width="50" :height="50" :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->   
           <div class="status"  >
@@ -270,15 +270,14 @@
       <div  v-show="switchValue == 0 && visMode == 0 && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
-          <div class="content">
-            <div style="padding: 0 28px"><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
-            <div class="info">
-              
+          <div class="content">            
+            <div style="padding: 0 28px" class="info">              
               <div >A相：{{item.l1MaxCur}}A</div>
               <div >B相：{{item.l2MaxCur}}A</div>
               <div >C相：{{ item.l3MaxCur }}A</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
+            <div ><Pie :width="50" :height="50" :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->    
           <div class="status"  >

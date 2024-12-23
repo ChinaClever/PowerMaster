@@ -518,30 +518,30 @@ public class BusIndexServiceImpl implements BusIndexService {
             List<Double> rateList = loadRate.toList(Double.class);
 
             if (rateList.size() > 1) {
-                busIndexRes.setALoadRate(loadRate.getDouble(0));
-                busIndexRes.setBLoadRate(loadRate.getDouble(1));
-                busIndexRes.setCLoadRate(loadRate.getDouble(2));
+                busIndexRes.setALoadRate(loadRate.getInteger(0));
+                busIndexRes.setBLoadRate(loadRate.getInteger(1));
+                busIndexRes.setCLoadRate(loadRate.getInteger(2));
             } else {
-                busIndexRes.setALoadRate(loadRate.getDouble(0));
+                busIndexRes.setALoadRate(loadRate.getInteger(0));
             }
-            rateList.sort(Collections.reverseOrder());
-            Double biggest = rateList.get(0);
-            if (biggest == 0) {
-                busIndexRes.setColor(0);
-            } else if (biggest < 30) {
-                busIndexRes.setColor(1);
-            } else if (biggest < 60) {
-                busIndexRes.setColor(2);
-            } else if (biggest < 90) {
-                busIndexRes.setColor(3);
-            } else if (biggest >= 90) {
-                busIndexRes.setColor(4);
-            }
-            if (pageReqVO.getColor() != null) {
-                if (!pageReqVO.getColor().contains(busIndexRes.getColor())) {
-                    res.removeIf(bus -> bus.getBusId().equals(busIndexRes.getBusId()));
-                }
-            }
+//            rateList.sort(Collections.reverseOrder());
+//            Double biggest = rateList.get(0);
+//            if (biggest == 0) {
+//                busIndexRes.setColor(0);
+//            } else if (biggest < 30) {
+//                busIndexRes.setColor(1);
+//            } else if (biggest < 60) {
+//                busIndexRes.setColor(2);
+//            } else if (biggest < 90) {
+//                busIndexRes.setColor(3);
+//            } else if (biggest >= 90) {
+//                busIndexRes.setColor(4);
+//            }
+//            if (pageReqVO.getColor() != null) {
+//                if (!pageReqVO.getColor().contains(busIndexRes.getColor())) {
+//                    res.removeIf(bus -> bus.getBusId().equals(busIndexRes.getBusId()));
+//                }
+//            }
         }
         return res;
     }
@@ -712,6 +712,11 @@ public class BusIndexServiceImpl implements BusIndexService {
     }
 
     @Override
+    public LoadRateStatus getBusIndexLoadRateStatus() {
+        return busIndexMapper.selectBusIndexLoadRateStatus();
+    }
+
+    @Override
     public PageResult<BusRedisDataRes> getBusRedisPage(BusIndexPageReqVO pageReqVO) {
         PageResult<BusIndexDO> busIndexDOPageResult = busIndexMapper.selectPage2(pageReqVO);
         List<BusIndexDO> list = busIndexDOPageResult.getList();
@@ -734,7 +739,6 @@ public class BusIndexServiceImpl implements BusIndexService {
             }
             JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
             String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id");
-            //String devKey = jsonObject.getString("dev_ip") + '_' + jsonObject.getString("bus_name");
             BusRedisDataRes busRedisDataRes = resMap.get(devKey);
             JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
             JSONArray volValue = lineItemList.getJSONArray("vol_value");
@@ -1115,6 +1119,7 @@ public class BusIndexServiceImpl implements BusIndexService {
             busTemRes.setBusName(busIndexDO.getBusName());
             res.add(busTemRes);
         }
+//        List<BusTemRes> res = BeanUtils.toBean(list, BusTemRes.class);
         Map<String, BusTemRes> resMap = res.stream().collect(Collectors.toMap(BusTemRes::getDevKey, Function.identity()));
         getPosition(res);
         for (Object o : redisList) {
@@ -1127,6 +1132,7 @@ public class BusIndexServiceImpl implements BusIndexService {
             JSONObject envItemList = jsonObject.getJSONObject("env_item_list");
             JSONArray temValue = envItemList.getJSONArray("tem_value");
             JSONArray temStatus = envItemList.getJSONArray("tem_status");
+            int status = 0;
             for (int i = 0; i < 4; i++) {
                 double tem = temValue.getDoubleValue(i);
                 Integer temSta = temStatus.getInteger(i);
@@ -1135,26 +1141,33 @@ public class BusIndexServiceImpl implements BusIndexService {
                     busTemRes.setATemStatus(temSta);
                     if (temSta != 0) {
                         busTemRes.setATemColor("red");
+                        status += 1;
                     }
                 } else if (i == 1) {
                     busTemRes.setBTem(tem);
                     busTemRes.setBTemStatus(temSta);
                     if (temSta != 0) {
                         busTemRes.setBTemColor("red");
+                        status += 1;
                     }
                 } else if (i == 2) {
                     busTemRes.setCTem(tem);
                     busTemRes.setCTemStatus(temSta);
                     if (temSta != 0) {
                         busTemRes.setCTemColor("red");
+                        status += 1;
                     }
                 } else if (i == 3) {
                     busTemRes.setNTem(tem);
                     busTemRes.setNTemStatus(temSta);
                     if (temSta != 0) {
                         busTemRes.setNTemColor("red");
+                        status += 1;
                     }
                 }
+            }
+            if(status == 0 && busTemRes.getStatus() == 1) {
+                busTemRes.setStatus(0);
             }
         }
         return new PageResult<>(res, busIndexDOPageResult.getTotal());
@@ -1201,6 +1214,46 @@ public class BusIndexServiceImpl implements BusIndexService {
         }
         return new PageResult<>(res, busIndexDOPageResult.getTotal());
     }
+
+    @Override
+    public Map<String, Object> getBusPFLowest(){
+        BusIndexPageReqVO pageReqVO = new BusIndexPageReqVO();
+        PageResult<BusIndexDO> busIndexDOResult = busIndexMapper.selectPage(pageReqVO);
+        List<BusIndexDO> list = busIndexDOResult.getList();
+        List<BusPFRes> res = new ArrayList<>();
+        List redisList = getMutiRedis(list);
+        Map<String, Object> map = new HashMap<>();
+        double pfInit = 1.0;
+        map.put("totalPf",pfInit);
+
+        for (BusIndexDO busIndexDO : list) {
+            BusPFRes busPFRes = new BusPFRes();
+            busPFRes.setStatus(busIndexDO.getRunStatus());
+            busPFRes.setDevKey(busIndexDO.getBusKey());
+            busPFRes.setLocation(busIndexDO.getIpAddr());
+            busPFRes.setBusName(busIndexDO.getBusName());
+            res.add(busPFRes);
+        }
+        Map<String, BusPFRes> resMap = res.stream().collect(Collectors.toMap(BusPFRes::getDevKey, Function.identity()));
+        getPosition(res);
+        for (Object o : redisList) {
+            if (Objects.isNull(o)) {
+                continue;
+            }
+            JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
+            String devKey = jsonObject.getString("dev_ip") + '-' + jsonObject.getString("bar_id");
+            BusPFRes busPFRes = resMap.get(devKey);
+            busPFRes.setTotalPf(jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getDoubleValue("power_factor"));
+
+            if (busPFRes.getTotalPf() <  (Double) map.get("totalPf") && busPFRes.getTotalPf() != 0 ) {
+                map.put("totalPf",busPFRes.getTotalPf());
+                map.put("location",busPFRes.getDevKey());
+                map.put("ipAddr",busPFRes.getLocation());
+            }
+        }
+        return map;
+    }
+
 
     @Override
     public PageResult<BusHarmonicRes> getBusHarmonicPage(BusIndexPageReqVO pageReqVO) {
@@ -2601,10 +2654,10 @@ public class BusIndexServiceImpl implements BusIndexService {
         //获取时间段内第一条和最后一条数据
         BusEleTotalDo endRealtimeDo = getEleData(startTime, endTime,
                 SortOrder.DESC,
-                BusConstants.BUS_ELE_TOTAL_REALTIME, id);
+                BUS_ELE_TOTAL_REALTIME, id);
         BusEleTotalDo startRealtimeDo = getEleData(startTime, endTime,
                 SortOrder.ASC,
-                BusConstants.BUS_ELE_TOTAL_REALTIME, id);
+                BUS_ELE_TOTAL_REALTIME, id);
         //结束时间电量
         double endEle = endRealtimeDo.getEleActive();
 
@@ -2877,7 +2930,7 @@ public class BusIndexServiceImpl implements BusIndexService {
             // 通过QueryBuilders构建ES查询条件，
             SearchSourceBuilder builder = new SearchSourceBuilder();
             //获取需要处理的数据
-            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + BusConstants.KEYWORD)
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD)
                             .gte(startTime)
                             .lt(endTime))
                     .must(QueryBuilders.termQuery(BUS_ID, id))));
@@ -2886,7 +2939,7 @@ public class BusIndexServiceImpl implements BusIndexService {
             // 设置聚合查询
             String top = "top";
             AggregationBuilder topAgg = AggregationBuilders.topHits(top)
-                    .size(1).sort(CREATE_TIME + BusConstants.KEYWORD, sortOrder);
+                    .size(1).sort(CREATE_TIME + KEYWORD, sortOrder);
 
             builder.aggregation(topAgg);
 

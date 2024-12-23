@@ -67,6 +67,8 @@ public interface BusIndexService {
 
     PageResult<BusPFRes> getBusPFPage(BusIndexPageReqVO pageReqVO);
 
+    Map<String, Object> getBusPFLowest();
+
     PageResult<BusHarmonicRes> getBusHarmonicPage(BusIndexPageReqVO pageReqVO);
 
     List<String> getDevKeyList();
@@ -132,4 +134,8 @@ public interface BusIndexService {
     LineMaxResVO getBusLineMax(BusIndexPageReqVO pageReqVO) throws IOException;
 
     BusIndexStatisticsResVO getBusIndexStatistics();
+
+    LoadRateStatus getBusIndexLoadRateStatus();
+
+
 }

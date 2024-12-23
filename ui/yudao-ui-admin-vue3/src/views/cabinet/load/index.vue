@@ -41,29 +41,6 @@
           </div>
         </div>
         <div class="line"></div>
-        <!-- <div class="overview">
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>总电能</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-        </div> -->
       </div>
     </template>
     <template #ActionBar>
@@ -161,6 +138,7 @@ import 'echarts-liquidfill'
 import { CabinetApi } from '@/api/cabinet/info'
 import LiquidBall from './compoent/LiquidBall.vue'
 
+const { push } = useRouter()
 const loading = ref(false)
 const isFirst = ref(true) // 是否第一次调用getTableData函数
 const navList = ref([])
@@ -331,6 +309,15 @@ const handleSwitchModal = (value) => {
     queryParams.pageSize = 10
   }
   getTableData(true)
+}
+
+const toMachineDetail = (row) => {
+  console.log("row",row)
+  const devKey = '172.16.101.2-1';
+  const busId = 6;
+  const location = '172.16.101.2-1';
+  const busName = 'iBusbar-1';
+  push({ path:'/cabinet/cab/cabinetPowerLoadDetail', state: { devKey, busId ,location,busName }})
 }
 
 onBeforeMount(() => {

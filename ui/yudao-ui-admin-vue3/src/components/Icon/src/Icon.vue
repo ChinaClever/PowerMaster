@@ -78,7 +78,6 @@ watch(
     <svg v-if="isLocal" :class="getSvgClass" aria-hidden="true">
       <use :xlink:href="symbolId" />
     </svg>
-
     <span v-else ref="elRef" :class="$attrs.class" :style="getIconifyStyle">
       <span :class="getSvgClass" :data-icon="symbolId"></span>
     </span>

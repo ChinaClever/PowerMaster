@@ -6,19 +6,13 @@
           <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div>
         </div> -->
         <div class="line"></div>
-        <!-- <div class="status">
+        <div class="status">
           <div class="box">
             <div class="top">
               <div class="tag"></div>{{ statusList[0].name }}
             </div>
             <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag empty"></div>小电流
-            </div>
-            <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
-          </div>
+          </div>         
           <div class="box">
             <div class="top">
               <div class="tag warn"></div>{{ statusList[1].name }}
@@ -29,12 +23,12 @@
             <div class="top">
               <div class="tag error"></div>{{ statusList[2].name }}
             </div>
-            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
+            <div class="value"><span class="number">{{statusNumber.greaterTwenty}}</span>个</div>
           </div>
-        </div> -->
+        </div>
         <div class="line"></div>
-
       </div>
+      
     </template>
     <template #ActionBar>
       <el-form
@@ -44,6 +38,20 @@
         :inline="true"
         label-width="68px"                          
       >
+      <el-form-item v-if="switchValue == 0 ">
+          <template v-for="(status, index) in statusList" :key="index">
+            <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
+          </template>
+        </el-form-item>
+        <el-button
+          type="primary"
+          plain
+          @click="openForm('create')"
+          v-if="switchValue == 0 "
+        >
+          <Icon icon="ep:plus" class="mr-5px" /> 谐波颜色范围
+        </el-button>
+
         <el-form-item >
           <el-checkbox-group  v-model="queryParams.status" @change="handleQuery">
             <el-checkbox :label="5" :value="5">在线</el-checkbox>
@@ -91,6 +99,7 @@
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="设备名称" align="center" prop="boxName" />
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column v-if="valueMode == 0" label="Ia" align="center" prop="acurThd" width="130px" >
           <template #default="scope" >
@@ -139,7 +148,7 @@
 
       <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
-          <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
+          <div class="devKey">{{ item.location != null ? item.location : item.devKey +'-' +item.boxName }}</div>
           <div class="content">
             <div class="icon">
               <div v-if="item.acurThd != null">
@@ -182,27 +191,58 @@
 
 
   <!-- 表单弹窗：添加/修改 -->
-  <!-- <CurbalanceColorForm ref="curBalanceColorForm" @success="getList" /> -->
+  <HarmonicColorForm ref="harmonicColorForm" @success="getList" />
 </template>
 
 <script setup lang="ts">
 // import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { IndexApi } from '@/api/bus/boxindex'
-// import CurbalanceColorForm from './CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
+import HarmonicColorForm from './HarmonicColorForm.vue'
+import { BoxHarmonicColorApi } from '@/api/bus/boxharmoniccolor'
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
 const { push } = useRouter()
 
-const curBalanceColorForm = ref()
+const harmonicColorForm = ref()
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(0)
 const valueMode = ref(0)
+
+const statusNumber = reactive({
+  lessFifteen : 0,
+  greaterFifteen : 0,
+  greaterTwenty : 0
+})
+
+const statusList = reactive([
+  {
+    name: '<5%',
+    selected: true,
+    value: 1,
+    cssClass: 'btn_normal',
+    activeClass: 'btn_normal normal'
+  },
+  {
+    name: '5%-20%',
+    selected: true,
+    value: 2,
+    cssClass: 'btn_warn',
+    activeClass: 'btn_warn warn'
+  },
+  {
+    name: '>20%',
+    selected: true,
+    value: 3,
+    cssClass: 'btn_error',
+    activeClass: 'btn_error error'
+  },
+])
 
 const devKeyList = ref([])
 const loadAll = async () => {
@@ -308,9 +348,22 @@ const getList = async () => {
   loading.value = true
   try {
     const data = await IndexApi.getBoxHarmonicPage(queryParams)
-
     list.value = data.list
+
+    //获取颜色范围
+    var range = await BoxHarmonicColorApi.getBoxHarmonicColor();
+    if(range != null){
+      statusList[0].name = '<' + range.rangeOne + '%';
+      statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
+      statusList[2].name = '>' + range.rangeFour + '%';
+    }
+
     var tableIndex = 0;
+
+    //获取颜色范围
+    var lessFifteen = 0;
+    var greaterFifteen = 0;
+    var greaterTwenty = 0;
 
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
@@ -321,7 +374,21 @@ const getList = async () => {
       obj.bcurThd = obj.bcurThd?.toFixed(2);
       obj.ccurThd = obj.ccurThd?.toFixed(2);
 
+      //获取颜色范围
+      if(obj.color == 1){
+        lessFifteen++;
+      } else if (obj.color == 2) {
+        greaterFifteen++;
+      } else if (obj.color == 3) {
+        greaterTwenty++;
+      }     
+
     });
+
+    //获取颜色范围
+    statusNumber.lessFifteen = lessFifteen;
+    statusNumber.greaterFifteen = greaterFifteen;
+    statusNumber.greaterTwenty = greaterTwenty;
 
     total.value = data.total
   } finally {
@@ -333,7 +400,20 @@ const getListNoLoading = async () => {
   try {
     const data = await IndexApi.getBoxHarmonicPage(queryParams)
     list.value = data.list
+    //获取颜色范围
+    var range = await BoxHarmonicColorApi.getBoxHarmonicColor();
+    if(range != null){
+      statusList[0].name = '<' + range.rangeOne + '%';
+      statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
+      statusList[2].name = '>' + range.rangeFour + '%';
+    }
+
     var tableIndex = 0;    
+
+    //获取颜色范围
+    var lessFifteen = 0;
+    var greaterFifteen = 0;
+    var greaterTwenty = 0;
 
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
@@ -344,7 +424,21 @@ const getListNoLoading = async () => {
       obj.bcurThd = obj.bcurThd?.toFixed(2);
       obj.ccurThd = obj.ccurThd?.toFixed(2);
 
+      //获取颜色范围
+      if(obj.color == 1){
+        lessFifteen++;
+      } else if (obj.color == 2) {
+        greaterFifteen++;
+      } else if (obj.color == 3) {
+        greaterTwenty++;
+      }   
+
     });
+
+    //获取颜色范围
+    statusNumber.lessFifteen = lessFifteen;
+    statusNumber.greaterFifteen = greaterFifteen;
+    statusNumber.greaterTwenty = greaterTwenty;
 
     total.value = data.total
   } catch (error) {
@@ -373,13 +467,29 @@ const toDetail = (row) =>{
   const devKey = row.devKey;
   const boxId = row.boxId
   const location = row.location ? row.location : devKey;
-  push({path: '/bus/boxmonitor/boxharmonicdetail', state: { devKey, boxId ,location }})
+  const name = row.boxName
+  push({path: '/bus/boxmonitor/boxharmonicdetail', state: { devKey, boxId ,location ,name}})
 }
 
 // const openNewPage = (scope) => {
 //   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
 //   window.open(url, '_blank');
 // }
+
+const handleSelectStatus = (index) => {
+  statusList[index].selected = !statusList[index].selected
+  const status =  statusList.filter(item => item.selected)
+  const statusArr = status.map(item => item.value)
+  if(statusArr.length != statusList.length){
+    queryParams.color = statusArr;
+    //queryParams.status = [5];
+  }else{
+    queryParams.color = null;
+    //queryParams.status = [];
+  }
+  
+  handleQuery();
+}
 
 
 /** 搜索按钮操作 */
@@ -391,13 +501,14 @@ const handleQuery = () => {
 /** 重置按钮操作 */
 const resetQuery = () => {
   queryFormRef.value.resetFields()
+  statusList.forEach((item) => item.selected = true)
   handleQuery()
 }
 
 /** 添加/修改操作 */
 
 const openForm = (type: string) => {
-  curBalanceColorForm.value.open(type)
+  harmonicColorForm.value.open(type)
 }
 
 /** 删除按钮操作 */

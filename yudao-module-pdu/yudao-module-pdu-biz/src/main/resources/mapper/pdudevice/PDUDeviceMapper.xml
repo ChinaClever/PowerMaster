@@ -21,4 +21,16 @@
             is_deleted =0
         </where>
     </select>
+    <select id="getBalancedDistribution"
+            resultType="cn.iocoder.yudao.module.pdu.controller.admin.pdudevice.vo.BalancedDistributionStatisticsVO">
+        select
+        sum(case when cur_unbalance_status = 1 then 1 else 0 end) as smallCurrent,
+        sum(case when cur_unbalance_status = 2 then 1 else 0 end) as lessFifteen,
+        sum(case when cur_unbalance_status = 3 then 1 else 0 end) as greaterFifteen,
+        sum(case when cur_unbalance_status = 4 then 1 else 0 end) as greaterThirty
+        from pdu_index
+        <where>
+            is_deleted =0
+        </where>
+    </select>
 </mapper>

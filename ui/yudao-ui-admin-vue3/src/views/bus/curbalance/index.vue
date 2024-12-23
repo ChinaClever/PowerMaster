@@ -67,7 +67,7 @@
           </el-button>
           <el-form-item class="inline-form-item">
             <el-checkbox-group v-model="queryParams.status" @change="handleQuery" class="inline-checkbox-group">
-        <el-checkbox :label="5" :value="5" class="inline-checkbox">在线</el-checkbox>
+        <el-checkbox :label="1" :value="1" class="inline-checkbox">在线</el-checkbox>
             </el-checkbox-group>
           </el-form-item>
           <el-form-item label="网络地址" prop="devKey" class="inline-form-item">
@@ -194,7 +194,7 @@
               link
               type="primary"
               @click="toDeatil(scope.row)"
-              v-if="scope.row.status != null && scope.row.status != 5"
+              v-if="scope.row.status != null && scope.row.status != 0"
             >
             设备详情
             </el-button>
@@ -202,7 +202,7 @@
               link
               type="danger"
               @click="handleDelete(scope.row.busId)"
-              v-if="scope.row.status == 5"
+              v-if="scope.row.status == 0"
             >
               删除
             </el-button>
@@ -230,13 +230,13 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
-            <el-tag type="info"  v-if="item.status == 5">离线</el-tag>
+            <el-tag type="info"  v-if="item.status == 0">离线</el-tag>
             <el-tag type="info"  v-if="item.color == 1">小电流不平衡</el-tag>
-            <el-tag type="success"  v-if="item.color == 2">&lt;15</el-tag>
-            <el-tag type="warning" v-if="item.color == 3">15%-30%</el-tag>
-            <el-tag type="danger" v-if="item.color == 4">&gt;30%</el-tag>
+            <el-tag type="success"  v-if="item.color == 2">{{ statusList[0].name }}</el-tag>
+            <el-tag type="warning" v-if="item.color == 3">{{ statusList[1].name }}</el-tag>
+            <el-tag type="danger" v-if="item.color == 4">{{ statusList[2].name }}</el-tag>
           </div>
-          <button class="detail" @click="showDialogCur(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <button class="detail" @click="showDialogCur(item)" v-if="item.status != null && item.status != 0">详情</button>
         </div>
       </div>
 
@@ -308,10 +308,10 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
-            <el-tag type="info"  v-if="item.status == 5">离线</el-tag>
+            <el-tag type="info"  v-if="item.status == 0">离线</el-tag>
             <el-tag type="info" v-else >电压不平衡</el-tag>
           </div>
-          <button class="detail" @click="showDialogVol(item)" v-if="item.status != null && item.status != 5">详情</button>
+          <button class="detail" @click="showDialogVol(item)" v-if="item.status != null && item.status != 0">详情</button>
         </div>
       </div>
 

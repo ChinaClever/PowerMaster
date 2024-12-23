@@ -35,6 +35,7 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusAisleBarQueryVO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.boxcurbalancecolor.BoxCurbalanceColorDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxcurbalancecolor.BoxCurbalanceColorMapper;
+import cn.iocoder.yudao.module.bus.dal.mysql.boxharmoniccolor.BoxHarmonicColorMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxindex.BoxIndexCopyMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 import cn.iocoder.yudao.module.bus.util.TimeUtil;
@@ -111,6 +112,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     private BoxIndexMapper boxIndexMapper;
     @Resource
     private BoxCurbalanceColorMapper boxCurbalanceColorMapper;
+
+    @Resource
+    private BoxHarmonicColorMapper boxHarmonicColorMapper;
 
     @Autowired
     private RedisTemplate redisTemplate;
@@ -511,11 +515,11 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             JSONArray loadRate = lineItemList.getJSONArray("load_rate");
             List<Double> rateList = loadRate.toList(Double.class);
             if (rateList.size() > 1) {
-                boxIndexRes.setALoadRate(loadRate.getDouble(0) / 100);
-                boxIndexRes.setBLoadRate(loadRate.getDouble(1) / 100);
-                boxIndexRes.setCLoadRate(loadRate.getDouble(2) / 100);
+                boxIndexRes.setALoadRate(loadRate.getInteger(0));
+                boxIndexRes.setBLoadRate(loadRate.getInteger(1));
+                boxIndexRes.setCLoadRate(loadRate.getInteger(2));
             } else {
-                boxIndexRes.setALoadRate(loadRate.getDouble(0) / 100);
+                boxIndexRes.setALoadRate(loadRate.getInteger(0));
             }
             rateList.sort(Collections.reverseOrder());
             Double biggest = rateList.get(0);
