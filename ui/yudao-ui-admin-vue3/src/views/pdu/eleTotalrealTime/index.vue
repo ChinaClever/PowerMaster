@@ -79,64 +79,100 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" >
-        <!-- 添加行号列 -->
+      <div>
+
+        <el-table  :data="list"  :show-overflow-tooltip="true" :header-cell-style="{background:'#f7f7f7',color:'#606266'}">
+        <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
+        <!-- 数据库查询 -->
+        <el-table-column label="所在位置" align="center" prop="location"  />
+        <el-table-column label= '网络地址' align= 'center' prop= 'location' width= '150px'/>
+        <el-table-column label= '开始电能' align='center' >
+        <el-table-column label='开始电能(kWh)' align= 'center' prop= 'eleActiveStart'  width= '130px'>
+        <template #default="scope">
+              <el-text line-clamp="2" v-if="scope.row.eleActiveStart">
+                {{ scope.row.eleActiveStart.toFixed(1) }}
+              </el-text>
+            </template>
+            </el-table-column>
+        <el-table-column label= '开始时间' align= 'center' prop='createTimeMin'   width= '130px'  >
+          <template #default="scope">
+              <el-text line-clamp="2" v-if="scope.row.createTimeMin">
+                {{ scope.row.createTimeMin }}
+              </el-text>
+            </template>
+        </el-table-column>
+      </el-table-column>
+      <el-table-column label= '结束电能' align= 'center' >
+          <el-table-column label= '结束电能(kWh)' align= 'center' prop= 'eleActiveEnd'  width= '130px'>
+            <template #default="scope">
+              <el-text line-clamp="2" v-if="scope.row.eleActiveEnd">
+                {{ scope.row.eleActiveEnd.toFixed(1) }}
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label= '结束时间' align= 'center' prop= 'createTimeMax'  width= '130px'  >
+            <template #default="scope">
+              <el-text line-clamp="2" v-if="scope.row.createTimeMax">
+                {{ scope.row.createTimeMax }}
+              </el-text>
+            </template>
+          </el-table-column>
+        </el-table-column>
+        <el-table-column label= '耗电量(kWh)' align= 'center' prop= 'eleActive'  width= '130px'>
+          <template #default="scope">
+              <el-text line-clamp="2" v-if="scope.row.eleActive">
+                {{ scope.row.eleActive.toFixed(1) }}
+              </el-text>
+            </template>
+          </el-table-column>
+      </el-table> 
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <!-- <el-table :datv-loading="loading" :data="list"  :show-overflow-tooltip="true" >
+            
         <el-table-column label="序号" align="center" width="80px">
           <template #default="{ $index }">
             {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
           </template>   
-        </el-table-column>
+        </el-table-column> -->
        <!-- 遍历其他列 -->
-      <template
-       v-for="column in tableColumns" :key="column.label">
-        <el-table-column
-          v-if="!column.children && column.istrue"
-          :key="column.prop"
-          :label="column.label"
-          :align="column.align"
-          :prop="column.prop"
-          :formatter="column.formatter"
-          :width="column.width"
-        >
-          <template #default="{ row }" v-if="column.slot === 'actions'">
-            <el-button link type="primary" @click="toDetails(row.location,row.createTimeMin,row.createTimeMax)">详情</el-button>
-          </template>
+        <!-- <el-table-column label= '所在位置'  align = 'center' prop= 'address' , istrue:true, width='150%'/>
+       <el-table-column label= '网络地址' align= 'center' prop= 'location' , istrue:true, width= '150px'/>
+       <el-table-column label= '开始电能' align='center' istrue: true>
+        <el-table-column label='开始电能(kWh)' align= 'center' prop= 'eleActiveStart' , istrue:true, formatter: formatEle ,width= '130px'/>
+        <el-table-column label= '开始时间' align= 'center' prop='createTimeMin' , formatter: formatTime1, width= '130px'  istrue:true/>
+      </el-table-column>
+        <el-table-column label= '结束电能' align= 'center' istrue: true>
+          <el-table-column label= '结束电能(kWh)' align= 'center' prop= 'eleActiveEnd' , istrue:true, formatter: formatEle,width= '130px'/>
+          <el-table-column label= '结束时间' align= 'center' prop= 'createTimeMax' , formatter: formatTime1, width= '130px'  istrue:true/>
         </el-table-column>
-        
-
-
-        <el-table-column
-          v-else-if="column.istrue"
-          :label="column.label"
-          :align="column.align"
-        >
-          <template v-for="child in column.children" :key="child.prop">
-            <el-table-column
-            v-if="child.istrue"
-              :label="child.label"
-              :align="child.align"
-              :prop="child.prop"
-              :formatter="child.formatter"
-              :width="child.width"
+        <el-table-column label= '耗电量(kWh)' align= 'center' prop= 'eleActive' ,istrue: true,formatter: formatEle ,width= '130px'/>
+        <el-table-column label="操作" align="center">
+          <template #default="scope">
+            <el-button
+              link
+              type="primary"
+              @click="toDetails(scope.row.location,scope.row.createTimeMin,scope.row.createTimeMax)"
             >
-              <template #default="{ row }" v-if="child.slot === 'actions'">
-                <el-button link type="primary" @click="toDetails(row.location,row.createTimeMin,row.createTimeMax)">详情</el-button>
-              </template>
-            </el-table-column>
+            设备详情
+            </el-button>
           </template>
         </el-table-column>
-<!--  -->
-
-      </template>
-      <!-- 超过一万条数据提示信息 -->
-      <template v-if="shouldShowDataExceedMessage" #append>
-        <tr>
-          <td colspan="列数" style="text-align: center; padding: 12px 0;">
-            <span style="margin:0 12px; color: red;">数据量过大，请筛选后查看更多数据。</span>
-          </td>
-        </tr>
-      </template>
-      </el-table>
+       
+ -->
+      
+      </div>
       <!-- 分页 -->
       <Pagination
         :total="total"
@@ -565,5 +601,9 @@ onMounted(() => {
 
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
-
+   
+   ::v-deep .el-table th,
+   ::v-deep .el-table td{
+    border-right: none;
+   }
 </style>

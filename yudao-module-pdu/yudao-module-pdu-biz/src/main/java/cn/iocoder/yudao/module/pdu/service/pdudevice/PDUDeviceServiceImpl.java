@@ -924,53 +924,54 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
     @Override
     public BalancedDistributionStatisticsVO getBalancedDistribution() {
-        Set<String> keys = redisTemplate.keys("packet:pdu:*");
-        List<Object> list = redisTemplate.opsForValue().multiGet(keys);
-        PDUCurbalanceColorDO PDUCurbalanceColorDO = PDUCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
-        BalancedDistributionStatisticsVO vo = new BalancedDistributionStatisticsVO();
-        for (Object o : list) {
-            JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-            JSONObject pduTgData = jsonObject.getJSONObject("pdu_data").getJSONObject("pdu_total_data");
-            JSONArray curArr = jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list").getJSONArray("cur_value");
-
-            JSONArray curAlarmArr = jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list").getJSONArray("cur_alarm_max");
-            curAlarmArr.sort(Collections.reverseOrder());
-            double maxVal = curAlarmArr.getDouble(0);
-            List<Double> temp = curArr.toList(Double.class);
-            Double curUnbalance;
-
-            temp.sort(Collections.reverseOrder());
-            if (temp.size() >= 2) {
-                double a = temp.get(0) - temp.get(2);
-                curUnbalance = pduTgData.getDoubleValue("cur_unbalance");
-
-                if (PDUCurbalanceColorDO == null) {
-                    if (a >= maxVal * 0.2) {
-                        if (curUnbalance < 15) {
-                            vo.setLessFifteen(vo.getLessFifteen()+1);
-                        } else if (curUnbalance < 30) {
-                            vo.setGreaterFifteen(vo.getGreaterFifteen()+1);
-                        } else {
-                            vo.setGreaterThirty(vo.getGreaterThirty()+1);
-                        }
-                    } else {
-                        vo.setSmallCurrent(vo.getSmallCurrent() + 1);
-                    }
-                } else {
-                    if (a >= maxVal * 0.2) {
-                        if (curUnbalance < PDUCurbalanceColorDO.getRangeOne()) {
-                            vo.setLessFifteen(vo.getLessFifteen()+1);
-                        } else if (curUnbalance < PDUCurbalanceColorDO.getRangeFour()) {
-                            vo.setGreaterFifteen(vo.getGreaterFifteen()+1);
-                        } else {
-                            vo.setGreaterThirty(vo.getGreaterThirty()+1);
-                        }
-                    } else {
-                        vo.setSmallCurrent(vo.getSmallCurrent() + 1);
-                    }
-                }
-            }
-        }
+        BalancedDistributionStatisticsVO vo = pDUDeviceMapper.getBalancedDistribution();
+//        Set<String> keys = redisTemplate.keys("packet:pdu:*");
+//        List<Object> list = redisTemplate.opsForValue().multiGet(keys);
+//        PDUCurbalanceColorDO PDUCurbalanceColorDO = PDUCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
+//        BalancedDistributionStatisticsVO vo = new BalancedDistributionStatisticsVO();
+//        for (Object o : list) {
+//            JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
+//            JSONObject pduTgData = jsonObject.getJSONObject("pdu_data").getJSONObject("pdu_total_data");
+//            JSONArray curArr = jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list").getJSONArray("cur_value");
+//
+//            JSONArray curAlarmArr = jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list").getJSONArray("cur_alarm_max");
+//            curAlarmArr.sort(Collections.reverseOrder());
+//            double maxVal = curAlarmArr.getDouble(0);
+//            List<Double> temp = curArr.toList(Double.class);
+//            Double curUnbalance;
+//
+//            temp.sort(Collections.reverseOrder());
+//            if (temp.size() >= 2) {
+//                double a = temp.get(0) - temp.get(2);
+//                curUnbalance = pduTgData.getDoubleValue("cur_unbalance");
+//
+//                if (PDUCurbalanceColorDO == null) {
+//                    if (a >= maxVal * 0.2) {
+//                        if (curUnbalance < 15) {
+//                            vo.setLessFifteen(vo.getLessFifteen()+1);
+//                        } else if (curUnbalance < 30) {
+//                            vo.setGreaterFifteen(vo.getGreaterFifteen()+1);
+//                        } else {
+//                            vo.setGreaterThirty(vo.getGreaterThirty()+1);
+//                        }
+//                    } else {
+//                        vo.setSmallCurrent(vo.getSmallCurrent() + 1);
+//                    }
+//                } else {
+//                    if (a >= maxVal * 0.2) {
+//                        if (curUnbalance < PDUCurbalanceColorDO.getRangeOne()) {
+//                            vo.setLessFifteen(vo.getLessFifteen()+1);
+//                        } else if (curUnbalance < PDUCurbalanceColorDO.getRangeFour()) {
+//                            vo.setGreaterFifteen(vo.getGreaterFifteen()+1);
+//                        } else {
+//                            vo.setGreaterThirty(vo.getGreaterThirty()+1);
+//                        }
+//                    } else {
+//                        vo.setSmallCurrent(vo.getSmallCurrent() + 1);
+//                    }
+//                }
+//            }
+//        }
         return vo;
     }
 

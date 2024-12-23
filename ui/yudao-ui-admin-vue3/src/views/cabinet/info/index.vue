@@ -139,7 +139,7 @@
       </el-table>
 
 
-   <el-table v-show="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
+   <el-table v-if="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
          <el-table-column label="位置" min-width="110" align="center">
             <template #default="scope">
                <div>{{scope.row.name}}</div>
@@ -177,7 +177,7 @@
         v-model:limit="queryParams.pageSize"
         @pagination="handleSwitchLogicRemoveModal(2,false)"
       />
-      <div v-show="!switchValue && listPage.length > 0" class="arrayContainer">
+      <div v-if="!switchValue && listPage.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in listPage" :key="item.id" @dblclick="handleArrayDbclick(item.cabinet_key)">
           <div class="content">
             <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->

@@ -88,7 +88,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true">
+      <el-table v-loading="loading" :data="list"  :show-overflow-tooltip="true">
         <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="80px">
           <template #default="{ $index }">
@@ -502,7 +502,7 @@ onMounted(() => {
   }
 
   ::v-deep .el-table .el-table__header th {
-    background-color: #F5F7FA;
+    background-color: #f7f7f7;
     color: #909399;
 }
 </style>

@@ -91,7 +91,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" >
+      <el-table v-loading="loading" :data="list"  :show-overflow-tooltip="true" :header-cell-style="{background:'#f7f7f7',color:'#606266'}">
         <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="80px">
           <template #default="{ $index }">
@@ -290,7 +290,7 @@ const initChart = () => {
       xAxis: {type: 'category', data: getPageNumbers(queryParams.pageNo)},
       yAxis: { type: 'value', name: "kWh"},
       series: [
-        {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
+        {name:"耗电量",  type: 'bar', data: eqData.value.map(num => formatEQ(num,1)), label: { show: true, position: 'top' }, barWidth: 50},
       ],
     });
     instance.appContext.config.globalProperties.rankChart = rankChart;
@@ -306,7 +306,7 @@ watch(() => queryParams.granularity, () => {
 });
 
 const tableColumns = ref([
-  { label: '所在位置', align: 'center', prop: 'address' , istrue:true, width: '150%'},
+  { label: '所在位置', align: 'center', prop: 'address' , istrue:true},
   { label: '网络地址', align: 'center', prop: 'location' , istrue:true, width: '150px'},
   { label: '记录日期', align: 'center', prop: 'create_time', formatter: formatTime, width: '150px' , istrue:true},
   { label: '开始电能', align: 'center', istrue: true, children: [
@@ -658,5 +658,8 @@ queryParams.ipArray = undefined;
 
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
-
+  ::v-deep .el-table th,
+   ::v-deep .el-table td{
+    border-right: none;
+   }
 </style>

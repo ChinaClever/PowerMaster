@@ -65,7 +65,7 @@
           </template>
         </el-form-item>
         <el-button
-          v-show="switchValue == 2 || switchValue == 3"
+          v-if="switchValue == 2 || switchValue == 3"
           type="primary"
           plain
           @click="openForm('create')"
@@ -142,14 +142,13 @@
       </el-form>
     </template>
     <template #Content>
+     <div v-if="switchValue && list.length > 0" style="height: 700px;overflow: hidden;overflow-y: auto;">
       <el-table
         v-show="switchValue == 3"
         v-loading="loading"
         :data="list"
-        :stripe="true"
         :show-overflow-tooltip="true"
         @cell-dblclick="toPDUDisplayScreen"
-        :header-cell-style="{background:'#f7f7f7'}"
       >
         <el-table-column label="编号" align="center" prop="tableId" width="80px" >
           <template #default="{ $index }">
@@ -257,10 +256,15 @@
         </el-table-column>
       </el-table>
 
-      <div v-show="switchValue == 2 && list.length > 0" class="arrayContainer">
+      <div v-if="switchValue == 2 && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
+            <div class="icon">
+              <div v-if="item.curUnbalance != null">
+                <span style="font-size: 20px">{{ item.curUnbalance }}%</span><br />不平衡度
+              </div>
+            </div>
             <div class="info">
               <div v-if="item.acur != null">A相电流：{{ item.acur.toFixed(2) }}A</div>
               <div v-if="item.bcur != null">B相电流：{{ item.bcur.toFixed(2) }}A</div>
@@ -268,11 +272,7 @@
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
-            <div class="icon">
-              <div v-if="item.curUnbalance != null">
-                <span style="font-size: 20px">{{ item.curUnbalance }}%</span><br />不平衡度
-              </div>
-            </div>
+            
            
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
@@ -291,54 +291,15 @@
           <button
             v-if="item.status != null && item.status != 5"
             class="detail"
-            @click="showDialogCur(item)"
+            @click="showDialogVol(item)"
             >详情</button
           >
         </div>
       </div>
 
-      <el-dialog v-model="dialogVisibleCur"  >
-        <!-- 自定义的头部内容（可选） -->
-        <template #header>
-          <CardTitle title="电流不平衡" />
-          <span style="margin-left: 1vw"
-            ><el-tag size="large">{{ curlocation }}</el-tag></span
-          >
-        </template>
-        <!-- 自定义的主要内容 -->
-        <div class="custom-content">
-          <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
-            <div class="IechartBar">
-              <Echart :options="ABarOption" :height="300" />
-            </div>
-          </el-card>
-          <el-card class="cardChilc" shadow="hover">
-            <div class="IechartBar" :style="{backgroundColor: colorVolList[balanceObj.colorIndex].color}">
-              <Echart :options="ALineOption" :height="300" />
-            </div>
-          </el-card>
-          <el-card class="cardChilc" shadow="hover">
-            <div class="box" :style="{ borderColor: colorList[balanceObj.colorIndex].color }">
-              <div class="value">{{ balanceObj.imbalanceValueA }}%</div>
-              <div
-                class="day"
-                :style="{ backgroundColor: colorList[balanceObj.colorIndex].color }"
-                >{{ colorList[balanceObj.colorIndex].name }}</div
-              >
-              <el-tooltip
-                class="box-item"
-                effect="dark"
-                content="三相电流不平衡： 不平衡度%=（MAX相电流-三相平均电流）/三相平均电流×100%"
-                placement="right"
-              >
-                <div @click.prevent="" class="question">?</div>
-              </el-tooltip>
-            </div>
-          </el-card>
-        </div>
-      </el-dialog>
+      
 
-      <div v-show="switchValue == 0 && list.length > 0" class="arrayContainer">
+      <div v-if="switchValue == 0 && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
@@ -370,14 +331,49 @@
       </div>
 
       <el-dialog v-model="dialogVisibleVol" @close="handleClose" width="70%">
-        <!-- 自定义的头部内容（可选） -->
+
+        
+        
         <template #header>
-          <CardTitle title="电压不平衡" />
-          <span style="margin-left: 1vw"
-            ><el-tag size="large">{{ vollocation }}</el-tag></span
-          >
+          <div><h2>均衡配电详情</h2></div> 
+          <div>所在位置：{{location ==null ? '未绑定设备':location  }} 
+            网络地址：{{vollocation}} 
+            <span style="padding-left: 530px;">更新时间: {{ dataUpdateTime }} </span>
+          </div>
+          
         </template>
-        <!-- 自定义的主要内容 -->
+       
+         <!-- 自定义的主要内容 -->
+        <div class="custom-content">
+          <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
+            <div class="IechartBar">
+              <Echart :options="ABarOption" :height="300" />
+            </div>
+          </el-card>
+          <el-card class="cardChilc" shadow="hover">
+            <div class="IechartBar" :style="{backgroundColor: colorVolList[balanceObj.colorIndex].color}">
+              <Echart :options="ALineOption" :height="300" />
+            </div>
+          </el-card>
+          <el-card class="cardChilc" shadow="hover">
+            <div class="box" :style="{ borderColor: colorList[balanceObj.colorIndex].color }">
+              <div class="value">{{ balanceObj.imbalanceValueA }}%</div>
+              <div
+                class="day"
+                :style="{ backgroundColor: colorList[balanceObj.colorIndex].color }"
+                >{{ colorList[balanceObj.colorIndex].name }}</div
+              >
+              <el-tooltip
+                class="box-item"
+                effect="dark"
+                content="三相电流不平衡： 不平衡度%=（MAX相电流-三相平均电流）/三相平均电流×100%"
+                placement="right"
+              >
+                <div @click.prevent="" class="question">?</div>
+              </el-tooltip>
+            </div>
+          </el-card>
+        </div>
         <div class="custom-content">
           <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
             <div class="IechartBar">
@@ -405,7 +401,7 @@
           </el-card>
         </div>
       </el-dialog>
-
+     </div>
       <Pagination
         :total="total"
         :page-size-arr="pageSizeArr"
@@ -582,12 +578,21 @@ const BLineOption = ref<EChartsOption>({
   xAxis:{},
   series: []
 })
+// 格式化耗电量列数据，保留1位小数
+function formatEQ(value: number, decimalPlaces: number | undefined){
+  if (!isNaN(value)) {
+    return Number(value).toFixed(decimalPlaces);
+  } else {
+      return null; // 或者其他默认值
+  }
+}
+
 
 const getBalanceDetail = async (item) => {
   const res = await PDUDeviceApi.balanceDetail({ devKey: item.devKey })
   console.log('res', res)
   if (res.cur_value) {
-    const cur_valueA = res.cur_value
+    const cur_valueA = res.cur_value.map(num => formatEQ(num,2))
     // const max = Math.max(...cur_valueA) // 最大值
     // // 计算平均值
     // let sum = 0
@@ -642,7 +647,7 @@ const getBalanceDetail = async (item) => {
     }
   }
   if (res.vol_value) {
-    const vol_value = res.vol_value
+    const vol_value = res.vol_value.map(w => formatEQ(w,1))
     BBarOption.value = {
       title: {
         text: '电压柱形图',
@@ -726,19 +731,19 @@ const getBalanceTrend = async (item) => {
           name: 'A',
           type: 'line',
           symbol: 'none',
-          data: res.map((item) => item.cur[0].curValue)
+          data: res.map((item) => formatEQ(item.cur[0].curValue,2))
         },
         {
           name: 'B',
           type: 'line',
           symbol: 'none',
-          data: res.map((item) => item.cur[1].curValue)
+          data: res.map((item) => formatEQ(item.cur[1].curValue,2))
         },
         {
           name: 'C',
           type: 'line',
           symbol: 'none',
-          data: res.map((item) => item.cur[2].curValue)
+          data: res.map((item) => formatEQ(item.cur[2].curValue,2))
         }
       ]
     }if (res[0].vol && res[0].vol.length == 1) {
@@ -766,19 +771,19 @@ const getBalanceTrend = async (item) => {
           name: 'A',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.vol[0].volValue),
+          data: res.map(item => formatEQ(item.vol[0].volValue,1)),
         },
         {
           name: 'B',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.vol[1].volValue),
+          data: res.map(item => formatEQ(item.vol[1].volValue,1)),
         },
         {
           name: 'C',
           type: 'line',
           symbol: 'none',
-          data: res.map(item => item.vol[2].volValue),
+          data: res.map(item => formatEQ(item.vol[2].volValue,1)),
         },
       ]
     }
@@ -1678,14 +1683,16 @@ onActivated(() => {
 
 
 ::v-deep .el-table .el-table__header th {
-  background-color: #f5f7fa;
+  background-color: #f7f7f7;
   color: #909399;
+  height: 60px;
 }
 
 :deep(.el-dialog) {
   top: -5%;
   width: 90%;
-  height: 80%;
+  height: 90%;
+  margin-top: 100px
 }
 
 .custom-content {
