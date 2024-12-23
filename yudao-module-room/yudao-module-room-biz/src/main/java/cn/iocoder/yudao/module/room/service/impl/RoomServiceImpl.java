@@ -8,6 +8,9 @@ import cn.iocoder.yudao.framework.common.dto.aisle.AisleSaveVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetDTO;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetSaveVo;
 import cn.iocoder.yudao.framework.common.dto.cabinet.CabinetVo;
+import cn.iocoder.yudao.framework.common.dto.room.RoomIndexDTO;
+import cn.iocoder.yudao.framework.common.dto.room.RoomIndexVo;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEleTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.room.ele.RoomEqTotalMonthDo;
@@ -23,11 +26,14 @@ import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomSavesVo;
 import cn.iocoder.yudao.framework.common.enums.*;
 import cn.iocoder.yudao.framework.common.mapper.*;
+import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.HttpUtil;
 import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
+import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.module.aisle.api.AisleApi;
 import cn.iocoder.yudao.module.cabinet.api.CabinetApi;
+import cn.iocoder.yudao.module.room.controller.admin.roomindex.vo.RoomIndexPageReqVO;
 import cn.iocoder.yudao.module.room.dto.*;
 import cn.iocoder.yudao.module.room.service.RoomService;
 import cn.iocoder.yudao.module.room.vo.RoomSaveVo;
@@ -1319,6 +1325,41 @@ public class RoomServiceImpl implements RoomService {
                 }
             }
             return index.getId();
+        }finally {
+            log.info("刷新计算服务缓存 --- " + adder);
+            HttpUtil.get(adder);
+        }
+    }
+
+    @Override
+    public PageResult<JSONObject> getDeletedRoomPage(RoomIndexVo pageReqVO) {
+        List<JSONObject> result = new ArrayList<>();
+        try {
+            Page<RoomIndexDTO> page = new Page<>(pageReqVO.getPageNo(), pageReqVO.getPageSize());
+            Page<RoomIndexDTO> indexDTOPage = roomIndexMapper.selectRoomleteList(page, pageReqVO);
+            indexDTOPage.getRecords().forEach(dto -> {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("id", dto.getId());
+                jsonObject.put("roomName", dto.getRoomName());
+                jsonObject.put("updateTime", dto.getUpdateTime());
+                result.add(jsonObject);
+            });
+            return new PageResult<>(result, indexDTOPage.getTotal());
+        } catch (Exception e) {
+            log.error("获取数据失败：", e);
+        }
+        return new PageResult<>(new ArrayList<>(), 0L);
+    }
+
+
+    //恢复已删除机房
+    @Override
+    public void getRestoreRoom(int id) {
+        try {
+            int affectedRows  = roomIndexMapper.restoreByDeleteRoom(id);
+            if (affectedRows > 0){
+                roomCfgMapper.restoreByRoomCfg(id);
+            }
         }finally {
             log.info("刷新计算服务缓存 --- " + adder);
             HttpUtil.get(adder);

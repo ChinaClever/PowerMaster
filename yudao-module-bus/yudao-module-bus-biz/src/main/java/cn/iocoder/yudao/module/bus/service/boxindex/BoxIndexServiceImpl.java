@@ -35,6 +35,7 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusAisleBarQueryVO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.boxcurbalancecolor.BoxCurbalanceColorDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxcurbalancecolor.BoxCurbalanceColorMapper;
+import cn.iocoder.yudao.module.bus.dal.mysql.boxharmoniccolor.BoxHarmonicColorMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxindex.BoxIndexCopyMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 import cn.iocoder.yudao.module.bus.util.TimeUtil;
@@ -111,6 +112,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     private BoxIndexMapper boxIndexMapper;
     @Resource
     private BoxCurbalanceColorMapper boxCurbalanceColorMapper;
+
+    @Resource
+    private BoxHarmonicColorMapper boxHarmonicColorMapper;
 
     @Autowired
     private RedisTemplate redisTemplate;

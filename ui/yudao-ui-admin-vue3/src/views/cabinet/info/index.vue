@@ -39,6 +39,7 @@
         ref="queryFormRef"
         :inline="true"
         label-width="68px"
+        style='height:54px'
       >
         <el-form-item>
           <template v-for="(status, index) in statusList" :key="index">
@@ -83,7 +84,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 1" style="width: 100%;" v-loading="loading" :data="listPage" @cell-dblclick="handleDbclick">
+      <el-table v-show="switchValue == 1" style="height: 700px;overflow: hidden;overflow-y: auto;" v-loading="loading" :data="listPage" @cell-dblclick="handleDbclick">
         <el-table-column label="位置" min-width="110" align="center">
           <template #default="scope">
             <div>{{scope.row.roomName}}-{{scope.row.cabinetName}}</div>
@@ -134,7 +135,7 @@
       </el-table>
 
 
-   <el-table v-show="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
+   <el-table v-if="switchValue == 2" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
          <el-table-column label="位置" min-width="110" align="center">
             <template #default="scope">
                <div>{{scope.row.name}}</div>
@@ -171,7 +172,7 @@
         v-model:limit="queryParams.pageSize"
         @pagination="handleSwitchLogicRemoveModal(2,false)"
       />
-      <div v-show="!switchValue && listPage.length > 0" class="arrayContainer">
+      <div v-if="!switchValue && listPage.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in listPage" :key="item.id" @dblclick="handleArrayDbclick(item.cabinet_key)">
           <div class="content">
             <!-- <div><img class="icon" alt="" src="@/assets/imgs/jg.jpg" /></div> -->
@@ -190,7 +191,7 @@
           <div v-if="item.status == 3" class="status-error">告警</div>
           <div v-if="item.status == 4" class="status-unbound">未绑定</div>
           <div v-if="item.status == 5" class="status-offline">离线</div>
-          <button class="detail" @click.prevent="toMachineDetail(item.cabinet_key)">详情</button>
+          <button class="detail" @click.prevent="toMachineDetail(item)">详情</button>
         </div>
       </div>
       <Pagination
@@ -378,6 +379,7 @@ const getTableData = async(reset = false) => {
       runStatus: status.map(item => item.value),
       company: queryParams.company
     })
+    console.log('res',res)
     if (res.list) {
       const list = res.list.map(item => {
         const tableItem = {
@@ -495,14 +497,17 @@ const handleSelectStatus = (index, event) => {
 
 // 跳转详情页
 const toMachineDetail = (key) => {
-  
+  console.log('key',key.cabinet_key.split('-')[0]);
+  console.log('key',key.cabinet_key.split('-')[1]);
+  console.log('key',key);
   const devKey = '172.16.101.2-1';
   const busId = 6;
-  const location = null;
-  const busName = 'iBusbar-1';
-  push({path: '/cabinet/cab/detail', state: { devKey, busId , location , busName }})
-  //console.log('toMachineDetail!', key.split('-')[1])
-  //push({path: '/cabinet/cab/detail', state: { id: key.split('-')[1] }})
+  const id = key.cabinet_key.split('-')[1]
+  const roomId = key.cabinet_key.split('-')[0];
+  const type = 'hour';
+  const location = key.roomName;
+  const busName = key.cabinetName;
+  push({path: '/cabinet/cab/detail', state: { devKey, busId , location , busName ,id ,roomId , type}})
 }
 
 const handleCheck = (row) => {
@@ -917,8 +922,9 @@ onBeforeMount(() => {
 
 @media screen and (max-width:2048px) and (min-width:1600px){
   .arrayContainer {
-    //height: 600px;
-    overflow: auto;
+    height: 700px;
+    overflow: hidden;
+    overflow-y: auto;
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
@@ -1181,5 +1187,9 @@ onBeforeMount(() => {
 }
 :deep(.el-form .el-form-item) {
   margin-right: 0;
+}
+
+:deep(.el-card){
+  --el-card-padding:5px;
 }
 </style>

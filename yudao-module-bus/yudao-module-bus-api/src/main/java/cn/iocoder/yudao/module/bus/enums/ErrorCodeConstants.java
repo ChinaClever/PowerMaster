@@ -13,4 +13,6 @@ public interface ErrorCodeConstants {
     ErrorCode STATIS_CONFIG_NOT_EXISTS = new ErrorCode(11111249, "母线计算服务配置不存在");
 
     ErrorCode DC_CONFIG_NOT_EXISTS = new ErrorCode(11111250, "母线数据采集配置不存在");
+
+    ErrorCode BOX_HARMONIC_COLOR_NOT_EXISTS = new ErrorCode(11111251, "插接箱谐波颜色不存在");
 }
