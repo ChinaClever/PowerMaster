@@ -33,6 +33,7 @@
           </div>
         </div> -->
         <div style="font-size:14px; margin-top:45px; margin-left:20px">
+          <div ><span>最低功率因数</span></div>
           <div>
             <span>所在位置：</span>
             <span>{{ lowlLocation }}</span>
