@@ -77,9 +77,9 @@
           </div>
         </div>
       </div>
-      <div class="right-right-part">
+      <div class="right-right-part" style="color: black;font-weight:bold;">
         <div style="margin:10px;">负载率曲线</div>
-        <MarkLine style="margin-top:-40px;" v-if="visContro.loadRateVis"  width="100%" height="100%" :list="resultData"/>
+        <MarkLine style="margin-top:-40px;" v-if="visContro.gaugeVis"  width="100%" height="100%" :list="resultData"/>
       </div>
     </div>
     <div class="bottom-part">
@@ -336,21 +336,9 @@ const getBusIdAndLocation =async () => {
  }
 }
 
-const getPeakDemand =async () => {
- try {
-    const data = await IndexApi.getPeakDemand(queryParams);
-    if (data != null){
-        peakDemand.value = data.peakDemand.toFixed(3);
-        peakDemandTime.value = data.peakDemandTime
-    }
- } finally {
- }
-}
-
 //刷新数据
 const flashChartData = async () =>{
     await getRedisData();
-    await getPeakDemand();
     await getLoadRateList();
 }
 
@@ -405,7 +393,6 @@ onMounted(async () => {
   // await getLineChartData();
   devKeyList.value = await loadAll();
   await getRedisData();
-  await getPeakDemand();
   await getLoadRateList();
   // initChart1();
   // initChart2();

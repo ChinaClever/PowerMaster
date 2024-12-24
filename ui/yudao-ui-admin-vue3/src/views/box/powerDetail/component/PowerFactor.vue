@@ -95,7 +95,7 @@ const echartsOption = reactive({
       },
       data: [
         {
-          value: props.loadFactor.pf,
+          value: 0.88,
           name: '功率因数'
         }
       ]

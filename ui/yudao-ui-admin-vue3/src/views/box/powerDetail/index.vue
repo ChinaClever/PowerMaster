@@ -27,7 +27,8 @@
       </div>
       <div class="right-part">
         <div class="center-top-part">
-          <div style="color: black;margin:10px 0 0 10px;font-weight: bold;">实时功率</div>
+          <div style="color: black;margin:10px 0 0 10px;font-weight: bold;">输出位数据</div>
+          <RealTimePower style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
         </div>
         <div class="center-top-right-part">
           <div class="label-container">
@@ -39,9 +40,15 @@
           <div class="label-container">
             <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">无功功率:</span><span style="font-size:16px;">{{redisData?.powReactiveTotal}}KVA</span>
           </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">电能:</span><span style="font-size:16px;">{{redisData?.powApparentTotal}}KVA</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.powApparentTotal}}KVA</span>
+          </div>
         </div>
       </div>
-      <div class="right-right-part">
+      <div class="right-right-part" style="color: black;font-weight:bold;">
         <div style="margin:10px;">负载率曲线</div>
       </div>
     </div>
@@ -50,6 +57,7 @@
         width: 50%;
         height: 100%;">
           <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">电压</div>
+          <AVol style="margin-top:-30px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
         </div>
         <div style="display: inline-block;
             position: absolute;
@@ -72,6 +80,7 @@
         width: 50%;
         height: 100%;">
           <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">电流</div>
+          <ACur style="margin-top:-10px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
         </div>
         <div style="display: inline-block;
             position: absolute;
@@ -116,7 +125,8 @@
       <div style="display: inline-block;
         width: 50%;
         height: 100%;">
-          <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">B路电压</div>
+          <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">功率</div>
+          <AVol style="margin-top:-30px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
         </div>
         <div style="display: inline-block;
             position: absolute;
@@ -124,13 +134,13 @@
             height: 100%;
             top: 50px;">
           <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ua:</span><span style="font-size:16px;">{{resultData?.volB[0]}}V</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">有功功率</span><span style="font-size:16px;">{{resultData?.volB[0]}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ub:</span><span style="font-size:16px;">{{resultData?.volB[1]}}V</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">无功功率</span><span style="font-size:16px;">{{resultData?.volB[1]}}V</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Uc:</span><span style="font-size:16px;">{{resultData?.volB[2]}}V</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">现在功率</span><span style="font-size:16px;">{{resultData?.volB[2]}}V</span>
           </div>
         </div>
     </div>
@@ -161,6 +171,7 @@
         width: 50%;
         height: 100%;">
           <div style="color: black;margin:10px 0 0 10px;font-weight:bold;">温度</div>
+          <AVol style="margin-top:-30px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="resultData"/>
         </div>
         <div style="display: inline-block;
             position: absolute;
@@ -181,6 +192,20 @@
           </div>
         </div>
     </div>
+    <div style="width:98.5%;heigth:100%;">
+      <div style="margin-top:30px;background-color:#fff;">回路数据</div>
+      <el-table :data="tableData" border style="width: 100%;">
+        <el-table-column align="center" prop="date" label="编号" width="100" />
+        <el-table-column align="center" prop="name" label="所在位置" />
+        <el-table-column align="center" prop="address" label="电压" width="150"/>
+        <el-table-column align="center" prop="address" label="电流" width="150" />
+        <el-table-column align="center" prop="address" label="有功功率" width="150" />
+        <el-table-column align="center" prop="address" label="无功功率" width="150" />
+        <el-table-column align="center" prop="address" label="现在功率" width="150"/>
+        <el-table-column align="center" prop="address" label="功率因数" width="150" />
+        <el-table-column align="center" prop="address" label="电能" width="150" />
+      </el-table>
+    </div>
   </div>
 </div> 
 </template>
@@ -196,6 +221,7 @@ import BVol from './component/BVol.vue'
 import ACur from './component/ACur.vue'
 import BCur from './component/BCur.vue'
 import EnvironmentCopy from './component/EnvironmentCopy.vue'
+import PowerFactor from './component/PowerFactor.vue'
 import { IndexApi } from '@/api/bus/boxindex'
 import { CabinetApi } from '@/api/cabinet/detail'
 import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'
@@ -438,8 +464,8 @@ body .TransformerMonitor .center-part .left-part {
         display: inline-block;
         width: 50%;
         height: 100%;
-        top: 30%;
         margin-bottom: 5px;
+        top:50px;
         position: absolute;
     }
     
@@ -484,7 +510,7 @@ body .TransformerMonitor .center-part .left-part {
 
 @media screen and (max-width:2048px) and (min-width:1600px) {
     .centainer-height{
-        height:93vh
+        height:150vh
     }
 
     .TransformerMonitor .center-part .left-part {
@@ -514,7 +540,7 @@ body .TransformerMonitor .center-part .left-part {
         display: inline-block;
         width: 50%;
         height: 100%;
-        top: 30%;
+        top:50px;
         margin-bottom: 5px;
         position: absolute;
     }
@@ -589,7 +615,7 @@ body .TransformerMonitor .center-part .left-part {
         display: inline-block;
         width: 50%;
         height: 100%;
-        top: 30%;
+        top:50px;
         margin-bottom: 5px;
         position: absolute;
     }

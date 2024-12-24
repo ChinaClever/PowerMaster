@@ -1,10 +1,10 @@
 <template>
-  <Echart :height="height" :width="width" :options="echartsOption" />
+  <Echart :height="height" :width="width" :options="chartOptions" />
 </template>
 
 <script lang="ts" setup>
+import { defineProps, computed, reactive, onUnmounted } from 'vue';
 import 'echarts';
-import { reactive, watch, defineProps, onUnmounted } from 'vue';
 
 // 定义组件接收的属性
 const props = defineProps({
@@ -22,8 +22,8 @@ const props = defineProps({
   }
 });
 
-// 初始化ECharts配置
-const echartsOption = reactive({
+// 使用 computed 属性来创建 ECharts 配置
+const chartOptions = computed(() => ({
   tooltip: {
     trigger: 'item'
   },
@@ -39,22 +39,19 @@ const echartsOption = reactive({
       },
       label: {
         show: true,
-        position: 'inside', // 将标签显示在饼图内部
-        formatter: (params) => {
-          // 返回具体的数值
-          return `${params.value}V`;
-        },
+        position: 'inside',
+        formatter: (params) => `${params.value}V`,
         fontSize: 14,
         fontWeight: 'bold'
       },
       data: [
-        { value: props.loadFactor.volB[0], name: 'Ua', itemStyle: { color: '#E5B849' } },
-        { value: props.loadFactor.volB[1], name: 'Ub', itemStyle: { color: '#C8603A' } },
-        { value: props.loadFactor.volB[2], name: 'Uc', itemStyle: { color: '#AD3762' } },
+        { value: 121, name: 'Ua', itemStyle: { color: '#E5B849' } },
+        { value: 211, name: 'Ub', itemStyle: { color: '#C8603A' } },
+        { value: 112, name: 'Uc', itemStyle: { color: '#AD3762' } },
       ]
     }
   ]
-});
+}));
 
 onUnmounted(() => {
   console.log('组件已卸载******');

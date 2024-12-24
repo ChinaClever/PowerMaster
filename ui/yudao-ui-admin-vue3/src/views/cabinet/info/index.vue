@@ -832,8 +832,9 @@ onBeforeMount(() => {
 
 @media screen and (min-width:2048px){
   .arrayContainer {
-    //height: 600px;
-    overflow: auto;
+    height: 700px;
+    overflow: hidden;
+    overflow-y: auto;
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
@@ -963,7 +964,6 @@ onBeforeMount(() => {
     height: 700px;
     overflow: hidden;
     overflow-y: auto;
-    //overflow: auto;
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
@@ -1090,8 +1090,9 @@ onBeforeMount(() => {
 
 @media screen and (max-width:1600px){
   .arrayContainer {
-    //height: 600px;
-    overflow: auto;
+    height: 700px;
+    overflow: hidden;
+    overflow-y: auto;
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
