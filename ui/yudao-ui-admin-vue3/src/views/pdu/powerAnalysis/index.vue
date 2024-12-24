@@ -84,10 +84,11 @@
 
          <el-form-item >
            <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-           <el-button type="success" plain @click="handleExport" :loading="exportLoading">
+           
+         </el-form-item>
+         <el-button type="success" plain @click="handleExport" :loading="exportLoading" style="float: right;margin-right: 10px;">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
-         </el-form-item>
       </el-form>
     </template>
     <template #Content>

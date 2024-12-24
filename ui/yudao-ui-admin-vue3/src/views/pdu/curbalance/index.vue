@@ -54,14 +54,11 @@
         label-width="68px"
       >
         <el-form-item v-if="switchValue == 2 || switchValue == 3">
-          <button class="bthnn" type="button" @click="toggleAllStatus">全部</button>
+          <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus1">
+            全部 
+          </button>
           <template v-for="(status, index) in statusList" :key="index">
-            
-            <button
-              :class="status.selected ? status.activeClass : status.cssClass"
-              @click.prevent="handleSelectStatus(index)"
-              >{{ status.name }}</button
-            >
+            <button :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus1(status.value)">{{status.name}}</button>
           </template>
         </el-form-item>
         <el-button
@@ -112,7 +109,10 @@
         </el-form-item>
         <div style="float: left">
           <el-button
-            @click="pageSizeArr = [24, 36, 48, 96];queryParams.pageSize = 24;getList();switchValue = 2
+            @click="pageSizeArr = [24, 36, 48, 96];
+            queryParams.pageSize = 24;
+            getList();
+            switchValue = 2
             "
             :type="switchValue == 2 ? 'primary' : ''"
             ><Icon icon="ep:grid" style="margin-right: 4px" />电流阵列</el-button
@@ -123,7 +123,7 @@
               pageSizeArr = [24, 36, 48, 96];
               queryParams.pageSize = 24;
               getList();
-              switchValue = 0;
+              switchValue = 99;
             "
             :type="switchValue == 0 ? 'primary' : ''"
             ><Icon icon="ep:grid" style="margin-right: 4px" />电压阵列</el-button
@@ -145,7 +145,6 @@
      <div v-if="switchValue && list.length > 0" style="height: 700px;overflow: hidden;overflow-y: auto;">
       <el-table
         v-show="switchValue == 3"
-        v-loading="loading"
         :data="list"
         :show-overflow-tooltip="true"
         @cell-dblclick="toPDUDisplayScreen"
@@ -242,7 +241,7 @@
               @click="toPDUDisplayScreen(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 5"
             >
-              设备详情
+              详情
             </el-button>
             <el-button
               link
@@ -260,11 +259,6 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="icon">
-              <div v-if="item.curUnbalance != null">
-                <span style="font-size: 20px">{{ item.curUnbalance }}%</span><br />不平衡度
-              </div>
-            </div>
             <div class="info">
               <div v-if="item.acur != null">A相电流：{{ item.acur.toFixed(2) }}A</div>
               <div v-if="item.bcur != null">B相电流：{{ item.bcur.toFixed(2) }}A</div>
@@ -272,6 +266,12 @@
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
+            <div class="icon" style="margin-left: 50px">
+              <div v-if="item.curUnbalance != null">
+                <span style="font-size: 20px">{{ item.curUnbalance }}%</span><br />不平衡度
+              </div>
+            </div>
+            
             
            
           </div>
@@ -299,7 +299,7 @@
 
       
 
-      <div v-if="switchValue == 0 && list.length > 0" class="arrayContainer">
+      <div v-if="switchValue == 99 && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
@@ -351,7 +351,7 @@
             </div>
           </el-card>
           <el-card class="cardChilc" shadow="hover">
-            <div class="IechartBar" :style="{backgroundColor: colorVolList[balanceObj.colorIndex].color}">
+            <div class="IechartBar">
               <Echart :options="ALineOption" :height="300" />
             </div>
           </el-card>
@@ -381,7 +381,7 @@
             </div>
           </el-card>
           <el-card class="cardChilc" shadow="hover">
-            <div class="IechartBar" :style="{backgroundColor: colorVolList[balanceObj.colorIndex].color}">
+            <div class="IechartBar" >
               <Echart :options="BLineOption" :height="300"/>
             </div>
           </el-card>
@@ -697,6 +697,24 @@ const getBalanceDetail = async (item) => {
   balanceObj.imbalanceValueB = res.volUnbalance
   balanceObj.colorIndex = res.color - 1
   console.log('balanceObj',balanceObj)
+}
+const butColor = ref(0);
+
+const onclickColor = ref(-1);
+const toggleAllStatus1 = () => {
+  butColor.value = 0;
+  onclickColor.value = -1;
+  queryParams.color = [0,1,2,3,4];
+  queryParams.status = [0,1,2,3,4];
+  handleQuery();
+}
+const handleSelectStatus1 = (index) => {
+  butColor.value = 1;
+  onclickColor.value = index;
+  queryParams.color = [index];
+ 
+  
+  handleQuery();
 }
 
 // 获取pdu电流趋势
@@ -1044,10 +1062,9 @@ const router = useRouter()
 // };
 
 const toPDUDisplayScreen = (row) => {
-  const devKey = row.devKey
-  const pduId = row.id
-  const location = row.location ? row.location : devKey
-  push({ path: '/pdu/pdudevicebalance', state: { devKey, pduId, location } })
+  const foundItem = list.value.find(item => item.devKey === row.devKey);
+  showDialogVol(foundItem);
+  
 }
 // const openNewPage = (scope) => {
 //   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
@@ -1055,6 +1072,7 @@ const toPDUDisplayScreen = (row) => {
 // }
 
 const handleSelectStatus = (index) => {
+
   statusList[index].selected = !statusList[index].selected
   const status = statusList.filter((item) => item.selected)
   const statusArr = status.map((item) => item.value)
@@ -1261,12 +1279,14 @@ onActivated(() => {
 .btn_warn,
 .btn_error {
   width: 58px;
-  height: 35px;
+  height: 32px;
   cursor: pointer;
   border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: none;
+  border-radius: 5px;
   &:hover {
     color: #7bc25a;
   }
@@ -1749,4 +1769,34 @@ onActivated(() => {
    ::v-deep .el-table td{
     border-right: none;
    }
+.btnallSelected {
+  margin-right: 10px;
+  width: 58px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #409EFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.btnallNotSelected{
+  margin-right: 10px;
+  width: 58px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: #000000;
+  border: 1px solid #409EFF;
+  border-radius: 5px;
+  &:hover {
+    color: #7bc25a;
+  }
+}
 </style>
