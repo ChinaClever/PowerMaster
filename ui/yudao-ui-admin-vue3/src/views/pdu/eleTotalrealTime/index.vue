@@ -81,10 +81,14 @@
     <template #Content>
       <div>
 
-        <el-table  :data="list"  :show-overflow-tooltip="true" :header-cell-style="{background:'#f7f7f7',color:'#606266',height:'30px'}">
-        <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
-        <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location"  />
+        <el-table  :data="list"  :show-overflow-tooltip="true" width="1800px"  :header-cell-style="{background:'#f7f7f7',color:'#606266',height:'30px'}">
+          <el-table-column label="编号" align="center" prop="tableId" width="80px" >
+          <template #default="{ $index }">
+            {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
+          </template>  
+        </el-table-column>
+                <!-- 数据库查询 -->
+        <el-table-column label="所在位置" align="center" prop="address"  />
         <el-table-column label= '网络地址' align= 'center' prop= 'location' width= '150px'/>
         <el-table-column label= '开始电能' align='center' >
         <el-table-column label='开始电能(kWh)' align= 'center' prop= 'eleActiveStart'  width= '130px'>

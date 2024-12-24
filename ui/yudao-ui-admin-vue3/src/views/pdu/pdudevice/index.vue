@@ -284,13 +284,13 @@
                 <span class="text-pf">PF</span>
               </div>                    
             </div>
-            <div class="info">
+            <!-- <div class="info">
               
               <div v-if=" item.pow != null ">有功功率：{{item.pow}}kW</div>    
-              <div v-if="item.apparentPow != null">视在功率：{{item.apparentPow}}kVA</div>
+              <div v-if="item.apparentPow != null">视在功率：{{item.apparentPow}}kVA</div> -->
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
-            </div>
+            <!-- </div> -->
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status">

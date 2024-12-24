@@ -30,7 +30,9 @@
         <ContentWrap class="hhh" style="position:relative;">
           <div style="margin:auto;
                  position:absolute;
-                 top:0;left:0;bottom:0;right:0;margin-top: 15px;">
+                 top:0;left:0;bottom:0;right:0;margin-top: 15px;
+                 margin-left: 5px;
+                 margin-right: 5px;">
         <slot name="ActionBar" ></slot>
       </div>
       </ContentWrap>

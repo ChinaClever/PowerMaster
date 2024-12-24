@@ -151,33 +151,18 @@
      <div v-if="switchValue && list.length > 0" style="height: 700px;overflow: hidden;overflow-y: auto;">
     <!-- 三相数据显示 -->
       <el-table v-show="switchValue == 2 && valueMode == 0 && MaxLineId > 1" v-loading="loading" :data="list"  :show-overflow-tooltip="true"   @cell-dblclick="toPDUDisplayScreen" >
-        <el-table-column label="编号" align="center" prop="tableId" width="80px" />
+        <el-table-column label="编号" align="center" prop="tableId" width="80px" >
+          <template #default="{ $index }">
+            {{ $index + 1 + (queryParams.pageNo - 1) * queryParams.pageSize }}
+          </template>  
+        </el-table-column>
+      
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="180px" />
-        <el-table-column label="运行状态" align="center" prop="status" >
-          <template #default="scope">
-            <el-tag  v-if="scope.row.status == 0 && scope.row.apparentPow == 0">空载</el-tag>
-            <el-tag  v-if="scope.row.status == 0 && scope.row.apparentPow != 0">正常</el-tag>
-            <el-tag type="warning" v-if="scope.row.status == 1">预警</el-tag>
-            <el-popover
-                placement="top-start"
-                title="告警内容"
-                :width="500"
-                trigger="hover"
-                :content="scope.row.pduAlarm"
-                v-if="scope.row.status == 2"
-              >
-                <template #reference>
-                  <el-tag type="danger">告警</el-tag>
-                </template>
-              </el-popover>
-            <el-tag type="info" v-if="scope.row.status == 4">故障</el-tag>
-            <el-tag type="info" v-if="scope.row.status == 5">离线</el-tag>
-          </template>
-        </el-table-column>
+        
         
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip" width="125px"/>
-        <el-table-column label="L1最大电流(kA)" align="center" prop="l1MaxCur" width="100px" >
+        <el-table-column label="L1最大电流(kA)" align="center" prop="l1MaxCur" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" >
               {{ scope.row.l1MaxCur }}
@@ -185,7 +170,7 @@
           </template>
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l1MaxCurTime"/>
-        <el-table-column label="L2最大电流(A)" align="center" prop="l2MaxCur" width="100px" >
+        <el-table-column label="L2最大电流(A)" align="center" prop="l2MaxCur" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
               {{ scope.row.l2MaxCur }}
@@ -193,7 +178,7 @@
           </template>
         </el-table-column>
         <el-table-column label="发生时间" align="center" prop="l2MaxCurTime"  />
-        <el-table-column label="L3最大电流(A)" align="center" prop="l3MaxCur" width="100px" >
+        <el-table-column label="L3最大电流(A)" align="center" prop="l3MaxCur" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.l2MaxCur !== null && scope.row.l2MaxCur !== undefined ">
               {{ scope.row.l3MaxCur }}
@@ -430,7 +415,7 @@
           <el-button @click="lineidBeforeChartUnmount()" style="float:right" show-close="false" >关闭</el-button>
           <div><h2>需量电流详情</h2></div> 
           <div>所在位置：{{onlyDevKey}} 
-            网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}} <span style="padding-left: 400px">起始时间：{{ createTimes }} 结束时间：{{ endTimes }}</span>
+            网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}} <span style="padding-left: 350px">起始时间：{{ createTimes }} 结束时间：{{ endTimes }}</span>
           </div>
           
         </template>
@@ -1606,12 +1591,6 @@ const showDialogOne = (id,type,flagValue) => {
   margin-bottom: 20px;
   background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
 }
-::v-deep .el-table .el-table__header th{
-  background-color: #f5f7fa;
-  color: #909399;
-  height: 80px;
-
-} 
 
 :deep(.el-dialog) {
   height: 70%;
