@@ -3,15 +3,19 @@
 </template>
 
 <script setup>
+import { string } from "vue-types"
+
 const props = defineProps({
   curChartData: {
     type: Array,
-    required: true
+    required: true,
   },
   createTimeData:{
-    
     type: Array,
-    required: true
+    required: true,
+  },
+  timeRadio:{
+    required: true,
   }
 })
 
@@ -21,16 +25,25 @@ const L3Data = ref()
 
 console.log('curChartData',props.curChartData.value)
 console.log('createTimeData',props.createTimeData)
+console.log('timeRadio', props.timeRadio)
+
+//if(props.curChartData.value != null){
+//  if(props.timeRadio === '近一小时'){
+//    L1Data.value = props.curChartData.value.L1.map((item) => item.cur_value.toFixed(2));
+//    L2Data.value = props.curChartData.value.L2.map((item) => item.cur_value.toFixed(2));
+//    L3Data.value = props.curChartData.value.L3.map((item) => item.cur_value.toFixed(2));
+//  }else{
+//    L1Data.value = props.curChartData.value.L1.map((item) => item.cur_value_avg_value.toFixed(2))
+//    L2Data.value = props.curChartData.value.L2.map((item) => item.cur_value_avg_value.toFixed(2))
+//    L3Data.value = props.curChartData.value.L3.map((item) => item.cur_value_avg_value.toFixed(2))
+//  }
+//}
 
 if(props.curChartData.value != null){
   L1Data.value = props.curChartData.value.L1.map((item) => item.cur_value.toFixed(2));
   L2Data.value = props.curChartData.value.L2.map((item) => item.cur_value.toFixed(2));
   L3Data.value = props.curChartData.value.L3.map((item) => item.cur_value.toFixed(2));
 }
-
-console.log('L1Data',L1Data.value)
-console.log('L2Data',L2Data.value)
-console.log('L3Data',L3Data.value)
 
 const chartOptions = {
   title: { text: ''},
@@ -60,6 +73,27 @@ const chartOptions = {
     {name: 'B-L3', type: 'line', symbol: 'none', data: L3Data.value},
   ],
 }
+
+watch( ()=>props.timeRadio, async(value)=>{
+  if ( value == '近一小时'){
+    L1Data.value = props.curChartData.value.L1.map((item) => item.cur_value.toFixed(2));
+    L2Data.value = props.curChartData.value.L2.map((item) => item.cur_value.toFixed(2));
+    L3Data.value = props.curChartData.value.L3.map((item) => item.cur_value.toFixed(2));
+  }else if (value == '近一天'){
+    L1Data.value = props.curChartData.value.L1.map((item) => item.cur_value_avg_value.toFixed(2))
+    L2Data.value = props.curChartData.value.L2.map((item) => item.cur_value_avg_value.toFixed(2))
+    L3Data.value = props.curChartData.value.L3.map((item) => item.cur_value_avg_value.toFixed(2))
+  }else if (value == '近三天'){
+    L1Data.value = props.curChartData.value.L1.map((item) => item.cur_value_avg_value.toFixed(2))
+    L2Data.value = props.curChartData.value.L2.map((item) => item.cur_value_avg_value.toFixed(2))
+    L3Data.value = props.curChartData.value.L3.map((item) => item.cur_value_avg_value.toFixed(2))
+  }else{
+    L1Data.value = props.curChartData.value.L1.map((item) => item.cur_value_avg_value.toFixed(2))
+    L2Data.value = props.curChartData.value.L2.map((item) => item.cur_value_avg_value.toFixed(2))
+    L3Data.value = props.curChartData.value.L3.map((item) => item.cur_value_avg_value.toFixed(2))
+  }
+  await getLineChartData();
+});
 </script>
 
 <style lang="less" scope>

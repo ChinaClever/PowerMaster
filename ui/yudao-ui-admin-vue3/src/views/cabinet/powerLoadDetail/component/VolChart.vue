@@ -6,12 +6,14 @@
 const props = defineProps({
   curChartData: {
     type: Array,
-    required: true
+    required: true,
   },
   createTimeData:{
-    
     type: Array,
-    required: true
+    required: true,
+  },
+  timeRadio:{
+    required: true,
   }
 })
 
@@ -19,18 +21,17 @@ const L1Data = ref()
 const L2Data = ref()
 const L3Data = ref()
 
-console.log('curChartData',props.curChartData.value)
-console.log('createTimeData',props.createTimeData)
-
 if(props.curChartData.value != null){
-  L1Data.value = props.curChartData.value.L1.map((item) => item.vol_value.toFixed(1));
-  L2Data.value = props.curChartData.value.L2.map((item) => item.vol_value.toFixed(1));
-  L3Data.value = props.curChartData.value.L3.map((item) => item.vol_value.toFixed(1));
+  if(props.timeRadio === '近一小时'){
+    L1Data.value = props.curChartData.value.L1.map((item) => item.vol_value.toFixed(1))
+    L2Data.value = props.curChartData.value.L2.map((item) => item.vol_value.toFixed(1))
+    L3Data.value = props.curChartData.value.L3.map((item) => item.vol_value.toFixed(1))
+  }else{
+    L1Data.value = props.curChartData.value.L1.map((item) => item.vol_value_avg_value.toFixed(1));
+    L2Data.value = props.curChartData.value.L2.map((item) => item.vol_value_avg_value.toFixed(1));
+    L3Data.value = props.curChartData.value.L3.map((item) => item.vol_value_avg_value.toFixed(1));
+  }
 }
-
-console.log('L1Data',L1Data.value)
-console.log('L2Data',L2Data.value)
-console.log('L3Data',L3Data.value)
 
 const chartOptions = {
   title: { text: ''},

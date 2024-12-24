@@ -314,10 +314,10 @@ const handleSwitchModal = (value) => {
 
 const toMachineDetail = (row) => {
   console.log("row",row)
-  const devKey = '172.16.101.2-1';
-  const busId = 6;
-  const location = '172.16.101.2-1';
-  const busName = 'iBusbar-1';
+  const devKey = '192.168.1.200-3';
+  const busId = 2;
+  const location = '192.168.1.200-3';
+  const busName = 'iBusbar-3';
   push({ path:'/cabinet/cab/cabinetPowerLoadDetail', state: { devKey, busId ,location,busName }})
 }
 

@@ -85,10 +85,10 @@
           </div>
           <div  class="block-part">
             <div  class="content-part">
-              <p >额定容量<span  class="vale-part BColor">{{redisData?.finstalledCapacity}}</span>kVA </p>
-              <p >视在功率<span  class="vale-part BColor">{{redisData?.s}}</span>kVA</p>
-              <p >有功功率<span  class="vale-part BColor">{{redisData?.p}}</span>kW</p>
-              <p >无功功率<span  class="vale-part BColor">{{redisData?.q}}</span>kVar</p>
+              <p>额定容量<span  class="vale-part BColor">{{redisData?.finstalledCapacity}}</span>kVA </p>
+              <p>视在功率<span  class="vale-part BColor">{{redisData?.s}}</span>kVA</p>
+              <p>有功功率<span  class="vale-part BColor">{{redisData?.p}}</span>kW</p>
+              <p>无功功率<span  class="vale-part BColor">{{redisData?.q}}</span>kVar</p>
             </div>
             <div  class="content-part">
               <p  >A相 <span  class="vale-part BColor" :style="{ backgroundColor: getBackgroundColor(redisData?.curStatusA) }">{{redisData?.ia}}</span>A </p>
@@ -652,10 +652,8 @@ body .TransformerMonitor .center-part .center-bottom-part {
 }
 
 .TransformerMonitor .center-part .center-bottom-part .block-part .content-part {
-    width: 14%;
+    width: 16%;
     height: 100%;
-    min-width: 155px;
-    padding-left: 20px;
     display: inline-block;
     vertical-align: top;
     padding-top: 15px
