@@ -1,7 +1,7 @@
 <template>
   <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="navList" navTitle="PDU配电">
     <template #NavInfo>
-      <div >
+      <div>
         <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/PDU.jpg" /></div>
 
@@ -40,16 +40,15 @@
     <template #ActionBar>
       <!-- 搜索工作栏 -->
       <el-form
-        class="-mb-15px"
         :model="queryParams"
         ref="queryFormRef"
         :inline="true"
         label-width="68px"
-        v-show="switchValue !== 2"                          
+        v-show="switchValue !== 2"
       >
-        <el-form-item style="margin-left: 5px">
+        <el-form-item style="margin-left: 5px;">
           <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">
-            全部 
+            全部
           </button>
           <template v-for="(status, index) in statusList" :key="index">
             <button :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
@@ -1154,8 +1153,14 @@ onActivated(() => {
 
 @media screen and (min-width:2048px){
   .arrayContainer {
+    width:100%;
+    height: 700px;
+    overflow: hidden;
+    overflow-y: auto;
     display: flex;
     flex-wrap: wrap;
+    align-content: flex-start;
+
     .arrayItem {
       width: 20%;
       height: 140px;
@@ -1227,11 +1232,13 @@ onActivated(() => {
 
 @media screen and (max-width:2048px) and (min-width:1600px) {
   .arrayContainer {
-    display: flex;
-    flex-wrap: wrap;
+    width:100%;
     height: 700px;
     overflow: hidden;
     overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
 
     .arrayItem {
       width: 25%;
@@ -1305,8 +1312,14 @@ onActivated(() => {
 
 @media screen and (max-width:1600px) {
   .arrayContainer {
+    width:100%;
+    height: 700px;
+    overflow: hidden;
+    overflow-y: auto;
     display: flex;
     flex-wrap: wrap;
+    align-content: flex-start;
+
     .arrayItem {
       width: 33%;
       height: 140px;

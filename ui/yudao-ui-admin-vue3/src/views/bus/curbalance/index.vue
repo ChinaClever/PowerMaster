@@ -1622,10 +1622,7 @@ onActivated(() => {
 }
 
 :deep(.el-dialog) {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  width: 100%;
+  width: 80%;
 }
 
 .custom-content {

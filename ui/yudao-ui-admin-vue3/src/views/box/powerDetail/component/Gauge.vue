@@ -67,7 +67,7 @@ const echartsOption = reactive( {
       },
       data: [
         {
-          value: props.loadFactor,
+          value: 88,
         }
       ]
     }
