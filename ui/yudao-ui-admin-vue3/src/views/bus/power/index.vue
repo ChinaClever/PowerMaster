@@ -78,12 +78,9 @@
         v-show="switchValue !== 4"  
       > <el-form-item>
         <el-form-item v-show="valueMode != 3 && valueMode != 4">
-          <!--<template v-for="(status,index) in statusList" :key="index">
-            <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
-          </template>-->
-          <button :class="normalFlag ? 'btn_normal normal': 'btn_normal'" @click.prevent="normalFlag = !normalFlag;handleSelectStatus(1)">正常</button>
-          <button :class="reportFlag ? 'btn_error error':  'btn_error'" @click.prevent="reportFlag = !reportFlag;handleSelectStatus(2)">告警</button>
-          <button :class="offlineFlag ? 'btn_offline offline': 'btn_offline'" @click.prevent="offlineFlag = !offlineFlag;handleSelectStatus(0)">离线</button>
+          <template v-for="(status,index) in statusList" :key="index">
+            <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="status.selected=!status.selected;handleSelectStatus(status.value)">{{status.name}}</button>
+          </template>
         </el-form-item>
         <el-form-item label="网络地址" prop="devKey" style="margin-left:10px">
           <el-autocomplete
@@ -175,10 +172,15 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
+      <el-table style="height:700px;" v-if="switchValue == 3" v-loading="loading" :data="list"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
+        <el-table-column label="状态" min-width="50" align="center">
+          <template #default="scope">
+            <div :style="{color: statusList[scope.row.status].color}">{{statusList[scope.row.status] && statusList[scope.row.status].name}}</div>
+          </template>
+        </el-table-column>
         <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" />
+        <el-table-column label="所在位置" min-width="110" align="center" prop="location" />
         <el-table-column label="设备名称" align="center" prop="busName" />
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column v-if="valueMode == 0" label="A相电流(A)" align="center" prop="acur" width="130px" >
@@ -314,6 +316,7 @@
               link
               type="primary"
               @click="toDeatil(scope.row)"
+              style="color:#fff;background-color:skyblue;border:1px solid skyblue;width:100px;height:30px;"
               v-if="scope.row.status != null && scope.row.status != 0"
             >
             设备详情
@@ -322,6 +325,7 @@
               link
               type="danger"
               @click="handleDelete(scope.row.busId)"
+              style="color:#fff;background-color:#fa3333;border:1px solid #fa3333;width:50px;height:30px;"
               v-if="scope.row.status == 0"
             >
               删除
@@ -330,7 +334,7 @@
         </el-table-column>
       </el-table>    
     <!-- 查询已删除-->
-      <el-table v-show="switchValue == 4" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
+      <el-table style="height:700px;" v-if="switchValue == 4" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -362,7 +366,7 @@
         v-model:limit="queryDeletedPageParams.pageSize"
         @pagination="getDeletedList"
       />     
-      <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
+      <div v-if="switchValue == 0  && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
@@ -483,26 +487,26 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" v-if="valueMode == 0">
-            <el-tag type="info" v-if="item.acurStatus == null || item.status == 0 || item.status == null" >离线</el-tag>
-            <el-tag type="danger" v-else-if="item.acurStatus != 0 || item.bcurStatus != 0  || item.ccurStatus != 0 " >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
+            <el-tag type="info" v-if="item.status === 0" >离线</el-tag>
+            <el-tag type="danger" v-else-if="item.status === 2" >告警</el-tag>
+            <el-tag v-else-if="item.status === 1" >正常</el-tag>
           </div>
           <div class="status" v-if="valueMode == 1">
-            <el-tag type="info" v-if="item.avolStatus == null || item.status == 0 || item.status == null" >离线</el-tag>
-            <el-tag type="danger" v-else-if="item.avolStatus != 0 || item.bvolStatus != 0 || item.cvolStatus != 0 " >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
+            <el-tag type="info" v-if="item.status === 0" >离线</el-tag>
+            <el-tag type="danger" v-else-if="item.status === 2" >告警</el-tag>
+            <el-tag v-else-if="item.status === 1" >正常</el-tag>
           </div>
           <div class="status" v-if="valueMode == 2">
-            <el-tag type="info" v-if="item.aactivePowStatus == null || item.status == 0 || item.status == null" >离线</el-tag>
-            <el-tag type="danger" v-else-if="item.aactivePowStatus != 0 || item.bactivePowStatus != 0 || item.cactivePowStatus != 0" >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
+            <el-tag type="info" v-if="item.status === 0" >离线</el-tag>
+            <el-tag type="danger" v-else-if="item.status === 2" >告警</el-tag>
+            <el-tag v-else-if="item.status === 1" >正常</el-tag>
           </div>
           <div class="status" v-if="valueMode == 3">
-            <el-tag type="info" v-if="item.status == null ||  item.status == 0" >离线</el-tag>
-            <el-tag v-else >正常</el-tag>
+            <el-tag type="info" v-if="item.status === 0" >离线</el-tag>
+            <el-tag v-else-if="item.status === 1" >正常</el-tag>
           </div>
           <div class="status" v-if="valueMode == 4">
-            <el-tag type="info" v-if="item.status == null ||  item.status == 0" >离线</el-tag>
+            <el-tag type="info" v-if="item.status === 0" >离线</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>
           <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 0" >详情</button>
@@ -569,14 +573,16 @@ const statusList = reactive([
     selected: true,
     value: 1,
     cssClass: 'btn_normal',
-    activeClass: 'btn_normal normal'
+    activeClass: 'btn_normal normal',
+    color: '#3bbb00'
   },
   {
     name: '告警',
     selected: true,
     value: 2,
     cssClass: 'btn_error',
-    activeClass: 'btn_error error'
+    activeClass: 'btn_error error',
+    color: '#fa3333'
   }
 ])
 const devKeyList = ref([])
@@ -890,11 +896,12 @@ const getNavList = async() => {
 }
 
 const toDeatil = (row) =>{
-  const devKey = row.devKey;
-  const busId = row.busId;
-  const location = row.location != null ? row.location : row.devKey
-  const busName = row.busName;
-  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location , busName }})
+  //const devKey = row.devKey;
+  //const busId = row.busId;
+  //const location = row.location != null ? row.location : row.devKey
+  //const busName = row.busName;
+  //push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location , busName }})
+  push({path: '/bus/busmonitor/buspowerdetail'})
 }
 
 // const openNewPage = (scope) => {
@@ -931,7 +938,6 @@ const filterData = () => {
 }
 
 const handleSelectStatus = (index) => {
-  //statusList[index].selected = !statusList[index].selected
   const status =  statusList.filter(item => item.selected)
   const statusArr = status.map(item => item.value)
   queryParams.status = statusArr;
@@ -1376,6 +1382,9 @@ onActivated(() => {
   background-color: #f5f7fa;
   color: #909399;
   height: 80px;
+}
 
+:deep(.el-card){
+  --el-card-padding:5px;
 }
 </style>
