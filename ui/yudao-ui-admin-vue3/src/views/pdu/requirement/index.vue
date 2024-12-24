@@ -44,7 +44,7 @@
     </div> 
     <div v-for="item in maxCurAll" :key="item.devKey" class="description-item">
       <span>所在位置 :</span>
-      <span>{{ item.devKey}}</span>
+      <span>{{ item.location}}</span>
     </div>     
     <div v-for="item in maxCurAll" :key="item.devKey" class="description-item">
       <span>网络地址 :</span>
@@ -413,9 +413,9 @@
         <!-- 自定义的头部内容（可选） -->
         <template #header>
           <el-button @click="lineidBeforeChartUnmount()" style="float:right" show-close="false" >关闭</el-button>
-          <div><h2>需量电流详情</h2></div> 
+          <div><h3>需量电流详情</h3></div> 
           <div>所在位置：{{onlyDevKey}} 
-            网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}} <span style="padding-left: 350px">起始时间：{{ createTimes }} 结束时间：{{ endTimes }}</span>
+            网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}} <span style="padding-left: 550px">{{ createTimes }} - {{ endTimes }}</span>
           </div>
           
         </template>
