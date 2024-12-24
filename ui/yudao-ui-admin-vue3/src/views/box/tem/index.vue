@@ -35,27 +35,23 @@
         <div class="status">
           <div class="box">
             <div class="top"> <div class="tag"></div>正常 </div>
-            <div class="value"
-              ><span class="number">{{leftDataList.normal}}</span>个</div
-            >
+            <div class="value">
+              <span class="number">{{leftDataList.normal}}</span>个</div>
           </div>
           <div class="box">
             <div class="top"> <div class="tag empty"></div>离线 </div>
-            <div class="value"
-              ><span class="number">{{leftDataList.offline}}</span>个</div
-            >
+            <div class="value">
+              <span class="number">{{leftDataList.offline}}</span>个</div>
           </div>
           <div class="box">
             <div class="top"> <div class="tag error"></div>告警 </div>
-            <div class="value"
-              ><span class="number">{{leftDataList.alarm}}</span>个</div
-            >
+            <div class="value">
+              <span class="number">{{leftDataList.alarm}}</span>个</div>
           </div>
           <div class="box">
             <div class="top"> <div class="tag empty"></div>总共 </div>
-            <div class="value"
-              ><span class="number">{{leftDataList.total}}</span>个</div
-            >
+            <div class="value">
+              <span class="number">{{leftDataList.total}}</span>个</div>
           </div>
         </div>
         <div class="line"></div>

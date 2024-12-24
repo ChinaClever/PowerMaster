@@ -37,6 +37,7 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.elasticsearch.action.search.MultiSearchRequest;
@@ -118,39 +119,26 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
     @Override
     public PageResult<PDUDeviceDO> getPDUDevicePage(PDUDevicePageReqVO pageReqVO) {
-
-        PageResult<PduIndex> pduIndexPageResult = null;
+        PageResult pageResult = new PageResult();
+        Page<PduIndex> pduIndexPageResult = null;
         List<PDUDeviceDO> result = new ArrayList<>();
         PDUCurbalanceColorDO PDUCurbalanceColorDO = PDUCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
         if (pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
-            List<String> devKeyList = new ArrayList<>();
-
             List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().inIfPresent(CabinetPdu::getCabinetId, pageReqVO.getCabinetIds()));
             if (cabinetPduList != null && cabinetPduList.size() > 0) {
-                for (CabinetPdu cabinetPdu : cabinetPduList) {
-                    if (!StringUtils.isEmpty(cabinetPdu.getPduKeyA())) {
-                        devKeyList.add(cabinetPdu.getPduKeyA());
-                    }
-                    if (!StringUtils.isEmpty(cabinetPdu.getPduKeyB())) {
-                        devKeyList.add(cabinetPdu.getPduKeyB());
-                    }
-                }
+                List<String> devKeyList = new ArrayList<>();
+                List<String> pduKeya = cabinetPduList.stream().map(CabinetPdu::getPduKeyA).collect(Collectors.toList());
+                List<String> pduKeyb = cabinetPduList.stream().map(CabinetPdu::getPduKeyB).collect(Collectors.toList());
+                devKeyList.addAll(pduKeya);
+                devKeyList.addAll(pduKeyb);
+                pageReqVO.setPduKeyList(devKeyList);
             } else {
                 return new PageResult<PDUDeviceDO>(result, 0L);
             }
-            pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
-                    .likeIfPresent(PduIndex::getPduKey, pageReqVO.getDevKey())
-                    .inIfPresent(PduIndex::getPduKey, devKeyList)
-                    .inIfPresent(PduIndex::getRunStatus, pageReqVO.getStatus())
-                    .eq(PduIndex::getIsDeleted, DelEnums.NO_DEL.getStatus()));
-        } else {
-            pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
-                    .likeIfPresent(PduIndex::getPduKey, pageReqVO.getDevKey())
-                    .inIfPresent(PduIndex::getRunStatus, pageReqVO.getStatus())
-                    .eq(PduIndex::getIsDeleted, DelEnums.NO_DEL.getStatus()));
         }
+        pduIndexPageResult = pDUDeviceMapper.selectQuery(new Page<>(pageReqVO.getPageNo(),pageReqVO.getPageSize()),pageReqVO);
 
-        List<PduIndex> pduIndices = pduIndexPageResult.getList();
+        List<PduIndex> pduIndices = pduIndexPageResult.getRecords();
         List redisList = getMutiRedis(pduIndices);
 
         for (PduIndex pduIndex : pduIndices) {
@@ -265,31 +253,17 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         PageResult<PduIndex> pduIndexPageResult = null;
         List<PDUDeviceDO> result = new ArrayList<>();
         if (pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
-            List<String> devKeyList = new ArrayList<>();
-
             List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().inIfPresent(CabinetPdu::getCabinetId, pageReqVO.getCabinetIds()));
             if (cabinetPduList != null && cabinetPduList.size() > 0) {
-                for (CabinetPdu cabinetPdu : cabinetPduList) {
-                    if (!StringUtils.isEmpty(cabinetPdu.getPduKeyA())) {
-                        devKeyList.add(cabinetPdu.getPduKeyA());
-                    }
-                    if (!StringUtils.isEmpty(cabinetPdu.getPduKeyB()) ) {
-                        devKeyList.add(cabinetPdu.getPduKeyB());
-                    }
-                }
+                List<String> devKeyList = new ArrayList<>();
+                List<String> pduKeya = cabinetPduList.stream().map(CabinetPdu::getPduKeyA).collect(Collectors.toList());
+                List<String> pduKeyb = cabinetPduList.stream().map(CabinetPdu::getPduKeyB).collect(Collectors.toList());
+                devKeyList.addAll(pduKeya);
+                devKeyList.addAll(pduKeyb);
+                pageReqVO.setPduKeyList(devKeyList);
             } else {
                 return new PageResult<PDUDeviceDO>(result, 0L);
             }
-            pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
-                    .likeIfPresent(PduIndex::getPduKey, pageReqVO.getDevKey())
-                    .inIfPresent(PduIndex::getPduKey, devKeyList)
-                    .inIfPresent(PduIndex::getRunStatus, pageReqVO.getStatus())
-                    .eq(PduIndex::getIsDeleted, DelEnums.DELETE.getStatus()));
-        } else {
-            pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
-                    .likeIfPresent(PduIndex::getPduKey, pageReqVO.getDevKey())
-                    .inIfPresent(PduIndex::getRunStatus, pageReqVO.getStatus())
-                    .eq(PduIndex::getIsDeleted, DelEnums.DELETE.getStatus()));
         }
 
         List<PduIndex> pduIndices = pduIndexPageResult.getList();
@@ -309,7 +283,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
     @Override
     public PageResult<PDULineRes> getPDULineDevicePage(PDUDevicePageReqVO pageReqVO) {
         try {
-            List<PduIndex> pduIndices = null;
+
             List<PDULineRes> result = new ArrayList<>();
             if (pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
                 List<String> devKeyList = new ArrayList<>();
@@ -327,9 +301,9 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 } else {
                     return new PageResult<>(result, 0L);
                 }
-                pduIndices = pDUDeviceMapper.selectList(new LambdaQueryWrapperX<PduIndex>()
-                        .likeIfPresent(PduIndex::getPduKey, pageReqVO.getDevKey()).inIfPresent(PduIndex::getPduKey, devKeyList));
             }
+            Page<PduIndex> page = pDUDeviceMapper.selectQuery(new Page<>(pageReqVO.getPageNo(), pageReqVO.getPageSize()), pageReqVO);
+            List<PduIndex> records = page.getRecords();
             if (pageReqVO.getTimeType() == 0 || pageReqVO.getOldTime().toLocalDate().equals(pageReqVO.getNewTime().toLocalDate())) {
                 pageReqVO.setNewTime(LocalDateTime.now());
                 pageReqVO.setOldTime(LocalDateTime.now().minusHours(24));
@@ -347,72 +321,59 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             }
             String startTime = localDateTimeToString(pageReqVO.getOldTime());
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
-            Map esTotalPduId = null;
-            if (pduIndices != null) {
-                esTotalPduId = getESTotalPduId(index, startTime, endTime, pageReqVO.getPageSize(), pageReqVO.getPageNo() - 1, pduIndices.stream().map(PduIndex::getId).collect(Collectors.toList()));
-            } else {
-                esTotalPduId = getESTotalPduId(index, startTime, endTime, pageReqVO.getPageSize(), pageReqVO.getPageNo() - 1);
-            }
-            Long total = (Long) esTotalPduId.get("total");
-            if (total == 0) {
-                return new PageResult<>(new ArrayList<>(), 0L);
-            }
-            List<Integer> pduIds = (List<Integer>) esTotalPduId.get("ids");
 
-            List<PduIndex> pdus = pDUDeviceMapper.selectBatchIds(pduIds);
-
+            List<Integer> pduIds = records.stream().map(PduIndex::getId).collect(Collectors.toList());
             curMap = getPDULineCurMaxData(startTime, endTime, pduIds, index);
             powMap = getPDULinePowMaxData(startTime, endTime, pduIds, index);
-            Map<Integer, PduIndex> map = pdus.stream().collect(Collectors.toMap(PduIndex::getId, x -> x));
+            Map<Integer, PduIndex> map = records.stream().collect(Collectors.toMap(PduIndex::getId, x -> x));
 
-//            for (PduIndex pduIndex : pdus) {
-            for (Integer pduId : pduIds) {
+            for (Integer pduId : map.keySet()) {
                 PDULineRes pduLineRes = new PDULineRes();
                 PduIndex pduIndex = map.get(pduId);
                 if (Objects.nonNull(pduIndex)) {
                     Integer id = pduIndex.getId().intValue();
-                    if (curMap.get(id) == null) {
-                        continue;
-                    }
+
                     pduLineRes.setStatus(pduIndex.getRunStatus());
                     pduLineRes.setPduId(pduIndex.getId());
                     pduLineRes.setDevKey(pduIndex.getPduKey());
                 }else {
                     pduLineRes.setPduId(pduId);
                 }
-                MaxValueAndCreateTime curl1 = curMap.get(pduId).get(1);
-                pduLineRes.setL1MaxCur(curl1.getMaxValue().floatValue());
-                pduLineRes.setL1MaxCurTime(curl1.getMaxTime().toString("yyyy-MM-dd HH:mm"));
-                MaxValueAndCreateTime curl2 = curMap.get(pduId).get(2);
-                if (curl2 != null) {
-                    pduLineRes.setL2MaxCur(curl2.getMaxValue().floatValue());
-                    pduLineRes.setL2MaxCurTime(curl2.getMaxTime().toString("yyyy-MM-dd HH:mm"));
+                if (Objects.nonNull(curMap.get(pduId))){
+                    MaxValueAndCreateTime curl1 = curMap.get(pduId).get(1);
+                    pduLineRes.setL1MaxCur(curl1.getMaxValue().floatValue());
+                    pduLineRes.setL1MaxCurTime(curl1.getMaxTime().toString("yyyy-MM-dd HH:mm"));
+                    MaxValueAndCreateTime curl2 = curMap.get(pduId).get(2);
+                    if (curl2 != null) {
+                        pduLineRes.setL2MaxCur(curl2.getMaxValue().floatValue());
+                        pduLineRes.setL2MaxCurTime(curl2.getMaxTime().toString("yyyy-MM-dd HH:mm"));
+                    }
+                    MaxValueAndCreateTime curl3 = curMap.get(pduId).get(3);
+                    if (curl3 != null) {
+                        pduLineRes.setL3MaxCur(curl3.getMaxValue().floatValue());
+                        pduLineRes.setL3MaxCurTime(curl3.getMaxTime().toString("yyyy-MM-dd HH:mm"));
+                    }
                 }
-                MaxValueAndCreateTime curl3 = curMap.get(pduId).get(3);
-                if (curl3 != null) {
-                    pduLineRes.setL3MaxCur(curl3.getMaxValue().floatValue());
-                    pduLineRes.setL3MaxCurTime(curl3.getMaxTime().toString("yyyy-MM-dd HH:mm"));
+                if (Objects.nonNull(powMap.get(pduId))) {
+                    MaxValueAndCreateTime powl1 = powMap.get(pduId).get(1);
+                    pduLineRes.setL1MaxPow(powl1.getMaxValue().floatValue());
+                    pduLineRes.setL1MaxPowTime(powl1.getMaxTime().toString("yyyy-MM-dd HH:mm"));
+                    MaxValueAndCreateTime powl2 = powMap.get(pduId).get(2);
+                    if (powl2 != null) {
+                        pduLineRes.setL2MaxPow(powl2.getMaxValue().floatValue());
+                        pduLineRes.setL2MaxPowTime(powl2.getMaxTime().toString("yyyy-MM-dd HH:mm"));
+                    }
+                    MaxValueAndCreateTime powl3 = powMap.get(pduId).get(3);
+                    if (powl3 != null) {
+                        pduLineRes.setL3MaxPow(powl3.getMaxValue().floatValue());
+                        pduLineRes.setL3MaxPowTime(powl3.getMaxTime().toString("yyyy-MM-dd HH:mm"));
+                    }
                 }
-
-                MaxValueAndCreateTime powl1 = powMap.get(pduId).get(1);
-                pduLineRes.setL1MaxPow(powl1.getMaxValue().floatValue());
-                pduLineRes.setL1MaxPowTime(powl1.getMaxTime().toString("yyyy-MM-dd HH:mm"));
-                MaxValueAndCreateTime powl2 = powMap.get(pduId).get(2);
-                if (powl2 != null) {
-                    pduLineRes.setL2MaxPow(powl2.getMaxValue().floatValue());
-                    pduLineRes.setL2MaxPowTime(powl2.getMaxTime().toString("yyyy-MM-dd HH:mm"));
-                }
-                MaxValueAndCreateTime powl3 = powMap.get(pduId).get(3);
-                if (powl3 != null) {
-                    pduLineRes.setL3MaxPow(powl3.getMaxValue().floatValue());
-                    pduLineRes.setL3MaxPowTime(powl3.getMaxTime().toString("yyyy-MM-dd HH:mm"));
-                }
-
                 result.add(pduLineRes);
             }
 
-            setLocation(pdus, result);
-            return new PageResult<PDULineRes>(result, total);
+            setLocation(records, result);
+            return new PageResult<PDULineRes>(result, page.getTotal());
 
         } catch (Exception e) {
             log.error("获取数据失败", e);
@@ -1905,26 +1866,23 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         if (CollectionUtils.isEmpty(result)||CollectionUtils.isEmpty(pduIndices)) {
             return;
         }
-        Set<String> ipAddrSet = new HashSet<>();
-        Set<Integer> cascadeAddrSet = new HashSet<>();
-        for (PduIndex pduIndex : pduIndices) {
-            ipAddrSet.add(pduIndex.getIpAddr());
-            cascadeAddrSet.add(pduIndex.getCascadeId());
-        }
+//        Set<String> ipAddrSet = new HashSet<>();
+//        Set<Integer> cascadeAddrSet = new HashSet<>();
+        List<String> pduKey = pduIndices.stream().map(PduIndex::getPduKey).collect(Collectors.toList());
 
         // 批量查询 CabinetPdu 表
         List<CabinetPdu> cabinetPdus = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>()
-                .in(CabinetPdu::getPduKeyA, ipAddrSet)
-                .or().in(CabinetPdu::getPduKeyB, ipAddrSet));
+                .in(CabinetPdu::getPduKeyA, pduKey)
+                .or().in(CabinetPdu::getPduKeyB, pduKey));
 
         // 将查询结果按 ipAddr 和 cascadeAddr 分组
         Map<String, List<CabinetPdu>> cabinetPduAMap = cabinetPdus.stream()
-                .filter(cabinetPdu -> ipAddrSet.contains(cabinetPdu.getPduKeyA()))
+                .filter(cabinetPdu -> pduKey.contains(cabinetPdu.getPduKeyA()))
                 .collect(Collectors.groupingBy(cabinetPdu -> cabinetPdu.getPduKeyA()));
 
 
         Map<String, List<CabinetPdu>> cabinetPduBMap = cabinetPdus.stream()
-                .filter(cabinetPdu -> ipAddrSet.contains(cabinetPdu.getPduKeyB()))
+                .filter(cabinetPdu -> pduKey.contains(cabinetPdu.getPduKeyB()))
                 .collect(Collectors.groupingBy(cabinetPdu -> cabinetPdu.getPduKeyB()));
 
         List<Integer> cabinetIds = cabinetPdus.stream()

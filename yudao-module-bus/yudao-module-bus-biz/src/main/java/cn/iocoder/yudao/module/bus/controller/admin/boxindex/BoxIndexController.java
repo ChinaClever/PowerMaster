@@ -350,6 +350,12 @@ public class BoxIndexController {
     public CommonResult<BusIndexStatisticsResVO> getBoxIndexStatistics() {
         return success(indexService.getBoxIndexStatistics());
     }
+
+    @GetMapping("balance/statistics")
+    @Operation(summary = "获得设备统计")
+    public CommonResult<BoxBalanceStatisticsVO> getBoxBalanceStatistics() {
+        return success(indexService.getBoxBalanceStatistics());
+    }
 //    @GetMapping("/export-excel")
 //    @Operation(summary = "导出插接箱索引 Excel")
 //    @PreAuthorize("@ss.hasPermission('box:index:export')")

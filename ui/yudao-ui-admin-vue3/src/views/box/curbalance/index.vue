@@ -437,11 +437,11 @@ const getList = async () => {
       statusList[2].name = '>' + range.rangeFour + '%';
     }
     
-    var tableIndex = 0;
-    var lessFifteen = 0;
-    var greaterFifteen = 0;
-    var greaterThirty = 0;
-    var smallCurrent = 0;
+     var tableIndex = 0;
+    // var lessFifteen = 0;
+    // var greaterFifteen = 0;
+    // var greaterThirty = 0;
+    // var smallCurrent = 0;
     data.list.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
       
@@ -453,20 +453,20 @@ const getList = async () => {
       obj.bvol = obj.bvol?.toFixed(1);
       obj.cvol = obj.cvol?.toFixed(1);
       obj.volUnbalance = obj.volUnbalance?.toFixed(0);
-      if(obj.color == 1){
-        smallCurrent++;
-      } else if (obj.color == 2) {
-        lessFifteen++;
-      } else if (obj.color == 3) {
-        greaterFifteen++;
-      } else if (obj.color == 4) {
-        greaterThirty++;
-      }
+      // if(obj.color == 1){
+      //   smallCurrent++;
+      // } else if (obj.color == 2) {
+      //   lessFifteen++;
+      // } else if (obj.color == 3) {
+      //   greaterFifteen++;
+      // } else if (obj.color == 4) {
+      //   greaterThirty++;
+      // }
     });
-    statusNumber.smallCurrent = smallCurrent;
-    statusNumber.lessFifteen = lessFifteen;
-    statusNumber.greaterFifteen = greaterFifteen;
-    statusNumber.greaterThirty = greaterThirty;
+    // statusNumber.smallCurrent = smallCurrent;
+    // statusNumber.lessFifteen = lessFifteen;
+    // statusNumber.greaterFifteen = greaterFifteen;
+    // statusNumber.greaterThirty = greaterThirty;
     list.value = data.list
     total.value = data.total
   } finally {
@@ -474,53 +474,60 @@ const getList = async () => {
   }
 }
 
-const getListNoLoading = async () => {
-  try {
-    console.log(queryParams)
-    const data = await IndexApi.getBalancePage(queryParams)
-    
-    var range = await BoxCurbalanceColorApi.getBoxCurbalanceColor();
-    if(range != null){
-      statusList[0].name = '<' + range.rangeOne + '%';
-      statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
-      statusList[2].name = '>' + range.rangeFour + '%';
-    }
-    var tableIndex = 0;    
-    var lessFifteen = 0;
-    var greaterFifteen = 0;
-    var greaterThirty = 0;
-    var smallCurrent = 0;
-    data.list.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-
-      obj.acur = obj.acur?.toFixed(2);
-      obj.bcur = obj.bcur?.toFixed(2);
-      obj.ccur = obj.ccur?.toFixed(2);
-      obj.curUnbalance = obj.curUnbalance?.toFixed(0);
-      obj.avol = obj.avol?.toFixed(1);
-      obj.bvol = obj.bvol?.toFixed(1);
-      obj.cvol = obj.cvol?.toFixed(1);
-      obj.volUnbalance = obj.volUnbalance?.toFixed(0);
-      if(obj.color == 1){
-        smallCurrent++;
-      } else if (obj.color == 2) {
-        lessFifteen++;
-      } else if (obj.color == 3) {
-        greaterFifteen++;
-      } else if (obj.color == 4) {
-        greaterThirty++;
-      }
-    });
-    statusNumber.smallCurrent = smallCurrent;
-    statusNumber.lessFifteen = lessFifteen;
-    statusNumber.greaterFifteen = greaterFifteen;
-    statusNumber.greaterThirty = greaterThirty;
-    list.value = data.list
-    total.value = data.total
-  } catch (error) {
-    
+const getStatistics = async () => {
+  const data = await IndexApi.getBalanceStatistics()
+    statusNumber.smallCurrent = data.smallCurrent;
+    statusNumber.lessFifteen = data.lessFifteen;
+    statusNumber.greaterFifteen = data.greaterFifteen;
+    statusNumber.greaterThirty = data.greaterThirty;
   }
-}
+
+// const getListNoLoading = async () => {
+//   try {
+//     console.log(queryParams)
+//     const data = await IndexApi.getBalancePage(queryParams)
+//     var range = await BoxCurbalanceColorApi.getBoxCurbalanceColor();
+//     if(range != null){
+//       statusList[0].name = '<' + range.rangeOne + '%';
+//       statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
+//       statusList[2].name = '>' + range.rangeFour + '%';
+//     }
+//     var tableIndex = 0;    
+//     var lessFifteen = 0;
+//     var greaterFifteen = 0;
+//     var greaterThirty = 0;
+//     var smallCurrent = 0;
+//     data.list.forEach((obj) => {
+//       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+
+//       obj.acur = obj.acur?.toFixed(2);
+//       obj.bcur = obj.bcur?.toFixed(2);
+//       obj.ccur = obj.ccur?.toFixed(2);
+//       obj.curUnbalance = obj.curUnbalance?.toFixed(0);
+//       obj.avol = obj.avol?.toFixed(1);
+//       obj.bvol = obj.bvol?.toFixed(1);
+//       obj.cvol = obj.cvol?.toFixed(1);
+//       obj.volUnbalance = obj.volUnbalance?.toFixed(0);
+//       if(obj.color == 1){
+//         smallCurrent++;
+//       } else if (obj.color == 2) {
+//         lessFifteen++;
+//       } else if (obj.color == 3) {
+//         greaterFifteen++;
+//       } else if (obj.color == 4) {
+//         greaterThirty++;
+//       }
+//     });
+//     statusNumber.smallCurrent = smallCurrent;
+//     statusNumber.lessFifteen = lessFifteen;
+//     statusNumber.greaterFifteen = greaterFifteen;
+//     statusNumber.greaterThirty = greaterThirty;
+//     list.value = data.list
+//     total.value = data.total
+//   } catch (error) {
+    
+//   }
+// }
 
 const getNavList = async() => {
   const res = await IndexApi.getBoxMenu()
@@ -568,7 +575,8 @@ const handleSelectStatus = (index) => {
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
-  getList()
+  getList();
+  getStatistics();
 }
 
 /** 重置按钮操作 */
@@ -617,7 +625,8 @@ onMounted(async () => {
   devKeyList.value = await loadAll();
   getList()
   getNavList();
-  flashListTimer.value = setInterval((getListNoLoading), 5000);
+  getStatistics();
+  flashListTimer.value = setInterval((getList), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -639,7 +648,7 @@ onActivated(() => {
   getList()
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getListNoLoading), 5000);
+    flashListTimer.value = setInterval((getList), 5000);
   }
 })
 </script>

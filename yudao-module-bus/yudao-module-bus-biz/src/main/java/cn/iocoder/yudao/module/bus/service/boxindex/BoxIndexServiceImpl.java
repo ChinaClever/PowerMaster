@@ -473,6 +473,11 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         return boxIndexCopyMapper.getBoxIndexStatistics();
     }
 
+    @Override
+    public BoxBalanceStatisticsVO getBoxBalanceStatistics() {
+        return boxIndexCopyMapper.getBoxBalanceStatistics();
+    }
+
 
     private void validateIndexExists(Long id) {
         if (boxIndexCopyMapper.selectById(id) == null) {

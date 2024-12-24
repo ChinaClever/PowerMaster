@@ -132,4 +132,7 @@ public interface BoxIndexService {
     LineBoxMaxResVO getBoxLineMax(BusIndexPageReqVO pageReqVO) throws IOException;
 
     BusIndexStatisticsResVO getBoxIndexStatistics();
+
+    BoxBalanceStatisticsVO getBoxBalanceStatistics();
+
 }

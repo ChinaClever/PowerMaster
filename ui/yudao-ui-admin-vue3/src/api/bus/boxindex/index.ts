@@ -69,6 +69,10 @@ export const IndexApi = {
   getBalancePage: async (data: any) => {
     return await request.post({ url: `/box/index/balance`, data })
   },
+//获得设备平衡统计
+  getBalanceStatistics: async () => {
+    return await request.get({ url: `/box/index/balance/statistics`})
+  },
 
   getBoxBalanceDetail: async (data: any) => {
     return await request.post({ url: `/box/index/balance/detail` ,  data})
