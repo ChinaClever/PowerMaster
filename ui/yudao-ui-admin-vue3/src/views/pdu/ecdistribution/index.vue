@@ -124,8 +124,10 @@
            </el-button>
         </el-form-item>
       </el-form>
-      
+    </template>
       <!-- 列表 -->
+      <template #Content>
+        <div v-loading="loading">
       <el-tabs v-model="activeName1">
         <el-tab-pane v-if="loading2" label="图表" name="lineChart">
           <div  v-loading="loading" ref="chartContainer" id="chartContainer" style="width: 70vw; height: 58vh;"></div>
@@ -166,12 +168,13 @@
           </div>
         </el-tab-pane>
       </el-tabs>
+    </div>
     </template>
-    <template #Content>
+    <!-- <template #Content>
       <div  v-if="loading3" style="overflow: visible;">
         <div v-loading="loading1" ref="rankContainer" id="rankContainer" style="width: 70vw; height: 90vh;"></div>
       </div>
-    </template>
+    </template> -->
   </CommonMenu1>
 
 </template>

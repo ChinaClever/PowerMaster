@@ -1152,11 +1152,12 @@ onMounted(async () => {
     // flashListTimer.value = setInterval(getList, 5000);
   // }
 
-    setInterval(() => {
-         setTimeout(() => {
-          getList()
-       }, 0);
-  }, 5000);
+  //   setInterval(() => {
+  //        setTimeout(() => {
+  //         getList()
+  //      }, 0);
+  // }, 5000);
+  flashListTimer.value = setInterval((getList), 5000);
 })
 
 onBeforeUnmount(() => {
@@ -1685,7 +1686,7 @@ onActivated(() => {
 ::v-deep .el-table .el-table__header th {
   background-color: #f7f7f7;
   color: #909399;
-  height: 60px;
+  height: 30px;
 }
 
 :deep(.el-dialog) {
@@ -1744,5 +1745,8 @@ onActivated(() => {
     }
   }
 }
-
+::v-deep .el-table th,
+   ::v-deep .el-table td{
+    border-right: none;
+   }
 </style>
