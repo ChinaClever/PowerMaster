@@ -2,35 +2,6 @@
   <CommonMenu :dataList="navList" @check="handleCheck"  navTitle="母线用能">
     <template #NavInfo>
       <div class="navInfo">
-        <!-- <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
-          <div class="name"></div>
-          <div></div>
-        </div> -->
-        <!-- <div class="line"></div> -->
-        <!-- <div class="overview">
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>总电能</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-        </div> -->
         <div style="font-size:14px; margin-top:45px; margin-left:20px">
           <div ><span>用能最多</span>
           </div>
@@ -164,7 +135,7 @@
 import { IndexApi } from '@/api/bus/busindex'
 
 const { push } = useRouter() // 路由跳转
-const queryParamsDevKey = ref('')
+const queryParamsDevKey = ref(undefined)
 const tableLoading = ref(false) // 
 const isFirst = ref(true) // 是否第一次调用getTableData函数
 const navList = ref([]) // 左侧导航栏树结构列表
@@ -185,6 +156,7 @@ const queryParams = reactive({
   pageTotal: 0,
   busDevKeyList : undefined as string[] | undefined,
   isDeleted: 0,
+  devKey: undefined,
   timeGranularity:'',
 }) as any
 
@@ -279,28 +251,14 @@ const getTableData = async(reset = false) => {
   }
 }
 
-const getMaxData = async(reset = false) => {
+const getMaxData = async() => {
   try {
-    const res = await IndexApi.getEqMax({
-      pageNo: queryParamsAll.pageNo,
-      pageSize: queryParamsAll.pageSize,
-      cabinetIds: isFirst.value ? null : cabinetIds.value,
-      company: queryParamsAll.company,
-      busDevKeyList : queryParamsAll.busDevKeyList,
-      isDeleted : queryParams.isDeleted
-    })
-    if (res.list) {
+    const data = await IndexApi.getEqMax()
+    if (data) {
         //借用id值来辅助判断是哪个时间的集合，0为昨日，1为上周，2为上月
-        const dataList = res.list
-        dataList.forEach(item => {
-          if(item.id == 0){
-            busName1.value = item.busName
-          }else if (item.id == 1){
-            busName2.value = item.busName
-          }else if (item.id == 2){
-            busName3.value = item.busName
-          }
-        })
+          busName1.value = data.yesterdayBusKey
+          busName2.value = data.lastWeekBusKey
+          busName3.value = data.lastMonthBusKey
     }
   } finally {
     
@@ -344,7 +302,12 @@ const handleCheck = (row) => {
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
-  // queryParams.busDevKeyList = [queryParamsDevKey.value]
+  console.log('handleQuery', queryParamsDevKey.value)
+  if(queryParamsDevKey.value !=null && queryParamsDevKey.value != ''){
+    queryParams.busDevKeyList = [queryParamsDevKey.value]
+  }else{
+    queryParams.busDevKeyList = undefined as string[] | undefined
+  }
   getTableData(true)
 }
 

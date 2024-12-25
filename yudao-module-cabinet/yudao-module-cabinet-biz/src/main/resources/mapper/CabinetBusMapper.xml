@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.iocoder.yudao.framework.common.mapper.CabinetBusMapper">
+    <select id="findRoomIdA" resultType="java.util.Map">
+        SELECT
+        concat(room_id,"-",id) as cabinetKey,
+        bi.bus_key as busKey,
+        bi.bus_name as busName
+        FROM cabinet_box cb
+        left join cabinet_index ci on cb.cabinet_id = ci.id
+        left join bus_index bi on cb.box_key_a = bi.bus_key
+        <where>
+            bi.bus_key in
+            <foreach collection="busKey" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+    <select id="findRoomIdB" resultType="java.util.Map">
+        SELECT
+        concat(room_id,"-",id) as cabinetKey,
+        bi.bus_key as busKey,
+        bi.bus_name as busName
+        FROM cabinet_box cb
+        left join cabinet_index ci on cb.cabinet_id = ci.id
+        left join bus_index bi on cb.box_key_b = bi.bus_key
+        <where>
+            bi.bus_key in
+            <foreach collection="busKey" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+</mapper>

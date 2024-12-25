@@ -227,8 +227,8 @@ public class BusIndexController {
 
     @Operation(summary = "始端箱用能列表分页")
     @PostMapping("/eq/maxEq")
-    public CommonResult<PageResult<BusIndexDTO>> getMaxEq(@RequestBody BusIndexPageReqVO pageReqVO) {
-        PageResult<BusIndexDTO> pageResult = indexService.getMaxEq(pageReqVO);
+    public CommonResult<MaxEqResVO> getMaxEq() {
+        MaxEqResVO pageResult = indexService.getMaxEq();
         return success(pageResult);
     }
 

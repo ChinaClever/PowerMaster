@@ -686,8 +686,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 result.put("ll", dayList2);
                 result.put("lll", dayList3);
             }
-            dateTimes.stream().distinct().collect(Collectors.toList());
-            result.put("dateTimes", dateTimes);
+            result.put("dateTimes", dateTimes.stream().distinct().collect(Collectors.toList()));
 
             return result;
         } else {
@@ -754,7 +753,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         result.put("l", dayList1);
         result.put("ll", dayList2);
         result.put("lll", dayList3);
-        result.put("dateTimes", dateTimes.stream().distinct());
+        result.put("dateTimes", dateTimes.stream().distinct().collect(Collectors.toList()));
         return result;
     }
 

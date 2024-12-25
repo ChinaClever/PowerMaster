@@ -246,7 +246,7 @@
           <div>
             <div>
               <span>所在位置：</span>
-              <el-tag size="large">{{ curlocation }}</el-tag><span>(名称：<el-tag size="large">{{ curlocation }}</el-tag>)</span>
+              <el-tag size="large">{{ curlocation }}</el-tag><span>(名称：<el-tag size="large">{{ busName }}</el-tag>)</span>
             </div>
             <div style="margin-top:-30px;float:right">
               <span>网络地址：</span>
@@ -433,7 +433,7 @@ const statusList = reactive([
 
 const curlocation = ref()
 const vollocation = ref()
-
+const busName = ref()
 const colorList = [
   {
     name: '小电流不平衡',
@@ -778,6 +778,7 @@ const getBalanceTrend = async (item) => {
 const showDialogCur = (item) => {
   dialogVisibleCur .value = true
   curlocation.value = item.devKey
+  busName.value = item.busName
   getBalanceDetail(item)
   getBalanceTrend(item)
 }
@@ -785,6 +786,7 @@ const showDialogCur = (item) => {
 const showDialogVol = (item) => {
   dialogVisibleVol.value = true
   vollocation.value = item.devKey
+    busName.value = item.busName
   getBalanceDetail(item)
   getBalanceTrend(item)
 }
@@ -1008,7 +1010,8 @@ const toDeatil = (row) =>{
   const devKey = row.devKey;
   const busId = row.busId;
   const location = row.location ? row.location : devKey;
-  push({path: '/bus/busmonitor/busbalancedetail', state: { devKey, busId ,location }})
+  const busName = row.busName;
+  push({path: '/bus/busmonitor/busbalancedetail', state: { devKey, busId ,location,busName }})
 
 }
 

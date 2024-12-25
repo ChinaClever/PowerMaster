@@ -25,7 +25,6 @@ import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
-import cn.iocoder.yudao.module.bus.constant.BusConstants;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.dto.MaxValueAndCreateTime;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
@@ -56,10 +55,8 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.BucketOrder;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
-import org.elasticsearch.search.aggregations.metrics.Cardinality;
-import org.elasticsearch.search.aggregations.metrics.ParsedMax;
-import org.elasticsearch.search.aggregations.metrics.ParsedTopHits;
-import org.elasticsearch.search.aggregations.metrics.TopHits;
+import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.*;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.collapse.CollapseBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
@@ -74,6 +71,7 @@ import org.springframework.validation.annotation.Validated;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.security.Key;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
@@ -234,112 +232,157 @@ public class BusIndexServiceImpl implements BusIndexService {
     }
 
     @Override
-    public PageResult<BusIndexDTO> getMaxEq(BusIndexPageReqVO pageReqVO) {
-        try {
-            PageResult<BusIndexDO> busIndexDOPageResult = busIndexMapper.selectPage(pageReqVO);
-            List<BusIndexDO> busIndexDOList = busIndexDOPageResult.getList();
-            List<BusIndexDTO> result = new ArrayList<>();
-            List<Integer> ids = busIndexDOList.stream().map(BusIndexDO::getId).collect(Collectors.toList());
-            String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
-            String endTime = DateUtil.formatDateTime(DateUtil.endOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
+    public MaxEqResVO getMaxEq() {
+        MaxEqResVO maxEqResVO = new MaxEqResVO();
+        String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
+        String endTime = DateUtil.formatDateTime(DateUtil.endOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
+        Map<String, Object> busEqTotalDay = extracted(startTime, endTime, "bus_eq_total_day");
+        if(Objects.nonNull(busEqTotalDay)) {
+            busEqTotalDay.keySet().forEach(iter -> {
+                maxEqResVO.setYesterdayBusKey(iter);
+                ArrayList<String> list = new ArrayList<>();
+                list.add(iter);
+                Map<String, String> positionByKey = getPositionByKey(list);
+                String local = positionByKey.get(iter);
+                maxEqResVO.setYesterdayLocal(local);
+            });
+        }
+        //上周
+        String startTime1 = DateUtil.formatDateTime(DateUtil.beginOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
+        String endTime1 = DateUtil.formatDateTime(DateUtil.endOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
+        Map<String, Object> busEqTotalWeek = extracted(startTime1, endTime1, "bus_eq_total_week");
+        if(Objects.nonNull(busEqTotalWeek)) {
+            busEqTotalDay.keySet().forEach(iter -> {
+                ArrayList<String> list = new ArrayList<>();
+                list.add(iter);
+                Map<String, String> positionByKey = getPositionByKey(list);
+                String local = positionByKey.get(iter);
+                maxEqResVO.setLastWeekBusKey(iter);
+                maxEqResVO.setLastWeekLocal(local);
+            });
+        }
+//上月
+        String startTime2 = DateUtil.formatDateTime(DateUtil.beginOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
+        String endTime2 = DateUtil.formatDateTime(DateUtil.endOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
+        Map<String, Object> busEqTotalMonth = extracted(startTime2, endTime2, "bus_eq_total_month");
+        if(Objects.nonNull(busEqTotalMonth)) {
+            busEqTotalMonth.keySet().forEach(iter -> {
+                ArrayList<String> list = new ArrayList<>();
+                list.add(iter);
+                Map<String, String> positionByKey = getPositionByKey(list);
+                String local = positionByKey.get(iter);
+                maxEqResVO.setLastMonthBusKey(iter);
+                maxEqResVO.setLastMonthLocal(local);
+            });
+        }
 
+        return null;
+    }
+
+    private Map<String,Object> extracted(String startTime, String endTime, String index){
+        try {
             // 创建SearchRequest对象, 设置查询索引名
-            SearchRequest searchRequest = new SearchRequest("bus_eq_total_day");
+            SearchRequest searchRequest = new SearchRequest(index);
             // 通过QueryBuilders构建ES查询条件，
             SearchSourceBuilder builder = new SearchSourceBuilder();
 
             //获取需要处理的数据
             builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
                     .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
-                    .must(QueryBuilders.termsQuery("bus_id", ids))));
-            builder.sort("eq_value", SortOrder.DESC);
+            ));
+            TermsAggregationBuilder aggregation = AggregationBuilders.terms("terms").field("bus_id").order(BucketOrder.aggregation("sum_eq", false)).size(1)
+                    .subAggregation(AggregationBuilders.sum("sum_eq").field("eq_value"));
+
+            builder.aggregation(aggregation);
+
             // 设置搜索条件
             searchRequest.source(builder);
             builder.size(1);
             // 执行ES请求
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-            SearchHit[] hits = searchResponse.getHits().getHits();
-            if (hits.length > 0) {
-                // 获取最大值和时间字段
-                Map<String, Object> sourceAsMap = hits[0].getSourceAsMap();
-                BusIndexDTO busIndexDTO = new BusIndexDTO();
-                busIndexDTO.setYesterdayEq((Double) sourceAsMap.get("eq_value"));
-                busIndexDTO.setBusId((Integer) sourceAsMap.get("bus_id"));
-                BusIndexDO busIndexDO = busIndexMapper.selectOne(BusIndexDO::getId, busIndexDTO.getBusId());
-                busIndexDTO.setDevKey(busIndexDO.getBusKey());
-                busIndexDTO.setBusName(busIndexDO.getBusName());
-                busIndexDTO.setId(0);//借用id值来辅助判断是哪个时间的集合，0为昨天，1为上周，2为上月
-                result.add(busIndexDTO);
+            // 处理聚合结果
+            Aggregations aggregations = searchResponse.getAggregations();
+            Terms busIdTerms = aggregations.get("terms");
+            Map<String,Object> map = new HashMap<>();
+            for (Terms.Bucket entry : busIdTerms.getBuckets()) {
+                ParsedSum eqValueSum = entry.getAggregations().get("sum_eq");
+                BusIndexDO busIndexDO = busIndexMapper.selectById(entry.getKeyAsNumber().intValue());
+                if (Objects.nonNull(busIndexDO))
+                    map.put(busIndexDO.getBusKey(),eqValueSum.getValue());
             }
-
-            //上周
-            String startTime1 = DateUtil.formatDateTime(DateUtil.beginOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
-            String endTime1 = DateUtil.formatDateTime(DateUtil.endOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
-            // 创建SearchRequest对象, 设置查询索引名
-            SearchRequest searchRequest1 = new SearchRequest("bus_eq_total_week");
-            // 通过QueryBuilders构建ES查询条件，
-            SearchSourceBuilder builder1 = new SearchSourceBuilder();
-
-            //获取需要处理的数据
-            builder1.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime1).lte(endTime1))
-                    .must(QueryBuilders.termsQuery("bus_id", ids))));
-            builder1.sort("eq_value", SortOrder.DESC);
-            // 设置搜索条件
-            searchRequest1.source(builder1);
-            builder1.size(1);
-            // 执行ES请求
-            SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
-            SearchHit[] hits1 = searchResponse1.getHits().getHits();
-            if (hits1.length > 0) {
-                // 获取最大值和时间字段
-                Map<String, Object> sourceAsMap = hits1[0].getSourceAsMap();
-                BusIndexDTO busIndexDTO = new BusIndexDTO();
-                busIndexDTO.setLastWeekEq((Double) sourceAsMap.get("eq_value"));
-                busIndexDTO.setBusId((Integer) sourceAsMap.get("bus_id"));
-                BusIndexDO busIndexDO = busIndexMapper.selectOne(BusIndexDO::getId, busIndexDTO.getBusId());
-                busIndexDTO.setDevKey(busIndexDO.getBusKey());
-                busIndexDTO.setBusName(busIndexDO.getBusName());
-                busIndexDTO.setId(1);//借用id值来辅助判断是哪个时间的集合，0为昨天，1为上周，2为上月
-                result.add(busIndexDTO);
-            }
-
-            //上月
-            String startTime2 = DateUtil.formatDateTime(DateUtil.beginOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
-            String endTime2 = DateUtil.formatDateTime(DateUtil.endOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
-            // 创建SearchRequest对象, 设置查询索引名
-            SearchRequest searchRequest2 = new SearchRequest("bus_eq_total_month");
-            // 通过QueryBuilders构建ES查询条件，
-            SearchSourceBuilder builder2 = new SearchSourceBuilder();
-
-            //获取需要处理的数据
-            builder2.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime2).lte(endTime2))
-                    .must(QueryBuilders.termsQuery("bus_id", ids))));
-            builder2.sort("eq_value", SortOrder.DESC);
-            // 设置搜索条件
-            searchRequest2.source(builder2);
-            builder2.size(1);
-
-            // 执行ES请求
-            SearchResponse searchResponse2 = client.search(searchRequest2, RequestOptions.DEFAULT);
-            SearchHit[] hits2 = searchResponse2.getHits().getHits();
-            if (hits2.length > 0) {
-                // 获取最大值和时间字段
-                Map<String, Object> sourceAsMap = hits2[0].getSourceAsMap();
-                BusIndexDTO busIndexDTO = new BusIndexDTO();
-                busIndexDTO.setLastMonthEq((Double) sourceAsMap.get("eq_value"));
-                busIndexDTO.setBusId((Integer) sourceAsMap.get("bus_id"));
-                BusIndexDO busIndexDO = busIndexMapper.selectOne(BusIndexDO::getId, busIndexDTO.getBusId());
-                busIndexDTO.setDevKey(busIndexDO.getBusKey());
-                busIndexDTO.setBusName(busIndexDO.getBusName());
-                busIndexDTO.setId(2);//借用id值来辅助判断是哪个时间的集合，0为昨天，1为上周，2为上月
-                result.add(busIndexDTO);
-            }
-            getPosition(result);
-            return new PageResult<>(result, busIndexDOPageResult.getTotal());
+            return map;
         } catch (Exception e) {
-            log.error("获取数据失败：", e);
+
         }
-        return new PageResult<>(new ArrayList<>(), 0L);
+        return null;
+    }
+
+    public Map<String ,String> getPositionByKey(List<String> busKeys) {
+        if (CollectionUtils.isEmpty(busKeys)) {
+            return null;
+        }
+        ValueOperations ops = redisTemplate.opsForValue();
+        Map<String ,String> map = new HashMap<>();
+        //柜列
+        List<AisleBar> aisleBar = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
+                .in(!CollectionUtils.isEmpty(busKeys), AisleBar::getBusKey, busKeys));
+        Map<String, String> aislePathMap = aisleBar.stream().collect(Collectors.toMap(AisleBar::getBusKey, AisleBar::getPath));
+        Map<Integer,String> aisleBarKeyMap = aisleBar.stream().collect(Collectors.toMap(AisleBar::getAisleId,AisleBar::getBusKey));
+
+        if (!CollectionUtils.isEmpty(aisleBar)) {
+            Set<String> redisKeys = aisleBar.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toSet());
+            List aisles = ops.multiGet(redisKeys);
+            if (!CollectionUtils.isEmpty(aisleBar)) {
+                for (Object aisle : aisles) {
+                    if (aisle == null) {
+                        continue;
+                    }
+                    JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
+                    String busKey = aisleBarKeyMap.get(json.getInteger("aisle_key"));
+                    map.put(busKey, json.getString("room_name") + SPLIT_KEY
+                            + json.getString("aisle_name") + SPLIT_KEY+ aislePathMap.get(busKey) + "路");
+                }
+            }
+        }
+
+        busKeys.removeAll(map.keySet());
+
+        if (CollectionUtils.isEmpty(busKeys)) {
+            return map;
+        }
+        List<Map<String,String>> aList = cabinetBusMapper.findRoomIdA(busKeys);
+        Map<String, Map<String, String>> busAmap = aList.stream().collect(Collectors.toMap(i -> REDIS_KEY_CABINET + i.get("cabinetKey"), i -> i));
+        List cabinetList = ops.multiGet(busAmap.keySet());
+        if (!CollectionUtils.isEmpty(cabinetList)) {
+            for (Object o : cabinetList) {
+                if (Objects.isNull(o))
+                    continue;
+                JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
+                Map<String, String> cabinetKey = busAmap.get(jsonObject.getString("cabinet_key"));
+                if (Objects.nonNull(cabinetKey)){
+                    map.put(cabinetKey.get("busKey"),jsonObject.getString("room_name") + SPLIT_KEY + cabinetKey.get("busName") + SPLIT_KEY +"A路");
+                }
+            }
+        }
+        busKeys.removeAll(map.keySet());
+        if (CollectionUtils.isEmpty(busKeys)) {
+            return map;
+        }
+        List<Map<String,String>> bList = cabinetBusMapper.findRoomIdB(busKeys);
+        Map<String, Map<String, String>> busBmap = bList.stream().collect(Collectors.toMap(i -> REDIS_KEY_CABINET + i.get("cabinetKey"), i -> i));
+        List cabinetListb = ops.multiGet(busAmap.keySet());
+        if (!CollectionUtils.isEmpty(cabinetListb)) {
+            for (Object o : cabinetListb) {
+                if (Objects.isNull(o))
+                    continue;
+                JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
+                Map<String, String> cabinetKey = busAmap.get(jsonObject.getString("cabinet_key"));
+                if (Objects.nonNull(cabinetKey)){
+                    map.put(cabinetKey.get("busKey"),jsonObject.getString("room_name") + SPLIT_KEY + cabinetKey.get("busName") + SPLIT_KEY +"B路");
+                }
+            }
+        }
+        return map;
     }
 
     @Override
@@ -611,11 +654,10 @@ public class BusIndexServiceImpl implements BusIndexService {
                 }
                 dateTimes.add(houResVO.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
             }
-            dateTimes.stream().distinct().collect(Collectors.toList());
             map.put("A", dayList1);
             map.put("B", dayList2);
             map.put("C", dayList3);
-            map.put("dateTimes", dateTimes);
+            map.put("dateTimes", dateTimes.stream().distinct().collect(Collectors.toList()));
         }
         return map;
     }
@@ -1166,7 +1208,7 @@ public class BusIndexServiceImpl implements BusIndexService {
                     }
                 }
             }
-            if(status == 0 && busTemRes.getStatus() == 1) {
+            if (status == 0 && busTemRes.getStatus() == 1) {
                 busTemRes.setStatus(0);
             }
         }
@@ -1216,7 +1258,7 @@ public class BusIndexServiceImpl implements BusIndexService {
     }
 
     @Override
-    public Map<String, Object> getBusPFLowest(){
+    public Map<String, Object> getBusPFLowest() {
         BusIndexPageReqVO pageReqVO = new BusIndexPageReqVO();
         PageResult<BusIndexDO> busIndexDOResult = busIndexMapper.selectPage(pageReqVO);
         List<BusIndexDO> list = busIndexDOResult.getList();
@@ -1224,7 +1266,7 @@ public class BusIndexServiceImpl implements BusIndexService {
         List redisList = getMutiRedis(list);
         Map<String, Object> map = new HashMap<>();
         double pfInit = 1.0;
-        map.put("totalPf",pfInit);
+        map.put("totalPf", pfInit);
 
         for (BusIndexDO busIndexDO : list) {
             BusPFRes busPFRes = new BusPFRes();
@@ -1245,10 +1287,10 @@ public class BusIndexServiceImpl implements BusIndexService {
             BusPFRes busPFRes = resMap.get(devKey);
             busPFRes.setTotalPf(jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getDoubleValue("power_factor"));
 
-            if (busPFRes.getTotalPf() <  (Double) map.get("totalPf") && busPFRes.getTotalPf() != 0 ) {
-                map.put("totalPf",busPFRes.getTotalPf());
-                map.put("location",busPFRes.getDevKey());
-                map.put("ipAddr",busPFRes.getLocation());
+            if (busPFRes.getTotalPf() < (Double) map.get("totalPf") && busPFRes.getTotalPf() != 0) {
+                map.put("totalPf", busPFRes.getTotalPf());
+                map.put("location", busPFRes.getDevKey());
+                map.put("ipAddr", busPFRes.getLocation());
             }
         }
         return map;

@@ -3,38 +3,6 @@
     <template #NavInfo>
       <div >
         <br/>
-        <!-- <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
-        </div>
-        <div class="line"></div> -->
-        <!-- <div class="status">
-          <div class="box">
-            <div class="top">
-              <div class="tag"></div>&lt;15%
-            </div>
-            <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag empty"></div>小电流
-            </div>
-            <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag warn"></div>15%-30%
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag error"></div>&gt;30
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
-          </div>
-        </div> -->
-        <!-- <div class="line"></div> -->
-
       </div>
     </template>
     <template #ActionBar>
@@ -45,16 +13,6 @@
         :inline="true"
         label-width="120px"
       >      
-        <!-- <el-form-item label="网络地址" prop="devKey">
-          <el-input
-            v-model="queryParams.devKey"
-            placeholder="请输入网络地址"
-            clearable
-            @keyup.enter="handleQuery"
-            class="!w-240px"
-          />
-        </el-form-item> -->
-
         <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
             v-model="queryParams.devKey"
@@ -147,8 +105,8 @@
                       <el-table-column  prop="baseInfoValue" >
                         <template #default="scope">
                           <span v-if="scope.$index === 2">
-                            <el-tag  v-if="scope.row.baseInfoValue == 0">正常</el-tag>
-                            <el-tag type="warning" v-if="scope.row.baseInfoValue == 1">预警</el-tag>
+                            <el-tag  v-if="scope.row.baseInfoValue == 1">正常</el-tag>
+                            <el-tag type="warning" v-if="scope.row.baseInfoValue == 2">告警</el-tag>
                             <el-popover
                                 placement="top-start"
                                 title="告警内容"
@@ -161,8 +119,7 @@
                                   <el-tag type="danger">告警</el-tag>
                                 </template>
                               </el-popover>
-                            <el-tag type="info" v-if="scope.row.baseInfoValue == 4">故障</el-tag>
-                            <el-tag type="info" v-if="scope.row.baseInfoValue == 5">离线</el-tag>
+                            <el-tag type="info" v-if="scope.row.baseInfoValue == 0">离线</el-tag>
                           </span>
                           <span v-else>{{ scope.row.baseInfoValue }}</span>
                         </template>
@@ -894,7 +851,7 @@ const getList = async () => {
   })
   temp.push({
     baseInfoName : "设备状态",
-    baseInfoValue : Bus?.status != null ? Bus.status : '/',
+    baseInfoValue : baseInfo?.list && baseInfo?.list.length > 0 ? baseInfo?.list[0].status : '/',
     pduAlarm : Bus?.pdu_alarm,
     consumeName : "当前功率因素",
     consumeValue : Bus?.bus_data?.bus_total_data != null ? Bus.bus_data.bus_total_data.power_factor?.toFixed(2) : '/'
@@ -910,7 +867,7 @@ const getList = async () => {
   const temp1Data = await IndexApi.getRecordPage({
     pageNo: 1,
     pageSize: 10,
-    devKey: "172.16.101.2-1",
+    devKey: queryParams.devKey,
     devType: 6
   })
   //处理告警信息数据
