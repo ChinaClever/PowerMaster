@@ -225,7 +225,7 @@
               link
               type="primary"
               @click="openPFDetail(scope.row)"
-              v-if=" scope.row.status != null && scope.row.status != 5"
+              v-if=" scope.row.status != null && scope.row.status != 0"
             >
             设备详情
             </el-button>
@@ -290,8 +290,8 @@
       <el-dialog v-model="detailVis" title="功率因数详情"  width="70vw" height="58vh" >
         <el-row>
           <el-tag style="margin-left: 7vw; margin-top: -62px">{{ location }}</el-tag>
-          <div style="margin-left: -14vw;">
-            日期:
+          <div style="margin-left: -10vw;">
+              日期:
             <el-date-picker
               v-model="queryParams.oldTime"
               value-format="YYYY-MM-DD HH:mm:ss"
@@ -619,37 +619,37 @@ const getList = async () => {
   }
 }
 
-const getListNoLoading = async () => {
-  try {
-    const data = await IndexApi.getBoxPFPage(queryParams)
-    list.value = data.list
-    var tableIndex = 0;    
+// const getListNoLoading = async () => {
+//   try {
+//     const data = await IndexApi.getBoxPFPage(queryParams)
+//     list.value = data.list
+//     var tableIndex = 0;    
 
-    list.value.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.phasePowFactor == null){
-        return;
-      } 
-      for(var i= 0;i < obj.phasePowFactor.length; i++)
-      {
-        obj.phasePowFactor[i] = obj.phasePowFactor[i]?.toFixed(2);
-      }
-      for(var i= 0;i < obj.loopPowFactor.length; i++)
-      {
-        obj.loopPowFactor[i] = obj.loopPowFactor[i]?.toFixed(2);
-      }
-      for(var i= 0;i < obj.outletPowFactor.length; i++)
-      {
-        obj.outletPowFactor[i] = obj.outletPowFactor[i]?.toFixed(2);
-      }
-      obj.totalPowFactor = obj.totalPowFactor?.toFixed(2);
-    });
+//     list.value.forEach((obj) => {
+//       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+//       if(obj?.phasePowFactor == null){
+//         return;
+//       } 
+//       for(var i= 0;i < obj.phasePowFactor.length; i++)
+//       {
+//         obj.phasePowFactor[i] = obj.phasePowFactor[i]?.toFixed(2);
+//       }
+//       for(var i= 0;i < obj.loopPowFactor.length; i++)
+//       {
+//         obj.loopPowFactor[i] = obj.loopPowFactor[i]?.toFixed(2);
+//       }
+//       for(var i= 0;i < obj.outletPowFactor.length; i++)
+//       {
+//         obj.outletPowFactor[i] = obj.outletPowFactor[i]?.toFixed(2);
+//       }
+//       obj.totalPowFactor = obj.totalPowFactor?.toFixed(2);
+//     });
 
-    total.value = data.total
-  } catch (error) {
+//     total.value = data.total
+//   } catch (error) {
     
-  }
-}
+//   }
+// }
 
 const getNavList = async() => {
   const res = await IndexApi.getBoxMenu()
@@ -748,7 +748,7 @@ onMounted(async () => {
   getList()
   getNavList();
   getTypeMaxValue();
-  flashListTimer.value = setInterval((getListNoLoading), 5000);
+  flashListTimer.value = setInterval((getList), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -770,7 +770,7 @@ onActivated(() => {
   getList()
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getListNoLoading), 5000);
+    flashListTimer.value = setInterval((getList), 5000);
   }
 })
 </script>

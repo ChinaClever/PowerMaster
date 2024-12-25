@@ -62,8 +62,8 @@ export const IndexApi = {
     return await request.post({ url: `/bus/index/eq/page`, data })
   },
 
-  getEqMax: async (data: any) => {
-    return await request.post({ url: `/bus/index/eq/maxEq`, data })
+  getEqMax: async () => {
+    return await request.post({ url: `/bus/index/eq/maxEq` })
   },
 
   getBalancePage: async (data: any) => {
@@ -203,7 +203,7 @@ export const IndexApi = {
     return await request.downloadPost({ url: `/bus/index/pf/detailExcel` , data, ...axiosConfig })
   },
 
-  //获得记录分页
+  //获得告警记录分页
   getRecordPage: async (data: any) => {
     return await request.post({ url: `/system/alarm/record/page`, data})
   },

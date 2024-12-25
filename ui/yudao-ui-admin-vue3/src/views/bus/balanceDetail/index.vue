@@ -4,7 +4,7 @@
       <div>
           <div>
             <span>所在位置：</span>
-            <el-tag size="large">{{ location }}</el-tag><span>(名称：<el-tag size="large">{{ location }}</el-tag>)</span>
+            <el-tag size="large">{{ location }}</el-tag><span>(名称：<el-tag size="large">{{ busName }}</el-tag>)</span>
           </div>
           <div style="margin-top:-30px;float:right">
             <span>网络地址：</span>
@@ -81,7 +81,8 @@ const busId = history?.state?.busId || -1
 const devKey = history?.state?.devKey || "0"
 const location =  history?.state?.location 
 const adder = history?.state?.location.split('-')[0]
-
+const busName = history?.state?.busName
+console.log('busName', busName);
 const colorList = [{
   name: '小电流不平衡',
   color: '#aaa',  //灰色

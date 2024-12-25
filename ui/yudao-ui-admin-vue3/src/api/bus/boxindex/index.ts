@@ -194,7 +194,10 @@ export const IndexApi = {
   getBoxPFDetailExcel: async ( data: any, axiosConfig) => {
     return await request.downloadPost({ url: `/box/index/pf/detailExcel` , data, ...axiosConfig })
   },
-
+  //获得告警记录分页
+  getRecordPage: async (data: any) => {
+    return await request.post({ url: `/system/alarm/record/page`, data})
+  },
    //获得插接箱设备统计
     getBoxIndexStatistics: async () => {
       return await request.get({ url: `/box/index/statistics` })

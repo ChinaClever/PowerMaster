@@ -23,7 +23,7 @@ import java.util.List;
 public interface BusIndexMapper extends BaseMapperX<BusIndexDO> {
 
     default PageResult<BusIndexDO> selectPage(BusIndexPageReqVO reqVO) {
-        return selectPage(reqVO, new LambdaQueryWrapperX<BusIndexDO>()
+        return selectPage(reqVO, new LambdaQueryWrapperX<BusIndexDO>().eq(BusIndexDO::getIsDeleted,false)
                 .eqIfPresent(BusIndexDO::getBusKey, reqVO.getDevKey())
                 .inIfPresent(BusIndexDO::getBusKey,reqVO.getBusDevKeyList())
                 .inIfPresent(BusIndexDO::getId,reqVO.getBusIds())
@@ -35,7 +35,7 @@ public interface BusIndexMapper extends BaseMapperX<BusIndexDO> {
                 .inIfPresent(BusIndexDO::getRunStatus, reqVO.getStatus())
                         .inIfPresent(BusIndexDO::getLoadRateStatus, reqVO.getLoadRateStatus())
 //                .ne(ObjectUtil.isNotEmpty(reqVO.getStatus()),BusIndexDO::getRunStatus, 0)
-                .orderByAsc(BusIndexDO::getId));
+                .orderByDesc(BusIndexDO::getRunStatus));
     }
 
     default PageResult<BusIndexDO> selectPage2(BusIndexPageReqVO reqVO) {

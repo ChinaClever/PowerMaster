@@ -334,7 +334,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         if (boxIndex != null) {
             String index;
             if (pageReqVO.getTimeType().equals(0)) {
-                index = "bus_hda_line_hou r";
+                index = "bus_hda_line_hour";
             } else {
                 index = "bus_hda_line_day";
             }
@@ -374,11 +374,10 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 }
                 dateTimes.add(houResVO.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
             }
-            dateTimes.stream().distinct().collect(Collectors.toList());
             map.put("A", dayList1);
             map.put("B", dayList2);
             map.put("C", dayList3);
-            map.put("dateTimes", dateTimes);
+            map.put("dateTimes", dateTimes.stream().distinct().collect(Collectors.toList()));
         }
         return map;
     }
@@ -2370,31 +2369,35 @@ public class BoxIndexServiceImpl implements BoxIndexService {
      * @param index     索引表
      */
     private List<String> getData(String startTime, String endTime, List<Integer> ids, String index) throws IOException {
-        // 创建SearchRequest对象, 设置查询索引名
-        SearchRequest searchRequest = new SearchRequest(index);
-        // 通过QueryBuilders构建ES查询条件，
-        SearchSourceBuilder builder = new SearchSourceBuilder();
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
 
-        //获取需要处理的数据
-        builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime))
-                .must(QueryBuilders.termsQuery("box_id", ids))));
-        builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
-        // 设置搜索条件
-        searchRequest.source(builder);
-        builder.size(3000);
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime))
+                    .must(QueryBuilders.termsQuery("box_id", ids))));
+            builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            builder.size(3000);
 
-        List<String> list = new ArrayList<>();
-        // 执行ES请求
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-        if (searchResponse != null) {
-            SearchHits hits = searchResponse.getHits();
-            for (SearchHit hit : hits) {
-                String str = hit.getSourceAsString();
-                list.add(str);
+            List<String> list = new ArrayList<>();
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse != null) {
+                SearchHits hits = searchResponse.getHits();
+                for (SearchHit hit : hits) {
+                    String str = hit.getSourceAsString();
+                    list.add(str);
+                }
             }
+            return list;
+        }catch (Exception e){
+            log.error(e.getMessage());
         }
-        return list;
-
+        return null;
     }
 
     private String getMaxData(String startTime, String endTime, List<Integer> ids, String index, String order) throws IOException {
