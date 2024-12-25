@@ -663,7 +663,9 @@ const initChart = async () => {
       legend: { data: ['有功功率','视在功率','功率因素'], selectedMode: 'single'},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-      xAxis: {type: 'category', axisLabel: { formatter: 
+      xAxis: {
+        type: 'category', 
+      axisLabel: { formatter: 
             function (value) {
               if(toggleTime.value == "oneHour"){
                 // 截取字符串的前n位，即yyyy-MM-dd HH:mm:ss
@@ -673,7 +675,8 @@ const initChart = async () => {
                 return value.substring(5, 19);
               } 
             }
-          },boundaryGap: false, data:chartData.value.dateTimes},
+          },
+          boundaryGap: false, data:chartData.value.dateTimes},
       yAxis: { type: 'value'},
       //鼠标悬停的显示
       series: [

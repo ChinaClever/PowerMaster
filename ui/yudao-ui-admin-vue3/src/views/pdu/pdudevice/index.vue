@@ -202,7 +202,7 @@
               @click="toPDUDisplayScreen(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 5"
             >
-            设备详情
+            详情
             </el-button>
             <el-button
               link
