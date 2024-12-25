@@ -257,7 +257,8 @@
         </template>
         <!-- 自定义的主要内容 -->
         <div class="custom-content">
-          <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
+          <div class="custom-content-container">
+            <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
             <div class="IechartBar">
               <Echart :options="ABarOption" :height="300" />
             </div>
@@ -285,6 +286,33 @@
               </el-tooltip>
             </div>
           </el-card>
+          </div>
+          <div class="custom-content-container">
+            <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
+            <div class="IechartBar">
+              <Echart :options="BBarOption" :height="300"/>
+            </div>
+          </el-card>
+          <el-card class="cardChilc" shadow="hover">
+            <div class="IechartBar"  :style="{backgroundColor: colorVolList[balanceObj.colorIndex].color}">
+              <Echart :options="BLineOption" :height="300"/>
+            </div>
+          </el-card>
+          <el-card  class="cardChilc" shadow="hover">
+            <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
+              <div class="value">{{balanceObj.imbalanceValueB.toFixed(2)}}%</div>
+              <div class="day" :style="{backgroundColor: colorList[0].color}">电压不平衡</div>
+              <el-tooltip
+                class="box-item"
+                effect="dark"
+                content="三相电压不平衡度=( 最大电压−最小电压)/平均电压×100%"
+                placement="right"
+              >
+                <div @click.prevent="" class="question">?</div>
+              </el-tooltip>
+            </div>
+          </el-card>
+          </div>
         </div>
       </el-dialog>
 
@@ -318,14 +346,52 @@
       <el-dialog v-model="dialogVisibleVol" @close="handleClose">
         <!-- 自定义的头部内容（可选） -->
         <template #header>
+          <div>
+            <div>
+              <span>所在位置：</span>
+              <el-tag size="large">{{ curlocation }}</el-tag><span>(名称：<el-tag size="large">{{ curlocation }}</el-tag>)</span>
+            </div>
+            <div style="margin-top:-30px;float:right">
+              <span>网络地址：</span>
+              <el-tag size="large">{{ curlocation.split('-')[0] }}</el-tag>
+            </div>
+          </div>
           <CardTitle title="电压不平衡" />
-          <span style="margin-left: 1vw"
-            ><el-tag size="large">{{ vollocation }}</el-tag></span
-          >
         </template>
         <!-- 自定义的主要内容 -->
         <div class="custom-content">
-          <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
+          <div class="custom-content-container">
+            <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
+            <div class="IechartBar">
+              <Echart :options="ABarOption" :height="300" />
+            </div>
+          </el-card>
+          <el-card class="cardChilc" shadow="hover">
+            <div class="IechartBar" :style="{backgroundColor: colorVolList[balanceObj.colorIndex].color}">
+              <Echart :options="ALineOption" :height="300" />
+            </div>
+          </el-card>
+          <el-card class="cardChilc" shadow="hover">
+            <div class="box" :style="{ borderColor: colorList[balanceObj.colorIndex].color }">
+              <div class="value">{{ balanceObj.imbalanceValueA.toFixed(2)}}%</div>
+              <div
+                class="day"
+                :style="{ backgroundColor: colorList[balanceObj.colorIndex].color }"
+                >{{ colorList[balanceObj.colorIndex].name }}</div
+              >
+              <el-tooltip
+                class="box-item"
+                effect="dark"
+                content="三相电流不平衡： 不平衡度%=（MAX相电流-三相平均电流）/三相平均电流×100%"
+                placement="right"
+              >
+                <div @click.prevent="" class="question">?</div>
+              </el-tooltip>
+            </div>
+          </el-card>
+          </div>
+          <div class="custom-content-container">
+            <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
             <div class="IechartBar">
               <Echart :options="BBarOption" :height="300"/>
             </div>
@@ -349,6 +415,7 @@
               </el-tooltip>
             </div>
           </el-card>
+          </div>
         </div>
       </el-dialog>
 
@@ -679,7 +746,7 @@ const getBalanceDetail = async (item) => {
   balanceObj.imbalanceValueA = res.curUnbalance
   balanceObj.imbalanceValueB = res.volUnbalance
   balanceObj.colorIndex = res.color - 1
-  console.log('balanceObj',balanceObj)
+  console.log('balanceObj',balanceObj.colorIndex)
 }
 
 const getBalanceTrend = async (item) => {
@@ -1623,9 +1690,16 @@ onActivated(() => {
 
 :deep(.el-dialog) {
   width: 80%;
+  margin-top: 70px;
 }
 
-.custom-content {
+.custom-content{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.custom-content-container{
   display: flex;
   justify-content: space-between;
   flex-wrap: nowrap;
