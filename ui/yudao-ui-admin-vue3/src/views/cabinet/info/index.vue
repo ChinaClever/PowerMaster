@@ -832,12 +832,13 @@ onBeforeMount(() => {
 
 @media screen and (min-width:2048px){
   .arrayContainer {
-    height: 700px;
+    height: 710px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
+    margin-top: -10px;
     .arrayItem {
       min-width: 290px;
       width: 20%;
@@ -961,12 +962,13 @@ onBeforeMount(() => {
 
 @media screen and (max-width:2048px) and (min-width:1600px){
   .arrayContainer {
-    height: 700px;
+    height: 710px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
+    margin-top: -10px;
     .arrayItem {
       min-width: 290px;
       width: 25%;
@@ -1090,12 +1092,13 @@ onBeforeMount(() => {
 
 @media screen and (max-width:1600px){
   .arrayContainer {
-    height: 700px;
+    height: 710px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
+    margin-top: -10px;
     .arrayItem {
       min-width: 290px;
       width: 33.3%;

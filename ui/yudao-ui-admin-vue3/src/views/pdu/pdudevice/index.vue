@@ -144,7 +144,7 @@
       </el-form>      
     </template>
     <template #Content >
-     <div v-if="switchValue && list.length > 0" style="height: 700px;overflow: hidden;overflow-y: auto;">
+     <div v-if="switchValue && list.length > 0" style="height: 710px;overflow: hidden;overflow-y: auto;margin-top: -10px;">
       <el-table v-if="switchValue == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
@@ -265,13 +265,13 @@
                 <span class="text-pf">PF</span>
               </div>                    
             </div>
-            <!-- <div class="info">
+            <div class="info">
               
               <div v-if=" item.pow != null ">有功功率：{{item.pow}}kW</div>    
-              <div v-if="item.apparentPow != null">视在功率：{{item.apparentPow}}kVA</div> -->
+              <div v-if="item.apparentPow != null">视在功率：{{item.apparentPow}}kVA</div>
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
-            <!-- </div> -->
+            </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status">
@@ -1167,12 +1167,13 @@ onActivated(() => {
 @media screen and (min-width:2048px){
   .arrayContainer {
     width:100%;
-    height: 700px;
+    height: 710px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
+    margin-top: -10px;
 
     .arrayItem {
       width: 20%;
@@ -1246,12 +1247,13 @@ onActivated(() => {
 @media screen and (max-width:2048px) and (min-width:1600px) {
   .arrayContainer {
     width:100%;
-    height: 700px;
+    height: 710px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
+    margin-top: -10px;
 
     .arrayItem {
       width: 25%;
@@ -1326,12 +1328,13 @@ onActivated(() => {
 @media screen and (max-width:1600px) {
   .arrayContainer {
     width:100%;
-    height: 700px;
+    height: 710px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
+    margin-top: -10px;
 
     .arrayItem {
       width: 33%;
