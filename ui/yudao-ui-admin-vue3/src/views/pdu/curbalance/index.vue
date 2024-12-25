@@ -335,10 +335,10 @@
         
         
         <template #header>
-          <div><h2>均衡配电详情</h2></div> 
+          <div><h3>均衡配电详情</h3></div> 
           <div>所在位置：{{location ==null ? '未绑定设备':location  }} 
             网络地址：{{vollocation}} 
-            <span style="padding-left: 530px;">更新时间: {{ dataUpdateTime }} </span>
+            <!-- <span style="padding-left: 530px;">更新时间: {{ dataUpdateTime }} </span> -->
           </div>
           
         </template>

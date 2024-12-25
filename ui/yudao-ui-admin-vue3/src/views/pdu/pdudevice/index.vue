@@ -254,7 +254,12 @@
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.id !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
-          <div class="content">
+          <div class="content" style="margin-left: 10px;">
+            <div class="info">
+              <div >视在功率：{{ formatEQ(item.apparentPow,3) }}kW</div>
+              <div >有功功率：{{ formatEQ(item.pow,3) }}kW</div>
+              <div >无功功率：{{ formatEQ(item.reactivePow,3) }}kW</div>
+            </div>
             <div class="icon">
               <div v-if="item.pf != null">
                 {{item.pf}}<br/>
@@ -361,6 +366,14 @@ const querySearch = (queryString: string, cb: any) => {
     : devKeyList.value
   // call callback function to return suggestions
   cb(results)
+}
+
+function formatEQ(value: number, decimalPlaces: number | undefined){
+  if (!isNaN(value)) {
+    return Number(value).toFixed(decimalPlaces);
+  } else {
+      return null; // 或者其他默认值
+  }
 }
 
 const createFilter = (queryString: string) => {
