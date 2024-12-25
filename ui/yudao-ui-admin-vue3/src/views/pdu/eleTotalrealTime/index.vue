@@ -137,7 +137,7 @@
               type="primary"
               @click="toDetails(scope.row.location,scope.row.createTimeMin,scope.row.createTimeMax)"
             >
-            设备详情
+            详情
             </el-button>
           </template>
         </el-table-column>
@@ -314,30 +314,65 @@ const getPageNumbers = (pageNumber) => {
   return pageNumbers;
 };
 
+// 返回当前页的序号数组
+const getPageNumber = (pageNumber) => {
+  const start = (pageNumber - 1) * queryParams.pageSize + 1;
+  const end = pageNumber * queryParams.pageSize;
+  const count = end - start + 1;
+  return count;
+};
+
 // 柱状图
 const rankChartContainer = ref<HTMLElement | null>(null);
 let rankChart = null as echarts.ECharts | null;
 const eqData = ref<number[]>([]);
-const initChart = () => {
-  if (rankChartContainer.value && instance) {
+  const initChart = () => {
+    if (rankChartContainer.value && instance) {
+    // 假设这是您的分页阈值
+    const labelThreshold = 30; // 您可以根据需要调整这个值
+
+    // 计算当前分页数量
+    const totalPages = getPageNumber(queryParams.pageNo);
     rankChart = echarts.init(rankChartContainer.value);
     rankChart.setOption({
       title: { text: '各PDU实时耗电量'},
       tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
       legend: { data: []},
       toolbox: {feature: {saveAsImage:{}}},
-      xAxis: {type: 'category', data: getPageNumbers(queryParams.pageNo)},
+      xAxis: {
+        type: 'category',
+        data: getPageNumbers(queryParams.pageNo),
+        axisLabel: {
+          interval: 0, // 根据实际情况调整
+          formatter: function (value, index) {
+            // 如果超过阈值，则只显示索引
+            return totalPages > labelThreshold ? '' : value;
+          },  // 如果需要，可以旋转标签
+        }
+      },
       yAxis: { type: 'value', name: "kWh"},
       series: [
-        {name:"耗电量",  type: 'bar', data: eqData.value, label: { show: true, position: 'top' }, barWidth: 50},
+        {
+          name: "耗电量",
+          type: 'bar',
+          barWidth: 'auto', // 自动调整宽度，或指定一个合适的固定宽度
+          barGap: '30%',
+          data: eqData.value,
+          label: {
+                        show: totalPages <= labelThreshold,
+                        position: 'top'
+                    }
+
+        },
       ],
     });
+    
     rankChart.on('click', function(params) {
-      // 控制台打印数据的名称
-       toDetails(list.value[params.dataIndex].location,
+      toDetails(list.value[params.dataIndex].location,
         list.value[params.dataIndex].createTimeMin,
         list.value[params.dataIndex].createTimeMax);
     });
+
     instance.appContext.config.globalProperties.rankChart = rankChart;
   }
 };
