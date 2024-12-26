@@ -76,7 +76,7 @@
       >
         <el-form-item label="时间段" prop="createTime" label-width="60px">
           <el-button 
-            @click="queryParams.timeType = 0;queryParams.oldTime = null;queryParams.newTime = null;queryParams.timeArr = null;handleQuery();showSearchBtn = false;dateSwitch = true;"
+            @click="queryParams.timeType = 0;queryParams.oldTime = getFullTimeByDate(new Date(now1.getTime() - 24 * 60 * 60 * 1000));queryParams.newTime = getFullTimeByDate(now1);queryParams.timeArr = null;handleQuery();showSearchBtn = false;dateSwitch = true;"
             :type="queryParams.timeType == 0 ? 'primary' : ''"
           >
             最近24小时
@@ -473,7 +473,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import Bar from './component/Bar.vue'
 
 const searchbth = ref(false);
-
+const now1 = new Date();
 
 // 使用 ref 来获取 DOM 元素
 const chartDom = ref<HTMLDivElement | null>(null);
