@@ -47,13 +47,13 @@
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag warn"></div>告警
+              <div class="tag error"></div>告警
             </div>
             <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag error"></div>总共
+              <!--<div class="tag error"></div>-->总共
             </div>
             <div class="value"><span class="number">{{ statusNumber.total }}</span>个</div>
           </div>
@@ -70,11 +70,6 @@
         :inline="true"
         label-width="68px"
       >
-        <el-form-item >
-          <el-checkbox-group  v-model="queryParams.status" @change="handleQuery">
-            <el-checkbox :label="5" :value="5">在线</el-checkbox>
-          </el-checkbox-group>
-        </el-form-item>
         <el-form-item label="参数类型" prop="type">
         <el-cascader
           v-model="defaultSelected"
@@ -128,7 +123,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
+      <el-table v-show="switchValue == 3" v-loading="loading" style="height:710px;margin-top:-10px;" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -380,7 +375,7 @@
               {{ scope.row.loopVol[7] }}
             </el-text>
           </template>
-        </el-table-column>
+        </el-table-column>--
         <el-table-column v-if="valueMode == 1 && typeText == 'loop'" label="回路9电压(V)" align="center" prop="cvol" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.loopVol">
@@ -540,7 +535,8 @@
       </el-table>
 
       <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+        <template v-for="item in list" :key="item.devKey">
+          <div v-if="item.id !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="icon" >
@@ -553,19 +549,25 @@
               <div v-else-if="valueMode == 0 && item.loopCur != null && typeText == 'loop'" >
                 电流
               </div> -->
+              <div v-if="valueMode == 0 && item.phaseCur != null && typeText == 'line'">
+                电流
+              </div>
+              <div v-else-if="valueMode == 0 && item.loopCur != null && typeText == 'loop'" >
+                电流
+              </div>
               <div v-if="valueMode == 1 && item.phaseVol != null && typeText == 'line'" >
                 电压
               </div>
               <div v-else-if="valueMode == 1 && item.loopVol != null && typeText == 'loop'" >
                 电压
               </div>
-              <div v-if="valueMode == 2 && item.phaseActivePow != null && typeText == 'line'" >
+              <div v-if="valueMode == 2 && item.phaseActivePow != null && typeText == 'line'">
                 有功功率
               </div>
-              <div v-if="valueMode == 2 && item.loopActivePow != null && typeText == 'loop'" >
+              <div v-if="valueMode == 2 && item.loopActivePow != null && typeText == 'loop'">
                 有功功率
               </div>
-              <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'outlet'" >
+              <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'outlet'">
                 有功功率
               </div>
               <div v-if="valueMode == 3 && item.phaseReactivePow != null && typeText == 'line'" >
@@ -678,6 +680,7 @@
           </div>
           <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 5" >详情</button>
         </div>
+        </template>
       </div>
       <Pagination
         :total="total"
@@ -717,7 +720,7 @@ const switchValue = ref(0)
 const valueMode = ref(0)
 
 const phaseLineText = ref(['A相：','B相：','C相：']);
-const loopLineText = ref(['回路1：','回路2：','回路3：','回路4：','回路5：','回路6：','回路7：','回路8：','回路9：']);
+const loopLineText = ref(['回路3：','回路6：','回路9：']);
 const outletLineText = ref(['输出位1：','输出位2：','输出位3：']);
 
 const phaseText = ref([['A相电流(A)','B相电流(A)','C相电流(A)'],['A相电压(V)','B相电压(V)','C相电压(V)'],
@@ -865,6 +868,7 @@ const getList = async () => {
 
     list.value = data.list
     var tableIndex = 0;
+    console.log('list-data1111',list.value.length)
 
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
@@ -898,41 +902,55 @@ const getList = async () => {
       }
     });
 
+    for(let i = 0; i < list.value.length; i++){
+      const loopCur = list.value[i].loopCur
+      const selectedElements = [];
+      const indicesToSelect = [2, 5, 8];
+      for (let j = 0; j < indicesToSelect.length; j++) {
+        if (j < loopCur.length){
+          selectedElements.push(loopCur[indicesToSelect[j]]);
+        }
+      }
+
+      list.value[i].loopCur = selectedElements
+      console.log('list.value[i].loopCur',list.value[i].loopCur)
+    }
+
     total.value = data.total
   } finally {
     loading.value = false
   }
 }
 
-const getListAll = async () => {
-  try {
-    var normal = 0;
-    var offline = 0;
-    var alarm = 0;
-
-    const allData = await IndexApi.getBoxRedisPage(queryParamsAll);
-    allList.value = allData.list
-    allList.value.forEach((objAll) => {
-      if(objAll?.dataUpdateTime == null && objAll?.phaseCur == null){
-        objAll.status = 0;
-        offline++;
-        return;
-      }
-      if(objAll?.status == 1){
-        normal++;
-      } else if (objAll?.status == 2){
-        alarm++;
-      }
-    });
-    //设置左边数量
-    statusNumber.normal = normal;
-    statusNumber.offline = offline;
-    statusNumber.alarm = alarm;
-    statusNumber.total = allData.total;
-  } catch (error) {
-    
-  }
-}
+//const getListAll = async () => {
+//  try {
+//    var normal = 0;
+//    var offline = 0;
+//    var alarm = 0;
+//
+//    const allData = await IndexApi.getBoxRedisPage(queryParamsAll);
+//    allList.value = allData.list
+//    allList.value.forEach((objAll) => {
+//      if(objAll?.dataUpdateTime == null && objAll?.phaseCur == null){
+//        objAll.status = 0;
+//        offline++;
+//        return;
+//      }
+//      if(objAll?.status == 1){
+//        normal++;
+//      } else if (objAll?.status == 2){
+//        alarm++;
+//      }
+//    });
+//    //设置左边数量
+//    statusNumber.normal = normal;
+//    statusNumber.offline = offline;
+//    statusNumber.alarm = alarm;
+//    statusNumber.total = allData.total;
+//  } catch (error) {
+//    
+//  }
+//}
 
 const getListNoLoading = async () => {
   try {
@@ -972,6 +990,20 @@ const getListNoLoading = async () => {
       }
     });
 
+    for(let i = 0; i < list.value.length; i++){
+      const loopCur = list.value[i].loopCur
+      const selectedElements = [];
+      const indicesToSelect = [2, 5, 8];
+      for (let j = 0; j < indicesToSelect.length; j++) {
+        if (j < loopCur.length){
+          selectedElements.push(loopCur[indicesToSelect[j]]);
+        }
+      }
+
+      list.value[i].loopCur = selectedElements
+      console.log('list.value[i].loopCur',list.value[i].loopCur)
+    }
+
     total.value = data.total
   } catch (error) {
     
@@ -998,8 +1030,9 @@ const getNavList = async() => {
 const toDeatil = (row) =>{
   const devKey = row.devKey;
   const boxId = row.boxId;
-  const location = row.location != null ? row.location : row.devKey
-  push({path: '/bus/boxmonitor/boxpowerdetail', state: { devKey, boxId ,location}})
+  const location = row.location != null ? row.location : row.devKey;
+  console.log('row',row);
+  push({path: '/bus/boxmonitor/boxpowerdetail', state: { devKey, boxId ,location}});
 }
 
 const defaultSelected = ref(['line'])
@@ -1100,10 +1133,10 @@ onMounted(async () => {
   devKeyList.value = await loadAll();
   getList()
   getNavList();
-  getListAll();
+  //getListAll();
   getTypeMaxValue();
   flashListTimer.value = setInterval((getListNoLoading), 5000);
-  flashListTimer.value = setInterval((getListAll), 5000);
+  //flashListTimer.value = setInterval((getListAll), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -1126,7 +1159,7 @@ onActivated(() => {
   getNavList();
   if(!firstTimerCreate.value){
     flashListTimer.value = setInterval((getListNoLoading), 5000);
-    flashListTimer.value = setInterval((getListAll), 5000);
+    //flashListTimer.value = setInterval((getListAll), 5000);
   }
 })
 </script>
@@ -1394,66 +1427,243 @@ onActivated(() => {
   }
 }
 
-.arrayContainer {
-  display: flex;
-  flex-wrap: wrap;
-  .arrayItem {
-    width: 25%;
-    height: 140px;
-    font-size: 13px;
-    box-sizing: border-box;
-    background-color: #eef4fc;
-    border: 5px solid #fff;
-    padding-top: 40px;
-    position: relative;
-    .content {
-      display: flex;
-      align-items: center;
-      flex-direction: row;
-      .icon {
-        width: 74px;
-        height: 30px;
-        margin: 0 28px;
-        font-size: large;
-        text-align: center;
+@media screen and (min-width:2048px){
+  .arrayContainer {
+    width:100%;
+    height: 710px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+
+    .arrayItem {
+      width: 20%;
+      height: 140px;
+      font-size: 13px;
+      box-sizing: border-box;
+      background-color: #eef4fc;
+      border: 5px solid #fff;
+      padding-top: 40px;
+      position: relative;
+      .content {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        .icon {
+          font-size: 20px;
+          width: 60px;
+          height: 30px;
+          margin: 0 25px 39px;
+          text-align: center;
+          .text-pf{
+            font-size: 16px;
+          }
+        }
+        .info{
+          font-size: 16px;
+          margin-bottom: 20px;
+        }
+      }
+      .devKey{
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .room {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .status {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        color: #fff;
+        position: absolute;
+        right: 38px;
+        top: 8px;
+      }
+      .detail {
+        width: 40px;
+        height: 25px;
+        padding: 0;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        cursor: pointer;
       }
     }
-    .devKey{
-      position: absolute;
-      left: 8px;
-      top: 8px;
-    }
-    .room {
-      position: absolute;
-      left: 8px;
-      top: 8px;
-    }
-    .status {
-      width: 40px;
-      height: 20px;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+  }
+}
 
-      color: #fff;
-      position: absolute;
-      right: 38px;
-      top: 8px;
+@media screen and (max-width:2048px) and (min-width:1600px) {
+  .arrayContainer {
+    width:100%;
+    height: 710px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+
+    .arrayItem {
+      width: 25%;
+      height: 140px;
+      font-size: 13px;
+      box-sizing: border-box;
+      background-color: #eef4fc;
+      border: 5px solid #fff;
+      padding-top: 40px;
+      position: relative;
+      border-radius: 7px;
+      .content {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        .icon {
+          font-size: 20px;
+          width: 60px;
+          height: 30px;
+          margin: 0 25px 39px;
+          text-align: center;
+          .text-pf{
+            font-size: 16px;
+          }
+        }
+        .info{
+          font-size: 16px;
+          margin-bottom: 20px;
+        }
+      }
+      .devKey{
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .room {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .status {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        color: #fff;
+        position: absolute;
+        right: 38px;
+        top: 8px;
+      }
+      .detail {
+        width: 40px;
+        height: 25px;
+        padding: 0;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        cursor: pointer;
+      }
     }
-    .detail {
-      width: 40px;
-      height: 25px;
-      padding: 0;
-      border: 1px solid #ccc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #fff;
-      position: absolute;
-      right: 8px;
-      bottom: 8px;
-      cursor: pointer;
+  }
+}
+
+@media screen and (max-width:1600px) {
+  .arrayContainer {
+    width:100%;
+    height: 710px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+
+    .arrayItem {
+      width: 33%;
+      height: 140px;
+      font-size: 13px;
+      box-sizing: border-box;
+      background-color: #eef4fc;
+      border: 5px solid #fff;
+      padding-top: 40px;
+      position: relative;
+      .content {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        .icon {
+          font-size: 20px;
+          width: 60px;
+          height: 30px;
+          margin: 0 25px 39px;
+          text-align: center;
+          .text-pf{
+            font-size: 16px;
+          }
+        }
+        .info{
+          font-size: 16px;
+          margin-bottom: 20px;
+        }
+      }
+      .devKey{
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .room {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .status {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        color: #fff;
+        position: absolute;
+        right: 38px;
+        top: 8px;
+      }
+      .detail {
+        width: 40px;
+        height: 25px;
+        padding: 0;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        cursor: pointer;
+      }
     }
   }
 }
@@ -1473,6 +1683,5 @@ onActivated(() => {
   background-color: #f5f7fa;
   color: #909399;
   height: 80px;
-
 }
 </style>

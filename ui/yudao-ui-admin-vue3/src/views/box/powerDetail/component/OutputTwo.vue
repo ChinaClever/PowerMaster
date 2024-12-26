@@ -45,9 +45,9 @@ const chartOptions = computed(() => ({
         fontWeight: 'bold'
       },
       data: [
-        { value: props.loadFactor.lineVolValue[0], name: 'Ua', itemStyle: { color: '#E5B849' } },
-        { value: props.loadFactor.lineVolValue[1], name: 'Ub', itemStyle: { color: '#C8603A' } },
-        { value: props.loadFactor.lineVolValue[2], name: 'Uc', itemStyle: { color: '#AD3762' } },
+        { value: props.loadFactor.linePowActive[1], name: '有功功率', itemStyle: { color: '#E5B849' } },
+        { value: props.loadFactor.linePowReactive[1], name: '无功功率', itemStyle: { color: '#C8603A' } },
+        { value: props.loadFactor.linePowApparent[1], name: '现在功率', itemStyle: { color: '#AD3762' } },
       ]
     }
   ]

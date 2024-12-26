@@ -320,8 +320,8 @@ const getLineChartData =async () => {
     message.warning('请先选择设备！')
     return
   }
-loading.value = true
- try {
+  loading.value = true
+  try {
     // 格式化时间范围 加上23:59:59的时分秒 
     queryParams.timeRange[0] = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
     // 结束时间的天数多加一天 ，  一天的毫秒数
@@ -329,6 +329,7 @@ loading.value = true
     queryParams.timeRange[1] = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
 
     const data = await EnergyConsumptionApi.getBoxEQDataDetails(queryParams);
+    console.log('11111',data)
     if (data != null && data.total != 0){
       loading2.value= true
       totalEqData.value = 0;
@@ -526,6 +527,7 @@ onMounted(async () => {
   queryParams.devkey =queryDevkey? queryDevkey : undefined;
   
   queryParams.boxId = queryBoxId ? parseInt(queryBoxId, 10) : undefined;
+  console.log('11111111111111111111111111')
   if (queryParams.boxId != undefined){
     await getLineChartData();
     nowAddress.value = queryLocation;

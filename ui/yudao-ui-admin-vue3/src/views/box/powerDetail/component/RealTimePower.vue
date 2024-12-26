@@ -21,34 +21,25 @@ console.log('loadFactor',props.loadFactor)
 
 const gaugeData = [
   {
-    value: 121,
+    value: props.loadFactor.totalPowApparent,
     detail: {
       valueAnimation: true,
       offsetCenter: ['0%', '-20%']
-    },
-    //itemStyle:{
-    //  color:'#C8603A'
-    //}
+    }
   },
   {
-    value: 323,
+    value: props.loadFactor.totalPowActive,
     detail: {
       valueAnimation: true,
       offsetCenter: ['0%', '10%']
-    },
-    //itemStyle:{
-    //  color:'#AD3762'
-    //}
+    }
   },
   {
-    value: 442,
+    value: props.loadFactor.totalPowReactive,
     detail: {
       valueAnimation: true,
       offsetCenter: ['0%', '40%']
-    },
-    //itemStyle:{
-    //  color:'#B47660'
-    //}
+    }
   }
 ];
 
@@ -90,6 +81,7 @@ const echartsOption = reactive({
         distance: 50
       },
       data: gaugeData,
+      max: 1000, // 设置最大值为1000
       title: {
         fontSize: 14
       },
@@ -105,7 +97,7 @@ const echartsOption = reactive({
       }
     }
   ]
-});
+});;
 
 onUnmounted(() => {
   console.log('onUnmounted******')

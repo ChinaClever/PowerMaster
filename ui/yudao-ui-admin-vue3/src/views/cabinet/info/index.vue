@@ -87,8 +87,8 @@
       </el-form>
     </template>
     <template #Content>
-      <div v-show="switchValue && listPage.length > 0" style="height:700px">
-        <el-table v-show="switchValue == 1"  style="height: 700px;overflow: hidden;overflow-y: auto;" v-loading="loading" :data="listPage" @cell-dblclick="handleDbclick">
+      <div v-show="switchValue && listPage.length > 0" style="height:710px">
+        <el-table v-show="switchValue == 1"  style="height: 710px;overflow: hidden;overflow-y: auto;" v-loading="loading" :data="listPage" @cell-dblclick="handleDbclick">
         <el-table-column label="位置" min-width="110" align="center">
           <template #default="scope">
             <div>{{scope.row.roomName}}-{{scope.row.cabinetName}}</div>
@@ -832,7 +832,7 @@ onBeforeMount(() => {
 
 @media screen and (min-width:2048px){
   .arrayContainer {
-    height: 710px;
+    height: 720px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
@@ -962,7 +962,7 @@ onBeforeMount(() => {
 
 @media screen and (max-width:2048px) and (min-width:1600px){
   .arrayContainer {
-    height: 710px;
+    height: 720px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
@@ -1092,7 +1092,7 @@ onBeforeMount(() => {
 
 @media screen and (max-width:1600px){
   .arrayContainer {
-    height: 710px;
+    height: 720px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
