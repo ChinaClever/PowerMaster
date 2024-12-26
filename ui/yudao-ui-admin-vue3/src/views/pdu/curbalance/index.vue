@@ -238,7 +238,7 @@
             <el-button
               link
               type="primary"
-              @click="toPDUDisplayScreen(scope.row)"
+              @click="location=scope.row.location;toPDUDisplayScreen(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 5"
             >
               详情
@@ -291,7 +291,7 @@
           <button
             v-if="item.status != null && item.status != 5"
             class="detail"
-            @click="showDialogVol(item)"
+            @click="location=item.location;showDialogVol(item)"
             >详情</button
           >
         </div>
@@ -303,11 +303,6 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="icon">
-              <div v-if="item.volUnbalance != null">
-                <span style="font-size: 20px">{{ item.volUnbalance }}%</span><br />不平衡度
-              </div>
-            </div>
             <div class="info">
               <div v-if="item.avol != null">A相电压：{{ item.avol.toFixed(1) }}V</div>
               <div v-if="item.bvol != null">B相电压：{{ item.bvol.toFixed(1) }}V</div>
@@ -315,6 +310,12 @@
               <!-- <div >网络地址：{{ item.devKey }}</div> -->
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
+            <div class="icon">
+              <div v-if="item.volUnbalance != null">
+                <span style="font-size: 20px">{{ item.volUnbalance }}%</span><br />不平衡度
+              </div>
+            </div>
+            
 
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
@@ -324,7 +325,7 @@
           <button
             v-if="item.status != null && item.status != 5"
             class="detail"
-            @click="showDialogVol(item)"
+            @click="location=item.location;showDialogVol(item)"
             >详情</button
           >
         </div>
@@ -336,7 +337,7 @@
         
         <template #header>
           <div><h3>均衡配电详情</h3></div> 
-          <div>所在位置：{{location ==null ? '未绑定设备':location  }} 
+          <div>所在位置：{{location  }} 
             网络地址：{{vollocation}} 
             <!-- <span style="padding-left: 530px;">更新时间: {{ dataUpdateTime }} </span> -->
           </div>
@@ -482,7 +483,7 @@ const statusList = reactive([
 
 const curlocation = ref()
 const vollocation = ref()
-
+const location = ref()
 const colorList = [
   {
     name: '小电流不平衡',
@@ -712,7 +713,9 @@ const handleSelectStatus1 = (index) => {
   butColor.value = 1;
   onclickColor.value = index;
   queryParams.color = [index];
- 
+  //queryParams.status = [index];
+  handleQuery();
+
   
   handleQuery();
 }
