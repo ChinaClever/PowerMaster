@@ -40,7 +40,7 @@
         <el-date-picker
         value-format="YYYY-MM-DD HH:mm:ss"
         v-model="queryParams.timeRange"
-        type="datetimerange"
+        type="daterange"
         :shortcuts="shortcuts"
         range-separator="-"
         start-placeholder="开始时间"

@@ -81,8 +81,7 @@ public class BusIndexController {
     @PostMapping("/page")
     @Operation(summary = "获得始端箱负荷分页")
     public CommonResult<PageResult<BusIndexRes>> getIndexPage(@RequestBody BusIndexPageReqVO pageReqVO) {
-        PageResult<BusIndexRes> pageResult = indexService.getIndexPage(pageReqVO);
-        return success(BeanUtils.toBean(pageResult, BusIndexRes.class));
+        return success(indexService.getIndexPage(pageReqVO));
     }
 
     @PostMapping("/pageExcel")

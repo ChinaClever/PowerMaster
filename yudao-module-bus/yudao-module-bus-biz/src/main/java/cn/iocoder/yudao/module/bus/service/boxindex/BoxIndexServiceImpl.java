@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.bus.service.boxindex;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEleTotalDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalMonthDo;
@@ -34,6 +35,7 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusAisleBarQueryVO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.boxcurbalancecolor.BoxCurbalanceColorDO;
+import cn.iocoder.yudao.module.bus.dal.dataobject.boxindex.BoxIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxcurbalancecolor.BoxCurbalanceColorMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxharmoniccolor.BoxHarmonicColorMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxindex.BoxIndexCopyMapper;
@@ -690,73 +692,180 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     }
 
     @Override
-    public PowerRedisDataRes getBoxPowerRedisData(String devKey) {
-        PowerRedisDataRes result = new PowerRedisDataRes();
+    public BoxPowerDetailRedisResVO getBoxPowerRedisData(String devKey,String type) {
+        BoxIndex boxIndex = boxIndexMapper.selectOne(new LambdaQueryWrapper<BoxIndex>().eq(BoxIndex::getBoxKey, devKey));
+//        PowerRedisDataRes result = new PowerRedisDataRes();
         ValueOperations ops = redisTemplate.opsForValue();
         JSONObject jsonObject = (JSONObject) ops.get(REDIS_KEY_BOX + devKey);
+        BoxPowerDetailRedisResVO vo = new BoxPowerDetailRedisResVO();
         if (jsonObject == null) {
-            return result;
+            return vo;
         }
-        JSONArray temArr = jsonObject.getJSONObject("env_item_list").getJSONArray("tem_value");
-        result.setTempA(temArr.getDouble(0));
-        result.setTempB(temArr.getDouble(1));
-        result.setTempC(temArr.getDouble(2));
-        result.setTempN(temArr.getDouble(3));
-        JSONObject boxTotalData = jsonObject.getJSONObject("box_data").getJSONObject("box_total_data");
-        JSONObject loopItemList = jsonObject.getJSONObject("box_data").getJSONObject("loop_item_list");
-        JSONArray volValue = loopItemList.getJSONArray("vol_value");
-        JSONArray curValue = loopItemList.getJSONArray("cur_value");
-        List<Double> curList = curValue.toList(Double.class);
-        List<Double> volList = volValue.toList(Double.class);
-        curList.sort(Comparator.naturalOrder());
-        volList.sort(Comparator.naturalOrder());
-        Double curAvg = (curList.get(0) + curList.get(1) + curList.get(2)) / 3;
-        Double volAvg = (volList.get(0) + volList.get(1) + volList.get(2)) / 3;
-        Double curUnbalance = curAvg == 0 ? 0 : (curList.get(2) - curAvg) / curAvg * 100;
-        Double volUnbalance = volAvg == 0 ? 0 : (volList.get(2) - volList.get(0)) / volAvg * 100;
-        result.setVub(curUnbalance);
-        result.setCub(volUnbalance);
-        result.setPf(boxTotalData.getDouble("power_factor"));
-        result.setS(boxTotalData.getDouble("pow_apparent"));
-        result.setP(boxTotalData.getDouble("pow_active"));
-        result.setQ(boxTotalData.getDouble("pow_reactive"));
-        result.setUpdateTime(jsonObject.getString("datetime"));
-        JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");
-        result.setIa(curValue.getDouble(0));
-        result.setIb(curValue.getDouble(1));
-        result.setIc(curValue.getDouble(2));
-        result.setUa(volValue.getDouble(0));
-        result.setUb(volValue.getDouble(1));
-        result.setUc(volValue.getDouble(2));
-        result.setUab(result.getUa() * 1.732);
-        result.setUbc(result.getUb() * 1.732);
-        result.setUca(result.getUc() * 1.732);
-        JSONArray curMax = loopItemList.getJSONArray("cur_max");
-        JSONArray volMax = loopItemList.getJSONArray("vol_max");
-        Double fInstalledCapacity = 0D;
-        for (int i = 0; i < 3; i++) {
-            fInstalledCapacity += curMax.getDouble(i) * volMax.getDouble(i);
-        }
-        result.setFInstalledCapacity(fInstalledCapacity / 1000);
-        BoxIndexPageReqVO reqVO = new BoxIndexPageReqVO();
-        reqVO.setDevKey(devKey);
-        reqVO.setTimeType(0);
+        vo.setDevKey(devKey);
+        vo.setUpdateTime(jsonObject.getString("datetime"));//当前时间
+        JSONArray temArr = jsonObject.getJSONObject("env_item_list").getJSONArray("tem_value");//温度
+        vo.setTemValue(temArr.toList(Double.class));
 
-        List<BoxLineRes> list = getBoxLineDevicePage(reqVO).getList();
-        if (!list.isEmpty()) {
-            BoxLineRes boxLineRes = list.get(0);
-            result.setMd(boxLineRes.getL1MaxPow().doubleValue() + boxLineRes.getL2MaxPow().doubleValue() + boxLineRes.getL3MaxPow().doubleValue());
-        } else {
-            result.setMd(0.0);
-        }
+        JSONObject boxTotalData = jsonObject.getJSONObject("box_data").getJSONObject("box_total_data");//总
+        vo.setTotalPowerFactor(boxTotalData.getDouble("power_factor"));
+        vo.setTotalPowApparent(boxTotalData.getDouble("pow_apparent"));
+        vo.setTotalPowActive(boxTotalData.getDouble("pow_active"));
+        vo.setTotalPowReactive(boxTotalData.getDouble("pow_reactive"));
+        vo.setTotalEleActive(boxTotalData.getDouble("ele_active"));
 
-        JSONArray curThd = lineItemList.getJSONArray("cur_thd");
-        result.setIaTHD(curThd.getDouble(0));
-        result.setIbTHD(curThd.getDouble(1));
-        result.setIcTHD(curThd.getDouble(2));
-        result.setLoadFactor((result.getP() / result.getFInstalledCapacity()) * 100);
-        return result;
+        Integer loopNum = jsonObject.getJSONObject("box_data").getJSONObject("box_cfg").getInteger("loop_num");
+        JSONObject loopItemList = jsonObject.getJSONObject("box_data").getJSONObject("loop_item_list");//回路
+        List<BoxLoopItemResVO> list = new ArrayList<>();
+        for (Integer i = 0; i < loopNum; i++) {
+            List<Double> curList = loopItemList.getList("cur_value",Double.class);//电流
+            List<Double> volList = loopItemList.getList("vol_value",Double.class);//电压
+            List<Double> powReactive = loopItemList.getList("pow_reactive", Double.class);//无功功率
+            List<Double> powApparent = loopItemList.getList("pow_apparent", Double.class);//视在功率
+            List<Double> powValue = loopItemList.getList("pow_value", Double.class);//有功功率值
+            List<Double> powerFactor = loopItemList.getList("power_factor", Double.class);//功率因素
+            List<Double> eleActive = loopItemList.getList("ele_active", Double.class);//电能
+            BoxLoopItemResVO loopItemResVO = new BoxLoopItemResVO();
+            loopItemResVO.setLoopId(i+1);
+            loopItemResVO.setLoopCurValue(curList.get(i));
+            loopItemResVO.setLoopVolValue(volList.get(i));
+            loopItemResVO.setLoopPowReactive(powReactive.get(i));
+            loopItemResVO.setLoopPowApparent(powApparent.get(i));
+            loopItemResVO.setLoopPowValue(powValue.get(i));
+            loopItemResVO.setLoopPowerFactor(powerFactor.get(i));
+            loopItemResVO.setLoopEleActive(eleActive.get(i));
+            list.add(loopItemResVO);
+        }
+        vo.setBoxLoopItemResVO(list);
+
+        JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");//相数据
+        List<Double> volList = lineItemList.getList("vol_value", Double.class);
+        List<Double> curList = lineItemList.getList("cur_value", Double.class);
+        vo.setLineVolValue(volList);
+        vo.setLineCurValue(curList);
+        vo.setLinePowActive(lineItemList.getList("pow_active",Double.class));
+        vo.setLinePowApparent(lineItemList.getList("pow_apparent",Double.class));
+        vo.setLinePowReactive(lineItemList.getList("pow_reactive",Double.class));
+        vo.setLineLoadRate(lineItemList.getList("load_rate",Double.class));
+        vo.setLineEleActive(lineItemList.getList("ele_active",Double.class));
+        vo.setLineEleReactive(lineItemList.getList("ele_reactive",Double.class));
+        vo.setLinePowerFactor(lineItemList.getList("power_factor",Double.class));
+        vo.setLineCurThd(lineItemList.getList("cur_thd",Double.class));
+
+        Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();
+        Double volAvg = volList.stream().mapToDouble(i -> i).average().getAsDouble();
+        Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList) - curAvg) / curAvg * 100;
+        Double volUnbalance = volAvg == 0 ? 0 : (Collections.max(volList) - Collections.min(volList)) / volAvg * 100;
+        vo.setVub(curUnbalance);//电流均衡
+        vo.setCub(volUnbalance);//电压均衡
+        List<Double> loadRate = lineItemList.getList("load_rate", Double.class);
+        vo.setLoadFactor(loadRate.stream().mapToDouble(i -> i).average().getAsDouble());
+
+        JSONObject outletItemList = jsonObject.getJSONObject("box_data").getJSONObject("outlet_item_list");
+        vo.setOutletPowActive(outletItemList.getList("pow_active",Double.class));
+        vo.setOutletPowApparent(outletItemList.getList("pow_apparent",Double.class));
+        vo.setOutletPowReactive(outletItemList.getList("pow_reactive",Double.class));
+        vo.setOutletEleActive(outletItemList.getList("ele_active",Double.class));
+        vo.setOutletEleApparent(outletItemList.getList("ele_apparent",Double.class));
+        vo.setOutletEleReactive(outletItemList.getList("ele_reactive",Double.class));
+        vo.setOutletPowerFactor(outletItemList.getList("power_factor",Double.class));
+
+        Map map = getCabinetDistributionFactor(boxIndex.getId(), type);
+        vo.setFactorC((List<BigDecimal>) map.get("factorC"));
+        vo.setFactorA((List<BigDecimal>) map.get("factorA"));
+        vo.setDay((List<String>) map.get("day"));
+        vo.setFactorB((List<BigDecimal>) map.get("factorB"));
+        return vo;
     }
+
+    public Map getCabinetDistributionFactor(int id, String type){
+        String startTime = null;
+        String endTime = null;
+        String index = null;
+        switch (type){
+            case "day":
+                startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusDays(1),"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(LocalDateTime.now(),"yyyy-MM-dd HH:mm:ss");
+                index = "cabinet_hda_pow_hour";
+                break;
+            case "hour":
+                startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusHours(1),"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(LocalDateTime.now(),"yyyy-MM-dd HH:mm:ss");
+                index = "box_hda_line_realtime";
+                break;
+            case "today":
+                startTime = LocalDateTimeUtil.format(LocalDateTime.MIN,"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(LocalDateTime.now(),"yyyy-MM-dd HH:mm:ss");
+                index = "box_hda_line_hour";
+                break;
+            case "threeDay":
+                startTime = LocalDateTimeUtil.format(LocalDateTime.now().minusDays(3),"yyyy-MM-dd HH:mm:ss");
+                endTime = LocalDateTimeUtil.format(LocalDateTime.now(),"yyyy-MM-dd HH:mm:ss");
+                index = "box_hda_line_hour";
+                break;
+            default:
+        }
+
+        Map map = new HashMap();
+        //day,today,threeDay
+        List<Map<String, Object>> data = getDataEs(startTime, endTime, Collections.singletonList(id),
+                index ,Map.class);
+        List<BigDecimal> factorA = new ArrayList<>();
+        List<BigDecimal> factorB = new ArrayList<>();
+        List<BigDecimal> factorC = new ArrayList<>();
+        List<String> createTime = new ArrayList<>();
+        Map<Integer, List<Map<String, Object>>> lineMap = data.stream().collect(Collectors.groupingBy(i -> (Integer)i.get("line_id")));
+
+        switch (index){
+            case "box_hda_line_realtime":
+                factorA = lineMap.get(1).stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate").toString()),100)).collect(Collectors.toList());
+                factorB = lineMap.get(2).stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate").toString()),100)).collect(Collectors.toList());
+                factorC = lineMap.get(3).stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate").toString()),100)).collect(Collectors.toList());
+                createTime = lineMap.get(1).stream().map(i -> String.valueOf(i.get("create_time"))).collect(Collectors.toList());
+                break;
+            case "box_hda_line_hour":
+                factorA = lineMap.get(1).stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate").toString()),100)).collect(Collectors.toList());
+                factorB = lineMap.get(2).stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate").toString()),100)).collect(Collectors.toList());
+                factorC = lineMap.get(3).stream().map(i -> BigDemicalUtil.safeMultiply(Double.parseDouble(i.get("load_rate").toString()),100)).collect(Collectors.toList());
+                createTime = lineMap.get(1).stream().map(i -> String.valueOf(i.get("create_time"))).collect(Collectors.toList());
+                break;
+        }
+        map.put("factorA",factorA);
+        map.put("factorB",factorB);
+        map.put("factorC",factorC);
+        map.put("day",createTime);
+        return map;
+    }
+    private List getDataEs(String startTime, String endTime, List<Integer> ids, String index, Class objClass){
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + KEYWORD).gte(startTime).lt(endTime))
+                    .must(QueryBuilders.termsQuery("box_id", ids))));
+            builder.sort(CREATE_TIME + KEYWORD, SortOrder.ASC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            builder.size(10000);
+
+            List list = new ArrayList<>();
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse != null) {
+                SearchHits hits = searchResponse.getHits();
+                for (SearchHit hit : hits) {
+                    list.add(JsonUtils.parseObject(hit.getSourceAsString(), objClass));
+                }
+            }
+            return list;
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return null;
+        }
+    }
+
 
     @Override
     public BusLineResBase getBoxLoadRateLine(BoxIndexPageReqVO pageReqVO) {
@@ -892,6 +1001,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     @Override
     public PageResult<BoxIndexDTO> getEqPage(BoxIndexPageReqVO pageReqVO) {
         try {
+            pageReqVO.setIsDeleted(0);
             PageResult<BoxIndex> boxIndexDOPageResult = boxIndexCopyMapper.selectPage(pageReqVO);
             List<BoxIndex> boxIndexDOList = boxIndexDOPageResult.getList();
             List<BoxIndexDTO> result = new ArrayList<>();

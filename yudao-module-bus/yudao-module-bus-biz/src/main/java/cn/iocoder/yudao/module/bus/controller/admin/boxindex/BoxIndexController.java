@@ -196,7 +196,7 @@ public class BoxIndexController {
      *
      * @param pageReqVO
      */
-    @Operation(summary = "机柜用能列表分页")
+    @Operation(summary = "插接箱用能列表分页")
     @PostMapping("/eq/page")
     public CommonResult<PageResult<BoxIndexDTO>> getEqPage(@RequestBody BoxIndexPageReqVO pageReqVO) {
         PageResult<BoxIndexDTO> pageResult = indexService.getEqPage(pageReqVO);
@@ -283,8 +283,8 @@ public class BoxIndexController {
 
     @Operation(summary = "插接箱通过devKey获取redis数据")
     @PostMapping("/power/detail")
-    public CommonResult<PowerRedisDataRes> getBoxPowerRedisData(@RequestBody BoxIndexPageReqVO pageReqVO) {
-        PowerRedisDataRes result = indexService.getBoxPowerRedisData(pageReqVO.getDevKey());
+    public CommonResult<BoxPowerDetailRedisResVO> getBoxPowerRedisData(@RequestBody BoxIndexPageReqVO pageReqVO) {
+        BoxPowerDetailRedisResVO result = indexService.getBoxPowerRedisData(pageReqVO.getDevKey(), pageReqVO.getTimeGranularity());
         return success(result);
     }
 
