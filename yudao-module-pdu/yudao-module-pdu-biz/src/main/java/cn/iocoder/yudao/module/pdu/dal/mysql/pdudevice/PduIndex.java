@@ -35,6 +35,8 @@ public class PduIndex {
      */
     private Integer nodeId;
 
+    private Integer  curUnbalanceStatus;
+
     /**
      * 是否删除
      */

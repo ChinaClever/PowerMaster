@@ -122,7 +122,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         PageResult pageResult = new PageResult();
         Page<PduIndex> pduIndexPageResult = null;
         List<PDUDeviceDO> result = new ArrayList<>();
-        PDUCurbalanceColorDO PDUCurbalanceColorDO = PDUCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
+//        PDUCurbalanceColorDO PDUCurbalanceColorDO = PDUCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
         if (pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
             List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().inIfPresent(CabinetPdu::getCabinetId, pageReqVO.getCabinetIds()));
             if (cabinetPduList != null && cabinetPduList.size() > 0) {
@@ -147,6 +147,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             pduDeviceDO.setId(pduIndex.getId());
             pduDeviceDO.setDevKey(pduIndex.getPduKey());
             pduDeviceDO.setDeleted(pduIndex.getIsDeleted().equals(1));
+            pduDeviceDO.setColor(pduIndex.getCurUnbalanceStatus());
             result.add(pduDeviceDO);
         }
         Map<String, PDUDeviceDO> resMap = result.stream().collect(Collectors.toMap(PDUDeviceDO::getDevKey, Function.identity()));
@@ -166,61 +167,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             JSONObject pduTgData = jsonObject.getJSONObject("pdu_data").getJSONObject("pdu_total_data");
             List<Double> curArr = jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list").getJSONArray("cur_value").toList(Double.class);
             List<Double> volArr = jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list").getJSONArray("vol_value").toList(Double.class);
-            JSONArray curAlarmArr = jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list").getJSONArray("cur_alarm_max");
-
-//            double curAvg = curArr.stream().mapToDouble(i -> i).average().getAsDouble();
-//            double volAvg = volArr.stream().mapToDouble(i -> i).average().getAsDouble();
-//            Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curArr) - curAvg) / curAvg * 100;
-//            Double volUnbalance = volAvg == 0 ? 0 : (Collections.max(volArr) - Collections.min(volArr)) / volAvg * 100;
-
             Double curUnbalance = pduTgData.getDoubleValue("cur_unbalance");
             Double volUnbalance = pduTgData.getDoubleValue("vol_unbalance");
-
-            curAlarmArr.sort(Collections.reverseOrder());
-            double maxVal = curAlarmArr.getDouble(0);
-//            List<Double> temp = curArr.toList(Double.class);
-//            Double curUnbalance = null;
-//            curUnbalance = pduTgData.getDoubleValue("cur_unbalance");
-            Double bcur = null;
-            Double ccur = null;
-            curArr.sort(Collections.reverseOrder());
-            int color = 0;
-            if (curArr.size() >= 2) {
-                double a = curArr.get(0) - curArr.get(2);
-
-                bcur = curArr.get(1);
-                ccur = curArr.get(2);
-                if (PDUCurbalanceColorDO == null) {
-                    if (a >= maxVal * 0.2) {
-                        if (curUnbalance < 15) {
-                            color = 2;
-                        } else if (curUnbalance < 30) {
-                            color = 3;
-                        } else {
-                            color = 4;
-                        }
-                    } else {
-                        color = 1;
-                    }
-                } else {
-                    if (a >= maxVal * 0.2) {
-                        if (curUnbalance < PDUCurbalanceColorDO.getRangeOne()) {
-                            color = 2;
-                        } else if (curUnbalance < PDUCurbalanceColorDO.getRangeFour()) {
-                            color = 3;
-                        } else {
-                            color = 4;
-                        }
-                    } else {
-                        color = 1;
-                    }
-                }
-            }
-            if (pageReqVO.getColor() != null) {
-                if (!pageReqVO.getColor().contains(color)) {
-                    continue;
-                }
-            }
             //开始写进result
             pduDeviceDO.setPf(pduTgData.getDoubleValue("power_factor"));
             pduDeviceDO.setEle(pduTgData.getDoubleValue("ele_active"));
@@ -230,20 +178,17 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             pduDeviceDO.setDataUpdateTime(jsonObject.getString("sys_time"));
             pduDeviceDO.setPduAlarm(jsonObject.getString("pdu_alarm"));
             pduDeviceDO.setAcur(new BigDecimal(curArr.get(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
-            pduDeviceDO.setBcur(new BigDecimal(bcur).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
-            pduDeviceDO.setCcur(new BigDecimal(ccur).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            pduDeviceDO.setBcur(new BigDecimal(curArr.get(1)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+            pduDeviceDO.setCcur(new BigDecimal(curArr.get(2)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
 
 
             pduDeviceDO.setAvol(new BigDecimal(volArr.get(0)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue() );
 
             pduDeviceDO.setBvol(new BigDecimal(volArr.size() > 1 ? volArr.get(1) : 0).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
             pduDeviceDO.setCvol(new BigDecimal(volArr.size() > 2 ? volArr.get(2) : 0).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
-
-//            pduDeviceDO.setCurUnbalance(new BigDecimal(curUnbalance).setScale(2, RoundingMode.HALF_UP).doubleValue());
-//            pduDeviceDO.setVolUnbalance(new BigDecimal(volUnbalance).setScale(2, RoundingMode.HALF_UP).doubleValue());
             pduDeviceDO.setCurUnbalance(new BigDecimal(curUnbalance).setScale(2, RoundingMode.HALF_UP).doubleValue());
             pduDeviceDO.setVolUnbalance(new BigDecimal(volUnbalance).setScale(2, RoundingMode.HALF_UP).doubleValue());
-            pduDeviceDO.setColor(color);
+//            pduDeviceDO.setColor(color);
         }
         return new PageResult<PDUDeviceDO>(result, pduIndexPageResult.getTotal());
     }
