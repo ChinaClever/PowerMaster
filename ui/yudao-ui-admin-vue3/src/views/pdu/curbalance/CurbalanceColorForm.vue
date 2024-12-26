@@ -58,7 +58,7 @@ const validateRangeOrder = (rule, value, callback) => {
     const rangeNames = ['第一空', '第二空', '第三空', '第四空'];
     // 检查范围顺序
     for (let i = 0; i < ranges.length - 1; i++) {
-      if (ranges[i] >= ranges[i + 1]) {
+      if (ranges[i] > ranges[i + 1]) {
         return callback(new Error(`${rangeNames[i]} 必须小于 ${rangeNames[i + 1]}`));
       }
     }

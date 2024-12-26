@@ -21,9 +21,9 @@ let myChart: echarts.ECharts | null = null;
 const dataWithPercent = computed(() => {
   const total = props.max.L1 + props.max.L2 + props.max.L3;
   return [
-    { value: props.max.L1, name: 'L1最大电流', percent: ((props.max.L1 / total) * 100).toFixed(2) + '%' },
-    { value: props.max.L2, name: 'L2最大电流', percent: ((props.max.L2 / total) * 100).toFixed(2) + '%' },
-    { value: props.max.L3, name: 'L3最大电流', percent: ((props.max.L3 / total) * 100).toFixed(2) + '%' }
+    { value: props.max.L1, name: 'L1', percent: ((props.max.L1 / total) * 100).toFixed(2) + '%' },
+    { value: props.max.L2, name: 'L2', percent: ((props.max.L2 / total) * 100).toFixed(2) + '%' },
+    { value: props.max.L3, name: 'L3', percent: ((props.max.L3 / total) * 100).toFixed(2) + '%' }
   ];
 });
 
