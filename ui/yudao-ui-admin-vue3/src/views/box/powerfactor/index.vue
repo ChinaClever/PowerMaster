@@ -44,11 +44,6 @@
         :inline="true"
         label-width="68px"                          
       >
-        <el-form-item >
-          <el-checkbox-group  v-model="queryParams.status"  @change="handleQuery">
-            <el-checkbox :label="5" :value="5">在线</el-checkbox>
-          </el-checkbox-group>
-        </el-form-item>
         <el-form-item label="参数类型" prop="type">
         <el-cascader
           v-model="defaultSelected"
@@ -98,7 +93,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :border="true">
+      <el-table v-if="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px;overflow:auto;overflow-y:auto;" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="300px"/>
@@ -226,6 +221,7 @@
               type="primary"
               @click="openPFDetail(scope.row)"
               v-if=" scope.row.status != null && scope.row.status != 5"
+              style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
             >
             设备详情
             </el-button>
@@ -234,6 +230,7 @@
               type="danger"
               @click="handleDelete(scope.row.boxId)"
               v-if="scope.row.status == 5"
+              style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
             >
               删除
             </el-button>
@@ -241,14 +238,17 @@
         </el-table-column>
       </el-table>    
 
-      <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
+      <div v-if="switchValue == 0  && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="icon">
               <div v-if=" item.totalPowFactor != null  && typeText == 'line'">
                 <span style="font-size: 20px;">{{ item.totalPowFactor }}</span><br/>总功率因数
-              </div>                    
+              </div>
+              <div v-else-if=" item.totalPowFactor != null  && typeText == 'loop'">
+                <span style="font-size: 20px;">{{ item.totalPowFactor }}</span><br/>总功率因数
+              </div>                
             </div>
             <div class="info" >
               <div v-if="item.phasePowFactor!= null && typeText == 'line'">
@@ -256,7 +256,7 @@
                   <div >{{ phaseLineText[index] }}{{phasePF}}</div>
                 </div>
               </div>
-              <div v-else-if="item.loopPowFactor != null && typeText == 'loop'">
+              <div v-else-if="item.loopPowFactor != null && typeText == 'loop'" style="height:100px;width:130px;overflow:hidden;overflow-y:auto;">
                 <div v-for="(loopPF,index) in item.loopPowFactor" :key="index">
                   <div>{{ loopLineText[index] }}{{loopPF}}</div>
                 </div>
@@ -591,6 +591,8 @@ const getList = async () => {
     const data = await IndexApi.getBoxPFPage(queryParams)
 
     list.value = data.list
+
+    console.log('list.value',list.value)
     var tableIndex = 0;
 
     list.value.forEach((obj) => {
@@ -1037,68 +1039,249 @@ onActivated(() => {
   }
 }
 
-.arrayContainer {
-  display: flex;
-  flex-wrap: wrap;
-  .arrayItem {
-    width: 25%;
-    height: 140px;
-    font-size: 13px;
-    box-sizing: border-box;
-    background-color: #eef4fc;
-    border: 5px solid #fff;
-    padding-top: 40px;
-    position: relative;
-    .content {
-      padding-left: 20px;
-      display: flex;
-      align-items: center;
-      .count_img {
-        margin: 0 35px 0 13px;
-      }
-      .icon {
-        width: 70px;
-        height: 60px;
-        margin: 0 28px;
-        text-align: center;
-      }
-    }
-    .devKey{
-      position: absolute;
-      left: 8px;
-      top: 8px;
-    }
-    .room {
-      position: absolute;
-      left: 8px;
-      top: 8px;
-    }
-    .status {
-      width: 40px;
-      height: 20px;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+@media screen and (min-width:2048px){
+  .arrayContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
 
-      color: #fff;
-      position: absolute;
-      right: 38px;
-      top: 8px;
+    .arrayItem {
+      width: 20%;
+      height: 140px;
+      font-size: 13px;
+      box-sizing: border-box;
+      background-color: #eef4fc;
+      border: 5px solid #fff;
+      padding-top: 40px;
+      position: relative;
+      .content {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        .icon {
+          font-size: 20px;
+          width: 100px;
+          height: 50px;
+          margin-left:20px;
+          margin-bottom: 20px;
+          margin-right:20px;
+          text-align: center;
+          .text-pf{
+            font-size: 16px;
+          }
+        }
+        .info{
+          font-size: 16px;
+          margin-bottom: 20px;
+        }
+      }
+      .devKey{
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .room {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .status {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        color: #fff;
+        position: absolute;
+        right: 38px;
+        top: 8px;
+      }
+      .detail {
+        width: 40px;
+        height: 25px;
+        padding: 0;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        cursor: pointer;
+      }
     }
-    .detail {
-      width: 40px;
-      height: 25px;
-      padding: 0;
-      border: 1px solid #ccc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #fff;
-      position: absolute;
-      right: 8px;
-      bottom: 8px;
-      cursor: pointer;
+  }
+}
+
+@media screen and (max-width:2048px) and (min-width:1600px) {
+  .arrayContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+
+    .arrayItem {
+      width: 25%;
+      height: 140px;
+      font-size: 13px;
+      box-sizing: border-box;
+      background-color: #eef4fc;
+      border: 5px solid #fff;
+      padding-top: 40px;
+      position: relative;
+      border-radius: 7px;
+      .content {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        .icon {
+          font-size: 20px;
+          width: 100px;
+          height: 50px;
+          margin-left:20px;
+          margin-bottom: 20px;
+          margin-right:20px;
+          text-align: center;
+          .text-pf{
+            font-size: 16px;
+          }
+        }
+        .info{
+          font-size: 16px;
+          margin-bottom: 20px;
+        }
+      }
+      .devKey{
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .room {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .status {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        color: #fff;
+        position: absolute;
+        right: 38px;
+        top: 8px;
+      }
+      .detail {
+        width: 40px;
+        height: 25px;
+        padding: 0;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        cursor: pointer;
+      }
+    }
+  }
+}
+
+@media screen and (max-width:1600px) {
+  .arrayContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+
+    .arrayItem {
+      width: 33%;
+      height: 140px;
+      font-size: 13px;
+      box-sizing: border-box;
+      background-color: #eef4fc;
+      border: 5px solid #fff;
+      padding-top: 40px;
+      position: relative;
+      .content {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        .icon {
+          font-size: 20px;
+          width: 100px;
+          height: 50px;
+          margin-left:20px;
+          margin-bottom: 20px;
+          margin-right:20px;
+          text-align: center;
+          .text-pf{
+            font-size: 16px;
+          }
+        }
+        .info{
+          font-size: 16px;
+          margin-bottom: 20px;
+        }
+      }
+      .devKey{
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .room {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .status {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        color: #fff;
+        position: absolute;
+        right: 38px;
+        top: 8px;
+      }
+      .detail {
+        width: 40px;
+        height: 25px;
+        padding: 0;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        cursor: pointer;
+      }
     }
   }
 }
@@ -1134,5 +1317,9 @@ onActivated(() => {
 .button-group {
   display: flex;
   gap: 10px;
+}
+
+:deep(.el-card){
+  --el-card-padding:5px;
 }
 </style>
