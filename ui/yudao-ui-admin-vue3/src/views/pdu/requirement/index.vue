@@ -195,7 +195,7 @@
               link
               type="primary"
               
-              @click="showDialog(scope.row.pduId,dateSwitch?'hour':'day',flagValue=0)"
+              @click="location=scope.row.location;showDialog(scope.row.pduId,dateSwitch?'hour':'day',flagValue=0)"
               v-if="scope.row.status != null && scope.row.status != 5"
             >
             详情
@@ -235,7 +235,7 @@
             <el-button
               link
               type="primary"
-              @click="showDialog(scope.row.pduId,dateSwitch?'hour':'day',flagValue=0)"
+              @click="location=scope.row.location;showDialog(scope.row.pduId,dateSwitch?'hour':'day',flagValue=0)"
               v-if="scope.row.status != null && scope.row.status != 5"
             >
             详情
@@ -289,7 +289,7 @@
             <el-button
               link
               type="primary"
-              @click="showDialogOne(scope.row.pduId,dateSwitch?'hour':'day',flagValue=1)"
+              @click="loading=scope.row.location;showDialogOne(scope.row.pduId, dateSwitch ? 'hour' : 'day', 1);"
               v-if="scope.row.status != null && scope.row.status != 5"
             >
             详情
@@ -327,7 +327,7 @@
             <el-button
               link
               type="primary"
-              @click="showDialogOne(scope.pduId,dateSwitch?'hour':'day',flagValue=1)"
+              @click="loading=scope.row.location;showDialogOne(scope.row.pduId, dateSwitch ? 'hour' : 'day', 1);"
               v-if="scope.row.status != null && scope.row.status != 5"
             >
             详情
@@ -368,7 +368,7 @@
           </div>          
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->              
           <!-- <button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button> -->    
-          <button class="detail" @click="onlyDevKey=item.devKey;showDialogOne(item.pduId,dateSwitch?'hour':'day',flagValue=1)">详情</button>
+          <button class="detail" @click="onlyDevKey=item.devKey,location=item.location;showDialogOne(item.pduId,dateSwitch?'hour':'day',flagValue=1);location1=item.location">详情</button>
         </div>
       </div>
 
@@ -380,7 +380,7 @@
         <template #header>
           <el-button @click="lineidBeforeChartUnmountOne()" style="float:right" show-close="false" >关闭</el-button>
           <div><h3>功率详情</h3></div> 
-          <div>所在位置：{{ onlyDevKey }}网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}}<span style="margin-left: 500px;">时间段：{{ createTimes }}-{{ endTimes }}</span></div>
+          <div>所在位置：{{ location }}网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}}<span style="float: right;">时间段：{{ createTimes }}-{{ endTimes }}</span></div>
         </template>
 
         <!-- 自定义的主要内容 -->
@@ -417,7 +417,7 @@
           </div>          
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->                
           <!--<button class="detail" @click="toPDUDisplayScreen(item)" v-if="item.status != null && item.status != 5">详情</button>--> 
-          <button class="detail" @click="onlyDevKey=item.devKey;showDialog(item.pduId,dateSwitch?'hour':'day',flagValue=0)">详情</button>
+          <button class="detail" @click="onlyDevKey=item.devKey,location=item.location;showDialog(item.pduId,dateSwitch?'hour':'day',flagValue=0);">详情</button>
         </div>
       </div>
 
@@ -429,8 +429,8 @@
         <template #header>
           <el-button @click="lineidBeforeChartUnmount()" style="float:right" show-close="false" >关闭</el-button>
           <div><h3>需量电流详情</h3></div> 
-          <div>所在位置：{{onlyDevKey}} 
-            网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}} <span style="padding-left: 550px">{{ createTimes }} - {{ endTimes }}</span>
+          <div>所在位置：{{location}} 
+            网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}} <span style="float: right;">{{ createTimes }} - {{ endTimes }}</span>
           </div>
           
         </template>
@@ -535,6 +535,7 @@ const flagValue = ref(0)
 let regularTime = null
 const dateSwitch = ref(true)
 const onlyDevKey = ref('')
+const location = ref('')
 const createTimes = ref('')
 const endTimes = ref('')
 // const statusNumber = reactive({
@@ -962,8 +963,8 @@ const updateChart = (lChartData,llChartData,lllChartData,lineidDateTimes ) => {
       legend: {
         data: ['A路最大功率', 'B路最大功率', 'C路最大功率'], // 图例项
         selected: {'A路最大功率': true,
-    'B路最大功率': false,
-    'C路最大功率': false
+    'B路最大功率': true,
+    'C路最大功率': true
       }
       },
       grid: {left: '3%', right: '70%', bottom: '3%',containLabel: true,width: '100%'},
