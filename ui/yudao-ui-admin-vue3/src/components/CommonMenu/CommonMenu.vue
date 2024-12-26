@@ -30,7 +30,7 @@
         <ContentWrap class="hhh" style="position:relative;">
           <div style="margin:auto;
                  position:absolute;
-                 top:0;left:0;bottom:0;right:0;
+                 top:0;left:0;bottom:0;right:0;margin-top: 15px;
                  margin-left: 5px;
                  margin-right: 5px;">
         <slot name="ActionBar" ></slot>
@@ -185,7 +185,7 @@ mediaQueryList.addEventListener('change', toggleStyles)
     width: 100%;
     .hhh {
       background-color: #f7f7f7;
-      height: 35px;
+      height: 60px;
     }
   }
 }

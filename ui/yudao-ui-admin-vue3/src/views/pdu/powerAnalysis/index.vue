@@ -316,7 +316,7 @@ const initChart = () => {
         {name:"耗电量",  type: 'bar', data: eqData.value.map(num => formatEQ(num,1)), label: {
                         show: totalPages <= labelThreshold,
                         position: 'top'
-                    }, barWidth: 50},
+                    }},
       ],
     });
     instance.appContext.config.globalProperties.rankChart = rankChart;
