@@ -144,7 +144,7 @@
       </el-form>      
     </template>
     <template #Content >
-     <div v-if="switchValue && list.length > 0" style="height: 710px;overflow: hidden;overflow-y: auto;margin-top: -10px;">
+     <div v-if="switchValue && list.length > 0" style="height: 720px;overflow: hidden;overflow-y: auto;margin-top: -10px;">
       <el-table v-if="switchValue == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true" :border="true" @cell-dblclick="toPDUDisplayScreen" >
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
@@ -201,6 +201,7 @@
               type="primary"
               @click="toPDUDisplayScreen(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 5"
+              style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
             >
             详情
             </el-button>
@@ -209,6 +210,7 @@
               type="danger"
               @click="handleDelete(scope.row.devKey)"
               v-if="scope.row.status == 5"
+              style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
             >
               删除
             </el-button>
@@ -475,7 +477,7 @@ watch(filterText, (val) => {
 const message = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
 
-const loading = ref(false) // 列表的加载中
+const loading = ref(true) // 列表的加载中
 const list = ref([
   { 
     id:null,
@@ -606,7 +608,7 @@ const getList = async () => {
     // statusNumber.warn = warn;
     total.value = data.total
   } finally {
-    //loading.value = false
+    loading.value = false
   }
 }
 
@@ -1167,7 +1169,7 @@ onActivated(() => {
 @media screen and (min-width:2048px){
   .arrayContainer {
     width:100%;
-    height: 710px;
+    height: 720px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
@@ -1247,7 +1249,7 @@ onActivated(() => {
 @media screen and (max-width:2048px) and (min-width:1600px) {
   .arrayContainer {
     width:100%;
-    height: 710px;
+    height: 720px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
@@ -1328,7 +1330,7 @@ onActivated(() => {
 @media screen and (max-width:1600px) {
   .arrayContainer {
     width:100%;
-    height: 710px;
+    height: 720px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;

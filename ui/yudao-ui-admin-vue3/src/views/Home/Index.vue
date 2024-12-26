@@ -1144,12 +1144,12 @@ onUnmounted(() => {
 
 @media screen and (max-width:2048px) and (min-width:1600px){
   .temperature-container{
-    height: 270px;
+    height: 260px;
     overflow-y:auto;
   }
 
   .scrollable-container {
-    height: 270px;
+    height: 260px;
     overflow-y:auto;
   }
  

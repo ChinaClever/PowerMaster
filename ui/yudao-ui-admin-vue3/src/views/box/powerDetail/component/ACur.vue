@@ -46,9 +46,9 @@ const echartsOption = reactive({
         fontWeight: 'bold'
       },
       data: [
-        { value: 121, name: 'Ia', itemStyle: { color: '#075F71' } },
-        { value: 321, name: 'Ib', itemStyle: { color: '#119CB5' } },
-        { value: 221, name: 'Ic', itemStyle: { color: '#45C0C9' } },
+        { value: props.loadFactor.lineCurValue[0], name: 'Ia', itemStyle: { color: '#075F71' } },
+        { value: props.loadFactor.lineCurValue[1], name: 'Ib', itemStyle: { color: '#119CB5' } },
+        { value: props.loadFactor.lineCurValue[2], name: 'Ic', itemStyle: { color: '#45C0C9' } },
       ]
     }
   ]

@@ -6,7 +6,7 @@
 import 'echarts'
 import { reactive, watch, defineProps, onUnmounted } from 'vue';
 const props = defineProps({
-  loadFactor: {
+  data: {
     type: Number,
     required: true
   },
@@ -17,6 +17,8 @@ const props = defineProps({
     type: [Number,String],
   }
 })
+
+console.log('1111',props.data)
 
 
 // 设置饼图的选项
@@ -67,7 +69,7 @@ const echartsOption = reactive( {
       },
       data: [
         {
-          value: 88,
+          value: props.data,
         }
       ]
     }
@@ -77,10 +79,6 @@ const echartsOption = reactive( {
 onUnmounted(() => {
   console.log('onUnmounted******')
 })
-
-watch(() => props.loadFactor, (newVal) => {
-  echartsOption.series[0].data[0].value = newVal;
-});
 
 </script>
 
