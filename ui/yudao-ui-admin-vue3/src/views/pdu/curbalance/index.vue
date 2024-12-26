@@ -282,10 +282,10 @@
             <el-tag type="warning" v-if="item.color == 3">大电流不平衡</el-tag>
             <el-tag type="danger" v-if="item.color == 4">大电流不平衡</el-tag>
           </div>
-          <div class="status" v-if="item.ccur == null && item.status != 5">
+          <div class="status" v-if="item.color == 0">
             <el-tag type="info">单相设备</el-tag>
           </div>
-          <div class="status" v-if="item.status == 5">
+          <div class="status" v-if="item.status == 5 && item.color == null">
             <el-tag type="info">离线</el-tag>
           </div>
           <button
@@ -713,7 +713,6 @@ const handleSelectStatus1 = (index) => {
   onclickColor.value = index;
   queryParams.color = [index];
  
-  
   handleQuery();
 }
 
@@ -1176,6 +1175,7 @@ onMounted(async () => {
   //      }, 0);
   // }, 5000);
   flashListTimer.value = setInterval((getList), 5000);
+  flashListTimer.value = setInterval((getNavAList), 5000);
 })
 
 onBeforeUnmount(() => {
