@@ -1196,6 +1196,7 @@ const initChart =  () => {
       }
       else{
         selected['电流'] = false;
+        selected['有功功率'] = false;
         indicator.value.nameAndMax=serverData1.value.nameAndMax
       }
       
