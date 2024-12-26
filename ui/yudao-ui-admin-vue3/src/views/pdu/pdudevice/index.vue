@@ -1410,20 +1410,24 @@ onActivated(() => {
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
+
 :deep(.el-form) {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }
+
 ::v-deep .el-table .el-table__header th{
   background-color: #f5f7fa;
   color: #909399;
   height: 80px;
 
 }
+
 :deep(.el-card){
   --el-card-padding:5px;
 }
