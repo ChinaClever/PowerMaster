@@ -25,7 +25,7 @@
         bus_index bi
         LEFT JOIN aisle_bar ab ON bi.bus_key = ab.bus_key
         <where>
-            bi.is_deleted = 0 and ab.bus_key is not null
+            bi.is_deleted = 0
             <if test="devkeys != null and devkeys.length > 0">
                 and bi.bus_key in
                 <foreach item="item" collection="devkeys" separator="," open="(" close=")" index="">
@@ -54,7 +54,7 @@
         LEFT JOIN aisle_box ab ON bi.box_key = ab.box_key
         LEFT JOIN aisle_bar ab1 ON ab1.id = ab.aisle_id
         <where>
-            bi.is_deleted = 0 and ab.bar_key is not null
+            bi.is_deleted = 0
             <if test="devkeys != null and devkeys.length > 0">
                 and bi.dev_key in
                 <foreach item="item" collection="devkeys" separator="," open="(" close=")" index="">
