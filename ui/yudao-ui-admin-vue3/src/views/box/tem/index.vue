@@ -34,22 +34,22 @@
         </div> -->
         <div class="status">
           <div class="box">
-            <div class="top"> <div class="tag"></div>正常 </div>
+            <div class="top"> <div class="tag"></div>正常</div>
             <div class="value">
               <span class="number">{{leftDataList.normal}}</span>个</div>
           </div>
           <div class="box">
-            <div class="top"> <div class="tag empty"></div>离线 </div>
+            <div class="top"> <div class="tag empty"></div>离线</div>
             <div class="value">
               <span class="number">{{leftDataList.offline}}</span>个</div>
           </div>
           <div class="box">
-            <div class="top"> <div class="tag error"></div>告警 </div>
+            <div class="top"> <div class="tag error"></div>告警</div>
             <div class="value">
               <span class="number">{{leftDataList.alarm}}</span>个</div>
           </div>
           <div class="box">
-            <div class="top"> <div class="tag empty"></div>总共 </div>
+            <div class="top"> 总共</div>
             <div class="value">
               <span class="number">{{leftDataList.total}}</span>个</div>
           </div>
@@ -64,17 +64,19 @@
         :model="queryParams"
         ref="queryFormRef"
         :inline="true"
-        label-width="68px"                          
+        label-width="68px"                         
       >
       <el-form-item v-show="valueMode != 3 && valueMode != 4">
-          <template v-for="(data) in statusList" :key="data.value">
+        <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus" style="height:34px;">
+            全部
+          </button>
+          <template v-for="(data,index) in statusList" :key="index">
             <button
-              :class="data.selected ? data.activeClass : data.cssClass"
+              :class="[onclickColor === data.value ? data.activeClass:data.cssClass]"
               @click.prevent="handleSelectStatus(data.value)"
               >{{ data.name }}</button
             >
           </template>
-          <el-button type="primary" style="height:35px;width:58px;" @click="toggleAllSelected()">全部</el-button>
         </el-form-item>
 
         <!-- <el-form-item >
@@ -314,31 +316,33 @@ const switchValue = ref(0)
 const switchChartOrTable = ref(0);
 const valueMode = ref(0)
 
+const butColor = ref(0);
+const onclickColor = ref(-1);
+
 const leftDataList = ref([])
 const statusList = reactive([
   {
-    name: '正常',
+    name: '离线',
     selected: true,
     value: 0,
-    status: 1,
+    cssClass: 'btn_offline',
+    activeClass: 'btn_offline offline'
+  },
+  {
+    name: '正常',
+    selected: true,
+    value: 1,
     cssClass: 'btn_normal',
-    activeClass: 'btn_normal normal'
+    activeClass: 'btn_normal normal',
+    color: '#3bbb00'
   },
   {
     name: '告警',
     selected: true,
-    value: 1,
-    status: 2,
-    cssClass: 'btn_error',
-    activeClass: 'btn_error error'
-  },
-  {
-    name: '离线',
-    selected: true,
     value: 2,
-    status: 0,
-    cssClass: 'btn_offline',
-    activeClass: 'btn_offline offline'
+    cssClass: 'btn_error',
+    activeClass: 'btn_error error',
+    color: '#fa3333'
   }
 ])
 
@@ -349,6 +353,21 @@ const loadAll = async () => {
     return { value: str };
   });
   return objectArray;
+}
+
+const handleSelectStatus = (index) => {
+  butColor.value = 1;
+  onclickColor.value = index;
+  queryParams.status = [index];
+  console.log('111111111',queryParams.status )
+  handleQuery();
+}
+
+const toggleAllStatus = () => {
+  butColor.value = 0;
+  onclickColor.value = -1;
+  queryParams.status = [];
+  handleQuery();
 }
 
 const querySearch = (queryString: string, cb: any) => {
@@ -521,12 +540,11 @@ const getDetail = async () => {
 const getList = async () => {
   loading.value = true
   try {
-    const data = await IndexApi.getBoxTemPage(queryParams)
+    const data = await IndexApi.getBoxTemPage(queryParams);
+    console.log('queryParams',queryParams);
     const res = await IndexApi.getBoxIndexStatistics();
-
-    // 检查 statusList 中所有项的 selected 是否都为 true
-    const allSelectedTrue = statusList.every(item => item.selected);
-    const allSelectedFalse = statusList.every(item => !item.selected);
+    console.log('data',data);
+    console.log('res',res);
  
     // 初始情况下，使用 API 返回的数据
     let processedList = data.list.map((obj, index) => {
@@ -539,55 +557,20 @@ const getList = async () => {
         ctem: obj.ctem?.toFixed(0),
       };
     });
- 
-    if (allSelectedTrue) {
-      // 如果都为 true
-      processedList = processedList;
-      console.log('All selected true, resetting list.value');
-      if (flashListTimer.value) {
-        clearInterval(flashListTimer.value);
-        flashListTimer.value = null;
-      }
-    } else if (allSelectedFalse) {
-      // 如果都为 false
-      processedList = [
-        {
-          id: null,
-          status: null,
-          apparentPow: null,
-          pow: null,
-          ele: null,
-          devKey: null,
-          location: null,
-          dataUpdateTime: '',
-          pduAlarm: '',
-          pf: null,
-          atem: null,
-          btem: null,
-          ctem: null,
-          temUnbalance: null
-        }
-      ];
-      console.log('All selected false, resetting list.value');
-      if (flashListTimer.value) {
-        clearInterval(flashListTimer.value);
-        flashListTimer.value = null;
-      }
-    }
-    list.value = processedList;
-    console.log('Processed list.value', list.value);
 
-    total.value = data.total
+    list.value = processedList;
+
+    total.value = data.total;
     leftDataList.value = res;
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 const getListNoLoading = async () => {
   try {
-    const data = await IndexApi.getBoxTemPage(queryParams)
-    list.value = data.list
+    const data = await IndexApi.getBoxTemPage(queryParams);
+    list.value = data.list;
     var tableIndex = 0;    
 
     list.value.forEach((obj) => {
@@ -601,22 +584,22 @@ const getListNoLoading = async () => {
       obj.ntem = obj.ntem?.toFixed(0);
     });
 
-    total.value = data.total
+    total.value = data.total;
   } catch (error) {
     
   }
 }
 
 const getNavList = async() => {
-  const res = await IndexApi.getBoxMenu()
-  serverRoomArr.value = res
+  const res = await IndexApi.getBoxMenu();
+  serverRoomArr.value = res;
   if (res && res.length > 0) {
-    const room = res[0]
-    const keys = [] as string[]
+    const room = res[0];
+    const keys = [] as string[];
     room.children.forEach(child => {
       if(child.children.length > 0) {
         child.children.forEach(son => {
-          keys.push(son.id + '-' + son.type)
+          keys.push(son.id + '-' + son.type);
         })
       }
     })
@@ -629,16 +612,6 @@ const getNavList = async() => {
 //   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
 //   window.open(url, '_blank');
 // }
-
-const handleSelectStatus = (index) => {
-  statusList[index].selected = !statusList[index].selected;
-  console.log("index",index);
-  const status = statusList.filter((item) => item.selected);
-  const statusArr = status.map((item) => item.status);
-  queryParams.status = statusArr;
-  console.log("statusArr",statusArr);
-  handleQuery();
-}
 
 const toggleAllSelected = () => {
  // 提取前三个按钮的状态
@@ -675,6 +648,8 @@ const handleQuery = () => {
 /** 重置按钮操作 */
 const resetQuery = () => {
   queryFormRef.value.resetFields()
+  statusList.forEach((item) => item.selected = true)
+  queryParams.status = [];
   handleQuery()
 }
 
@@ -1091,6 +1066,37 @@ onActivated(() => {
       bottom: 8px;
       cursor: pointer;
     }
+  }
+}
+
+.btnallSelected {
+  margin-right: 10px;
+  width: 58px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #409EFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.btnallNotSelected{
+  margin-right: 10px;
+  width: 58px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: #000000;
+  border: 1px solid #409EFF;
+  border-radius: 5px;
+  &:hover {
+    color: #7bc25a;
   }
 }
 

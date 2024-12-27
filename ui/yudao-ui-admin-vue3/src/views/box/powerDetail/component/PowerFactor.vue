@@ -95,7 +95,7 @@ const echartsOption = reactive({
       },
       data: [
         {
-          value: 0.88,
+          value: props.loadFactor.linePowerFactor[0],
           name: '功率因数'
         }
       ]
@@ -106,10 +106,6 @@ const echartsOption = reactive({
 onUnmounted(() => {
   console.log('onUnmounted******')
 })
-
-watch(() => props.loadFactor, (newVal) => {
-  echartsOption.series[0].data[0].value = newVal;
-});
 
 </script>
 

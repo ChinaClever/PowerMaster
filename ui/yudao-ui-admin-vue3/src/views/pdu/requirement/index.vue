@@ -355,7 +355,7 @@
     <div>L3最大功率：{{ (item.l3MaxPow || 0).toFixed(2) }}kW</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
-            <div style="margin-left: 10px;margin-bottom: 50px; margin-top: -20px; width: 100px;height: 100px" ><Bar :max="{L1:item.l1MaxCur,L2:item.l2MaxCur,L3:item.l3MaxCur}" /></div>
+            <div style="margin-left: 10px;margin-bottom: 50px; margin-top: -20px; width: 100px;height: 100px" ><Bar :max="{L1:item.l1MaxPow,L2:item.l2MaxPow,L3:item.l3MaxPow}" /></div>
           </div>
           
           <div class="content" v-show="item.l3MaxPow == undefined || item.l3MaxPow == null">

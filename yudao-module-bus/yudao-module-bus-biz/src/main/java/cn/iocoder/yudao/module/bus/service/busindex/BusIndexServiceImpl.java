@@ -317,6 +317,12 @@ public class BusIndexServiceImpl implements BusIndexService {
         return null;
     }
 
+    /**
+     * 跟据key查询路径
+     * 返回map<key,路径>
+     * @param busKeys
+     * @return
+     */
     public Map<String ,String> getPositionByKey(List<String> busKeys) {
         if (CollectionUtils.isEmpty(busKeys)) {
             return null;
