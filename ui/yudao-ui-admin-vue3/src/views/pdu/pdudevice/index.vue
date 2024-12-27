@@ -758,8 +758,10 @@ const handleQuery = () => {
 const resetQuery = () => {
   queryFormRef.value.resetFields()
   queryFormRef2.value.resetFields()
-  statusList.forEach((item) => item.selected = true)
+  butColor.value = 0;
+  //statusList.forEach((item) => item.selected = true)
   queryParams.status = [];
+  onclickColor.value = -1;
   handleQuery()
 }
 
