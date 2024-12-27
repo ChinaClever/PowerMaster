@@ -691,7 +691,7 @@ const getBalanceDetail = async (item) => {
       series: [
         {
           type: 'pie',
-          radius: ['40%', '80%'],
+          radius: ['40%', '85%'],
           avoidLabelOverlap: false,
           itemStyle: {
             borderRadius: 10,
