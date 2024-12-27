@@ -711,14 +711,9 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             return result;
         }
         JSONObject pduTgData = jsonObject.getJSONObject("pdu_data").getJSONObject("pdu_total_data");
-        JSONObject loopItemList = jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list");
-        List<Double> curList  = loopItemList.getJSONArray("cur_value").toList(Double.class);
-        List<Double> volList  = loopItemList.getJSONArray("vol_value").toList(Double.class);
-
-//        Double curAvg = curList.stream().mapToDouble(i->i).average().getAsDouble();
-//        Double volAvg = volList.stream().mapToDouble(i->i).average().getAsDouble();
-//        Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList) - curAvg) / curAvg * 100;
-//        Double volUnbalance = volAvg == 0 ? 0 : (Collections.max(volList) - Collections.min(volList)) / volAvg * 100;
+        JSONObject lineItemList = jsonObject.getJSONObject("pdu_data").getJSONObject("line_item_list");
+        List<Double> curList  = lineItemList.getJSONArray("cur_value").toList(Double.class);
+        List<Double> volList  = lineItemList.getJSONArray("vol_value").toList(Double.class);
 
         Double curUnbalance = pduTgData.getDoubleValue("cur_unbalance");
         Double volUnbalance = pduTgData.getDoubleValue("vol_unbalance");
@@ -726,13 +721,13 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         result.setVol_value(volList);
         result.setCurUnbalance(new BigDecimal(curUnbalance).setScale(2, RoundingMode.HALF_UP).doubleValue());
         result.setVolUnbalance(new BigDecimal(volUnbalance).setScale(2, RoundingMode.HALF_UP).doubleValue());
-        JSONArray curAlarmArr = loopItemList.getJSONArray("cur_alarm_max");
+        JSONArray curAlarmArr = lineItemList.getJSONArray("cur_alarm_max");
         List<Double> sortAlarmArr = curAlarmArr.toList(Double.class);
         sortAlarmArr.sort(Collections.reverseOrder());
         double maxVal = sortAlarmArr.get(0);
 //        List<Double> temp = curValue.toList(Double.class);
-        curList.sort(Collections.reverseOrder());
-        double a = curList.get(0) - curList.get(2);
+//        curList.sort(Collections.reverseOrder());
+        double a = Collections.max(curList) -Collections.min(curList);// curList.get(0) - curList.get(2);
         int color = 0;
         if (PDUCurbalanceColorDO == null) {
             if (a >= maxVal * 0.2) {
