@@ -46,7 +46,8 @@
             全部 
           </button>
           <template v-for="(status, index) in statusList" :key="index">
-            <button type="button" :class="[onclickColor === index ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(index, $event)">{{status.name}}</button>
+            <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+            <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
           </template>
         </el-form-item>
         <div>
