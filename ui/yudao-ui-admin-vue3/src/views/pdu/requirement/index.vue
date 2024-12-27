@@ -376,12 +376,13 @@
       <el-dialog
         v-model="dialogVisibleOne"
         @close="handleClose"
+        width="100%"
       >     
         <!-- 自定义的头部内容（可选） -->
         <template #header>
           <el-button @click="lineidBeforeChartUnmountOne()" style="float:right" show-close="false" >关闭</el-button>
           <div><h3>功率详情</h3></div> 
-          <div>所在位置：{{ location }}网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}}<span style="float: right;">时间段：{{ createTimes }}-{{ endTimes }}</span></div>
+          <div>所在位置：{{ location }}<span style="margin-left: 10px;">网络地址：{{onlyDevKey.split('-').length > 0 ? onlyDevKey.split('-')[0] : onlyDevKey}}</span><span style="float: right;">时间段：{{ createTimes }}-{{ endTimes }}</span></div>
         </template>
 
         <!-- 自定义的主要内容 -->
@@ -438,7 +439,7 @@
 
         <!-- 自定义的主要内容 -->
         <div class="custom-content">
-          <div ref="lineidChartContainer" id="lineidChartContainer" class="adaptiveStyle" style="width: 1290px;"></div>
+          <div ref="lineidChartContainer" id="lineidChartContainer" class="adaptiveStyle" style="width: 1290px;height: 500px;"></div>
         </div>
       </el-dialog>
     </div>
@@ -1621,8 +1622,10 @@ const showDialogOne = (id,type,flagValue) => {
 }
 
 :deep(.el-dialog) {
-  height: 70%;
+  top: -5%;
   width: 70%;
+  height: 70%;
+  margin-top: 100px
 }
 
 .adaptiveStyle {

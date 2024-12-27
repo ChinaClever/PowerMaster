@@ -499,7 +499,16 @@ public class HistoryDataServiceImpl implements HistoryDataService {
 
     @Override
     public PageResult<Object> getHistoryDataDetails(HistoryDataDetailsReqVO reqVO) throws IOException{
-        Integer pduId = reqVO.getPduId();
+
+        String ipAddr = reqVO.getIpAddr();
+        String cascadeAddr = reqVO.getCascadeAddr();
+        String ipKey = ipAddr + "-" +cascadeAddr;
+        QueryWrapper<PduIndex> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("pdu_key", ipKey);
+        List<PduIndex> pduIndices = pduIndexMapper.selectList(queryWrapper);
+        PduIndex pduIndex = pduIndices.get(0);
+        Integer pduId = pduIndex.getId();
+        //Integer pduId = reqVO.getPduId();
         if (Objects.equals(pduId, null)){
             pduId = getPduIdByAddr(reqVO.getIpAddr(), reqVO.getCascadeAddr());
             if (Objects.equals(pduId, null)){
