@@ -53,8 +53,31 @@
           </div>
         </div>
       </div>
-      <div class="right-right-part" style="color: black;font-weight:bold;">
-        <div style="margin:10px;">曲线</div>
+      <div class="right-right-part" style="position: relative;">
+        <div style="display: inline-block;
+        width: 50%;
+        height: 100%;">
+          <div style="color: black;font-weight:bold;margin:10px;">温度</div>
+          <TemValue style="margin-top:-30px;" class="chart" v-if="visContro.gaugeVis" width="100%" height="100%" :load-factor="redisData"/>
+        </div>
+        <div style="display: inline-block;
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            top: 70px;">
+          <div class="label-container">
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">A温度:</span><span style="font-size:16px;">{{redisData?.temValue[0]}}℃</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">B温度:</span><span style="font-size:16px;">{{redisData?.temValue[1]}}℃</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">C温度:</span><span style="font-size:16px;">{{redisData?.temValue[2]}}℃</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">D温度:</span><span style="font-size:16px;">{{redisData?.temValue[3]}}℃</span>
+          </div>
+        </div>
       </div>
     </div>
     <div class="bottom-part">
@@ -208,7 +231,9 @@
         </div>
     </div>
     <div style="width:98.5%;heigth:100%;">
-      <div style="margin-top:30px;background-color:#fff;font-weight:bold;">回路数据</div>
+      <div style="margin-top:30px;background-color:#fff;font-weight:bold;">
+        <span style="margin-left:10px;">回路数据</span>
+      </div>
       <el-table :data="tableData" border style="width: 100%;">
         <el-table-column align="center" prop="loopId" label="编号" width="100px" />
         <el-table-column label="断路器状态" align="center" width="450px">
@@ -262,6 +287,7 @@ import PowerFactor from './component/PowerFactor.vue'
 import OutputOne from './component/OutputOne.vue'
 import OutputTwo from './component/OutputTwo.vue'
 import OutputThree from './component/OutputThree.vue'
+import TemValue from './component/TemValue.vue'
 import { IndexApi } from '@/api/bus/boxindex'
 import { CabinetApi } from '@/api/cabinet/detail'
 import { BusPowerLoadDetailApi } from '@/api/bus/buspowerloaddetail'

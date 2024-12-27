@@ -187,6 +187,7 @@
               type="primary"
               @click="toDetail(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 5"
+              style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
             >
             设备详情
             </el-button>
@@ -195,6 +196,7 @@
               type="danger"
               @click="handleDelete(scope.row.boxId)"
               v-if="scope.row.status == 5"
+              style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
             >
               删除
             </el-button>

@@ -1313,6 +1313,7 @@ onActivated(() => {
     }
   }
 }
+
 .btnallSelected {
   margin-right: 10px;
   width: 58px;

@@ -335,7 +335,6 @@ const switchValue = ref(0)
 const showPagination = ref(0);
 
 const butColor = ref(0);
-
 const onclickColor = ref(-1);
 
 const statusNumber = reactive({

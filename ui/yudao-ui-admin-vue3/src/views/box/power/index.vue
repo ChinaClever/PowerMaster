@@ -123,7 +123,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" style="height:710px;margin-top:-10px;" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
+      <el-table v-show="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px;" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -1431,7 +1431,7 @@ onActivated(() => {
 @media screen and (min-width:2048px){
   .arrayContainer {
     width:100%;
-    height: 710px;
+    height: 720px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
@@ -1512,7 +1512,7 @@ onActivated(() => {
 @media screen and (max-width:2048px) and (min-width:1600px) {
   .arrayContainer {
     width:100%;
-    height: 710px;
+    height: 720px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
@@ -1594,7 +1594,7 @@ onActivated(() => {
 @media screen and (max-width:1600px) {
   .arrayContainer {
     width:100%;
-    height: 710px;
+    height: 720px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
@@ -1690,5 +1690,9 @@ onActivated(() => {
   background-color: #f5f7fa;
   color: #909399;
   height: 80px;
+}
+
+:deep(.el-card){
+  --el-card-padding:5px;
 }
 </style>

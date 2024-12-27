@@ -565,16 +565,18 @@ const initChart3 = () => {
 const getDetailData =async () => {
  try {
     const data = await BusPowerLoadDetailApi.getDetailData(queryParams);
+    console.log('data',data);
     if (data != null){
       hasData.value = true
-      runLoad.value = formatNumber(data.runLoad, 2);
-      ratedCapacity.value = formatNumber(data.ratedCapacity, 2);
-      reserveMargin.value = formatNumber(data.reserveMargin, 2);
-      powActive.value = formatNumber(data.powActive, 2);
-      powReactive.value = formatNumber(data.powReactive, 2);
-      peakDemand.value = formatNumber(data.peakDemand, 2);
+      runLoad.value = data.runLoad.toFixed(2);
+      ratedCapacity.value = data.ratedCapacity.toFixed(2);
+      reserveMargin.value = data.reserveMargin.toFixed(2);
+      console.log('ratedCapacity.value',ratedCapacity.value)
+      powActive.value = data.powActive.toFixed(2);
+      powReactive.value = data.powReactive.toFixed(2);
+      peakDemand.value = data.peakDemand.toFixed(2);
       powActivepPercentage.value = runLoad.value == 0 ? 0 :  ((powActive.value / runLoad.value) * 100).toFixed(2);
-      powReactivepPercentage.value = runLoad.value == 0 ? 0 : ((powReactive.value / runLoad.value) * 100 ).toFixed(2)
+      powReactivepPercentage.value = runLoad.value == 0 ? 0 : ((powReactive.value / runLoad.value) * 100 ).toFixed(2);
       loadPercentage.value = ratedCapacity.value == 0 ? 0 :  ((runLoad.value / ratedCapacity.value) * 100).toFixed(2);
       //loadPercentage.value = 76 测试数据
       if (loadPercentage.value <= 40){
@@ -1316,9 +1318,6 @@ const initData = () => {
         }
         break;             
     }
-    console.log('L1Data.value',L1Data.value)
-    console.log('L2Data.value',L2Data.value)
-    console.log('L3Data.value',L3Data.value)
   }else if(timeRadio.value == '近一天' || timeRadio.value == '近三天'){
     switch (typeRadio.value){
       case '电流':
@@ -1383,9 +1382,6 @@ const initData = () => {
         }
         break;    
       }
-      console.log('L1Data111.value',L1Data.value)
-      console.log('L2Data222.value',L2Data.value)
-      console.log('L3Data333.value',L3Data.value)
   }else{
     switch (typeRadio.value){
       case '电流':
@@ -1450,9 +1446,6 @@ const initData = () => {
         }
         break;    
       }
-      console.log('L1Data111111.value',L1Data.value)
-      console.log('L2Data222222.value',L2Data.value)
-      console.log('L3Data333333.value',L3Data.value)
   }
   
 }
@@ -1464,16 +1457,6 @@ window.addEventListener('resize', function() {
   myChart2?.resize(); 
   myChart3?.resize();
 });
-
-// 处理数据后有几位小数点
-function formatNumber(value,index) {
-  if (typeof value === 'number') {
-    return value.toFixed(index); 
-  } else {
-    console.error('尝试对非数字值使用 toFixed 方法', value);
-    return '0.000'; 
-  }
-}
 
 /** 搜索按钮操作 */
 const handleQuery = async () => {
@@ -1488,7 +1471,6 @@ onMounted(async () => {
     devKeyList.value = await loadAll();
     await getDetailData();
     await getLineChartData();
-    console.log('还是不执行吗'); // 这行代码应该会执行，除非前面的代码抛出了异常
     initChart();
     initChart1();
     initChart2()

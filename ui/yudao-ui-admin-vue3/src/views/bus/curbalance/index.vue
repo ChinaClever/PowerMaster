@@ -45,10 +45,13 @@
       >
         <div class="form-container">
           <el-form-item v-if="switchValue == 0" class="inline-form-item">
-      <template v-for="(status, index) in statusList" :key="index">
+            <button style="height:34px;" :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">
+            全部
+          </button>
+      <template v-for="(status) in statusList" :key="status.value">
         <button
-          :class="status.selected ? status.activeClass : status.cssClass"
-          @click.prevent="handleSelectStatus(index)"
+          :class="[onclickColor === status.value ? status.activeClass:status.cssClass]"
+          @click.prevent="handleSelectStatus(status.value)"
           class="inline-button"
         >
           {{ status.name }}
@@ -65,11 +68,6 @@
           >
             <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
           </el-button>
-          <el-form-item class="inline-form-item">
-            <el-checkbox-group v-model="queryParams.status" @change="handleQuery" class="inline-checkbox-group">
-        <el-checkbox :label="1" :value="1" class="inline-checkbox">在线</el-checkbox>
-            </el-checkbox-group>
-          </el-form-item>
           <el-form-item label="网络地址" prop="devKey" class="inline-form-item">
             <el-autocomplete
               v-model="queryParams.devKey"
@@ -117,7 +115,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="visMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
+      <el-table v-if="visMode == 1" v-loading="loading" style="height:720px;margin-top:-10px;" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location"/>    
@@ -131,28 +129,28 @@
               <el-tag type="danger" v-if="scope.row.color == 4">大电流不平衡</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="不平衡度(%)" align="center" prop="curUnbalance" width="80px" v-if="switchValue == 0">
+        <el-table-column label="不平衡度(%)" align="center" prop="curUnbalance" width="130px" v-if="switchValue == 0">
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.curUnbalance != null" >
               {{ scope.row.curUnbalance }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="A相(A)" align="center" prop="acur" width="130px" v-if="switchValue == 0" >
+        <el-table-column label="A相(A)" align="center" prop="acur" width="100px" v-if="switchValue == 0" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.acur != null">
               {{ scope.row.acur }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="B相(A)" align="center" prop="bcur" width="130px" v-if="switchValue == 0">
+        <el-table-column label="B相(A)" align="center" prop="bcur" width="100px" v-if="switchValue == 0">
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.bcur != null">
               {{ scope.row.bcur }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column label="C相(A)" align="center" prop="ccur" width="130px" v-if="switchValue == 0">
+        <el-table-column label="C相(A)" align="center" prop="ccur" width="100px" v-if="switchValue == 0">
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.ccur != null">
               {{ scope.row.ccur }}
@@ -195,6 +193,7 @@
               type="primary"
               @click="toDeatil(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 0"
+              style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
             >
             设备详情
             </el-button>
@@ -203,6 +202,7 @@
               type="danger"
               @click="handleDelete(scope.row.busId)"
               v-if="scope.row.status == 0"
+              style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
             >
               删除
             </el-button>
@@ -210,7 +210,7 @@
         </el-table-column>
       </el-table>
 
-      <div v-show="visMode == 0 && switchValue == 0  && list.length > 0" class="arrayContainer">
+      <div v-if="visMode == 0 && switchValue == 0  && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
@@ -466,6 +466,9 @@ const statusNumber = reactive({
   greaterThirty : 0,
   smallCurrent : 0
 })
+
+const butColor = ref(0);
+const onclickColor = ref(-1);
 
 const statusList = reactive([
   {
@@ -1085,19 +1088,34 @@ const toDeatil = (row) =>{
 // }
 
 const handleSelectStatus = (index) => {
-  statusList[index].selected = !statusList[index].selected
-  const status =  statusList.filter(item => item.selected)
-  const statusArr = status.map(item => item.value)
-  if(statusArr.length != statusList.length){
-    queryParams.color = statusArr;
-    //queryParams.status = [5];
-  }else{
-    queryParams.color = null;
-    //queryParams.status = [];
-  }
-  
+  butColor.value = 1;
+  onclickColor.value = index;
+  queryParams.status = [index];
   handleQuery();
 }
+
+const toggleAllStatus = () => {
+  butColor.value = 0;
+  onclickColor.value = -1;
+  queryParams.status = [];
+  handleQuery();
+}
+
+
+//const handleSelectStatus = (index) => {
+//  statusList[index].selected = !statusList[index].selected
+//  const status =  statusList.filter(item => item.selected)
+//  const statusArr = status.map(item => item.value)
+//  if(statusArr.length != statusList.length){
+//    queryParams.color = statusArr;
+//    //queryParams.status = [5];
+//  }else{
+//    queryParams.color = null;
+//    //queryParams.status = [];
+//  }
+//  
+//  handleQuery();
+//}
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
@@ -1442,8 +1460,14 @@ onActivated(() => {
 
 @media screen and (min-width: 2048px) {
   .arrayContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
     display: flex;
     flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
     .arrayItem {
       width: 20%;
       height: 140px;
@@ -1509,8 +1533,14 @@ onActivated(() => {
 
 @media screen and (max-width: 2048px) and (min-width: 1600px) {
   .arrayContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
     display: flex;
     flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
     .arrayItem {
       width: 25%;
       height: 140px;
@@ -1576,8 +1606,14 @@ onActivated(() => {
 
 @media screen and (max-width: 1600px) {
   .arrayContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
     display: flex;
     flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
     .arrayItem {
       width: 33%;
       height: 140px;
@@ -1638,6 +1674,37 @@ onActivated(() => {
         cursor: pointer;
       }
     }
+  }
+}
+
+.btnallSelected {
+  margin-right: 10px;
+  width: 58px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #409EFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.btnallNotSelected{
+  margin-right: 10px;
+  width: 58px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: #000000;
+  border: 1px solid #409EFF;
+  border-radius: 5px;
+  &:hover {
+    color: #7bc25a;
   }
 }
 
@@ -1747,5 +1814,9 @@ onActivated(() => {
       padding: 10px 0;
     }
   }
+}
+
+:deep(.el-card){
+  --el-card-padding:5px;
 }
 </style>
