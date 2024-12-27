@@ -5,6 +5,7 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailRespVO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
+import cn.iocoder.yudao.module.bus.vo.ReportBasicInformationResVO;
 
 import javax.validation.Valid;
 import java.io.IOException;
@@ -138,4 +139,5 @@ public interface BusIndexService {
     LoadRateStatus getBusIndexLoadRateStatus();
 
 
+    ReportBasicInformationResVO getReportBasicInformationResVO(BusIndexPageReqVO pageReqVO);
 }

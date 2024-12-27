@@ -1,11 +1,13 @@
 package cn.iocoder.yudao.module.bus.controller.admin.busindex;
 
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
+import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxIndexPageReqVO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusTemDetailRes;
 import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailReqVO;
 import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailRespVO;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.EQPageRespVO;
+import cn.iocoder.yudao.module.bus.vo.ReportBasicInformationResVO;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
 import org.springframework.web.bind.annotation.*;
@@ -345,7 +347,7 @@ public class BusIndexController {
     }
 
     @PostMapping("/report/pfline")
-    @Operation(summary = "获得始端箱报表数据")
+    @Operation(summary = "获得始端箱报表数据-功率因素")
     public CommonResult<Map> getBusPFLine(@RequestBody BusIndexPageReqVO pageReqVO) {
         return success(indexService.getBusPFLine(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
     }
@@ -384,5 +386,11 @@ public class BusIndexController {
     @Operation(summary = "获得始端箱设备负载量状态统计")
     public CommonResult<LoadRateStatus> getBusIndexLoadRateStatus() {
         return success(indexService.getBusIndexLoadRateStatus());
+    }
+
+    @PostMapping("/report/basicInformation")
+    @Operation(summary = "获得始端箱报表数据-基础数据")
+    public CommonResult<ReportBasicInformationResVO> getReportBasicInformationResVO(@RequestBody BusIndexPageReqVO pageReqVO) {
+        return success(indexService.getReportBasicInformationResVO(pageReqVO));
     }
 }

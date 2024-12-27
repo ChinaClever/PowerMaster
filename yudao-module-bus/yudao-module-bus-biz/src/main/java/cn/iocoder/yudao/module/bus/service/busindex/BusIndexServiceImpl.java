@@ -3,6 +3,7 @@ package cn.iocoder.yudao.module.bus.service.busindex;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEleTotalDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalDayDo;
@@ -14,6 +15,8 @@ import cn.iocoder.yudao.framework.common.entity.es.bus.tem.BusTemHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.total.BusTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.total.BusTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
+import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
+import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
@@ -35,6 +38,7 @@ import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.buscurbalancecolor.BusCurbalanceColorMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 import cn.iocoder.yudao.module.bus.util.TimeUtil;
+import cn.iocoder.yudao.module.bus.vo.ReportBasicInformationResVO;
 import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
@@ -86,6 +90,7 @@ import java.util.stream.Collectors;
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY_AISLE;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static cn.iocoder.yudao.module.bus.constant.BoxConstants.REDIS_KEY_BOX;
 import static cn.iocoder.yudao.module.bus.constant.BusConstants.*;
 import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.INDEX_NOT_EXISTS;
 
@@ -356,40 +361,42 @@ public class BusIndexServiceImpl implements BusIndexService {
         if (CollectionUtils.isEmpty(busKeys)) {
             return map;
         }
-        List<Map<String,String>> aList = cabinetBusMapper.findRoomIdA(busKeys);
-        Map<String, Map<String, String>> busAmap = aList.stream().collect(Collectors.toMap(i -> REDIS_KEY_CABINET + i.get("cabinetKey"), i -> i));
-        List cabinetList = ops.multiGet(busAmap.keySet());
-        if (!CollectionUtils.isEmpty(cabinetList)) {
-            for (Object o : cabinetList) {
-                if (Objects.isNull(o))
-                    continue;
-                JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-                Map<String, String> cabinetKey = busAmap.get(jsonObject.getString("cabinet_key"));
-                if (Objects.nonNull(cabinetKey)){
-                    map.put(cabinetKey.get("busKey"),jsonObject.getString("room_name") + SPLIT_KEY + cabinetKey.get("busName") + SPLIT_KEY +"A路");
-                }
-            }
-        }
-        busKeys.removeAll(map.keySet());
-        if (CollectionUtils.isEmpty(busKeys)) {
+        List<CabinetBox> cabinetBus = cabinetBusMapper.selectList(new LambdaQueryWrapperX<CabinetBox>()
+                .in(CabinetBox::getBoxKeyA, busKeys).or().in(CabinetBox::getBoxKeyB, busKeys));
+        if (CollectionUtils.isEmpty(cabinetBus)) {
             return map;
         }
-        List<Map<String,String>> bList = cabinetBusMapper.findRoomIdB(busKeys);
-        Map<String, Map<String, String>> busBmap = bList.stream().collect(Collectors.toMap(i -> REDIS_KEY_CABINET + i.get("cabinetKey"), i -> i));
-        List cabinetListb = ops.multiGet(busAmap.keySet());
-        if (!CollectionUtils.isEmpty(cabinetListb)) {
-            for (Object o : cabinetListb) {
-                if (Objects.isNull(o))
-                    continue;
-                JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(o));
-                Map<String, String> cabinetKey = busAmap.get(jsonObject.getString("cabinet_key"));
-                if (Objects.nonNull(cabinetKey)){
-                    map.put(cabinetKey.get("busKey"),jsonObject.getString("room_name") + SPLIT_KEY + cabinetKey.get("busName") + SPLIT_KEY +"B路");
+        List<Integer> cabinetIds = cabinetBus.stream().map(CabinetBox::getCabinetId).collect(Collectors.toList());
+        Map<Integer, String> cabinetBusMapA = cabinetBus.stream().filter(cabinet -> cabinet.getBoxKeyA() != null).collect(Collectors.toMap(CabinetBox::getCabinetId,CabinetBox::getBoxKeyA));
+        Map<Integer, String> cabinetBusMapB = cabinetBus.stream().filter(cabinet -> cabinet.getBoxKeyB() != null).collect(Collectors.toMap(CabinetBox::getCabinetId, CabinetBox::getBoxKeyB));
+
+        List<CabinetIndex> cabinetIndices = cabinetIndexMapper.selectBatchIds(cabinetIds);
+        List<String> cabinetRedisKeys = cabinetIndices.stream().map(index -> REDIS_KEY_CABINET + index.getRoomId() + SPLIT_KEY + index.getId()).collect(Collectors.toList());
+        //设备位置
+        String devPosition;
+        List cabinets = ops.multiGet(cabinetRedisKeys);
+        if (!CollectionUtils.isEmpty(cabinets)) {
+            for (Object cabinet : cabinets) {
+                JSONObject json = JSON.parseObject(JSON.toJSONString(cabinet));
+                devPosition = json.getString("room_name") + SPLIT_KEY + json.getString("cabinet_name");
+                if (!StringUtils.isEmpty(json.getString("aisle_name"))) {
+                    devPosition += SPLIT_KEY + json.getString("aisle_name");
+                }
+                Integer cabinetId = Integer.valueOf(json.getString("cabinet_key").split("-")[1]);
+                String devKeyA = cabinetBusMapA.get(cabinetId);
+                if (!StringUtils.isEmpty(devKeyA)) {
+                    map.put(devKeyA,devPosition + SPLIT_KEY + "A路");
+                }
+                String devKeyB = cabinetBusMapB.get(cabinetId);
+                if (!StringUtils.isEmpty(devKeyB)) {
+                    map.put(devKeyB,devPosition + SPLIT_KEY + "B路");
                 }
             }
         }
         return map;
     }
+
+
 
     @Override
     public PageResult<BusCurLinePageResVO> getBusLineCurLinePage(BusIndexPageReqVO pageReqVO) throws IOException {
@@ -620,7 +627,7 @@ public class BusIndexServiceImpl implements BusIndexService {
             Integer Id = busIndexDO.getId();
             String index;
             if (pageReqVO.getTimeType().equals(0)) {
-                index = "bus_hda_line_hou r";
+                index = "bus_hda_line_hour";
             } else {
                 index = "bus_hda_line_day";
             }
@@ -628,11 +635,13 @@ public class BusIndexServiceImpl implements BusIndexService {
             SearchRequest searchRequest = new SearchRequest(index);
             // 通过QueryBuilders构建ES查询条件，
             SearchSourceBuilder builder = new SearchSourceBuilder();
-
+            builder.size(10000);
             builder.trackTotalHits(true);
             //获取需要处理的数据
             builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
-                    .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(pageReqVO.getOldTime()).lte(pageReqVO.getNewTime()))
+                    .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword")
+                            .gte(LocalDateTimeUtil.format(pageReqVO.getOldTime(),"yyyy-MM-dd HH:mm:ss"))
+                            .lte(LocalDateTimeUtil.format(pageReqVO.getNewTime(),"yyyy-MM-dd HH:mm:ss")))
                     .must(QueryBuilders.termQuery("bus_id", busIndexDO.getId()))));
             builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
             // 设置搜索条件
@@ -762,6 +771,24 @@ public class BusIndexServiceImpl implements BusIndexService {
     @Override
     public LoadRateStatus getBusIndexLoadRateStatus() {
         return busIndexMapper.selectBusIndexLoadRateStatus();
+    }
+
+    @Override
+    public ReportBasicInformationResVO getReportBasicInformationResVO(BusIndexPageReqVO pageReqVO) {
+        BusIndexDO busIndexDO = busIndexMapper.selectOne(new LambdaUpdateWrapper<BusIndexDO>().eq(BusIndexDO::getBusKey, pageReqVO.getDevKey()));
+        ReportBasicInformationResVO vo = new ReportBasicInformationResVO();
+        Object obj = redisTemplate.opsForValue().get(REDIS_KEY_BUS + busIndexDO.getBusKey());
+        JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
+
+        ArrayList<String> list = new ArrayList<>();
+        list.add(busIndexDO.getBusKey());
+        Map<String, String> positionByKey = getPositionByKey(list);
+        vo.setLocation(positionByKey.get(busIndexDO.getBusKey()));
+        vo.setDevKey(busIndexDO.getBusKey());
+        vo.setPowApparent(jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getBigDecimal("pow_apparent"));
+        vo.setRunStatus(busIndexDO.getRunStatus());
+        vo.setPowerFactor(jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data").getBigDecimal("power_factor"));
+        return vo;
     }
 
     @Override

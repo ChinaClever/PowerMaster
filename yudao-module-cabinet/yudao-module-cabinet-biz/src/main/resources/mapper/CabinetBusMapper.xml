@@ -3,7 +3,7 @@
 <mapper namespace="cn.iocoder.yudao.framework.common.mapper.CabinetBusMapper">
     <select id="findRoomIdA" resultType="java.util.Map">
         SELECT
-        concat(room_id,"-",id) as cabinetKey,
+        concat(ci.room_id,"-",ci.id) as cabinetKey,
         bi.bus_key as busKey,
         bi.bus_name as busName
         FROM cabinet_box cb
@@ -18,7 +18,7 @@
     </select>
     <select id="findRoomIdB" resultType="java.util.Map">
         SELECT
-        concat(room_id,"-",id) as cabinetKey,
+        concat(ci.room_id,"-",ci.id) as cabinetKey,
         bi.bus_key as busKey,
         bi.bus_name as busName
         FROM cabinet_box cb

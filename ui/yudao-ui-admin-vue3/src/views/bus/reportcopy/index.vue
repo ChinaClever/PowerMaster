@@ -713,7 +713,6 @@ const itemStyle = ref({
 });
 
 const getList = async () => {
-  //debugger
   loading.value = true
   eqData.value = await IndexApi.getConsumeData(queryParams);
   if(eqData.value?.barRes?.series[0]){
@@ -832,29 +831,28 @@ const getList = async () => {
     serChartContainerWidth.value = 0;
   }
 
-  var Bus = await IndexApi.getBusRedisByDevKey(queryParams);
-  Bus = JSON.parse(Bus)
+  // var Bus = await IndexApi.getBusRedisByDevKey(queryParams);
+  // Bus = JSON.parse(Bus)
   var temp = [] as any;
-  var baseInfo = await IndexApi.getIndexPage(queryParams);
+  var baseInfo = await IndexApi.getReportBasicInformationResVO(queryParams);
 
   temp.push({
     baseInfoName : "所属位置",
-    baseInfoValue : baseInfo?.list && baseInfo?.list.length > 0 ? baseInfo?.list[0].location : "/",
+    baseInfoValue : baseInfo?.location !=null ? baseInfo?.location : "/",
     consumeName : "消耗电量",
     consumeValue : eqData.value?.barRes?.series && eqData.value?.barRes?.series.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '/',
   })
   temp.push({
     baseInfoName : "网络地址",
-    baseInfoValue : queryParams.devKey,
+    baseInfoValue : baseInfo?.devKey !=null ? baseInfo?.devKey : "/",
     consumeName : "当前视在功率",
-    consumeValue : Bus?.bus_data?.bus_total_data != null ? Bus.bus_data.bus_total_data.pow_apparent.toFixed(3) + "kVA" : '/'
+    consumeValue : baseInfo?.powApparent !=null ? baseInfo?.powApparent.toFixed(3) + "kVA" : '/',
   })
   temp.push({
     baseInfoName : "设备状态",
-    baseInfoValue : baseInfo?.list && baseInfo?.list.length > 0 ? baseInfo?.list[0].status : '/',
-    pduAlarm : Bus?.pdu_alarm,
+    baseInfoValue : baseInfo?.runStatus !=null ? baseInfo?.runStatus : "/",
     consumeName : "当前功率因素",
-    consumeValue : Bus?.bus_data?.bus_total_data != null ? Bus.bus_data.bus_total_data.power_factor?.toFixed(2) : '/'
+    consumeValue : baseInfo?.powerFactor !=null ? baseInfo?.powerFactor.toFixed(2) : '/'
   })
   PDUTableData.value = temp;
   
@@ -871,7 +869,6 @@ const getList = async () => {
     devType: 6
   })
   //处理告警信息数据
-  // //debugger
   //处理时间信息
   
   console.log('表格的数据',temp1Data)
@@ -912,7 +909,6 @@ const arraySpanMethod = ({
 
 /** 搜索按钮操作 */
 const handleQuery = async () => {
-  //debugger
   if(queryParams.devKey){
     if(queryParams.oldTime && queryParams.newTime){
       await getList();
@@ -931,7 +927,6 @@ const targetId = ref('')
 //const getTableData = async(reset = false) => {
 //  tableLoading.value = true
 //  try {
-//    // //debugger
 //    const res = await AlarmApi.getAlarmRecord({
 //      pageNo: 1,
 //      pageSize: 10,
