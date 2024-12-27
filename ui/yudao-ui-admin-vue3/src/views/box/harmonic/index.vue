@@ -6,7 +6,7 @@
           <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div>
         </div> -->
         <div class="line"></div>
-        <div class="status">
+        <!-- <div class="status">
           <div class="box">
             <div class="top">
               <div class="tag"></div>{{ statusList[0].name }}
@@ -25,8 +25,8 @@
             </div>
             <div class="value"><span class="number">{{statusNumber.greaterTwenty}}</span>个</div>
           </div>
-        </div>
-        <div class="line"></div>
+        </div> -->
+        <!-- <div class="line"></div> -->
       </div>
       
     </template>
@@ -38,7 +38,7 @@
         :inline="true"
         label-width="68px"                          
       >
-      <el-form-item v-if="switchValue == 0 ">
+      <!-- <el-form-item v-if="switchValue == 0 ">
           <template v-for="(status, index) in statusList" :key="index">
             <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
           </template>
@@ -50,7 +50,7 @@
           v-if="switchValue == 0 "
         >
           <Icon icon="ep:plus" class="mr-5px" /> 谐波颜色范围
-        </el-button>
+        </el-button> -->
 
         <el-form-item >
           <el-checkbox-group  v-model="queryParams.status" @change="handleQuery">
@@ -350,20 +350,8 @@ const getList = async () => {
     const data = await IndexApi.getBoxHarmonicPage(queryParams)
     list.value = data.list
 
-    //获取颜色范围
-    var range = await BoxHarmonicColorApi.getBoxHarmonicColor();
-    if(range != null){
-      statusList[0].name = '<' + range.rangeOne + '%';
-      statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
-      statusList[2].name = '>' + range.rangeFour + '%';
-    }
-
     var tableIndex = 0;
 
-    //获取颜色范围
-    var lessFifteen = 0;
-    var greaterFifteen = 0;
-    var greaterTwenty = 0;
 
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
@@ -374,21 +362,7 @@ const getList = async () => {
       obj.bcurThd = obj.bcurThd?.toFixed(2);
       obj.ccurThd = obj.ccurThd?.toFixed(2);
 
-      //获取颜色范围
-      if(obj.color == 1){
-        lessFifteen++;
-      } else if (obj.color == 2) {
-        greaterFifteen++;
-      } else if (obj.color == 3) {
-        greaterTwenty++;
-      }     
-
     });
-
-    //获取颜色范围
-    statusNumber.lessFifteen = lessFifteen;
-    statusNumber.greaterFifteen = greaterFifteen;
-    statusNumber.greaterTwenty = greaterTwenty;
 
     total.value = data.total
   } finally {
@@ -400,20 +374,8 @@ const getListNoLoading = async () => {
   try {
     const data = await IndexApi.getBoxHarmonicPage(queryParams)
     list.value = data.list
-    //获取颜色范围
-    var range = await BoxHarmonicColorApi.getBoxHarmonicColor();
-    if(range != null){
-      statusList[0].name = '<' + range.rangeOne + '%';
-      statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
-      statusList[2].name = '>' + range.rangeFour + '%';
-    }
 
     var tableIndex = 0;    
-
-    //获取颜色范围
-    var lessFifteen = 0;
-    var greaterFifteen = 0;
-    var greaterTwenty = 0;
 
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
@@ -424,21 +386,7 @@ const getListNoLoading = async () => {
       obj.bcurThd = obj.bcurThd?.toFixed(2);
       obj.ccurThd = obj.ccurThd?.toFixed(2);
 
-      //获取颜色范围
-      if(obj.color == 1){
-        lessFifteen++;
-      } else if (obj.color == 2) {
-        greaterFifteen++;
-      } else if (obj.color == 3) {
-        greaterTwenty++;
-      }   
-
     });
-
-    //获取颜色范围
-    statusNumber.lessFifteen = lessFifteen;
-    statusNumber.greaterFifteen = greaterFifteen;
-    statusNumber.greaterTwenty = greaterTwenty;
 
     total.value = data.total
   } catch (error) {
