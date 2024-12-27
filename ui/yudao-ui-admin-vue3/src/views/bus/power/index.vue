@@ -77,9 +77,10 @@
         label-width="68px"
         v-show="switchValue !== 4"  
       > <el-form-item>
-        <el-form-item v-show="valueMode != 3 && valueMode != 4">
+        <el-form-item>
+          <el-button style="height:35px;" :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">全部</el-button>
           <template v-for="(status,index) in statusList" :key="index">
-            <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="status.selected=!status.selected;handleSelectStatus(status.value)">{{status.name}}</button>
+            <button :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
           </template>
         </el-form-item>
         <el-form-item label="网络地址" prop="devKey" style="margin-left:10px">
@@ -172,7 +173,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table style="height:700px;" v-if="switchValue == 3" v-loading="loading" :data="list"  @cell-dblclick="toDeatil" :border="true">
+        <el-table style="height:720px;margin-top:-10px;" v-if="switchValue == 3" v-loading="loading" :data="list"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <el-table-column label="状态" min-width="50" align="center">
           <template #default="scope">
@@ -316,8 +317,8 @@
               link
               type="primary"
               @click="toDeatil(scope.row)"
-              style="color:#fff;background-color:skyblue;border:1px solid skyblue;width:100px;height:30px;"
               v-if="scope.row.status != null && scope.row.status != 0"
+              style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
             >
             设备详情
             </el-button>
@@ -325,8 +326,8 @@
               link
               type="danger"
               @click="handleDelete(scope.row.busId)"
-              style="color:#fff;background-color:#fa3333;border:1px solid #fa3333;width:50px;height:30px;"
               v-if="scope.row.status == 0"
+              style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
             >
               删除
             </el-button>
@@ -334,7 +335,7 @@
         </el-table-column>
       </el-table>    
     <!-- 查询已删除-->
-      <el-table style="height:700px;" v-if="switchValue == 4" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
+      <el-table style="height:720px;margin-top:-10px;" v-if="switchValue == 4" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -359,7 +360,7 @@
         </el-table-column>
       </el-table>
       <Pagination
-        v-if="showPagination == 1"
+        v-show="showPagination == 1"
         :total="deletedTotal"
         :page-size-arr="pageSizeArr"
         v-model:page="queryDeletedPageParams.pageNo"
@@ -367,7 +368,8 @@
         @pagination="getDeletedList"
       />     
       <div v-if="switchValue == 0  && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+        <template v-for="item in list" :key="item.devKey">
+          <div v-if="item.id !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             
@@ -511,9 +513,10 @@
           </div>
           <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 0" >详情</button>
         </div>
+        </template>
       </div>
       <Pagination
-        v-if="showPagination == 0"
+        v-show="showPagination == 0"
         :total="total"
         :page-size-arr="pageSizeArr"
         v-model:page="queryParams.pageNo"
@@ -560,6 +563,10 @@ const statusNumber = reactive({
 const normalFlag = ref(true)
 const reportFlag = ref(true)
 const offlineFlag = ref(true)
+
+const butColor = ref(0);
+const onclickColor = ref(-1);
+
 const statusList = reactive([
   {
     name: '离线',
@@ -938,9 +945,16 @@ const filterData = () => {
 }
 
 const handleSelectStatus = (index) => {
-  const status =  statusList.filter(item => item.selected)
-  const statusArr = status.map(item => item.value)
-  queryParams.status = statusArr;
+  butColor.value = 1;
+  onclickColor.value = index;
+  queryParams.status = [index];
+  handleQuery();
+}
+
+const toggleAllStatus = () => {
+  butColor.value = 0;
+  onclickColor.value = -1;
+  queryParams.status = [];
   handleQuery();
 }
 
@@ -1301,66 +1315,272 @@ onActivated(() => {
   }
 }
 
-.arrayContainer {
-  display: flex;
-  flex-wrap: wrap;
-  .arrayItem {
-    width: 25%;
-    height: 140px;
-    font-size: 13px;
-    box-sizing: border-box;
-    background-color: #eef4fc;
-    border: 5px solid #fff;
-    padding-top: 40px;
-    position: relative;
-    .content {
-      display: flex;
-      align-items: center;
-      .icon {
-        width: 90px;
-        height: 30px;
-        margin: 0 28px 30px;
-        font-size: 15px;
-        text-align: center;
+@media screen and (min-width:2048px){
+  .arrayContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+
+    .arrayItem {
+      width: 20%;
+      height: 140px;
+      font-size: 13px;
+      box-sizing: border-box;
+      background-color: #eef4fc;
+      border: 5px solid #fff;
+      padding-top: 40px;
+      position: relative;
+      .content {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        .icon {
+          font-size: 20px;
+          width: 150px;
+          height: 100px;
+          text-align: center;
+          .text-pf{
+            font-size: 16px;
+          }
+        }
+        .info{
+          font-size: 16px;
+          margin-bottom: 20px;
+        }
+      }
+      .devKey{
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .room {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .status {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        color: #fff;
+        position: absolute;
+        right: 38px;
+        top: 8px;
+      }
+      .detail {
+        width: 40px;
+        height: 25px;
+        padding: 0;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        cursor: pointer;
       }
     }
-    .devKey{
-      position: absolute;
-      left: 8px;
-      top: 8px;
-    }
-    .room {
-      position: absolute;
-      left: 8px;
-      top: 8px;
-    }
-    .status {
-      width: 40px;
-      height: 20px;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+  }
+}
 
-      color: #fff;
-      position: absolute;
-      right: 38px;
-      top: 8px;
+@media screen and (max-width:2048px) and (min-width:1600px) {
+  .arrayContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+
+    .arrayItem {
+      width: 25%;
+      height: 140px;
+      font-size: 13px;
+      box-sizing: border-box;
+      background-color: #eef4fc;
+      border: 5px solid #fff;
+      padding-top: 40px;
+      position: relative;
+      border-radius: 7px;
+      .content {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        .icon {
+          font-size: 20px;
+          width: 150px;
+          height: 100px;
+          text-align: center;
+          .text-pf{
+            font-size: 16px;
+          }
+        }
+        .info{
+          font-size: 16px;
+          margin-bottom: 20px;
+        }
+      }
+      .devKey{
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .room {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .status {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        color: #fff;
+        position: absolute;
+        right: 38px;
+        top: 8px;
+      }
+      .detail {
+        width: 40px;
+        height: 25px;
+        padding: 0;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        cursor: pointer;
+      }
     }
-    .detail {
-      width: 40px;
-      height: 25px;
-      padding: 0;
-      border: 1px solid #ccc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #fff;
-      position: absolute;
-      right: 8px;
-      bottom: 8px;
-      cursor: pointer;
+  }
+}
+
+@media screen and (max-width:1600px) {
+  .arrayContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+
+    .arrayItem {
+      width: 33%;
+      height: 140px;
+      font-size: 13px;
+      box-sizing: border-box;
+      background-color: #eef4fc;
+      border: 5px solid #fff;
+      padding-top: 40px;
+      position: relative;
+      .content {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        .icon {
+          font-size: 20px;
+          width: 150px;
+          height: 100px;
+          text-align: center;
+          .text-pf{
+            font-size: 16px;
+          }
+        }
+        .info{
+          font-size: 16px;
+          margin-bottom: 20px;
+        }
+      }
+      .devKey{
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .room {
+        position: absolute;
+        left: 8px;
+        top: 8px;
+      }
+      .status {
+        width: 40px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        color: #fff;
+        position: absolute;
+        right: 38px;
+        top: 8px;
+      }
+      .detail {
+        width: 40px;
+        height: 25px;
+        padding: 0;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        cursor: pointer;
+      }
     }
+  }
+}
+
+.btnallSelected {
+  margin-right: 10px;
+  width: 58px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #409EFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.btnallNotSelected{
+  margin-right: 10px;
+  width: 58px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: #000000;
+  border: 1px solid #409EFF;
+  border-radius: 5px;
+  &:hover {
+    color: #7bc25a;
   }
 }
 
