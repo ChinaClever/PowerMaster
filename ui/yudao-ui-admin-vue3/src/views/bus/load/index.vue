@@ -48,7 +48,8 @@
         <el-form-item v-if="switchValue == 2 || switchValue == 3">
           <el-button style="height:25px;width:50px;margin-right:10px" :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">全部</el-button>
           <template v-for="(status, index) in statusList" :key="index">
-            <button :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
+            <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+            <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
           </template>    
         </el-form-item>
         <!-- <el-button
@@ -143,7 +144,7 @@
     </template>
     <template #Content>
       <div v-if="switchValue == 3 || switchValue == 4 && list.length > 0" style="height:720px;margin-top:-10px;">
-        <el-table v-if="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border=true>
+        <el-table v-if="switchValue == 3" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border=true>
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -151,12 +152,11 @@
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column label="运行状态" align="center" prop="color" >
           <template #default="scope" >
-            <el-tag type="info"  v-if="scope.row.status == 0">离线</el-tag>
             <el-tag type="info"  v-if="scope.row.color == 0&&scope.row.status != 0">空载</el-tag>
-            <el-tag type="success"  v-if="scope.row.color == 1&&scope.row.status != 0">&lt;30%</el-tag>
-            <el-tag type="primary"  v-if="scope.row.color == 2&&scope.row.status != 0">30%-60%</el-tag>
-            <el-tag type="warning" v-if="scope.row.color == 3&&scope.row.status != 0">60%-90%</el-tag>
-            <el-tag type="danger" v-if="scope.row.color == 4&&scope.row.status != 0">&gt;90%</el-tag>
+            <el-tag type="success"  v-else-if="scope.row.color == 1&&scope.row.status != 0">&lt;30%</el-tag>
+            <el-tag type="primary"  v-else-if="scope.row.color == 2&&scope.row.status != 0">30%-60%</el-tag>
+            <el-tag type="warning" v-else-if="scope.row.color == 3&&scope.row.status != 0">60%-90%</el-tag>
+            <el-tag type="danger" v-else-if="scope.row.color == 4&&scope.row.status != 0">&gt;90%</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="A相负载率(%)" align="center" prop="aloadRate" width="130px" >
@@ -253,12 +253,11 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
-            <el-tag type="info"  v-if="item.color == 0&& item.status != 0">空载</el-tag>
-            <el-tag type="info"  v-if="item.status == 0">离线</el-tag>
-            <el-tag type="success"  v-if="item.status == 1">&lt;30%</el-tag>
-            <el-tag type="primary"  v-if="item.status == 2">30%-60%</el-tag>
-            <el-tag type="warning" v-if="item.status == 3">60%-90%</el-tag>
-            <el-tag type="danger" v-if="item.status == 4">&gt;90%</el-tag>
+            <el-tag type="info"  v-if="item.color == 0 && item.status != 0">空载</el-tag>
+            <el-tag type="success"  v-else-if="item.color == 1 && item.status != 0">&lt;30%</el-tag>
+            <el-tag type="primary"  v-else-if="item.color == 2 && item.status != 0">30%-60%</el-tag>
+            <el-tag type="warning" v-else-if="item.color == 3 && item.status != 0">60%-90%</el-tag>
+            <el-tag type="danger" v-else-if="item.color == 4 && item.status != 0">&gt;90%</el-tag>
           </div>
           <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 0" >详情</button>
         </div>
@@ -1056,6 +1055,7 @@ onActivated(() => {
         .info{
           font-size: 16px;
           margin-bottom: 20px;
+          margin-left: 20px;
         }
       }
       .devKey{
@@ -1137,6 +1137,7 @@ onActivated(() => {
         .info{
           font-size: 16px;
           margin-bottom: 20px;
+          margin-left: 20px;
         }
       }
       .devKey{
@@ -1217,6 +1218,7 @@ onActivated(() => {
         .info{
           font-size: 16px;
           margin-bottom: 20px;
+          margin-left: 20px;
         }
       }
       .devKey{

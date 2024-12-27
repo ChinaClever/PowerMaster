@@ -51,7 +51,8 @@
             全部
           </button>
           <template v-for="(status, index) in statusList" :key="index">
-            <button :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+            <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+            <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
           </template>
         </el-form-item>
       <el-form-item>
@@ -316,17 +317,17 @@
 
 <script setup lang="ts">
 // import { dateFormatter } from '@/utils/formatTime'
-import download from '@/utils/download'
-import { PDUDeviceApi } from '@/api/pdu/pdudevice'
+import download from '@/utils/download';
+import { PDUDeviceApi } from '@/api/pdu/pdudevice';
 // import PDUDeviceForm from './PDUDeviceForm.vue'
-import { ElTree } from 'element-plus'
-import { CabinetApi } from '@/api/cabinet/info'
-import { get } from 'http'
+import { ElTree } from 'element-plus';
+import { CabinetApi } from '@/api/cabinet/info';
+import { get } from 'http';
 
 /** PDU设备 列表 */
-defineOptions({ name: 'PDUDevice' })
+defineOptions({ name: 'PDUDevice' });
 
-const { push } = useRouter()
+const { push } = useRouter();
 const navList = ref([]) as any // 左侧导航栏树结构列表
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
@@ -336,6 +337,7 @@ const showPagination = ref(0);
 
 const butColor = ref(0);
 const onclickColor = ref(-1);
+const flag = ref(true);
 
 const statusNumber = reactive({
   normal : 0,
@@ -735,16 +737,16 @@ const toggleAllStatus = () => {
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
-  queryParams.pageNo = 1
-  queryDeletedPageParams.pageNo = 1
+  queryParams.pageNo = 1;
+  queryDeletedPageParams.pageNo = 1;
   getList();
   //getListAll();
 }
 
 /** 重置按钮操作 */
 const resetQuery = () => {
-  queryFormRef.value.resetFields()
-  queryFormRef2.value.resetFields()
+  queryFormRef.value.resetFields();
+  queryFormRef2.value.resetFields();
   butColor.value = 0;
   //statusList.forEach((item) => item.selected = true)
   queryParams.status = [];

@@ -49,7 +49,8 @@
             全部
           </button>
       <template v-for="(status) in statusList" :key="status.value">
-        <button
+        <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+        <button v-else-if="butColor === 1"
           :class="[onclickColor === status.value ? status.activeClass:status.cssClass]"
           @click.prevent="handleSelectStatus(status.value)"
           class="inline-button"
@@ -115,7 +116,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-if="visMode == 1" v-loading="loading" style="height:720px;margin-top:-10px;" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
+      <el-table v-if="visMode == 1" v-loading="loading" style="height:720px;margin-top:-10px;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location"/>    
@@ -266,7 +267,7 @@
             </div>
           </el-card>
           <el-card class="cardChilc" shadow="hover">
-            <div class="IechartBar" :style="{backgroundColor: colorVolList[balanceObj.colorIndex].color}">
+            <div class="IechartBar">
               <Echart :options="ALineOption" :height="300" />
             </div>
           </el-card>
@@ -296,7 +297,7 @@
             </div>
           </el-card>
           <el-card class="cardChilc" shadow="hover">
-            <div class="IechartBar"  :style="{backgroundColor: colorVolList[balanceObj.colorIndex].color}">
+            <div class="IechartBar">
               <Echart :options="BLineOption" :height="300"/>
             </div>
           </el-card>
@@ -369,7 +370,7 @@
             </div>
           </el-card>
           <el-card class="cardChilc" shadow="hover">
-            <div class="IechartBar" :style="{backgroundColor: colorVolList[balanceObj.colorIndex].color}">
+            <div class="IechartBar">
               <Echart :options="ALineOption" :height="300" />
             </div>
           </el-card>
@@ -399,7 +400,7 @@
             </div>
           </el-card>
           <el-card class="cardChilc" shadow="hover">
-            <div class="IechartBar"  :style="{backgroundColor: colorVolList[balanceObj.colorIndex].color}">
+            <div class="IechartBar">
               <Echart :options="BLineOption" :height="300"/>
             </div>
           </el-card>
@@ -643,52 +644,36 @@ const getBalanceDetail = async (item) => {
     // balanceObj.imbalanceValueA =  +(((max - average) * 100 / average).toFixed(0))
     ABarOption.value = {
       title: {
-        text: '电流柱形图',
+        text: '电流饼形图',
         left: 'center'
       },
       tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-          type: 'shadow'
-        },formatter: function (params) {
-            // params是一个数组，包含了当前触发tooltip的多个系列的信息
-            let tooltipContent = '';
-            params.forEach(function (item) {
-                // item是单个系列的信息，包括seriesName（系列名称）、name（数据项名称）、value（数据值）等
-                tooltipContent += item.name + ' : ' + item.value + ' A<br/>';
-            });
-            return tooltipContent;
-        },
+        trigger: 'item',
+        formatter: '{b} : {c}'
       },
-      grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '3%',
-        containLabel: true
-      },
-      xAxis: [
-        {
-          type: 'category',
-          data: ['A', 'B', 'C'],
-          axisTick: {
-            alignWithLabel: true
-          }
-        }
-      ],
-      yAxis: [
-        {
-          type: 'value',
-          name: '电流',
-          axisLabel: {
-            formatter: '{value} A'
-          }
-        }
-      ],
       series: [
         {
-          type: 'bar',
-          barWidth: '20%',
-          data: cur_valueA
+          type: 'pie',
+          radius: [20, 120],
+          center: ['50%', '50%'],
+          roseType: 'radius',
+          itemStyle: {
+            borderRadius: 5
+          },
+          label: {
+            show: true,
+            position: 'inside', // 将标签显示在饼图内部
+            formatter: (params) => {
+              return `${params.value}A`;
+            },
+            fontSize: 14,
+            fontWeight: 'bold'
+          },
+          data: [
+            { value: cur_valueA[0], name: 'A相电流', itemStyle: { color: '#075F71' } },
+            { value: cur_valueA[1], name: 'B相电流', itemStyle: { color: '#119CB5' } },
+            { value: cur_valueA[2], name: 'C相电流', itemStyle: { color: '#45C0C9' } },
+          ]
         }
       ]
     }
@@ -697,53 +682,35 @@ const getBalanceDetail = async (item) => {
     const vol_value = res.vol_value
     BBarOption.value = {
       title: {
-        text: '电压柱形图',
+        text: '电压饼形图',
         left: 'center'
       },
       tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-          type: 'shadow'
-        },formatter: function (params) {
-            // params是一个数组，包含了当前触发tooltip的多个系列的信息
-            let tooltipContent = '';
-            params.forEach(function (item) {
-                // item是单个系列的信息，包括seriesName（系列名称）、name（数据项名称）、value（数据值）等
-                tooltipContent += item.name + ' : ' + item.value + ' V<br/>';
-            });
-            return tooltipContent;
-        },
+        trigger: 'item'
       },
-      grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '3%',
-        containLabel: true
-      },
-      xAxis: [
-        {
-          type: 'category',
-          data: ["A","B","C"],
-          axisTick: {
-            alignWithLabel: true
-          }
-        }
-      ],
-      yAxis: [
-        {
-          type: 'value',
-          name: '电压',
-          axisLabel: {
-            formatter: '{value} V'
-          }
-        }
-      ],
       series: [
         {
-          type: 'bar',
-          barWidth: '20%',
-          data: vol_value,
-        },
+          type: 'pie',
+          radius: ['40%', '80%'],
+          avoidLabelOverlap: false,
+          itemStyle: {
+            borderRadius: 10,
+            borderColor: '#fff',
+            borderWidth: 2
+          },
+          label: {
+            show: true,
+            position: 'inside',
+            formatter: (params) => `${params.value}V`,
+            fontSize: 14,
+            fontWeight: 'bold'
+          },
+          data: [
+            { value: vol_value[0], name: 'A相电压', itemStyle: { color: '#E5B849' } },
+            { value: vol_value[1], name: 'B相电压', itemStyle: { color: '#C8603A' } },
+            { value: vol_value[2], name: 'C相电压', itemStyle: { color: '#AD3762' } },
+          ]
+        }
       ]
     }
   }

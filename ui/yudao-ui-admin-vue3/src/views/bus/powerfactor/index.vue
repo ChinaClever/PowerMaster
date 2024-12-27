@@ -63,9 +63,13 @@
           <!--<template v-for="(status,index) in statusList" :key="index">
             <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
           </template>-->
-          <button :class="normalFlag ? 'btn_normal normal': 'btn_normal'" @click.prevent="normalFlag = !normalFlag;handleSelectStatus(1)">正常</button>
-          <button :class="reportFlag ? 'btn_error error':  'btn_error'" @click.prevent="reportFlag = !reportFlag;handleSelectStatus(2)">告警</button>
-          <button :class="offlineFlag ? 'btn_offline offline': 'btn_offline'" @click.prevent="offlineFlag = !offlineFlag;handleSelectStatus(0)">离线</button>
+          <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">
+            全部
+          </button>
+          <template v-for="(status, index) in statusList" :key="index">
+            <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+            <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+          </template>
         </el-form-item>
         <!-- <el-form-item >
           <el-checkbox-group  v-model="queryParams.status" @change="handleQuery">
@@ -110,7 +114,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :border="true">
+      <el-table v-if="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -145,6 +149,7 @@
               type="primary"
               @click="openPFDetail(scope.row)"
               v-if=" scope.row.status != null && scope.row.status != 5"
+              style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
             >
             设备详情
             </el-button>
@@ -153,6 +158,7 @@
               type="danger"
               @click="handleDelete(scope.row.busId)"
               v-if="scope.row.status == 5"
+              style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
             >
               删除
             </el-button>
@@ -160,8 +166,9 @@
         </el-table-column>
       </el-table>    
 
-      <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+      <div v-if="switchValue == 0  && list.length > 0" class="arrayContainer">
+        <template v-for="item in list" :key="item.devKey">
+          <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="info" >                  
@@ -177,11 +184,13 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status">
-            <el-tag v-if="item.apf != null" >功率因素</el-tag>
-            <el-tag v-else type="info">离线</el-tag>
+            <el-tag v-if="item.status === 1" >正常</el-tag>
+            <el-tag v-else-if="item.status === 0" type="info">离线</el-tag>
+            <el-tag v-else-if="item.status === 2">离线</el-tag>
           </div>
           <button class="detail" @click="openPFDetail(item)" v-if="item.status != null && item.status != 0" >详情</button>
         </div>
+        </template>
       </div>
       <Pagination
         :total="total"
@@ -242,8 +251,8 @@
 
         </el-row>
         <br/>
-        <PFDetail v-show="switchChartOrTable == 0"  width="68vw" height="58vh"  :list="pfESList"   />
-        <el-table v-show="switchChartOrTable == 1" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" >
+        <PFDetail v-if="switchChartOrTable == 0"  width="68vw" height="58vh"  :list="pfESList"   />
+        <el-table style="height:550px;ovrflow:hidden;overflow-y:auto;" v-if="switchChartOrTable == 1" :data="pfTableList" :show-overflow-tooltip="true" >
           <el-table-column label="时间" align="center" prop="time" />
           <el-table-column label="A相功率因素" align="center" prop="powerFactorAvgValueA" />
           <el-table-column label="B相功率因素" align="center" prop="powerFactorAvgValueB" />
@@ -283,6 +292,9 @@ const detailVis = ref(false);
 const lowlLocation = ref() as any;
 const ipAddr = ref()
 const pfTotal = ref()
+
+const butColor = ref(0);
+const onclickColor = ref(-1);
 
 const statusList = reactive([
   {
@@ -589,12 +601,19 @@ const filterData = () => {
 }
 
 const handleSelectStatus = (index) => {
-  //statusList[index].selected = !statusList[index].selected
-  const status =  statusList.filter(item => item.selected)
-  const statusArr = status.map(item => item.value)
-  queryParams.status = statusArr;
+  butColor.value = 1;
+  onclickColor.value = index;
+  queryParams.status = [index];
   handleQuery();
 }
+
+const toggleAllStatus = () => {
+  butColor.value = 0;
+  onclickColor.value = -1;
+  queryParams.status = [];
+  handleQuery();
+}
+
 
 // const openNewPage = (scope) => {
 //   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
@@ -611,23 +630,26 @@ const handleQuery = () => {
 /** 重置按钮操作 */
 const resetQuery = () => {
   queryFormRef.value.resetFields()
+  butColor.value = 0;
+  queryParams.status = [];
+  onclickColor.value = -1;
   handleQuery()
 }
 
 /** 添加/修改操作 */
 
 const openForm = (type: string) => {
-  curBalanceColorForm.value.open(type)
+  curBalanceColorForm.value.open(type);
 }
 
 /** 删除按钮操作 */
 const handleDelete = async (id: number) => {
   try {
     // 删除的二次确认
-    await message.delConfirm()
+    await message.delConfirm();
     // 发起删除
-    await IndexApi.deleteIndex(id)
-    message.success(t('common.delSuccess'))
+    await IndexApi.deleteIndex(id);
+    message.success(t('common.delSuccess'));
     // 刷新列表
     // await getList()
   } catch {}
@@ -636,21 +658,21 @@ const handleDelete = async (id: number) => {
 const handleExportXLS = async ()=>{
   try {
     // 导出的二次确认
-    await message.exportConfirm()
+    await message.exportConfirm();
     // 发起导出
-    queryParams.pageNo = 1
-    exportLoading.value = true
+    queryParams.pageNo = 1;
+    exportLoading.value = true;
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
-    const data = await IndexApi.getBusPFDetailExcel(queryParams, axiosConfig)
-    console.log("data",data)
-    await download.excel(data, '功率因数详细.xlsx')
+    const data = await IndexApi.getBusPFDetailExcel(queryParams, axiosConfig);
+    console.log("data",data);
+    await download.excel(data, '功率因数详细.xlsx');
   } catch (error) {
     // 处理异常
-    console.error('导出失败：', error)
+    console.error('导出失败：', error);
   } finally {
-    exportLoading.value = false
+    exportLoading.value = false;
   }
 }
 
@@ -659,14 +681,14 @@ const handleExportXLS = async ()=>{
 const handleExport = async () => {
   try {
     // 导出的二次确认
-    await message.exportConfirm()
+    await message.exportConfirm();
     // 发起导出
-    exportLoading.value = true
-    const data = await IndexApi.exportIndex(queryParams)
-    download.excel(data, 'PDU设备.xls')
+    exportLoading.value = true;
+    const data = await IndexApi.exportIndex(queryParams);
+    download.excel(data, 'PDU设备.xls');
   } catch {
   } finally {
-    exportLoading.value = false
+    exportLoading.value = false;
   }
 }
 
@@ -688,29 +710,29 @@ const getFullTimeByDate = (date) => {
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
-  getList()
+  getList();
   getNavList();
-  getListNoLoading()
+  getListNoLoading();
   flashListTimer.value = setInterval((getListNoLoading), 5000);
 })
 
 onBeforeUnmount(()=>{
   if(flashListTimer.value){
-    clearInterval(flashListTimer.value)
+    clearInterval(flashListTimer.value);
     flashListTimer.value = null;
   }
 })
 
 onBeforeRouteLeave(()=>{
   if(flashListTimer.value){
-    clearInterval(flashListTimer.value)
+    clearInterval(flashListTimer.value);
     flashListTimer.value = null;
     firstTimerCreate.value = false;
   }
 })
 
 onActivated(() => {
-  getList()
+  getList();
   getNavList();
   if(!firstTimerCreate.value){
     flashListTimer.value = setInterval((getListNoLoading), 5000);
@@ -980,9 +1002,16 @@ onActivated(() => {
   }
 }
 
-.arrayContainer {
-  display: flex;
-  flex-wrap: wrap;
+@media screen and (min-width:2048px){
+  .arrayContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
   .arrayItem {
     width: 25%;
     height: 140px;
@@ -1045,6 +1074,186 @@ onActivated(() => {
     }
   }
 }
+}
+
+@media screen and (max-width:2048px) and (min-width:1600px){
+  .arrayContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+  .arrayItem {
+    width: 25%;
+    height: 140px;
+    font-size: 13px;
+    box-sizing: border-box;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 40px;
+    position: relative;
+    .content {
+      padding-left: 20px;
+      display: flex;
+      align-items: center;
+      .count_img {
+        margin: 0 35px 0 13px;
+      }
+      .icon {
+        width: 70px;
+        height: 60px;
+        margin: 0 28px;
+        text-align: center;
+      }
+    }
+    .devKey{
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .room {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .status {
+      width: 40px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      color: #fff;
+      position: absolute;
+      right: 38px;
+      top: 8px;
+    }
+    .detail {
+      width: 40px;
+      height: 25px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      cursor: pointer;
+    }
+  }
+}
+}
+
+@media screen and (max-width:1600px){
+  .arrayContainer {
+  width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+  .arrayItem {
+    width: 33%;
+    height: 140px;
+    font-size: 13px;
+    box-sizing: border-box;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 40px;
+    position: relative;
+    .content {
+      padding-left: 20px;
+      display: flex;
+      align-items: center;
+      .count_img {
+        margin: 0 35px 0 13px;
+      }
+      .icon {
+        width: 70px;
+        height: 60px;
+        margin: 0 28px;
+        text-align: center;
+      }
+    }
+    .devKey{
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .room {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .status {
+      width: 40px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      color: #fff;
+      position: absolute;
+      right: 38px;
+      top: 8px;
+    }
+    .detail {
+      width: 40px;
+      height: 25px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      cursor: pointer;
+    }
+  }
+}
+}
+
+.btnallSelected {
+  margin-right: 10px;
+  width: 58px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #409EFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.btnallNotSelected{
+  margin-right: 10px;
+  width: 58px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: #000000;
+  border: 1px solid #409EFF;
+  border-radius: 5px;
+  &:hover {
+    color: #7bc25a;
+  }
+}
 
 :deep(.master-left .el-card__body) {
   padding: 0;
@@ -1076,5 +1285,9 @@ onActivated(() => {
 .button-group {
   display: flex;
   gap: 10px;
+}
+
+:deep(.el-card){
+  --el-card-padding:5px;
 }
 </style>
