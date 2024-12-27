@@ -211,7 +211,8 @@
       </el-table>
 
       <div v-if="visMode == 0 && switchValue == 0  && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+        <template v-for="item in list" :key="item.devKey">
+          <div v-if="item.id !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="info">                  
@@ -238,6 +239,7 @@
           </div>
           <button class="detail" @click="showDialogCur(item)" v-if="item.status != null && item.status != 0">详情</button>
         </div>
+        </template>
       </div>
 
       <el-dialog v-model="dialogVisibleCur" @close="handleClose">
@@ -1126,7 +1128,10 @@ const handleQuery = () => {
 /** 重置按钮操作 */
 const resetQuery = () => {
   queryFormRef.value.resetFields()
-  statusList.forEach((item) => item.selected = true)
+  butColor.value = 0;
+  //statusList.forEach((item) => item.selected = true)
+  queryParams.status = [];
+  onclickColor.value = -1;
   handleQuery()
 }
 

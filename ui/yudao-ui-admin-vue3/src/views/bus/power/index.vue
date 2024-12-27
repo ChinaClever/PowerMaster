@@ -968,6 +968,9 @@ const handleQuery = () => {
 /** 重置按钮操作 */
 const resetQuery = () => {
   queryFormRef.value.resetFields()
+  butColor.value = 0;
+  queryParams.status = [];
+  onclickColor.value = -1;
   handleQuery()
 }
 

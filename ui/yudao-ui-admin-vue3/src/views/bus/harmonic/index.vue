@@ -45,9 +45,12 @@
         label-width="68px"                          
       >
       <el-form-item >
-          <button :class="normalFlag ? 'btn_normal normal': 'btn_normal'" @click.prevent="normalFlag = !normalFlag;handleSelectStatus(1)">正常</button>
-          <button :class="reportFlag ? 'btn_error error':  'btn_error'" @click.prevent="reportFlag = !reportFlag;handleSelectStatus(2)">告警</button>
-          <button :class="offlineFlag ? 'btn_offline offline': 'btn_offline'" @click.prevent="offlineFlag = !offlineFlag;handleSelectStatus(0)">离线</button>
+          <button style="height:34px;" :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">
+            全部
+          </button>
+          <template v-for="(status, index) in statusList" :key="index">
+            <button :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+          </template>
         </el-form-item>
         <!-- <el-form-item >
           <el-checkbox-group  v-model="queryParams.status" @change="handleQuery">
@@ -93,12 +96,12 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
+      <el-table v-if="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location"/>
         <el-table-column label="设备名称" align="center" prop="busName"/>
-        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>     
+        <el-table-column label="网络地址" align="center" prop="devKey" width="150px" :class-name="ip"/>     
         <el-table-column v-if="valueMode == 0" label="Ia" align="center" prop="acurThd" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.acurThd != null">
@@ -142,13 +145,14 @@
           </template>
         </el-table-column>
         <!-- 数据库查询 -->
-        <el-table-column label="操作" align="center" width="100px">
+        <el-table-column label="操作" align="center" width="130px">
           <template #default="scope">
             <el-button
               link
               type="primary"
               @click="toDetail(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 0"
+              style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
             >
             设备详情
             </el-button>
@@ -157,6 +161,7 @@
               type="danger"
               @click="handleDelete(scope.row.busId)"
               v-if="scope.row.status == 0"
+              style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
             >
               删除
             </el-button>
@@ -164,8 +169,9 @@
         </el-table-column>
       </el-table>    
 
-      <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+      <div v-if="switchValue == 0  && list.length > 0" class="arrayContainer">
+        <template v-for="item in list" :key="item.devKey">
+          <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="icon">
@@ -192,6 +198,7 @@
           </div>          
           <button class="detail" @click="showDialogCur(item)" v-if="item.status != null && item.status != 0">详情</button>
         </div>
+        </template>
       </div>
 
       <el-dialog v-model="dialogVisibleCur" @close="handleClose">
@@ -274,8 +281,9 @@
         </div>
       </el-dialog>
 
-      <div v-show="switchValue == 1  && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+      <div v-if="switchValue == 1  && list.length > 0" class="arrayContainer">
+        <template v-for="item in list" :key="item.devKey">
+          <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="icon">
@@ -302,6 +310,7 @@
           </div>          
           <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 0">详情</button>
         </div>
+        </template>
       </div>
       <Pagination
         :total="total"
@@ -346,6 +355,8 @@ const switchValue = ref(0)
 const valueMode = ref(0)
 
 const devKeyList = ref([])
+const butColor = ref(0);
+const onclickColor = ref(-1);
 
 const statusList = reactive([
   {
@@ -479,7 +490,6 @@ const getList = async () => {
   try {
     const data = await IndexApi.getBusHarmonicPage(queryParams)
     list.value = data.list
-    filterData()
     console.log('list.value',list.value)
     var tableIndex = 0;
 
@@ -507,7 +517,6 @@ const getListNoLoading = async () => {
   try {
     const data = await IndexApi.getBusHarmonicPage(queryParams)
     list.value = data.list
-    filterData()
     //list.value = list.value.map(item => ({
     //  ...item, // 复制对象
     //  location: item.devKey.split('-')[0] // 直接计算location属性
@@ -569,40 +578,17 @@ const showDialogVol = () => {
 //   window.open(url, '_blank');
 // }
 
-const filterData = () => {
-  const data0 = list.value.filter(item => item.status === 1); // 正常状态数据
-  console.log('data0',data0)
-  const data1 = list.value.filter(item => item.status === 2 ); // 告警状态数据
-  console.log('data1',data1)
-  const data2 = list.value.filter(item => item.status === 0 || item.status == null); // 离线状态数据
-  console.log('data2',data2)
- 
-  if (normalFlag.value && !reportFlag.value && !offlineFlag.value) {
-    list.value = data0; // 仅正常状态
-  } else if (reportFlag.value && !normalFlag.value && !offlineFlag.value) {
-    list.value = data1; // 仅告警状态
-  } else if (offlineFlag.value && !normalFlag.value && !reportFlag.value) {
-    list.value = data2; // 仅离线状态
-  } else if (normalFlag.value && reportFlag.value && !offlineFlag.value) {
-    list.value = [...data0, ...data1];
-  } else if (normalFlag.value && offlineFlag.value && !reportFlag.value) {
-    list.value = [...data0, ...data2];
-  } else if (reportFlag.value && offlineFlag.value && !normalFlag.value) {
-    list.value = [...data1, ...data2];
-  } else if (normalFlag.value && reportFlag.value && offlineFlag.value) {
-    list.value = [...data0, ...data1, ...data2];
-  } else {
-    list.value = list.value;
-  }
-
-  console.log('执行完毕',list.value)
+const handleSelectStatus = (index) => {
+  butColor.value = 1;
+  onclickColor.value = index;
+  queryParams.status = [index];
+  handleQuery();
 }
 
-const handleSelectStatus = (index) => {
-  //statusList[index].selected = !statusList[index].selected
-  const status =  statusList.filter(item => item.selected)
-  const statusArr = status.map(item => item.value)
-  queryParams.status = statusArr;
+const toggleAllStatus = () => {
+  butColor.value = 0;
+  onclickColor.value = -1;
+  queryParams.status = [];
   handleQuery();
 }
 
@@ -615,6 +601,10 @@ const handleQuery = () => {
 /** 重置按钮操作 */
 const resetQuery = () => {
   queryFormRef.value.resetFields()
+  butColor.value = 0;
+  //statusList.forEach((item) => item.selected = true)
+  queryParams.status = [];
+  onclickColor.value = -1;
   handleQuery()
 }
 
@@ -946,9 +936,16 @@ onActivated(() => {
   }
 }
 
-.arrayContainer {
-  display: flex;
-  flex-wrap: wrap;
+@media screen and (min-width:2048px){
+  .arrayContainer {
+   width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
   .arrayItem {
     width: 25%;
     height: 140px;
@@ -1012,6 +1009,188 @@ onActivated(() => {
     }
   }
 }
+}
+
+@media screen and (max-width:2048px) and (min-width:1600px){
+.arrayContainer {
+   width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+  .arrayItem {
+    width: 25%;
+    height: 140px;
+    font-size: 13px;
+    box-sizing: border-box;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 40px;
+    position: relative;
+    .content {
+      padding-left: 20px;
+      display: flex;
+      align-items: center;
+      .count_img {
+        margin: 0 35px 0 13px;
+      }
+      .icon {
+        width: 74px;
+        height: 60px;
+        margin: 0 28px;
+        text-align: center;
+        font-size: large;
+      }
+    }
+    .devKey{
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .room {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .status {
+      width: 40px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      color: #fff;
+      position: absolute;
+      right: 38px;
+      top: 8px;
+    }
+    .detail {
+      width: 40px;
+      height: 25px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      cursor: pointer;
+    }
+  }
+}
+}
+
+@media screen and (max-width:1600px){
+  .arrayContainer {
+   width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+  .arrayItem {
+    width: 33%;
+    height: 140px;
+    font-size: 13px;
+    box-sizing: border-box;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 40px;
+    position: relative;
+    .content {
+      padding-left: 20px;
+      display: flex;
+      align-items: center;
+      .count_img {
+        margin: 0 35px 0 13px;
+      }
+      .icon {
+        width: 74px;
+        height: 60px;
+        margin: 0 28px;
+        text-align: center;
+        font-size: large;
+      }
+    }
+    .devKey{
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .room {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .status {
+      width: 40px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      color: #fff;
+      position: absolute;
+      right: 38px;
+      top: 8px;
+    }
+    .detail {
+      width: 40px;
+      height: 25px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      cursor: pointer;
+    }
+  }
+}
+}
+
+.btnallSelected {
+  margin-right: 10px;
+  width: 58px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #409EFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.btnallNotSelected{
+  margin-right: 10px;
+  width: 58px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: #000000;
+  border: 1px solid #409EFF;
+  border-radius: 5px;
+  &:hover {
+    color: #7bc25a;
+  }
+}
 
 :deep(.master-left .el-card__body) {
   padding: 0;
@@ -1038,5 +1217,9 @@ onActivated(() => {
   margin: 0;
   width: 100%;
   height: 100%;
+}
+
+:deep(.el-card){
+  --el-card-padding:5px;
 }
 </style>
