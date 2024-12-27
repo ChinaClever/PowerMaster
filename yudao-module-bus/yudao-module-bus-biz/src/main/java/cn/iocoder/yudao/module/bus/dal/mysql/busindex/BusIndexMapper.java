@@ -36,6 +36,7 @@ public interface BusIndexMapper extends BaseMapperX<BusIndexDO> {
                 .betweenIfPresent(BusIndexDO::getCreateTime, reqVO.getCreateTime())
                 .inIfPresent(BusIndexDO::getRunStatus, reqVO.getStatus())
                         .inIfPresent(BusIndexDO::getLoadRateStatus, reqVO.getLoadRateStatus())
+                        .inIfPresent(BusIndexDO::getCurUnbalanceStatus,reqVO.getCurUnbalanceStatus())
 //                .ne(ObjectUtil.isNotEmpty(reqVO.getStatus()),BusIndexDO::getRunStatus, 0)
                 .orderByDesc(BusIndexDO::getRunStatus));
     }

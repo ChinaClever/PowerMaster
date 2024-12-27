@@ -80,8 +80,8 @@
         sum(case when bi.load_rate_status = 0 then 1 else 0 end) as LoadRateZero,
         sum(case when bi.load_rate_status = 1 then 1 else 0 end) as lessThirty,
         sum(case when bi.load_rate_status = 2 then 1 else 0 end) as greaterThirty,
-        sum(case when bi.load_rate_status = 3 then1 else 0 end) as greaterSixty,
-        sum(case when bi.load_rate_status = 4 then1 else 0 end) as greaterNinety,
+        sum(case when bi.load_rate_status = 3 then 1 else 0 end) as greaterSixty,
+        sum(case when bi.load_rate_status = 4 then 1 else 0 end) as greaterNinety
         FROM bus_index bi
         <where>
             is_deleted = 0

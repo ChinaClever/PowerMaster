@@ -554,6 +554,8 @@ public class BusIndexServiceImpl implements BusIndexService {
             busIndexRes.setBusId(busIndexDO.getId());
             busIndexRes.setDevKey(busIndexDO.getBusKey());
             busIndexRes.setBusName(busIndexDO.getBusName());
+            busIndexRes.setColor(busIndexDO.getLoadRateStatus());
+            busIndexRes.setStatus(busIndexDO.getRunStatus());
             res.add(busIndexRes);
         }
         Map<String, BusIndexRes> resMap = res.stream().collect(Collectors.toMap(BusIndexRes::getDevKey, Function.identity()));
@@ -1158,6 +1160,7 @@ public class BusIndexServiceImpl implements BusIndexService {
             busTemRes.setBusId(busIndexDO.getId());
             busTemRes.setDevKey(busIndexDO.getBusKey());
             busTemRes.setBusName(busIndexDO.getBusName());
+            busTemRes.setStatus(busIndexDO.getRunStatus());
             res.add(busTemRes);
         }
 //        List<BusTemRes> res = BeanUtils.toBean(list, BusTemRes.class);
@@ -1206,9 +1209,6 @@ public class BusIndexServiceImpl implements BusIndexService {
                         status += 1;
                     }
                 }
-            }
-            if (status == 0 && busTemRes.getStatus() == 1) {
-                busTemRes.setStatus(0);
             }
         }
         return new PageResult<>(res, busIndexDOPageResult.getTotal());

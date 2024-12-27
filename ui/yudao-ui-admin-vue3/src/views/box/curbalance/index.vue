@@ -566,10 +566,10 @@ const handleSelectStatus = (index) => {
   const status =  statusList.filter(item => item.selected)
   const statusArr = status.map(item => item.value)
   if(statusArr.length != statusList.length){
-    queryParams.color = statusArr;
+    queryParams.curUnbalanceStatus = statusArr;
     //queryParams.status = [5];
   }else{
-    queryParams.color = null;
+    queryParams.curUnbalanceStatus = null;
     //queryParams.status = [];
   }
   handleQuery();

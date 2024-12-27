@@ -1038,14 +1038,14 @@ const toDeatil = (row) =>{
 const handleSelectStatus = (index) => {
   butColor.value = 1;
   onclickColor.value = index;
-  queryParams.status = [index];
+  queryParams.curUnbalanceStatus = [index];
   handleQuery();
 }
 
 const toggleAllStatus = () => {
   butColor.value = 0;
   onclickColor.value = -1;
-  queryParams.status = [];
+  queryParams.curUnbalanceStatus = undefined;
   handleQuery();
 }
 

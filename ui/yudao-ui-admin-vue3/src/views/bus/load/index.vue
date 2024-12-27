@@ -362,14 +362,14 @@ const loadAll = async () => {
 const handleSelectStatus = (index) => {
   butColor.value = 1;
   onclickColor.value = index;
-  queryParams.status = [index];
+  queryParams.loadRateStatus = [index];
   handleQuery();
 }
 
 const toggleAllStatus = () => {
   butColor.value = 0;
   onclickColor.value = -1;
-  queryParams.status = [];
+  queryParams.loadRateStatus = undefined;
   handleQuery();
 }
 

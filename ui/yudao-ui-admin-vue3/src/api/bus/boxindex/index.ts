@@ -34,7 +34,7 @@ export const IndexApi = {
   },
   //获得设备负载量状态统计
   getLoadRateStatus: async () => {
-    return await request.get({ url: `/bus/index/loadRateStatus`})
+    return await request.get({ url: `/box/index/loadRateStatus`})
   },
   // 新增始端箱索引
   createIndex: async (data: IndexVO) => {
