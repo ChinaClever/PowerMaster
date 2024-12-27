@@ -153,7 +153,7 @@
           
         </el-form-item>
 
-        <el-button type="success" plain @click="handleExport1" :loading="exportLoading" style="float: right;margin-right: 10px;">
+        <el-button type="success" plain @click="handleExport1" :loading="exportLoading" style="float: right;">
              <Icon icon="ep:download" class="mr-5px" /> 导出
            </el-button>
       </el-form>
@@ -892,8 +892,16 @@ const getNavList = async() => {
 /** 搜索按钮操作 */
 const handleQuery = () => {
     queryParams.pduId = undefined;
-    queryParams.channel = Number(detect.value.split('')[0])
-    queryParams.position = Number(detect.value.split('')[1])
+    if (detect.value.length >= 2) {
+                const firstChar = detect.value[0];
+                const secondChar = detect.value[1];
+                if (/^\d$/.test(firstChar)) {
+                    queryParams.channel = Number(firstChar);
+                }
+                if (/^\d$/.test(secondChar)) {
+                    queryParams.position = Number(secondChar);
+                }
+            }
     needFlush.value++;
 }
 

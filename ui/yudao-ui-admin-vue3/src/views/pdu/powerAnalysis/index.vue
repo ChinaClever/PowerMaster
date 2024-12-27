@@ -256,7 +256,7 @@ const typeCascaderChange = (selected) => {
     if (!exists) {
       // 在列表行索引1(位置后面)插入输出位行 
       const newRow = { label: '输出位', align: 'center', prop: 'outlet_id', istrue: true};
-      tableColumns.value.splice(1, 0, newRow);
+      tableColumns.value.splice(2, 1, newRow);
     }
   }else{
     // 选择总，移除索引为 1 的位置上的行数据
@@ -313,10 +313,13 @@ const initChart = () => {
       },
       yAxis: { type: 'value', name: "kWh"},
       series: [
-        {name:"耗电量",  type: 'bar', data: eqData.value.map(num => formatEQ(num,1)), label: {
-                        show: totalPages <= labelThreshold,
-                        position: 'top'
-                    }},
+        {name:"耗电量",  
+        type: 'bar', 
+        data: eqData.value.map(num => formatEQ(num,1)), 
+        label: { 
+          show: totalPages <= labelThreshold, position: 'top' 
+        },
+      },
       ],
     });
     instance.appContext.config.globalProperties.rankChart = rankChart;

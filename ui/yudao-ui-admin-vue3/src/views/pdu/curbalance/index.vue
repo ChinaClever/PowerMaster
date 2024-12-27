@@ -53,25 +53,25 @@
         :inline="true"
         label-width="68px"
       >
-        <el-form-item v-if="switchValue == 2 || switchValue == 3">
+        <el-form-item v-if="switchValue == 2 || switchValue == 3" style="margin-right: -300px;">
           <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus1">
             全部 
           </button>
           <template v-for="(status, index) in statusList" :key="index">
-            <button :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus1(status.value)">{{status.name}}</button>
+            <button :class="[onclickColor === status.value ? status.activeClass:status.activeClass]" @click.prevent="handleSelectStatus1(status.value)">{{status.name}}</button>
           </template>
-        </el-form-item>
-        <el-button
+          <el-button
           v-if="switchValue == 2 || switchValue == 3"
           type="primary"
           plain
           @click="openForm('create')"
-          style="margin-left: 1px;" 
+          style="float: left;" 
         >
           <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
         </el-button>
+        </el-form-item>
         <el-form-item>
-          <el-form-item label="网络地址" prop="devKey">
+          <el-form-item label="网络地址" prop="devKey" style="float: left;">
             <el-autocomplete
               v-model="queryParams.devKey"
               :fetch-suggestions="querySearch"
@@ -332,9 +332,6 @@
       </div>
 
       <el-dialog v-model="dialogVisibleVol" @close="handleClose" width="70%">
-
-        
-        
         <template #header>
           <div><h3>均衡配电详情</h3></div> 
           <div>所在位置：{{location  }} 
@@ -347,8 +344,8 @@
          <!-- 自定义的主要内容 -->
         <div class="custom-content">
           <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
-            <div class="IechartBar">
-              <Echart :options="ABarOption" :height="300" />
+            <div class="IechartBar" style=" width: 100px;height: 90px">
+              <Bar :max="barMaxValues" />
             </div>
           </el-card>
           <el-card class="cardChilc" shadow="hover">
@@ -364,6 +361,11 @@
                 :style="{ backgroundColor: colorList[balanceObj.colorIndex].color }"
                 >{{ colorList[balanceObj.colorIndex].name }}</div
               >
+              <div class="status1">
+  <template v-for="item in statusList" :key="item.value">
+    <div class="box1" :style="{backgroundColor: item.color}"></div>{{ item.name }}
+  </template>
+</div>
               <el-tooltip
                 class="box-item"
                 effect="dark"
@@ -378,7 +380,7 @@
         <div class="custom-content">
           <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
             <div class="IechartBar">
-              <Echart :options="BBarOption" :height="300"/>
+              <Vol :max="volMaxValues" />
             </div>
           </el-card>
           <el-card class="cardChilc" shadow="hover">
@@ -429,7 +431,8 @@ import { ElTree } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
 import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
 import { EChartsOption } from 'echarts'
-
+import Bar from './Bar.vue'
+import Vol from './Vol.vue'
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
@@ -456,28 +459,32 @@ const statusList = reactive([
     selected: true,
     value: 2,
     cssClass: 'btn_normal',
-    activeClass: 'btn_normal normal'
+    activeClass: 'btn_normal normal',
+    color: '#3bbb00'
   },
   {
     name: '15%-30%',
     selected: true,
     value: 3,
     cssClass: 'btn_warn',
-    activeClass: 'btn_warn warn'
+    activeClass: 'btn_warn warn',
+    color:'#ffc402'
   },
   {
     name: '>30%',
     selected: true,
     value: 4,
     cssClass: 'btn_error',
-    activeClass: 'btn_error error'
+    activeClass: 'btn_error error',
+    color:'#fa3333'
   },
   {
     name: '小电流',
     selected: true,
     value: 1,
     cssClass: 'btn_offline',
-    activeClass: 'btn_offline offline'
+    activeClass: 'btn_offline offline',
+    color:'#aaa'
   }
 ])
 
@@ -726,6 +733,17 @@ const getBalanceTrend = async (item) => {
   if (res.length > 0) {
     const timeList = res.map((item) => item.dateTime)
     if (res[0].cur && res[0].cur.length == 1) {
+      ALineOption.value.tooltip= { trigger: 'axis', formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+          if (param.seriesName === 'A' || param.seriesName === 'B' || param.seriesName === 'C') {
+            result += ' A';
+          }
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }},
       ALineOption.value.xAxis = {
         type: 'category',
         boundaryGap: false,
@@ -740,6 +758,17 @@ const getBalanceTrend = async (item) => {
         }
       ]
     } else if (res[0].cur && res[0].cur.length == 3) {
+      ALineOption.value.tooltip= { trigger: 'axis', formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+          if (param.seriesName === 'A' || param.seriesName === 'B' || param.seriesName === 'C') {
+            result += ' A';
+          }
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }},
       ALineOption.value.xAxis = {
         type: 'category',
         boundaryGap: false,
@@ -766,6 +795,17 @@ const getBalanceTrend = async (item) => {
         }
       ]
     }if (res[0].vol && res[0].vol.length == 1) {
+      BLineOption.value.tooltip= { trigger: 'axis', formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+          if (param.seriesName === 'A' || param.seriesName === 'B' || param.seriesName === 'C') {
+            result += ' V';
+          }
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }},
       BLineOption.value.xAxis = {
         type: 'category',
         boundaryGap: false,
@@ -780,6 +820,17 @@ const getBalanceTrend = async (item) => {
         },
       ]
     } else if(res[0].vol && res[0].vol.length == 3) {
+      BLineOption.value.tooltip= { trigger: 'axis', formatter: function (params) {
+        let result = params[0].name + '<br>';
+        params.forEach(param => {
+          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+          if (param.seriesName === 'A' || param.seriesName === 'B' || param.seriesName === 'C') {
+            result += 'V';
+          }
+          result += '<br>';
+        });
+        return result.trimEnd(); // 去除末尾多余的换行符
+      }},
       BLineOption.value.xAxis = {
         type: 'category',
         boundaryGap: false,
@@ -819,11 +870,36 @@ const showDialogCur = (item) => {
   getBalanceTrend(item)
 }
 
+const barMaxValues = ref({
+  L1: 0,
+  L2: 0,
+  L3: 0
+});
+
+const volMaxValues = ref({
+  L1: 0,
+  L2: 0,
+  L3: 0
+});
 const showDialogVol = (item) => {
   dialogVisibleVol.value = true
   vollocation.value = item.devKey
   getBalanceDetail(item)
   getBalanceTrend(item)
+
+// 将 item 的属性赋值给 barMaxValues
+barMaxValues.value = {
+    L1: item.acur.toFixed(2),
+    L2: item.bcur.toFixed(2),
+    L3: item.ccur.toFixed(2)
+  };
+
+  volMaxValues.value = {
+    L1: item.avol.toFixed(1),
+    L2: item.bvol.toFixed(1),
+    L3: item.cvol.toFixed(1)
+  };
+
 }
 
 const loadAll = async () => {
@@ -1801,4 +1877,18 @@ onActivated(() => {
     color: #7bc25a;
   }
 }
+.status1 {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  .box1 {
+    font-display: center;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    margin-left: 10px;
+    margin-right: 5px;
+  }
+}
+
 </style>

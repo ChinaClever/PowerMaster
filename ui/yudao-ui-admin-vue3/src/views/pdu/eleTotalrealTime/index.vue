@@ -99,7 +99,7 @@
               </el-text>
             </template>
             </el-table-column>
-        <el-table-column label= '开始时间' align= 'center' prop='createTimeMin'   width= '130px'  >
+        <el-table-column label= '开始时间' align= 'center' prop='createTimeMin'   width= '165px'  >
           <template #default="scope">
               <el-text line-clamp="2" v-if="scope.row.createTimeMin">
                 {{ scope.row.createTimeMin }}
@@ -115,7 +115,7 @@
               </el-text>
             </template>
           </el-table-column>
-          <el-table-column label= '结束时间' align= 'center' prop= 'createTimeMax'  width= '130px'  >
+          <el-table-column label= '结束时间' align= 'center' prop= 'createTimeMax'  width= '165px'  >
             <template #default="scope">
               <el-text line-clamp="2" v-if="scope.row.createTimeMax">
                 {{ scope.row.createTimeMax }}
@@ -439,12 +439,12 @@ const getList = async () => {
 function customTooltipFormatter(params: any[]) {
   var tooltipContent = ''; 
   var item = params[0]; // 获取第一个数据点的信息
-  tooltipContent += '所在位置：'+list.value[item.dataIndex].address + '<br/>'
-                    +item.marker +'网络地址：'+list.value[item.dataIndex].location + '<br/>'
-                    +item.marker +'开始日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMin) + ' 开始电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveStart)  + 'kWh <br/>' 
-                    +item.marker +'结束日期：'+formatTime(null, null, list.value[item.dataIndex].createTimeMax) + ' 结束电能：'+formatEle(null, null, list.value[item.dataIndex].eleActiveEnd) + 'kWh <br/>'
-                    +item.marker +'耗电量：'+formatEle(null, null, list.value[item.dataIndex].eleActive) + 'kWh';
-  return tooltipContent;
+  tooltipContent += '所在位置：' + (list.value[item.dataIndex].address ? list.value[item.dataIndex].address : '未绑定设备') + '<br/>'
+                + item.marker + '网络地址：' + list.value[item.dataIndex].location + '<br/>'
+                + item.marker + '开始日期：' + formatTime(null, null, list.value[item.dataIndex].createTimeMin) + ' 开始电能：' + formatEle(null, null, list.value[item.dataIndex].eleActiveStart) + 'kWh <br/>' 
+                + item.marker + '结束日期：' + formatTime(null, null, list.value[item.dataIndex].createTimeMax) + ' 结束电能：' + formatEle(null, null, list.value[item.dataIndex].eleActiveEnd) + 'kWh <br/>'
+                + item.marker + '耗电量：' + formatEle(null, null, list.value[item.dataIndex].eleActive) + 'kWh';
+return tooltipContent;
 }
 
 // 最后一页显示数据量过大的提示

@@ -9,6 +9,7 @@ import cn.iocoder.yudao.module.pdu.dal.mysql.pdudevice.PduIndex;
 import cn.iocoder.yudao.module.pdu.service.historydata.HistoryDataService;
 import cn.iocoder.yudao.module.pdu.service.pdudevice.PDUDeviceService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import lombok.extern.log4j.Log4j2;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -31,6 +32,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Log4j2
 @Service
 public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
 
@@ -434,34 +436,39 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
 
     @Override
     public Map<String, Object> getSumData(String[] indices, String[] name, LocalDateTime[] timeAgo) throws IOException {
-        Map<String, Object> resultItem = new HashMap<>();
-        // 添加范围查询 最近24小时
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        for (int i = 0; i < (name.length == 4 ? 4 : 3); i++) {
-            SearchRequest searchRequest;
-            if (name.length == 4) {
-                searchRequest = new SearchRequest(indices[i]);
-            } else {
-                searchRequest = new SearchRequest(indices[0], indices[1]);
+        try {
+            Map<String, Object> resultItem = new HashMap<>();
+            // 添加范围查询 最近24小时
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            for (int i = 0; i < (name.length == 4 ? 4 : 3); i++) {
+                SearchRequest searchRequest;
+                if (name.length == 4) {
+                    searchRequest = new SearchRequest(indices[i]);
+                } else {
+                    searchRequest = new SearchRequest(indices[0], indices[1]);
+                }
+                SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+                searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
+                        .from(timeAgo[i].format(formatter))
+                        .to(now.format(formatter)));
+                // 添加计数聚合
+                searchSourceBuilder.aggregation(
+                        AggregationBuilders.count("total_insertions").field("pdu_id")
+                );
+                searchRequest.source(searchSourceBuilder);
+                // 执行搜索请求
+                SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+                // 从聚合结果中获取文档数量
+                ValueCount totalInsertionsAggregation = searchResponse.getAggregations().get("total_insertions");
+                long totalInsertions = totalInsertionsAggregation.getValue();
+                resultItem.put(name[i], totalInsertions);
             }
-            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-            searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(timeAgo[i].format(formatter))
-                    .to(now.format(formatter)));
-            // 添加计数聚合
-            searchSourceBuilder.aggregation(
-                    AggregationBuilders.count("total_insertions").field("pdu_id")
-            );
-            searchRequest.source(searchSourceBuilder);
-            // 执行搜索请求
-            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-            // 从聚合结果中获取文档数量
-            ValueCount totalInsertionsAggregation = searchResponse.getAggregations().get("total_insertions");
-            long totalInsertions = totalInsertionsAggregation.getValue();
-            resultItem.put(name[i], totalInsertions);
+            return resultItem;
+        }catch (Exception e){
+            log.error(e.getMessage());
         }
-        return resultItem;
+        return null;
     }
 
     @Override
