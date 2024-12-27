@@ -1,4 +1,5 @@
 package cn.iocoder.yudao.module.bus.service.boxindex;
+import com.google.common.collect.Maps;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
@@ -41,6 +42,7 @@ import cn.iocoder.yudao.module.bus.dal.mysql.boxharmoniccolor.BoxHarmonicColorMa
 import cn.iocoder.yudao.module.bus.dal.mysql.boxindex.BoxIndexCopyMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 import cn.iocoder.yudao.module.bus.util.TimeUtil;
+import cn.iocoder.yudao.module.bus.vo.ReportBasicInformationResVO;
 import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
@@ -184,6 +186,11 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         );
     }
 
+    /**
+     * 获得已经删除插接箱负荷分页
+     * @param pageReqVO
+     * @return
+     */
     @Override
     public PageResult<BoxIndexRes> getDeletedPage(BoxIndexPageReqVO pageReqVO) {
         PageResult<BoxIndex> boxIndexDOPageResult = boxIndexCopyMapper.selectPage(pageReqVO);
@@ -336,20 +343,22 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         if (boxIndex != null) {
             String index;
             if (pageReqVO.getTimeType().equals(0)) {
-                index = "bus_hda_line_hour";
+                index = "box_hda_line_hour";
             } else {
-                index = "bus_hda_line_day";
+                index = "box_hda_line_day";
             }
             // 创建SearchRequest对象, 设置查询索引名
             SearchRequest searchRequest = new SearchRequest(index);
             // 通过QueryBuilders构建ES查询条件，
             SearchSourceBuilder builder = new SearchSourceBuilder();
-
+            builder.size(10000);
             builder.trackTotalHits(true);
             //获取需要处理的数据
             builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
-                    .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(pageReqVO.getOldTime()).lte(pageReqVO.getNewTime()))
-                    .must(QueryBuilders.termQuery("bus_id", boxIndex.getId()))));
+                    .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword")
+                            .gte(LocalDateTimeUtil.format(pageReqVO.getOldTime(),"yyyy-MM-dd HH:mm:ss"))
+                            .lte(LocalDateTimeUtil.format(pageReqVO.getNewTime(),"yyyy-MM-dd HH:mm:ss")))
+                    .must(QueryBuilders.termQuery("box_id", boxIndex.getId()))));
             builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
             // 设置搜索条件
             searchRequest.source(builder);
@@ -477,6 +486,24 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     @Override
     public BoxBalanceStatisticsVO getBoxBalanceStatistics() {
         return boxIndexCopyMapper.getBoxBalanceStatistics();
+    }
+
+    @Override
+    public ReportBasicInformationResVO getReportBasicInformationResVO(BoxIndexPageReqVO pageReqVO) {
+        BoxIndex boxIndex = boxIndexMapper.selectOne(new LambdaUpdateWrapper<BoxIndex>().eq(BoxIndex::getBoxKey, pageReqVO.getDevKey()));
+        ReportBasicInformationResVO vo = new ReportBasicInformationResVO();
+        Object obj = redisTemplate.opsForValue().get(REDIS_KEY_BOX + boxIndex.getBoxKey());
+        JSONObject jsonObject = JSON.parseObject(JSON.toJSONString(obj));
+
+        ArrayList<String> list = new ArrayList<>();
+        list.add(boxIndex.getBoxKey());
+        Map<String, String> positionByKey = getPositionByKey(list);
+        vo.setLocation(positionByKey.get(boxIndex.getBoxKey()));
+        vo.setDevKey(boxIndex.getBoxKey());
+        vo.setPowApparent(jsonObject.getJSONObject("box_data").getJSONObject("box_total_data").getBigDecimal("pow_apparent"));
+        vo.setRunStatus(boxIndex.getRunStatus());
+        vo.setPowerFactor(jsonObject.getJSONObject("box_data").getJSONObject("box_total_data").getBigDecimal("power_factor"));
+        return vo;
     }
 
 
@@ -715,6 +742,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
         Integer loopNum = jsonObject.getJSONObject("box_data").getJSONObject("box_cfg").getInteger("loop_num");
         JSONObject loopItemList = jsonObject.getJSONObject("box_data").getJSONObject("loop_item_list");//回路
+        List<Integer> breakerStatus = jsonObject.getJSONObject("box_data").getJSONObject("box_cfg").getList("breaker_status", Integer.class);
         List<BoxLoopItemResVO> list = new ArrayList<>();
         for (Integer i = 0; i < loopNum; i++) {
             List<Double> curList = loopItemList.getList("cur_value",Double.class);//电流
@@ -726,6 +754,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             List<Double> eleActive = loopItemList.getList("ele_active", Double.class);//电能
             BoxLoopItemResVO loopItemResVO = new BoxLoopItemResVO();
             loopItemResVO.setLoopId(i+1);
+            loopItemResVO.setBreakerStatusA(breakerStatus.get(0));
+            loopItemResVO.setBreakerStatusB(breakerStatus.get(1));
+            loopItemResVO.setBreakerStatusC(breakerStatus.get(2));
             loopItemResVO.setLoopCurValue(curList.get(i));
             loopItemResVO.setLoopVolValue(volList.get(i));
             loopItemResVO.setLoopPowReactive(powReactive.get(i));
@@ -3358,8 +3389,6 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 }
             }
         }
-
-
     }
 
     private Map getESTotalAndIds(String index, String startTime, String endTime, Integer pageSize, Integer pageNo) throws IOException {
@@ -3436,5 +3465,89 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         List<String> devKeys = list.stream().map(boxIndex -> "packet:box:" + boxIndex.getBoxKey()).collect(Collectors.toList());
         ValueOperations ops = redisTemplate.opsForValue();
         return ops.multiGet(devKeys);
+    }
+
+
+    public Map<String ,String> getPositionByKey(List<String> keys) {
+        Map<String ,String> map =new HashMap<>();
+        if (CollectionUtils.isEmpty(keys)) {
+            return map;
+        }
+        ValueOperations ops = redisTemplate.opsForValue();
+        List<BoxIndex> boxIndices = boxIndexMapper.selectList(new LambdaUpdateWrapper<BoxIndex>().in(BoxIndex::getBoxKey, keys));
+        Map<String, String> collect = boxIndices.stream().collect(Collectors.toMap(BoxIndex::getBoxKey, BoxIndex::getBoxName));
+
+        //柜列
+        List<AisleBox> aisleBoxList = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
+                .in(AisleBox::getBoxKey, keys));
+        if (!CollectionUtils.isEmpty(aisleBoxList)) {
+            List<Integer> aisleBarIds = aisleBoxList.stream().map(AisleBox::getAisleBarId).collect(Collectors.toList());
+            List<AisleBar> aisleBars = aisleBarMapper.selectBatchIds(aisleBarIds);
+            Map<Integer, String> pathMap = aisleBars.stream().collect(Collectors.toMap(AisleBar::getId, AisleBar::getPath));
+            Map<Integer, AisleBox> aisleBoxKeyMap = aisleBoxList.stream().collect(Collectors.toMap(AisleBox::getAisleId,  Function.identity() ));
+
+            Map<Integer, String> positionMap = new HashMap<>();
+            if (!CollectionUtils.isEmpty(aisleBoxList)) {
+                List<String> redisKeys = aisleBoxList.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toList());
+                List aisles = ops.multiGet(redisKeys);
+                if (!CollectionUtils.isEmpty(aisleBoxList)) {
+                    for (Object aisle : aisles) {
+                        JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
+                        AisleBox aisleKey = aisleBoxKeyMap.get(json.getInteger("aisle_key"));
+                        if (Objects.nonNull(aisleKey)){
+                            String boxKey = aisleKey.getBoxKey();
+                            map.put(boxKey, json.getString("room_name") + SPLIT_KEY
+                                    + json.getString("aisle_name")+ SPLIT_KEY + pathMap.get(aisleKey.getAisleBarId()) + "路");
+                        }
+                    }
+                }
+            }
+        }
+        keys.removeAll(map.keySet());
+        if (CollectionUtils.isEmpty(keys)) {
+            return map;
+        }
+        List<String> busKey = boxIndices.stream().map(BoxIndex::getBusKey).collect(Collectors.toList());
+        List<CabinetBox> cabinetBus = cabinetBusMapper.selectList(new LambdaQueryWrapperX<CabinetBox>()
+                .in(CabinetBox::getBoxKeyA, busKey).or().in(CabinetBox::getBoxKeyB, busKey));
+        if (CollectionUtils.isEmpty(cabinetBus)) {
+            return map;
+        }
+        List<Integer> cabinetIds = cabinetBus.stream().map(CabinetBox::getCabinetId).collect(Collectors.toList());
+        Map<Integer, String> cabinetBusMapA = cabinetBus.stream().filter(cabinet -> cabinet.getBoxKeyA() != null).collect(Collectors.toMap(CabinetBox::getCabinetId, i ->i.getBoxKeyA()+i.getOutletIdA()));
+        Map<Integer, String> cabinetBusMapB = cabinetBus.stream().filter(cabinet -> cabinet.getBoxKeyB() != null).collect(Collectors.toMap(CabinetBox::getCabinetId, i->i.getBoxKeyB()+i.getOutletIdB()));
+
+        List<CabinetIndex> cabinetIndices = cabinetIndexMapper.selectBatchIds(cabinetIds);
+        List<String> cabinetRedisKeys = cabinetIndices.stream().map(index -> REDIS_KEY_CABINET + index.getRoomId() + SPLIT_KEY + index.getId()).collect(Collectors.toList());
+        //设备位置
+        String devPosition;
+        List cabinets = ops.multiGet(cabinetRedisKeys);
+        if (!CollectionUtils.isEmpty(cabinets)) {
+            for (Object cabinet : cabinets) {
+                JSONObject json = JSON.parseObject(JSON.toJSONString(cabinet));
+                devPosition = json.getString("room_name") + SPLIT_KEY + json.getString("cabinet_name");
+                if (!StringUtils.isEmpty(json.getString("aisle_name"))) {
+                    devPosition += SPLIT_KEY + json.getString("aisle_name");
+                }
+                Integer cabinetId = Integer.valueOf(json.getString("cabinet_key").split("-")[1]);
+                String devKeyA = cabinetBusMapA.get(cabinetId);
+                if (!StringUtils.isEmpty(devKeyA)) {
+                    if (Objects.isNull(collect.get(devKeyA))){
+                        map.put(devKeyA,devPosition + SPLIT_KEY + "A路");
+                    }else {
+                    map.put(devKeyA,devPosition + SPLIT_KEY + "A路" + SPLIT_KEY + collect.get(devKeyA));
+                  }
+                }
+                String devKeyB = cabinetBusMapB.get(cabinetId);
+                if (!StringUtils.isEmpty(devKeyB)) {
+                    if (Objects.isNull(collect.get(devKeyB))){
+                        map.put(devKeyB,devPosition + SPLIT_KEY + "B路");
+                    }else {
+                        map.put(devKeyB,devPosition + SPLIT_KEY + "B路" + SPLIT_KEY + collect.get(devKeyA));
+                    }
+                }
+            }
+        }
+        return map;
     }
 }

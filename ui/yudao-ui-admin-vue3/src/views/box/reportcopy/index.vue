@@ -834,29 +834,29 @@ const getList = async () => {
     serChartContainerWidth.value = 0;
   }
 
-  var Box = await IndexApi.getBoxRedisByDevKey(queryParams);
-  Box = JSON.parse(Box)
+  // var Box = await IndexApi.getBoxRedisByDevKey(queryParams);
+  // Box = JSON.parse(Box)
   var temp = [] as any;
-  var baseInfo = await IndexApi.getIndexPage(queryParams);
+  var baseInfo = await IndexApi.getReportBasicInformationResVO(queryParams);
 
   temp.push({
     baseInfoName : "所属位置",
-    baseInfoValue : baseInfo?.list && baseInfo?.list.length > 0 ? baseInfo?.list[0].location : "/",
+    baseInfoValue : baseInfo?.location !=null ? baseInfo?.location : "/",
     consumeName : "消耗电量",
     consumeValue : eqData.value?.barRes?.series && eqData.value?.barRes?.series.length > 0? visControll.isSameDay ? (eqData.value.lastEq - eqData.value.firstEq).toFixed(1) + "kWh" : eqData.value.totalEle + "kWh" : '/',
   })
   temp.push({
     baseInfoName : "网络地址",
-    baseInfoValue : queryParams.devKey,
+    baseInfoValue : baseInfo?.devKey !=null ? baseInfo?.devKey : "/",
     consumeName : "当前视在功率",
-    consumeValue : Box?.bus_data?.bus_total_data != null ? Box.bus_data.bus_total_data.pow_apparent.toFixed(3) + "kVA" : '/'
+    consumeValue : baseInfo?.powApparent !=null ? baseInfo?.powApparent.toFixed(3) + "kVA" : '/',
   })
   temp.push({
     baseInfoName : "设备状态",
-    baseInfoValue : baseInfo?.list && baseInfo?.list.length > 0 ? baseInfo?.list[0].status : "/",
-    pduAlarm : Box?.pdu_alarm,
+    baseInfoValue : baseInfo?.runStatus !=null ? baseInfo?.runStatus : "/",
+    // pduAlarm : Box?.pdu_alarm,
     consumeName : "当前功率因素",
-    consumeValue : Box?.bus_data?.bus_total_data != null ? Box.bus_data.bus_total_data.power_factor?.toFixed(2) : '/'
+    consumeValue : baseInfo?.powerFactor !=null ? baseInfo?.powerFactor.toFixed(2) : '/'
   })
   PDUTableData.value = temp;
   

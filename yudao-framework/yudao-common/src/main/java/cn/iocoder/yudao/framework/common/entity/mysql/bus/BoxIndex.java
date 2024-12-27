@@ -27,6 +27,8 @@ public class BoxIndex implements Serializable {
      */
     private String boxKey;
 
+    private String busKey;
+
     /**
      * ip地址
      */
@@ -49,6 +51,27 @@ public class BoxIndex implements Serializable {
      * 插接箱名称
      */
     private String boxName;
+
+    /**
+     * 负载率：总视在功率/电力容量
+     * 负载量状态：load_rate_status
+     * 0：空载
+     * 1：<30%
+     * 2: 30~60
+     * 3：60~90
+     * 4：>90%
+     */
+    private int loadRateStatus;
+
+    /**
+     * 三相电流不平衡度：cur_unbalance_status
+     * 0：无效（单相设备）
+     * 1：小电流不平衡
+     * 2：< 15%
+     * 3: 15~30
+     * 4：> 31%
+     */
+    private int curUnbalanceStatus;
 
     /**
      * 运行状态

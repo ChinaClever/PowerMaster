@@ -18,6 +18,10 @@ export const IndexApi = {
   getIndexPage: async (data: any) => {
     return await request.post({ url: `/box/index/page`, data })
   },
+  // 获得插接箱报表数据-基础数据
+  getReportBasicInformationResVO: async (data: any) => {
+    return await request.post({ url: `/box/index/report/basicInformation`, data })
+  },
 
   // 查询已删除的始端箱索引分页
   getDeletedIndexPage: async (data: any) => {

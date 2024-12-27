@@ -10,6 +10,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.service.boxindex.BoxIndexService;
+import cn.iocoder.yudao.module.bus.vo.ReportBasicInformationResVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -314,6 +315,12 @@ public class BoxIndexController {
     public CommonResult<Map> getReportConsumeDataByDevKey(@RequestBody BoxIndexPageReqVO pageReqVO) {
         return success(indexService.getReportConsumeDataByDevKey(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
     }
+    @PostMapping("/report/basicInformation")
+    @Operation(summary = "获得插接箱报表数据-基础数据")
+    public CommonResult<ReportBasicInformationResVO> getReportBasicInformationResVO(@RequestBody BoxIndexPageReqVO pageReqVO) {
+        return success(indexService.getReportBasicInformationResVO(pageReqVO));
+    }
+
 
     @PostMapping("/report/pfline")
     @Operation(summary = "获得插接箱报表数据")
