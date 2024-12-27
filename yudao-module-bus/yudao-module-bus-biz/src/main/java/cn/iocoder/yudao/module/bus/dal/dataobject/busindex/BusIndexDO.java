@@ -55,6 +55,11 @@ public class BusIndexDO {
      * 0：空载 1：<30%  2: 30~60 3：60~90  4：>90%
      */
     private Integer loadRateStatus;
+
+    /**
+     * 三相电不平衡状态
+     */
+    private Integer curUnbalanceStatus;
     /**
      * 节点IP
      */

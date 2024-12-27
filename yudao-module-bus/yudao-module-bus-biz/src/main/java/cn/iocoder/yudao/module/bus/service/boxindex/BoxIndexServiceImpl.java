@@ -1,5 +1,5 @@
 package cn.iocoder.yudao.module.bus.service.boxindex;
-import com.google.common.collect.Maps;
+import cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
@@ -36,12 +36,12 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusAisleBarQueryVO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.boxcurbalancecolor.BoxCurbalanceColorDO;
-import cn.iocoder.yudao.module.bus.dal.dataobject.boxindex.BoxIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxcurbalancecolor.BoxCurbalanceColorMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxharmoniccolor.BoxHarmonicColorMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.boxindex.BoxIndexCopyMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 import cn.iocoder.yudao.module.bus.util.TimeUtil;
+import cn.iocoder.yudao.module.bus.vo.LoadRateStatus;
 import cn.iocoder.yudao.module.bus.vo.ReportBasicInformationResVO;
 import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson2.JSON;
@@ -484,7 +484,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     }
 
     @Override
-    public BoxBalanceStatisticsVO getBoxBalanceStatistics() {
+    public BalanceStatisticsVO getBoxBalanceStatistics() {
         return boxIndexCopyMapper.getBoxBalanceStatistics();
     }
 
@@ -504,6 +504,11 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         vo.setRunStatus(boxIndex.getRunStatus());
         vo.setPowerFactor(jsonObject.getJSONObject("box_data").getJSONObject("box_total_data").getBigDecimal("power_factor"));
         return vo;
+    }
+
+    @Override
+    public LoadRateStatus getBoxIndexLoadRateStatus() {
+        return boxIndexCopyMapper.getBoxIndexLoadRateStatus();
     }
 
 
@@ -1350,6 +1355,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             boxBalanceDataRes.setBoxId(boxIndexDO.getId());
             boxBalanceDataRes.setDevKey(boxIndexDO.getBoxKey());
             boxBalanceDataRes.setBoxName(boxIndexDO.getBoxName());
+            boxBalanceDataRes.setColor(boxIndexDO.getCurUnbalanceStatus());
             res.add(boxBalanceDataRes);
         }
         Map<String, BoxBalanceDataRes> resMap = res.stream().collect(Collectors.toMap(BoxBalanceDataRes::getDevKey, Function.identity()));
@@ -1364,28 +1370,17 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             }
             String devKey = jsonObject.getString("dev_ip") + "-" + jsonObject.getString("bar_id") + "-" + jsonObject.getString("addr");
             BoxBalanceDataRes boxBalanceDataRes = resMap.get(devKey);
-            JSONObject loopItemList = jsonObject.getJSONObject("box_data").getJSONObject("loop_item_list");
-            JSONArray volValue = loopItemList.getJSONArray("vol_value");
-            JSONArray curValue = loopItemList.getJSONArray("cur_value");
-            List<Double> curList = curValue.toList(Double.class);
-            List<Double> volList = volValue.toList(Double.class);
-            curList.sort(Comparator.naturalOrder());
-            volList.sort(Comparator.naturalOrder());
-            Double curAvg = (curList.get(0) + curList.get(1) + curList.get(2)) / 3;
-            Double volAvg = (volList.get(0) + volList.get(1) + volList.get(2)) / 3;
-            Double curUnbalance = curAvg == 0 ? 0 : (curList.get(2) - curAvg) / curAvg * 100;
-            Double volUnbalance = volAvg == 0 ? 0 : (volList.get(2) - volList.get(0)) / volAvg * 100;
-            JSONArray curAlarmArr = loopItemList.getJSONArray("cur_max");
-            List<Double> sortAlarmArr = curAlarmArr.toList(Double.class);
-            sortAlarmArr.sort(Collections.reverseOrder());
-            double maxVal = sortAlarmArr.get(0);
-            List<Double> temp = curValue.toList(Double.class);
-            temp.sort(Collections.reverseOrder());
-            double a = temp.get(0) - temp.get(2);
-            int color;
+            JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");
+            List<Double> curList = lineItemList.getList("vol_value",Double.class);
+            List<Double> volList  = lineItemList.getList("cur_value",Double.class);
+
+            Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();
+            Double volAvg = volList.stream().mapToDouble(i -> i).average().getAsDouble();
+            Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList)- curAvg) / curAvg * 100;
+            Double volUnbalance = volAvg == 0 ? 0 : (Collections.max(volList) - Collections.min(volList)) / volAvg * 100;
             for (int i = 0; i < 3; i++) {
-                double vol = volValue.getDoubleValue(i);
-                double cur = curValue.getDoubleValue(i);
+                double vol = volList.get(i);
+                double cur = curList.get(i);
                 if (i == 0) {
                     boxBalanceDataRes.setACur(cur);
                     boxBalanceDataRes.setAVol(vol);
@@ -1397,34 +1392,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                     boxBalanceDataRes.setCVol(vol);
                 }
             }
-            if (boxCurbalanceColorDO == null) {
-                if (a >= maxVal * 0.2) {
-                    if (curUnbalance < 15) {
-                        color = 2;
-                    } else if (curUnbalance < 30) {
-                        color = 3;
-                    } else {
-                        color = 4;
-                    }
-                } else {
-                    color = 1;
-                }
-            } else {
-                if (a >= maxVal * 0.2) {
-                    if (curUnbalance < boxCurbalanceColorDO.getRangeOne()) {
-                        color = 2;
-                    } else if (curUnbalance < boxCurbalanceColorDO.getRangeFour()) {
-                        color = 3;
-                    } else {
-                        color = 4;
-                    }
-                } else {
-                    color = 1;
-                }
-            }
             boxBalanceDataRes.setCurUnbalance(curUnbalance);
             boxBalanceDataRes.setVolUnbalance(volUnbalance);
-            boxBalanceDataRes.setColor(color);
             if (pageReqVO.getColor() != null) {
                 if (!pageReqVO.getColor().contains(boxBalanceDataRes.getColor())) {
                     res.removeIf(box -> box.getBoxId().equals(boxBalanceDataRes.getBoxId()));
@@ -1443,28 +1412,23 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         if (jsonObject == null) {
             return result;
         }
-        JSONObject loopItemList = jsonObject.getJSONObject("box_data").getJSONObject("loop_item_list");
-        JSONArray curValue = loopItemList.getJSONArray("cur_value");
-        JSONArray volValue = loopItemList.getJSONArray("vol_value");
-        List<Double> curList = curValue.toList(Double.class);
-        List<Double> volList = volValue.toList(Double.class);
-        curList.sort(Comparator.naturalOrder());
-        volList.sort(Comparator.naturalOrder());
-        Double curAvg = (curList.get(0) + curList.get(1) + curList.get(2)) / 3;
-        Double volAvg = (volList.get(0) + volList.get(1) + volList.get(2)) / 3;
-        Double curUnbalance = curAvg == 0 ? 0 : (curList.get(2) - curAvg) / curAvg * 100;
-        Double volUnbalance = volAvg == 0 ? 0 : (volList.get(2) - volList.get(0)) / volAvg * 100;
-        result.setCur_value(curValue.toArray(Float.class));
-        result.setVol_value(volValue.toArray(Float.class));
+//        JSONObject loopItemList = jsonObject.getJSONObject("box_data").getJSONObject("loop_item_list");
+
+        JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");
+        List<Double> curList = lineItemList.getList("vol_value",Double.class);
+        List<Double> volList  = lineItemList.getList("cur_value",Double.class);
+
+        Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();
+        Double volAvg = volList.stream().mapToDouble(i -> i).average().getAsDouble();
+        Double curUnbalance = curAvg == 0 ? 0 : (Collections.max(curList)- curAvg) / curAvg * 100;
+        Double volUnbalance = volAvg == 0 ? 0 : (Collections.max(volList) - Collections.min(volList)) / volAvg * 100;
+
+        result.setCur_value(curList);
+        result.setVol_value(volList);
         result.setCurUnbalance(curUnbalance);
         result.setVolUnbalance(volUnbalance);
-        JSONArray curAlarmArr = loopItemList.getJSONArray("cur_max");
-        List<Double> sortAlarmArr = curAlarmArr.toList(Double.class);
-        sortAlarmArr.sort(Collections.reverseOrder());
-        double maxVal = sortAlarmArr.get(0);
-        List<Double> temp = curValue.toList(Double.class);
-        temp.sort(Collections.reverseOrder());
-        double a = temp.get(0) - temp.get(2);
+        double maxVal =63.0;
+        double a = Collections.max(curList) - Collections.min(curList);
         int color;
         if (boxCurbalanceColorDO == null) {
             if (a >= maxVal * 0.2) {
@@ -1913,7 +1877,10 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     @Override
     public PageResult<BoxLineRes> getBoxLineDevicePage(BoxIndexPageReqVO pageReqVO) {
         try {
-            List<BoxIndex> searchList = boxIndexCopyMapper.selectList(new LambdaQueryWrapperX<BoxIndex>().inIfPresent(BoxIndex::getBoxKey, pageReqVO.getBoxDevKeyList()));
+            List<BoxIndex> searchList = boxIndexCopyMapper.selectList(new LambdaQueryWrapperX<BoxIndex>()
+                    .inIfPresent(BoxIndex::getBoxKey, pageReqVO.getBoxDevKeyList())
+                    .eq(BoxIndex::getIsDeleted,false)
+                    .eq(BoxIndex::getBoxType,0));
             if (CollectionUtils.isEmpty(searchList)) {
                 return new PageResult<>(new ArrayList<>(), 0L);
             }

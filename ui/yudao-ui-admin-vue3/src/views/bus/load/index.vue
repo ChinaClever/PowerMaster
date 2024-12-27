@@ -510,37 +510,20 @@ const getList = async () => {
     list.value = data.list
     console.log('list',list.value)
     var tableIndex = 0;
-    var lessThirty = 0;
-    var greaterThirty = 0;
-    var greaterSixty = 0;
-    var greaterNinety = 0;
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      //数据测试
-      // obj.aloadRate = 35
-      // obj.bloadRate = 65 
-      // obj.cloadRate = 95
-      // obj.aloadRate = 15
-      // obj.bloadRate = 25 
-      // obj.cloadRate = 95
-      if(obj.color == 4){
-        greaterNinety++;
-      } else if (obj.color == 1) {
-        lessThirty++;
-      } else if (obj.color == 2) {
-        greaterThirty++;
-      } else if (obj.color == 3) {
-        greaterSixty++;
-      }
     });
-    statusNumber.greaterNinety = greaterNinety;
-    statusNumber.lessThirty = lessThirty;
-    statusNumber.greaterThirty = greaterThirty;
-    statusNumber.greaterSixty = greaterSixty;
     total.value = data.total
   } finally {
     loading.value = false
   }
+}
+const getLoadRateStatus = async () => {
+      const data = await IndexApi.getLoadRateStatus()
+    statusNumber.greaterNinety = data.greaterNinety;
+    statusNumber.lessThirty = data.lessThirty;
+    statusNumber.greaterThirty = data.greaterThirty;
+    statusNumber.greaterSixty = data.greaterSixty;
 }
 const getDeletedList = async () => {
   try {
@@ -551,44 +534,25 @@ const getDeletedList = async () => {
     deletedList.value.forEach((obj) => {
       obj.tableId = (queryDeletedPageParams.pageNo - 1) * queryDeletedPageParams.pageSize + ++tableIndex;
     });
-
     deletedTotal.value = data.total
   } catch (error) {
-    
   }
 }
 
-const getListNoLoading = async () => {
-  try {
-    const data = await IndexApi.getIndexPage(queryParams)
-    list.value = data.list
-    var tableIndex = 0;    
-    var lessThirty = 0;
-    var greaterThirty = 0;
-    var greaterSixty = 0;
-    var greaterNinety = 0;
-    list.value.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+// const getListNoLoading = async () => {
+//   try {
+//     const data = await IndexApi.getIndexPage(queryParams)
+//     list.value = data.list
+//     var tableIndex = 0;    
+//     list.value.forEach((obj) => {
+//       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+//     });
 
-      if(obj.color == 4){
-        greaterNinety++;
-      } else if (obj.color == 1) {
-        lessThirty++;
-      } else if (obj.color == 2) {
-        greaterThirty++;
-      } else if (obj.color == 3) {
-        greaterSixty++;
-      }
-    });
-    statusNumber.greaterNinety = greaterNinety;
-    statusNumber.lessThirty = lessThirty;
-    statusNumber.greaterThirty = greaterThirty;
-    statusNumber.greaterSixty = greaterSixty;
-    total.value = data.total
-  } catch (error) {
+//     total.value = data.total
+//   } catch (error) {
     
-  }
-}
+//   }
+// }
 
 const getNavList = async() => {
   const res = await IndexApi.getBusMenu()
@@ -717,8 +681,9 @@ const getColor = (loadRate: number) => {
 onMounted(async () => {
   devKeyList.value = await loadAll();
   getList()
+  getLoadRateStatus();
   getNavList();
-  flashListTimer.value = setInterval((getListNoLoading), 5000);
+  flashListTimer.value = setInterval((getList), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -740,7 +705,7 @@ onActivated(() => {
   getList()
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getListNoLoading), 5000);
+    flashListTimer.value = setInterval((getList), 5000);
   }
 })
 </script>

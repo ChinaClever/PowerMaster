@@ -1,9 +1,9 @@
-package cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo;
+package cn.iocoder.yudao.module.bus.vo;
 
 import lombok.Data;
 
 @Data
-public class BoxBalanceStatisticsVO {
+public class BalanceStatisticsVO {
     //小电流
     private int smallCurrent;
     //<20%

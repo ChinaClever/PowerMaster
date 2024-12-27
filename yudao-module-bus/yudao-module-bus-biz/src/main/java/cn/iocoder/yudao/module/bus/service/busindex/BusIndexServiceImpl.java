@@ -15,8 +15,6 @@ import cn.iocoder.yudao.framework.common.entity.es.bus.tem.BusTemHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.total.BusTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.total.BusTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
-import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
-import cn.iocoder.yudao.framework.common.entity.mysql.bus.BusIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
@@ -38,6 +36,8 @@ import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
 import cn.iocoder.yudao.module.bus.dal.mysql.buscurbalancecolor.BusCurbalanceColorMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 import cn.iocoder.yudao.module.bus.util.TimeUtil;
+import cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO;
+import cn.iocoder.yudao.module.bus.vo.LoadRateStatus;
 import cn.iocoder.yudao.module.bus.vo.ReportBasicInformationResVO;
 import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson2.JSON;
@@ -75,7 +75,6 @@ import org.springframework.validation.annotation.Validated;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.security.Key;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
@@ -90,7 +89,6 @@ import java.util.stream.Collectors;
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY_AISLE;
 import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static cn.iocoder.yudao.module.bus.constant.BoxConstants.REDIS_KEY_BOX;
 import static cn.iocoder.yudao.module.bus.constant.BusConstants.*;
 import static cn.iocoder.yudao.module.bus.enums.ErrorCodeConstants.INDEX_NOT_EXISTS;
 
@@ -792,6 +790,11 @@ public class BusIndexServiceImpl implements BusIndexService {
     }
 
     @Override
+    public BalanceStatisticsVO getBusBalanceStatistics() {
+        return busIndexMapper.getBusBalanceStatistics();
+    }
+
+    @Override
     public PageResult<BusRedisDataRes> getBusRedisPage(BusIndexPageReqVO pageReqVO) {
         PageResult<BusIndexDO> busIndexDOPageResult = busIndexMapper.selectPage2(pageReqVO);
         List<BusIndexDO> list = busIndexDOPageResult.getList();
@@ -992,6 +995,7 @@ public class BusIndexServiceImpl implements BusIndexService {
             busBalanceDataRes.setBusId(busIndexDO.getId());
             busBalanceDataRes.setDevKey(busIndexDO.getBusKey());
             busBalanceDataRes.setBusName(busIndexDO.getBusName());
+            busBalanceDataRes.setColor(busIndexDO.getCurUnbalanceStatus());
             res.add(busBalanceDataRes);
         }
         Map<String, BusBalanceDataRes> resMap = res.stream().collect(Collectors.toMap(BusBalanceDataRes::getDevKey, Function.identity()));
@@ -1008,14 +1012,6 @@ public class BusIndexServiceImpl implements BusIndexService {
             JSONArray volValue = lineItemList.getJSONArray("vol_value");
             JSONArray curValue = lineItemList.getJSONArray("cur_value");
             JSONObject busTotalData = jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data");
-            JSONArray curAlarmArr = lineItemList.getJSONArray("cur_max");
-            List<Double> sortAlarmArr = curAlarmArr.toList(Double.class);
-            sortAlarmArr.sort(Collections.reverseOrder());
-            double maxVal = sortAlarmArr.get(0);
-            List<Double> temp = curValue.toList(Double.class);
-            temp.sort(Collections.reverseOrder());
-            double a = temp.get(0) - temp.get(2);
-            int color;
             for (int i = 0; i < 3; i++) {
                 double vol = volValue.getDoubleValue(i);
                 double cur = curValue.getDoubleValue(i);
@@ -1030,34 +1026,8 @@ public class BusIndexServiceImpl implements BusIndexService {
                     busBalanceDataRes.setCVol(vol);
                 }
             }
-            if (busCurbalanceColorDO == null) {
-                if (a >= maxVal * 0.2) {
-                    if (busTotalData.getDouble("cur_unbalance") < 15) {
-                        color = 2;
-                    } else if (busTotalData.getDouble("cur_unbalance") < 30) {
-                        color = 3;
-                    } else {
-                        color = 4;
-                    }
-                } else {
-                    color = 1;
-                }
-            } else {
-                if (a >= maxVal * 0.2) {
-                    if (busTotalData.getDouble("cur_unbalance") < busCurbalanceColorDO.getRangeOne()) {
-                        color = 2;
-                    } else if (busTotalData.getDouble("cur_unbalance") < busCurbalanceColorDO.getRangeFour()) {
-                        color = 3;
-                    } else {
-                        color = 4;
-                    }
-                } else {
-                    color = 1;
-                }
-            }
             busBalanceDataRes.setCurUnbalance(busTotalData.getDouble("cur_unbalance"));
             busBalanceDataRes.setVolUnbalance(busTotalData.getDouble("vol_unbalance"));
-            busBalanceDataRes.setColor(color);
             if (pageReqVO.getColor() != null) {
                 if (!pageReqVO.getColor().contains(busBalanceDataRes.getColor())) {
                     res.removeIf(bus -> bus.getBusId().equals(busBalanceDataRes.getBusId()));
@@ -1072,27 +1042,23 @@ public class BusIndexServiceImpl implements BusIndexService {
         BusBalanceDeatilRes result = new BusBalanceDeatilRes();
         BusCurbalanceColorDO busCurbalanceColorDO = busCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
         ValueOperations ops = redisTemplate.opsForValue();
-        JSONObject jsonObject = (JSONObject) ops.get("packet:bus:" + devKey);
+        JSONObject jsonObject = (JSONObject) ops.get(REDIS_KEY_BUS + devKey);
         if (jsonObject == null) {
             return result;
         }
         JSONObject busTotalData = jsonObject.getJSONObject("bus_data").getJSONObject("bus_total_data");
         JSONObject lineItemList = jsonObject.getJSONObject("bus_data").getJSONObject("line_item_list");
-        JSONArray curValue = lineItemList.getJSONArray("cur_value");
-        JSONArray volValue = lineItemList.getJSONArray("vol_value");
+        List<Double> curValue = lineItemList.getList("cur_value",Double.class);
+        List<Double> volValue = lineItemList.getList("vol_value",Double.class);
         Double curUnbalance = busTotalData.getDouble("cur_unbalance");
         Double volUnbalance = busTotalData.getDouble("vol_unbalance");
-        result.setCur_value(curValue.toArray(Float.class));
-        result.setVol_value(volValue.toArray(Float.class));
+        result.setCur_value(curValue);
+        result.setVol_value(volValue);
         result.setCurUnbalance(curUnbalance);
         result.setVolUnbalance(volUnbalance);
-        JSONArray curAlarmArr = lineItemList.getJSONArray("cur_max");
-        List<Double> curAlarmArrList = curAlarmArr.toList(Double.class);
-        curAlarmArrList.sort(Collections.reverseOrder());
-        double maxVal = curAlarmArrList.get(0);
-        List<Double> temp = curValue.toList(Double.class);
-        temp.sort(Collections.reverseOrder());
-        double a = temp.get(0) - temp.get(2);
+        List<Double> curAlarmArrList = lineItemList.getList("cur_max",Double.class);
+        double maxVal = Collections.max(curAlarmArrList);
+        double a =Collections.max(curValue) - Collections.min(curValue);
         int color = 0;
         if (busCurbalanceColorDO == null) {
             if (a >= maxVal * 0.2) {

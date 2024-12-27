@@ -424,19 +424,22 @@ const queryParams = reactive({
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
-/** 查询列表 */
-const getList = async () => {
-  loading.value = true
-  try {
-    console.log(queryParams)
-    const data = await IndexApi.getBalancePage(queryParams)
+
+const getCurBalance = async () => {
     var range = await BoxCurbalanceColorApi.getBoxCurbalanceColor();
     if(range != null){
       statusList[0].name = '<' + range.rangeOne + '%';
       statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
       statusList[2].name = '>' + range.rangeFour + '%';
     }
-    
+}
+
+/** 查询列表 */
+const getList = async () => {
+  loading.value = true
+  try {
+    console.log(queryParams)
+    const data = await IndexApi.getBalancePage(queryParams)
      var tableIndex = 0;
     // var lessFifteen = 0;
     // var greaterFifteen = 0;
@@ -623,7 +626,8 @@ const handleExport = async () => {
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
-  getList()
+  getCurBalance();
+  getList();
   getNavList();
   getStatistics();
   flashListTimer.value = setInterval((getList), 5000);

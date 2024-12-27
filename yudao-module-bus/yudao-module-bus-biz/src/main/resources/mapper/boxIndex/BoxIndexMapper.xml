@@ -22,7 +22,7 @@
         </where>
     </select>
     <select id="getBoxBalanceStatistics"
-            resultType="cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxBalanceStatisticsVO">
+            resultType="cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO">
         select
         sum(case when cur_unbalance_status = 1 then 1 else 0 end) as smallCurrent,
         sum(case when cur_unbalance_status = 2 then 1 else 0 end) as lessFifteen,
@@ -30,7 +30,19 @@
         sum(case when cur_unbalance_status = 4 then 1 else 0 end) as greaterThirty
         from box_index
         <where>
-            is_deleted =0
+            is_deleted =0 and box_type =0
+        </where>
+    </select>
+    <select id="getBoxIndexLoadRateStatus" resultType="cn.iocoder.yudao.module.bus.vo.LoadRateStatus">
+        SELECT
+        sum(case when bi.load_rate_status = 0 then 1 else 0 end) as LoadRateZero,
+        sum(case when bi.load_rate_status = 1 then 1 else 0 end) as lessThirty,
+        sum(case when bi.load_rate_status = 2 then 1 else 0 end) as greaterThirty,
+        sum(case when bi.load_rate_status = 3 then1 else 0 end) as greaterSixty,
+        sum(case when bi.load_rate_status = 4 then1 else 0 end) as greaterNinety,
+        FROM box_index bi
+        <where>
+            is_deleted = 0 and box_type =0
         </where>
     </select>
 </mapper>

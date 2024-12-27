@@ -6,6 +6,8 @@ import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusAisleBarQueryVO;
 import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
+import cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO;
+import cn.iocoder.yudao.module.bus.vo.LoadRateStatus;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Mapper;
@@ -62,4 +64,6 @@ public interface BusIndexMapper extends BaseMapperX<BusIndexDO> {
     BusIndexStatisticsResVO selectBusIndexStatistics();
 
     LoadRateStatus selectBusIndexLoadRateStatus();
+
+    BalanceStatisticsVO getBusBalanceStatistics();
 }

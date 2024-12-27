@@ -26,6 +26,11 @@ export const IndexApi = {
   getDeletedIndexPage: async (data: any) => {
     return await request.post({ url: `/bus/index/getDeletedPage`, data })
   },  
+  //获得设备负载量状态统计
+  getLoadRateStatus: async () => {
+    return await request.get({ url: `/bus/index/loadRateStatus`})
+  },
+  
 
   // 查询始端箱索引详情
   getIndex: async (id: number) => {
@@ -72,7 +77,10 @@ export const IndexApi = {
   getBalancePage: async (data: any) => {
     return await request.post({ url: `/bus/index/balance`, data })
   },
-
+//获得设备平衡统计
+getBalanceStatistics: async () => {
+  return await request.get({ url: `/bus/index/balance/statistics`})
+},
   getBusBalanceDetail: async (data: any) => {
     return await request.post({ url: `/bus/index/balance/detail` ,  data})
   },

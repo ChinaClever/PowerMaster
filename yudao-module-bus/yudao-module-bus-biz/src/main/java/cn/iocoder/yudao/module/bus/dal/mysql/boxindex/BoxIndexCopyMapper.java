@@ -1,15 +1,13 @@
 package cn.iocoder.yudao.module.bus.dal.mysql.boxindex;
 
-import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.mybatis.core.mapper.BaseMapperX;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
-import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxBalanceStatisticsVO;
+import cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxIndexPageReqVO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusIndexStatisticsResVO;
-import cn.iocoder.yudao.module.bus.dal.dataobject.busindex.BusIndexDO;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import cn.iocoder.yudao.module.bus.vo.LoadRateStatus;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -39,5 +37,8 @@ public interface BoxIndexCopyMapper extends BaseMapperX<BoxIndex> {
 
     BusIndexStatisticsResVO getBoxIndexStatistics();
 
-    BoxBalanceStatisticsVO getBoxBalanceStatistics();
+    BalanceStatisticsVO getBoxBalanceStatistics();
+
+    LoadRateStatus getBoxIndexLoadRateStatus();
+
 }

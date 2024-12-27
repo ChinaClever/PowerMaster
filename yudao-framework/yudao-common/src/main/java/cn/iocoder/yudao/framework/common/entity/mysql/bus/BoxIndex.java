@@ -20,7 +20,7 @@ public class BoxIndex implements Serializable {
      * bus_id  唯一标识
      */
     @TableId(value = "id", type = IdType.AUTO)
-    private int id;
+    private Integer id;
 
     /**
      * 设备识别码
@@ -61,7 +61,7 @@ public class BoxIndex implements Serializable {
      * 3：60~90
      * 4：>90%
      */
-    private int loadRateStatus;
+    private Integer loadRateStatus;
 
     /**
      * 三相电流不平衡度：cur_unbalance_status
@@ -71,12 +71,12 @@ public class BoxIndex implements Serializable {
      * 3: 15~30
      * 4：> 31%
      */
-    private int curUnbalanceStatus;
+    private Integer curUnbalanceStatus;
 
     /**
      * 运行状态
      */
-    private int runStatus;
+    private Integer runStatus;
 
     /**
      * 是否删除

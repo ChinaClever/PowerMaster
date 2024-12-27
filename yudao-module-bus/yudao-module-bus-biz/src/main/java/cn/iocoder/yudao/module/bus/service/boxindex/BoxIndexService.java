@@ -9,6 +9,8 @@ import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusEleChainDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusEqTrendDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.BusTrendDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
+import cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO;
+import cn.iocoder.yudao.module.bus.vo.LoadRateStatus;
 import cn.iocoder.yudao.module.bus.vo.ReportBasicInformationResVO;
 
 import javax.validation.Valid;
@@ -134,7 +136,10 @@ public interface BoxIndexService {
 
     BusIndexStatisticsResVO getBoxIndexStatistics();
 
-    BoxBalanceStatisticsVO getBoxBalanceStatistics();
+    BalanceStatisticsVO getBoxBalanceStatistics();
 
     ReportBasicInformationResVO getReportBasicInformationResVO(BoxIndexPageReqVO pageReqVO);
+
+    LoadRateStatus getBoxIndexLoadRateStatus();
+
 }

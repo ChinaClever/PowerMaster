@@ -32,7 +32,10 @@ export const IndexApi = {
   getIndex: async (id: number) => {
     return await request.get({ url: `/box/index/get?id=` + id })
   },
-
+  //获得设备负载量状态统计
+  getLoadRateStatus: async () => {
+    return await request.get({ url: `/bus/index/loadRateStatus`})
+  },
   // 新增始端箱索引
   createIndex: async (data: IndexVO) => {
     return await request.post({ url: `/box/index/create`, data })

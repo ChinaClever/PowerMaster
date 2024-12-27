@@ -10,6 +10,8 @@ import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.service.boxindex.BoxIndexService;
+import cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO;
+import cn.iocoder.yudao.module.bus.vo.LoadRateStatus;
 import cn.iocoder.yudao.module.bus.vo.ReportBasicInformationResVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -353,27 +355,20 @@ public class BoxIndexController {
     }
 
     @GetMapping("/statistics")
-    @Operation(summary = "获得设备统计")
+    @Operation(summary = "获得插接箱设备运行状态统计")
     public CommonResult<BusIndexStatisticsResVO> getBoxIndexStatistics() {
         return success(indexService.getBoxIndexStatistics());
     }
 
     @GetMapping("balance/statistics")
-    @Operation(summary = "获得设备统计")
-    public CommonResult<BoxBalanceStatisticsVO> getBoxBalanceStatistics() {
+    @Operation(summary = "获得插接箱设备不平衡度统计")
+    public CommonResult<BalanceStatisticsVO> getBoxBalanceStatistics() {
         return success(indexService.getBoxBalanceStatistics());
     }
-//    @GetMapping("/export-excel")
-//    @Operation(summary = "导出插接箱索引 Excel")
-//    @PreAuthorize("@ss.hasPermission('box:index:export')")
-//    @OperateLog(type = EXPORT)
-//    public void exportIndexExcel(@Valid BoxIndexPageReqVO pageReqVO,
-//              HttpServletResponse response) throws IOException {
-//        pageReqVO.setPageSize(PageParam.PAGE_SIZE_NONE);
-//        List<BoxIndexDO> list = indexService.getIndexPage(pageReqVO).getList();
-//        // 导出 Excel
-//        ExcelUtils.write(response, "插接箱索引.xls", "数据", BoxIndexRespVO.class,
-//                        BeanUtils.toBean(list, BoxIndexRespVO.class));
-//    }
+    @GetMapping("/loadRateStatus")
+    @Operation(summary = "获得始端箱设备负载量状态统计")
+    public CommonResult<LoadRateStatus> getBoxIndexLoadRateStatus() {
+        return success(indexService.getBoxIndexLoadRateStatus());
+    }
 
 }

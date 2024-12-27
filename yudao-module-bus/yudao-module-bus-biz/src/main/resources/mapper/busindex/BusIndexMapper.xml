@@ -75,16 +75,27 @@
         </where>
     </select>
     <select id="selectBusIndexLoadRateStatus"
-            resultType="cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.LoadRateStatus">
+            resultType="cn.iocoder.yudao.module.bus.vo.LoadRateStatus">
         SELECT
-        sum(case when bi.load_rate = 0 then 1 else 0 end) as LoadRateZero,
-        sum(case when bi.load_rate = 1 then 1 else 0 end) as LoadRateOne,
-        sum(case when bi.load_rate = 2 then 1 else 0 end) as LoadRateTwo,
-        sum(case when bi.load_rate = 3 then1 else 0 end) as LoadRateThree,
-        sum(case when bi.load_rate = 4 then1 else 0 end) as LoadRateFour,
+        sum(case when bi.load_rate_status = 0 then 1 else 0 end) as LoadRateZero,
+        sum(case when bi.load_rate_status = 1 then 1 else 0 end) as lessThirty,
+        sum(case when bi.load_rate_status = 2 then 1 else 0 end) as greaterThirty,
+        sum(case when bi.load_rate_status = 3 then1 else 0 end) as greaterSixty,
+        sum(case when bi.load_rate_status = 4 then1 else 0 end) as greaterNinety,
         FROM bus_index bi
         <where>
             is_deleted = 0
+        </where>
+    </select>
+    <select id="getBusBalanceStatistics" resultType="cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO">
+        select
+        sum(case when cur_unbalance_status = 1 then 1 else 0 end) as smallCurrent,
+        sum(case when cur_unbalance_status = 2 then 1 else 0 end) as lessFifteen,
+        sum(case when cur_unbalance_status = 3 then 1 else 0 end) as greaterFifteen,
+        sum(case when cur_unbalance_status = 4 then 1 else 0 end) as greaterThirty
+        from bus_index
+        <where>
+            is_deleted =0
         </where>
     </select>
 </mapper>

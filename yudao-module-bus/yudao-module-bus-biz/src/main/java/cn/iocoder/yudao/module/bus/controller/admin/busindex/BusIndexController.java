@@ -1,15 +1,12 @@
 package cn.iocoder.yudao.module.bus.controller.admin.busindex;
 
 import cn.iocoder.yudao.framework.excel.core.util.ExcelUtils;
-import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxIndexPageReqVO;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
-import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusTemDetailRes;
-import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailReqVO;
 import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailRespVO;
-import cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.EQPageRespVO;
+import cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO;
+import cn.iocoder.yudao.module.bus.vo.LoadRateStatus;
 import cn.iocoder.yudao.module.bus.vo.ReportBasicInformationResVO;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Update;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -392,5 +389,11 @@ public class BusIndexController {
     @Operation(summary = "获得始端箱报表数据-基础数据")
     public CommonResult<ReportBasicInformationResVO> getReportBasicInformationResVO(@RequestBody BusIndexPageReqVO pageReqVO) {
         return success(indexService.getReportBasicInformationResVO(pageReqVO));
+    }
+
+    @GetMapping("balance/statistics")
+    @Operation(summary = "获得始端箱设备不平衡度统计")
+    public CommonResult<BalanceStatisticsVO> getBusBalanceStatistics() {
+        return success(indexService.getBusBalanceStatistics());
     }
 }
