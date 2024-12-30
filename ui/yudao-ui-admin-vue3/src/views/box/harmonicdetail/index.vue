@@ -617,11 +617,13 @@ onMounted( async () =>  {
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
+
 :deep(.el-form) {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }

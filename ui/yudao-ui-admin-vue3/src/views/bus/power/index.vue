@@ -174,7 +174,7 @@
       </el-form>
     </template>
     <template #Content>
-        <el-table style="height:720px;margin-top:-10px;" v-if="switchValue == 3" v-loading="loading" :data="list"  @cell-dblclick="toDeatil" :border="true">
+        <el-table style="height:720px;margin-top:-10px;overflow-y: auto;" v-show="switchValue == 3" v-loading="loading" :data="list"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <el-table-column label="状态" min-width="50" align="center">
           <template #default="scope">
@@ -336,7 +336,7 @@
         </el-table-column>
       </el-table>    
     <!-- 查询已删除-->
-      <el-table style="height:720px;margin-top:-10px;" v-if="switchValue == 4" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
+      <el-table style="height:720px;margin-top:-10px;overflow-y: auto;" v-show="switchValue == 4" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -368,7 +368,7 @@
         v-model:limit="queryDeletedPageParams.pageSize"
         @pagination="getDeletedList"
       />     
-      <div v-if="switchValue == 0  && list.length > 0" class="arrayContainer">
+      <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.id !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
@@ -492,25 +492,25 @@
           <div class="status" v-if="valueMode == 0">
             <el-tag type="info" v-if="item.status === 0" >离线</el-tag>
             <el-tag type="danger" v-else-if="item.status === 2" >告警</el-tag>
-            <el-tag v-else-if="item.status === 1" >正常</el-tag>
+            <el-tag type="success" v-else-if="item.status === 1" >正常</el-tag>
           </div>
           <div class="status" v-if="valueMode == 1">
             <el-tag type="info" v-if="item.status === 0" >离线</el-tag>
             <el-tag type="danger" v-else-if="item.status === 2" >告警</el-tag>
-            <el-tag v-else-if="item.status === 1" >正常</el-tag>
+            <el-tag type="success" v-else-if="item.status === 1" >正常</el-tag>
           </div>
           <div class="status" v-if="valueMode == 2">
             <el-tag type="info" v-if="item.status === 0" >离线</el-tag>
             <el-tag type="danger" v-else-if="item.status === 2" >告警</el-tag>
-            <el-tag v-else-if="item.status === 1" >正常</el-tag>
+            <el-tag type="success" v-else-if="item.status === 1" >正常</el-tag>
           </div>
           <div class="status" v-if="valueMode == 3">
             <el-tag type="info" v-if="item.status === 0" >离线</el-tag>
-            <el-tag v-else-if="item.status === 1" >正常</el-tag>
+            <el-tag type="success" v-else-if="item.status === 1" >正常</el-tag>
           </div>
           <div class="status" v-if="valueMode == 4">
             <el-tag type="info" v-if="item.status === 0" >离线</el-tag>
-            <el-tag v-else >正常</el-tag>
+            <el-tag type="success" v-else >正常</el-tag>
           </div>
           <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 0" >详情</button>
         </div>
