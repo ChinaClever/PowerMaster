@@ -296,24 +296,37 @@ public class HistoryDataServiceImpl implements HistoryDataService {
     }
 
     @Override
-    public Map getHistoryDataTypeMaxValue() throws IOException {
-        HashMap resultMap = new HashMap<>();
+    public Map<String, Object> getHistoryDataTypeMaxValue() throws IOException {
+        // 使用 MultiSearchRequest 批量执行查询
+        MultiSearchRequest multiSearchRequest = new MultiSearchRequest();
+
         String[] indexArr = new String[]{"pdu_hda_line_realtime", "pdu_hda_loop_realtime", "pdu_hda_outlet_realtime"};
         String[] fieldNameArr = new String[]{"line_id", "loop_id", "outlet_id"};
+
         for (int i = 0; i < indexArr.length; i++) {
             SearchRequest searchRequest = new SearchRequest(indexArr[i]);
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-            // 添加最大值聚合
-            searchSourceBuilder.aggregation(
-                    AggregationBuilders.max("max_value").field(fieldNameArr[i])
-            );
+            // 添加最大值聚合，并指定只返回聚合结果
+            searchSourceBuilder.size(0)
+                    .aggregation(AggregationBuilders.max("max_value").field(fieldNameArr[i]));
             searchRequest.source(searchSourceBuilder);
-            // 执行搜索请求
-            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-            // 从聚合结果中获取最大值
-            Max maxAggregation = searchResponse.getAggregations().get("max_value");
-            Integer maxValue = (int) maxAggregation.getValue();
-            resultMap.put(fieldNameArr[i]+"_max_value", maxValue);
+            multiSearchRequest.add(searchRequest);
+        }
+
+        // 执行多搜索请求
+        MultiSearchResponse multiSearchResponse = client.msearch(multiSearchRequest, RequestOptions.DEFAULT);
+
+        // 处理多搜索响应
+        HashMap<String, Object> resultMap = new HashMap<>();
+        for (int i = 0; i < multiSearchResponse.getResponses().length; i++) {
+            SearchResponse response = multiSearchResponse.getResponses()[i].getResponse();
+            if (response != null && response.getAggregations() != null) {
+                Max maxAggregation = response.getAggregations().get("max_value");
+                if (maxAggregation != null) {
+                    Double maxValue = maxAggregation.getValue(); // 直接获取 double 类型
+                    resultMap.put(fieldNameArr[i] + "_max_value", maxValue);
+                }
+            }
         }
 
         return resultMap;
@@ -486,7 +499,16 @@ public class HistoryDataServiceImpl implements HistoryDataService {
 
     @Override
     public PageResult<Object> getHistoryDataDetails(HistoryDataDetailsReqVO reqVO) throws IOException{
-        Integer pduId = reqVO.getPduId();
+
+        String ipAddr = reqVO.getIpAddr();
+        String cascadeAddr = reqVO.getCascadeAddr();
+        String ipKey = ipAddr + "-" +cascadeAddr;
+        QueryWrapper<PduIndex> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("pdu_key", ipKey);
+        List<PduIndex> pduIndices = pduIndexMapper.selectList(queryWrapper);
+        PduIndex pduIndex = pduIndices.get(0);
+        Integer pduId = pduIndex.getId();
+        //Integer pduId = reqVO.getPduId();
         if (Objects.equals(pduId, null)){
             pduId = getPduIdByAddr(reqVO.getIpAddr(), reqVO.getCascadeAddr());
             if (Objects.equals(pduId, null)){

@@ -49,7 +49,8 @@
             全部
           </button>
           <template v-for="(status, index) in statusList" :key="index">
-            <button :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+            <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+            <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
           </template>
         </el-form-item>
         <!-- <el-form-item >
@@ -196,7 +197,7 @@
             <el-tag type="info" v-if="item.status == 0 " >离线</el-tag>
             <el-tag v-else >正常</el-tag>
           </div>          
-          <button class="detail" @click="showDialogCur(item)" v-if="item.status != null && item.status != 0">详情</button>
+          <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 0">详情</button>
         </div>
         </template>
       </div>
