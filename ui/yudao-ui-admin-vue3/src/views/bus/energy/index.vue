@@ -604,7 +604,7 @@ onBeforeMount(() => {
   margin-top: -10px;
   
   .item {
-    width: 25%;
+    width: 33%;
     min-width: 275px;
     height: 130px;
     font-size: 12px;

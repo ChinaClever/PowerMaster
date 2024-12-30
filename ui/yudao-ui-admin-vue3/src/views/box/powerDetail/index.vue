@@ -236,8 +236,8 @@
       </div>
       <el-table :data="tableData" border style="width: 100%;">
         <el-table-column align="center" prop="loopId" label="编号" width="100px" />
-        <el-table-column label="断路器状态" align="center" width="450px">
-          <el-table-column label="A相" align="center" prop="acur" width="150px">
+        <el-table-column label="断路器状态" align="center" width="450px" />
+          <!--<el-table-column label="A相" align="center" prop="acur" width="150px">
             <template #default="scope">
               <el-text line-clamp="2" v-if="scope.row.acur != null">
                 {{ scope.row.acur.toFixed(2) }}
@@ -258,7 +258,7 @@
               </el-text>
             </template>
           </el-table-column>
-        </el-table-column>
+        </el-table-column>-->
         <el-table-column align="center" prop="loopVolValue" label="电压" width="150"/>
         <el-table-column align="center" prop="loopCurValue" label="电流" width="150" />
         <el-table-column align="center" prop="loopPowValue" label="有功功率" width="150" />
