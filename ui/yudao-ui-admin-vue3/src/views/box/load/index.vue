@@ -154,11 +154,11 @@
         <el-table-column label="运行状态" align="center" prop="color" >
           <template #default="scope" >
             <!--<el-tag type="info"  v-if="scope.row.status == 5">离线</el-tag>-->
-            <el-tag type="info"  v-if="scope.row.color == 0&&scope.row.status != 5">空载</el-tag>
-            <el-tag type="success"  v-if="scope.row.color == 1&&scope.row.status != 5">&lt;30%</el-tag>
-            <el-tag type="primary"  v-if="scope.row.color == 2&&scope.row.status != 5">30%-60%</el-tag>
-            <el-tag type="warning" v-if="scope.row.color == 3&&scope.row.status != 5">60%-90%</el-tag>
-            <el-tag type="danger" v-if="scope.row.color == 4&&scope.row.status != 5">&gt;90%</el-tag>
+            <el-tag type="info"  v-if="scope.row.color == 0&&scope.row.status != 5">{{statusList[4].name}}</el-tag>
+            <el-tag type="success" v-else-if="scope.row.color == 1&&scope.row.status != 5">{{(statusList[0].name)}}</el-tag>
+            <el-tag type="primary" v-else-if="scope.row.color == 2&&scope.row.status != 5">{{(statusList[1].name)}}</el-tag>
+            <el-tag type="warning" v-else-if="scope.row.color == 3&&scope.row.status != 5">{{(statusList[2].name)}}</el-tag>
+            <el-tag type="danger" v-else-if="scope.row.color == 4&&scope.row.status != 5">{{(statusList[3].name)}}</el-tag>
             <!--<el-tag type="danger" v-if="scope.row.color != 0 && scope.row.color != 4 && scope.row.color != 3 && scope.row.color != 2 && scope.row.color != 1 && scope.row.status != 5">异常</el-tag>-->
           </template>
         </el-table-column>
@@ -256,12 +256,12 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
-            <el-tag type="info"  v-if="item.color == 0 && item.status != 0">空载</el-tag>
+            <el-tag type="info"  v-if="item.color == 0 && item.status != 0">{{(statusList[4].name)}}</el-tag>
             <!--<el-tag type="info"  v-if="item.status == 0">离线</el-tag>-->
-            <el-tag type="success"  v-if="item.color == 1&& item.status != 0">&lt;30%</el-tag>
-            <el-tag type="primary"  v-if="item.color == 2&& item.status != 0">30%-60%</el-tag>
-            <el-tag type="warning" v-if="item.color == 3&& item.status != 0">60%-90%</el-tag>
-            <el-tag type="danger" v-if="item.color == 4&& item.status != 0">&gt;90%</el-tag>
+            <el-tag type="success" v-else-if="item.color == 1&& item.status != 0">{{(statusList[0].name).slice(3, 10)}}</el-tag>
+            <el-tag type="primary" v-else-if="item.color == 2&& item.status != 0">{{(statusList[1].name).slice(3, 10)}}</el-tag>
+            <el-tag type="warning" v-else-if="item.color == 3&& item.status != 0">{{(statusList[2].name).slice(3, 10)}}</el-tag>
+            <el-tag type="danger" v-else-if="item.color == 4&& item.status != 0">{{(statusList[3].name).slice(3, 10)}}</el-tag>
             <!--<el-tag type="danger" v-if="item.color != 0 && item.color != 4 && item.color != 3 && item.color != 2 && item.color != 1 && item.status != 0">异常</el-tag>-->
           </div>
           <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 0 && item.color != 0" >详情</button>
@@ -618,7 +618,6 @@ const handleSelectStatus = (index) => {
   butColor.value = 1;
   onclickColor.value = index;
   queryParams.color = [index];
-  queryParams.status = [index];
   handleQuery();
 }
 
@@ -626,7 +625,6 @@ const toggleAllStatus = () => {
   butColor.value = 0;
   onclickColor.value = -1;
   queryParams.color = [0,1,2,3,4];
-  queryParams.status = [];
   handleQuery();
 }
 
@@ -644,7 +642,7 @@ const resetQuery = () => {
   queryFormRef2.value.resetFields();
   butColor.value = 0;
   //statusList.forEach((item) => item.selected = true)
-  queryParams.status = [];
+  queryParams.color = [];
   onclickColor.value = -1;
   handleQuery();
 }
@@ -1309,5 +1307,9 @@ onActivated(() => {
 
 :deep(.el-card){
   --el-card-padding:5px;
+}
+
+:deep(.el-tag){
+  margin-right:-60px;
 }
 </style>

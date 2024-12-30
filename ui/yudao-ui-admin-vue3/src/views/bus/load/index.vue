@@ -152,11 +152,11 @@
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column label="运行状态" align="center" prop="color" >
           <template #default="scope" >
-            <el-tag type="info"  v-if="scope.row.color == 0&&scope.row.status != 0">空载</el-tag>
-            <el-tag type="success"  v-else-if="scope.row.color == 1&&scope.row.status != 0">&lt;30%</el-tag>
-            <el-tag type="primary"  v-else-if="scope.row.color == 2&&scope.row.status != 0">30%-60%</el-tag>
-            <el-tag type="warning" v-else-if="scope.row.color == 3&&scope.row.status != 0">60%-90%</el-tag>
-            <el-tag type="danger" v-else-if="scope.row.color == 4&&scope.row.status != 0">&gt;90%</el-tag>
+            <el-tag type="info"  v-if="scope.row.color == 0&&scope.row.status != 0">{{statusList[0].name}}</el-tag>
+            <el-tag type="success"  v-else-if="scope.row.color == 1&&scope.row.status != 0">{{statusList[1].name}}</el-tag>
+            <el-tag type="primary"  v-else-if="scope.row.color == 2&&scope.row.status != 0">{{statusList[2].name}}</el-tag>
+            <el-tag type="warning" v-else-if="scope.row.color == 3&&scope.row.status != 0">{{statusList[3].name}}</el-tag>
+            <el-tag type="danger" v-else-if="scope.row.color == 4&&scope.row.status != 0">{{statusList[4].name}}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="A相负载率(%)" align="center" prop="aloadRate" width="130px" >
@@ -253,11 +253,11 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
-            <el-tag type="info"  v-if="item.color == 0 && item.status != 0">空载</el-tag>
-            <el-tag type="success"  v-else-if="item.color == 1 && item.status != 0">&lt;30%</el-tag>
-            <el-tag type="primary"  v-else-if="item.color == 2 && item.status != 0">30%-60%</el-tag>
-            <el-tag type="warning" v-else-if="item.color == 3 && item.status != 0">60%-90%</el-tag>
-            <el-tag type="danger" v-else-if="item.color == 4 && item.status != 0">&gt;90%</el-tag>
+            <el-tag type="info"  v-if="item.color == 0 && item.status != 0">{{statusList[0].name}}</el-tag>
+            <el-tag type="success"  v-else-if="item.color == 1 && item.status != 0">{{(statusList[1].name)}}</el-tag>
+            <el-tag type="primary"  v-else-if="item.color == 2 && item.status != 0">{{(statusList[2].name)}}</el-tag>
+            <el-tag type="warning" v-else-if="item.color == 3 && item.status != 0">{{(statusList[3].name)}}</el-tag>
+            <el-tag type="danger" v-else-if="item.color == 4 && item.status != 0">{{(statusList[4].name)}}</el-tag>
           </div>
           <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 0 && item.color != 0" >详情</button>
         </div>
@@ -1280,5 +1280,9 @@ onActivated(() => {
 
 :deep(.el-card){
   --el-card-padding:5px;
+}
+
+:deep(.el-tag){
+  margin-right:-60px;
 }
 </style>

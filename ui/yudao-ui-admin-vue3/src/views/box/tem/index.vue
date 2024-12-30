@@ -122,11 +122,11 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openTemDetail" :border="true">
+      <el-table v-show="switchValue == 3" v-loading="loading" style="margin-top:-10px;height:720px;overflow-y:auto;" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openTemDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
-        <el-table-column label="网络地址" align="center" prop="devKey" width="150px"/>
+        <el-table-column label="网络地址" align="center" prop="devKey" width="250px"/>
         <el-table-column v-if="valueMode == 0" label="A相温度(°C)" align="center" prop="atem" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.atem != null" :type=" scope.row.atemStatus != 0 ? 'danger' : '' ">
@@ -149,13 +149,14 @@
           </template>
         </el-table-column>
         <!-- 数据库查询 -->
-        <el-table-column label="操作" align="center">
+        <el-table-column label="操作" align="center" width="130px">
           <template #default="scope">
             <el-button
               link
               type="primary"
               @click="openTemDetail(scope.row)"
               v-if=" scope.row.status != null && scope.row.status != 1"
+              style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
             >
             设备详情
             </el-button>
@@ -164,6 +165,7 @@
               type="danger"
               @click="handleDelete(scope.row.boxId)"
               v-if="scope.row.status == 1"
+              style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
             >
               删除
             </el-button>
@@ -187,7 +189,7 @@
           <div class="status" v-if="valueMode == 0">
             <el-tag type="info" v-if="item.atemStatus == null " >离线</el-tag>
             <el-tag type="danger" v-else-if="item.atemStatus != 0 || item.btemStatus != 0  || item.ctemStatus != 0 " >告警</el-tag>
-            <el-tag v-else >正常</el-tag>
+            <el-tag type="success" v-else >正常</el-tag>
           </div>
           <button class="detail" @click="openTemDetail(item)" v-if="item.status != null && item.status != 0"  >详情</button>
         </div>
@@ -359,7 +361,6 @@ const handleSelectStatus = (index) => {
   butColor.value = 1;
   onclickColor.value = index;
   queryParams.status = [index];
-  console.log('111111111',queryParams.status )
   handleQuery();
 }
 
@@ -641,15 +642,17 @@ const toggleAllSelected = () => {
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
-  queryParams.pageNo = 1
-  getList()
+  queryParams.pageNo = 1;
+  getList();
 }
 
 /** 重置按钮操作 */
 const resetQuery = () => {
-  queryFormRef.value.resetFields()
-  statusList.forEach((item) => item.selected = true)
+  queryFormRef.value.resetFields();
+  //statusList.forEach((item) => item.selected = true)
+  butColor.value = 0;
   queryParams.status = [];
+  onclickColor.value = -1;
   handleQuery()
 }
 
@@ -663,10 +666,10 @@ const openForm = (type: string) => {
 const handleDelete = async (id: number) => {
   try {
     // 删除的二次确认
-    await message.delConfirm()
+    await message.delConfirm();
     // 发起删除
-    await IndexApi.deleteIndex(id)
-    message.success(t('common.delSuccess'))
+    await IndexApi.deleteIndex(id);
+    message.success(t('common.delSuccess'));
     // 刷新列表
     // await getList()
   } catch {}
@@ -675,21 +678,21 @@ const handleDelete = async (id: number) => {
 const handleExportXLS = async ()=>{
   try {
     // 导出的二次确认
-    await message.exportConfirm()
+    await message.exportConfirm();
     // 发起导出
-    queryParams.pageNo = 1
-    exportLoading.value = true
+    queryParams.pageNo = 1;
+    exportLoading.value = true;
     const axiosConfig = {
       timeout: 0 // 设置超时时间为0
     }
-    const data = await IndexApi.getBoxTemDetailExcel(queryParams, axiosConfig)
-    console.log("data",data)
-    await download.excel(data, '温度详细.xlsx')
+    const data = await IndexApi.getBoxTemDetailExcel(queryParams, axiosConfig);
+    console.log("data",data);
+    await download.excel(data, '温度详细.xlsx');
   } catch (error) {
     // 处理异常
-    console.error('导出失败：', error)
+    console.error('导出失败：', error);
   } finally {
-    exportLoading.value = false
+    exportLoading.value = false;
   }
 }
 
@@ -697,35 +700,35 @@ const handleExportXLS = async ()=>{
 const handleExport = async () => {
   try {
     // 导出的二次确认
-    await message.exportConfirm()
+    await message.exportConfirm();
     // 发起导出
-    exportLoading.value = true
-    const data = await IndexApi.exportIndex(queryParams)
-    download.excel(data, 'PDU设备.xls')
+    exportLoading.value = true;
+    const data = await IndexApi.exportIndex(queryParams);
+    download.excel(data, 'PDU设备.xls');
   } catch {
   } finally {
-    exportLoading.value = false
+    exportLoading.value = false;
   }
 }
 
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
-  getList()
+  getList();
   getNavList();
   flashListTimer.value = setInterval((getListNoLoading), 5000);
 })
 
 onBeforeUnmount(()=>{
   if(flashListTimer.value){
-    clearInterval(flashListTimer.value)
+    clearInterval(flashListTimer.value);
     flashListTimer.value = null;
   }
 })
 
 onBeforeRouteLeave(()=>{
   if(flashListTimer.value){
-    clearInterval(flashListTimer.value)
+    clearInterval(flashListTimer.value);
     flashListTimer.value = null;
     firstTimerCreate.value = false;
   }
@@ -1003,9 +1006,16 @@ onActivated(() => {
   }
 }
 
-.arrayContainer {
-  display: flex;
-  flex-wrap: wrap;
+@media screen and (min-width:2048px){
+  .arrayContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
   .arrayItem {
     width: 25%;
     height: 140px;
@@ -1067,6 +1077,155 @@ onActivated(() => {
       cursor: pointer;
     }
   }
+}
+}
+
+@media screen and (max-width:2048px) and (min-width:1600px){
+  .arrayContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+  .arrayItem {
+    width: 25%;
+    height: 140px;
+    font-size: 13px;
+    box-sizing: border-box;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 40px;
+    position: relative;
+    .content {
+      padding-left: 20px;
+      display: flex;
+      align-items: center;
+      .count_img {
+        margin: 0 35px 0 13px;
+      }
+      .icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 28px;
+        text-align: center;
+      }
+    }
+    .devKey{
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .room {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .status {
+      width: 40px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      color: #fff;
+      position: absolute;
+      right: 38px;
+      top: 8px;
+    }
+    .detail {
+      width: 40px;
+      height: 25px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      cursor: pointer;
+    }
+  }
+}
+}
+
+@media screen and (max-width:1600px){
+  .arrayContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+  .arrayItem {
+    width: 33%;
+    height: 140px;
+    font-size: 13px;
+    box-sizing: border-box;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 40px;
+    position: relative;
+    .content {
+      padding-left: 20px;
+      display: flex;
+      align-items: center;
+      .count_img {
+        margin: 0 35px 0 13px;
+      }
+      .icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 28px;
+        text-align: center;
+      }
+    }
+    .devKey{
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .room {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .status {
+      width: 40px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      color: #fff;
+      position: absolute;
+      right: 38px;
+      top: 8px;
+    }
+    .detail {
+      width: 40px;
+      height: 25px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      cursor: pointer;
+    }
+  }
+}
 }
 
 .btnallSelected {
@@ -1131,5 +1290,13 @@ onActivated(() => {
 .button-group {
   display: flex;
   gap: 10px;
+}
+
+:deep(.el-card){
+  --el-card-padding:5px;
+}
+
+:deep(.el-tag){
+  margin-right:-60px;
 }
 </style>

@@ -236,7 +236,7 @@
       </div>
       <el-table :data="tableData" border style="width: 100%;">
         <el-table-column align="center" prop="loopId" label="编号" width="100px" />
-        <el-table-column label="断路器状态" align="center" width="450px" />
+        <el-table-column label="断路器状态" prop="breakerStatus" align="center" width="450px" />
           <!--<el-table-column label="A相" align="center" prop="acur" width="150px">
             <template #default="scope">
               <el-text line-clamp="2" v-if="scope.row.acur != null">
@@ -346,7 +346,6 @@ const queryParams = reactive({
 
 const getRedisData = async () => {
   const data =  await IndexApi.getBoxPowerRedisData(queryParams);
-  console.log('data',data)
   //let loopItem = {} as any;
   //for (let key in data) {  
   //  if (data.hasOwnProperty(key)) {  
@@ -360,12 +359,21 @@ const getRedisData = async () => {
   //}
   //loopItem['updateTime'] = data['updateTime'];
   redisData.value = data;
-  tableData.value = redisData.value.boxLoopItemResVO
+  tableData.value = redisData.value.boxLoopItemResVO;
+
+  tableData.value = tableData.value.map(item => {
+    let newItem = { ...item }; // 创建对象的浅拷贝
+    if (newItem.breakerStatus === 1) {
+      newItem.breakerStatus = '断开';
+    } else if (newItem.breakerStatus === 2) {
+      newItem.breakerStatus = '闭合';
+    }
+    return newItem;
+  });
+
   if(redisData.value.loadFactor != null){
     visContro.value.gaugeVis = true;
   }
-  console.log('redisData.boxLoopItemResVO',redisData.value.boxLoopItemResVO)
-  console.log('tableData',tableData.value)
 }
 
 //刷新数据
