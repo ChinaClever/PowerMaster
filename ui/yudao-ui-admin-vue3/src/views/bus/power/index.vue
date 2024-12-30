@@ -1611,4 +1611,8 @@ onActivated(() => {
 :deep(.el-card){
   --el-card-padding:5px;
 }
+
+:deep(.el-tag){
+  margin-right:-60px;
+}
 </style>

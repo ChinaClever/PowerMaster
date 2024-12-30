@@ -172,8 +172,8 @@
             <el-tag v-else >正常</el-tag>
           </div> -->
           <div class="status" v-if="valueMode == 0">
-            <el-tag type="info" v-if="item.status == 0 " >离线</el-tag>
-            <el-tag v-else-if="item.status === 1" type="success" >正常</el-tag>
+            <el-tag type="info" v-if="item.status == 0 " >{{statusList[0].name}}</el-tag>
+            <el-tag v-else-if="item.status === 1" type="success" >{{statusList[1].name}}</el-tag>
           </div>          
           <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 0" >详情</button>
         </div>
@@ -231,21 +231,21 @@ const statusList = reactive([
   {
     name: '<5%',
     selected: true,
-    value: 1,
+    value: 0,
     cssClass: 'btn_normal',
     activeClass: 'btn_normal normal'
   },
   {
     name: '5%-20%',
     selected: true,
-    value: 2,
+    value: 1,
     cssClass: 'btn_warn',
     activeClass: 'btn_warn warn'
   },
   {
     name: '>20%',
     selected: true,
-    value: 3,
+    value: 2,
     cssClass: 'btn_error',
     activeClass: 'btn_error error'
   },
@@ -500,9 +500,9 @@ const toDetail = (row) =>{
 //}
 
 const handleSelectStatus = (index) => {
+  console.log('index',index);
   butColor.value = 1;
   onclickColor.value = index;
-  queryParams.status = [index];
   queryParams.color = [index];
   handleQuery();
 }
@@ -510,7 +510,6 @@ const handleSelectStatus = (index) => {
 const toggleAllStatus = () => {
   butColor.value = 0;
   onclickColor.value = -1;
-  queryParams.status = [];
   queryParams.color = [0,1,2];
   handleQuery();
 }
@@ -524,7 +523,10 @@ const handleQuery = () => {
 /** 重置按钮操作 */
 const resetQuery = () => {
   queryFormRef.value.resetFields()
-  statusList.forEach((item) => item.selected = true)
+  //statusList.forEach((item) => item.selected = true)
+  butColor.value = 0;
+  queryParams.color = [];
+  onclickColor.value = -1;
   handleQuery()
 }
 
@@ -1201,5 +1203,9 @@ onActivated(() => {
 
 :deep(.el-card){
   --el-card-padding:5px;
+}
+
+:deep(.el-tag){
+  margin-right:-40px;
 }
 </style>

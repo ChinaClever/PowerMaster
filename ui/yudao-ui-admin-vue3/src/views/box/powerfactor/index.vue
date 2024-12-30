@@ -44,7 +44,7 @@
         :inline="true"
         label-width="68px"                          
       >
-        <el-form-item label="参数类型" prop="type">
+        <!--<el-form-item label="参数类型" prop="type">
         <el-cascader
           v-model="defaultSelected"
           collapse-tags
@@ -54,7 +54,7 @@
           @change="typeCascaderChange"
           class="!w-130px"
         />
-        </el-form-item>
+        </el-form-item>-->
         <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
             v-model="queryParams.devKey"
@@ -93,7 +93,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-if="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px;overflow-y:auto;" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :border="true">
+      <el-table v-show="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px;overflow-y:auto;" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="300px"/>
@@ -238,7 +238,7 @@
         </el-table-column>
       </el-table>    
 
-      <div v-if="switchValue == 0  && list.length > 0" class="arrayContainer">
+      <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
@@ -251,7 +251,7 @@
               </div>                
             </div>
             <div class="info" >
-              <div v-if="item.phasePowFactor!= null && typeText == 'line'">
+              <!--div v-if="item.phasePowFactor!= null && typeText == 'line'">
                 <div v-for="(phasePF,index) in item.phasePowFactor" :key="index">
                   <div >{{ phaseLineText[index] }}{{phasePF}}</div>
                 </div>
@@ -260,8 +260,8 @@
                 <div v-for="(loopPF,index) in item.loopPowFactor" :key="index">
                   <div>{{ loopLineText[index] }}{{loopPF}}</div>
                 </div>
-              </div>
-              <div v-else-if="item.outletPowFactor != null && typeText == 'outlet'">
+              </div>-->
+              <div>
                 <div v-for="(outletPF,index) in item.outletPowFactor" :key="index">
                   <div>{{ outletLineText[index] }}{{outletPF}}</div>
                 </div>
@@ -437,16 +437,16 @@ const phaseLineText = ref(['A相：','B相：','C相：']);
 const loopLineText = ref(['回路1：','回路2：','回路3：','回路4：','回路5：','回路6：','回路7：','回路8：','回路9：']);
 const outletLineText = ref(['输出位1：','输出位2：','输出位3：']);
 
-const defaultSelected = ref(['line'])
+//const defaultSelected = ref(['line'])
 const typeSelection = ref([]) as any;
 var typeText = ref('line');
 // 参数类型改变触发
-const typeCascaderChange = (selected) => {
-  queryParams.type = selected[0];
-  typeText = selected[0];
-  // 自动搜索
-  handleQuery()
-}
+//const typeCascaderChange = (selected) => {
+//  queryParams.type = selected[0];
+//  typeText = selected[0];
+//  // 自动搜索
+//  handleQuery()
+//}
 
 // 参数类型选择框初始化，相固定3相
 const getTypeMaxValue = async () => {
@@ -1321,5 +1321,9 @@ onActivated(() => {
 
 :deep(.el-card){
   --el-card-padding:5px;
+}
+
+:deep(.el-tag){
+  margin-right:-40px;
 }
 </style>
