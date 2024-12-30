@@ -145,14 +145,14 @@
     </template>
     <template #Content>
       <el-table
-        v-if="switchValue == 3"
+        v-show="switchValue == 3"
         v-loading="loading"
         :data="list"
         :stripe="true"
         :show-overflow-tooltip="true"
         @cell-dblclick="openTemDetail"
         :border="true"
-        style="height:710px;margin-top:-10px"
+        style="height:710px;margin-top:-10pxoverflow-y: auto;"
       >
         <el-table-column label="编号" align="center" prop="tableId" width="80px" />
         <!-- 数据库查询 -->
@@ -235,7 +235,7 @@
         </el-table-column>
       </el-table>
 
-      <div v-if="switchValue == 0 && list.length > 0" class="arrayContainer">
+      <div v-show="switchValue == 0 && list.length > 0" class="arrayContainer">
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.id !== null" class="arrayItem" :style="{backgroundColor: item.status === 2?'red':'' }">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>

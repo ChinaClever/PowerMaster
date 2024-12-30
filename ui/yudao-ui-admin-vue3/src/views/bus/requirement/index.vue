@@ -148,108 +148,110 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table style="height:720px;margin-top:-10px;" v-show="switchValue == 1 && visMode == 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
-        <el-table-column label="编号" align="center" prop="tableId" width="80px" />
-        <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" width="218px" />
-        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
-        <el-table-column label="L1最大电流(A)" align="center" prop="l1MaxCur" width="100px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" >
-              {{ scope.row.l1MaxCur }}
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column label="发生时间" align="center" prop="l1MaxCurTime" />
-        <el-table-column label="L2最大电流(A)" align="center" prop="l2MaxCur" width="100px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" >
-              {{ scope.row.l2MaxCur }}
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column label="发生时间" align="center" prop="l2MaxCurTime" />
-        <el-table-column label="L3最大电流(A)" align="center" prop="l3MaxCur" width="100px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" >
-              {{ scope.row.l3MaxCur }}
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column label="发生时间" align="center" prop="l3MaxCurTime" />
+      <div v-if="switchValue == 1" style="height:720px;margin-top:-10px;overflow-y: auto;">
+        <el-table v-show="visMode == 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
+          <el-table-column label="编号" align="center" prop="tableId" width="80px" />
+          <!-- 数据库查询 -->
+          <el-table-column label="所在位置" align="center" prop="location" width="218px" />
+          <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
+          <el-table-column label="L1最大电流(A)" align="center" prop="l1MaxCur" width="100px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.l1MaxCur }}
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="发生时间" align="center" prop="l1MaxCurTime" />
+          <el-table-column label="L2最大电流(A)" align="center" prop="l2MaxCur" width="100px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.l2MaxCur }}
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="发生时间" align="center" prop="l2MaxCurTime" />
+          <el-table-column label="L3最大电流(A)" align="center" prop="l3MaxCur" width="100px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.l3MaxCur }}
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="发生时间" align="center" prop="l3MaxCurTime" />
 
-        <el-table-column label="操作" align="center" >
-          <template #default="scope">
-            <el-button
-              link
-              type="primary"
-              @click="queryParams.lineType = 0;openDetail(scope.row)"
-              style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
-            >
-            设备详情
-            </el-button>
-            <el-button
-              link
-              type="danger"
-              @click="handleDelete(scope.row.busId)"
-              v-if="scope.row.status == 5"
-              style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
-            >
-              删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <el-table style="height:720px;margin-top:-10px;" v-show="switchValue == 1 && visMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
-        <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
-        <el-table-column label="所在位置" align="center" prop="location" width="218px" />
-        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
-        <el-table-column label="L1最大功率(kW)" align="center" prop="l1MaxPow" width="100px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" >
-              {{ scope.row.l1MaxPow }}
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column label="发生时间" align="center" prop="l1MaxPowTime" />
-        <el-table-column label="L2最大功率(kW)" align="center" prop="l2MaxPow" width="100px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" >
-              {{ scope.row.l2MaxPow }}
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column label="发生时间" align="center" prop="l2MaxPowTime" />
-        <el-table-column label="L3最大功率(kW)" align="center" prop="l3MaxPow" width="100px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" >
-              {{ scope.row.l3MaxPow }}
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column label="发生时间" align="center" prop="l3MaxPowTime" />
-        <el-table-column label="操作" align="center" >
-          <template #default="scope">
-            <el-button
-              link
-              type="primary"
-              @click="queryParams.lineType = 1;openDetail(scope.row)"
-              style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
-            >
-            设备详情
-            </el-button>
-            <el-button
-              link
-              type="danger"
-              @click="handleDelete(scope.row.busId)"
-              v-if="scope.row.status == 5"
-              style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
-            >
-              删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+          <el-table-column label="操作" align="center" >
+            <template #default="scope">
+              <el-button
+                link
+                type="primary"
+                @click="queryParams.lineType = 0;openDetail(scope.row)"
+                style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
+              >
+              设备详情
+              </el-button>
+              <el-button
+                link
+                type="danger"
+                @click="handleDelete(scope.row.busId)"
+                v-if="scope.row.status == 5"
+                style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
+              >
+                删除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <el-table v-show="visMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
+          <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
+          <el-table-column label="所在位置" align="center" prop="location" width="218px" />
+          <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
+          <el-table-column label="L1最大功率(kW)" align="center" prop="l1MaxPow" width="100px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.l1MaxPow }}
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="发生时间" align="center" prop="l1MaxPowTime" />
+          <el-table-column label="L2最大功率(kW)" align="center" prop="l2MaxPow" width="100px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.l2MaxPow }}
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="发生时间" align="center" prop="l2MaxPowTime" />
+          <el-table-column label="L3最大功率(kW)" align="center" prop="l3MaxPow" width="100px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" >
+                {{ scope.row.l3MaxPow }}
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column label="发生时间" align="center" prop="l3MaxPowTime" />
+          <el-table-column label="操作" align="center" >
+            <template #default="scope">
+              <el-button
+                link
+                type="primary"
+                @click="queryParams.lineType = 1;openDetail(scope.row)"
+                style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
+              >
+              设备详情
+              </el-button>
+              <el-button
+                link
+                type="danger"
+                @click="handleDelete(scope.row.busId)"
+                v-if="scope.row.status == 5"
+                style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
+              >
+                删除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
       <div  v-show="switchValue == 0 && visMode == 1 && list.length > 0" class="arrayContainer">
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.devKey !== null" class="arrayItem">

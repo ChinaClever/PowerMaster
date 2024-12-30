@@ -64,7 +64,7 @@
     </template>
     <template #Content>
       <div v-loading="tableLoading">
-        <div v-if="switchValue == 0 && tableData.length > 0" class="matrixContainer">
+        <div v-show="switchValue == 0 && tableData.length > 0" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
             <div class="content">
               <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
@@ -79,7 +79,7 @@
             <button class="detail" @click.prevent="toDetail(item.devKey,item.roomId, item.id,item.location,item.busName)" >详情</button>
           </div>
         </div>
-        <el-table v-if="switchValue == 1" style="width: 100%;height: 720px;margin-top:-10px;" :data="tableData" :border="true">
+        <el-table v-show="switchValue == 1" style="width: 100%;height: 720px;margin-top:-10px;overflow-y: auto;" :data="tableData" :border="true">
           <el-table-column type="index" width="80px" label="序号" align="center" />
           <el-table-column label="位置" min-width="110" align="center" prop="local" />
           <el-table-column label="设备名称"  align="center" prop="busName" />

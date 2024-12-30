@@ -114,7 +114,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-if="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :border="true">
+      <el-table v-show="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px;overflow-y: auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -166,7 +166,7 @@
         </el-table-column>
       </el-table>    
 
-      <div v-if="switchValue == 0  && list.length > 0" class="arrayContainer">
+      <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
@@ -184,7 +184,7 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status">
-            <el-tag v-if="item.status === 1" >正常</el-tag>
+            <el-tag v-if="item.status === 1" type="success">正常</el-tag>
             <el-tag v-else-if="item.status === 0" type="info">离线</el-tag>
             <el-tag v-else-if="item.status === 2">离线</el-tag>
           </div>

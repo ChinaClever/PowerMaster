@@ -38,25 +38,25 @@
         :inline="true"
         label-width="68px"                          
       >
-      <!-- <el-form-item v-if="switchValue == 0 ">
-          <template v-for="(status, index) in statusList" :key="index">
-            <button :class="status.selected ? status.activeClass : status.cssClass" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
-          </template>
-        </el-form-item>
+      <el-form-item v-if="switchValue == 0 ">
+        <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">
+          全部
+        </button>
+        <template v-for="(status, index) in statusList" :key="index">
+          <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+          <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+        </template>
         <el-button
           type="primary"
           plain
           @click="openForm('create')"
           v-if="switchValue == 0 "
+          style="height:35px;"
         >
           <Icon icon="ep:plus" class="mr-5px" /> 谐波颜色范围
-        </el-button> -->
-
-        <el-form-item >
-          <el-checkbox-group  v-model="queryParams.status" @change="handleQuery">
-            <el-checkbox :label="5" :value="5">在线</el-checkbox>
-          </el-checkbox-group>
+        </el-button>
         </el-form-item>
+
         <el-form-item label="网络地址" prop="devKey">
           <el-autocomplete
             v-model="queryParams.devKey"
@@ -95,7 +95,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
+      <el-table v-show="switchValue == 3" style="height:720px;margin-top:-10px;" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -131,6 +131,7 @@
               type="primary"
               @click="toDetail(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 5"
+              style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
             >
             设备详情
             </el-button>
@@ -139,15 +140,17 @@
               type="danger"
               @click="handleDelete(scope.row.boxId)"
               v-if="scope.row.status == 5"
+              style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
             >
               删除
             </el-button>
           </template>
         </el-table-column>
-      </el-table>    
+      </el-table>
 
       <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+        <template v-for="item in list" :key="item.devKey">
+          <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey +'-' +item.boxName }}</div>
           <div class="content">
             <div class="icon">
@@ -157,9 +160,9 @@
               </div> 
             </div>
             <div class="info" >                  
-              <div  v-if="item.acurThd != null">Ia:{{item.acurThd}}</div>
-              <div  v-if="item.bcurThd != null">Ib:{{item.bcurThd}}</div>
-              <div  v-if="item.ccurThd != null">Ic:{{item.ccurThd}}</div>
+              <div v-if="item.acurThd != null">Ia:{{item.acurThd}}</div>
+              <div v-if="item.bcurThd != null">Ib:{{item.bcurThd}}</div>
+              <div v-if="item.ccurThd != null">Ic:{{item.ccurThd}}</div>
             </div>          
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
@@ -170,10 +173,11 @@
           </div> -->
           <div class="status" v-if="valueMode == 0">
             <el-tag type="info" v-if="item.status == 0 " >离线</el-tag>
-            <el-tag v-else >正常</el-tag>
+            <el-tag v-else-if="item.status === 1" type="success" >正常</el-tag>
           </div>          
           <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 0" >详情</button>
         </div>
+        </template>
       </div>
 
       <Pagination
@@ -206,6 +210,9 @@ import { BoxHarmonicColorApi } from '@/api/bus/boxharmoniccolor'
 defineOptions({ name: 'PDUDevice' })
 
 const { push } = useRouter()
+
+const butColor = ref(0);
+const onclickColor = ref(-1);
 
 const harmonicColorForm = ref()
 const flashListTimer = ref();
@@ -349,6 +356,15 @@ const getList = async () => {
   try {
     const data = await IndexApi.getBoxHarmonicPage(queryParams)
     list.value = data.list
+    console.log('data',data);
+
+    //获取颜色范围
+    var range = await BoxHarmonicColorApi.getBoxHarmonicColor();
+    if(range != null){
+      statusList[0].name = '<' + range.rangeOne + '%';
+      statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
+      statusList[2].name = '>' + range.rangeFour + '%';
+    }
 
     var tableIndex = 0;
 
@@ -424,21 +440,36 @@ const toDetail = (row) =>{
 //   window.open(url, '_blank');
 // }
 
+//const handleSelectStatus = (index) => {
+//  statusList[index].selected = !statusList[index].selected
+//  const status =  statusList.filter(item => item.selected)
+//  const statusArr = status.map(item => item.value)
+//  if(statusArr.length != statusList.length){
+//    queryParams.color = statusArr;
+//    //queryParams.status = [5];
+//  }else{
+//    queryParams.color = null;
+//    //queryParams.status = [];
+//  }
+//  
+//  handleQuery();
+//}
+
 const handleSelectStatus = (index) => {
-  statusList[index].selected = !statusList[index].selected
-  const status =  statusList.filter(item => item.selected)
-  const statusArr = status.map(item => item.value)
-  if(statusArr.length != statusList.length){
-    queryParams.color = statusArr;
-    //queryParams.status = [5];
-  }else{
-    queryParams.color = null;
-    //queryParams.status = [];
-  }
-  
+  butColor.value = 1;
+  onclickColor.value = index;
+  queryParams.status = [index];
+  queryParams.color = [index];
   handleQuery();
 }
 
+const toggleAllStatus = () => {
+  butColor.value = 0;
+  onclickColor.value = -1;
+  queryParams.status = [];
+  queryParams.color = [0,1,2];
+  handleQuery();
+}
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
@@ -848,21 +879,283 @@ onActivated(() => {
   }
 }
 
+@media screen and (min-width:2048px){
+  .arrayContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+  .arrayItem {
+    width: 25%;
+    height: 140px;
+    font-size: 13px;
+    box-sizing: border-box;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 40px;
+    position: relative;
+    .content {
+      padding-left: 20px;
+      display: flex;
+      align-items: center;
+      .count_img {
+        margin: 0 35px 0 13px;
+      }
+      .icon {
+        width: 74px;
+        height: 60px;
+        margin: 0 28px;
+        text-align: center;
+        font-size: large;
+      }
+    }
+    .devKey{
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .room {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .status {
+      width: 40px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      color: #fff;
+      position: absolute;
+      right: 38px;
+      top: 8px;
+    }
+    .detail {
+      width: 40px;
+      height: 25px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      cursor: pointer;
+    }
+  }
+}
+}
+
+@media screen and (max-width:2048px) and (min-width:1600px){
+  .arrayContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+  .arrayItem {
+    width: 25%;
+    height: 140px;
+    font-size: 13px;
+    box-sizing: border-box;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 40px;
+    position: relative;
+    .content {
+      padding-left: 20px;
+      display: flex;
+      align-items: center;
+      .count_img {
+        margin: 0 35px 0 13px;
+      }
+      .icon {
+        width: 74px;
+        height: 60px;
+        margin: 0 28px;
+        text-align: center;
+        font-size: large;
+      }
+    }
+    .devKey{
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .room {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .status {
+      width: 40px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      color: #fff;
+      position: absolute;
+      right: 38px;
+      top: 8px;
+    }
+    .detail {
+      width: 40px;
+      height: 25px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      cursor: pointer;
+    }
+  }
+}
+}
+
+@media screen and (max-width:1600px){
+  .arrayContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+  .arrayItem {
+    width: 33%;
+    height: 140px;
+    font-size: 13px;
+    box-sizing: border-box;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 40px;
+    position: relative;
+    .content {
+      padding-left: 20px;
+      display: flex;
+      align-items: center;
+      .count_img {
+        margin: 0 35px 0 13px;
+      }
+      .icon {
+        width: 74px;
+        height: 60px;
+        margin: 0 28px;
+        text-align: center;
+        font-size: large;
+      }
+    }
+    .devKey{
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .room {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+    .status {
+      width: 40px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      color: #fff;
+      position: absolute;
+      right: 38px;
+      top: 8px;
+    }
+    .detail {
+      width: 40px;
+      height: 25px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      cursor: pointer;
+    }
+  }
+}
+}
+
+.btnallSelected {
+  margin-right: 10px;
+  width: 58px;
+  height: 35px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #409EFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.btnallNotSelected{
+  margin-right: 10px;
+  width: 58px;
+  height: 35px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: #000000;
+  border: 1px solid #409EFF;
+  border-radius: 5px;
+  &:hover {
+    color: #7bc25a;
+  }
+}
+
 :deep(.master-left .el-card__body) {
   padding: 0;
 }
+
 :deep(.el-form) {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
 :deep(.el-form .el-form-item) {
   margin-right: 0;
 }
+
 ::v-deep .el-table .el-table__header th{
   background-color: #f5f7fa;
   color: #909399;
   height: 80px;
+}
 
+:deep(.el-card){
+  --el-card-padding:5px;
 }
 </style>

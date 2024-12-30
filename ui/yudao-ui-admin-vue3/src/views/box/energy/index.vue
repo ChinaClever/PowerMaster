@@ -120,7 +120,7 @@
     </template>
     <template #Content>
       <div v-loading="tableLoading">
-        <div v-if="switchValue == 0 && tableData.length > 0" class="matrixContainer">
+        <div v-show="switchValue == 0 && tableData.length > 0" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
             <div class="content">
               <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
@@ -135,7 +135,7 @@
             <button class="detail" @click.prevent="toDetail(item.roomId, item.id,item.location,item.boxName)" >详情</button>
           </div>
         </div>
-        <el-table v-if="switchValue == 1" style="width: 100%;height: calc(100vh - 320px);" :data="tableData" :border="true">
+        <el-table v-show="switchValue == 1" style="width: 100%;height:720px;margin-top:-10px;overflow:hidden;overflow-y:auto;" :data="tableData" :border="true">
           <el-table-column type="index" width="80px" label="序号" align="center" />
           <el-table-column label="位置" min-width="110" align="center" prop="local" />
           <el-table-column label="设备名称" align="center" prop="boxName" />
@@ -446,12 +446,17 @@ onBeforeMount(() => {
     background: linear-gradient(297deg, #fff, #dcdcdc 51%, #fff);
   }
 }
-.matrixContainer {
-  height: calc(100vh - 320px);
-  overflow: auto;
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
+
+@media screen and (min-width:2048px){
+  .matrixContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
   .item {
     width: 25%;
     min-width: 275px;
@@ -510,10 +515,155 @@ onBeforeMount(() => {
   
   }
 }
+}
+
+@media screen and (max-width:2048px) and (min-width:1600px){
+  .matrixContainer {
+    width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+  .item {
+    width: 25%;
+    min-width: 275px;
+    height: 130px;
+    font-size: 12px;
+    box-sizing: border-box;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 36px;
+    position: relative;
+    .content {
+      padding-left: 20px;
+      display: flex;
+      align-items: center;
+      .count_img {
+        margin: 0 35px 0 13px;
+      }
+      .info {
+        line-height: 1.7;
+        font-size: 13px;
+      }
+    }
+    .room {
+      position: absolute;
+      left: 10px;
+      top: 8px;
+      font-size: 13px;
+    }
+    .name {
+      height: 20px;
+      font-size: 14px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      right: 5px;
+      top: 4px;
+    }
+
+    .detail {
+      width: 35px;
+      height: 20px;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 5px;
+      bottom: 4px;
+    }
+  
+  }
+}
+}
+
+@media screen and (max-width:1600px){
+.matrixContainer {
+   width:100%;
+    height: 720px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    margin-top: -10px;
+  .item {
+    width: 33%;
+    min-width: 275px;
+    height: 130px;
+    font-size: 12px;
+    box-sizing: border-box;
+    background-color: #eef4fc;
+    border: 5px solid #fff;
+    padding-top: 36px;
+    position: relative;
+    .content {
+      padding-left: 20px;
+      display: flex;
+      align-items: center;
+      .count_img {
+        margin: 0 35px 0 13px;
+      }
+      .info {
+        line-height: 1.7;
+        font-size: 13px;
+      }
+    }
+    .room {
+      position: absolute;
+      left: 10px;
+      top: 8px;
+      font-size: 13px;
+    }
+    .name {
+      height: 20px;
+      font-size: 14px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      right: 5px;
+      top: 4px;
+    }
+
+    .detail {
+      width: 35px;
+      height: 20px;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      position: absolute;
+      right: 5px;
+      bottom: 4px;
+    }
+  
+  }
+}
+}
+
 ::v-deep .el-table .el-table__header th{
   background-color: #f5f7fa;
   color: #909399;
   height: 80px;
+}
 
+:deep(.el-card){
+  --el-card-padding:5px;
 }
 </style>
