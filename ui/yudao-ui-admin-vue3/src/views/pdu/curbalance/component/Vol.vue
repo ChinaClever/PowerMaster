@@ -1,5 +1,5 @@
 <template>
-  <div ref="chartDom" style="width: 400px; height: 300px;margin-left: 30px;"></div>
+  <Echart :height="height" :width="width" :options="echartsOption" />
 </template>
 
 <script setup lang="ts">
@@ -10,6 +10,12 @@ const props = defineProps({
   max: {
     type: Object,
     required: true
+  },
+  height: {
+    type: [Number,String],
+  },
+  width: {
+    type: [Number,String],
   }
 });
 
@@ -21,38 +27,41 @@ let myChart: echarts.ECharts | null = null;
 const dataWithPercent = computed(() => {
   const total = props.max.L1 + props.max.L2 + props.max.L3;
   return [
-    { value: props.max.L1, name: 'A相电压', percent: ((props.max.L1 / total) * 100).toFixed(2) + '%' ,itemStyle: { color: '#E5B849' }},
-    { value: props.max.L2, name: 'B相电压', percent: ((props.max.L2 / total) * 100).toFixed(2) + '%' ,itemStyle: { color: '#C8603A' }},
-    { value: props.max.L3, name: 'C相电压', percent: ((props.max.L3 / total) * 100).toFixed(2) + '%' ,itemStyle: { color: '#AD3762' }}
+    
+    { value: props.max.L1, name: 'A相电压',itemStyle: { color: '#075F71' } },
+    { value: props.max.L2, name: 'B相电压' ,itemStyle: { color: '#119CB5' }},
+    { value: props.max.L3, name: 'C相电压',itemStyle: { color: '#45C0C9' } }
   ];
 });
 
 // 图表配置
-const option = {
+const echartsOption = reactive({
   tooltip: {
-    trigger: 'item',
-    formatter: function (params: any) {
-      return `${params.name}: ${params.value} V`;
-    }
+    trigger: 'item'
   },
   series: [
     {
-      name: 'Access From',
       type: 'pie',
-      radius: ['40%', '100%'],
+      radius: ['40%', '80%'],
+      center: ['60%', '50%'],
       avoidLabelOverlap: false,
       itemStyle: {
-        borderRadius: 10,
+        borderRadius: 7,
         borderColor: '#fff',
         borderWidth: 2
       },
       label: {
-        show: false,
-        position: 'center'
+        show: true,
+        position: 'inside', // 将标签显示在饼图内部
+        formatter: (params) => {
+          return `${params.value}V`;
+        },
+        fontSize: 14,
+        fontWeight: 'bold'
       },
       emphasis: {
         label: {
-          show: true,
+          show: false,
           fontSize: 40,
           fontWeight: 'bold'
         }
@@ -60,10 +69,11 @@ const option = {
       labelLine: {
         show: false
       },
+      padAngle: 1,
       data: dataWithPercent.value
     }
   ]
-};
+});
 
 // 组件挂载时初始化图表
 onMounted(() => {

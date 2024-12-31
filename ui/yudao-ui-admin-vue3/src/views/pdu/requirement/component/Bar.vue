@@ -45,6 +45,10 @@ const option = {
       label: {
         show: false // 不在线上显示标签
       },
+      itemStyle: {
+        borderRadius: 3// 设置圆角半径为10
+      },
+      padAngle: 10,
       data: dataWithPercent.value
     }
   ]

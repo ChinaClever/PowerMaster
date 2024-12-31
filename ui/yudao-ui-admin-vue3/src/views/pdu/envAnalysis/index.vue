@@ -242,7 +242,7 @@ const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
 const needFlush = ref(0) // 是否需要刷新图表
 const loading = ref(false) //  列表的加载中
-const detect = ref('11') as any// 监测点的值 默认全部
+const detect = ref('传感器1') as any// 监测点的值 默认全部
 const message = useMessage() // 消息弹窗
 const exportLoading = ref(false)
 const queryParams = reactive({
@@ -268,12 +268,11 @@ const carouselItems = ref([
     ]);//侧边栏轮播图图片路径
 // 传感器选项
 const sensorOptions = ref([
-  { value: "11", label: '前上'},
-  { value: "12", label: '前中'},
-  { value: "13", label: '前下'},
-  { value: "21", label: '后上'},
-  { value: "22", label: '后中'},
-  { value: "23", label: '后下'}
+  { value: "1", label: '传感器1'},
+  { value: "2", label: '传感器2'},
+  { value: "3", label: '传感器3'},
+  { value: "4", label: '传感器4'},
+  
 ]) 
 
 // 时间段快捷选项
@@ -892,16 +891,11 @@ const getNavList = async() => {
 /** 搜索按钮操作 */
 const handleQuery = () => {
     queryParams.pduId = undefined;
-    if (detect.value.length >= 2) {
+    
                 const firstChar = detect.value[0];
-                const secondChar = detect.value[1];
-                if (/^\d$/.test(firstChar)) {
+                const secondChar = detect.value[0];
                     queryParams.channel = Number(firstChar);
-                }
-                if (/^\d$/.test(secondChar)) {
                     queryParams.position = Number(secondChar);
-                }
-            }
     needFlush.value++;
 }
 
