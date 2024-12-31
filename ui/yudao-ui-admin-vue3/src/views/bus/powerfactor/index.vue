@@ -171,16 +171,17 @@
           <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="info" >                  
+            <!--<div class="info" >                  
               <div  v-if="item.apf != null">A: {{item.apf}}</div>
               <div  v-if="item.bpf != null">B: {{item.bpf}}</div>
               <div  v-if="item.cpf != null">C: {{item.cpf}}</div>
-            </div>
+            </div>-->
             <div class="icon">
               <div v-if=" item.totalPf != null ">
                 <span style="font-size: 20px;">{{ item.totalPf }}</span><br/>总功率因素
               </div>                    
             </div>
+            <div v-show="item.status != 0"><Bar :width="130" :height="100" :max="{L1:item.apf,L2:item.bpf,L3:item.cpf}" /></div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status">
@@ -275,6 +276,7 @@ import { IndexApi } from '@/api/bus/busindex'
 import { ElTree } from 'element-plus'
 import PFDetail from './component/PFDetail.vue'
 // import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
+import Bar from './Bar.vue'
 
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
@@ -1022,7 +1024,6 @@ onActivated(() => {
     padding-top: 40px;
     position: relative;
     .content {
-      padding-left: 20px;
       display: flex;
       align-items: center;
       .count_img {
@@ -1096,7 +1097,6 @@ onActivated(() => {
     padding-top: 40px;
     position: relative;
     .content {
-      padding-left: 20px;
       display: flex;
       align-items: center;
       .count_img {
@@ -1170,7 +1170,6 @@ onActivated(() => {
     padding-top: 40px;
     position: relative;
     .content {
-      padding-left: 20px;
       display: flex;
       align-items: center;
       .count_img {
@@ -1289,5 +1288,9 @@ onActivated(() => {
 
 :deep(.el-card){
   --el-card-padding:5px;
+}
+
+:deep(.el-tag){
+  margin-right:-60px;
 }
 </style>

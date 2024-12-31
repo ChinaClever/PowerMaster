@@ -55,7 +55,15 @@
           class="!w-130px"
         />
         </el-form-item>-->
-        <el-form-item label="网络地址" prop="devKey">
+        <el-form-item prop="devKey">
+          <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">
+            全部
+          </button>
+          <template v-for="(status, index) in statusList" :key="index">
+            <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+            <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+          </template>
+          <span>网络地址</span>
           <el-autocomplete
             v-model="queryParams.devKey"
             :fetch-suggestions="querySearch"
@@ -270,7 +278,7 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
-            <el-tag v-if="item.phasePowFactor != null" >功率因数</el-tag>
+            <el-tag v-if="item.phasePowFactor != null" type="success" >功率因数</el-tag>
             <el-tag v-else  type="info">离线</el-tag>
           </div>
           <button class="detail" @click="openPFDetail(item)"  v-if="item.status != null && item.status != 0">详情</button>
@@ -382,6 +390,9 @@ const loadAll = async () => {
   });
   return objectArray;
 }
+
+const butColor = ref(0);
+const onclickColor = ref(-1);
 
 const querySearch = (queryString: string, cb: any) => {
 
@@ -1283,6 +1294,37 @@ onActivated(() => {
         cursor: pointer;
       }
     }
+  }
+}
+
+.btnallSelected {
+  margin-right: 10px;
+  width: 58px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #409EFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.btnallNotSelected{
+  margin-right: 10px;
+  width: 58px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: #000000;
+  border: 1px solid #409EFF;
+  border-radius: 5px;
+  &:hover {
+    color: #7bc25a;
   }
 }
 

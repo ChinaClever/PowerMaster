@@ -124,10 +124,10 @@
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>      
         <el-table-column label="运行状态" align="center" prop="color" v-if="switchValue == 0">
           <template #default="scope" >
-              <el-tag type="info"  v-if="scope.row.color == 1">小电流不平衡</el-tag>
-              <el-tag type="success"  v-if="scope.row.color == 2">大电流不平衡</el-tag>
-              <el-tag type="warning" v-if="scope.row.color == 3">大电流不平衡</el-tag>
-              <el-tag type="danger" v-if="scope.row.color == 4">大电流不平衡</el-tag>
+              <el-tag type="info"  v-if="scope.row.color == 1">{{ statusList[3].name }}</el-tag>
+              <el-tag type="success"  v-if="scope.row.color == 2">{{ statusList[0].name }}</el-tag>
+              <el-tag type="warning" v-if="scope.row.color == 3">{{ statusList[1].name }}</el-tag>
+              <el-tag type="danger" v-if="scope.row.color == 4">{{ statusList[2].name }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="不平衡度(%)" align="center" prop="curUnbalance" width="130px" v-if="switchValue == 0">
@@ -192,7 +192,7 @@
             <el-button
               link
               type="primary"
-              @click="toDeatil(scope.row)"
+              @click="showDialogCur(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 0"
               style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
             >
@@ -496,7 +496,7 @@ const statusList = reactive([
     activeClass: 'btn_error error'
   },
   {
-    name: '小电流',
+    name: '小电流不平衡',
     selected: true,
     value: 1,
     cssClass: 'btn_offline',

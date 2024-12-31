@@ -108,10 +108,10 @@
         <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
         <el-table-column label="运行状态" align="center" prop="color" v-if="switchValue == 0">
           <template #default="scope" >
-              <el-tag type="info"  v-if="scope.row.color == 1">小电流不平衡</el-tag>
-              <el-tag type="success"  v-if="scope.row.color == 2">大电流不平衡</el-tag>
-              <el-tag type="warning" v-if="scope.row.color == 3">大电流不平衡</el-tag>
-              <el-tag type="danger" v-if="scope.row.color == 4">大电流不平衡</el-tag>
+              <el-tag type="info"  v-if="scope.row.color == 0">{{statusList[0].name}}</el-tag>
+              <el-tag type="success"  v-if="scope.row.color == 1">{{statusList[1].name}}</el-tag>
+              <el-tag type="warning" v-if="scope.row.color == 2">{{statusList[2].name}}</el-tag>
+              <el-tag type="danger" v-if="scope.row.color == 3">{{statusList[3].name}}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="不平衡度(%)" align="center" prop="curUnbalance" width="130px" v-if="switchValue == 0">
@@ -214,8 +214,8 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
-            <el-tag type="info"  v-if="item.status == 0">离线</el-tag>
-            <el-tag type="info"  v-if="item.color == 1">小电流不平衡</el-tag>
+            <el-tag type="info"  v-if="item.color == 0">离线</el-tag>
+            <el-tag type="info"  v-if="item.color == 1">{{statusList[3].name}}</el-tag>
             <el-tag type="success"  v-if="item.color == 2">{{ statusList[0].name }}</el-tag>
             <el-tag type="warning" v-if="item.color == 3">{{ statusList[1].name }}</el-tag>
             <el-tag type="danger" v-if="item.color == 4">{{ statusList[2].name }}</el-tag>
@@ -319,7 +319,7 @@ const statusList = reactive([
     activeClass: 'btn_error error'
   },
   {
-    name: '小电流',
+    name: '小电流不平衡',
     selected: true,
     value: 1,
     cssClass: 'btn_offline',
@@ -442,8 +442,8 @@ const getCurBalance = async () => {
 const getList = async () => {
   loading.value = true
   try {
-    console.log(queryParams)
     const data = await IndexApi.getBalancePage(queryParams)
+    console.log('data',data);
      var tableIndex = 0;
     // var lessFifteen = 0;
     // var greaterFifteen = 0;
@@ -580,16 +580,17 @@ const toDeatil = (row) =>{
 //}
 
 const handleSelectStatus = (index) => {
+  console.log('index',index);
   butColor.value = 1;
   onclickColor.value = index;
-  queryParams.status = [index];
+  queryParams.curUnbalanceStatus = [index];
   handleQuery();
 }
 
 const toggleAllStatus = () => {
   butColor.value = 0;
   onclickColor.value = -1;
-  queryParams.status = [];
+  queryParams.curUnbalanceStatus = [0,1,2,3,4];
   handleQuery();
 }
 

@@ -174,10 +174,9 @@
                   </el-table>
                 </div>
               </el-col>
-              <el-col v-if="serChartContainerWidth == 10" :span="serChartContainerWidth">  
-                
+              <el-col v-if="serChartContainerWidth == 10" :span="serChartContainerWidth">
                 <!-- <Radar width="29vw" height="25vh" :list="serverData" /> -->
-                <div >
+                <div>
                  <div ref="serChartContainer" id="serChartContainer" style="width: 60vh; height: 25vh"></div>
                </div>
               </el-col>
@@ -187,7 +186,7 @@
             <div class="page-conTitle" >
               电量分布
             </div>
-            <p v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，最大用电量{{eqData.maxEle}}kWh， 最大负荷发生时间{{eqData.maxEleTime}}</p>
+            <p v-if="!visControll.isSameDay">本周期内，共计使用电量{{eqData.totalEle}}kWh，{{eqData.maxEle == 0 ? '用电量' + eqData.maxEle : '最大用电量' + eqData.maxEle}}kWh， 最大负荷发生时间{{eqData.maxEleTime}}</p>
             <p v-if="visControll.isSameDay">本周期内，开始时电能为{{eqData.firstEq}}kWh，结束时电能为{{eqData.lastEq}}kWh， 电能增长{{(eqData.lastEq - eqData.firstEq).toFixed(1)}}kWh</p>
             <Bar class="Container" width="70vw" height="58vh" :list="eleList"/>
           </div>
@@ -786,6 +785,7 @@ const getList = async () => {
   }
 
   var PDU = await IndexApi.getBoxRedisByDevKey(queryParams);
+  console.log('PDU',PDU);
   PDU = JSON.parse(PDU)
   var temp = [] as any;
   var resultArray=[] as any;
@@ -830,10 +830,11 @@ const getList = async () => {
     if(resultArray.length==0){
       serChartContainerWidth.value = 0;
     }
+
   }else{
     serChartContainerWidth.value = 0;
   }
-
+  console.log('雷达图的数据',serverData.value);
   // var Box = await IndexApi.getBoxRedisByDevKey(queryParams);
   // Box = JSON.parse(Box)
   var temp = [] as any;

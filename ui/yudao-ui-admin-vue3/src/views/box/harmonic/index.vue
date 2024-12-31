@@ -5,6 +5,32 @@
         <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div>
         </div> -->
+        <div class="status" style="margin-top:20px;">
+          <div class="box">
+            <div class="top">
+              <div class="tag"></div>正常
+            </div>
+            <div class="value"><span class="number">0</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag empty"></div>离线
+            </div>
+            <div class="value"><span class="number">0</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag error"></div>告警
+            </div>
+            <div class="value"><span class="number">0</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <!--<div class="tag error"></div>-->总共
+            </div>
+            <div class="value"><span class="number">0</span>个</div>
+          </div>
+        </div>
         <div class="line"></div>
         <!-- <div class="status">
           <div class="box">
@@ -174,6 +200,7 @@
           <div class="status" v-if="valueMode == 0">
             <el-tag type="info" v-if="item.status == 0 " >{{statusList[0].name}}</el-tag>
             <el-tag v-else-if="item.status === 1" type="success" >{{statusList[1].name}}</el-tag>
+            <el-tag v-else-if="item.status === 2" type="success" >{{statusList[2].name}}</el-tag>
           </div>          
           <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 0" >详情</button>
         </div>
@@ -229,21 +256,21 @@ const statusNumber = reactive({
 
 const statusList = reactive([
   {
-    name: '<5%',
+    name: '离线',
     selected: true,
     value: 0,
+    cssClass: 'btn_offline',
+    activeClass: 'btn_offline offline'
+  },
+  {
+    name: '正常',
+    selected: true,
+    value: 1,
     cssClass: 'btn_normal',
     activeClass: 'btn_normal normal'
   },
   {
-    name: '5%-20%',
-    selected: true,
-    value: 1,
-    cssClass: 'btn_warn',
-    activeClass: 'btn_warn warn'
-  },
-  {
-    name: '>20%',
+    name: '告警',
     selected: true,
     value: 2,
     cssClass: 'btn_error',
@@ -359,12 +386,12 @@ const getList = async () => {
     console.log('data',data);
 
     //获取颜色范围
-    var range = await BoxHarmonicColorApi.getBoxHarmonicColor();
-    if(range != null){
-      statusList[0].name = '<' + range.rangeOne + '%';
-      statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
-      statusList[2].name = '>' + range.rangeFour + '%';
-    }
+    //var range = await BoxHarmonicColorApi.getBoxHarmonicColor();
+    //if(range != null){
+    //  statusList[0].name = '<' + range.rangeOne + '%';
+    //  statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
+    //  statusList[2].name = '>' + range.rangeFour + '%';
+    //}
 
     var tableIndex = 0;
 
@@ -459,14 +486,14 @@ const handleSelectStatus = (index) => {
   console.log('index',index);
   butColor.value = 1;
   onclickColor.value = index;
-  queryParams.color = [index];
+  queryParams.status = [index];
   handleQuery();
 }
 
 const toggleAllStatus = () => {
   butColor.value = 0;
   onclickColor.value = -1;
-  queryParams.color = [0,1,2];
+  queryParams.status = [0,1,2];
   handleQuery();
 }
 

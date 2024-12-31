@@ -71,7 +71,9 @@
             全部
           </button>
           <template v-for="(data,index) in statusList" :key="index">
+            <button v-if="butColor === 0" :class="[data.activeClass]" @click.prevent="handleSelectStatus(data.value)">{{data.name}}</button>
             <button
+              v-else-if="butColor === 1"
               :class="[onclickColor === data.value ? data.activeClass:data.cssClass]"
               @click.prevent="handleSelectStatus(data.value)"
               >{{ data.name }}</button
@@ -187,9 +189,9 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" v-if="valueMode == 0">
-            <el-tag type="info" v-if="item.atemStatus == null " >离线</el-tag>
-            <el-tag type="danger" v-else-if="item.atemStatus != 0 || item.btemStatus != 0  || item.ctemStatus != 0 " >告警</el-tag>
-            <el-tag type="success" v-else >正常</el-tag>
+            <el-tag type="info" v-if="item.status == 0 " >离线</el-tag>
+            <el-tag type="danger" v-else-if="item.status == 2" >告警</el-tag>
+            <el-tag type="success" v-else-if="item.status == 1" >正常</el-tag>
           </div>
           <button class="detail" @click="openTemDetail(item)" v-if="item.status != null && item.status != 0"  >详情</button>
         </div>
@@ -207,8 +209,8 @@
 
       <el-dialog v-model="detailVis" title="温度详情"  width="70vw" height="58vh">
         <el-row class="custom-row">
-          <el-tag style="margin-left: 6vw; margin-top: -130px">{{ location }}</el-tag>
-          <div style="margin-left: -14vw;">
+          <el-tag style="margin-left: 100px; margin-top: -130px">{{ location }}</el-tag>
+          <div style="margin-left: -170px;">
             日期:
             <el-date-picker
               v-model="queryParams.oldTime"
@@ -222,7 +224,7 @@
           
           
           <el-button
-            style="margin-left: 1vw;"
+            style="margin-left: 20px;"
             @click="subtractOneDay();handleDayPick()" 
             :type=" 'primary'"
           >
@@ -358,6 +360,7 @@ const loadAll = async () => {
 }
 
 const handleSelectStatus = (index) => {
+  console.log('index',index);
   butColor.value = 1;
   onclickColor.value = index;
   queryParams.status = [index];
@@ -543,9 +546,8 @@ const getList = async () => {
   try {
     const data = await IndexApi.getBoxTemPage(queryParams);
     console.log('queryParams',queryParams);
-    const res = await IndexApi.getBoxIndexStatistics();
     console.log('data',data);
-    console.log('res',res);
+    const res = await IndexApi.getBoxIndexStatistics();
  
     // 初始情况下，使用 API 返回的数据
     let processedList = data.list.map((obj, index) => {

@@ -143,7 +143,7 @@
       </el-form>      
     </template>
     <template #Content>
-      <div v-show="switchValue == 3 || switchValue == 4 && list.length > 0" style="height:720px;margin-top:-10px;overflow-y: auto;">
+      <div v-if="switchValue == 3 || switchValue == 4 && list.length > 0" style="height:720px;margin-top:-10px;">
         <el-table v-if="switchValue == 3" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border=true>
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
@@ -238,7 +238,7 @@
         v-model:limit="queryDeletedPageParams.pageSize"
         @pagination="getDeletedList"
       />        
-      <div v-show="switchValue == 2  && list.length > 0" class="arrayContainer">
+      <div v-if="switchValue == 2  && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
@@ -254,12 +254,12 @@
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
             <el-tag type="info"  v-if="item.color == 0 && item.status != 0">{{statusList[0].name}}</el-tag>
-            <el-tag type="success"  v-else-if="item.color == 1 && item.status != 0">{{(statusList[1].name)}}</el-tag>
-            <el-tag type="primary"  v-else-if="item.color == 2 && item.status != 0">{{(statusList[2].name)}}</el-tag>
-            <el-tag type="warning" v-else-if="item.color == 3 && item.status != 0">{{(statusList[3].name)}}</el-tag>
-            <el-tag type="danger" v-else-if="item.color == 4 && item.status != 0">{{(statusList[4].name)}}</el-tag>
+            <el-tag type="success"  v-else-if="item.color == 1 && item.status != 0">{{statusList[1].name.slice(3,10)}}</el-tag>
+            <el-tag type="primary"  v-else-if="item.color == 2 && item.status != 0">{{statusList[2].name.slice(3,10)}}</el-tag>
+            <el-tag type="warning" v-else-if="item.color == 3 && item.status != 0">{{statusList[3].name.slice(3,10)}}</el-tag>
+            <el-tag type="danger" v-else-if="item.color == 4 && item.status != 0">{{statusList[4].name.slice(3,10)}}</el-tag>
           </div>
-          <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 0 && item.color != 0" >详情</button>
+          <button class="detail" @click="toDetail(item)" v-if="item.color !== 0" >详情</button>
         </div>
       </div>
       <Pagination

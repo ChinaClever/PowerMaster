@@ -232,6 +232,7 @@ const getRedisData = async () => {
 
 const getLoadRateList = async () =>{
     const data = await IndexApi.getBusLoadRateLine(queryParams);//oldtime newtime id
+    console.log('负载率曲线的data',data);
     loadRateList.value = data;
     if(loadRateList.value?.time != null && loadRateList.value?.time?.length > 0){
         visContro.value.loadRateVis = true;
@@ -303,6 +304,7 @@ const handleQuery = async () => {
 }
 
 const changeTime = async (data) => {
+    console.log('changeTime',data);
     queryParams.timeGranularity = data;   
     handleQuery();
 }

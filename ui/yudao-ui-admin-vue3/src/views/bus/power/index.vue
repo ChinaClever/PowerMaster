@@ -78,7 +78,7 @@
         v-show="switchValue !== 4"  
       > <el-form-item>
         <el-form-item>
-          <el-button style="height:35px;" :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">全部</el-button>
+          <el-button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">全部</el-button>
           <template v-for="(status,index) in statusList" :key="index">
             <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
             <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
@@ -904,12 +904,12 @@ const getNavList = async() => {
 }
 
 const toDeatil = (row) =>{
-  const devKey = row.devKey;
-  const busId = row.busId;
-  const location = row.location != null ? row.location : row.devKey
-  const busName = row.busName;
-  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location , busName }})
-  // push({path: '/bus/busmonitor/buspowerdetail'})
+  //const devKey = row.devKey;
+  //const busId = row.busId;
+  //const location = row.location != null ? row.location : row.devKey
+  //const busName = row.busName;
+  //push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location , busName }})
+  push({path: '/bus/busmonitor/buspowerdetail'})
 }
 
 // const openNewPage = (scope) => {
@@ -1560,7 +1560,7 @@ onActivated(() => {
 .btnallSelected {
   margin-right: 10px;
   width: 58px;
-  height: 32px;
+  height: 35px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1574,7 +1574,7 @@ onActivated(() => {
 .btnallNotSelected{
   margin-right: 10px;
   width: 58px;
-  height: 32px;
+  height: 35px;
   cursor: pointer;
   display: flex;
   align-items: center;

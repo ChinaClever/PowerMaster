@@ -81,7 +81,13 @@
           class="!w-130px"
         />
         </el-form-item>-->
-        <el-form-item label="网络地址" prop="devKey">
+        <el-form-item prop="devKey">
+          <el-button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">全部</el-button>
+          <template v-for="(status, index) in statusList" :key="index">
+            <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
+            <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
+          </template> 
+          <span>网络地址：</span>
           <el-autocomplete
             v-model="queryParams.devKey"
             :fetch-suggestions="querySearch"
@@ -728,6 +734,35 @@ const outletLineText = ref(['输出位1：','输出位2：','输出位3：']);
 const phaseText = ref([['A相电流(A)','B相电流(A)','C相电流(A)'],['A相电压(V)','B相电压(V)','C相电压(V)'],
 ['A相有功功率(kW)','B相有功功率(kW)','C相有功功率(kW)'],['A相无功功率(kVar)','B相无功功率(kVar)','C相无功功率(kVar)']]);
 
+const butColor = ref(0);
+const onclickColor = ref(-1);
+
+const statusList = reactive([
+  {
+    name: '离线',
+    selected: true,
+    value: 0,
+    cssClass: 'btn_offline',
+    activeClass: 'btn_offline offline'
+  },
+  {
+    name: '正常',
+    selected: true,
+    value: 1,
+    cssClass: 'btn_normal',
+    activeClass: 'btn_normal normal',
+    color: '#3bbb00'
+  },
+  {
+    name: '告警',
+    selected: true,
+    value: 2,
+    cssClass: 'btn_error',
+    activeClass: 'btn_error error',
+    color: '#fa3333'
+  }
+])
+
 const devKeyList = ref([]);
 const statusNumber = reactive({
   normal : 0,
@@ -1089,9 +1124,26 @@ const handleQuery = () => {
   getList();
 }
 
+const handleSelectStatus = (index) => {
+  butColor.value = 1;
+  onclickColor.value = index;
+  queryParams.status = [index];
+  handleQuery();
+}
+
+const toggleAllStatus = () => {
+  butColor.value = 0;
+  onclickColor.value = -1;
+  queryParams.status = [];
+  handleQuery();
+}
+
 /** 重置按钮操作 */
 const resetQuery = () => {
   queryFormRef.value.resetFields();
+  butColor.value = 0;
+  queryParams.status = [];
+  onclickColor.value = -1;
   handleQuery();
 }
 
@@ -1669,6 +1721,37 @@ onActivated(() => {
         cursor: pointer;
       }
     }
+  }
+}
+
+.btnallSelected {
+  margin-right: 10px;
+  width: 58px;
+  height: 35px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #409EFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.btnallNotSelected{
+  margin-right: 10px;
+  width: 58px;
+  height: 35px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: #000000;
+  border: 1px solid #409EFF;
+  border-radius: 5px;
+  &:hover {
+    color: #7bc25a;
   }
 }
 

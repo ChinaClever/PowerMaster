@@ -5,6 +5,32 @@
         <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
         </div> -->
+        <div class="status" style="margin-top:20px;">
+          <div class="box">
+            <div class="top">
+              <div class="tag"></div>正常
+            </div>
+            <div class="value"><span class="number">0</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag empty"></div>离线
+            </div>
+            <div class="value"><span class="number">0</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <div class="tag error"></div>告警
+            </div>
+            <div class="value"><span class="number">0</span>个</div>
+          </div>
+          <div class="box">
+            <div class="top">
+              <!--<div class="tag error"></div>-->总共
+            </div>
+            <div class="value"><span class="number">0</span>个</div>
+          </div>
+        </div>
         <div class="line"></div>
         <!-- <div class="status">
           <div class="box">
@@ -308,6 +334,7 @@
           <div class="status" v-if="valueMode == 0">
             <el-tag type="info" v-if="item.status === 0 " >离线</el-tag>
             <el-tag v-else-if="item.status === 1" type="success">正常</el-tag>
+            <el-tag v-else-if="item.status === 2" type="danger">告警</el-tag>
           </div>          
           <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 0">详情</button>
         </div>
@@ -1222,5 +1249,9 @@ onActivated(() => {
 
 :deep(.el-card){
   --el-card-padding:5px;
+}
+
+:deep(.el-tag){
+  margin-right:-60px;
 }
 </style>
