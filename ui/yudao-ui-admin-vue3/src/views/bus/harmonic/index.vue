@@ -10,25 +10,25 @@
             <div class="top">
               <div class="tag"></div>正常
             </div>
-            <div class="value"><span class="number">0</span>个</div>
+            <div class="value"><span class="number">{{ statusNumber.normal }}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag empty"></div>离线
             </div>
-            <div class="value"><span class="number">0</span>个</div>
+            <div class="value"><span class="number">{{ statusNumber.offline }}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag error"></div>告警
             </div>
-            <div class="value"><span class="number">0</span>个</div>
+            <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <!--<div class="tag error"></div>-->总共
             </div>
-            <div class="value"><span class="number">0</span>个</div>
+            <div class="value"><span class="number">{{ busTotal }}</span>个</div>
           </div>
         </div>
         <div class="line"></div>
@@ -348,7 +348,7 @@
         @pagination="getList"
       />
       <template v-if="list.length == 0 && switchValue != 3">
-        <el-empty description="暂无数据" :image-size="300" />
+        <el-empty description="暂无数据" :image-size="595" />
       </template>
     </template>
   </CommonMenu>
@@ -381,10 +381,18 @@ const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(0)
 const valueMode = ref(0)
-
 const devKeyList = ref([])
+
 const butColor = ref(0);
 const onclickColor = ref(-1);
+
+const busTotal = ref(0)
+const statusNumber = reactive({
+  normal : 0,
+  warn : 0,
+  alarm : 0,
+  offline : 0
+})
 
 const statusList = reactive([
   {
@@ -508,8 +516,38 @@ const queryParams = reactive({
   status:undefined,
   busDevKeyList : [],
 })as any
+const queryParamsAll = reactive({
+  pageNo: 1,
+  pageSize: -1,
+  devKey: undefined,
+  createTime: [],
+  cascadeNum: undefined,
+  serverRoomData:undefined,
+  status:undefined,
+  cabinetIds : [],
+  isDeleted: 0,
+})as any
 const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
+
+const allList = ref([
+  { 
+    id:null,
+    status:null,
+    apparentPow:null,
+    pow:null,
+    ele:null,
+    devKey:null,
+    location:null,
+    dataUpdateTime : "",
+    pduAlarm:"",
+    pf:null,
+    acur : null,
+    bcur : null,
+    ccur : null,
+    curUnbalance : null,
+  }
+]) as any// 列表的数据
 
 /** 查询列表 */
 const getList = async () => {
@@ -537,6 +575,40 @@ const getList = async () => {
     total.value = data.total
   } finally {
     loading.value = false
+  }
+}
+
+const getListAll = async () => {
+  try {
+    var normal = 0;
+    var offline = 0;
+    var alarm = 0;
+    var warn = 0;
+    const allData = await await IndexApi.getBusRedisPage(queryParamsAll)
+    console.log("allData",allData)
+    allList.value = allData.list
+    allList.value.forEach((objAll) => {
+      if(objAll?.dataUpdateTime == null && objAll?.acur == null && objAll?.bcur == null && objAll?.ccur == null){
+        objAll.status = 0;
+        offline++;
+        return;
+      }  
+      if(objAll?.status == 1){
+        normal++;
+      } else if (objAll?.status == 3){
+        warn++;
+      } else if (objAll?.status == 2){
+        alarm++;
+      }          
+    });
+    //设置左边数量
+    statusNumber.normal = normal;
+    statusNumber.offline = offline;
+    statusNumber.alarm = alarm;
+    statusNumber.warn = warn;
+    busTotal.value = allData.total
+  } catch (error) {
+    
   }
 }
 
@@ -675,7 +747,9 @@ onMounted(async () => {
   devKeyList.value = await loadAll();
   getList()
   getNavList();
+  getListAll();
   flashListTimer.value = setInterval((getListNoLoading), 5000);
+  flashListTimer.value = setInterval((getListAll), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -698,6 +772,7 @@ onActivated(() => {
   getNavList();
   if(!firstTimerCreate.value){
     flashListTimer.value = setInterval((getListNoLoading), 5000);
+    flashListTimer.value = setInterval((getListAll), 5000);
   }
 })
 </script>

@@ -271,7 +271,7 @@
         @pagination="getList"
       />
       <template v-if="list.length == 0 && switchValue == 2 && showPagination == 0">
-        <el-empty description="暂无数据" :image-size="300" />
+        <el-empty description="暂无数据" :image-size="595" />
       </template>
     </template>
   </CommonMenu>

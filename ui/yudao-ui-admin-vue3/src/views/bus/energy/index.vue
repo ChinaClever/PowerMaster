@@ -125,7 +125,7 @@
           @pagination="getTableData(false)"
         />
         <template v-if="tableData.length == 0 && switchValue == 0">
-          <el-empty description="暂无数据" :image-size="300" />
+          <el-empty description="暂无数据" :image-size="595" />
         </template>
       </div>
     </template>
