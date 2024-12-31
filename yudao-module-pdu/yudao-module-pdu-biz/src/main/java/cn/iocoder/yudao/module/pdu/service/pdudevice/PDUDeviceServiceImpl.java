@@ -1134,7 +1134,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
     @Override
     public int restorePDU(String devKey) throws Exception {
-        PduIndex index = pDUDeviceMapper.selectOne("dev_key", devKey);
+        PduIndex index = pDUDeviceMapper.selectOne("pdu_key", devKey);
         if (Objects.isNull(index)) {
             return -1;
         }
