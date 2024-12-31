@@ -36,6 +36,7 @@ import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
@@ -78,6 +79,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.CREATE_TIME;
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY_PDU;
@@ -516,7 +518,8 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
+            List<Double> reactiveList = calculateReactivePower(apparentList, activeList);
+            result.put("reactiveList", reactiveList);
             result.put("apparentList", apparentList);
             result.put("activeList", activeList);
             result.put("factorList", factorList);
@@ -528,6 +531,18 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         }
     }
 
+    public static List<Double> calculateReactivePower(List<Double> apparentList, List<Double> activeList) {
+        if (apparentList.size()!= activeList.size()) {
+            throw new IllegalArgumentException("apparentList和activeList的长度必须相同");
+        }
+        return IntStream.range(0, apparentList.size())
+                .mapToDouble(i -> {
+                    double reactivePower = Math.sqrt(Math.pow(apparentList.get(i), 2) - Math.pow(activeList.get(i), 2));
+                    return reactivePower < 0? 0 : reactivePower;
+                })
+                .boxed()
+                .collect(Collectors.toList());
+    }
 
     @Override
     public Map getPduHdaLineHisdataKey(String devKey, String type) {
@@ -703,6 +718,10 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
     @Override
     public PduBalanceDeatilRes getPDUDeviceDetail(String key) {
+        QueryWrapper<PduIndex> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("pdu_key", key);
+        PduIndex pduIndex = pDUDeviceMapper.selectOne(queryWrapper);
+        Integer curUnbalanceStatus = pduIndex.getCurUnbalanceStatus();
         PduBalanceDeatilRes result = new PduBalanceDeatilRes();
         PDUCurbalanceColorDO PDUCurbalanceColorDO = PDUCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
         ValueOperations ops = redisTemplate.opsForValue();
@@ -754,7 +773,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
                 color = 1;
             }
         }
-        result.setColor(color);
+        result.setColor(curUnbalanceStatus);
         return result;
     }
 

@@ -58,7 +58,8 @@
             全部 
           </button>
           <template v-for="(status, index) in statusList" :key="index">
-            <button :class="[onclickColor === status.value ? status.activeClass:status.activeClass]" @click.prevent="handleSelectStatus1(status.value)">{{status.name}}</button>
+            <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus1(status.value)">{{status.name}}</button>
+            <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus1(status.value)">{{status.name}}</button>
           </template>
           <el-button
           v-if="switchValue == 2 || switchValue == 3"
@@ -331,30 +332,29 @@
         </div>
       </div>
 
-      <el-dialog v-model="dialogVisibleVol" @close="handleClose" width="70%">
+      <el-dialog v-model="dialogVisibleVol" @close="handleClose" width="50%" :destroy-on-close="true" style="background-color: #f1f1f1;">
         <template #header>
-          <div><h3>均衡配电详情</h3></div> 
-          <div>所在位置：{{location  }} 
-            网络地址：{{vollocation}} 
-            <!-- <span style="padding-left: 530px;">更新时间: {{ dataUpdateTime }} </span> -->
-          </div>
           
+          <div style="display: flex; align-items: center;">
+    <span style="font-size: 20px; font-weight: bold;margin-top: 10px;">均衡配电详情</span>
+    <span style="margin-left: 15px;margin-top: 13px;">所在位置：{{ location }}</span>
+    <span style="margin-left: 15px;margin-top: 13px;">网络地址：{{ vollocation }}</span>
+    <!-- <span style="padding-left: 530px; margin-left: 10px;">更新时间: {{ dataUpdateTime }} </span> -->
+  </div>
         </template>
-       
          <!-- 自定义的主要内容 -->
-        <div class="custom-content">
-          <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
-            <div class="IechartBar" style=" width: 100px;height: 90px">
-              <Bar :max="barMaxValues" />
-            </div>
-          </el-card>
+        <div class="custom-content" style="margin-top:-10px">
           <el-card class="cardChilc" shadow="hover">
-            <div class="IechartBar">
-              <Echart :options="ALineOption" :height="300" />
-            </div>
-          </el-card>
-          <el-card class="cardChilc" shadow="hover">
-            <div class="box" :style="{ borderColor: colorList[balanceObj.colorIndex].color }">
+            <div>
+              <div>
+    <span style="font-size: 20px; font-weight: bold;">
+      {{ colorList[balanceObj.colorIndex].name }}
+    </span>
+</div>
+          </div>
+              <div class="status1"></div>
+            <curUnblance :max="balanceObj.imbalanceValueA" :customColor="colorList[balanceObj.colorIndex].color" />
+            <!-- <div class="box" :style="{ borderColor: colorList[balanceObj.colorIndex].color }">
               <div class="value">{{ balanceObj.imbalanceValueA }}%</div>
               <div
                 class="day"
@@ -374,22 +374,51 @@
               >
                 <div @click.prevent="" class="question">?</div>
               </el-tooltip>
-            </div>
+            </div> -->
           </el-card>
-        </div>
-        <div class="custom-content">
-          <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
-            <div class="IechartBar">
-              <Vol :max="volMaxValues" />
+          <el-card class="cardChilc" style="margin: 0 10px" shadow="hover" >
+            <div><span style="font-size: 20px; font-weight: bold;">相电流</span></div>
+            <div class="IechartBar" style=" width: 50%;height: 100%;display: inline-block; right: 0;margin-top: 30px;">
+              <Bar :max="barMaxValues" width="300px" height="300px"/>
             </div>
+            <div style="display: inline-block;
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            margin-top: 100px;
+            margin-left:80px">
+          <div class="label-container">
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;" >{{barMaxValues.L1}}A</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{barMaxValues.L2}}A</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{barMaxValues.L3}}A</span>
+          </div>
+        </div>
           </el-card>
           <el-card class="cardChilc" shadow="hover">
-            <div class="IechartBar" >
-              <Echart :options="BLineOption" :height="300"/>
+            <div >
+    <span style="font-size: 20px;  font-weight: bold; ">
+      电流趋势
+    </span>
+</div>
+            <div class="IechartBar">
+              <Echart :options="ALineOption" :height="300" style="margin-top:10px" />
             </div>
           </el-card>
+          
+        </div>
+        <div class="custom-content" style="margin-top: 20px;">
           <el-card  class="cardChilc" shadow="hover">
-            <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
+            <div>
+    <span style="font-size: 20px; font-weight: bold; color:{{ color: colorList[4].color }}">
+      电压不平衡
+    </span>
+</div>
+            <volUnblance :max="balanceObj.imbalanceValueB" :customColor="colorList[4].color" />
+            <!-- <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
               <div class="value">{{balanceObj.imbalanceValueB}}%</div>
               <div class="day" :style="{backgroundColor: colorList[0].color}">电压不平衡</div>
               <el-tooltip
@@ -400,8 +429,41 @@
               >
                 <div @click.prevent="" class="question">?</div>
               </el-tooltip>
+            </div> -->
+          </el-card>
+          <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
+            <div><span style="font-size: 20px; font-weight: bold;">相电压</span></div>
+            <div class="IechartBar" style=" width: 50%;height: 100%;display: inline-block; right: 0;margin-top: 30px;margin-left: -25px;">
+              <Vol :max="volMaxValues" width="300px" height="300px"/>
+            </div>
+            <div style="display: inline-block;
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            margin-top: 110px;
+            margin-left:100px">
+          <div class="label-container">
+            <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ua</span><span style="font-size:16px;">{{volMaxValues.L1}}V</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#119CB5;">•</span><span style="width:50px;font-size:14px;">Ub</span><span style="font-size:16px;">{{volMaxValues.L2}}V</span>
+          </div>
+          <div class="label-container">
+            <span class="bullet" style="color:#45C0C9;">•</span><span style="width:50px;font-size:14px;">Uc</span><span style="font-size:16px;">{{volMaxValues.L3}}V</span>
+          </div>
+        </div>
+          </el-card>
+          <el-card class="cardChilc" shadow="hover">
+            <div>
+    <span style="font-size: 20px; font-weight: bold; ">
+      电压趋势
+    </span>
+</div>
+            <div class="IechartBar" >
+              <Echart :options="BLineOption" :height="300" style="margin-top:10px"/>
             </div>
           </el-card>
+          
         </div>
       </el-dialog>
      </div>
@@ -426,13 +488,15 @@
 // import { dateFormatter } from '@/utils/formatTime'
 import download from '@/utils/download'
 import { PDUDeviceApi } from '@/api/pdu/pdudevice'
-import CurbalanceColorForm from './CurbalanceColorForm.vue'
+import CurbalanceColorForm from './component/CurbalanceColorForm.vue'
 import { ElTree } from 'element-plus'
 import { CabinetApi } from '@/api/cabinet/info'
 import { CurbalanceColorApi } from '@/api/pdu/curbalancecolor'
 import { EChartsOption } from 'echarts'
-import Bar from './Bar.vue'
-import Vol from './Vol.vue'
+import Bar from './component/Bar.vue'
+import Vol from './component/Vol.vue'
+import curUnblance from './component/curUnblance.vue'
+import volUnblance from './component/volUnblance.vue'
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
@@ -507,6 +571,10 @@ const colorList = [
   {
     name: '大电流不平衡',
     color: '#fa3333'
+  },
+  {
+    name: '电压不平衡',
+    color: '#0B758A'
   }
 ]
 
@@ -538,10 +606,7 @@ const ABarOption = ref<EChartsOption>({})
 const BBarOption = ref<EChartsOption>({})
 
 const ALineOption = ref<EChartsOption>({
-  title: {
-    text: '电流趋势',
-    left: 'center'
-  },
+  
   tooltip: {
     trigger: 'axis'
   },
@@ -563,10 +628,7 @@ const ALineOption = ref<EChartsOption>({
 })
 
 const BLineOption = ref<EChartsOption>({
-  title: {
-    text: '电压趋势',
-    left: 'center'
-  },
+  
   tooltip: {
     trigger: 'axis'
   },
@@ -876,6 +938,8 @@ const barMaxValues = ref({
   L3: 0
 });
 
+const curUnblance1 = ref()
+
 const volMaxValues = ref({
   L1: 0,
   L2: 0,
@@ -886,7 +950,7 @@ const showDialogVol = (item) => {
   vollocation.value = item.devKey
   getBalanceDetail(item)
   getBalanceTrend(item)
-
+  curUnblance1.value = balanceObj.imbalanceValueA
 // 将 item 的属性赋值给 barMaxValues
 barMaxValues.value = {
     L1: item.acur.toFixed(2),
@@ -1127,6 +1191,8 @@ const getNavList = async () => {
 }
 
 import { useRouter } from 'vue-router'
+import { ITEM_RENDER_EVT } from 'element-plus/es/components/virtual-list/src/defaults'
+import { iteratee } from 'lodash-es'
 
 const router = useRouter()
 
@@ -1890,5 +1956,13 @@ onActivated(() => {
     margin-right: 5px;
   }
 }
-
+.bullet {
+  font-size: 34px; /* 根据需要调整大小 */
+  margin-right: 8px; /* 设置小圆点与后续文本之间的间距 */
+}
+.label-container {
+      display: flex; /* 使用 Flexbox 布局 */
+      align-items: center; /* 垂直居中 */
+      color:#000;
+    }
 </style>

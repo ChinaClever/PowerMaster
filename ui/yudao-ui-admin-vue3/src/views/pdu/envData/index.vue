@@ -48,7 +48,7 @@
         :inline="true"
         label-width="auto"
       >
-        <el-form-item label="监测点" prop="detect">
+        <el-form-item label="传感器ID" prop="detect">
           <el-select
             v-model="detect"
             class="!w-130px"
@@ -107,7 +107,7 @@
 
         </el-form-item> 
 
-        <el-button type="success" plain @click="handleExport" :loading="exportLoading" style="float: right;margin-right: 10px;">
+        <el-button type="success" plain @click="handleExport" :loading="exportLoading" style="float:right;">
             <Icon icon="ep:download" class="mr-5px" /> 导出
           </el-button>
         <!-- </div> -->
@@ -255,17 +255,15 @@ const shortcuts = [
 // 传感器选项
 const sensorOptions = ref([
   { value: 'all', label: '全部'},
-  { value: "11", label: '前上'},
-  { value: "12", label: '前中'},
-  { value: "13", label: '前下'},
-  { value: "21", label: '后上'},
-  { value: "22", label: '后中'},
-  { value: "23", label: '后下'}
+  { value: "1", label: '传感器1'},
+  { value: "2", label: '传感器2'},
+  { value: "3", label: '传感器3'},
+  { value: "4", label: '传感器4'},
 ])
 
 //筛选选项
 const props = { multiple: true}
-const defaultOptionsCol = ref([["tem"], ["hum"]])
+const defaultOptionsCol = ref([["tem"], ["hum"],["sensor_id"]])
 const optionsCol = ref([
   { value: "tem", label: '温度'},
   { value: "hum", label: '湿度'},
@@ -384,7 +382,7 @@ const tableColumns = ref([
   { label: '网络地址', align: 'center', prop: 'location' , istrue:false, width: '180px'},
   { label: '时间', align: 'center', prop: 'create_time', width: '200px', formatter: formatTime, istrue:true},
   { label: '监测点', align: 'center', slot: 'detect' , istrue: true},
-  { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:false, width: '120px'},
+  { label: '传感器ID', align: 'center', prop: 'sensor_id' , istrue:true, width: '120px'},
   { label: '温度(℃)', align: 'center', prop: 'tem_value', istrue:true, formatter: formatData},
   { label: '湿度(%RH)', align: 'center', prop: 'hum_value' , istrue:true, formatter: formatData1},
   { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '120px'},
@@ -482,16 +480,16 @@ const disabledDate = (date) => {
 const handleQuery = () => {
     queryParams.pageNo = 1
     if (detect.value != 'all'){
-      if (queryParams.cabinetIds?.length != 1){
-        ElMessage.error('仅选定一个机柜时可以筛选监测点！')
-        detect.value = 'all'
-        queryParams.channel = undefined
-        queryParams.position = undefined
-          return
-      }
+      // if (queryParams.cabinetIds?.length != 1){
+      //   ElMessage.error('仅选定一个机柜时可以筛选监测点！')
+      //   detect.value = 'all'
+      //   queryParams.channel = undefined
+      //   queryParams.position = undefined
+      //     return
+      // }
 
       queryParams.channel = Number(detect.value.split('')[0])
-      queryParams.position = Number(detect.value.split('')[1])
+      queryParams.position = Number(detect.value.split('')[0])
     }else{
       queryParams.channel = undefined
       queryParams.position = undefined

@@ -1114,14 +1114,10 @@ const initChart =  () => {
     serChart = echarts.init(serChartContainer.value);
     serChart.setOption({
       legend: {
-                data: ['电流','视在功率', '有功功率'],
+                data: ['电流'],
                 selected: { // 默认选择状态
-                  '电流': true, // 默认选中电能
-                  '视在功率': false,
-                  '有功功率': false
-                           },
-                bottom: 0,
-                right: 0,
+                  '电流': true, },
+                  
               },
       grid: {
                 bottom: 0,
@@ -1137,24 +1133,6 @@ const initChart =  () => {
           itemStyle: {
             color: 'skyblue'
           }
-        },
-        { 
-          name: 'PDU输出位视在功率', 
-          type: 'radar', 
-          label: { show: true, position: 'inside' } ,
-          data: [ { value: serverData.value.powapparent, name: '视在功率' }, ],
-          itemStyle: {
-            color: '#90EE90'
-          }
-        },
-        { 
-          name: 'PDU输出位有功功率', 
-          type: 'radar', 
-          label: { show: true, position: 'inside' } ,
-          data: [ { value: serverData.value.powvalue, name: '有功功率' }, ],
-          itemStyle: {
-            color: '#FFB6C1'
-          } 
         }
       ]
     });
@@ -1183,27 +1161,22 @@ const initChart =  () => {
       // }
       if(selected['电流']&&!selected['视在功率']&&!selected['有功功率']){
         selected['电流'] = true;
-        selected['视在功率'] = false;
-        selected['有功功率'] = false;
         num=0;
         indicator.value.nameAndMax=serverData.value.nameAndMax
       }
       else if(num%2==0){
         selected['电流'] = true;
-        selected['视在功率'] = false;
-        selected['有功功率'] = false;
         indicator.value.nameAndMax=serverData.value.nameAndMax
       }
       else{
         selected['电流'] = false;
-        selected['有功功率'] = false;
         indicator.value.nameAndMax=serverData1.value.nameAndMax
       }
       
 
       // 更新图表配置
       if(serChart){
-      serChart.setOption({legend: {selected: selected},radar: { indicator: indicator.value.nameAndMax}});
+      serChart.setOption({legend: {selected: selected},radar: { indicator: indicator.value.nameAndMax,max: 16}});
       }
 });
         // serverData.value.nameAndMax=[]
