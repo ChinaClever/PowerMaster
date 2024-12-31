@@ -31,6 +31,7 @@ public interface BoxIndexCopyMapper extends BaseMapperX<BoxIndex> {
                 .eqIfPresent(BoxIndex::getNodeId, reqVO.getNodeIp())
                 .eqIfPresent(BoxIndex::getIsDeleted, reqVO.getIsDeleted())
                 .inIfPresent(BoxIndex::getCurUnbalanceStatus,reqVO.getCurUnbalanceStatus())
+                .inIfPresent(BoxIndex::getRunStatus,reqVO.getStatus())
                 .eqIfPresent(BoxIndex::getBoxType,0)
                 .betweenIfPresent(BoxIndex::getCreateTime, reqVO.getCreateTime())
                 .orderByAsc(BoxIndex::getId));

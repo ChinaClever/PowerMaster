@@ -17,6 +17,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -45,6 +46,7 @@ import java.util.stream.Collectors;
 import static cn.iocoder.yudao.framework.common.constant.FieldConstant.REDIS_KEY_AISLE;
 import static cn.iocoder.yudao.module.bus.constant.BusConstants.SPLIT_KEY;
 
+@Log4j2
 @Service
 public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionService {
 
@@ -97,56 +99,60 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
 
     @Override
     public PageResult<Object> getEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
-        // 搜索源构建对象
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        // 设置要排除的字段
-        searchSourceBuilder.fetchSource(null, new String[]{"id", "bill_value", "bill_mode", "bill_period"});
-        int pageNo = pageReqVO.getPageNo();
-        int pageSize = pageReqVO.getPageSize();
-        int index = (pageNo - 1) * pageSize;
-        searchSourceBuilder.from(index);
-        // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-        if (index + pageSize > 10000) {
-            searchSourceBuilder.size(10000 - index);
-        } else {
-            searchSourceBuilder.size(pageSize);
-        }
-        searchSourceBuilder.trackTotalHits(true);
-        searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
-        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
-        if (pageReqVO.getTimeRange() != null && pageReqVO.getTimeRange().length != 0) {
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(pageReqVO.getTimeRange()[0])
-                    .to(pageReqVO.getTimeRange()[1]));
-        }
-        String[] devkeys = pageReqVO.getDevkeys();
-        if (devkeys != null) {
-            Integer[] busIds = getBusIdsByDevkeys(devkeys);
-            searchSourceBuilder.query(QueryBuilders.termsQuery("bus_id", busIds));
-        }
-        // 搜索请求对象
-        SearchRequest searchRequest = new SearchRequest();
-        if ("day".equals(pageReqVO.getGranularity())) {
-            searchRequest.indices("bus_eq_total_day");
-        } else if ("week".equals(pageReqVO.getGranularity())) {
-            searchRequest.indices("bus_eq_total_week");
-        } else {
-            searchRequest.indices("bus_eq_total_month");
-        }
-        searchRequest.source(searchSourceBuilder);
-        // 执行搜索,向ES发起http请求
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-        // 搜索结果
-        List<Map<String, Object>> mapList = new ArrayList<>();
-        SearchHits hits = searchResponse.getHits();
-        hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
-        // 匹配到的总记录数
-        Long totalHits = hits.getTotalHits().value;
         // 返回的结果
         PageResult<Object> pageResult = new PageResult<>();
-        pageResult.setList(busHistoryDataService.getLocationsAndNameByBusIds(mapList))
-                .setTotal(totalHits);
-
+        try {
+            // 搜索源构建对象
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            // 设置要排除的字段
+            searchSourceBuilder.fetchSource(null, new String[]{"id", "bill_value", "bill_mode", "bill_period"});
+            int pageNo = pageReqVO.getPageNo();
+            int pageSize = pageReqVO.getPageSize();
+            int index = (pageNo - 1) * pageSize;
+            searchSourceBuilder.from(index);
+            // 最后一页请求超过一万，pageSize设置成请求刚好一万条
+            if (index + pageSize > 10000) {
+                searchSourceBuilder.size(10000 - index);
+            } else {
+                searchSourceBuilder.size(pageSize);
+            }
+            searchSourceBuilder.trackTotalHits(true);
+            searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
+            searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+            if (pageReqVO.getTimeRange() != null && pageReqVO.getTimeRange().length != 0) {
+                searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                        .from(pageReqVO.getTimeRange()[0])
+                        .to(pageReqVO.getTimeRange()[1]));
+            }
+            String[] devkeys = pageReqVO.getDevkeys();
+            if (devkeys != null) {
+                Integer[] busIds = getBusIdsByDevkeys(devkeys);
+                searchSourceBuilder.query(QueryBuilders.termsQuery("bus_id", busIds));
+            }
+            // 搜索请求对象
+            SearchRequest searchRequest = new SearchRequest();
+            if ("day".equals(pageReqVO.getGranularity())) {
+                searchRequest.indices("bus_eq_total_day");
+            } else if ("week".equals(pageReqVO.getGranularity())) {
+                searchRequest.indices("bus_eq_total_week");
+            } else {
+                searchRequest.indices("bus_eq_total_month");
+            }
+            searchRequest.source(searchSourceBuilder);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            // 搜索结果
+            List<Map<String, Object>> mapList = new ArrayList<>();
+            SearchHits hits = searchResponse.getHits();
+            hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
+            // 匹配到的总记录数
+            Long totalHits = hits.getTotalHits().value;
+            pageResult.setList(busHistoryDataService.getLocationsAndNameByBusIds(mapList))
+                    .setTotal(totalHits);
+            return pageResult;
+        } catch (Exception e) {
+            log.error("运行时异常", e);
+        }
         return pageResult;
     }
 
@@ -828,7 +834,7 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
                     .setBusName(record.getBusName()).setDevKey(record.getDevKey());
             if (Objects.nonNull(aislePathMap.get(record.getDevKey()).getPath())) {
                 resVO.setLocation(localtion + aislePathMap.get(record.getDevKey()).getPath() + "路");
-            } else if(Objects.nonNull(localtion)){
+            } else if (Objects.nonNull(localtion)) {
                 resVO.setLocation(localtion + "路");
             }
             BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();

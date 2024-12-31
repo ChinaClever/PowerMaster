@@ -759,9 +759,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             List<Double> eleActive = loopItemList.getList("ele_active", Double.class);//电能
             BoxLoopItemResVO loopItemResVO = new BoxLoopItemResVO();
             loopItemResVO.setLoopId(i+1);
-            loopItemResVO.setBreakerStatusA(breakerStatus.get(0));
-            loopItemResVO.setBreakerStatusB(breakerStatus.get(1));
-            loopItemResVO.setBreakerStatusC(breakerStatus.get(2));
+            loopItemResVO.setBreakerStatus(breakerStatus.get(i));
             loopItemResVO.setLoopCurValue(curList.get(i));
             loopItemResVO.setLoopVolValue(volList.get(i));
             loopItemResVO.setLoopPowReactive(powReactive.get(i));
@@ -805,11 +803,11 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         vo.setOutletEleReactive(outletItemList.getList("ele_reactive",Double.class));
         vo.setOutletPowerFactor(outletItemList.getList("power_factor",Double.class));
 
-        Map map = getCabinetDistributionFactor(boxIndex.getId(), type);
-        vo.setFactorC((List<BigDecimal>) map.get("factorC"));
-        vo.setFactorA((List<BigDecimal>) map.get("factorA"));
-        vo.setDay((List<String>) map.get("day"));
-        vo.setFactorB((List<BigDecimal>) map.get("factorB"));
+//        Map map = getCabinetDistributionFactor(boxIndex.getId(), type);
+//        vo.setFactorC((List<BigDecimal>) map.get("factorC"));
+//        vo.setFactorA((List<BigDecimal>) map.get("factorA"));
+//        vo.setDay((List<String>) map.get("day"));
+//        vo.setFactorB((List<BigDecimal>) map.get("factorB"));
         return vo;
     }
 
@@ -1345,7 +1343,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     public PageResult<BoxBalanceDataRes> getBoxBalancePage(BoxIndexPageReqVO pageReqVO) {
 
         PageResult<BoxIndex> boxIndexDOPageResult = boxIndexCopyMapper.selectPage(pageReqVO);
-        BoxCurbalanceColorDO boxCurbalanceColorDO = boxCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
+//        BoxCurbalanceColorDO boxCurbalanceColorDO = boxCurbalanceColorMapper.selectOne(new LambdaQueryWrapperX<>(), false);
         List<BoxIndex> list = boxIndexDOPageResult.getList();
         List<BoxBalanceDataRes> res = new ArrayList<>();
         List redisList = getMutiRedis(list);
@@ -1394,11 +1392,11 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             }
             boxBalanceDataRes.setCurUnbalance(curUnbalance);
             boxBalanceDataRes.setVolUnbalance(volUnbalance);
-            if (pageReqVO.getColor() != null) {
-                if (!pageReqVO.getColor().contains(boxBalanceDataRes.getColor())) {
-                    res.removeIf(box -> box.getBoxId().equals(boxBalanceDataRes.getBoxId()));
-                }
-            }
+//            if (pageReqVO.getColor() != null) {
+//                if (!pageReqVO.getColor().contains(boxBalanceDataRes.getColor())) {
+//                    res.removeIf(box -> box.getBoxId().equals(boxBalanceDataRes.getBoxId()));
+//                }
+//            }
         }
         return new PageResult<>(res, boxIndexDOPageResult.getTotal());
     }

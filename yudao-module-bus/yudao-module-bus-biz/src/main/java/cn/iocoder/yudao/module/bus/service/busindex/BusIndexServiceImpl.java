@@ -51,6 +51,7 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -906,6 +907,25 @@ public class BusIndexServiceImpl implements BusIndexService {
     @Override
     public PageResult<BusIndexDTO> getEqPage(BusIndexPageReqVO pageReqVO) {
         try {
+            // 创建BoolQueryBuilder对象
+            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+            // 搜索源构建对象
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            int pageNo = pageReqVO.getPageNo();
+            int pageSize = pageReqVO.getPageSize();
+            int index = (pageNo - 1) * pageSize;
+            searchSourceBuilder.from(index);
+            // 最后一页请求超过一万，pageSize设置成请求刚好一万条
+            if (index + pageSize > 10000) {
+                searchSourceBuilder.size(10000 - index);
+            } else {
+                searchSourceBuilder.size(pageSize);
+            }
+            searchSourceBuilder.trackTotalHits(true);
+
+
+
+
             PageResult<BusIndexDO> busIndexDOPageResult = busIndexMapper.selectPage(pageReqVO);
             List<BusIndexDO> busIndexDOList = busIndexDOPageResult.getList();
             List<BusIndexDTO> result = new ArrayList<>();

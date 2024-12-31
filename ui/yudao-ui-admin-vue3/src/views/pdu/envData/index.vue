@@ -494,7 +494,8 @@ const handleQuery = () => {
       queryParams.channel = undefined
       queryParams.position = undefined
     }
-    getList()
+    getNavNewData();
+    getList();
 }
 
 /** 详情操作*/

@@ -5,10 +5,8 @@ import lombok.Data;
 
 @Data
 public class BoxLoopItemResVO {
-
-    private Integer  breakerStatusA;
-    private Integer  breakerStatusB;
-    private Integer  breakerStatusC;
+    @Schema(description = "断路器开关")
+    private Integer  breakerStatus;
 
     @Schema(description = "回路编号")
     private Integer loopId;
