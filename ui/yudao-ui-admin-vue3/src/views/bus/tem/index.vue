@@ -280,7 +280,7 @@
         @pagination="getList"
       />
       <template v-if="list.length == 0 && switchValue != 3">
-        <el-empty description="暂无数据" :image-size="300" />
+        <el-empty description="暂无数据" :image-size="595" />
       </template>
 
       <el-dialog v-model="detailVis" title="温度详情" width="70vw" height="58vh">

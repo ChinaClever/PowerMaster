@@ -313,7 +313,7 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
         />      
-      <template v-if="list.length == 0 && switchValue ==0 && showPagination == 0">
+      <template v-if="list.length == 0 && showPagination == 0">
         <el-empty description="暂无数据" :image-size="595" />
       </template>
     </template>
