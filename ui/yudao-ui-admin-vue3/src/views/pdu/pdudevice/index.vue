@@ -244,12 +244,12 @@
       </el-table> 
      </div> 
         <Pagination
-        v-show="showPagination == 1"
-        :total="deletedTotal"
-        :page-size-arr="pageSizeArr"
-        v-model:page="queryDeletedPageParams.pageNo"
-        v-model:limit="queryDeletedPageParams.pageSize"
-        @pagination="getDeletedList"
+          v-show="showPagination == 1"
+          :total="deletedTotal"
+          :page-size-arr="pageSizeArr"
+          v-model:page="queryDeletedPageParams.pageNo"
+          v-model:limit="queryDeletedPageParams.pageSize"
+          @pagination="getDeletedList"
         />               
       <!-- 阵列模式分页 --> 
       <div class="arrayContainer" v-if="!switchValue && list.length > 0"> 
@@ -300,6 +300,9 @@
           </div>
           <button v-if="item.status != null && item.status != 5" class="detail" @click="toPDUDisplayScreen(item)">详情</button>
         </div>
+        <div v-else class="arrayItem">
+          
+        </div>
         </template>      
       </div>
         <Pagination
@@ -311,7 +314,7 @@
         @pagination="getList"
         />      
       <template v-if="list.length == 0 && switchValue ==0 && showPagination == 0">
-        <el-empty description="暂无数据" :image-size="300" />
+        <el-empty description="暂无数据" :image-size="595" />
       </template>
     </template>
 

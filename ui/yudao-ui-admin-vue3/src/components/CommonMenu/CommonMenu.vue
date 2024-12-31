@@ -35,8 +35,8 @@
                  margin-right: 5px;">
         <slot name="ActionBar" ></slot>
       </div>
-      </ContentWrap>
-        <slot name="Content" ></slot>
+      </ContentWrap >
+          <slot name="Content" ></slot>
       </ContentWrap>
     </div>
   </div>
