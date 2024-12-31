@@ -197,17 +197,30 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
         PageResult<PduIndex> pduIndexPageResult = null;
         List<PDUDeviceDO> result = new ArrayList<>();
         if (pageReqVO.getCabinetIds() != null && !pageReqVO.getCabinetIds().isEmpty()) {
+            List<String> devKeyList = new ArrayList<>();
             List<CabinetPdu> cabinetPduList = cabinetPduMapper.selectList(new LambdaQueryWrapperX<CabinetPdu>().inIfPresent(CabinetPdu::getCabinetId, pageReqVO.getCabinetIds()));
             if (cabinetPduList != null && cabinetPduList.size() > 0) {
-                List<String> devKeyList = new ArrayList<>();
-                List<String> pduKeya = cabinetPduList.stream().map(CabinetPdu::getPduKeyA).collect(Collectors.toList());
-                List<String> pduKeyb = cabinetPduList.stream().map(CabinetPdu::getPduKeyB).collect(Collectors.toList());
-                devKeyList.addAll(pduKeya);
-                devKeyList.addAll(pduKeyb);
-                pageReqVO.setPduKeyList(devKeyList);
+                for (CabinetPdu cabinetPdu : cabinetPduList) {
+                    if (!StringUtils.isEmpty(cabinetPdu.getPduKeyA())) {
+                        devKeyList.add(cabinetPdu.getPduKeyA());
+                    }
+                    if (!StringUtils.isEmpty(cabinetPdu.getPduKeyB())) {
+                        devKeyList.add(cabinetPdu.getPduKeyB());
+                    }
+                }
             } else {
                 return new PageResult<PDUDeviceDO>(result, 0L);
             }
+            pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
+                    .likeIfPresent(PduIndex::getPduKey, pageReqVO.getDevKey())
+                    .inIfPresent(PduIndex::getPduKey, devKeyList)
+                    .inIfPresent(PduIndex::getRunStatus, pageReqVO.getStatus())
+                    .eq(PduIndex::getIsDeleted, DelEnums.DELETE.getStatus()));
+        } else {
+            pduIndexPageResult = pDUDeviceMapper.selectPage(pageReqVO, new LambdaQueryWrapperX<PduIndex>()
+                    .likeIfPresent(PduIndex::getPduKey, pageReqVO.getDevKey())
+                    .inIfPresent(PduIndex::getRunStatus, pageReqVO.getStatus())
+                    .eq(PduIndex::getIsDeleted, DelEnums.DELETE.getStatus()));
         }
 
         List<PduIndex> pduIndices = pduIndexPageResult.getList();
@@ -1088,7 +1101,7 @@ public class PDUDeviceServiceImpl implements PDUDeviceService {
 
     @Override
     public int deletePDU(String devKey) throws Exception {
-        PduIndex index = pDUDeviceMapper.selectOne("dev_key", devKey);
+        PduIndex index = pDUDeviceMapper.selectOne("pdu_key", devKey);
         if (Objects.isNull(index)) {
             return -1;
         }
