@@ -56,7 +56,7 @@ const gaugeData = [
   },
   {
     value: props.loadFactor.temValue[3],
-    name: 'D',
+    name: 'N',
     title: {
       offsetCenter: ['60%', '80%']
     },

@@ -40,16 +40,16 @@
             <span style="color:black;font-size:14px;">发生时间: </span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">额定功率:</span><span style="font-size:16px;">{{redisData?.powApparentTotal}}KVA</span>
+            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">额定功率:</span><span style="font-size:16px;">{{redisData?.powApparentTotal}}KVA</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">现在功率:</span><span style="font-size:16px;">{{redisData?.totalPowApparent}}kVA</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">视在功率:</span><span style="font-size:16px;">{{redisData?.totalPowApparent}}kVA</span>
           </div>
           <div class="label-container">
             <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">有功功率:</span><span style="font-size:16px;">{{redisData?.totalPowActive}}kW</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">无功功率:</span><span style="font-size:16px;">{{redisData?.totalPowReactive}}kVar</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">无功功率:</span><span style="font-size:16px;">{{redisData?.totalPowReactive}}kVar</span>
           </div>
         </div>
       </div>
@@ -66,7 +66,7 @@
             height: 100%;
             top: 70px;">
           <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">A温度:</span><span style="font-size:16px;">{{redisData?.temValue[0]}}℃</span>
+            <span class="bullet" style="color:#B47660;">•</span><span style="width:50px;font-size:14px;">A温度:</span><span style="font-size:16px;">{{redisData?.temValue[0]}}℃</span>
           </div>
           <div class="label-container">
             <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">B温度:</span><span style="font-size:16px;">{{redisData?.temValue[1]}}℃</span>
@@ -75,7 +75,7 @@
             <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">C温度:</span><span style="font-size:16px;">{{redisData?.temValue[2]}}℃</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">D温度:</span><span style="font-size:16px;">{{redisData?.temValue[3]}}℃</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">N温度:</span><span style="font-size:16px;">{{redisData?.temValue[3]}}℃</span>
           </div>
         </div>
       </div>
@@ -139,16 +139,16 @@
             height: 100%;
             top: 20px;">
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.totalPowerFactor}}</span>
+            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.totalPowerFactor.toFixed(2)}}</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">A相:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[0]}}</span>
+            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">A相:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[0].toFixed(2)}}</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">B相:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[1]}}</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">B相:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[1].toFixed(2)}}</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">C相:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[2]}}</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">C相:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[2].toFixed(2)}}</span>
           </div>
         </div>
     </div>
@@ -165,16 +165,16 @@
             height: 100%;
             top: 30px;">
           <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">有功功率</span><span style="font-size:16px;">{{redisData?.linePowActive[0]}}kW</span>
+            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">有功功率</span><span style="font-size:16px;">{{redisData?.linePowActive[0]}}kW</span>
           </div>
           <div class="label-container">
             <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">无功功率</span><span style="font-size:16px;">{{redisData?.linePowReactive[0]}}kVar</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">现在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[0]}}kVA</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">视在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[0]}}kVA</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[0]}}</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[0].toFixed(2)}}</span>
           </div>
         </div>
     </div>
@@ -191,16 +191,16 @@
             height: 100%;
             top: 30px;">
           <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">有功功率</span><span style="font-size:16px;">{{redisData?.linePowActive[1]}}kW</span>
+            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">有功功率</span><span style="font-size:16px;">{{redisData?.linePowActive[1]}}kW</span>
           </div>
           <div class="label-container">
             <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">无功功率</span><span style="font-size:16px;">{{redisData?.linePowReactive[1]}}kVar</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">现在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[1]}}kVA</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">视在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[1]}}kVA</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[1]}}</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[1].toFixed(2)}}</span>
           </div>
         </div>
     </div>
@@ -217,16 +217,16 @@
             height: 100%;
             top: 30px;">
           <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">有功功率</span><span style="font-size:16px;">{{redisData?.linePowActive[2]}}kW</span>
+            <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">有功功率</span><span style="font-size:16px;">{{redisData?.linePowActive[2]}}kW</span>
           </div>
           <div class="label-container">
             <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">无功功率</span><span style="font-size:16px;">{{redisData?.linePowReactive[2]}}kVar</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">现在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[2]}}kVA</span>
+            <span class="bullet" style="color:#AD3762;">•</span><span style="width:80px;font-size:14px;">视在功率</span><span style="font-size:16px;">{{redisData?.linePowApparent[2]}}kVA</span>
           </div>
           <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[2]}}</span>
+            <span class="bullet" style="color:#E5B849;">•</span><span style="width:80px;font-size:14px;">功率因数:</span><span style="font-size:16px;">{{redisData?.linePowerFactor[2].toFixed(2)}}</span>
           </div>
         </div>
     </div>
@@ -263,7 +263,7 @@
         <el-table-column align="center" prop="loopCurValue" label="电流" width="150" />
         <el-table-column align="center" prop="loopPowValue" label="有功功率" width="150" />
         <el-table-column align="center" prop="loopPowReactive" label="无功功率" width="150" />
-        <el-table-column align="center" prop="loopPowApparent" label="现在功率" width="150"/>
+        <el-table-column align="center" prop="loopPowApparent" label="视在功率" width="150"/>
         <el-table-column align="center" prop="loopPowerFactor" label="功率因数" width="150" />
         <el-table-column align="center" prop="loopEleActive" label="电能" />
       </el-table>
@@ -346,6 +346,7 @@ const queryParams = reactive({
 
 const getRedisData = async () => {
   const data =  await IndexApi.getBoxPowerRedisData(queryParams);
+  console.log('data',data);
   //let loopItem = {} as any;
   //for (let key in data) {  
   //  if (data.hasOwnProperty(key)) {  

@@ -25,7 +25,24 @@ const props = defineProps({
 // 使用 computed 属性来创建 ECharts 配置
 const chartOptions = computed(() => ({
   tooltip: {
-    trigger: 'item'
+    trigger: 'item',
+    formatter: (params) => {
+      let unit;
+      switch (params.name) {
+        case '有功功率':
+          unit = 'kW';
+          break;
+        case '无功功率':
+          unit = 'kVar';
+          break;
+        case '现在功率':
+          unit = 'kVA';
+          break;
+        case '功率因数':
+          return `${params.name}: ${params.value.toFixed(2)}`;
+      }
+      return `${params.name}: ${params.value}${unit}`;
+    }
   },
   series: [
     {
@@ -40,14 +57,15 @@ const chartOptions = computed(() => ({
       label: {
         show: true,
         position: 'inside',
-        formatter: (params) => `${params.value}V`,
+        formatter: (params) => `${params.value}`,
         fontSize: 14,
         fontWeight: 'bold'
       },
       data: [
-        { value: props.loadFactor.linePowActive[2], name: '有功功率', itemStyle: { color: '#E5B849' } },
+        { value: props.loadFactor.linePowActive[2], name: '有功功率', itemStyle: { color: '#B47660' } },
         { value: props.loadFactor.linePowReactive[2], name: '无功功率', itemStyle: { color: '#C8603A' } },
         { value: props.loadFactor.linePowApparent[2], name: '现在功率', itemStyle: { color: '#AD3762' } },
+        { value: props.loadFactor.linePowerFactor[2].toFixed(2), name: '功率因数', itemStyle: { color: '#E5B849' } },
       ]
     }
   ]

@@ -905,7 +905,6 @@ const getList = async () => {
 
     list.value = data.list;
     var tableIndex = 0;
-    console.log('list-data1111',list.value.length);
 
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
@@ -950,7 +949,6 @@ const getList = async () => {
       }
 
       list.value[i].loopCur = selectedElements;
-      console.log('list.value[i].loopCur',list.value[i].loopCur);
     }
 
     total.value = data.total;
@@ -1038,7 +1036,6 @@ const getListNoLoading = async () => {
       }
 
       list.value[i].loopCur = selectedElements;
-      console.log('list.value[i].loopCur',list.value[i].loopCur);
     }
 
     total.value = data.total;
@@ -1067,7 +1064,6 @@ const toDeatil = (row) =>{
   const devKey = row.devKey;
   const boxId = row.boxId;
   const location = row.location != null ? row.location : row.devKey;
-  console.log('row',row);
   push({path: '/bus/boxmonitor/boxpowerdetail', state: { devKey, boxId ,location}});
 };
 
