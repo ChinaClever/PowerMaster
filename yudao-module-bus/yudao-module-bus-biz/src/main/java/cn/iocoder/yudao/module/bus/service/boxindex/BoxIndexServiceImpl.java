@@ -572,11 +572,11 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             } else if (biggest / 100 >= 90) {
                 boxIndexRes.setColor(4);
             }
-            if (pageReqVO.getColor() != null) {
-                if (!pageReqVO.getColor().contains(boxIndexRes.getColor())) {
-                    res.removeIf(box -> box.getBoxId().equals(boxIndexRes.getBoxId()));
-                }
-            }
+//            if (pageReqVO.getColor() != null) {
+//                if (!pageReqVO.getColor().contains(boxIndexRes.getColor())) {
+//                    res.removeIf(box -> box.getBoxId().equals(boxIndexRes.getBoxId()));
+//                }
+//            }
         }
         return new PageResult<>(res, boxIndexDOPageResult.getTotal());
     }

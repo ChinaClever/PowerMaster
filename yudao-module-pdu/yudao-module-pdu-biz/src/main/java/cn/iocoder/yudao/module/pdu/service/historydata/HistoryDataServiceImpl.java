@@ -782,8 +782,8 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         if (pduId == null && sensorId == null){
             QueryWrapper<CabinetEnvSensor> cabinetEnvSensorQueryWrapper = new QueryWrapper<>();
             cabinetEnvSensorQueryWrapper.eq("cabinet_id", cabinetId)
-                    .eq("channel", channel)
-                    .eq("position", position);
+//                    .eq("channel", channel)
+                    .eq("sensor_id", sensorId);
             CabinetEnvSensor cabinetEnvSensor = cabinetEnvSensorMapper.selectOne(cabinetEnvSensorQueryWrapper);
             // 表示此机柜此位置没有传感器 直接返回
             if ( cabinetEnvSensor == null ){

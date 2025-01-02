@@ -242,7 +242,7 @@ const tableData = ref<Array<{ }>>([]); // 折线图表格数据
 const headerData = ref<any[]>([]);
 const needFlush = ref(0) // 是否需要刷新图表
 const loading = ref(false) //  列表的加载中
-const detect = ref('传感器1') as any// 监测点的值 默认全部
+const detect = ref('') as any// 监测点的值 默认全部
 const message = useMessage() // 消息弹窗
 const exportLoading = ref(false)
 const queryParams = reactive({
@@ -892,10 +892,12 @@ const getNavList = async() => {
 const handleQuery = () => {
     queryParams.pduId = undefined;
     
-                const firstChar = detect.value[0];
-                const secondChar = detect.value[0];
-                    queryParams.channel = Number(firstChar);
-                    queryParams.position = Number(secondChar);
+    // const firstChar = detect.value[0];
+    const secondChar = detect.value[0];
+    if (secondChar != null){    
+    // queryParams.channel = Number(firstChar);
+    queryParams.sensorId = Number(secondChar);
+    }
     needFlush.value++;
 }
 
