@@ -113,7 +113,7 @@
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="typeText == 'line'" label="A相功率因数" align="center" prop="apf" width="130px" >
+        <!--<el-table-column v-if="typeText == 'line'" label="A相功率因数" align="center" prop="apf" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.apf != null">
               {{ scope.row.apf }}
@@ -196,24 +196,24 @@
               {{ scope.row.loopPowFactor[8] }}
             </el-text>
           </template>
-        </el-table-column>
+        </el-table-column>-->
         
         
-        <el-table-column v-if="typeText == 'outlet'" label="输出位1功率因数" align="center" prop="outlet1pf" width="130px" >
+        <el-table-column label="输出位1功率因数" align="center" prop="outlet1pf" width="150px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.outletPowFactor != null">
               {{ scope.row.outletPowFactor[0] }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="typeText == 'outlet'" label="输出位2功率因数" align="center" prop="outlet2pf" width="130px" >
+        <el-table-column label="输出位2功率因数" align="center" prop="outlet2pf" width="150px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.outletPowFactor != null">
               {{ scope.row.outletPowFactor[1] }}
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="typeText == 'outlet'" label="输出位3功率因数" align="center" prop="outlet3pf" width="130px" >
+        <el-table-column label="输出位3功率因数" align="center" prop="outlet3pf" width="150px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.outletPowFactor != null">
               {{ scope.row.outletPowFactor[2] }}
@@ -222,7 +222,7 @@
         </el-table-column>
         
         <!-- 数据库查询 -->
-        <el-table-column label="操作" align="center">
+        <el-table-column label="操作" align="center" width="150px">
           <template #default="scope">
             <el-button
               link
@@ -297,8 +297,8 @@
 
       <el-dialog v-model="detailVis" title="功率因数详情"  width="70vw" height="58vh" >
         <el-row>
-          <el-tag style="margin-left: 7vw; margin-top: -62px">{{ location }}</el-tag>
-          <div style="margin-left: -10vw;">
+          <el-tag style="margin-left: 130px; margin-top: -62px">{{ location }}</el-tag>
+          <div style="margin-left: -220px;">
               日期:
             <el-date-picker
               v-model="queryParams.oldTime"
@@ -312,7 +312,7 @@
           
           
           <el-button 
-            style="margin-left: 1vw;"
+            style="margin-left: 10px;"
             @click="subtractOneDay();handleDayPick()" 
             :type=" 'primary'"
           >
@@ -344,12 +344,12 @@
 
         </el-row>
         <br/>
-        <PFDetail v-show="switchChartOrTable == 0"  width="68vw" height="58vh"  :list="pfESList"   />
+        <PFDetail v-show="switchChartOrTable == 0"  width="68vw" height="58vh"  :list="pfESList" />
         <el-table v-show="switchChartOrTable == 1" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" >
           <el-table-column label="时间" align="center" prop="time"/>
-          <el-table-column label="A相功率因数" align="center" prop="powerFactorAvgValueA"/>
-          <el-table-column label="B相功率因数" align="center" prop="powerFactorAvgValueB"/>
-          <el-table-column label="C相功率因数" align="center" prop="powerFactorAvgValueC"/>
+          <el-table-column label="输出位1功率因数" align="center" prop="powerFactorAvgValueA"/>
+          <el-table-column label="输出位2功率因数" align="center" prop="powerFactorAvgValueB"/>
+          <el-table-column label="输出位3功率因数" align="center" prop="powerFactorAvgValueC"/>
         </el-table>
       </el-dialog>
     </template>
@@ -587,8 +587,10 @@ const exportLoading = ref(false) // 导出的加载中
 const getDetail = async () => {
   const data = await IndexApi.getBoxPFDetail(queryParams);
   pfESList.value = data?.chart;
+  console.log('pfESList.value',pfESList.value);
 
   pfTableList.value = data?.table;
+  console.log('表格数据',pfTableList.value);
   pfTableList.value?.forEach((obj) => {
     console.log(obj,obj.powerFactorAvgValueA);
     obj.powerFactorAvgValueA = obj?.powerFactorAvgValueA?.toFixed(2);
