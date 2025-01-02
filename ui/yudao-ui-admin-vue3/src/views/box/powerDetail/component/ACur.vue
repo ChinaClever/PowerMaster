@@ -25,7 +25,7 @@ console.log('loadFactor',props.loadFactor)
 const echartsOption = reactive({
   tooltip: {
     trigger: 'item',
-    formatter: '{b} : {c}'
+    formatter: (params) => `${params.name}: ${params.value}A`
   },
   series: [
     {

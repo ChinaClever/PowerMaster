@@ -69,7 +69,7 @@ const echartsOption = reactive( {
       },
       data: [
         {
-          value: props.data,
+          value: props.data.toFixed(2),
         }
       ]
     }

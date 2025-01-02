@@ -342,7 +342,7 @@ const initChart = () => {
             } else if (value <= 75) {
                 return 'rgb(56,201,73)'; 
             } else {
-                return 'rgb(230,93,93)'; 
+                return 'rgb(230,93,93)';
             }
         } 
 };
@@ -352,45 +352,43 @@ let myChart1 = null as echarts.ECharts | null;
 const initChart1 = () => {
   if (chartContainer1.value && instance) {
     myChart1 = echarts.init(chartContainer1.value);
-    myChart1.setOption(
-      {
-        title: {
-          text: '',
-          subtext: '',
-          left: 'center'
-        },
-        tooltip: {
-          trigger: 'item',
-          formatter: '{a} <br/>{b} : {c}%'
-        },
-        legend: {
-          orient: 'horizontal',
-          bottom: '25',
-          selectedMode: false
-        },
-        series: [
-          {
-            name: '',
-            type: 'pie',
-            radius: '50%',
-            label: {
-              formatter: '{b}: {d}%',
-            },
-            data: [
-              { value: powReactivepPercentage.value, name: '无功功率', },
-              { value: powActivepPercentage.value, name: '有功功率' },
-            ],
-            emphasis: {
-              itemStyle: {
-                shadowBlur: 10,
-                shadowOffsetX: 0,
-                shadowColor: 'rgba(0, 0, 0, 0.5)'
-              }
+    myChart1?.setOption({
+      title: {
+        text: '',
+        subtext: '',
+        left: 'center'
+      },
+      tooltip: {
+        trigger: 'item',
+        formatter: '{a} <br/>{b} : {d}%'  // 修改这里使用 {d}%
+      },
+      legend: {
+        orient: 'horizontal',
+        bottom: '25',
+        selectedMode: false
+      },
+      series: [
+        {
+          name: '',
+          type: 'pie',
+          radius: '50%',
+          label: {
+            formatter: '{b}: {d}%',  // 这里已经是正确的
+          },
+          data: [
+            { value: powReactivepPercentage.value, name: '无功功率' },
+            { value: powActivepPercentage.value, name: '有功功率' }
+          ],
+          emphasis: {
+            itemStyle: {
+              shadowBlur: 10,
+              shadowOffsetX: 0,
+              shadowColor: 'rgba(0, 0, 0, 0.5)'
             }
           }
-        ]
-      }
-    );
+        }
+      ]
+    });
     instance.appContext.config.globalProperties.myChart1 = myChart1;
 
   }
@@ -561,9 +559,10 @@ const initChart3 = () => {
 const getDetailData =async () => {
  try {
     const data = await BusPowerLoadDetailApi.getBoxDetailData(queryParams);
+    console.log('data',data);
     if (data != null){
       hasData.value = true
-      runLoad.value = formatNumber(data.runLoad, 2);
+      runLoad.value = data.runLoad;
       ratedCapacity.value = formatNumber(data.ratedCapacity, 2);
       reserveMargin.value = formatNumber(data.reserveMargin, 2);
       powActive.value = formatNumber(data.powActive, 3);
@@ -1035,45 +1034,43 @@ const flashChartData = async () =>{
       ],
     }
   );
-  myChart1?.setOption(
-    {
-      title: {
-        text: '',
-        subtext: '',
-        left: 'center'
-      },
-      tooltip: {
-        trigger: 'item',
-        formatter: '{a} <br/>{b} : {c}%'
-      },
-      legend: {
-        orient: 'horizontal',
-        bottom: '25',
-        selectedMode: false
-      },
-      series: [
-        {
-          name: '',
-          type: 'pie',
-          radius: '50%',
-          label: {
-            formatter: '{b}: {d}%',
-          },
-          data: [
-            { value: powReactivepPercentage.value, name: '无功功率', },
-            { value: powActivepPercentage.value, name: '有功功率' },
-          ],
-          emphasis: {
-            itemStyle: {
-              shadowBlur: 10,
-              shadowOffsetX: 0,
-              shadowColor: 'rgba(0, 0, 0, 0.5)'
-            }
-          },
-        }          
-      ]
-    }
-  );
+  myChart1?.setOption({
+    title: {
+      text: '',
+      subtext: '',
+      left: 'center'
+    },
+    tooltip: {
+      trigger: 'item',
+      formatter: '{a} <br/>{b} : {d}%'  // 修改这里使用 {d}%
+    },
+    legend: {
+      orient: 'horizontal',
+      bottom: '25',
+      selectedMode: false
+    },
+    series: [
+      {
+        name: '',
+        type: 'pie',
+        radius: '50%',
+        label: {
+          formatter: '{b}: {d}%',  // 这里已经是正确的
+        },
+        data: [
+          { value: powReactivepPercentage.value, name: '无功功率' },
+          { value: powActivepPercentage.value, name: '有功功率' }
+        ],
+        emphasis: {
+          itemStyle: {
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowColor: 'rgba(0, 0, 0, 0.5)'
+          }
+        }
+      }
+    ]
+  });
   myChart2?.setOption({
       tooltip: { trigger: 'axis' ,formatter: function(params) {
                                   var result = params[0].name + '<br>';

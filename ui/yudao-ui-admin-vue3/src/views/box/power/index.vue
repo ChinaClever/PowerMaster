@@ -119,10 +119,10 @@
         </el-form-item>
         </el-form-item>
         <div style="float:right">
-          <el-button v-if= "!shouldShowLabel" @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
-          <el-button v-if= "!shouldShowLabel" @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压</el-button>            
           <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />有功功率</el-button>            
-          <el-button @click="valueMode = 3;" :type="valueMode == 3 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />无功功率</el-button>                     
+          <el-button @click="valueMode = 3;" :type="valueMode == 3 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />无功功率</el-button> 
+          <el-button v-if= "!shouldShowLabel" @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
+          <el-button v-if= "!shouldShowLabel" @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压</el-button>                                 
           <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
         </div>
@@ -725,7 +725,7 @@ const flashListTimer = ref();
 const firstTimerCreate = ref(true);
 const pageSizeArr = ref([24,36,48,96]);
 const switchValue = ref(0);
-const valueMode = ref(0);
+const valueMode = ref(2);
 
 const phaseLineText = ref(['A相：','B相：','C相：']);
 const loopLineText = ref(['回路3：','回路6：','回路9：']);
@@ -905,7 +905,6 @@ const getList = async () => {
 
     list.value = data.list;
     var tableIndex = 0;
-    console.log('list-data1111',list.value.length);
 
     list.value.forEach((obj) => {
       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
@@ -950,7 +949,6 @@ const getList = async () => {
       }
 
       list.value[i].loopCur = selectedElements;
-      console.log('list.value[i].loopCur',list.value[i].loopCur);
     }
 
     total.value = data.total;
@@ -959,35 +957,35 @@ const getList = async () => {
   }
 };
 
-//const getListAll = async () => {
-//  try {
-//    var normal = 0;
-//    var offline = 0;
-//    var alarm = 0;
-//
-//    const allData = await IndexApi.getBoxRedisPage(queryParamsAll);
-//    allList.value = allData.list
-//    allList.value.forEach((objAll) => {
-//      if(objAll?.dataUpdateTime == null && objAll?.phaseCur == null){
-//        objAll.status = 0;
-//        offline++;
-//        return;
-//      }
-//      if(objAll?.status == 1){
-//        normal++;
-//      } else if (objAll?.status == 2){
-//        alarm++;
-//      }
-//    });
-//    //设置左边数量
-//    statusNumber.normal = normal;
-//    statusNumber.offline = offline;
-//    statusNumber.alarm = alarm;
-//    statusNumber.total = allData.total;
-//  } catch (error) {
-//    
-//  }
-//}
+const getListAll = async () => {
+  try {
+    var normal = 0;
+    var offline = 0;
+    var alarm = 0;
+
+    const allData = await IndexApi.getBoxRedisPage(queryParamsAll);
+    allList.value = allData.list
+    allList.value.forEach((objAll) => {
+      if(objAll?.dataUpdateTime == null && objAll?.phaseCur == null){
+        objAll.status = 0;
+        offline++;
+        return;
+      }
+      if(objAll?.status == 1){
+        normal++;
+      } else if (objAll?.status == 2){
+        alarm++;
+      }
+    });
+    //设置左边数量
+    statusNumber.normal = normal;
+    statusNumber.offline = offline;
+    statusNumber.alarm = alarm;
+    statusNumber.total = allData.total;
+  } catch (error) {
+    
+  }
+}
 
 const getListNoLoading = async () => {
   try {
@@ -1038,7 +1036,6 @@ const getListNoLoading = async () => {
       }
 
       list.value[i].loopCur = selectedElements;
-      console.log('list.value[i].loopCur',list.value[i].loopCur);
     }
 
     total.value = data.total;
@@ -1067,7 +1064,6 @@ const toDeatil = (row) =>{
   const devKey = row.devKey;
   const boxId = row.boxId;
   const location = row.location != null ? row.location : row.devKey;
-  console.log('row',row);
   push({path: '/bus/boxmonitor/boxpowerdetail', state: { devKey, boxId ,location}});
 };
 
@@ -1186,10 +1182,10 @@ onMounted(async () => {
   devKeyList.value = await loadAll();
   getList();
   getNavList();
-  //getListAll();
+  getListAll();
   //getTypeMaxValue();
   flashListTimer.value = setInterval((getListNoLoading), 5000);
-  //flashListTimer.value = setInterval((getListAll), 5000);
+  flashListTimer.value = setInterval((getListAll), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -1212,7 +1208,7 @@ onActivated(() => {
   getNavList();
   if(!firstTimerCreate.value){
     flashListTimer.value = setInterval((getListNoLoading), 5000);
-    //flashListTimer.value = setInterval((getListAll), 5000);
+    flashListTimer.value = setInterval((getListAll), 5000);
   }
 })
 </script>
