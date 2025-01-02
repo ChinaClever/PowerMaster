@@ -460,13 +460,9 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
             // 添加范围查询 最近24小时
             LocalDateTime now = LocalDateTime.now();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            for (int i = 0; i < (name.length == 4 ? 4 : 3); i++) {
+            for (int i = 0; i < name.length ; i++) {
                 SearchRequest searchRequest;
-                if (name.length == 4) {
-                    searchRequest = new SearchRequest(indices[i]);
-                } else {
-                    searchRequest = new SearchRequest(indices[0], indices[1]);
-                }
+                searchRequest = new SearchRequest(indices[i]);
                 SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
                 searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
                         .from(timeAgo[i].format(formatter))
@@ -492,7 +488,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
 
     @Override
     public Map<String, Object> getNewData() throws IOException {
-        String[] indices = new String[]{"pdu_eq_total_day", "pdu_eq_outlet_day"};
+        String[] indices = new String[]{"pdu_ele_total_realtime","pdu_ele_total_realtime","pdu_ele_total_realtime"};
         String[] name = new String[]{"day", "week", "month"};
         LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1), LocalDateTime.now().minusMonths(1)};
         Map<String, Object> map = getSumData(indices, name, timeAgo);
