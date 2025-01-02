@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="始端箱环境数据分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="始端箱环境数据分析" :showCheckbox="false" placeholder="如:192.168.1.96-0">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
@@ -278,7 +278,7 @@
         <!-- <el-empty v-show="!isHaveData" description="暂无数据" /> -->
       </div>
     </template>
-  </CommonMenu>
+  </CommonMenu1>
 </template>
 <script setup lang="ts">
 import { IndexApi } from '@/api/bus/busindex'
@@ -287,6 +287,7 @@ import { onMounted } from 'vue'
 import { EnvDataApi } from '@/api/bus/envData'
 import { formatDate } from '@/utils/formatTime'
 import dayjs from 'dayjs'
+import CommonMenu1 from './component/CommonMenu1.vue';
 import download from '@/utils/download'
 
 // import PDUImage from '@/assets/imgs/PDU.jpg'
@@ -480,7 +481,7 @@ const b2=ref(0)
 /** 查询列表 */
 const isHaveData = ref(false);
 const getList = async () => {
-      if (queryParams.devkey == undefined){
+      if (nowIpAddr == undefined){
       message.warning('请先选择设备！')
       return
     }

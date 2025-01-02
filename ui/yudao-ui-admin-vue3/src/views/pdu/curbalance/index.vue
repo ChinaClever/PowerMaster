@@ -336,14 +336,14 @@
         <template #header>
           
           <div style="display: flex; align-items: center;">
-    <span style="font-size: 20px; font-weight: bold;margin-top: 10px;">均衡配电详情</span>
-    <span style="margin-left: 15px;margin-top: 13px;">所在位置：{{ location }}</span>
-    <span style="margin-left: 15px;margin-top: 13px;">网络地址：{{ vollocation }}</span>
+    <span style="font-size: 20px; font-weight: bold;margin-top: -10px;">均衡配电详情</span>
+    <span style="margin-left: 15px;margin-top: -3px;">所在位置：{{ location }}</span>
+    <span style="margin-left: 15px;margin-top: -3px;">网络地址：{{ vollocation }}</span>
     <!-- <span style="padding-left: 530px; margin-left: 10px;">更新时间: {{ dataUpdateTime }} </span> -->
   </div>
         </template>
          <!-- 自定义的主要内容 -->
-        <div class="custom-content" style="margin-top:-10px">
+        <div class="custom-content" style="margin-top:-30px">
           <el-card class="cardChilc" shadow="hover">
             <div>
               <div>

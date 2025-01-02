@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="插接箱电力分析" :showCheckbox="false">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="插接箱电力分析" :showCheckbox="false">
     <template #NavInfo>
       <br/>    <br/> 
       <div class="nav_data">
@@ -180,7 +180,7 @@
         <!-- <el-empty v-show="!isHaveData" description="暂无数据" /> -->
       </div>
     </template>
-  </CommonMenu>
+  </CommonMenu1>
 </template>
 
 <script setup lang="ts">
@@ -191,6 +191,8 @@ import { formatDate} from '@/utils/formatTime'
 import { IndexApi } from '@/api/bus/busindex'
 import download from '@/utils/download'
 import { ElMessage } from 'element-plus'
+import  CommonMenu1 from './component/CommonMenu1.vue'
+
 
 defineOptions({ name: 'PDUHistoryLine' })
 

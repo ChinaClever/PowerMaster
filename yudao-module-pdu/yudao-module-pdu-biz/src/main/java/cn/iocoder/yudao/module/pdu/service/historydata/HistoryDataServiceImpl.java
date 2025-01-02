@@ -17,7 +17,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.extern.log4j.Log4j2;
 import org.elasticsearch.action.search.*;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -40,7 +39,6 @@ import java.util.*;
 /**
  * @author linzhentian
  */
-@Log4j2
 @Service
 public class HistoryDataServiceImpl implements HistoryDataService {
     private static final int BATCH_SIZE = 200; // 每批处理的数据量
@@ -501,134 +499,128 @@ public class HistoryDataServiceImpl implements HistoryDataService {
 
     @Override
     public PageResult<Object> getHistoryDataDetails(HistoryDataDetailsReqVO reqVO) throws IOException{
-        PageResult<Object> pageResult = null;
-        try {
-            String ipAddr = reqVO.getIpAddr();
-            String cascadeAddr = reqVO.getCascadeAddr();
-            String ipKey = ipAddr + "-" + cascadeAddr;
-            QueryWrapper<PduIndex> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("pdu_key", ipKey);
-            List<PduIndex> pduIndices = pduIndexMapper.selectList(queryWrapper);
-            PduIndex pduIndex = pduIndices.get(0);
-            Integer pduId = null;
-            //Integer pduId = reqVO.getPduId();
-            if (Objects.equals(pduIndex.getId(), null)) {
-                pduId = getPduIdByAddr(reqVO.getIpAddr(), reqVO.getCascadeAddr());
-                if (Objects.equals(pduId, null)) {
-                    pageResult = new PageResult<>();
-                    pageResult.setList(new ArrayList<>())
-                            .setTotal(new Long(0));
-                    return pageResult;
-                }
+
+        String ipAddr = reqVO.getIpAddr();
+        String cascadeAddr = reqVO.getCascadeAddr();
+        String ipKey = ipAddr + "-" +cascadeAddr;
+        QueryWrapper<PduIndex> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("pdu_key", ipKey);
+        List<PduIndex> pduIndices = pduIndexMapper.selectList(queryWrapper);
+        PduIndex pduIndex = pduIndices.get(0);
+        Integer pduId = pduIndex.getId();
+        //Integer pduId = reqVO.getPduId();
+        if (Objects.equals(pduId, null)){
+            pduId = getPduIdByAddr(reqVO.getIpAddr(), reqVO.getCascadeAddr());
+            if (Objects.equals(pduId, null)){
+                PageResult<Object> pageResult=new PageResult<>();
+                pageResult.setList(new ArrayList<>())
+                        .setTotal(new Long(0));
+                return pageResult;
             }
-            // 创建BoolQueryBuilder对象
-            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-            // 搜索源构建对象
-            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-            searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
-            searchSourceBuilder.size(10000);
-            searchSourceBuilder.trackTotalHits(true);
-            if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0) {
-                searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                        .gte(reqVO.getTimeRange()[0])
-                        .lte(reqVO.getTimeRange()[1]));
-            }
-            // 搜索请求对象
-            SearchRequest searchRequest = new SearchRequest();
-
-            switch (reqVO.getType()) {
-                case "total":
-                    if ("realtime".equals(reqVO.getGranularity())) {
-                        searchRequest.indices("pdu_hda_total_realtime");
-                    } else if ("hour".equals(reqVO.getGranularity())) {
-                        searchRequest.indices("pdu_hda_total_hour");
-                    } else {
-                        searchRequest.indices("pdu_hda_total_day");
-                    }
-                    searchSourceBuilder.query(QueryBuilders.termQuery("pdu_id", pduId));
-                    break;
-
-                case "line":
-                    if ("realtime".equals(reqVO.getGranularity())) {
-                        searchRequest.indices("pdu_hda_line_realtime");
-                    } else if ("hour".equals(reqVO.getGranularity())) {
-                        searchRequest.indices("pdu_hda_line_hour");
-                    } else {
-                        searchRequest.indices("pdu_hda_line_day");
-                    }
-                    Integer lineId = reqVO.getLineId();
-                    // 创建范围查询
-                    QueryBuilder termQuery = QueryBuilders.termQuery("pdu_id", pduId);
-                    // 创建匹配查询
-                    QueryBuilder termQuery1 = QueryBuilders.termQuery("line_id", lineId);
-                    // 将范围查询和匹配查询添加到布尔查询中
-                    boolQuery.must(termQuery);
-                    boolQuery.must(termQuery1);
-                    // 将布尔查询设置到SearchSourceBuilder中
-                    searchSourceBuilder.query(boolQuery);
-                    break;
-
-                case "loop":
-                    if ("realtime".equals(reqVO.getGranularity())) {
-                        searchRequest.indices("pdu_hda_loop_realtime");
-                    } else if ("hour".equals(reqVO.getGranularity())) {
-                        searchRequest.indices("pdu_hda_loop_hour");
-                    } else {
-                        searchRequest.indices("pdu_hda_loop_day");
-                    }
-                    Integer loopId = reqVO.getLoopId();
-                    // 创建范围查询
-                    termQuery = QueryBuilders.termQuery("pdu_id", pduId);
-                    // 创建匹配查询
-                    termQuery1 = QueryBuilders.termQuery("loop_id", loopId);
-                    // 将范围查询和匹配查询添加到布尔查询中
-                    boolQuery.must(termQuery);
-                    boolQuery.must(termQuery1);
-                    // 将布尔查询设置到SearchSourceBuilder中
-                    searchSourceBuilder.query(boolQuery);
-                    break;
-
-                case "outlet":
-                    if ("realtime".equals(reqVO.getGranularity())) {
-                        searchRequest.indices("pdu_hda_outlet_realtime");
-                    } else if ("hour".equals(reqVO.getGranularity())) {
-                        searchRequest.indices("pdu_hda_outlet_hour");
-                    } else {
-                        searchRequest.indices("pdu_hda_outlet_day");
-                    }
-                    Integer outletId = reqVO.getOutletId();
-                    // 创建范围查询
-                    termQuery = QueryBuilders.termQuery("pdu_id", pduId);
-                    // 创建匹配查询
-                    termQuery1 = QueryBuilders.termQuery("outlet_id", outletId);
-                    // 将范围查询和匹配查询添加到布尔查询中
-                    boolQuery.must(termQuery);
-                    boolQuery.must(termQuery1);
-                    // 将布尔查询设置到SearchSourceBuilder中
-                    searchSourceBuilder.query(boolQuery);
-                    break;
-                default:
-            }
-            searchRequest.source(searchSourceBuilder);
-            // 执行搜索,向ES发起http请求
-            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-            // 搜索结果
-            List<Object> resultList = new ArrayList<>();
-            SearchHits hits = searchResponse.getHits();
-            hits.forEach(searchHit -> resultList.add(searchHit.getSourceAsMap()));
-            // 匹配到的总记录数
-            Long totalHits = hits.getTotalHits().value;
-            // 返回的结果
-            pageResult = new PageResult<>();
-            pageResult.setList(resultList)
-                    .setTotal(totalHits);
-
-            return pageResult;
-        }catch (Exception e) {
-            log.error("查询pdu历史数据失败", e);
-            return pageResult;
         }
+        // 创建BoolQueryBuilder对象
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        // 搜索源构建对象
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
+        searchSourceBuilder.size(10000);
+        searchSourceBuilder.trackTotalHits(true);
+        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0){
+            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                    .gte(reqVO.getTimeRange()[0])
+                    .lte(reqVO.getTimeRange()[1]));
+        }
+        // 搜索请求对象
+        SearchRequest searchRequest = new SearchRequest();
+        PageResult<Object> pageResult = null;
+        switch (reqVO.getType()) {
+            case "total":
+                if ("realtime".equals(reqVO.getGranularity()) ){
+                    searchRequest.indices("pdu_hda_total_realtime");
+                }else if ("hour".equals(reqVO.getGranularity()) ){
+                    searchRequest.indices("pdu_hda_total_hour");
+                }else {
+                    searchRequest.indices("pdu_hda_total_day");
+                }
+                searchSourceBuilder.query(QueryBuilders.termQuery("pdu_id", pduId));
+                break;
 
+            case "line":
+                if ("realtime".equals(reqVO.getGranularity()) ){
+                    searchRequest.indices("pdu_hda_line_realtime");
+                }else if ("hour".equals(reqVO.getGranularity()) ){
+                    searchRequest.indices("pdu_hda_line_hour");
+                }else {
+                    searchRequest.indices("pdu_hda_line_day");
+                }
+                Integer lineId = reqVO.getLineId();
+                // 创建范围查询
+                QueryBuilder termQuery = QueryBuilders.termQuery("pdu_id", pduId);
+                // 创建匹配查询
+                QueryBuilder termQuery1 = QueryBuilders.termQuery("line_id", lineId);
+                // 将范围查询和匹配查询添加到布尔查询中
+                boolQuery.must(termQuery);
+                boolQuery.must(termQuery1);
+                // 将布尔查询设置到SearchSourceBuilder中
+                searchSourceBuilder.query(boolQuery);
+                break;
+
+            case "loop":
+                if ("realtime".equals(reqVO.getGranularity()) ){
+                    searchRequest.indices("pdu_hda_loop_realtime");
+                }else if ("hour".equals(reqVO.getGranularity()) ){
+                    searchRequest.indices("pdu_hda_loop_hour");
+                }else {
+                    searchRequest.indices("pdu_hda_loop_day");
+                }
+                Integer loopId = reqVO.getLoopId();
+                // 创建范围查询
+                termQuery = QueryBuilders.termQuery("pdu_id", pduId);
+                // 创建匹配查询
+                termQuery1 = QueryBuilders.termQuery("loop_id", loopId);
+                // 将范围查询和匹配查询添加到布尔查询中
+                boolQuery.must(termQuery);
+                boolQuery.must(termQuery1);
+                // 将布尔查询设置到SearchSourceBuilder中
+                searchSourceBuilder.query(boolQuery);
+                break;
+
+            case "outlet":
+                if ("realtime".equals(reqVO.getGranularity()) ){
+                    searchRequest.indices("pdu_hda_outlet_realtime");
+                }else if ("hour".equals(reqVO.getGranularity()) ){
+                    searchRequest.indices("pdu_hda_outlet_hour");
+                }else {
+                    searchRequest.indices("pdu_hda_outlet_day");
+                }
+                Integer outletId = reqVO.getOutletId();
+                // 创建范围查询
+                termQuery = QueryBuilders.termQuery("pdu_id", pduId);
+                // 创建匹配查询
+                termQuery1 = QueryBuilders.termQuery("outlet_id", outletId);
+                // 将范围查询和匹配查询添加到布尔查询中
+                boolQuery.must(termQuery);
+                boolQuery.must(termQuery1);
+                // 将布尔查询设置到SearchSourceBuilder中
+                searchSourceBuilder.query(boolQuery);
+                break;
+            default:
+        }
+        searchRequest.source(searchSourceBuilder);
+        // 执行搜索,向ES发起http请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        // 搜索结果
+        List<Object> resultList = new ArrayList<>();
+        SearchHits hits = searchResponse.getHits();
+        hits.forEach(searchHit -> resultList.add(searchHit.getSourceAsMap()));
+        // 匹配到的总记录数
+        Long totalHits = hits.getTotalHits().value;
+        // 返回的结果
+        pageResult = new PageResult<>();
+        pageResult.setList(resultList)
+                .setTotal(totalHits);
+
+        return pageResult;
     }
 
     @Override
@@ -720,6 +712,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
                 // 将布尔查询设置到SearchSourceBuilder中
                 searchSourceBuilder.query(boolQuery);
             }
+
         }
 
         // 搜索请求对象
@@ -843,21 +836,21 @@ public class HistoryDataServiceImpl implements HistoryDataService {
 
     @Override
     public Map<String, Object> getNavNewData(String granularity) throws IOException {
-        String[] indices = new String[]{"pdu_hda_total_realtime", "pdu_hda_line_realtime", "pdu_hda_loop_realtime", "pdu_hda_outlet_realtime"};;
+        String[] indices = new String[0];
         String[] key = new String[]{"total", "line", "loop", "outlet"};
         LocalDateTime[] timeAgo = new LocalDateTime[0];
         Map<String, Object> map;
         switch (granularity){
             case "realtime":
-
+                indices = new String[]{"pdu_hda_total_realtime", "pdu_hda_line_realtime", "pdu_hda_loop_realtime", "pdu_hda_outlet_realtime"};
                 timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1), LocalDateTime.now().minusMinutes(1)};
                 break;
             case "hour":
-//                indices = new String[]{"pdu_hda_total_hour", "pdu_hda_line_hour", "pdu_hda_loop_hour", "pdu_hda_outlet_hour"};
+                indices = new String[]{"pdu_hda_total_hour", "pdu_hda_line_hour", "pdu_hda_loop_hour", "pdu_hda_outlet_hour"};
                 timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1), LocalDateTime.now().minusHours(1)};
                 break;
             case "day":
-//                indices = new String[]{"pdu_hda_total_day", "pdu_hda_line_day", "pdu_hda_loop_day", "pdu_hda_outlet_day"};
+                indices = new String[]{"pdu_hda_total_day", "pdu_hda_line_day", "pdu_hda_loop_day", "pdu_hda_outlet_day"};
                 timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusDays(1)};
                 break;
             default:
@@ -868,7 +861,7 @@ public class HistoryDataServiceImpl implements HistoryDataService {
 
     @Override
     public Map<String, Object> getEnvNavNewData() throws IOException {
-        String[] indices = new String[]{"pdu_env_realtime", "pdu_env_realtime", "pdu_env_realtime"};
+        String[] indices = new String[]{"pdu_env_realtime", "pdu_env_hour", "pdu_env_day"};
         String[] name = new String[]{"hour", "day", "week"};
         LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusHours(1), LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1)};
         Map<String, Object> map = energyConsumptionService.getSumData(indices, name, timeAgo);

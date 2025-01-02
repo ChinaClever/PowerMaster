@@ -1,5 +1,5 @@
 <template>
-  <CommonMenu :dataList="navList" @node-click="handleClick" navTitle="始端箱能耗排名" :showCheckbox="false">
+  <CommonMenu1 :dataList="navList" @node-click="handleClick" navTitle="始端箱能耗排名" :showCheckbox="false">
     <template #NavInfo>
       
       <div class="nav_data">
@@ -146,7 +146,7 @@
         </el-tab-pane>
       </el-tabs>
     </template>
-  </CommonMenu>
+  </CommonMenu1>
 
 </template>
 
@@ -159,6 +159,7 @@ import { formatDate, endOfDay, convertDate, addTime, betweenDay } from '@/utils/
 import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 import download from '@/utils/download'
+import  CommonMenu1 from './component/CommonMenu1.vue'
 defineOptions({ name: 'ECDistribution' })
 
 const exportLoading = ref(false)

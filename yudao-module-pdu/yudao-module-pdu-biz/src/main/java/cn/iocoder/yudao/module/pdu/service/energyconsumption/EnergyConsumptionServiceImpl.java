@@ -129,8 +129,8 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
                     .setTotal(totalHits);
 
             return pageResult;
-        } catch (Exception e) {
-            log.error("EnergyConsumptionServiceImpl.getEQDataPage error:{}", e.getMessage());
+        }catch (Exception e){
+            log.error("EnergyConsumptionServiceImpl.getEQDataPage error:{}",e.getMessage());
         }
         return pageResult;
     }
@@ -199,55 +199,49 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
                 break;
             default:
         }
+        searchRequest.source(searchSourceBuilder);
+        // 执行搜索,向ES发起http请求
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        // 搜索结果
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        SearchHits hits = searchResponse.getHits();
+        hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
+        // 匹配到的总记录数
+        Long totalHits = hits.getTotalHits().value;
+        // 返回的结果
         PageResult<Object> pageResult = new PageResult<>();
-        try {
-            searchRequest.source(searchSourceBuilder);
-            // 执行搜索,向ES发起http请求
-            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-            // 搜索结果
-            List<Map<String, Object>> mapList = new ArrayList<>();
-            SearchHits hits = searchResponse.getHits();
-            hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
-            // 匹配到的总记录数
-            Long totalHits = hits.getTotalHits().value;
-            // 返回的结果
+        pageResult.setList(historyDataService.getLocationsByPduIds(mapList))
+                .setTotal(totalHits);
 
-            pageResult.setList(historyDataService.getLocationsByPduIds(mapList))
-                    .setTotal(totalHits);
-
-            return pageResult;
-        }catch (Exception e){
-            log.error(e);
-            return pageResult;
-        }
+        return pageResult;
     }
 
     @Override
     public PageResult<Object> getEQDataDetails(EnergyConsumptionPageReqVO reqVO) throws IOException {
-        PageResult<Object> pageResult = new PageResult<>();
-        try {
-            Integer pduId = reqVO.getPduId();
+        Integer pduId = reqVO.getPduId();
+        if (Objects.equals(pduId, null)) {
+            pduId = historyDataService.getPduIdByAddr(reqVO.getIpAddr(), null);
             if (Objects.equals(pduId, null)) {
-                pduId = historyDataService.getPduIdByAddr(reqVO.getIpAddr(), null);
-                if (Objects.equals(pduId, null)) {
-                    pageResult.setList(new ArrayList<>())
-                            .setTotal(new Long(0));
-                    return pageResult;
-                }
+                PageResult<Object> pageResult = new PageResult<>();
+                pageResult.setList(new ArrayList<>())
+                        .setTotal(new Long(0));
+                return pageResult;
             }
-            // 创建BoolQueryBuilder对象
-            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-            // 搜索源构建对象
-            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-            searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
-            searchSourceBuilder.size(10000);
-            searchSourceBuilder.trackTotalHits(true);
-            if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0) {
-                searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                        .from(reqVO.getTimeRange()[0])
-                        .to(reqVO.getTimeRange()[1]));
-            }
-
+        }
+        // 创建BoolQueryBuilder对象
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        // 搜索源构建对象
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
+        searchSourceBuilder.size(10000);
+        searchSourceBuilder.trackTotalHits(true);
+        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0) {
+            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                    .from(reqVO.getTimeRange()[0])
+                    .to(reqVO.getTimeRange()[1]));
+        }
+        PageResult<Object> pageResult = null;
+        try {
             // 搜索请求对象
             SearchRequest searchRequest = new SearchRequest();
             switch (reqVO.getType()) {
@@ -293,19 +287,20 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
             hits.forEach(searchHit -> resultList.add(searchHit.getSourceAsMap()));
             // 匹配到的总记录数
             Long totalHits = hits.getTotalHits().value;
-
+            // 返回的结果
+            pageResult = new PageResult<>();
             pageResult.setList(resultList)
                     .setTotal(totalHits);
             return pageResult;
-        } catch (Exception e) {
-            log.error("pdu能耗分析异常：" + e);
-            return pageResult;
+        }catch (Exception e){
+            log.error("getEQDataDetails error", e);
         }
+        return pageResult;
     }
 
     @Override
     public List<Object> getOutletsEQData(EnergyConsumptionPageReqVO reqVO) throws IOException {
-        // 将结果转换为列表形式
+
         List<Object> resultList = new ArrayList<>();
         try {
             Integer pduId = reqVO.getPduId();
@@ -354,6 +349,7 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
                     outletIdToSumEqValueMap.put(outletId, eqValue);
                 }
             });
+            // 将结果转换为列表形式
 
             outletIdToSumEqValueMap.forEach((outletId, sumEqValue) -> {
                 Map<String, Object> resultItem = new HashMap<>();
@@ -363,10 +359,10 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
             });
             // 返回的结果
             return resultList;
-        } catch (Exception e) {
-            log.error("获得pdu电量数据详情发生异常：" + e);
-            return resultList;
+        }catch (Exception e){
+            log.error("获取实时eq数据失败",e);
         }
+        return resultList;
     }
 
     @Override
@@ -460,14 +456,17 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
     public Map<String, Object> getSumData(String[] indices, String[] name, LocalDateTime[] timeAgo) throws IOException {
         Map<String, Object> resultItem = new HashMap<>();
         try {
+             resultItem = new HashMap<>();
             // 添加范围查询 最近24小时
             LocalDateTime now = LocalDateTime.now();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            for (int i = 0; i < name.length; i++) {
+            for (int i = 0; i < (name.length == 4 ? 4 : 3); i++) {
                 SearchRequest searchRequest;
-
-                searchRequest = new SearchRequest(indices[i]);
-
+                if (name.length == 4) {
+                    searchRequest = new SearchRequest(indices[i]);
+                } else {
+                    searchRequest = new SearchRequest(indices[0], indices[1]);
+                }
                 SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
                 searchSourceBuilder.query(QueryBuilders.rangeQuery("create_time.keyword")
                         .from(timeAgo[i].format(formatter))
@@ -485,11 +484,10 @@ public class EnergyConsumptionServiceImpl implements EnergyConsumptionService {
                 resultItem.put(name[i], totalInsertions);
             }
             return resultItem;
-        } catch (Exception e) {
+        }catch (Exception e){
             log.error(e.getMessage());
-            return resultItem;
         }
-
+        return null;
     }
 
     @Override
