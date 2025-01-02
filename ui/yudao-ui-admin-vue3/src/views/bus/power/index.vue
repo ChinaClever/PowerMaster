@@ -174,7 +174,8 @@
       </el-form>
     </template>
     <template #Content>
-        <el-table style="height:720px;margin-top:-10px;overflow-y: auto;" v-show="switchValue == 3" v-loading="loading" :data="list"  @cell-dblclick="toDeatil" :border="true">
+      <div v-if="switchValue && list.length > 0" style="height:720px;margin-top:-10px;overflow-y: auto;">
+        <el-table v-if="switchValue == 3" v-loading="loading" :data="list"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <el-table-column label="状态" min-width="50" align="center">
           <template #default="scope">
@@ -336,7 +337,7 @@
         </el-table-column>
       </el-table>    
     <!-- 查询已删除-->
-      <el-table style="height:720px;margin-top:-10px;overflow-y: auto;" v-show="switchValue == 4" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
+      <el-table v-else-if="switchValue == 4" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -360,6 +361,7 @@
           </template>
         </el-table-column>
       </el-table>
+      </div>
       <Pagination
         v-show="showPagination == 1"
         :total="deletedTotal"
@@ -524,7 +526,7 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
-      <template v-if="list.length == 0 && switchValue == 2 && showPagination == 0">
+      <template v-if="list.length == 0 && showPagination == 0">
         <el-empty description="暂无数据" :image-size="595" />
       </template>
     </template>

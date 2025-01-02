@@ -5,30 +5,30 @@
         <!-- <div class="header">
           <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div>
         </div> -->
-        <div class="status" style="margin-top:20px;">
+        <div class="status" style="margin-top:20px">
           <div class="box">
             <div class="top">
               <div class="tag"></div>正常
             </div>
-            <div class="value"><span class="number">0</span>个</div>
+            <div class="value"><span class="number">{{ statusNumber.normal }}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag empty"></div>离线
             </div>
-            <div class="value"><span class="number">0</span>个</div>
+            <div class="value"><span class="number">{{ statusNumber.offline }}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <div class="tag error"></div>告警
             </div>
-            <div class="value"><span class="number">0</span>个</div>
+            <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
               <!--<div class="tag error"></div>-->总共
             </div>
-            <div class="value"><span class="number">0</span>个</div>
+            <div class="value"><span class="number">{{ statusNumber.total }}</span>个</div>
           </div>
         </div>
         <div class="line"></div>
@@ -121,7 +121,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" style="height:720px;margin-top:-10px;" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
+      <el-table v-show="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px;" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -174,7 +174,7 @@
         </el-table-column>
       </el-table>
 
-      <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
+      <div v-show="switchValue == 0 && list.length > 0" class="arrayContainer">
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey +'-' +item.boxName }}</div>
@@ -215,7 +215,7 @@
         @pagination="getList"
       />
       <template v-if="list.length == 0 && switchValue != 3">
-        <el-empty description="暂无数据" :image-size="300" />
+        <el-empty description="暂无数据" :image-size="595" />
       </template>
     </template>
   </CommonMenu>
@@ -248,11 +248,44 @@ const pageSizeArr = ref([24,36,48,96])
 const switchValue = ref(0)
 const valueMode = ref(0)
 
+const allData = ref();
+
 const statusNumber = reactive({
-  lessFifteen : 0,
-  greaterFifteen : 0,
-  greaterTwenty : 0
-})
+  normal : 0,
+  alarm : 0,
+  offline : 0,
+  total : 0
+});
+
+const queryParamsAll = reactive({
+  pageNo: 1,
+  pageSize: -1,
+  devKey: undefined,
+  createTime: [],
+  cascadeNum: undefined,
+  serverRoomData:undefined,
+  status:[],
+  cabinetIds : [],
+})as any;
+
+const allList = ref([
+  {
+    id:null,
+    status:null,
+    apparentPow:null,
+    pow:null,
+    ele:null,
+    devKey:null,
+    location:null,
+    dataUpdateTime : "",
+    pduAlarm:"",
+    pf:null,
+    acur : null,
+    bcur : null,
+    ccur : null,
+    curUnbalance : null,
+  }
+]) as any;// 列表的数据
 
 const statusList = reactive([
   {
@@ -413,6 +446,36 @@ const getList = async () => {
   }
 }
 
+const getListAll = async () => {
+  try {
+    var normal = 0;
+    var offline = 0;
+    var alarm = 0;
+
+    const allData = await IndexApi.getBoxRedisPage(queryParamsAll);
+    allList.value = allData.list
+    allList.value.forEach((objAll) => {
+      if(objAll?.dataUpdateTime == null && objAll?.phaseCur == null){
+        objAll.status = 0;
+        offline++;
+        return;
+      }
+      if(objAll?.status == 1){
+        normal++;
+      } else if (objAll?.status == 2){
+        alarm++;
+      }
+    });
+    //设置左边数量
+    statusNumber.normal = normal;
+    statusNumber.offline = offline;
+    statusNumber.alarm = alarm;
+    statusNumber.total = allData.total;
+  } catch (error) {
+    
+  }
+}
+
 const getListNoLoading = async () => {
   try {
     const data = await IndexApi.getBoxHarmonicPage(queryParams)
@@ -550,31 +613,34 @@ const handleExport = async () => {
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
-  getList()
+  getList();
   getNavList();
+  getListAll();
   flashListTimer.value = setInterval((getListNoLoading), 5000);
+  flashListTimer.value = setInterval((getListAll), 5000);
 })
 
 onBeforeUnmount(()=>{
   if(flashListTimer.value){
-    clearInterval(flashListTimer.value)
+    clearInterval(flashListTimer.value);
     flashListTimer.value = null;
   }
 })
 
 onBeforeRouteLeave(()=>{
   if(flashListTimer.value){
-    clearInterval(flashListTimer.value)
+    clearInterval(flashListTimer.value);
     flashListTimer.value = null;
     firstTimerCreate.value = false;
   }
 })
 
 onActivated(() => {
-  getList()
+  getList();
   getNavList();
   if(!firstTimerCreate.value){
     flashListTimer.value = setInterval((getListNoLoading), 5000);
+    flashListTimer.value = setInterval((getListAll), 5000);
   }
 })
 </script>
