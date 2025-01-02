@@ -436,7 +436,6 @@ loading1.value = true
 
     const data = await EnergyConsumptionApi.getOutletsEQData(queryParams);
     // console.log(data.length)
-    
     if (data != null && data.total != 0){
       if(data.length==0){
         loading3.value=false
@@ -444,7 +443,6 @@ loading1.value = true
       else{
         loading3.value=true
       }
-      
       outletIdData.value = data.map((item) => {
         if (item.outlet_id < 10) {
           return '输出位 0' + item.outlet_id;
@@ -458,8 +456,6 @@ loading1.value = true
         message: '暂无数据',
         type: 'warning',
       });
-
-      
     }
  } finally {
    loading1.value = false
@@ -724,7 +720,7 @@ const getNavList = async() => {
 /** 搜索按钮操作 */
 const handleQuery = async() => {
   await getLineChartData();
-  await getRankChartData();
+  // await getRankChartData();
   initLineChart();
   initRankChart();
 }
@@ -742,7 +738,7 @@ onMounted(async () => {
   queryParams.pduId = queryPduId ? parseInt(queryPduId, 10) : undefined;
   if (queryParams.pduId != undefined){
     await getLineChartData();
-    await getRankChartData();
+    // await getRankChartData();
     nowAddress.value = queryAddress;
     nowAddressTemp.value = queryAddress;
     initLineChart();
