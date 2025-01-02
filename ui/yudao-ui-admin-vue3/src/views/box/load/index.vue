@@ -153,12 +153,12 @@
         <el-table-column label="设备名称" align="center" prop="boxName" />
         <el-table-column label="运行状态" align="center" prop="color" >
           <template #default="scope" >
-            <!--<el-tag type="info"  v-if="scope.row.status == 5">离线</el-tag>-->
-            <el-tag type="info"  v-if="scope.row.color == 0&&scope.row.status != 5">{{statusList[4].name}}</el-tag>
-            <el-tag type="success" v-else-if="scope.row.color == 1&&scope.row.status != 5">{{(statusList[0].name)}}</el-tag>
-            <el-tag type="primary" v-else-if="scope.row.color == 2&&scope.row.status != 5">{{(statusList[1].name)}}</el-tag>
-            <el-tag type="warning" v-else-if="scope.row.color == 3&&scope.row.status != 5">{{(statusList[2].name)}}</el-tag>
-            <el-tag type="danger" v-else-if="scope.row.color == 4&&scope.row.status != 5">{{(statusList[3].name)}}</el-tag>
+            <el-tag type="info"  v-if="scope.row.status == 0">离线</el-tag>
+            <el-tag type="info"  v-if="scope.row.color == 0&&scope.row.status != 0">{{statusList[4].name}}</el-tag>
+            <el-tag type="success" v-else-if="scope.row.color == 1&&scope.row.status != 0">{{(statusList[0].name)}}</el-tag>
+            <el-tag type="primary" v-else-if="scope.row.color == 2&&scope.row.status != 0">{{(statusList[1].name)}}</el-tag>
+            <el-tag type="warning" v-else-if="scope.row.color == 3&&scope.row.status != 0">{{(statusList[2].name)}}</el-tag>
+            <el-tag type="danger" v-else-if="scope.row.color == 4&&scope.row.status != 0">{{(statusList[3].name)}}</el-tag>
             <!--<el-tag type="danger" v-if="scope.row.color != 0 && scope.row.color != 4 && scope.row.color != 3 && scope.row.color != 2 && scope.row.color != 1 && scope.row.status != 5">异常</el-tag>-->
           </template>
         </el-table-column>
@@ -241,7 +241,8 @@
         @pagination="getDeletedList"
       />        
       <div v-show="switchValue == 2  && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+        <template v-for="item in list" :key="item.devKey">
+          <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}&nbsp;{{item.boxName}}</div>
           <div class="content">
             
@@ -257,15 +258,16 @@
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
             <el-tag type="info"  v-if="item.color == 0 && item.status != 0">{{(statusList[4].name)}}</el-tag>
-            <!--<el-tag type="info"  v-if="item.status == 0">离线</el-tag>-->
+            <el-tag type="info"  v-if="item.status == 0">离线</el-tag>
             <el-tag type="success" v-else-if="item.color == 1&& item.status != 0">{{(statusList[0].name).slice(3, 10)}}</el-tag>
             <el-tag type="primary" v-else-if="item.color == 2&& item.status != 0">{{(statusList[1].name).slice(3, 10)}}</el-tag>
             <el-tag type="warning" v-else-if="item.color == 3&& item.status != 0">{{(statusList[2].name).slice(3, 10)}}</el-tag>
             <el-tag type="danger" v-else-if="item.color == 4&& item.status != 0">{{(statusList[3].name).slice(3, 10)}}</el-tag>
             <!--<el-tag type="danger" v-if="item.color != 0 && item.color != 4 && item.color != 3 && item.color != 2 && item.color != 1 && item.status != 0">异常</el-tag>-->
           </div>
-          <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 0 && item.color != 0" >详情</button>
+          <button class="detail" @click="toDetail(item)" v-if="item.status != null && item.status != 0" >详情</button>
         </div>
+        </template>
       </div>
       <Pagination
         v-if="showPagination == 0"
