@@ -297,8 +297,10 @@
 
       <el-dialog v-model="detailVis" title="功率因数详情"  width="70vw" height="58vh" >
         <el-row>
-          <el-tag style="margin-left: 130px; margin-top: -62px">{{ location }}</el-tag>
-          <div style="margin-left: -220px;">
+          <el-tag style="margin-left: 110px; margin-top: -62px">所在位置：{{location != null ? location : devkey }}</el-tag>
+          <el-tag style="margin-left: 50px; margin-top: -62px">网络地址：{{ devkey }}</el-tag>
+
+          <div style="margin-left: 130px; margin-top: -62px">
               日期:
             <el-date-picker
               v-model="queryParams.oldTime"
@@ -312,32 +314,35 @@
           
           
           <el-button 
-            style="margin-left: 10px;"
+            style="margin-left: 10px;margin-top: -62px"
             @click="subtractOneDay();handleDayPick()" 
             :type=" 'primary'"
           >
             &lt;前一日
           </el-button>
-          <el-button 
+          <el-button
+          style="margin-left: 10px; margin-top: -62px" 
             @click="addtractOneDay();handleDayPick()" 
             :type=" 'primary'"
           >
             &gt;后一日
           </el-button>
-          <div class="button-group" style="margin-left: auto">
+          <div class="button-group" style="margin-left: 70px">
             <el-button
+            style="margin-left: 0px; margin-top: -62px"
               @click="switchChartOrTable = 0"
               :type="switchChartOrTable === 0 ? 'primary' : ''"
             >
               图表
             </el-button>
             <el-button
+            style="margin-left: 0px; margin-top: -62px"
               @click="switchChartOrTable = 1"
               :type="switchChartOrTable === 1 ? 'primary' : ''"
             >
               数据
             </el-button>
-            <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading">
+            <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading" style="margin-left: 0px; margin-top: -62px">
               <Icon icon="ep:download" class="mr-5px" /> 导出
             </el-button>
           </div>
@@ -372,6 +377,7 @@ import { ElTree } from 'element-plus'
 defineOptions({ name: 'PDUDevice' })
 
 const location = ref() as any;
+const devkey = ref() as any;
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
@@ -415,6 +421,7 @@ const openPFDetail = async (row) =>{
   queryParams.boxId = row.boxId;
   queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
   location.value = row.location ? row.location : row.devKey;
+  devkey.value = row.devKey;
   await getDetail();
   detailVis.value = true;
 }
