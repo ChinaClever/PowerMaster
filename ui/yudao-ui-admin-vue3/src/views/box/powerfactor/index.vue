@@ -250,14 +250,6 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="icon">
-              <div v-if=" item.totalPowFactor != null  && typeText == 'line'">
-                <span style="font-size: 20px;">{{ item.totalPowFactor }}</span><br/>总功率因数
-              </div>
-              <div v-else-if=" item.totalPowFactor != null  && typeText == 'loop'">
-                <span style="font-size: 20px;">{{ item.totalPowFactor }}</span><br/>总功率因数
-              </div>                
-            </div>
             <div class="info" >
               <!--div v-if="item.phasePowFactor!= null && typeText == 'line'">
                 <div v-for="(phasePF,index) in item.phasePowFactor" :key="index">
@@ -274,7 +266,15 @@
                   <div>{{ outletLineText[index] }}{{outletPF}}</div>
                 </div>
               </div>
-            </div>          
+            </div>
+            <div class="icon">
+              <div v-if=" item.totalPowFactor != null  && typeText == 'line'">
+                <span style="font-size: 20px;">{{ item.totalPowFactor }}</span><br/>总功率因数
+              </div>
+              <div v-else-if=" item.totalPowFactor != null  && typeText == 'loop'">
+                <span style="font-size: 20px;">{{ item.totalPowFactor }}</span><br/>总功率因数
+              </div>                
+            </div>  
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
@@ -586,11 +586,9 @@ const exportLoading = ref(false) // 导出的加载中
 /** 查询列表 */
 const getDetail = async () => {
   const data = await IndexApi.getBoxPFDetail(queryParams);
-  pfESList.value = data?.chart;
-  console.log('pfESList.value',pfESList.value);
+  pfESList.value = data;
 
   pfTableList.value = data?.table;
-  console.log('表格数据',pfTableList.value);
   pfTableList.value?.forEach((obj) => {
     console.log(obj,obj.powerFactorAvgValueA);
     obj.powerFactorAvgValueA = obj?.powerFactorAvgValueA?.toFixed(2);
@@ -1091,6 +1089,7 @@ onActivated(() => {
         .info{
           font-size: 16px;
           margin-bottom: 20px;
+          margin-left: 10px;
         }
       }
       .devKey{
@@ -1174,6 +1173,7 @@ onActivated(() => {
         .info{
           font-size: 16px;
           margin-bottom: 20px;
+          margin-left: 10px;
         }
       }
       .devKey{
@@ -1256,6 +1256,7 @@ onActivated(() => {
         .info{
           font-size: 16px;
           margin-bottom: 20px;
+          margin-left: 10px;
         }
       }
       .devKey{

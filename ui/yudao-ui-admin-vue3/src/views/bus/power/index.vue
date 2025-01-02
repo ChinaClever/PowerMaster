@@ -470,22 +470,22 @@
               <!-- <div v-if="valueMode == 1 && item.avol != null" style="font-size:large">
                 电压
               </div> -->
-              <div v-if="valueMode == 2 && item.aactivePow != null" style="font-size:20px">
+              <div v-if="valueMode == 2 && item.aactivePow != null" style="font-size:20px;">
                 {{item.powValue?.toFixed(3)}}
               </div>
-              <div v-if="valueMode == 2 && item.aactivePow != null" >
+              <div v-if="valueMode == 2 && item.aactivePow != null" style="font-size:16px;" >
                 总有功功率(kW)
               </div>
-              <div v-if="valueMode == 3 && item.areactivePow != null" style="font-size:20px">
+              <div v-if="valueMode == 3 && item.areactivePow != null" style="font-size:20px;">
                 {{item.powReactive?.toFixed(3)}}
               </div>
-              <div v-if="valueMode == 3 && item.areactivePow != null" >
+              <div v-if="valueMode == 3 && item.areactivePow != null" style="font-size:16px;" >
                 总无功功率(kVar)
               </div>
-              <div v-if="valueMode == 4 && item.areactivePow != null" style="font-size:20px">
+              <div v-if="valueMode == 4 && item.areactivePow != null" style="font-size:20px;">
                 {{item.powApparent?.toFixed(3)}}
               </div>
-              <div v-if="valueMode == 4 && item.powApparent != null" >
+              <div v-if="valueMode == 4 && item.powApparent != null" style="font-size:16px;" >
                 总视在功率(kVA)
               </div> 
             </div>
@@ -1386,6 +1386,7 @@ onActivated(() => {
         width: 40px;
         height: 25px;
         padding: 0;
+        margin-left: -30px;
         border: 1px solid #ccc;
         display: flex;
         align-items: center;
@@ -1429,6 +1430,7 @@ onActivated(() => {
           font-size: 20px;
           width: 150px;
           height: 100px;
+          margin-left: -30px;
           text-align: center;
           .text-pf{
             font-size: 16px;
@@ -1508,6 +1510,7 @@ onActivated(() => {
           font-size: 20px;
           width: 150px;
           height: 100px;
+          margin-left: -30px;
           text-align: center;
           .text-pf{
             font-size: 16px;

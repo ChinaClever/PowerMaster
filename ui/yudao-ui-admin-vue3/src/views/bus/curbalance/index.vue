@@ -437,7 +437,7 @@
 
 
   <!-- 表单弹窗：添加/修改 -->
-  <CurbalanceColorForm ref="curBalanceColorForm" @success="getList" />
+  <CurbalanceColorForm ref="curBalanceColorForm" @success="handleSuccess" />
 </template>
 
 <script setup lang="ts">
@@ -933,13 +933,23 @@ const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
 const getCurBalance = async () => {
-      var range = await CurbalanceColorApi.getCurbalanceColor();
+    var range = await CurbalanceColorApi.getCurbalanceColor();
+    console.log('range',range);
     if(range != null){
       statusList[0].name = '<' + range.rangeOne + '%';
       statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
       statusList[2].name = '>' + range.rangeFour + '%';
     }
 }
+
+const handleSuccess = (formData: any) => {
+  console.log('Received formData:', formData);
+  if(formData != null){
+    statusList[0].name = '<' + formData.rangeOne + '%';
+    statusList[1].name = formData.rangeTwo + '%-' +  formData.rangeThree + "%";
+    statusList[2].name = '>' +formData.rangeFour + '%';
+  }
+};
 
 /** 查询列表 */
 const getList = async () => {
