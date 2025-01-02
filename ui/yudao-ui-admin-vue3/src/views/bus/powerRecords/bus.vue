@@ -38,9 +38,9 @@
       >
       <el-form-item label="时间段" prop="timeRange">
         <el-date-picker
-        value-format="YYYY-MM-DD HH:mm:ss"
-        v-model="queryParams.timeRange"
-        type="datetimerange"
+        value-format="YYYY-MM-DD"
+        v-model="selectTimeRange"
+        type="daterange"
         :shortcuts="shortcuts"
         range-separator="-"
         start-placeholder="开始时间"
@@ -95,7 +95,10 @@
 import dayjs from 'dayjs'
 import download from '@/utils/download'
 import { EnergyConsumptionApi } from '@/api/bus/busenergyConsumption'
+import { formatDate, endOfDay, convertDate, addTime, beginOfDay } from '@/utils/formatTime'
 import { IndexApi } from '@/api/bus/busindex'
+import { time } from 'echarts'
+import { get } from 'http'
 // import PDUImage from '@/assets/imgs/PDU.jpg';
 defineOptions({ name: 'PowerRecords' })
 
@@ -105,7 +108,9 @@ const loading = ref(true)
 const message = useMessage() // 消息弹窗
 const list = ref<Array<{ }>>([]) as any; 
 const total = ref(0)
+const timeRangeType = ref('day')
 const realTotel = ref(0) // 数据的真实总条数
+const selectTimeRange = ref<Date[] | undefined>(undefined);
 const queryParams = reactive({
   pageNo: 1,
   pageSize: 15,
@@ -123,30 +128,23 @@ const exportLoading = ref(false)
 //     ]);//侧边栏轮播图图片路径
 // 时间段快捷选项
 const shortcuts = [
-  {
-    text: '最近一天',
-    value: () => {
-      const end = new Date()
-      const start = new Date()
-      start.setHours(start.getHours() - 24)
-      return [start, end]
+    {
+        text: '最近一天',
+        value: async () => {
+            const end = new Date();
+            const start = new Date();
+            start.setHours(start.getHours() - 24);
+            timeRangeType.value = 'day';
+            return [start, end];
+        }
     },
-  },
-  {
-    text: '最近一周',
-    value: () => {
-      const end = new Date()
-      const start = new Date()
-      start.setDate(start.getDate() - 7)
-      return [start, end]
-    },
-  },
-  {
+    {
     text: '最近一个月',
     value: () => {
       const end = new Date()
       const start = new Date()
       start.setMonth(start.getMonth() - 1)
+      timeRangeType.value = 'month';
       return [start, end]
     },
   },
@@ -156,6 +154,7 @@ const shortcuts = [
       const end = new Date()
       const start = new Date()
       start.setMonth(start.getMonth() - 6)
+      timeRangeType.value = 'sixMonths';
       return [start, end]
     },
   },
@@ -165,10 +164,15 @@ const shortcuts = [
       const end = new Date()
       const start = new Date()
       start.setFullYear(start.getFullYear() - 1)
+      timeRangeType.value = 'year';
       return [start, end]
     },
   },
-]
+];
+
+watch(() => timeRangeType.value, () => {
+  getNavOneDayData(timeRangeType)
+});
 
 const tableColumns = ref([
   { label: '所在位置', align: 'center', prop: 'location' , istrue:true},
@@ -181,6 +185,21 @@ const tableColumns = ref([
 const getList = async () => {
   loading.value = true
   try {
+    if(selectTimeRange.value == null){
+      alert('请输入时间范围');
+    return;
+    }
+    if ( selectTimeRange.value != undefined){
+      // 格式化时间范围 加上23:59:59的时分秒 
+      const selectedStartTime = formatDate(beginOfDay(convertDate(selectTimeRange.value[0])))
+      // 结束时间的天数多加一天 ，  一天的毫秒数
+      const selectedEndTime = formatDate(endOfDay(convertDate(selectTimeRange.value[1])))
+      queryParams.timeRange = [selectedStartTime, selectedEndTime];
+    }
+    // 时间段清空后值会变成null 此时搜索不能带上时间段
+    if(selectTimeRange.value == null){
+      queryParams.timeRange = undefined
+    }
     const data = await EnergyConsumptionApi.getRealtimeEQDataPage(queryParams)
     list.value = data.list
     realTotel.value = data.total
@@ -221,7 +240,7 @@ function formatTime(_row: any, _column: any, cellValue: number): string {
   if (!cellValue) {
     return ''
   }
-  return dayjs(cellValue).format('YYYY-MM-DD HH:mm')
+  return dayjs(cellValue).format('YYYY-MM-DD')
 }
 
 
@@ -274,10 +293,11 @@ const getNavList = async() => {
 }
 
 // 获取导航的数据显示
-const getNavOneDayData = async() => {
-  const res = await EnergyConsumptionApi.getNavOneDayData({})
-  navTotalData.value = res.total
-}
+const getNavOneDayData = async (timeRangeType) => {
+    const res = await EnergyConsumptionApi.getNavOneDayData(timeRangeType.value);
+    navTotalData.value = res.total;
+};
+
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
@@ -288,9 +308,23 @@ const handleQuery = () => {
 /** 初始化 **/
 onMounted(() => {
   getNavList()
-  getNavOneDayData()
+  getNavOneDayData(timeRangeType)
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+   // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
+selectTimeRange.value = [
+  format(startOfMonth),
+  format(now)
+];
   getList();
 })
+
+const format = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 </script>
 
 <style scoped>

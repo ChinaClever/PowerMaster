@@ -425,7 +425,7 @@ const loading2=ref(false);
 /** 查询列表 */
 const isHaveData = ref(false);
 const getList = async () => {
-  if (queryParams.devkey == null){
+  if (nowAddress.value == null){
     ElMessage.error('请先选择设备！');
   }
   loading.value = true;
@@ -529,7 +529,7 @@ const initChart = () => {
                 selected: {  "总有功功率(kW)": true, "总视在功率(kVA)": false, "总无功功率(kVar)": false, "功率因素": false, }
               },
           grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-          toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+          toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '2%'},
           xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
           yAxis: { type: 'value'},
           series: [
@@ -629,7 +629,7 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                     selected: {  "总有功功率(kW)": true, "总视在功率(kVA)": true, "总无功功率(kVar)": true, "功率因素": false, }
                   },
               grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-              toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+              toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '2%'},
               xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
               yAxis: { type: 'value'},
               series: [
@@ -665,7 +665,7 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                                   "平均视在功率(kVA)": true, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false }
                       },
               grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
-              toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+              toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '2%'},
               xAxis: [
                 {type: 'category', boundaryGap: false, data: createTimeData.value}
               ],
@@ -712,7 +712,7 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                             , "电压(V)": false, "电流(A)": true, "负载率": false, "电流谐波含量": false
                            }},
                 grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-                toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+                toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '2%'},
                 xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
                 yAxis: { type: 'value'},
                 series: [
@@ -753,7 +753,7 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                                   "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false, "平均电流谐波含量": false, "最大电流谐波含量": false, "最小电流谐波含量": false }
                     },
             grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
-            toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+            toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '2%'},
             xAxis: [
               {type: 'category', boundaryGap: false, data: createTimeData.value},
             ],
@@ -808,7 +808,7 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                 legend: { data:  ['有功功率(kW)', '视在功率(kVA)', '无功功率(kVar)', '功率因素', '电压(V)', '电流(A)'],
                           selected: {  "有功功率(kW)": false, "视在功率(kVA)": false, "无功功率(kVar)": false, "功率因素": false, "电压(V)": false, "电流(A)": true }},
                 grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-                toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+                toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '2%'},
                 xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
                 yAxis: { type: 'value'},
                 series: [
@@ -847,7 +847,7 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                                  "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false }
                     },
             grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
-            toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+            toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '2%'},
             xAxis: [
               {type: 'category', boundaryGap: false, data: createTimeData.value},
             ],
@@ -899,7 +899,7 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                     selected: {  "有功功率(kW)": true, "视在功率(kVA)": false, "无功功率(kVar)": false, "功率因素": false, }
                   },
               grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
-              toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+              toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '2%'},
               xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
               yAxis: { type: 'value'},
               series: [
@@ -935,7 +935,7 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                                   "平均视在功率(kVA)": true, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false }
                       },
               grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
-              toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+              toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '2%'},
               xAxis: [
                 {type: 'category', boundaryGap: false, data: createTimeData.value}
               ],
