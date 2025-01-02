@@ -473,7 +473,7 @@ const minActivePowDataTimeTemp = ref();// 最小有功功率的发生时间
 /** 查询列表 */
 const isHaveData = ref(false);
 const getList = async () => {
-  if (queryParams.devkey == null){
+  if (nowAddress.value == null){
     ElMessage.error('请先选择设备！');
   }
   loading.value = true;
@@ -588,8 +588,8 @@ const initChart = () => {
         realtimeChart.setOption({
           title: { text: ''},
           tooltip: { trigger: 'axis', formatter: customTooltipFormatter},
-          legend: { data: ['总有功功率(kW)(kW)', '总视在功率(kVA)', '总无功功率(kVar)', '功率因素', '电压三相不平衡', '电流三相不平衡'],
-                selected: {  "总有功功率(kW)(kW)": true, "总视在功率(kVA)": true, "总无功功率(kVar)": false, "功率因素": false, 
+          legend: { data: ['总有功功率(kW)', '总视在功率(kVA)', '总无功功率(kVar)', '功率因素', '电压三相不平衡', '电流三相不平衡'],
+                selected: {  "总有功功率(kW)": true, "总视在功率(kVA)": true, "总无功功率(kVar)": false, "功率因素": false, 
                                "电压三相不平衡": false, "电流三相不平衡": false }
               },
           grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
@@ -597,7 +597,7 @@ const initChart = () => {
           xAxis: {type: 'category', boundaryGap: false, data:createTimeData.value},
           yAxis: { type: 'value'},
           series: [
-            {name: '总有功功率(kW)(kW)', type: 'line', symbol: 'none', data: powActiveData.value},
+            {name: '总有功功率(kW)', type: 'line', symbol: 'none', data: powActiveData.value},
             {name: '总视在功率(kVA)', type: 'line', symbol: 'none', data: powApparentData.value},
             {name: '总无功功率(kVar)', type: 'line', symbol: 'none', data: powReactiveData.value},
             {name: '功率因素', type: 'line', symbol: 'none', data: powerFactorData.value},

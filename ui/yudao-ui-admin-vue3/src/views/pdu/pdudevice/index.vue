@@ -258,9 +258,9 @@
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content" style="margin-left: 10px;">
             <div class="info">
-              <div >视在功率：{{ formatEQ(item.apparentPow,3) }}kW</div>
+              <div >视在功率：{{ formatEQ(item.apparentPow,3) }}kVA</div>
               <div >有功功率：{{ formatEQ(item.pow,3) }}kW</div>
-              <div >无功功率：{{ formatEQ(item.reactivePow,3) }}kW</div>
+              <div >无功功率：{{ formatEQ(item.reactivePow,3) }}kVar</div>
             </div>
             <div class="icon">
               <div v-if="item.pf != null">

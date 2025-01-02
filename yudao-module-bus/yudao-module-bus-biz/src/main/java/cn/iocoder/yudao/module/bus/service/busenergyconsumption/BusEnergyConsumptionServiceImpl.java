@@ -356,20 +356,46 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
 
     @Override
     public Map<String, Object> getNewData() throws IOException {
+        Map<String, Object> map = new HashMap<>();
         String[] indices = new String[]{"bus_eq_total_day"};
         String[] name = new String[]{"day", "week", "month"};
         LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1), LocalDateTime.now().minusMonths(1)};
-        Map<String, Object> map = getSumData(indices, name, timeAgo);
+        try {
+             map = getSumData(indices, name, timeAgo);
+        }catch (Exception e){
+            log.error("获取数据失败",e);
+        }
         return map;
     }
 
     @Override
-    public Map<String, Object> getOneDaySumData() throws IOException {
+    public Map<String, Object> getOneDaySumData(String timeRangeType) throws IOException {
         String[] indices = new String[]{"bus_ele_total_realtime"};
         String[] name = new String[]{"total"};
-        LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1)};
+        LocalDateTime[] timeAgo;
+
+        switch (timeRangeType) {
+            case "day":
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1)};
+                break;
+            case "week":
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusWeeks(1)};
+                break;
+            case "month":
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMonths(1)};
+                break;
+            case "sixMonth":
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMonths(6)};
+                break;
+            case "year":
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusYears(1)};
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid type: " + timeRangeType);
+        }
+
         Map<String, Object> map = getSumData(indices, name, timeAgo);
-        return map;
+        return map; // 确保 map 已经正确初始化并且不是 null
     }
 
     @Override
