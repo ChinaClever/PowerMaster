@@ -202,7 +202,7 @@
             <div class="icon" >
               <div v-if="item.curUnbalance != null" >
                 <span style="font-size: 20px;">{{ item.curUnbalance }}%</span><br/>电流不平衡度
-              </div>              
+              </div>
             </div>
             <div class="info">                  
               <div v-if="item.acur != null">A相：{{item.acur}}A</div>
@@ -262,9 +262,8 @@
     </template>
   </CommonMenu>
 
-
   <!-- 表单弹窗：添加/修改 -->
-  <CurbalanceColorForm ref="curBalanceColorForm" @success="getList" />
+  <CurbalanceColorForm ref="curBalanceColorForm" @success="handleSuccess" />
 </template>
 
 <script setup lang="ts">
@@ -437,6 +436,15 @@ const getCurBalance = async () => {
       statusList[2].name = '>' + range.rangeFour + '%';
     }
 }
+
+const handleSuccess = (formData: any) => {
+  console.log('Received formData:', formData);
+  if(formData != null){
+    statusList[0].name = '<' + formData.rangeOne + '%';
+    statusList[1].name = formData.rangeTwo + '%-' +  formData.rangeThree + "%";
+    statusList[2].name = '>' +formData.rangeFour + '%';
+  }
+};
 
 /** 查询列表 */
 const getList = async () => {
