@@ -4,6 +4,7 @@ import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 
@@ -79,13 +80,22 @@ public class BoxRedisDataRes extends BoxResBase {
     @Schema(description = "负载率所在范围")
     private Integer color;
 
-    @Schema(description = "总视在功率")
-    private Double powActive;
+//    @Schema(description = "总视在功率")
+//    private Double powActive;
 
     @Schema(description = "运行状态")
     private Integer status;
 
     @Schema(description = "数据更新时间")
     private String dataUpdateTime;
+
+    @Schema(description = "总有功功率")
+    private BigDecimal powActive; //总有功功率
+
+    @Schema(description = "总视在功率")
+    private BigDecimal  powApparent; //总视在功率
+
+    @Schema(description = "总无功功率")
+    private BigDecimal   powReactive; //总无功功率
 
 }

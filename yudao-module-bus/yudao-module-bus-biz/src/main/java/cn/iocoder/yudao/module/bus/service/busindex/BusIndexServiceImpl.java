@@ -923,9 +923,6 @@ public class BusIndexServiceImpl implements BusIndexService {
             }
             searchSourceBuilder.trackTotalHits(true);
 
-
-
-
             PageResult<BusIndexDO> busIndexDOPageResult = busIndexMapper.selectPage(pageReqVO);
             List<BusIndexDO> busIndexDOList = busIndexDOPageResult.getList();
             List<BusIndexDTO> result = new ArrayList<>();

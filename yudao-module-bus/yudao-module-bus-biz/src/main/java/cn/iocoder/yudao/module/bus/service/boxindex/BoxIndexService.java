@@ -104,7 +104,7 @@ public interface BoxIndexService {
 
     Integer getBoxIdByDevKey(String devKey);
 
-    BoxPowerDetailRedisResVO getBoxPowerRedisData(String devKey,String type);
+    BoxPowerDetailRedisResVO getBoxPowerRedisData(String devKey,String type) throws IOException;
 
     BusLineResBase getBoxLoadRateLine(BoxIndexPageReqVO pageReqVO);
 

@@ -286,7 +286,7 @@ public class BoxIndexController {
 
     @Operation(summary = "插接箱通过devKey获取redis数据")
     @PostMapping("/power/detail")
-    public CommonResult<BoxPowerDetailRedisResVO> getBoxPowerRedisData(@RequestBody BoxIndexPageReqVO pageReqVO) {
+    public CommonResult<BoxPowerDetailRedisResVO> getBoxPowerRedisData(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
         BoxPowerDetailRedisResVO result = indexService.getBoxPowerRedisData(pageReqVO.getDevKey(), pageReqVO.getTimeGranularity());
         return success(result);
     }

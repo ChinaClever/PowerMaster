@@ -1,4 +1,5 @@
 package cn.iocoder.yudao.module.bus.service.boxindex;
+import cn.iocoder.yudao.framework.common.entity.es.box.outlet.BoxOutletHourDo;
 import cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO;
 
 import cn.hutool.core.collection.CollectionUtil;
@@ -55,6 +56,7 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -535,6 +537,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             boxIndexRes.setBoxId(boxIndexDO.getId());
             boxIndexRes.setDevKey(boxIndexDO.getBoxKey());
             boxIndexRes.setBoxName(boxIndexDO.getBoxName());
+            boxIndexRes.setLoadRateStatus(boxIndexDO.getLoadRateStatus());
             res.add(boxIndexRes);
         }
         Map<String, BoxIndexRes> resMap = res.stream().collect(Collectors.toMap(BoxIndexRes::getDevKey, Function.identity()));
@@ -559,19 +562,19 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             } else {
                 boxIndexRes.setALoadRate(loadRate.getInteger(0));
             }
-            rateList.sort(Collections.reverseOrder());
-            Double biggest = rateList.get(0);
-            if (biggest == 0) {
-                boxIndexRes.setColor(0);
-            } else if (biggest / 100 < 30) {
-                boxIndexRes.setColor(1);
-            } else if (biggest / 100 < 60) {
-                boxIndexRes.setColor(2);
-            } else if (biggest / 100 < 90) {
-                boxIndexRes.setColor(3);
-            } else if (biggest / 100 >= 90) {
-                boxIndexRes.setColor(4);
-            }
+//            rateList.sort(Collections.reverseOrder());
+//            Double biggest = rateList.get(0);
+//            if (biggest == 0) {
+//                boxIndexRes.setColor(0);
+//            } else if (biggest / 100 < 30) {
+//                boxIndexRes.setColor(1);
+//            } else if (biggest / 100 < 60) {
+//                boxIndexRes.setColor(2);
+//            } else if (biggest / 100 < 90) {
+//                boxIndexRes.setColor(3);
+//            } else if (biggest / 100 >= 90) {
+//                boxIndexRes.setColor(4);
+//            }
 //            if (pageReqVO.getColor() != null) {
 //                if (!pageReqVO.getColor().contains(boxIndexRes.getColor())) {
 //                    res.removeIf(box -> box.getBoxId().equals(boxIndexRes.getBoxId()));
@@ -610,27 +613,12 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             //相数据解析
             JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");
 
-            JSONArray volValue = lineItemList.getJSONArray("vol_value");
-            JSONArray curValue = lineItemList.getJSONArray("cur_value");
-            JSONArray powValue = lineItemList.getJSONArray("pow_active");
-            JSONArray powReactive = lineItemList.getJSONArray("pow_reactive");
-            JSONArray powApparent = lineItemList.getJSONArray("pow_apparent");
-            JSONArray powFactor = lineItemList.getJSONArray("power_factor");
-
-            List<Double> phaseVolValue = new ArrayList<>();
-            List<Double> phaseCurValue = new ArrayList<>();
-            List<Double> phasePowValue = new ArrayList<>();
-            List<Double> phaseReactivePowValue = new ArrayList<>();
-            List<Double> phaseApparentPowValue = new ArrayList<>();
-            List<Double> phasePowFactor = new ArrayList<>();
-
-            phaseVolValue = volValue.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-            phaseCurValue = curValue.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-            phasePowValue = powValue.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-            phaseReactivePowValue = powReactive.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-            phaseApparentPowValue = powApparent.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-            phasePowFactor = powFactor.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-
+            List<Double> phaseVolValue = lineItemList.getList("vol_value",Double.class);
+            List<Double> phaseCurValue = lineItemList.getList("cur_value",Double.class);
+            List<Double> phasePowValue = lineItemList.getList("pow_active",Double.class);
+            List<Double> phaseReactivePowValue = lineItemList.getList("pow_reactive",Double.class);
+            List<Double> phaseApparentPowValue = lineItemList.getList("pow_apparent",Double.class);
+            List<Double> phasePowFactor = lineItemList.getList("power_factor",Double.class);
 
             boxRedisDataRes.setPhaseVol(phaseVolValue);
             boxRedisDataRes.setPhaseCur(phaseCurValue);
@@ -640,38 +628,17 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             boxRedisDataRes.setPhasePowFactor(phasePowFactor);
             //回路数据解析
             JSONObject loopItemList = jsonObject.getJSONObject("box_data").getJSONObject("loop_item_list");
-            volValue = loopItemList.getJSONArray("vol_value");
-            JSONArray volStatus = loopItemList.getJSONArray("vol_status");
-            curValue = loopItemList.getJSONArray("cur_value");
-            JSONArray curStatus = loopItemList.getJSONArray("cur_status");
-            powValue = loopItemList.getJSONArray("pow_value");
-            JSONArray powStatus = loopItemList.getJSONArray("pow_status");
-            powReactive = loopItemList.getJSONArray("pow_reactive");
+             List<Double> loopVolValue = loopItemList.getList("vol_value",Double.class);
+            List<Integer> loopVolStatus = loopItemList.getList("vol_status",Integer.class);
+            List<Double>  loopCurValue = loopItemList.getList("cur_value",Double.class);
+            List<Integer>  loopCurStatus  = loopItemList.getList("cur_status",Integer.class);
+            List<Double> loopPowValue = loopItemList.getList("pow_value",Double.class);
+            List<Integer> loopPowStatus =loopItemList.getList("pow_status",Integer.class);
+            List<Double> loopReactivePowValue = loopItemList.getList("pow_reactive",Double.class);
 
             List<String> loopCurColor = new ArrayList<>();
             List<String> loopVolColor = new ArrayList<>();
             List<String> loopPowColor = new ArrayList<>();
-
-            List<Double> loopCurValue;
-            List<Integer> loopCurStatus;
-            List<Double> loopVolValue;
-            List<Integer> loopVolStatus;
-            List<Double> loopPowValue;
-            List<Integer> loopPowStatus;
-            List<Double> loopReactivePowValue;
-
-
-            loopCurValue = curValue.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-            loopCurStatus = curStatus.stream().mapToInt(value -> Integer.parseInt(value.toString())).boxed().collect(Collectors.toList());
-
-            loopVolValue = volValue.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-            loopVolStatus = volStatus.stream().mapToInt(value -> Integer.parseInt(value.toString())).boxed().collect(Collectors.toList());
-
-            loopPowValue = powValue.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-            loopPowStatus = powStatus.stream().mapToInt(value -> Integer.parseInt(value.toString())).boxed().collect(Collectors.toList());
-
-            loopReactivePowValue = powReactive.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-
             for (Integer curState : loopCurStatus) {
                 if (curState != 0) {
                     loopCurColor.add("red");
@@ -697,34 +664,29 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             boxRedisDataRes.setLoopActivePowStatus(loopPowStatus);
             boxRedisDataRes.setLoopActivePowColor(loopPowColor);
             boxRedisDataRes.setLoopReactivePow(loopReactivePowValue);
-
             //输出位数据解析
             JSONObject outletItemList = jsonObject.getJSONObject("box_data").getJSONObject("outlet_item_list");
-            powValue = outletItemList.getJSONArray("pow_active");
-            JSONArray reactivePowValue = outletItemList.getJSONArray("pow_reactive");
-            JSONArray apparentPowValue = outletItemList.getJSONArray("pow_apparent");
-            powFactor = outletItemList.getJSONArray("power_factor");
-
-            List<Double> outletPowValue;
-            List<Double> outletReactivePowValue;
-            List<Double> outletApparentPowValue;
-            List<Double> outletPowFactor;
-
-            outletPowValue = powValue.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-            outletReactivePowValue = reactivePowValue.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-            outletApparentPowValue = apparentPowValue.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
-            outletPowFactor = powFactor.stream().mapToDouble(value -> Double.parseDouble(value.toString())).boxed().collect(Collectors.toList());
+            List<Double>  outletPowValue =   outletItemList.getList("pow_active",Double.class);
+            List<Double> outletReactivePowValue = outletItemList.getList("pow_reactive",Double.class);
+            List<Double> outletApparentPowValue = outletItemList.getList("pow_apparent",Double.class);
+            List<Double> outletPowFactor = outletItemList.getList("power_factor",Double.class);
 
             boxRedisDataRes.setOutletActivePow(outletPowValue);
             boxRedisDataRes.setOutletReactivePow(outletReactivePowValue);
             boxRedisDataRes.setOutletApparentPow(outletApparentPowValue);
             boxRedisDataRes.setOutletPowFactor(outletPowFactor);
+
+            JSONObject boxTotalData = jsonObject.getJSONObject("box_data").getJSONObject("box_total_data");
+            boxRedisDataRes.setPowActive(boxTotalData.getBigDecimal("pow_active"));//总有功功率
+            boxRedisDataRes.setPowApparent(boxTotalData.getBigDecimal("pow_apparent"));//总视在功率
+            boxRedisDataRes.setPowReactive(boxTotalData.getBigDecimal("pow_reactive"));//总无功功率
+
         }
         return new PageResult<>(res, boxIndexDOPageResult.getTotal());
     }
 
     @Override
-    public BoxPowerDetailRedisResVO getBoxPowerRedisData(String devKey,String type) {
+    public BoxPowerDetailRedisResVO getBoxPowerRedisData(String devKey,String type) throws IOException {
         BoxIndex boxIndex = boxIndexMapper.selectOne(new LambdaQueryWrapper<BoxIndex>().eq(BoxIndex::getBoxKey, devKey));
 //        PowerRedisDataRes result = new PowerRedisDataRes();
         ValueOperations ops = redisTemplate.opsForValue();
@@ -802,6 +764,24 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         vo.setOutletEleApparent(outletItemList.getList("ele_apparent",Double.class));
         vo.setOutletEleReactive(outletItemList.getList("ele_reactive",Double.class));
         vo.setOutletPowerFactor(outletItemList.getList("power_factor",Double.class));
+
+
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        boolQuery.must(QueryBuilders.termsQuery("box_id", boxIndex.getId().toString()));
+        // 搜索源构建对象
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(boolQuery);
+        searchSourceBuilder.size(1);
+        searchSourceBuilder.sort("load_rate", SortOrder.DESC);
+        SearchRequest searchRequest1 = new SearchRequest();
+        searchRequest1.indices("box_hda_line_realtime");
+        //query条件--正常查询条件
+        searchRequest1.source(searchSourceBuilder);
+        // 执行搜索,向ES发起http请求
+        SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
+        SearchHits hits = searchResponse1.getHits();
+        SearchHit hit = hits.getAt(0);
+        vo.setLoadFactorTime(hit.getSourceAsMap().get("create_time").toString());
 
 //        Map map = getCabinetDistributionFactor(boxIndex.getId(), type);
 //        vo.setFactorC((List<BigDecimal>) map.get("factorC"));
@@ -1682,60 +1662,20 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             ids.add(pageReqVO.getBoxId());
             String startTime = localDateTimeToString(pageReqVO.getOldTime());
             String endTime = localDateTimeToString(pageReqVO.getNewTime());
-            List<String> boxHdaLineHour = getData(startTime, endTime, ids, "box_hda_line_hour");
-            List<BoxLineHourDo> strList = boxHdaLineHour.stream()
-                    .map(str -> JsonUtils.parseObject(str, BoxLineHourDo.class))
+            List<String> outletHour = getData(startTime, endTime, ids, "box_hda_outlet_hour");
+            List<BoxPFDetail> strList = outletHour.stream()
+                    .map(str -> JsonUtils.parseObject(str, BoxPFDetail.class))
                     .collect(Collectors.toList());
 
-            HashMap<String, Object> resultMap = new HashMap<>();
-
-            List<BusPFTableRes> tableList = new ArrayList<>();
-            BusPFDetailRes result = new BusPFDetailRes();
-            result.setPowerFactorAvgValueA(new ArrayList<>());
-            result.setPowerFactorAvgValueB(new ArrayList<>());
-            result.setPowerFactorAvgValueC(new ArrayList<>());
-            result.setTime(new ArrayList<>());
-
-            resultMap.put("chart", result);
-            resultMap.put("table", tableList);
-
-            if (strList == null || strList.size() == 0) {
-                return resultMap;
+            Map<String, List<BoxPFDetail>> pfMap = strList.stream().collect(Collectors.groupingBy(i -> String.valueOf(i.getOutletId())));
+            Map<String,List> map = new HashMap<>();
+            for (String key : pfMap.keySet()) {
+                List<BoxPFDetail> list = pfMap.get(key);
+                map.put(key,list.stream().map(BoxPFDetail::getPowerFactorAvgValue).collect(Collectors.toList()));
             }
-
-            Map<Integer, List<BoxLineHourDo>> pfMap = strList.stream().collect(Collectors.groupingBy(boxLineHourDo -> boxLineHourDo.getLineId()));
-
-            int i = 0;
-            for (BoxLineHourDo boxLineHourDo : pfMap.get(1)) {
-                BusPFTableRes busPFTableRes = new BusPFTableRes();
-                result.getPowerFactorAvgValueA().add(boxLineHourDo.getPowerFactorAvgValue());
-                result.getTime().add(boxLineHourDo.getCreateTime().toString("HH:mm"));
-                busPFTableRes.setPowerFactorAvgValueA(boxLineHourDo.getPowerFactorAvgValue());
-                busPFTableRes.setTime(boxLineHourDo.getCreateTime().toString("HH:mm"));
-                tableList.add(busPFTableRes);
-                i++;
-            }
-            int j = 0;
-            for (BoxLineHourDo boxLineHourDo : pfMap.get(2)) {
-                result.getPowerFactorAvgValueB().add(boxLineHourDo.getPowerFactorAvgValue());
-                if (i == 0 || j >= i) {
-                    break;
-                } else if (j < i) {
-                    tableList.get(j).setPowerFactorAvgValueB(boxLineHourDo.getPowerFactorAvgValue());
-                    j++;
-                }
-            }
-            j = 0;
-            for (BoxLineHourDo boxLineHourDo : pfMap.get(3)) {
-                result.getPowerFactorAvgValueC().add(boxLineHourDo.getPowerFactorAvgValue());
-                if (i == 0 || j >= i) {
-                    break;
-                } else if (j < i) {
-                    tableList.get(j).setPowerFactorAvgValueC(boxLineHourDo.getPowerFactorAvgValue());
-                    j++;
-                }
-            }
-            return resultMap;
+            map.put("time",strList.stream().map(BoxPFDetail::getCreateTime).distinct().collect(Collectors.toList()));
+            map.put("table",strList);
+            return map;
         } catch (Exception e) {
             log.error("获取数据失败：", e);
         }
