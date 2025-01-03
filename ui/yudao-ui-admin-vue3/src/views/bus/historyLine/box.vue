@@ -935,7 +935,7 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                                   "平均视在功率(kVA)": true, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false }
                       },
               grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
-              toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '2%'},
+              toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '30px'},
               xAxis: [
                 {type: 'category', boundaryGap: false, data: createTimeData.value}
               ],

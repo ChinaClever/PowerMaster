@@ -736,7 +736,7 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                         "平均视在功率(kVA)": true, "最大视在功率(kVA)": false, "最小视在功率(kVA)": false, "平均零线电流(A)": false, "最大零线电流(A)": false, "最小零线电流(A)": false,}
               },
               grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true },
-              toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+              toolbox: {feature: {  restore:{}, saveAsImage: {}},top: '20px'},
               xAxis: [
                 {type: 'category', boundaryGap: false, data: createTimeData.value}
               ],
@@ -827,7 +827,7 @@ watch(() => [activeName.value, queryParams.type, needFlush.value], async (newVal
                                   "平均电压(V)": false, "最大电压(V)": false, "最小电压(V)": false, "平均线电压(V)": false, "最大线电压(V)": false, "最小线电压(V)": false }
                     },
             grid: {left: '3%', right: '4%',bottom: '3%', containLabel: true },
-            toolbox: {feature: {  restore:{}, saveAsImage: {}}},
+            toolbox: {feature: {  restore:{}, saveAsImage: {}},top:'20px'},
             xAxis: [
               {type: 'category', boundaryGap: false, data: createTimeData.value},
             ],
