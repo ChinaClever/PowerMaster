@@ -67,12 +67,12 @@
         <div v-show="switchValue == 0 && tableData.length > 0" class="matrixContainer">
           <div class="item" v-for="item in tableData" :key="item.key">
             <div class="content">
-              <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
               <div class="info">
                 <div>昨日用能：{{item.yesterdayEq}}kW·h</div>
                 <div>上周用能：{{item.lastWeekEq}}kW·h</div>
                 <div>上月用能：{{item.lastMonthEq}}kW·h</div>
               </div>
+              <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
             </div>
             <div class="room">{{item.location}}</div>
             <div class="name">{{item.busName}}</div>
@@ -245,8 +245,9 @@ const getTableData = async(reset = false) => {
           busName : item.busName,
         }
       })
-      queryParams.pageTotal = res.total
+      queryParams.pageTotal = res.total;
     }
+    console.log('tableData',tableData.value);
   } finally {
     tableLoading.value = false
   }
@@ -485,6 +486,7 @@ onBeforeMount(() => {
       .info {
         line-height: 1.7;
         font-size: 13px;
+        margin-right: 15px;
       }
     }
     .room {
@@ -554,6 +556,7 @@ onBeforeMount(() => {
       .info {
         line-height: 1.7;
         font-size: 13px;
+        margin-right: 15px;
       }
     }
     .room {
@@ -623,6 +626,7 @@ onBeforeMount(() => {
       .info {
         line-height: 1.7;
         font-size: 13px;
+        margin-right: 15px;
       }
     }
     .room {

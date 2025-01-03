@@ -42,7 +42,7 @@ const echartsOption = reactive({
   series: [
     {
       type: 'pie',
-      radius: ['40%', '80%'],
+      radius: ['40%', '90%'],
       center: ['60%', '50%'],
       avoidLabelOverlap: false,
       itemStyle: {

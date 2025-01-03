@@ -45,7 +45,7 @@ const echartsOption = reactive({
     {
       name: 'Nightingale Chart',
       type: 'pie',
-      radius: [55, 130],
+      radius: [55, 120],
       center: ['50%', '50%'],
       roseType: 'area',
       label: {
