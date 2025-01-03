@@ -124,7 +124,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" style="margin-top:-10px;height:720px;overflow-y:auto;" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openTemDetail" :border="true">
+      <el-table v-show="switchValue == 3" v-loading="loading" style="margin-top:-10px;height:720px;overflow-y:auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openTemDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />

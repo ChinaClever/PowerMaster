@@ -145,7 +145,7 @@
       </el-form>      
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" style="height:710px;overflow-y:auto;" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
+      <el-table v-show="switchValue == 3" v-loading="loading" style="height:710px;overflow-y:auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="300px"/>
@@ -208,7 +208,7 @@
         </el-table-column>
       </el-table>
     <!-- 查询已删除-->
-      <el-table v-show="switchValue == 4" v-loading="loading" style="height:710px;overflow-y:auto;" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
+      <el-table v-show="switchValue == 4" v-loading="loading" style="height:710px;overflow-y:auto;" :data="deletedList" :show-overflow-tooltip="true"  :border=true>
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />

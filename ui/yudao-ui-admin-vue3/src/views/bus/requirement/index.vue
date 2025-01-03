@@ -149,7 +149,7 @@
     </template>
     <template #Content>
       <div v-if="switchValue == 1" style="height:720px;margin-top:-10px;overflow-y: auto;">
-        <el-table v-show="visMode == 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
+        <el-table v-show="visMode == 0" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
           <el-table-column label="编号" align="center" prop="tableId" width="80px" />
           <!-- 数据库查询 -->
           <el-table-column label="所在位置" align="center" prop="location" width="218px" />
@@ -201,7 +201,7 @@
             </template>
           </el-table-column>
         </el-table>
-        <el-table v-show="visMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
+        <el-table v-show="visMode == 1" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
           <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
           <el-table-column label="所在位置" align="center" prop="location" width="218px" />
           <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
