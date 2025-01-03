@@ -66,7 +66,7 @@ public interface BoxIndexService {
 
     PageResult<BoxRedisDataRes> getBoxRedisPage(BoxIndexPageReqVO pageReqVO);
 
-    PageResult<BoxIndexDTO> getEqPage(BoxIndexPageReqVO pageReqVO);
+    PageResult<BoxIndexDTO> getEqPage(BoxIndexPageReqVO pageReqVO) throws IOException;
 
     PageResult<BoxIndexDTO> getMaxEq(BoxIndexPageReqVO pageReqVO);
 
@@ -142,4 +142,5 @@ public interface BoxIndexService {
 
     LoadRateStatus getBoxIndexLoadRateStatus();
 
+    PageResult<BoxIndexDTO> getEqPage1(BoxIndexPageReqVO pageReqVO);
 }

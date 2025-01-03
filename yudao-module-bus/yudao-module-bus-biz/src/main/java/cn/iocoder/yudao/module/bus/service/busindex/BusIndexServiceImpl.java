@@ -937,6 +937,9 @@ public class BusIndexServiceImpl implements BusIndexService {
 
                 result.add(res);
             });
+
+
+
             String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
             String endTime = DateUtil.formatDateTime(DateUtil.endOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
             List<String> yesterdayList = getData(startTime, endTime, ids, "bus_eq_total_day");

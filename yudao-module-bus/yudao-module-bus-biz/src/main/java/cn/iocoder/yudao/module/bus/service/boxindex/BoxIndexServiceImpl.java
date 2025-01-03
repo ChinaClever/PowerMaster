@@ -1,11 +1,10 @@
 package cn.iocoder.yudao.module.bus.service.boxindex;
-import cn.iocoder.yudao.framework.common.entity.es.box.outlet.BoxOutletHourDo;
-import cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
+import cn.iocoder.yudao.framework.common.entity.es.box.BoxBaseDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEleTotalDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalMonthDo;
@@ -42,6 +41,7 @@ import cn.iocoder.yudao.module.bus.dal.mysql.boxharmoniccolor.BoxHarmonicColorMa
 import cn.iocoder.yudao.module.bus.dal.mysql.boxindex.BoxIndexCopyMapper;
 import cn.iocoder.yudao.module.bus.dal.mysql.busindex.BusIndexMapper;
 import cn.iocoder.yudao.module.bus.util.TimeUtil;
+import cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO;
 import cn.iocoder.yudao.module.bus.vo.LoadRateStatus;
 import cn.iocoder.yudao.module.bus.vo.ReportBasicInformationResVO;
 import com.alibaba.druid.util.StringUtils;
@@ -1011,9 +1011,127 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         return result;
     }
 
+    @Override
+    public PageResult<BoxIndexDTO> getEqPage(BoxIndexPageReqVO pageReqVO) throws IOException {
+        String indices = null;
+        String startTime = null;
+        String endTime = DateUtil.formatDateTime(DateTime.now());
+        Integer total = 0;
+        switch (pageReqVO.getTimeGranularity()) {
+            case "yesterday":
+                startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+                indices = "box_eq_total_day";
+                break;
+            case "lastWeek":
+                startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
+                indices = "box_eq_total_week";
+                break;
+            case "lastMonth":
+                startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
+                indices = "box_eq_total_month";
+                break;
+            default:
+        }
+        try {
+            // 搜索源构建对象
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            int pageNo = pageReqVO.getPageNo();
+            int pageSize = pageReqVO.getPageSize();
+            int index = (pageNo - 1) * pageSize;
+            searchSourceBuilder.from(index);
+            // 最后一页请求超过一万，pageSize设置成请求刚好一万条
+            if (index + pageSize > 10000) {
+                searchSourceBuilder.size(10000 - index);
+            } else {
+                searchSourceBuilder.size(pageSize);
+            }
+            searchSourceBuilder.trackTotalHits(true);
+            searchSourceBuilder.sort("eq_value", SortOrder.DESC);
+            //获取需要处理的数据
+            searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
+                    .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime))));
+
+            SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(indices);
+            searchRequest.source(searchSourceBuilder);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            List<BoxEqTotalDayDo> list = new ArrayList<>();
+            for (SearchHit hit : searchResponse.getHits()) {
+                BoxEqTotalDayDo dayDo = JsonUtils.parseObject(hit.getSourceAsString(), BoxEqTotalDayDo.class);
+                list.add(dayDo);
+            }
+
+            if (!CollectionUtils.isEmpty(list)) {
+                List<Integer> ids = list.stream().map(BoxBaseDo::getBoxId).collect(Collectors.toList());
+                List<BoxIndex> boxIndices = boxIndexCopyMapper.selectList(new LambdaUpdateWrapper<BoxIndex>().in(BoxIndex::getId, ids));
+                Map<Integer, BoxIndex> boxIndexMap = boxIndices.stream().collect(Collectors.toMap(BoxIndex::getId, x -> x));
+                List<BoxIndexDTO> result = new ArrayList<>();
+
+                List<String> yesterdayList = getData(startTime, endTime, ids, "box_eq_total_day");
+                Map<Integer, Double> yesterdayMap = new HashMap<>();
+                if (!CollectionUtils.isEmpty(yesterdayList)) {
+                    yesterdayList.forEach(str -> {
+                        BoxEqTotalDayDo dayDo = JsonUtils.parseObject(str, BoxEqTotalDayDo.class);
+                        yesterdayMap.put(dayDo.getBoxId(), dayDo.getEq());
+                    });
+                }
+
+                //上周
+                startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
+                endTime = DateUtil.formatDateTime(DateTime.now());
+                List<String> weekList = getData(startTime, endTime, ids, "box_eq_total_week");
+                Map<Integer, Double> weekMap = new HashMap<>();
+                if (!CollectionUtils.isEmpty(weekList)) {
+                    weekList.forEach(str -> {
+                        BoxEqTotalWeekDo weekDo = JsonUtils.parseObject(str, BoxEqTotalWeekDo.class);
+                        weekMap.put(weekDo.getBoxId(), weekDo.getEq());
+                    });
+                }
+
+                //上月
+                startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
+                endTime = DateUtil.formatDateTime(DateTime.now());
+                List<String> monthList = getData(startTime, endTime, ids, "box_eq_total_month");
+                Map<Integer, Double> monthMap = new HashMap<>();
+                if (!CollectionUtils.isEmpty(monthList)) {
+                    monthList.forEach(str -> {
+                        BoxEqTotalMonthDo monthDo = JsonUtils.parseObject(str, BoxEqTotalMonthDo.class);
+                        monthMap.put(monthDo.getBoxId(), monthDo.getEq());
+                    });
+                }
+                list.forEach(vo -> {
+                    Integer id = vo.getBoxId();
+                    BoxIndex boxIndex = boxIndexMap.get(id);
+                    BoxIndexDTO boxIndexDTO = new BoxIndexDTO().setId(boxIndex.getId()).setRunStatus(boxIndex.getRunStatus());
+                    boxIndexDTO.setDevKey(boxIndex.getBoxKey());
+                    boxIndexDTO.setBoxName(boxIndex.getBoxName());
+                    boxIndexDTO.setYesterdayEq(yesterdayMap.get(id));
+                    boxIndexDTO.setLastWeekEq(weekMap.get(id));
+                    boxIndexDTO.setLastMonthEq(monthMap.get(id));
+                    if (boxIndexDTO.getYesterdayEq() == null) {
+                        boxIndexDTO.setYesterdayEq(0.0);
+                    }
+                    if (boxIndexDTO.getLastWeekEq() == null) {
+                        boxIndexDTO.setLastWeekEq(0.0);
+                    }
+                    if (boxIndexDTO.getLastMonthEq() == null) {
+                        boxIndexDTO.setLastMonthEq(0.0);
+                    }
+                    result.add(boxIndexDTO);
+                });
+                getPosition(result);
+                return new PageResult<>(result, searchResponse.getHits().getTotalHits().value);
+            }
+            return null;
+        }catch (Exception e){
+            log.error("获取数据失败：", e);
+            return null;
+        }
+    }
 
     @Override
-    public PageResult<BoxIndexDTO> getEqPage(BoxIndexPageReqVO pageReqVO) {
+    public PageResult<BoxIndexDTO> getEqPage1(BoxIndexPageReqVO pageReqVO) {
         try {
             pageReqVO.setIsDeleted(0);
             PageResult<BoxIndex> boxIndexDOPageResult = boxIndexCopyMapper.selectPage(pageReqVO);
@@ -1302,15 +1420,11 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         BusEleChainDTO chainDTO = new BusEleChainDTO();
         try {
 
-
             getDayChain(id, chainDTO);
-
 
             getWeekChain(id, chainDTO);
 
-
             getMonthChain(id, chainDTO);
-
 
         } catch (Exception e) {
             log.error("获取数据异常：", e);
@@ -1349,8 +1463,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             String devKey = jsonObject.getString("dev_ip") + "-" + jsonObject.getString("bar_id") + "-" + jsonObject.getString("addr");
             BoxBalanceDataRes boxBalanceDataRes = resMap.get(devKey);
             JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");
-            List<Double> curList = lineItemList.getList("vol_value",Double.class);
-            List<Double> volList  = lineItemList.getList("cur_value",Double.class);
+            List<Double> curList = lineItemList.getList("cur_value",Double.class);
+            List<Double> volList  = lineItemList.getList("vol_value",Double.class);
 
             Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();
             Double volAvg = volList.stream().mapToDouble(i -> i).average().getAsDouble();
@@ -1393,8 +1507,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 //        JSONObject loopItemList = jsonObject.getJSONObject("box_data").getJSONObject("loop_item_list");
 
         JSONObject lineItemList = jsonObject.getJSONObject("box_data").getJSONObject("line_item_list");
-        List<Double> curList = lineItemList.getList("vol_value",Double.class);
-        List<Double> volList  = lineItemList.getList("cur_value",Double.class);
+        List<Double> curList = lineItemList.getList("cur_value",Double.class);
+        List<Double> volList  = lineItemList.getList("vol_value",Double.class);
 
         Double curAvg = curList.stream().mapToDouble(i -> i).average().getAsDouble();
         Double volAvg = volList.stream().mapToDouble(i -> i).average().getAsDouble();
@@ -2949,47 +3063,47 @@ public class BoxIndexServiceImpl implements BoxIndexService {
      * @return
      */
     private void getDayChain(int id, BusEleChainDTO chainDTO) throws IOException {
-        String startTime;
-        String endTime;
-        //日环比
-        //今日
-        startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
-        endTime = DateUtil.formatDateTime(DateTime.now());
+        try {
+            String startTime;
+            String endTime;
+            //日环比
+            //今日
+            startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+            endTime = DateUtil.formatDateTime(DateTime.now());
 
-        double todayEq = getDayEq(startTime, endTime, id);
-        chainDTO.setTodayEq(todayEq);
-        //昨日
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.HOUR_OF_DAY, -24);
-        startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(calendar.getTime()));
-        endTime = DateUtil.formatDateTime(DateTime.now());
+            double todayEq = getDayEq(startTime, endTime, id);
+            chainDTO.setTodayEq(todayEq);
+            //昨日
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR_OF_DAY, -24);
+            startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(calendar.getTime()));
+            endTime = DateUtil.formatDateTime(DateTime.now());
 
-        List<String> list = getData(startTime, endTime, id, BOX_EQ_TOTAL_DAY);
-        Map<String, Double> eqMap = new HashMap<>();
+            List<String> list = getData(startTime, endTime, id, BOX_EQ_TOTAL_DAY);
+            Map<String, Double> eqMap = new HashMap<>();
 
-        list.forEach(str -> {
-            BoxEqTotalDayDo dayDo = JsonUtils.parseObject(str, BoxEqTotalDayDo.class);
-            String dateTime = dayDo.getCreateTime().toString(HOUR_FORMAT);
-            eqMap.put(dateTime, dayDo.getEq());
+            list.forEach(str -> {
+                BoxEqTotalDayDo dayDo = JsonUtils.parseObject(str, BoxEqTotalDayDo.class);
+                String dateTime = dayDo.getCreateTime().toString(HOUR_FORMAT);
+                eqMap.put(dateTime, dayDo.getEq());
 
-        });
-        //前日
-        String lastTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
-        double eveEq = eqMap.containsKey(lastTime) ? eqMap.get(lastTime) : 0;
-
-        //昨天
-        String thisTime = DateUtil.formatDate(DateUtil.beginOfDay(DateTime.now()));
-        double lastEq = eqMap.containsKey(thisTime) ? eqMap.get(thisTime) : 0;
-
-        chainDTO.setYesterdayEq(lastEq);
-
-        NumberFormat percentInstance = NumberFormat.getPercentInstance();
-        // 设置保留几位小数，这里设置的是保留两位小数
-        percentInstance.setMinimumFractionDigits(2);
-        //环比
-        String dayRate = eveEq == 0 ? percentInstance.format(0) : percentInstance.format(lastEq / eveEq);
-        chainDTO.setDayRate(dayRate);
-
+            });
+            //前日
+            String lastTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
+            double eveEq = eqMap.containsKey(lastTime) ? eqMap.get(lastTime) : 0;
+            //昨天
+            String thisTime = DateUtil.formatDate(DateUtil.beginOfDay(DateTime.now()));
+            double lastEq = eqMap.containsKey(thisTime) ? eqMap.get(thisTime) : 0;
+            chainDTO.setYesterdayEq(lastEq);
+            NumberFormat percentInstance = NumberFormat.getPercentInstance();
+            // 设置保留几位小数，这里设置的是保留两位小数
+            percentInstance.setMinimumFractionDigits(2);
+            //环比
+            String dayRate = eveEq == 0 ? percentInstance.format(0) : percentInstance.format(lastEq / eveEq);
+            chainDTO.setDayRate(dayRate);
+        }catch (Exception e){
+            log.error("插接箱日环比错误"+e);
+        }
     }
 
     /**
@@ -2999,51 +3113,55 @@ public class BoxIndexServiceImpl implements BoxIndexService {
      * @param chainDTO
      */
     private void getWeekChain(int id, BusEleChainDTO chainDTO) throws IOException {
-        String startTime;
-        String endTime;
-        //周环比
-        //本周
-        startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
-        endTime = DateUtil.formatDateTime(DateTime.now());
+        try {
+            String startTime;
+            String endTime;
+            //周环比
+            //本周
+            startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
+            endTime = DateUtil.formatDateTime(DateTime.now());
 
-        double thisWeekEq = getDayEq(startTime, endTime, id);
-        chainDTO.setThisWeekEq(thisWeekEq);
-        //上周
-        LocalDate today = LocalDate.now();
-        //上周第一天
-        DayOfWeek todayOfWeek = today.getDayOfWeek();
-        int sub = todayOfWeek.getValue() + 6;
-        LocalDate lastWeekFirst = today.minusDays(sub);
+            double thisWeekEq = getDayEq(startTime, endTime, id);
+            chainDTO.setThisWeekEq(thisWeekEq);
+            //上周
+            LocalDate today = LocalDate.now();
+            //上周第一天
+            DayOfWeek todayOfWeek = today.getDayOfWeek();
+            int sub = todayOfWeek.getValue() + 6;
+            LocalDate lastWeekFirst = today.minusDays(sub);
 
 
-        startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(Date.from(lastWeekFirst.atStartOfDay(ZoneId.systemDefault()).toInstant())));
+            startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(Date.from(lastWeekFirst.atStartOfDay(ZoneId.systemDefault()).toInstant())));
 
-        List<String> list = getData(startTime, endTime, id, BOX_EQ_TOTAL_WEEK);
+            List<String> list = getData(startTime, endTime, id, BOX_EQ_TOTAL_WEEK);
 
-        Map<String, Double> eqMap = new HashMap<>();
+            Map<String, Double> eqMap = new HashMap<>();
 
-        list.forEach(str -> {
-            BoxEqTotalDayDo weekDo = JsonUtils.parseObject(str, BoxEqTotalDayDo.class);
-            String dateTime = weekDo.getCreateTime().toString(HOUR_FORMAT);
-            eqMap.put(dateTime, weekDo.getEq());
+            list.forEach(str -> {
+                BoxEqTotalDayDo weekDo = JsonUtils.parseObject(str, BoxEqTotalDayDo.class);
+                String dateTime = weekDo.getCreateTime().toString(HOUR_FORMAT);
+                eqMap.put(dateTime, weekDo.getEq());
 
-        });
-        //上上周
-        String lastTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
-        double eveEq = eqMap.containsKey(lastTime) ? eqMap.get(lastTime) : 0;
+            });
+            //上上周
+            String lastTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
+            double eveEq = eqMap.containsKey(lastTime) ? eqMap.get(lastTime) : 0;
 
-        //上周
-        String thisTime = DateUtil.formatDate(DateUtil.beginOfWeek(DateTime.now()));
-        double lastEq = eqMap.containsKey(thisTime) ? eqMap.get(thisTime) : 0;
+            //上周
+            String thisTime = DateUtil.formatDate(DateUtil.beginOfWeek(DateTime.now()));
+            double lastEq = eqMap.containsKey(thisTime) ? eqMap.get(thisTime) : 0;
 
-        chainDTO.setLastWeekEq(lastEq);
+            chainDTO.setLastWeekEq(lastEq);
 
-        NumberFormat percentInstance = NumberFormat.getPercentInstance();
-        // 设置保留几位小数，这里设置的是保留两位小数
-        percentInstance.setMinimumFractionDigits(2);
-        //环比
-        String weekRate = eveEq == 0 ? percentInstance.format(0) : percentInstance.format(lastEq / eveEq);
-        chainDTO.setWeekRate(weekRate);
+            NumberFormat percentInstance = NumberFormat.getPercentInstance();
+            // 设置保留几位小数，这里设置的是保留两位小数
+            percentInstance.setMinimumFractionDigits(2);
+            //环比
+            String weekRate = eveEq == 0 ? percentInstance.format(0) : percentInstance.format(lastEq / eveEq);
+            chainDTO.setWeekRate(weekRate);
+        }catch (Exception e){
+            log.error("插接箱用能环比"+e);
+        }
     }
 
     /**
@@ -3053,48 +3171,52 @@ public class BoxIndexServiceImpl implements BoxIndexService {
      * @param chainDTO
      */
     private void getMonthChain(int id, BusEleChainDTO chainDTO) throws IOException {
-        String startTime;
-        String endTime;
-        //月环比
-        //本月
-        startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
-        endTime = DateUtil.formatDateTime(DateTime.now());
+        try {
+            String startTime;
+            String endTime;
+            //月环比
+            //本月
+            startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
+            endTime = DateUtil.formatDateTime(DateTime.now());
 
-        double thisMonthEq = getDayEq(startTime, endTime, id);
-        chainDTO.setThisMonthEq(thisMonthEq);
-        //上月
-        //上月第一天
-        Calendar lastMonthFirstDateCal = Calendar.getInstance();
-        lastMonthFirstDateCal.add(Calendar.MONTH, -1);
-        lastMonthFirstDateCal.set(Calendar.DAY_OF_MONTH, 1);
+            double thisMonthEq = getDayEq(startTime, endTime, id);
+            chainDTO.setThisMonthEq(thisMonthEq);
+            //上月
+            //上月第一天
+            Calendar lastMonthFirstDateCal = Calendar.getInstance();
+            lastMonthFirstDateCal.add(Calendar.MONTH, -1);
+            lastMonthFirstDateCal.set(Calendar.DAY_OF_MONTH, 1);
 
-        startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(lastMonthFirstDateCal.getTime()));
+            startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(lastMonthFirstDateCal.getTime()));
 
 
-        List<String> list = getData(startTime, endTime, id, BOX_EQ_TOTAL_MONTH);
+            List<String> list = getData(startTime, endTime, id, BOX_EQ_TOTAL_MONTH);
 
-        Map<String, Double> eqMap = new HashMap<>();
+            Map<String, Double> eqMap = new HashMap<>();
 
-        list.forEach(str -> {
-            BoxEqTotalDayDo monthDo = JsonUtils.parseObject(str, BoxEqTotalDayDo.class);
-            String dateTime = monthDo.getCreateTime().toString(HOUR_FORMAT);
-            eqMap.put(dateTime, monthDo.getEq());
+            list.forEach(str -> {
+                BoxEqTotalDayDo monthDo = JsonUtils.parseObject(str, BoxEqTotalDayDo.class);
+                String dateTime = monthDo.getCreateTime().toString(HOUR_FORMAT);
+                eqMap.put(dateTime, monthDo.getEq());
 
-        });
-        //上上月
-        String lastMonthTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
-        double eveEq = eqMap.containsKey(lastMonthTime) ? eqMap.get(lastMonthTime) : 0;
-        //上月
-        String thisMonthTime = DateUtil.formatDate(DateUtil.beginOfMonth(DateTime.now()));
-        double lastMonthEq = eqMap.containsKey(thisMonthTime) ? eqMap.get(thisMonthTime) : 0;
-        chainDTO.setLastMonthEq(lastMonthEq);
+            });
+            //上上月
+            String lastMonthTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
+            double eveEq = eqMap.containsKey(lastMonthTime) ? eqMap.get(lastMonthTime) : 0;
+            //上月
+            String thisMonthTime = DateUtil.formatDate(DateUtil.beginOfMonth(DateTime.now()));
+            double lastMonthEq = eqMap.containsKey(thisMonthTime) ? eqMap.get(thisMonthTime) : 0;
+            chainDTO.setLastMonthEq(lastMonthEq);
 
-        NumberFormat percentInstance = NumberFormat.getPercentInstance();
-        // 设置保留几位小数，这里设置的是保留两位小数
-        percentInstance.setMinimumFractionDigits(2);
-        //环比
-        String monthRate = eveEq == 0 ? percentInstance.format(0) : percentInstance.format(lastMonthEq / eveEq);
-        chainDTO.setMonthRate(monthRate);
+            NumberFormat percentInstance = NumberFormat.getPercentInstance();
+            // 设置保留几位小数，这里设置的是保留两位小数
+            percentInstance.setMinimumFractionDigits(2);
+            //环比
+            String monthRate = eveEq == 0 ? percentInstance.format(0) : percentInstance.format(lastMonthEq / eveEq);
+            chainDTO.setMonthRate(monthRate);
+        }catch (Exception e){
+            log.error("插接箱用能月环比错误"+e);
+        }
     }
 
     /**

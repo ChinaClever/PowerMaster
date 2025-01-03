@@ -1,5 +1,6 @@
 package cn.iocoder.yudao.module.bus.controller.admin.boxindex;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.iocoder.yudao.framework.common.pojo.CommonResult;
 import cn.iocoder.yudao.framework.common.pojo.PageResult;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
@@ -27,6 +28,7 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static cn.iocoder.yudao.framework.common.pojo.CommonResult.success;
 
@@ -201,8 +203,13 @@ public class BoxIndexController {
      */
     @Operation(summary = "插接箱用能列表分页")
     @PostMapping("/eq/page")
-    public CommonResult<PageResult<BoxIndexDTO>> getEqPage(@RequestBody BoxIndexPageReqVO pageReqVO) {
-        PageResult<BoxIndexDTO> pageResult = indexService.getEqPage(pageReqVO);
+    public CommonResult<PageResult<BoxIndexDTO>> getEqPage(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
+        PageResult<BoxIndexDTO> pageResult;
+        if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity())){
+            pageResult = indexService.getEqPage1(pageReqVO);
+        }else {
+            pageResult =  indexService.getEqPage(pageReqVO);
+        }
         return success(pageResult);
     }
 
