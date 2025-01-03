@@ -56,7 +56,7 @@
         <where>
             bi.is_deleted = 0
             <if test="devkeys != null and devkeys.length > 0">
-                and bi.dev_key in
+                and bi.box_key in
                 <foreach item="item" collection="devkeys" separator="," open="(" close=")" index="">
                     #{item}
                 </foreach>
