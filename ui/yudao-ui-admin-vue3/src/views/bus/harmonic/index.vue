@@ -659,18 +659,20 @@ const getNavList = async() => {
 }
 
 const toDetail = (row) =>{
+  console.log('row',row);
   const devKey = row.devKey;
-  const busId = row.busId
+  const busId = row.busId;
   const location = row.location ? row.location : devKey;
-  push({path: '/bus/busmonitor/busharmonicdetail', state: { devKey, busId , location }})
+  const busName = row.busName;
+  push({path: '/bus/busmonitor/busharmonicdetail', state: { devKey, busId , location , busName}});
 }
 
 const showDialogCur = () => {
-  dialogVisibleCur.value = true
+  dialogVisibleCur.value = true;
 }
 
 const showDialogVol = () => {
-  dialogVisibleVol.value = true
+  dialogVisibleVol.value = true;
 }
 
 // const openNewPage = (scope) => {
