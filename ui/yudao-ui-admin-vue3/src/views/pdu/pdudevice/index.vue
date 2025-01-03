@@ -610,7 +610,8 @@ const getList = async () => {
     // statusNumber.offline = offline;
     // statusNumber.alarm = alarm;
     // statusNumber.warn = warn;
-    total.value = data.total
+    total.value = data.total;
+    getListAll();
   } finally {
     loading.value = false
   }
@@ -756,7 +757,7 @@ const handleQuery = () => {
   queryParams.pageNo = 1;
   queryDeletedPageParams.pageNo = 1;
   getList();
-  //getListAll();
+  getListAll();
 }
 
 /** 重置按钮操作 */
@@ -855,7 +856,7 @@ onActivated(() => {
   getNavList();
   if(!firstTimerCreate.value){
     flashListTimer.value = setInterval(() => {
-        getList();
+        getListAll();
   }, 10000);
     // flashListTimer.value = setInterval((getListAll), 5000);
   }
