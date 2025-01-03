@@ -252,9 +252,9 @@
           @pagination="getDeletedList"
         />               
       <!-- 阵列模式分页 --> 
-      <div class="arrayContainer" v-if="!switchValue && list.length > 0"> 
+      <div class="arrayContainer" v-show="!switchValue && list.length > 0"> 
         <template v-for="item in list" :key="item.devKey">
-          <div v-if="item.id !== null" class="arrayItem">
+          <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content" style="margin-left: 10px;">
             <div class="info">
@@ -560,6 +560,7 @@ const exportLoading = ref(false) // 导出的加载中
 const getList = async () => {
   try {
     const data = await PDUDeviceApi.getPDUDevicePage(queryParams);
+    console.log('data',data);
     list.value = data.list
     var tableIndex = 0;
     // var normal = 0;
