@@ -170,9 +170,9 @@ const shortcuts = [
   },
 ];
 
-watch(() => timeRangeType.value, () => {
-  getNavOneDayData(timeRangeType)
-});
+// watch(() => timeRangeType.value, () => {
+//   getNavOneDayData(timeRangeType)
+// });
 
 const tableColumns = ref([
   { label: '所在位置', align: 'center', prop: 'location' , istrue:true},
@@ -302,6 +302,7 @@ const getNavOneDayData = async (timeRangeType) => {
 /** 搜索按钮操作 */
 const handleQuery = () => {
   queryParams.pageNo = 1
+  getNavOneDayData(timeRangeType)
   getList()
 }
 
