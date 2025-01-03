@@ -327,7 +327,7 @@
         <div class="custom-content">
           <div class="custom-content-container">
             <el-card class="cardChilc" shadow="hover">
-              <curUnblance :max="balanceObj.imbalanceValueA.toFixed(2)" :customColor="colorList[balanceObj.colorIndex].color" />
+              <curUnblance :max="balanceObj.imbalanceValueA.toFixed(2)" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[colorFlag].name" />
             </el-card>
             <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
               <div class="IechartBar">
@@ -342,7 +342,7 @@
           </div>
           <div class="custom-content-container">
             <el-card  class="cardChilc" shadow="hover">
-              <volUnblance :max="balanceObj.imbalanceValueB.toFixed(2)" :customColor=" colorList[balanceObj.colorIndex].color" />
+              <volUnblance :max="balanceObj.imbalanceValueB.toFixed(2)" :customColor=" colorList[balanceObj.colorIndex].color" :name="colorVolList[colorFlag].name" />
             </el-card>
             <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
               <div class="IechartBar">
