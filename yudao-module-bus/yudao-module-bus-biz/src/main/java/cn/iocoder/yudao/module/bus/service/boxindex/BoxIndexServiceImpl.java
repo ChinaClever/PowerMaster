@@ -349,30 +349,15 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             } else {
                 index = "box_hda_line_day";
             }
-            // 创建SearchRequest对象, 设置查询索引名
-            SearchRequest searchRequest = new SearchRequest(index);
-            // 通过QueryBuilders构建ES查询条件，
-            SearchSourceBuilder builder = new SearchSourceBuilder();
-            builder.size(10000);
-            builder.trackTotalHits(true);
-            //获取需要处理的数据
-            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
-                    .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword")
-                            .gte(LocalDateTimeUtil.format(pageReqVO.getOldTime(),"yyyy-MM-dd HH:mm:ss"))
-                            .lte(LocalDateTimeUtil.format(pageReqVO.getNewTime(),"yyyy-MM-dd HH:mm:ss")))
-                    .must(QueryBuilders.termQuery("box_id", boxIndex.getId()))));
-            builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
-            // 设置搜索条件
-            searchRequest.source(builder);
-
+            String start = LocalDateTimeUtil.format(pageReqVO.getOldTime(), "yyyy-MM-dd HH:mm:ss");
+            String end = LocalDateTimeUtil.format(pageReqVO.getNewTime(), "yyyy-MM-dd HH:mm:ss");
+            List<String> list = getEsStrings(index, start, end, boxIndex);
             List<BusHdaLineAvgResVO> dayList1 = new ArrayList<>();
             List<BusHdaLineAvgResVO> dayList2 = new ArrayList<>();
             List<BusHdaLineAvgResVO> dayList3 = new ArrayList<>();
             List<String> dateTimes = new ArrayList<>();
-            // 执行ES请求
-            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-            for (SearchHit hit : searchResponse.getHits()) {
-                BusHdaLineAvgResVO houResVO = JsonUtils.parseObject(hit.getSourceAsString(), BusHdaLineAvgResVO.class);
+            for (String hit : list) {
+                BusHdaLineAvgResVO houResVO = JsonUtils.parseObject(hit, BusHdaLineAvgResVO.class);
                 switch (houResVO.getLineId()) {
                     case 1:
                         dayList1.add(houResVO);
@@ -393,6 +378,37 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             map.put("dateTimes", dateTimes.stream().distinct().collect(Collectors.toList()));
         }
         return map;
+    }
+
+    private List<String> getEsStrings(String index, String start, String end, BoxIndex boxIndex) throws IOException {
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(index);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+            builder.size(10000);
+            builder.trackTotalHits(true);
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
+                    .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword")
+                            .gte(start)
+                            .lte(end))
+                    .must(QueryBuilders.termQuery("box_id", boxIndex.getId()))));
+            builder.sort(CREATE_TIME + ".keyword", SortOrder.ASC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            List<String> list = new ArrayList<>();
+            for (SearchHit hit : searchResponse.getHits()) {
+                String sourceAsString = hit.getSourceAsString();
+                list.add(sourceAsString);
+            }
+            return list;
+        }catch (Exception e){
+            log.error("插接箱报表查询异常:"+e);
+            return null;
+        }
     }
 
     @Override
@@ -1213,6 +1229,53 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     }
 
     @Override
+    public Map getAvgBoxHdaLoopForm(BoxIndexPageReqVO pageReqVO) throws IOException {
+        HashMap<String, Object> map = new HashMap<>();
+        BoxIndex boxIndex = boxIndexCopyMapper.selectOne(new LambdaQueryWrapperX<BoxIndex>().eq(BoxIndex::getBoxKey, pageReqVO.getDevKey()));
+        if (boxIndex != null) {
+            String index;
+            if (pageReqVO.getTimeType().equals(0)) {
+                index = "box_hda_loop_hour";
+            } else {
+                index = "box_hda_loop_day";
+            }
+            String start = LocalDateTimeUtil.format(pageReqVO.getOldTime(), "yyyy-MM-dd HH:mm:ss");
+            String end = LocalDateTimeUtil.format(pageReqVO.getNewTime(), "yyyy-MM-dd HH:mm:ss");
+            List<String> list = getEsStrings(index, start, end, boxIndex);
+            List<BusHdaLoopAvgResVO> dayList1 = new ArrayList<>();
+            List<BusHdaLoopAvgResVO> dayList2 = new ArrayList<>();
+            List<BusHdaLoopAvgResVO> dayList3 = new ArrayList<>();
+            List<String> dateTimes = new ArrayList<>();
+            for (String hit : list) {
+                BusHdaLoopAvgResVO houResVO = JsonUtils.parseObject(hit, BusHdaLoopAvgResVO.class);
+                switch (houResVO.getLineId()) {
+                    case 1:
+                        dayList1.add(houResVO);
+                        break;
+                    case 2:
+                        dayList2.add(houResVO);
+                        break;
+                    case 3:
+                        dayList3.add(houResVO);
+                        break;
+                    default:
+                }
+                dateTimes.add(houResVO.getCreateTime().toString("yyyy-MM-dd HH:mm:ss"));
+            }
+            map.put("A", dayList1);
+            map.put("B", dayList2);
+            map.put("C", dayList3);
+            map.put("dateTimes", dateTimes.stream().distinct().collect(Collectors.toList()));
+        }
+        return map;
+    }
+
+    @Override
+    public BusIndexStatisticsResVO getBoxIndexStatisticsAll() {
+        return boxIndexCopyMapper.getBoxIndexStatisticsAll();
+    }
+
+    @Override
     public PageResult<BoxIndexDTO> getMaxEq(BoxIndexPageReqVO pageReqVO) {
         try {
             PageResult<BoxIndex> boxIndexDOPageResult = boxIndexCopyMapper.selectPage(pageReqVO);
@@ -1610,7 +1673,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
     @Override
     public PageResult<BoxTemRes> getBoxTemPage(BoxIndexPageReqVO pageReqVO) {
-        PageResult<BoxIndex> boxIndexDOPageResult = boxIndexCopyMapper.selectPage(pageReqVO);
+        PageResult<BoxIndex> boxIndexDOPageResult = boxIndexCopyMapper.selectPageAll(pageReqVO);
         List<BoxIndex> list = boxIndexDOPageResult.getList();
         List<BoxTemRes> res = new ArrayList<>();
         List redisList = getMutiRedis(list);

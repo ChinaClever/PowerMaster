@@ -38,7 +38,7 @@ public interface BusIndexMapper extends BaseMapperX<BusIndexDO> {
                         .inIfPresent(BusIndexDO::getLoadRateStatus, reqVO.getLoadRateStatus())
                         .inIfPresent(BusIndexDO::getCurUnbalanceStatus,reqVO.getCurUnbalanceStatus())
 //                .ne(ObjectUtil.isNotEmpty(reqVO.getStatus()),BusIndexDO::getRunStatus, 0)
-                .orderByDesc(BusIndexDO::getRunStatus));
+                .last(" ORDER BY CASE WHEN run_status =1 THEN 0 ELSE run_status END, create_time asc"));
     }
 
     default PageResult<BusIndexDO> selectPage2(BusIndexPageReqVO reqVO) {

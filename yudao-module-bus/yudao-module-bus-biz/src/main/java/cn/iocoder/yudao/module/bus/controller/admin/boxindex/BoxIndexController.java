@@ -135,7 +135,7 @@ public class BoxIndexController {
     }
 
     @PostMapping("/boxtempage")
-    @Operation(summary = "获得插接箱索引分页")
+    @Operation(summary = "获得插接箱温度索引分页")
     public CommonResult<PageResult<BoxTemRes>> getBoxTemPage(@RequestBody BoxIndexPageReqVO pageReqVO) {
         PageResult<BoxTemRes> pageResult = indexService.getBoxTemPage(pageReqVO);
         return success(BeanUtils.toBean(pageResult, BoxTemRes.class));
@@ -320,7 +320,7 @@ public class BoxIndexController {
     }
 
     @PostMapping("/report/ele")
-    @Operation(summary = "获得插接箱报表数据")
+    @Operation(summary = "获得插接箱报表电能数据")
     public CommonResult<Map> getReportConsumeDataByDevKey(@RequestBody BoxIndexPageReqVO pageReqVO) {
         return success(indexService.getReportConsumeDataByDevKey(pageReqVO.getDevKey(),pageReqVO.getTimeType(),pageReqVO.getOldTime(),pageReqVO.getNewTime()));
     }
@@ -360,11 +360,21 @@ public class BoxIndexController {
     public CommonResult<Map> getAvgBoxHdaLineForm(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
         return success(indexService.getAvgBoxHdaLineForm(pageReqVO));
     }
+    @PostMapping("/avg/boxHdaLoop/form")
+    @Operation(summary = "获得插接箱报表平均电流电压详细信息")
+    public CommonResult<Map> getAvgBoxHdaLoopForm(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
+        return success(indexService.getAvgBoxHdaLoopForm(pageReqVO));
+    }
 
     @GetMapping("/statistics")
-    @Operation(summary = "获得插接箱设备运行状态统计")
+    @Operation(summary = "获得插接箱设备运行状态统计-不带连接器")
     public CommonResult<BusIndexStatisticsResVO> getBoxIndexStatistics() {
         return success(indexService.getBoxIndexStatistics());
+    }
+    @GetMapping("/statisticsAll")
+    @Operation(summary = "获得插接箱设备运行状态统计-所有")
+    public CommonResult<BusIndexStatisticsResVO> getBoxIndexStatisticsAll() {
+        return success(indexService.getBoxIndexStatisticsAll());
     }
 
     @GetMapping("balance/statistics")

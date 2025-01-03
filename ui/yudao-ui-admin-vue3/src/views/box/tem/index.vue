@@ -547,7 +547,7 @@ const getList = async () => {
     const data = await IndexApi.getBoxTemPage(queryParams);
     console.log('queryParams',queryParams);
     console.log('data',data);
-    const res = await IndexApi.getBoxIndexStatistics();
+    const res = await IndexApi.getBoxIndexStatisticsAll();
  
     // 初始情况下，使用 API 返回的数据
     let processedList = data.list.map((obj, index) => {

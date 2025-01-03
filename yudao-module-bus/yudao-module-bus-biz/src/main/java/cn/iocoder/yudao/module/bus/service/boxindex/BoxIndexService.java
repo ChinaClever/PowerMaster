@@ -143,4 +143,9 @@ public interface BoxIndexService {
     LoadRateStatus getBoxIndexLoadRateStatus();
 
     PageResult<BoxIndexDTO> getEqPage1(BoxIndexPageReqVO pageReqVO);
+
+    Map getAvgBoxHdaLoopForm(BoxIndexPageReqVO pageReqVO) throws IOException;
+
+    BusIndexStatisticsResVO getBoxIndexStatisticsAll();
+
 }

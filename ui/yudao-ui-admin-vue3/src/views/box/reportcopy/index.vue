@@ -206,15 +206,27 @@
           </div>
           <div class="pageBox" v-if="visControll.temVis">
             <div class="page-conTitle">
-              电流曲线
+              相电流曲线
             </div>
             <CurLine class="adaptiveStyle" :list="curvolList"/>
           </div>
           <div class="pageBox" v-if="visControll.temVis">
             <div class="page-conTitle">
-              电压曲线
+              相电压曲线
             </div>
             <VolLine class="adaptiveStyle" :list="curvolList"/>
+          </div>
+          <div class="pageBox" v-if="visControll.temVis">
+            <div class="page-conTitle">
+              回路电流曲线
+            </div>
+            <CurLine class="adaptiveStyle" :list="curvolLoopList"/>
+          </div>
+          <div class="pageBox" v-if="visControll.temVis">
+            <div class="page-conTitle">
+              回路电压曲线
+            </div>
+            <VolLine class="adaptiveStyle" :list="curvolLoopList"/>
           </div>
           <div class="pageBox" v-if="visControll.temVis">
             <div class="page-conTitle">
@@ -291,6 +303,7 @@ defineOptions({ name: 'PDUDevice' })
 
 const temp1 = ref([]) as any
 const curvolList = ref() as any
+const curvolLoopList = ref() as any
 const temList = ref() as any;
 const eleList = ref() as any;
 const totalLineList = ref() as any;
@@ -763,6 +776,9 @@ const getList = async () => {
   
   curvolList.value = await IndexApi.getAvgBoxHdaLineForm(queryParams);
   console.log('curvolList',curvolList.value)
+
+  curvolLoopList.value = await IndexApi.getAvgBoxHdaLoopForm(queryParams);
+  console.log('curvolList',curvolLoopList.value)
 
   temData.value = await IndexApi.getTemData(queryParams);
   temList.value = temData.value.lineRes;
