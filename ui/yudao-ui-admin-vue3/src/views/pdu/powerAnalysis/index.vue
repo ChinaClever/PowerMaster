@@ -157,7 +157,7 @@
         layout = "sizes, prev, pager, next, jumper"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
-        @pagination="getList"/>
+        @pagination="getList1"/>
       <div class="realTotal" v-if="list.length != 0">共 {{ realTotel }} 条</div>
       <br/><br/><br/><br/>
       <ContentWrap>
@@ -352,42 +352,42 @@ const tableColumns = ref([
   { label: '操作', align: 'center', slot: 'actions' , istrue:true, width: '120px'},
 ]) as any;
 
-/** 查询列表 */
-const getList = async () => {
-  loading.value = true
-  try {
-    if ( selectTimeRange.value != undefined){
-      // 格式化时间范围 加上23:59:59的时分秒 
-      const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
-      // 结束时间的天数多加一天 ，  一天的毫秒数
-      const oneDay = 24 * 60 * 60 * 1000;
-      const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
-      queryParams.timeRange = [selectedStartTime, selectedEndTime];
-    }
-    // 时间段清空后值会变成null 此时搜索不能带上时间段
-    if(selectTimeRange.value == null){
-      queryParams.timeRange = undefined
-    }
-    const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
-    //eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
-    eqData.value = data.list.map((item) => {
-       const difference = item.end_ele - item.start_ele;
-       return difference < 0 ? item.end_ele : formatEQ(difference, 1);
-    });
+// /** 查询列表 */
+// const getList = async () => {
+//   loading.value = true
+//   try {
+//     if ( selectTimeRange.value != undefined){
+//       // 格式化时间范围 加上23:59:59的时分秒 
+//       const selectedStartTime = formatDate(endOfDay(convertDate(selectTimeRange.value[0])))
+//       // 结束时间的天数多加一天 ，  一天的毫秒数
+//       const oneDay = 24 * 60 * 60 * 1000;
+//       const selectedEndTime = formatDate(endOfDay(addTime(convertDate(selectTimeRange.value[1]), oneDay )))
+//       queryParams.timeRange = [selectedStartTime, selectedEndTime];
+//     }
+//     // 时间段清空后值会变成null 此时搜索不能带上时间段
+//     if(selectTimeRange.value == null){
+//       queryParams.timeRange = undefined
+//     }
+//     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
+//     //eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
+//     eqData.value = data.list.map((item) => {
+//        const difference = item.end_ele - item.start_ele;
+//        return difference < 0 ? item.end_ele : formatEQ(difference, 1);
+//     });
 
-    list.value = data.list
-    realTotel.value = data.total
-    if (data.total > 10000){
-      total.value = 10000
-    }else{
-      total.value = data.total
-    }
+//     list.value = data.list
+//     realTotel.value = data.total
+//     if (data.total > 10000){
+//       total.value = 10000
+//     }else{
+//       total.value = data.total
+//     }
     
-  } finally {
-    initChart();
-    loading.value = false
-  }
-}
+//   } finally {
+//     initChart();
+//     loading.value = false
+//   }
+// }
 
 const getList1 = async () => {
   loading.value = true
@@ -503,7 +503,7 @@ const disabledDate = (date) => {
 /** 搜索按钮操作 */
 const handleQuery = () => {
  queryParams.pageNo = 1
- getList()
+ getList1()
 }
 
 
@@ -611,7 +611,8 @@ onMounted(() => {
   getNavList()
   getNavNewData()
   getTypeMaxValue();
-  getList();
+  
+  //getList();
 
   start.value = useRoute().query.start as string;
   end.value = useRoute().query.end as string;

@@ -143,8 +143,8 @@
       </el-form>      
     </template>
     <template #Content>
-      <div v-if="switchValue !== 2 && list.length > 0" style="height:720px;margin-top:-10px;">
-        <el-table v-if="switchValue == 3" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border=true>
+      <div v-show="switchValue !== 2 && list.length > 0" style="height:720px;margin-top:-10px;">
+        <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border=true>
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -205,7 +205,7 @@
         </el-table-column>
       </el-table>
     <!-- 查询已删除-->
-      <el-table v-else-if="switchValue == 4" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
+      <el-table v-show="switchValue == 4" v-loading="loading" :data="deletedList" :stripe="true" :show-overflow-tooltip="true"  :border=true>
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -238,7 +238,7 @@
         v-model:limit="queryDeletedPageParams.pageSize"
         @pagination="getDeletedList"
       />        
-      <div v-if="switchValue == 2  && list.length > 0" class="arrayContainer">
+      <div v-show="switchValue == 2  && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
@@ -259,7 +259,7 @@
             <el-tag type="warning" v-else-if="item.color == 3 && item.status != 0">{{statusList[3].name.slice(3,10)}}</el-tag>
             <el-tag type="danger" v-else-if="item.color == 4 && item.status != 0">{{statusList[4].name.slice(3,10)}}</el-tag>
           </div>
-          <button class="detail" @click="toDetail(item)" v-if="item.color !== 0" >详情</button>
+          <button class="detail" @click="toDetail(item)" v-if="item.status !== 0" >详情</button>
         </div>
       </div>
       <Pagination
