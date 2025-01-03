@@ -295,11 +295,16 @@
         <el-empty description="暂无数据" :image-size="300" />
       </template>
 
-      <el-dialog v-model="detailVis" title="功率因数详情"  width="70vw" height="58vh" >
-        <el-row>
-          <el-tag style="margin-left: 130px; margin-top: -62px">{{ location }}</el-tag>
-          <div style="margin-left: -220px;">
-              日期:
+      <el-dialog v-model="detailVis">
+        <el-row class="custom-row" style="display: flex; align-items: center;">
+          <el-col :span="9" class="location-tag">
+            <span style="margin-right:10px;font-size:18px;font-weight:bold;">功率因素详情</span>
+            <span>所在位置：{{ boxName }}</span>
+            <span> 网络地址：{{ location }}</span>
+          </el-col>
+          
+          <el-col :span="10" class="date-picker-col">
+            日期:
             <el-date-picker
               v-model="queryParams.oldTime"
               value-format="YYYY-MM-DD HH:mm:ss"
@@ -308,43 +313,44 @@
               @change="handleDayPick"
               class="!w-160px"
             />
-          </div>
-          
-          
-          <el-button 
-            style="margin-left: 10px;"
-            @click="subtractOneDay();handleDayPick()" 
-            :type=" 'primary'"
-          >
-            &lt;前一日
-          </el-button>
-          <el-button 
-            @click="addtractOneDay();handleDayPick()" 
-            :type=" 'primary'"
-          >
-            &gt;后一日
-          </el-button>
-          <div class="button-group" style="margin-left: auto">
-            <el-button
-              @click="switchChartOrTable = 0"
-              :type="switchChartOrTable === 0 ? 'primary' : ''"
+            <el-button 
+              style="margin-left: 10px;"
+              @click="subtractOneDay();handleDayPick()" 
+              :type=" 'primary'"
             >
-              图表
+              &lt;前一日
             </el-button>
-            <el-button
-              @click="switchChartOrTable = 1"
-              :type="switchChartOrTable === 1 ? 'primary' : ''"
+            <el-button 
+              @click="addtractOneDay();handleDayPick()" 
+              :type=" 'primary'"
             >
-              数据
+              &gt;后一日
             </el-button>
-            <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading">
-              <Icon icon="ep:download" class="mr-5px" /> 导出
-            </el-button>
-          </div>
+          </el-col>
+          
+          <el-col :span="6" class="chart-data-buttons" style="margin-right:10px;">
+            <div class="button-group" style="margin-left: auto">
+              <el-button
+                @click="switchChartOrTable = 0"
+                :type="switchChartOrTable === 0 ? 'primary' : ''"
+              >
+                图表
+              </el-button>
+              <el-button
+                @click="switchChartOrTable = 1"
+                :type="switchChartOrTable === 1 ? 'primary' : ''"
+              >
+                数据
+              </el-button>
+              <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading">
+                <Icon icon="ep:download" class="mr-5px" /> 导出
+              </el-button>
+            </div>
+          </el-col>
 
         </el-row>
         <br/>
-        <PFDetail v-show="switchChartOrTable == 0"  width="68vw" height="58vh"  :list="pfESList" />
+        <PFDetail v-show="switchChartOrTable == 0"  width="75vw" height="70vh"  :list="pfESList" />
         <el-table v-show="switchChartOrTable == 1" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" >
           <el-table-column label="时间" align="center" prop="time"/>
           <el-table-column label="输出位1功率因数" align="center" prop="powerFactorAvgValueA"/>
@@ -371,6 +377,7 @@ import { ElTree } from 'element-plus'
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
+const boxName = ref() as any;
 const location = ref() as any;
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
@@ -415,6 +422,8 @@ const openPFDetail = async (row) =>{
   queryParams.boxId = row.boxId;
   queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
   location.value = row.location ? row.location : row.devKey;
+  boxName.value = row.boxName;
+  console.log('row',row);
   await getDetail();
   detailVis.value = true;
 }
@@ -587,6 +596,7 @@ const exportLoading = ref(false) // 导出的加载中
 const getDetail = async () => {
   const data = await IndexApi.getBoxPFDetail(queryParams);
   pfESList.value = data;
+  console.log('data');
 
   pfTableList.value = data?.table;
   pfTableList.value?.forEach((obj) => {
@@ -1357,6 +1367,7 @@ onActivated(() => {
   align-items: center;
   justify-content: space-between;
   flex-wrap: nowrap;
+  margin-top:-50px;
 }
  
 .button-group {
@@ -1370,5 +1381,11 @@ onActivated(() => {
 
 :deep(.el-tag){
   margin-right:-40px;
+}
+
+:deep(.el-dialog){
+  width: 80%;
+  height: 80%;
+  margin-top:80px;
 }
 </style>

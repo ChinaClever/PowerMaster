@@ -204,52 +204,38 @@
         <el-empty description="暂无数据" :image-size="595" />
       </template>
 
-      <el-dialog v-model="detailVis" title="功率因素详情"  width="70vw" height="58vh" >
-        <el-row class="custom-row">
-          <el-tag style="margin-left:120px; margin-top: -135px">{{ location }}</el-tag>
-          <div style="margin-left: -220px;">
-            日期:
+      <el-dialog v-model="detailVis" width="70vw" height="58vh" >
+        <el-row class="custom-row" style="display: flex; align-items: center;">
+          <!-- 位置标签 -->
+          <el-col :span="9" class="location-tag">
+            <span style="margin-right:10px;font-size:18px;font-weight:bold;">功率因素详情</span>
+            <span>所在位置：{{ busName }}</span>
+            <span> 网络地址：{{ location }}</span>
+          </el-col>
+
+          <!-- 日期选择器 -->
+          <el-col :span="8" class="date-picker-col">
             <el-date-picker
               v-model="queryParams.oldTime"
               value-format="YYYY-MM-DD HH:mm:ss"
-              type="date"
-              :disabled-date="disabledDate"
-              @change="handleDayPick"
-              class="!w-160px"
+              type="datetime"
+              :picker-options="pickerOptions"
+              placeholder="选择日期时间"
             />
-          </div>
+            <el-button @click="subtractOneDay(); handleDayPick()" type="primary" style="margin-left:10px;">&lt; 前一日</el-button>
+            <el-button @click="addOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
+          </el-col>
 
-          <el-button 
-            style="margin-left: 1vw;"
-            @click="subtractOneDay();handleDayPick()" 
-            :type=" 'primary'"
-          >
-            &lt;前一日
-          </el-button>
-          <el-button 
-            @click="addtractOneDay();handleDayPick()" 
-            :type=" 'primary'"
-          >
-            &gt;后一日
-          </el-button>
-          <div class="button-group" style="margin-left: auto">
-            <el-button
-              @click="switchChartOrTable = 0"
-              :type="switchChartOrTable === 0 ? 'primary' : ''"
-            >
-              图表
-            </el-button>
-            <el-button
-              @click="switchChartOrTable = 1"
-              :type="switchChartOrTable === 1 ? 'primary' : ''"
-            >
-              数据
-            </el-button>
-            <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading">
-              <Icon icon="ep:download" class="mr-5px" /> 导出
-            </el-button>
-          </div>
-
+          <!-- 图表/数据切换按钮组 -->
+          <el-col :span="4" class="chart-data-buttons" style="margin-right:50px;">
+            <div class="button-group">
+              <el-button @click="switchChartOrTable = 0" :type="switchChartOrTable === 0 ? 'primary' : ''">图表</el-button>
+              <el-button @click="switchChartOrTable = 1" :type="switchChartOrTable === 1 ? 'primary' : ''">数据</el-button>
+              <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading">
+                <i class="el-icon-download"></i> 导出
+              </el-button>
+            </div>
+          </el-col>
         </el-row>
         <br/>
         <PFDetail v-if="switchChartOrTable == 0"  width="68vw" height="58vh"  :list="pfESList"   />
@@ -282,6 +268,7 @@ import Bar from './Bar.vue'
 defineOptions({ name: 'PDUDevice' })
 
 // const { push } = useRouter()
+const busName = ref() as any;
 const location = ref() as any;
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
@@ -357,6 +344,8 @@ const openPFDetail = async (row) =>{
   queryParams.busId = row.busId;
   queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
   location.value = row.location ? row.location : row.devKey;
+  busName.value = row.busName;
+  console.log('row',row);
   await getDetail();
   detailVis.value = true;
 }
@@ -479,6 +468,7 @@ const exportLoading = ref(false) // 导出的加载中
 /** 查询列表 */
 const getDetail = async () => {
   const data = await IndexApi.getBusPFDetail(queryParams);
+  console.log('数据',data);
   pfESList.value = data?.chart;
   pfESList.value?.powerFactorAvgValueA?.forEach((obj) => {
     obj = obj?.toFixed(2);
@@ -1279,6 +1269,7 @@ onActivated(() => {
   align-items: center;
   justify-content: space-between;
   flex-wrap: nowrap;
+  margin-top:-50px;
 }
  
 .button-group {

@@ -290,7 +290,7 @@
             <el-tag type="info">离线</el-tag>
           </div>
           <button
-            v-if="item.status != null && item.status != 5"
+            v-if="item.status != null && item.color != 5"
             class="detail"
             @click="location=item.location;showDialogVol(item)"
             >详情</button
@@ -334,26 +334,24 @@
 
       <el-dialog v-model="dialogVisibleVol" @close="handleClose" width="50%" :destroy-on-close="true" style="background-color: #f1f1f1;">
         <template #header>
-          
-          <div style="display: flex; align-items: center;">
-    <span style="font-size: 20px; font-weight: bold;margin-top: 10px;">均衡配电详情</span>
-    <span style="margin-left: 15px;margin-top: 13px;">所在位置：{{ location }}</span>
-    <span style="margin-left: 15px;margin-top: 13px;">网络地址：{{ vollocation }}</span>
-    <!-- <span style="padding-left: 530px; margin-left: 10px;">更新时间: {{ dataUpdateTime }} </span> -->
-  </div>
+          <div style="display: flex; align-items: center;margin-top:-10px">
+            <span style="font-size: 20px; font-weight: bold;">均衡配电详情</span>
+            <span style="margin-left: 15px;">所在位置：{{ location }}</span>
+            <span style="margin-left: 15px;">网络地址：{{ vollocation }}</span>
+            <!-- <span style="padding-left: 530px; margin-left: 10px;">更新时间: {{ dataUpdateTime }} </span> -->
+          </div>
         </template>
          <!-- 自定义的主要内容 -->
-        <div class="custom-content" style="margin-top:-10px">
+        <div class="custom-content" style="margin-top:-35px">
           <el-card class="cardChilc" shadow="hover">
             <div>
               <div>
-    <span style="font-size: 20px; font-weight: bold;">
-      {{ colorList[balanceObj.colorIndex].name }}
-    </span>
-</div>
+                <span style="font-size: 20px; font-weight: bold;">
+                  {{ colorList[balanceObj.colorIndex].name }}
+                </span>
+            </div>
           </div>
-              <div class="status1"></div>
-            <curUnblance :max="balanceObj.imbalanceValueA" :customColor="colorList[balanceObj.colorIndex].color" />
+          <curUnblance :max="balanceObj.imbalanceValueA" :customColor="colorList[balanceObj.colorIndex].color" />
             <!-- <div class="box" :style="{ borderColor: colorList[balanceObj.colorIndex].color }">
               <div class="value">{{ balanceObj.imbalanceValueA }}%</div>
               <div
@@ -362,10 +360,10 @@
                 >{{ colorList[balanceObj.colorIndex].name }}</div
               >
               <div class="status1">
-  <template v-for="item in statusList" :key="item.value">
-    <div class="box1" :style="{backgroundColor: item.color}"></div>{{ item.name }}
-  </template>
-</div>
+                <template v-for="item in statusList" :key="item.value">
+                  <div class="box1" :style="{backgroundColor: item.color}"></div>{{ item.name }}
+                </template>
+              </div>
               <el-tooltip
                 class="box-item"
                 effect="dark"
@@ -378,34 +376,34 @@
           </el-card>
           <el-card class="cardChilc" style="margin: 0 10px" shadow="hover" >
             <div><span style="font-size: 20px; font-weight: bold;">相电流</span></div>
-            <div class="IechartBar" style=" width: 50%;height: 100%;display: inline-block; right: 0;margin-top: 30px;">
-              <Bar :max="barMaxValues" width="300px" height="300px"/>
+            <div class="IechartBar" style=" width: 50%;height: 100%;display: inline-block; right: 0;margin-top: 10px;">
+              <Bar :max="barMaxValues" width="300px" height="250px"/>
             </div>
             <div style="display: inline-block;
-            position: absolute;
-            width: 100px;
-            height: 100px;
-            margin-top: 100px;
-            margin-left:80px">
-          <div class="label-container">
-            <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;" >{{barMaxValues.L1}}A</span>
+              position: absolute;
+              width: 100px;
+              height: 100px;
+              margin-top: 50px;
+              margin-left:80px">
+            <div class="label-container">
+              <span class="bullet" style="color:#E5B849;">•</span><span style="width:50px;font-size:14px;">Ia</span><span style="font-size:16px;" >{{barMaxValues.L1}}A</span>
+            </div>
+            <div class="label-container">
+              <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{barMaxValues.L2}}A</span>
+            </div>
+            <div class="label-container">
+              <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{barMaxValues.L3}}A</span>
+            </div>
           </div>
-          <div class="label-container">
-            <span class="bullet" style="color:#C8603A;">•</span><span style="width:50px;font-size:14px;">Ib</span><span style="font-size:16px;">{{barMaxValues.L2}}A</span>
-          </div>
-          <div class="label-container">
-            <span class="bullet" style="color:#AD3762;">•</span><span style="width:50px;font-size:14px;">Ic</span><span style="font-size:16px;">{{barMaxValues.L3}}A</span>
-          </div>
-        </div>
           </el-card>
           <el-card class="cardChilc" shadow="hover">
             <div >
-    <span style="font-size: 20px;  font-weight: bold; ">
-      电流趋势
-    </span>
-</div>
+              <span style="font-size: 20px;  font-weight: bold; ">
+                电流趋势
+              </span>
+            </div>
             <div class="IechartBar">
-              <Echart :options="ALineOption" :height="300" style="margin-top:10px" />
+              <Echart :options="ALineOption" :height="250" style="margin-top:10px" />
             </div>
           </el-card>
           
@@ -413,10 +411,10 @@
         <div class="custom-content" style="margin-top: 20px;">
           <el-card  class="cardChilc" shadow="hover">
             <div>
-    <span style="font-size: 20px; font-weight: bold; color:{{ color: colorList[4].color }}">
-      电压不平衡
-    </span>
-</div>
+              <span style="font-size: 20px; font-weight: bold; color:{{ color: colorList[4].color }}">
+                电压不平衡
+              </span>
+            </div>
             <volUnblance :max="balanceObj.imbalanceValueB" :customColor="colorList[4].color" />
             <!-- <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
               <div class="value">{{balanceObj.imbalanceValueB}}%</div>
@@ -433,14 +431,14 @@
           </el-card>
           <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
             <div><span style="font-size: 20px; font-weight: bold;">相电压</span></div>
-            <div class="IechartBar" style=" width: 50%;height: 100%;display: inline-block; right: 0;margin-top: 30px;margin-left: -25px;">
-              <Vol :max="volMaxValues" width="300px" height="300px"/>
+            <div class="IechartBar" style=" width: 50%;height: 100%;display: inline-block; right: 0;margin-top: 10px;margin-left: -25px;">
+              <Vol :max="volMaxValues" width="300px" height="250px"/>
             </div>
             <div style="display: inline-block;
             position: absolute;
             width: 100px;
             height: 100px;
-            margin-top: 110px;
+            margin-top: 50px;
             margin-left:100px">
           <div class="label-container">
             <span class="bullet" style="color:#075F71;">•</span><span style="width:50px;font-size:14px;">Ua</span><span style="font-size:16px;">{{volMaxValues.L1}}V</span>
@@ -455,15 +453,14 @@
           </el-card>
           <el-card class="cardChilc" shadow="hover">
             <div>
-    <span style="font-size: 20px; font-weight: bold; ">
-      电压趋势
-    </span>
-</div>
+              <span style="font-size: 20px; font-weight: bold; ">
+                电压趋势
+              </span>
+            </div>
             <div class="IechartBar" >
-              <Echart :options="BLineOption" :height="300" style="margin-top:10px"/>
+              <Echart :options="BLineOption" :height="250" style="margin-top:10px"/>
             </div>
           </el-card>
-          
         </div>
       </el-dialog>
      </div>
@@ -1854,10 +1851,9 @@ onActivated(() => {
 }
 
 :deep(.el-dialog) {
-  top: -5%;
   width: 90%;
   height: 90%;
-  margin-top: 100px
+  margin-top: 30px
 }
 
 .custom-content {
@@ -1885,6 +1881,7 @@ onActivated(() => {
   flex: 1;
   margin: 0 10px;
   box-sizing: border-box;
+  height:40vh;
   .box {
     position: relative;
     height: 121px;
@@ -1909,10 +1906,12 @@ onActivated(() => {
     }
   }
 }
+
 ::v-deep .el-table th,
-   ::v-deep .el-table td{
-    border-right: none;
-   }
+::v-deep .el-table td{
+ border-right: none;
+}
+
 .btnallSelected {
   margin-right: 10px;
   width: 58px;
