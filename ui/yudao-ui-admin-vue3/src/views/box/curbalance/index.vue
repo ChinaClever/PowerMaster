@@ -229,7 +229,7 @@
         <template #header>
           <div>
             <span style="font-weight:bold;font-size:20px;margin-right:10px">电流不平衡</span>
-            <span style="margin-right:10px">所在位置：{{ boxName }}</span>
+            <span style="margin-right:10px">所在位置：{{ curlocation }}</span>
             <span>网络地址：{{ curlocation }}</span>
           </div>
         </template>

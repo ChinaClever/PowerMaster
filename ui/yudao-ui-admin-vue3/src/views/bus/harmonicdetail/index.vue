@@ -56,9 +56,9 @@
         
         <el-form-item>  
           <span>所处位置：</span>
-          <el-tag size="large">{{ adder }}</el-tag>
+          <el-tag size="large">{{ location }}</el-tag>
           <span>设备名称：</span>
-          <el-tag size="large" style="margin-right:11vw">{{ location }}</el-tag>
+          <el-tag size="large" style="margin-right:11vw">{{ busName }}</el-tag>
           <el-select
             v-model="queryParams.harmonicType"
             placeholder="请选择"
@@ -148,7 +148,7 @@ import HarmonicLine from './component/HarmonicLine.vue'
 defineOptions({ name: 'PDUDevice' })
 
 const location = ref(history?.state?.location);
-const adder = location.value.split('-')[0]
+const busName = ref(history?.state?.busName);
 const haveSearch = ref(false);
 const switchValue = ref(1);
 const harmonicRealTime = ref();
