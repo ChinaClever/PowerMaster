@@ -370,7 +370,7 @@
         v-model:limit="queryDeletedPageParams.pageSize"
         @pagination="getDeletedList"
       />     
-      <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
+      <div v-if="switchValue == 0  && list.length > 0" class="arrayContainer">
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.id !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>

@@ -187,7 +187,7 @@
           <div class="status">
             <el-tag v-if="item.status === 1" type="success">正常</el-tag>
             <el-tag v-else-if="item.status === 0" type="info">离线</el-tag>
-            <el-tag v-else-if="item.status === 2">离线</el-tag>
+            <el-tag v-else-if="item.status === 2">告警</el-tag>
           </div>
           <button class="detail" @click="openPFDetail(item)" v-if="item.status != null && item.status != 0" >详情</button>
         </div>
@@ -308,9 +308,10 @@ const statusList = reactive([
     activeClass: 'btn_error error'
   }
 ])
-const normalFlag = ref(true)
-const reportFlag = ref(true)
-const offlineFlag = ref(true)
+
+const normalFlag = ref(true);
+const reportFlag = ref(true);
+const offlineFlag = ref(true);
 
 const pfESList = ref({}) as any
 const pfTableList = ref([]) as any
