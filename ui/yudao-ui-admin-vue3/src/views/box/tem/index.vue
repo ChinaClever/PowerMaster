@@ -124,7 +124,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" style="margin-top:-10px;height:720px;overflow-y:auto;" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openTemDetail" :border="true">
+      <el-table v-show="switchValue == 3" v-loading="loading" style="margin-top:-10px;height:720px;overflow-y:auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openTemDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -547,7 +547,7 @@ const getList = async () => {
     const data = await IndexApi.getBoxTemPage(queryParams);
     console.log('queryParams',queryParams);
     console.log('data',data);
-    const res = await IndexApi.getBoxIndexStatistics();
+    const res = await IndexApi.getBoxIndexStatisticsAll();
  
     // 初始情况下，使用 API 返回的数据
     let processedList = data.list.map((obj, index) => {

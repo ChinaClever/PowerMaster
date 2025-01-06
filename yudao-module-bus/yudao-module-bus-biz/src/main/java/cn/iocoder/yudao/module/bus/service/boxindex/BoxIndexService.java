@@ -66,7 +66,7 @@ public interface BoxIndexService {
 
     PageResult<BoxRedisDataRes> getBoxRedisPage(BoxIndexPageReqVO pageReqVO);
 
-    PageResult<BoxIndexDTO> getEqPage(BoxIndexPageReqVO pageReqVO);
+    PageResult<BoxIndexDTO> getEqPage(BoxIndexPageReqVO pageReqVO) throws IOException;
 
     PageResult<BoxIndexDTO> getMaxEq(BoxIndexPageReqVO pageReqVO);
 
@@ -104,7 +104,7 @@ public interface BoxIndexService {
 
     Integer getBoxIdByDevKey(String devKey);
 
-    BoxPowerDetailRedisResVO getBoxPowerRedisData(String devKey,String type);
+    BoxPowerDetailRedisResVO getBoxPowerRedisData(String devKey,String type) throws IOException;
 
     BusLineResBase getBoxLoadRateLine(BoxIndexPageReqVO pageReqVO);
 
@@ -141,5 +141,11 @@ public interface BoxIndexService {
     ReportBasicInformationResVO getReportBasicInformationResVO(BoxIndexPageReqVO pageReqVO);
 
     LoadRateStatus getBoxIndexLoadRateStatus();
+
+    PageResult<BoxIndexDTO> getEqPage1(BoxIndexPageReqVO pageReqVO);
+
+    Map getAvgBoxHdaLoopForm(BoxIndexPageReqVO pageReqVO) throws IOException;
+
+    BusIndexStatisticsResVO getBoxIndexStatisticsAll();
 
 }

@@ -233,10 +233,10 @@
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
             <el-tag type="info"  v-if="item.status == 0">离线</el-tag>
-            <el-tag type="info"  v-if="item.color == 1">小电流不平衡</el-tag>
-            <el-tag type="success"  v-if="item.color == 2">{{ statusList[0].name }}</el-tag>
-            <el-tag type="warning" v-if="item.color == 3">{{ statusList[1].name }}</el-tag>
-            <el-tag type="danger" v-if="item.color == 4">{{ statusList[2].name }}</el-tag>
+            <el-tag type="info"  v-else-if="item.color == 1">小电流不平衡</el-tag>
+            <el-tag type="success"  v-else-if="item.color == 2">{{ statusList[0].name }}</el-tag>
+            <el-tag type="warning" v-else-if="item.color == 3">{{ statusList[1].name }}</el-tag>
+            <el-tag type="danger" v-else-if="item.color == 4">{{ statusList[2].name }}</el-tag>
           </div>
           <button class="detail" @click="showDialogCur(item)" v-if="item.status != null && item.status != 0">详情</button>
         </div>
@@ -247,74 +247,42 @@
         <!-- 自定义的头部内容（可选） -->
         <template #header>
           <div>
-            <div>
-              <span>所在位置：</span>
-              <el-tag size="large">{{ curlocation }}</el-tag><span>(名称：<el-tag size="large">{{ busName }}</el-tag>)</span>
-            </div>
-            <div style="margin-top:-30px;float:right">
-              <span>网络地址：</span>
-              <el-tag size="large">{{ curlocation.split('-')[0] }}</el-tag>
-            </div>
+            <span style="font-weight:bold;font-size:20px;margin-right:10px">电流不平衡</span>
+            <span style="margin-right:10px">所在位置：{{ boxName }}</span>
+            <span>网络地址：{{ curlocation }}</span>
           </div>
-          <CardTitle title="电流不平衡" />
         </template>
         <!-- 自定义的主要内容 -->
         <div class="custom-content">
           <div class="custom-content-container">
+            <el-card class="cardChilc" shadow="hover">
+              <curUnblance :max="balanceObj.imbalanceValueA.toFixed(2)" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[colorFlag].name" />
+            </el-card>
             <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
-            <div class="IechartBar">
-              <Echart :options="ABarOption" :height="300" />
-            </div>
-          </el-card>
-          <el-card class="cardChilc" shadow="hover">
-            <div class="IechartBar">
-              <Echart :options="ALineOption" :height="300" />
-            </div>
-          </el-card>
-          <el-card class="cardChilc" shadow="hover">
-            <div class="box" :style="{ borderColor: colorList[balanceObj.colorIndex].color }">
-              <div class="value">{{ balanceObj.imbalanceValueA.toFixed(2)}}%</div>
-              <div
-                class="day"
-                :style="{ backgroundColor: colorList[balanceObj.colorIndex].color }"
-                >{{ colorList[balanceObj.colorIndex].name }}</div
-              >
-              <el-tooltip
-                class="box-item"
-                effect="dark"
-                content="三相电流不平衡： 不平衡度%=（MAX相电流-三相平均电流）/三相平均电流×100%"
-                placement="right"
-              >
-                <div @click.prevent="" class="question">?</div>
-              </el-tooltip>
-            </div>
-          </el-card>
+              <div class="IechartBar">
+                <Echart :options="ABarOption" :height="300" />
+              </div>
+            </el-card>
+            <el-card class="cardChilc" shadow="hover">
+              <div class="IechartBar">
+                <Echart :options="ALineOption" :height="300" />
+              </div>
+            </el-card>
           </div>
           <div class="custom-content-container">
+            <el-card  class="cardChilc" shadow="hover">
+              <volUnblance :max="balanceObj.imbalanceValueB.toFixed(2)" :customColor=" colorList[balanceObj.colorIndex].color" :name="colorVolList[colorFlag].name"/>
+            </el-card>
             <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
-            <div class="IechartBar">
-              <Echart :options="BBarOption" :height="300"/>
-            </div>
-          </el-card>
-          <el-card class="cardChilc" shadow="hover">
-            <div class="IechartBar">
-              <Echart :options="BLineOption" :height="300"/>
-            </div>
-          </el-card>
-          <el-card  class="cardChilc" shadow="hover">
-            <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
-              <div class="value">{{balanceObj.imbalanceValueB.toFixed(2)}}%</div>
-              <div class="day" :style="{backgroundColor: colorList[0].color}">电压不平衡</div>
-              <el-tooltip
-                class="box-item"
-                effect="dark"
-                content="三相电压不平衡度=( 最大电压−最小电压)/平均电压×100%"
-                placement="right"
-              >
-                <div @click.prevent="" class="question">?</div>
-              </el-tooltip>
-            </div>
-          </el-card>
+              <div class="IechartBar">
+                <Echart :options="BBarOption" :height="300"/>
+              </div>
+            </el-card>
+            <el-card class="cardChilc" shadow="hover">
+              <div class="IechartBar">
+                <Echart :options="BLineOption" :height="300"/>
+              </div>
+            </el-card>
           </div>
         </div>
       </el-dialog>
@@ -350,74 +318,42 @@
         <!-- 自定义的头部内容（可选） -->
         <template #header>
           <div>
-            <div>
-              <span>所在位置：</span>
-              <el-tag size="large">{{ curlocation }}</el-tag><span>(名称：<el-tag size="large">{{ curlocation }}</el-tag>)</span>
-            </div>
-            <div style="margin-top:-30px;float:right">
-              <span>网络地址：</span>
-              <el-tag size="large">{{ curlocation.split('-')[0] }}</el-tag>
-            </div>
+            <span style="font-weight:bold;font-size:20px;margin-right:10px">电压不平衡</span>
+            <span style="margin-right:10px">所在位置：{{ boxName }}</span>
+            <span>网络地址：{{ curlocation }}</span>
           </div>
-          <CardTitle title="电压不平衡" />
         </template>
         <!-- 自定义的主要内容 -->
         <div class="custom-content">
           <div class="custom-content-container">
+            <el-card class="cardChilc" shadow="hover">
+              <curUnblance :max="balanceObj.imbalanceValueA.toFixed(2)" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[colorFlag].name" />
+            </el-card>
             <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
-            <div class="IechartBar">
-              <Echart :options="ABarOption" :height="300" />
-            </div>
-          </el-card>
-          <el-card class="cardChilc" shadow="hover">
-            <div class="IechartBar">
-              <Echart :options="ALineOption" :height="300" />
-            </div>
-          </el-card>
-          <el-card class="cardChilc" shadow="hover">
-            <div class="box" :style="{ borderColor: colorList[balanceObj.colorIndex].color }">
-              <div class="value">{{ balanceObj.imbalanceValueA.toFixed(2)}}%</div>
-              <div
-                class="day"
-                :style="{ backgroundColor: colorList[balanceObj.colorIndex].color }"
-                >{{ colorList[balanceObj.colorIndex].name }}</div
-              >
-              <el-tooltip
-                class="box-item"
-                effect="dark"
-                content="三相电流不平衡： 不平衡度%=（MAX相电流-三相平均电流）/三相平均电流×100%"
-                placement="right"
-              >
-                <div @click.prevent="" class="question">?</div>
-              </el-tooltip>
-            </div>
-          </el-card>
+              <div class="IechartBar">
+                <Echart :options="ABarOption" :height="300" />
+              </div>
+            </el-card>
+            <el-card class="cardChilc" shadow="hover">
+              <div class="IechartBar">
+                <Echart :options="ALineOption" :height="300" />
+              </div>
+            </el-card>
           </div>
           <div class="custom-content-container">
+            <el-card  class="cardChilc" shadow="hover">
+              <volUnblance :max="balanceObj.imbalanceValueB.toFixed(2)" :customColor=" colorList[balanceObj.colorIndex].color" :name="colorVolList[colorFlag].name" />
+            </el-card>
             <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
-            <div class="IechartBar">
-              <Echart :options="BBarOption" :height="300"/>
-            </div>
-          </el-card>
-          <el-card class="cardChilc" shadow="hover">
-            <div class="IechartBar">
-              <Echart :options="BLineOption" :height="300"/>
-            </div>
-          </el-card>
-          <el-card  class="cardChilc" shadow="hover">
-            <div class="box" :style="{borderColor: colorList[balanceObj.colorIndex].color}">
-              <div class="value">{{balanceObj.imbalanceValueB.toFixed(2)}}%</div>
-              <div class="day" :style="{backgroundColor: colorList[0].color}">电压不平衡</div>
-              <el-tooltip
-                class="box-item"
-                effect="dark"
-                content="三相电压不平衡度=( 最大电压−最小电压)/平均电压×100%"
-                placement="right"
-              >
-                <div @click.prevent="" class="question">?</div>
-              </el-tooltip>
-            </div>
-          </el-card>
+              <div class="IechartBar">
+                <Echart :options="BBarOption" :height="300"/>
+              </div>
+            </el-card>
+            <el-card class="cardChilc" shadow="hover">
+              <div class="IechartBar">
+                <Echart :options="BLineOption" :height="300"/>
+              </div>
+            </el-card>
           </div>
         </div>
       </el-dialog>
@@ -437,38 +373,40 @@
 
 
   <!-- 表单弹窗：添加/修改 -->
-  <CurbalanceColorForm ref="curBalanceColorForm" @success="getList" />
+  <CurbalanceColorForm ref="curBalanceColorForm" @success="handleSuccess" />
 </template>
 
 <script setup lang="ts">
 // import { dateFormatter } from '@/utils/formatTime'
-import download from '@/utils/download'
-import { IndexApi } from '@/api/bus/busindex'
-import CurbalanceColorForm from './CurbalanceColorForm.vue'
-import { ElTree } from 'element-plus'
-import { CabinetApi } from '@/api/cabinet/info'
-import { CurbalanceColorApi } from '@/api/bus/buscurbalancecolor'
-import { EChartsOption } from 'echarts'
+import download from '@/utils/download';
+import { IndexApi } from '@/api/bus/busindex';
+import CurbalanceColorForm from './CurbalanceColorForm.vue';
+import { ElTree } from 'element-plus';
+import { CabinetApi } from '@/api/cabinet/info';
+import { CurbalanceColorApi } from '@/api/bus/buscurbalancecolor';
+import { EChartsOption } from 'echarts';
+import curUnblance from './component/curUnblance.vue';
+import volUnblance from './component/volUnblance.vue';
 
 /** PDU设备 列表 */
-defineOptions({ name: 'PDUDevice' })
+defineOptions({ name: 'PDUDevice' });
 
 
-const dialogVisibleCur = ref(false) //全屏弹窗的显示隐藏
-const dialogVisibleVol = ref(false) //全屏弹窗的显示隐藏
-const { push } = useRouter()
+const dialogVisibleCur = ref(false);
+const dialogVisibleVol = ref(false);
+const { push } = useRouter();
 const visMode = ref(0);
-const curBalanceColorForm = ref()
+const curBalanceColorForm = ref();
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
-const pageSizeArr = ref([24,36,48,96])
-const switchValue = ref(0)
+const pageSizeArr = ref([24,36,48,96]);
+const switchValue = ref(0);
 const statusNumber = reactive({
   lessFifteen : 0,
   greaterFifteen : 0,
   greaterThirty : 0,
   smallCurrent : 0
-})
+});
 
 const butColor = ref(0);
 const onclickColor = ref(-1);
@@ -556,7 +494,7 @@ const BBarOption = ref<EChartsOption>({})
 const ALineOption = ref<EChartsOption>({
   title: {
     text: '电流趋势',
-    left: 'center'
+    left: 'left'
   },
   tooltip: {
     trigger: 'axis',
@@ -593,7 +531,7 @@ const ALineOption = ref<EChartsOption>({
 const BLineOption = ref<EChartsOption>({
   title: {
     text: '电压趋势',
-    left: 'center'
+    left: 'left'
   },
   tooltip: {
     trigger: 'axis',
@@ -645,7 +583,7 @@ const getBalanceDetail = async (item) => {
     ABarOption.value = {
       title: {
         text: '电流饼形图',
-        left: 'center'
+        left: 'left'
       },
       tooltip: {
         trigger: 'item',
@@ -683,7 +621,7 @@ const getBalanceDetail = async (item) => {
     BBarOption.value = {
       title: {
         text: '电压饼形图',
-        left: 'center'
+        left: 'left'
       },
       tooltip: {
         trigger: 'item'
@@ -814,8 +752,11 @@ const getBalanceTrend = async (item) => {
   console.log('item', item)
 }
 
+const colorFlag = ref(0);
+
 const showDialogCur = (item) => {
-  dialogVisibleCur .value = true
+  colorFlag.value = item.color;
+  dialogVisibleCur.value = true
   curlocation.value = item.devKey
   busName.value = item.busName
   getBalanceDetail(item)
@@ -823,6 +764,7 @@ const showDialogCur = (item) => {
 }
 
 const showDialogVol = (item) => {
+  colorFlag.value = item.color;
   dialogVisibleVol.value = true
   vollocation.value = item.devKey
     busName.value = item.busName
@@ -933,13 +875,23 @@ const queryFormRef = ref() // 搜索的表单
 const exportLoading = ref(false) // 导出的加载中
 
 const getCurBalance = async () => {
-      var range = await CurbalanceColorApi.getCurbalanceColor();
+    var range = await CurbalanceColorApi.getCurbalanceColor();
+    console.log('range',range);
     if(range != null){
       statusList[0].name = '<' + range.rangeOne + '%';
       statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
       statusList[2].name = '>' + range.rangeFour + '%';
     }
 }
+
+const handleSuccess = (formData: any) => {
+  console.log('Received formData:', formData);
+  if(formData != null){
+    statusList[0].name = '<' + formData.rangeOne + '%';
+    statusList[1].name = formData.rangeTwo + '%-' +  formData.rangeThree + "%";
+    statusList[2].name = '>' +formData.rangeFour + '%';
+  }
+};
 
 /** 查询列表 */
 const getList = async () => {
@@ -1678,6 +1630,7 @@ onActivated(() => {
 :deep(.el-dialog) {
   width: 80%;
   margin-top: 70px;
+  background-color: #f1f1f1;
 }
 
 .custom-content{

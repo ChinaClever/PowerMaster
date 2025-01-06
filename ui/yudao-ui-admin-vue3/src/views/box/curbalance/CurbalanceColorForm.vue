@@ -98,29 +98,29 @@ const open = async (type: string) => {
   }
   
 }
-defineExpose({ open }) // 提供 open 方法，用于打开弹窗
+defineExpose({ open }); // 提供 open 方法，用于打开弹窗
 
 /** 提交表单 */
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
   // 校验表单
-  await formRef.value.validate()
+  await formRef.value.validate();
   // 提交请求
-  formLoading.value = true
+  formLoading.value = true;
   try {
-    const data = formData.value as unknown as BoxCurbalanceColorVO
+    const data = formData.value as unknown as BoxCurbalanceColorVO;
     if (formType.value === 'create') {
-      await BoxCurbalanceColorApi.createBoxCurbalanceColor(data)
-      message.success(t('common.createSuccess'))
+      await BoxCurbalanceColorApi.createBoxCurbalanceColor(data);
+      message.success(t('common.createSuccess'));
     } else {
-      await BoxCurbalanceColorApi.updateBoxCurbalanceColor(data)
-      message.success(t('common.updateSuccess'))
+      await BoxCurbalanceColorApi.updateBoxCurbalanceColor(data);
+      message.success(t('common.updateSuccess'));
     }
-    dialogVisible.value = false
+    dialogVisible.value = false;
     // 发送操作成功的事件
-    emit('success')
+    emit('success', formData.value)
   } finally {
-    formLoading.value = false
+    formLoading.value = false;
   }
 }
 

@@ -111,7 +111,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true">
+      <el-table v-loading="loading" :data="list" :show-overflow-tooltip="true">
           <!-- 添加行号列 -->
         <el-table-column label="序号" align="center" width="60px">
           <template #default="{ $index }">

@@ -45,4 +45,15 @@
             is_deleted = 0 and box_type =0
         </where>
     </select>
+    <select id="getBoxIndexStatisticsAll"
+            resultType="cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusIndexStatisticsResVO">
+        SELECT count(1) as total,
+        sum(case when bi.run_status = 1 then 1 else 0 end) as normal,
+        sum(case when bi.run_status = 2 then 1 else 0 end) as alarm,
+        sum(case when bi.run_status = 0 then 1 else 0 end) as offline
+        FROM box_index bi
+        <where>
+            bi.is_deleted = 0
+        </where>
+    </select>
 </mapper>

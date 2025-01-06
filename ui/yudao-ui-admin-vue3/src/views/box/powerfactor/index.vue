@@ -101,7 +101,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px;overflow-y:auto;" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :border="true">
+      <el-table v-show="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px;overflow-y:auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="300px"/>
@@ -250,8 +250,8 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            
             <div class="info" style="padding-left: 20px;">
+
               <!--div v-if="item.phasePowFactor!= null && typeText == 'line'">
                 <div v-for="(phasePF,index) in item.phasePowFactor" :key="index">
                   <div >{{ phaseLineText[index] }}{{phasePF}}</div>
@@ -277,6 +277,7 @@
                 <span style="font-size: 20px;">{{ item.totalPowFactor }}</span><br/>总功率因数
               </div>                
             </div>
+
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
@@ -335,14 +336,15 @@
               @click="switchChartOrTable = 0"
               :type="switchChartOrTable === 0 ? 'primary' : ''"
             >
-              图表
+              &lt;前一日
             </el-button>
             <el-button
             style="margin-left: 0px; margin-top: -62px"
               @click="switchChartOrTable = 1"
               :type="switchChartOrTable === 1 ? 'primary' : ''"
+
             >
-              数据
+              &gt;后一日
             </el-button>
             <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading" style="margin-left: 0px; margin-top: -62px">
               <Icon icon="ep:download" class="mr-5px" /> 导出
@@ -351,7 +353,7 @@
 
         </el-row>
         <br/>
-        <PFDetail v-show="switchChartOrTable == 0"  width="68vw" height="58vh"  :list="pfESList" />
+        <PFDetail v-show="switchChartOrTable == 0"  width="75vw" height="70vh"  :list="pfESList" />
         <el-table v-show="switchChartOrTable == 1" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" >
           <el-table-column label="时间" align="center" prop="time"/>
           <el-table-column label="输出位1功率因数" align="center" prop="powerFactorAvgValueA"/>
@@ -378,6 +380,7 @@ import { ElTree } from 'element-plus'
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' })
 
+const boxName = ref() as any;
 const location = ref() as any;
 const devkey = ref() as any;
 const curBalanceColorForm = ref()
@@ -595,11 +598,10 @@ const exportLoading = ref(false) // 导出的加载中
 /** 查询列表 */
 const getDetail = async () => {
   const data = await IndexApi.getBoxPFDetail(queryParams);
-  pfESList.value = data?.chart;
-  console.log('pfESList.value',pfESList.value);
+  pfESList.value = data;
+  console.log('data');
 
   pfTableList.value = data?.table;
-  console.log('表格数据',pfTableList.value);
   pfTableList.value?.forEach((obj) => {
     console.log(obj,obj.powerFactorAvgValueA);
     obj.powerFactorAvgValueA = obj?.powerFactorAvgValueA?.toFixed(2);
@@ -1100,6 +1102,7 @@ onActivated(() => {
         .info{
           font-size: 16px;
           margin-bottom: 20px;
+          margin-left: 10px;
         }
       }
       .devKey{
@@ -1183,6 +1186,7 @@ onActivated(() => {
         .info{
           font-size: 16px;
           margin-bottom: 20px;
+          margin-left: 10px;
         }
       }
       .devKey{
@@ -1265,6 +1269,7 @@ onActivated(() => {
         .info{
           font-size: 16px;
           margin-bottom: 20px;
+          margin-left: 10px;
         }
       }
       .devKey{
@@ -1365,6 +1370,7 @@ onActivated(() => {
   align-items: center;
   justify-content: space-between;
   flex-wrap: nowrap;
+  margin-top:-50px;
 }
  
 .button-group {
@@ -1378,5 +1384,11 @@ onActivated(() => {
 
 :deep(.el-tag){
   margin-right:-40px;
+}
+
+:deep(.el-dialog){
+  width: 80%;
+  height: 80%;
+  margin-top:80px;
 }
 </style>

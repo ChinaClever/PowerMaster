@@ -743,7 +743,7 @@ const initChart = async () => {
                                     return result;
                                   }},
       //显示线的按钮
-      legend: { data: ['有功功率','视在功率','无功功率'], selector: {show: true}},
+      legend: { data: ['有功功率','视在功率','无功功率'], selector: {'有功功率':true, '无功功率':true, '视在功率':true}},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
       xAxis: {type: 'category', axisLabel: { formatter: 
@@ -1372,7 +1372,7 @@ const flashChartData = async () =>{
                                     }
                                     return result;
                                   }},
-      legend: { data: ['有功功率','视在功率','无功功率'], selectedMode: 'single'},
+      legend: { data: ['有功功率','视在功率','无功功率'], selector: {'有功功率':true, '无功功率':true, '视在功率':true}},
       grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
       xAxis: {type: 'category', axisLabel: { formatter: 
@@ -2113,7 +2113,7 @@ watch([() => queryParams.powGranularity], async ([newPowGranularity]) => {
                                       }
                                       return result;
                                     }},
-        legend: { data: ['有功功率','视在功率','无功功率'], selectedMode: 'single'},
+                                    legend: { data: ['有功功率','视在功率','无功功率'], selector: {'有功功率':true, '无功功率':true, '视在功率':true}},
         grid: {left: '3%', right: '4%', bottom: '3%',containLabel: true},
         toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
         xAxis: {type: 'category', axisLabel: { formatter: 

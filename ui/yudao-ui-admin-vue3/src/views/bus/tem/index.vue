@@ -77,13 +77,9 @@
       >
         <el-form-item v-if="valueMode != 3 && valueMode != 4">
           <el-button style="height:35px;" :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">全部</el-button>
-          <template v-for="(data, index) in statusList" :key="index">
+          <template v-for="(status,index) in statusList" :key="index">
             <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
-            <button v-else-if="butColor === 1"
-              :class="[onclickColor === data.value ? data.activeClass:data.cssClass]"
-              @click.prevent="handleSelectStatus(data.value)"
-              >{{ data.name }}</button
-            >
+            <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
           </template>
         </el-form-item>
         <el-form-item label="网络地址" prop="devKey">

@@ -92,7 +92,7 @@
             v-model="queryParams.devKey"
             :fetch-suggestions="querySearch"
             clearable
-            class="!w-200px"
+            class="!w-150px"
             placeholder="请输入网络地址"
             @select="handleQuery"
           />
@@ -119,17 +119,18 @@
         </el-form-item>
         </el-form-item>
         <div style="float:right">
+          <el-button @click="valueMode = 4;" :type="valueMode == 4 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />视在功率</el-button>
           <el-button @click="valueMode = 2;" :type="valueMode == 2 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />有功功率</el-button>            
           <el-button @click="valueMode = 3;" :type="valueMode == 3 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />无功功率</el-button> 
-          <el-button v-if= "!shouldShowLabel" @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
-          <el-button v-if= "!shouldShowLabel" @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压</el-button>                                 
+          <!-- <el-button v-if= "!shouldShowLabel" @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电流</el-button>            
+          <el-button v-if= "!shouldShowLabel" @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />电压</el-button>                                  -->
           <el-button @click="pageSizeArr=[24,36,48,96];queryParams.pageSize = 24;getList();switchValue = 0;" :type="switchValue == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 4px" />阵列模式</el-button>
           <el-button @click="pageSizeArr=[15, 25,30, 50, 100];queryParams.pageSize = 15;getList();switchValue = 3;" :type="switchValue == 3 ? 'primary' : ''"><Icon icon="ep:expand" style="margin-right: 4px" />表格模式</el-button>
         </div>
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px;" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
+      <el-table v-show="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -176,7 +177,7 @@
             </el-text>
           </template>
         </el-table-column>
-        <el-table-column v-if="valueMode == 2 && typeText == 'line'" label="A相有功功率(kW)" align="center" prop="aactivePow" width="130px" >
+        <!-- <el-table-column v-if="valueMode == 2 && typeText == 'line'" label="A相有功功率(kW)" align="center" prop="aactivePow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.phaseActivePow">
               {{ scope.row.phaseActivePow[0] }}
@@ -196,8 +197,8 @@
               {{ scope.row.phaseActivePow[2] }}
             </el-text>
           </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 3 && typeText == 'line'" label="A相无功功率(kVar)" align="center" prop="areactivePow" width="130px" >
+        </el-table-column> -->
+        <!-- <el-table-column v-if="valueMode == 3 && typeText == 'line'" label="A相无功功率(kVar)" align="center" prop="areactivePow" width="130px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.phaseReactivePow">
               {{ scope.row.phaseReactivePow[0] }}
@@ -218,7 +219,35 @@
             </el-text>
           </template>
         </el-table-column>
-
+         -->
+                <el-table-column v-if="valueMode == 4 && typeText == 'line'" label="输出位1视在功率(kVA)" align="center" prop="areactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.outletApparentPow">
+              {{ scope.row.outletApparentPow[0] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 4 && typeText == 'line'" label="输出位2视在功率(kVA)" align="center" prop="breactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.outletApparentPow">
+              {{ scope.row.outletApparentPow[1] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 4 && typeText == 'line'" label="输出位3视在功率(kVA)" align="center" prop="creactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.outletApparentPow">
+              {{ scope.row.outletApparentPow[2] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 4 && typeText == 'line'" label="总视在功率(kVA)" align="center" prop="creactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powApparent">
+              {{ scope.row.powApparent }}
+            </el-text>
+          </template>
+        </el-table-column>
         
         <el-table-column v-if="valueMode == 2" label="输出位1有功功率(kW)" align="center" prop="aactivePow" width="130px" >
           <template #default="scope" >
@@ -238,6 +267,13 @@
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.outletActivePow">
               {{ scope.row.outletActivePow[2] }}
+            </el-text>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="valueMode == 2 && typeText == 'line'" label="总有功功率(kW)" align="center" prop="cactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powActive">
+              {{ scope.row.powActive }}
             </el-text>
           </template>
         </el-table-column>
@@ -262,7 +298,13 @@
             </el-text>
           </template>
         </el-table-column>
-
+        <el-table-column v-if="valueMode == 3" label="总无功功率(kVar)" align="center" prop="creactivePow" width="130px" >
+          <template #default="scope" >
+            <el-text line-clamp="2" v-if="scope.row.powReactive">
+              {{ scope.row.powReactive }}
+            </el-text>
+          </template>
+        </el-table-column>
         <!--<el-table-column v-if="valueMode == 0 && typeText == 'loop'" label="回路1电流(A)" align="center" prop="acur" width="100px" >
           <template #default="scope" >
             <el-text line-clamp="2" v-if="scope.row.loopCur != null">
@@ -569,7 +611,7 @@
               <!--<div v-else-if="valueMode == 1 && item.loopVol != null && typeText == 'loop'" >
                 电压
               </div>-->
-              <div v-if="valueMode == 2 && item.phaseActivePow != null && typeText == 'line'">
+              <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'line'">
                 有功功率
               </div>
               <!--<div v-if="valueMode == 2 && item.loopActivePow != null && typeText == 'loop'">
@@ -578,13 +620,13 @@
               <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'outlet'">
                 有功功率
               </div>-->
-              <div v-if="valueMode == 3 && item.phaseReactivePow != null && typeText == 'line'" >
+              <div v-if="valueMode == 3 && item.outletReactivePow != null && typeText == 'line'" >
                 无功功率
               </div>
-              <!--<div v-if="valueMode == 3 && item.loopReactivePow != null && typeText == 'loop'" >
-                无功功率
+              <div v-if="valueMode == 4 && item.outletApparentPow != null && typeText == 'line'" >
+                视在功率
               </div>
-              <div v-if="valueMode == 3 && item.outletReactivePow != null && typeText == 'outlet'" >
+             <!--<div v-if="valueMode == 3 && item.outletReactivePow != null && typeText == 'outlet'" >
                 无功功率
               </div>-->
             </div>
@@ -662,6 +704,29 @@
                 <div v-for="(outletReactivePow,index) in item.outletReactivePow" :key="index">
                   <el-text  v-if="item.outletReactivePow != null">
                     {{outletLineText[index]}}{{outletReactivePow}}kVar
+                  </el-text>
+                </div>
+              </div>
+            </div>
+            <div class="info" v-if="valueMode == 4">
+              <!--<div  v-if="item.phaseReactivePow != null && typeText == 'line'">
+                <div v-for="(phaseReactivePow,index) in item.phaseReactivePow" :key="index">
+                  <el-text  v-if="item.phaseReactivePow != null">
+                    {{phaseLineText[index]}}{{phaseReactivePow}}kVar
+                  </el-text>
+                </div>
+              </div>
+              <div  v-else-if="item.loopReactivePow != null && typeText == 'loop'">
+                <div v-for="(loopReactivePow,index) in item.loopReactivePow" :key="index">
+                  <el-text  v-if="item.loopReactivePow != null">
+                    {{loopLineText[index]}}{{loopReactivePow}}kVar
+                  </el-text>
+                </div>
+              </div>-->
+              <div>
+                <div v-for="(outletApparentPow,index) in item.outletApparentPow" :key="index">
+                  <el-text  v-if="item.outletApparentPow != null">
+                    {{outletLineText[index]}}{{outletApparentPow}}kVar
                   </el-text>
                 </div>
               </div>

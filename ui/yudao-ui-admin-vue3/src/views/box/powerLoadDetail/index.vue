@@ -569,8 +569,9 @@ const getDetailData =async () => {
       powReactive.value = formatNumber(data.powReactive, 3);
       peakDemand.value = formatNumber(data.peakDemand, 3);
       powActivepPercentage.value = runLoad.value == 0 ? 0 :  ((powActive.value / runLoad.value) * 100).toFixed(2);
-      powReactivepPercentage.value = runLoad.value == 0 ? 0 : ((powReactive.value / runLoad.value) * 100 ).toFixed(2)
+      powReactivepPercentage.value = runLoad.value == 0 ? 0 : ((powReactive.value / runLoad.value) * 100 ).toFixed(2);
       loadPercentage.value = ratedCapacity.value == 0 ? 0 :  ((runLoad.value / ratedCapacity.value) * 100).toFixed(2);
+      console.log('1111111111111',loadPercentage.value);
       //loadPercentage.value = 7 测试数据
       if (loadPercentage.value <= 40){
         xAxisLabel.value = '正常运行'
@@ -603,6 +604,10 @@ const getBoxIdAndLocation =async () => {
  } finally {
  }
 }
+
+watch(() => loadPercentage.value ,async()=>{
+  await initChart()
+})
 
 // 监听切换类型
 watch( ()=>typeRadio.value, async(value)=>{

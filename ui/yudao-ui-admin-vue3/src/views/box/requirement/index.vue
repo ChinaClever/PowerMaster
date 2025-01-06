@@ -342,7 +342,7 @@ import RequirementLine from './component/RequirementLine.vue'
 import { ElTree } from 'element-plus'
 
 /** PDU设备 列表 */
-defineOptions({ name: 'PDUDevice' })
+// defineOptions({ name: 'PDUDevice' })
 
 const startTime = ref() as any;
 const endTime = ref() as any;

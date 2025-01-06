@@ -149,7 +149,7 @@
     </template>
     <template #Content>
       <div v-if="switchValue == 1" style="height:720px;margin-top:-10px;overflow-y: auto;">
-        <el-table v-show="visMode == 0" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
+        <el-table v-show="visMode == 0" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
           <el-table-column label="编号" align="center" prop="tableId" width="80px" />
           <!-- 数据库查询 -->
           <el-table-column label="所在位置" align="center" prop="location" width="218px" />
@@ -201,7 +201,7 @@
             </template>
           </el-table-column>
         </el-table>
-        <el-table v-show="visMode == 1" v-loading="loading" :data="list" :stripe="true" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
+        <el-table v-show="visMode == 1" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openDetail" :border="true">
           <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
           <el-table-column label="所在位置" align="center" prop="location" width="218px" />
           <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>
@@ -275,7 +275,8 @@
       </div>
 
       <div  v-show="switchValue == 0 && visMode == 0 && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+        <template v-for="item in list" :key="item.devKey">
+          <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">            
             <div style="padding: 0 28px" class="info">              
@@ -292,6 +293,7 @@
           </div>                
           <button class="detail" @click="queryParams.lineType = 0;openDetail(item)" >详情</button>
         </div>
+        </template>
       </div>
 
       <Pagination
@@ -306,26 +308,30 @@
         <el-empty description="暂无数据" :image-size="300" />
       </template>
 
-      <el-dialog v-model="detailVis" :title="queryParams.lineType == 0 ? `电流详情`: `功率详情`"  width="70vw" height="58vh" >
-        <div>
-          结果所在位置：（<el-tag>{{ location }}</el-tag>） 时间段: {{ startTime }}&nbsp;&nbsp;到&nbsp;&nbsp;{{ endTime }}
-        </div>
-        <div style="margin-left:55vw; margin-top:-4vh;">
-          <el-button 
-            @click="switchChartOrTable = 0" 
-            :type="switchChartOrTable == 0 ?  'primary' : ``"
-          >
-            图表
-          </el-button>
-          <el-button 
-            @click="switchChartOrTable = 1" 
-            :type=" switchChartOrTable == 1 ?  'primary' : ``"
-          >
-            数据
-          </el-button>
-          <el-button type="success" plain @click="handleExport" :loading="exportLoading">
-             <Icon icon="ep:download" class="mr-5px" /> 导出
-           </el-button>
+      <el-dialog v-model="detailVis" width="70vw" height="58vh" >
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;margin-top:-50px;">
+          <div>
+            <span style="font-weight:bold;font-size:20px;margin-right:10px;">{{queryParams.lineType == 0 ? `电流详情`: `功率详情`}}</span>
+            <span style="margin-right:10px;">结果所在位置：{{ location }}</span>
+            <span>时间段: {{ startTime }}&nbsp;&nbsp;到&nbsp;&nbsp;{{ endTime }}</span>
+          </div>
+          <div style="display: flex; gap: 10px;margin-right:30px;"> <!-- 子div用于包含按钮，并设置按钮之间的间距 -->
+            <el-button
+              @click="switchChartOrTable = 0"
+              :type="switchChartOrTable == 0 ? 'primary' : ''"
+            >
+              图表
+            </el-button>
+            <el-button
+              @click="switchChartOrTable = 1"
+              :type="switchChartOrTable == 1 ? 'primary' : ''"
+            >
+              数据
+            </el-button>
+            <el-button type="success" plain @click="handleExport" :loading="exportLoading">
+              <Icon icon="ep:download" class="mr-5px" /> 导出
+            </el-button>
+          </div>
         </div>
         <div style="margin-top:3vh;">
           <RequirementLine v-if="switchChartOrTable == 0" width="68vw" height="58vh" :list="requirementLine"  />
@@ -650,6 +656,7 @@ const openDetail = async (row) =>{
   pfTableList.value.forEach(item => item.pow_active_max_value = item.pow_active_max_value+'KW')
 
   const lineData = await IndexApi.getBusLineCurLine(queryParams)
+  console.log('lineData',lineData);
   requirementLine.value = lineData;
   requirementLine.value.formatter = queryParams.lineType == 0 ? '{value} A' : '{value} kW';
   location.value = row.location != null ? row.location : row.devKey

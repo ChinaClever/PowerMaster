@@ -34,7 +34,7 @@ public interface BoxIndexCopyMapper extends BaseMapperX<BoxIndex> {
                 .inIfPresent(BoxIndex::getRunStatus,reqVO.getStatus())
                 .eqIfPresent(BoxIndex::getBoxType,0)
                 .betweenIfPresent(BoxIndex::getCreateTime, reqVO.getCreateTime())
-                .orderByAsc(BoxIndex::getId));
+                .last(" ORDER BY CASE WHEN run_status =1 THEN 0 ELSE run_status END, create_time asc"));
     }
 
     BusIndexStatisticsResVO getBoxIndexStatistics();
@@ -43,4 +43,23 @@ public interface BoxIndexCopyMapper extends BaseMapperX<BoxIndex> {
 
     LoadRateStatus getBoxIndexLoadRateStatus();
 
+    default PageResult<BoxIndex> selectPageAll(BoxIndexPageReqVO reqVO){
+        return selectPage(reqVO, new LambdaQueryWrapperX<BoxIndex>()
+                .eqIfPresent(BoxIndex::getBoxKey, reqVO.getDevKey())
+                .inIfPresent(BoxIndex::getBoxKey,reqVO.getBoxDevKeyList())
+                .inIfPresent(BoxIndex::getId,reqVO.getBoxIds())
+                .eqIfPresent(BoxIndex::getIpAddr, reqVO.getIpAddr())
+                .eqIfPresent(BoxIndex::getBoxId, reqVO.getBarId())
+                .eqIfPresent(BoxIndex::getRunStatus, reqVO.getRunStatus())
+                .inIfPresent(BoxIndex::getLoadRateStatus, reqVO.getColor())
+                .eqIfPresent(BoxIndex::getNodeId, reqVO.getNodeIp())
+                .eqIfPresent(BoxIndex::getIsDeleted, reqVO.getIsDeleted())
+                .inIfPresent(BoxIndex::getCurUnbalanceStatus,reqVO.getCurUnbalanceStatus())
+                .inIfPresent(BoxIndex::getRunStatus,reqVO.getStatus())
+//                .eqIfPresent(BoxIndex::getBoxType,0)
+                .betweenIfPresent(BoxIndex::getCreateTime, reqVO.getCreateTime())
+                .last(" ORDER BY CASE WHEN run_status =1 THEN 0 ELSE run_status END, create_time asc"));
+    }
+
+    BusIndexStatisticsResVO getBoxIndexStatisticsAll();
 }

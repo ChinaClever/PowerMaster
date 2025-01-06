@@ -356,20 +356,46 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
 
     @Override
     public Map<String, Object> getNewData() throws IOException {
+        Map<String, Object> map = new HashMap<>();
         String[] indices = new String[]{"bus_eq_total_day"};
         String[] name = new String[]{"day", "week", "month"};
         LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1), LocalDateTime.now().minusWeeks(1), LocalDateTime.now().minusMonths(1)};
-        Map<String, Object> map = getSumData(indices, name, timeAgo);
+        try {
+             map = getSumData(indices, name, timeAgo);
+        }catch (Exception e){
+            log.error("获取数据失败",e);
+        }
         return map;
     }
 
     @Override
-    public Map<String, Object> getOneDaySumData() throws IOException {
+    public Map<String, Object> getOneDaySumData(String timeRangeType) throws IOException {
         String[] indices = new String[]{"bus_ele_total_realtime"};
         String[] name = new String[]{"total"};
-        LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1)};
+        LocalDateTime[] timeAgo;
+
+        switch (timeRangeType) {
+            case "day":
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1)};
+                break;
+            case "week":
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusWeeks(1)};
+                break;
+            case "month":
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMonths(1)};
+                break;
+            case "sixMonths":
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMonths(6)};
+                break;
+            case "year":
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusYears(1)};
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid type: " + timeRangeType);
+        }
+
         Map<String, Object> map = getSumData(indices, name, timeAgo);
-        return map;
+        return map; // 确保 map 已经正确初始化并且不是 null
     }
 
     @Override
@@ -421,112 +447,125 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
     //--------------------------------------------------------插接箱
     @Override
     public PageResult<Object> getBoxEQDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
-        // 搜索源构建对象
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        // 设置要排除的字段
-        searchSourceBuilder.fetchSource(null, new String[]{"id", "bill_value", "bill_mode", "bill_period"});
-        int pageNo = pageReqVO.getPageNo();
-        int pageSize = pageReqVO.getPageSize();
-        int index = (pageNo - 1) * pageSize;
-        searchSourceBuilder.from(index);
-        // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-        if (index + pageSize > 10000) {
-            searchSourceBuilder.size(10000 - index);
-        } else {
-            searchSourceBuilder.size(pageSize);
-        }
-        searchSourceBuilder.trackTotalHits(true);
-        searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
-        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
-        if (pageReqVO.getTimeRange() != null && pageReqVO.getTimeRange().length != 0) {
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(pageReqVO.getTimeRange()[0])
-                    .to(pageReqVO.getTimeRange()[1]));
-        }
-        String[] devkeys = pageReqVO.getDevkeys();
-        if (devkeys != null) {
-            Integer[] boxIds = getBoxIdsByDevkeys(devkeys);
-            System.out.println();
-            searchSourceBuilder.query(QueryBuilders.termsQuery("box_id", boxIds));
-        }
-        // 搜索请求对象
-        SearchRequest searchRequest = new SearchRequest();
-        if ("day".equals(pageReqVO.getGranularity())) {
-            searchRequest.indices("box_eq_total_day");
-        } else if ("week".equals(pageReqVO.getGranularity())) {
-            searchRequest.indices("box_eq_total_week");
-        } else {
-            searchRequest.indices("box_eq_total_month");
-        }
-        searchRequest.source(searchSourceBuilder);
-        // 执行搜索,向ES发起http请求
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-        // 搜索结果
-        List<Map<String, Object>> mapList = new ArrayList<>();
-        SearchHits hits = searchResponse.getHits();
-        hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
-        // 匹配到的总记录数
-        Long totalHits = hits.getTotalHits().value;
-        // 返回的结果
-        PageResult<Object> pageResult = new PageResult<>();
-        pageResult.setList(busHistoryDataService.getLocationsAndNameByBoxIds(mapList))
-                .setTotal(totalHits);
 
+        PageResult<Object> pageResult = new PageResult<>();
+        try {
+            // 搜索源构建对象
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            // 设置要排除的字段
+            searchSourceBuilder.fetchSource(null, new String[]{"id", "bill_value", "bill_mode", "bill_period"});
+            int pageNo = pageReqVO.getPageNo();
+            int pageSize = pageReqVO.getPageSize();
+            int index = (pageNo - 1) * pageSize;
+            searchSourceBuilder.from(index);
+            // 最后一页请求超过一万，pageSize设置成请求刚好一万条
+            if (index + pageSize > 10000) {
+                searchSourceBuilder.size(10000 - index);
+            } else {
+                searchSourceBuilder.size(pageSize);
+            }
+            searchSourceBuilder.trackTotalHits(true);
+            searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
+            searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+            if (pageReqVO.getTimeRange() != null && pageReqVO.getTimeRange().length != 0) {
+                searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                        .from(pageReqVO.getTimeRange()[0])
+                        .to(pageReqVO.getTimeRange()[1]));
+            }
+            String[] devkeys = pageReqVO.getDevkeys();
+            if (devkeys != null) {
+                Integer[] boxIds = getBoxIdsByDevkeys(devkeys);
+                System.out.println();
+                searchSourceBuilder.query(QueryBuilders.termsQuery("box_id", boxIds));
+            }
+            // 搜索请求对象
+            SearchRequest searchRequest = new SearchRequest();
+            if ("day".equals(pageReqVO.getGranularity())) {
+                searchRequest.indices("box_eq_total_day");
+            } else if ("week".equals(pageReqVO.getGranularity())) {
+                searchRequest.indices("box_eq_total_week");
+            } else {
+                searchRequest.indices("box_eq_total_month");
+            }
+            searchRequest.source(searchSourceBuilder);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            // 搜索结果
+            List<Map<String, Object>> mapList = new ArrayList<>();
+            SearchHits hits = searchResponse.getHits();
+            hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
+            // 匹配到的总记录数
+            Long totalHits = hits.getTotalHits().value;
+            // 返回的结果
+
+            pageResult.setList(busHistoryDataService.getLocationsAndNameByBoxIds(mapList))
+                    .setTotal(totalHits);
+
+            return pageResult;
+        }catch (Exception e){
+            log.error("查询插接箱数据异常",e);
+        }
         return pageResult;
     }
 
     @Override
     public PageResult<Object> getBoxBillDataPage(EnergyConsumptionPageReqVO pageReqVO) throws IOException {
-        // 搜索源构建对象
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        // 设置要搜索的字段
-//        searchSourceBuilder.fetchSource(new String[]{"box_id", "start_time", "end_time", "eq_value",  "bill_value", }, null);
-        int pageNo = pageReqVO.getPageNo();
-        int pageSize = pageReqVO.getPageSize();
-        int index = (pageNo - 1) * pageSize;
-        searchSourceBuilder.from(index);
-        // 最后一页请求超过一万，pageSize设置成请求刚好一万条
-        if (index + pageSize > 10000) {
-            searchSourceBuilder.size(10000 - index);
-        } else {
-            searchSourceBuilder.size(pageSize);
-        }
-        searchSourceBuilder.trackTotalHits(true);
-        searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
-        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
-        if (pageReqVO.getTimeRange() != null && pageReqVO.getTimeRange().length != 0) {
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(pageReqVO.getTimeRange()[0])
-                    .to(pageReqVO.getTimeRange()[1]));
-        }
-        String[] devkeys = pageReqVO.getDevkeys();
-        if (devkeys != null) {
-            Integer[] boxIds = getBoxIdsByDevkeys(devkeys);
-            searchSourceBuilder.query(QueryBuilders.termsQuery("box_id", boxIds));
-        }
-        // 搜索请求对象
-        SearchRequest searchRequest = new SearchRequest();
-        if ("day".equals(pageReqVO.getGranularity())) {
-            searchRequest.indices("box_eq_total_day");
-        } else if ("week".equals(pageReqVO.getGranularity())) {
-            searchRequest.indices("box_eq_total_week");
-        } else {
-            searchRequest.indices("box_eq_total_month");
-        }
-        searchRequest.source(searchSourceBuilder);
-        // 执行搜索,向ES发起http请求
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-        // 搜索结果
-        List<Map<String, Object>> mapList = new ArrayList<>();
-        SearchHits hits = searchResponse.getHits();
-        hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
-        // 匹配到的总记录数
-        Long totalHits = hits.getTotalHits().value;
-        // 返回的结果
         PageResult<Object> pageResult = new PageResult<>();
-        pageResult.setList(busHistoryDataService.getLocationsAndNameByBoxIds(mapList))
-                .setTotal(totalHits);
+        try {
+            // 搜索源构建对象
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            // 设置要搜索的字段
+//        searchSourceBuilder.fetchSource(new String[]{"box_id", "start_time", "end_time", "eq_value",  "bill_value", }, null);
+            int pageNo = pageReqVO.getPageNo();
+            int pageSize = pageReqVO.getPageSize();
+            int index = (pageNo - 1) * pageSize;
+            searchSourceBuilder.from(index);
+            // 最后一页请求超过一万，pageSize设置成请求刚好一万条
+            if (index + pageSize > 10000) {
+                searchSourceBuilder.size(10000 - index);
+            } else {
+                searchSourceBuilder.size(pageSize);
+            }
+            searchSourceBuilder.trackTotalHits(true);
+            searchSourceBuilder.sort("create_time.keyword", SortOrder.DESC);
+            searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+            if (pageReqVO.getTimeRange() != null && pageReqVO.getTimeRange().length != 0) {
+                searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                        .from(pageReqVO.getTimeRange()[0])
+                        .to(pageReqVO.getTimeRange()[1]));
+            }
+            String[] devkeys = pageReqVO.getDevkeys();
+            if (devkeys != null) {
+                Integer[] boxIds = getBoxIdsByDevkeys(devkeys);
+                searchSourceBuilder.query(QueryBuilders.termsQuery("box_id", boxIds));
+            }
+            // 搜索请求对象
+            SearchRequest searchRequest = new SearchRequest();
+            if ("day".equals(pageReqVO.getGranularity())) {
+                searchRequest.indices("box_eq_total_day");
+            } else if ("week".equals(pageReqVO.getGranularity())) {
+                searchRequest.indices("box_eq_total_week");
+            } else {
+                searchRequest.indices("box_eq_total_month");
+            }
+            searchRequest.source(searchSourceBuilder);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            // 搜索结果
+            List<Map<String, Object>> mapList = new ArrayList<>();
+            SearchHits hits = searchResponse.getHits();
+            hits.forEach(searchHit -> mapList.add(searchHit.getSourceAsMap()));
+            // 匹配到的总记录数
+            Long totalHits = hits.getTotalHits().value;
+            // 返回的结果
 
+            pageResult.setList(busHistoryDataService.getLocationsAndNameByBoxIds(mapList))
+                    .setTotal(totalHits);
+
+            return pageResult;
+        }catch (Exception e){
+            log.error("查询插接箱数据异常",e);
+        }
         return pageResult;
     }
 
@@ -552,41 +591,47 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
             return pageResult;
 //            boxId = reqVO.getBoxId();
         }
-        // 搜索源构建对象
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
-        searchSourceBuilder.size(10000);
-        searchSourceBuilder.trackTotalHits(true);
-        if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0) {
-            searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
-                    .from(reqVO.getTimeRange()[0])
-                    .to(reqVO.getTimeRange()[1]));
-        }
-        // 搜索请求对象
-        SearchRequest searchRequest = new SearchRequest();
-        if ("day".equals(reqVO.getGranularity())) {
-            searchRequest.indices("box_eq_total_day");
-        } else if ("week".equals(reqVO.getGranularity())) {
-            searchRequest.indices("box_eq_total_week");
-        } else {
-            searchRequest.indices("box_eq_total_month");
-        }
-
-        searchSourceBuilder.query(QueryBuilders.termQuery("box_id", boxId));
-
-        searchRequest.source(searchSourceBuilder);
-        // 执行搜索,向ES发起http请求
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-        // 搜索结果
-        List<Object> resultList = new ArrayList<>();
-        SearchHits hits = searchResponse.getHits();
-        hits.forEach(searchHit -> resultList.add(searchHit.getSourceAsMap()));
-        // 匹配到的总记录数
-        Long totalHits = hits.getTotalHits().value;
-        // 返回的结果
         PageResult<Object> pageResult = new PageResult<>();
-        pageResult.setList(resultList)
-                .setTotal(totalHits);
+        try {
+            // 搜索源构建对象
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.sort("create_time.keyword", SortOrder.ASC);
+            searchSourceBuilder.size(10000);
+            searchSourceBuilder.trackTotalHits(true);
+            if (reqVO.getTimeRange() != null && reqVO.getTimeRange().length != 0) {
+                searchSourceBuilder.postFilter(QueryBuilders.rangeQuery("create_time.keyword")
+                        .from(reqVO.getTimeRange()[0])
+                        .to(reqVO.getTimeRange()[1]));
+            }
+            // 搜索请求对象
+            SearchRequest searchRequest = new SearchRequest();
+            if ("day".equals(reqVO.getGranularity())) {
+                searchRequest.indices("box_eq_total_day");
+            } else if ("week".equals(reqVO.getGranularity())) {
+                searchRequest.indices("box_eq_total_week");
+            } else {
+                searchRequest.indices("box_eq_total_month");
+            }
+
+            searchSourceBuilder.query(QueryBuilders.termQuery("box_id", boxId));
+
+            searchRequest.source(searchSourceBuilder);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            // 搜索结果
+            List<Object> resultList = new ArrayList<>();
+            SearchHits hits = searchResponse.getHits();
+            hits.forEach(searchHit -> resultList.add(searchHit.getSourceAsMap()));
+            // 匹配到的总记录数
+            Long totalHits = hits.getTotalHits().value;
+            // 返回的结果
+
+            pageResult.setList(resultList)
+                    .setTotal(totalHits);
+            return pageResult;
+        }catch (Exception e){
+            log.error("获取box实时能耗数据失败",e);
+        }
         return pageResult;
     }
 
@@ -652,10 +697,30 @@ public class BusEnergyConsumptionServiceImpl implements BusEnergyConsumptionServ
     }
 
     @Override
-    public Map<String, Object> getBoxOneDaySumData() throws IOException {
+    public Map<String, Object> getBoxOneDaySumData(String timeRangeType) throws IOException {
         String[] indices = new String[]{"box_ele_total_realtime"};
         String[] name = new String[]{"total"};
-        LocalDateTime[] timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1)};
+        LocalDateTime[] timeAgo;
+
+        switch (timeRangeType) {
+            case "day":
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusDays(1)};
+                break;
+            case "week":
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusWeeks(1)};
+                break;
+            case "month":
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMonths(1)};
+                break;
+            case "sixMonths":
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusMonths(6)};
+                break;
+            case "year":
+                timeAgo = new LocalDateTime[]{LocalDateTime.now().minusYears(1)};
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid type: " + timeRangeType);
+        }
         Map<String, Object> map = getSumData(indices, name, timeAgo);
         return map;
     }

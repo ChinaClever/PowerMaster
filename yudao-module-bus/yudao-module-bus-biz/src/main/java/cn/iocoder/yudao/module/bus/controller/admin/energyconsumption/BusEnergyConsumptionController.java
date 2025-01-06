@@ -156,10 +156,10 @@ public class BusEnergyConsumptionController {
         return success(map);
     }
 
-    @GetMapping("/bus/one-day")
+    @GetMapping("/bus/one-day/{timeRangeType}")
     @Operation(summary = "获得始端箱能耗最近一天插入的数据量")
-    public CommonResult<Map<String, Object>> getOneDaySumData() throws IOException {
-        Map<String, Object> map = busEnergyConsumptionService.getOneDaySumData();
+    public CommonResult<Map<String, Object>> getOneDaySumData(@PathVariable("timeRangeType")String timeRangeType) throws IOException {
+        Map<String, Object> map = busEnergyConsumptionService.getOneDaySumData(timeRangeType);
         return success(map);
     }
 
@@ -295,10 +295,10 @@ public class BusEnergyConsumptionController {
         return success(map);
     }
 
-    @GetMapping("/box/one-day")
+    @GetMapping("/box/one-day/{timeRangeType}")
     @Operation(summary = "获得插接箱能耗最近一天插入的数据量")
-    public CommonResult<Map<String, Object>> getBoxOneDaySumData() throws IOException {
-        Map<String, Object> map = busEnergyConsumptionService.getBoxOneDaySumData();
+    public CommonResult<Map<String, Object>> getBoxOneDaySumData(@PathVariable("timeRangeType")String timeRangeType) throws IOException {
+        Map<String, Object> map = busEnergyConsumptionService.getBoxOneDaySumData(timeRangeType);
         return success(map);
     }
 
