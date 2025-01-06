@@ -545,7 +545,6 @@ const getList = async () => {
   loading.value = true
   try {
     const data = await IndexApi.getBoxTemPage(queryParams);
-    console.log('queryParams',queryParams);
     console.log('data',data);
     const res = await IndexApi.getBoxIndexStatistics();
  
