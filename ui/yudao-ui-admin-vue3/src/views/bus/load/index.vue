@@ -239,7 +239,8 @@
         @pagination="getDeletedList"
       />        
       <div v-show="switchValue == 2  && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+        <template v-for="item in list" :key="item.devKey">
+          <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="info">                  
@@ -261,6 +262,7 @@
           </div>
           <button class="detail" @click="toDetail(item)" v-if="item.status !== null" >详情</button>
         </div>
+        </template>
       </div>
       <Pagination
         v-if="showPagination == 0"
