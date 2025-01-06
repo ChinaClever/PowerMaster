@@ -250,15 +250,8 @@
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="icon">
-              <div v-if=" item.totalPowFactor != null  && typeText == 'line'">
-                <span style="font-size: 20px;">{{ item.totalPowFactor }}</span><br/>总功率因数
-              </div>
-              <div v-else-if=" item.totalPowFactor != null  && typeText == 'loop'">
-                <span style="font-size: 20px;">{{ item.totalPowFactor }}</span><br/>总功率因数
-              </div>                
-            </div>
-            <div class="info" >
+            
+            <div class="info" style="padding-left: 20px;">
               <!--div v-if="item.phasePowFactor!= null && typeText == 'line'">
                 <div v-for="(phasePF,index) in item.phasePowFactor" :key="index">
                   <div >{{ phaseLineText[index] }}{{phasePF}}</div>
@@ -274,7 +267,16 @@
                   <div>{{ outletLineText[index] }}{{outletPF}}</div>
                 </div>
               </div>
-            </div>          
+            </div>  
+            
+            <div class="icon" >
+              <div v-if=" item.totalPowFactor != null  && typeText == 'line'">
+                <span style="font-size: 20px; ">{{ item.totalPowFactor }}</span><br/>总功率因数
+              </div>
+              <div v-else-if=" item.totalPowFactor != null  && typeText == 'loop'">
+                <span style="font-size: 20px;">{{ item.totalPowFactor }}</span><br/>总功率因数
+              </div>                
+            </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
@@ -1087,7 +1089,7 @@ onActivated(() => {
           font-size: 20px;
           width: 100px;
           height: 50px;
-          margin-left:20px;
+          margin-left:30px;
           margin-bottom: 20px;
           margin-right:20px;
           text-align: center;
