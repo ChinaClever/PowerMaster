@@ -1,5 +1,5 @@
 <template>
-<div style="background-color: #E7E7E7;height:850px">
+<div class="change" style="background-color: #E7E7E7;">
   <div class="header_app">
     <div class="header_app_text">所在位置：{{ location }}&nbsp;&nbsp;&nbsp; (名称：{{busName}})</div>
     <div class="header_app_text_other1">
@@ -24,12 +24,12 @@
             </el-form>
           </el-col>
     </div>
-    <div class="header_app_text_other">
-      <el-button @click="handleQuery"  ><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
-      <el-button @click="changeTime ('近一小时');" :type="queryParams.timeGranularity == '近一小时' ? 'primary' : ''" style="margin-left: 65px;">近一小时</el-button>
-      <el-button @click="changeTime ('今天');" :type="queryParams.timeGranularity == '今天' ? 'primary' : ''">今天</el-button>
-      <el-button @click="changeTime('近一天');" :type="queryParams.timeGranularity == '近一天' ? 'primary' : ''">近一天</el-button>
-      <el-button @click="changeTime('近三天');" :type="queryParams.timeGranularity == '近三天' ? 'primary' : ''">近三天</el-button>
+    <div class="header_app_text_other flex-container">
+        <el-button @click="handleQuery"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+        <el-button @click="changeTime('近一小时');" :type="queryParams.timeGranularity == '近一小时' ? 'primary' : ''" style="margin-left: 65px;">近一小时</el-button>
+        <el-button @click="changeTime('今天');" :type="queryParams.timeGranularity == '今天' ? 'primary' : ''">今天</el-button>
+        <el-button @click="changeTime('近一天');" :type="queryParams.timeGranularity == '近一天' ? 'primary' : ''">近一天</el-button>
+        <el-button @click="changeTime('近三天');" :type="queryParams.timeGranularity == '近三天' ? 'primary' : ''">近三天</el-button>
     </div>
   </div>
   <div class="TransformerMonitor">
@@ -714,7 +714,7 @@ body .TransformerMonitor .bottom-part {
     display: inline-block;
     width: 33.33%;
     height: 100%;
-    vertical-align: top
+    vertical-align: top;
 }
 
 .TransformerMonitor .bottom-part .bottomLineDiv p {
@@ -737,34 +737,42 @@ body .TransformerMonitor .bottom-part {
     line-height: 200px
 }
 
-@media screen and (max-width: 2160px) {
-    .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt {
-        font-size:30px
+//@media screen and (max-width: 2160px) {
+//    .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt {
+//        font-size:30px
+//    }
+//
+//    .TransformerMonitor .bottom-part .bottomLineDiv p,.TransformerMonitor .center-part .center-bottom-part .block-part .content-part p,.TransformerMonitor .center-part .center-top-part .div-part p {
+//        font-size: 16px
+//    }
+//
+//    .TransformerMonitor .center-part .center-bottom-part .top-part {
+//        height: 50px
+//    }
+//
+//    .TransformerMonitor .center-part .center-bottom-part .top-part span {
+//        line-height: 50px;
+//        font-size: 16px
+//    }
+//
+//    .TransformerMonitor .center-part .center-bottom-part .block-part{
+//        margin-top:-5px;
+//    }
+//    
+//    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
+//        margin: 8px 0
+//    }
+//
+//    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part .vale-part {
+//        width: 66px
+//    }
+//}
+
+@media screen and (min-width: 1920px) {
+    .change{
+        height:90vh;
     }
 
-    .TransformerMonitor .bottom-part .bottomLineDiv p,.TransformerMonitor .center-part .center-bottom-part .block-part .content-part p,.TransformerMonitor .center-part .center-top-part .div-part p {
-        font-size: 22px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .top-part {
-        height: 60px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .top-part span {
-        line-height: 60px;
-        font-size: 25px
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
-        margin: 8px 0
-    }
-
-    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part .vale-part {
-        width: 66px
-    }
-}
-
-@media screen and (max-width: 1920px) {
     .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt {
         font-size:28px
     }
@@ -786,8 +794,43 @@ body .TransformerMonitor .bottom-part {
     }
 
     .TransformerMonitor .center-part .center-bottom-part .top-part span {
-        line-height: 40px;
+        line-height: 32px;
+        font-size: 14px
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part .vale-part {
+        width: 48px
+    }
+}
+
+@media screen and (max-width: 1920px) {
+    .change{
+        height:850px;
+    }
+
+    .TransformerMonitor .center-part .center-top-part .div-part .div-part1 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part2 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part3 .middletxt,.TransformerMonitor .center-part .center-top-part .div-part .div-part4 .middletxt {
+        font-size:28px
+    }
+
+    .TransformerMonitor .bottom-part .bottomLineDiv p,.TransformerMonitor .center-part .center-top-part .div-part p {
         font-size: 16px
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part {
+        padding-top: 0
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .block-part .content-part p {
+        font-size: 15px
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .top-part {
+        height: 40px
+    }
+
+    .TransformerMonitor .center-part .center-bottom-part .top-part span {
+        line-height: 32px;
+        font-size: 14px
     }
 
     .TransformerMonitor .center-part .center-bottom-part .block-part .content-part .vale-part {
@@ -796,6 +839,10 @@ body .TransformerMonitor .bottom-part {
 }
 
 @media screen and (max-width: 1680px) {
+    .change{
+        height:800px;
+    }
+
     .TransformerMonitor .center-part .center-bottom-part .block-part .content-part {
         padding-top:5px
     }
@@ -906,16 +953,23 @@ body .TransformerMonitor .center-part .center-bottom-part .top-part span,body .T
   width: 100%;
   align-content: center;
   color:#606266;
-}                                                       
-.header_app_text_other{
-  width: 65%;
-  align-content: center;
-  background-color: white;
-  margin-right: 5px;
 }
+
+//.header_app_text_other{
+//  width: 80%;
+//  align-content: center;
+//  background-color: white;
+//  margin-right:-10vh;
+//}
+
 .header_app_text_other1{
   align-content: center;
   background-color: white;
+}
 
+.flex-container {
+    display: flex;
+    justify-content: flex-end; /* 将内容对齐到右边 */
+    align-items: center; /* 垂直方向居中对齐，可选 */
 }
 </style>
