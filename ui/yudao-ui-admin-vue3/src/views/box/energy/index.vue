@@ -238,6 +238,7 @@ const getTableData = async(reset = false) => {
       boxDevKeyList : queryParams.boxDevKeyList,
       timeGranularity : queryParams.timeGranularity
     })
+    console.log('res',res);
     if (res.list) {
       tableData.value = res.list.map(item => {
         return {
