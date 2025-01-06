@@ -336,7 +336,7 @@
               @click="switchChartOrTable = 0"
               :type="switchChartOrTable === 0 ? 'primary' : ''"
             >
-              &lt;前一日
+            图表
             </el-button>
             <el-button
             style="margin-left: 0px; margin-top: -62px"
@@ -344,7 +344,7 @@
               :type="switchChartOrTable === 1 ? 'primary' : ''"
 
             >
-              &gt;后一日
+            数据
             </el-button>
             <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading" style="margin-left: 0px; margin-top: -62px">
               <Icon icon="ep:download" class="mr-5px" /> 导出
