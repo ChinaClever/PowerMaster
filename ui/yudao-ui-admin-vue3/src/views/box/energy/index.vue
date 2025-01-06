@@ -2,75 +2,19 @@
   <CommonMenu :dataList="navList" @check="handleCheck" navTitle="插接箱用能">
     <template #NavInfo>
       <div class="navInfo">
-        <!-- <div class="header"> -->
-          <!-- <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div> -->
-          <!-- <div class="name"></div>
-          <div></div>
-        </div> -->
-        <!-- <div class="line"></div>
-        <div class="status">
-          <div class="box">
-            <div class="top">
-              <div class="tag"></div>正常
-            </div>
-            <div class="value"><span class="number">24</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag empty"></div>空载
-            </div>
-            <div class="value"><span class="number">1</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag warn"></div>预警
-            </div>
-            <div class="value"><span class="number">1</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag error"></div>故障
-            </div>
-            <div class="value"><span class="number">0</span>个</div>
-          </div>
-        </div>
-        <div class="line"></div> -->
-        <!-- <div class="overview">
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>总电能</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dh.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-          <div class="count">
-            <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
-            <div class="info">
-              <div>今日用电</div>
-              <div class="value">295.87 kW·h</div>
-            </div>
-          </div>
-        </div> -->
         <div style="font-size: 14px;margin-top: 45px;margin-left:10px">
-          <div ><span>用能最多</span>
+          <div ><span>用能最大IP</span>
           </div>
           <div>
-            <span class="label">昨日用能：</span>
+            <span class="label">昨日：</span>
             <span class="value">{{ boxName1 }}</span>
           </div>
           <div >
-            <span class="label">上周用能：</span>
+            <span class="label">上周：</span>
             <span class="value">{{ boxName2 }}</span>
           </div>
           <div >
-            <span class="label">上月用能：</span>
+            <span class="label">上月：</span>
             <span class="value">{{ boxName3 }}</span>
           </div>
           </div>
@@ -262,24 +206,17 @@ const getTableData = async(reset = false) => {
 
 const getMaxData = async(reset = false) => {
   try {
-    const res = await IndexApi.getEqMax({
-      pageNo: queryParamsAll.pageNo,
-      pageSize: queryParamsAll.pageSize,
-      cabinetIds: isFirst.value ? null : cabinetIds.value,
-      company: queryParamsAll.company,
-      busDevKeyList : queryParamsAll.busDevKeyList,
-      isDeleted : queryParams.isDeleted
-    })
-    if (res.list) {
+    const res = await IndexApi.getEqMax()
+    if (res) {
         //借用id值来辅助判断是哪个时间的集合，0为昨日，1为上周，2为上月
-        const dataList = res.list
+        const dataList = res
         dataList.forEach(item => {
           if(item.id == 0){
-            boxName1.value = item.boxName
+            boxName1.value = item.devKey
           }else if (item.id == 1){
-            boxName2.value = item.boxName
+            boxName2.value = item.devKey
           }else if (item.id == 2){
-            boxName3.value = item.boxName
+            boxName3.value = item.devKey
           }
         })
     }

@@ -3,18 +3,18 @@
     <template #NavInfo>
       <div class="navInfo">
         <div style="font-size:14px; margin-top:45px; margin-left:20px">
-          <div ><span>用能最多</span>
+          <div ><span>用能最大IP</span>
           </div>
           <div>
-            <span>昨日用能：</span>
+            <span>昨日：</span>
             <span>{{ busName1 }}</span>
           </div>
           <div >
-            <span>上周用能：</span>
+            <span>上周：</span>
             <span>{{ busName2 }}</span>
           </div>
           <div >
-            <span>上月用能：</span>
+            <span>上月：</span>
             <span>{{ busName3 }}</span>
           </div>
         </div>
@@ -254,13 +254,20 @@ const getTableData = async(reset = false) => {
 }
 
 const getMaxData = async() => {
-  try {
-    const data = await IndexApi.getEqMax()
-    if (data) {
+    try {
+    const res = await IndexApi.getEqMax()
+    if (res) {
         //借用id值来辅助判断是哪个时间的集合，0为昨日，1为上周，2为上月
-          busName1.value = data.yesterdayBusKey
-          busName2.value = data.lastWeekBusKey
-          busName3.value = data.lastMonthBusKey
+        const dataList = res
+        dataList.forEach(item => {
+          if(item.id == 0){
+            busName1.value = item.devKey
+          }else if (item.id == 1){
+            busName2.value = item.devKey
+          }else if (item.id == 2){
+            busName3.value = item.devKey
+          }
+        })
     }
   } finally {
     

@@ -206,17 +206,20 @@ public class BoxIndexController {
     public CommonResult<PageResult<BoxIndexDTO>> getEqPage(@RequestBody BoxIndexPageReqVO pageReqVO) throws IOException {
         PageResult<BoxIndexDTO> pageResult;
         if (ObjectUtil.isEmpty(pageReqVO.getTimeGranularity())){
-            pageResult = indexService.getEqPage1(pageReqVO);
-        }else {
             pageResult =  indexService.getEqPage(pageReqVO);
+        }else {
+            pageResult = indexService.getEqPage1(pageReqVO);
+            if (ObjectUtil.isEmpty(pageResult)){
+                pageResult =  indexService.getEqPage(pageReqVO);
+            }
         }
         return success(pageResult);
     }
 
-    @Operation(summary = "插接箱用能列表分页")
+    @Operation(summary = "插接箱用能列表最多")
     @PostMapping("/eq/maxEq")
-    public CommonResult<PageResult<BoxIndexDTO>> getMaxEq(@RequestBody BoxIndexPageReqVO pageReqVO) {
-        PageResult<BoxIndexDTO> pageResult = indexService.getMaxEq(pageReqVO);
+    public CommonResult<List<BoxIndexMaxEqResVO>> getMaxEq() {
+        List<BoxIndexMaxEqResVO> pageResult = indexService.getMaxEq();
         return success(pageResult);
     }
     /**
