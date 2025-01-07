@@ -591,47 +591,6 @@
           <div v-if="item.id !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="icon" >
-              <!-- <div v-if="shouldShow('current', 'phaseCur', 'line') || shouldShow('current', 'loopCur', 'loop')">  
-                电流
-              </div> -->
-              <!-- <div v-if="valueMode == 0 && item.phaseCur != null && typeText == 'line'" >
-                电流
-              </div>
-              <div v-else-if="valueMode == 0 && item.loopCur != null && typeText == 'loop'" >
-                电流
-              </div> -->
-              <div v-if="valueMode == 0 && item.phaseCur != null && typeText == 'line'">
-                电流
-              </div>
-              <!--<div v-else-if="valueMode == 0 && item.loopCur != null && typeText == 'loop'" >
-                电流
-              </div>-->
-              <div v-if="valueMode == 1 && item.phaseVol != null && typeText == 'line'" >
-                电压
-              </div>
-              <!--<div v-else-if="valueMode == 1 && item.loopVol != null && typeText == 'loop'" >
-                电压
-              </div>-->
-              <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'line'">
-                有功功率
-              </div>
-              <!--<div v-if="valueMode == 2 && item.loopActivePow != null && typeText == 'loop'">
-                有功功率
-              </div>
-              <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'outlet'">
-                有功功率
-              </div>-->
-              <div v-if="valueMode == 3 && item.outletReactivePow != null && typeText == 'line'" >
-                无功功率
-              </div>
-              <div v-if="valueMode == 4 && item.outletApparentPow != null && typeText == 'line'" >
-                视在功率
-              </div>
-             <!--<div v-if="valueMode == 3 && item.outletReactivePow != null && typeText == 'outlet'" >
-                无功功率
-              </div>-->
-            </div>
             <div class="info" v-if="valueMode == 0" >
               <div v-if="item.phaseCur != null && typeText == 'line'">
                 <div v-for="(phaseCur,index) in item.phaseCur" :key="index">
@@ -733,12 +692,53 @@
                 </div>
               </div>
             </div>
+            <div class="icon" >
+              <!-- <div v-if="shouldShow('current', 'phaseCur', 'line') || shouldShow('current', 'loopCur', 'loop')">  
+                电流
+              </div> -->
+              <!-- <div v-if="valueMode == 0 && item.phaseCur != null && typeText == 'line'" >
+                电流
+              </div>
+              <div v-else-if="valueMode == 0 && item.loopCur != null && typeText == 'loop'" >
+                电流
+              </div> -->
+              <div v-if="valueMode == 0 && item.phaseCur != null && typeText == 'line'">
+                电流
+              </div>
+              <!--<div v-else-if="valueMode == 0 && item.loopCur != null && typeText == 'loop'" >
+                电流
+              </div>-->
+              <div v-if="valueMode == 1 && item.phaseVol != null && typeText == 'line'" >
+                电压
+              </div>
+              <!--<div v-else-if="valueMode == 1 && item.loopVol != null && typeText == 'loop'" >
+                电压
+              </div>-->
+              <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'line'">
+                有功功率
+              </div>
+              <!--<div v-if="valueMode == 2 && item.loopActivePow != null && typeText == 'loop'">
+                有功功率
+              </div>
+              <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'outlet'">
+                有功功率
+              </div>-->
+              <div v-if="valueMode == 3 && item.outletReactivePow != null && typeText == 'line'" >
+                无功功率
+              </div>
+              <div v-if="valueMode == 4 && item.outletApparentPow != null && typeText == 'line'" >
+                视在功率
+              </div>
+             <!--<div v-if="valueMode == 3 && item.outletReactivePow != null && typeText == 'outlet'" >
+                无功功率
+              </div>-->
+            </div>
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status">
-            <el-tag type="info" v-if="item.loopCurStatus == null " >离线</el-tag>
-            <el-tag type="danger" v-else-if="item.loopCurStatus[0] != 0 || item.loopCurStatus[1] != 0  || item.loopCurStatus[2] != 0 " >告警</el-tag>
-            <el-tag type="success" v-else >正常</el-tag>
+            <el-tag type="info" v-if="item.status === 0 " >离线</el-tag>
+            <el-tag type="danger" v-else-if="item.status === 2" >告警</el-tag>
+            <el-tag type="success" v-else-if="item.status === 1" >正常</el-tag>
           </div>
           <!--<div class="status" v-if="valueMode == 1">
             <el-tag type="info" v-if="item.loopVolStatus == null " >离线</el-tag>
@@ -753,7 +753,7 @@
           <div class="status" v-if="valueMode == 3">
             <el-tag type="info" v-if="item.status == null ||  item.status == 5" >离线</el-tag>
           </div>-->
-          <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status != 5" >详情</button>
+          <button class="detail" @click="toDeatil(item)" v-if="item.status != null && item.status !== 0" >详情</button>
         </div>
         </template>
       </div>
@@ -1572,7 +1572,6 @@ onActivated(() => {
           width: 100px;
           height: 50px;
           margin-left:20px;
-          margin-right:20px;
           text-align: center;
           .text-pf{
             font-size: 16px;
@@ -1581,6 +1580,7 @@ onActivated(() => {
         .info{
           font-size: 16px;
           margin-bottom: 20px;
+          margin-left: 10px;
         }
       }
       .devKey{
@@ -1654,7 +1654,6 @@ onActivated(() => {
           width: 100px;
           height: 50px;
           margin-left:20px;
-          margin-right:20px;
           text-align: center;
           .text-pf{
             font-size: 16px;
@@ -1663,6 +1662,7 @@ onActivated(() => {
         .info{
           font-size: 16px;
           margin-bottom: 20px;
+          margin-left: 10px;
         }
       }
       .devKey{
@@ -1735,7 +1735,6 @@ onActivated(() => {
           width: 100px;
           height: 50px;
           margin-left:20px;
-          margin-right:20px;
           text-align: center;
           .text-pf{
             font-size: 16px;
@@ -1744,6 +1743,7 @@ onActivated(() => {
         .info{
           font-size: 16px;
           margin-bottom: 20px;
+          margin-left: 10px;
         }
       }
       .devKey{
