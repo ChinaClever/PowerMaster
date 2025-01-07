@@ -303,59 +303,38 @@
       </template>
 
       <el-dialog v-model="detailVis">
-        <el-row class="custom-row" style="display: flex; align-items: center;">
-          <el-col :span="9" class="location-tag">
+        <div class="custom-row" style="display: flex; align-items: center;">
+          <!-- 位置标签 -->
+          <div class="location-tag el-col"> <!-- 假设原el-col的:span="9"在24格布局中占37.5%，这里简化为30% -->
             <span style="margin-right:10px;font-size:18px;font-weight:bold;">功率因素详情</span>
-            <span>所在位置：{{ boxName }}</span>
+            <span>所在位置：{{ busName }}</span>
             <span> 网络地址：{{ location }}</span>
-          </el-col>
-          
-          <el-col :span="10" class="date-picker-col">
-            日期:
+          </div>
+
+          <!-- 日期选择器 -->
+          <div class="date-picker-col el-col"> <!-- 假设原el-col的:span="8"在24格布局中占33.33%，这里为了简化计算取近似值26.66% -->
             <el-date-picker
               v-model="queryParams.oldTime"
               value-format="YYYY-MM-DD HH:mm:ss"
-              type="date"
-              :disabled-date="disabledDate"
-              @change="handleDayPick"
-              class="!w-160px"
+              type="datetime"
+              :picker-options="pickerOptions"
+              placeholder="选择日期时间"
             />
-            <el-button 
-              style="margin-left: 10px;"
-              @click="subtractOneDay();handleDayPick()" 
-              :type=" 'primary'"
-            >
-              &lt;前一日
-            </el-button>
-            <el-button 
-              @click="addtractOneDay();handleDayPick()" 
-              :type=" 'primary'"
-            >
-              &gt;后一日
-            </el-button>
-          </el-col>
-          
-          <el-col :span="6" class="chart-data-buttons" style="margin-right:10px;">
-            <div class="button-group" style="margin-left: auto">
-              <el-button
-                @click="switchChartOrTable = 0"
-                :type="switchChartOrTable === 0 ? 'primary' : ''"
-              >
-                图表
-              </el-button>
-              <el-button
-                @click="switchChartOrTable = 1"
-                :type="switchChartOrTable === 1 ? 'primary' : ''"
-              >
-                数据
-              </el-button>
+            <el-button @click="subtractOneDay(); handleDayPick()" type="primary" style="margin-left:10px;">&lt; 前一日</el-button>
+            <el-button @click="addOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
+          </div>
+
+          <!-- 图表/数据切换按钮组 -->
+          <div class="chart-data-buttons el-col" style="margin-right: 50px;"> <!-- 假设原el-col的:span="4"在24格布局中占16.67%，这里为了布局调整取近似值13.33%并添加margin-right -->
+            <div class="button-group">
+              <el-button @click="switchChartOrTable = 0" :type="switchChartOrTable === 0 ? 'primary' : ''">图表</el-button>
+              <el-button @click="switchChartOrTable = 1" :type="switchChartOrTable === 1 ? 'primary' : ''">数据</el-button>
               <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading">
-                <Icon icon="ep:download" class="mr-5px" /> 导出
+                <i class="el-icon-download"></i> 导出
               </el-button>
             </div>
-          </el-col>
-
-        </el-row>
+          </div>
+        </div>
         <br/>
         <PFDetail v-show="switchChartOrTable == 0"  width="75vw" height="70vh"  :list="pfESList" />
         <el-table v-show="switchChartOrTable == 1" :data="pfTableList" :stripe="true" :show-overflow-tooltip="true" >
@@ -627,7 +606,7 @@ const exportLoading = ref(false) // 导出的加载中
 const getDetail = async () => {
   const data = await IndexApi.getBoxPFDetail(queryParams);
   pfESList.value = data;
-  console.log('data');
+  console.log('pfESList.value',pfESList.value);
 
   pfTableList.value = data?.table;
   pfTableList.value?.forEach((obj) => {
@@ -1432,7 +1411,7 @@ onActivated(() => {
 :deep(.el-dialog){
   width: 80%;
   height: 80%;
-  margin-top:80px;
+  margin-top:100px;
 }
 
 :deep(.el-tag){

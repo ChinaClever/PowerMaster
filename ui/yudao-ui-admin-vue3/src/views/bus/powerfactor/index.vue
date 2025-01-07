@@ -206,17 +206,17 @@
         <el-empty description="暂无数据" :image-size="595" />
       </template>
 
-      <el-dialog v-model="detailVis" width="70vw" height="58vh" >
-        <el-row class="custom-row" style="display: flex; align-items: center;">
+      <el-dialog v-model="detailVis">
+        <div class="custom-row" style="display: flex; align-items: center;">
           <!-- 位置标签 -->
-          <el-col :span="9" class="location-tag">
+          <div class="location-tag el-col">
             <span style="margin-right:10px;font-size:18px;font-weight:bold;">功率因素详情</span>
             <span>所在位置：{{ busName }}</span>
             <span> 网络地址：{{ location }}</span>
-          </el-col>
+          </div>
 
           <!-- 日期选择器 -->
-          <el-col :span="8" class="date-picker-col">
+          <div class="date-picker-col el-col">
             <el-date-picker
               v-model="queryParams.oldTime"
               value-format="YYYY-MM-DD HH:mm:ss"
@@ -226,10 +226,10 @@
             />
             <el-button @click="subtractOneDay(); handleDayPick()" type="primary" style="margin-left:10px;">&lt; 前一日</el-button>
             <el-button @click="addOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
-          </el-col>
+          </div>
 
           <!-- 图表/数据切换按钮组 -->
-          <el-col :span="4" class="chart-data-buttons" style="margin-right:50px;">
+          <div class="chart-data-buttons el-col" style="margin-right: 50px;">
             <div class="button-group">
               <el-button @click="switchChartOrTable = 0" :type="switchChartOrTable === 0 ? 'primary' : ''">图表</el-button>
               <el-button @click="switchChartOrTable = 1" :type="switchChartOrTable === 1 ? 'primary' : ''">数据</el-button>
@@ -237,10 +237,10 @@
                 <i class="el-icon-download"></i> 导出
               </el-button>
             </div>
-          </el-col>
-        </el-row>
+          </div>
+        </div>
         <br/>
-        <PFDetail v-if="switchChartOrTable == 0"  width="68vw" height="58vh"  :list="pfESList"   />
+        <PFDetail v-if="switchChartOrTable == 0"  width="75vw" height="70vh"  :list="pfESList"   />
         <el-table style="height:550px;ovrflow:hidden;overflow-y:auto;" v-if="switchChartOrTable == 1" :data="pfTableList" :show-overflow-tooltip="true" >
           <el-table-column label="时间" align="center" prop="time" />
           <el-table-column label="A相功率因素" align="center" prop="powerFactorAvgValueA" />
@@ -1286,5 +1286,11 @@ onActivated(() => {
 
 :deep(.el-tag){
   margin-right:-60px;
+}
+
+:deep(.el-dialog){
+  width: 80%;
+  height: 80%;
+  margin-top: 100px;
 }
 </style>

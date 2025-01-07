@@ -281,63 +281,41 @@
         <el-empty description="暂无数据" :image-size="595" />
       </template>
 
-      <el-dialog v-model="detailVis" title="温度详情" width="70vw" height="58vh">
-        <el-row class="custom-row">
-          <div style="margin-left: 80px; margin-top: -135px">
-            <el-tag>{{ location.split('-')[0] }}</el-tag>
-            <span>(名称：<el-tag>{{ location }}</el-tag>)</span>
+      <el-dialog v-model="detailVis">
+        <div class="custom-row" style="display: flex; align-items: center;">
+          <!-- 位置标签 -->
+          <div class="location-tag el-col">
+            <span style="margin-right:10px;font-size:18px;font-weight:bold;">温度详情</span>
+            <span>所在位置：{{ busName }}</span>
+            <span> 网络地址：{{ location }}</span>
           </div>
-          <div style="margin-left: -330px;">
-            日期:
+
+          <!-- 日期选择器 -->
+          <div class="date-picker-col el-col">
             <el-date-picker
               v-model="queryParams.oldTime"
               value-format="YYYY-MM-DD HH:mm:ss"
-              type="date"
-              :disabled-date="disabledDate"
-              @change="handleDayPick"
-              class="!w-160px"
+              type="datetime"
+              :picker-options="pickerOptions"
+              placeholder="选择日期时间"
             />
+            <el-button @click="subtractOneDay(); handleDayPick()" type="primary" style="margin-left:10px;">&lt; 前一日</el-button>
+            <el-button @click="addOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
           </div>
 
-          <el-button
-            style="margin-left: 1vw;"
-            @click="
-              subtractOneDay();
-              handleDayPick();
-            "
-            :type="'primary'"
-          >
-            &lt;前一日
-          </el-button>
-          <el-button
-            @click="
-              addtractOneDay();
-              handleDayPick();
-            "
-            :type="'primary'"
-          >
-            &gt;后一日
-          </el-button>
-          <div class="button-group" style="margin-left: auto">
-            <el-button
-              @click="switchChartOrTable = 0"
-              :type="switchChartOrTable === 0 ? 'primary' : ''"
-            >
-              图表
-            </el-button>
-            <el-button
-              @click="switchChartOrTable = 1"
-              :type="switchChartOrTable === 1 ? 'primary' : ''"
-            >
-              数据
-            </el-button>
-            <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading">
-              <Icon icon="ep:download" class="mr-5px" /> 导出
-            </el-button>
+          <!-- 图表/数据切换按钮组 -->
+          <div class="chart-data-buttons el-col" style="margin-right: 50px;">
+            <div class="button-group">
+              <el-button @click="switchChartOrTable = 0" :type="switchChartOrTable === 0 ? 'primary' : ''">图表</el-button>
+              <el-button @click="switchChartOrTable = 1" :type="switchChartOrTable === 1 ? 'primary' : ''">数据</el-button>
+              <el-button type="success" plain @click="handleExportXLS" :loading="exportLoading">
+                <i class="el-icon-download"></i> 导出
+              </el-button>
+            </div>
           </div>
-        </el-row>
+        </div>
         <br />
-        <TemDetail v-show="switchChartOrTable == 0" width="68vw" height="58vh" :list="temESList" />
+        <TemDetail v-show="switchChartOrTable == 0" width="75vw" height="70vh" :list="temESList" />
         <el-table
           v-show="switchChartOrTable == 1"
           :data="temTableList"
@@ -1372,6 +1350,7 @@ onActivated(() => {
   align-items: center;
   justify-content: space-between;
   flex-wrap: nowrap;
+  margin-top: -50px;
 }
  
 .button-group {
@@ -1385,5 +1364,11 @@ onActivated(() => {
 
 :deep(.el-tag){
   margin-right:-60px;
+}
+
+:deep(.el-dialog){
+  width: 80%;
+  height: 80%;
+  margin-top: 100px;
 }
 </style>
