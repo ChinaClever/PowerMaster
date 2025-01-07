@@ -47,13 +47,12 @@
     </template>
     <template #ActionBar>
       <el-form
-        class="-mb-15px"
         :model="queryParams"
         ref="queryFormRef"
         :inline="true"
         label-width="68px"
       >
-        <el-form-item v-if="switchValue == 2 || switchValue == 3" style="margin-right: -300px;">
+        <el-form-item v-if="switchValue == 2 || switchValue == 3">
           <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus1">
             全部 
           </button>
@@ -72,12 +71,12 @@
         </el-button>
         </el-form-item>
         <el-form-item>
-          <el-form-item label="网络地址" prop="devKey" style="float: left;">
+          <el-form-item label="网络地址" prop="devKey">
             <el-autocomplete
               v-model="queryParams.devKey"
               :fetch-suggestions="querySearch"
               clearable
-              class="!w-200px"
+              class="!w-150px"
               placeholder="请输入网络地址"
               @select="handleQuery"
             />
@@ -108,7 +107,7 @@
             </el-form-item>
           </el-form-item>
         </el-form-item>
-        <div style="float: left">
+        <div style="margin-right:10px;">
           <el-button
             @click="pageSizeArr = [24, 36, 48, 96];
             queryParams.pageSize = 24;
