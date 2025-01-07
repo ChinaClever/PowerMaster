@@ -264,6 +264,7 @@ const getDetail = async () => {
   }
 
   const lineData = await IndexApi.getHarmonicLine(queryParams);
+  console.log('lineData',lineData);
   seriesAndTimeArr.value = lineData;
   if(seriesAndTimeArr.value.time != null && seriesAndTimeArr.value.time?.length > 0){
     const filteredSeries = seriesAndTimeArr.value.series.filter((item,index) => queryParams.harmonicArr.includes(index));

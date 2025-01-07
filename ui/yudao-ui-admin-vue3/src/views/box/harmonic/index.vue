@@ -121,8 +121,8 @@
       </el-form>
     </template>
     <template #Content>
-      <div v-if="switchValue !== 0 && list.length > 0" style="height:720px;margin-top:-10px;">
-        <el-table v-show="switchValue == 3" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
+      <div v-if="switchValue !== 0 && list.length > 0">
+        <el-table v-if="switchValue == 3" style="height:720px;margin-top:-10px;" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />

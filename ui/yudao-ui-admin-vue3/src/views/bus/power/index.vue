@@ -336,7 +336,7 @@
       />     
       <div v-if="switchValue == 0  && list.length > 0" class="arrayContainer">
         <template v-for="item in list" :key="item.devKey">
-          <div v-if="item.id !== null" class="arrayItem">
+          <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             
@@ -447,7 +447,7 @@
                 总无功功率(kVar)
               </div>
               <div v-if="valueMode == 4 && item.areactivePow != null" style="font-size:20px;">
-                {{item.powApparent?.toFixed(3)}}
+                {{item.powApparent}}
               </div>
               <div v-if="valueMode == 4 && item.powApparent != null" style="font-size:16px;" >
                 总视在功率(kVA)
@@ -1255,6 +1255,8 @@ onActivated(() => {
           font-size: 20px;
           width: 150px;
           height: 100px;
+          margin-left: -30px;
+          margin-top:30px;
           text-align: center;
           .text-pf{
             font-size: 16px;
@@ -1337,6 +1339,7 @@ onActivated(() => {
           width: 150px;
           height: 100px;
           margin-left: -30px;
+          margin-top:30px;
           text-align: center;
           .text-pf{
             font-size: 16px;
@@ -1417,6 +1420,7 @@ onActivated(() => {
           width: 150px;
           height: 100px;
           margin-left: -30px;
+          margin-top:30px;
           text-align: center;
           .text-pf{
             font-size: 16px;
