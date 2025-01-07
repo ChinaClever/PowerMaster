@@ -239,7 +239,7 @@
         <div class="custom-content">
           <div class="custom-content-container">
             <el-card class="cardChilc" shadow="hover">
-            <curUnblance :max="balanceObj.imbalanceValueA.toFixed(2)" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[colorFlag].name"/>
+            <curUnblance :max="balanceObj.imbalanceValueA" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[colorFlag].name"/>
             </el-card>
             <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
               <div class="IechartBar">
@@ -311,12 +311,12 @@
             <el-card class="cardChilc" shadow="hover">
               <curUnblance :max="balanceObj.imbalanceValueA.toFixed(2)" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[colorFlag].name" />
             </el-card>
-            <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
+            <el-card v-if="ABarOption" class="cardChilc" style="margin: 0 10px" shadow="hover">
               <div class="IechartBar">
                 <Echart :options="ABarOption" :height="300" />
               </div>
             </el-card>
-            <el-card class="cardChilc" shadow="hover">
+            <el-card v-if="ALineOption" class="cardChilc" shadow="hover">
               <div class="IechartBar">
                 <Echart :options="ALineOption" :height="300" />
               </div>
@@ -339,6 +339,7 @@
           </div>
         </div>
       </el-dialog>
+
       <Pagination
         :total="total"
         :page-size-arr="pageSizeArr"
