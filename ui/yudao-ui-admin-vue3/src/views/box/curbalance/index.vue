@@ -691,20 +691,9 @@ const getList = async () => {
       obj.bvol = obj.bvol?.toFixed(1);
       obj.cvol = obj.cvol?.toFixed(1);
       obj.volUnbalance = obj.volUnbalance?.toFixed(0);
-      // if(obj.color == 1){
-      //   smallCurrent++;
-      // } else if (obj.color == 2) {
-      //   lessFifteen++;
-      // } else if (obj.color == 3) {
-      //   greaterFifteen++;
-      // } else if (obj.color == 4) {
-      //   greaterThirty++;
-      // }
+
     });
-    // statusNumber.smallCurrent = smallCurrent;
-    // statusNumber.lessFifteen = lessFifteen;
-    // statusNumber.greaterFifteen = greaterFifteen;
-    // statusNumber.greaterThirty = greaterThirty;
+
     list.value = data.list
     total.value = data.total
   } finally {
@@ -719,53 +708,6 @@ const getStatistics = async () => {
     statusNumber.greaterFifteen = data.greaterFifteen;
     statusNumber.greaterThirty = data.greaterThirty;
   }
-
-// const getListNoLoading = async () => {
-//   try {
-//     console.log(queryParams)
-//     const data = await IndexApi.getBalancePage(queryParams)
-//     var range = await BoxCurbalanceColorApi.getBoxCurbalanceColor();
-//     if(range != null){
-//       statusList[0].name = '<' + range.rangeOne + '%';
-//       statusList[1].name = range.rangeTwo + '%-' +  range.rangeThree + "%";
-//       statusList[2].name = '>' + range.rangeFour + '%';
-//     }
-//     var tableIndex = 0;    
-//     var lessFifteen = 0;
-//     var greaterFifteen = 0;
-//     var greaterThirty = 0;
-//     var smallCurrent = 0;
-//     data.list.forEach((obj) => {
-//       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-
-//       obj.acur = obj.acur?.toFixed(2);
-//       obj.bcur = obj.bcur?.toFixed(2);
-//       obj.ccur = obj.ccur?.toFixed(2);
-//       obj.curUnbalance = obj.curUnbalance?.toFixed(0);
-//       obj.avol = obj.avol?.toFixed(1);
-//       obj.bvol = obj.bvol?.toFixed(1);
-//       obj.cvol = obj.cvol?.toFixed(1);
-//       obj.volUnbalance = obj.volUnbalance?.toFixed(0);
-//       if(obj.color == 1){
-//         smallCurrent++;
-//       } else if (obj.color == 2) {
-//         lessFifteen++;
-//       } else if (obj.color == 3) {
-//         greaterFifteen++;
-//       } else if (obj.color == 4) {
-//         greaterThirty++;
-//       }
-//     });
-//     statusNumber.smallCurrent = smallCurrent;
-//     statusNumber.lessFifteen = lessFifteen;
-//     statusNumber.greaterFifteen = greaterFifteen;
-//     statusNumber.greaterThirty = greaterThirty;
-//     list.value = data.list
-//     total.value = data.total
-//   } catch (error) {
-    
-//   }
-// }
 
 const getNavList = async() => {
   const res = await IndexApi.getBoxMenu()
@@ -790,25 +732,6 @@ const toDeatil = (row) =>{
   const location = row.location ? row.location : devKey;
   push({path: '/bus/boxmonitor/boxbalancedetail', state: { devKey, boxId ,location }})
 }
-
-// const openNewPage = (scope) => {
-//   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
-//   window.open(url, '_blank');
-// }
-
-//const handleSelectStatus = (index) => {
-//  statusList[index].selected = !statusList[index].selected
-//  const status =  statusList.filter(item => item.selected)
-//  const statusArr = status.map(item => item.value)
-//  if(statusArr.length != statusList.length){
-//    queryParams.color = statusArr;
-//    //queryParams.status = [5];
-//  }else{
-//    queryParams.color = null;
-//    //queryParams.status = [];
-//  }
-//  handleQuery();
-//}
 
 const colorFlag = ref(0);
 

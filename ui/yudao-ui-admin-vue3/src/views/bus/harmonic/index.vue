@@ -32,34 +32,6 @@
           </div>
         </div>
         <div class="line"></div>
-        <!-- <div class="status">
-          <div class="box">
-            <div class="top">
-              <div class="tag"></div>{{ statusList[0].name }}
-            </div>
-            <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag empty"></div>小电流
-            </div>
-            <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag warn"></div>{{ statusList[1].name }}
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag error"></div>{{ statusList[2].name }}
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
-          </div>
-        </div> -->
-        <div class="line"></div>
-
       </div>
     </template>
     <template #ActionBar>

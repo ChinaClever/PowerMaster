@@ -46,9 +46,8 @@
         label-width="68px"                          
       >
         <el-form-item v-if="switchValue == 2 || switchValue == 3">
-          <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">
-            全部
-          </button>
+          <!-- <button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">全部</button> -->
+           <el-button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">全部</el-button>
           <template v-for="(status, index) in statusList" :key="index">
             <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
             <button v-else-if="butColor === 1" style="height:25px;" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
@@ -544,39 +543,6 @@ const getDeletedList = async () => {
   }
 }
 
-const getListNoLoading = async () => {
-  try {
-    const data = await IndexApi.getIndexPage(queryParams);
-    list.value = data.list;
-    var tableIndex = 0;    
-    var lessThirty = 0;
-    var greaterThirty = 0;
-    var greaterSixty = 0;
-    var greaterNinety = 0;
-    list.value.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-
-
-      if(obj.color == 4){
-        greaterNinety++;
-      } else if (obj.color == 1) {
-        lessThirty++;
-      } else if (obj.color == 2) {
-        greaterThirty++;
-      } else if (obj.color == 3) {
-        greaterSixty++;
-      }
-    });
-    statusNumber.greaterNinety = greaterNinety;
-    statusNumber.lessThirty = lessThirty;
-    statusNumber.greaterThirty = greaterThirty;
-    statusNumber.greaterSixty = greaterSixty;
-    total.value = data.total
-  } catch (error) {
-    
-  }
-}
-
 const getNavList = async() => {
   const res = await IndexApi.getBoxMenu();
   serverRoomArr.value = res;
@@ -809,7 +775,7 @@ onActivated(() => {
 .btn_offline {
   // width: 55px;
   // height: 32px;
-  padding: 3px 8px;
+  padding: 8px 8px;
   cursor: pointer;
   border-radius: 3px;
   display: flex;
@@ -1265,7 +1231,7 @@ onActivated(() => {
 .btnallSelected {
   margin-right: 10px;
   width: 58px;
-  height: 25px;
+  height: 35px;
   cursor: pointer;
   display: flex;
   align-items: center;

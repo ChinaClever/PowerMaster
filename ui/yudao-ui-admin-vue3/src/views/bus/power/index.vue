@@ -938,7 +938,6 @@ onMounted(async () => {
   getList()
   getNavList();
   getListAll();
-  // flashListTimer.value = setInterval((getListNoLoading), 5000);
   flashListTimer.value = setInterval((getList), 5000);
 })
 
@@ -961,7 +960,6 @@ onActivated(() => {
   getList()
   getNavList();
   if(!firstTimerCreate.value){
-    // flashListTimer.value = setInterval((getListNoLoading), 5000);
     flashListTimer.value = setInterval((getList), 5000);
   }
 })

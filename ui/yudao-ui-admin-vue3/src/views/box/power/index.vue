@@ -2,36 +2,6 @@
   <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="插接箱配电">
     <template #NavInfo>
       <div>
-        <!-- <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div>
-        </div> -->
-        <!-- <div class="line"></div> -->
-        <!-- <div class="status">
-          <div class="box">
-            <div class="top">
-              <div class="tag"></div>{{ statusList[0].name }}
-            </div>
-            <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag empty"></div>小电流
-            </div>
-            <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag warn"></div>{{ statusList[1].name }}
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag error"></div>{{ statusList[2].name }}
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
-          </div>
-        </div> -->
         <div class="status">
           <div class="box">
             <div class="top">
@@ -1026,90 +996,73 @@ const getList = async () => {
 
 const getListAll = async () => {
   try {
-    var normal = 0;
-    var offline = 0;
-    var alarm = 0;
-
-    const allData = await IndexApi.getBoxRedisPage(queryParamsAll);
-    allList.value = allData.list
-    allList.value.forEach((objAll) => {
-      if(objAll?.dataUpdateTime == null && objAll?.phaseCur == null){
-        objAll.status = 0;
-        offline++;
-        return;
-      }
-      if(objAll?.status == 1){
-        normal++;
-      } else if (objAll?.status == 2){
-        alarm++;
-      }
-    });
+    const allData = await IndexApi.getBoxIndexStatistics();
     //设置左边数量
-    statusNumber.normal = normal;
-    statusNumber.offline = offline;
-    statusNumber.alarm = alarm;
+    statusNumber.normal = allData.normal;
+    statusNumber.offline = allData.offline;
+    statusNumber.alarm = allData.alarm;
     statusNumber.total = allData.total;
   } catch (error) {
     
   }
 }
 
-const getListNoLoading = async () => {
-  try {
-    const data = await IndexApi.getBoxRedisPage(queryParams);
-    list.value = data.list;
-    var tableIndex = 0;
+// const getListNoLoading = async () => {
+//   try {
+//     const data = await IndexApi.getBoxRedisPage(queryParams);
+//     list.value = data.list;
+//     var tableIndex = 0;
 
-    list.value.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.phaseCur == null){
-        return;
-      }
-      for(var i= 0;i < obj.phaseCur.length; i++)
-      {
-        obj.phaseCur[i] = obj.phaseCur[i]?.toFixed(2);
-        obj.phaseVol[i] = obj.phaseVol[i]?.toFixed(2);
-        obj.phaseActivePow[i] = obj.phaseActivePow[i]?.toFixed(3);
-        obj.phaseReactivePow[i] = obj.phaseReactivePow[i]?.toFixed(3);
-        obj.phaseApparentPow[i] = obj.phaseApparentPow[i]?.toFixed(3);
-        obj.phasePowFactor[i] = obj.phasePowFactor[i]?.toFixed(2);
-      }
+//     list.value.forEach((obj) => {
+//       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
+//       if(obj?.phaseCur == null){
+//         return;
+//       }
+//       for(var i= 0;i < obj.phaseCur.length; i++)
+//       {
+//         obj.phaseCur[i] = obj.phaseCur[i]?.toFixed(2);
+//         obj.phaseVol[i] = obj.phaseVol[i]?.toFixed(2);
+//         obj.phaseActivePow[i] = obj.phaseActivePow[i]?.toFixed(3);
+//         obj.phaseReactivePow[i] = obj.phaseReactivePow[i]?.toFixed(3);
+//         obj.phaseApparentPow[i] = obj.phaseApparentPow[i]?.toFixed(3);
+//         obj.phasePowFactor[i] = obj.phasePowFactor[i]?.toFixed(2);
+//       }
       
-      for(var i= 0;i < obj.loopCur.length; i++)
-      {
-        obj.loopCur[i] = obj.loopCur[i]?.toFixed(2);
-        obj.loopVol[i] = obj.loopVol[i]?.toFixed(1);
-        obj.loopActivePow[i] = obj.loopActivePow[i]?.toFixed(3);
-        obj.loopReactivePow[i] = obj.loopReactivePow[i]?.toFixed(3);
-      } 
+//       for(var i= 0;i < obj.loopCur.length; i++)
+//       {
+//         obj.loopCur[i] = obj.loopCur[i]?.toFixed(2);
+//         obj.loopVol[i] = obj.loopVol[i]?.toFixed(1);
+//         obj.loopActivePow[i] = obj.loopActivePow[i]?.toFixed(3);
+//         obj.loopReactivePow[i] = obj.loopReactivePow[i]?.toFixed(3);
+//       } 
       
-      for(var i= 0;i < obj.outletActivePow.length; i++)
-      {
-        obj.outletActivePow[i] = obj.outletActivePow[i]?.toFixed(3);
-        obj.outletReactivePow[i] = obj.outletReactivePow[i]?.toFixed(3);
-        obj.outletApparentPow[i] = obj.outletApparentPow[i]?.toFixed(3);
-        obj.outletPowFactor[i] = obj.outletPowFactor[i]?.toFixed(2);
-      }
-    });
+//       for(var i= 0;i < obj.outletActivePow.length; i++)
+//       {
+//         obj.outletActivePow[i] = obj.outletActivePow[i]?.toFixed(3);
+//         obj.outletReactivePow[i] = obj.outletReactivePow[i]?.toFixed(3);
+//         obj.outletApparentPow[i] = obj.outletApparentPow[i]?.toFixed(3);
+//         obj.outletPowFactor[i] = obj.outletPowFactor[i]?.toFixed(2);
+//       }
+//     });
 
-    for(let i = 0; i < list.value.length; i++){
-      const loopCur = list.value[i].loopCur;
-      const selectedElements = [];
-      const indicesToSelect = [2, 5, 8];
-      for (let j = 0; j < indicesToSelect.length; j++) {
-        if (j < loopCur.length){
-          selectedElements.push(loopCur[indicesToSelect[j]]);
-        }
-      }
+//     for(let i = 0; i < list.value.length; i++){
+//       const loopCur = list.value[i].loopCur;
+//       const selectedElements = [];
+//       const indicesToSelect = [2, 5, 8];
+//       for (let j = 0; j < indicesToSelect.length; j++) {
+//         if (j < loopCur.length){
+//           selectedElements.push(loopCur[indicesToSelect[j]]);
+//         }
+//       }
 
-      list.value[i].loopCur = selectedElements;
-    }
+//       list.value[i].loopCur = selectedElements;
+//     }
 
-    total.value = data.total;
-  } catch (error) {
+//     total.value = data.total;
+//   } catch (error) {
     
-  }
-};
+//   }
+// };
 
 const getNavList = async() => {
   const res = await IndexApi.getBoxMenu();
@@ -1251,8 +1204,8 @@ onMounted(async () => {
   getNavList();
   getListAll();
   //getTypeMaxValue();
-  flashListTimer.value = setInterval((getListNoLoading), 5000);
-  flashListTimer.value = setInterval((getListAll), 5000);
+  // flashListTimer.value = setInterval((getListNoLoading), 5000);
+  flashListTimer.value = setInterval((getList), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -1274,8 +1227,8 @@ onActivated(() => {
   getList();
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getListNoLoading), 5000);
-    flashListTimer.value = setInterval((getListAll), 5000);
+    // flashListTimer.value = setInterval((getListNoLoading), 5000);
+    flashListTimer.value = setInterval((getList), 5000);
   }
 })
 </script>
