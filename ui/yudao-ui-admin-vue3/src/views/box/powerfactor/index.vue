@@ -253,7 +253,8 @@
           <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
-            <div class="info" >
+            <div class="info" style="padding-left: 20px;">
+
               <!--div v-if="item.phasePowFactor!= null && typeText == 'line'">
                 <div v-for="(phasePF,index) in item.phasePowFactor" :key="index">
                   <div >{{ phaseLineText[index] }}{{phasePF}}</div>
@@ -269,15 +270,17 @@
                   <div>{{ outletLineText[index] }}{{outletPF}}</div>
                 </div>
               </div>
-            </div>
-            <div class="icon">
+            </div>  
+            
+            <div class="icon" >
               <div v-if=" item.totalPowFactor != null  && typeText == 'line'">
-                <span style="font-size: 20px;">{{ item.totalPowFactor }}</span><br/>总功率因数
+                <span style="font-size: 20px; ">{{ item.totalPowFactor }}</span><br/>总功率因数
               </div>
               <div v-else-if=" item.totalPowFactor != null  && typeText == 'loop'">
                 <span style="font-size: 20px;">{{ item.totalPowFactor }}</span><br/>总功率因数
               </div>                
-            </div>  
+            </div>
+
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
@@ -302,17 +305,13 @@
         <el-empty description="暂无数据" :image-size="595" />
       </template>
 
-      <el-dialog v-model="detailVis">
-        <div class="custom-row" style="display: flex; align-items: center;">
-          <!-- 位置标签 -->
-          <div class="location-tag el-col"> <!-- 假设原el-col的:span="9"在24格布局中占37.5%，这里简化为30% -->
-            <span style="margin-right:10px;font-size:18px;font-weight:bold;">功率因素详情</span>
-            <span>所在位置：{{ busName }}</span>
-            <span> 网络地址：{{ location }}</span>
-          </div>
+      <el-dialog v-model="detailVis" title="功率因数详情"  width="70vw" height="58vh" >
+        <el-row>
+          <el-tag style="margin-left: 110px; margin-top: -62px">所在位置：{{location != null ? location : devkey }}</el-tag>
+          <el-tag style="margin-left: 50px; margin-top: -62px">网络地址：{{ devkey }}</el-tag>
 
-          <!-- 日期选择器 -->
-          <div class="date-picker-col el-col"> <!-- 假设原el-col的:span="8"在24格布局中占33.33%，这里为了简化计算取近似值26.66% -->
+          <div style="margin-left: 130px; margin-top: -62px">
+              日期:
             <el-date-picker
               v-model="queryParams.oldTime"
               value-format="YYYY-MM-DD HH:mm:ss"
@@ -365,6 +364,7 @@ defineOptions({ name: 'PDUDevice' })
 
 const boxName = ref() as any;
 const location = ref() as any;
+const devkey = ref() as any;
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
@@ -432,8 +432,7 @@ const openPFDetail = async (row) =>{
   queryParams.boxId = row.boxId;
   queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
   location.value = row.location ? row.location : row.devKey;
-  boxName.value = row.boxName;
-  console.log('row',row);
+  devkey.value = row.devKey;
   await getDetail();
   detailVis.value = true;
 }
@@ -1117,7 +1116,7 @@ onActivated(() => {
           font-size: 20px;
           width: 100px;
           height: 50px;
-          margin-left:20px;
+          margin-left:30px;
           margin-bottom: 20px;
           margin-right:20px;
           text-align: center;

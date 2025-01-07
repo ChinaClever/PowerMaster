@@ -272,6 +272,7 @@ defineOptions({ name: 'PDUDevice' })
 // const { push } = useRouter()
 const busName = ref() as any;
 const location = ref() as any;
+const devkey = ref() as any;
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
@@ -348,6 +349,7 @@ const openPFDetail = async (row) =>{
   queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
   location.value = row.location ? row.location : row.devKey;
   busName.value = row.busName;
+  devkey.value = row.devKey;
   console.log('row',row);
   await getDetail();
   detailVis.value = true;

@@ -582,63 +582,13 @@ const getList = async () => {
 
 const getListAll = async () => {
   try {
-    var normal = 0;
-    var offline = 0;
-    var alarm = 0;
-    var warn = 0;
-    const allData = await await IndexApi.getBusRedisPage(queryParamsAll)
-    console.log("allData",allData)
-    allList.value = allData.list
-    allList.value.forEach((objAll) => {
-      if(objAll?.dataUpdateTime == null && objAll?.acur == null && objAll?.bcur == null && objAll?.ccur == null){
-        objAll.status = 0;
-        offline++;
-        return;
-      }  
-      if(objAll?.status == 1){
-        normal++;
-      } else if (objAll?.status == 3){
-        warn++;
-      } else if (objAll?.status == 2){
-        alarm++;
-      }          
-    });
+    const allData = await IndexApi.getBusIndexStatistics()
     //设置左边数量
-    statusNumber.normal = normal;
-    statusNumber.offline = offline;
-    statusNumber.alarm = alarm;
-    statusNumber.warn = warn;
+    statusNumber.normal = allData.normal;
+    statusNumber.offline = allData.offline;
+    statusNumber.alarm = allData.alarm;
+    statusNumber.warn = allData.warn;
     busTotal.value = allData.total
-  } catch (error) {
-    
-  }
-}
-
-const getListNoLoading = async () => {
-  console.log(queryParams)
-  try {
-    const data = await IndexApi.getBusHarmonicPage(queryParams)
-    list.value = data.list
-    //list.value = list.value.map(item => ({
-    //  ...item, // 复制对象
-    //  location: item.devKey.split('-')[0] // 直接计算location属性
-    //}));
-    var tableIndex = 0;    
-
-    list.value.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.acurThd == null){
-        return;
-      } 
-      obj.acurThd = obj.acurThd?.toFixed(2);
-      obj.bcurThd = obj.bcurThd?.toFixed(2);
-      obj.ccurThd = obj.ccurThd?.toFixed(2);
-      obj.avolThd = obj.avolThd?.toFixed(2);
-      obj.bvolThd = obj.bvolThd?.toFixed(2);
-      obj.cvolThd = obj.cvolThd?.toFixed(2);
-    });
-
-    total.value = data.total
   } catch (error) {
     
   }
@@ -752,8 +702,8 @@ onMounted(async () => {
   getList()
   getNavList();
   getListAll();
-  flashListTimer.value = setInterval((getListNoLoading), 5000);
-  flashListTimer.value = setInterval((getListAll), 5000);
+
+  flashListTimer.value = setInterval((getList), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -775,7 +725,6 @@ onActivated(() => {
   getList()
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getListNoLoading), 5000);
     flashListTimer.value = setInterval((getListAll), 5000);
   }
 })
