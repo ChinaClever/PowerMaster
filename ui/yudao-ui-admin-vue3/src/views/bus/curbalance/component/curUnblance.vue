@@ -54,7 +54,7 @@ const option = computed(() => ({
         show: true,
         position: 'center',
         // 修改 formatter 以显示 percentageValue 的值
-        formatter: () => percentageValue.value +  '%',
+        formatter: () => percentageValue.value.toFixed(2) +  '%',
         fontSize: 30,
         fontWeight: 'bold'
       },
@@ -63,7 +63,7 @@ const option = computed(() => ({
       },
       data: [
         {
-          value: percentageValue.value,
+          value: percentageValue.value.toFixed(2),
           name: 'Percentage',
           itemStyle: {
             color: props.customColor || '#FF0000'

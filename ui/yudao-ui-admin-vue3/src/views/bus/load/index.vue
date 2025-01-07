@@ -256,7 +256,7 @@
           <div class="status" >
             <el-tag type="info"  v-if="item.color == 0">{{statusList[0].name}}</el-tag>
             <el-tag type="success" v-else-if="item.color == 1">{{statusList[1].name.slice(3,10)}}</el-tag>
-            <el-tag type="primary" v-else-if="item.color == 2">{{statusList[2].name.slice(3,10)}}</el-tag>
+            <el-tag type="primary" v-else-if="item.color == 2">{{statusList[2].name.slice(7,11)}}</el-tag>
             <el-tag type="warning" v-else-if="item.color == 3">{{statusList[3].name.slice(7,11)}}</el-tag>
             <el-tag type="danger"  v-else-if="item.color == 4">{{statusList[4].name.slice(3,10)}}</el-tag>
           </div>

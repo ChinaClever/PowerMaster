@@ -233,10 +233,10 @@
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
             <el-tag type="info"  v-if="item.status == 0">离线</el-tag>
-            <el-tag type="info"  v-else-if="item.color == 1">{{ statusList[3].name.slice(0,3) }}</el-tag>
-            <el-tag type="success"  v-else-if="item.color == 2">{{ statusList[0].name }}</el-tag>
-            <el-tag type="warning" v-else-if="item.color == 3">{{ statusList[1].name }}</el-tag>
-            <el-tag type="danger" v-else-if="item.color == 4">{{ statusList[2].name }}</el-tag>
+            <el-tag type="info"  v-else-if="item.color == 1 && item.status != 0">{{ statusList[3].name.slice(0,3) }}</el-tag>
+            <el-tag type="success"  v-else-if="item.color == 2 && item.status != 0">{{ statusList[0].name }}</el-tag>
+            <el-tag type="warning" v-else-if="item.color == 3 && item.status != 0">{{ statusList[1].name }}</el-tag>
+            <el-tag type="danger" v-else-if="item.color == 4 && item.status != 0">{{ statusList[2].name }}</el-tag>
           </div>
           <button class="detail" @click="showDialogCur(item)" v-if="item.status != null && item.status != 0">详情</button>
         </div>
@@ -256,7 +256,7 @@
         <div class="custom-content">
           <div class="custom-content-container">
             <el-card class="cardChilc" shadow="hover">
-              <curUnblance :max="balanceObj.imbalanceValueA.toFixed(2)" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[colorFlag].name" />
+              <curUnblance :max="balanceObj.imbalanceValueA" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[colorFlag].name" />
             </el-card>
             <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
               <div class="IechartBar">
@@ -327,7 +327,7 @@
         <div class="custom-content">
           <div class="custom-content-container">
             <el-card class="cardChilc" shadow="hover">
-              <curUnblance :max="balanceObj.imbalanceValueA.toFixed(2)" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[colorFlag].name" />
+              <curUnblance :max="balanceObj.imbalanceValueA" :customColor="colorList[balanceObj.colorIndex].color" :name="colorList[colorFlag].name" />
             </el-card>
             <el-card class="cardChilc" style="margin: 0 10px" shadow="hover">
               <div class="IechartBar">
@@ -608,9 +608,9 @@ const getBalanceDetail = async (item) => {
             fontWeight: 'bold'
           },
           data: [
-            { value: cur_valueA[0], name: 'A相电流', itemStyle: { color: '#075F71' } },
-            { value: cur_valueA[1], name: 'B相电流', itemStyle: { color: '#119CB5' } },
-            { value: cur_valueA[2], name: 'C相电流', itemStyle: { color: '#45C0C9' } },
+            { value: cur_valueA[0].toFixed(2), name: 'A相电流', itemStyle: { color: '#075F71' } },
+            { value: cur_valueA[1].toFixed(2), name: 'B相电流', itemStyle: { color: '#119CB5' } },
+            { value: cur_valueA[2].toFixed(2), name: 'C相电流', itemStyle: { color: '#45C0C9' } },
           ]
         }
       ]
