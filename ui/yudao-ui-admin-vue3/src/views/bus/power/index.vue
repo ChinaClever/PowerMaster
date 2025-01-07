@@ -2,36 +2,6 @@
   <CommonMenu @check="handleCheck"  @node-click="handleClick" :showSearch="true" :dataList="serverRoomArr" navTitle="母线电力">
     <template #NavInfo>
       <div>
-        <!-- <div class="header">
-          <div class="header_img"><img alt="" src="@/assets/imgs/Bus.png" /></div>
-        </div> -->
-        <!-- <div class="line"></div> -->
-        <!-- <div class="status">
-          <div class="box">
-            <div class="top">
-              <div class="tag"></div>{{ statusList[0].name }}
-            </div>
-            <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag empty"></div>小电流
-            </div>
-            <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag warn"></div>{{ statusList[1].name }}
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
-          </div>
-          <div class="box">
-            <div class="top">
-              <div class="tag error"></div>{{ statusList[2].name }}
-            </div>
-            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
-          </div>
-        </div> -->
         <div class="status">
           <div class="box">
             <div class="top">
@@ -45,12 +15,6 @@
             </div>
             <div class="value"><span class="number">{{ statusNumber.offline }}</span>个</div>
           </div>
-          <!-- <div class="box">
-            <div class="top">
-              <div class="tag warn"></div>预警
-            </div>
-            <div class="value"><span class="number">{{ statusNumber.warn }}</span>个</div>
-          </div> -->
           <div class="box">
             <div class="top">
               <div class="tag error"></div>告警
@@ -767,7 +731,7 @@ const getList = async () => {
   try {
     const data = await IndexApi.getBusRedisPage(queryParams)
     list.value = data.list
-    //filterData()
+    filterData()
     console.log('查询列表的数据',list.value)
     var tableIndex = 0;
 
@@ -822,68 +786,15 @@ const getDeletedList = async () => {
   }
 }
 
-const getListNoLoading = async () => {
-  try {
-    const data = await IndexApi.getBusRedisPage(queryParams)
-    list.value = data.list
-    //filterData()
-    console.log('list.value',list.value)
-    var tableIndex = 0;    
-
-    list.value.forEach((obj) => {
-      obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex;
-      if(obj?.acur == null){
-        return;
-      } 
-      obj.acur = obj.acur?.toFixed(2);
-      obj.bcur = obj.bcur?.toFixed(2);
-      obj.ccur = obj.ccur?.toFixed(2);
-      obj.avol = obj.avol?.toFixed(1);
-      obj.bvol = obj.bvol?.toFixed(1);
-      obj.cvol = obj.cvol?.toFixed(1);
-      obj.aactivePow = obj.aactivePow?.toFixed(3);
-      obj.bactivePow = obj.bactivePow?.toFixed(3);
-      obj.cactivePow = obj.cactivePow?.toFixed(3);
-      obj.areactivePow = obj.areactivePow?.toFixed(3);
-      obj.breactivePow = obj.breactivePow?.toFixed(3);
-      obj.creactivePow = obj.creactivePow?.toFixed(3);
-    });
-
-    total.value = data.total
-  } catch (error) {
-    
-  }
-}
-
 const getListAll = async () => {
-  console.log('11111')
   try {
-    var normal = 0;
-    var offline = 0;
-    var alarm = 0;
-    var warn = 0;
-    const allData = await await IndexApi.getBusRedisPage(queryParamsAll)
-    console.log("allData111111111111111",allData)
-    allList.value = allData.list
-    allList.value.forEach((objAll) => {
-      if(objAll?.dataUpdateTime == null && objAll?.acur == null && objAll?.bcur == null && objAll?.ccur == null){
-        objAll.status = 0;
-        offline++;
-        return;
-      }  
-      if(objAll?.status == 1){
-        normal++;
-      } else if (objAll?.status == 3){
-        warn++;
-      } else if (objAll?.status == 2){
-        alarm++;
-      }          
-    });
+
+    const allData =  await IndexApi.getBusIndexStatistics()
     //设置左边数量
-    statusNumber.normal = normal;
-    statusNumber.offline = offline;
-    statusNumber.alarm = alarm;
-    statusNumber.warn = warn;
+    statusNumber.normal = allData.normal;
+    statusNumber.offline = allData.offline;
+    statusNumber.alarm = allData.alarm;
+    statusNumber.warn = allData.warn;
     busTotal.value = allData.total
   } catch (error) {
     
@@ -912,38 +823,37 @@ const toDeatil = (row) =>{
   const location = row.location != null ? row.location : row.devKey
   const busName = row.busName;
   push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location , busName }})
-  //push({path: '/bus/busmonitor/buspowerdetail'})
+
 }
 
-// const openNewPage = (scope) => {
-//   const url = 'http://' + scope.row.devKey.split('-')[0] + '/index.html';
-//   window.open(url, '_blank');
-// }
-//const filterData = () => {
-//  const data0 = list.value.filter(item => item.status === 1 && item.acurStatus != null);
-//  const data1 = list.value.filter(item => item.status === 2);
-//  const data2 = list.value.filter(item => item.status === 0 || item.acurStatus == null || item.status == null);
-// 
-//  if (normalFlag.value && !reportFlag.value && !offlineFlag.value) {
-//    list.value = data0; // 仅正常状态
-//  } else if (reportFlag.value && !normalFlag.value && !offlineFlag.value) {
-//    list.value = data1; // 仅告警状态
-//  } else if (offlineFlag.value && !normalFlag.value && !reportFlag.value) {
-//    list.value = data2; // 仅离线状态
-//  } else if (normalFlag.value && reportFlag.value && !offlineFlag.value) {
-//    list.value = [...data0, ...data1];
-//  } else if (normalFlag.value && offlineFlag.value && !reportFlag.value) {
-//    list.value = [...data0, ...data2];
-//  } else if (reportFlag.value && offlineFlag.value && !normalFlag.value) {
-//    list.value = [...data1, ...data2];
-//  } else if (normalFlag.value && reportFlag.value && offlineFlag.value) {
-//    list.value = [...data0, ...data1, ...data2];
-//  } else {
-//    list.value = list.value;
-//  }
-//
-//  console.log('执行完毕')
-//}
+const filterData = () => {
+  const data0 = list.value.filter(item => item.status === 1 && item.acurStatus != null); // 正常状态数据
+  console.log('data0',data0)
+  const data1 = list.value.filter(item => item.status === 2); // 告警状态数据
+  console.log('data1',data1)
+  const data2 = list.value.filter(item => item.status === 0 || item.acurStatus == null || item.status == null); // 离线状态数据
+  console.log('data2',data2)
+ 
+  if (normalFlag.value && !reportFlag.value && !offlineFlag.value) {
+    list.value = data0; // 仅正常状态
+  } else if (reportFlag.value && !normalFlag.value && !offlineFlag.value) {
+    list.value = data1; // 仅告警状态
+  } else if (offlineFlag.value && !normalFlag.value && !reportFlag.value) {
+    list.value = data2; // 仅离线状态
+  } else if (normalFlag.value && reportFlag.value && !offlineFlag.value) {
+    list.value = [...data0, ...data1];
+  } else if (normalFlag.value && offlineFlag.value && !reportFlag.value) {
+    list.value = [...data0, ...data2];
+  } else if (reportFlag.value && offlineFlag.value && !normalFlag.value) {
+    list.value = [...data1, ...data2];
+  } else if (normalFlag.value && reportFlag.value && offlineFlag.value) {
+    list.value = [...data0, ...data1, ...data2];
+  } else {
+    list.value = list.value;
+  }
+
+  console.log('执行完毕')
+}
 
 const handleSelectStatus = (index) => {
   butColor.value = 1;
@@ -1028,8 +938,8 @@ onMounted(async () => {
   getList()
   getNavList();
   getListAll();
-  flashListTimer.value = setInterval((getListNoLoading), 5000);
-  flashListTimer.value = setInterval((getListAll), 5000);
+  // flashListTimer.value = setInterval((getListNoLoading), 5000);
+  flashListTimer.value = setInterval((getList), 5000);
 })
 
 onBeforeUnmount(()=>{
@@ -1051,8 +961,8 @@ onActivated(() => {
   getList()
   getNavList();
   if(!firstTimerCreate.value){
-    flashListTimer.value = setInterval((getListNoLoading), 5000);
-    flashListTimer.value = setInterval((getListAll), 5000);
+    // flashListTimer.value = setInterval((getListNoLoading), 5000);
+    flashListTimer.value = setInterval((getList), 5000);
   }
 })
 </script>

@@ -625,8 +625,17 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                 }
 
             }
-
-            return buildTree(menuDTOS);
+            List<RoomMenuDTO> roomMenuDTOS = buildTree(menuDTOS);
+            RoomMenuDTO roomMenuDTO = new RoomMenuDTO();
+            roomMenuDTO.setId(-1);
+            roomMenuDTO.setName("未绑定");
+            roomMenuDTO.setChildren(new ArrayList<>());
+            roomMenuDTO.setType(MenuTypeEnums.ROOM.getType());
+            roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.ROOM.getType()) + SPLIT + -1);
+            roomMenuDTO.setParentId(0);
+            roomMenuDTO.setParentType(0);
+            roomMenuDTOS.add(roomMenuDTO);
+            return roomMenuDTOS;
         } catch (Exception e) {
             log.error("获取菜单失败：", e);
         }
@@ -678,8 +687,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                     menuDTOS.add(roomMenuDTO);
                 });
             }
-
-            return buildTree(menuDTOS);
+           return buildTree(menuDTOS);
         } catch (Exception e) {
             log.error("获取菜单失败：", e);
         }
