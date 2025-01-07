@@ -1,9 +1,8 @@
 package cn.iocoder.yudao.module.cabinet.dto;
 
+import cn.iocoder.yudao.framework.common.dto.room.RoomMenuDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-
-import java.util.List;
 
 /**
  * @author luowei
@@ -12,7 +11,7 @@ import java.util.List;
  * @date 2024/5/6 9:36
  */
 @Data
-public class RoomPduMenuDTO extends RoomMenuDTO{
+public class RoomPduMenuDTO extends RoomMenuDTO {
 
 
     /**

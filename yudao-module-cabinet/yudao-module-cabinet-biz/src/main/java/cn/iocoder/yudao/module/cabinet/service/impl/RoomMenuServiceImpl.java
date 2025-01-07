@@ -11,7 +11,7 @@ import cn.iocoder.yudao.framework.common.entity.mysql.room.RoomIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
 import cn.iocoder.yudao.framework.common.enums.DisableEnums;
 import cn.iocoder.yudao.framework.common.mapper.*;
-import cn.iocoder.yudao.module.cabinet.dto.RoomMenuDTO;
+import cn.iocoder.yudao.framework.common.dto.room.RoomMenuDTO;
 import cn.iocoder.yudao.module.cabinet.dto.RoomPduMenuDTO;
 import cn.iocoder.yudao.module.cabinet.mapper.*;
 import cn.iocoder.yudao.module.cabinet.enums.MenuTypeEnums;
@@ -54,7 +54,10 @@ public class RoomMenuServiceImpl implements RoomMenuService {
     AisleBoxMapper aisleBoxMapper;
     @Autowired
     BoxIndexMapper boxIndexMapper;
-
+    @Autowired
+    private BusIndexDoMapper busIndexDoMapper;
+    @Autowired
+    private PduIndexDoMapper pduIndexDoMapper;
     @Override
     public List<RoomIndex> roomList(String name) {
 
@@ -261,6 +264,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
 
             List<RoomPduMenuDTO> menuDTOS = new ArrayList<>();
 
+            List<String> pduKeys = null;
             if (!CollectionUtils.isEmpty(roomIndexList)) {
                 roomIndexList.forEach(roomIndex -> {
                     RoomPduMenuDTO roomMenuDTO = new RoomPduMenuDTO();
@@ -313,7 +317,11 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                     menuDTOS.add(roomMenuDTO);
                 });
 
-
+                pduKeys = pduList.stream().map(CabinetPdu::getPduKeyA).collect(Collectors.toList());
+                List<String> collect1 = pduList.stream().map(CabinetPdu::getPduKeyB).collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(collect1)) {
+                    pduKeys.addAll(collect1);
+                }
                 if (!CollectionUtils.isEmpty(pduList)){
                     pduList.forEach(cabinetPdu -> {
 
@@ -348,8 +356,21 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                     });
                 }
             }
+            List<RoomPduMenuDTO> roomPduMenuDTOS = buildPduTree(menuDTOS);
+//            RoomPduMenuDTO roomMenuDTO = new RoomPduMenuDTO();
+//            roomMenuDTO.setId(-1);
+//            roomMenuDTO.setName("未绑定");
+//
+//            roomMenuDTO.setType(MenuTypeEnums.BUS.getType());
+//            roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.ROOM.getType()) + SPLIT + -1);
+//            roomMenuDTO.setParentId(0);
+//            roomMenuDTO.setParentType(0);
+//
+//            List<RoomMenuDTO> boxIndices = pduIndexDoMapper.queryRoomMenuDTO(pduKeys);
+//            roomMenuDTO.setChildren(boxIndices);
+//            roomPduMenuDTOS.add(roomMenuDTO);
 
-            return buildPduTree(menuDTOS);
+            return roomPduMenuDTOS;
         } catch (Exception e) {
             log.error("获取菜单失败：", e);
         }
@@ -467,7 +488,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
 
 
             List<RoomMenuDTO> menuDTOS = new ArrayList<>();
-
+            List<String> busKeys = null;
             if (!CollectionUtils.isEmpty(roomIndexList)) {
                 roomIndexList.forEach(roomIndex -> {
                     RoomMenuDTO roomMenuDTO = new RoomMenuDTO();
@@ -502,7 +523,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
 
                 List<AisleBar>  barList = aisleBarMapper.selectList(new LambdaQueryWrapper<AisleBar>()
                         .in(AisleBar::getAisleId,ids));
-
+                busKeys = barList.stream().map(AisleBar::getBusKey).collect(Collectors.toList());
                 if (!CollectionUtils.isEmpty(barList)){
                     barList.forEach(aisleBar -> {
                         if (StringUtils.isNotEmpty(aisleBar.getBusKey())){
@@ -522,8 +543,21 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                 }
 
             }
+            List<RoomMenuDTO> roomMenuDTOS = buildTree(menuDTOS);
+            RoomMenuDTO roomMenuDTO = new RoomMenuDTO();
+            roomMenuDTO.setId(-1);
+            roomMenuDTO.setName("未绑定");
+            roomMenuDTO.setType(MenuTypeEnums.BUS.getType());
+            roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.ROOM.getType()) + SPLIT + -1);
+            roomMenuDTO.setParentId(0);
+            roomMenuDTO.setParentType(0);
 
-            return buildTree(menuDTOS);
+            List<RoomMenuDTO> boxIndices = busIndexDoMapper.queryRoomMenuDTO(busKeys);
+
+            roomMenuDTO.setChildren(boxIndices);
+            roomMenuDTOS.add(roomMenuDTO);
+
+            return roomMenuDTOS;
         } catch (Exception e) {
             log.error("获取菜单失败：", e);
         }
@@ -545,7 +579,8 @@ public class RoomMenuServiceImpl implements RoomMenuService {
 
 
             List<RoomMenuDTO> menuDTOS = new ArrayList<>();
-
+            List<String> boxKeys = null;
+            List<BoxIndex> boxIndexlist1 = null;
             if (!CollectionUtils.isEmpty(roomIndexList)) {
                 roomIndexList.forEach(roomIndex -> {
                     RoomMenuDTO roomMenuDTO = new RoomMenuDTO();
@@ -599,11 +634,12 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                     });
 
                     List<Integer> aisleBarIds = barList.stream().map(AisleBar::getId).collect(Collectors.toList());
-                    List<AisleBox>boxList = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
+                    List<AisleBox> boxList = aisleBoxMapper.selectList(new LambdaQueryWrapper<AisleBox>()
                             .in(AisleBox::getAisleBarId,aisleBarIds));
-                    List<String>barKeys=boxList.stream().map(AisleBox::getBoxKey).collect(Collectors.toList());
-                    List<BoxIndex>boxIndexlist1=boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>()
-                            .in(BoxIndex::getBoxKey,barKeys));
+                    List<String> barKeys=boxList.stream().map(AisleBox::getBoxKey).collect(Collectors.toList());
+                    boxIndexlist1=boxIndexMapper.selectList(new LambdaQueryWrapper<BoxIndex>()
+                            .in(BoxIndex::getBoxKey,barKeys).eq(BoxIndex::getIsDeleted,0));
+                    boxKeys=boxIndexlist1.stream().map(BoxIndex::getBoxKey).collect(Collectors.toList());
                     Collections.sort(boxIndexlist1, Comparator.comparing(BoxIndex::getBoxName));
                     if (!CollectionUtils.isEmpty(boxIndexlist1)) {
                         boxIndexlist1.forEach(aisleBox -> {
@@ -614,7 +650,7 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                                 roomMenuDTOA.setName(aisleBox.getBoxName());
                                 roomMenuDTOA.setUnique(aisleBox.getBoxKey());
                                 //父id设置柜列
-                                roomMenuDTOA.setParentId(aisleBoxMapper.selectOne(new LambdaQueryWrapper<AisleBox>().in(AisleBox::getBoxKey,aisleBox.getBoxKey())).getAisleBarId());
+//                                roomMenuDTOA.setParentId(aisleBoxMapper.selectOne(new LambdaQueryWrapper<AisleBox>().in(AisleBox::getBoxKey,aisleBox.getBoxKey())).getAisleBarId());
                                 roomMenuDTOA.setParentType(MenuTypeEnums.BUS.getType());
                                 //非插接箱id  绑定ID
                                 roomMenuDTOA.setId(aisleBox.getId());
@@ -623,17 +659,20 @@ public class RoomMenuServiceImpl implements RoomMenuService {
                         });
                     }
                 }
-
             }
+
             List<RoomMenuDTO> roomMenuDTOS = buildTree(menuDTOS);
             RoomMenuDTO roomMenuDTO = new RoomMenuDTO();
             roomMenuDTO.setId(-1);
             roomMenuDTO.setName("未绑定");
-            roomMenuDTO.setChildren(new ArrayList<>());
-            roomMenuDTO.setType(MenuTypeEnums.ROOM.getType());
+
+            roomMenuDTO.setType(MenuTypeEnums.BUS.getType());
             roomMenuDTO.setUnique(String.valueOf(MenuTypeEnums.ROOM.getType()) + SPLIT + -1);
             roomMenuDTO.setParentId(0);
             roomMenuDTO.setParentType(0);
+
+            List<RoomMenuDTO> boxIndices = boxIndexMapper.queryRoomMenuDTO(boxKeys);
+            roomMenuDTO.setChildren(boxIndices);
             roomMenuDTOS.add(roomMenuDTO);
             return roomMenuDTOS;
         } catch (Exception e) {

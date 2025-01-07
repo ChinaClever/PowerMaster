@@ -246,7 +246,7 @@ const handleCheck = (row) => {
   const ids = [] as any
   var haveCabinet = false;
   row.forEach(item => {
-    if (item.type == 6) {
+    if (item.type == 7) {
       ids.push(item.unique)
       haveCabinet = true;
     }
