@@ -715,7 +715,7 @@
                 电压
               </div>-->
               <div v-if="valueMode == 2 && item.outletActivePow != null && typeText == 'line'">
-                有功功率
+                总有功率
               </div>
               <!--<div v-if="valueMode == 2 && item.loopActivePow != null && typeText == 'loop'">
                 有功功率
@@ -724,7 +724,7 @@
                 有功功率
               </div>-->
               <div v-if="valueMode == 3 && item.outletReactivePow != null && typeText == 'line'" >
-                无功功率
+                总无功率
               </div>
               <div v-if="valueMode == 4 && item.outletApparentPow != null && typeText == 'line'" >
                 视在功率
