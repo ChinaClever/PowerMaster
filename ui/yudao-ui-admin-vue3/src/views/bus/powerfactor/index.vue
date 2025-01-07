@@ -207,10 +207,10 @@
       <el-dialog v-model="detailVis" width="70vw" height="58vh" >
         <el-row class="custom-row" style="display: flex; align-items: center;">
           <!-- 位置标签 -->
-          <el-col :span="9" class="location-tag">
-            <span style="margin-right:10px;font-size:18px;font-weight:bold;">功率因素详情</span>
-            <span>所在位置：{{ busName }}</span>
-            <span> 网络地址：{{ location }}</span>
+          <el-col :span="11" class="location-tag">
+            <span style="margin-right:8px;font-size:18px;font-weight:bold;">功率因素详情</span>
+            <span>所在位置：{{ location }}</span>
+            <span> &nbsp;网络地址：{{ devkey }}</span>
           </el-col>
 
           <!-- 日期选择器 -->
@@ -270,6 +270,7 @@ defineOptions({ name: 'PDUDevice' })
 // const { push } = useRouter()
 const busName = ref() as any;
 const location = ref() as any;
+const devkey = ref() as any;
 const curBalanceColorForm = ref()
 const flashListTimer = ref();
 const firstTimerCreate = ref(true);
@@ -346,6 +347,7 @@ const openPFDetail = async (row) =>{
   queryParams.oldTime = getFullTimeByDate(new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate(),0,0,0));
   location.value = row.location ? row.location : row.devKey;
   busName.value = row.busName;
+  devkey.value = row.devKey;
   console.log('row',row);
   await getDetail();
   detailVis.value = true;
