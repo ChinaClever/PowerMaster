@@ -286,8 +286,8 @@
           <!-- 位置标签 -->
           <div class="location-tag el-col">
             <span style="margin-right:10px;font-size:18px;font-weight:bold;">温度详情</span>
-            <span>所在位置：{{ busName }}</span>
-            <span> 网络地址：{{ location }}</span>
+            <span>所在位置：{{ location }}</span>
+            <span> 网络地址：{{ devkey }}</span>
           </div>
 
           <!-- 日期选择器 -->
@@ -367,6 +367,7 @@ defineOptions({ name: 'PDUDevice' })
 
 // const { push } = useRouter()
 const isChecked = ref(false)
+const devkey = ref() as any;
 const location = ref() as any
 const detailVis = ref(false)
 const curBalanceColorForm = ref()
@@ -449,11 +450,12 @@ const handleCheck = async (row) => {
 }
 
 const openTemDetail = async (row) => {
-  queryParams.busId = row.busId
+  queryParams.busId = row.busId;
   queryParams.oldTime = getFullTimeByDate(
     new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), 0, 0, 0)
   )
-  location.value = row.location ? row.location : row.devKey
+  location.value = row.location ? row.location : row.devKey;
+  devkey.value = row.devKey;
   await getDetail()
   detailVis.value = true
 }

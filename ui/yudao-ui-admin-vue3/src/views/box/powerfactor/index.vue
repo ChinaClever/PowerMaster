@@ -310,8 +310,8 @@
           <!-- 位置标签 -->
           <div class="location-tag el-col">
             <span style="margin-right:10px;font-size:18px;font-weight:bold;">功率因素详情</span>
-            <span>所在位置：{{ busName }}</span>
-            <span> 网络地址：{{ location }}</span>
+            <span>所在位置：{{ location }}</span>
+            <span> 网络地址：{{ devkey }}</span>
           </div>
 
           <!-- 日期选择器 -->
