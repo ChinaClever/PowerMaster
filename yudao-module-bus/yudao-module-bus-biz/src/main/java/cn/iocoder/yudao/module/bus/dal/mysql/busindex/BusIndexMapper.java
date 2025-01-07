@@ -38,7 +38,7 @@ public interface BusIndexMapper extends BaseMapperX<BusIndexDO> {
                         .inIfPresent(BusIndexDO::getLoadRateStatus, reqVO.getLoadRateStatus())
                         .inIfPresent(BusIndexDO::getCurUnbalanceStatus,reqVO.getCurUnbalanceStatus())
 //                .ne(ObjectUtil.isNotEmpty(reqVO.getStatus()),BusIndexDO::getRunStatus, 0)
-                .last(" ORDER BY CASE WHEN run_status =1 THEN 0 ELSE run_status END, create_time asc"));
+                .last("ORDER BY CASE WHEN run_status =1 THEN 4 ELSE run_status END desc, create_time desc"));
     }
 
     default PageResult<BusIndexDO> selectPage2(BusIndexPageReqVO reqVO) {
@@ -53,7 +53,7 @@ public interface BusIndexMapper extends BaseMapperX<BusIndexDO> {
                 .eqIfPresent(BusIndexDO::getIsDeleted, reqVO.getIsDeleted())
                 .betweenIfPresent(BusIndexDO::getCreateTime, reqVO.getCreateTime())
                 .in(ObjectUtil.isNotEmpty(reqVO.getStatus()), BusIndexDO::getRunStatus, reqVO.getStatus())
-                .last(" ORDER BY CASE WHEN run_status =1 THEN 0 ELSE run_status END, create_time asc"));
+                .last("ORDER BY CASE WHEN run_status =1 THEN 4 ELSE run_status END desc, create_time desc"));
     }
 
     IPage<BusAisleBarQueryVO> selectPageList(@Param("page") Page<Object> page,@Param("devkeys") String[] devkeys);

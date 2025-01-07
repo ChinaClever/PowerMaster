@@ -34,7 +34,7 @@ public interface BoxIndexCopyMapper extends BaseMapperX<BoxIndex> {
                 .inIfPresent(BoxIndex::getRunStatus,reqVO.getStatus())
                 .eqIfPresent(BoxIndex::getBoxType,0)
                 .betweenIfPresent(BoxIndex::getCreateTime, reqVO.getCreateTime())
-                .last(" ORDER BY CASE WHEN run_status =1 THEN 0 ELSE run_status END, create_time asc"));
+                .last("ORDER BY CASE WHEN run_status =1 THEN 4 ELSE run_status END desc, create_time desc"));
     }
 
     BusIndexStatisticsResVO getBoxIndexStatistics();
@@ -58,7 +58,7 @@ public interface BoxIndexCopyMapper extends BaseMapperX<BoxIndex> {
                 .inIfPresent(BoxIndex::getRunStatus,reqVO.getStatus())
 //                .eqIfPresent(BoxIndex::getBoxType,0)
                 .betweenIfPresent(BoxIndex::getCreateTime, reqVO.getCreateTime())
-                .last(" ORDER BY CASE WHEN run_status =1 THEN 0 ELSE run_status END, create_time asc"));
+                .last("ORDER BY CASE WHEN run_status =1 THEN 4 ELSE run_status END desc, create_time desc"));
     }
 
     BusIndexStatisticsResVO getBoxIndexStatisticsAll();

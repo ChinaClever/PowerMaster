@@ -46,7 +46,8 @@
         v-show="switchValue !== 4"                          
       >
         <el-form-item v-if="switchValue == 2 || switchValue == 3">
-          <el-button style="height:25px;width:50px;margin-right:10px" :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">全部</el-button>
+          <!-- <el-button style="height:25px;width:50px;margin-right:10px" :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">全部</el-button> -->
+          <el-button :class="{ 'btnallSelected': butColor === 0 , 'btnallNotSelected': butColor === 1 }" type = "button" @click="toggleAllStatus">全部</el-button>
           <template v-for="(status, index) in statusList" :key="index">
             <button v-if="butColor === 0" :class="[status.activeClass]" @click.prevent="handleSelectStatus(status.value)">{{status.name}}</button>
             <button v-else-if="butColor === 1" :class="[onclickColor === status.value ? status.activeClass:status.cssClass]" @click.prevent="handleSelectStatus(index)">{{status.name}}</button>
@@ -783,7 +784,7 @@ onUpdated(() => {
 .btn_offline {
   // width: 55px;
   // height: 32px;
-  padding: 3px 8px;
+  padding: 8px 8px;
   cursor: pointer;
   border-radius: 3px;
   display: flex;
@@ -1262,7 +1263,7 @@ onUpdated(() => {
 .btnallSelected {
   margin-right: 10px;
   width: 58px;
-  height: 32px;
+  height: 35px;
   cursor: pointer;
   display: flex;
   align-items: center;
