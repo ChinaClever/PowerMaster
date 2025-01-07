@@ -305,13 +305,17 @@
         <el-empty description="暂无数据" :image-size="595" />
       </template>
 
-      <el-dialog v-model="detailVis" title="功率因数详情"  width="70vw" height="58vh" >
-        <el-row>
-          <el-tag style="margin-left: 110px; margin-top: -62px">所在位置：{{location != null ? location : devkey }}</el-tag>
-          <el-tag style="margin-left: 50px; margin-top: -62px">网络地址：{{ devkey }}</el-tag>
+      <el-dialog v-model="detailVis">
+        <div class="custom-row" style="display: flex; align-items: center;">
+          <!-- 位置标签 -->
+          <div class="location-tag el-col">
+            <span style="margin-right:10px;font-size:18px;font-weight:bold;">功率因素详情</span>
+            <span>所在位置：{{ busName }}</span>
+            <span> 网络地址：{{ location }}</span>
+          </div>
 
-          <div style="margin-left: 130px; margin-top: -62px">
-              日期:
+          <!-- 日期选择器 -->
+          <div class="date-picker-col el-col">
             <el-date-picker
               v-model="queryParams.oldTime"
               value-format="YYYY-MM-DD HH:mm:ss"
@@ -324,7 +328,7 @@
           </div>
 
           <!-- 图表/数据切换按钮组 -->
-          <div class="chart-data-buttons el-col" style="margin-right: 50px;"> <!-- 假设原el-col的:span="4"在24格布局中占16.67%，这里为了布局调整取近似值13.33%并添加margin-right -->
+          <div class="chart-data-buttons el-col" style="margin-right: 50px;">
             <div class="button-group">
               <el-button @click="switchChartOrTable = 0" :type="switchChartOrTable === 0 ? 'primary' : ''">图表</el-button>
               <el-button @click="switchChartOrTable = 1" :type="switchChartOrTable === 1 ? 'primary' : ''">数据</el-button>
