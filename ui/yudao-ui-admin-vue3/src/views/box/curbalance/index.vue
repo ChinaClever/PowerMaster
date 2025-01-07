@@ -101,7 +101,8 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="visMode == 1" v-loading="loading" style="margin-top:-10px;height:720px;oveflow-y:auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
+      <div v-if="visMode !== 0 && list.length > 0">
+        <el-table v-if="visMode == 1" v-loading="loading" style="margin-top:-10px;height:720px;oveflow-y:auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location"  width="300px"/>
@@ -194,8 +195,9 @@
           </template>
         </el-table-column>
       </el-table>
+      </div>
 
-      <div v-show="visMode == 0 && switchValue == 0  && list.length > 0" class="arrayContainer">
+      <div v-if="visMode == 0 && switchValue == 0  && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
@@ -268,7 +270,7 @@
         </div>
       </el-dialog>
 
-      <div v-show="visMode == 0 && switchValue == 1  && list.length > 0" class="arrayContainer">
+      <div v-if="visMode == 0 && switchValue == 1  && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
@@ -344,8 +346,8 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
-      <template v-if="list.length == 0 && switchValue != 3">
-        <el-empty description="暂无数据" :image-size="300" />
+      <template v-if="list.length == 0 && switchValue !== null">
+        <el-empty description="暂无数据" :image-size="595" />
       </template>
     </template>
   </CommonMenu>

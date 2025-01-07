@@ -130,7 +130,8 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
+      <div v-if="switchValue !== 0  && list.length > 0" style="height:720px;margin-top:-10px;">
+        <el-table v-if="switchValue == 3" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDeatil" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -583,8 +584,9 @@
           </template>
         </el-table-column>
       </el-table>
+      </div>
 
-      <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
+      <div v-else-if="switchValue == 0  && list.length > 0" class="arrayContainer">
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.id !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
@@ -762,8 +764,8 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
-      <template v-if="list.length == 0 && switchValue != 3">
-        <el-empty description="暂无数据" :image-size="300" />
+      <template v-if="list.length == 0 && switchValue !== null">
+        <el-empty description="暂无数据" :image-size="595" />
       </template>
     </template>
   </CommonMenu>

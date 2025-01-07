@@ -145,7 +145,8 @@
       </el-form>      
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" style="height:710px;overflow-y:auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
+      <div v-if="switchValue !== 2 && list.length > 0" style="height:710px;overflow-y:auto;">
+        <el-table v-if="switchValue == 3" v-loading="loading" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="toDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="300px"/>
@@ -208,7 +209,7 @@
         </el-table-column>
       </el-table>
     <!-- 查询已删除-->
-      <el-table v-show="switchValue == 4" v-loading="loading" style="height:710px;overflow-y:auto;" :data="deletedList" :show-overflow-tooltip="true"  :border=true>
+      <el-table v-else-if="switchValue == 4" v-loading="loading" :data="deletedList" :show-overflow-tooltip="true"  :border=true>
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" />
@@ -232,15 +233,16 @@
           </template>
         </el-table-column>
       </el-table>
+      </div>
       <Pagination
-        v-show="showPagination == 1"
+        v-show="showPagination == 1 && switchValue === 4 && list.length > 0"
         :total="deletedTotal"
         :page-size-arr="pageSizeArr"
         v-model:page="queryDeletedPageParams.pageNo"
         v-model:limit="queryDeletedPageParams.pageSize"
         @pagination="getDeletedList"
       />        
-      <div v-show="switchValue == 2  && list.length > 0" class="arrayContainer">
+      <div v-if="switchValue == 2  && list.length > 0" class="arrayContainer">
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}&nbsp;{{item.boxName}}</div>
@@ -270,15 +272,15 @@
         </template>
       </div>
       <Pagination
-        v-if="showPagination == 0"
+        v-show="showPagination == 0 && switchValue !== 4 && list.length > 0"
         :total="total"
         :page-size-arr="pageSizeArr"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
-      <template v-if="list.length == 0 && switchValue == 2 && showPagination == 0">
-        <el-empty description="暂无数据" :image-size="300" />
+      <template v-if="list.length == 0 && showPagination !== null">
+        <el-empty description="暂无数据" :image-size="595" />
       </template>
     </template>
   </CommonMenu>

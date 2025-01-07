@@ -114,59 +114,61 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px;overflow-y: auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :border="true">
-        <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
-        <!-- 数据库查询 -->
-        <el-table-column label="所在位置" align="center" prop="location" />
-        <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>   
-        <el-table-column v-if="valueMode == 0" label="A相功率因素" align="center" prop="apf" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.apf != null">
-              {{ scope.row.apf }}
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="B相功率因素" align="center" prop="bpf" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.bpf != null">
-              {{ scope.row.bpf }}
-            </el-text>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="valueMode == 0" label="C相功率因素" align="center" prop="cpf" width="130px" >
-          <template #default="scope" >
-            <el-text line-clamp="2" v-if="scope.row.cpf != null">
-              {{ scope.row.cpf }}
-            </el-text>
-          </template>
-        </el-table-column>
-        
-        <!-- 数据库查询 -->
-        <el-table-column label="操作" align="center">
-          <template #default="scope">
-            <el-button
-              link
-              type="primary"
-              @click="openPFDetail(scope.row)"
-              v-if=" scope.row.status != null && scope.row.status != 5"
-              style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
-            >
-            设备详情
-            </el-button>
-            <el-button
-              link
-              type="danger"
-              @click="handleDelete(scope.row.busId)"
-              v-if="scope.row.status == 5"
-              style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
-            >
-              删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>    
+      <div v-if="switchValue !== 0  && list.length > 0">
+        <el-table v-show="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px;overflow-y: auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :border="true">
+          <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
+          <!-- 数据库查询 -->
+          <el-table-column label="所在位置" align="center" prop="location" />
+          <el-table-column label="网络地址" align="center" prop="devKey" :class-name="ip"/>   
+          <el-table-column v-if="valueMode == 0" label="A相功率因素" align="center" prop="apf" width="130px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" v-if="scope.row.apf != null">
+                {{ scope.row.apf }}
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column v-if="valueMode == 0" label="B相功率因素" align="center" prop="bpf" width="130px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" v-if="scope.row.bpf != null">
+                {{ scope.row.bpf }}
+              </el-text>
+            </template>
+          </el-table-column>
+          <el-table-column v-if="valueMode == 0" label="C相功率因素" align="center" prop="cpf" width="130px" >
+            <template #default="scope" >
+              <el-text line-clamp="2" v-if="scope.row.cpf != null">
+                {{ scope.row.cpf }}
+              </el-text>
+            </template>
+          </el-table-column>
 
-      <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
+          <!-- 数据库查询 -->
+          <el-table-column label="操作" align="center" width="200px">
+            <template #default="scope">
+              <el-button
+                link
+                type="primary"
+                @click="openPFDetail(scope.row)"
+                v-if=" scope.row.status != null && scope.row.status != 5"
+                style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
+              >
+              设备详情
+              </el-button>
+              <el-button
+                link
+                type="danger"
+                @click="handleDelete(scope.row.busId)"
+                v-if="scope.row.status == 5"
+                style="background-color:#fa3333;color:#fff;border:none;width:60px;height:30px;"
+              >
+                删除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>    
+
+      <div v-else-if="switchValue == 0  && list.length > 0" class="arrayContainer">
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
@@ -200,7 +202,7 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
-      <template v-if="list.length == 0 && switchValue != 3">
+      <template v-if="list.length == 0 && switchValue != null">
         <el-empty description="暂无数据" :image-size="595" />
       </template>
 

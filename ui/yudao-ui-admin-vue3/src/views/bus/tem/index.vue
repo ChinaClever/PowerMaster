@@ -140,8 +140,9 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table
-        v-show="switchValue == 3"
+      <div v-if="switchValue !== 0 && list.length > 0">
+        <el-table
+        v-if="switchValue == 3"
         v-loading="loading"
         :data="list"
         :stripe="true"
@@ -230,8 +231,9 @@
           </template>
         </el-table-column>
       </el-table>
+      </div>
 
-      <div v-show="switchValue == 0 && list.length > 0" class="arrayContainer">
+      <div v-else-if="switchValue == 0 && list.length > 0" class="arrayContainer">
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.id !== null" class="arrayItem" :style="{backgroundColor: item.status === 2?'red':'' }">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
@@ -275,7 +277,7 @@
         v-model:limit="queryParams.pageSize"
         @pagination="getList"
       />
-      <template v-if="list.length == 0 && switchValue != 3">
+      <template v-if="list.length == 0 && switchValue != null">
         <el-empty description="暂无数据" :image-size="595" />
       </template>
 
