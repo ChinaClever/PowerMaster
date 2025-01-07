@@ -290,6 +290,7 @@ const harmonicMultiple = ref([
 const serverRoomArr =  ref([])
 const labeldata = ref('')
 labeldata.value = harmonicMultiple.value[0].label
+
 const getLabel = (num) => {
   labeldata.value = harmonicMultiple.value[num-1].label
 }
@@ -1221,6 +1222,7 @@ watch(() => [queryParams.harmonicType], () => {
     }]
   }
   haveSearch.value = false;
+  labeldata.value = harmonicMultiple.value[0].label;
   handleQuery();
 });
 
