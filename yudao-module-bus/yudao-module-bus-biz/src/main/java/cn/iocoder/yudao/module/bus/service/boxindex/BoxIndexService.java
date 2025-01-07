@@ -68,7 +68,7 @@ public interface BoxIndexService {
 
     PageResult<BoxIndexDTO> getEqPage(BoxIndexPageReqVO pageReqVO) throws IOException;
 
-    PageResult<BoxIndexDTO> getMaxEq(BoxIndexPageReqVO pageReqVO);
+    List<BoxIndexMaxEqResVO> getMaxEq();
 
     PageResult<BoxBalanceDataRes> getBoxBalancePage(BoxIndexPageReqVO pageReqVO);
 

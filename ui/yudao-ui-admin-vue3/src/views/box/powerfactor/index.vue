@@ -101,7 +101,7 @@
       </el-form>
     </template>
     <template #Content>
-      <el-table v-show="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px;overflow-y:auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :border="true">
+      <el-table v-if="switchValue == 3" v-loading="loading" style="height:720px;margin-top:-10px;overflow-y:auto;" :data="list" :show-overflow-tooltip="true"  @cell-dblclick="openPFDetail" :border="true">
         <el-table-column label="编号" align="center" prop="tableId" width="80px"/>
         <!-- 数据库查询 -->
         <el-table-column label="所在位置" align="center" prop="location" width="300px"/>
@@ -246,8 +246,9 @@
         </el-table-column>
       </el-table>    
 
-      <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
-        <div class="arrayItem" v-for="item in list" :key="item.devKey">
+      <div v-if="switchValue == 0  && list.length > 0" class="arrayContainer">
+        <template v-for="item in list" :key="item.devKey">
+          <div v-if="item.devKey !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
             <div class="info" style="padding-left: 20px;">
@@ -281,11 +282,15 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
-            <el-tag v-if="item.phasePowFactor != null" type="success" >功率因数</el-tag>
-            <el-tag v-else  type="info">离线</el-tag>
+            <div class="status">
+              <el-tag v-if="item.status === 1" type="success">正常</el-tag>
+              <el-tag v-else-if="item.status === 0" type="info">离线</el-tag>
+              <el-tag v-else-if="item.status === 2">告警</el-tag>
+            </div>
           </div>
           <button class="detail" @click="openPFDetail(item)"  v-if="item.status != null && item.status != 0">详情</button>
         </div>
+        </template>
       </div>
       <Pagination
         :total="total"
@@ -404,6 +409,30 @@ const loadAll = async () => {
 
 const butColor = ref(0);
 const onclickColor = ref(-1);
+
+const statusList = reactive([
+  {
+    name: '离线',
+    selected: true,
+    value: 0,
+    cssClass: 'btn_offline',
+    activeClass: 'btn_offline offline'
+  },
+  {
+    name: '正常',
+    selected: true,
+    value: 1,
+    cssClass: 'btn_normal',
+    activeClass: 'btn_normal normal'
+  },
+  {
+    name: '告警',
+    selected: true,
+    value: 2,
+    cssClass: 'btn_error',
+    activeClass: 'btn_error error'
+  }
+])
 
 const querySearch = (queryString: string, cb: any) => {
 
@@ -610,13 +639,14 @@ const getDetail = async () => {
   });
 }
 const getList = async () => {
-  loading.value = true
+  loading.value = true;
   try {
-    const data = await IndexApi.getBoxPFPage(queryParams)
+    const data = await IndexApi.getBoxPFPage(queryParams);
+    console.log('data',data);
 
-    list.value = data.list
+    list.value = data.list;
 
-    console.log('list.value',list.value)
+    console.log('list.value',list.value);
     var tableIndex = 0;
 
     list.value.forEach((obj) => {
@@ -707,9 +737,27 @@ const handleQuery = () => {
   getList()
 }
 
+const handleSelectStatus = (index) => {
+  butColor.value = 1;
+  onclickColor.value = index;
+  queryParams.status = [index];
+  handleQuery();
+}
+
+const toggleAllStatus = () => {
+  butColor.value = 0;
+  onclickColor.value = -1;
+  queryParams.status = [];
+  handleQuery();
+}
+
+
 /** 重置按钮操作 */
 const resetQuery = () => {
-  queryFormRef.value.resetFields()
+  queryFormRef.value.resetFields();
+  butColor.value = 0;
+  queryParams.status = [];
+  onclickColor.value = -1;
   handleQuery()
 }
 
@@ -1316,7 +1364,7 @@ onActivated(() => {
 .btnallSelected {
   margin-right: 10px;
   width: 58px;
-  height: 32px;
+  height: 35px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1330,7 +1378,7 @@ onActivated(() => {
 .btnallNotSelected{
   margin-right: 10px;
   width: 58px;
-  height: 32px;
+  height: 35px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1382,13 +1430,14 @@ onActivated(() => {
   --el-card-padding:5px;
 }
 
-:deep(.el-tag){
-  margin-right:-40px;
-}
-
 :deep(.el-dialog){
   width: 80%;
   height: 80%;
   margin-top:80px;
+}
+
+:deep(.el-tag){
+  margin-top: -15px;
+  margin-right:-130px;
 }
 </style>

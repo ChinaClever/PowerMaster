@@ -370,7 +370,7 @@
         v-model:limit="queryDeletedPageParams.pageSize"
         @pagination="getDeletedList"
       />     
-      <div v-show="switchValue == 0  && list.length > 0" class="arrayContainer">
+      <div v-if="switchValue == 0  && list.length > 0" class="arrayContainer">
         <template v-for="item in list" :key="item.devKey">
           <div v-if="item.id !== null" class="arrayItem">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
@@ -906,12 +906,12 @@ const getNavList = async() => {
 }
 
 const toDeatil = (row) =>{
-  //const devKey = row.devKey;
-  //const busId = row.busId;
-  //const location = row.location != null ? row.location : row.devKey
-  //const busName = row.busName;
-  //push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location , busName }})
-  push({path: '/bus/busmonitor/buspowerdetail'})
+  const devKey = row.devKey;
+  const busId = row.busId;
+  const location = row.location != null ? row.location : row.devKey
+  const busName = row.busName;
+  push({path: '/bus/busmonitor/buspowerdetail', state: { devKey, busId , location , busName }})
+  //push({path: '/bus/busmonitor/buspowerdetail'})
 }
 
 // const openNewPage = (scope) => {

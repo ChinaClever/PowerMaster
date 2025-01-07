@@ -261,7 +261,7 @@
             <el-tag type="info"  v-if="item.status == 0">离线</el-tag>
             <el-tag type="success" v-else-if="item.loadRateStatus == 1&& item.status != 0">{{(statusList[0].name).slice(3, 10)}}</el-tag>
             <el-tag type="primary" v-else-if="item.loadRateStatus == 2&& item.status != 0">{{(statusList[1].name).slice(7, 11)}}</el-tag>
-            <el-tag type="warning" v-else-if="item.loadRateStatus == 3&& item.status != 0">{{(statusList[2].name).slice(3, 10)}}</el-tag>
+            <el-tag type="warning" v-else-if="item.loadRateStatus == 3&& item.status != 0">{{(statusList[2].name).slice(7, 11)}}</el-tag>
             <el-tag type="danger" v-else-if="item.loadRateStatus == 4&& item.status != 0">{{(statusList[3].name).slice(3, 10)}}</el-tag>
             <!--<el-tag type="danger" v-if="item.color != 0 && item.color != 4 && item.color != 3 && item.color != 2 && item.color != 1 && item.status != 0">异常</el-tag>-->
           </div>

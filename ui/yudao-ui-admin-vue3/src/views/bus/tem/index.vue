@@ -257,7 +257,7 @@
             <el-tag type="info" v-if="item.status === 0">离线</el-tag>
             <el-tag type="danger" v-else-if="item.status === 2">告警</el-tag
             >
-            <el-tag v-else-if="item.status === 1">正常</el-tag>
+            <el-tag type="success" v-else-if="item.status === 1">正常</el-tag>
           </div>
           <button
             class="detail"
@@ -1076,7 +1076,7 @@ onActivated(() => {
 @media screen and (min-width:2048px){
   .arrayContainer {
     width:100%;
-    height: 710px;
+    height: 720px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
@@ -1156,7 +1156,7 @@ onActivated(() => {
 @media screen and (max-width:2048px) and (min-width:1600px) {
   .arrayContainer {
     width:100%;
-    height: 710px;
+    height: 720px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
@@ -1237,7 +1237,7 @@ onActivated(() => {
 @media screen and (max-width:1600px) {
   .arrayContainer {
     width:100%;
-    height: 710px;
+    height: 720px;
     overflow: hidden;
     overflow-y: auto;
     display: flex;
@@ -1375,5 +1375,13 @@ onActivated(() => {
 .button-group {
   display: flex;
   gap: 10px;
+}
+
+:deep(.el-card){
+  --el-card-padding:5px;
+}
+
+:deep(.el-tag){
+  margin-right:-60px;
 }
 </style>

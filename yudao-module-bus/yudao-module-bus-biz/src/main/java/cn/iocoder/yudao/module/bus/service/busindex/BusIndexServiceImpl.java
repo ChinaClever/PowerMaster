@@ -5,6 +5,11 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.iocoder.yudao.framework.common.entity.es.box.BoxBaseDo;
+import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalDayDo;
+import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalMonthDo;
+import cn.iocoder.yudao.framework.common.entity.es.box.ele.total.BoxEqTotalWeekDo;
+import cn.iocoder.yudao.framework.common.entity.es.bus.BusBaseDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEleTotalDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalDayDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.ele.total.BusEqTotalMonthDo;
@@ -15,6 +20,7 @@ import cn.iocoder.yudao.framework.common.entity.es.bus.tem.BusTemHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.total.BusTotalHourDo;
 import cn.iocoder.yudao.framework.common.entity.es.bus.total.BusTotalRealtimeDo;
 import cn.iocoder.yudao.framework.common.entity.mysql.aisle.AisleBar;
+import cn.iocoder.yudao.framework.common.entity.mysql.bus.BoxIndex;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetBox;
 import cn.iocoder.yudao.framework.common.entity.mysql.cabinet.CabinetIndex;
 import cn.iocoder.yudao.framework.common.enums.DelEnums;
@@ -26,7 +32,10 @@ import cn.iocoder.yudao.framework.common.util.json.JsonUtils;
 import cn.iocoder.yudao.framework.common.util.number.BigDemicalUtil;
 import cn.iocoder.yudao.framework.common.util.object.BeanUtils;
 import cn.iocoder.yudao.framework.mybatis.core.query.LambdaQueryWrapperX;
+import cn.iocoder.yudao.module.bus.controller.admin.boxindex.dto.BoxIndexDTO;
 import cn.iocoder.yudao.module.bus.controller.admin.boxindex.dto.MaxValueAndCreateTime;
+import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxIndexMaxEqResVO;
+import cn.iocoder.yudao.module.bus.controller.admin.boxindex.vo.BoxResBase;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.dto.*;
 import cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.*;
 import cn.iocoder.yudao.module.bus.controller.admin.buspowerloaddetail.VO.BusPowerLoadDetailRespVO;
@@ -236,51 +245,61 @@ public class BusIndexServiceImpl implements BusIndexService {
     }
 
     @Override
-    public MaxEqResVO getMaxEq() {
-        MaxEqResVO maxEqResVO = new MaxEqResVO();
-        String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
-        String endTime = DateUtil.formatDateTime(DateUtil.endOfDay(Date.from(LocalDateTime.now().minusDays(1).atZone(ZoneId.systemDefault()).toInstant())));
-        Map<String, Object> busEqTotalDay = extracted(startTime, endTime, "bus_eq_total_day");
-        if(Objects.nonNull(busEqTotalDay)) {
-            busEqTotalDay.keySet().forEach(iter -> {
-                maxEqResVO.setYesterdayBusKey(iter);
-                ArrayList<String> list = new ArrayList<>();
-                list.add(iter);
-                Map<String, String> positionByKey = getPositionByKey(list);
-                String local = positionByKey.get(iter);
-                maxEqResVO.setYesterdayLocal(local);
-            });
-        }
-        //上周
-        String startTime1 = DateUtil.formatDateTime(DateUtil.beginOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
-        String endTime1 = DateUtil.formatDateTime(DateUtil.endOfWeek(Date.from(LocalDateTime.now().minusWeeks(1).atZone(ZoneId.systemDefault()).toInstant())));
-        Map<String, Object> busEqTotalWeek = extracted(startTime1, endTime1, "bus_eq_total_week");
-        if(Objects.nonNull(busEqTotalWeek)) {
-            busEqTotalDay.keySet().forEach(iter -> {
-                ArrayList<String> list = new ArrayList<>();
-                list.add(iter);
-                Map<String, String> positionByKey = getPositionByKey(list);
-                String local = positionByKey.get(iter);
-                maxEqResVO.setLastWeekBusKey(iter);
-                maxEqResVO.setLastWeekLocal(local);
-            });
-        }
-//上月
-        String startTime2 = DateUtil.formatDateTime(DateUtil.beginOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
-        String endTime2 = DateUtil.formatDateTime(DateUtil.endOfMonth(Date.from(LocalDateTime.now().minusMonths(1).atZone(ZoneId.systemDefault()).toInstant())));
-        Map<String, Object> busEqTotalMonth = extracted(startTime2, endTime2, "bus_eq_total_month");
-        if(Objects.nonNull(busEqTotalMonth)) {
-            busEqTotalMonth.keySet().forEach(iter -> {
-                ArrayList<String> list = new ArrayList<>();
-                list.add(iter);
-                Map<String, String> positionByKey = getPositionByKey(list);
-                String local = positionByKey.get(iter);
-                maxEqResVO.setLastMonthBusKey(iter);
-                maxEqResVO.setLastMonthLocal(local);
-            });
-        }
+    public List<BusIndexMaxEqResVO> getMaxEq() {
+        List<BusIndexMaxEqResVO> result = new ArrayList<>();
+        String endTime = DateUtil.formatDateTime(DateTime.now());
+        String startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+        //借用id值来辅助判断是哪个时间的集合，0为昨天，1为上周，2为上月
+        extractedMaxEq("bus_eq_total_day", startTime, endTime, result, 0);
 
-        return null;
+        //上周
+        startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
+        extractedMaxEq("bus_eq_total_week", startTime, endTime, result, 1);
+        //上月
+        startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
+        extractedMaxEq("bus_eq_total_week", startTime, endTime, result, 2);
+
+        List<String> collect = result.stream().map(BusResBase::getDevKey).collect(Collectors.toList());
+        Map<String, String> map = getPositionByKey(collect);
+        for (BusIndexMaxEqResVO resVO : result) {
+            String location = map.get(resVO.getDevKey());
+            resVO.setLocation(location);
+        }
+        return result;
+    }
+
+    private void extractedMaxEq(String indexEs, String startTime, String endTime, List<BusIndexMaxEqResVO> result, Integer type) {
+        try {
+            // 创建SearchRequest对象, 设置查询索引名
+            SearchRequest searchRequest = new SearchRequest(indexEs);
+            // 通过QueryBuilders构建ES查询条件，
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+
+            //获取需要处理的数据
+            builder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword")
+                    .gte(startTime).lte(endTime))));
+            builder.sort("eq_value", SortOrder.DESC);
+            // 设置搜索条件
+            searchRequest.source(builder);
+            builder.size(1);
+            // 执行ES请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            SearchHit[] hits = searchResponse.getHits().getHits();
+            if (hits.length > 0) {
+                // 获取最大值和时间字段
+                Map<String, Object> sourceAsMap = hits[0].getSourceAsMap();
+                BusIndexMaxEqResVO busIndexDTO = new BusIndexMaxEqResVO();
+                busIndexDTO.setMaxEq((Double) sourceAsMap.get("eq_value"));
+                busIndexDTO.setBusId((Integer) sourceAsMap.get("bus_id"));
+                BusIndexDO busIndex = busIndexMapper.selectOne(BusIndexDO::getId, busIndexDTO.getBusId());
+                busIndexDTO.setDevKey(busIndex.getBusKey());
+                busIndexDTO.setBusName(busIndex.getBusName());
+                busIndexDTO.setId(type);//借用id值来辅助判断是哪个时间的集合，0为昨天，1为上周，2为上月
+                result.add(busIndexDTO);
+            }
+        } catch (Exception e) {
+            log.error("插接箱用能最大查询异常：" + e);
+        }
     }
 
     private Map<String,Object> extracted(String startTime, String endTime, String index){
@@ -795,6 +814,124 @@ public class BusIndexServiceImpl implements BusIndexService {
     @Override
     public BalanceStatisticsVO getBusBalanceStatistics() {
         return busIndexMapper.getBusBalanceStatistics();
+    }
+
+    @Override
+    public PageResult<BusIndexDTO> getEqPage1(BusIndexPageReqVO pageReqVO) {
+        String indices = null;
+        String startTime = null;
+        String endTime = DateUtil.formatDateTime(DateTime.now());
+        Integer total = 0;
+        switch (pageReqVO.getTimeGranularity()) {
+            case "yesterday":
+                startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+                indices = "bus_eq_total_day";
+                break;
+            case "lastWeek":
+                startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
+                indices = "bus_eq_total_week";
+                break;
+            case "lastMonth":
+                startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
+                indices = "bus_eq_total_month";
+                break;
+            default:
+        }
+        try {
+            // 搜索源构建对象
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            int pageNo = pageReqVO.getPageNo();
+            int pageSize = pageReqVO.getPageSize();
+            int index = (pageNo - 1) * pageSize;
+            searchSourceBuilder.from(index);
+            // 最后一页请求超过一万，pageSize设置成请求刚好一万条
+            if (index + pageSize > 10000) {
+                searchSourceBuilder.size(10000 - index);
+            } else {
+                searchSourceBuilder.size(pageSize);
+            }
+            searchSourceBuilder.trackTotalHits(true);
+            searchSourceBuilder.sort("eq_value", SortOrder.DESC);
+            //获取需要处理的数据
+            searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
+                    .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime))));
+
+            SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(indices);
+            searchRequest.source(searchSourceBuilder);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            List<BusEqTotalDayDo> list = new ArrayList<>();
+            for (SearchHit hit : searchResponse.getHits()) {
+                BusEqTotalDayDo dayDo = JsonUtils.parseObject(hit.getSourceAsString(), BusEqTotalDayDo.class);
+                list.add(dayDo);
+            }
+
+            if (!CollectionUtils.isEmpty(list)) {
+                List<Integer> ids = list.stream().map(BusBaseDo::getBusId).collect(Collectors.toList());
+                List<BusIndexDO> busIndexDOS = busIndexMapper.selectList(new LambdaUpdateWrapper<BusIndexDO>().in(BusIndexDO::getId, ids));
+                Map<Integer, BusIndexDO> busIndexMap = busIndexDOS.stream().collect(Collectors.toMap(BusIndexDO::getId, x -> x));
+
+                startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+                List<String> yesterdayList = getData(startTime, endTime, ids, "bus_eq_total_day");
+                Map<Integer, Double> yesterdayMap = new HashMap<>();
+                if (!CollectionUtils.isEmpty(yesterdayList)) {
+                    yesterdayList.forEach(str -> {
+                        BusEqTotalDayDo dayDo = JsonUtils.parseObject(str, BusEqTotalDayDo.class);
+                        yesterdayMap.put(dayDo.getBusId(), dayDo.getEq());
+                    });
+                }
+
+                //上周
+                startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
+                List<String> weekList = getData(startTime, endTime, ids, "bus_eq_total_week");
+                Map<Integer, Double> weekMap = new HashMap<>();
+                if (!CollectionUtils.isEmpty(weekList)) {
+                    weekList.forEach(str -> {
+                        BusEqTotalWeekDo weekDo = JsonUtils.parseObject(str, BusEqTotalWeekDo.class);
+                        weekMap.put(weekDo.getBusId(), weekDo.getEq());
+                    });
+                }
+
+                //上月
+                startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
+                List<String> monthList = getData(startTime, endTime, ids, "bus_eq_total_month");
+                Map<Integer, Double> monthMap = new HashMap<>();
+                if (!CollectionUtils.isEmpty(monthList)) {
+                    monthList.forEach(str -> {
+                        BusEqTotalMonthDo monthDo = JsonUtils.parseObject(str, BusEqTotalMonthDo.class);
+                        monthMap.put(monthDo.getBusId(), monthDo.getEq());
+                    });
+                }
+                List<BusIndexDTO> result = new ArrayList<>();
+                list.forEach(vo -> {
+                    Integer id = vo.getBusId();
+                    BusIndexDO busIndex = busIndexMap.get(id);
+                    BusIndexDTO busIndexDTO = new BusIndexDTO().setId(busIndex.getId()).setRunStatus(busIndex.getRunStatus());
+                    busIndexDTO.setDevKey(busIndex.getBusKey());
+                    busIndexDTO.setBusName(busIndex.getBusName());
+                    busIndexDTO.setYesterdayEq(yesterdayMap.get(id));
+                    busIndexDTO.setLastWeekEq(weekMap.get(id));
+                    busIndexDTO.setLastMonthEq(monthMap.get(id));
+                    if (busIndexDTO.getYesterdayEq() == null) {
+                        busIndexDTO.setYesterdayEq(0.0);
+                    }
+                    if (busIndexDTO.getLastWeekEq() == null) {
+                        busIndexDTO.setLastWeekEq(0.0);
+                    }
+                    if (busIndexDTO.getLastMonthEq() == null) {
+                        busIndexDTO.setLastMonthEq(0.0);
+                    }
+                    result.add(busIndexDTO);
+                });
+                getPosition(result);
+                return new PageResult<>(result, searchResponse.getHits().getTotalHits().value);
+            }
+            return null;
+        }catch (Exception e){
+            log.error("获取数据失败：", e);
+            return null;
+        }
     }
 
     @Override
@@ -2146,23 +2283,11 @@ public class BusIndexServiceImpl implements BusIndexService {
     }
 
     @Override
-    public BusEleChainDTO getEleChain(int id) {
+    public BusEleChainDTO getEleChain(int id) throws IOException {
         BusEleChainDTO chainDTO = new BusEleChainDTO();
-        try {
-
-
             getDayChain(id, chainDTO);
-
-
             getWeekChain(id, chainDTO);
-
-
             getMonthChain(id, chainDTO);
-
-
-        } catch (Exception e) {
-            log.error("获取数据异常：", e);
-        }
         return chainDTO;
     }
 
@@ -2554,47 +2679,50 @@ public class BusIndexServiceImpl implements BusIndexService {
      * @return
      */
     private void getDayChain(int id, BusEleChainDTO chainDTO) throws IOException {
-        String startTime;
-        String endTime;
-        //日环比
-        //今日
-        startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
-        endTime = DateUtil.formatDateTime(DateTime.now());
+        try {
+            String startTime;
+            String endTime;
+            //日环比
+            //今日
+            startTime = DateUtil.formatDateTime(DateUtil.beginOfDay(DateTime.now()));
+            endTime = DateUtil.formatDateTime(DateTime.now());
 
-        double todayEq = getDayEq(startTime, endTime, id);
-        chainDTO.setTodayEq(todayEq);
-        //昨日
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.HOUR_OF_DAY, -24);
-        startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(calendar.getTime()));
-        endTime = DateUtil.formatDateTime(DateTime.now());
+            double todayEq = getDayEq(startTime, endTime, id);
+            chainDTO.setTodayEq(todayEq);
+            //昨日
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR_OF_DAY, -24);
+            startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(calendar.getTime()));
+            endTime = DateUtil.formatDateTime(DateTime.now());
 
-        List<String> list = getData(startTime, endTime, id, BUS_EQ_TOTAL_DAY);
-        Map<String, Double> eqMap = new HashMap<>();
+            List<String> list = getData(startTime, endTime, id, BUS_EQ_TOTAL_DAY);
+            Map<String, Double> eqMap = new HashMap<>();
 
-        list.forEach(str -> {
-            BusEqTotalDayDo dayDo = JsonUtils.parseObject(str, BusEqTotalDayDo.class);
-            String dateTime = dayDo.getCreateTime().toString(HOUR_FORMAT);
-            eqMap.put(dateTime, dayDo.getEq());
+            list.forEach(str -> {
+                BusEqTotalDayDo dayDo = JsonUtils.parseObject(str, BusEqTotalDayDo.class);
+                String dateTime = dayDo.getCreateTime().toString(HOUR_FORMAT);
+                eqMap.put(dateTime, dayDo.getEq());
 
-        });
-        //前日
-        String lastTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
-        double eveEq = eqMap.containsKey(lastTime) ? eqMap.get(lastTime) : 0;
+            });
+            //前日
+            String lastTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
+            double eveEq = eqMap.containsKey(lastTime) ? eqMap.get(lastTime) : 0;
 
-        //昨天
-        String thisTime = DateUtil.formatDate(DateUtil.beginOfDay(DateTime.now()));
-        double lastEq = eqMap.containsKey(thisTime) ? eqMap.get(thisTime) : 0;
+            //昨天
+            String thisTime = DateUtil.formatDate(DateUtil.beginOfDay(DateTime.now()));
+            double lastEq = eqMap.containsKey(thisTime) ? eqMap.get(thisTime) : 0;
 
-        chainDTO.setYesterdayEq(lastEq);
+            chainDTO.setYesterdayEq(lastEq);
 
-        NumberFormat percentInstance = NumberFormat.getPercentInstance();
-        // 设置保留几位小数，这里设置的是保留两位小数
-        percentInstance.setMinimumFractionDigits(2);
-        //环比
-        String dayRate = eveEq == 0 ? percentInstance.format(0) : percentInstance.format(lastEq / eveEq);
-        chainDTO.setDayRate(dayRate);
-
+            NumberFormat percentInstance = NumberFormat.getPercentInstance();
+            // 设置保留几位小数，这里设置的是保留两位小数
+            percentInstance.setMinimumFractionDigits(2);
+            //环比
+            String dayRate = eveEq == 0 ? percentInstance.format(0) : percentInstance.format(lastEq / eveEq);
+            chainDTO.setDayRate(dayRate);
+        }catch (Exception e){
+            log.error("始端箱日环比数据获取失败:",e);
+        }
     }
 
     /**
@@ -2604,51 +2732,56 @@ public class BusIndexServiceImpl implements BusIndexService {
      * @param chainDTO
      */
     private void getWeekChain(int id, BusEleChainDTO chainDTO) throws IOException {
-        String startTime;
-        String endTime;
-        //周环比
-        //本周
-        startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
-        endTime = DateUtil.formatDateTime(DateTime.now());
+        try {
+            String startTime;
+            String endTime;
+            //周环比
+            //本周
+            startTime = DateUtil.formatDateTime(DateUtil.beginOfWeek(DateTime.now()));
+            endTime = DateUtil.formatDateTime(DateTime.now());
 
-        double thisWeekEq = getDayEq(startTime, endTime, id);
-        chainDTO.setThisWeekEq(thisWeekEq);
-        //上周
-        LocalDate today = LocalDate.now();
-        //上周第一天
-        DayOfWeek todayOfWeek = today.getDayOfWeek();
-        int sub = todayOfWeek.getValue() + 6;
-        LocalDate lastWeekFirst = today.minusDays(sub);
+            double thisWeekEq = getDayEq(startTime, endTime, id);
+            chainDTO.setThisWeekEq(thisWeekEq);
+            //上周
+            LocalDate today = LocalDate.now();
+            //上周第一天
+            DayOfWeek todayOfWeek = today.getDayOfWeek();
+            int sub = todayOfWeek.getValue() + 6;
+            LocalDate lastWeekFirst = today.minusDays(sub);
 
 
-        startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(Date.from(lastWeekFirst.atStartOfDay(ZoneId.systemDefault()).toInstant())));
+            startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(Date.from(lastWeekFirst.atStartOfDay(ZoneId.systemDefault()).toInstant())));
 
-        List<String> list = getData(startTime, endTime, id, BUS_EQ_TOTAL_WEEK);
+            List<String> list = getData(startTime, endTime, id, BUS_EQ_TOTAL_WEEK);
 
-        Map<String, Double> eqMap = new HashMap<>();
+            Map<String, Double> eqMap = new HashMap<>();
 
-        list.forEach(str -> {
-            BusEqTotalWeekDo weekDo = JsonUtils.parseObject(str, BusEqTotalWeekDo.class);
-            String dateTime = weekDo.getCreateTime().toString(HOUR_FORMAT);
-            eqMap.put(dateTime, weekDo.getEq());
+            list.forEach(str -> {
+                BusEqTotalWeekDo weekDo = JsonUtils.parseObject(str, BusEqTotalWeekDo.class);
+                String dateTime = weekDo.getCreateTime().toString(HOUR_FORMAT);
+                eqMap.put(dateTime, weekDo.getEq());
 
-        });
-        //上上周
-        String lastTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
-        double eveEq = eqMap.containsKey(lastTime) ? eqMap.get(lastTime) : 0;
+            });
+            //上上周
+            String lastTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
+            double eveEq = eqMap.containsKey(lastTime) ? eqMap.get(lastTime) : 0;
 
-        //上周
-        String thisTime = DateUtil.formatDate(DateUtil.beginOfWeek(DateTime.now()));
-        double lastEq = eqMap.containsKey(thisTime) ? eqMap.get(thisTime) : 0;
+            //上周
+            String thisTime = DateUtil.formatDate(DateUtil.beginOfWeek(DateTime.now()));
+            double lastEq = eqMap.containsKey(thisTime) ? eqMap.get(thisTime) : 0;
 
-        chainDTO.setLastWeekEq(lastEq);
+            chainDTO.setLastWeekEq(lastEq);
 
-        NumberFormat percentInstance = NumberFormat.getPercentInstance();
-        // 设置保留几位小数，这里设置的是保留两位小数
-        percentInstance.setMinimumFractionDigits(2);
-        //环比
-        String weekRate = eveEq == 0 ? percentInstance.format(0) : percentInstance.format(lastEq / eveEq);
-        chainDTO.setWeekRate(weekRate);
+            NumberFormat percentInstance = NumberFormat.getPercentInstance();
+            // 设置保留几位小数，这里设置的是保留两位小数
+            percentInstance.setMinimumFractionDigits(2);
+            //环比
+            String weekRate = eveEq == 0 ? percentInstance.format(0) : percentInstance.format(lastEq / eveEq);
+            chainDTO.setWeekRate(weekRate);
+        }
+        catch (Exception e){
+            log.error("始端箱周环比数据获取失败:",e);
+        }
     }
 
     /**
@@ -2658,48 +2791,52 @@ public class BusIndexServiceImpl implements BusIndexService {
      * @param chainDTO
      */
     private void getMonthChain(int id, BusEleChainDTO chainDTO) throws IOException {
-        String startTime;
-        String endTime;
-        //月环比
-        //本月
-        startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
-        endTime = DateUtil.formatDateTime(DateTime.now());
+        try {
+            String startTime;
+            String endTime;
+            //月环比
+            //本月
+            startTime = DateUtil.formatDateTime(DateUtil.beginOfMonth(DateTime.now()));
+            endTime = DateUtil.formatDateTime(DateTime.now());
 
-        double thisMonthEq = getDayEq(startTime, endTime, id);
-        chainDTO.setThisMonthEq(thisMonthEq);
-        //上月
-        //上月第一天
-        Calendar lastMonthFirstDateCal = Calendar.getInstance();
-        lastMonthFirstDateCal.add(Calendar.MONTH, -1);
-        lastMonthFirstDateCal.set(Calendar.DAY_OF_MONTH, 1);
+            double thisMonthEq = getDayEq(startTime, endTime, id);
+            chainDTO.setThisMonthEq(thisMonthEq);
+            //上月
+            //上月第一天
+            Calendar lastMonthFirstDateCal = Calendar.getInstance();
+            lastMonthFirstDateCal.add(Calendar.MONTH, -1);
+            lastMonthFirstDateCal.set(Calendar.DAY_OF_MONTH, 1);
 
-        startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(lastMonthFirstDateCal.getTime()));
+            startTime = DateUtil.formatDateTime(TimeUtil.getStartOfDay(lastMonthFirstDateCal.getTime()));
 
 
-        List<String> list = getData(startTime, endTime, id, BUS_EQ_TOTAL_MONTH);
+            List<String> list = getData(startTime, endTime, id, BUS_EQ_TOTAL_MONTH);
 
-        Map<String, Double> eqMap = new HashMap<>();
+            Map<String, Double> eqMap = new HashMap<>();
 
-        list.forEach(str -> {
-            BusEqTotalMonthDo monthDo = JsonUtils.parseObject(str, BusEqTotalMonthDo.class);
-            String dateTime = monthDo.getCreateTime().toString(HOUR_FORMAT);
-            eqMap.put(dateTime, monthDo.getEq());
+            list.forEach(str -> {
+                BusEqTotalMonthDo monthDo = JsonUtils.parseObject(str, BusEqTotalMonthDo.class);
+                String dateTime = monthDo.getCreateTime().toString(HOUR_FORMAT);
+                eqMap.put(dateTime, monthDo.getEq());
 
-        });
-        //上上月
-        String lastMonthTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
-        double eveEq = eqMap.containsKey(lastMonthTime) ? eqMap.get(lastMonthTime) : 0;
-        //上月
-        String thisMonthTime = DateUtil.formatDate(DateUtil.beginOfMonth(DateTime.now()));
-        double lastMonthEq = eqMap.containsKey(thisMonthTime) ? eqMap.get(thisMonthTime) : 0;
-        chainDTO.setLastMonthEq(lastMonthEq);
+            });
+            //上上月
+            String lastMonthTime = DateUtil.formatDate(DateUtil.parse(startTime, HOUR_FORMAT));
+            double eveEq = eqMap.containsKey(lastMonthTime) ? eqMap.get(lastMonthTime) : 0;
+            //上月
+            String thisMonthTime = DateUtil.formatDate(DateUtil.beginOfMonth(DateTime.now()));
+            double lastMonthEq = eqMap.containsKey(thisMonthTime) ? eqMap.get(thisMonthTime) : 0;
+            chainDTO.setLastMonthEq(lastMonthEq);
 
-        NumberFormat percentInstance = NumberFormat.getPercentInstance();
-        // 设置保留几位小数，这里设置的是保留两位小数
-        percentInstance.setMinimumFractionDigits(2);
-        //环比
-        String monthRate = eveEq == 0 ? percentInstance.format(0) : percentInstance.format(lastMonthEq / eveEq);
-        chainDTO.setMonthRate(monthRate);
+            NumberFormat percentInstance = NumberFormat.getPercentInstance();
+            // 设置保留几位小数，这里设置的是保留两位小数
+            percentInstance.setMinimumFractionDigits(2);
+            //环比
+            String monthRate = eveEq == 0 ? percentInstance.format(0) : percentInstance.format(lastMonthEq / eveEq);
+            chainDTO.setMonthRate(monthRate);
+        }catch (Exception e){
+            log.error("始端箱月环比数据获取失败:",e);
+        }
     }
 
     /**
