@@ -594,12 +594,13 @@ onMounted(() => {
   getNavList()
   // getNavNewData()
   // getTypeMaxValue();
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const end = new Date()
+      const start = new Date()
+      start.setMonth(start.getMonth() - 1)
    // 使用上述自定义的 format 函数将日期对象转换为指定格式的字符串
 selectTimeRange.value = [
-  format(startOfMonth),
-  format(now)
+  format(start),
+  format(end)
 ];
    getList();
 });

@@ -178,6 +178,7 @@ import { ElMessage } from 'element-plus'
 import PDUImage from '@/assets/imgs/PDU.jpg';
 import download from '@/utils/download'
 import router from '@/router'
+import { ca } from 'element-plus/es/locale'
 const { push } = useRouter()
 defineOptions({ name: 'PowerAnalysis' })
 
@@ -256,11 +257,11 @@ const typeCascaderChange = (selected) => {
     if (!exists) {
       // 在列表行索引1(位置后面)插入输出位行 
       const newRow = { label: '输出位', align: 'center', prop: 'outlet_id', istrue: true};
-      tableColumns.value.splice(2, 1, newRow);
+      tableColumns.value.splice(2, 0, newRow);
     }
   }else{
     // 选择总，移除索引为 1 的位置上的行数据
-    tableColumns.value.splice(1, 1);
+    tableColumns.value.splice(2, 1);
   }
   handleQuery();
 }
@@ -408,6 +409,8 @@ const getList1 = async () => {
     	console.log('详情页2', queryParams.ipArray);
     const data = await EnergyConsumptionApi.getEQDataPage(queryParams)
     eqData.value = data.list.map((item) => formatEQ(item.eq_value, 1));
+    //如果list为空,则显示无数据
+    
     list.value = data.list
     realTotel.value = data.total
     if (data.total > 10000){
@@ -416,7 +419,16 @@ const getList1 = async () => {
       total.value = data.total
     }
       
-  } finally {
+  } catch (error) {
+    ElMessage({
+    message: '暂无数据',
+    type: 'warning',
+    plain: true,
+  })
+    //将表格清空
+    list.value = [];
+  } 
+  finally {
     initChart();
     loading.value = false
   }
@@ -427,6 +439,7 @@ function customTooltipFormatter(params: any[]) {
   var tooltipContent = ''; 
   var item = params[0]; // 获取第一个数据点的信息
   // params.forEach(function(item) {
+   tooltipContent += '所在位置：' + (list.value[item.dataIndex].address ? list.value[item.dataIndex].address : '未绑定设备') + '<br/>'
   tooltipContent += '网络地址：'+list.value[item.dataIndex].location + '  '
   // 添加条件判断
   if (queryParams.type == 'outlet') {

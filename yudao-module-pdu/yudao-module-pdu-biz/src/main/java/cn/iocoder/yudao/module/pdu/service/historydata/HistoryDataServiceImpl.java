@@ -674,7 +674,9 @@ public class HistoryDataServiceImpl implements HistoryDataService {
         }else{
             searchSourceBuilder.query(QueryBuilders.matchAllQuery());
         }
-
+        if (channel != null){
+            searchSourceBuilder.query(QueryBuilders.termQuery("sensor_id", channel));
+        }
         // 前端筛选某个机柜和探测点后触发
         if (cabinetIds!= null && channel != null && position != null){
             QueryWrapper<CabinetEnvSensor> cabinetEnvSensorQueryWrapper = new QueryWrapper<>();

@@ -70,7 +70,6 @@
         >
           <Icon icon="ep:plus" class="mr-5px" /> 平衡度范围颜色
         </el-button>
-        </el-form-item>
         <el-form-item>
           <el-form-item label="网络地址" prop="devKey" style="float: left;">
             <el-autocomplete
@@ -88,6 +87,8 @@
               <el-button @click="resetQuery"
                 ><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button
               >
+        </el-form-item>
+        
               <el-button
                 type="primary"
                 plain
@@ -332,18 +333,17 @@
         </div>
       </div>
 
-      <el-dialog v-model="dialogVisibleVol" @close="handleClose" width="50%" :destroy-on-close="true" style="background-color: #f1f1f1;">
+      <el-dialog v-model="dialogVisibleVol" @close="handleClose" :show-close=false>
         <template #header>
-          
-          <div style="display: flex; align-items: center;">
+          <el-button @click="lineidBeforeChartUnmountOne()" style="float:right" show-close="false" >关闭</el-button>
     <span style="font-size: 20px; font-weight: bold;margin-top: -10px;">均衡配电详情</span>
     <span style="margin-left: 15px;margin-top: -3px;">所在位置：{{ location }}</span>
     <span style="margin-left: 15px;margin-top: -3px;">网络地址：{{ vollocation }}</span>
     <!-- <span style="padding-left: 530px; margin-left: 10px;">更新时间: {{ dataUpdateTime }} </span> -->
-  </div>
         </template>
          <!-- 自定义的主要内容 -->
         <div class="custom-content" style="margin-top:-30px">
+          <div class="custom-content-container">
           <el-card class="cardChilc" shadow="hover">
             <div>
               <div>
@@ -352,7 +352,7 @@
     </span>
 </div>
           </div>
-              <div class="status1"></div>
+              <!-- <div class="status1"></div> -->
             <curUnblance :max="balanceObj.imbalanceValueA" :customColor="colorList[balanceObj.colorIndex].color" />
             <!-- <div class="box" :style="{ borderColor: colorList[balanceObj.colorIndex].color }">
               <div class="value">{{ balanceObj.imbalanceValueA }}%</div>
@@ -408,9 +408,8 @@
               <Echart :options="ALineOption" :height="300" style="margin-top:10px" />
             </div>
           </el-card>
-          
         </div>
-        <div class="custom-content" style="margin-top: 20px;">
+        <div class="custom-content-container">
           <el-card  class="cardChilc" shadow="hover">
             <div>
     <span style="font-size: 20px; font-weight: bold; color:{{ color: colorList[4].color }}">
@@ -463,8 +462,8 @@
               <Echart :options="BLineOption" :height="300" style="margin-top:10px"/>
             </div>
           </el-card>
-          
         </div>
+      </div>
       </el-dialog>
      </div>
       <Pagination
@@ -1328,7 +1327,9 @@ onBeforeUnmount(() => {
     flashListTimer.value = null
   }
 })
-
+const lineidBeforeChartUnmountOne = () => {
+  dialogVisibleVol.value = false
+}
 onBeforeRouteLeave(() => {
   if (flashListTimer.value) {
     clearInterval(flashListTimer.value)
@@ -1854,16 +1855,14 @@ onActivated(() => {
 }
 
 :deep(.el-dialog) {
-  top: -5%;
-  width: 90%;
-  height: 90%;
-  margin-top: 100px
+  width: 80%;
+  margin-top: 70px;
 }
 
-.custom-content {
+.custom-content{
   display: flex;
-  justify-content: space-between;
-  flex-wrap: nowrap;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .question {
@@ -1955,6 +1954,11 @@ onActivated(() => {
     margin-left: 10px;
     margin-right: 5px;
   }
+}
+.custom-content-container{
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: nowrap;
 }
 .bullet {
   font-size: 34px; /* 根据需要调整大小 */

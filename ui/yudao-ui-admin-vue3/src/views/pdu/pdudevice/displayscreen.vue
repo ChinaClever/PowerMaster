@@ -311,7 +311,7 @@
           <div style="width: 5%;font-size: 16px;">回路</div>
         </template>
         <ContentWrap>
-          <el-table  :data="circleList" :stripe="true" :show-overflow-tooltip="true">
+          <el-table  :data="circleList" :stripe="true" :show-overflow-tooltip="true" :empty-text="'ajsdhj'">
             <el-table-column label="回路" align="center" prop="circuit" />
             <el-table-column label="断路器状态" align="center" prop="breaker" v-if="controlVis.circleTableCol.breaker"> 
               <template #default="scope" >

@@ -118,7 +118,7 @@
         :inline="true"
         label-width="70px"
       >
-      <el-form-item label="监测点" prop="detect">
+      <el-form-item label="传感器" prop="detect">
         <el-select
           v-model="detect"
           class="!w-130px"
@@ -887,26 +887,39 @@ const getNavList = async() => {
   const res = await CabinetApi.getRoomMenuAll({})
   navList.value = res
 }
-
+import { useRoute, useRouter } from 'vue-router';
+const route = useRoute();
+const router = useRouter();
 /** 搜索按钮操作 */
 const handleQuery = () => {
     queryParams.pduId = undefined;
     
-    // const firstChar = detect.value[0];
+   // const firstChar = detect.value[0];
     const secondChar = detect.value[0];
     if (secondChar != null){    
     // queryParams.channel = Number(firstChar);
     queryParams.sensorId = Number(secondChar);
+    // 更新路由查询参数
+    const querySensorId = String(Number(secondChar));
+        router.push({
+            query: {
+                ...route.query, // 保留现有查询参数
+                sensorId: querySensorId // 添加或更新 sensorId 参数
+            }
+        });
     }
     needFlush.value++;
 }
-
 /** 初始化 **/
 onMounted( async () => {
+  console.log('22231');
   getNavList()
   // 获取路由参数中的 pdu_id
   let queryPduId = useRoute().query.pduId as string | undefined;
   let querySensorId = useRoute().query.sensorId as string | undefined;
+  detect.value = querySensorId;
+        console.log(detect);
+      console.log(detect.value); // 打印最新的值
   let queryLocation = useRoute().query.location as string;
   let queryAddress = useRoute().query.address as string;
   let queryDetectValue = useRoute().query.detectValue as string;
@@ -920,7 +933,7 @@ onMounted( async () => {
       nowAddress.value = queryAddress;
     }
     nowLocation.value = queryLocation
-    detect.value = queryDetectValue == null ? undefined : queryDetectValue
+    // detect.value = queryDetectValue == null ? undefined : queryDetectValue
     initChart();
   }
 })
