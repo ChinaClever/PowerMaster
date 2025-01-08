@@ -110,9 +110,9 @@
         <el-table-column label="运行状态" align="center" prop="color" v-if="switchValue == 0">
           <template #default="scope" >
               <el-tag type="info"  v-if="scope.row.color == 0">{{statusList[0].name}}</el-tag>
-              <el-tag type="success"  v-if="scope.row.color == 1">{{statusList[1].name}}</el-tag>
-              <el-tag type="warning" v-if="scope.row.color == 2">{{statusList[2].name}}</el-tag>
-              <el-tag type="danger" v-if="scope.row.color == 3">{{statusList[3].name}}</el-tag>
+              <el-tag type="success"  v-else-if="scope.row.color == 1">{{statusList[1].name}}</el-tag>
+              <el-tag type="warning" v-else-if="scope.row.color == 2">{{statusList[2].name}}</el-tag>
+              <el-tag type="danger" v-else-if="scope.row.color == 3">{{statusList[3].name}}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="不平衡度(%)" align="center" prop="curUnbalance" width="130px" v-if="switchValue == 0">
@@ -217,12 +217,12 @@
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
             <el-tag type="info"  v-if="item.color == 0">离线</el-tag>
-            <el-tag type="info"  v-if="item.color == 1">{{statusList[3].name}}</el-tag>
-            <el-tag type="success"  v-if="item.color == 2">{{ statusList[0].name }}</el-tag>
-            <el-tag type="warning" v-if="item.color == 3">{{ statusList[1].name }}</el-tag>
-            <el-tag type="danger" v-if="item.color == 4">{{ statusList[2].name }}</el-tag>
+            <el-tag type="info"  v-else-if="item.color == 1 && item.color !== 0">{{statusList[3].name}}</el-tag>
+            <el-tag type="success"  v-else-if="item.color == 2 && item.color !== 0">{{ statusList[0].name }}</el-tag>
+            <el-tag type="warning" v-else-if="item.color == 3 && item.color !== 0">{{ statusList[1].name }}</el-tag>
+            <el-tag type="danger" v-else-if="item.color == 4 && item.color !== 0">{{ statusList[2].name }}</el-tag>
           </div>
-          <button class="detail" @click="showDialogCur(item)" v-if="item.status != null && item.status != 0">详情</button>
+          <button class="detail" @click="showDialogCur(item)" v-if="item.color != null && item.color != 0">详情</button>
         </div>
       </div>
 
@@ -232,7 +232,7 @@
           <div>
             <span style="font-weight:bold;font-size:20px;margin-right:10px">电流不平衡</span>
             <span style="margin-right:10px">所在位置：{{ curlocation }}</span>
-            <span>网络地址：{{ curlocation }}</span>
+            <span>网络地址：{{ curdevkey }}</span>
           </div>
         </template>
         <!-- 自定义的主要内容 -->
@@ -289,8 +289,8 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
-            <el-tag type="info"  v-if="item.color == 0">离线</el-tag>
-            <el-tag type="info" v-else >电压不平衡</el-tag>
+            <el-tag type="info"  v-if="item.color === 0">离线</el-tag>
+            <el-tag type="info" v-else-if="item.color !== 0" >电压不平衡</el-tag>
           </div>
           <button class="detail" @click="showDialogVol(item)" v-if="item.status != null && item.status != 0">详情</button>
         </div>
@@ -301,8 +301,8 @@
         <template #header>
           <div>
             <span style="font-weight:bold;font-size:20px;margin-right:10px">电压不平衡</span>
-            <span style="margin-right:10px">所在位置：{{ boxName }}</span>
-            <span>网络地址：{{ curlocation }}</span>
+            <span style="margin-right:10px">所在位置：{{ vollocation }}</span>
+            <span>网络地址：{{ voldevkey }}</span>
           </div>
         </template>
         <!-- 自定义的主要内容 -->
@@ -371,6 +371,8 @@ import volUnblance from './component/volUnblance.vue';
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' });
 
+const curdevkey = ref() as any;
+const voldevkey = ref() as any;
 const dialogVisibleCur = ref(false);
 const dialogVisibleVol = ref(false);
 const { push } = useRouter();
@@ -738,7 +740,8 @@ const colorFlag = ref(0);
 const showDialogCur = (item) => {
   colorFlag.value = item.color;
   dialogVisibleCur.value = true;
-  curlocation.value = item.devKey;
+  curdevkey.value = item.devKey;
+  curlocation.value = item.location;
   boxName.value = item.boxName;
   getBalanceDetail(item);
   getBalanceTrend(item);
@@ -747,7 +750,8 @@ const showDialogCur = (item) => {
 const showDialogVol = (item) => {
   colorFlag.value = item.color;
   dialogVisibleVol.value = true;
-  vollocation.value = item.devKey;
+  voldevkey.value = item.devKey;
+  vollocation.value = item.location;
   boxName.value = item.boxName;
   getBalanceDetail(item);
   getBalanceTrend(item);

@@ -248,8 +248,8 @@
         <template #header>
           <div>
             <span style="font-weight:bold;font-size:20px;margin-right:10px">电流不平衡</span>
-            <span style="margin-right:10px">所在位置：{{ boxName }}</span>
-            <span>网络地址：{{ curlocation }}</span>
+            <span style="margin-right:10px">所在位置：{{ curlocation }}</span>
+            <span>网络地址：{{ curdevkey }}</span>
           </div>
         </template>
         <!-- 自定义的主要内容 -->
@@ -287,7 +287,7 @@
         </div>
       </el-dialog>
 
-      <div v-show="visMode == 0 && switchValue == 1  && list.length > 0" class="arrayContainer">
+      <div v-if="visMode == 0 && switchValue == 1  && list.length > 0" class="arrayContainer">
         <div class="arrayItem" v-for="item in list" :key="item.devKey">
           <div class="devKey">{{ item.location != null ? item.location : item.devKey }}</div>
           <div class="content">
@@ -391,7 +391,8 @@ import volUnblance from './component/volUnblance.vue';
 /** PDU设备 列表 */
 defineOptions({ name: 'PDUDevice' });
 
-
+const curdevkey = ref();
+const voldevkey = ref();
 const dialogVisibleCur = ref(false);
 const dialogVisibleVol = ref(false);
 const { push } = useRouter();
@@ -756,20 +757,22 @@ const colorFlag = ref(0);
 
 const showDialogCur = (item) => {
   colorFlag.value = item.color;
-  dialogVisibleCur.value = true
-  curlocation.value = item.devKey
-  busName.value = item.busName
-  getBalanceDetail(item)
-  getBalanceTrend(item)
+  dialogVisibleCur.value = true;
+  curdevkey.value = item.devKey;
+  busName.value = item.busName;
+  curlocation.value = item.location;
+  getBalanceDetail(item);
+  getBalanceTrend(item);
 }
 
 const showDialogVol = (item) => {
   colorFlag.value = item.color;
-  dialogVisibleVol.value = true
-  vollocation.value = item.devKey
-    busName.value = item.busName
-  getBalanceDetail(item)
-  getBalanceTrend(item)
+  dialogVisibleVol.value = true;
+  voldevkey.value = item.devKey;
+  busName.value = item.busName;
+  vollocation.value = item.location;
+  getBalanceDetail(item);
+  getBalanceTrend(item);
 }
 
 const devKeyList = ref([])
