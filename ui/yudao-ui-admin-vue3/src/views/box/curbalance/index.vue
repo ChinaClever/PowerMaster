@@ -289,10 +289,10 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
-            <el-tag type="info"  v-if="item.color === 0">离线</el-tag>
-            <el-tag type="info" v-else-if="item.color !== 0" >电压不平衡</el-tag>
+            <el-tag type="info"  v-if="item.color === 0">单相设备</el-tag>
+            <el-tag type="info" v-else >电压不平衡</el-tag>
           </div>
-          <button class="detail" @click="showDialogVol(item)" v-if="item.status != null && item.status != 0">详情</button>
+          <button class="detail" @click="showDialogVol(item)" v-if="item.color != null && item.color != 0">详情</button>
         </div>
       </div>
 
