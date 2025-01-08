@@ -388,9 +388,7 @@
         </template>
 
         <!-- 自定义的主要内容 -->
-        <div class="custom-content">
-          <div ref="lineidChartContainerOne" id="lineidChartContainerOne" class="adaptiveStyle" style="width: 1250px;"></div>
-        </div>
+        <div ref="lineidChartContainerOne" id="lineidChartContainerOne" class="changeScreen"></div>
       </el-dialog>
 
       <div  v-if="switchValue == 1 && list.length > 0 && valueMode == 0" class="arrayContainer">
@@ -401,8 +399,8 @@
             <div class="info" style="margin-bottom: 20px;">
               
               <div>L1最大电流：{{ (item.l1MaxCur || 0).toFixed(2) }}A</div>
-    <div>L2最大电流：{{ (item.l2MaxCur || 0).toFixed(2) }}A</div>
-    <div>L3最大电流：{{ (item.l3MaxCur || 0).toFixed(2) }}A</div>
+              <div>L2最大电流：{{ (item.l2MaxCur || 0).toFixed(2) }}A</div>
+              <div>L3最大电流：{{ (item.l3MaxCur || 0).toFixed(2) }}A</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
             <!-- <div  style="height: 50px;background-color: black"></div> -->
@@ -440,9 +438,7 @@
         </template>
 
         <!-- 自定义的主要内容 -->
-        <div class="custom-content">
-          <div ref="lineidChartContainer" id="lineidChartContainer" class="adaptiveStyle" style="width: 1290px;height: 500px;"></div>
-        </div>
+        <div ref="lineidChartContainer" id="lineidChartContainer" class="changeScreen"></div>
       </el-dialog>
     </div>
       <Pagination
@@ -465,16 +461,16 @@
 
 <script setup lang="ts">
 // import { dateFormatter } from '@/utils/formatTime'
-import download from '@/utils/download'
-import { PDUDeviceApi } from '@/api/pdu/pdudevice'
-import Pie from './component/Pie.vue'
+import download from '@/utils/download';
+import { PDUDeviceApi } from '@/api/pdu/pdudevice';
+import Pie from './component/Pie.vue';
 // import PDUDeviceForm from './PDUDeviceForm.vue'
-import { ElTree } from 'element-plus'
-import { CabinetApi } from '@/api/cabinet/info'
+import { ElTree } from 'element-plus';
+import { CabinetApi } from '@/api/cabinet/info';
 
-import * as echarts from 'echarts'
+import * as echarts from 'echarts';
 import { ref, onMounted, onUnmounted } from 'vue';
-import Bar from './component/Bar.vue'
+import Bar from './component/Bar.vue';
 
 const searchbth = ref(false);
 const now1 = new Date();
@@ -908,7 +904,7 @@ const updateChart = (lChartData,llChartData,lllChartData,lineidDateTimes ) => {
           'L3-电流':true
         }
       },
-      grid: {left: '3%', right: '3%', bottom: '3%',containLabel: true},
+      grid: {left: '3%', right: '6%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
       xAxis: {
         type: 'category',nameLocation: 'end',
@@ -967,11 +963,11 @@ const updateChart = (lChartData,llChartData,lllChartData,lineidDateTimes ) => {
       legend: {
         data: ['A路最大功率', 'B路最大功率', 'C路最大功率'], // 图例项
         selected: {'A路最大功率': true,
-    'B路最大功率': true,
-    'C路最大功率': true
-      }
+         'B路最大功率': true,
+         'C路最大功率': true
+        }
       },
-      grid: {left: '3%', right: '70%', bottom: '3%',containLabel: true,width: '100%'},
+      grid: {left: '3%', right: '6%', bottom: '3%',containLabel: true},
       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
       xAxis: {
         type: 'category',nameLocation: 'end',
@@ -1117,8 +1113,10 @@ const showDialogOne = (id,type,flagValue) => {
   flagValue.value = 1
 }
 
-
-
+window.addEventListener('resize', function() {
+  lineidChart?.resize();
+  lineidChartOne?.resize();
+});
 </script>
 
 <style scoped lang="scss">
@@ -1630,11 +1628,6 @@ const showDialogOne = (id,type,flagValue) => {
   margin-top: 100px
 }
 
-.adaptiveStyle {
-  width: 65vw;
-  height: 45vh;
-  z-index: 5;
-}
 /* 尝试隐藏关闭按钮，但可能不总是有效 */
 :deep(.el-dialog__headerbtn) {
   display: none !important; /* 使用 !important 尝试提高优先级 */
@@ -1648,5 +1641,10 @@ const showDialogOne = (id,type,flagValue) => {
 
 :deep(.el-card){
   --el-card-padding:5px;
+}
+
+.changeScreen{
+  width:65vw;
+  height: 40vh;
 }
 </style>
