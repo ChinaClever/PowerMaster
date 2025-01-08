@@ -1,8 +1,12 @@
 package cn.iocoder.yudao.framework.common.mapper;
 
+import cn.iocoder.yudao.framework.common.dto.room.RoomMenuDTO;
 import cn.iocoder.yudao.framework.common.entity.mysql.pdu.PduIndexDo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * PDU设备 Mapper
@@ -13,4 +17,5 @@ import org.apache.ibatis.annotations.Mapper;
 public interface PduIndexDoMapper extends BaseMapper<PduIndexDo> {
 
 
+    List<RoomMenuDTO> queryRoomMenuDTO(@Param("pduKeys") List<String> pduKeys);
 }

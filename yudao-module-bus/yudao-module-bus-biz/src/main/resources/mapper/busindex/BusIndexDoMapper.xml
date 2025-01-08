@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.iocoder.yudao.framework.common.mapper.BusIndexDoMapper">
+
+    <!--
+        一般情况下，尽可能使用 Mapper 进行 CRUD 增删改查即可。
+        无法满足的场景，例如说多表关联查询，才使用 XML 编写 SQL。
+        代码生成器暂时只生成 Mapper XML 文件本身，更多推荐 MybatisX 快速开发插件来生成查询。
+        文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
+     -->
+    <select id="selectPageList"
+            resultType="cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusAisleBarQueryVO">
+        SELECT
+        bi.id AS id,
+        bi.bus_key AS devKey,
+        bi.ip_addr AS ipAddr,
+        bi.run_status AS runStatus,
+        bi.bus_name AS busName,
+        bi.is_deleted AS isDeleted,
+        bi.create_time AS createTime,
+        bi.update_time AS updateTime,
+        ab.path AS path,
+        ab.aisle_id AS aisleId,
+        ab.bus_key AS barKey
+        FROM
+        bus_index bi
+        LEFT JOIN aisle_bar ab ON bi.bus_key = ab.bus_key
+        <where>
+            bi.is_deleted = 0
+            <if test="devkeys != null and devkeys.length > 0">
+                and bi.bus_key in
+                <foreach item="item" collection="devkeys" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="selectBoxPageList"
+            resultType="cn.iocoder.yudao.module.bus.controller.admin.energyconsumption.VO.BusAisleBarQueryVO">
+        SELECT
+        bi.id AS id,
+        bi.box_key AS devKey,
+        bi.ip_addr AS ipAddr,
+        bi.box_id AS barId,
+        bi.run_status AS runStatus,
+        bi.box_name AS busName,
+        bi.is_deleted AS isDeleted,
+        bi.create_time AS createTime,
+        bi.update_time AS updateTime,
+        ab.aisle_id AS aisleId,
+        ab.box_key AS barKey,
+        ab1.path AS path
+        FROM
+        box_index bi
+        LEFT JOIN aisle_box ab ON bi.box_key = ab.box_key
+        LEFT JOIN aisle_bar ab1 ON ab1.id = ab.aisle_id
+        <where>
+            bi.is_deleted = 0
+            <if test="devkeys != null and devkeys.length > 0">
+                and bi.box_key in
+                <foreach item="item" collection="devkeys" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="selectBusIndexStatistics"
+            resultType="cn.iocoder.yudao.module.bus.controller.admin.busindex.vo.BusIndexStatisticsResVO">
+        SELECT count(1) as total,
+        sum(case when bi.run_status = 1 then 1 else 0 end) as normal,
+        sum(case when bi.run_status = 2 then 1 else 0 end) as alarm,
+        sum(case when bi.run_status = 0 then 1 else 0 end) as offline
+        FROM bus_index bi
+        <where>
+            is_deleted = 0
+        </where>
+    </select>
+    <select id="selectBusIndexLoadRateStatus"
+            resultType="cn.iocoder.yudao.module.bus.vo.LoadRateStatus">
+        SELECT
+        sum(case when bi.load_rate_status = 0 then 1 else 0 end) as LoadRateZero,
+        sum(case when bi.load_rate_status = 1 then 1 else 0 end) as lessThirty,
+        sum(case when bi.load_rate_status = 2 then 1 else 0 end) as greaterThirty,
+        sum(case when bi.load_rate_status = 3 then 1 else 0 end) as greaterSixty,
+        sum(case when bi.load_rate_status = 4 then 1 else 0 end) as greaterNinety
+        FROM bus_index bi
+        <where>
+            is_deleted = 0
+        </where>
+    </select>
+    <select id="getBusBalanceStatistics" resultType="cn.iocoder.yudao.module.bus.vo.BalanceStatisticsVO">
+        select
+        sum(case when cur_unbalance_status = 1 then 1 else 0 end) as smallCurrent,
+        sum(case when cur_unbalance_status = 2 then 1 else 0 end) as lessFifteen,
+        sum(case when cur_unbalance_status = 3 then 1 else 0 end) as greaterFifteen,
+        sum(case when cur_unbalance_status = 4 then 1 else 0 end) as greaterThirty
+        from bus_index
+        <where>
+            is_deleted =0
+        </where>
+    </select>
+    <select id="queryRoomMenuDTO" resultType="cn.iocoder.yudao.framework.common.dto.room.RoomMenuDTO">
+        select
+        t1.id as id,
+        t1.bus_key as `unique`,
+        t1.bus_name as `name`,
+        '6' as type,
+        '2' as parentType
+        from bus_index t1
+        <where>
+            t1.is_deleted = 0
+            <if test="busKeys !=null and busKeys.size >0">
+                NOT EXISTS (
+                SELECT 1
+                FROM (
+                <foreach collection="busKeys" item="key" separator="union all">
+                    SELECT #{key} AS bus_key
+                </foreach>
+                ) t2
+                WHERE t2.bus_key = t1.bus_key
+                )
+            </if>
+        </where>
+    </select>
+</mapper>

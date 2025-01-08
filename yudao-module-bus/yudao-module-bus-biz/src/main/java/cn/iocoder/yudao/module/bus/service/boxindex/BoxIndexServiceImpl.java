@@ -454,9 +454,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         LineBoxMaxResVO resVO = null;
         if (searchResponse.getHits().getTotalHits().value>0){
             resVO = JsonUtils.parseObject(searchResponse.getHits().getAt(0).getSourceAsString(), LineBoxMaxResVO.class);
-            BoxIndex boxIndex = boxIndexCopyMapper.selectById(resVO.getBusId());
-            resVO.setDevKey(boxIndex.getBoxKey());
-            resVO.setBusName(boxIndex.getBoxName());
+
             switch (resVO.getLineId()) {
                 case 1:
                     resVO.setLineName("A相");
@@ -469,33 +467,12 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                     break;
                 default:
             }
-
-            List<BusAisleBarQueryVO> records = busIndexMapper.selectBoxPageList(boxIndex.getBoxKey().split(","));
-            if (CollectionUtil.isNotEmpty(records)) {
-                Map<String, BusAisleBarQueryVO> aislePathMap = records.stream().collect(Collectors.toMap(BusAisleBarQueryVO::getDevKey, x -> x));
-                Set<String> redisKeys = records.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toSet());
-                List aisles = ops.multiGet(redisKeys);
-                Map<Integer, String> positonMap = new HashMap<>();
-                if (!CollectionUtils.isEmpty(records)) {
-                    for (Object aisle : aisles) {
-                        if (aisle == null) {
-                            continue;
-                        }
-                        JSONObject json = JSON.parseObject(JSON.toJSONString(aisle));
-                        String devPosition = json.getString("room_name") + SPLIT_KEY
-                                + json.getString("aisle_name") + SPLIT_KEY;
-                        positonMap.put(json.getInteger("aisle_key"), devPosition);
-                    }
-                }
-                Map<String, Integer> keyMap = records.stream().filter(item -> ObjectUtils.isNotEmpty(item.getBarKey()))
-                        .collect(Collectors.toMap(BusAisleBarQueryVO::getBarKey, val -> val.getAisleId()));// x -> x, (oldVal, newVal) -> newVal));
-                Integer aisleId = keyMap.get(boxIndex.getBoxKey());
-                String localtion = positonMap.get(aisleId);
-                if (Objects.nonNull(aislePathMap.get(boxIndex.getBoxKey()).getPath())) {
-                    resVO.setLocation(localtion + aislePathMap.get(boxIndex.getBoxKey()).getPath() + "路");
-                } else {
-                    resVO.setLocation(localtion + "路");
-                }
+            BoxIndex boxIndex = boxIndexCopyMapper.selectById(resVO.getBusId());
+            if (Objects.nonNull(boxIndex)) {
+                resVO.setDevKey(boxIndex.getBoxKey());
+                resVO.setBusName(boxIndex.getBoxName());
+                Map<String, String> positionByKey = getPositionByKey(boxIndex.getBoxKey());
+                resVO.setLocation(positionByKey.get(boxIndex.getBoxKey()));
             }
         }
         return resVO;
@@ -786,23 +763,47 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         vo.setOutletEleReactive(outletItemList.getList("ele_reactive", Double.class));
         vo.setOutletPowerFactor(outletItemList.getList("power_factor", Double.class));
 
+        if (true) {
+            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+            boolQuery.must(QueryBuilders.termsQuery("box_id", boxIndex.getId().toString()));
+            // 搜索源构建对象
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(boolQuery);
+            searchSourceBuilder.size(1);
+            searchSourceBuilder.sort("load_rate", SortOrder.DESC);
+            SearchRequest searchRequest1 = new SearchRequest();
+            searchRequest1.indices("box_hda_line_realtime");
+            //query条件--正常查询条件
+            searchRequest1.source(searchSourceBuilder);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
+            SearchHits hits = searchResponse1.getHits();
+            if (hits.getTotalHits().value>0) {
+                SearchHit hit = hits.getAt(0);
+                vo.setLoadFactorTime(hit.getSourceAsMap().get("create_time").toString());
+            }
+        }
+        if (true) {
+            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+            boolQuery.must(QueryBuilders.termsQuery("box_id", boxIndex.getId().toString()));
+            // 搜索源构建对象
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(boolQuery);
+            searchSourceBuilder.size(1);
+            searchSourceBuilder.sort("pow_active", SortOrder.DESC);
+            SearchRequest searchRequest1 = new SearchRequest();
+            searchRequest1.indices("box_hda_line_realtime");
+            //query条件--正常查询条件
+            searchRequest1.source(searchSourceBuilder);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
+            SearchHits hits = searchResponse1.getHits();
+            if (hits.getTotalHits().value>0) {
+                SearchHit hit = hits.getAt(0);
+                vo.setPowActiveTime(hit.getSourceAsMap().get("create_time").toString());
+            }
+        }
 
-        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-        boolQuery.must(QueryBuilders.termsQuery("box_id", boxIndex.getId().toString()));
-        // 搜索源构建对象
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.query(boolQuery);
-        searchSourceBuilder.size(1);
-        searchSourceBuilder.sort("load_rate", SortOrder.DESC);
-        SearchRequest searchRequest1 = new SearchRequest();
-        searchRequest1.indices("box_hda_line_realtime");
-        //query条件--正常查询条件
-        searchRequest1.source(searchSourceBuilder);
-        // 执行搜索,向ES发起http请求
-        SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
-        SearchHits hits = searchResponse1.getHits();
-        SearchHit hit = hits.getAt(0);
-        vo.setLoadFactorTime(hit.getSourceAsMap().get("create_time").toString());
 
 //        Map map = getCabinetDistributionFactor(boxIndex.getId(), type);
 //        vo.setFactorC((List<BigDecimal>) map.get("factorC"));
@@ -1038,6 +1039,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         String indices = null;
         String startTime = null;
         String endTime = DateUtil.formatDateTime(DateTime.now());
+        List<BoxIndex> boxIndices1 = boxIndexMapper.selectList(new LambdaUpdateWrapper<BoxIndex>().eq(BoxIndex::getBoxType, 1));
+        List<Integer> boxIds = boxIndices1.stream().map(BoxIndex::getId).collect(Collectors.toList());
         Integer total = 0;
         switch (pageReqVO.getTimeGranularity()) {
             case "yesterday":
@@ -1071,7 +1074,8 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             searchSourceBuilder.sort("eq_value", SortOrder.DESC);
             //获取需要处理的数据
             searchSourceBuilder.query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery()
-                    .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime))));
+                    .must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lt(endTime))
+                    .mustNot(QueryBuilders.termQuery("box_id",boxIds))));
 
             SearchRequest searchRequest = new SearchRequest();
             searchRequest.indices(indices);
@@ -1986,9 +1990,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
 
             for (BoxIndex boxIndex : boxIndices) {
                 Integer id = boxIndex.getId();
-                if (curMap.get(id) == null) {
-                    continue;
-                }
+
                 BoxLineRes boxLineRes = new BoxLineRes();
                 boxLineRes.setStatus(boxIndex.getRunStatus());
 
@@ -1996,6 +1998,9 @@ public class BoxIndexServiceImpl implements BoxIndexService {
                 boxLineRes.setDevKey(boxIndex.getBoxKey());
                 boxLineRes.setBoxName(boxIndex.getBoxName());
 
+                if (curMap.get(id) == null) {
+                    continue;
+                }
                 MaxValueAndCreateTime curl1 = curMap.get(id).get(1);
                 boxLineRes.setL1MaxCur(curl1.getMaxValue().floatValue());
                 boxLineRes.setL1MaxCurTime(curl1.getMaxTime().toString("yyyy-MM-dd HH:mm:ss"));
@@ -3470,38 +3475,43 @@ public class BoxIndexServiceImpl implements BoxIndexService {
     }
 
     private Map getESTotalAndIds(String index, String startTime, String endTime, Integer pageSize, Integer pageNo, List<Integer> ids) throws IOException {
-        HashMap<String, Object> result = new HashMap<>();
-        SearchRequest searchRequest = new SearchRequest(index);
+        try {
+            HashMap<String, Object> result = new HashMap<>();
+            SearchRequest searchRequest = new SearchRequest(index);
 
-        SearchSourceBuilder builder = new SearchSourceBuilder();
-        builder
-                .from(pageNo * pageSize)
-                .size(pageSize)
-                .query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
-                        .must(QueryBuilders.termsQuery("box_id", ids))))
-                .sort("box_id", SortOrder.ASC)
-                .collapse(new CollapseBuilder("box_id"))
-                .aggregation(AggregationBuilders.cardinality("total_size").field("box_id").precisionThreshold(10000));
-        searchRequest.source(builder);
-        List<Integer> sortValues = new ArrayList<>();
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-        if (searchResponse != null) {
-            SearchHits hits = searchResponse.getHits();
-            for (SearchHit hit : hits) {
-                String str = hit.getSourceAsString();
-                BoxLineHourDo hourDo = JsonUtils.parseObject(str, BoxLineHourDo.class);
-                sortValues.add(hourDo.getBoxId());
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+            builder
+                    .from(pageNo * pageSize)
+                    .size(pageSize)
+                    .query(QueryBuilders.constantScoreQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery(CREATE_TIME + ".keyword").gte(startTime).lte(endTime))
+                            .must(QueryBuilders.termsQuery("box_id", ids))))
+                    .sort("box_id", SortOrder.ASC)
+                    .collapse(new CollapseBuilder("box_id"))
+                    .aggregation(AggregationBuilders.cardinality("total_size").field("box_id").precisionThreshold(10000));
+            searchRequest.source(builder);
+            List<Integer> sortValues = new ArrayList<>();
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            if (searchResponse != null) {
+                SearchHits hits = searchResponse.getHits();
+                for (SearchHit hit : hits) {
+                    String str = hit.getSourceAsString();
+                    BoxLineHourDo hourDo = JsonUtils.parseObject(str, BoxLineHourDo.class);
+                    sortValues.add(hourDo.getBoxId());
+                }
             }
-        }
-        Long totalRes = 0L;
-        Cardinality totalSizeAggregation = searchResponse.getAggregations().get("total_size");
-        if (totalSizeAggregation != null) {
-            totalRes = totalSizeAggregation.getValue();
-        }
+            Long totalRes = 0L;
+            Cardinality totalSizeAggregation = searchResponse.getAggregations().get("total_size");
+            if (totalSizeAggregation != null) {
+                totalRes = totalSizeAggregation.getValue();
+            }
 
-        result.put("total", totalRes);
-        result.put("ids", sortValues);
-        return result;
+            result.put("total", totalRes);
+            result.put("ids", sortValues);
+            return result;
+        }catch (Exception e){
+            log.error("需量监测错误"+e);
+            return null;
+        }
     }
 
     private List getMutiRedis(List<BoxIndex> list) {
@@ -3534,7 +3544,7 @@ public class BoxIndexServiceImpl implements BoxIndexService {
             Map<Integer, String> pathMap = aisleBars.stream().collect(Collectors.toMap(AisleBar::getId, AisleBar::getPath));
             Map<Integer, AisleBox> aisleBoxKeyMap = aisleBoxList.stream().collect(Collectors.toMap(AisleBox::getAisleId, Function.identity()));
 
-            Map<Integer, String> positionMap = new HashMap<>();
+//            Map<Integer, String> positionMap = new HashMap<>();
             if (!CollectionUtils.isEmpty(aisleBoxList)) {
                 List<String> redisKeys = aisleBoxList.stream().map(aisle -> REDIS_KEY_AISLE + aisle.getAisleId()).collect(Collectors.toList());
                 List aisles = ops.multiGet(redisKeys);

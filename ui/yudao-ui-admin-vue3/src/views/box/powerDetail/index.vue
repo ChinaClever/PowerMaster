@@ -8,7 +8,7 @@
             <span style="color:black;font-weight:bold;">负载率</span>
             <div style="margin-left:300px;">
                 <span style="color:black;font-size:14px;">最大负载率: </span>
-                <span style="color:black;font-size:14px;">发生时间: </span>
+                <span style="color:black;font-size:14px;">发生时间: {{redisData?.loadFactorTime}}</span>
             </div>
         </div>
         <!--<div style="height:20px;display:flex;align-items: center;margin-left:10px">              
@@ -37,7 +37,7 @@
         <div class="center-top-right-part">
           <div style="margin-left:100px;margin-top:-70px;margin-bottom:50px">
             <span style="color:black;font-size:14px;">最大功率: </span>
-            <span style="color:black;font-size:14px;">发生时间: </span>
+            <span style="color:black;font-size:14px;">发生时间: {{redisData?.powActiveTime}}</span>
           </div>
           <div class="label-container">
             <span class="bullet" style="color:#B47660;">•</span><span style="width:80px;font-size:14px;">额定功率:</span><span style="font-size:16px;">{{redisData?.powApparentTotal}}KVA</span>
