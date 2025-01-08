@@ -980,8 +980,15 @@ const getList = async () => {
       const selectedElements = [];
       const indicesToSelect = [2, 5, 8];
       for (let j = 0; j < indicesToSelect.length; j++) {
-        if (j < loopCur.length){
-          selectedElements.push(loopCur[indicesToSelect[j]]);
+        if (Array.isArray(loopCur) && Array.isArray(indicesToSelect) && j < loopCur.length) {
+          const index = indicesToSelect[j];
+          if (index >= 0 && index < loopCur.length) {
+            selectedElements.push(loopCur[index]);
+          } else {
+            console.warn('Index out of bounds:', index);
+          }
+        } else {
+          console.warn('Invalid loopCur or indicesToSelect array');
         }
       }
 

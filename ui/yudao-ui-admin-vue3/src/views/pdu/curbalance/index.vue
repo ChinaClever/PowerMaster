@@ -772,15 +772,12 @@ const toggleAllStatus1 = () => {
   butColor.value = 0;
   onclickColor.value = -1;
   queryParams.color = [0,1,2,3,4];
-  queryParams.status = [0,1,2,3,4];
   handleQuery();
 }
 const handleSelectStatus1 = (index) => {
   butColor.value = 1;
   onclickColor.value = index;
   queryParams.color = [index];
-  //queryParams.status = [index];
-
   handleQuery();
 }
 
@@ -1062,52 +1059,12 @@ const getList = async () => {
   loading.value = true
   try {
     const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
-    var range = await CurbalanceColorApi.getCurbalanceColor()
-    if (range != null) {
-      statusList[0].name = '<' + range.rangeOne + '%'
-      statusList[1].name = range.rangeTwo + '%-' + range.rangeThree + '%'
-      statusList[2].name = '>' + range.rangeFour + '%'
-    }
-
-    // var tableIndex = 0
-    // var lessFifteen = 0
-    // var greaterFifteen = 0
-    // var greaterThirty = 0
-    // var smallCurrent = 0
-    // data.list.forEach((obj) => {
-    //   obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex
-    //   if (obj?.dataUpdateTime == null && obj?.pow == null) {
-    //     return
-    //   }
-    //   const splitArray = obj.dataUpdateTime.split(' ')
-    //   obj.dataUpdateTime = splitArray[1]
-
-    //   obj.apparentPow = obj.apparentPow.toFixed(3)
-    //   obj.pow = obj.pow.toFixed(3)
-    //   obj.ele = obj.ele.toFixed(1)
-    //   obj.pf = obj.pf.toFixed(2)
-    //   obj.acur = obj.acur?.toFixed(2)
-    //   obj.bcur = obj.bcur?.toFixed(2)
-    //   obj.ccur = obj.ccur?.toFixed(2)
-    //   obj.curUnbalance = obj.curUnbalance?.toFixed(0)
-    //   obj.avol = obj.avol?.toFixed(1)
-    //   obj.bvol = obj.bvol?.toFixed(1)
-    //   obj.cvol = obj.cvol?.toFixed(1)
-    //   obj.volUnbalance = obj.volUnbalance?.toFixed(0)
-    //   if (obj.color == 1) {
-    //     smallCurrent++
-    //   } else if (obj.color == 2) {
-    //     lessFifteen++
-    //   } else if (obj.color == 3) {
-    //     greaterFifteen++
-    //   } else if (obj.color == 4) {
-    //     greaterThirty++
-    //   }
-    // })
-    // statusNumber.smallCurrent = smallCurrent
-    // statusNumber.lessFifteen = lessFifteen
-    // statusNumber.greaterFifteen = greaterFifteen
-    // statusNumber.greaterThirty = greaterThirty
+    // var range = await CurbalanceColorApi.getCurbalanceColor()
+    // if (range != null) {
+    //   statusList[0].name = '<' + range.rangeOne + '%'
+    //   statusList[1].name = range.rangeTwo + '%-' + range.rangeThree + '%'
+    //   statusList[2].name = '>' + range.rangeFour + '%'
+    // }
     total.value = data.total
     list.value = data.list
     console.log('111获取数据111', list)
@@ -1115,59 +1072,17 @@ const getList = async () => {
     loading.value = false
   }
 }
+const getCurbalanceColor = async () => {
+  const res = await CurbalanceColorApi.getCurbalanceColor()
+  console.log('res', res)
+  if (res != null) {
+    statusList[0].name = '<' + res.rangeOne + '%'
+    statusList[1].name = res.rangeTwo + '%-' + res.rangeThree + '%'
+    statusList[2].name = '>' + res.rangeFour + '%'
+  }
+}
 
-// const getListNoLoading = async () => {
-//   try {
-//     const data = await PDUDeviceApi.getPDUDevicePage(queryParams)
-//     var range = await CurbalanceColorApi.getCurbalanceColor()
-//     if (range != null) {
-//       statusList[0].name = '<' + range.rangeOne + '%'
-//       statusList[1].name = range.rangeTwo + '%-' + range.rangeThree + '%'
-//       statusList[2].name = '>' + range.rangeFour + '%'
-//     }
-//     var tableIndex = 0
-//     var lessFifteen = 0
-//     var greaterFifteen = 0
-//     var greaterThirty = 0
-//     var smallCurrent = 0
-//     data.list.forEach((obj) => {
-//       obj.tableId = (queryParams.pageNo - 1) * queryParams.pageSize + ++tableIndex
-//       if (obj?.dataUpdateTime == null && obj?.pow == null) {
-//         return
-//       }
-//       const splitArray = obj.dataUpdateTime.split(' ')
-//       obj.dataUpdateTime = splitArray[1]
-//       obj.apparentPow = obj.apparentPow.toFixed(3)
-//       obj.pow = obj.pow.toFixed(3)
-//       obj.ele = obj.ele.toFixed(1)
-//       obj.pf = obj.pf.toFixed(2)
-//       obj.acur = obj.acur?.toFixed(2)
-//       obj.bcur = obj.bcur?.toFixed(2)
-//       obj.ccur = obj.ccur?.toFixed(2)
-//       obj.curUnbalance = obj.curUnbalance?.toFixed(0)
-//       obj.avol = obj.avol?.toFixed(1)
-//       obj.bvol = obj.bvol?.toFixed(1)
-//       obj.cvol = obj.cvol?.toFixed(1)
-//       obj.volUnbalance = obj.volUnbalance?.toFixed(0)
-//       if (obj.color == 1) {
-//         smallCurrent++
-//       } else if (obj.color == 2) {
-//         lessFifteen++
-//       } else if (obj.color == 3) {
-//         greaterFifteen++
-//       } else if (obj.color == 4) {
-//         greaterThirty++
-//       }
-//     })
 
-//     statusNumber.smallCurrent = smallCurrent
-//     statusNumber.lessFifteen = lessFifteen
-//     statusNumber.greaterFifteen = greaterFifteen
-//     statusNumber.greaterThirty = greaterThirty
-//     list.value = data.list
-//     total.value = data.total
-//   } catch (error) {}
-// }
 const getNavAList = async() => {
     const resStatus =await PDUDeviceApi.getBalancedDistribution();
     console.log(resStatus);
@@ -1218,10 +1133,8 @@ const handleSelectStatus = (index) => {
   const statusArr = status.map((item) => item.value)
   if (statusArr.length != statusList.length) {
     queryParams.color = statusArr
-    queryParams.status = [0, 1, 2, 3, 4]
   } else {
     queryParams.color = []
-    queryParams.status = []
   }
   handleQuery()
 }
@@ -1242,10 +1155,8 @@ const toggleAllStatus = () => {
   const statusArr = status.map(item => item.value);
   if (statusArr.length != statusList.length) {
     queryParams.color = statusArr
-    queryParams.status = [0, 1, 2, 3, 4]
   } else {
     queryParams.color = []
-    queryParams.status = []
   }
   handleQuery();
 }
@@ -1304,6 +1215,7 @@ const handleExport = async () => {
 onMounted(async () => {
   devKeyList.value = await loadAll()
   getList()
+  getCurbalanceColor()
   getNavList()
   getNavAList()
   // if (!firstTimerCreate.value) {
