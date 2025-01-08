@@ -31,7 +31,7 @@ const restPercentageValue = computed(() => 100 - percentageValue.value);
 const option = computed(() => ({
   tooltip: {
     trigger: 'item',
-    formatter: '{b}: {c} ({d}%)'
+    formatter: '{d}%'
   },
   legend: {
     show: false // 不显示图例
