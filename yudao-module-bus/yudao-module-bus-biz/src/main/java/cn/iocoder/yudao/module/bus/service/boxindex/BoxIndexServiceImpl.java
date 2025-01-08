@@ -786,23 +786,47 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         vo.setOutletEleReactive(outletItemList.getList("ele_reactive", Double.class));
         vo.setOutletPowerFactor(outletItemList.getList("power_factor", Double.class));
 
+        if (true) {
+            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+            boolQuery.must(QueryBuilders.termsQuery("box_id", boxIndex.getId().toString()));
+            // 搜索源构建对象
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(boolQuery);
+            searchSourceBuilder.size(1);
+            searchSourceBuilder.sort("load_rate", SortOrder.DESC);
+            SearchRequest searchRequest1 = new SearchRequest();
+            searchRequest1.indices("box_hda_line_realtime");
+            //query条件--正常查询条件
+            searchRequest1.source(searchSourceBuilder);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
+            SearchHits hits = searchResponse1.getHits();
+            if (hits.getTotalHits().value>0) {
+                SearchHit hit = hits.getAt(0);
+                vo.setLoadFactorTime(hit.getSourceAsMap().get("create_time").toString());
+            }
+        }
+        if (true) {
+            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+            boolQuery.must(QueryBuilders.termsQuery("box_id", boxIndex.getId().toString()));
+            // 搜索源构建对象
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(boolQuery);
+            searchSourceBuilder.size(1);
+            searchSourceBuilder.sort("pow_active", SortOrder.DESC);
+            SearchRequest searchRequest1 = new SearchRequest();
+            searchRequest1.indices("box_hda_line_realtime");
+            //query条件--正常查询条件
+            searchRequest1.source(searchSourceBuilder);
+            // 执行搜索,向ES发起http请求
+            SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
+            SearchHits hits = searchResponse1.getHits();
+            if (hits.getTotalHits().value>0) {
+                SearchHit hit = hits.getAt(0);
+                vo.setPowActiveTime(hit.getSourceAsMap().get("create_time").toString());
+            }
+        }
 
-        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-        boolQuery.must(QueryBuilders.termsQuery("box_id", boxIndex.getId().toString()));
-        // 搜索源构建对象
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.query(boolQuery);
-        searchSourceBuilder.size(1);
-        searchSourceBuilder.sort("load_rate", SortOrder.DESC);
-        SearchRequest searchRequest1 = new SearchRequest();
-        searchRequest1.indices("box_hda_line_realtime");
-        //query条件--正常查询条件
-        searchRequest1.source(searchSourceBuilder);
-        // 执行搜索,向ES发起http请求
-        SearchResponse searchResponse1 = client.search(searchRequest1, RequestOptions.DEFAULT);
-        SearchHits hits = searchResponse1.getHits();
-        SearchHit hit = hits.getAt(0);
-        vo.setLoadFactorTime(hit.getSourceAsMap().get("create_time").toString());
 
 //        Map map = getCabinetDistributionFactor(boxIndex.getId(), type);
 //        vo.setFactorC((List<BigDecimal>) map.get("factorC"));

@@ -231,7 +231,7 @@
         <template #header>
           <div>
             <span style="font-weight:bold;font-size:20px;margin-right:10px">电流不平衡</span>
-            <span style="margin-right:10px">所在位置：{{ curlocation }}</span>
+            <span style="margin-right:10px">所在位置：{{ location != null ? location : boxName  }}</span>
             <span>网络地址：{{ curlocation }}</span>
           </div>
         </template>
@@ -301,7 +301,7 @@
         <template #header>
           <div>
             <span style="font-weight:bold;font-size:20px;margin-right:10px">电压不平衡</span>
-            <span style="margin-right:10px">所在位置：{{ boxName }}</span>
+            <span style="margin-right:10px">所在位置：{{ location != null ? location : boxName }}</span>
             <span>网络地址：{{ curlocation }}</span>
           </div>
         </template>
@@ -387,6 +387,7 @@ const statusNumber = reactive({
   smallCurrent : 0
 })
 
+const location = ref();
 const curlocation = ref();
 const vollocation = ref();
 const boxName = ref();
@@ -739,6 +740,7 @@ const showDialogCur = (item) => {
   colorFlag.value = item.color;
   dialogVisibleCur.value = true;
   curlocation.value = item.devKey;
+  location.value = item.location;
   boxName.value = item.boxName;
   getBalanceDetail(item);
   getBalanceTrend(item);
