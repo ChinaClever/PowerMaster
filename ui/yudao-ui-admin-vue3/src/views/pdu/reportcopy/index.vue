@@ -1117,7 +1117,8 @@ const initChart =  () => {
                 data: ['电流'],
                 selected: { // 默认选择状态
                   '电流': true, },
-                  
+                  right: 80, // 距离右侧10px
+        bottom: 10 // 距离底部10px
               },
       grid: {
                 bottom: 0,

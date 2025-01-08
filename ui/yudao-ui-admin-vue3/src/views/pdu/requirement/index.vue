@@ -92,10 +92,8 @@
             :type="queryParams.timeType == 2 ? 'primary' : ''"
           >
             自定义
-          </el-button>                            
-        </el-form-item>
-        
-        <div style="margin-left: -250px;">
+          </el-button> 
+          <div style="float: left;">
         <el-form-item >
           <el-date-picker
             v-if="queryParams.timeType == 1"
@@ -141,7 +139,10 @@
           </el-button>
         </el-form-item>         
         </el-form-item>
-      </div>
+      </div>                           
+        </el-form-item>
+        
+        
         <div style="float:right ">
           <el-button @click="valueMode = 0;" :type="valueMode == 0 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 2px" />电流</el-button>
           <el-button @click="valueMode = 1;" :type="valueMode == 1 ? 'primary' : ''"><Icon icon="ep:grid" style="margin-right: 2px" />功率</el-button>          
@@ -378,7 +379,7 @@
       <el-dialog
         v-model="dialogVisibleOne"
         @close="handleClose"
-        width="100%"
+        width="70%"
       >     
         <!-- 自定义的头部内容（可选） -->
         <template #header>
@@ -389,8 +390,11 @@
 
         <!-- 自定义的主要内容 -->
         <div class="custom-content">
-          <div ref="lineidChartContainerOne" id="lineidChartContainerOne" class="adaptiveStyle" style="width: 1250px;"></div>
-        </div>
+          <div class="custom-content-container">
+           
+          <div ref="lineidChartContainerOne" id="lineidChartContainerOne" class="adaptiveStyle"  style="width: 100%;height: 500px;"></div>
+          
+        </div></div>
       </el-dialog>
 
       <div  v-if="switchValue == 1 && list.length > 0 && valueMode == 0" class="arrayContainer">
@@ -424,7 +428,7 @@
           <button class="detail" @click="onlyDevKey=item.devKey,location=item.location;showDialog(item.pduId,dateSwitch?'hour':'day',flagValue=0);">详情</button>
         </div>
       </div>
-
+      
       <el-dialog
         v-model="dialogVisible"
         @close="handleClose"
@@ -440,9 +444,10 @@
         </template>
 
         <!-- 自定义的主要内容 -->
-        <div class="custom-content">
-          <div ref="lineidChartContainer" id="lineidChartContainer" class="adaptiveStyle" style="width: 1290px;height: 500px;"></div>
-        </div>
+        
+          <!-- <pow /> -->
+         
+          <div ref="lineidChartContainer" id="lineidChartContainer"  style="width: 100%;height: 500px;"></div>
       </el-dialog>
     </div>
       <Pagination
@@ -475,6 +480,7 @@ import { CabinetApi } from '@/api/cabinet/info'
 import * as echarts from 'echarts'
 import { ref, onMounted, onUnmounted } from 'vue';
 import Bar from './component/Bar.vue'
+import pow from './component/pow.vue'
 
 const searchbth = ref(false);
 const now1 = new Date();
@@ -885,136 +891,358 @@ const lineidChartContainer = ref<HTMLElement | null>(null);
 let lineidChartOne = null as echarts.ECharts | null; // 显式声明 rankChart 的类型
 const lineidChartContainerOne = ref<HTMLElement | null>(null);
 
+
 const updateChart = (lChartData,llChartData,lllChartData,lineidDateTimes ) => {
+  console.log(lineidDateTimes.value.length)
+  console.log(lChartData.value.cur_max_value[1])
+  interface DataItem {
+  Year: any;
+  Country: any;
+  Income: any;
+}
+
+
+const newData: DataItem[] = [];
+for (let i = 0; i < lineidDateTimes.value.length; i++) {
+  newData.push({ Year: lineidDateTimes.value[i], Country: 'L1-电流', Income: lChartData.value.cur_max_value[i] } as DataItem);
+  newData.push({ Year: lineidDateTimes.value[i], Country: 'L2-电流', Income: llChartData.value.cur_max_value[i] } as DataItem);
+  newData.push({ Year: lineidDateTimes.value[i], Country: 'L3-电流', Income: lllChartData.value.cur_max_value[i] } as DataItem);
+}
+console.log(newData)
+console.log(lChartData.value.pow_active_max_value[1])
+const newData1: DataItem[] = [];
+for (let i = 0; i < lineidDateTimes.value.length; i++) {
+  newData1.push({ Year: lineidDateTimes.value[i], Country: 'L1功率', Income: lChartData.value.pow_active_max_value[i] } as DataItem);
+  newData1.push({ Year: lineidDateTimes.value[i], Country: 'L2功率', Income: llChartData.value.pow_active_max_value[i] } as DataItem);
+  newData1.push({ Year: lineidDateTimes.value[i], Country: 'L3功率', Income: lllChartData.value.pow_active_max_value[i] } as DataItem);
+}
+console.log(newData1)
+
   if(flagValue.value == 0){
     return {
-      title: { text: ''},
-      tooltip: { trigger: 'axis', formatter: function (params) {
-        let result = params[0].name + '<br>';
-        params.forEach(param => {
-          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
-          if (param.seriesName === 'L1-电流' || param.seriesName === 'L2-电流' || param.seriesName === 'L3-电流') {
-            result += ' A';
-          }
-          result += '<br>';
-        });
-        return result.trimEnd(); // 去除末尾多余的换行符
-      }},
-      legend: {
-        data: ['L1-电流', 'L2-电流', 'L3-电流'], // 图例项
-        selected:{
-          'L1-电流':true,
-          'L2-电流':true,
-          'L3-电流':true
+      dataset: [
+    {
+      id: 'dataset_raw',
+      source: newData
+    },
+    {
+      id: 'dataset_l',
+      fromDatasetId: 'dataset_raw',
+      transform: {
+        type: 'filter',
+        config: {
+          and: [
+              { dimension: 'Country', '=': 'L1-电流' }
+            ]
         }
-      },
-      grid: {left: '3%', right: '3%', bottom: '3%',containLabel: true},
-      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-      xAxis: {
-        type: 'category',nameLocation: 'end',
-        boundaryGap: false,
-        //axisLabel:{
-        //  show:true,
-        //  interval:0,
-        //  rotate:-45
-        //},
-        data:lineidDateTimes.value
-      },
-      yAxis: {
-        type: 'value'
-      },
-      series: [
-        {
-          name: 'L1-电流',
-          type: 'line',
-          data: lChartData.value.cur_max_value,
-          symbol: 'circle',
-          symbolSize: 4
-        },
-        {
-          name: 'L2-电流',
-          type: 'line',
-          data: llChartData.value.cur_max_value,
-          symbol: 'circle',
-          symbolSize: 4,
-          lineStyle:{type: 'dashed'}
-        },
-        {
-          name: 'L3-电流',
-          type: 'line',
-          data: lllChartData.value.cur_max_value,
-          symbol: 'circle',
-          symbolSize: 4,
-          lineStyle:{type: 'dashed'}
+      }
+    },
+    {
+      id: 'dataset_ll',
+      fromDatasetId: 'dataset_raw',
+      transform: {
+        type: 'filter',
+        config: {
+          and: [
+              { dimension: 'Country', '=': 'L2-电流' }
+            ]
         }
-      ]
+      }
+    },
+    {
+      id: 'dataset_lll',
+      fromDatasetId: 'dataset_raw',
+      transform: {
+        type: 'filter',
+        config: {
+          and: [
+              { dimension: 'Country', '=': 'L3-电流' }
+            ]
+        }
+      }
+    }
+  ],
+  tooltip: {
+    trigger: 'axis'
+  },
+  xAxis: {
+    type: 'category',
+    nameLocation: 'middle'
+  },
+  yAxis: {
+    
+  },
+  legend: {
+    data: ['L1-电流', 'L2-电流', 'L3-电流']
+  },
+  series: [
+    {
+      type: 'line',
+      datasetId: 'dataset_l',
+      showSymbol: false,
+      encode: {
+        x: 'Year',
+        y: 'Income',
+        itemName: 'Year',
+        tooltip: ['Income']
+      },
+      name: 'L1-电流'
+    },
+    {
+      type: 'line',
+      datasetId: 'dataset_ll',
+      showSymbol: false,
+      encode: {
+        x: 'Year',
+        y: 'Income',
+        itemName: 'Year',
+        tooltip: ['Income']
+      },
+      name: 'L2-电流'
+    },
+    {
+      type: 'line',
+      datasetId: 'dataset_lll',
+      showSymbol: false,
+      encode: {
+        x: 'Year',
+        y: 'Income',
+        itemName: 'Year',
+        tooltip: ['Income']
+      },
+      name: 'L3-电流'
+    }
+  ]
     }
   }else if(flagValue.value == 1){
     return {
-      title: { text: ''},
-      tooltip: { trigger: 'axis', formatter: function (params) {
-        let result = params[0].name + '<br>';
-        params.forEach(param => {
-          result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
-          if (param.seriesName === 'A路最大功率' || param.seriesName === 'B路最大功率' || param.seriesName === 'C路最大功率') {
-            result += ' KW';
-          }
-          result += '<br>';
-        });
-        return result.trimEnd(); // 去除末尾多余的换行符
+      dataset: [
+    {
+      id: 'dataset_raw',
+      source: newData1
+    },
+    {
+      id: 'dataset_l',
+      fromDatasetId: 'dataset_raw',
+      transform: {
+        type: 'filter',
+        config: {
+          and: [
+              { dimension: 'Country', '=': 'L1功率' }
+            ]
         }
-      },
-      legend: {
-        data: ['A路最大功率', 'B路最大功率', 'C路最大功率'], // 图例项
-        selected: {'A路最大功率': true,
-    'B路最大功率': true,
-    'C路最大功率': true
       }
-      },
-      grid: {left: '3%', right: '70%', bottom: '3%',containLabel: true,width: '100%'},
-      toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
-      xAxis: {
-        type: 'category',nameLocation: 'end',
-        boundaryGap: false,
-        //axisLabel:{
-        //  interval:0,
-        //  rotate:-45
-        //},
-        
-        data:lineidDateTimes.value
-      },
-      yAxis: {
-        type: 'value',
-      },
-      series: [
-        {
-          name: 'A路最大功率',
-          type: 'line',
-          data: lChartData.value.pow_active_max_value,
-          symbol: 'circle',
-          symbolSize: 4,
-          lineStyle:{type: 'dashed'}
-        },
-        {
-          name: 'B路最大功率',
-          type: 'line',
-          data: llChartData.value.pow_active_max_value,
-          symbol: 'circle',
-          symbolSize: 4,
-          lineStyle:{type: 'dashed'}
-        },
-        {
-          name: 'C路最大功率',
-          type: 'line',
-          data: lllChartData.value.pow_active_max_value,
-          symbol: 'circle',
-          symbolSize: 4,
-          lineStyle:{type: 'dashed'}
+    },
+    {
+      id: 'dataset_ll',
+      fromDatasetId: 'dataset_raw',
+      transform: {
+        type: 'filter',
+        config: {
+          and: [
+              { dimension: 'Country', '=': 'L2功率' }
+            ]
         }
-      ]
+      }
+    },
+    {
+      id: 'dataset_lll',
+      fromDatasetId: 'dataset_raw',
+      transform: {
+        type: 'filter',
+        config: {
+          and: [
+              { dimension: 'Country', '=': 'L3功率' }
+            ]
+        }
+      }
+    }
+  ],
+  tooltip: {
+    trigger: 'axis'
+  },
+  xAxis: {
+    type: 'category',
+    nameLocation: 'middle'
+  },
+  yAxis: {
+    
+  },
+  legend: {
+    data: ['L1功率', 'L2功率', 'L3功率']
+  },
+  series: [
+    {
+      type: 'line',
+      datasetId: 'dataset_l',
+      showSymbol: false,
+      encode: {
+        x: 'Year',
+        y: 'Income',
+        itemName: 'Year',
+        tooltip: ['Income']
+      },
+      name: 'L1功率'
+    },
+    {
+      type: 'line',
+      datasetId: 'dataset_ll',
+      showSymbol: false,
+      encode: {
+        x: 'Year',
+        y: 'Income',
+        itemName: 'Year',
+        tooltip: ['Income']
+      },
+      name: 'L2功率'
+    },
+    {
+      type: 'line',
+      datasetId: 'dataset_lll',
+      showSymbol: false,
+      encode: {
+        x: 'Year',
+        y: 'Income',
+        itemName: 'Year',
+        tooltip: ['Income']
+      },
+      name: 'L3功率'
+    }
+  ]
     }
   }
 }
+
+// const updateChart = (lChartData,llChartData,lllChartData,lineidDateTimes ) => {
+//   if(flagValue.value == 0){
+//     return {
+//       title: { text: ''},
+//       tooltip: { trigger: 'axis', formatter: function (params) {
+//         let result = params[0].name + '<br>';
+//         params.forEach(param => {
+//           result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+//           if (param.seriesName === 'L1-电流' || param.seriesName === 'L2-电流' || param.seriesName === 'L3-电流') {
+//             result += ' A';
+//           }
+//           result += '<br>';
+//         });
+//         return result.trimEnd(); // 去除末尾多余的换行符
+//       }},
+//       legend: {
+//         data: ['L1-电流', 'L2-电流', 'L3-电流'], // 图例项
+//         selected:{
+//           'L1-电流':true,
+//           'L2-电流':true,
+//           'L3-电流':true
+//         }
+//       },
+//       grid: {left: '3%', right: '3%', bottom: '3%',containLabel: true},
+//       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+//       xAxis: {
+//         type: 'category',nameLocation: 'end',
+//         boundaryGap: false,
+//         //axisLabel:{
+//         //  show:true,
+//         //  interval:0,
+//         //  rotate:-45
+//         //},
+//         data:lineidDateTimes.value
+//       },
+//       yAxis: {
+//         type: 'value'
+//       },
+//       series: [
+//         {
+//           name: 'L1-电流',
+//           type: 'line',
+//           data: lChartData.value.cur_max_value,
+//           symbol: 'circle',
+//           symbolSize: 4
+//         },
+//         {
+//           name: 'L2-电流',
+//           type: 'line',
+//           data: llChartData.value.cur_max_value,
+//           symbol: 'circle',
+//           symbolSize: 4,
+//           lineStyle:{type: 'dashed'}
+//         },
+//         {
+//           name: 'L3-电流',
+//           type: 'line',
+//           data: lllChartData.value.cur_max_value,
+//           symbol: 'circle',
+//           symbolSize: 4,
+//           lineStyle:{type: 'dashed'}
+//         }
+//       ]
+//     }
+//   }else if(flagValue.value == 1){
+//     return {
+//       title: { text: ''},
+//       tooltip: { trigger: 'axis', formatter: function (params) {
+//         let result = params[0].name + '<br>';
+//         params.forEach(param => {
+//           result += param.marker + param.seriesName + ': &nbsp;&nbsp;&nbsp;&nbsp' + param.value;
+//           if (param.seriesName === 'A路最大功率' || param.seriesName === 'B路最大功率' || param.seriesName === 'C路最大功率') {
+//             result += ' KW';
+//           }
+//           result += '<br>';
+//         });
+//         return result.trimEnd(); // 去除末尾多余的换行符
+//         }
+//       },
+//       legend: {
+//         data: ['A路最大功率', 'B路最大功率', 'C路最大功率'], // 图例项
+//         selected: {'A路最大功率': true,
+//     'B路最大功率': true,
+//     'C路最大功率': true
+//       }
+//       },
+//       grid: {left: '3%', right: '70%', bottom: '3%',containLabel: true,width: '100%'},
+//       toolbox: {feature: {saveAsImage: {},dataView:{},dataZoom :{},restore :{}, }},
+//       xAxis: {
+//         type: 'category',nameLocation: 'end',
+//         boundaryGap: false,
+//         //axisLabel:{
+//         //  interval:0,
+//         //  rotate:-45
+//         //},
+        
+//         data:lineidDateTimes.value
+//       },
+//       yAxis: {
+//         type: 'value',
+//       },
+//       series: [
+//         {
+//           name: 'A路最大功率',
+//           type: 'line',
+//           data: lChartData.value.pow_active_max_value,
+//           symbol: 'circle',
+//           symbolSize: 4,
+//           lineStyle:{type: 'dashed'}
+//         },
+//         {
+//           name: 'B路最大功率',
+//           type: 'line',
+//           data: llChartData.value.pow_active_max_value,
+//           symbol: 'circle',
+//           symbolSize: 4,
+//           lineStyle:{type: 'dashed'}
+//         },
+//         {
+//           name: 'C路最大功率',
+//           type: 'line',
+//           data: lllChartData.value.pow_active_max_value,
+//           symbol: 'circle',
+//           symbolSize: 4,
+//           lineStyle:{type: 'dashed'}
+//         }
+//       ]
+//     }
+//   }
+// }
 
 const updateChartData = (chartData, dataArray) => {
   chartData.value.cur_max_value = dataArray.map(item => item.cur_max_value);
@@ -1088,7 +1316,8 @@ const getLineid = async (id, type,flagValue) => {
     }
     lineidChart = echarts.init(chartContainer);
   }
- 
+  
+
   // 设置图表选项
   lineidChart.setOption(option, true);
 }
@@ -1624,22 +1853,26 @@ const showDialogOne = (id,type,flagValue) => {
 }
 
 :deep(.el-dialog) {
-  top: -5%;
-  width: 70%;
-  height: 70%;
-  margin-top: 100px
+  width: 80%;
+  margin-top: 70px;
 }
-
+.custom-content-container{
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+}
 .adaptiveStyle {
-  width: 65vw;
-  height: 45vh;
   z-index: 5;
 }
 /* 尝试隐藏关闭按钮，但可能不总是有效 */
 :deep(.el-dialog__headerbtn) {
   display: none !important; /* 使用 !important 尝试提高优先级 */
 }
-
+.custom-content{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 ::v-deep .el-table .el-table__header th{
   background-color: #f7f7f7;
   color: #909399;
@@ -1648,5 +1881,10 @@ const showDialogOne = (id,type,flagValue) => {
 
 :deep(.el-card){
   --el-card-padding:5px;
+}
+.cardChilc {
+  flex: 1;
+  margin: 0 10px;
+  box-sizing: border-box;
 }
 </style>
