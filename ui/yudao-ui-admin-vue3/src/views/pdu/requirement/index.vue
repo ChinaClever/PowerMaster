@@ -395,6 +395,7 @@
           <div ref="lineidChartContainerOne" id="lineidChartContainerOne" class="adaptiveStyle"  style="width: 100%;height: 500px;"></div>
           
         </div></div>
+        <div ref="lineidChartContainerOne" id="lineidChartContainerOne" class="changeScreen"></div>
       </el-dialog>
 
       <div  v-if="switchValue == 1 && list.length > 0 && valueMode == 0" class="arrayContainer">
@@ -405,8 +406,8 @@
             <div class="info" style="margin-bottom: 20px;">
               
               <div>L1最大电流：{{ (item.l1MaxCur || 0).toFixed(2) }}A</div>
-    <div>L2最大电流：{{ (item.l2MaxCur || 0).toFixed(2) }}A</div>
-    <div>L3最大电流：{{ (item.l3MaxCur || 0).toFixed(2) }}A</div>
+              <div>L2最大电流：{{ (item.l2MaxCur || 0).toFixed(2) }}A</div>
+              <div>L3最大电流：{{ (item.l3MaxCur || 0).toFixed(2) }}A</div>
               <!-- <div>AB路占比：{{item.fzb}}</div> -->
             </div>
             <!-- <div  style="height: 50px;background-color: black"></div> -->
@@ -470,14 +471,14 @@
 
 <script setup lang="ts">
 // import { dateFormatter } from '@/utils/formatTime'
-import download from '@/utils/download'
-import { PDUDeviceApi } from '@/api/pdu/pdudevice'
-import Pie from './component/Pie.vue'
+import download from '@/utils/download';
+import { PDUDeviceApi } from '@/api/pdu/pdudevice';
+import Pie from './component/Pie.vue';
 // import PDUDeviceForm from './PDUDeviceForm.vue'
-import { ElTree } from 'element-plus'
-import { CabinetApi } from '@/api/cabinet/info'
+import { ElTree } from 'element-plus';
+import { CabinetApi } from '@/api/cabinet/info';
 
-import * as echarts from 'echarts'
+import * as echarts from 'echarts';
 import { ref, onMounted, onUnmounted } from 'vue';
 import Bar from './component/Bar.vue'
 import pow from './component/pow.vue'
@@ -1346,8 +1347,10 @@ const showDialogOne = (id,type,flagValue) => {
   flagValue.value = 1
 }
 
-
-
+window.addEventListener('resize', function() {
+  lineidChart?.resize();
+  lineidChartOne?.resize();
+});
 </script>
 
 <style scoped lang="scss">
