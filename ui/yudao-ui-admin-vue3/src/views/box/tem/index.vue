@@ -201,7 +201,7 @@
               placeholder="选择日期时间"
             />
             <el-button @click="subtractOneDay(); handleDayPick()" type="primary" style="margin-left:10px;">&lt; 前一日</el-button>
-            <el-button @click="addOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
+            <el-button @click="addtractOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
           </div>
 
           <!-- 图表/数据切换按钮组 -->
@@ -216,8 +216,9 @@
           </div>
         </div>
         <br/>
-        <TemDetail v-show="switchChartOrTable == 0" width="75vw" height="70vh"  :list="temESList"  />
-        <el-table v-show="switchChartOrTable == 1" :data="temTableList" :stripe="true" :show-overflow-tooltip="true" >
+        <TemDetail v-if="switchChartOrTable == 0" width="75vw" height="70vh"  :list="temESList"  />
+        <div v-else-if="switchChartOrTable == 1" style="width: 100%;height:70vh;overflow-y:auto;">
+          <el-table :data="temTableList" :stripe="true" :show-overflow-tooltip="true" style="height:70vh;">
           <el-table-column label="时间" align="center" prop="temAvgTime" />
           <el-table-column label="A相温度" align="center" prop="temAvgValueA" >
             <template #default="scope" >
@@ -248,6 +249,7 @@
             </template>
           </el-table-column>
         </el-table>
+        </div>
       </el-dialog>
     </template>
   </CommonMenu>

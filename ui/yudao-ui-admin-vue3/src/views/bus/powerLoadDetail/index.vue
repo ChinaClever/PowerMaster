@@ -378,7 +378,7 @@ const initChart1 = () => {
             type: 'pie',
             radius: '50%',
             label: {
-              formatter: '{b}: {d}%',
+              formatter: '{b}: {c}%',
             },
             data: [
               { value: powReactivepPercentage.value, name: '无功功率', },
