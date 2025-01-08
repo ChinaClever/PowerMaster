@@ -5,34 +5,34 @@
         <div class="header">
           <!-- <div class="header_img"><img alt="" src="@/assets/imgs/Box.png" /></div> -->
         </div>
-        <div class="line"></div>
-        <!-- <div class="status">
+        <!-- <div class="line"></div> -->
+        <div class="status" style="margin-top:20px">
           <div class="box">
             <div class="top">
-              <div class="tag"></div>{{ statusList[0].name }}
+              <div class="tag"></div>正常
             </div>
-            <div class="value"><span class="number">{{statusNumber.lessFifteen}}</span>个</div>
+            <div class="value"><span class="number">{{ statusNumber.normal }}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag empty"></div>小电流
+              <div class="tag empty"></div>离线
             </div>
-            <div class="value"><span class="number">{{statusNumber.smallCurrent}}</span>个</div>
+            <div class="value"><span class="number">{{ statusNumber.offline }}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag warn"></div>{{ statusList[1].name }}
+              <div class="tag error"></div>告警
             </div>
-            <div class="value"><span class="number">{{statusNumber.greaterFifteen}}</span>个</div>
+            <div class="value"><span class="number">{{ statusNumber.alarm }}</span>个</div>
           </div>
           <div class="box">
             <div class="top">
-              <div class="tag error"></div>{{ statusList[2].name }}
+              <!--<div class="tag error"></div>-->总共
             </div>
-            <div class="value"><span class="number">{{statusNumber.greaterThirty}}</span>个</div>
+            <div class="value"><span class="number">{{ statusNumber.total }}</span>个</div>
           </div>
-        </div> -->
-        <div class="line"></div>
+        </div>
+        <!-- <div class="line"></div> -->
 
       </div>
     </template>
@@ -390,7 +390,12 @@ const loadAll = async () => {
 
 const butColor = ref(0);
 const onclickColor = ref(-1);
-
+const statusNumber = reactive({
+  normal : 0,
+  alarm : 0,
+  offline : 0,
+  total : 0
+});
 const statusList = reactive([
   {
     name: '离线',
@@ -440,7 +445,17 @@ const openPFDetail = async (row) =>{
   await getDetail();
   detailVis.value = true;
 }
+const getListAll = async () => {
+  try {
+    const allData = await IndexApi.getBoxIndexStatistics();
+    statusNumber.normal = allData.normal;
+    statusNumber.offline = allData.offline;
+    statusNumber.alarm = allData.alarm;
+    statusNumber.total = allData.total;
+      } finally {
 
+  }
+}
 const disabledDate = (date) => {
   // 获取今天的日期
   const today = new Date();
@@ -800,7 +815,8 @@ const handleExport = async () => {
 /** 初始化 **/
 onMounted(async () => {
   devKeyList.value = await loadAll();
-  getList()
+  getList();
+  getListAll();
   getNavList();
   getTypeMaxValue();
   flashListTimer.value = setInterval((getList), 5000);
