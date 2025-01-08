@@ -225,7 +225,7 @@
               placeholder="选择日期时间"
             />
             <el-button @click="subtractOneDay(); handleDayPick()" type="primary" style="margin-left:10px;">&lt; 前一日</el-button>
-            <el-button @click="addOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
+            <el-button @click="addtractOneDay(); handleDayPick()" type="primary">&gt; 后一日</el-button>
           </div>
 
           <!-- 图表/数据切换按钮组 -->
@@ -241,12 +241,14 @@
         </div>
         <br/>
         <PFDetail v-if="switchChartOrTable == 0"  width="75vw" height="70vh"  :list="pfESList"   />
-        <el-table style="height:550px;ovrflow:hidden;overflow-y:auto;" v-if="switchChartOrTable == 1" :data="pfTableList" :show-overflow-tooltip="true" >
+        <div v-else-if="switchChartOrTable == 1" style="width: 100%;height:70vh;overflow-y:auto;">
+          <el-table style="height:70vh;" :data="pfTableList" :show-overflow-tooltip="true" >
           <el-table-column label="时间" align="center" prop="time" />
           <el-table-column label="A相功率因素" align="center" prop="powerFactorAvgValueA" />
           <el-table-column label="B相功率因素" align="center" prop="powerFactorAvgValueB" />
           <el-table-column label="C相功率因素" align="center" prop="powerFactorAvgValueC" />
         </el-table>
+        </div>
       </el-dialog>
     </template>
   </CommonMenu>
