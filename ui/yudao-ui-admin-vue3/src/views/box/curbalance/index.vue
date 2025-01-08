@@ -216,12 +216,11 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
-            <el-tag type="info"  v-if="item.color != null && item.status === 0">离线</el-tag>
-            <el-tag type="info"  v-if="item.color == 0 && item.status !== 0">单相设备</el-tag>
-            <el-tag type="info"  v-if="item.color == 1 && item.status !== 0">{{statusList[3].name}}</el-tag>
-            <el-tag type="success"  v-if="item.color == 2 && item.status !== 0">{{ statusList[0].name }}</el-tag>
-            <el-tag type="warning" v-if="item.color == 3 && item.status !== 0">{{ statusList[1].name }}</el-tag>
-            <el-tag type="danger" v-if="item.color == 4 && item.status !== 0">{{ statusList[2].name }}</el-tag>
+            <el-tag type="info"  v-if="item.color == 0">单相设备</el-tag>
+            <el-tag type="info"  v-if="item.color == 1">{{statusList[3].name}}</el-tag>
+            <el-tag type="success"  v-if="item.color == 2">{{ statusList[0].name }}</el-tag>
+            <el-tag type="warning" v-if="item.color == 3">{{ statusList[1].name }}</el-tag>
+            <el-tag type="danger" v-if="item.color == 4">{{ statusList[2].name }}</el-tag>
           </div>
           <button class="detail" @click="showDialogCur(item)" v-if="item.status != null && item.status != 0">详情</button>
         </div>
@@ -232,7 +231,7 @@
         <template #header>
           <div>
             <span style="font-weight:bold;font-size:20px;margin-right:10px">电流不平衡</span>
-            <span style="margin-right:10px">所在位置：{{ curlocation }}</span>
+            <span style="margin-right:10px">所在位置：{{ location != null ? location : boxName  }}</span>
             <span>网络地址：{{ curlocation }}</span>
           </div>
         </template>
@@ -303,7 +302,7 @@
         <template #header>
           <div>
             <span style="font-weight:bold;font-size:20px;margin-right:10px">电压不平衡</span>
-            <span style="margin-right:10px">所在位置：{{ boxName }}</span>
+            <span style="margin-right:10px">所在位置：{{ location != null ? location : boxName }}</span>
             <span>网络地址：{{ curlocation }}</span>
           </div>
         </template>
@@ -389,6 +388,7 @@ const statusNumber = reactive({
   smallCurrent : 0
 })
 
+const location = ref();
 const curlocation = ref();
 const vollocation = ref();
 const boxName = ref();
@@ -741,6 +741,7 @@ const showDialogCur = (item) => {
   colorFlag.value = item.color;
   dialogVisibleCur.value = true;
   curlocation.value = item.devKey;
+  location.value = item.location;
   boxName.value = item.boxName;
   getBalanceDetail(item);
   getBalanceTrend(item);

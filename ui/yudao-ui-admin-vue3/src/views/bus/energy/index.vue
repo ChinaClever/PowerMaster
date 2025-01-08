@@ -75,7 +75,7 @@
               <img class="count_img" alt="" src="@/assets/imgs/dn.jpg" />
             </div>
             <div class="room">{{item.location}}</div>
-            <div class="name">{{item.busName}}</div>
+            <!-- <div class="name">{{item.busName}}</div> -->
             <button class="detail" @click.prevent="toDetail(item.devKey,item.roomId, item.id,item.location,item.busName)" >详情</button>
           </div>
         </div>
@@ -236,13 +236,15 @@ const getTableData = async(reset = false) => {
         return {
           id: item.id,
           devKey: item.devKey,
-          location: item.location ? item.location : item.devKey ,
+          busName : item.busName,
+          // location: item.location ? item.location : item.devKey+item.busName,
+          location: item.location || (item.devKey && item.busName ? item.devKey +'-'+ item.busName : null),
           local : item.location,
           yesterdayEq: item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0',
           lastWeekEq: item.lastWeekEq ? item.lastWeekEq.toFixed(1) : '0.0',
           lastMonthEq: item.lastMonthEq ? item.lastMonthEq.toFixed(1) : '0.0',
           status : item.runStatus,
-          busName : item.busName,
+
         }
       })
       queryParams.pageTotal = res.total;

@@ -43,17 +43,19 @@
           </el-button>                            
         </el-form-item>
         <div>
-          <el-form-item label="公司名称" prop="username" style="margin-left:80px">
-            <el-input
-              v-model="queryParams.company"
-              placeholder="请输入公司名称"
-              clearable
-              class="!w-160px"
-              height="35"
-            />
-          <el-form-item style="margin-left: 10px">
-            <el-button style="margin-left: 12px" @click="getTableData(true)" ><Icon icon="ep:search" />搜索</el-button>
-          </el-form-item>            
+        <el-form-item label="网络地址" prop="devKey" style="margin-left:80px">
+          <el-autocomplete
+            v-model="queryParamsDevKey"
+            :fetch-suggestions="querySearch"
+            clearable
+            class="!w-160px"
+            placeholder="请输入网络地址"
+            @select="handleQuery"
+          />
+        <el-form-item style="margin-left: 5px;margin-right: 6px">
+          <el-button @click="handleQuery" style="width:70px"><Icon icon="ep:search" class="mr-5px" /> 搜索</el-button>
+          <el-button @click="resetQuery" style="width:70px;" ><Icon icon="ep:refresh" class="mr-5px" /> 重置</el-button>
+        </el-form-item>          
           </el-form-item>
         </div>
         <el-form-item style="margin-left: auto">
@@ -75,7 +77,7 @@
               </div>
             </div>
             <div class="room">{{item.location}}</div>
-            <div class="name">{{item.boxName}}</div>
+            <!-- <div class="name">{{item.boxName}}</div> -->
             <button class="detail" @click.prevent="toDetail(item.roomId, item.id,item.location,item.boxName)" >详情</button>
           </div>
         </div>
@@ -132,7 +134,7 @@ const navList = ref([]) // 左侧导航栏树结构列表
 const tableData = ref([])as any
 const switchValue = ref(0) // 表格(1) 矩阵(0)切换
 const cabinetIds = ref<number[]>([]) // 左侧导航菜单所选id数组
-
+const queryParamsDevKey = ref(undefined)
 const boxName1 = ref('无数据')
 const boxName2 = ref('无数据')
 const boxName3 = ref('无数据')
@@ -187,13 +189,14 @@ const getTableData = async(reset = false) => {
       tableData.value = res.list.map(item => {
         return {
           id: item.id,
-          location: item.location ? item.location : item.devKey,
+          devKey:item.devKey,
+          // location: item.location ? item.location : item.devKey+'-'+item.boxName,
+          location: item.location || (item.devKey && item.boxName ? item.devKey +'-'+ item.boxName : null),
           local : item.location,
           yesterdayEq: item.yesterdayEq ? item.yesterdayEq.toFixed(1) : '0.0',
           lastWeekEq: item.lastWeekEq ? item.lastWeekEq.toFixed(1) : '0.0',
           lastMonthEq: item.lastMonthEq ? item.lastMonthEq.toFixed(1) : '0.0',
           status : item.runStatus,
-          devKey:item.devKey,
           boxName : item.boxName,
         }
       })
@@ -203,6 +206,45 @@ const getTableData = async(reset = false) => {
     tableLoading.value = false
   }
 }
+/** 搜索按钮操作 */
+const handleQuery = () => {
+  console.log('handleQuery', queryParamsDevKey.value)
+  if(queryParamsDevKey.value !=null && queryParamsDevKey.value != ''){
+    queryParams.boxDevKeyList = [queryParamsDevKey.value]
+  }else{
+    queryParams.boxDevKeyList = undefined as string[] | undefined
+  }
+  getTableData(true)
+}
+const resetQuery = () => {
+  queryParams.boxDevKeyList = undefined as string[] | undefined
+  getTableData(true)
+}
+const devKeyList = ref([])
+const loadAll = async () => {
+  var data = await IndexApi.devKeyList();
+  var objectArray = data.map((str) => {
+    return { value: str };
+  });
+  return objectArray;
+}
+const querySearch = (queryString: string, cb: any) => {
+
+  const results = queryString
+    ? devKeyList.value.filter(createFilter(queryString))
+    : devKeyList.value
+  // call callback function to return suggestions
+  cb(results)
+}
+
+const createFilter = (queryString: string) => {
+  return (devKeyList) => {
+    return (
+      devKeyList.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+    )
+  }
+}
+
 
 const getMaxData = async(reset = false) => {
   try {
@@ -264,6 +306,9 @@ const handleCheck = (row) => {
 const toDetail = (roomId, id,location,boxName) => {
   push({path: '/bus/boxmonitor/boxenergydetail', state: { roomId, id ,location,boxName}})
 }
+onMounted(async () => {
+  devKeyList.value = await loadAll();
+})
 
 onBeforeMount(() => {
   getNavList()
