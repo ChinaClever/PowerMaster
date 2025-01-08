@@ -142,7 +142,7 @@
       </el-form>
     </template>
     <template #Content>
-     <div v-if="switchValue && list.length > 0" style="height: 700px;overflow: hidden;overflow-y: auto;">
+     <div v-if="switchValue && list.length > 0" style="height: 720px;margin-top:-10px;overflow: hidden;overflow-y: auto;">
       <el-table
         v-show="switchValue == 3"
         :data="list"
@@ -240,6 +240,7 @@
               type="primary"
               @click="location=scope.row.location;toPDUDisplayScreen(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 5"
+              style="background-color:#409EFF;color:#fff;border:none;width:60px;height:30px;"
             >
               详情
             </el-button>
@@ -1958,9 +1959,14 @@ onActivated(() => {
   font-size: 34px; /* 根据需要调整大小 */
   margin-right: 8px; /* 设置小圆点与后续文本之间的间距 */
 }
+
 .label-container {
-      display: flex; /* 使用 Flexbox 布局 */
-      align-items: center; /* 垂直居中 */
-      color:#000;
-    }
+  display: flex; /* 使用 Flexbox 布局 */
+  align-items: center; /* 垂直居中 */
+  color:#000;
+}
+
+:deep(.el-card){
+  --el-card-padding:5px;
+}
 </style>

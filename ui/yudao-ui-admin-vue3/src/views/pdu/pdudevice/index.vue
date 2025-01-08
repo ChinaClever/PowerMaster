@@ -202,7 +202,7 @@
               type="primary"
               @click="toPDUDisplayScreen(scope.row)"
               v-if="scope.row.status != null && scope.row.status != 5"
-              style="background-color:#409EFF;color:#fff;border:none;width:100px;height:30px;"
+              style="background-color:#409EFF;color:#fff;border:none;width:60px;height:30px;"
             >
             详情
             </el-button>
