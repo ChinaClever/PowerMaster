@@ -455,8 +455,10 @@ public class BoxIndexServiceImpl implements BoxIndexService {
         if (searchResponse.getHits().getTotalHits().value>0){
             resVO = JsonUtils.parseObject(searchResponse.getHits().getAt(0).getSourceAsString(), LineBoxMaxResVO.class);
             BoxIndex boxIndex = boxIndexCopyMapper.selectById(resVO.getBusId());
-            resVO.setDevKey(boxIndex.getBoxKey());
-            resVO.setBusName(boxIndex.getBoxName());
+            if (Objects.nonNull(boxIndex)) {
+                resVO.setDevKey(boxIndex.getBoxKey());
+                resVO.setBusName(boxIndex.getBoxName());
+            }
             switch (resVO.getLineId()) {
                 case 1:
                     resVO.setLineName("A相");
