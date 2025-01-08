@@ -216,7 +216,7 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
-            <el-tag type="info"  v-if="item.color == 0">离线</el-tag>
+            <el-tag type="info"  v-if="item.color == 0">单相设备</el-tag>
             <el-tag type="info"  v-if="item.color == 1">{{statusList[3].name}}</el-tag>
             <el-tag type="success"  v-if="item.color == 2">{{ statusList[0].name }}</el-tag>
             <el-tag type="warning" v-if="item.color == 3">{{ statusList[1].name }}</el-tag>

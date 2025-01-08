@@ -232,11 +232,11 @@
           </div>
           <!-- <div class="room">{{item.jf}}-{{item.mc}}</div> -->
           <div class="status" >
-            <el-tag type="info"  v-if="item.status == 0">离线</el-tag>
-            <el-tag type="info"  v-else-if="item.color == 1 && item.status != 0">{{ statusList[3].name.slice(0,3) }}</el-tag>
-            <el-tag type="success"  v-else-if="item.color == 2 && item.status != 0">{{ statusList[0].name }}</el-tag>
-            <el-tag type="warning" v-else-if="item.color == 3 && item.status != 0">{{ statusList[1].name }}</el-tag>
-            <el-tag type="danger" v-else-if="item.color == 4 && item.status != 0">{{ statusList[2].name }}</el-tag>
+            <el-tag type="info"  v-if="item.color == 0">单相设备</el-tag>
+            <el-tag type="info"  v-else-if="item.color == 1">{{ statusList[3].name.slice(0,3) }}</el-tag>
+            <el-tag type="success"  v-else-if="item.color == 2">{{ statusList[0].name }}</el-tag>
+            <el-tag type="warning" v-else-if="item.color == 3">{{ statusList[1].name }}</el-tag>
+            <el-tag type="danger" v-else-if="item.color == 4">{{ statusList[2].name }}</el-tag>
           </div>
           <button class="detail" @click="showDialogCur(item)" v-if="item.status != null && item.status != 0">详情</button>
         </div>
@@ -1693,7 +1693,7 @@ onActivated(() => {
   --el-card-padding:5px;
 }
 
-:deep(.el-tag){
-  margin-right:-60px;
-}
+// :deep(.el-tag){
+//   margin-right:-60px;
+// }
 </style>
